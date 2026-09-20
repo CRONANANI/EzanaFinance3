@@ -88,8 +88,6 @@
     "proj4": "^2.20.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-grid-layout": "^2.2.2",
-    "react-icons": "^5.2.1",
     "react-markdown": "^10.1.0",
     "react-pdf": "^10.4.1",
     "react-plaid-link": "^4.1.1",

@@ -9,13 +9,7 @@ import { AuthProvider } from '@/components/AuthProvider';
 import { ProGateProvider } from '@/components/upgrade/ProGateContext';
 import { PartnerProvider } from '@/contexts/PartnerContext';
 import { OrgProvider } from '@/contexts/OrgContext';
-import { OrgThemeProvider } from '@/components/org/OrgThemeProvider';
-import { CongressProvider } from '@/contexts/CongressContext';
-import { PinnedCardsProvider } from '@/contexts/PinnedCardsContext';
 import { ToastProvider } from '@/contexts/ToastContext';
-import { SettingsProvider } from '@/contexts/SettingsContext';
-import { ActiveTaskProvider } from '@/contexts/ActiveTaskContext';
-import { BeginnerLevelProvider } from '@/contexts/BeginnerLevelContext';
 import { ConditionalNavbar } from '@/components/Layout/ConditionalNavbar';
 import { PublicMobileCta } from '@/components/public/PublicMobileCta';
 import { PartnerChromeEffects } from '@/components/partner/PartnerChromeEffects';
@@ -189,7 +183,7 @@ export default async function RootLayout({ children }) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Nunito:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Nunito:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
           rel="stylesheet"
         />
         {/* Bootstrap Icons: preconnect so the jsdelivr CDN is warmed early,
@@ -229,35 +223,32 @@ export default async function RootLayout({ children }) {
         <a href="#main-content" className="skip-to-content">
           Skip to content
         </a>
+        {/* Six providers that used to live here now wrap the (dashboard)
+            segment instead: Settings, ActiveTask, Congress, PinnedCards,
+            BeginnerLevel and OrgTheme. Every one of them had zero consumers
+            outside that segment, and keeping them here meant marketing and
+            auth traffic downloaded and mounted dashboard state to render a
+            sign-in form. The six that remain are genuinely global: Theme and
+            Auth are needed everywhere, ProGate and Toast are reached from
+            shared components, and Partner and Org are read by /settings,
+            which sits outside (dashboard). See docs/perf/PERFORMANCE_MAP.md. */}
         <ThemeProvider initialTheme={initialTheme}>
           <AuthProvider>
             <ProGateProvider>
-              <SettingsProvider>
-                <ActiveTaskProvider>
-                  <PartnerProvider>
-                    <OrgProvider>
-                      <CongressProvider>
-                        <PinnedCardsProvider>
-                          <ToastProvider>
-                            <BeginnerLevelProvider>
-                              <Suspense
-                                fallback={<nav className="main-nav" style={{ minHeight: 64 }} />}
-                              >
-                                <ConditionalNavbar />
-                              </Suspense>
-                              <PartnerChromeEffects />
-                              <OrgThemeProvider>{children}</OrgThemeProvider>
-                              {/* Public-only, phones only, self-gating: see
-                                  PublicMobileCta for the visibility rules. */}
-                              <PublicMobileCta />
-                            </BeginnerLevelProvider>
-                          </ToastProvider>
-                        </PinnedCardsProvider>
-                      </CongressProvider>
-                    </OrgProvider>
-                  </PartnerProvider>
-                </ActiveTaskProvider>
-              </SettingsProvider>
+              <PartnerProvider>
+                <OrgProvider>
+                  <ToastProvider>
+                    <Suspense fallback={<nav className="main-nav" style={{ minHeight: 64 }} />}>
+                      <ConditionalNavbar />
+                    </Suspense>
+                    <PartnerChromeEffects />
+                    {children}
+                    {/* Public-only, phones only, self-gating: see
+                        PublicMobileCta for the visibility rules. */}
+                    <PublicMobileCta />
+                  </ToastProvider>
+                </OrgProvider>
+              </PartnerProvider>
             </ProGateProvider>
           </AuthProvider>
         </ThemeProvider>

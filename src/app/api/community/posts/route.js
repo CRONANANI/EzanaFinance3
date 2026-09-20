@@ -147,24 +147,19 @@ async function buildEnrichedResponse(supabase, user, list) {
   let savedSet = new Set();
   let votedMap = {};
   if (user && postIds.length > 0) {
-    const { data: likes } = await supabase
-      .from('post_likes')
-      .select('post_id')
-      .eq('user_id', user.id)
-      .in('post_id', postIds);
-    const { data: saves } = await supabase
-      .from('post_saves')
-      .select('post_id')
-      .eq('user_id', user.id)
-      .in('post_id', postIds);
+    /* Likes, saves and poll votes are three independent reads over the same
+       post ids: one round trip instead of three. */
+    const [{ data: likes }, { data: saves }, { data: votes }] = await Promise.all([
+      supabase.from('post_likes').select('post_id').eq('user_id', user.id).in('post_id', postIds),
+      supabase.from('post_saves').select('post_id').eq('user_id', user.id).in('post_id', postIds),
+      supabase
+        .from('poll_votes')
+        .select('post_id, option_id')
+        .eq('user_id', user.id)
+        .in('post_id', postIds),
+    ]);
     likedSet = new Set((likes || []).map((l) => l.post_id));
     savedSet = new Set((saves || []).map((s) => s.post_id));
-
-    const { data: votes } = await supabase
-      .from('poll_votes')
-      .select('post_id, option_id')
-      .eq('user_id', user.id)
-      .in('post_id', postIds);
     votedMap = Object.fromEntries((votes || []).map((v) => [v.post_id, v.option_id]));
   }
 

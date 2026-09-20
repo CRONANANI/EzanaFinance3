@@ -11,6 +11,17 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { TutorialWalkthrough } from '@/components/TutorialWalkthrough';
 import { BetaLockGate } from '@/components/beta/BetaLockGate';
 import { useWatchlistPriceAlerts } from '@/hooks/useWatchlistPriceAlerts';
+/* Moved down from the root layout: these six have no consumers outside this
+   segment, so hoisting them here keeps marketing and auth routes from paying
+   for dashboard state. Order matters only in that SettingsProvider reads
+   useTheme and OrgThemeProvider reads useOrg; both of those stay in the root
+   layout, above this one. */
+import { SettingsProvider } from '@/contexts/SettingsContext';
+import { ActiveTaskProvider } from '@/contexts/ActiveTaskContext';
+import { CongressProvider } from '@/contexts/CongressContext';
+import { PinnedCardsProvider } from '@/contexts/PinnedCardsContext';
+import { BeginnerLevelProvider } from '@/contexts/BeginnerLevelContext';
+import { OrgThemeProvider } from '@/components/org/OrgThemeProvider';
 import '@/components/Layout/mobile-bottom-nav.css';
 import './layout.css';
 import './dashboard-polish.css';
@@ -115,6 +126,37 @@ export default function DashboardLayout({ children }) {
     };
   }, [isPartnerExperience, isMarketAnalysisFullscreen, isEchoArticle]);
 
+  return (
+    <SettingsProvider>
+      <ActiveTaskProvider>
+        <CongressProvider>
+          <PinnedCardsProvider>
+            <BeginnerLevelProvider>
+              <OrgThemeProvider>
+                <DashboardShell
+                  isPartnerExperience={isPartnerExperience}
+                  isMarketAnalysisFullscreen={isMarketAnalysisFullscreen}
+                  isAuthenticated={isAuthenticated}
+                >
+                  {children}
+                </DashboardShell>
+              </OrgThemeProvider>
+            </BeginnerLevelProvider>
+          </PinnedCardsProvider>
+        </CongressProvider>
+      </ActiveTaskProvider>
+    </SettingsProvider>
+  );
+}
+
+/* The shell is split out so the providers above can wrap it without
+   re-indenting the whole tree. */
+function DashboardShell({
+  isPartnerExperience,
+  isMarketAnalysisFullscreen,
+  isAuthenticated,
+  children,
+}) {
   return (
     <ErrorBoundary>
       <TutorialWalkthrough />

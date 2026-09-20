@@ -144,15 +144,28 @@ export const POST = withApiGuard(
     const userClient = getUserClient();
 
     // 1. Resolve the user context: plan tier × version (regular/partner/org).
-    const { data: profile } = await admin
-      .from('profiles')
-      .select('subscription_plan, subscription_status, one_time_plan')
-      .eq('id', user.id)
-      .maybeSingle();
+    //    These four reads are mutually independent — the profile, the org
+    //    membership, the partner flag and today's usage count share no inputs
+    //    — so they go out together instead of as four sequential round trips.
+    //    The global circuit breaker above stays sequential and first on
+    //    purpose: its whole job is to return before any further work.
+    //    usedToday joins them because the QUERY is independent; only the
+    //    comparison below depends on the entitlements computed after.
+    const [{ data: profile }, member, isPartner, { count: usedToday }] = await Promise.all([
+      admin
+        .from('profiles')
+        .select('subscription_plan, subscription_status, one_time_plan')
+        .eq('id', user.id)
+        .maybeSingle(),
+      getCurrentOrgMember(userClient).catch(() => null),
+      isActivePartner(userClient, user).catch(() => false),
+      admin
+        .from('sonar_queries')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', startOfUtcDayISO()),
+    ]);
     const planTier = getPlanTier(getActivePlan(profile));
-
-    const member = await getCurrentOrgMember(userClient).catch(() => null);
-    const isPartner = await isActivePartner(userClient, user).catch(() => false);
     const version = member ? 'org' : isPartner ? 'partner' : 'regular';
 
     // 2. The entitlement matrix — the single source of truth for this query.
@@ -165,12 +178,7 @@ export const POST = withApiGuard(
     const { available, locked } = describeDatasetAccess(entitlements);
 
     // 3. Daily quota — enforced server-side. Over-limit is an upgrade surface,
-    //    not an error.
-    const { count: usedToday } = await admin
-      .from('sonar_queries')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .gte('created_at', startOfUtcDayISO());
+    //    not an error. The count was fetched alongside the user context above.
     const used = usedToday || 0;
     if (used >= entitlements.dailyQueries) {
       return NextResponse.json({

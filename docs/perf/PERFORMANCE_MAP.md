@@ -9,65 +9,90 @@ Read this before starting Phase 2. It changes the order the brief proposed.
 
 ---
 
-## The headline finding: the floor, not the pages
+## The floor: what is actually in it
 
-The brief frames the work as cutting the 86% client share on heavy pages.
-That is real, but it is the second-biggest prize.
+Every route pays a 246 kB floor and the root shell is 397.2 kB. `/auth/signin`
+costs 347.6 kB to render a form with two inputs.
 
-**Every route pays a 246 kB floor, and the root shell is 397.2 kB.**
-`/auth/signin` costs 347.6 kB to render a form with two inputs. The cause is
-`src/app/layout.js:7-18`, which wraps all 143 routes in twelve client context
-providers:
+**An earlier revision blamed this on the twelve client context providers in
+`src/app/layout.js`. That hypothesis was tested and was mostly wrong.** Moving
+the six providers with no consumers outside the dashboard into the
+`(dashboard)` layout moved `/layout` by 4.5 kB and `/help-center/user` by
+12.1 kB, and moved `/auth/signin` not at all. Next's per-route chunking was
+already keeping most unused provider code off those routes.
 
-| Provider              | Import         | Needed on a sign-in page? |
-| --------------------- | -------------- | ------------------------- |
-| ThemeProvider         | `layout.js:7`  | yes                       |
-| AuthProvider          | `layout.js:8`  | yes                       |
-| ProGateProvider       | `layout.js:9`  | no                        |
-| PartnerProvider       | `layout.js:10` | no                        |
-| OrgProvider           | `layout.js:11` | no                        |
-| OrgThemeProvider      | `layout.js:12` | no                        |
-| CongressProvider      | `layout.js:13` | no                        |
-| PinnedCardsProvider   | `layout.js:14` | no                        |
-| ToastProvider         | `layout.js:15` | probably                  |
-| SettingsProvider      | `layout.js:16` | no                        |
-| ActiveTaskProvider    | `layout.js:17` | no                        |
-| BeginnerLevelProvider | `layout.js:18` | no                        |
+The split was kept, because it is still correct: six fewer context providers
+mount and subscribe on every public page render, which is hydration and CPU
+work rather than bytes. But it is not where the floor comes from.
 
-Nine of twelve are dashboard concerns paid for by marketing and auth traffic,
-which is the traffic that converts. Moving the dashboard-only providers into
-the `(dashboard)` route group's layout is a contained change with no visual
-effect, and it is multiplied across every public route.
+Measured by chunk, `/auth/signin`'s 347.6 kB is:
 
-**Recommended reordering: do this before the brief's Phase 3.** It is smaller,
-lower-risk, and larger in effect than any single page refactor.
+|    kB | Chunk                   | What it is         |
+| ----: | ----------------------- | ------------------ |
+| 110.4 | `6243-*`                | framework          |
+|  52.6 | `fd9d1056-*`            | framework          |
+|  38.2 | `52774a7f-*`            | framework          |
+|  54.1 | `7195-*`                | **`@supabase`**    |
+|  39.8 | `2912-*`                | **`lucide-react`** |
+|   ~12 | route + webpack runtime | app code           |
 
----
+Roughly 201 kB is React and Next themselves, which is the price of the
+framework. Supabase at 54.1 kB is genuinely needed on an auth page.
 
-## Dead weight: delete before optimising
+That leaves **lucide at 39.8 kB on every route**, reaching public pages through
+`ConditionalNavbar` -> `Navbar.js`, which imports nine icons.
 
-Five packages have zero reachable import sites. They need removal, not
-code-splitting, and the brief's Phase 4 plan for them is moot:
-
-| Package                                                         | Only referenced by                 | Action                                                                             |
-| --------------------------------------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------- |
-| `react-icons`                                                   | nothing                            | remove from `package.json` and from `optimizePackageImports` (`next.config.js:34`) |
-| `react-grid-layout`                                             | nothing                            | remove                                                                             |
-| `world-atlas`                                                   | `src/lib/latLngToCountryAlpha2.ts` | remove with that file                                                              |
-| `topojson-client`                                               | `src/lib/latLngToCountryAlpha2.ts` | remove with that file                                                              |
-| `@turf/bbox`, `@turf/boolean-point-in-polygon`, `@turf/helpers` | `src/lib/latLngToCountryAlpha2.ts` | remove with that file                                                              |
-| `proj4`                                                         | `src/components/ui/world-map.tsx`  | remove with that file                                                              |
-
-`src/lib/latLngToCountryAlpha2.ts` and `src/components/ui/world-map.tsx` have
-no importers anywhere. They are orphaned TypeScript in a JavaScript repo.
-
-`gsap` appears only in `app-legacy/components/landing/card-swap/card-swap.js`
-and three `app-legacy/*.html` files. `app-legacy` is copied to `public/` by
-`scripts/copy-app-legacy.js` and served statically, so gsap is never
-webpack-bundled and costs the app bundle nothing. It stays until the legacy
-HTML goes.
+**It was not removed, and should not be without a decision.** Those nine icons
+are the source of truth for the Sonar orbital map's `DIMENSION_ICON` mapping,
+by design, so the two surfaces cannot drift. Swapping the Navbar to Bootstrap
+Icons would visibly change the Datasets dropdown, which this pass's zero-visual-
+change guardrail forbids. It is a product decision, not a performance one, and
+it is the single largest remaining byte win on public routes.
 
 ---
+
+## Dependency reachability, corrected
+
+**An earlier revision of this document claimed seven packages were dead. That
+was wrong for five of them, and the error is recorded here rather than quietly
+edited out, because the wrong version was acted on.**
+
+The mistake: the reachability grep used `head -4`, and four CSS class-name
+matches in `HeroDottedMap.jsx` consumed the output, truncating the real import
+at `market-analysis/page.js:7`. Never truncate a reachability check.
+
+The actual chain is live and is a direct cause of market-analysis being the
+second-heaviest route:
+
+```
+market-analysis/page.js:7
+  -> components/ui/world-map.tsx
+       -> dotted-map
+       -> proj4
+       -> lib/latLngToCountryAlpha2.ts
+            -> @turf/bbox, @turf/boolean-point-in-polygon, @turf/helpers
+            -> topojson-client
+            -> world-atlas/countries-110m.json   (107,761 bytes of TopoJSON)
+```
+
+So `proj4`, `topojson-client`, `world-atlas` and the three `@turf` packages are
+all shipping, and a 107 kB country atlas is bundled into a client route. These
+are code-splitting targets, as the brief originally said, not deletions.
+
+One caveat before splitting: `market-analysis/page.js:15-19` documents that
+`WorldMap` is eagerly imported _on purpose_ because it is that route's LCP
+element, and the neighbouring controls are already dynamic. Deferring the map
+itself would trade first-load JS for a worse LCP. The win to chase is the
+atlas: `latLngToAlpha2Cached` and its TopoJSON only run when a point needs
+resolving to a country, so that module can load on demand behind the map.
+
+Genuinely unreachable, verified without truncation:
+
+| Package             | Status                                                                              | Action taken                                                                                                                                |
+| ------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `react-icons`       | zero import sites anywhere                                                          | removed from `package.json`; also removed from `optimizePackageImports` (`next.config.js`), where it was optimising nothing                 |
+| `react-grid-layout` | zero import sites anywhere                                                          | removed from `package.json`                                                                                                                 |
+| `gsap`              | only `app-legacy/*.html` and `app-legacy/components/landing/card-swap/card-swap.js` | left in place; `app-legacy` is copied to `public/` and served statically, so gsap is never webpack-bundled and costs the app bundle nothing |
 
 ## Route audit
 

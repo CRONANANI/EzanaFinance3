@@ -31,7 +31,6 @@ const nextConfig = {
     instrumentationHook: true,
     optimizePackageImports: [
       'lucide-react',
-      'react-icons',
       'framer-motion',
       'recharts',
       '@radix-ui/react-accordion',

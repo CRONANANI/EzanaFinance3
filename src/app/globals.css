@@ -1,5 +1,9 @@
 /* @import must come first - otherwise browsers ignore these stylesheets */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap');
+/* Cinzel moved to the font <link> in src/app/layout.js. A CSS @import of a
+   remote stylesheet cannot start downloading until this file has itself
+   downloaded and parsed, so having it here serialized a font request behind
+   the whole stylesheet. It is still used, by HomeTerminalSummary.jsx:568 and
+   centaur-intelligence.css:450, so it moved rather than being deleted. */
 @import './theme-variables.css';
 @import '../components/ds/ds.css';
 @import './landing-redesign.css';

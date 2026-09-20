@@ -37,9 +37,10 @@ const BUDGETS = join(ROOT, 'docs/perf/budgets.json');
 const args = process.argv.slice(2);
 const asJson = args.includes('--json');
 const write = args.includes('--write');
-/* Headroom applied by --write. 10% absorbs ordinary churn without letting a
-   real regression through unnoticed. */
-const HEADROOM = 1.1;
+/* Headroom applied by --write. Tightened from 10% to 5% in Phase 9 now that
+   the pass has a measured floor: 5% absorbs ordinary chunk-hash churn while
+   still catching a real regression. */
+const HEADROOM = 1.05;
 
 function read(path) {
   if (!existsSync(path)) return null;
