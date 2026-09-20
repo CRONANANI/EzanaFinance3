@@ -31,6 +31,7 @@
     "optimize-president-images": "node scripts/optimize-president-images.js",
     "test:recruiting": "node scripts/check-recruiting-consent.mjs",
     "test:council": "node scripts/check-council-elo.mjs",
+    "lint:perf": "node scripts/check-route-budgets.mjs",
     "lint:branding": "node scripts/check-branding.mjs",
     "check:help-links": "node --no-warnings scripts/check-help-links.mjs"
   },
