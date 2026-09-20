@@ -62,13 +62,13 @@ The current header is too thin. A pitch header must carry state, stakes, and act
 - **Analyst + desk + PM** attribution from the org chart
 - **Days-in-stage** with an aging warning (>10d)
 - **Stage-appropriate primary action.** The button changes by stage:
-  | Stage | Primary CTA |
-  |---|---|
-  | Screening | `Advance to Deep Dive` |
-  | Deep Dive | `Submit for IC` |
-  | Pitch Scheduled | `View IC Agenda` |
-  | IC Vote | `Open Vote` |
-  | In Portfolio | `Update Thesis` / `Flag Position` |
+  | Stage           | Primary CTA                       |
+  | --------------- | --------------------------------- |
+  | Screening       | `Advance to Deep Dive`            |
+  | Deep Dive       | `Submit for IC`                   |
+  | Pitch Scheduled | `View IC Agenda`                  |
+  | IC Vote         | `Open Vote`                       |
+  | In Portfolio    | `Update Thesis` / `Flag Position` |
 
 ### Stage progress rail (below header)
 
