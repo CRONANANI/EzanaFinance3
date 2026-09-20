@@ -1,5 +1,5 @@
 /**
- * SocialLedgerSection — "Social investing / live ELO" landing section
+ * SocialLedgerSection: the "Social investing / live ELO" landing section
  * (design concept 4a, "The Ledger").
  *
  * Three stacked pieces: centered copy → two-column ledger (event feed +
@@ -87,8 +87,8 @@ export function SocialLedgerSection() {
           Every move is on the record.
         </h2>
         <p className="sled-sub">
-          Add a friend and your ratings start writing themselves &mdash; wins, streaks and research,
-          each one a line in the ledger.
+          Add a friend and your ratings start writing themselves: wins, streaks and research, each
+          one a line in the ledger.
         </p>
       </div>
 
@@ -115,36 +115,35 @@ export function SocialLedgerSection() {
           <div className="sled-row">
             <span className="sled-delta">+12</span>
             <span className="sled-row-body">
-              Top 10% weekly P&amp;L &mdash; <span className="sled-num">1462 → 1474</span>
+              Top 10% weekly P&amp;L, <span className="sled-num">1462 → 1474</span>
             </span>
             <span className="sled-time">FRI</span>
           </div>
           <div className="sled-row">
             <span className="sled-delta">+24</span>
             <span className="sled-row-body">
-              Won &lsquo;Q3 Momentum Sprint&rsquo; &mdash;{' '}
-              <span className="sled-num">1474 → 1498</span>
+              Won &lsquo;Q3 Momentum Sprint&rsquo;, <span className="sled-num">1474 → 1498</span>
             </span>
             <span className="sled-time">MON</span>
           </div>
           <div className="sled-row sled-row--wash">
             <span className="sled-delta">▲ 02</span>
             <span className="sled-row-body">
-              You passed Priya S. &mdash; now <strong>#2 in your circle</strong>
+              You passed Priya S., now <strong>#2 in your circle</strong>
             </span>
             <span className="sled-time">MON</span>
           </div>
           <div className="sled-row">
             <span className="sled-delta">+5</span>
             <span className="sled-row-body">
-              7-day login streak &mdash; <span className="sled-num">7 days running</span>
+              7-day login streak, <span className="sled-num">7 days running</span>
             </span>
             <span className="sled-time">TUE</span>
           </div>
           <div className="sled-row">
             <span className="sled-delta">+8</span>
             <span className="sled-row-body">
-              Research post upvoted &mdash; <span className="sled-num">consensus signal</span>
+              Research post upvoted, <span className="sled-num">consensus signal</span>
             </span>
             <span className="sled-time">WED</span>
           </div>

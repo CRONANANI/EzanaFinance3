@@ -16,10 +16,19 @@
 
 /* ── 1. Copy block ── */
 .sled-copy {
-  max-width: 620px;
+  /* Widened from 620px so the heading and the sub each hold one line at
+     desktop; 1040 minus the 40px gutters leaves 960px of content. */
+  max-width: 1040px;
   margin: 0 auto 56px;
   padding: 0 40px;
   text-align: center;
+}
+
+@media (min-width: 1024px) {
+  .sled-heading,
+  .sled-sub {
+    white-space: nowrap;
+  }
 }
 .sled-eyebrow {
   margin: 0;

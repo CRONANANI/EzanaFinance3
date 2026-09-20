@@ -2622,8 +2622,13 @@ html:has(.landing-page) .navbar .logo,
   z-index: 2;
 }
 
+/* Horizontal only: the vertical rhythm comes from the shared --landing-gap
+   rule below, per the convention that block documents. The old 80px shorthand
+   made the Why Ezana to FAQ boundary 128px while every other boundary was
+   96px. */
 .landing-page .faq-section-wrapper {
-  padding: 80px 2rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
 }
 
 .landing-page .hero-cybercore-root {
@@ -2717,7 +2722,8 @@ html:has(.landing-page) .navbar.navbar-sticky,
 .landing-page .features-section,
 .landing-page .sled-section,
 .landing-page .dimension-scroll-section,
-.landing-page .resources-section {
+.landing-page .resources-section,
+.landing-page .faq-section-wrapper {
   padding-top: calc(var(--landing-gap) / 2);
   padding-bottom: calc(var(--landing-gap) / 2);
 }
