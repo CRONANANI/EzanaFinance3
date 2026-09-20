@@ -37,6 +37,16 @@
  * size. A backend failure must never leave the Lockheed demo copy on screen
  * pretending to be the answer to what was actually asked.
  *
+ * On desktop the band is a full-viewport takeover. Scrolling down into it
+ * snaps the page to the band and locks it: the body and navbar take the
+ * band's ground colour and downward scroll is blocked, by wheel, touch,
+ * keyboard and scrollbar drag alike. The bouncing chevron is the only way
+ * down, and using it releases the lock for the rest of the visit. Upward
+ * intent always releases immediately, so the lock is never a trap. Below
+ * 1024px none of this runs: the stacked band is taller than a phone
+ * viewport, and locking it would push content off screen with no way back.
+ * The edge fades are gone; the page matching the band replaces them.
+ *
  * The dossier renders deterministic bracketed placeholders on the server and
  * swaps in real public-record rows from /api/landing/sonar-fixture after
  * hydration. SSR and first client render are therefore byte identical, and a
@@ -151,6 +161,12 @@ export function SonarSection() {
      state: mid-request and after a failure alike, the demo copy is gone. */
   const [hasPinged, setHasPinged] = useState(false);
   const [lastQuery, setLastQuery] = useState('');
+  /* Takeover lock. lockedIn drives the arrow; the refs are what the scroll
+     listeners read, since they fire far too often to chase React state. */
+  const [lockedIn, setLockedIn] = useState(false);
+  const dismissedRef = useRef(false);
+  const lockedRef = useRef(false);
+  const settlingRef = useRef(false);
 
   /* Viewport gating. Pausing rather than unmounting: unmounting restarts the
      loop mid-sequence on scroll back, which reads as broken. */
@@ -195,6 +211,173 @@ export function SonarSection() {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [gateOpen]);
+
+  /* Takeover lock manager. One effect owns every listener and its cleanup;
+     passive:false only where preventDefault is actually needed. The body
+     class drives the page and navbar recolour over in sonar-band.css. */
+  useEffect(() => {
+    const band = bandRef.current;
+    if (!band) return undefined;
+    const mql = window.matchMedia('(min-width: 1024px)');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    const bandTop = () => band.getBoundingClientRect().top + window.scrollY;
+
+    let settleTimer = null;
+    /* Both elements: body carries the class the stylesheet scopes off, and
+       html is what paints the canvas behind rubber-band overscroll. */
+    const setLock = (on) => {
+      lockedRef.current = on;
+      setLockedIn(on);
+      document.body.classList.toggle('snr-takeover', on);
+      document.documentElement.classList.toggle('snr-takeover', on);
+    };
+
+    const endSettle = () => {
+      settlingRef.current = false;
+      if (settleTimer) {
+        clearTimeout(settleTimer);
+        settleTimer = null;
+      }
+    };
+
+    const release = () => {
+      endSettle();
+      setLock(false);
+    };
+
+    /* The cookie banner is fixed to the bottom of the viewport above every
+       z-index in the band, and its children take clicks, so while it is up
+       the continue arrow cannot be pressed. Locking then would be a genuine
+       trap: no way down and a consent dialog in the way. It sets
+       --cookie-banner-height on <html> while open and removes it on close,
+       so that is the signal. The lock simply waits its turn. */
+    const overlayBlocking = () =>
+      Boolean(document.documentElement.style.getPropertyValue('--cookie-banner-height'));
+
+    /* The arrow rests ARROW_BOTTOM_PX above the band's lower edge (see
+       .snr-continue). If the composed band is taller than the viewport by
+       more than that, the only way down would sit below the fold, and a lock
+       whose exit is off screen is just a trap. So the lock stands down and
+       the band scrolls like any other section. That is what happens on a
+       1366x768 laptop, where the three columns plus padding come to about
+       889px: the takeover is a big-screen treatment, not a promise. */
+    const ARROW_BOTTOM_PX = 26;
+    const arrowReachable = () => band.offsetHeight - ARROW_BOTTOM_PX <= window.innerHeight;
+
+    const engage = () => {
+      if (lockedRef.current || dismissedRef.current || !mql.matches) return;
+      if (overlayBlocking() || !arrowReachable()) return;
+      setLock(true);
+      settlingRef.current = true;
+      /* A smooth scroll that gets interrupted never reaches its target, and
+         a settling flag that never clears would leave the page green with
+         nothing actually locked. Hard deadline, so the state cannot stick. */
+      if (settleTimer) clearTimeout(settleTimer);
+      settleTimer = setTimeout(endSettle, 900);
+      window.scrollTo({ top: bandTop(), behavior: reduced.matches ? 'auto' : 'smooth' });
+    };
+
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      const goingDown = y > lastY;
+      lastY = y;
+      if (lockedRef.current) {
+        const target = bandTop();
+        if (settlingRef.current) {
+          if (Math.abs(y - target) < 4) endSettle();
+          return;
+        }
+        /* Scrollbar drags and leftover momentum: clamp back to the band. */
+        if (Math.abs(y - target) > 4) window.scrollTo({ top: target });
+        return;
+      }
+      /* Arm when the band's top crosses the upper third on the way down. */
+      if (goingDown && band.getBoundingClientRect().top <= window.innerHeight * 0.33) engage();
+    };
+
+    const onWheel = (e) => {
+      if (!lockedRef.current || settlingRef.current) return;
+      if (e.deltaY > 0) e.preventDefault();
+      else if (e.deltaY < -8) release();
+    };
+
+    let touchY = null;
+    const onTouchStart = (e) => {
+      touchY = e.touches?.[0]?.clientY ?? null;
+    };
+    const onTouchMove = (e) => {
+      if (!lockedRef.current || settlingRef.current || touchY === null) return;
+      const dy = (e.touches?.[0]?.clientY ?? touchY) - touchY;
+      if (dy < 0) e.preventDefault(); /* finger up means scroll down: blocked */
+      else if (dy > 24) release(); /* finger down means scroll up: let them out */
+    };
+
+    const DOWN_KEYS = new Set(['ArrowDown', 'PageDown', 'End', ' ']);
+    const UP_KEYS = new Set(['ArrowUp', 'PageUp', 'Home']);
+    const onKeyDown = (e) => {
+      if (!lockedRef.current) return;
+      const t = e.target;
+      const typing =
+        t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+      if (typing) return; /* the ping bar stays typeable, space included */
+      if (DOWN_KEYS.has(e.key)) e.preventDefault();
+      else if (UP_KEYS.has(e.key)) release();
+    };
+
+    /* An in-page anchor would fight the clamp and lose, stranding the
+       visitor on the band with the wrong target under them. */
+    const onHashChange = () => {
+      dismissedRef.current = true;
+      release();
+    };
+
+    const onMedia = () => {
+      if (!mql.matches) {
+        dismissedRef.current = false;
+        release();
+      }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('hashchange', onHashChange);
+    mql.addEventListener('change', onMedia);
+
+    return () => {
+      if (settleTimer) clearTimeout(settleTimer);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('hashchange', onHashChange);
+      mql.removeEventListener('change', onMedia);
+      document.body.classList.remove('snr-takeover');
+      document.documentElement.classList.remove('snr-takeover');
+    };
+  }, []);
+
+  /* The arrow: dismiss the lock for the rest of the visit, then hand the
+     page back to the visitor at the section below. */
+  function onContinue() {
+    dismissedRef.current = true;
+    lockedRef.current = false;
+    settlingRef.current = false;
+    setLockedIn(false);
+    document.body.classList.remove('snr-takeover');
+    document.documentElement.classList.remove('snr-takeover');
+    const band = bandRef.current;
+    if (band) {
+      const nextTop = band.getBoundingClientRect().bottom + window.scrollY;
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: nextTop, behavior: reduced ? 'auto' : 'smooth' });
+    }
+  }
 
   function openGate(copy) {
     setGateCopy(copy || null);
@@ -527,6 +710,17 @@ export function SonarSection() {
           </div>
         </div>
       </div>
+
+      {lockedIn ? (
+        <button
+          type="button"
+          className="snr-continue snr-anim-bounce"
+          aria-label="Continue to the rest of the page"
+          onClick={onContinue}
+        >
+          <i className="bi bi-chevron-down" aria-hidden="true" />
+        </button>
+      ) : null}
     </section>
   );
 }

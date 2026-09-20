@@ -90,41 +90,32 @@
   padding-left: 80px;
   padding-right: 80px;
   /* Vertical padding is owned here rather than by the shared --landing-gap
-     rule in globals.css, which the band has been removed from. The edge fades
-     below are 140px tall, and the shared 48px would put the headline inside
-     the gradient. The fades are what now carry the transition into the page,
-     so the band no longer needs the hard gap its neighbours use. */
-  padding-top: 150px;
-  padding-bottom: 150px;
+     rule in globals.css, which the band has been removed from. Top clears the
+     sticky navbar; bottom clears the continue arrow parked at the band's
+     lower edge. The band now ends in a hard line on purpose: while the
+     takeover is engaged the page itself wears the band's ground colour, so
+     there is nothing to dissolve into. 104 rather than 120 is what brings the
+     composed band under 864px, so the takeover still engages on a 1536x864
+     laptop instead of standing down. */
+  padding-top: 104px;
+  padding-bottom: 96px;
   background: var(--snr-band-bg);
   color: var(--snr-text);
   font-family: var(--snr-font-sans);
 }
 
-/* Edge fades: the band dissolves into the page above and below it instead of
-   ending in a hard line. --bg-primary is white in the light shell and near
-   black in the dark one, so each fade resolves to whatever the page actually
-   is. The pseudo-elements sit above the background and the grid layer but
-   below .snr-inner, which is raised to z-index 2. */
-.snr-band::before,
-.snr-band::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 140px;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.snr-band::before {
-  top: 0;
-  background: linear-gradient(to bottom, var(--bg-primary), transparent);
-}
-
-.snr-band::after {
-  bottom: 0;
-  background: linear-gradient(to top, var(--bg-primary), transparent);
+/* Takeover geometry: on desktop the band is a full viewport page. Flex
+   centering keeps the columns vertically composed whatever the screen height;
+   100svh rather than 100vh so a dynamic browser toolbar can never open a
+   scroll gutter inside the lock. */
+@media (min-width: 1024px) {
+  .snr-band {
+    min-height: 100svh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
 }
 
 /* The one duration. Percentages of it are the contract. */
@@ -148,8 +139,11 @@
 }
 
 /* The pop-in for live answers and freshly matched rows is the one animation
-   that must still run in live mode; it is a one-shot, not part of the loop. */
-.snr-band.snr-live .snr-anim-rowpop {
+   that must still run in live mode; it is a one-shot, not part of the loop.
+   The continue arrow joins it: it is the only way down while locked, so it
+   must keep signalling after a real ping freezes the demo timeline. */
+.snr-band.snr-live .snr-anim-rowpop,
+.snr-band.snr-live .snr-anim-bounce {
   animation-play-state: running;
 }
 
@@ -193,7 +187,11 @@
 .snr-inner {
   position: relative;
   z-index: 2;
+  width: 100%;
   max-width: 1440px;
+  /* width + auto margins, not stretch: once .snr-band is a column flex
+     container the auto margins would otherwise shrink this to its content
+     and the max-width centring would stop applying. */
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -1194,15 +1192,10 @@
   .snr-band {
     padding-left: 24px;
     padding-right: 24px;
-    /* Shorter fades on a phone, and matching padding so the head copy still
-       clears them. */
-    padding-top: 110px;
-    padding-bottom: 110px;
-  }
-
-  .snr-band::before,
-  .snr-band::after {
-    height: 96px;
+    /* Tighter on a phone. No lock and no arrow at this width, so the bottom
+       only needs to clear the band's own content. */
+    padding-top: 96px;
+    padding-bottom: 72px;
   }
 
   /* Below md: the dossier is hidden and the synthesis panel carries the story. */
@@ -1878,4 +1871,115 @@
 
 .snr-skel--short {
   width: 62%;
+}
+
+/* ── takeover ─────────────────────────────────────────────────────────────
+   While the visitor is locked into the band the page wears the band's ground
+   colour, so nothing pale sits above or below it, rubber-band overscroll
+   included. --snr-takeover-bg is the band gradient's base stop; a
+   component-scoped custom prop is the sanctioned home for that hex. The class
+   goes on BOTH html and body: html paints the canvas, and the canvas is what
+   the overscroll area actually shows.
+
+   The selectors are deliberately heavy, and the weight was measured rather
+   than guessed. The landing shell pins its chrome hard: globals.css has
+   `html:has(.landing-page) .navbar.navbar-sticky { background-color: #0a0e13
+   !important }` and landing-light-mode.css adds
+   `body.light-mode:has(.landing-page) .navbar.navbar-sticky { background:
+   var(--bg-primary) !important }`, which lands at (0,4,1). Leading with
+   `html.snr-takeover body.snr-takeover` and naming both navbar classes puts
+   this at (0,4,3), which clears it without touching those files.
+
+   The body and .landing-page rules below are the cheap version on purpose.
+   They win where nothing else claims the element and lose to the same
+   landing lock where it does, which costs nothing: the band is 100svh while
+   locked, so it covers the body box entirely and only the canvas (html,
+   above) and the navbar are ever actually visible. */
+html.snr-takeover,
+body.snr-takeover {
+  --snr-takeover-bg: #032a21;
+  background: var(--snr-takeover-bg) !important;
+}
+
+html.snr-takeover body.snr-takeover .navbar,
+html.snr-takeover body.snr-takeover .navbar.navbar-sticky,
+html.snr-takeover body.snr-takeover .navbar.navbar-sticky.scrolled {
+  background: var(--snr-takeover-bg) !important;
+  border-bottom-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Nav ink. Light mode paints the landing links slate (#475569), which lands
+   at about 2:1 against the band's ground and is unreadable. Measured, not
+   assumed: the logo is already near-white and needs nothing. Scoped to the
+   takeover and to this sheet, so Navbar.js and the light theme are both
+   untouched, and reverted the moment the lock releases. */
+html.snr-takeover body.snr-takeover .navbar .nav-link,
+html.snr-takeover body.snr-takeover .navbar .nav-link-text,
+html.snr-takeover body.snr-takeover .navbar .nav-action-btn {
+  color: rgba(255, 255, 255, 0.86) !important;
+}
+
+html.snr-takeover body.snr-takeover .navbar .nav-link:hover,
+html.snr-takeover body.snr-takeover .navbar .nav-link:focus-visible {
+  color: var(--snr-mint) !important;
+}
+
+/* Continue arrow: the one way down while locked. White on the band, round
+   hit target, gentle bounce. The snr-anim- prefix keeps it inside the pause
+   and reduced-motion rules; translateX(-50%) is the resting frame, so a
+   killed animation still leaves it centred. */
+.snr-continue {
+  position: absolute;
+  left: 50%;
+  /* The cookie banner is fixed to the bottom of the viewport at z-index 9000
+     and its children capture clicks, so at a flat 26px it sits on top of the
+     one control that can end the lock. The lock refuses to engage while the
+     banner is up (see SonarSection), and this clears the arrow if the banner
+     ever appears mid-lock. --cookie-banner-height is the banner's own
+     contract, removed when it closes. */
+  bottom: calc(26px + var(--cookie-banner-height, 0px));
+  transform: translateX(-50%);
+  z-index: 4;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--snr-text);
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.snr-continue:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.snr-continue:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 3px;
+}
+
+/* Specificity, same story as .snr-anim-rowpop above: the shared
+   `.snr-band [class*='snr-anim-']` binding is (0,2,0) and would otherwise
+   hold the bounce at the 15s linear master duration. Match it and sit later
+   in the sheet. */
+.snr-band .snr-anim-bounce {
+  animation-name: snrBounce;
+  animation-duration: 1.6s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes snrBounce {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-10px);
+  }
 }
