@@ -168,9 +168,17 @@ export const POST = withApiGuard(
       return safeErrorResponse(e);
     }
 
+    console.log('[sonar/landing]', {
+      query,
+      items: items.length,
+      corporaSearched,
+      corporaUsed,
+    });
+
     const marked = items.map((it, i) => ({ ...it, marker: `S${i + 1}` }));
 
     let answer = null;
+    let providerErrors = [];
     if (marked.length) {
       const sourcesBlock = marked
         .map((it) => `[${it.marker}] (${it.corpus}) ${String(it.text || '').slice(0, 500)}`)
@@ -184,6 +192,7 @@ export const POST = withApiGuard(
         webSearch: false,
       });
       answer = out.answer || null;
+      providerErrors = out.providerErrors || [];
     }
 
     const usedCorpora = new Set(corporaUsed);
@@ -210,22 +219,30 @@ export const POST = withApiGuard(
       request.headers.get('x-real-ip') ||
       'unknown';
     const ipHash = crypto.createHash('sha256').update(`snr:${ip}:${guestSecret()}`).digest('hex');
-    const { error: ledgerError } = await admin.from('sonar_queries').insert({
-      user_id: null,
-      is_guest: true,
-      ip_hash: ipHash,
-      query_text: query,
-      classification,
-      version: 'guest',
-      plan_tier: 0,
-      datasets_searched: sources.map((s) => s.id),
-      grounded: Boolean(answer),
-    });
-    if (ledgerError) {
-      console.error(
-        '[sonar/landing] ledger insert failed (apply supabase/migrations/20260920120000_sonar_guest_queries.sql):',
-        ledgerError.message,
-      );
+    try {
+      const { error: ledgerError } = await admin.from('sonar_queries').insert({
+        user_id: null,
+        is_guest: true,
+        ip_hash: ipHash,
+        query_text: query,
+        classification,
+        version: 'guest',
+        plan_tier: 0,
+        datasets_searched: sources.map((s) => s.id),
+        grounded: Boolean(answer),
+      });
+      if (ledgerError) {
+        console.error(
+          '[sonar/landing] ledger insert failed (apply supabase/migrations/20260920120000_sonar_guest_queries.sql):',
+          ledgerError.message,
+        );
+      }
+    } catch (e) {
+      /* The destructured error above covers Postgres-level failures, which are
+         returned rather than thrown. A transport failure still throws, and
+         letting it escape would 500 a ping whose synthesis we have already
+         paid for. Loud log, response proceeds. */
+      console.error('[sonar/landing] ledger insert threw:', e?.message);
     }
 
     const nextUsed = used + 1;
@@ -235,6 +252,12 @@ export const POST = withApiGuard(
       sources,
       remaining: Math.max(0, GUEST_LIMIT - nextUsed),
       disclaimer: DISCLAIMER,
+      /* Never in production: provider errors name the model and status code,
+         which is a debugging aid locally and an information leak on a public
+         unauthenticated endpoint. */
+      ...(process.env.NODE_ENV !== 'production' && providerErrors.length
+        ? { debug: providerErrors }
+        : {}),
     });
     setGuestCount(res, nextUsed);
     return res;

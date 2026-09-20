@@ -30,6 +30,13 @@
  * so clicking one opens an auth gate offering log in or sign up rather than
  * dropping a signed-out visitor onto a gated route.
  *
+ * The synthesis panel is a four-state surface. Pristine (no ping this visit)
+ * runs the demo narration. From the first real submit onward the demo is frozen
+ * out for the rest of the visit and the panel shows, in turn, a sweep skeleton
+ * while the request is in flight, the real cited answer, or the failure at full
+ * size. A backend failure must never leave the Lockheed demo copy on screen
+ * pretending to be the answer to what was actually asked.
+ *
  * The dossier renders deterministic bracketed placeholders on the server and
  * swaps in real public-record rows from /api/landing/sonar-fixture after
  * hydration. SSR and first client render are therefore byte identical, and a
@@ -119,6 +126,7 @@ const ROWS = [
 
 export function SonarSection() {
   const bandRef = useRef(null);
+  const inputRef = useRef(null);
   const [inView, setInView] = useState(true);
   const [gateOpen, setGateOpen] = useState(false);
   /* Live guest Sonar. null until the first real ping answers; after that the
@@ -138,6 +146,11 @@ export function SonarSection() {
      juggling classes. 0 means untouched, so the first paint and the 15s
      master loop are exactly as before. */
   const [pingPulse, setPingPulse] = useState(0);
+  /* True from the first real ping of the visit onward, never reset. It is what
+     freezes the demo choreography and takes the panel out of its pristine
+     state: mid-request and after a failure alike, the demo copy is gone. */
+  const [hasPinged, setHasPinged] = useState(false);
+  const [lastQuery, setLastQuery] = useState('');
 
   /* Viewport gating. Pausing rather than unmounting: unmounting restarts the
      loop mid-sequence on scroll back, which reads as broken. */
@@ -199,6 +212,8 @@ export function SonarSection() {
       return;
     }
     if (pinging) return;
+    setHasPinged(true);
+    setLastQuery(q);
     setPinging(true);
     setPingError(null);
     try {
@@ -227,6 +242,10 @@ export function SonarSection() {
             ? `No dataset coverage for that ping yet. ${data.remaining} free pings left.`
             : 'No dataset coverage for that ping yet.',
         );
+      } else if (res.status === 429) {
+        /* The strict per-IP limiter, not a broken ping. Naming it stops a
+           visitor retrying into the same wall. */
+        setPingError('Too many pings too fast. Wait a minute and try again.');
       } else {
         setPingError(data?.error || 'That ping did not land. Try again.');
       }
@@ -240,7 +259,7 @@ export function SonarSection() {
   return (
     <section
       ref={bandRef}
-      className={`snr-band${inView ? '' : ' snr-paused'}${live ? ' snr-live' : ''}`}
+      className={`snr-band${inView ? '' : ' snr-paused'}${hasPinged ? ' snr-live' : ''}`}
     >
       <div className="snr-grid-layer" aria-hidden="true" />
 
@@ -274,6 +293,7 @@ export function SonarSection() {
                 Ping a company, ticker, politician or bill
               </label>
               <input
+                ref={inputRef}
                 id="snr-ping-input"
                 className="snr-input"
                 type="search"
@@ -326,8 +346,44 @@ export function SonarSection() {
                 <p className="snr-empty snr-anim-idle" aria-hidden="true">
                   Awaiting ping. Nothing is synthesized until you ask.
                 </p>
-                {live
-                  ? live.answer
+                {!hasPinged ? (
+                  SYNTHESIS.map((p) => (
+                    <p key={p.cls} className={`snr-para${p.lead ? ' snr-line-lead' : ''} ${p.cls}`}>
+                      {p.segments.map((seg, i) =>
+                        seg.link ? (
+                          <button
+                            key={`${p.cls}-${i}`}
+                            type="button"
+                            className="snr-link"
+                            onClick={() => openGate()}
+                          >
+                            {seg.t}
+                          </button>
+                        ) : (
+                          <span key={`${p.cls}-${i}`}>{seg.t}</span>
+                        ),
+                      )}
+                      {p.cite ? <span className="snr-cite"> {p.cite}</span> : null}
+                    </p>
+                  ))
+                ) : pinging ? (
+                  <>
+                    <p className="snr-para snr-line-lead">Sweeping datasets for “{lastQuery}”…</p>
+                    <div className="snr-skel snr-anim-rowpop" aria-hidden="true" />
+                    <div
+                      className="snr-skel snr-anim-rowpop"
+                      style={{ animationDelay: '0.1s' }}
+                      aria-hidden="true"
+                    />
+                    <div
+                      className="snr-skel snr-anim-rowpop snr-skel--short"
+                      style={{ animationDelay: '0.2s' }}
+                      aria-hidden="true"
+                    />
+                  </>
+                ) : live ? (
+                  <>
+                    {live.answer
                       .split(/\n\s*\n/)
                       .slice(0, 3)
                       .map((para, i) => (
@@ -338,40 +394,35 @@ export function SonarSection() {
                         >
                           {para}
                         </p>
-                      ))
-                  : SYNTHESIS.map((p) => (
-                      <p
-                        key={p.cls}
-                        className={`snr-para${p.lead ? ' snr-line-lead' : ''} ${p.cls}`}
+                      ))}
+                    <p className="snr-para">
+                      <button type="button" className="snr-link" onClick={() => openGate()}>
+                        Open the full dossier in Sonar
+                      </button>
+                      {typeof live.remaining === 'number' ? (
+                        <span className="snr-cite"> {live.remaining} free pings left</span>
+                      ) : null}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="snr-para snr-line-lead">
+                      {pingError || 'That ping did not land.'}
+                    </p>
+                    <p className="snr-para">
+                      <button
+                        type="button"
+                        className="snr-link"
+                        onClick={() => {
+                          setPingPulse((n) => n + 1);
+                          inputRef.current?.focus();
+                        }}
                       >
-                        {p.segments.map((seg, i) =>
-                          seg.link ? (
-                            <button
-                              key={`${p.cls}-${i}`}
-                              type="button"
-                              className="snr-link"
-                              onClick={() => openGate()}
-                            >
-                              {seg.t}
-                            </button>
-                          ) : (
-                            <span key={`${p.cls}-${i}`}>{seg.t}</span>
-                          ),
-                        )}
-                        {p.cite ? <span className="snr-cite"> {p.cite}</span> : null}
-                      </p>
-                    ))}
-                {live ? (
-                  <p className="snr-para">
-                    <button type="button" className="snr-link" onClick={() => openGate()}>
-                      Open the full dossier in Sonar
-                    </button>
-                    {typeof live.remaining === 'number' ? (
-                      <span className="snr-cite"> {live.remaining} free pings left</span>
-                    ) : null}
-                  </p>
-                ) : null}
-                {pingError ? <p className="snr-para snr-cite">{pingError}</p> : null}
+                        Try another ping
+                      </button>
+                    </p>
+                  </>
+                )}
               </div>
 
               {gateOpen ? (
@@ -420,11 +471,13 @@ export function SonarSection() {
             <SonarOrbital />
           </div>
 
-          <div className="snr-col-dossier" aria-hidden="true">
+          <div className="snr-col-dossier" aria-hidden={hasPinged ? undefined : 'true'}>
             <div className="snr-dossier-head">
               <span className="snr-dossier-title">SOURCED MATCHES</span>
               <span className="snr-rule" />
-              <span className="snr-meta">LMT</span>
+              <span className="snr-meta">
+                {hasPinged ? lastQuery.toUpperCase().slice(0, 14) : 'LMT'}
+              </span>
             </div>
 
             <div className="snr-dossier-body">

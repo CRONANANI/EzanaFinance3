@@ -144,6 +144,10 @@
     {
       "path": "/api/cron/org-flag-outcomes",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/index-echo-articles?limit=500",
+      "schedule": "0 5 * * *"
     }
   ]
 }

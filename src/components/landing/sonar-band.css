@@ -153,6 +153,16 @@
   animation-play-state: running;
 }
 
+/* The idle lines ("Awaiting ping", "No matches yet") are absolutely positioned
+   over the panel and fade out across the loop, so a freeze can catch them at
+   full opacity and stack them on top of the real result. Once a ping has gone
+   out there is nothing left to await: kill the animation outright rather than
+   pausing it, so the base opacity:0 applies. Specificity (0,3,0) clears the
+   shared `.snr-band [class*='snr-anim-']` binding without an !important. */
+.snr-band.snr-live .snr-empty {
+  animation: none;
+}
+
 /* Reduced motion. Every base style below is authored as the composed END frame,
    so killing animation lands on the finished composition with no second
    stylesheet. See 02-TIMELINE.json -> reducedMotion. */
@@ -1853,4 +1863,19 @@
 .snr-ping-btn[disabled] {
   cursor: wait;
   opacity: 0.85;
+}
+
+/* Sweep placeholder while a real ping is in flight. Static base so the shared
+   pause rule has nothing to freeze; the one-shot snr-anim-rowpop entry above
+   is already exempted from it, which is why these lines still animate in while
+   the rest of the band is held still. */
+.snr-skel {
+  height: 12px;
+  margin: 0 0 12px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--snr-mint) 16%, transparent);
+}
+
+.snr-skel--short {
+  width: 62%;
 }

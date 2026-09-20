@@ -13,7 +13,9 @@ export const kind = 'structured';
 export const scope = 'public';
 
 function clean(v) {
-  return String(v || '').replace(/[,()%*]/g, ' ').trim();
+  return String(v || '')
+    .replace(/[,()%*]/g, ' ')
+    .trim();
 }
 
 export async function retrieve(query, ctx = {}, opts = {}) {
@@ -21,13 +23,19 @@ export async function retrieve(query, ctx = {}, opts = {}) {
   const e = ctx.entities || {};
   const admin = ctx.admin || getAdminClient();
 
-  let q = admin
-    .from('usaspending_contract_awards')
-    .select(
-      'generated_award_id, award_id_piid, recipient_name, award_amount, awarding_agency, awarding_sub_agency, action_date, award_type, ticker, fiscal_year',
-    )
-    .order('award_amount', { ascending: false })
-    .limit(limit);
+  const base = () => {
+    let b = admin
+      .from('usaspending_contract_awards')
+      .select(
+        'generated_award_id, award_id_piid, recipient_name, award_amount, awarding_agency, awarding_sub_agency, action_date, award_type, ticker, fiscal_year',
+      )
+      .order('award_amount', { ascending: false })
+      .limit(limit);
+    if (e.years?.length) b = b.gte('action_date', `${Math.min(...e.years)}-01-01`);
+    return b;
+  };
+
+  let q = base();
 
   // Bidirectional lexical alias expansion (RAG_SYSTEM.md §3 P4, always-on, no LLM):
   // a ticker query (LMT) also matches recipient-name rows ("Lockheed Martin") and
@@ -58,28 +66,32 @@ export async function retrieve(query, ctx = {}, opts = {}) {
     ...[...agencies].filter(Boolean).map((a) => `awarding_agency.ilike.%${a}%`),
   ];
 
-  if (orParts.length) {
-    q = q.or(orParts.join(','));
-  } else if (e.keywords?.length) {
-    // Keyword fallback across recipient + awarding agency (bounded set).
-    const terms = e.keywords.slice(0, 4).filter((k) => k.length >= 4);
-    if (!terms.length) return [];
-    q = q.or(
-      terms
-        .flatMap((k) => [`recipient_name.ilike.%${clean(k)}%`, `awarding_agency.ilike.%${clean(k)}%`])
-        .join(','),
-    );
-  } else {
-    return [];
-  }
+  // Keyword fallback across recipient + awarding agency (bounded set).
+  const keywordFilter = () => {
+    const terms = (e.keywords || []).slice(0, 4).filter((k) => k.length >= 4);
+    if (!terms.length) return null;
+    return terms
+      .flatMap((k) => [`recipient_name.ilike.%${clean(k)}%`, `awarding_agency.ilike.%${clean(k)}%`])
+      .join(',');
+  };
 
-  if (e.years?.length) {
-    const y = Math.min(...e.years);
-    q = q.gte('action_date', `${y}-01-01`);
-  }
+  const primary = orParts.length ? orParts.join(',') : null;
+  const fallback = keywordFilter();
+  if (!primary && !fallback) return [];
+  q = q.or(primary || fallback);
 
-  const { data, error } = await q;
+  let { data, error } = await q;
   if (error || !Array.isArray(data)) return [];
+
+  // An exact ticker/name anchor that matches nothing must not be worse than no
+  // anchor at all. Before this, a name extracted from the query (now including
+  // the title-cased retry in entities.js) took the keyword fallback off the
+  // table entirely, so "tesla stock" could return nothing while the keyword
+  // path would have found Tesla rows. Retry once on the keyword filter.
+  if (primary && fallback && !data.length) {
+    const retry = await base().or(fallback);
+    if (!retry.error && Array.isArray(retry.data)) data = retry.data;
+  }
 
   return data.map((r) => {
     const amount = usd(r.award_amount);
