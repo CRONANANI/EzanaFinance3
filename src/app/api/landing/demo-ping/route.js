@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { runLandingPipeline, DISCLAIMER } from '@/lib/sonar/landing-pipeline';
 
@@ -23,56 +24,71 @@ import { runLandingPipeline, DISCLAIMER } from '@/lib/sonar/landing-pipeline';
  * still sees it.
  */
 export const runtime = 'nodejs';
-export const revalidate = 86400;
-export const maxDuration = 30;
+/* Dynamic route, cache INSIDE it. Exporting `revalidate` on a handler whose
+   pipeline does uncacheable work (no-store fetches, a service-role Supabase
+   client) meant Next treated the route as dynamic and quietly ignored the
+   revalidate, so nothing was cached and every visitor paid for a synthesis.
+   unstable_cache caches the pipeline result itself, which is the thing worth
+   caching, and the key carries a version so a fix invalidates yesterday's
+   answer instead of waiting a day for it. */
+export const dynamic = 'force-dynamic';
+/* The pipeline resolves a company, retrieves across corpora, synthesizes and
+   then fetches five dossier legs. 30s was optimistic for a cold run. */
+export const maxDuration = 60;
 
 const DEMO_QUERY = 'Lockheed Martin';
-const TTL_MS = 24 * 60 * 60 * 1000;
 
 /* Bump alongside the ?v= the client sends when a pipeline change should
    invalidate yesterday's cached demo rather than wait a day for it. */
-const DEMO_VERSION = 2;
+const DEMO_VERSION = 3;
 
-let memo = null;
+/* The admin client is built INSIDE the cached function on purpose: capturing
+   one from the module scope would pin a connection into the cache entry. */
+const cachedDemo = unstable_cache(
+  async () => {
+    const result = await runLandingPipeline(DEMO_QUERY, { admin: getAdminClient() });
+    if (!result.answer) {
+      /* Throwing keeps a failed run out of the cache, so the next visitor
+         retries instead of being served a day-old failure. */
+      throw new Error('demo pipeline produced no answer');
+    }
+    return result;
+  },
+  [`landing-demo-ping-v${DEMO_VERSION}`],
+  { revalidate: 86400, tags: ['landing-demo-ping'] },
+);
 
 export async function GET() {
-  if (memo && Date.now() - memo.at < TTL_MS) {
-    return NextResponse.json(memo.body);
-  }
-
-  const admin = getAdminClient();
   let result;
   try {
-    result = await runLandingPipeline(DEMO_QUERY, { admin });
+    result = await cachedDemo();
   } catch (e) {
-    console.error('[landing/demo-ping] pipeline failed:', e?.message);
+    console.error('[landing/demo-ping] failed:', e?.message);
     return NextResponse.json({ error: 'Demo unavailable.' }, { status: 502 });
   }
 
-  if (!result.answer) {
-    /* Not cached: a failed synthesis should be retried on the next visit,
-       not pinned for a day. */
-    return NextResponse.json({ error: 'Demo unavailable.' }, { status: 502 });
-  }
-
+  /* Ledger, best effort. The cached path skips this on a hit, which is the
+     point: one recorded synthesis a day rather than one per visitor. */
   try {
-    const { error } = await admin.from('sonar_queries').insert({
-      user_id: null,
-      is_guest: true,
-      ip_hash: null,
-      query_text: DEMO_QUERY,
-      classification: result.classification,
-      version: 'demo',
-      plan_tier: 0,
-      datasets_searched: result.sources.map((s) => s.id),
-      grounded: result.grounded,
-    });
+    const { error } = await getAdminClient()
+      .from('sonar_queries')
+      .insert({
+        user_id: null,
+        is_guest: true,
+        ip_hash: null,
+        query_text: DEMO_QUERY,
+        classification: result.classification,
+        version: 'demo',
+        plan_tier: 0,
+        datasets_searched: result.sources.map((s) => s.id),
+        grounded: result.grounded,
+      });
     if (error) console.error('[landing/demo-ping] ledger insert failed:', error.message);
   } catch (e) {
     console.error('[landing/demo-ping] ledger insert threw:', e?.message);
   }
 
-  const body = {
+  return NextResponse.json({
     answer: result.answer,
     grounded: result.grounded,
     sources: result.sources,
@@ -82,7 +98,5 @@ export async function GET() {
     demo: true,
     version: DEMO_VERSION,
     disclaimer: DISCLAIMER,
-  };
-  memo = { at: Date.now(), body };
-  return NextResponse.json(body);
+  });
 }

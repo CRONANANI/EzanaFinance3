@@ -121,6 +121,17 @@ function callAnthropic(body, apiKey, timeoutMs) {
       'Content-Type': 'application/json',
       'x-api-key': apiKey,
       'anthropic-version': '2023-06-01',
+      /* An org-level key that is not scoped to a single workspace is rejected
+         with a 400 unless the request names the workspace. Production ran into
+         exactly that: every synthesis on /api/sonar/query,
+         /api/sonar/landing-query and /api/landing/demo-ping came back
+         "This API key is not scoped to a workspace, so this request must
+         include the anthropic-workspace-id header". Setting
+         ANTHROPIC_WORKSPACE_ID is the header-side fix; scoping the key to a
+         workspace instead makes this a no-op. */
+      ...(process.env.ANTHROPIC_WORKSPACE_ID
+        ? { 'anthropic-workspace-id': process.env.ANTHROPIC_WORKSPACE_ID }
+        : {}),
     },
     body: JSON.stringify(body),
     signal: AbortSignal.timeout(timeoutMs),
