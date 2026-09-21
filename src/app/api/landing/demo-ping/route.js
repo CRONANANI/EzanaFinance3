@@ -29,6 +29,10 @@ export const maxDuration = 30;
 const DEMO_QUERY = 'Lockheed Martin';
 const TTL_MS = 24 * 60 * 60 * 1000;
 
+/* Bump alongside the ?v= the client sends when a pipeline change should
+   invalidate yesterday's cached demo rather than wait a day for it. */
+const DEMO_VERSION = 2;
+
 let memo = null;
 
 export async function GET() {
@@ -76,6 +80,7 @@ export async function GET() {
     dossier: result.dossier,
     query: DEMO_QUERY,
     demo: true,
+    version: DEMO_VERSION,
     disclaimer: DISCLAIMER,
   };
   memo = { at: Date.now(), body };

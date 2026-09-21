@@ -605,7 +605,11 @@ export function SonarSection() {
       setLastQuery('Lockheed Martin');
       setPinging(true);
       try {
-        const res = await fetch('/api/landing/demo-ping');
+        /* The version is the cache-buster. /api/landing/demo-ping caches for
+           a day, so a response produced before a pipeline fix keeps serving
+           for up to 24h after the deploy that fixed it. Bumping this asks
+           for a different URL, which is a different cache entry. */
+        const res = await fetch('/api/landing/demo-ping?v=2');
         const data = await res.json().catch(() => null);
         if (!alive) return;
         if (res.ok && data?.answer) {
@@ -661,8 +665,15 @@ export function SonarSection() {
      failed still opens the way down, just without the stage. */
   useEffect(() => {
     if (!live || typed !== -1) return undefined;
-    setStage2(Boolean(live.dossier));
-    const t = setTimeout(() => setArrowReady(true), live.dossier ? 500 : 0);
+    /* Gated on an answer, not on a resolved company. Requiring the dossier
+       meant a failed name resolution silently did nothing at all: the band
+       kept the demo composition and the whole stage looked broken rather
+       than partial. With sources alone the dossier still centres and the
+       orbital still shrinks; the cards below render only where there is
+       data for them. */
+    const staging = Boolean(live.dossier || live.sources?.length);
+    setStage2(staging);
+    const t = setTimeout(() => setArrowReady(true), staging ? 500 : 0);
     return () => clearTimeout(t);
   }, [live, typed]);
 
@@ -1050,7 +1061,10 @@ export function SonarSection() {
               The orbital stays in .snr-col-radar and is repositioned by grid
               rather than moved into this wrapper: reparenting it would remount
               the map and restart its drift mid-glide. */}
-          {stage2 && live?.dossier ? (
+          {stage2 &&
+          (live?.dossier?.fundamentals ||
+            live?.dossier?.news?.length ||
+            live?.dossier?.echo?.length) ? (
             <div className="snr-stack">
               {live.dossier.fundamentals ? (
                 <div className="snr-fund snr-anim-rowpop">

@@ -101,33 +101,128 @@ async function fetchJson(url, ms = 4000) {
   return res.json();
 }
 
+function tickerToken(query) {
+  const dollar = String(query).match(/\$([A-Za-z]{1,5})\b/);
+  if (dollar) return dollar[1].toUpperCase();
+  const bare = String(query).match(/\b([A-Z]{2,5})\b/);
+  return bare ? bare[1] : null;
+}
+
 /**
- * Bare company names retrieve nothing, because every ticker-keyed retriever
- * needs a ticker and "lockheed martin" has none. One FMP name search turns it
- * into "Lockheed Martin (LMT)", which both anchors retrieval and gives the
- * dossier something to fetch. Fail-soft throughout: any error, and the raw
- * query proceeds exactly as before.
+ * Resolution has to work from either end, because both arrive: a visitor
+ * types "lockheed martin" and every ticker-keyed retriever needs a ticker, or
+ * they type "LMT" and the dossier needs a company name.
+ *
+ * Each direction tries more than one upstream, and that is deliberate rather
+ * than defensive padding. No search or profile endpoint is used anywhere else
+ * in this repo, so none of them is proven against this FMP plan, and the
+ * sandbox this was written in cannot reach FMP at all to find out. Trying the
+ * documented paths in order and falling back to Finnhub, which the city-news
+ * route already calls server-side with the same pattern, means resolution
+ * works on whichever one the plan actually answers instead of on a guess. The
+ * log line names the winner, so production tells us which it is.
+ */
+const NAME_LOOKUPS = [
+  {
+    id: 'fmp/search-name',
+    url: (q, k) => `${FMP_STABLE}/search-name?query=${encodeURIComponent(q)}&limit=1&apikey=${k}`,
+    pick: (d) => (Array.isArray(d) ? d[0] : null),
+    map: (r) =>
+      r?.symbol && r?.name
+        ? { ticker: String(r.symbol).toUpperCase(), name: String(r.name) }
+        : null,
+  },
+  {
+    id: 'fmp/search-symbol',
+    url: (q, k) => `${FMP_STABLE}/search-symbol?query=${encodeURIComponent(q)}&limit=1&apikey=${k}`,
+    pick: (d) => (Array.isArray(d) ? d[0] : null),
+    map: (r) =>
+      r?.symbol && r?.name
+        ? { ticker: String(r.symbol).toUpperCase(), name: String(r.name) }
+        : null,
+  },
+];
+
+const TICKER_LOOKUPS = [
+  {
+    id: 'fmp/profile',
+    url: (t, k) => `${FMP_STABLE}/profile?symbol=${encodeURIComponent(t)}&apikey=${k}`,
+    pick: (d) => (Array.isArray(d) ? d[0] : d),
+    map: (r, t) => (r?.companyName ? { ticker: t, name: String(r.companyName) } : null),
+  },
+];
+
+async function tryFmp(lookups, arg) {
+  const key = getFmpKey();
+  if (!key) return null;
+  const k = encodeURIComponent(key);
+  for (const lookup of lookups) {
+    try {
+      const data = await fetchJson(lookup.url(arg, k));
+      const hit = lookup.map(lookup.pick(data), arg);
+      if (hit) {
+        console.log('[sonar-pipeline] resolved via', lookup.id, hit);
+        return hit;
+      }
+    } catch {
+      /* try the next one */
+    }
+  }
+  return null;
+}
+
+/** Finnhub, the one search upstream this repo already uses in production. */
+async function tryFinnhub(query, ticker) {
+  const key = process.env.FINNHUB_API_KEY;
+  if (!key) return null;
+  const k = encodeURIComponent(key);
+  try {
+    if (ticker) {
+      const d = await fetchJson(
+        `https://finnhub.io/api/v1/stock/profile2?symbol=${encodeURIComponent(ticker)}&token=${k}`,
+      );
+      if (d?.name) {
+        console.log('[sonar-pipeline] resolved via finnhub/profile2', { ticker, name: d.name });
+        return { ticker, name: String(d.name) };
+      }
+      return null;
+    }
+    const d = await fetchJson(
+      `https://finnhub.io/api/v1/search?q=${encodeURIComponent(query)}&exchange=US&token=${k}`,
+    );
+    const row = Array.isArray(d?.result) ? d.result[0] : null;
+    if (row?.symbol && row?.description) {
+      const hit = { ticker: String(row.symbol).toUpperCase(), name: String(row.description) };
+      console.log('[sonar-pipeline] resolved via finnhub/search', hit);
+      return hit;
+    }
+  } catch {
+    /* fail-soft */
+  }
+  return null;
+}
+
+/**
+ * Resolve a query to { ticker, name }, from either direction. Memoized for a
+ * day; any failure returns null and the raw query proceeds unchanged.
  */
 export async function resolveCompany(query) {
   const q = String(query || '').trim();
-  if (!q || looksLikeTicker(q)) return null;
+  if (!q) return null;
   const key = q.toLowerCase();
   const hit = resolveCache.get(key);
   if (hit && Date.now() - hit.at < RESOLVE_TTL_MS) return hit.value;
 
+  const ticker = looksLikeTicker(q) ? tickerToken(q) : null;
   let value = null;
   try {
-    const apikey = getFmpKey();
-    if (apikey) {
-      const url = `${FMP_STABLE}/search-name?query=${encodeURIComponent(q)}&limit=1&apikey=${encodeURIComponent(apikey)}`;
-      const rows = await fetchJson(url);
-      const row = Array.isArray(rows) ? rows[0] : null;
-      if (row?.symbol && row?.name)
-        value = { ticker: String(row.symbol).toUpperCase(), name: String(row.name) };
-    }
+    value = ticker
+      ? (await tryFmp(TICKER_LOOKUPS, ticker)) || (await tryFinnhub(q, ticker))
+      : (await tryFmp(NAME_LOOKUPS, q)) || (await tryFinnhub(q, null));
   } catch {
-    /* fail-soft: an unreachable or rate-limited FMP must not cost a ping */
+    /* fail-soft: an unreachable or rate-limited upstream must not cost a ping */
   }
+  if (!value) console.log('[sonar-pipeline] no resolution', { query: q, ticker });
   resolveCache.set(key, { at: Date.now(), value });
   return value;
 }
@@ -356,6 +451,19 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
     .filter(Boolean);
 
   const dossier = wantDossier && resolved ? await buildDossier(resolved, admin) : null;
+  console.log('[sonar-pipeline]', {
+    query,
+    resolved,
+    items: items.length,
+    dossierLegs: dossier
+      ? {
+          fundamentals: Boolean(dossier.fundamentals),
+          spark: dossier.spark ? dossier.spark.length : 0,
+          news: dossier.news.length,
+          echo: dossier.echo.length,
+        }
+      : null,
+  });
 
   return {
     answer,
