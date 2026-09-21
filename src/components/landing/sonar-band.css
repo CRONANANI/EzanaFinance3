@@ -104,18 +104,26 @@
   font-family: var(--snr-font-sans);
 }
 
-/* Takeover geometry: on desktop the band is a full viewport page. Flex
-   centering keeps the columns vertically composed whatever the screen height;
-   100svh rather than 100vh so a dynamic browser toolbar can never open a
-   scroll gutter inside the lock. */
-@media (min-width: 1024px) {
-  .snr-band {
-    min-height: 100svh;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
+/* Takeover geometry: the band is a full viewport page at EVERY width, not
+   just desktop. The lock applies everywhere now, and a band shorter than the
+   screen would leave the next section's own white background showing beneath
+   it while frozen.
+   Both min-heights on purpose: svh is the floor every engine understands,
+   dvh refines it where supported, so a mobile toolbar collapsing mid-lock
+   cannot open a gap under the band. Flex centering keeps the columns
+   composed whatever the screen height. */
+.snr-band.snr-band {
+  /* Doubled class on purpose. globals.css carries
+     `.landing-page > section { min-height: 0 }` at (0,1,1), and the band is a
+     direct section child of the landing page, so a single-class rule here
+     loses and the band renders at its content height. Measured: min-height
+     resolved to 0px and 96px of the next section showed under the lock. */
+  min-height: 100svh;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 /* The one duration. Percentages of it are the contract. */
@@ -1907,6 +1915,17 @@ html.snr-takeover body.snr-takeover .navbar.navbar-sticky.scrolled {
   background: var(--snr-takeover-bg) !important;
   border-bottom-color: transparent !important;
   box-shadow: none !important;
+  /* The lock freezes the body with position:fixed and a negative top offset.
+     A sticky navbar has no scroll container left to stick to, so it would
+     ride that offset straight off the top of the screen and the green bar
+     would simply vanish for the whole lock. Fixed pins it where sticky had
+     it. --snr-sbw is the scrollbar width the freeze measured: the body pads
+     itself by it, but a fixed element ignores that padding, so the nav has to
+     inset itself by the same amount or it overhangs the compensated body. */
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: var(--snr-sbw, 0px) !important;
 }
 
 /* Nav ink. Light mode paints the landing links slate (#475569), which lands
@@ -2006,6 +2025,7 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
    so the dossier poke is still sliced at the page edge. */
 .snr-band.snr-locked {
   max-height: 100svh;
+  max-height: 100dvh;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;

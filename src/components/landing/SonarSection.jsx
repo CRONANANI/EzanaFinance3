@@ -226,7 +226,18 @@ export function SonarSection() {
      all of it" (reduced motion, or a result restored after one ran). */
   const [typed, setTyped] = useState(-1);
   const demoStartedRef = useRef(false);
+  const demoDoneRef = useRef(false);
   const hasPingedRef = useRef(false);
+  /* scrollY captured at freeze time; null means the body is not frozen. */
+  const frozenAtRef = useRef(null);
+  const lastYRef = useRef(0);
+  /* Set immediately before any scroll WE cause. The scroll handler consumes
+     it instead of arming, so the lock can never be triggered by its own
+     entry scroll, by the restore on release, or by the arrow's handoff. This
+     replaced a timing grace window, which the restore outlived: the restore
+     landed ~750ms late, read as a large downward scroll, and pulled the
+     visitor straight back into the lock they had just left. */
+  const programmaticRef = useRef(false);
   const dismissedRef = useRef(false);
   const lockedRef = useRef(false);
   const settlingRef = useRef(false);
@@ -275,6 +286,75 @@ export function SonarSection() {
     return () => document.removeEventListener('keydown', onKey);
   }, [gateOpen]);
 
+  /* The hold is a physical freeze, not a clamp. Re-pinning scrollY from a
+     scroll listener always loses a few pixels to momentum between events, and
+     in those pixels the next section shows through: it paints its own white
+     background, and the page's takeover green sits behind sections rather
+     than over them. Taking the body out of flow removes the scroll entirely,
+     so there is nothing to lose pixels to.
+     The offset is what keeps the view still: the body moves up by exactly the
+     scroll position it had, so every element lands where it already was. */
+  const freezeBody = useCallback((exactY) => {
+    if (frozenAtRef.current !== null) return;
+    /* Freeze at the band's true offset, not wherever the entry scroll
+       happened to stop. The settle tolerance is a few pixels, and with the
+       band sized to exactly one viewport those pixels come off its bottom
+       edge and show the next section through the gap. */
+    const y = typeof exactY === 'number' ? Math.round(exactY) : window.scrollY;
+    frozenAtRef.current = y;
+    /* The page scrollbar goes away with the scroll. Pad by its width so the
+       content does not jump sideways at the moment of the freeze; the fixed
+       navbar reads the same value through --snr-sbw, since a fixed element
+       ignores the body's padding. */
+    const sbw = window.innerWidth - document.documentElement.clientWidth;
+    document.documentElement.style.setProperty('--snr-sbw', `${Math.max(0, sbw)}px`);
+    const b = document.body.style;
+    b.position = 'fixed';
+    b.top = `-${y}px`;
+    b.left = '0';
+    b.right = '0';
+    b.width = '100%';
+    if (sbw > 0) b.paddingRight = `${sbw}px`;
+  }, []);
+
+  const unfreezeBody = useCallback(() => {
+    if (frozenAtRef.current === null) return;
+    const y = frozenAtRef.current;
+    frozenAtRef.current = null;
+    const b = document.body.style;
+    b.position = '';
+    b.top = '';
+    b.left = '';
+    b.right = '';
+    b.width = '';
+    b.paddingRight = '';
+    document.documentElement.style.removeProperty('--snr-sbw');
+    /* Restoring the scroll is the fiddliest part of the whole freeze. While
+       the body is fixed the document's scroll extent collapses to about one
+       viewport, and clearing position:fixed does not settle it synchronously,
+       so a scrollTo issued straight afterwards gets clamped to single digits
+       and the real jump lands a frame or more later. That late jump then
+       reads as a large downward scroll and pulls the visitor back into the
+       lock they just left. Reading scrollHeight forces the extent to settle;
+       the retry covers the engines where one read is not enough. */
+    const root = document.documentElement;
+    const restore = () => {
+      programmaticRef.current = true;
+      lastYRef.current = y;
+      /* globals.css sets scroll-behavior: smooth on the root, which turned
+         this restore into a ~600ms animation. Every frame of it looked like
+         the visitor scrolling down toward the band, so the lock re-armed
+         before the restore had even finished. It has to be one jump. */
+      const previous = root.style.scrollBehavior;
+      root.style.scrollBehavior = 'auto';
+      window.scrollTo({ top: y, behavior: 'instant' });
+      root.style.scrollBehavior = previous;
+    };
+    void root.scrollHeight;
+    restore();
+    if (Math.abs(window.scrollY - y) > 2) requestAnimationFrame(restore);
+  }, []);
+
   /* Takeover lock manager. One effect owns every listener and its cleanup;
      passive:false only where preventDefault is actually needed. The body
      class drives the page and navbar recolour over in sonar-band.css. */
@@ -310,6 +390,9 @@ export function SonarSection() {
     };
 
     const release = () => {
+      /* Unfreeze first: it restores the real scroll position, and doing it
+         after the class removal would paint one frame of the page at scroll 0. */
+      unfreezeBody();
       endSettle();
       setLock(false);
     };
@@ -322,23 +405,44 @@ export function SonarSection() {
          a settling flag that never clears would leave the page green with
          nothing actually locked. Hard deadline, so the state cannot stick. */
       if (settleTimer) clearTimeout(settleTimer);
-      settleTimer = setTimeout(endSettle, 900);
-      window.scrollTo({ top: bandTop(), behavior: reduced.matches ? 'auto' : 'smooth' });
+      /* Deadline, in case a smooth scroll is interrupted and never lands
+         within tolerance: freeze where we are rather than leaving the page
+         green and still scrollable. */
+      settleTimer = setTimeout(() => {
+        endSettle();
+        if (lockedRef.current) freezeBody(bandTop());
+      }, 900);
+      const target = bandTop();
+      programmaticRef.current = true;
+      window.scrollTo({ top: target, behavior: reduced.matches ? 'auto' : 'smooth' });
+      if (reduced.matches) {
+        /* An instant jump emits no settling scroll event to catch. */
+        endSettle();
+        freezeBody(target);
+      }
     };
 
-    let lastY = window.scrollY;
+    lastYRef.current = window.scrollY;
     const onScroll = () => {
       const y = window.scrollY;
-      const goingDown = y > lastY;
-      lastY = y;
+      const goingDown = y > lastYRef.current;
+      lastYRef.current = y;
+      /* A scroll we caused ourselves is not the visitor asking for anything. */
+      if (programmaticRef.current && !lockedRef.current) {
+        programmaticRef.current = false;
+        return;
+      }
       if (lockedRef.current) {
+        /* The entry scroll is the only scrolling that happens while locked.
+           The moment it lands on the band, the body is frozen and no further
+           scroll events arrive at all, so there is no clamp branch: there is
+           nothing left to clamp. */
         const target = bandTop();
-        if (settlingRef.current) {
-          if (Math.abs(y - target) < 4) endSettle();
-          return;
+        if (settlingRef.current && Math.abs(y - target) < 4) {
+          programmaticRef.current = false;
+          endSettle();
+          freezeBody(target);
         }
-        /* Scrollbar drags and leftover momentum: clamp back to the band. */
-        if (Math.abs(y - target) > 4) window.scrollTo({ top: target });
         return;
       }
       /* Arm when the band's top crosses the upper third on the way down. */
@@ -350,12 +454,16 @@ export function SonarSection() {
        pointer happened to be over it, and scroll the page underneath (then
        get yanked back by the clamp) when it was not. Taking the delta and
        applying it ourselves makes it deterministic and jitter-free. */
+    /* With the body frozen the page cannot move, so this is no longer about
+       blocking it. It drives the band's own scroll and reads exit intent. */
     const onWheel = (e) => {
       if (!lockedRef.current || settlingRef.current) return;
       const max = band.scrollHeight - band.clientHeight;
       if (e.deltaY > 0) {
-        e.preventDefault();
-        if (max > 0) band.scrollTop = Math.min(max, band.scrollTop + e.deltaY);
+        if (max > 0) {
+          e.preventDefault();
+          band.scrollTop = Math.min(max, band.scrollTop + e.deltaY);
+        }
       } else if (e.deltaY < 0) {
         if (band.scrollTop > 0) {
           e.preventDefault();
@@ -375,10 +483,9 @@ export function SonarSection() {
       if (!lockedRef.current || settlingRef.current || touchY === null) return;
       const dy = (e.touches?.[0]?.clientY ?? touchY) - touchY;
       const insideBand = band.contains(e.target);
-      /* The band scrolls internally while locked. A downward swipe inside it
-         belongs to the band until the band has nothing left to show; only
-         then does blocking the page mean anything. Outside the band, or at
-         its bottom, the block is the lock. */
+      /* The frozen body cannot scroll, but a touch that overscrolls the band
+         still triggers the browser's rubber band. Blocking at the band's
+         bottom is what keeps that from showing anything underneath. */
       const atBottom = band.scrollTop + band.clientHeight >= band.scrollHeight - 2;
       if (dy < 0) {
         if (!insideBand || atBottom) e.preventDefault();
@@ -437,8 +544,11 @@ export function SonarSection() {
       window.removeEventListener('hashchange', onHashChange);
       document.body.classList.remove('snr-takeover');
       document.documentElement.classList.remove('snr-takeover');
+      /* Unconditional: a route change that unmounts this section must never
+         leave a fixed body behind, which would look like a dead page. */
+      unfreezeBody();
     };
-  }, []);
+  }, [freezeBody, unfreezeBody]);
 
   /* Reveal an answer one character at a time. Sequential across the three
      paragraphs falls out of revealing the joined string: each paragraph slices
@@ -515,26 +625,37 @@ export function SonarSection() {
         } else {
           setPingError('The demo could not load. Type a ping to try it yourself.');
         }
+        demoDoneRef.current = true;
       } catch {
-        if (alive) setPingError('The demo could not load. Type a ping to try it yourself.');
+        if (alive) {
+          setPingError('The demo could not load. Type a ping to try it yourself.');
+          demoDoneRef.current = true;
+        }
       } finally {
         if (alive) setPinging(false);
       }
     }, TYPE_OUT_MS);
 
-    /* Deadline. Whatever happens to the demo, the way down appears. A
-       choreography that stalls must never become a scroll trap. */
-    const deadline = setTimeout(() => {
-      if (alive) setArrowReady(true);
-    }, 14000);
-
     return () => {
       alive = false;
       clearTimeout(timer);
-      clearTimeout(deadline);
       stopType();
+      /* A demo cancelled mid-flight by a release never reported anything, so
+         it must not count as having run. Leaving demoStartedRef set meant the
+         next lock skipped the demo, nothing ever resolved, and the arrow
+         never appeared: the visitor was locked in with no way down. */
+      if (!demoDoneRef.current) demoStartedRef.current = false;
     };
   }, [lockedIn, startTypewriter]);
+
+  /* The deadline that guarantees a way down, in its own effect so it re-arms
+     on every lock. It used to live inside the demo effect, where a release
+     cleared it and the early return on the next lock never set it again. */
+  useEffect(() => {
+    if (!lockedIn || arrowReady) return undefined;
+    const t = setTimeout(() => setArrowReady(true), 14000);
+    return () => clearTimeout(t);
+  }, [lockedIn, arrowReady]);
 
   /* Stage 2 follows the type-out, and the arrow follows stage 2. A ping that
      failed still opens the way down, just without the stage. */
@@ -552,6 +673,7 @@ export function SonarSection() {
   /* The arrow: dismiss the lock for the rest of the visit, then hand the
      page back to the visitor at the section below. */
   function onContinue() {
+    unfreezeBody();
     dismissedRef.current = true;
     lockedRef.current = false;
     settlingRef.current = false;
@@ -562,6 +684,8 @@ export function SonarSection() {
     if (band) {
       const nextTop = band.getBoundingClientRect().bottom + window.scrollY;
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      programmaticRef.current = true;
+      lastYRef.current = nextTop;
       window.scrollTo({ top: nextTop, behavior: reduced ? 'auto' : 'smooth' });
     }
   }
