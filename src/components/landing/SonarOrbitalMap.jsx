@@ -71,9 +71,9 @@ function ang(i) {
 // way the old target-hopping animation did when it reached a target. The random
 // per-dimension frequencies/phases keep the seven points out of sync so the
 // shape keeps reforming. t is in seconds; frequencies in Hz.
-function weightAt(s, t) {
+function weightAt(s, t, base) {
   const w =
-    s.base +
+    base +
     s.a1 * Math.sin(2 * Math.PI * s.f1 * t + s.p1) +
     s.a2 * Math.sin(2 * Math.PI * s.f2 * t + s.p2);
   return Math.max(0.14, Math.min(0.98, w));
@@ -179,7 +179,7 @@ function MobileRadarFlow({ dims, sourceDetails, accentColor }) {
   );
 }
 
-export default function SonarOrbitalMap({ sourceDetails }) {
+export default function SonarOrbitalMap({ sourceDetails, relevance = null }) {
   const accentColor = '#10b981';
   // `hoveredDim` is transient (mouse/focus over a dot or label); `pinnedDim`
   // persists after a click so the description card stays open. The card shows
@@ -199,6 +199,12 @@ export default function SonarOrbitalMap({ sourceDetails }) {
   );
   const stateRef = useRef(null);
   const rafRef = useRef(null);
+  /* Relevance arrives from a ping and changes while the loop is running. It
+     rides a ref rather than the effect's deps, because re-running that effect
+     would re-seed every dimension's drift parameters and the whole map would
+     visibly restart mid-glide. */
+  const relevanceRef = useRef(relevance);
+  const renderRef = useRef(null);
 
   useEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -216,14 +222,29 @@ export default function SonarOrbitalMap({ sourceDetails }) {
       f2: 0.011 + Math.random() * 0.013,
       p2: Math.random() * Math.PI * 2,
       a2: 0.1 + Math.random() * 0.08,
+      /* The displayed weight, eased toward the relevance target each frame. */
+      wDisp: d.w,
     }));
     stateRef.current = states;
 
-    function render(t) {
+    /* A ping repositions the orbits: each dimension's resting radius becomes
+       its relevance to what was asked, so the dots glide out toward the icons
+       of the datasets that actually matched and pull in toward the hub for the
+       ones that did not. Easing a displayed weight toward the target rather
+       than assigning it keeps the drift breathing through the move; the dots
+       travel, they never teleport. */
+    const easeTo = (s, i, snap) => {
+      const rel = relevanceRef.current;
+      const target = rel ? Math.min(1, Math.max(0.1, rel[DIMS[i].id] ?? 0.1)) : s.base;
+      s.wDisp = snap ? target : s.wDisp + (target - s.wDisp) * 0.06;
+      return s.wDisp;
+    };
+
+    function render(t, snap = false) {
       const pts = [];
       for (let i = 0; i < states.length; i++) {
         const s = states[i];
-        const w = weightAt(s, t);
+        const w = weightAt(s, t, easeTo(s, i, snap));
         const r = RMIN + w * (RMAX - RMIN);
         const x = CX + r * Math.cos(s.a);
         const y = CY + r * Math.sin(s.a);
@@ -239,8 +260,11 @@ export default function SonarOrbitalMap({ sourceDetails }) {
       if (polyYouRef.current) polyYouRef.current.setAttribute('points', pts.join(' '));
     }
 
+    renderRef.current = (snap) => render(0, snap);
+
     if (reduce) {
-      render(0);
+      /* No glide under reduced motion: positions land on the target at once. */
+      render(0, true);
     } else {
       const t0 = performance.now();
       function loop(now) {
@@ -252,8 +276,19 @@ export default function SonarOrbitalMap({ sourceDetails }) {
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      renderRef.current = null;
     };
   }, []);
+
+  /* Publish the new target to the running loop. Under reduced motion there is
+     no loop to pick it up, so repaint once from here. */
+  useEffect(() => {
+    relevanceRef.current = relevance;
+    const reduce =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce && renderRef.current) renderRef.current(true);
+  }, [relevance]);
 
   const activeDetail = activeDim !== null ? sourceDetails?.[DIMS[activeDim].id] : null;
   const popupPos =

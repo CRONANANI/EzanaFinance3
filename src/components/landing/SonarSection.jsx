@@ -56,7 +56,7 @@
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { SonarOrbital } from './SonarOrbital';
 import './sonar-band.css';
 
@@ -134,6 +134,58 @@ const ROWS = [
   { cls: 'snr-anim-row4', tag: 'SEC', source: 'EDGAR', line: '[FORM TYPE] filed [DATE]' },
 ];
 
+/** Compact money, for a card that has room for four numbers and no more. */
+function compactUsd(n) {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return null;
+  const abs = Math.abs(n);
+  const [div, suffix] =
+    abs >= 1e12 ? [1e12, 'T'] : abs >= 1e9 ? [1e9, 'B'] : abs >= 1e6 ? [1e6, 'M'] : [1, ''];
+  return `$${(n / div).toFixed(abs >= 1e6 ? 2 : 2)}${suffix}`;
+}
+
+function statValue(stat) {
+  if (!stat || typeof stat.value !== 'number') return null;
+  return stat.kind === 'percent' ? `${(stat.value * 100).toFixed(2)}%` : stat.value.toFixed(2);
+}
+
+function relativeDay(iso) {
+  if (!iso) return null;
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (!Number.isFinite(days)) return null;
+  if (days <= 0) return 'today';
+  if (days === 1) return 'yesterday';
+  return `${days}d ago`;
+}
+
+/**
+ * Sparkline from the dossier's closes. A polyline over a normalized viewBox,
+ * drawn straight from the data with no chart library: deterministic, so the
+ * server and the client agree, and weightless on a landing page.
+ */
+function Sparkline({ points }) {
+  if (!Array.isArray(points) || points.length < 2) return null;
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const span = max - min || 1;
+  const d = points
+    .map(
+      (v, i) =>
+        `${((i / (points.length - 1)) * 100).toFixed(2)},${(28 - ((v - min) / span) * 26).toFixed(2)}`,
+    )
+    .join(' ');
+  return (
+    <svg className="snr-spark" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
+      <polyline
+        points={d}
+        fill="none"
+        stroke="var(--snr-mint)"
+        strokeWidth="1.4"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
 export function SonarSection() {
   const bandRef = useRef(null);
   const inputRef = useRef(null);
@@ -164,6 +216,17 @@ export function SonarSection() {
   /* Takeover lock. lockedIn drives the arrow; the refs are what the scroll
      listeners read, since they fire far too often to chase React state. */
   const [lockedIn, setLockedIn] = useState(false);
+  /* The arrow is withheld until the choreography has finished, so the eye is
+     not pulled to the exit while the answer is still arriving. Withholding it
+     is also the one thing that can trap someone, which is why every path that
+     ends the choreography, including failure and a hard deadline, sets it. */
+  const [arrowReady, setArrowReady] = useState(false);
+  const [stage2, setStage2] = useState(false);
+  /* Characters of the answer revealed so far; -1 means "no typewriter, show
+     all of it" (reduced motion, or a result restored after one ran). */
+  const [typed, setTyped] = useState(-1);
+  const demoStartedRef = useRef(false);
+  const hasPingedRef = useRef(false);
   const dismissedRef = useRef(false);
   const lockedRef = useRef(false);
   const settlingRef = useRef(false);
@@ -228,12 +291,13 @@ export function SonarSection() {
     const setLock = (on) => {
       lockedRef.current = on;
       setLockedIn(on);
+      /* html and body are outside React's tree, so they are set here. The
+         band's own snr-locked class is NOT: React owns that element's
+         className and would wipe an imperative toggle on the next render,
+         which is exactly what happened the first time this was written. It
+         rides lockedIn in the JSX instead. */
       document.body.classList.toggle('snr-takeover', on);
       document.documentElement.classList.toggle('snr-takeover', on);
-      /* The band's own class: while locked it becomes a scroll container
-         capped at the viewport, which is what lets a band taller than the
-         screen still be read without unlocking the page behind it. */
-      band.classList.toggle('snr-locked', on);
       if (!on) band.scrollTop = 0;
     };
 
@@ -373,9 +437,117 @@ export function SonarSection() {
       window.removeEventListener('hashchange', onHashChange);
       document.body.classList.remove('snr-takeover');
       document.documentElement.classList.remove('snr-takeover');
-      band.classList.remove('snr-locked');
     };
   }, []);
+
+  /* Reveal an answer one character at a time. Sequential across the three
+     paragraphs falls out of revealing the joined string: each paragraph slices
+     what is left after the ones before it. */
+  const startTypewriter = useCallback((text) => {
+    const reduce =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || !text) {
+      setTyped(-1);
+      return () => {};
+    }
+    setTyped(0);
+    const total = text.length;
+    const id = setInterval(() => {
+      setTyped((n) => {
+        if (n < 0) return n;
+        const next = n + 7;
+        if (next >= total) {
+          clearInterval(id);
+          return -1;
+        }
+        return next;
+      });
+    }, 28);
+    return () => clearInterval(id);
+  }, []);
+
+  /* The auto-demo. It runs once per visit, the first time the lock engages on
+     a visitor who has not typed their own ping, and it costs nothing: the
+     endpoint is cached for a day, so the Haiku call behind it is paid about
+     once daily across every visitor rather than once each.
+     The result lands in the same `live` state a real ping uses, so relevance,
+     the dossier stage and the arrow all flow through one path. */
+  useEffect(() => {
+    /* hasPinged is read through a ref, never a dep. The demo SETS it, so
+       listing it here made the effect tear itself down mid-fetch: alive went
+       false, the result was discarded, and the panel sat on the sweep
+       skeleton forever. */
+    if (!lockedIn || demoStartedRef.current || hasPingedRef.current) return undefined;
+    demoStartedRef.current = true;
+    let alive = true;
+    let stopType = () => {};
+
+    /* snrQuery types the demo query between 4% and 16% of the 15s master
+       cycle, so 2.4s is where the type-out lands. The loop is free-running,
+       so this is the duration of the type-out rather than a sync to it. */
+    const TYPE_OUT_MS = 2400;
+
+    const timer = setTimeout(async () => {
+      if (!alive) return;
+      hasPingedRef.current = true;
+      setHasPinged(true);
+      setLastQuery('Lockheed Martin');
+      setPinging(true);
+      try {
+        const res = await fetch('/api/landing/demo-ping');
+        const data = await res.json().catch(() => null);
+        if (!alive) return;
+        if (res.ok && data?.answer) {
+          setLive({
+            answer: data.answer,
+            sources: data.sources || [],
+            relevance: data.relevance || null,
+            dossier: data.dossier || null,
+            grounded: data.grounded !== false,
+            remaining: null,
+          });
+          /* Same bump the user path makes. Without it the dossier rows keep
+             their master-timeline classes, which live mode freezes, and the
+             card renders its header over three invisible rows. */
+          setPingPulse((n) => n + 1);
+          stopType = startTypewriter(data.answer);
+        } else {
+          setPingError('The demo could not load. Type a ping to try it yourself.');
+        }
+      } catch {
+        if (alive) setPingError('The demo could not load. Type a ping to try it yourself.');
+      } finally {
+        if (alive) setPinging(false);
+      }
+    }, TYPE_OUT_MS);
+
+    /* Deadline. Whatever happens to the demo, the way down appears. A
+       choreography that stalls must never become a scroll trap. */
+    const deadline = setTimeout(() => {
+      if (alive) setArrowReady(true);
+    }, 14000);
+
+    return () => {
+      alive = false;
+      clearTimeout(timer);
+      clearTimeout(deadline);
+      stopType();
+    };
+  }, [lockedIn, startTypewriter]);
+
+  /* Stage 2 follows the type-out, and the arrow follows stage 2. A ping that
+     failed still opens the way down, just without the stage. */
+  useEffect(() => {
+    if (!live || typed !== -1) return undefined;
+    setStage2(Boolean(live.dossier));
+    const t = setTimeout(() => setArrowReady(true), live.dossier ? 500 : 0);
+    return () => clearTimeout(t);
+  }, [live, typed]);
+
+  useEffect(() => {
+    if (pingError) setArrowReady(true);
+  }, [pingError]);
 
   /* The arrow: dismiss the lock for the rest of the visit, then hand the
      page back to the visitor at the section below. */
@@ -387,7 +559,6 @@ export function SonarSection() {
     document.body.classList.remove('snr-takeover');
     document.documentElement.classList.remove('snr-takeover');
     const band = bandRef.current;
-    if (band) band.classList.remove('snr-locked');
     if (band) {
       const nextTop = band.getBoundingClientRect().bottom + window.scrollY;
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -411,6 +582,7 @@ export function SonarSection() {
       return;
     }
     if (pinging) return;
+    hasPingedRef.current = true;
     setHasPinged(true);
     setLastQuery(q);
     setPinging(true);
@@ -429,7 +601,15 @@ export function SonarSection() {
         });
         setLive((l) => (l ? { ...l, remaining: 0 } : l));
       } else if (res.ok && data?.answer) {
-        setLive({ answer: data.answer, sources: data.sources || [], remaining: data.remaining });
+        setLive({
+          answer: data.answer,
+          sources: data.sources || [],
+          relevance: data.relevance || null,
+          dossier: data.dossier || null,
+          grounded: data.grounded !== false,
+          remaining: data.remaining,
+        });
+        startTypewriter(data.answer);
         setPingPulse((n) => n + 1);
       } else if (res.ok) {
         /* The ping worked; the datasets just had nothing on this subject. That
@@ -458,7 +638,9 @@ export function SonarSection() {
   return (
     <section
       ref={bandRef}
-      className={`snr-band${inView ? '' : ' snr-paused'}${hasPinged ? ' snr-live' : ''}`}
+      className={`snr-band${inView ? '' : ' snr-paused'}${lockedIn ? ' snr-locked' : ''}${
+        hasPinged ? ' snr-live' : ''
+      }${stage2 ? ' snr-stage2' : ''}`}
     >
       <div className="snr-grid-layer" aria-hidden="true" />
 
@@ -582,26 +764,40 @@ export function SonarSection() {
                   </>
                 ) : live ? (
                   <>
-                    {live.answer
-                      .split(/\n\s*\n/)
-                      .slice(0, 3)
-                      .map((para, i) => (
-                        <p
-                          key={`live-${i}`}
-                          className={`snr-para${i === 0 ? ' snr-line-lead' : ''} snr-anim-rowpop`}
-                          style={{ animationDelay: `${i * 0.1}s` }}
-                        >
-                          {para}
-                        </p>
-                      ))}
-                    <p className="snr-para">
-                      <button type="button" className="snr-link" onClick={() => openGate()}>
-                        Open the full dossier in Sonar
-                      </button>
-                      {typeof live.remaining === 'number' ? (
-                        <span className="snr-cite"> {live.remaining} free pings left</span>
-                      ) : null}
-                    </p>
+                    {live.grounded === false ? (
+                      <span className="snr-chip-general">General briefing</span>
+                    ) : null}
+                    {(() => {
+                      /* One reveal counter across the joined answer, so the
+                         paragraphs type in sequence without any per-paragraph
+                         bookkeeping. typed === -1 means show all of it. */
+                      const paras = live.answer.split(/\n\s*\n/).slice(0, 3);
+                      let consumed = 0;
+                      return paras.map((para, i) => {
+                        const start = consumed;
+                        consumed += para.length + 2;
+                        const shown = typed < 0 ? para : para.slice(0, Math.max(0, typed - start));
+                        if (typed >= 0 && !shown) return null;
+                        return (
+                          <p
+                            key={`live-${i}`}
+                            className={`snr-para${i === 0 ? ' snr-line-lead' : ''}`}
+                          >
+                            {shown}
+                          </p>
+                        );
+                      });
+                    })()}
+                    {typed < 0 ? (
+                      <p className="snr-para">
+                        <button type="button" className="snr-link" onClick={() => openGate()}>
+                          Open the full dossier in Sonar
+                        </button>
+                        {typeof live.remaining === 'number' ? (
+                          <span className="snr-cite"> {live.remaining} free pings left</span>
+                        ) : null}
+                      </p>
+                    ) : null}
                   </>
                 ) : (
                   <>
@@ -667,7 +863,7 @@ export function SonarSection() {
           </div>
 
           <div className="snr-col-radar">
-            <SonarOrbital />
+            <SonarOrbital relevance={live?.relevance ?? null} />
           </div>
 
           <div className="snr-col-dossier" aria-hidden={hasPinged ? undefined : 'true'}>
@@ -724,10 +920,100 @@ export function SonarSection() {
               <span className="snr-meta">3 MORE</span>
             </div>
           </div>
+
+          {/* Stage 2's right-hand stack. In the DOM only once a ping has
+              actually returned a dossier, so nothing empty is ever laid out.
+              The orbital stays in .snr-col-radar and is repositioned by grid
+              rather than moved into this wrapper: reparenting it would remount
+              the map and restart its drift mid-glide. */}
+          {stage2 && live?.dossier ? (
+            <div className="snr-stack">
+              {live.dossier.fundamentals ? (
+                <div className="snr-fund snr-anim-rowpop">
+                  <div className="snr-fund-head">
+                    <span className="snr-fund-ticker">{live.dossier.ticker}</span>
+                    <span className="snr-rule-soft" />
+                    <span className="snr-fund-name">{live.dossier.name}</span>
+                  </div>
+                  <Sparkline points={live.dossier.spark} />
+                  <div className="snr-fund-grid">
+                    <div className="snr-stat">
+                      <span className="snr-stat-label">P/E TTM</span>
+                      <span className="snr-stat-value">
+                        {typeof live.dossier.fundamentals.peTtm === 'number'
+                          ? live.dossier.fundamentals.peTtm.toFixed(2)
+                          : 'n/a'}
+                      </span>
+                    </div>
+                    <div className="snr-stat">
+                      <span className="snr-stat-label">EV/EBITDA TTM</span>
+                      <span className="snr-stat-value">
+                        {typeof live.dossier.fundamentals.evToEbitdaTtm === 'number'
+                          ? live.dossier.fundamentals.evToEbitdaTtm.toFixed(2)
+                          : 'n/a'}
+                      </span>
+                    </div>
+                    <div className="snr-stat">
+                      <span className="snr-stat-label">Market cap</span>
+                      <span className="snr-stat-value">
+                        {compactUsd(live.dossier.fundamentals.marketCap) || 'n/a'}
+                      </span>
+                    </div>
+                    <div className="snr-stat">
+                      <span className="snr-stat-label">
+                        {live.dossier.fundamentals.fourth?.label || 'Price'}
+                      </span>
+                      <span className="snr-stat-value">
+                        {statValue(live.dossier.fundamentals.fourth) ||
+                          (typeof live.dossier.fundamentals.price === 'number'
+                            ? `$${live.dossier.fundamentals.price.toFixed(2)}`
+                            : 'n/a')}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {live.dossier.news.length || live.dossier.echo.length ? (
+                <div className="snr-news snr-anim-rowpop" style={{ animationDelay: '0.1s' }}>
+                  {live.dossier.news.map((n) => (
+                    <a
+                      key={n.url}
+                      className="snr-news-item"
+                      href={n.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <span className="snr-news-title">{n.title}</span>
+                      <span className="snr-news-meta">
+                        {n.source}
+                        {relativeDay(n.publishedAt) ? ` · ${relativeDay(n.publishedAt)}` : ''}
+                      </span>
+                    </a>
+                  ))}
+                  {live.dossier.echo.map((e) => (
+                    <a key={e.slug} className="snr-news-item" href={`/echo/${e.slug}`}>
+                      <span className="snr-news-title">
+                        <span className="snr-echo-chip">
+                          <i className="bi bi-broadcast-pin" aria-hidden="true" />
+                          ECHO
+                        </span>
+                        {e.title}
+                      </span>
+                      <span className="snr-news-meta">
+                        Ezana Echo
+                        {relativeDay(e.publishedAt) ? ` · ${relativeDay(e.publishedAt)}` : ''}
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </div>
 
-      {lockedIn ? (
+      {lockedIn && arrowReady ? (
         <button
           type="button"
           className="snr-continue snr-anim-bounce"

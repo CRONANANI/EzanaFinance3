@@ -2075,3 +2075,237 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
     transform: translateX(-50%) translateY(-10px);
   }
 }
+
+/* ── stage 2 ──────────────────────────────────────────────────────────────
+   After a ping has answered and resolved a company, the band recomposes: the
+   orbital shrinks and docks top-right, the dossier leaves the page edge for
+   the centre, and the fundamentals and news cards fill the column beneath the
+   map. The orbital is NOT moved in the DOM to get there. Reparenting it would
+   remount the map and restart its drift mid-glide, so .snr-cols becomes a
+   grid and every column is placed rather than ordered. */
+@media (min-width: 1024px) {
+  .snr-stage2 .snr-cols {
+    display: grid;
+    grid-template-columns: 430px minmax(340px, 1fr) minmax(300px, 380px);
+    grid-template-rows: auto 1fr;
+    align-items: start;
+  }
+
+  .snr-stage2 .snr-col-left {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    width: auto;
+  }
+
+  .snr-stage2 .snr-col-dossier {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    width: auto;
+  }
+
+  .snr-stage2 .snr-col-radar {
+    grid-column: 3;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .snr-stage2 .snr-stack {
+    grid-column: 3;
+    grid-row: 2;
+  }
+}
+
+/* The orbital at half size. max-width rather than a transform so the axis
+   icons stay crisp and the popup keeps hit-testing against real geometry. */
+.snr-orbital,
+.snr-col-dossier {
+  transition:
+    max-width 0.45s ease,
+    margin-right 0.45s ease,
+    border-radius 0.45s ease,
+    transform 0.45s ease;
+}
+
+.snr-stage2 .snr-orbital {
+  max-width: 280px;
+}
+
+/* The dossier comes in off the edge: the poke margin, the clipped corners and
+   the missing right border all resolve as it lands in the centre column. */
+.snr-stage2 .snr-col-dossier {
+  margin-right: 0;
+  padding-right: 20px;
+  border-radius: var(--snr-r-panel);
+  border-right: 1px solid rgba(110, 231, 183, 0.3);
+  box-shadow: var(--snr-lift);
+}
+
+.snr-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.snr-fund,
+.snr-news {
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border-radius: var(--snr-r-panel);
+  background: var(--snr-panel);
+  border: 1px solid var(--snr-hair);
+}
+
+.snr-fund-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.snr-fund-ticker {
+  font-family: var(--snr-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  letter-spacing: var(--snr-track-label);
+  color: var(--snr-mint);
+}
+
+.snr-fund-name {
+  font-size: 11.5px;
+  color: var(--snr-text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.snr-spark {
+  display: block;
+  width: 100%;
+  height: 34px;
+  margin-bottom: 12px;
+}
+
+.snr-fund-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+}
+
+.snr-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.snr-stat-label {
+  font-size: 10px;
+  letter-spacing: var(--snr-track-label);
+  text-transform: uppercase;
+  color: var(--snr-text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.snr-stat-value {
+  font-family: var(--snr-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  color: var(--snr-text);
+}
+
+.snr-news {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.snr-news-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--snr-r-row);
+  padding: 6px 8px;
+  margin: -6px -8px;
+  transition: background 0.15s ease;
+}
+
+.snr-news-item:hover {
+  background: var(--snr-row);
+}
+
+.snr-news-item:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 2px;
+}
+
+.snr-news-title {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--snr-text);
+}
+
+.snr-news-meta {
+  font-family: var(--snr-font-mono);
+  font-size: 10px;
+  letter-spacing: var(--snr-track-label);
+  text-transform: uppercase;
+  color: var(--snr-text-faint);
+}
+
+/* Echo items carry their provenance. A filled chip, not a colour, so the
+   denotation survives a greyscale screenshot. */
+.snr-echo-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 6px;
+  padding: 1px 6px;
+  border-radius: var(--snr-r-chip);
+  background: var(--snr-emerald);
+  color: var(--snr-ink);
+  font-family: var(--snr-font-mono);
+  font-size: 9px;
+  letter-spacing: var(--snr-track-label);
+  vertical-align: middle;
+}
+
+/* An ungrounded answer says so before it says anything else. */
+.snr-chip-general {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 2px 8px;
+  border: 1px solid var(--snr-text-faint);
+  border-radius: var(--snr-r-chip);
+  font-family: var(--snr-font-mono);
+  font-size: 9.5px;
+  letter-spacing: var(--snr-track-label);
+  text-transform: uppercase;
+  color: var(--snr-text-faint);
+}
+
+/* Below the lock's desktop layout, stage 2 is just source order: synthesis,
+   dossier, then the stack. The mini orbital goes away so the band's internal
+   scroll stays short enough to read. */
+@media (max-width: 1023px) {
+  .snr-stage2 .snr-col-radar {
+    display: none;
+  }
+
+  .snr-stage2 .snr-col-dossier {
+    display: flex;
+  }
+}
+
+/* Reduced motion already kills animation across the band; stage 2's moves are
+   transitions, which it does not cover, so they are cut here too. */
+@media (prefers-reduced-motion: reduce) {
+  .snr-orbital,
+  .snr-col-dossier {
+    transition: none;
+  }
+}
