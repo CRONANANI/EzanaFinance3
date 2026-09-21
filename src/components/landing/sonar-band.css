@@ -1909,12 +1909,19 @@ body.snr-takeover {
   background: var(--snr-takeover-bg) !important;
 }
 
+/* The nav is glass while locked, not paint. A solid --snr-takeover-bg is the
+   gradient's darkest stop, so against the gradient behind it the bar read as a
+   darker slab with a seam along its bottom edge. Clearing it entirely makes
+   the band's own gradient the nav's background, which matches by construction
+   at every scroll position and every viewport, with nothing to keep in sync. */
 html.snr-takeover body.snr-takeover .navbar,
 html.snr-takeover body.snr-takeover .navbar.navbar-sticky,
 html.snr-takeover body.snr-takeover .navbar.navbar-sticky.scrolled {
-  background: var(--snr-takeover-bg) !important;
+  background: transparent !important;
   border-bottom-color: transparent !important;
   box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   /* The lock freezes the body with position:fixed and a negative top offset.
      A sticky navbar has no scroll container left to stick to, so it would
      ride that offset straight off the top of the screen and the green bar
@@ -1953,6 +1960,17 @@ html.snr-takeover body.snr-takeover .navbar .nav-echo-wordmark {
 html.snr-takeover body.snr-takeover .navbar .nav-echo-wordmark span,
 html.snr-takeover body.snr-takeover .navbar .nav-echo-title {
   color: var(--snr-mint) !important;
+}
+
+/* Any inner surface that paints its own slab has to go with it, or the glass
+   is a pane over an opaque box. */
+html.snr-takeover body.snr-takeover .navbar .nav-container,
+html.snr-takeover body.snr-takeover .navbar .nav-container-centered,
+html.snr-takeover body.snr-takeover .navbar .nav-menu,
+html.snr-takeover body.snr-takeover .navbar .animated-nav,
+html.snr-takeover body.snr-takeover .navbar .animated-nav-list {
+  background: transparent !important;
+  backdrop-filter: none !important;
 }
 
 /* The pill row. It renders only for a signed-in visitor (Navbar passes
@@ -2045,13 +2063,17 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
    killed animation still leaves it centred. */
 .snr-continue {
   position: absolute;
-  left: 50%;
+  /* Under the synthesis column's left edge, not the viewport centre. The
+     max() mirrors .snr-inner's centred 1440px box plus the band's own 40px
+     gutter, so the arrow tracks the content at every width instead of
+     drifting away from it on wide screens. */
+  left: max(40px, calc((100% - 1440px) / 2 + 40px));
   /* The cookie banner is fixed to the bottom of the viewport at z-index 9000
      and its children capture clicks, so at a flat 26px it sits on top of the
      one control that can end the lock. --cookie-banner-height is the
      banner's own contract, removed when it closes. */
   bottom: calc(26px + var(--cookie-banner-height, 0px));
-  transform: translateX(-50%);
+  transform: none;
   z-index: 4;
   width: 48px;
   height: 48px;
@@ -2086,13 +2108,15 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   animation-iteration-count: infinite;
 }
 
+/* translateY only: the arrow is no longer centred by transform, so a
+   translateX component here would shove it off its left anchor. */
 @keyframes snrBounce {
   0%,
   100% {
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
   }
   50% {
-    transform: translateX(-50%) translateY(-10px);
+    transform: translateY(-10px);
   }
 }
 
@@ -2105,8 +2129,11 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
    grid and every column is placed rather than ordered. */
 @media (min-width: 1024px) {
   .snr-stage2 .snr-cols {
+    /* The right region carries a landscape card, so it gets the width it
+       needs and the synthesis column gives it up. The card's proportion is
+       the requirement; the synthesis column has slack, the card does not. */
     display: grid;
-    grid-template-columns: 430px minmax(340px, 1fr) minmax(300px, 380px);
+    grid-template-columns: 400px minmax(280px, 1fr) 460px;
     grid-template-rows: auto 1fr;
     align-items: start;
   }
@@ -2114,7 +2141,7 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   .snr-stage2 .snr-col-left {
     grid-column: 1;
     grid-row: 1 / span 2;
-    width: auto;
+    width: 400px;
   }
 
   .snr-stage2 .snr-col-dossier {
@@ -2144,6 +2171,32 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
     margin-right 0.45s ease,
     border-radius 0.45s ease,
     transform 0.45s ease;
+}
+
+/* The right-hand cards arrive from off the right edge, staggered behind the
+   dossier's move so they read as being pulled in by it rather than appearing
+   on their own. The stack is in the DOM only once there is data, so its rest
+   state is applied on the next frame by .snr-stage2 rather than needing a
+   mount transition. */
+.snr-fund,
+.snr-news {
+  transform: translateX(120px);
+  opacity: 0;
+  transition:
+    transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 0.45s ease;
+}
+
+.snr-stage2 .snr-fund {
+  transform: translateX(0);
+  opacity: 1;
+  transition-delay: 0.12s;
+}
+
+.snr-stage2 .snr-news {
+  transform: translateX(0);
+  opacity: 1;
+  transition-delay: 0.24s;
 }
 
 .snr-stage2 .snr-orbital {
@@ -2199,17 +2252,43 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   text-overflow: ellipsis;
 }
 
+/* Landscape by construction: the chart takes the left half, the four ratios
+   the right. A 2x2 grid beside a chart is what makes the card wider than it
+   is tall without pinning a height. */
+.snr-fund--wide .snr-fund-body {
+  display: grid;
+  grid-template-columns: 0.85fr 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+/* The stat labels are the API's own wording, and two of them ("EV/EBITDA TTM",
+   "Dividend yield TTM") do not fit a quarter of this card on one line. They
+   wrap here rather than ellipsing: a truncated label names the wrong ratio. */
+.snr-fund--wide .snr-stat-label {
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.25;
+  letter-spacing: 0.08em;
+}
+
+.snr-fund--wide .snr-stat {
+  justify-content: flex-end;
+  min-height: 42px;
+}
+
 .snr-spark {
   display: block;
   width: 100%;
-  height: 34px;
-  margin-bottom: 12px;
+  height: 92px;
+  min-width: 0;
 }
 
 .snr-fund-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px 12px;
+  min-width: 0;
 }
 
 .snr-stat {
@@ -2319,13 +2398,51 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   .snr-stage2 .snr-col-dossier {
     display: flex;
   }
+
+  /* Full width, and the chart-beside-ratios split is what keeps the card
+     landscape on a phone too. */
+  .snr-stack {
+    width: 100%;
+  }
+
+  .snr-fund--wide .snr-fund-body {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .snr-spark {
+    height: 76px;
+  }
 }
 
 /* Reduced motion already kills animation across the band; stage 2's moves are
    transitions, which it does not cover, so they are cut here too. */
 @media (prefers-reduced-motion: reduce) {
   .snr-orbital,
-  .snr-col-dossier {
+  .snr-col-dossier,
+  .snr-fund,
+  .snr-news {
+    transition: none;
+  }
+}
+
+/* ── demo choreography ───────────────────────────────────────────────────
+   The pointer's demo travel is JS-driven, because its target is measured off
+   the Ping button rather than assumed. That means dropping the looping
+   keyframe animation and transitioning the transform instead. */
+.snr-cursor--demo {
+  opacity: 0.95;
+  animation: none;
+  transition: transform 0.62s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* The press, held for 150ms as the fetch fires. */
+.snr-ping-btn--pressed {
+  transform: scale(0.95);
+  background: color-mix(in srgb, var(--snr-emerald) 78%, #000000);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snr-cursor--demo {
     transition: none;
   }
 }

@@ -189,6 +189,11 @@ function Sparkline({ points }) {
 export function SonarSection() {
   const bandRef = useRef(null);
   const inputRef = useRef(null);
+  const formRef = useRef(null);
+  const pingBtnRef = useRef(null);
+  /* Set the moment the visitor touches the field. The demo stands down: it is
+     a demonstration, not a fight over the input. */
+  const userTookOverRef = useRef(false);
   const [inView, setInView] = useState(true);
   const [gateOpen, setGateOpen] = useState(false);
   /* Live guest Sonar. null until the first real ping answers; after that the
@@ -208,6 +213,13 @@ export function SonarSection() {
      juggling classes. 0 means untouched, so the first paint and the 15s
      master loop are exactly as before. */
   const [pingPulse, setPingPulse] = useState(0);
+  /* The ping field is controlled now, because the demo types into the REAL
+     input rather than an overlay: a visitor watching sees the field fill. */
+  const [queryValue, setQueryValue] = useState('');
+  /* The demo pointer's target, measured off the Ping button each run so it
+     lands on the button at any width instead of a hardcoded offset. */
+  const [demoCursor, setDemoCursor] = useState(null);
+  const [btnPressed, setBtnPressed] = useState(false);
   /* True from the first real ping of the visit onward, never reset. It is what
      freezes the demo choreography and takes the panel out of its pristine
      state: mid-request and after a failure alike, the demo copy is gone. */
@@ -220,8 +232,15 @@ export function SonarSection() {
      not pulled to the exit while the answer is still arriving. Withholding it
      is also the one thing that can trap someone, which is why every path that
      ends the choreography, including failure and a hard deadline, sets it. */
-  const [arrowReady, setArrowReady] = useState(false);
+  /* The arrow is derived, never set imperatively. Every path that can end
+     the choreography feeds one of these three, so "demo broke, no way down"
+     is not a reachable state: stage 2 settling is the happy path, pingError
+     covers a user ping, demoFailed covers the demo, and the deadline below
+     covers anything that hangs without reporting either. */
   const [stage2, setStage2] = useState(false);
+  const [stage2Settled, setStage2Settled] = useState(false);
+  const [demoFailed, setDemoFailed] = useState(false);
+  const [deadlinePassed, setDeadlinePassed] = useState(false);
   /* Characters of the answer revealed so far; -1 means "no typewriter, show
      all of it" (reduced motion, or a result restored after one ran). */
   const [typed, setTyped] = useState(-1);
@@ -566,14 +585,17 @@ export function SonarSection() {
     const id = setInterval(() => {
       setTyped((n) => {
         if (n < 0) return n;
-        const next = n + 7;
+        const next = n + 12;
         if (next >= total) {
           clearInterval(id);
           return -1;
         }
         return next;
       });
-    }, 28);
+      /* Roughly 750 chars a second, so three paragraphs land in about two
+         seconds. The query types slowly because watching it fill is the
+         point; the answer types fast because waiting for it is not. */
+    }, 16);
     return () => clearInterval(id);
   }, []);
 
@@ -593,56 +615,106 @@ export function SonarSection() {
     let alive = true;
     let stopType = () => {};
 
-    /* snrQuery types the demo query between 4% and 16% of the 15s master
-       cycle, so 2.4s is where the type-out lands. The loop is free-running,
-       so this is the duration of the type-out rather than a sync to it. */
-    const TYPE_OUT_MS = 2400;
+    const DEMO_QUERY = 'Lockheed Martin';
+    const CHAR_MS = 70;
+    const POINTER_MS = 620;
+    const PRESS_MS = 150;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const timers = [];
+    const wait = (ms) =>
+      new Promise((resolve) => {
+        timers.push(setTimeout(resolve, reduce ? 0 : ms));
+      });
 
-    const timer = setTimeout(async () => {
-      if (!alive) return;
-      hasPingedRef.current = true;
-      setHasPinged(true);
-      setLastQuery('Lockheed Martin');
-      setPinging(true);
-      try {
-        /* The version is the cache-buster. /api/landing/demo-ping caches for
+    /* Beat 1: the query types into the real field, one character at a time. */
+    const typeQuery = async () => {
+      if (reduce) {
+        setQueryValue(DEMO_QUERY);
+        return;
+      }
+      for (let i = 1; i <= DEMO_QUERY.length; i += 1) {
+        if (!alive || userTookOverRef.current) return;
+        setQueryValue(DEMO_QUERY.slice(0, i));
+        await wait(CHAR_MS);
+      }
+    };
+
+    /* Beat 2: the pointer travels to the Ping button and presses it. The
+       target is measured off the button relative to the form, which is the
+       cursor's positioning context, so it lands on the button at any width
+       rather than at a hardcoded offset. */
+    const movePointer = async () => {
+      const btn = pingBtnRef.current;
+      const form = formRef.current;
+      if (!btn || !form) return;
+      const b = btn.getBoundingClientRect();
+      const f = form.getBoundingClientRect();
+      setDemoCursor({
+        x: b.left - f.left + b.width * 0.45,
+        y: b.top - f.top + b.height * 0.4,
+      });
+      await wait(POINTER_MS);
+      if (!alive || userTookOverRef.current) return;
+      setBtnPressed(true);
+      timers.push(setTimeout(() => setBtnPressed(false), PRESS_MS));
+    };
+
+    const timer = setTimeout(
+      async () => {
+        if (!alive || userTookOverRef.current) return;
+        await typeQuery();
+        if (!alive || userTookOverRef.current) return;
+        await movePointer();
+        if (!alive || userTookOverRef.current) return;
+
+        hasPingedRef.current = true;
+        setHasPinged(true);
+        setLastQuery(DEMO_QUERY);
+        setPinging(true);
+        try {
+          /* The version is the cache-buster. /api/landing/demo-ping caches for
            a day, so a response produced before a pipeline fix keeps serving
            for up to 24h after the deploy that fixed it. Bumping this asks
            for a different URL, which is a different cache entry. */
-        const res = await fetch('/api/landing/demo-ping?v=2');
-        const data = await res.json().catch(() => null);
-        if (!alive) return;
-        if (res.ok && data?.answer) {
-          setLive({
-            answer: data.answer,
-            sources: data.sources || [],
-            relevance: data.relevance || null,
-            dossier: data.dossier || null,
-            grounded: data.grounded !== false,
-            remaining: null,
-          });
-          /* Same bump the user path makes. Without it the dossier rows keep
+          const res = await fetch('/api/landing/demo-ping?v=2');
+          const data = await res.json().catch(() => null);
+          if (!alive) return;
+          if (res.ok && data?.answer) {
+            setLive({
+              answer: data.answer,
+              sources: data.sources || [],
+              relevance: data.relevance || null,
+              dossier: data.dossier || null,
+              grounded: data.grounded !== false,
+              remaining: null,
+            });
+            /* Same bump the user path makes. Without it the dossier rows keep
              their master-timeline classes, which live mode freezes, and the
              card renders its header over three invisible rows. */
-          setPingPulse((n) => n + 1);
-          stopType = startTypewriter(data.answer);
-        } else {
-          setPingError('The demo could not load. Type a ping to try it yourself.');
-        }
-        demoDoneRef.current = true;
-      } catch {
-        if (alive) {
-          setPingError('The demo could not load. Type a ping to try it yourself.');
+            setPingPulse((n) => n + 1);
+            stopType = startTypewriter(data.answer);
+          } else {
+            setPingError('The demo could not load. Type a ping to try it yourself.');
+            setDemoFailed(true);
+          }
           demoDoneRef.current = true;
+        } catch {
+          if (alive) {
+            setPingError('The demo could not load. Type a ping to try it yourself.');
+            setDemoFailed(true);
+            demoDoneRef.current = true;
+          }
+        } finally {
+          if (alive) setPinging(false);
         }
-      } finally {
-        if (alive) setPinging(false);
-      }
-    }, TYPE_OUT_MS);
+      },
+      reduce ? 0 : 420,
+    );
 
     return () => {
       alive = false;
       clearTimeout(timer);
+      timers.forEach(clearTimeout);
       stopType();
       /* A demo cancelled mid-flight by a release never reported anything, so
          it must not count as having run. Leaving demoStartedRef set meant the
@@ -656,10 +728,10 @@ export function SonarSection() {
      on every lock. It used to live inside the demo effect, where a release
      cleared it and the early return on the next lock never set it again. */
   useEffect(() => {
-    if (!lockedIn || arrowReady) return undefined;
-    const t = setTimeout(() => setArrowReady(true), 14000);
+    if (!lockedIn || deadlinePassed) return undefined;
+    const t = setTimeout(() => setDeadlinePassed(true), 14000);
     return () => clearTimeout(t);
-  }, [lockedIn, arrowReady]);
+  }, [lockedIn, deadlinePassed]);
 
   /* Stage 2 follows the type-out, and the arrow follows stage 2. A ping that
      failed still opens the way down, just without the stage. */
@@ -673,13 +745,11 @@ export function SonarSection() {
        data for them. */
     const staging = Boolean(live.dossier || live.sources?.length);
     setStage2(staging);
-    const t = setTimeout(() => setArrowReady(true), staging ? 500 : 0);
+    /* Stage 2's transitions are 450ms; settle just after so the arrow does
+       not arrive while the composition is still moving. */
+    const t = setTimeout(() => setStage2Settled(true), staging ? 500 : 0);
     return () => clearTimeout(t);
   }, [live, typed]);
-
-  useEffect(() => {
-    if (pingError) setArrowReady(true);
-  }, [pingError]);
 
   /* The arrow: dismiss the lock for the rest of the visit, then hand the
      page back to the visitor at the section below. */
@@ -711,7 +781,7 @@ export function SonarSection() {
      an empty press replays the demo pop, a real query pings for real. */
   async function onPingSubmit(e) {
     e.preventDefault();
-    const q = e.currentTarget.elements?.q?.value?.trim();
+    const q = (queryValue || e.currentTarget.elements?.q?.value || '').trim();
     if (!q) {
       setPingPulse((n) => n + 1);
       return;
@@ -770,6 +840,8 @@ export function SonarSection() {
     }
   }
 
+  const arrowReady = stage2Settled || Boolean(pingError) || demoFailed || deadlinePassed;
+
   return (
     <section
       ref={bandRef}
@@ -798,6 +870,7 @@ export function SonarSection() {
         <div className="snr-cols">
           <div className="snr-col-left">
             <form
+              ref={formRef}
               className="snr-pingbar"
               action="/sonar"
               method="get"
@@ -816,14 +889,32 @@ export function SonarSection() {
                 name="q"
                 placeholder=" "
                 autoComplete="off"
+                value={queryValue}
+                onChange={(e) => {
+                  userTookOverRef.current = true;
+                  setDemoCursor(null);
+                  setQueryValue(e.target.value);
+                }}
+                onFocus={() => {
+                  userTookOverRef.current = true;
+                  setDemoCursor(null);
+                }}
               />
-              {/* Decorative demo: the typed query, its caret and the pointer.
-                  Clears the moment the real field is focused or typed into. */}
-              <span className="snr-demo" aria-hidden="true">
-                <span className="snr-query snr-anim-query">Lockheed Martin</span>
-                <span className="snr-caret snr-anim-caret" />
-              </span>
-              <button type="submit" className="snr-ping-btn snr-anim-press" disabled={pinging}>
+              {/* Decorative demo narration for the pristine loop only. Once
+                  the real field has content, whether the demo typed it or the
+                  visitor did, the overlay would double it. */}
+              {queryValue ? null : (
+                <span className="snr-demo" aria-hidden="true">
+                  <span className="snr-query snr-anim-query">Lockheed Martin</span>
+                  <span className="snr-caret snr-anim-caret" />
+                </span>
+              )}
+              <button
+                ref={pingBtnRef}
+                type="submit"
+                className={`snr-ping-btn snr-anim-press${btnPressed ? ' snr-ping-btn--pressed' : ''}`}
+                disabled={pinging}
+              >
                 {pinging ? (
                   <>
                     <span className="snr-beacon-sm snr-ping-dot" aria-hidden="true" />
@@ -834,7 +925,12 @@ export function SonarSection() {
                 )}
               </button>
               <svg
-                className="snr-cursor snr-anim-cursor"
+                className={`snr-cursor ${demoCursor ? 'snr-cursor--demo' : 'snr-anim-cursor'}`}
+                style={
+                  demoCursor
+                    ? { transform: `translate(${demoCursor.x}px, ${demoCursor.y}px)` }
+                    : undefined
+                }
                 viewBox="0 0 24 24"
                 fill="#ffffff"
                 stroke="#04261c"
@@ -1067,53 +1163,55 @@ export function SonarSection() {
             live?.dossier?.echo?.length) ? (
             <div className="snr-stack">
               {live.dossier.fundamentals ? (
-                <div className="snr-fund snr-anim-rowpop">
+                <div className="snr-fund snr-fund--wide">
                   <div className="snr-fund-head">
                     <span className="snr-fund-ticker">{live.dossier.ticker}</span>
                     <span className="snr-rule-soft" />
                     <span className="snr-fund-name">{live.dossier.name}</span>
                   </div>
-                  <Sparkline points={live.dossier.spark} />
-                  <div className="snr-fund-grid">
-                    <div className="snr-stat">
-                      <span className="snr-stat-label">P/E TTM</span>
-                      <span className="snr-stat-value">
-                        {typeof live.dossier.fundamentals.peTtm === 'number'
-                          ? live.dossier.fundamentals.peTtm.toFixed(2)
-                          : 'n/a'}
-                      </span>
-                    </div>
-                    <div className="snr-stat">
-                      <span className="snr-stat-label">EV/EBITDA TTM</span>
-                      <span className="snr-stat-value">
-                        {typeof live.dossier.fundamentals.evToEbitdaTtm === 'number'
-                          ? live.dossier.fundamentals.evToEbitdaTtm.toFixed(2)
-                          : 'n/a'}
-                      </span>
-                    </div>
-                    <div className="snr-stat">
-                      <span className="snr-stat-label">Market cap</span>
-                      <span className="snr-stat-value">
-                        {compactUsd(live.dossier.fundamentals.marketCap) || 'n/a'}
-                      </span>
-                    </div>
-                    <div className="snr-stat">
-                      <span className="snr-stat-label">
-                        {live.dossier.fundamentals.fourth?.label || 'Price'}
-                      </span>
-                      <span className="snr-stat-value">
-                        {statValue(live.dossier.fundamentals.fourth) ||
-                          (typeof live.dossier.fundamentals.price === 'number'
-                            ? `$${live.dossier.fundamentals.price.toFixed(2)}`
-                            : 'n/a')}
-                      </span>
+                  <div className="snr-fund-body">
+                    <Sparkline points={live.dossier.spark} />
+                    <div className="snr-fund-grid">
+                      <div className="snr-stat">
+                        <span className="snr-stat-label">P/E TTM</span>
+                        <span className="snr-stat-value">
+                          {typeof live.dossier.fundamentals.peTtm === 'number'
+                            ? live.dossier.fundamentals.peTtm.toFixed(2)
+                            : 'n/a'}
+                        </span>
+                      </div>
+                      <div className="snr-stat">
+                        <span className="snr-stat-label">EV/EBITDA TTM</span>
+                        <span className="snr-stat-value">
+                          {typeof live.dossier.fundamentals.evToEbitdaTtm === 'number'
+                            ? live.dossier.fundamentals.evToEbitdaTtm.toFixed(2)
+                            : 'n/a'}
+                        </span>
+                      </div>
+                      <div className="snr-stat">
+                        <span className="snr-stat-label">Market cap</span>
+                        <span className="snr-stat-value">
+                          {compactUsd(live.dossier.fundamentals.marketCap) || 'n/a'}
+                        </span>
+                      </div>
+                      <div className="snr-stat">
+                        <span className="snr-stat-label">
+                          {live.dossier.fundamentals.fourth?.label || 'Price'}
+                        </span>
+                        <span className="snr-stat-value">
+                          {statValue(live.dossier.fundamentals.fourth) ||
+                            (typeof live.dossier.fundamentals.price === 'number'
+                              ? `$${live.dossier.fundamentals.price.toFixed(2)}`
+                              : 'n/a')}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
               ) : null}
 
               {live.dossier.news.length || live.dossier.echo.length ? (
-                <div className="snr-news snr-anim-rowpop" style={{ animationDelay: '0.1s' }}>
+                <div className="snr-news">
                   {live.dossier.news.map((n) => (
                     <a
                       key={n.url}
