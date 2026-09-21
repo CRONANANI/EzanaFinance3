@@ -218,7 +218,6 @@ export function SonarSection() {
   useEffect(() => {
     const band = bandRef.current;
     if (!band) return undefined;
-    const mql = window.matchMedia('(min-width: 1024px)');
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     const bandTop = () => band.getBoundingClientRect().top + window.scrollY;
@@ -231,6 +230,11 @@ export function SonarSection() {
       setLockedIn(on);
       document.body.classList.toggle('snr-takeover', on);
       document.documentElement.classList.toggle('snr-takeover', on);
+      /* The band's own class: while locked it becomes a scroll container
+         capped at the viewport, which is what lets a band taller than the
+         screen still be read without unlocking the page behind it. */
+      band.classList.toggle('snr-locked', on);
+      if (!on) band.scrollTop = 0;
     };
 
     const endSettle = () => {
@@ -246,28 +250,8 @@ export function SonarSection() {
       setLock(false);
     };
 
-    /* The cookie banner is fixed to the bottom of the viewport above every
-       z-index in the band, and its children take clicks, so while it is up
-       the continue arrow cannot be pressed. Locking then would be a genuine
-       trap: no way down and a consent dialog in the way. It sets
-       --cookie-banner-height on <html> while open and removes it on close,
-       so that is the signal. The lock simply waits its turn. */
-    const overlayBlocking = () =>
-      Boolean(document.documentElement.style.getPropertyValue('--cookie-banner-height'));
-
-    /* The arrow rests ARROW_BOTTOM_PX above the band's lower edge (see
-       .snr-continue). If the composed band is taller than the viewport by
-       more than that, the only way down would sit below the fold, and a lock
-       whose exit is off screen is just a trap. So the lock stands down and
-       the band scrolls like any other section. That is what happens on a
-       1366x768 laptop, where the three columns plus padding come to about
-       889px: the takeover is a big-screen treatment, not a promise. */
-    const ARROW_BOTTOM_PX = 26;
-    const arrowReachable = () => band.offsetHeight - ARROW_BOTTOM_PX <= window.innerHeight;
-
     const engage = () => {
-      if (lockedRef.current || dismissedRef.current || !mql.matches) return;
-      if (overlayBlocking() || !arrowReachable()) return;
+      if (lockedRef.current || dismissedRef.current) return;
       setLock(true);
       settlingRef.current = true;
       /* A smooth scroll that gets interrupted never reaches its target, and
@@ -297,10 +281,26 @@ export function SonarSection() {
       if (goingDown && band.getBoundingClientRect().top <= window.innerHeight * 0.33) engage();
     };
 
+    /* While locked the wheel drives the BAND, never the page. Leaving the
+       default action to the browser made the band scroll only when the
+       pointer happened to be over it, and scroll the page underneath (then
+       get yanked back by the clamp) when it was not. Taking the delta and
+       applying it ourselves makes it deterministic and jitter-free. */
     const onWheel = (e) => {
       if (!lockedRef.current || settlingRef.current) return;
-      if (e.deltaY > 0) e.preventDefault();
-      else if (e.deltaY < -8) release();
+      const max = band.scrollHeight - band.clientHeight;
+      if (e.deltaY > 0) {
+        e.preventDefault();
+        if (max > 0) band.scrollTop = Math.min(max, band.scrollTop + e.deltaY);
+      } else if (e.deltaY < 0) {
+        if (band.scrollTop > 0) {
+          e.preventDefault();
+          band.scrollTop = Math.max(0, band.scrollTop + e.deltaY);
+        } else if (e.deltaY < -8) {
+          /* At the band's own top, upward intent is a request to leave. */
+          release();
+        }
+      }
     };
 
     let touchY = null;
@@ -310,8 +310,19 @@ export function SonarSection() {
     const onTouchMove = (e) => {
       if (!lockedRef.current || settlingRef.current || touchY === null) return;
       const dy = (e.touches?.[0]?.clientY ?? touchY) - touchY;
-      if (dy < 0) e.preventDefault(); /* finger up means scroll down: blocked */
-      else if (dy > 24) release(); /* finger down means scroll up: let them out */
+      const insideBand = band.contains(e.target);
+      /* The band scrolls internally while locked. A downward swipe inside it
+         belongs to the band until the band has nothing left to show; only
+         then does blocking the page mean anything. Outside the band, or at
+         its bottom, the block is the lock. */
+      const atBottom = band.scrollTop + band.clientHeight >= band.scrollHeight - 2;
+      if (dy < 0) {
+        if (!insideBand || atBottom) e.preventDefault();
+      } else if (dy > 24) {
+        /* Upward swipe releases only from the band's own top, so a visitor
+           reading the middle of a tall band is not thrown out of it. */
+        if (!insideBand || band.scrollTop <= 2) release();
+      }
     };
 
     const DOWN_KEYS = new Set(['ArrowDown', 'PageDown', 'End', ' ']);
@@ -322,8 +333,20 @@ export function SonarSection() {
       const typing =
         t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
       if (typing) return; /* the ping bar stays typeable, space included */
-      if (DOWN_KEYS.has(e.key)) e.preventDefault();
-      else if (UP_KEYS.has(e.key)) release();
+      const max = band.scrollHeight - band.clientHeight;
+      const step = e.key === 'PageDown' || e.key === 'PageUp' ? band.clientHeight * 0.9 : 120;
+      if (DOWN_KEYS.has(e.key)) {
+        e.preventDefault();
+        if (max > 0)
+          band.scrollTop = Math.min(max, band.scrollTop + (e.key === 'End' ? max : step));
+      } else if (UP_KEYS.has(e.key)) {
+        if (band.scrollTop > 0) {
+          e.preventDefault();
+          band.scrollTop = e.key === 'Home' ? 0 : Math.max(0, band.scrollTop - step);
+        } else {
+          release();
+        }
+      }
     };
 
     /* An in-page anchor would fight the clamp and lose, stranding the
@@ -333,20 +356,12 @@ export function SonarSection() {
       release();
     };
 
-    const onMedia = () => {
-      if (!mql.matches) {
-        dismissedRef.current = false;
-        release();
-      }
-    };
-
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('touchstart', onTouchStart, { passive: true });
     window.addEventListener('touchmove', onTouchMove, { passive: false });
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('hashchange', onHashChange);
-    mql.addEventListener('change', onMedia);
 
     return () => {
       if (settleTimer) clearTimeout(settleTimer);
@@ -356,9 +371,9 @@ export function SonarSection() {
       window.removeEventListener('touchmove', onTouchMove);
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('hashchange', onHashChange);
-      mql.removeEventListener('change', onMedia);
       document.body.classList.remove('snr-takeover');
       document.documentElement.classList.remove('snr-takeover');
+      band.classList.remove('snr-locked');
     };
   }, []);
 
@@ -372,6 +387,7 @@ export function SonarSection() {
     document.body.classList.remove('snr-takeover');
     document.documentElement.classList.remove('snr-takeover');
     const band = bandRef.current;
+    if (band) band.classList.remove('snr-locked');
     if (band) {
       const nextTop = band.getBoundingClientRect().bottom + window.scrollY;
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

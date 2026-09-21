@@ -1925,6 +1925,100 @@ html.snr-takeover body.snr-takeover .navbar .nav-link:focus-visible {
   color: var(--snr-mint) !important;
 }
 
+/* The Echo wordmark's accent measured 4.11 against the band, just under AA.
+   Mint puts it near 10 and keeps it reading as an accent. */
+html.snr-takeover body.snr-takeover .navbar .nav-echo-wordmark {
+  color: rgba(255, 255, 255, 0.86) !important;
+}
+
+html.snr-takeover body.snr-takeover .navbar .nav-echo-wordmark span,
+html.snr-takeover body.snr-takeover .navbar .nav-echo-title {
+  color: var(--snr-mint) !important;
+}
+
+/* The pill row. It renders only for a signed-in visitor (Navbar passes
+   userNavItems to AnimatedNav behind the auth branch), who can still land on
+   the marketing page, so it needs the treatment even though a signed-out
+   walk of the header never shows it. The pills carry their own backgrounds,
+   which is why transparent has to be stated rather than inherited. */
+html.snr-takeover body.snr-takeover .animated-nav .animated-nav-link {
+  color: rgba(255, 255, 255, 0.86) !important;
+  background: transparent !important;
+}
+
+html.snr-takeover body.snr-takeover .animated-nav .animated-nav-link:hover,
+html.snr-takeover body.snr-takeover .animated-nav .animated-nav-link.hovered,
+html.snr-takeover body.snr-takeover .animated-nav .animated-nav-link.active {
+  color: var(--snr-mint) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.snr-takeover body.snr-takeover .animated-nav .animated-nav-underline {
+  background: var(--snr-mint) !important;
+}
+
+/* Mobile chrome. The hamburger measured 2.16 and the drawer panel is a solid
+   white sheet over the band, so both are restated here rather than left to
+   the light theme. The drawer is the one surface allowed its own ground: it
+   is a panel, not part of the bar, so it takes the takeover colour and its
+   ink goes white with it. */
+html.snr-takeover body.snr-takeover .navbar .mobile-hamburger {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+}
+
+html.snr-takeover body.snr-takeover .navbar .mobile-hamburger,
+html.snr-takeover body.snr-takeover .navbar .mobile-hamburger i {
+  color: #ffffff !important;
+}
+
+html.snr-takeover body.snr-takeover .mobile-nav-menu {
+  background: var(--snr-takeover-bg) !important;
+  border-left-color: var(--snr-hair) !important;
+}
+
+html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-link,
+html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-link span,
+html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-group-trigger,
+html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-auth-btn,
+html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-auth-btn span {
+  color: rgba(255, 255, 255, 0.86) !important;
+}
+
+html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-partner,
+html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-partner span,
+html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-brand {
+  color: var(--snr-mint) !important;
+}
+
+html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-partner {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
+  background: var(--snr-hair) !important;
+}
+
+/* Locked: the band becomes its own scroll container, capped at the viewport.
+   This is what lets the lock apply at every width. A band taller than the
+   screen (a phone, a 1366x768 laptop, or the stage 2 layout) is read by
+   scrolling inside it, and the page behind stays put. overflow-x stays hidden
+   so the dossier poke is still sliced at the page edge. */
+.snr-band.snr-locked {
+  max-height: 100svh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* The arrow leaves the band's flow while locked and pins to the viewport, so
+   the one way down is on screen no matter how far into a tall band the
+   visitor has scrolled. Paired with the cookie-banner offset below, that is
+   what replaced the two stand-down guards this lock used to need. */
+.snr-band.snr-locked .snr-continue {
+  position: fixed;
+}
+
 /* Continue arrow: the one way down while locked. White on the band, round
    hit target, gentle bounce. The snr-anim- prefix keeps it inside the pause
    and reduced-motion rules; translateX(-50%) is the resting frame, so a
@@ -1934,10 +2028,8 @@ html.snr-takeover body.snr-takeover .navbar .nav-link:focus-visible {
   left: 50%;
   /* The cookie banner is fixed to the bottom of the viewport at z-index 9000
      and its children capture clicks, so at a flat 26px it sits on top of the
-     one control that can end the lock. The lock refuses to engage while the
-     banner is up (see SonarSection), and this clears the arrow if the banner
-     ever appears mid-lock. --cookie-banner-height is the banner's own
-     contract, removed when it closes. */
+     one control that can end the lock. --cookie-banner-height is the
+     banner's own contract, removed when it closes. */
   bottom: calc(26px + var(--cookie-banner-height, 0px));
   transform: translateX(-50%);
   z-index: 4;
