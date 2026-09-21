@@ -2,25 +2,16 @@ import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { withApiGuard, safeErrorResponse } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
-import { getSonarEntitlements, SONAR_DATASETS } from '@/lib/sonar/entitlements';
-import {
-  corporaForDatasets,
-  depthBudget,
-  classifyQuery,
-  CORPUS_TO_DATASET,
-} from '@/lib/sonar/retrieval';
-import { orchestrate } from '@/lib/research-copilot/orchestrate';
-import { synthesizeWithFallback } from '@/lib/sonar/llm-providers';
+import { runLandingPipeline, hashIp, DISCLAIMER } from '@/lib/sonar/landing-pipeline';
 
 /**
  * POST /api/sonar/landing-query. The landing page's guest Sonar.
  *
  * Anonymous visitors get GUEST_LIMIT real pings per browser session per
- * device, then the client shows the auth gate. Each ping is the free-tier
- * pipeline: free entitlements from the same matrix as the app, retrieval over
- * the entitled corpora only, Haiku-only synthesis with a small token budget
- * and no web tool. Spend rides the existing ANTHROPIC_API_KEY and counts
- * against SONAR_GLOBAL_DAILY_CAP via the shared sonar_queries ledger.
+ * device. The pipeline itself lives in @/lib/sonar/landing-pipeline, shared
+ * with the cached demo route so the two cannot drift; this route owns only
+ * the things a guest ping needs and the demo does not: quota, the signed
+ * cookie, and the ledger row.
  *
  * Four independent guards, all server-side, because this is an unauthenticated
  * endpoint that spends money:
@@ -31,6 +22,11 @@ import { synthesizeWithFallback } from '@/lib/sonar/llm-providers';
  *      authenticated route.
  * The quota check runs BEFORE any retrieval or model call, so an exhausted
  * visitor costs nothing.
+ *
+ * Quota accounting: a ping is only spent when the visitor actually got an
+ * answer. A failed synthesis or a dead upstream returns the count untouched
+ * and leaves the cookie alone, so nobody burns their five on our outage. A
+ * general-knowledge answer still counts, because a real synthesis was paid for.
  */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -38,25 +34,6 @@ export const maxDuration = 30;
 
 const GUEST_LIMIT = 5;
 const COOKIE = 'snr_guest';
-
-/* Same constant the synthesis chain uses as its safe fallback
-   (src/lib/sonar/llm-providers.js). Guests are pinned to it: cheapest model,
-   small budget, no web tool. */
-const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
-
-const DISCLAIMER =
-  'Sonar synthesizes sourced research from Ezana datasets. Findings only, never financial advice.';
-
-/* Same voice as the app's SYSTEM_PROMPT, constrained for the landing panel.
-   Deliberately NOT buildUserPrompt from the authenticated route: that prompt
-   instructs the model to use live web search, which a guest ping does not
-   have, so sharing it would ask for citations it cannot produce. */
-const GUEST_SYSTEM_PROMPT = `You are Ezana Sonar, a research/intelligence surface, answering a guest ping on the public landing page. You are given sourced snippets from Ezana's datasets (Echo editorial, congressional trades, government contracts, prediction markets). Rules:
-- Ground every claim in a provided source and cite its marker inline, e.g. [S1].
-- If the sources do not cover the subject, say so plainly. Never fabricate.
-- Findings only. No financial or investment advice, price targets, or buy/sell/hold calls.
-- Respond as EXACTLY three short paragraphs separated by blank lines: (1) one-sentence headline read plus what the subject is, (2) what the dataset signals show, (3) cross-signals or gaps worth watching. No headers, no lists.
-- Plain language, no hype, no em dashes. If the ping is not a finance-adjacent entity, answer briefly and suggest a better ping.`;
 
 function guestSecret() {
   return process.env.SONAR_GUEST_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -139,97 +116,59 @@ export const POST = withApiGuard(
       );
     }
 
-    // Free-tier entitlements from the same matrix as the app: honest scoping,
-    // one source of truth for what a guest can see.
-    const entitlements = getSonarEntitlements({ planTier: 0, version: 'regular' });
-    // classifyQuery returns a plain string, not an object.
-    const classification = classifyQuery(query);
-    const allowCorpora = corporaForDatasets(entitlements.datasets);
-    const budget = depthBudget('summary');
-
-    let items = [];
-    let corporaSearched = [];
-    let corporaUsed = [];
+    let result;
     try {
-      /* orchestrate defaults supabaseUser and member to null, and its org-member
-         gate excludes org corpora when they are absent, so a guest call needs
-         neither. */
-      const out = await orchestrate(query, {
-        admin,
-        allowCorpora,
-        topK: budget.topK,
-        perCorpusCap: budget.perCorpusCap,
-        charBudget: budget.charBudget,
-      });
-      items = out.items || [];
-      corporaSearched = out.corporaSearched || [];
-      corporaUsed = out.corporaUsed || [];
+      result = await runLandingPipeline(query, { admin });
     } catch (e) {
       return safeErrorResponse(e);
     }
 
     console.log('[sonar/landing]', {
       query,
-      items: items.length,
-      corporaSearched,
-      corporaUsed,
+      resolved: result.resolved?.ticker || null,
+      items: result.itemCount,
+      grounded: result.grounded,
+      corporaUsed: result.corporaUsed,
     });
 
-    const marked = items.map((it, i) => ({ ...it, marker: `S${i + 1}` }));
-
-    let answer = null;
-    let providerErrors = [];
-    if (marked.length) {
-      const sourcesBlock = marked
-        .map((it) => `[${it.marker}] (${it.corpus}) ${String(it.text || '').slice(0, 500)}`)
-        .join('\n');
-      const out = await synthesizeWithFallback({
-        system: GUEST_SYSTEM_PROMPT,
-        user: `Ping: ${query}\n\nSources:\n${sourcesBlock}`,
-        maxTokens: 420,
-        model: HAIKU_MODEL,
-        fallbackModel: HAIKU_MODEL,
-        webSearch: false,
-      });
-      answer = out.answer || null;
-      providerErrors = out.providerErrors || [];
+    /* No answer at all means both the grounded and the general synthesis
+       failed, which is our problem and not the visitor's. Nothing is spent. */
+    if (!result.answer) {
+      return NextResponse.json(
+        {
+          answer: null,
+          grounded: false,
+          sources: result.sources,
+          remaining: GUEST_LIMIT - used,
+          disclaimer: DISCLAIMER,
+          error: 'That ping did not land. Try again.',
+          ...(process.env.NODE_ENV !== 'production' && result.providerErrors.length
+            ? { debug: result.providerErrors }
+            : {}),
+        },
+        { status: 502 },
+      );
     }
 
-    const usedCorpora = new Set(corporaUsed);
-    const sources = corporaSearched
-      .map((corpus) => {
-        const id = CORPUS_TO_DATASET[corpus];
-        const meta = SONAR_DATASETS[id];
-        return meta ? { id, label: meta.label, used: usedCorpora.has(corpus) } : null;
-      })
-      .filter(Boolean);
-
     /* Ledger row: quota accounting for the global cap plus audit. Salted IP
-       hash only, never a raw IP.
-
-       Non-fatal by design. This row needs
-       supabase/migrations/20260920120000_sonar_guest_queries.sql, which is
-       applied by hand; until then user_id is still NOT NULL and this insert
-       throws. Failing here would waste synthesis we have already paid for and
-       show the visitor an error for a working ping, so the failure is logged
-       and swallowed. The cost is the audit row and this ping's share of the
-       global cap, both of which the per-IP limiter still backstops. */
+       hash only, never a raw IP. Non-fatal by design: failing here would
+       waste synthesis we have already paid for and show the visitor an error
+       for a working ping. */
     const ip =
       request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
       request.headers.get('x-real-ip') ||
       'unknown';
-    const ipHash = crypto.createHash('sha256').update(`snr:${ip}:${guestSecret()}`).digest('hex');
     try {
       const { error: ledgerError } = await admin.from('sonar_queries').insert({
         user_id: null,
         is_guest: true,
-        ip_hash: ipHash,
+        ip_hash: hashIp(ip, guestSecret()),
         query_text: query,
-        classification,
+        classification: result.classification,
         version: 'guest',
         plan_tier: 0,
-        datasets_searched: sources.map((s) => s.id),
-        grounded: Boolean(answer),
+        datasets_searched: result.sources.map((s) => s.id),
+        grounded: result.grounded,
       });
       if (ledgerError) {
         console.error(
@@ -247,17 +186,13 @@ export const POST = withApiGuard(
 
     const nextUsed = used + 1;
     const res = NextResponse.json({
-      answer,
-      grounded: Boolean(answer),
-      sources,
+      answer: result.answer,
+      grounded: result.grounded,
+      sources: result.sources,
+      relevance: result.relevance,
+      dossier: result.dossier,
       remaining: Math.max(0, GUEST_LIMIT - nextUsed),
       disclaimer: DISCLAIMER,
-      /* Never in production: provider errors name the model and status code,
-         which is a debugging aid locally and an information leak on a public
-         unauthenticated endpoint. */
-      ...(process.env.NODE_ENV !== 'production' && providerErrors.length
-        ? { debug: providerErrors }
-        : {}),
     });
     setGuestCount(res, nextUsed);
     return res;

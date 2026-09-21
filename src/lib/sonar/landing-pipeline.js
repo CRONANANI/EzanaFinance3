@@ -1,0 +1,378 @@
+import crypto from 'crypto';
+import { getSonarEntitlements, SONAR_DATASETS } from '@/lib/sonar/entitlements';
+import {
+  corporaForDatasets,
+  depthBudget,
+  classifyQuery,
+  CORPUS_TO_DATASET,
+} from '@/lib/sonar/retrieval';
+import { orchestrate } from '@/lib/research-copilot/orchestrate';
+import { synthesizeWithFallback } from '@/lib/sonar/llm-providers';
+import { getFmpKey } from '@/lib/fmp/upcoming-events';
+
+/**
+ * The landing-page Sonar pipeline, shared by the two routes that run it:
+ * POST /api/sonar/landing-query (a guest ping, with quota, cookie and ledger)
+ * and GET /api/landing/demo-ping (the cached Lockheed Martin demo, with none
+ * of those). Everything a ping produces lives here so the two cannot drift;
+ * the routes own only their own concerns.
+ *
+ * A run produces:
+ *   answer       the synthesized briefing, or null if synthesis failed
+ *   grounded     true when the answer is built from retrieved sources
+ *   sources      the dataset manifest, marked used/searched
+ *   relevance    per-taxonomy-dimension 0..1, what the orbital map orbits on
+ *   dossier      resolved company detail, or null when nothing resolved
+ */
+
+const FMP_STABLE = 'https://financialmodelingprep.com/stable';
+const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
+
+export const DISCLAIMER =
+  'Sonar synthesizes sourced research from Ezana datasets. Findings only, never financial advice.';
+
+const GROUNDED_SYSTEM_PROMPT = `You are Ezana Sonar, a research/intelligence surface, answering a guest ping on the public landing page. You are given sourced snippets from Ezana's datasets (Echo editorial, congressional trades, government contracts, prediction markets). Rules:
+- Ground every claim in a provided source and cite its marker inline, e.g. [S1].
+- If the sources do not cover the subject, say so plainly. Never fabricate.
+- Findings only. No financial or investment advice, price targets, or buy/sell/hold calls.
+- Respond as EXACTLY three short paragraphs separated by blank lines: (1) one-sentence headline read plus what the subject is, (2) what the dataset signals show, (3) cross-signals or gaps worth watching. No headers, no lists.
+- Plain language, no hype, no em dashes. If the ping is not a finance-adjacent entity, answer briefly and suggest a better ping.`;
+
+/* The ungrounded variant. A ping that retrieves nothing used to dead-end on an
+   apology; this answers from general knowledge instead and says so, which is
+   the only honest way to do it. No citation markers, because there are no
+   sources to cite and inventing [S1] would be a lie the UI cannot detect. */
+const GENERAL_SYSTEM_PROMPT = `You are Ezana Sonar, a research/intelligence surface, answering a guest ping on the public landing page. Ezana's datasets returned no match for this subject, so you are answering from general knowledge only. Rules:
+- Say in the first paragraph that Ezana's datasets returned no coverage and that this is general background, not sourced research.
+- Never invent citations, markers, figures, dates, or dataset matches. No [S1] style markers at all.
+- Findings only. No financial or investment advice, price targets, or buy/sell/hold calls.
+- Respond as EXACTLY three short paragraphs separated by blank lines: (1) the no-coverage note plus what the subject is, (2) the general background that is worth knowing, (3) what a visitor could ping instead to get sourced results.
+- Plain language, no hype, no em dashes.`;
+
+/* Dataset to taxonomy dimension. SONAR_DATASETS entries carry {id,label,source}
+   and no dimension, so the mapping is stated here against DATASET_TAXONOMY's
+   own blurbs: Capitol Watch covers "congressional trading, committee power,
+   campaign money, lobbying, and the federal contracts that political influence
+   moves"; Titans Shadow covers "institutional and corporate-insider filings";
+   The Hive covers "prediction-market odds".
+   Echo is deliberately absent. It is Ezana's editorial layer ACROSS the seven
+   dimensions rather than one of them, and assigning it to a dimension would
+   invent a signal the retrieval never produced. */
+const DATASET_DIMENSION = {
+  congress: 'capitol',
+  'gov-contracts': 'capitol',
+  lobbying: 'capitol',
+  '13f': 'titans',
+  'sec-filings': 'titans',
+  'prediction-markets': 'hive',
+};
+
+const ALL_DIMENSIONS = [
+  'capitol',
+  'titans',
+  'eyes',
+  'whispers',
+  'hive',
+  'lighthouse',
+  'regulatory',
+];
+
+/* Floors, so the map never collapses to the hub: a dimension whose datasets
+   were searched and came back empty still sits further out than one that was
+   never entitled to be searched at all. */
+const FLOOR_SEARCHED = 0.15;
+const FLOOR_UNSEARCHED = 0.1;
+const FLOOR_UNGROUNDED = 0.12;
+
+/* Name resolutions are stable for a company's lifetime, so a day is a
+   conservative stamp. Module level, which on a serverless runtime means per
+   warm instance: a cache miss costs one cheap search call, never a wrong
+   answer. */
+const RESOLVE_TTL_MS = 24 * 60 * 60 * 1000;
+const resolveCache = new Map();
+
+function looksLikeTicker(query) {
+  return /\$[A-Za-z]{1,5}\b/.test(query) || /\b[A-Z]{2,5}\b/.test(query);
+}
+
+async function fetchJson(url, ms = 4000) {
+  const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(ms) });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+/**
+ * Bare company names retrieve nothing, because every ticker-keyed retriever
+ * needs a ticker and "lockheed martin" has none. One FMP name search turns it
+ * into "Lockheed Martin (LMT)", which both anchors retrieval and gives the
+ * dossier something to fetch. Fail-soft throughout: any error, and the raw
+ * query proceeds exactly as before.
+ */
+export async function resolveCompany(query) {
+  const q = String(query || '').trim();
+  if (!q || looksLikeTicker(q)) return null;
+  const key = q.toLowerCase();
+  const hit = resolveCache.get(key);
+  if (hit && Date.now() - hit.at < RESOLVE_TTL_MS) return hit.value;
+
+  let value = null;
+  try {
+    const apikey = getFmpKey();
+    if (apikey) {
+      const url = `${FMP_STABLE}/search-name?query=${encodeURIComponent(q)}&limit=1&apikey=${encodeURIComponent(apikey)}`;
+      const rows = await fetchJson(url);
+      const row = Array.isArray(rows) ? rows[0] : null;
+      if (row?.symbol && row?.name)
+        value = { ticker: String(row.symbol).toUpperCase(), name: String(row.name) };
+    }
+  } catch {
+    /* fail-soft: an unreachable or rate-limited FMP must not cost a ping */
+  }
+  resolveCache.set(key, { at: Date.now(), value });
+  return value;
+}
+
+/** Counts per corpus, normalized, floored, keyed by taxonomy dimension. */
+function relevanceFrom(items, corporaSearched) {
+  const byDimension = {};
+  for (const item of items) {
+    const dataset = CORPUS_TO_DATASET[item.corpus];
+    const dim = DATASET_DIMENSION[dataset];
+    if (!dim) continue;
+    byDimension[dim] = (byDimension[dim] || 0) + 1;
+  }
+  const searchedDims = new Set(
+    corporaSearched.map((c) => DATASET_DIMENSION[CORPUS_TO_DATASET[c]]).filter(Boolean),
+  );
+  const max = Math.max(0, ...Object.values(byDimension));
+  const out = {};
+  for (const dim of ALL_DIMENSIONS) {
+    const n = byDimension[dim] || 0;
+    if (max > 0 && n > 0) out[dim] = Math.min(1, n / max);
+    else out[dim] = searchedDims.has(dim) ? FLOOR_SEARCHED : FLOOR_UNSEARCHED;
+  }
+  return out;
+}
+
+function flatRelevance(v) {
+  return Object.fromEntries(ALL_DIMENSIONS.map((d) => [d, v]));
+}
+
+/** The fourth stat, named from whatever the ratios payload actually carries. */
+function fourthStat(ratios) {
+  if (!ratios) return null;
+  const candidates = [
+    ['Dividend yield TTM', ratios.dividendYieldTTM, 'percent'],
+    ['Price / sales TTM', ratios.priceToSalesRatioTTM, 'ratio'],
+    ['Return on equity TTM', ratios.returnOnEquityTTM, 'percent'],
+    ['Current ratio TTM', ratios.currentRatioTTM, 'ratio'],
+  ];
+  for (const [label, value, kind] of candidates) {
+    if (typeof value === 'number' && Number.isFinite(value)) return { label, value, kind };
+  }
+  return null;
+}
+
+/**
+ * Company detail for the dossier stage. Every leg is independent, capped at 4s
+ * and allowed to come back null: a dossier with a chart and no news is worth
+ * more than no dossier because one upstream was slow.
+ */
+export async function buildDossier({ ticker, name }, admin) {
+  const apikey = getFmpKey();
+  const sym = encodeURIComponent(ticker);
+  const finnhubKey = process.env.FINNHUB_API_KEY || '';
+  const today = new Date();
+  const from = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const to = today.toISOString().slice(0, 10);
+
+  const legs = await Promise.allSettled([
+    apikey
+      ? fetchJson(`${FMP_STABLE}/quote?symbol=${sym}&apikey=${encodeURIComponent(apikey)}`)
+      : null,
+    apikey
+      ? fetchJson(`${FMP_STABLE}/ratios-ttm?symbol=${sym}&apikey=${encodeURIComponent(apikey)}`)
+      : null,
+    apikey
+      ? fetchJson(
+          `${FMP_STABLE}/historical-price-eod/light?symbol=${sym}&apikey=${encodeURIComponent(apikey)}`,
+        )
+      : null,
+    /* Same upstream and key the city-news route already uses for per-ticker
+       headlines, called server-side here rather than through the browser
+       proxy that FinnhubAPI targets. */
+    finnhubKey
+      ? fetchJson(
+          `https://finnhub.io/api/v1/company-news?symbol=${sym}&from=${from}&to=${to}&token=${encodeURIComponent(finnhubKey)}`,
+        )
+      : null,
+    admin
+      ? admin
+          .from('echo_articles')
+          .select('article_title, article_slug, published_at')
+          .eq('article_status', 'published')
+          .gte('published_at', new Date(today.getTime() - 42 * 24 * 60 * 60 * 1000).toISOString())
+          .or(
+            `article_title.ilike.%${name.replace(/[,()%*]/g, ' ')}%,article_body.ilike.%${name.replace(/[,()%*]/g, ' ')}%`,
+          )
+          .order('published_at', { ascending: false })
+          .limit(3)
+      : null,
+  ]);
+
+  const val = (i) => (legs[i].status === 'fulfilled' ? legs[i].value : null);
+  const quote = Array.isArray(val(0)) ? val(0)[0] : val(0);
+  const ratios = Array.isArray(val(1)) ? val(1)[0] : val(1);
+  const eod = val(2);
+  const news = val(3);
+  const echoRes = val(4);
+
+  const rows = Array.isArray(eod) ? eod : Array.isArray(eod?.historical) ? eod.historical : [];
+  const spark = rows
+    .slice(0, 60)
+    .map((r) =>
+      typeof r?.price === 'number' ? r.price : typeof r?.close === 'number' ? r.close : null,
+    )
+    .filter((n) => typeof n === 'number')
+    .reverse();
+
+  const fundamentals =
+    quote && typeof quote.price === 'number'
+      ? {
+          price: quote.price,
+          marketCap: typeof quote.marketCap === 'number' ? quote.marketCap : null,
+          peTtm:
+            typeof ratios?.priceToEarningsRatioTTM === 'number'
+              ? ratios.priceToEarningsRatioTTM
+              : typeof quote.pe === 'number'
+                ? quote.pe
+                : null,
+          evToEbitdaTtm:
+            typeof ratios?.enterpriseValueMultipleTTM === 'number'
+              ? ratios.enterpriseValueMultipleTTM
+              : typeof ratios?.evToEBITDATTM === 'number'
+                ? ratios.evToEBITDATTM
+                : null,
+          fourth: fourthStat(ratios),
+        }
+      : null;
+
+  return {
+    ticker,
+    name,
+    fundamentals,
+    spark: spark.length >= 2 ? spark : null,
+    news: (Array.isArray(news) ? news : [])
+      .filter((n) => n?.headline && n?.url)
+      .slice(0, 2)
+      .map((n) => ({
+        title: String(n.headline),
+        url: String(n.url),
+        source: String(n.source || 'News'),
+        publishedAt: n.datetime ? new Date(n.datetime * 1000).toISOString() : null,
+      })),
+    echo: (Array.isArray(echoRes?.data) ? echoRes.data : [])
+      .filter((r) => r?.article_title && r?.article_slug)
+      .map((r) => ({
+        title: String(r.article_title),
+        slug: String(r.article_slug),
+        publishedAt: r.published_at || null,
+      })),
+  };
+}
+
+/**
+ * One ping, end to end. `admin` is the service-role client; the caller owns it
+ * so the demo route and the guest route share one connection policy.
+ */
+export async function runLandingPipeline(query, { admin, wantDossier = true } = {}) {
+  const resolved = await resolveCompany(query);
+  /* Retrieval sees the enriched string; the ledger and the UI keep the words
+     the visitor actually typed. */
+  const retrievalQuery = resolved ? `${resolved.name} (${resolved.ticker})` : query;
+
+  const entitlements = getSonarEntitlements({ planTier: 0, version: 'regular' });
+  const classification = classifyQuery(retrievalQuery);
+  const allowCorpora = corporaForDatasets(entitlements.datasets);
+  const budget = depthBudget('summary');
+
+  const out = await orchestrate(retrievalQuery, {
+    admin,
+    allowCorpora,
+    topK: budget.topK,
+    perCorpusCap: budget.perCorpusCap,
+    charBudget: budget.charBudget,
+  });
+  const items = out.items || [];
+  const corporaSearched = out.corporaSearched || [];
+  const corporaUsed = out.corporaUsed || [];
+
+  let answer = null;
+  let grounded = false;
+  let providerErrors = [];
+
+  if (items.length) {
+    const marked = items.map((it, i) => ({ ...it, marker: `S${i + 1}` }));
+    const sourcesBlock = marked
+      .map(
+        (it) =>
+          `[${it.marker}] (${it.corpus}) ${String(it.text || it.snippet || '').slice(0, 500)}`,
+      )
+      .join('\n');
+    const synth = await synthesizeWithFallback({
+      system: GROUNDED_SYSTEM_PROMPT,
+      user: `Ping: ${query}\n\nSources:\n${sourcesBlock}`,
+      maxTokens: 420,
+      model: HAIKU_MODEL,
+      fallbackModel: HAIKU_MODEL,
+      webSearch: false,
+    });
+    answer = synth.answer || null;
+    grounded = Boolean(answer);
+    providerErrors = synth.providerErrors || [];
+  }
+
+  if (!answer) {
+    const synth = await synthesizeWithFallback({
+      system: GENERAL_SYSTEM_PROMPT,
+      user: `Ping: ${query}${resolved ? ` (resolved to ${resolved.name}, ${resolved.ticker})` : ''}`,
+      maxTokens: 420,
+      model: HAIKU_MODEL,
+      fallbackModel: HAIKU_MODEL,
+      webSearch: false,
+    });
+    answer = synth.answer || null;
+    grounded = false;
+    providerErrors = [...providerErrors, ...(synth.providerErrors || [])];
+  }
+
+  const usedCorpora = new Set(corporaUsed);
+  const sources = corporaSearched
+    .map((corpus) => {
+      const id = CORPUS_TO_DATASET[corpus];
+      const meta = SONAR_DATASETS[id];
+      return meta ? { id, label: meta.label, used: usedCorpora.has(corpus) } : null;
+    })
+    .filter(Boolean);
+
+  const dossier = wantDossier && resolved ? await buildDossier(resolved, admin) : null;
+
+  return {
+    answer,
+    grounded,
+    sources,
+    relevance: grounded ? relevanceFrom(items, corporaSearched) : flatRelevance(FLOOR_UNGROUNDED),
+    dossier,
+    classification,
+    resolved,
+    itemCount: items.length,
+    corporaSearched,
+    corporaUsed,
+    providerErrors,
+  };
+}
+
+/** Salted hash, so the ledger can rate-account an IP without storing one. */
+export function hashIp(ip, salt) {
+  return crypto.createHash('sha256').update(`snr:${ip}:${salt}`).digest('hex');
+}
