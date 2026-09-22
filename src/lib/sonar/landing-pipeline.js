@@ -281,6 +281,11 @@ export async function buildDossier({ ticker, name }, admin) {
   const from = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const to = today.toISOString().slice(0, 10);
 
+  /* Year to date, not a rolling 60 rows: the chart is labelled YTD, so the
+     window has to be the actual year rather than whatever 60 trading days
+     happens to cover. */
+  const ytdFrom = `${today.getUTCFullYear()}-01-01`;
+
   const legs = await Promise.allSettled([
     apikey
       ? fetchJson(`${FMP_STABLE}/quote?symbol=${sym}&apikey=${encodeURIComponent(apikey)}`)
@@ -290,7 +295,7 @@ export async function buildDossier({ ticker, name }, admin) {
       : null,
     apikey
       ? fetchJson(
-          `${FMP_STABLE}/historical-price-eod/light?symbol=${sym}&apikey=${encodeURIComponent(apikey)}`,
+          `${FMP_STABLE}/historical-price-eod/light?symbol=${sym}&from=${ytdFrom}&to=${to}&apikey=${encodeURIComponent(apikey)}`,
         )
       : null,
     /* Same upstream and key the city-news route already uses for per-ticker
@@ -323,8 +328,9 @@ export async function buildDossier({ ticker, name }, admin) {
   const echoRes = val(4);
 
   const rows = Array.isArray(eod) ? eod : Array.isArray(eod?.historical) ? eod.historical : [];
+  /* FMP returns newest first; the chart reads left to right in time. No
+     slice: the whole year is the series. */
   const spark = rows
-    .slice(0, 60)
     .map((r) =>
       typeof r?.price === 'number' ? r.price : typeof r?.close === 'number' ? r.close : null,
     )
@@ -357,6 +363,7 @@ export async function buildDossier({ ticker, name }, admin) {
     name,
     fundamentals,
     spark: spark.length >= 2 ? spark : null,
+    sparkLabel: 'YTD',
     news: (Array.isArray(news) ? news : [])
       .filter((n) => n?.headline && n?.url)
       .slice(0, 2)
@@ -381,7 +388,36 @@ export async function buildDossier({ ticker, name }, admin) {
  * so the demo route and the guest route share one connection policy.
  */
 export async function runLandingPipeline(query, { admin, wantDossier = true } = {}) {
-  const resolved = await resolveCompany(query);
+  /* A run that ends without an answer has to say WHERE it broke, or the only
+     signal in the logs is that it broke. Each leg records its name, outcome
+     and duration; nothing from an error message goes in, so the leg names are
+     safe to hand back to a client as `failedAt`. */
+  const trace = [];
+  const leg = async (name, fn, note, okOf) => {
+    const t0 = Date.now();
+    try {
+      const value = await fn();
+      /* Not throwing is not the same as working. Synthesis returns a shape
+         with a null answer when the provider rejects it, which is precisely
+         the failure worth naming, so a leg can declare its own success. */
+      trace.push({
+        leg: name,
+        ok: okOf ? Boolean(okOf(value)) : true,
+        ms: Date.now() - t0,
+        note: note ? note(value) : undefined,
+      });
+      return value;
+    } catch (e) {
+      trace.push({ leg: name, ok: false, ms: Date.now() - t0, note: e?.name || 'threw' });
+      throw e;
+    }
+  };
+
+  const resolved = await leg(
+    'resolve',
+    () => resolveCompany(query),
+    (v) => (v ? v.ticker : 'none'),
+  );
   /* Retrieval sees the enriched string; the ledger and the UI keep the words
      the visitor actually typed. */
   const retrievalQuery = resolved ? `${resolved.name} (${resolved.ticker})` : query;
@@ -391,13 +427,18 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
   const allowCorpora = corporaForDatasets(entitlements.datasets);
   const budget = depthBudget('summary');
 
-  const out = await orchestrate(retrievalQuery, {
-    admin,
-    allowCorpora,
-    topK: budget.topK,
-    perCorpusCap: budget.perCorpusCap,
-    charBudget: budget.charBudget,
-  });
+  const out = await leg(
+    'retrieve',
+    () =>
+      orchestrate(retrievalQuery, {
+        admin,
+        allowCorpora,
+        topK: budget.topK,
+        perCorpusCap: budget.perCorpusCap,
+        charBudget: budget.charBudget,
+      }),
+    (v) => `${(v.items || []).length} items`,
+  );
   const items = out.items || [];
   const corporaSearched = out.corporaSearched || [];
   const corporaUsed = out.corporaUsed || [];
@@ -414,28 +455,40 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
           `[${it.marker}] (${it.corpus}) ${String(it.text || it.snippet || '').slice(0, 500)}`,
       )
       .join('\n');
-    const synth = await synthesizeWithFallback({
-      system: GROUNDED_SYSTEM_PROMPT,
-      user: `Ping: ${query}\n\nSources:\n${sourcesBlock}`,
-      maxTokens: 420,
-      model: HAIKU_MODEL,
-      fallbackModel: HAIKU_MODEL,
-      webSearch: false,
-    });
+    const synth = await leg(
+      'synthesize',
+      () =>
+        synthesizeWithFallback({
+          system: GROUNDED_SYSTEM_PROMPT,
+          user: `Ping: ${query}\n\nSources:\n${sourcesBlock}`,
+          maxTokens: 420,
+          model: HAIKU_MODEL,
+          fallbackModel: HAIKU_MODEL,
+          webSearch: false,
+        }),
+      (v) => (v.answer ? 'answered' : v.degraded || 'no answer'),
+      (v) => Boolean(v.answer),
+    );
     answer = synth.answer || null;
     grounded = Boolean(answer);
     providerErrors = synth.providerErrors || [];
   }
 
   if (!answer) {
-    const synth = await synthesizeWithFallback({
-      system: GENERAL_SYSTEM_PROMPT,
-      user: `Ping: ${query}${resolved ? ` (resolved to ${resolved.name}, ${resolved.ticker})` : ''}`,
-      maxTokens: 420,
-      model: HAIKU_MODEL,
-      fallbackModel: HAIKU_MODEL,
-      webSearch: false,
-    });
+    const synth = await leg(
+      'synthesize-general',
+      () =>
+        synthesizeWithFallback({
+          system: GENERAL_SYSTEM_PROMPT,
+          user: `Ping: ${query}${resolved ? ` (resolved to ${resolved.name}, ${resolved.ticker})` : ''}`,
+          maxTokens: 420,
+          model: HAIKU_MODEL,
+          fallbackModel: HAIKU_MODEL,
+          webSearch: false,
+        }),
+      (v) => (v.answer ? 'answered' : v.degraded || 'no answer'),
+      (v) => Boolean(v.answer),
+    );
     answer = synth.answer || null;
     grounded = false;
     providerErrors = [...providerErrors, ...(synth.providerErrors || [])];
@@ -450,20 +503,28 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
     })
     .filter(Boolean);
 
-  const dossier = wantDossier && resolved ? await buildDossier(resolved, admin) : null;
-  console.log('[sonar-pipeline]', {
-    query,
-    resolved,
-    items: items.length,
-    dossierLegs: dossier
-      ? {
-          fundamentals: Boolean(dossier.fundamentals),
-          spark: dossier.spark ? dossier.spark.length : 0,
-          news: dossier.news.length,
-          echo: dossier.echo.length,
-        }
-      : null,
-  });
+  let dossier = null;
+  if (wantDossier && resolved) {
+    try {
+      dossier = await leg(
+        'dossier',
+        () => buildDossier(resolved, admin),
+        (v) =>
+          `fund=${Boolean(v.fundamentals)} spark=${v.spark ? v.spark.length : 0} news=${v.news.length} echo=${v.echo.length}`,
+      );
+    } catch {
+      /* The dossier is an enrichment. Losing it degrades the stage; it must
+         not lose an answer that has already been paid for. */
+    }
+  }
+
+  /* One line, and it names the leg. A run with no answer logs at error level
+     so it surfaces in the runtime error groups without a text search. */
+  if (answer) {
+    console.log('[sonar-pipeline] trace', JSON.stringify(trace));
+  } else {
+    console.error('[sonar-pipeline] trace', JSON.stringify(trace));
+  }
 
   return {
     answer,
@@ -477,6 +538,8 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
     corporaSearched,
     corporaUsed,
     providerErrors,
+    /* Leg names only, never messages: safe to return to a client. */
+    failedAt: trace.filter((t) => !t.ok).map((t) => t.leg),
   };
 }
 

@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { unstable_cache } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { runLandingPipeline, DISCLAIMER } from '@/lib/sonar/landing-pipeline';
 
@@ -9,86 +8,36 @@ import { runLandingPipeline, DISCLAIMER } from '@/lib/sonar/landing-pipeline';
  * The band's auto-demo. It runs the same pipeline a guest ping runs, for one
  * fixed query, and carries none of the guest concerns: no cookie, no quota,
  * no gate. Visitors do not spend a ping to watch the demo, and the demo does
- * not spend a Haiku call per visitor.
+ * not spend a model call per visitor.
  *
- * Cost control is the whole point of this route existing. `revalidate` puts
- * the response in Next's data cache for a day, so repeat visitors are served
- * without touching a model. The module-level copy below is the second line:
- * it bounds how often a freshly started instance can miss that cache and pay
- * again. Neither is a distributed lock, so the honest guarantee is "about one
- * synthesis a day", not "exactly one" — a burst of cold starts in different
- * regions can each pay once before their caches fill.
+ * Caching is a row in public.landing_demo_cache, not the framework's cache.
+ * unstable_cache forbids the dynamic work this pipeline is made of, which
+ * made it a standing risk for a production-only failure that local testing
+ * never sees. A row has no execution-context rules, and because it is shared
+ * it gives the guarantee the per-instance memo could not: about one synthesis
+ * a day in total, not one per cold start per region.
  *
- * The ledger row is written with version 'demo' so demo spend is separable
- * from guest spend in the same table, and so the shared global daily cap
- * still sees it.
+ * Failures are never cached, so the next visitor retries rather than being
+ * served a day-old error.
  */
 export const runtime = 'nodejs';
-/* Dynamic route, cache INSIDE it. Exporting `revalidate` on a handler whose
-   pipeline does uncacheable work (no-store fetches, a service-role Supabase
-   client) meant Next treated the route as dynamic and quietly ignored the
-   revalidate, so nothing was cached and every visitor paid for a synthesis.
-   unstable_cache caches the pipeline result itself, which is the thing worth
-   caching, and the key carries a version so a fix invalidates yesterday's
-   answer instead of waiting a day for it. */
 export const dynamic = 'force-dynamic';
 /* The pipeline resolves a company, retrieves across corpora, synthesizes and
    then fetches five dossier legs. 30s was optimistic for a cold run. */
 export const maxDuration = 60;
 
 const DEMO_QUERY = 'Lockheed Martin';
-
 /* Bump alongside the ?v= the client sends when a pipeline change should
-   invalidate yesterday's cached demo rather than wait a day for it. */
-const DEMO_VERSION = 3;
+   invalidate yesterday's cached answer rather than wait a day for it. */
+const CACHE_KEY = 'landing-demo-v4';
+const TTL_MS = 24 * 60 * 60 * 1000;
 
-/* The admin client is built INSIDE the cached function on purpose: capturing
-   one from the module scope would pin a connection into the cache entry. */
-const cachedDemo = unstable_cache(
-  async () => {
-    const result = await runLandingPipeline(DEMO_QUERY, { admin: getAdminClient() });
-    if (!result.answer) {
-      /* Throwing keeps a failed run out of the cache, so the next visitor
-         retries instead of being served a day-old failure. */
-      throw new Error('demo pipeline produced no answer');
-    }
-    return result;
-  },
-  [`landing-demo-ping-v${DEMO_VERSION}`],
-  { revalidate: 86400, tags: ['landing-demo-ping'] },
-);
+/* Same-instance fast path in front of the table read. The row is the real
+   cache; this just saves a query on a warm instance. */
+let memo = null;
 
-export async function GET() {
-  let result;
-  try {
-    result = await cachedDemo();
-  } catch (e) {
-    console.error('[landing/demo-ping] failed:', e?.message);
-    return NextResponse.json({ error: 'Demo unavailable.' }, { status: 502 });
-  }
-
-  /* Ledger, best effort. The cached path skips this on a hit, which is the
-     point: one recorded synthesis a day rather than one per visitor. */
-  try {
-    const { error } = await getAdminClient()
-      .from('sonar_queries')
-      .insert({
-        user_id: null,
-        is_guest: true,
-        ip_hash: null,
-        query_text: DEMO_QUERY,
-        classification: result.classification,
-        version: 'demo',
-        plan_tier: 0,
-        datasets_searched: result.sources.map((s) => s.id),
-        grounded: result.grounded,
-      });
-    if (error) console.error('[landing/demo-ping] ledger insert failed:', error.message);
-  } catch (e) {
-    console.error('[landing/demo-ping] ledger insert threw:', e?.message);
-  }
-
-  return NextResponse.json({
+function bodyFrom(result) {
+  return {
     answer: result.answer,
     grounded: result.grounded,
     sources: result.sources,
@@ -96,7 +45,88 @@ export async function GET() {
     dossier: result.dossier,
     query: DEMO_QUERY,
     demo: true,
-    version: DEMO_VERSION,
     disclaimer: DISCLAIMER,
-  });
+  };
+}
+
+export async function GET() {
+  if (memo && Date.now() - memo.at < TTL_MS) {
+    return NextResponse.json(memo.body);
+  }
+
+  const admin = getAdminClient();
+
+  try {
+    const { data } = await admin
+      .from('landing_demo_cache')
+      .select('payload, created_at')
+      .eq('cache_key', CACHE_KEY)
+      .maybeSingle();
+    if (data?.payload && Date.now() - new Date(data.created_at).getTime() < TTL_MS) {
+      memo = { at: new Date(data.created_at).getTime(), body: data.payload };
+      return NextResponse.json(data.payload);
+    }
+  } catch (e) {
+    /* A missing table (migration not yet applied) or an unreachable database
+       costs a cache read, not the endpoint. */
+    console.error('[landing/demo-ping] cache read failed:', e?.message);
+  }
+
+  let result;
+  try {
+    result = await runLandingPipeline(DEMO_QUERY, { admin });
+  } catch (e) {
+    console.error('[landing/demo-ping] pipeline threw:', e?.message);
+    return NextResponse.json({ error: 'Demo unavailable.' }, { status: 502 });
+  }
+
+  if (!result.answer) {
+    /* Not cached: the next visitor retries. `failedAt` names the legs that
+       went wrong, never their messages, so the client and the logs agree on
+       where it broke without leaking anything. */
+    console.error(
+      '[landing/demo-ping] no answer, failedAt:',
+      result.failedAt?.join(',') || 'unknown',
+    );
+    return NextResponse.json(
+      { error: 'Demo unavailable.', failedAt: result.failedAt || [] },
+      { status: 502 },
+    );
+  }
+
+  const body = bodyFrom(result);
+
+  try {
+    const { error } = await admin
+      .from('landing_demo_cache')
+      .upsert({ cache_key: CACHE_KEY, payload: body, created_at: new Date().toISOString() });
+    if (error) {
+      console.error(
+        '[landing/demo-ping] cache write failed (apply supabase/migrations/20260921120000_landing_demo_cache.sql):',
+        error.message,
+      );
+    }
+  } catch (e) {
+    console.error('[landing/demo-ping] cache write threw:', e?.message);
+  }
+
+  try {
+    const { error } = await admin.from('sonar_queries').insert({
+      user_id: null,
+      is_guest: true,
+      ip_hash: null,
+      query_text: DEMO_QUERY,
+      classification: result.classification,
+      version: 'demo',
+      plan_tier: 0,
+      datasets_searched: result.sources.map((x) => x.id),
+      grounded: result.grounded,
+    });
+    if (error) console.error('[landing/demo-ping] ledger insert failed:', error.message);
+  } catch (e) {
+    console.error('[landing/demo-ping] ledger insert threw:', e?.message);
+  }
+
+  memo = { at: Date.now(), body };
+  return NextResponse.json(body);
 }
