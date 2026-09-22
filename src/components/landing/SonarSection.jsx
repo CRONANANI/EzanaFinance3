@@ -58,6 +58,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SonarOrbital } from './SonarOrbital';
+import { SonarLoader } from '@/components/sonar/SonarLoader';
 import './sonar-band.css';
 
 /* Three short Lockheed Martin paragraphs. Link segments render as buttons
@@ -708,7 +709,10 @@ export function SonarSection() {
           if (alive) setPinging(false);
         }
       },
-      reduce ? 0 : 420,
+      /* No delay. The entry scroll settles underneath the type-out; the two
+         are independent, and waiting for one to start the other left the band
+         looking inert for the first half second of the lock. */
+      0,
     );
 
     return () => {
@@ -735,8 +739,11 @@ export function SonarSection() {
 
   /* Stage 2 follows the type-out, and the arrow follows stage 2. A ping that
      failed still opens the way down, just without the stage. */
+  /* Stage 2 engages the moment an answer lands, not when the type-out
+     finishes: the orbital shrink, the dossier slide and the cards' entrance
+     all run WHILE the paragraphs are still typing. */
   useEffect(() => {
-    if (!live || typed !== -1) return undefined;
+    if (!live) return undefined;
     /* Gated on an answer, not on a resolved company. Requiring the dossier
        meant a failed name resolution silently did nothing at all: the band
        kept the demo composition and the whole stage looked broken rather
@@ -749,7 +756,7 @@ export function SonarSection() {
        not arrive while the composition is still moving. */
     const t = setTimeout(() => setStage2Settled(true), staging ? 500 : 0);
     return () => clearTimeout(t);
-  }, [live, typed]);
+  }, [live]);
 
   /* The arrow: dismiss the lock for the rest of the visit, then hand the
      page back to the visitor at the section below. */
@@ -840,7 +847,11 @@ export function SonarSection() {
     }
   }
 
-  const arrowReady = stage2Settled || Boolean(pingError) || demoFailed || deadlinePassed;
+  /* Both conditions, not either: now that the stage and the type-out run
+     concurrently, the stage settling no longer implies the answer has
+     finished arriving. */
+  const arrowReady =
+    (stage2Settled && typed === -1) || Boolean(pingError) || demoFailed || deadlinePassed;
 
   return (
     <section
@@ -947,10 +958,12 @@ export function SonarSection() {
                 <span className="snr-beacon-sm" aria-hidden="true" />
                 <span className="snr-panel-title">LIVE SYNTHESIS</span>
                 <span className="snr-rule-soft" aria-hidden="true" />
+                {/* One label, state-driven. It used to be three absolutely
+                    positioned spans cross-fading on the master timeline, which
+                    live mode freezes: all three stopped visible and stacked on
+                    top of one another. */}
                 <span className="snr-status" aria-hidden="true">
-                  <span className="snr-state-ready snr-anim-ready">READY</span>
-                  <span className="snr-state-sweep snr-anim-sweepstate">SWEEPING 8 DATASETS</span>
-                  <span className="snr-state-done snr-anim-done">8 CLAIMS CITED</span>
+                  {pinging ? 'SWEEPING 8 DATASETS' : live ? 'READY' : '8 CLAIMS CITED'}
                 </span>
               </div>
 
@@ -979,20 +992,10 @@ export function SonarSection() {
                     </p>
                   ))
                 ) : pinging ? (
-                  <>
-                    <p className="snr-para snr-line-lead">Sweeping datasets for “{lastQuery}”…</p>
-                    <div className="snr-skel snr-anim-rowpop" aria-hidden="true" />
-                    <div
-                      className="snr-skel snr-anim-rowpop"
-                      style={{ animationDelay: '0.1s' }}
-                      aria-hidden="true"
-                    />
-                    <div
-                      className="snr-skel snr-anim-rowpop snr-skel--short"
-                      style={{ animationDelay: '0.2s' }}
-                      aria-hidden="true"
-                    />
-                  </>
+                  /* The app's own ping loader, reused as-is. Its classes are
+                     snrl-, so none of the band's snr-anim pause rules reach
+                     it and it keeps moving while the band is frozen. */
+                  <SonarLoader caption={`Sweeping 8 datasets for “${lastQuery}”...`} />
                 ) : live ? (
                   <>
                     {live.grounded === false ? (
@@ -1126,10 +1129,18 @@ export function SonarSection() {
                 ).map((r, i) => (
                   <div
                     key={`${r.tag}-${r.cls}`}
+                    /* Once any ping has gone out the rows must leave the
+                       master timeline, which live mode freezes. Keyed on
+                       hasPinged, not the pulse: a demo that failed never
+                       bumped the pulse, so its fixture rows stayed frozen at
+                       opacity 0 and the card rendered its header over
+                       nothing. */
                     className={`snr-row${r.used === false ? ' snr-row--dry' : ''} ${
-                      pingPulse === 0 ? r.cls : 'snr-anim-rowpop'
+                      hasPinged || pingPulse > 0 ? 'snr-anim-rowpop' : r.cls
                     }`}
-                    style={pingPulse === 0 ? undefined : { animationDelay: `${i * 0.12}s` }}
+                    style={
+                      hasPinged || pingPulse > 0 ? { animationDelay: `${i * 0.12}s` } : undefined
+                    }
                   >
                     <div className="snr-row-top">
                       <span className="snr-tag">{r.tag}</span>
@@ -1143,8 +1154,14 @@ export function SonarSection() {
             </div>
 
             <div
-              className={`snr-row-footer ${pingPulse === 0 ? 'snr-anim-row5' : 'snr-anim-rowpop'}`}
-              style={pingPulse === 0 ? undefined : { animationDelay: `${rows.length * 0.12}s` }}
+              className={`snr-row-footer ${
+                hasPinged || pingPulse > 0 ? 'snr-anim-rowpop' : 'snr-anim-row5'
+              }`}
+              style={
+                hasPinged || pingPulse > 0
+                  ? { animationDelay: `${rows.length * 0.12}s` }
+                  : undefined
+              }
             >
               <span className="snr-meta">13F, LOBBYING, WEB</span>
               <span className="snr-rule-soft" />
@@ -1166,6 +1183,9 @@ export function SonarSection() {
                 <div className="snr-fund snr-fund--wide">
                   <div className="snr-fund-head">
                     <span className="snr-fund-ticker">{live.dossier.ticker}</span>
+                    {live.dossier.sparkLabel ? (
+                      <span className="snr-range-chip">{live.dossier.sparkLabel}</span>
+                    ) : null}
                     <span className="snr-rule-soft" />
                     <span className="snr-fund-name">{live.dossier.name}</span>
                   </div>

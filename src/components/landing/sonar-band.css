@@ -149,9 +149,17 @@
 /* The pop-in for live answers and freshly matched rows is the one animation
    that must still run in live mode; it is a one-shot, not part of the loop.
    The continue arrow joins it: it is the only way down while locked, so it
-   must keep signalling after a real ping freezes the demo timeline. */
+   must keep signalling after a real ping freezes the demo timeline.
+
+   The ping loader joins them, and it had to be measured rather than assumed:
+   the pause rule above is `.snr-band.snr-live *`, a universal descendant
+   selector, so the loader's snrl- prefix buys it nothing. Caught frozen
+   mid-ping with animation-play-state: paused. (0,3,0) beats the (0,2,0)
+   pause rule without an !important. */
 .snr-band.snr-live .snr-anim-rowpop,
-.snr-band.snr-live .snr-anim-bounce {
+.snr-band.snr-live .snr-anim-bounce,
+.snr-band.snr-live .snrl-wrap,
+.snr-band.snr-live .snrl-wrap * {
   animation-play-state: running;
 }
 
@@ -499,37 +507,22 @@
 
 /* Three absolutely stacked spans in one slot. Base opacity: READY 0,
    SWEEPING 0, CITED 1, so reduced motion shows the finished state. */
+/* One label now, so the type lives on the element itself. It used to sit on
+   the three absolutely positioned children that cross-faded on the timeline;
+   with those gone the text inherited the panel's body size and wrapped the
+   head onto two lines. */
 .snr-status {
-  position: relative;
-  display: block;
-  width: 132px;
-  height: 20px;
-  flex-shrink: 0;
-}
-
-.snr-status span {
-  position: absolute;
-  inset: 0;
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  width: 132px;
+  height: 20px;
+  flex-shrink: 0;
   font-family: var(--snr-font-mono);
   font-size: 9.5px;
   letter-spacing: 0.14em;
   white-space: nowrap;
-}
-
-.snr-state-ready {
-  color: rgba(255, 255, 255, 0.55);
-  opacity: 0;
-}
-.snr-state-sweep {
-  color: var(--snr-mint-soft);
-  opacity: 0;
-}
-.snr-state-done {
   color: var(--snr-mint);
-  opacity: 1;
 }
 
 .snr-synth-body {
@@ -1866,19 +1859,37 @@
   opacity: 0.85;
 }
 
-/* Sweep placeholder while a real ping is in flight. Static base so the shared
-   pause rule has nothing to freeze; the one-shot snr-anim-rowpop entry above
-   is already exempted from it, which is why these lines still animate in while
-   the rest of the band is held still. */
-.snr-skel {
-  height: 12px;
-  margin: 0 0 12px;
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--snr-mint) 16%, transparent);
+/* The ping loader is the app's SonarLoader, reused unchanged. Its palette
+   derives from --emerald and --bg-primary, which resolve to the PAGE's
+   surface rather than the band's, so it is re-pointed at the band's own
+   system here. The component and its sheet stay untouched. */
+/* The loader's caption is sized for the app's light surface; on the band it
+   needs the band's own muted ink to be readable rather than a whisper. */
+.snr-band .snrl-caption {
+  color: var(--snr-text-muted);
+  font-family: var(--snr-font-mono);
+  font-size: 11px;
+  letter-spacing: var(--snr-track-label);
 }
 
-.snr-skel--short {
-  width: 62%;
+.snr-band .snrl-wrap {
+  --snrl-deep: color-mix(in srgb, var(--snr-emerald) 55%, var(--snr-ink));
+  --snrl-mid: color-mix(in srgb, var(--snr-emerald) 40%, var(--snr-ink));
+  --snrl-top: color-mix(in srgb, var(--snr-emerald) 72%, var(--snr-ink));
+  --snrl-bright: var(--snr-mint);
+  --snrl-shadow: color-mix(in srgb, #000000 45%, transparent);
+  color: var(--snr-text-muted);
+}
+
+/* The range the sparkline covers, stated rather than implied. */
+.snr-range-chip {
+  padding: 1px 6px;
+  border: 1px solid var(--snr-text-faint);
+  border-radius: var(--snr-r-chip);
+  font-family: var(--snr-font-mono);
+  font-size: 9px;
+  letter-spacing: var(--snr-track-label);
+  color: var(--snr-text-faint);
 }
 
 /* ── takeover ─────────────────────────────────────────────────────────────
