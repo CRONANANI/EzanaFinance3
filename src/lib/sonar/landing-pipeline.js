@@ -31,23 +31,32 @@ const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
 export const DISCLAIMER =
   'Sonar synthesizes sourced research from Ezana datasets. Findings only, never financial advice.';
 
-const GROUNDED_SYSTEM_PROMPT = `You are Ezana Sonar, a research/intelligence surface, answering a guest ping on the public landing page. You are given sourced snippets from Ezana's datasets (Echo editorial, congressional trades, government contracts, prediction markets). Rules:
-- Ground every claim in a provided source and cite its marker inline, e.g. [S1].
-- If the sources do not cover the subject, say so plainly. Never fabricate.
-- Findings only. No financial or investment advice, price targets, or buy/sell/hold calls.
-- Respond as EXACTLY three short paragraphs separated by blank lines: (1) one-sentence headline read plus what the subject is, (2) what the dataset signals show, (3) cross-signals or gaps worth watching. No headers, no lists.
-- Plain language, no hype, no em dashes. If the ping is not a finance-adjacent entity, answer briefly and suggest a better ping.`;
+const GROUNDED_SYSTEM_PROMPT = `You are Ezana Sonar, a research surface answering a ping on the public landing page. You have two kinds of evidence: numbered dataset snippets from Ezana's proprietary datasets (congressional trades, government contracts, SEC filings, prediction markets, Echo editorial), and live web search.
+Rules:
+- Answer the question the visitor actually asked, about the entity they asked about. Lead with what is true and current, using web search for facts the snippets do not cover.
+- Wherever a dataset snippet covers the subject, weave it in and cite its marker inline, e.g. [S1]. Dataset corroboration is the product being demonstrated; use every snippet that is genuinely about the subject, and none that is not.
+- If the datasets have little or nothing on the subject, say so in ONE clause at most, inside a sentence that still delivers substance from the web. Never make dataset absence the headline or the topic of a paragraph.
+- Never present another company's data as context filler. If a snippet is about a different entity, ignore it.
+- Findings only. No financial or investment advice, price targets, or buy/sell/hold language. No fabricated figures: numbers come from a snippet or from a web result.
+- EXACTLY three short paragraphs separated by blank lines: (1) direct answer to the ping, (2) the strongest specifics, dataset-cited where possible, (3) cross-signals or what to watch. No headers, no lists, no em dashes.`;
 
 /* The ungrounded variant. A ping that retrieves nothing used to dead-end on an
    apology; this answers from general knowledge instead and says so, which is
    the only honest way to do it. No citation markers, because there are no
    sources to cite and inventing [S1] would be a lie the UI cannot detect. */
-const GENERAL_SYSTEM_PROMPT = `You are Ezana Sonar, a research/intelligence surface, answering a guest ping on the public landing page. Ezana's datasets returned no match for this subject, so you are answering from general knowledge only. Rules:
-- Say in the first paragraph that Ezana's datasets returned no coverage and that this is general background, not sourced research.
-- Never invent citations, markers, figures, dates, or dataset matches. No [S1] style markers at all.
-- Findings only. No financial or investment advice, price targets, or buy/sell/hold calls.
-- Respond as EXACTLY three short paragraphs separated by blank lines: (1) the no-coverage note plus what the subject is, (2) the general background that is worth knowing, (3) what a visitor could ping instead to get sourced results.
-- Plain language, no hype, no em dashes.`;
+/* The no-snippet path. It used to apologise, because it had nothing but its
+   own training data to work from. With search available it can answer
+   properly, so it now leads with substance and keeps the honest framing to a
+   single clause. The no-fabrication rules are unchanged: with the tool off it
+   still has to say the answer is general background. */
+const GENERAL_SYSTEM_PROMPT = `You are Ezana Sonar, a research surface answering a ping on the public landing page. Ezana's proprietary datasets returned no match for this subject, so your evidence is live web search and general knowledge.
+Rules:
+- Answer the question the visitor actually asked, leading with what is true and current from web search. Give real substance.
+- Note in ONE clause, not a sentence of its own, that Ezana's datasets do not cover this subject yet. Never make that the headline or the topic of a paragraph.
+- Never invent dataset citations. Do not use [S1] style markers at all: there are no snippets to cite. If web search did not run, say plainly that this is general background rather than sourced research.
+- No fabricated figures, dates or names. A number either comes from a web result or does not appear.
+- Findings only. No financial or investment advice, price targets, or buy/sell/hold language.
+- EXACTLY three short paragraphs separated by blank lines: (1) direct answer to the ping, (2) the strongest specifics, (3) what to watch, or a better ping for sourced results. No headers, no lists, no em dashes.`;
 
 /* Dataset to taxonomy dimension. SONAR_DATASETS entries carry {id,label,source}
    and no dimension, so the mapping is stated here against DATASET_TAXONOMY's
@@ -437,15 +446,42 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
         perCorpusCap: budget.perCorpusCap,
         charBudget: budget.charBudget,
       }),
-    (v) => `${(v.items || []).length} items`,
+    (v) => `retrieved ${(v.items || []).length}`,
   );
-  const items = out.items || [];
+  const retrieved = out.items || [];
   const corporaSearched = out.corporaSearched || [];
-  const corporaUsed = out.corporaUsed || [];
+
+  /* Off-entity chunks poison the synthesis: an Apple ping came back citing
+     Boeing and Lockheed awards, because semantic retrieval returns what is
+     SIMILAR, not what is about the same company. When resolution tells us the
+     entity, keep only the items that actually mention it.
+
+     The haystack is title plus snippet plus the structured meta, NOT a `text`
+     field: no retriever emits one, so matching on it would leave every
+     haystack empty, drop every item, and send every entity ping down the
+     ungrounded path. Checked against the retrievers rather than assumed. */
+  const entityTerms = resolved
+    ? [resolved.name, resolved.ticker].filter(Boolean).map((t) => t.toLowerCase())
+    : null;
+  const items = entityTerms
+    ? retrieved.filter((it) => {
+        const hay = [it.title, it.snippet, ...Object.values(it.meta || {})]
+          .filter((v) => typeof v === 'string')
+          .join(' ')
+          .toLowerCase();
+        return entityTerms.some((t) => hay.includes(t));
+      })
+    : retrieved;
+
+  /* Recomputed from the survivors: a corpus that only contributed off-entity
+     noise must not be shown as a match. */
+  const corporaUsed = [...new Set(items.map((i) => i.corpus))];
 
   let answer = null;
   let grounded = false;
   let providerErrors = [];
+  let webUsed = false;
+  let webSources = [];
 
   if (items.length) {
     const marked = items.map((it, i) => ({ ...it, marker: `S${i + 1}` }));
@@ -461,16 +497,22 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
         synthesizeWithFallback({
           system: GROUNDED_SYSTEM_PROMPT,
           user: `Ping: ${query}\n\nSources:\n${sourcesBlock}`,
-          maxTokens: 420,
+          /* Answers carry web facts as well as snippets now, so they need
+             the room. */
+          maxTokens: 600,
           model: HAIKU_MODEL,
           fallbackModel: HAIKU_MODEL,
-          webSearch: false,
+          /* Inert until SONAR_WEB_SEARCH=true is set: anthropicSynthesize
+             gates the tool on that env var as well as this flag. */
+          webSearch: { enabled: true, maxUses: 2 },
         }),
-      (v) => (v.answer ? 'answered' : v.degraded || 'no answer'),
+      (v) => (v.answer ? `answered${v.webUsed ? ' +web' : ''}` : v.degraded || 'no answer'),
       (v) => Boolean(v.answer),
     );
     answer = synth.answer || null;
     grounded = Boolean(answer);
+    webUsed = Boolean(synth.webUsed);
+    webSources = (synth.webSources || []).slice(0, 4);
     providerErrors = synth.providerErrors || [];
   }
 
@@ -481,16 +523,18 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
         synthesizeWithFallback({
           system: GENERAL_SYSTEM_PROMPT,
           user: `Ping: ${query}${resolved ? ` (resolved to ${resolved.name}, ${resolved.ticker})` : ''}`,
-          maxTokens: 420,
+          maxTokens: 600,
           model: HAIKU_MODEL,
           fallbackModel: HAIKU_MODEL,
-          webSearch: false,
+          webSearch: { enabled: true, maxUses: 2 },
         }),
-      (v) => (v.answer ? 'answered' : v.degraded || 'no answer'),
+      (v) => (v.answer ? `answered${v.webUsed ? ' +web' : ''}` : v.degraded || 'no answer'),
       (v) => Boolean(v.answer),
     );
     answer = synth.answer || null;
     grounded = false;
+    webUsed = Boolean(synth.webUsed);
+    webSources = (synth.webSources || []).slice(0, 4);
     providerErrors = [...providerErrors, ...(synth.providerErrors || [])];
   }
 
@@ -520,10 +564,17 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
 
   /* One line, and it names the leg. A run with no answer logs at error level
      so it surfaces in the runtime error groups without a text search. */
+  /* retrieved vs kept is the line that shows the entity filter working: a
+     ping whose retrieval was all off-entity reads "retrieved 6, kept 0" and
+     routes to the web-backed path instead of citing noise. */
+  const summary = JSON.stringify(trace).replace(
+    '"leg":"retrieve"',
+    `"leg":"retrieve","kept":${items.length}`,
+  );
   if (answer) {
-    console.log('[sonar-pipeline] trace', JSON.stringify(trace));
+    console.log('[sonar-pipeline] trace', summary);
   } else {
-    console.error('[sonar-pipeline] trace', JSON.stringify(trace));
+    console.error('[sonar-pipeline] trace', summary);
   }
 
   return {
@@ -531,10 +582,13 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
     grounded,
     sources,
     relevance: grounded ? relevanceFrom(items, corporaSearched) : flatRelevance(FLOOR_UNGROUNDED),
+    webUsed,
+    webSources,
     dossier,
     classification,
     resolved,
     itemCount: items.length,
+    retrievedCount: retrieved.length,
     corporaSearched,
     corporaUsed,
     providerErrors,

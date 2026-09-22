@@ -677,7 +677,7 @@ export function SonarSection() {
            a day, so a response produced before a pipeline fix keeps serving
            for up to 24h after the deploy that fixed it. Bumping this asks
            for a different URL, which is a different cache entry. */
-          const res = await fetch('/api/landing/demo-ping?v=2');
+          const res = await fetch('/api/landing/demo-ping?v=5');
           const data = await res.json().catch(() => null);
           if (!alive) return;
           if (res.ok && data?.answer) {
@@ -687,6 +687,8 @@ export function SonarSection() {
               relevance: data.relevance || null,
               dossier: data.dossier || null,
               grounded: data.grounded !== false,
+              webUsed: Boolean(data.webUsed),
+              webSources: data.webSources || [],
               remaining: null,
             });
             /* Same bump the user path makes. Without it the dossier rows keep
@@ -819,6 +821,8 @@ export function SonarSection() {
           relevance: data.relevance || null,
           dossier: data.dossier || null,
           grounded: data.grounded !== false,
+          webUsed: Boolean(data.webUsed),
+          webSources: data.webSources || [],
           remaining: data.remaining,
         });
         startTypewriter(data.answer);
@@ -999,7 +1003,12 @@ export function SonarSection() {
                 ) : live ? (
                   <>
                     {live.grounded === false ? (
-                      <span className="snr-chip-general">General briefing</span>
+                      /* Two different honesties: with the tool on the answer
+                         is current web research; with it off it is the
+                         model's own background. The chip has to say which. */
+                      <span className="snr-chip-general">
+                        {live.webUsed ? 'Web briefing' : 'General briefing'}
+                      </span>
                     ) : null}
                     {(() => {
                       /* One reveal counter across the joined answer, so the
@@ -1126,30 +1135,62 @@ export function SonarSection() {
                       cls: `snr-anim-row${i}`,
                     }))
                   : rows
-                ).map((r, i) => (
-                  <div
-                    key={`${r.tag}-${r.cls}`}
-                    /* Once any ping has gone out the rows must leave the
+                )
+                  .concat(
+                    /* Public web citations, appended after the dataset rows.
+                       Real links, new tab, no auth gate: unlike the dossier
+                       tools these are pages anyone can open. */
+                    live && live.webSources?.length
+                      ? live.webSources.slice(0, 2).map((w, i) => ({
+                          tag: 'WEB',
+                          source: (() => {
+                            try {
+                              return new URL(w.url).hostname.replace(/^www\./, '');
+                            } catch {
+                              return 'web';
+                            }
+                          })(),
+                          line: w.title,
+                          href: w.url,
+                          cls: `snr-anim-row${i}`,
+                        }))
+                      : [],
+                  )
+                  .map((r, i) => (
+                    <div
+                      key={`${r.tag}-${r.cls}`}
+                      /* Once any ping has gone out the rows must leave the
                        master timeline, which live mode freezes. Keyed on
                        hasPinged, not the pulse: a demo that failed never
                        bumped the pulse, so its fixture rows stayed frozen at
                        opacity 0 and the card rendered its header over
                        nothing. */
-                    className={`snr-row${r.used === false ? ' snr-row--dry' : ''} ${
-                      hasPinged || pingPulse > 0 ? 'snr-anim-rowpop' : r.cls
-                    }`}
-                    style={
-                      hasPinged || pingPulse > 0 ? { animationDelay: `${i * 0.12}s` } : undefined
-                    }
-                  >
-                    <div className="snr-row-top">
-                      <span className="snr-tag">{r.tag}</span>
-                      <span className="snr-rule" />
-                      <span className="snr-src">{r.source}</span>
+                      className={`snr-row${r.used === false ? ' snr-row--dry' : ''} ${
+                        hasPinged || pingPulse > 0 ? 'snr-anim-rowpop' : r.cls
+                      }`}
+                      style={
+                        hasPinged || pingPulse > 0 ? { animationDelay: `${i * 0.12}s` } : undefined
+                      }
+                    >
+                      <div className="snr-row-top">
+                        <span className="snr-tag">{r.tag}</span>
+                        <span className="snr-rule" />
+                        <span className="snr-src">{r.source}</span>
+                      </div>
+                      {r.href ? (
+                        <a
+                          className="snr-row-line snr-row-link"
+                          href={r.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {r.line}
+                        </a>
+                      ) : (
+                        <span className="snr-row-line">{r.line}</span>
+                      )}
                     </div>
-                    <span className="snr-row-line">{r.line}</span>
-                  </div>
-                ))}
+                  ))}
               </div>
             </div>
 

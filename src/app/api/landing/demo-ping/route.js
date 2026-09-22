@@ -29,7 +29,7 @@ export const maxDuration = 60;
 const DEMO_QUERY = 'Lockheed Martin';
 /* Bump alongside the ?v= the client sends when a pipeline change should
    invalidate yesterday's cached answer rather than wait a day for it. */
-const CACHE_KEY = 'landing-demo-v4';
+const CACHE_KEY = 'landing-demo-v5';
 const TTL_MS = 24 * 60 * 60 * 1000;
 
 /* Same-instance fast path in front of the table read. The row is the real

@@ -2457,3 +2457,21 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
     transition: none;
   }
 }
+
+/* A web citation row is a real link. The dossier column is aria-hidden until
+   a ping lands, and these only exist after one, so the link is reachable. */
+.snr-row-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--snr-hair);
+}
+
+.snr-row-link:hover {
+  color: var(--snr-mint);
+  border-bottom-color: var(--snr-mint);
+}
+
+.snr-row-link:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 2px;
+}
