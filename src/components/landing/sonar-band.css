@@ -126,6 +126,22 @@
   justify-content: center;
 }
 
+/* Taking back the two layout declarations globals.css forces on every landing
+   section. `.landing-page > section` there carries
+   `display: block !important; height: auto !important` so that
+   content-visibility can never blank the page below the hero. That rule is
+   about painting, and it was silently defeating this band: the display: flex
+   above never applied, so the whole vertical flex chain under it was inert,
+   and `height: 100dvh` on the locked state never applied either, so the band
+   rendered at its content height. Measured on a 1366x768 laptop: an 911px
+   band inside a 768px lock, with the synthesis column clipped off the bottom.
+   (0,2,1) beats that rule's (0,1,1) whatever order the sheets load in, and
+   !important is the only answer to !important. Its paint guarantees are
+   untouched: only display and height are reclaimed. */
+.landing-page > section.snr-band {
+  display: flex !important;
+}
+
 /* The one duration. Percentages of it are the contract. */
 .snr-band [class*='snr-anim-'] {
   animation-duration: var(--snr-cycle);
@@ -528,6 +544,21 @@
 .snr-synth-body {
   position: relative;
   flex-grow: 1;
+}
+
+/* The one element allowed to overflow, and it scrolls itself. This used to
+   subtract a hand-measured constant from 100dvh, which was wrong the moment
+   any chrome above it changed height. It does not need to know: the min-height
+   chain above lets it shrink to whatever the locked band has left, so the cap
+   here is only the aesthetic one for tall screens, where a 900px column of
+   prose would read worse than a 340px one. overscroll-behavior keeps a wheel
+   inside it from reaching the lock. */
+.snr-band.snr-locked .snr-synth-body {
+  max-height: 340px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--snr-hair-strong) transparent;
 }
 
 /* Base opacity 0 so reduced motion hides the empty state and shows the filled
@@ -2052,12 +2083,80 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
    screen (a phone, a 1366x768 laptop, or the stage 2 layout) is read by
    scrolling inside it, and the page behind stays put. overflow-x stays hidden
    so the dossier poke is still sliced at the page edge. */
-.snr-band.snr-locked {
-  max-height: 100svh;
-  max-height: 100dvh;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
+/* Locked, the band is EXACTLY one screen and nothing inside it scrolls the
+   page. The band used to be a scroll container at small widths; that is gone,
+   because a page that can scroll while the nav is transparent is a page whose
+   nav can overlap the cards. The synthesis body absorbs any overflow with its
+   own internal scroll instead. */
+.snr-band.snr-locked,
+.landing-page > section.snr-band.snr-locked {
+  /* !important and the doubled-up selector for the same reason as the display
+     reclaim above: `height: auto !important` from globals.css is what this is
+     overriding. svh first as the floor every engine understands, dvh where
+     supported. */
+  height: 100svh !important;
+  height: 100dvh !important;
+  overflow: hidden;
+  /* Part 3.4: a tighter frame while locked, so four regions fit one screen. */
+  padding-top: 96px;
+  padding-bottom: 72px;
+}
+
+/* Locked, the composition is height-driven rather than content-driven: the
+   band is exactly one screen, so every box between it and the synthesis body
+   has to be allowed to shrink. A flex item's min-height defaults to auto,
+   which is its content height, so without these the chain simply refuses to
+   compress and the overflow lands back on the band. The synthesis body is the
+   designated absorber: it is the last flex-grow in the chain and the only
+   element carrying its own scroll. */
+.snr-band.snr-locked .snr-inner {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.snr-band.snr-locked .snr-cols,
+.snr-band.snr-locked .snr-col-left,
+.snr-band.snr-locked .snr-synth,
+.snr-band.snr-locked .snr-synth-body {
+  min-height: 0;
+}
+
+/* Stage 2 puts .snr-cols in a grid with align-items: start, which would leave
+   the synthesis column at its content height inside a grid area that is
+   already the right size. Stretching it is what hands the constraint down. */
+.snr-band.snr-locked .snr-col-left {
+  align-self: stretch;
+}
+
+/* Below the three-column layout .snr-cols is a column flex container, so
+   flex-shrink governs HEIGHT, and .snr-col-left carries flex-shrink: 0 from
+   the row layout (where it protects a 470px width). Left as is, the synthesis
+   column refuses to compress and pushes itself off the bottom of the lock:
+   measured 600px of column into 630px of .snr-cols alongside a 274px stack.
+   The stack is pinned instead, because its two cards are already at their
+   floor heights and would clip rather than scroll. Compression therefore
+   lands where there is something to absorb it. */
+@media (max-width: 1280px) {
+  .snr-band.snr-locked .snr-col-left {
+    flex-shrink: 1;
+  }
+
+  .snr-band.snr-locked .snr-stack,
+  .snr-band.snr-locked .snr-col-dossier {
+    flex-shrink: 0;
+  }
+}
+
+/* Locked on a phone the frame is as tight as the chrome allows: the navbar
+   measures 64px and the continue arrow is fixed to the bottom edge, so every
+   pixel given back here is a pixel of answer. Placed after the rule above
+   rather than inside the earlier phone block, which is where an identical
+   (0,2,0) selector would have lost on source order. */
+@media (max-width: 768px) {
+  .snr-band.snr-locked {
+    padding-top: 76px;
+    padding-bottom: 56px;
+  }
 }
 
 /* The arrow leaves the band's flow while locked and pins to the viewport, so
@@ -2161,15 +2260,28 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
     width: auto;
   }
 
+  /* Stage 2 lifts the orbital out of the grid and pins it top-right, its top
+     edge on the headline (--snr-orb-top is measured in SonarSection). That
+     frees the whole third column for the stack, which now spans both rows
+     instead of sitting under the orbital. */
   .snr-stage2 .snr-col-radar {
-    grid-column: 3;
-    grid-row: 1;
+    position: absolute;
+    top: var(--snr-orb-top, 140px);
+    right: 40px;
+    width: 280px;
     min-width: 0;
+    z-index: 3;
   }
 
   .snr-stage2 .snr-stack {
     grid-column: 3;
-    grid-row: 2;
+    grid-row: 1 / span 2;
+    /* Clear of the pinned orbital above it. Measured in SonarSection from the
+       orbital's real reach: a constant here is either short (the cards run
+       under the map) or long, and long is worse, because the stack is a grid
+       row and the surplus grows the band past the locked viewport. */
+    padding-top: var(--snr-stack-pad, 300px);
+    transition: padding-top 0.45s ease;
   }
 }
 
@@ -2182,6 +2294,14 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
     margin-right 0.45s ease,
     border-radius 0.45s ease,
     transform 0.45s ease;
+}
+
+/* The orbital eases up to its pin rather than jumping there. */
+.snr-col-radar {
+  transition:
+    top 0.45s ease,
+    right 0.45s ease,
+    width 0.45s ease;
 }
 
 /* The right-hand cards arrive from off the right edge, staggered behind the
@@ -2410,10 +2530,57 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
     display: flex;
   }
 
+  /* Part 3.4, measured deviation. On a 390x844 phone the four stage-2 regions
+     provably do not coexist: the head, ping bar, synthesis chrome, dossier,
+     chart card and news list come to 747px of irreducible box inside 665px of
+     locked inner height, before the answer itself gets a single pixel. The
+     spec's own escape hatch (shrink the synthesis body first) closes only 82px
+     of that, so two things give here and both are named in the PR.
+
+     First the head. In stage 2 the visitor has already pinged; the headline
+     and the subhead are the pitch for an action they have taken, and the
+     eyebrow keeps the band identified. Worth 173px. */
+  .snr-band.snr-locked.snr-stage2 .snr-headline,
+  .snr-band.snr-locked.snr-stage2 .snr-subhead {
+    display: none;
+  }
+
+  /* Then the dossier, and only when the chart card is actually there to
+     replace it: .snr-has-fund is set from live.dossier.fundamentals. The fund
+     card's own head carries the ticker, the company name and the range chip,
+     so nothing identifying is lost, and when the legs come back empty the
+     dossier stays and carries the entity alone. Worth 233px. */
+  .snr-band.snr-locked.snr-stage2.snr-has-fund .snr-col-dossier {
+    display: none;
+  }
+
   /* Full width, and the chart-beside-ratios split is what keeps the card
      landscape on a phone too. */
   .snr-stack {
     width: 100%;
+  }
+
+  /* One screen on a phone means tighter cards and a shorter news list. */
+  .snr-band.snr-locked .snr-fund,
+  .snr-band.snr-locked .snr-news {
+    padding: 10px 12px;
+  }
+
+  /* No cap on the chart card. 130px sliced 26px off a card whose real height
+     is 156 on a 390px phone, because two of the four ratio labels wrap at a
+     69px column and the grid rows are equal-height. A half-drawn ratio grid
+     is worse than a shorter answer, and the answer is the one box in the
+     composition that scrolls, so it takes the difference. */
+
+  /* Two items, not a max-height. The cap used to slice the third row through
+     the middle, which is a clipped element by any reading of the acceptance
+     test; dropping it outright is honest and hands ~48px back to the answer. */
+  .snr-band.snr-locked .snr-news-item:nth-child(n + 3) {
+    display: none;
+  }
+
+  .snr-band.snr-locked .snr-col-dossier {
+    padding: 12px 14px;
   }
 
   .snr-fund--wide .snr-fund-body {
@@ -2430,6 +2597,7 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
 @media (prefers-reduced-motion: reduce) {
   .snr-orbital,
   .snr-col-dossier,
+  .snr-col-radar,
   .snr-fund,
   .snr-news {
     transition: none;
