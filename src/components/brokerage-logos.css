@@ -1,4 +1,47 @@
-/* Brokerage logos: five static tiles, one flipping at a time */
+/* Institution logos: two country groups, five tiles each, one flipping at a
+   time per group. */
+
+/* The two country blocks. Stacked, not side by side: five 188px tiles and
+   four gaps come to 996px, so two rows abreast would need ~2000px before the
+   section's own padding, and every width below that would shrink the tiles
+   past the point where a bank mark is legible. Stacked, both rows keep full
+   size at every width and the flags read as section markers. */
+.bl-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  align-items: center;
+}
+
+.bl-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.bl-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.bl-flag {
+  display: block;
+  /* Below the branding guard's 2px floor on purpose: a flag is a rectangle,
+     and any visible rounding at 20x14 reads as a rendering fault. */
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+.bl-group-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
 
 .bl-section {
   /* Vertical rhythm is owned by the shared .landing-page --landing-gap rule in
@@ -118,7 +161,9 @@
 .bl-logo-item {
   flex: 0 0 auto;
   width: 188px;
-  min-height: 66px; /* was height: 66px — the tile may GROW to fit content, never clip */
+  /* 8 + 56 mark + 4 gap + 17 label + 8 = 93. min-height, not height: the tile
+     may GROW to fit content, never clip. */
+  min-height: 96px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -142,21 +187,61 @@
   ); /* whisper of hover feedback, no outline */
 }
 
+/* 56px, not the 26px this slot held for wordmarks. Plaid ships square marks
+   (152x152), and a mark scaled to a wordmark's height is a 26px dot. */
 .bl-logo-slot {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 26px;
+  height: 56px;
   width: 100%;
   flex-shrink: 0;
 }
 
 .bl-logo-img {
-  max-height: 26px;
+  max-height: 56px;
   max-width: 140px;
   width: auto;
   height: auto;
   opacity: 0.9;
+}
+
+/* Square by construction, so the slot's max-height alone would let a
+   non-square mark letterbox. Fixed both ways with contain, which crops
+   nothing and centres whatever Plaid actually sent. */
+.bl-logo-img--mark {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+}
+
+/* The fallback when Plaid has no mark for an institution. A designed tile
+   rather than a gap: same 56px box as a mark, so a logo arriving after
+   hydration swaps in without moving anything. --bg-secondary rather than
+   --surface-card, which resolves to transparent in dark mode and would leave
+   the initials floating on the page background. */
+.bl-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  /* --radius-md, not the --radius-lg the brief named. The radius tokens do
+     not resolve to the values theme-variables.css declares: at runtime the
+     scale is 8/16/24/32px, so --radius-lg paints 24px, which on a 56px box is
+     a circle rather than the rounded square this is meant to be. --radius-md
+     is the nearest token that reads correctly. The scale's drift is a
+     repo-wide issue, not this tile's to fix. */
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.03em;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  box-sizing: border-box;
 }
 
 .bl-logo-label {
@@ -197,7 +282,12 @@ body.light-mode .bl-heading {
 
   .bl-logo-item {
     width: 160px;
-    min-height: 60px; /* was height: 60px */
+    min-height: 90px;
+  }
+
+  /* Groups stay stacked and keep their flags; the rows below already wrap. */
+  .bl-groups {
+    gap: 24px;
   }
 
   .bl-logo-label {
