@@ -66,6 +66,10 @@ import './sonar-band.css';
    Figure-light on purpose, so nothing here can go stale or be a number nobody
    sourced. The snr-anim-syn1/3/5 classes are the existing timeline keys,
    reused rather than renumbered. */
+/* Breathing room between the pinned orbital's bottom edge and the top of the
+   stack that clears it. Matches the .snr-stack flex gap. */
+const STACK_GAP = 20;
+
 const SYNTHESIS = [
   {
     cls: 'snr-anim-syn1',
@@ -191,6 +195,10 @@ export function SonarSection() {
   const bandRef = useRef(null);
   const inputRef = useRef(null);
   const formRef = useRef(null);
+  const headlineRef = useRef(null);
+  const innerRef = useRef(null);
+  const colsRef = useRef(null);
+  const radarRef = useRef(null);
   const pingBtnRef = useRef(null);
   /* Set the moment the visitor touches the field. The demo stands down: it is
      a demonstration, not a fight over the input. */
@@ -677,7 +685,7 @@ export function SonarSection() {
            a day, so a response produced before a pipeline fix keeps serving
            for up to 24h after the deploy that fixed it. Bumping this asks
            for a different URL, which is a different cache entry. */
-          const res = await fetch('/api/landing/demo-ping?v=5');
+          const res = await fetch('/api/landing/demo-ping?v=6');
           const data = await res.json().catch(() => null);
           if (!alive) return;
           if (res.ok && data?.answer) {
@@ -759,6 +767,86 @@ export function SonarSection() {
     const t = setTimeout(() => setStage2Settled(true), staging ? 500 : 0);
     return () => clearTimeout(t);
   }, [live]);
+
+  /* Stage 2 pins the orbital top-right with its top edge on the headline, and
+     drops the stack below it by exactly the orbital's reach.
+
+     Both numbers are measured, not guessed. The offsets depend on how the
+     headline copy wraps, which depends on the width; the orbital's height
+     depends on its own aspect at the stage-2 width. Two details matter:
+
+     - The offset is taken against .snr-inner, not .snr-band. .snr-inner is
+       position: relative, so IT is the containing block for the absolutely
+       positioned radar column. Measuring from the band put the orbital the
+       band's own top padding (96px) too low.
+     - The stack's top clearance used to be a 300px constant. That was taller
+       than the orbital actually reaches, and since the stack sits in a grid
+       row the surplus inflated the whole band past the viewport. Deriving it
+       from the same measurement is what lets the composition fit 768px. */
+  useEffect(() => {
+    if (!stage2) return undefined;
+    /* Captured for the cleanup: by the time it runs the ref may already point
+       somewhere else, and the two custom properties have to come off the node
+       they were set on. */
+    const bandNode = bandRef.current;
+    const radarNode = radarRef.current;
+    const apply = () => {
+      const h2 = headlineRef.current;
+      const inner = innerRef.current;
+      const band = bandRef.current;
+      if (!h2 || !inner || !band) return;
+      const innerTop = inner.getBoundingClientRect().top;
+      const top = Math.round(h2.getBoundingClientRect().top - innerTop);
+      band.style.setProperty('--snr-orb-top', `${top}px`);
+
+      const cols = colsRef.current;
+      const radar = radarRef.current;
+      if (!cols || !radar) return;
+      const colsTop = cols.getBoundingClientRect().top - innerTop;
+      /* Height, not bottom: the radar is mid-transition to its pin on the
+         first pass, so its own top is not trustworthy yet. Its height is. */
+      const reach = top + radar.getBoundingClientRect().height + STACK_GAP;
+      band.style.setProperty('--snr-stack-pad', `${Math.max(0, Math.round(reach - colsTop))}px`);
+    };
+    apply();
+    window.addEventListener('resize', apply);
+    /* The orbital's box settles over the 0.45s width transition, so re-measure
+       as it changes rather than once on a timer. */
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => apply());
+    if (ro && radarNode) ro.observe(radarNode);
+    return () => {
+      window.removeEventListener('resize', apply);
+      ro?.disconnect();
+      bandNode?.style.removeProperty('--snr-orb-top');
+      bandNode?.style.removeProperty('--snr-stack-pad');
+    };
+  }, [stage2]);
+
+  /* Part 3.5: ONE owner for the takeover classes and the freeze, mirroring
+     lockedIn. The classes used to be toggled from three places, and a path
+     that set them without freezing produced the state in the screenshot: a
+     transparent nav over a page that still scrolled, so the bar overlapped
+     the cards. Class and freeze cannot diverge if the same effect asserts
+     both, including after a resize. */
+  useEffect(() => {
+    const band = bandRef.current;
+    if (!lockedIn) {
+      unfreezeBody();
+      document.body.classList.remove('snr-takeover');
+      document.documentElement.classList.remove('snr-takeover');
+      return undefined;
+    }
+    const assert = () => {
+      document.body.classList.add('snr-takeover');
+      document.documentElement.classList.add('snr-takeover');
+      if (document.body.style.position !== 'fixed' && band) {
+        freezeBody(band.getBoundingClientRect().top + window.scrollY);
+      }
+    };
+    assert();
+    window.addEventListener('resize', assert);
+    return () => window.removeEventListener('resize', assert);
+  }, [lockedIn, freezeBody, unfreezeBody]);
 
   /* The arrow: dismiss the lock for the rest of the visit, then hand the
      page back to the visitor at the section below. */
@@ -862,11 +950,11 @@ export function SonarSection() {
       ref={bandRef}
       className={`snr-band${inView ? '' : ' snr-paused'}${lockedIn ? ' snr-locked' : ''}${
         hasPinged ? ' snr-live' : ''
-      }${stage2 ? ' snr-stage2' : ''}`}
+      }${stage2 ? ' snr-stage2' : ''}${live?.dossier?.fundamentals ? ' snr-has-fund' : ''}`}
     >
       <div className="snr-grid-layer" aria-hidden="true" />
 
-      <div className="snr-inner">
+      <div ref={innerRef} className="snr-inner">
         <div className="snr-head">
           <div className="snr-eyebrow-row">
             <span className="snr-beacon" aria-hidden="true" />
@@ -874,7 +962,9 @@ export function SonarSection() {
             <span className="snr-rule" aria-hidden="true" />
             <span className="snr-kicker">RESEARCH SURFACE, NOT A CHATBOT</span>
           </div>
-          <h2 className="snr-headline">Ping anything. Sonar sweeps everything.</h2>
+          <h2 ref={headlineRef} className="snr-headline">
+            Ping anything. Sonar sweeps everything.
+          </h2>
           <p className="snr-subhead">
             One query, swept across congressional trades, government contracts, SEC filings,
             prediction markets, lobbying disclosures, Echo editorial, and the live web. Every claim
@@ -882,7 +972,7 @@ export function SonarSection() {
           </p>
         </div>
 
-        <div className="snr-cols">
+        <div ref={colsRef} className="snr-cols">
           <div className="snr-col-left">
             <form
               ref={formRef}
@@ -1105,8 +1195,8 @@ export function SonarSection() {
             </div>
           </div>
 
-          <div className="snr-col-radar">
-            <SonarOrbital relevance={live?.relevance ?? null} />
+          <div ref={radarRef} className="snr-col-radar">
+            <SonarOrbital relevance={live?.relevance ?? null} hubLabel={live ? lastQuery : null} />
           </div>
 
           <div className="snr-col-dossier" aria-hidden={hasPinged ? undefined : 'true'}>
