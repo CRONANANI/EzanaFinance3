@@ -26,6 +26,10 @@ import { getFmpKey } from '@/lib/fmp/upcoming-events';
  */
 
 const FMP_STABLE = 'https://financialmodelingprep.com/stable';
+/* The legacy v3 API, same key. Every dossier leg falls back to it, so a
+   /stable/ path this plan does not serve degrades one field instead of the
+   whole card. */
+const FMP_V3 = 'https://financialmodelingprep.com/api/v3';
 const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
 
 export const DISCLAIMER =
@@ -38,7 +42,7 @@ Rules:
 - If the datasets have little or nothing on the subject, say so in ONE clause at most, inside a sentence that still delivers substance from the web. Never make dataset absence the headline or the topic of a paragraph.
 - Never present another company's data as context filler. If a snippet is about a different entity, ignore it.
 - Findings only. No financial or investment advice, price targets, or buy/sell/hold language. No fabricated figures: numbers come from a snippet or from a web result.
-- EXACTLY three short paragraphs separated by blank lines: (1) direct answer to the ping, (2) the strongest specifics, dataset-cited where possible, (3) cross-signals or what to watch. No headers, no lists, no em dashes.`;
+- EXACTLY three short paragraphs separated by blank lines: (1) direct answer to the ping, (2) the strongest specifics, dataset-cited where possible, (3) cross-signals or what to watch. Each paragraph is 50 to 80 words. No headers, no lists, no em dashes.`;
 
 /* The ungrounded variant. A ping that retrieves nothing used to dead-end on an
    apology; this answers from general knowledge instead and says so, which is
@@ -56,7 +60,7 @@ Rules:
 - Never invent dataset citations. Do not use [S1] style markers at all: there are no snippets to cite. If web search did not run, say plainly that this is general background rather than sourced research.
 - No fabricated figures, dates or names. A number either comes from a web result or does not appear.
 - Findings only. No financial or investment advice, price targets, or buy/sell/hold language.
-- EXACTLY three short paragraphs separated by blank lines: (1) direct answer to the ping, (2) the strongest specifics, (3) what to watch, or a better ping for sourced results. No headers, no lists, no em dashes.`;
+- EXACTLY three short paragraphs separated by blank lines: (1) direct answer to the ping, (2) the strongest specifics, (3) what to watch, or a better ping for sourced results. Each paragraph is 50 to 80 words. No headers, no lists, no em dashes.`;
 
 /* Dataset to taxonomy dimension. SONAR_DATASETS entries carry {id,label,source}
    and no dimension, so the mapping is stated here against DATASET_TAXONOMY's
@@ -110,6 +114,36 @@ async function fetchJson(url, ms = 4000) {
   return res.json();
 }
 
+/**
+ * Same fetch, but it reports the status. A leg that comes back empty tells you
+ * nothing on its own: 200-with-no-rows (wrong symbol) and 403 (plan does not
+ * cover this path) look identical downstream, and that ambiguity is what made
+ * the empty dossier hard to pin down. Every leg now records its code.
+ */
+async function fetchWithStatus(url, ms = 4000) {
+  try {
+    const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(ms) });
+    const status = res.status;
+    if (!res.ok) return { status, data: null };
+    return { status, data: await res.json() };
+  } catch (e) {
+    return { status: e?.name === 'TimeoutError' ? 'timeout' : 'neterr', data: null };
+  }
+}
+
+/** First non-empty response across a chain of URLs, with the status of each. */
+async function firstOf(urls, pick, ms = 4000) {
+  const codes = [];
+  for (const { id, url } of urls) {
+    if (!url) continue;
+    const { status, data } = await fetchWithStatus(url, ms);
+    const value = data == null ? null : pick(data);
+    codes.push(`${id}:${status}${value ? '' : ':empty'}`);
+    if (value) return { value, codes };
+  }
+  return { value: null, codes };
+}
+
 function tickerToken(query) {
   const dollar = String(query).match(/\$([A-Za-z]{1,5})\b/);
   if (dollar) return dollar[1].toUpperCase();
@@ -131,24 +165,61 @@ function tickerToken(query) {
  * works on whichever one the plan actually answers instead of on a guess. The
  * log line names the winner, so production tells us which it is.
  */
+/**
+ * Pick the US primary listing out of a search result set.
+ *
+ * This is the whole reason the dossier was empty. FMP's name search returned
+ * LMT.BA, the Buenos Aires cross-listing, as its first match for "Lockheed
+ * Martin", and every dossier leg then queried a symbol the quote, ratios and
+ * price-history endpoints have nothing useful for: fund=false spark=0 news=0.
+ * The /stable/ paths were never the problem; the ticker was.
+ *
+ * A suffixed symbol (LMT.BA, LMT.MX) is a foreign listing by FMP's
+ * convention, so an unsuffixed match wins. Exchange is the tiebreak where the
+ * payload carries one.
+ */
+const US_EXCHANGES = new Set(['NASDAQ', 'NYSE', 'AMEX', 'NYSEARCA', 'BATS', 'OTC']);
+
+function pickUsListing(rows) {
+  const list = Array.isArray(rows)
+    ? rows.filter((r) => r?.symbol && (r.name || r.companyName))
+    : [];
+  if (!list.length) return null;
+  const score = (r) => {
+    const sym = String(r.symbol).toUpperCase();
+    const ex = String(r.exchangeShortName || r.exchange || '').toUpperCase();
+    let n = 0;
+    if (!sym.includes('.')) n += 2;
+    if (US_EXCHANGES.has(ex)) n += 1;
+    return n;
+  };
+  const best = list.reduce((a, b) => (score(b) > score(a) ? b : a), list[0]);
+  return {
+    ticker: String(best.symbol).toUpperCase(),
+    name: String(best.name || best.companyName),
+  };
+}
+
+/* limit=10, not 1: picking the right listing needs more than one candidate. */
 const NAME_LOOKUPS = [
   {
     id: 'fmp/search-name',
-    url: (q, k) => `${FMP_STABLE}/search-name?query=${encodeURIComponent(q)}&limit=1&apikey=${k}`,
-    pick: (d) => (Array.isArray(d) ? d[0] : null),
-    map: (r) =>
-      r?.symbol && r?.name
-        ? { ticker: String(r.symbol).toUpperCase(), name: String(r.name) }
-        : null,
+    url: (q, k) => `${FMP_STABLE}/search-name?query=${encodeURIComponent(q)}&limit=10&apikey=${k}`,
+    pick: (d) => d,
+    map: (d) => pickUsListing(d),
   },
   {
     id: 'fmp/search-symbol',
-    url: (q, k) => `${FMP_STABLE}/search-symbol?query=${encodeURIComponent(q)}&limit=1&apikey=${k}`,
-    pick: (d) => (Array.isArray(d) ? d[0] : null),
-    map: (r) =>
-      r?.symbol && r?.name
-        ? { ticker: String(r.symbol).toUpperCase(), name: String(r.name) }
-        : null,
+    url: (q, k) =>
+      `${FMP_STABLE}/search-symbol?query=${encodeURIComponent(q)}&limit=10&apikey=${k}`,
+    pick: (d) => d,
+    map: (d) => pickUsListing(d),
+  },
+  {
+    id: 'fmp-v3/search',
+    url: (q, k) => `${FMP_V3}/search?query=${encodeURIComponent(q)}&limit=10&apikey=${k}`,
+    pick: (d) => d,
+    map: (d) => pickUsListing(d),
   },
 ];
 
@@ -156,6 +227,12 @@ const TICKER_LOOKUPS = [
   {
     id: 'fmp/profile',
     url: (t, k) => `${FMP_STABLE}/profile?symbol=${encodeURIComponent(t)}&apikey=${k}`,
+    pick: (d) => (Array.isArray(d) ? d[0] : d),
+    map: (r, t) => (r?.companyName ? { ticker: t, name: String(r.companyName) } : null),
+  },
+  {
+    id: 'fmp-v3/profile',
+    url: (t, k) => `${FMP_V3}/profile/${encodeURIComponent(t)}?apikey=${k}`,
     pick: (d) => (Array.isArray(d) ? d[0] : d),
     map: (r, t) => (r?.companyName ? { ticker: t, name: String(r.companyName) } : null),
   },
@@ -262,6 +339,12 @@ function flatRelevance(v) {
   return Object.fromEntries(ALL_DIMENSIONS.map((d) => [d, v]));
 }
 
+/** First finite number among the candidates, so field-name drift is survivable. */
+function num(...vals) {
+  for (const v of vals) if (typeof v === 'number' && Number.isFinite(v)) return v;
+  return null;
+}
+
 /** The fourth stat, named from whatever the ratios payload actually carries. */
 function fourthStat(ratios) {
   if (!ratios) return null;
@@ -295,28 +378,59 @@ export async function buildDossier({ ticker, name }, admin) {
      happens to cover. */
   const ytdFrom = `${today.getUTCFullYear()}-01-01`;
 
-  const legs = await Promise.allSettled([
-    apikey
-      ? fetchJson(`${FMP_STABLE}/quote?symbol=${sym}&apikey=${encodeURIComponent(apikey)}`)
-      : null,
-    apikey
-      ? fetchJson(`${FMP_STABLE}/ratios-ttm?symbol=${sym}&apikey=${encodeURIComponent(apikey)}`)
-      : null,
-    apikey
-      ? fetchJson(
-          `${FMP_STABLE}/historical-price-eod/light?symbol=${sym}&from=${ytdFrom}&to=${to}&apikey=${encodeURIComponent(apikey)}`,
-        )
-      : null,
-    /* Same upstream and key the city-news route already uses for per-ticker
-       headlines, called server-side here rather than through the browser
-       proxy that FinnhubAPI targets. */
-    finnhubKey
-      ? fetchJson(
-          `https://finnhub.io/api/v1/company-news?symbol=${sym}&from=${from}&to=${to}&token=${encodeURIComponent(finnhubKey)}`,
-        )
-      : null,
-    admin
-      ? admin
+  const k = encodeURIComponent(apikey);
+  const u = (path) => (apikey ? { id: path.split('?')[0].split('/').pop(), url: path } : {});
+
+  /* Every leg is a chain: the /stable/ path first, then the legacy v3 path on
+     the same key. A plan that does not serve one of them loses a field, not
+     the card. Each chain reports the status of every attempt, so the next
+     empty dossier says WHY: 403 means the plan, 200:empty means the symbol. */
+  const legs = await Promise.all([
+    firstOf(
+      [u(`${FMP_STABLE}/quote?symbol=${sym}&apikey=${k}`), u(`${FMP_V3}/quote/${sym}?apikey=${k}`)],
+      (d) => (Array.isArray(d) ? d[0] : d) || null,
+    ),
+    firstOf(
+      [
+        u(`${FMP_STABLE}/ratios-ttm?symbol=${sym}&apikey=${k}`),
+        u(`${FMP_V3}/ratios-ttm/${sym}?apikey=${k}`),
+        u(`${FMP_V3}/key-metrics-ttm/${sym}?apikey=${k}`),
+      ],
+      (d) => (Array.isArray(d) ? d[0] : d) || null,
+    ),
+    firstOf(
+      [
+        u(
+          `${FMP_STABLE}/historical-price-eod/light?symbol=${sym}&from=${ytdFrom}&to=${to}&apikey=${k}`,
+        ),
+        u(`${FMP_V3}/historical-price-full/${sym}?from=${ytdFrom}&serietype=line&apikey=${k}`),
+      ],
+      (d) => {
+        const r = Array.isArray(d) ? d : Array.isArray(d?.historical) ? d.historical : null;
+        return r && r.length ? r : null;
+      },
+    ),
+    /* News: Finnhub first, the upstream the city-news route already uses, then
+       FMP's own stock_news on the same key so a resolved ticker is never
+       structurally newsless for want of a second provider. */
+    firstOf(
+      [
+        finnhubKey
+          ? {
+              id: 'finnhub/company-news',
+              url: `https://finnhub.io/api/v1/company-news?symbol=${sym}&from=${from}&to=${to}&token=${encodeURIComponent(finnhubKey)}`,
+            }
+          : {},
+        u(`${FMP_V3}/stock_news?tickers=${sym}&limit=4&apikey=${k}`),
+      ],
+      (d) => (Array.isArray(d) && d.length ? d : null),
+    ),
+  ]);
+
+  let echoRes = null;
+  try {
+    echoRes = admin
+      ? await admin
           .from('echo_articles')
           .select('article_title, article_slug, published_at')
           .eq('article_status', 'published')
@@ -326,17 +440,18 @@ export async function buildDossier({ ticker, name }, admin) {
           )
           .order('published_at', { ascending: false })
           .limit(3)
-      : null,
-  ]);
+      : null;
+  } catch {
+    /* fail-soft: the card renders on external news alone */
+  }
 
-  const val = (i) => (legs[i].status === 'fulfilled' ? legs[i].value : null);
-  const quote = Array.isArray(val(0)) ? val(0)[0] : val(0);
-  const ratios = Array.isArray(val(1)) ? val(1)[0] : val(1);
-  const eod = val(2);
-  const news = val(3);
-  const echoRes = val(4);
+  const quote = legs[0].value;
+  const ratios = legs[1].value;
+  const eod = legs[2].value;
+  const news = legs[3].value;
+  const legCodes = legs.flatMap((l) => l.codes);
 
-  const rows = Array.isArray(eod) ? eod : Array.isArray(eod?.historical) ? eod.historical : [];
+  const rows = Array.isArray(eod) ? eod : [];
   /* FMP returns newest first; the chart reads left to right in time. No
      slice: the whole year is the series. */
   const spark = rows
@@ -351,18 +466,20 @@ export async function buildDossier({ ticker, name }, admin) {
       ? {
           price: quote.price,
           marketCap: typeof quote.marketCap === 'number' ? quote.marketCap : null,
-          peTtm:
-            typeof ratios?.priceToEarningsRatioTTM === 'number'
-              ? ratios.priceToEarningsRatioTTM
-              : typeof quote.pe === 'number'
-                ? quote.pe
-                : null,
-          evToEbitdaTtm:
-            typeof ratios?.enterpriseValueMultipleTTM === 'number'
-              ? ratios.enterpriseValueMultipleTTM
-              : typeof ratios?.evToEBITDATTM === 'number'
-                ? ratios.evToEBITDATTM
-                : null,
+          /* Field names differ between /stable/ and v3 and between
+             ratios-ttm and key-metrics-ttm; whichever chain answered, the
+             label stays truthful to the source field. */
+          peTtm: num(
+            ratios?.priceToEarningsRatioTTM,
+            ratios?.peRatioTTM,
+            ratios?.priceEarningsRatioTTM,
+            quote?.pe,
+          ),
+          evToEbitdaTtm: num(
+            ratios?.enterpriseValueMultipleTTM,
+            ratios?.evToEBITDATTM,
+            ratios?.enterpriseValueOverEBITDATTM,
+          ),
           fourth: fourthStat(ratios),
         }
       : null;
@@ -373,14 +490,21 @@ export async function buildDossier({ ticker, name }, admin) {
     fundamentals,
     spark: spark.length >= 2 ? spark : null,
     sparkLabel: 'YTD',
+    /* Surfaced in the trace so an empty card explains itself. */
+    legCodes,
+    /* Finnhub calls it headline/datetime, FMP calls it title/publishedDate. */
     news: (Array.isArray(news) ? news : [])
-      .filter((n) => n?.headline && n?.url)
+      .filter((n) => (n?.headline || n?.title) && n?.url)
       .slice(0, 2)
       .map((n) => ({
-        title: String(n.headline),
+        title: String(n.headline || n.title),
         url: String(n.url),
-        source: String(n.source || 'News'),
-        publishedAt: n.datetime ? new Date(n.datetime * 1000).toISOString() : null,
+        source: String(n.source || n.site || 'News'),
+        publishedAt: n.datetime
+          ? new Date(n.datetime * 1000).toISOString()
+          : n.publishedDate
+            ? new Date(n.publishedDate).toISOString()
+            : null,
       })),
     echo: (Array.isArray(echoRes?.data) ? echoRes.data : [])
       .filter((r) => r?.article_title && r?.article_slug)
@@ -497,9 +621,10 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
         synthesizeWithFallback({
           system: GROUNDED_SYSTEM_PROMPT,
           user: `Ping: ${query}\n\nSources:\n${sourcesBlock}`,
-          /* Answers carry web facts as well as snippets now, so they need
-             the room. */
-          maxTokens: 600,
+          /* Enough for web facts alongside snippets, capped so the panel
+             stays inside the locked viewport: the card used to grow the page
+             past one screen. Paired with the 50-to-80-word rule above. */
+          maxTokens: 480,
           model: HAIKU_MODEL,
           fallbackModel: HAIKU_MODEL,
           /* Inert until SONAR_WEB_SEARCH=true is set: anthropicSynthesize
@@ -523,7 +648,7 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
         synthesizeWithFallback({
           system: GENERAL_SYSTEM_PROMPT,
           user: `Ping: ${query}${resolved ? ` (resolved to ${resolved.name}, ${resolved.ticker})` : ''}`,
-          maxTokens: 600,
+          maxTokens: 480,
           model: HAIKU_MODEL,
           fallbackModel: HAIKU_MODEL,
           webSearch: { enabled: true, maxUses: 2 },
@@ -554,7 +679,7 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
         'dossier',
         () => buildDossier(resolved, admin),
         (v) =>
-          `fund=${Boolean(v.fundamentals)} spark=${v.spark ? v.spark.length : 0} news=${v.news.length} echo=${v.echo.length}`,
+          `fund=${Boolean(v.fundamentals)} spark=${v.spark ? v.spark.length : 0} news=${v.news.length} echo=${v.echo.length} [${(v.legCodes || []).join(' ')}]`,
       );
     } catch {
       /* The dossier is an enrichment. Losing it degrades the stage; it must
