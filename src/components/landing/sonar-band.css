@@ -51,6 +51,13 @@
   --snr-divider: rgba(110, 231, 183, 0.18);
   --snr-panel: rgba(3, 18, 14, 0.5);
   --snr-panel-solid: rgba(4, 20, 15, 0.72);
+  /* The gate's scrim: the band gradient's darkest stop at 78%, which is what
+     makes the ping bar and the panel unreadable beneath the cover while the
+     emerald still reads through. It lives here rather than being mixed from
+     --snr-takeover-bg, which is only defined on html.snr-takeover and
+     body.snr-takeover: the gate also opens outside the lock, so that mix
+     would have taken its literal fallback every time it mattered. */
+  --snr-gate-scrim: rgba(3, 42, 33, 0.78);
   --snr-field: rgba(3, 18, 14, 0.62);
   --snr-row: rgba(0, 0, 0, 0.22);
 
@@ -301,6 +308,9 @@
 }
 
 .snr-col-left {
+  /* Containing block for the gate cover, which spans the ping bar and the
+     synthesis panel together. */
+  position: relative;
   width: 470px;
   flex-shrink: 0;
   display: flex;
@@ -1700,22 +1710,42 @@
   text-decoration-color: var(--snr-mint);
 }
 
-/* Auth gate popover, anchored to the synthesis panel. */
-.snr-gate {
+/* Full-cover auth gate. It used to be a card pinned to the bottom of the
+   synthesis panel, which left the input and the answer legible and usable
+   above it. It now shades the whole left column, ping bar included, and
+   centres its own content on both axes. */
+.snr-gate--cover {
   position: absolute;
-  inset: auto 14px 14px 14px;
-  z-index: 5;
-  padding: 16px 18px;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: var(--snr-r-panel);
-  background: var(--snr-panel-solid);
+  background: var(--snr-gate-scrim);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(110, 231, 183, 0.35);
   box-shadow: var(--snr-lift);
 }
 
+/* The container takes focus when the dialog opens, so it must not also draw
+   the focus ring meant for controls. */
+.snr-gate--cover:focus {
+  outline: none;
+}
+
+.snr-gate-inner {
+  max-width: 340px;
+  padding: 0 24px;
+  text-align: center;
+}
+
 .snr-gate-close {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  /* Now measured against the whole column overlay, not a small card. */
+  top: 14px;
+  right: 14px;
   appearance: none;
   background: none;
   border: 0;
@@ -1727,16 +1757,16 @@
 }
 
 .snr-gate-title {
-  margin: 0 0 4px;
-  font-size: 14px;
+  margin: 0 0 8px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--snr-text);
 }
 
 .snr-gate-sub {
-  margin: 0 0 12px;
-  font-size: 12.5px;
-  line-height: 1.5;
+  margin: 0 0 18px;
+  font-size: 13.5px;
+  line-height: 1.55;
   color: var(--snr-text-muted);
 }
 
@@ -1750,11 +1780,17 @@
 
 .snr-gate-actions {
   display: flex;
+  justify-content: center;
   gap: 10px;
 }
 
 .snr-gate-btn {
-  flex: 1;
+  /* Sized to their own copy and centred, rather than stretched to the width
+     of a column that is now the full card. */
+  min-width: 128px;
+  flex: 0 0 auto;
+  padding-left: 16px;
+  padding-right: 16px;
   text-align: center;
   padding: 9px 0;
   border-radius: var(--snr-r-pill);

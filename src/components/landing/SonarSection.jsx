@@ -196,6 +196,10 @@ export function SonarSection() {
   const inputRef = useRef(null);
   const formRef = useRef(null);
   const headlineRef = useRef(null);
+  const gateRef = useRef(null);
+  /* Where focus was when the gate opened, so closing it puts a keyboard
+     visitor back rather than dropping them at the top of the document. */
+  const gateReturnRef = useRef(null);
   const innerRef = useRef(null);
   const colsRef = useRef(null);
   const radarRef = useRef(null);
@@ -304,7 +308,8 @@ export function SonarSection() {
     };
   }, []);
 
-  /* Escape closes the gate, as a dialog should. */
+  /* Escape closes the gate, as a dialog should. The listener is on the
+     document, so it is unaffected by the gate moving up a level in the tree. */
   useEffect(() => {
     if (!gateOpen) return undefined;
     const onKey = (e) => {
@@ -312,6 +317,23 @@ export function SonarSection() {
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
+  }, [gateOpen]);
+
+  /* Focus follows the dialog. The container takes it rather than the first
+     control, because the first control is the close button and landing on it
+     invites dismissing the thing the visitor was meant to read. Restoring on
+     close is safe even though the opener sits inside the inert region: this
+     is a passive effect, so its cleanup runs after the commit that removed
+     inert. */
+  useEffect(() => {
+    if (!gateOpen) return undefined;
+    const previous = document.activeElement;
+    gateReturnRef.current = previous instanceof HTMLElement ? previous : null;
+    gateRef.current?.focus();
+    return () => {
+      gateReturnRef.current?.focus();
+      gateReturnRef.current = null;
+    };
   }, [gateOpen]);
 
   /* The hold is a physical freeze, not a clamp. Re-pinning scrollY from a
@@ -898,7 +920,7 @@ export function SonarSection() {
       const data = await res.json().catch(() => null);
       if (data?.gate) {
         openGate({
-          title: 'You have used your 5 free pings.',
+          title: 'You\u2019ve used your 5 free pings.',
           sub: 'Create a free account to keep pinging across every Ezana dataset.',
         });
         setLive((l) => (l ? { ...l, remaining: 0 } : l));
@@ -942,6 +964,12 @@ export function SonarSection() {
   /* Both conditions, not either: now that the stage and the type-out run
      concurrently, the stage settling no longer implies the answer has
      finished arriving. */
+  /* Resolved once: the dialog's accessible name has to be the same string the
+     title renders, and both gate paths reach the same component. */
+  const gateTitle = gateCopy?.title || 'This tool lives inside Ezana.';
+  const gateSub =
+    gateCopy?.sub || 'Log in or create a free account to open charts, filings, and trackers.';
+
   const arrowReady =
     (stage2Settled && typed === -1) || Boolean(pingError) || demoFailed || deadlinePassed;
 
@@ -974,6 +1002,11 @@ export function SonarSection() {
 
         <div ref={colsRef} className="snr-cols">
           <div className="snr-col-left">
+            {/* Both shaded regions go inert while the gate is up, so the
+                content the visitor cannot read is also content they cannot
+                tab into or hear read out. React 18 does not know `inert` as a
+                boolean prop, so it is passed as the empty string, which is
+                the attribute's own HTML form. */}
             <form
               ref={formRef}
               className="snr-pingbar"
@@ -981,6 +1014,7 @@ export function SonarSection() {
               method="get"
               role="search"
               onSubmit={onPingSubmit}
+              inert={gateOpen ? '' : undefined}
             >
               <i className="bi bi-search snr-pingbar-icon" aria-hidden="true" />
               <label className="snr-label-sr" htmlFor="snr-ping-input">
@@ -1047,7 +1081,7 @@ export function SonarSection() {
               </svg>
             </form>
 
-            <div className="snr-synth">
+            <div className="snr-synth" inert={gateOpen ? '' : undefined}>
               <div className="snr-panel-head">
                 <span className="snr-beacon-sm" aria-hidden="true" />
                 <span className="snr-panel-title">LIVE SYNTHESIS</span>
@@ -1153,34 +1187,6 @@ export function SonarSection() {
                 )}
               </div>
 
-              {gateOpen ? (
-                <div className="snr-gate" role="dialog" aria-label="Sign in to open this tool">
-                  <button
-                    type="button"
-                    className="snr-gate-close"
-                    aria-label="Close"
-                    onClick={() => setGateOpen(false)}
-                  >
-                    <i className="bi bi-x-lg" aria-hidden="true" />
-                  </button>
-                  <p className="snr-gate-title">
-                    {gateCopy?.title || 'This tool lives inside Ezana.'}
-                  </p>
-                  <p className="snr-gate-sub">
-                    {gateCopy?.sub ||
-                      'Log in or create a free account to open charts, filings, and trackers.'}
-                  </p>
-                  <div className="snr-gate-actions">
-                    <a className="snr-gate-btn snr-gate-btn-ghost" href="/signin?next=/sonar">
-                      Log in
-                    </a>
-                    <a className="snr-gate-btn snr-gate-btn-solid" href="/signup?next=/sonar">
-                      Sign up free
-                    </a>
-                  </div>
-                </div>
-              ) : null}
-
               <div className="snr-divider-line" aria-hidden="true" />
 
               <div className="snr-foot">
@@ -1193,6 +1199,49 @@ export function SonarSection() {
                 </a>
               </div>
             </div>
+
+            {/* The gate is a sibling of the panel rather than a child of it,
+                which is the whole point: inset 0 on the column covers the ping
+                bar and the synthesis card together. Pinned to the bottom of
+                the panel it left the input readable and usable underneath. */}
+            {gateOpen ? (
+              <div
+                ref={gateRef}
+                tabIndex={-1}
+                className="snr-gate snr-gate--cover"
+                role="dialog"
+                /* role="dialog" without aria-modal on purpose. aria-modal
+                   tells assistive tech that everything outside the dialog is
+                   inert, and here it is not: the gate covers one column, and
+                   the dossier, the orbital and the news list stay visible and
+                   tabbable, which a tab-order trace confirms. Claiming modal
+                   would hide the rest of the band from screen reader users
+                   alone, for a dismissible upsell. What the gate does cover is
+                   genuinely unreachable, via inert on the two regions. */
+                aria-label={gateTitle}
+              >
+                <button
+                  type="button"
+                  className="snr-gate-close"
+                  aria-label="Close"
+                  onClick={() => setGateOpen(false)}
+                >
+                  <i className="bi bi-x-lg" aria-hidden="true" />
+                </button>
+                <div className="snr-gate-inner">
+                  <p className="snr-gate-title">{gateTitle}</p>
+                  <p className="snr-gate-sub">{gateSub}</p>
+                  <div className="snr-gate-actions">
+                    <a className="snr-gate-btn snr-gate-btn-ghost" href="/signin?next=/sonar">
+                      Log in
+                    </a>
+                    <a className="snr-gate-btn snr-gate-btn-solid" href="/signup?next=/sonar">
+                      Sign up free
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </div>
 
           <div ref={radarRef} className="snr-col-radar">
