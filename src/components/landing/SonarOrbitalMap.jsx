@@ -179,7 +179,7 @@ function MobileRadarFlow({ dims, sourceDetails, accentColor }) {
   );
 }
 
-export default function SonarOrbitalMap({ sourceDetails, relevance = null }) {
+export default function SonarOrbitalMap({ sourceDetails, relevance = null, hubLabel = null }) {
   const accentColor = '#10b981';
   // `hoveredDim` is transient (mouse/focus over a dot or label); `pinnedDim`
   // persists after a click so the description card stays open. The card shows
@@ -513,9 +513,58 @@ export default function SonarOrbitalMap({ sourceDetails, relevance = null }) {
                 strokeWidth="1.5"
               />
               <circle cx={CX} cy={CY} r={40} fill="url(#radar-hg)" />
-              <text x={CX} y={CY + 6} textAnchor="middle" className="radar-hub-label">
-                Ezana
-              </text>
+              {/* The hub names what was pinged. Two lines, because most company
+                  names are two words and one line of "Lockheed Martin" does not
+                  fit an r=40 hub at any readable size.
+
+                  Everything here is in the 1120x760 viewBox's user units, which
+                  is the whole difficulty: the hub is 80 units across while the
+                  default label is 30 units tall, so a fixed line offset and a
+                  fixed size are both wrong. A 16-unit dy drew the two lines 4px
+                  apart on screen, one over the other. The size is derived from
+                  the longest line instead and the offset follows it in ems.
+
+                  Without a ping the label is untouched: same single line, same
+                  size off the stylesheet, so the resting orbital is unchanged. */}
+              {(() => {
+                const pinged = typeof hubLabel === 'string' && hubLabel.trim();
+                if (!pinged) {
+                  return (
+                    <text x={CX} y={CY + 6} textAnchor="middle" className="radar-hub-label">
+                      Ezana
+                    </text>
+                  );
+                }
+                const words = pinged.split(/\s+/);
+                const clip = (w) => (w.length > 12 ? `${w.slice(0, 11)}\u2026` : w);
+                const line1 = clip(words.length > 1 ? words[0] : pinged);
+                const line2 = words.length > 1 ? clip(words.slice(1).join(' ')) : null;
+                const longest = Math.max(line1.length, line2 ? line2.length : 0);
+                /* ~72 units of usable width inside the hub, and the face
+                   advances at roughly 0.58em, so this is the size at which the
+                   longest line just fits. Capped at the stylesheet's 30 so a
+                   three-letter ticker is not drawn comically large. */
+                const fs = Math.max(9, Math.min(30, Math.round(72 / (longest * 0.58))));
+                /* Baseline maths, not guesses: 0.36em is about the cap-height
+                   centre, so a single line lands on CY and a pair straddles it. */
+                const lift = Math.round(fs * 0.36);
+                return (
+                  <text
+                    x={CX}
+                    y={line2 ? CY - Math.round(fs * 0.55) + lift : CY + lift}
+                    textAnchor="middle"
+                    className="radar-hub-label"
+                    style={{ fontSize: `${fs}px` }}
+                  >
+                    <tspan x={CX}>{line1}</tspan>
+                    {line2 ? (
+                      <tspan x={CX} dy="1.1em">
+                        {line2}
+                      </tspan>
+                    ) : null}
+                  </text>
+                );
+              })()}
 
               {/* Dimension icons (interactive). The title labels are gone; each
                   axis shows its Datasets-menu icon, all white on the band. Ink

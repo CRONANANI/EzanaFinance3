@@ -18,6 +18,9 @@
  * `relevance` is the per-dimension 0..1 vector a ping returns. It is passed
  * straight through: the map turns it into each dot's resting radius, so after
  * a ping the dimensions that actually matched sit out by their icons.
+ * `hubLabel` names what was pinged, in the hub, for as long as a result is
+ * live. The app's /sonar page renders no orbital today, so this lands in the
+ * fork only; an app orbital should import this component to inherit it.
  */
 
 'use client';
@@ -25,10 +28,14 @@
 import SonarOrbitalMap from '@/components/landing/SonarOrbitalMap';
 import { DIMENSION_SOURCE_DETAILS } from '@/lib/datasets/taxonomy';
 
-export function SonarOrbital({ relevance = null }) {
+export function SonarOrbital({ relevance = null, hubLabel = null }) {
   return (
     <div className="snr-orbital">
-      <SonarOrbitalMap sourceDetails={DIMENSION_SOURCE_DETAILS} relevance={relevance} />
+      <SonarOrbitalMap
+        sourceDetails={DIMENSION_SOURCE_DETAILS}
+        relevance={relevance}
+        hubLabel={hubLabel}
+      />
     </div>
   );
 }
