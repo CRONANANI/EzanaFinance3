@@ -1,23 +1,33 @@
 /**
  * BrokerageLogos — "Connect your bank or brokerage" section.
  *
- * Two country groups, Canada and the United States, each under a small inline
- * flag. Each group runs the same flip mechanic as before: five tiles, one
- * flipping on its Y axis roughly every 2.4s into an institution not currently
- * on screen. The two rows are offset by half the interval so they never flip
- * in sync.
+ * Two country groups, Canada and the United States, twenty institutions each
+ * under a small inline flag. Five are on screen per row; the other fifteen
+ * wait in the wings.
+ *
+ * ONE randomizer drives both rows. Every 2.4s it draws a single position out
+ * of all ten and flips it, so the section has no alternation and no phase
+ * offset: the same row can flip twice running, which is what makes it read as
+ * one surface rather than two loops that happen to share a page.
+ *
+ * A flip is atomic. The `is-flipping` class sits on the wrapper around both
+ * the mark and the label, and the content swap fires at the 90 degree edge, so
+ * the outgoing bank's logo and name leave together and the incoming bank's
+ * arrive together. A tile never shows one bank's logo over another's name.
  *
  * Icons are Plaid-first. /api/landing/institution-icons resolves the roster by
- * name and returns marks as data URIs; a name Plaid does not cover falls back
- * to an initials tile, tinted with the institution's Plaid colour when one is
- * known. There is no broken-image state and no empty slot at any point: the
- * server renders initials tiles, and Plaid marks swap in after hydration, so
- * SSR and the first client render agree.
+ * name and returns marks as data URIs. Rotation draws only from institutions
+ * whose mark actually resolved, so a flip can never land on the initials
+ * fallback: the destination is always a real logo, already decoded, with no
+ * network in the path. Initials survive in exactly three places, all of them
+ * before or outside the rotation: the server paint, the moment before the
+ * icons request answers, and a row where Plaid resolved fewer than five marks
+ * and there is genuinely nothing else to show.
  */
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { BrokerageTradeInfo } from '@/components/landing/BrokerageTradeInfo';
 import './brokerage-logos.css';
 
@@ -39,6 +49,17 @@ const GROUPS = [
       { name: 'Desjardins', label: 'Desjardins' },
       { name: 'Tangerine', label: 'Tangerine' },
       { name: 'Simplii Financial', label: 'Simplii' },
+      { name: 'EQ Bank', label: 'EQ Bank' },
+      { name: 'Laurentian Bank', label: 'Laurentian' },
+      { name: 'ATB Financial', label: 'ATB' },
+      { name: 'Manulife Bank', label: 'Manulife' },
+      { name: 'Vancity', label: 'Vancity' },
+      { name: 'Coast Capital Savings', label: 'Coast Capital' },
+      { name: 'Meridian Credit Union', label: 'Meridian' },
+      { name: 'Wealthsimple', label: 'Wealthsimple' },
+      { name: 'Questrade', label: 'Questrade' },
+      { name: "President's Choice Financial", label: 'PC Financial' },
+      { name: 'Canadian Western Bank', label: 'CWB' },
     ],
   },
   {
@@ -48,9 +69,23 @@ const GROUPS = [
       { name: 'Chase', label: 'Chase' },
       { name: 'Bank of America', label: 'Bank of America' },
       { name: 'Wells Fargo', label: 'Wells Fargo' },
-      { name: 'Capital One', label: 'Capital One' },
       { name: 'Citibank', label: 'Citibank' },
+      { name: 'Capital One', label: 'Capital One' },
       { name: 'U.S. Bank', label: 'U.S. Bank' },
+      { name: 'PNC Bank', label: 'PNC' },
+      { name: 'Truist', label: 'Truist' },
+      { name: 'TD Bank', label: 'TD Bank' },
+      { name: 'American Express', label: 'Amex' },
+      { name: 'Charles Schwab', label: 'Schwab' },
+      { name: 'Fidelity', label: 'Fidelity' },
+      { name: 'Ally Bank', label: 'Ally' },
+      { name: 'Discover Bank', label: 'Discover' },
+      { name: 'Citizens Bank', label: 'Citizens' },
+      { name: 'Fifth Third Bank', label: 'Fifth Third' },
+      { name: 'KeyBank', label: 'KeyBank' },
+      { name: 'Regions Bank', label: 'Regions' },
+      { name: 'USAA', label: 'USAA' },
+      { name: 'SoFi', label: 'SoFi' },
     ],
   },
 ];
@@ -75,6 +110,31 @@ const INITIALS = {
   'Capital One': 'C1',
   Citibank: 'CB',
   'U.S. Bank': 'USB',
+  'EQ Bank': 'EQ',
+  'Laurentian Bank': 'LB',
+  'ATB Financial': 'ATB',
+  'Manulife Bank': 'ML',
+  Vancity: 'VC',
+  'Coast Capital Savings': 'CC',
+  'Meridian Credit Union': 'MCU',
+  Wealthsimple: 'WS',
+  Questrade: 'QT',
+  "President's Choice Financial": 'PC',
+  'Canadian Western Bank': 'CWB',
+  'PNC Bank': 'PNC',
+  Truist: 'TR',
+  'TD Bank': 'TD',
+  'American Express': 'AMEX',
+  'Charles Schwab': 'CS',
+  Fidelity: 'FID',
+  'Ally Bank': 'ALLY',
+  'Discover Bank': 'DISC',
+  'Citizens Bank': 'CZ',
+  'Fifth Third Bank': '53',
+  KeyBank: 'KEY',
+  'Regions Bank': 'RG',
+  USAA: 'USAA',
+  SoFi: 'SOFI',
 };
 
 function initialsFor(name) {
@@ -185,7 +245,11 @@ function LogoTile({ institution, icon }) {
   );
 }
 
-const VISIBLE_SLOTS = 5;
+const VISIBLE_SLOTS = 5; // per country row
+/* One randomizer over both rows: a tick draws a position out of all ten, so
+   the same row can flip twice running. That absence of a guarantee is the
+   point; alternating rows reads as two loops sharing a page. */
+const TOTAL_SLOTS = VISIBLE_SLOTS * 2;
 const FLIP_EVERY_MS = 2400;
 const FLIP_HALF_MS = 300;
 
@@ -198,67 +262,13 @@ const seededRand = (n) => {
 };
 
 /**
- * One country's header and tile row. The flip state lives here rather than in
- * the section so the logic is written once and each group runs its own copy,
- * over its own roster, on its own phase.
+ * One country's header and tile row. Purely presentational: the rotation lives
+ * in the section, because a single randomizer cannot be split across two
+ * components that each own their own state.
  */
-function LogoGroup({ group, icons, inView, phaseMs, seed }) {
+function LogoGroup({ group, slots, flippingSlot, icons }) {
   const { institutions } = group;
-  const [slots, setSlots] = useState(() =>
-    Array.from({ length: Math.min(VISIBLE_SLOTS, institutions.length) }, (_, i) => i),
-  );
-  const [flippingSlot, setFlippingSlot] = useState(null);
-  const counterRef = useRef(seed);
   const Flag = FLAGS[group.code];
-
-  useEffect(() => {
-    if (!inView) return undefined;
-    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
-    /* Nothing to rotate through when the roster is no longer than the row. */
-    if (institutions.length <= VISIBLE_SLOTS) return undefined;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    const timeouts = [];
-    let interval = null;
-
-    const tick = () => {
-      const c = (counterRef.current += 1);
-      const slot = Math.floor(seededRand(c) * VISIBLE_SLOTS);
-
-      const swap = () =>
-        setSlots((prev) => {
-          const pool = institutions.map((_, i) => i).filter((i) => !prev.includes(i));
-          if (pool.length === 0) return prev;
-          const next = pool[Math.floor(seededRand(c * 2 + 1) * pool.length)];
-          const copy = [...prev];
-          copy[slot] = next;
-          return copy;
-        });
-
-      if (reduced) {
-        // Reduced motion: the tile still rotates through, but with a plain
-        // swap and no 3D flip animation.
-        swap();
-        return;
-      }
-      setFlippingSlot(slot);
-      timeouts.push(window.setTimeout(swap, FLIP_HALF_MS));
-      timeouts.push(window.setTimeout(() => setFlippingSlot(null), FLIP_HALF_MS * 2));
-    };
-
-    /* The offset is what keeps the two rows out of phase. It delays the first
-       tick only; the interval that follows is the same 2400ms both rows run,
-       so the cadence is unchanged and the phase difference is permanent. */
-    const start = window.setTimeout(() => {
-      interval = window.setInterval(tick, FLIP_EVERY_MS);
-    }, phaseMs);
-
-    return () => {
-      window.clearTimeout(start);
-      if (interval) window.clearInterval(interval);
-      timeouts.forEach(clearTimeout);
-    };
-  }, [inView, institutions, phaseMs]);
 
   return (
     <div className="bl-group">
@@ -268,6 +278,10 @@ function LogoGroup({ group, icons, inView, phaseMs, seed }) {
       </div>
       <div className="bl-flip-row" aria-label={`${group.label} institutions`} role="group">
         {slots.map((idx, slot) => (
+          /* is-flipping goes on this wrapper, which contains the mark AND the
+             label, so the pair rotates as one face. On the inner mark instead,
+             a tile would spend the swap showing one bank's logo under
+             another's name. */
           <div key={slot} className={`bl-flip-slot${flippingSlot === slot ? ' is-flipping' : ''}`}>
             {/* Keyed by institution, not by slot: LogoTile carries its own
                 `failed` state, and a slot that reuses the instance would keep
@@ -287,7 +301,30 @@ function LogoGroup({ group, icons, inView, phaseMs, seed }) {
 export function BrokerageLogos() {
   const sectionRef = useRef(null);
   const [inView, setInView] = useState(false);
-  const [icons, setIcons] = useState({});
+  /* null until the icons request settles, which is what holds the rotation
+     back: flipping before the marks exist would land on initials. */
+  const [icons, setIcons] = useState(null);
+  /* slots[g] holds five indices into GROUPS[g].institutions. */
+  const [slots, setSlots] = useState(() =>
+    GROUPS.map((g) =>
+      Array.from({ length: Math.min(VISIBLE_SLOTS, g.institutions.length) }, (_, i) => i),
+    ),
+  );
+  /* { group, slot } | null — one position in the whole section, never two. */
+  const [flipping, setFlipping] = useState(null);
+  const counterRef = useRef(0);
+
+  /* The tick reads occupancy from here rather than from `slots` directly.
+     Putting `slots` in the rotation effect's dependencies, as the obvious
+     version does, makes every swap tear the interval down and build a new one
+     300ms into the cycle: the cadence stretches from 2400ms to 2700ms, and the
+     cleanup's clearTimeout kills the pending setFlipping(null), stranding a
+     tile with the is-flipping class. A ref keeps the interval stable and the
+     reads fresh. */
+  const slotsRef = useRef(slots);
+  useEffect(() => {
+    slotsRef.current = slots;
+  }, [slots]);
 
   // Flip only while the section is on screen (same IntersectionObserver
   // pattern as WhyEzanaSection).
@@ -306,21 +343,113 @@ export function BrokerageLogos() {
 
   /* Fetched once after mount rather than on the server, so the server and the
      first client render produce the same initials tiles and hydration has
-     nothing to reconcile. The marks arrive a frame later into slots that are
-     already the right size, so there is no layout shift. A failure leaves the
-     map empty, which is the fallback the section already renders. */
+     nothing to reconcile. A failure stores {} rather than leaving null: the
+     section then settles on initials and simply never rotates, which is a
+     resting state rather than a permanent wait. */
   useEffect(() => {
     let alive = true;
     fetch('/api/landing/institution-icons')
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
-        if (alive && d?.icons) setIcons(d.icons);
+        if (alive) setIcons(d?.icons || {});
       })
-      .catch(() => {});
+      .catch(() => {
+        if (alive) setIcons({});
+      });
     return () => {
       alive = false;
     };
   }, []);
+
+  /* The rotation pool: institutions whose Plaid mark actually resolved. This
+     single restriction is what guarantees a flip never lands on initials, and
+     it is why no image-loading state is needed on the incoming face either.
+     A resolved mark is a data URI, already decoded, with no network in the
+     path. */
+  const resolvedPools = useMemo(() => {
+    if (!icons) return GROUPS.map(() => []);
+    return GROUPS.map((g) =>
+      g.institutions.reduce((acc, inst, i) => {
+        if (icons[inst.name]?.logo) acc.push(i);
+        return acc;
+      }, []),
+    );
+  }, [icons]);
+
+  /* One settle pass when the icons land: any visible tile still showing
+     initials is replaced with a resolved one, in place and without a flip.
+     In place matters. Rebuilding the row as "keepers, then fillers" would
+     reshuffle tiles that were already correct, which reads as a glitch rather
+     than a correction. Fill-what-we-can rather than all-or-nothing: a row
+     where Plaid resolved three marks shows three logos and two initials, and
+     the rotation below simply has nothing to draw for it. */
+  useEffect(() => {
+    if (!icons) return;
+    setSlots((prev) =>
+      prev.map((groupSlots, g) => {
+        const pool = resolvedPools[g];
+        const resolved = new Set(pool);
+        const spare = pool.filter((i) => !groupSlots.includes(i));
+        let moved = false;
+        const next = groupSlots.map((i) => {
+          if (resolved.has(i) || spare.length === 0) return i;
+          moved = true;
+          return spare.shift();
+        });
+        return moved ? next : groupSlots;
+      }),
+    );
+  }, [icons, resolvedPools]);
+
+  useEffect(() => {
+    /* Never before the marks exist. */
+    if (!inView || !icons) return undefined;
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const timeouts = [];
+
+    const tick = () => {
+      const c = (counterRef.current += 1);
+      /* One draw across all ten positions: 0 to 4 is Canada, 5 to 9 the US. */
+      const flat = Math.floor(seededRand(c) * TOTAL_SLOTS);
+      const group = Math.floor(flat / VISIBLE_SLOTS);
+      const slot = flat % VISIBLE_SLOTS;
+
+      /* Nothing in the wings for this row: skip the tick rather than animate a
+         tile into the same bank it already shows, or into an initials tile. */
+      const available = resolvedPools[group].filter((i) => !slotsRef.current[group].includes(i));
+      if (available.length === 0) return;
+
+      const swap = () =>
+        setSlots((prev) => {
+          const incoming = resolvedPools[group].filter((i) => !prev[group].includes(i));
+          if (incoming.length === 0) return prev;
+          const next = incoming[Math.floor(seededRand(c * 2 + 1) * incoming.length)];
+          const copy = prev.map((arr) => [...arr]);
+          copy[group][slot] = next;
+          return copy;
+        });
+
+      if (reduced) {
+        // Reduced motion: the tile still rotates through, but with a plain
+        // swap and no 3D flip animation.
+        swap();
+        return;
+      }
+      setFlipping({ group, slot });
+      /* At the 90 degree edge, so the incoming logo and label appear together
+         on the back half of the flip. */
+      timeouts.push(window.setTimeout(swap, FLIP_HALF_MS));
+      timeouts.push(window.setTimeout(() => setFlipping(null), FLIP_HALF_MS * 2));
+    };
+
+    const interval = window.setInterval(tick, FLIP_EVERY_MS);
+    return () => {
+      window.clearInterval(interval);
+      timeouts.forEach(clearTimeout);
+    };
+  }, [inView, icons, resolvedPools]);
 
   return (
     <section className="bl-section" aria-labelledby="bl-heading" ref={sectionRef}>
@@ -336,18 +465,13 @@ export function BrokerageLogos() {
       </p>
 
       <div className="bl-groups">
-        {GROUPS.map((group, i) => (
+        {GROUPS.map((group, g) => (
           <LogoGroup
             key={group.code}
             group={group}
-            icons={icons}
-            inView={inView}
-            /* Half an interval apart, so a visitor always sees one row
-               settling while the other turns. */
-            phaseMs={i * (FLIP_EVERY_MS / 2)}
-            /* Different starting counters, so the two rows do not draw the
-               same slot and the same replacement on every tick. */
-            seed={i * 997}
+            slots={slots[g]}
+            flippingSlot={flipping?.group === g ? flipping.slot : null}
+            icons={icons || {}}
           />
         ))}
       </div>

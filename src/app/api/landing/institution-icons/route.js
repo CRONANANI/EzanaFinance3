@@ -24,6 +24,10 @@ import { plaidClient } from '@/lib/plaid';
  */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+/* Only ever paid on a cold cache, and then once a week. The pool below keeps
+   the real figure far under this, but forty external searches deserve more
+   than the default ceiling. */
+export const maxDuration = 60;
 
 /* Keyed by country, because an institution's name is only unique within one:
    "TD" means TD Canada Trust in CA and TD Bank in US, and searching the wrong
@@ -39,13 +43,52 @@ const ROSTER = {
     'Desjardins',
     'Tangerine',
     'Simplii Financial',
+    'EQ Bank',
+    'Laurentian Bank',
+    'ATB Financial',
+    'Manulife Bank',
+    'Vancity',
+    'Coast Capital Savings',
+    'Meridian Credit Union',
+    'Wealthsimple',
+    'Questrade',
+    "President's Choice Financial",
+    'Canadian Western Bank',
   ],
-  US: ['Chase', 'Bank of America', 'Wells Fargo', 'Capital One', 'Citibank', 'U.S. Bank'],
+  US: [
+    'Chase',
+    'Bank of America',
+    'Wells Fargo',
+    'Citibank',
+    'Capital One',
+    'U.S. Bank',
+    'PNC Bank',
+    'Truist',
+    'TD Bank',
+    'American Express',
+    'Charles Schwab',
+    'Fidelity',
+    'Ally Bank',
+    'Discover Bank',
+    'Citizens Bank',
+    'Fifth Third Bank',
+    'KeyBank',
+    'Regions Bank',
+    'USAA',
+    'SoFi',
+  ],
 };
 
-/* v2: v1 held the previous brokerage roster, and a stale row would serve
-   logos for institutions no longer on the page. */
-const CACHE_KEY = 'plaid-institution-icons-v2';
+/* Forty searches, not fifteen. Sequentially that is a cold-start request long
+   enough to be worth avoiding, so they run in a small pool: enough to keep the
+   route comfortably inside its budget, few enough to stay polite to an API we
+   are a guest on. */
+const SEARCH_CONCURRENCY = 5;
+
+/* Bumped with every roster change. A stale row is not merely incomplete: it
+   serves logos for institutions no longer on the page and, worse, withholds
+   the new ones for a week. v2 held fifteen banks, v1 the brokerages. */
+const CACHE_KEY = 'plaid-institution-icons-v3';
 const TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 let memo = null;
@@ -115,22 +158,47 @@ async function resolveOne(name, countryCode) {
   };
 }
 
-async function buildIcons() {
-  const icons = {};
-  for (const [countryCode, names] of Object.entries(ROSTER)) {
-    for (const name of names) {
-      try {
-        const entry = await resolveOne(name, countryCode);
-        /* Keyed by OUR roster name, not Plaid's, so the component looks up
-           what it already knows and never has to learn Plaid's spelling. */
-        if (entry) icons[name] = entry;
-      } catch (e) {
-        /* One institution failing is not the roster failing. A crypto
-           exchange or a bank Plaid does not cover simply has no entry, and
-           the tile falls back to initials. */
-        console.error(`[institution-icons] ${countryCode} "${name}" failed:`, e?.message);
-      }
+/* A fixed set of workers pulling from one cursor, rather than chunked
+   Promise.all batches: a chunk runs only as fast as its slowest member, and
+   institution searches vary enough for that to matter. */
+async function mapWithConcurrency(items, limit, fn) {
+  const results = new Array(items.length);
+  let cursor = 0;
+  const worker = async () => {
+    for (;;) {
+      const i = cursor;
+      cursor += 1;
+      if (i >= items.length) return;
+      results[i] = await fn(items[i], i);
     }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results;
+}
+
+async function buildIcons() {
+  /* Flattened across both countries before the pool runs, so a short roster
+     never leaves workers idle waiting on a long one. */
+  const jobs = Object.entries(ROSTER).flatMap(([countryCode, names]) =>
+    names.map((name) => ({ name, countryCode })),
+  );
+
+  const entries = await mapWithConcurrency(jobs, SEARCH_CONCURRENCY, async (job) => {
+    try {
+      return [job.name, await resolveOne(job.name, job.countryCode)];
+    } catch (e) {
+      /* One institution failing is not the roster failing. A name Plaid does
+         not cover simply has no entry, and the tile keeps its initials. */
+      console.error(`[institution-icons] ${job.countryCode} "${job.name}" failed:`, e?.message);
+      return [job.name, null];
+    }
+  });
+
+  const icons = {};
+  for (const [name, entry] of entries) {
+    /* Keyed by OUR roster name, not Plaid's, so the component looks up what
+       it already knows and never has to learn Plaid's spelling. */
+    if (entry) icons[name] = entry;
   }
   return icons;
 }
