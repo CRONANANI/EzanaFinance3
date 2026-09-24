@@ -2381,6 +2381,32 @@ html:has(.landing-page) .navbar .logo,
   transform: translateX(-50%) translateY(0);
 }
 
+/* Hover bridge, sized to the measured corridor rather than to a guess.
+   The trigger's bottom edge is at y=44 and this panel's box starts at y=51,
+   so only 7px of the pointer's path belongs to neither element; the panel's
+   own 0.6rem padding-top already covers the rest of the way to the visible
+   card at y=61. 8px closes that corridor with a pixel to spare.
+
+   Full width, and that is the safe choice rather than the risky one: the
+   strip hangs BELOW the nav row, spanning y=44 to 51, while the links sit at
+   y=24 to 44. A taller strip would climb back into their row and swallow
+   their hovers, which is the failure this is meant to avoid. It is also why
+   the bridge is not anchored horizontally to the trigger: it never reaches
+   the links to begin with, and the trigger sits a consistent 60px left of
+   page centre at 1280, 1440 and 1920, so a centred fixed-width strip would
+   have been a coincidence rather than a rule.
+
+   Only while open. The closed state keeps pointer-events: none above, so a
+   fading panel cannot swallow a hover on the way out. */
+.navbar .nav-datasets-mega.is-open::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 8px;
+}
+
 .nav-datasets-panel {
   background: var(--echo-surface-3);
   border: 1px solid var(--border-strong);

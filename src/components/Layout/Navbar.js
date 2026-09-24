@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
@@ -59,6 +59,68 @@ export function Navbar() {
   const [datasetsOpen, setDatasetsOpen] = useState(false);
   const landingNavRef = useRef(null);
   const datasetsRef = useRef(null);
+  const datasetsCloseTimer = useRef(null);
+  /* Pinned means opened on purpose rather than passed over. A pinned menu
+     ignores mouseleave entirely; only Escape, an outside click, a second
+     trigger click, choosing an item, or navigating puts it away. */
+  const [datasetsPinned, setDatasetsPinned] = useState(false);
+
+  /* Hover intent for the Datasets menu.
+     -------------------------------------------------------------------------
+     Two things used to close it out from under the pointer. The trigger's
+     onClick was a toggle, so hovering (which opens) and then clicking the word
+     closed it; on a touch laptop the emulated mouseenter and the click arrive
+     from one tap, so it opened and shut in the same gesture. And mouseleave
+     closed with no delay, while the panel is anchored to the centered
+     .nav-menu rather than to the trigger, so the pointer's path down to it
+     crosses a corridor belonging to neither element.
+
+     Opening stays immediate. Closing waits long enough to cross that corridor,
+     and re-entering either the trigger or the panel cancels it. */
+  const cancelDatasetsClose = useCallback(() => {
+    if (datasetsCloseTimer.current) {
+      clearTimeout(datasetsCloseTimer.current);
+      datasetsCloseTimer.current = null;
+    }
+  }, []);
+
+  const openDatasetsMenu = useCallback(() => {
+    cancelDatasetsClose();
+    setDatasetsOpen(true);
+  }, [cancelDatasetsClose]);
+
+  const scheduleDatasetsClose = useCallback(() => {
+    if (datasetsPinned) return;
+    cancelDatasetsClose();
+    datasetsCloseTimer.current = setTimeout(() => {
+      setDatasetsOpen(false);
+      datasetsCloseTimer.current = null;
+    }, 220);
+  }, [cancelDatasetsClose, datasetsPinned]);
+
+  const closeDatasetsMenu = useCallback(() => {
+    cancelDatasetsClose();
+    setDatasetsPinned(false);
+    setDatasetsOpen(false);
+  }, [cancelDatasetsClose]);
+
+  const onDatasetsTriggerClick = useCallback(() => {
+    cancelDatasetsClose();
+    setDatasetsPinned((pinned) => {
+      /* Only a click on an already-pinned menu closes it. A click on a menu
+         the pointer merely opened pins it instead, which is what stops the
+         hover-then-click gesture from undoing itself. */
+      if (pinned) {
+        setDatasetsOpen(false);
+        return false;
+      }
+      setDatasetsOpen(true);
+      return true;
+    });
+  }, [cancelDatasetsClose]);
+
+  useEffect(() => () => cancelDatasetsClose(), [cancelDatasetsClose]);
+
   // Echo-article nav: reading-progress fill node (width written straight to
   // the DOM — no re-render per scroll frame), plus the headline swap state.
   const echoProgressRef = useRef(null);
@@ -327,8 +389,10 @@ export function Navbar() {
 
   useEffect(() => {
     setMobileMenuOpen(false);
-    setDatasetsOpen(false);
-  }, [pathname]);
+    /* Through the same door as every other close, so the pin and the pending
+       timer can never outlive the menu. */
+    closeDatasetsMenu();
+  }, [pathname, closeDatasetsMenu]);
 
   useEffect(() => {
     if (!showLandingNav) return undefined;
@@ -347,11 +411,11 @@ export function Navbar() {
   useEffect(() => {
     if (!datasetsOpen) return undefined;
     const onKeyDown = (e) => {
-      if (e.key === 'Escape') setDatasetsOpen(false);
+      if (e.key === 'Escape') closeDatasetsMenu();
     };
     const onPointerDown = (e) => {
       if (datasetsRef.current && !datasetsRef.current.contains(e.target)) {
-        setDatasetsOpen(false);
+        closeDatasetsMenu();
       }
     };
     document.addEventListener('keydown', onKeyDown);
@@ -360,7 +424,7 @@ export function Navbar() {
       document.removeEventListener('keydown', onKeyDown);
       document.removeEventListener('mousedown', onPointerDown);
     };
-  }, [datasetsOpen]);
+  }, [datasetsOpen, closeDatasetsMenu]);
 
   // Mobile sheet: lock the page behind it so the background does not scroll
   // under the overlay, and always restore on close/unmount. A class rather
@@ -384,7 +448,12 @@ export function Navbar() {
   // Let other surfaces (e.g. the landing hero's "View datasets" button) open
   // the Datasets mega-menu instead of navigating away.
   useEffect(() => {
-    const openDatasets = () => setDatasetsOpen(true);
+    /* Opened deliberately from another surface, so it pins: a menu the visitor
+       asked for should not evaporate the moment the pointer drifts. */
+    const openDatasets = () => {
+      setDatasetsOpen(true);
+      setDatasetsPinned(true);
+    };
     window.addEventListener('ezana:open-datasets-menu', openDatasets);
     return () => window.removeEventListener('ezana:open-datasets-menu', openDatasets);
   }, []);
@@ -548,15 +617,15 @@ export function Navbar() {
             <li
               className="nav-item nav-datasets"
               ref={datasetsRef}
-              onMouseEnter={() => setDatasetsOpen(true)}
-              onMouseLeave={() => setDatasetsOpen(false)}
+              onMouseEnter={openDatasetsMenu}
+              onMouseLeave={scheduleDatasetsClose}
             >
               <button
                 type="button"
                 className="nav-link nav-datasets-trigger"
                 aria-haspopup="true"
                 aria-expanded={datasetsOpen}
-                onClick={() => setDatasetsOpen((open) => !open)}
+                onClick={onDatasetsTriggerClick}
               >
                 Datasets
                 <ChevronDown
@@ -567,6 +636,8 @@ export function Navbar() {
               </button>
               <div
                 className={`nav-datasets-mega${datasetsOpen ? ' is-open' : ''}`}
+                onMouseEnter={openDatasetsMenu}
+                onMouseLeave={scheduleDatasetsClose}
                 role="menu"
                 aria-label="Datasets"
               >
@@ -592,6 +663,7 @@ export function Navbar() {
                                 href={item.href}
                                 className="nav-datasets-item"
                                 role="menuitem"
+                                onClick={closeDatasetsMenu}
                               >
                                 <span className="nav-datasets-item-label">{item.label}</span>
                               </a>
@@ -617,12 +689,22 @@ export function Navbar() {
                     })}
                   </div>
                   <div className="nav-datasets-divider" />
-                  <a href="/ezana-api" className="nav-datasets-foot" role="menuitem">
+                  <a
+                    href="/ezana-api"
+                    className="nav-datasets-foot"
+                    role="menuitem"
+                    onClick={closeDatasetsMenu}
+                  >
                     Ezana API
                     <ArrowRight size={14} aria-hidden />
                   </a>
                   <div className="nav-datasets-divider" />
-                  <a href="/datasets" className="nav-datasets-foot" role="menuitem">
+                  <a
+                    href="/datasets"
+                    className="nav-datasets-foot"
+                    role="menuitem"
+                    onClick={closeDatasetsMenu}
+                  >
                     View all datasets
                     <ArrowRight size={14} aria-hidden />
                   </a>
