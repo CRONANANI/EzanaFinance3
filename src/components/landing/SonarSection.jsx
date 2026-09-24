@@ -59,6 +59,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SonarOrbital } from './SonarOrbital';
 import { SonarLoader } from '@/components/sonar/SonarLoader';
+import { geometryFor } from './sonar-geometry';
 import './sonar-band.css';
 
 /* Three short Lockheed Martin paragraphs. Link segments render as buttons
@@ -250,6 +251,11 @@ export function SonarSection() {
      is not a reachable state: stage 2 settling is the happy path, pingError
      covers a user ping, demoFailed covers the demo, and the deadline below
      covers anything that hangs without reporting either. */
+  /* 07 C.3: a landscape phone, or anything under 560 tall below 1024 wide,
+     cannot hold a legible locked composition. The section then renders as an
+     ordinary scrolling block with the arrows hidden. A deliberate degradation,
+     not a failure to fit. */
+  const [unlocked, setUnlocked] = useState(false);
   const [stage2, setStage2] = useState(false);
   const [stage2Settled, setStage2Settled] = useState(false);
   const [demoFailed, setDemoFailed] = useState(false);
@@ -789,6 +795,90 @@ export function SonarSection() {
     const t = setTimeout(() => setStage2Settled(true), staging ? 500 : 0);
     return () => clearTimeout(t);
   }, [live]);
+
+  /* The measured spec, published as custom properties.
+     -------------------------------------------------------------------------
+     04-SPEC.md section 1 is a vertical budget whose every column sums exactly
+     to its viewport height, and the lock only holds while that stays true. The
+     arithmetic lives in sonar-geometry.js and is proven by
+     `npm run check:sonar-budget`; this effect is only the wiring.
+
+     Custom properties set on the node, not React inline styles, for the same
+     reason as the orbital measurement below: the server cannot know the
+     viewport, so anything the geometry touches would be a hydration mismatch
+     if it arrived through the rendered markup. The stylesheet carries the 1440
+     column as its defaults, so the first paint is already close and this only
+     corrects it.
+
+     The nav height is measured, never assumed. 07 C.1 is explicit about it,
+     and the real bar is 64 on desktop and 56 on phones. */
+  useEffect(() => {
+    const band = bandRef.current;
+    if (!band) return undefined;
+
+    const apply = () => {
+      const nav = document.querySelector('.navbar, nav');
+      const navPx = nav ? Math.round(nav.getBoundingClientRect().height) : undefined;
+      const g = geometryFor(window.innerWidth, window.innerHeight, navPx);
+
+      const px = (k, v) => band.style.setProperty(k, `${Math.round(v * 100) / 100}px`);
+      px('--snr-nav', g.nav);
+      px('--snr-pad-top', g.padTop);
+      px('--snr-eyebrow', g.eyebrow);
+      px('--snr-g1', g.g1);
+      px('--snr-head-h', g.head);
+      px('--snr-head-fs', g.headFs);
+      px('--snr-g2', g.g2);
+      px('--snr-sub-h', g.sub);
+      px('--snr-sub-fs', g.subFs);
+      px('--snr-g3', g.g3);
+      px('--snr-work', g.work);
+      px('--snr-g4', g.g4);
+      px('--snr-arrow', g.arrow);
+      px('--snr-pad-bot', g.padBot);
+      px('--snr-gutter', g.gutter);
+      px('--snr-content', g.content);
+      px('--snr-head-max', g.headMax);
+      px('--snr-col-l', g.colL);
+      px('--snr-col-c', g.colC);
+      px('--snr-col-r', g.colR);
+      px('--snr-gap-col', g.gap);
+      px('--snr-ping-h', g.pingH);
+      px('--snr-syn-h', g.synH);
+      px('--snr-chart-h', g.chartH);
+      px('--snr-news-h', g.newsH);
+      px('--snr-row-h', g.rowH);
+      px('--snr-row-gap', g.rowGap);
+      px('--snr-orb-rest', g.orbRest);
+      px('--snr-orb-mini', g.orbMini);
+      px('--snr-orb-icon', g.orbIcon);
+      px('--snr-orb-icon-mini', g.orbIconMini);
+      px('--snr-orb-hub', g.orbHub);
+      px('--snr-orb-hub-mini', g.orbHubMini);
+      px('--snr-orb-hub-label', g.orbHubLabel);
+      px('--snr-orb-hub-label-mini', g.orbHubLabelMini);
+      px('--snr-rest-region', g.restRegion);
+      /* Resting placement of the sliced dossier, both derived from the live
+         left column so the poke tracks the grid at every width. */
+      px('--snr-poke-left', g.gutter + g.content - g.colL + 40);
+      px('--snr-poke-w', g.colL + 60);
+
+      /* Flags the stylesheet switches on, so a tier change is one attribute
+         rather than a media query per rule. */
+      band.dataset.tier = g.tier;
+      band.dataset.rowDetail = g.rowDetail ? 'on' : 'off';
+      band.dataset.rowsScroll = g.rowsScroll ? 'on' : 'off';
+      setUnlocked(g.tier === 'unlocked');
+    };
+
+    apply();
+    window.addEventListener('resize', apply);
+    window.addEventListener('orientationchange', apply);
+    return () => {
+      window.removeEventListener('resize', apply);
+      window.removeEventListener('orientationchange', apply);
+    };
+  }, []);
 
   /* Stage 2 pins the orbital top-right with its top edge on the headline, and
      drops the stack below it by exactly the orbital's reach.
@@ -1449,16 +1539,35 @@ export function SonarSection() {
         </div>
       </div>
 
-      {lockedIn && arrowReady ? (
-        <button
-          type="button"
-          className="snr-continue snr-anim-bounce"
-          aria-label="Continue to the rest of the page"
-          onClick={onContinue}
-        >
-          <i className="bi bi-chevron-down" aria-hidden="true" />
-        </button>
-      ) : null}
+      {/* The arrow row is a zone of the vertical budget, not an overlay. Two
+          arrows, aligned to the content box edges per 01-BRIEF.md section 5;
+          being in the flow is what keeps them off the cards at every height,
+          and it is why the row has a measured height of its own. The release
+          logic and its fixed-position-vs-transformed-ancestor fix are the
+          original ones, restyled and re-timed only. */}
+      <div className="snr-arrows" aria-hidden={lockedIn && arrowReady ? undefined : 'true'}>
+        {lockedIn && arrowReady ? (
+          <>
+            <button
+              type="button"
+              className="snr-continue snr-anim-bounce"
+              aria-label="Continue to the rest of the page"
+              onClick={onContinue}
+            >
+              <i className="bi bi-chevron-down" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="snr-continue snr-anim-bounce snr-continue--end"
+              aria-label="Continue to the rest of the page"
+              onClick={onContinue}
+              tabIndex={-1}
+            >
+              <i className="bi bi-chevron-down" aria-hidden="true" />
+            </button>
+          </>
+        ) : null}
+      </div>
     </section>
   );
 }

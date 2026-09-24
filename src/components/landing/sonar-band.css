@@ -2679,3 +2679,267 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   outline: 2px solid var(--snr-mint);
   outline-offset: 2px;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   v3 LAYOUT SYSTEM
+   --------------------------------------------------------------------------
+   04-SPEC.md section 1 is a vertical budget: a stack of zones whose heights
+   sum exactly to the viewport. This block implements it, and it supersedes the
+   band's earlier content-sized geometry above.
+
+   Everything here reads the custom properties SonarSection publishes from
+   sonar-geometry.js. The defaults are the 1440 column, so the first paint is
+   already the right shape before the effect corrects it for the real viewport,
+   and SSR has nothing to mismatch on.
+
+   The work area is the only zone that flexes. Every other zone is its measured
+   height, so the sum is the viewport by construction rather than by tuning:
+   if a card wants more room, it takes it from the work area, and the work area
+   takes it from nothing, because there is nothing left to take.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.snr-band {
+  --snr-nav: 64px;
+  --snr-pad-top: 32px;
+  --snr-eyebrow: 16px;
+  --snr-g1: 16px;
+  --snr-head-h: 60px;
+  --snr-head-fs: 56px;
+  --snr-g2: 12px;
+  --snr-sub-h: 48px;
+  --snr-sub-fs: 16px;
+  --snr-g3: 28px;
+  --snr-work: 536px;
+  --snr-g4: 16px;
+  --snr-arrow: 48px;
+  --snr-pad-bot: 24px;
+  --snr-gutter: 40px;
+  --snr-content: 1360px;
+  --snr-head-max: 1152px;
+  --snr-col-l: 400px;
+  --snr-col-c: 432px;
+  --snr-col-r: 480px;
+  --snr-gap-col: 24px;
+  --snr-ping-h: 56px;
+  --snr-syn-h: 468px;
+  --snr-chart-h: 248px;
+  --snr-news-h: 272px;
+  --snr-row-h: 54px;
+  --snr-row-gap: 6px;
+  --snr-orb-rest: 440px;
+  --snr-orb-mini: 176px;
+}
+
+/* The band is exactly one viewport while locked. dvh is the real figure on a
+   phone with a collapsing toolbar; svh is the floor every engine understands.
+   The !important pair answers globals.css, which forces
+   `display: block; height: auto` on every landing section to keep
+   content-visibility from blanking the page below the hero. That rule is about
+   painting; these two declarations are layout, and the band takes them back at
+   a specificity that wins whatever order the sheets load in. */
+.landing-page > section.snr-band.snr-locked,
+.snr-band.snr-locked {
+  height: 100svh !important;
+  height: 100dvh !important;
+  overflow: hidden;
+  padding-top: calc(var(--snr-nav) + var(--snr-pad-top));
+  padding-bottom: var(--snr-pad-bot);
+}
+
+/* The zone stack. Gaps are explicit elements of the budget rather than a flex
+   `gap`, because the budget names each one separately and they are not equal. */
+.snr-band.snr-locked .snr-inner {
+  display: flex;
+  flex-direction: column;
+  width: var(--snr-content);
+  max-width: 100%;
+  margin: 0 auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 0;
+}
+
+.snr-band.snr-locked .snr-head {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  /* The mini orbital parks against the top of the header block, so the header
+     stops clear of it. 04-SPEC.md section 4 resolves the conflict this way
+     rather than dropping the orbital to 144. */
+  width: var(--snr-head-max);
+}
+
+.snr-band.snr-locked .snr-eyebrow-row {
+  height: var(--snr-eyebrow);
+  margin-bottom: var(--snr-g1);
+  flex: 0 0 auto;
+}
+
+.snr-band.snr-locked .snr-headline {
+  height: var(--snr-head-h);
+  margin: 0 0 var(--snr-g2);
+  font-size: var(--snr-head-fs);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.snr-band.snr-locked .snr-subhead {
+  height: var(--snr-sub-h);
+  margin: 0 0 var(--snr-g3);
+  font-size: var(--snr-sub-fs);
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+/* The work area. Its height is the budget's remainder, and every column fills
+   it, which is what puts the three columns on one top edge and one bottom
+   edge. Defect 1 in 04-SPEC.md section 11. */
+.snr-band.snr-locked .snr-cols {
+  flex: 0 0 var(--snr-work);
+  height: var(--snr-work);
+  min-height: 0;
+  margin-bottom: var(--snr-g4);
+  display: grid;
+  grid-template-columns: var(--snr-col-l) var(--snr-col-c) var(--snr-col-r);
+  gap: var(--snr-gap-col);
+  align-items: stretch;
+}
+
+.snr-band.snr-locked .snr-col-left,
+.snr-band.snr-locked .snr-col-dossier,
+.snr-band.snr-locked .snr-stack {
+  height: 100%;
+  min-height: 0;
+  width: auto;
+}
+
+/* Left column: ping bar at its measured height, synthesis panel taking the
+   rest. The panel is a flex column so its body can be the overflow absorber
+   with a fixed head and a pinned footer. */
+.snr-band.snr-locked .snr-col-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.snr-band.snr-locked .snr-pingbar {
+  flex: 0 0 var(--snr-ping-h);
+  height: var(--snr-ping-h);
+}
+
+.snr-band.snr-locked .snr-synth {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The designated overflow absorber: everything that does not fit ends up here,
+   scrolling thinly behind a bottom fade, and never as a clipped card.
+   Defect 5 in section 11. */
+.snr-band.snr-locked .snr-synth-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+/* The right stack: two cards and a 16 gap that together equal the work area
+   exactly, so the stack ends on the same baseline as its neighbours and no
+   green void opens under it. Defect 2 in section 11. */
+.snr-band.snr-locked .snr-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.snr-band.snr-locked .snr-fund {
+  flex: 0 0 var(--snr-chart-h);
+  height: var(--snr-chart-h);
+  min-height: 0;
+  max-height: none;
+  overflow: hidden;
+}
+
+.snr-band.snr-locked .snr-news {
+  flex: 0 0 var(--snr-news-h);
+  height: var(--snr-news-h);
+  min-height: 0;
+  max-height: none;
+  overflow: hidden;
+}
+
+/* Dataset rows divide the sourced-matches card. All eight are always listed:
+   the claim in the headline is eight datasets, so showing eight is the proof.
+   The height comes from the geometry, which derives it from the space rather
+   than from a per-tier constant. */
+.snr-band.snr-locked .snr-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--snr-row-gap);
+  min-height: 0;
+}
+
+.snr-band.snr-locked .snr-row {
+  flex: 1 1 0;
+  min-height: 0;
+  height: var(--snr-row-h);
+}
+
+/* Only when even the floor will not fit, which is a very short desktop window.
+   A thin scroll inside the card rather than a dropped dataset or a clipped
+   one. */
+.snr-band[data-rows-scroll='on'].snr-locked .snr-rows {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+/* Below the 42px row the detail line goes and the chip and flag carry the row,
+   which is the short tier's treatment applied when the space asks for it. */
+.snr-band[data-row-detail='off'].snr-locked .snr-row-line {
+  display: none;
+}
+
+/* The arrow row is a zone of the budget, not an overlay. Being in the flow is
+   what keeps it off the cards at every height. */
+.snr-band.snr-locked .snr-arrows {
+  flex: 0 0 var(--snr-arrow);
+  height: var(--snr-arrow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: var(--snr-content);
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* The degradation 07 C.3 asks for by name: under 560 tall below 1024 wide the
+   lock cannot hold a legible composition, so the section stops trying. Normal
+   flow, normal scrolling, no arrows. */
+.snr-band[data-tier='unlocked'] {
+  height: auto !important;
+  min-height: 0;
+  overflow: visible;
+}
+
+.snr-band[data-tier='unlocked'] .snr-arrows,
+.snr-band[data-tier='unlocked'] .snr-continue {
+  display: none;
+}
+
+/* Two arrows, at the content box edges. The pair is decorative repetition of
+   one action, so only the first is in the tab order; the second carries
+   tabIndex -1 and the same accessible name for anyone who reaches it by
+   pointer. Static in the row, not fixed: the row is a real zone now, so the
+   old escape from a transformed ancestor is no longer needed here. */
+.snr-band.snr-locked .snr-arrows .snr-continue {
+  position: static;
+  transform: none;
+  margin: 0;
+}
