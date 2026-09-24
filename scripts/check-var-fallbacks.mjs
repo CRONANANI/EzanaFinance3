@@ -35,8 +35,7 @@ const CODE_EXT = new Set(['.css', '.scss']);
 // hsl/hsla(). Token-name captured in group 1. `var(--x, var(--y))` and
 // non-colour fallbacks (lengths, numbers, keywords) are intentionally NOT
 // matched — only colour fallbacks are the target.
-const VAR_COLOR_FALLBACK =
-  /var\(\s*(--[a-z0-9-]+)\s*,\s*(?:#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\()/gi;
+const VAR_COLOR_FALLBACK = /var\(\s*(--[a-z0-9-]+)\s*,\s*(?:#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\()/gi;
 
 // Accent / hue tokens whose colour fallback is intentional (an accent, not a
 // neutral surface). Matched as a case-insensitive substring of the token name,
@@ -62,6 +61,13 @@ function isAllowed(token) {
   return ACCENT_HUE.test(token) || DYNAMIC_ALLOW.has(token);
 }
 
+// The legacy tree predates the token system and is excluded from the branding
+// guard for the same reason (see EXEMPT in scripts/check-branding.mjs). This
+// script's own default root is src, so a bare run never saw app-legacy — but
+// lint-staged hands it explicit paths, which made every commit that touches a
+// legacy stylesheet fail on fallbacks nobody in this repo authored.
+const EXEMPT = /(^|[\\/])app-legacy[\\/]/;
+
 const violations = [];
 
 function walk(p) {
@@ -80,6 +86,7 @@ function walk(p) {
     return;
   }
   if (!CODE_EXT.has(extname(p))) return;
+  if (EXEMPT.test(p)) return;
   const lines = readFileSync(p, 'utf8').split('\n');
   lines.forEach((line, i) => {
     for (const m of line.matchAll(VAR_COLOR_FALLBACK)) {
@@ -103,4 +110,6 @@ if (violations.length) {
   console.error('');
   process.exit(1);
 }
-console.log(`✔ No hardcoded colour fallbacks inside var() on surface/neutral tokens in: ${roots.join(', ')}`);
+console.log(
+  `✔ No hardcoded colour fallbacks inside var() on surface/neutral tokens in: ${roots.join(', ')}`,
+);
