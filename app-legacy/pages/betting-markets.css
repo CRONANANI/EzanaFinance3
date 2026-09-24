@@ -117,7 +117,7 @@
   padding: 1rem;
   background: var(--muted, rgba(17, 24, 39, 0.4));
   border: 1px solid var(--border, rgba(16, 185, 129, 0.1));
-  border-radius: var(--radius-sm, 0.5rem);
+  border-radius: var(--legacy-radius-sm, 0.5rem);
   transition: all 0.2s ease;
   cursor: pointer;
 }
@@ -131,7 +131,7 @@
 .bm-prediction-icon {
   width: 36px;
   height: 36px;
-  border-radius: var(--radius-sm, 0.5rem);
+  border-radius: var(--legacy-radius-sm, 0.5rem);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -406,7 +406,7 @@
   flex: 1;
   background: var(--muted, rgba(17, 24, 39, 0.4));
   border: 1px solid var(--border, rgba(16, 185, 129, 0.1));
-  border-radius: var(--radius-sm, 0.5rem);
+  border-radius: var(--legacy-radius-sm, 0.5rem);
   padding: 0.625rem 1rem;
   font-size: var(--font-sm, 0.875rem);
   font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
@@ -425,7 +425,7 @@
 
 .bm-trader-search button {
   padding: 0.625rem 1.25rem;
-  border-radius: var(--radius-sm, 0.5rem);
+  border-radius: var(--legacy-radius-sm, 0.5rem);
   background: var(--primary, #10b981);
   color: #fff;
   font-size: var(--font-sm, 0.875rem);
@@ -796,7 +796,7 @@
 .bm-skeleton-card {
   padding: 1rem;
   border: 1px solid var(--border, rgba(16, 185, 129, 0.1));
-  border-radius: var(--radius-sm, 0.5rem);
+  border-radius: var(--legacy-radius-sm, 0.5rem);
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -1106,7 +1106,7 @@
 .bm-analytics-card {
   background: var(--muted, rgba(17, 24, 39, 0.4));
   border: 1px solid var(--border, rgba(16, 185, 129, 0.1));
-  border-radius: var(--radius-sm, 0.5rem);
+  border-radius: var(--legacy-radius-sm, 0.5rem);
   padding: 1rem;
 }
 

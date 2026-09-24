@@ -61,7 +61,7 @@ body.sidebar-open .page-wrapper {
   background: var(--card, var(--bg-card));
   backdrop-filter: blur(12px);
   border: 1px solid var(--card-border, var(--border-primary));
-  border-radius: var(--radius-lg, var(--radius));
+  border-radius: var(--legacy-radius-lg, var(--radius));
   padding: 2rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: var(--font-sans);

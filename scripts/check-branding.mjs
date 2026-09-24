@@ -12,6 +12,17 @@
  *      --font-mono / --font-sans, defined in :root).
  *   4. A recharts `tick` prop whose fontSize is anything but 11.
  *   5. Raw border-radius px values outside the token scale.
+ *   6. A second declaration of the --radius-sm/md/lg/xl scale anywhere in
+ *      src/ or app-legacy/. This one always runs, whatever paths are passed,
+ *      because it is a whole-repo invariant rather than a per-file rule.
+ *
+ * Rule 5 reads the scale out of src/app/theme-variables.css rather than
+ * hardcoding it, so the guard can never enforce a scale the app does not
+ * paint. It used to hardcode 4/8/12/16 while app-legacy/assets/css/
+ * theme-variables.css quietly redeclared the same four tokens at 8/16/24/32
+ * on :root — globals.css @imports it second, so it won — and the guard spent
+ * that whole time telling authors to snap to tokens that painted double what
+ * they asked for. Rule 6 is what stops that recurring.
  *
  * Usage: node scripts/check-branding.mjs [paths...]   (default: src)
  */
@@ -73,7 +84,42 @@ const RAW_STACK = /font-family:[^;}]*(?:JetBrains|Jakarta)/gi;
 const TICK_FONTSIZE = /tick=\{\{[^{}]*fontSize:\s*(\d+)/g;
 // 50%, 999px and 9999px are pill/circle idioms and stay.
 const RAW_RADIUS = /border-radius:\s*([^;}]+)/g;
-const RADIUS_OK = new Set([4, 8, 12, 16]);
+
+// ── The radius scale ─────────────────────────────────────────────────────
+// src/app/theme-variables.css is the single source of truth, and the only
+// file allowed to declare these four tokens. The snap set below is read from
+// it, so the values the guard enforces are by construction the values the app
+// paints. Legacy CSS keeps its own rem scale under --legacy-radius-*.
+const RADIUS_DECL = /--radius-(sm|md|lg|xl)\s*:\s*([^;}]+)/g;
+const RADIUS_SCALE_FILE = path.join('src', 'app', 'theme-variables.css');
+
+function readRadiusScale() {
+  if (!fs.existsSync(RADIUS_SCALE_FILE)) {
+    console.error(`✖ ${RADIUS_SCALE_FILE} is missing — it declares the radius scale.`);
+    process.exit(1);
+  }
+  const src = stripComments(fs.readFileSync(RADIUS_SCALE_FILE, 'utf8'));
+  const scale = new Map();
+  for (const m of src.matchAll(RADIUS_DECL)) {
+    const px = /^(\d+)px$/.exec(m[2].trim());
+    if (!px) {
+      console.error(
+        `✖ ${RADIUS_SCALE_FILE}: --radius-${m[1]} is "${m[2].trim()}" — the scale is declared in ` +
+          `whole px so the guard, the tokens and the rendered corner stay one number.`,
+      );
+      process.exit(1);
+    }
+    scale.set(m[1], Number(px[1]));
+  }
+  const missing = ['sm', 'md', 'lg', 'xl'].filter((t) => !scale.has(t));
+  if (missing.length) {
+    console.error(
+      `✖ ${RADIUS_SCALE_FILE} does not declare: ${missing.map((t) => `--radius-${t}`).join(', ')}`,
+    );
+    process.exit(1);
+  }
+  return scale;
+}
 
 const findings = [];
 const add = (file, line, rule, text) => findings.push({ file, line, rule, text });
@@ -100,6 +146,24 @@ const files = TARGETS.flatMap((t) => walk(t)).filter(
 // Blank out comment bodies (keeping newlines so line numbers stay true) before
 // scanning. A palette documented in a file header is not a declaration.
 const stripComments = (src) => src.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
+
+// Rule 6, and the source of rule 5's snap set. Whole-repo invariant, so it
+// runs over src/ and app-legacy/ regardless of the paths passed in.
+const RADIUS_OK = new Set(readRadiusScale().values());
+
+for (const f of ['src', 'app-legacy'].flatMap((t) => walk(t))) {
+  if (!f.endsWith('.css') || f === RADIUS_SCALE_FILE) continue;
+  const src = stripComments(fs.readFileSync(f, 'utf8'));
+  for (const m of src.matchAll(RADIUS_DECL)) {
+    add(
+      f,
+      lineOf(src, m.index),
+      'radius-redeclared',
+      `--radius-${m[1]} — only ${RADIUS_SCALE_FILE} declares the scale ` +
+        `(app-legacy/ has its own --legacy-radius-*)`,
+    );
+  }
+}
 
 for (const f of files) {
   const src = stripComments(fs.readFileSync(f, 'utf8'));

@@ -69,7 +69,7 @@ body.watchlist-page .stock-watchlist-card {
   align-items: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   font-weight: 600;
   font-size: 0.9375rem;
   cursor: pointer;
@@ -129,7 +129,7 @@ body.watchlist-page .stock-watchlist-card {
 .stat-card {
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--legacy-radius-lg);
   padding: 1.5rem;
   display: flex;
   gap: 1rem;
@@ -145,7 +145,7 @@ body.watchlist-page .stock-watchlist-card {
 .stat-icon {
   width: 48px;
   height: 48px;
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -301,7 +301,7 @@ body.watchlist-page .stock-watchlist-card {
   padding: 0.375rem 0.75rem;
   background: var(--muted);
   border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   color: var(--text-primary);
   font-size: 0.8125rem;
   font-weight: 500;
@@ -335,7 +335,7 @@ body.watchlist-page .stock-watchlist-card {
   min-width: 180px;
   background: var(--bg-card);
   border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
   padding: 0.375rem;
   z-index: 100;
@@ -359,7 +359,7 @@ body.watchlist-page .stock-watchlist-card {
   padding: 0.5rem 0.75rem;
   background: transparent;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
   color: var(--text-primary);
   font-size: 0.875rem;
   font-weight: 500;
@@ -490,7 +490,7 @@ body.watchlist-page .stock-watchlist-card {
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   transition: all 0.2s ease;
   cursor: pointer;
 }
@@ -633,7 +633,7 @@ body.watchlist-page .stock-watchlist-card {
   font-weight: 500;
   cursor: pointer;
   padding: 0.375rem 0.625rem;
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
   transition: all 0.2s ease;
 }
 
@@ -655,7 +655,7 @@ body.watchlist-page .stock-watchlist-card {
   padding: 0.3125rem 0.625rem;
   background: rgba(5, 150, 105, 0.15);
   color: var(--primary, #05966d);
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
   font-size: 0.8125rem;
   font-weight: 500;
 }
@@ -691,7 +691,7 @@ body.watchlist-page .stock-watchlist-card {
   padding: 0.625rem 1rem;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   font-size: 0.875rem;
   color: var(--foreground);
   text-align: left;
@@ -712,7 +712,7 @@ body.watchlist-page .stock-watchlist-card {
 
 .filter-section {
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   overflow: hidden;
 }
 
@@ -755,7 +755,7 @@ body.watchlist-page .stock-watchlist-card {
   color: var(--muted-foreground);
   background: var(--muted);
   padding: 0.1875rem 0.5rem;
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
 }
 
 .filter-options {
@@ -823,7 +823,7 @@ body.watchlist-page .stock-watchlist-card {
   padding: 0.75rem 1rem;
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   transition: all 0.2s ease;
   flex-shrink: 0;
 }
@@ -902,7 +902,7 @@ body.watchlist-page .stock-watchlist-card {
 .filter-select {
   padding: 0.5rem 1rem;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   background: var(--muted);
   color: var(--foreground);
   font-size: 0.875rem;
@@ -947,7 +947,7 @@ body.watchlist-page .stock-watchlist-card {
 
 .badge {
   padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -966,7 +966,7 @@ body.watchlist-page .stock-watchlist-card {
   padding: 1rem;
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   transition: all 0.3s ease;
 }
 
@@ -1008,7 +1008,7 @@ body.watchlist-page .stock-watchlist-card {
   padding: 1rem;
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   border-left: 3px solid transparent;
 }
 
@@ -1035,7 +1035,7 @@ body.watchlist-page .stock-watchlist-card {
   height: 32px;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
   color: var(--muted-foreground);
   display: flex;
   align-items: center;
@@ -1054,7 +1054,7 @@ body.watchlist-page .stock-watchlist-card {
   height: 32px;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
   color: var(--muted-foreground);
   display: inline-flex;
   align-items: center;
@@ -1091,7 +1091,7 @@ body.watchlist-page .stock-watchlist-card {
 .modal-content {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--legacy-radius-lg);
   width: 90%;
   max-width: 800px;
   max-height: 80vh;
@@ -1190,7 +1190,7 @@ body.watchlist-page .stock-watchlist-card {
 }
 
 .recent-activity-compact .recent-activity-body {
-  border-radius: var(--radius-lg, 1.5rem);
+  border-radius: var(--legacy-radius-lg, 1.5rem);
 }
 
 .recent-activity-compact {

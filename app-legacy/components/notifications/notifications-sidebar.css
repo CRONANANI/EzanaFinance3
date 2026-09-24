@@ -49,7 +49,7 @@
   background: var(--primary);
   color: var(--primary-foreground);
   border: none;
-  border-radius: var(--radius-sm, 0.5rem);
+  border-radius: var(--legacy-radius-sm, 0.5rem);
   font-size: 0.65rem;
   font-weight: 600;
   cursor: pointer;
@@ -806,7 +806,7 @@
   padding: 0.5rem 1rem;
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   color: var(--muted-foreground);
   font-size: 0.8125rem;
   font-weight: 500;

@@ -658,7 +658,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
   gap: 0.5rem;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   padding: 0.5rem 1rem;
   min-width: 240px;
 }
@@ -693,7 +693,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
 .learning-course-table-card {
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--legacy-radius-lg);
   padding: 0.75rem;
   overflow: hidden;
 }
@@ -760,14 +760,14 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
   width: 60px;
   height: 6px;
   background: var(--muted);
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
   overflow: hidden;
 }
 
 .level-badge {
   display: inline-block;
   padding: 0.2rem 0.5rem;
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
   font-size: 0.6875rem;
   font-weight: 600;
   text-transform: capitalize;
@@ -783,7 +783,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
   color: var(--muted-foreground);
   cursor: pointer;
   padding: 0.25rem;
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
   transition: all 0.2s ease;
 }
 
@@ -796,7 +796,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
 .learning-achievements-card {
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--legacy-radius-lg);
   padding: 0.75rem;
   display: flex;
   flex-direction: column;
@@ -818,7 +818,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
 .achievement-icon {
   width: 36px;
   height: 36px;
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -893,7 +893,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
   background: var(--primary);
   color: var(--primary-foreground);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
@@ -918,12 +918,12 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
 
 .courses-scroll-wrap::-webkit-scrollbar-track {
   background: var(--muted);
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
 }
 
 .courses-scroll-wrap::-webkit-scrollbar-thumb {
   background: var(--primary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
 }
 
 .courses-scroll {
@@ -937,7 +937,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
   min-width: 260px;
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--legacy-radius-lg);
   padding: 1rem;
   transition: all 0.3s ease;
 }
@@ -960,7 +960,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
   padding: 0.2rem 0.5rem;
   background: var(--accent);
   color: var(--primary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
   font-weight: 600;
 }
 
@@ -1000,7 +1000,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
   padding: 0.2rem 0.5rem;
   background: var(--muted);
   color: var(--muted-foreground);
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
 }
 
 .recommended-card .tag.beginner { background: rgba(16, 185, 129, 0.2); color: var(--primary); }
@@ -1014,7 +1014,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
   background: var(--primary);
   color: var(--primary-foreground);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -1037,12 +1037,12 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
 
 .topics-scroll-wrap::-webkit-scrollbar-track {
   background: var(--muted);
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
 }
 
 .topics-scroll-wrap::-webkit-scrollbar-thumb {
   background: var(--primary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
 }
 
 .topics-scroll {
@@ -1061,7 +1061,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
   padding: 1rem 0.75rem;
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--legacy-radius-lg);
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -1075,7 +1075,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
 .topic-icon {
   width: 40px;
   height: 40px;
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   background: var(--accent);
   color: var(--primary);
   display: flex;
@@ -1157,7 +1157,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
   padding: 0.4rem 0.9rem;
   background: var(--card);
   border: 1px solid var(--primary);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   font-weight: 600;
   font-size: 0.8125rem;
   color: var(--foreground);
@@ -1203,7 +1203,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
 .stat-card {
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--legacy-radius-lg);
   padding: 1.5rem;
   display: flex;
   gap: 1rem;
@@ -1219,7 +1219,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
 .stat-icon {
   width: 48px;
   height: 48px;
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1267,7 +1267,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
 .progress-bar-large {
   height: 10px;
   background: var(--muted);
-  border-radius: var(--radius-lg);
+  border-radius: var(--legacy-radius-lg);
   overflow: hidden;
 }
 
@@ -1283,7 +1283,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
   margin-bottom: 1.25rem;
   padding: 0.25rem;
   background: var(--muted);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
 }
 
 .learning-tab {
@@ -1296,7 +1296,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
   font-size: 0.8125rem;
   background: transparent;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   color: var(--muted-foreground);
   font-weight: 600;
   cursor: pointer;
@@ -1327,7 +1327,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
   gap: 1rem;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   padding: 0.75rem 1rem;
   transition: all 0.3s ease;
 }
@@ -1339,7 +1339,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
   width: 100%;
   height: 100px;
   min-height: 100px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
   overflow: hidden;
   background: var(--muted);
 }
@@ -1377,7 +1377,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
 }
 
 .course-meta-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.375rem; }
-.course-category { padding: 0.2rem 0.5rem; background: var(--accent); color: var(--primary); border-radius: var(--radius-sm); font-size: 0.6875rem; font-weight: 600; }
+.course-category { padding: 0.2rem 0.5rem; background: var(--accent); color: var(--primary); border-radius: var(--legacy-radius-sm); font-size: 0.6875rem; font-weight: 600; }
 .course-time { font-size: 0.75rem; color: var(--muted-foreground); }
 
 .course-name {
@@ -1394,7 +1394,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
 .progress-bar-small {
   height: 6px;
   background: var(--muted);
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
   overflow: hidden;
   margin-bottom: 0.5rem;
 }
@@ -1412,7 +1412,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
   background: var(--primary);
   color: var(--primary-foreground);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -1425,7 +1425,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
   background: var(--muted);
   color: var(--foreground);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -1442,7 +1442,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
 .course-card-small {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   padding: 0.75rem 1rem;
   position: relative;
   transition: all 0.3s ease;
@@ -1477,7 +1477,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
   background: var(--accent);
   color: var(--primary);
   border: 1px solid var(--primary);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -1494,7 +1494,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
 .skill-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   padding: 0.75rem 1rem;
   transition: all 0.3s ease;
 }
@@ -1505,21 +1505,21 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
   width: 36px;
   height: 36px;
   background: var(--accent);
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.125rem;
   color: var(--primary);
 }
-.skill-level { padding: 0.25rem 0.75rem; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+.skill-level { padding: 0.25rem 0.75rem; border-radius: var(--legacy-radius-sm); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
 .skill-card.mastered .skill-level { background: rgba(16, 185, 129, 0.2); color: #10b981; }
 .skill-card.proficient .skill-level { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
 .skill-card.learning .skill-level { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
 
 .skill-name { font-size: 1rem; font-weight: 600; color: var(--foreground); margin-bottom: 0.5rem; }
 .skill-progress { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
-.progress-bar-skill { flex: 1; height: 6px; background: var(--muted); border-radius: var(--radius-sm); overflow: hidden; }
+.progress-bar-skill { flex: 1; height: 6px; background: var(--muted); border-radius: var(--legacy-radius-sm); overflow: hidden; }
 .skill-percentage { font-weight: 700; color: var(--primary); }
 .skill-stats { display: flex; gap: 1.5rem; }
 .stat-small { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--muted-foreground); }
@@ -1535,7 +1535,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
 .badge-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   padding: 0.75rem 1rem;
   text-align: center;
   transition: all 0.3s ease;
@@ -1564,7 +1564,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
 .badge-description { font-size: 0.75rem; color: var(--muted-foreground); margin-bottom: 0.375rem; }
 .badge-date { font-size: 0.6875rem; color: var(--primary); font-weight: 600; margin-bottom: 0.25rem; }
 .badge-progress { font-size: 0.6875rem; color: var(--muted-foreground); margin-bottom: 0.25rem; }
-.badge-rarity { display: inline-block; padding: 0.25rem 0.75rem; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+.badge-rarity { display: inline-block; padding: 0.25rem 0.75rem; border-radius: var(--legacy-radius-sm); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
 .badge-rarity.rare { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
 .badge-rarity.common { background: var(--muted); color: var(--muted-foreground); }
 
@@ -1576,7 +1576,7 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
 
 .tab-content[data-content="browse"] .course-card {
   padding: 0.75rem 1rem;
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
 }
 
 .tab-content[data-content="browse"] .course-card:hover {

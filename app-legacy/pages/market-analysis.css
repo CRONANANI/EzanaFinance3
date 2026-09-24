@@ -7,7 +7,7 @@
 .market-analysis-hero {
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--legacy-radius-lg);
   overflow: hidden;
   margin-bottom: 1.5rem;
 }
@@ -39,7 +39,7 @@
   padding: 0.75rem 1rem;
   background: rgba(13, 20, 37, 0.8);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   margin-bottom: 1rem;
 }
 
@@ -65,7 +65,7 @@
   position: relative;
   background: linear-gradient(135deg, #0d1425 0%, #1a1a2e 100%);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   overflow: visible;
 }
 
@@ -156,7 +156,7 @@
   color: #ffffff;
   font-weight: 600;
   font-size: 0.875rem;
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   box-shadow: var(--shadow-md);
   z-index: 2;
 }
@@ -166,7 +166,7 @@
   z-index: 50;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   padding: 0.75rem 1rem;
   box-shadow: var(--shadow-xl);
   pointer-events: none;
@@ -347,7 +347,7 @@ body.market-analysis-page .market-analysis-container.dashboard-container {
   margin: 2rem 0;
   padding: 0.5rem;
   background: var(--muted);
-  border-radius: var(--radius-lg);
+  border-radius: var(--legacy-radius-lg);
 }
 
 .analysis-tab {
@@ -359,7 +359,7 @@ body.market-analysis-page .market-analysis-container.dashboard-container {
   padding: 1rem 1.5rem;
   background: transparent;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   color: var(--muted-foreground);
   font-family: var(--font-sans);
   font-size: 1rem;
@@ -405,7 +405,7 @@ body.market-analysis-page .market-analysis-container.dashboard-container {
   padding: 0.5rem 1rem;
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   color: var(--foreground);
   font-size: 0.875rem;
 }
@@ -428,7 +428,7 @@ body.market-analysis-page .market-analysis-container.dashboard-container {
 
 .sector-cell {
   padding: 2rem 1.5rem;
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -497,7 +497,7 @@ body.market-analysis-page .market-analysis-container.dashboard-container {
   padding: 1rem;
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   transition: all 0.3s ease;
 }
 
@@ -543,7 +543,7 @@ body.market-analysis-page .market-analysis-container.dashboard-container {
   padding: 1.5rem;
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   text-align: center;
   transition: all 0.3s ease;
 }
@@ -598,7 +598,7 @@ body.market-analysis-page .market-analysis-container.dashboard-container {
 /* Badge styles for Economic Calendar */
 .badge {
   padding: 0.25rem 0.5rem;
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
   font-size: 0.75rem;
   font-weight: 600;
 }
@@ -617,7 +617,7 @@ body.market-analysis-page .market-analysis-container.dashboard-container {
   padding: 1.5rem;
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
 }
 
 .meeting-date {
@@ -638,7 +638,7 @@ body.market-analysis-page .market-analysis-container.dashboard-container {
   align-items: center;
   justify-content: center;
   background: var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--muted-foreground);
@@ -666,7 +666,7 @@ body.market-analysis-page .market-analysis-container.dashboard-container {
   padding: 1rem;
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   transition: all 0.3s ease;
 }
 

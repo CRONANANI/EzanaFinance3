@@ -480,7 +480,7 @@ body.sidebar-open .dashboard-main {
   padding: 0.6rem 1rem;
   background: var(--bg-card);
   border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: var(--font-sans);
@@ -942,7 +942,7 @@ body.sidebar-open .dashboard-main {
   transform: translate(-50%, -50%);
   background: var(--card, var(--bg-card));
   border: 1px solid var(--primary, var(--color-primary));
-  border-radius: var(--radius-lg, 1rem);
+  border-radius: var(--legacy-radius-lg, 1rem);
   padding: 1.25rem;
   box-shadow: var(--shadow-2xl, 0 25px 50px -12px rgba(0, 0, 0, 0.25));
   opacity: 0;
@@ -1017,7 +1017,7 @@ body.sidebar-open .dashboard-main {
   align-items: center;
   padding: 0.5rem 0.75rem;
   background: var(--muted, rgba(17, 24, 39, 0.4));
-  border-radius: var(--radius-sm, 0.5rem);
+  border-radius: var(--legacy-radius-sm, 0.5rem);
   transition: all 0.2s ease;
 }
 
@@ -1082,7 +1082,7 @@ body.sidebar-open .dashboard-main {
   gap: 0.625rem;
   padding: 0.625rem;
   background: var(--muted, rgba(17, 24, 39, 0.4));
-  border-radius: var(--radius-sm, 0.5rem);
+  border-radius: var(--legacy-radius-sm, 0.5rem);
   cursor: pointer;
   transition: all 0.3s ease;
 }

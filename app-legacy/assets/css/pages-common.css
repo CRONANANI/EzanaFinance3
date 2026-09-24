@@ -9,7 +9,7 @@
 .page-content .hero-section,
 .dashboard-page-content .hero-section {
     background: linear-gradient(135deg, var(--bg-secondary, #1a2332) 0%, var(--bg-primary, #0f1419) 100%);
-    border-radius: var(--radius-lg, 12px);
+    border-radius: var(--legacy-radius-lg, 12px);
     padding: var(--space-xl, 2rem);
     margin-bottom: var(--space-xl, 2rem);
     border: 1px solid var(--border-primary);
@@ -74,7 +74,7 @@
     text-align: center;
     padding: var(--space-sm) var(--space-md);
     background: rgba(255, 255, 255, 0.05);
-    border-radius: var(--radius-md);
+    border-radius: var(--legacy-radius-md);
     border: 1px solid var(--border-secondary);
     backdrop-filter: blur(10px);
     min-width: 72px;
@@ -170,7 +170,7 @@
     background: var(--bg-card);
     backdrop-filter: blur(12px);
     border: 1px solid var(--border-secondary);
-    border-radius: var(--radius-lg);
+    border-radius: var(--legacy-radius-lg);
     padding: var(--space-xl) var(--space-lg);
     box-shadow: var(--shadow-md);
     position: relative;

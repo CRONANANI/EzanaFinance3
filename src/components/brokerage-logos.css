@@ -213,7 +213,9 @@
   width: 56px;
   height: 56px;
   object-fit: contain;
-  border-radius: var(--radius-md);
+  /* Same radius as .bl-initials below: the two are the same 56px box and swap
+     for each other, so they have to corner identically. */
+  border-radius: var(--radius-lg);
 }
 
 /* The fallback when Plaid has no mark for an institution. A designed tile
@@ -227,13 +229,7 @@
   justify-content: center;
   width: 56px;
   height: 56px;
-  /* --radius-md, not the --radius-lg the brief named. The radius tokens do
-     not resolve to the values theme-variables.css declares: at runtime the
-     scale is 8/16/24/32px, so --radius-lg paints 24px, which on a 56px box is
-     a circle rather than the rounded square this is meant to be. --radius-md
-     is the nearest token that reads correctly. The scale's drift is a
-     repo-wide issue, not this tile's to fix. */
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: 15px;

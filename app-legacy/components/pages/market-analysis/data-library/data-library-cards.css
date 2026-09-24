@@ -8,7 +8,7 @@
   padding: 1.5rem;
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--legacy-radius-lg);
 }
 
 .data-library-intro h2 {
@@ -40,7 +40,7 @@
 .data-category-card {
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--legacy-radius-lg);
   overflow: hidden;
   transition: all 0.3s ease;
 }
@@ -67,7 +67,7 @@
 .data-category-icon {
   width: 48px;
   height: 48px;
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   display: flex;
   align-items: center;
   justify-content: center;

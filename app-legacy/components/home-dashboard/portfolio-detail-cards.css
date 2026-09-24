@@ -331,7 +331,7 @@
 /* Chart Container */
 .portfolio-chart-container {
     background: var(--card);
-    border-radius: var(--radius-md);
+    border-radius: var(--legacy-radius-md);
     padding: 1rem;
     border: 1px solid var(--border);
     min-height: 400px;

@@ -23,10 +23,19 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
 
-    --radius-sm: 0.5rem;
-    --radius-md: 1rem;
-    --radius-lg: 1.5rem;
-    --radius-xl: 2rem;
+    /* Private to the legacy tree. These used to be named --radius-sm/md/lg/xl,
+       which collided with the app's radius scale in src/app/theme-variables.css:
+       globals.css @imports this file AFTER that one, so these values won the
+       cascade on :root and every var(--radius-*) in the app painted double the
+       declared size (8/16/24/32 instead of 4/8/12/16). The legacy CSS in this
+       tree was authored against this rem scale, so it keeps it under a private
+       name rather than being re-cornered. Nothing outside app-legacy/ may use
+       these; the app's scale is the --radius-* one, which is the only one
+       scripts/check-branding.mjs will let a file declare. */
+    --legacy-radius-sm: 0.5rem;
+    --legacy-radius-md: 1rem;
+    --legacy-radius-lg: 1.5rem;
+    --legacy-radius-xl: 2rem;
 
     /* Shadows (Tweakcn) */
     --shadow-2xs: 0px 8px 16px -4px hsl(0 0% 0% / 0.04);

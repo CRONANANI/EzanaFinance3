@@ -74,14 +74,24 @@
 
 - Typography, colour and radius run off the tokens in `src/app/theme-variables.css`:
   the `--type-*` ramp (eyebrow, page title, section, card title, body, caption,
-  micro, value-lg, value-sm), the brand colours, and `--radius-sm/md/lg/xl`.
+  micro, value-lg, value-sm), the brand colours, and `--radius-sm/md/lg/xl`
+  (**4 / 8 / 12 / 16px** — that file is the only place in the repo allowed to
+  declare them, and the guard fails a second declaration anywhere in `src/` or
+  `app-legacy/`). The legacy tree runs on its own, larger rem scale under
+  `--legacy-radius-*`; it is private to `app-legacy/` and nothing in `src/` may
+  use it. Tailwind's `rounded-sm/md/lg/xl` utilities are a **separate** scale
+  (`borderRadius` in `tailwind.config.js`, 8/16/24/32px) and deliberately do
+  not track the tokens — `rounded-lg` is not `var(--radius-lg)`.
   Charts read their presentation props from `CHART` in `src/lib/chart-theme.js`.
 - `npm run lint:branding` (`scripts/check-branding.mjs`, wired into CI) enforces
   it: no raw brand hex in CSS, no `var(--border-color|--text-tertiary|--mono|--sans)`
   (none of those tokens exist), no raw JetBrains/Jakarta font stacks, recharts
-  axis ticks pinned at 11px, and `border-radius` in the 2 to 18px band on the
-  token scale. Sanctioned exceptions (Echo's `--echo-*` system, the broadsheet
-  `--bs-*` palette, device chrome, standalone document generators) and the
-  pending hand-review list are documented at the top of the script.
+  axis ticks pinned at 11px, `border-radius` in the 2 to 18px band on the
+  token scale (the guard reads that scale out of `theme-variables.css` rather
+  than hardcoding it, so it can only ever enforce what the app paints), and a
+  single declaration site for the scale. Sanctioned exceptions (Echo's
+  `--echo-*` system, the broadsheet `--bs-*` palette, device chrome, standalone
+  document generators) and the pending hand-review list are documented at the
+  top of the script.
 - `EZANA_BRANDING_GUIDE.md` is the prose companion to the above. It is not
   currently checked into this repo.

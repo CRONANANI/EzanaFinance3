@@ -282,7 +282,7 @@
   padding: 0.5rem 1rem;
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: var(--card-border-radius, var(--radius-lg));
+  border-radius: var(--card-border-radius, var(--legacy-radius-lg));
   box-shadow: var(--shadow-sm);
 }
 
@@ -320,7 +320,7 @@
   background: var(--muted);
   color: var(--muted-foreground);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -348,7 +348,7 @@
   background: var(--background);
   background-color: var(--background);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--legacy-radius-lg);
   box-shadow: var(--shadow-lg);
   z-index: 50;
   scrollbar-width: thin;
@@ -392,7 +392,7 @@
   padding: 0.65rem 0.85rem;
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   transition: all 0.2s ease;
 }
 
@@ -458,7 +458,7 @@
   background: var(--primary);
   color: var(--primary-foreground);
   border: 1px solid var(--primary);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
@@ -495,7 +495,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   font-weight: 600;
   font-size: 0.9375rem;
   cursor: pointer;
@@ -517,7 +517,7 @@
 .post-card {
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: var(--card-border-radius, var(--radius-lg));
+  border-radius: var(--card-border-radius, var(--legacy-radius-lg));
   padding: var(--card-padding, 2rem);
   box-shadow: var(--shadow-sm);
   transition: all 0.3s ease;
@@ -574,7 +574,7 @@
   padding: 0.875rem;
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   transition: all 0.3s ease;
   cursor: pointer;
 }
@@ -777,7 +777,7 @@
 .stat-card {
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: var(--card-border-radius, var(--radius-lg));
+  border-radius: var(--card-border-radius, var(--legacy-radius-lg));
   padding: var(--card-padding, 1.5rem);
   display: flex;
   gap: 1rem;
@@ -787,7 +787,7 @@
 .stat-icon {
   width: var(--stat-icon-size, 48px);
   height: var(--stat-icon-size, 48px);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -817,7 +817,7 @@
   font-size: 0.8rem;
   font-weight: 600;
   line-height: 1.2;
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
   border: 1px solid var(--border);
   background: var(--muted);
   color: var(--foreground);
@@ -849,7 +849,7 @@
   font-size: 0.8rem;
   font-weight: 600;
   line-height: 1.2;
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
   border: 1px solid var(--border);
   background: var(--muted);
   color: var(--muted-foreground);
@@ -888,7 +888,7 @@
   padding: 0.5rem 1rem;
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   color: var(--muted-foreground);
   font-size: 0.875rem;
   cursor: pointer;
@@ -926,7 +926,7 @@
   padding: 0.25rem 0.625rem;
   background: var(--accent);
   color: var(--primary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--legacy-radius-sm);
   font-size: 0.75rem;
   font-weight: 500;
 }
@@ -944,7 +944,7 @@
   color: var(--muted-foreground);
   font-size: 0.8125rem;
   cursor: pointer;
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   transition: all 0.3s ease;
 }
 .action-btn:hover, .action-btn.active { color: var(--primary); }
@@ -980,7 +980,7 @@
   align-items: center;
   padding: 0.75rem 1rem;
   background: var(--muted);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   text-decoration: none;
   color: inherit;
   transition: all 0.3s ease;
@@ -995,7 +995,7 @@
   flex-direction: column;
   padding: 1rem;
   background: var(--muted);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
 }
 .activity-label { font-size: 0.8125rem; color: var(--muted-foreground); margin-bottom: 0.25rem; }
 .activity-value { font-size: 1.25rem; font-weight: 700; color: var(--foreground); }
@@ -1028,7 +1028,7 @@
   background: var(--primary);
   color: var(--primary-foreground);
   border: 1px solid var(--primary);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -1049,7 +1049,7 @@
   font-size: 0.875rem;
   background: var(--background);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   color: var(--foreground);
   outline: none;
   transition: border-color 0.2s;
@@ -1115,7 +1115,7 @@
   gap: 0.25rem;
   padding: 0.25rem;
   background: var(--muted);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   margin-bottom: 0.75rem;
 }
 
@@ -1158,7 +1158,7 @@
   padding: 0.5rem 0.75rem;
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
 }
 
 .user-stat-card i {
@@ -1215,7 +1215,7 @@
   padding: 0.5rem 0.75rem;
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   transition: all 0.2s ease;
 }
 
@@ -1310,7 +1310,7 @@
   background: var(--accent);
   color: var(--primary);
   border: 1px solid var(--primary);
-  border-radius: var(--radius-md);
+  border-radius: var(--legacy-radius-md);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -1322,7 +1322,7 @@
 
 /* Community Feed Card */
 .community-feed-filters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
-.feed-filter-btn { padding: 0.4rem 0.75rem; font-size: 0.8rem; font-weight: 600; background: var(--muted); color: var(--muted-foreground); border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s ease; }
+.feed-filter-btn { padding: 0.4rem 0.75rem; font-size: 0.8rem; font-weight: 600; background: var(--muted); color: var(--muted-foreground); border: 1px solid var(--border); border-radius: var(--legacy-radius-md); cursor: pointer; transition: all 0.2s ease; }
 .feed-filter-btn:hover { background: var(--accent); color: var(--primary); border-color: var(--primary); }
 .feed-filter-btn.active { background: var(--primary); color: var(--primary-foreground); border-color: var(--primary); }
 .community-feed-threads { display: flex; flex-direction: column; gap: 0.75rem; max-height: 380px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(16,185,129,0.5) rgba(255,255,255,0.1); }
@@ -1330,7 +1330,7 @@
 .community-feed-threads::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
 .community-feed-threads::-webkit-scrollbar-thumb { background: rgba(16,185,129,0.5); border-radius: 3px; }
 .community-feed-threads::-webkit-scrollbar-thumb:hover { background: rgba(16,185,129,0.7); }
-.feed-thread-card { padding: 1rem; background: var(--muted); border: 1px solid var(--border); border-radius: var(--radius-md); transition: all 0.2s ease; }
+.feed-thread-card { padding: 1rem; background: var(--muted); border: 1px solid var(--border); border-radius: var(--legacy-radius-md); transition: all 0.2s ease; }
 .feed-thread-card:hover { border-color: var(--primary); box-shadow: var(--shadow-sm); }
 .thread-meta-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
 .thread-author { display: flex; align-items: center; gap: 0.5rem; }
