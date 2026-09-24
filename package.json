@@ -33,7 +33,8 @@
     "test:council": "node scripts/check-council-elo.mjs",
     "lint:perf": "node scripts/check-route-budgets.mjs",
     "lint:branding": "node scripts/check-branding.mjs",
-    "check:help-links": "node --no-warnings scripts/check-help-links.mjs"
+    "check:help-links": "node --no-warnings scripts/check-help-links.mjs",
+    "check:sonar-budget": "node --no-warnings scripts/check-sonar-budget.mjs"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [
