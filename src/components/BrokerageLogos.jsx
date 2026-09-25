@@ -5,10 +5,12 @@
  * under a small inline flag. Five are on screen per row; the other fifteen
  * wait in the wings.
  *
- * ONE randomizer drives both rows. Every 2.4s it draws a single position out
- * of all ten and flips it, so the section has no alternation and no phase
- * offset: the same row can flip twice running, which is what makes it read as
- * one surface rather than two loops that happen to share a page.
+ * Flips ALTERNATE between the rows, and nothing about which tile flips is
+ * random. Tick n flips group n % 2 — Canada, United States, Canada, United
+ * States — and within a row the position advances round-robin, so every one of
+ * the five is visited in turn before any repeats. Only the choice of which bank
+ * arrives is drawn (from a seeded generator, never Math.random), out of the
+ * institutions currently in the wings for that row.
  *
  * A flip is atomic. The `is-flipping` class sits on the wrapper around both
  * the mark and the label, and the content swap fires at the 90 degree edge, so
@@ -201,14 +203,36 @@ function FlagUS() {
 
 const FLAGS = { CA: FlagCA, US: FlagUS };
 
+/* Institutions whose Plaid mark is not usable on a light tile. Simplii's
+   arrives as a dark square that reads as a black box rather than a logo, so the
+   tile shows its name as a coloured wordmark instead and skips the PNG
+   entirely. Add an entry here for any other mark that turns out the same way.
+
+   Not an exhaustive audit: Plaid is not reachable from the build sandbox, so
+   the remaining marks in the roster could not be inspected here. */
+const MARK_OVERRIDES = {
+  'Simplii Financial': { kind: 'wordmark' },
+};
+
 function LogoTile({ institution, icon }) {
   const [failed, setFailed] = useState(false);
-  const showPlaid = Boolean(icon?.logo) && !failed;
+  const override = MARK_OVERRIDES[institution.name];
+  const showPlaid = Boolean(icon?.logo) && !failed && override?.kind !== 'wordmark';
 
   return (
     <div className="bl-logo-item" title={institution.name}>
       <div className="bl-logo-slot">
-        {showPlaid ? (
+        {override?.kind === 'wordmark' ? (
+          <span
+            className="bl-wordmark"
+            aria-hidden="true"
+            /* Plaid's primary_color when it sent one, so the wordmark still
+               reads as that bank; the text token otherwise. */
+            style={icon?.color ? { color: icon.color } : undefined}
+          >
+            {institution.label}
+          </span>
+        ) : showPlaid ? (
           /* A plain img, not next/image: a data URI has nothing for the
              optimizer to fetch, resize or cache, so routing it through
              /_next/image would only add a round trip. */
@@ -246,10 +270,6 @@ function LogoTile({ institution, icon }) {
 }
 
 const VISIBLE_SLOTS = 5; // per country row
-/* One randomizer over both rows: a tick draws a position out of all ten, so
-   the same row can flip twice running. That absence of a guarantee is the
-   point; alternating rows reads as two loops sharing a page. */
-const TOTAL_SLOTS = VISIBLE_SLOTS * 2;
 const FLIP_EVERY_MS = 2400;
 const FLIP_HALF_MS = 300;
 
@@ -321,6 +341,9 @@ export function BrokerageLogos() {
      cleanup's clearTimeout kills the pending setFlipping(null), stranding a
      tile with the is-flipping class. A ref keeps the interval stable and the
      reads fresh. */
+  /* Where each row's round-robin is up to. A ref, not state: advancing it must
+     not re-render, and the interval must not be torn down when it changes. */
+  const slotCursorRef = useRef([0, 0]);
   const slotsRef = useRef(slots);
   useEffect(() => {
     slotsRef.current = slots;
@@ -411,15 +434,20 @@ export function BrokerageLogos() {
 
     const tick = () => {
       const c = (counterRef.current += 1);
-      /* One draw across all ten positions: 0 to 4 is Canada, 5 to 9 the US. */
-      const flat = Math.floor(seededRand(c) * TOTAL_SLOTS);
-      const group = Math.floor(flat / VISIBLE_SLOTS);
-      const slot = flat % VISIBLE_SLOTS;
+      /* Strict alternation: odd ticks are Canada, even ticks the United States.
+         No draw decides the row any more, so the two never flip twice running. */
+      const group = c % 2;
 
       /* Nothing in the wings for this row: skip the tick rather than animate a
-         tile into the same bank it already shows, or into an initials tile. */
+         tile into the same bank it already shows, or into an initials tile. The
+         cursor is left alone on a skip, so the round-robin does not lose its
+         place to a row that happens to be fully resolved. */
       const available = resolvedPools[group].filter((i) => !slotsRef.current[group].includes(i));
       if (available.length === 0) return;
+
+      /* Round-robin within the row: every position is visited in turn. */
+      const slot = slotCursorRef.current[group];
+      slotCursorRef.current[group] = (slot + 1) % VISIBLE_SLOTS;
 
       const swap = () =>
         setSlots((prev) => {

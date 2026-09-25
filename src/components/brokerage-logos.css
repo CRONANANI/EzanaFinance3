@@ -208,14 +208,37 @@
 
 /* Square by construction, so the slot's max-height alone would let a
    non-square mark letterbox. Fixed both ways with contain, which crops
-   nothing and centres whatever Plaid actually sent. */
+   nothing and centres whatever Plaid actually sent.
+
+   Inset inside the 56px slot rather than filling it. At 56px the mark's own
+   border-radius bit into the artwork's corners, which is what read as a logo
+   being cut off: Plaid's PNGs are square and drawn edge to edge, so a rounded
+   corner over the top takes a piece out of the mark itself. 44px with 4px of
+   padding keeps the artwork clear of the corner and clear of the slot edge. */
 .bl-logo-img--mark {
-  width: 56px;
-  height: 56px;
+  width: 44px;
+  height: 44px;
+  padding: 4px;
+  box-sizing: border-box;
   object-fit: contain;
-  /* Same radius as .bl-initials below: the two are the same 56px box and swap
-     for each other, so they have to corner identically. */
+  /* Same radius as .bl-initials below: the two swap for each other, so they
+     have to corner identically. */
   border-radius: var(--radius-lg);
+}
+
+/* A wordmark override: the institution's short label as text, in its own brand
+   colour, for banks whose Plaid mark is unusable on a light tile (see
+   MARK_OVERRIDES in BrokerageLogos.jsx). No image, so nothing to clip. */
+.bl-wordmark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 56px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
 }
 
 /* The fallback when Plaid has no mark for an institution. A designed tile
