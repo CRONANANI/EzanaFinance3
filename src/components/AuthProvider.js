@@ -1,10 +1,9 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase-browser';
 import { clearLocalAuth } from '@/lib/clear-auth';
-
-const AuthContext = createContext({ user: null, loading: true });
+import { AuthContext, useAuth } from '@/components/auth-context';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -74,6 +73,8 @@ export function AuthProvider({ children }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useAuth() {
-  return useContext(AuthContext);
-}
+/* Re-exported so the many existing `import { useAuth } from '@/components/AuthProvider'`
+   call sites keep working. A consumer that only READS auth state should import
+   it from '@/components/auth-context' instead, to keep supabase-js out of its
+   route's bundle. */
+export { useAuth };

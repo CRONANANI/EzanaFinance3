@@ -25,7 +25,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronDown } from 'lucide-react';
 import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
-import { useAuth } from '@/components/AuthProvider';
+import { useAuth } from '@/components/auth-context';
 import './category-bar.css';
 
 export default function CategoryBar({ active, activeItem }) {

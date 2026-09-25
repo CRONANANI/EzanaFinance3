@@ -75,8 +75,12 @@
     grid-template-columns: auto 1fr auto;
     padding: 8px 12px;
   }
-  .dscat-home span,
-  .dscat-btn--ghost {
+  /* Scoped to .dscat-bar deliberately. responsive-system.css carries a global
+     touch-target rule, a[class*='btn'] { display: inline-flex }, whose (0,1,1)
+     specificity beats a bare (0,1,0) class selector, so an unscoped
+     .dscat-btn--ghost { display: none } loses and Log in stays on screen. */
+  .dscat-bar .dscat-home span,
+  .dscat-bar .dscat-btn--ghost {
     display: none; /* icon-only home, single Sign up button on phones */
   }
 }
