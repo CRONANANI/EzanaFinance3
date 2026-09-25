@@ -113,6 +113,28 @@ const SYNTHESIS = [
 ];
 /* Deterministic SSR fallback for the dossier. Replaced after hydration when
    /api/landing/sonar-fixture returns enough real rows. */
+/* The eight datasets a ping sweeps, in the order the band claims them.
+   All eight are always listed: the headline says eight datasets are joined,
+   so showing eight is the proof, and a searched-but-dry one at reduced
+   strength is a finding rather than an absence.
+
+   `chip` is the short form, and it is short on purpose. The chips used to be
+   derived with `label.toUpperCase().slice(0, 12)`, which rendered
+   "CONGRESSIONAL TRADING" as "CONGRESSIONA" and "GOVERNMENT CONTRACTS" as
+   "GOVERNMENT C". A chip that clips a letter names nothing.
+
+   Keyed by the ids in SONAR_DATASETS so a live response merges onto it. */
+const SWEPT = [
+  { id: 'echo', chip: 'EZANA ECHO', name: 'Ezana Echo archive' },
+  { id: 'congress', chip: 'CONGRESS', name: 'Congressional trading' },
+  { id: 'gov-contracts', chip: 'GOV CONTRACTS', name: 'Government contracts' },
+  { id: 'sec-filings', chip: 'SEC', name: 'SEC filings' },
+  { id: 'prediction-markets', chip: 'MARKETS', name: 'Prediction markets' },
+  { id: '13f', chip: '13F', name: '13F institutional holdings' },
+  { id: 'lobbying', chip: 'LOBBYING', name: 'Lobbying disclosures' },
+  { id: 'web', chip: 'WEB', name: 'Live web' },
+];
+
 const ROWS = [
   { cls: 'snr-anim-row0', tag: 'ECHO', source: 'Echo editorial', line: '[MATCH TITLE]' },
   {
@@ -1352,8 +1374,17 @@ export function SonarSection() {
             <div className="snr-dossier-head">
               <span className="snr-dossier-title">SOURCED MATCHES</span>
               <span className="snr-rule" />
-              <span className="snr-meta">
-                {hasPinged ? lastQuery.toUpperCase().slice(0, 14) : 'LMT'}
+              {/* The pinged term in full, or its ticker when the full name
+                  will not fit. It used to be `slice(0, 14)`, which rendered
+                  "LOCKHEED MARTIN" as "LOCKHEED MARTI": a truncation that
+                  reads as a different company. A ticker is short and true,
+                  where half a name is neither. */}
+              <span className="snr-meta snr-term">
+                {hasPinged
+                  ? lastQuery.length > 16 && live?.dossier?.ticker
+                    ? live.dossier.ticker.toUpperCase()
+                    : lastQuery.toUpperCase()
+                  : 'LMT'}
               </span>
             </div>
 
@@ -1365,14 +1396,23 @@ export function SonarSection() {
               </p>
 
               <div className="snr-rows" key={pingPulse}>
-                {(live && live.sources.length
-                  ? live.sources.slice(0, 5).map((sc, i) => ({
-                      tag: sc.label.toUpperCase().slice(0, 12),
-                      source: sc.used ? 'matched' : 'searched',
-                      line: sc.label,
-                      used: sc.used,
-                      cls: `snr-anim-row${i}`,
-                    }))
+                {(live
+                  ? /* All eight, always, merged onto whatever the response
+                       actually returned. The list used to be
+                       `live.sources.slice(0, 5)`, which is why the card showed
+                       five rows and needed a "3 MORE" footer to admit the rest
+                       existed, and why a thin response left most of a 536px
+                       card empty. */
+                    SWEPT.map((d, i) => {
+                      const hit = live.sources?.find((sc) => sc.id === d.id);
+                      return {
+                        tag: d.chip,
+                        source: hit?.used ? 'matched' : 'searched',
+                        line: d.name,
+                        used: Boolean(hit?.used),
+                        cls: `snr-anim-row${i}`,
+                      };
+                    })
                   : rows
                 )
                   .concat(
@@ -1433,20 +1473,9 @@ export function SonarSection() {
               </div>
             </div>
 
-            <div
-              className={`snr-row-footer ${
-                hasPinged || pingPulse > 0 ? 'snr-anim-rowpop' : 'snr-anim-row5'
-              }`}
-              style={
-                hasPinged || pingPulse > 0
-                  ? { animationDelay: `${rows.length * 0.12}s` }
-                  : undefined
-              }
-            >
-              <span className="snr-meta">13F, LOBBYING, WEB</span>
-              <span className="snr-rule-soft" />
-              <span className="snr-meta">3 MORE</span>
-            </div>
+            {/* The "13F, LOBBYING, WEB / 3 MORE" footer is gone. It existed
+                to admit that three of the eight datasets were not on screen,
+                which stopped being true once all eight render. */}
           </div>
 
           {/* Stage 2's right-hand stack. In the DOM only once a ping has

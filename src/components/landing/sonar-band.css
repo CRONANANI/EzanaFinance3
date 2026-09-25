@@ -3051,3 +3051,47 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
 .snr-stage2 .snr-orbital .radar-sweep2 {
   opacity: 0.38;
 }
+
+/* ── stage 2: dataset rows are readable, not squashed ──────────────────────
+   Eight rows always render now, so the card fills honestly and each row has
+   room for its chip, its detail line and its flag. The rows divide the card
+   between them, floored so a row never collapses to a line of text, and the
+   floor is what the geometry's row height already computes. */
+@media (min-width: 1024px) {
+  .snr-band.snr-stage2 .snr-rows {
+    display: flex;
+    flex-direction: column;
+    gap: var(--snr-row-gap, 6px);
+    height: 100%;
+    min-height: 0;
+  }
+
+  .snr-band.snr-stage2 .snr-row {
+    flex: 1 1 0;
+    min-height: min(52px, var(--snr-row-h, 52px));
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    overflow: hidden;
+  }
+}
+
+/* Chips are sized to their own text and never clipped. The short forms live
+   in SWEPT in the component; this only stops the box from squeezing them. */
+.snr-band .snr-row .snr-chip,
+.snr-band .snr-row [class*='snr-chip'] {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* The pinged term: one line, sized to fit, never sliced mid-word. The
+   component falls back to the ticker when the name is long. */
+.snr-band .snr-term {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
