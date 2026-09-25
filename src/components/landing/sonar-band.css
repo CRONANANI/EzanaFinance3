@@ -3176,3 +3176,123 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
 .snr-news-more:focus-visible {
   color: var(--snr-mint-soft);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   STAGE 2 ON MOBILE (below 1024px)
+   --------------------------------------------------------------------------
+   One column inside the locked band. The page itself never scrolls while
+   locked; this stack scrolls internally, which is the only place in the
+   composition where scrolling is allowed.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 1023px) {
+  .snr-band.snr-stage2 .snr-cols {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    min-height: 0;
+  }
+
+  .snr-band.snr-stage2 .snr-col-left,
+  .snr-band.snr-stage2 .snr-col-dossier,
+  .snr-band.snr-stage2 .snr-stack {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    flex: 0 0 auto;
+  }
+
+  /* The poke is a three-column effect. Stacked, the dossier is an ordinary
+     card again: full border, full radius, no lip. */
+  .snr-band.snr-stage2 .snr-col-dossier {
+    border-radius: var(--snr-r-panel);
+    border-right: 1px solid rgba(110, 231, 183, 0.3);
+    padding-right: 16px;
+    margin-right: 0;
+  }
+
+  .snr-band.snr-stage2 .snr-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* 16px card padding on a phone, down from the desktop 20. */
+  .snr-band.snr-stage2 .snr-fund,
+  .snr-band.snr-stage2 .snr-news,
+  .snr-band.snr-stage2 .snr-col-dossier {
+    padding: 16px;
+  }
+
+  /* The synthesis panel is capped so it cannot push the rest of the stack
+     far down the scroll. Its own body absorbs the overflow, as it does on
+     desktop. */
+  .snr-band.snr-stage2 .snr-synth {
+    height: 360px;
+    flex: 0 0 360px;
+  }
+
+  /* Chart above the ratios, not beside them: side by side at phone width
+     leaves neither legible. 16:9 for the chart, then a 2x2 grid. */
+  .snr-band.snr-stage2 .snr-fund-body,
+  .snr-band.snr-stage2 .snr-fund--wide .snr-fund-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* A height, not an aspect-ratio. The computed value reads 16 / 9 either
+     way, but this is a replaced element with a viewBox, and Chromium sizes
+     it from the intrinsic 100/30 ratio instead: measured 324x107, which is
+     3.03, not 1.78. The card is the content box less its two 16px paddings,
+     so this is the same 16:9 stated in terms the SVG cannot overrule. */
+  .snr-band.snr-stage2 .snr-spark {
+    width: 100%;
+    height: calc((var(--snr-content, 358px) - 32px) * 0.5625);
+    aspect-ratio: auto;
+    /* flex-shrink: 0, or the column shrinks it back. It is a flex item in
+       .snr-fund-body now, and the default shrink took the computed 183px
+       down to 108, which is where the 3.01 ratio came from rather than from
+       the height being wrong. */
+    flex: 0 0 auto;
+  }
+
+  .snr-band.snr-stage2 .snr-fund-grid {
+    grid-template-columns: 1fr 1fr;
+    align-content: start;
+  }
+
+  /* The cards are their natural height in the scroller, so the desktop
+     flex ratios must not pin them. */
+  .snr-band.snr-locked.snr-stage2 .snr-fund,
+  .snr-band.snr-locked.snr-stage2 .snr-news {
+    flex: 0 0 auto;
+    height: auto;
+  }
+
+  /* Nothing below 10px, per the phone type scale. The desktop sheet puts the
+     dataset chips and their sources at 9, the status label at 9.5 and the
+     range chip at 9, which is legible on a 1440 laptop and is not on a
+     phone. Measured: 18 elements under 10px before this. */
+  .snr-band.snr-stage2 .snr-meta,
+  .snr-band.snr-stage2 .snr-news-meta,
+  .snr-band.snr-stage2 .snr-stat-label,
+  .snr-band.snr-stage2 .snr-tag,
+  .snr-band.snr-stage2 .snr-src,
+  .snr-band.snr-stage2 .snr-status,
+  .snr-band.snr-stage2 .snr-range-chip {
+    font-size: 10px;
+  }
+
+  .snr-band.snr-stage2 .snr-stat-value {
+    font-size: 18px;
+  }
+
+  /* The kicker goes on a phone; the eyebrow keeps the band identified. */
+  .snr-band.snr-stage2 .snr-kicker {
+    display: none;
+  }
+}

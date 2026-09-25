@@ -959,6 +959,38 @@ export function SonarSection() {
     };
   }, [stage2]);
 
+  /* Dev-only alignment guard.
+     -------------------------------------------------------------------------
+     The three columns sharing a top and a bottom edge is the whole point of
+     the stage-2 composition, and it is the kind of thing a single new rule
+     can break silently months later. This measures it once the stage has
+     settled and says so in the console if it drifts.
+
+     Stripped from production builds by the NODE_ENV check, so it costs a
+     dead branch and nothing else. */
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') return undefined;
+    if (!stage2) return undefined;
+    const t = window.setTimeout(() => {
+      const q = (sel) => document.querySelector(sel)?.getBoundingClientRect();
+      const dossier = q('.snr-col-dossier');
+      const fund = q('.snr-fund');
+      const news = q('.snr-news');
+      if (!dossier || !fund || !news) return;
+      const deltas = {
+        chartTopVsDossierTop: +(fund.top - dossier.top).toFixed(1),
+        newsBottomVsDossierBottom: +(news.bottom - dossier.bottom).toFixed(1),
+      };
+      if (
+        Math.abs(deltas.chartTopVsDossierTop) > 1 ||
+        Math.abs(deltas.newsBottomVsDossierBottom) > 1
+      ) {
+        console.warn('[sonar] stage 2 misaligned', deltas);
+      }
+    }, 700);
+    return () => window.clearTimeout(t);
+  }, [stage2]);
+
   /* Part 3.5: ONE owner for the takeover classes and the freeze, mirroring
      lockedIn. The classes used to be toggled from three places, and a path
      that set them without freezing produced the state in the screenshot: a
