@@ -3095,3 +3095,84 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   text-overflow: ellipsis;
   max-width: 100%;
 }
+
+/* ── stage 2: the cards fill themselves ────────────────────────────────────
+   Both cards were sized by the grid but their contents were not, so a 248px
+   chart card held a 94px body with a 110px empty band under it, and a 272px
+   news card held three items and 123px of nothing. The cards are flex columns
+   now and their bodies take the remaining height. */
+
+.snr-band.snr-stage2 .snr-fund,
+.snr-band.snr-stage2 .snr-news {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.snr-band.snr-stage2 .snr-fund .snr-card-head,
+.snr-band.snr-stage2 .snr-news .snr-card-head,
+.snr-band.snr-stage2 .snr-fund-head {
+  flex: 0 0 auto;
+}
+
+.snr-band.snr-stage2 .snr-fund-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  /* Stretch, not centre. Centring is what parked a short body in the middle
+     of a tall card and left the band beneath it. */
+  align-items: stretch;
+}
+
+/* The sparkline stretches to its cell. It already carries
+   preserveAspectRatio="none" and a non-scaling stroke, so height is the only
+   thing that was holding it to 92px. */
+.snr-band.snr-stage2 .snr-spark {
+  height: 100%;
+  min-height: 0;
+}
+
+/* The four stats spread over the full cell rather than bunching at the top. */
+.snr-band.snr-stage2 .snr-fund-grid {
+  align-content: space-evenly;
+  height: 100%;
+}
+
+/* News: head, then a list that takes what is left, then a pinned footer.
+   overflow hidden on the list drops whole items that do not fit rather than
+   showing half of one. */
+.snr-band.snr-stage2 .snr-news-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.snr-band.snr-stage2 .snr-news-item {
+  flex: 0 0 auto;
+}
+
+.snr-news-more {
+  flex: 0 0 auto;
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0 0;
+  appearance: none;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--snr-divider);
+  width: 100%;
+  font-family: var(--snr-font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--snr-mint);
+  cursor: pointer;
+  text-align: left;
+}
+
+.snr-news-more:hover,
+.snr-news-more:focus-visible {
+  color: var(--snr-mint-soft);
+}

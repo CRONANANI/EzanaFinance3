@@ -1541,36 +1541,51 @@ export function SonarSection() {
 
               {live.dossier.news.length || live.dossier.echo.length ? (
                 <div className="snr-news">
-                  {live.dossier.news.map((n) => (
-                    <a
-                      key={n.url}
-                      className="snr-news-item"
-                      href={n.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <span className="snr-news-title">{n.title}</span>
-                      <span className="snr-news-meta">
-                        {n.source}
-                        {relativeDay(n.publishedAt) ? ` · ${relativeDay(n.publishedAt)}` : ''}
-                      </span>
-                    </a>
-                  ))}
-                  {live.dossier.echo.map((e) => (
-                    <a key={e.slug} className="snr-news-item" href={`/echo/${e.slug}`}>
-                      <span className="snr-news-title">
-                        <span className="snr-echo-chip">
-                          <i className="bi bi-broadcast-pin" aria-hidden="true" />
-                          ECHO
+                  <div className="snr-card-head">
+                    <span className="snr-panel-title">RELEVANT NEWS</span>
+                    <span className="snr-rule-soft" aria-hidden="true" />
+                  </div>
+                  <div className="snr-news-list">
+                    {live.dossier.news.map((n) => (
+                      <a
+                        key={n.url}
+                        className="snr-news-item"
+                        href={n.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <span className="snr-news-title">{n.title}</span>
+                        <span className="snr-news-meta">
+                          {n.source}
+                          {relativeDay(n.publishedAt) ? ` · ${relativeDay(n.publishedAt)}` : ''}
                         </span>
-                        {e.title}
-                      </span>
-                      <span className="snr-news-meta">
-                        Ezana Echo
-                        {relativeDay(e.publishedAt) ? ` · ${relativeDay(e.publishedAt)}` : ''}
-                      </span>
-                    </a>
-                  ))}
+                      </a>
+                    ))}
+                    {live.dossier.echo.map((e) => (
+                      <a key={e.slug} className="snr-news-item" href={`/echo/${e.slug}`}>
+                        <span className="snr-news-title">
+                          <span className="snr-echo-chip">
+                            <i className="bi bi-broadcast-pin" aria-hidden="true" />
+                            ECHO
+                          </span>
+                          {e.title}
+                        </span>
+                        <span className="snr-news-meta">
+                          Ezana Echo
+                          {relativeDay(e.publishedAt) ? ` · ${relativeDay(e.publishedAt)}` : ''}
+                        </span>
+                      </a>
+                    ))}
+                  </div>
+                  {/* Pinned to the card bottom. It anchors the bottom edge
+                      visually when only two items come back, which is what
+                      left 123px of the card empty before. Gated like the other
+                      dossier links: this one opens the app, it does not
+                      navigate a signed-out visitor into a wall. */}
+                  <button type="button" className="snr-news-more" onClick={() => openGate()}>
+                    More coverage in Sonar
+                    <i className="bi bi-arrow-right" aria-hidden="true" />
+                  </button>
                 </div>
               ) : null}
             </div>
