@@ -159,6 +159,108 @@ const ROWS = [
 ];
 
 /** Compact money, for a card that has room for four numbers and no more. */
+/* Formatters for the rich Sourced matches rows. Every figure they render
+   comes from dossier.matches; nothing here estimates, rounds up to a nicer
+   number, or fills a gap. */
+function usdShort(n) {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return null;
+  const a = Math.abs(n);
+  if (a >= 1e12) return `$${(n / 1e12).toFixed(2)}T`;
+  if (a >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
+  if (a >= 1e6) return `$${(n / 1e6).toFixed(1)}M`;
+  if (a >= 1e3) return `$${Math.round(n / 1e3)}K`;
+  return `$${Math.round(n)}`;
+}
+
+function countShort(n) {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return null;
+  return n.toLocaleString('en-US');
+}
+
+function fyLabel(fy) {
+  return `FY'${String(fy).slice(-2)}`;
+}
+
+/** Award value over time. Inline SVG, no chart library, built from `series`. */
+function AwardChart({ series }) {
+  if (!Array.isArray(series) || series.length < 2) return null;
+  const W = 100;
+  const H = 30;
+  const values = series.map((d) => d.value);
+  const max = Math.max(...values);
+  const min = Math.min(...values, 0);
+  const span = max - min || 1;
+  const x = (i) => (i / (series.length - 1)) * W;
+  const y = (v) => H - ((v - min) / span) * (H - 3) - 1.5;
+  const line = series.map((d, i) => `${x(i).toFixed(2)},${y(d.value).toFixed(2)}`).join(' ');
+  const area = `0,${H} ${line} ${W},${H}`;
+  const last = series[series.length - 1];
+  const ticks = [0, Math.floor((series.length - 1) / 2), series.length - 1];
+  return (
+    <div className="snr-award-chart">
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
+        <polygon points={area} fill="rgba(16,185,129,.16)" />
+        <polyline
+          points={line}
+          fill="none"
+          stroke="var(--snr-mint)"
+          strokeWidth="1.4"
+          vectorEffect="non-scaling-stroke"
+        />
+        {series.map((d, i) => (
+          <circle
+            key={d.fy}
+            cx={x(i)}
+            cy={y(d.value)}
+            r={i === series.length - 1 ? 2.2 : 1.1}
+            fill="var(--snr-mint)"
+            vectorEffect="non-scaling-stroke"
+          />
+        ))}
+      </svg>
+      <span className="snr-award-last">
+        {fyLabel(last.fy)} {usdShort(last.value)}
+      </span>
+      <div className="snr-award-axis" aria-hidden="true">
+        {ticks.map((i) => (
+          <span key={series[i].fy}>{fyLabel(series[i].fy)}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Top agencies as one stacked bar plus a legend. */
+function AgencyBar({ agencies }) {
+  if (!Array.isArray(agencies) || !agencies.length) return null;
+  /* Mint for the lead agency, graded neutrals behind it, so the ranking reads
+     without needing a colour key. */
+  const tone = (i) =>
+    ['var(--snr-mint)', 'rgba(110,231,183,.55)', 'rgba(110,231,183,.32)', 'rgba(255,255,255,.18)'][
+      Math.min(i, 3)
+    ];
+  return (
+    <div className="snr-agency">
+      <div className="snr-agency-bar" aria-hidden="true">
+        {agencies.map((a, i) => (
+          <span
+            key={a.name}
+            style={{ width: `${(a.share * 100).toFixed(2)}%`, background: tone(i) }}
+          />
+        ))}
+      </div>
+      <div className="snr-agency-legend">
+        {agencies.map((a, i) => (
+          <span key={a.name} className="snr-agency-item">
+            <i style={{ background: tone(i) }} aria-hidden="true" />
+            {a.name} {Math.round(a.share * 100)}% {usdShort(a.value)}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function compactUsd(n) {
   if (typeof n !== 'number' || !Number.isFinite(n)) return null;
   const abs = Math.abs(n);
@@ -732,7 +834,7 @@ export function SonarSection() {
            a day, so a response produced before a pipeline fix keeps serving
            for up to 24h after the deploy that fixed it. Bumping this asks
            for a different URL, which is a different cache entry. */
-          const res = await fetch('/api/landing/demo-ping?v=6');
+          const res = await fetch('/api/landing/demo-ping?v=7');
           const data = await res.json().catch(() => null);
           if (!alive) return;
           if (res.ok && data?.answer) {
@@ -1438,80 +1540,162 @@ export function SonarSection() {
               </p>
 
               <div className="snr-rows" key={pingPulse}>
-                {(live
-                  ? /* All eight, always, merged onto whatever the response
-                       actually returned. The list used to be
-                       `live.sources.slice(0, 5)`, which is why the card showed
-                       five rows and needed a "3 MORE" footer to admit the rest
-                       existed, and why a thin response left most of a 536px
-                       card empty. */
-                    SWEPT.map((d, i) => {
-                      const hit = live.sources?.find((sc) => sc.id === d.id);
-                      return {
-                        tag: d.chip,
-                        source: hit?.used ? 'matched' : 'searched',
-                        line: d.name,
-                        used: Boolean(hit?.used),
-                        cls: `snr-anim-row${i}`,
-                      };
-                    })
-                  : rows
-                )
-                  .concat(
-                    /* Public web citations, appended after the dataset rows.
-                       Real links, new tab, no auth gate: unlike the dossier
-                       tools these are pages anyone can open. */
-                    live && live.webSources?.length
-                      ? live.webSources.slice(0, 2).map((w, i) => ({
-                          tag: 'WEB',
-                          source: (() => {
-                            try {
-                              return new URL(w.url).hostname.replace(/^www\./, '');
-                            } catch {
-                              return 'web';
-                            }
-                          })(),
-                          line: w.title,
-                          href: w.url,
-                          cls: `snr-anim-row${i}`,
-                        }))
-                      : [],
-                  )
-                  .map((r, i) => (
-                    <div
-                      key={`${r.tag}-${r.cls}`}
-                      /* Once any ping has gone out the rows must leave the
-                       master timeline, which live mode freezes. Keyed on
-                       hasPinged, not the pulse: a demo that failed never
-                       bumped the pulse, so its fixture rows stayed frozen at
-                       opacity 0 and the card rendered its header over
-                       nothing. */
-                      className={`snr-row${r.used === false ? ' snr-row--dry' : ''} ${
-                        hasPinged || pingPulse > 0 ? 'snr-anim-rowpop' : r.cls
-                      }`}
-                      style={
-                        hasPinged || pingPulse > 0 ? { animationDelay: `${i * 0.12}s` } : undefined
-                      }
-                    >
-                      <div className="snr-row-top">
-                        <span className="snr-tag">{r.tag}</span>
-                        <span className="snr-rule" />
-                        <span className="snr-src">{r.source}</span>
+                {(() => {
+                  const m = live?.dossier?.matches || null;
+                  /* A dataset is matched only when its leg actually returned
+                     something. The honesty rule: no rich row is rendered from
+                     an empty leg, and a null leg falls through to the dry row
+                     rather than drawing an empty frame. */
+                  const rich = {
+                    'gov-contracts': m?.contracts || null,
+                    echo: m?.echo?.length ? m.echo : null,
+                    congress: m?.congress?.length ? m.congress : null,
+                    'sec-filings': m?.sec?.length ? m.sec : null,
+                  };
+                  /* Matched rich rows first, in the brief's order, then
+                     everything else dimmed. */
+                  const order = ['gov-contracts', 'echo', 'congress', 'sec-filings'];
+                  const sorted = [...SWEPT].sort((a, b) => {
+                    const ra = rich[a.id] ? order.indexOf(a.id) : 99;
+                    const rb = rich[b.id] ? order.indexOf(b.id) : 99;
+                    if (ra !== rb) return ra - rb;
+                    return SWEPT.indexOf(a) - SWEPT.indexOf(b);
+                  });
+
+                  return sorted.map((d, i) => {
+                    const data = live ? rich[d.id] : null;
+                    const hit = live?.sources?.find((sc) => sc.id === d.id);
+                    const matched = Boolean(data) || Boolean(hit?.used);
+                    const cls = `snr-row${matched ? '' : ' snr-row--dry'}${data ? ' snr-row--rich' : ''} ${
+                      hasPinged || pingPulse > 0 ? 'snr-anim-rowpop' : `snr-anim-row${i}`
+                    }`;
+                    const style =
+                      hasPinged || pingPulse > 0 ? { animationDelay: `${i * 0.08}s` } : undefined;
+
+                    return (
+                      <div key={d.id} className={cls} style={style}>
+                        <div className="snr-row-top">
+                          <span className="snr-tag">{d.chip}</span>
+                          <span className="snr-rule" />
+                          <span className="snr-src">{matched ? 'matched' : 'searched'}</span>
+                        </div>
+
+                        {d.id === 'gov-contracts' && data ? (
+                          <div className="snr-rich">
+                            <span className="snr-rich-name">{data.recipient}</span>
+                            <div className="snr-stat-strip">
+                              <div className="snr-stat">
+                                <span className="snr-stat-label">TOTAL AWARDED</span>
+                                <span className="snr-stat-value">{usdShort(data.total)}</span>
+                                <span className="snr-stat-cap">
+                                  {fyLabel(data.coverage.fromFy)} to {fyLabel(data.coverage.toFy)}
+                                </span>
+                              </div>
+                              <div className="snr-stat">
+                                <span className="snr-stat-label">AWARDS</span>
+                                <span className="snr-stat-value">{countShort(data.awards)}</span>
+                                <span className="snr-stat-cap">contracts</span>
+                              </div>
+                              <div className="snr-stat">
+                                <span className="snr-stat-label">AVG CONTRACT</span>
+                                <span className="snr-stat-value">{usdShort(data.avg)}</span>
+                                <span className="snr-stat-cap">per award</span>
+                              </div>
+                              <div className="snr-stat">
+                                <span className="snr-stat-label">YOY</span>
+                                {data.yoy ? (
+                                  <>
+                                    <span
+                                      className={`snr-stat-value ${
+                                        data.yoy.value >= 0 ? 'snr-up' : 'snr-down'
+                                      }`}
+                                    >
+                                      {data.yoy.value >= 0 ? '+' : ''}
+                                      {(data.yoy.value * 100).toFixed(1)}%
+                                    </span>
+                                    {/* The fiscal years are named because the
+                                        figure is meaningless without them, and
+                                        because they are complete years: a
+                                        partial current year compared against a
+                                        whole one is how a quick view reports a
+                                        collapse that never happened. */}
+                                    <span className="snr-stat-cap">
+                                      {fyLabel(data.yoy.from)} to {fyLabel(data.yoy.to)}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className="snr-stat-value">n/a</span>
+                                    <span className="snr-stat-cap">needs two full years</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            <AwardChart series={data.series} />
+                            <AgencyBar agencies={data.agencies} />
+                            <button
+                              type="button"
+                              className="snr-rich-link"
+                              onClick={() => openGate()}
+                            >
+                              Full dossier
+                              <i className="bi bi-arrow-up-right" aria-hidden="true" />
+                            </button>
+                          </div>
+                        ) : null}
+
+                        {d.id === 'echo' && data ? (
+                          <div className="snr-rich snr-rich--echo">
+                            {data.map((a) => (
+                              <a key={a.slug} className="snr-echo-row" href={`/echo/${a.slug}`}>
+                                <span className="snr-echo-title">{a.title}</span>
+                                {a.excerpt ? (
+                                  <span className="snr-echo-excerpt">{a.excerpt}</span>
+                                ) : null}
+                                <span className="snr-echo-date">{relativeDay(a.publishedAt)}</span>
+                              </a>
+                            ))}
+                          </div>
+                        ) : null}
+
+                        {d.id === 'congress' && data ? (
+                          <div className="snr-rich">
+                            {data.map((t, k) => (
+                              <span key={`${t.member}-${k}`} className="snr-trade">
+                                <span className="snr-trade-member">{t.member}</span>
+                                <span
+                                  className={`snr-trade-type ${
+                                    /sale|sell/i.test(t.type) ? 'snr-down' : 'snr-up'
+                                  }`}
+                                >
+                                  {t.type}
+                                </span>
+                                <span className="snr-trade-date">{relativeDay(t.date)}</span>
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
+
+                        {d.id === 'sec-filings' && data ? (
+                          <div className="snr-rich">
+                            {data.map((f, k) => (
+                              <span key={`${f.form}-${k}`} className="snr-trade">
+                                <span className="snr-trade-member">{f.form}</span>
+                                <span className="snr-trade-date">{relativeDay(f.filedAt)}</span>
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
+
+                        {!data ? (
+                          <span className="snr-row-line">
+                            {matched ? d.name : 'No matches for this ping'}
+                          </span>
+                        ) : null}
                       </div>
-                      {r.href ? (
-                        <a
-                          className="snr-row-line snr-row-link"
-                          href={r.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {r.line}
-                        </a>
-                      ) : (
-                        <span className="snr-row-line">{r.line}</span>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  });
+                })()}
               </div>
             </div>
 

@@ -365,6 +365,191 @@ function fourthStat(ratios) {
  * and allowed to come back null: a dossier with a chart and no news is worth
  * more than no dossier because one upstream was slow.
  */
+/* ── dossier.matches ───────────────────────────────────────────────────────
+   What each dataset actually found for this ping, so a Sourced matches row can
+   preview the finding rather than only name the dataset.
+
+   Every leg is fail-soft and returns null on any error or empty result, which
+   the band reads as "searched, nothing found" and renders as a dry row. No
+   figure here is estimated or interpolated: a number that is not in the rows
+   does not appear.
+   ========================================================================= */
+
+const FY_NOW = (() => {
+  /* The US federal fiscal year starts on 1 October, so Oct to Dec belongs to
+     the next one. The CURRENT fiscal year is always partial, which is the
+     whole reason the year-over-year figure below refuses to use it. */
+  const d = new Date();
+  return d.getUTCMonth() >= 9 ? d.getUTCFullYear() + 1 : d.getUTCFullYear();
+})();
+
+const AGENCY_SHORT = (name) =>
+  String(name || '')
+    .replace(/^Department of (the )?/i, '')
+    .replace(/\s*\(.*\)\s*$/, '')
+    .trim() || 'Other';
+
+async function matchEcho(admin, { name, ticker }) {
+  if (!admin || !name) return null;
+  try {
+    const safe = name.replace(/[,()%*]/g, ' ');
+    const { data } = await admin
+      .from('echo_articles')
+      .select('article_slug, article_title, article_excerpt, article_body, published_at')
+      .eq('article_status', 'published')
+      /* No date window. The dossier's news leg is about what is current; this
+         is the archive, and a two-year-old Echo piece on a defense prime is
+         exactly the kind of coverage the claim is about. */
+      .or(
+        `article_title.ilike.%${safe}%,article_body.ilike.%${safe}%` +
+          (ticker ? `,article_title.ilike.%${ticker}%` : ''),
+      )
+      .order('published_at', { ascending: false })
+      .limit(2);
+    if (!data?.length) return null;
+    return data.map((a) => ({
+      title: String(a.article_title || ''),
+      slug: String(a.article_slug || ''),
+      /* article_excerpt where it exists, else the first sentences of the
+         plaintext body, which curated-seed.js already stores with the [[kw:]]
+         markup stripped. Three sentences either way. */
+      excerpt: firstSentences(a.article_excerpt || a.article_body || '', 3),
+      publishedAt: a.published_at || null,
+    }));
+  } catch (e) {
+    console.error('[sonar-pipeline] echo matches failed:', e?.message);
+    return null;
+  }
+}
+
+function firstSentences(raw, n) {
+  const text = String(raw || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\[\[kw:[^\]]*\]\]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!text) return '';
+  const parts = text.match(/[^.!?]+[.!?]+/g);
+  if (!parts) return text.slice(0, 220);
+  return parts.slice(0, n).join(' ').trim();
+}
+
+async function matchContracts(admin, { name }) {
+  if (!admin || !name) return null;
+  try {
+    /* Prefix match, not equality. USAspending spells one recipient several
+       ways ("LOCKHEED MARTIN CORPORATION", "LOCKHEED MARTIN CORP"), and
+       matching exactly splits one company into several. */
+    const prefix = name
+      .replace(/[%_,()]/g, ' ')
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .join(' ');
+    if (!prefix) return null;
+    const { data } = await admin
+      .from('gov_contract_recipient_rollup')
+      .select('fiscal_year, recipient_name, awarding_agency, total_amount, award_count')
+      .ilike('recipient_name', `${prefix}%`)
+      .limit(5000);
+    if (!data?.length) return null;
+
+    let total = 0;
+    let awards = 0;
+    const byFy = new Map();
+    const byAgency = new Map();
+    for (const r of data) {
+      const v = Number(r.total_amount) || 0;
+      const c = Number(r.award_count) || 0;
+      total += v;
+      awards += c;
+      const fy = Number(r.fiscal_year);
+      if (Number.isFinite(fy)) byFy.set(fy, (byFy.get(fy) || 0) + v);
+      const a = AGENCY_SHORT(r.awarding_agency);
+      byAgency.set(a, (byAgency.get(a) || 0) + v);
+    }
+    if (!total || !byFy.size) return null;
+
+    const series = [...byFy.entries()]
+      .map(([fy, value]) => ({ fy, value }))
+      .sort((a, b) => a.fy - b.fy);
+
+    /* Complete fiscal years only. Comparing a partial current year against a
+       whole one is how a quick view ends up reporting a 60% collapse that
+       never happened. */
+    const complete = series.filter((d) => d.fy < FY_NOW);
+    const yoy =
+      complete.length >= 2
+        ? (() => {
+            const to = complete[complete.length - 1];
+            const from = complete[complete.length - 2];
+            if (!from.value) return null;
+            return {
+              value: (to.value - from.value) / from.value,
+              from: from.fy,
+              to: to.fy,
+            };
+          })()
+        : null;
+
+    const ranked = [...byAgency.entries()].sort((a, b) => b[1] - a[1]);
+    const top = ranked.slice(0, 3);
+    const otherValue = ranked.slice(3).reduce((sum, [, v]) => sum + v, 0);
+    const agencies = top.map(([nm, v]) => ({ name: nm, value: v, share: v / total }));
+    if (otherValue > 0) {
+      agencies.push({ name: 'Other', value: otherValue, share: otherValue / total });
+    }
+
+    return {
+      recipient: data[0].recipient_name || name,
+      total,
+      awards,
+      avg: awards ? total / awards : null,
+      yoy,
+      coverage: { fromFy: series[0].fy, toFy: series[series.length - 1].fy },
+      series,
+      agencies,
+    };
+  } catch (e) {
+    console.error('[sonar-pipeline] contract matches failed:', e?.message);
+    return null;
+  }
+}
+
+async function matchCongress(admin, { ticker }) {
+  if (!admin || !ticker) return null;
+  try {
+    const { data } = await admin
+      .from('congressional_trades')
+      .select('politician_name, transaction_type, transaction_date')
+      .eq('symbol', ticker.toUpperCase())
+      .order('transaction_date', { ascending: false })
+      .limit(3);
+    if (!data?.length) return null;
+    return data.map((r) => ({
+      member: String(r.politician_name || ''),
+      type: String(r.transaction_type || ''),
+      date: r.transaction_date || null,
+    }));
+  } catch (e) {
+    console.error('[sonar-pipeline] congress matches failed:', e?.message);
+    return null;
+  }
+}
+
+export async function buildMatches({ ticker, name }, admin) {
+  const [echo, contracts, congress] = await Promise.all([
+    matchEcho(admin, { name, ticker }),
+    matchContracts(admin, { name }),
+    matchCongress(admin, { ticker }),
+  ]);
+  /* sec stays null: the landing pipeline has no EDGAR leg, and adding one
+     means fetching EDGAR's full ticker-to-CIK map on the landing critical
+     path, which needs a caching decision of its own. Null renders SEC as a
+     dry row, which is honest. */
+  return { echo, contracts, congress, sec: null };
+}
+
 export async function buildDossier({ ticker, name }, admin) {
   const apikey = getFmpKey();
   const sym = encodeURIComponent(ticker);
@@ -681,6 +866,21 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
         (v) =>
           `fund=${Boolean(v.fundamentals)} spark=${v.spark ? v.spark.length : 0} news=${v.news.length} echo=${v.echo.length} [${(v.legCodes || []).join(' ')}]`,
       );
+      /* What each dataset found, for the Sourced matches previews. Its own
+         leg so a slow rollup scan cannot cost the dossier, and fail-soft
+         throughout: a null leg renders its dataset as a dry row. */
+      if (dossier) {
+        try {
+          dossier.matches = await leg(
+            'matches',
+            () => buildMatches(resolved, admin),
+            (m) =>
+              `echo=${m.echo?.length || 0} contracts=${m.contracts ? 'y' : 'n'} congress=${m.congress?.length || 0} sec=${m.sec ? 'y' : 'n'}`,
+          );
+        } catch {
+          dossier.matches = null;
+        }
+      }
     } catch {
       /* The dossier is an enrichment. Losing it degrades the stage; it must
          not lose an answer that has already been paid for. */
