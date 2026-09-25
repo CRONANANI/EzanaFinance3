@@ -215,6 +215,7 @@ export function SonarSection() {
   const inputRef = useRef(null);
   const formRef = useRef(null);
   const headlineRef = useRef(null);
+  const eyebrowRef = useRef(null);
   const gateRef = useRef(null);
   /* Where focus was when the gate opened, so closing it puts a keyboard
      visitor back rather than dropping them at the top of the document. */
@@ -920,12 +921,16 @@ export function SonarSection() {
        they were set on. */
     const bandNode = bandRef.current;
     const apply = () => {
-      const h2 = headlineRef.current;
+      const eyebrow = eyebrowRef.current;
       const inner = innerRef.current;
       const band = bandRef.current;
-      if (!h2 || !inner || !band) return;
+      if (!eyebrow || !inner || !band) return;
       const innerTop = inner.getBoundingClientRect().top;
-      const top = Math.round(h2.getBoundingClientRect().top - innerTop);
+      /* The eyebrow row, not the headline. Aligning to the headline left the
+         map only the space below it, which after the headline shrank was 134
+         to 168px depending on the tier, and a map that small is specks. From
+         the eyebrow row the header zone gives it 180. */
+      const top = Math.round(eyebrow.getBoundingClientRect().top - innerTop);
       band.style.setProperty('--snr-orb-top', `${top}px`);
 
       const cols = colsRef.current;
@@ -943,7 +948,11 @@ export function SonarSection() {
          arrow row, which is what put the bottom-right arrow on top of the
          news card. Sizing the orbital to fit removes the overhang instead of
          compensating for it. */
-      const size = Math.max(96, Math.min(200, Math.round(colsTop - top - 8)));
+      /* clamp(180, room, 220). The geometry raises g3 on the desktop anchors
+         so room lands on 180 exactly rather than below it; the clamp is the
+         floor for every width between them. */
+      const room = Math.round(colsTop - top - 8);
+      const size = Math.max(180, Math.min(220, room));
       band.style.setProperty('--snr-orb-size', `${size}px`);
     };
     apply();
@@ -1131,7 +1140,7 @@ export function SonarSection() {
 
       <div ref={innerRef} className="snr-inner">
         <div className="snr-head">
-          <div className="snr-eyebrow-row">
+          <div ref={eyebrowRef} className="snr-eyebrow-row">
             <span className="snr-beacon" aria-hidden="true" />
             <span className="snr-eyebrow">Sonar</span>
             <span className="snr-rule" aria-hidden="true" />
@@ -1398,6 +1407,7 @@ export function SonarSection() {
             <SonarOrbital
               relevance={live?.relevance ?? null}
               hubLabel={live ? lastQuery : null}
+              hubTicker={live?.dossier?.ticker ?? null}
               compact={stage2}
             />
           </div>

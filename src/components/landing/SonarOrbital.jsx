@@ -28,13 +28,19 @@
 import SonarOrbitalMap from '@/components/landing/SonarOrbitalMap';
 import { DIMENSION_SOURCE_DETAILS } from '@/lib/datasets/taxonomy';
 
-export function SonarOrbital({ relevance = null, hubLabel = null, compact = false }) {
+export function SonarOrbital({
+  relevance = null,
+  hubLabel = null,
+  hubTicker = null,
+  compact = false,
+}) {
   return (
     <div className="snr-orbital">
       <SonarOrbitalMap
         sourceDetails={DIMENSION_SOURCE_DETAILS}
         relevance={relevance}
         hubLabel={hubLabel}
+        hubTicker={hubTicker}
         compact={compact}
       />
     </div>

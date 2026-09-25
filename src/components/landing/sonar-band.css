@@ -283,7 +283,7 @@
 
 .snr-headline {
   margin: 0;
-  font-size: 52px;
+  font-size: 34px;
   line-height: 1.02;
   letter-spacing: var(--snr-track-head);
   font-weight: 800;
@@ -1225,7 +1225,7 @@
   }
 
   .snr-headline {
-    font-size: 40px;
+    font-size: 17px;
     white-space: normal;
   }
 }
@@ -1246,7 +1246,7 @@
   }
 
   .snr-headline {
-    font-size: 30px;
+    font-size: 20px;
   }
 
   .snr-kicker {
@@ -2769,6 +2769,15 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   gap: 0;
 }
 
+/* While the map is parked in the header zone the eyebrow row stops 24px short
+   of its left edge, so the hairline and the right-hand kicker never run under
+   it. Sized from the rendered map, not from the geometry's nominal mini
+   diameter, because the two differ once the clamp is involved. */
+.snr-band.snr-stage2 .snr-eyebrow-row {
+  width: calc(var(--snr-content) - var(--snr-orb-size, 180px) - 24px);
+  max-width: 100%;
+}
+
 .snr-band.snr-locked .snr-head {
   flex: 0 0 auto;
   display: flex;
@@ -2989,15 +2998,10 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
 }
 
 /* A faint dark disc under the whole map lifts it off the gradient. */
-.snr-stage2 .snr-orbital {
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(2, 20, 15, 0.55) 0%,
-    rgba(2, 20, 15, 0.35) 60%,
-    transparent 72%
-  );
-}
+/* The dark radial backdrop is gone. It was added to lift the map off the
+   gradient, and with the hub grown to cover half of it the two together read
+   as a blob rather than a radar. The brighter non-scaling strokes do the
+   lifting on their own. */
 
 .snr-stage2 .snr-orbital .radar-grid {
   stroke: rgba(110, 231, 183, 0.55);

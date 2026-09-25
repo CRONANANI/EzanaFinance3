@@ -183,6 +183,8 @@ export default function SonarOrbitalMap({
   sourceDetails,
   relevance = null,
   hubLabel = null,
+  /* The resolved ticker, which is what the hub shows at mini size. */
+  hubTicker = null,
   /* Stage 2 renders this map at roughly a sixth of its resting width. The
      viewBox scales everything with it, so 1px rings land near a sixth of a
      pixel and sub-pixel dots disappear into the band. Geometry that must keep
@@ -245,15 +247,22 @@ export default function SonarOrbitalMap({
      only way the pinged term is readable at all. */
   const hubLabelUnits = compact ? Math.round(12 * unitsPerPx) : null;
   /* 35% of the diameter, which is 04-SPEC.md section 4's figure and comes out
-     around 49px rendered. Growing it to fully contain a 12px two-line label
-     instead needed r=247 of a 300 radius, which swallowed the polygon and the
-     dots and left a dark disc with a name on it. The label overflows the disc
-     by a few pixels at the longest words and reads fine over the inner rings,
-     helped by the dark backdrop the band sheet puts under the whole map. */
-  const hubR = compact ? Math.round((0.35 * 1120) / 2) : 40;
+     22 real pixels. It was 35% of the diameter, which is 196 units against a
+     300-unit outer ring: that swallowed the polygon and the data points and
+     left a dark disc with a name on it. The map gets its map back, and the
+     label problem that drove the growth is solved by showing a ticker rather
+     than by growing the disc to fit a company name. */
+  const hubR = compact ? Math.round(22 * unitsPerPx) : 40;
   const dotR = (active) =>
-    compact ? Math.round((active ? 5 : 3.5) * unitsPerPx) : active ? 6 : 4.5;
-  const pulseR = compact ? Math.round(7 * unitsPerPx) : 5;
+    compact ? Math.round((active ? 5.5 : 4) * unitsPerPx) : active ? 6 : 4.5;
+  const pulseR = compact ? Math.round(8 * unitsPerPx) : 5;
+
+  /* A two-line company name at a readable 12px does not fit a 44px hub, which
+     is how the hub ballooned to 196 units in the first place. Compact shows
+     the ticker instead, or the first word cut to six characters when there is
+     none. The full term stays reachable: it is the map's aria-label and the
+     hub's own <title>, so hovering names it. */
+  const hubShort = compact ? (hubTicker || (hubLine1 || 'Ezana').slice(0, 6)).toUpperCase() : null;
   const activeDim = pinnedDim !== null ? pinnedDim : hoveredDim;
   const togglePin = (i) => setPinnedDim((prev) => (prev === i ? null : i));
   const polyYouRef = useRef(null);
@@ -408,7 +417,11 @@ export default function SonarOrbitalMap({
               ref={svgRef}
               viewBox="0 0 1120 760"
               role="img"
-              aria-label="Weighted radar chart of seven intelligence dimensions"
+              aria-label={
+                compact && hubText
+                  ? `Weighted radar chart of seven intelligence dimensions for ${hubText}`
+                  : 'Weighted radar chart of seven intelligence dimensions'
+              }
               className={cn('block w-full h-auto overflow-visible', compact && 'radar--compact')}
               onClick={() => setPinnedDim(null)}
             >
@@ -616,24 +629,32 @@ export default function SonarOrbitalMap({
                     </text>
                   );
                 }
+                /* Compact is one short line: the ticker. Two lines of a
+                   company name at 12px was what forced the hub to grow until
+                   it covered the data. The full term is on the <title> and
+                   the map's aria-label. */
+                if (compact) {
+                  return (
+                    <text
+                      x={CX}
+                      y={CY + Math.round(hubLabelUnits * 0.36)}
+                      textAnchor="middle"
+                      className="radar-hub-label"
+                      style={{ fontSize: `${hubLabelUnits}px` }}
+                    >
+                      <title>{hubText}</title>
+                      {hubShort}
+                    </text>
+                  );
+                }
                 const line1 = hubLine1;
                 const line2 = hubLine2;
                 const longest = hubLongest;
-                /* Usable width inside the hub, which is the hub's own radius
-                   grown under compact, less a little breathing room. The face
-                   advances at roughly 0.58em, so this is the size at which the
-                   longest line just fits.
-
-                   Compact takes the larger of that and the 12-real-pixel floor
-                   from 04-SPEC.md section 4, converted into viewBox units by
-                   the measured scale. The floor is what matters in practice:
-                   at the sizes this renders, a label that merely fits the hub
-                   is still too small to read. Capped at the stylesheet's 30 in
-                   the resting map so a three-letter ticker is not drawn
+                /* The resting map, unchanged: usable width inside an r=40 hub
+                   against a face that advances at roughly 0.58em, capped at
+                   the stylesheet's 30 so a three-letter ticker is not drawn
                    comically large. */
-                const fs = compact
-                  ? hubLabelUnits
-                  : Math.max(9, Math.min(30, Math.round(72 / (longest * 0.58))));
+                const fs = Math.max(9, Math.min(30, Math.round(72 / (longest * 0.58))));
                 /* Baseline maths, not guesses: 0.36em is about the cap-height
                    centre, so a single line lands on CY and a pair straddles it. */
                 const lift = Math.round(fs * 0.36);
@@ -666,7 +687,9 @@ export default function SonarOrbitalMap({
                 const Icon = DIMENSION_ICON[d.id];
                 const isActive = activeDim === i;
                 if (!Icon) return null;
-                const S = 44; /* SVG units; renders near 20px at the band's half scale */
+                /* 18 real pixels, whatever the map is rendered at. A flat 44
+                   units renders near 5px in stage 2, which is a speck. */
+                const S = compact ? Math.round(18 * unitsPerPx) : 44;
                 return (
                   <g
                     key={`dim-icon-${i}`}

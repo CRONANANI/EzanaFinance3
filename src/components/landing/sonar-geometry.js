@@ -26,8 +26,22 @@
  * heights that remainder equals the table's work value by construction.
  */
 
-/* The four measured columns, verbatim from 04-SPEC.md section 1 and the
-   prototype's BP table. Order matters: the interpolation walks it. */
+/* The four measured columns, from 04-SPEC.md section 1 and the prototype's BP
+   table, with one deliberate departure: the headline runs at 0.65 of the
+   spec's size at Noah's direction, so `head` and `headFs` are 20/50 at 390,
+   31/34 at 1366, 36/40 at 1440 and 39/42 at 1920 where the spec says 30/76,
+   48/52, 56/60 and 60/64. Nothing else moves, and nothing needs to: the work
+   area is the budget's remainder, so the height the smaller headline frees
+   flows into it and the column still sums.
+
+   `g3`, the gap between the subhead and the work area, is raised on the three
+   desktop anchors for a second reason. The mini orbital needs 180px of header
+   zone measured from the eyebrow row down to the work area, and after the
+   headline shrank there was 134 at 1366, 152 at 1440 and 168 at 1920. The
+   shortfall goes into g3 rather than anywhere else precisely because the work
+   area is the remainder: 24 to 70, 28 to 56 and 32 to 44 buys the map its
+   room and the column still sums to the viewport. The phone keeps its 14,
+   since the orbital is hidden in stage 2 there. Order matters: the interpolation walks it. */
 export const ANCHORS = [
   {
     w: 390,
@@ -39,8 +53,8 @@ export const ANCHORS = [
     padTop: 14,
     eyebrow: 14,
     g1: 10,
-    head: 76,
-    headFs: 30,
+    head: 50,
+    headFs: 20,
     g2: 8,
     sub: 60,
     subFs: 13,
@@ -76,12 +90,12 @@ export const ANCHORS = [
     padTop: 24,
     eyebrow: 16,
     g1: 14,
-    head: 52,
-    headFs: 48,
+    head: 34,
+    headFs: 31,
     g2: 10,
     sub: 44,
     subFs: 15,
-    g3: 24,
+    g3: 70,
     g4: 14,
     arrow: 44,
     padBot: 20,
@@ -107,12 +121,12 @@ export const ANCHORS = [
     padTop: 32,
     eyebrow: 16,
     g1: 16,
-    head: 60,
-    headFs: 56,
+    head: 40,
+    headFs: 36,
     g2: 12,
     sub: 48,
     subFs: 16,
-    g3: 28,
+    g3: 56,
     g4: 16,
     arrow: 48,
     padBot: 24,
@@ -138,12 +152,12 @@ export const ANCHORS = [
     padTop: 40,
     eyebrow: 18,
     g1: 18,
-    head: 64,
-    headFs: 60,
+    head: 42,
+    headFs: 39,
     g2: 14,
     sub: 52,
     subFs: 17,
-    g3: 32,
+    g3: 44,
     g4: 20,
     arrow: 52,
     padBot: 32,
