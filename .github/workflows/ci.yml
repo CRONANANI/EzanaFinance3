@@ -67,6 +67,15 @@ jobs:
         # script.
         run: npm run lint:branding
 
+      - name: No backend names in user-visible copy
+        # User-facing copy names the PUBLIC data source (USAspending.gov, SEC
+        # EDGAR, the OECD, the Treasury), never the pipeline, warehouse,
+        # database or host that moves and stores it. Parses every file under
+        # src/ and checks only string literals, template chunks and JSX text,
+        # so comments, logs and thrown errors stay exempt. Sanctioned paths and
+        # strings are listed with their reasons at the top of the script.
+        run: npm run check:copy
+
       - name: Help center link integrity
         # Every /help-center href inside an article body must resolve to a real
         # slug in the audience it names, every category entry must have a body

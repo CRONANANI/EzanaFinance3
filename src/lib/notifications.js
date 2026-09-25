@@ -36,7 +36,7 @@ export async function sendPushNotification(userId, { title, body, url, tag, imag
   try {
     supabase = getAdminClient();
   } catch {
-    return { sent: 0, error: 'Supabase service client unavailable' };
+    return { sent: 0, error: 'notification service unavailable' };
   }
 
   try {

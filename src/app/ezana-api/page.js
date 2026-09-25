@@ -508,7 +508,7 @@ const ROADMAP_STEPS = [
   {
     n: 1,
     title: 'Request → scoped API key',
-    body: 'A requester submits the access form. On approval we issue a scoped key backed by a Supabase key table — only a salted hash is stored, never the raw key — bound to a lease tier and dataset scopes.',
+    body: 'A requester submits the access form. On approval we issue a scoped key backed by a key registry — only a salted hash is stored, never the raw key — bound to a lease tier and dataset scopes.',
   },
   {
     n: 2,

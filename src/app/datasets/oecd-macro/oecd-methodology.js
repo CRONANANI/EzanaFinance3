@@ -25,7 +25,7 @@ export const OECD_METHODOLOGY = {
   },
   history: {
     title: 'How this chart is built',
-    body: 'Series come from the OECD Economic Outlook database, 1961–2025, synced through Ezana’s BigQuery pipeline. Solid lines are OECD actuals through 2023; dashed segments inside the shaded band are OECD projections for 2024–25. Gaps in a line mean the OECD reports no value for those years — nothing is interpolated.',
+    body: 'Series come from the OECD Economic Outlook database, 1961–2025, synced on a regular cadence. Solid lines are OECD actuals through 2023; dashed segments inside the shaded band are OECD projections for 2024–25. Gaps in a line mean the OECD reports no value for those years — nothing is interpolated.',
   },
   eras: {
     title: 'About these annotations',

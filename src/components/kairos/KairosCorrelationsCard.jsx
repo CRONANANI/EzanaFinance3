@@ -203,7 +203,7 @@ export function KairosCorrelationsCard({ regionId }) {
                 maxWidth: 300,
               }}
             >
-              The correlation engine runs on a scheduled cron job that pairs 5 years of weather data
+              The correlation engine runs on a regular schedule, pairing 5 years of weather data
               with commodity price history. It needs FMP_API_KEY or ALPHA_VANTAGE_API_KEY for
               commodity prices. Trigger manually via{' '}
               <code

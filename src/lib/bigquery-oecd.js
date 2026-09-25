@@ -14,7 +14,7 @@ const MAX_BYTES_BILLED = process.env.BQ_OECD_MAX_BYTES_BILLED || String(1 * 1024
 
 async function runQuery(query, params = {}) {
   const bq = getBigQuery();
-  if (!bq) return { rows: [], bytesBilled: null, error: 'BigQuery not configured' };
+  if (!bq) return { rows: [], bytesBilled: null, error: 'data source not configured' };
   try {
     const [job] = await bq.createQueryJob({
       query,
@@ -30,7 +30,7 @@ async function runQuery(query, params = {}) {
       error: null,
     };
   } catch (err) {
-    return { rows: [], bytesBilled: null, error: err?.message || 'bigquery error' };
+    return { rows: [], bytesBilled: null, error: err?.message || 'query failed' };
   }
 }
 

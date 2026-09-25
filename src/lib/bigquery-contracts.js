@@ -21,7 +21,7 @@ const MAX_BYTES_BILLED = process.env.BQ_MAX_BYTES_BILLED || String(5 * 1024 * 10
 
 async function runQuery(query, params = {}) {
   const bq = getBigQuery();
-  if (!bq) return { rows: [], bytesBilled: null, error: 'BigQuery not configured' };
+  if (!bq) return { rows: [], bytesBilled: null, error: 'data source not configured' };
   try {
     const [job] = await bq.createQueryJob({
       query,
@@ -31,9 +31,13 @@ async function runQuery(query, params = {}) {
     });
     const [rows] = await job.getQueryResults();
     const billed = job.metadata?.statistics?.query?.totalBytesBilled;
-    return { rows: Array.isArray(rows) ? rows : [], bytesBilled: billed != null ? Number(billed) : null, error: null };
+    return {
+      rows: Array.isArray(rows) ? rows : [],
+      bytesBilled: billed != null ? Number(billed) : null,
+      error: null,
+    };
   } catch (err) {
-    return { rows: [], bytesBilled: null, error: err?.message || 'bigquery error' };
+    return { rows: [], bytesBilled: null, error: err?.message || 'query failed' };
   }
 }
 

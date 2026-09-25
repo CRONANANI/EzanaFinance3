@@ -873,7 +873,7 @@ export const USER_ARTICLES = {
       'Brokerage connections are handled through Plaid (read-only access) and Alpaca Securities (trading), both of which are SOC 2 Type II certified. We never store your brokerage login credentials.',
       'Your <a href="/help-center/user/article/opening-a-brokerage-account">Ezana brokerage account</a> is SIPC insured up to $500,000. We do not sell your personal data to third parties. You can request a full export or deletion of your data at any time.',
       '<h3>What protects your money vs your data</h3>',
-      '<ul><li><strong>Data</strong> &mdash; TLS 1.3 in transit, AES-256 at rest, row-level security in our Postgres database.</li><li><strong>Credentials</strong> &mdash; brokerage logins are handled by Plaid/SnapTrade; Ezana never stores them.</li><li><strong>Funds</strong> &mdash; custody sits with Alpaca, a SIPC-member broker-dealer.</li></ul>',
+      '<ul><li><strong>Data</strong> &mdash; TLS 1.3 in transit, AES-256 at rest, row-level security on every table.</li><li><strong>Credentials</strong> &mdash; brokerage logins are handled by Plaid/SnapTrade; Ezana never stores them.</li><li><strong>Funds</strong> &mdash; custody sits with Alpaca, a SIPC-member broker-dealer.</li></ul>',
       '<h3>Troubleshooting</h3>',
       '<ul><li><strong>Want to review connected apps?</strong> Each broker has a Connected Apps page where you can revoke access at the source.</li><li><strong>Suspect unauthorized access?</strong> Change your password, enable 2FA, and email contact@ezana.world.</li></ul>',
       '<p>Next in Account & Security: <a href="/help-center/user/article/resetting-your-password">Resetting Your Password</a> and <a href="/help-center/user/article/user-api-access">Personal API Access and Integrations</a>.</p>',
@@ -1386,7 +1386,7 @@ export const USER_ARTICLES = {
     content: wrap([
       'Ezana supports both light and dark themes. The app defaults to <strong>light mode</strong>; the sun/moon icon in the navbar toggles between them at any time.',
       '<h3>How your preference is saved</h3>',
-      'Your choice is saved to your account settings in Supabase (<code>user_settings.theme</code>) and also mirrored to <code>localStorage</code> for fast first paint. When you log in on another device, your preferred theme follows you.',
+      'Your choice is saved to your account settings and also mirrored to <code>localStorage</code> for fast first paint. When you log in on another device, your preferred theme follows you.',
       '<h3>System-specific behavior</h3>',
       '<ul><li>Some pages (the Global Market Analysis map, for instance) are always rendered in dark mode regardless of your preference, because the map visualization only reads well against a dark background. The rest of the app still respects your setting.</li><li>The Help Center, Dashboard, Research, Trading, Community, Settings, and Learning Center all follow your theme preference — they never force a specific mode.</li></ul>',
       'If you ever see a page locked to the wrong theme, email <a href="mailto:contact@ezana.world">contact@ezana.world</a> — that\'s a bug we want to fix.',
@@ -1745,7 +1745,7 @@ export const USER_ARTICLES = {
     content: wrap([
       'The full Privacy Policy is maintained at <a href="/privacy">ezana.world/privacy</a>.',
       '<h3>The short version</h3>',
-      '<ul><li><strong>What we collect:</strong> account info (email, display name), portfolio data you connect or enter, behavioral data (pages visited, features used) to improve the product.</li><li><strong>What we never do:</strong> sell your personal data to third parties, use message content to train models, or share your individual holdings publicly.</li><li><strong>How we store it:</strong> all data in transit is TLS 1.3; data at rest is AES-256 encrypted. Supabase is our primary database (Postgres + row-level security).</li><li><strong>Your controls:</strong> export or delete your data at any time from Settings → Account. Deletion is irreversible and completes within 30 days.</li></ul>',
+      '<ul><li><strong>What we collect:</strong> account info (email, display name), portfolio data you connect or enter, behavioral data (pages visited, features used) to improve the product.</li><li><strong>What we never do:</strong> sell your personal data to third parties, use message content to train models, or share your individual holdings publicly.</li><li><strong>How we store it:</strong> all data in transit is TLS 1.3; data at rest is AES-256 encrypted, with row-level security so one account can never read another account’s rows.</li><li><strong>Your controls:</strong> export or delete your data at any time from Settings → Account. Deletion is irreversible and completes within 30 days.</li></ul>',
       'For full details — including cookie policy, regional rights (GDPR, CCPA), and contact for privacy requests — see the <a href="/privacy">Privacy Policy</a>.',
       '<h3>Related articles</h3>',
       '<ul><li><a href="/help-center/user/article/data-security">How Your Data Is Protected</a></li><li><a href="/help-center/user/article/terms-of-service">Terms of Service</a></li><li><a href="/help-center/user/article/deleting-account">Deleting Your Account</a></li></ul>',

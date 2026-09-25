@@ -100,7 +100,7 @@ export async function getHostedContractAwards({ limit = 25 } = {}) {
 
     return { rows: allRows.slice(0, displayLimit), topRecipients, syncedAt, error: null };
   } catch (err) {
-    return { rows: [], topRecipients: [], syncedAt: null, error: err?.message || 'supabase error' };
+    return { rows: [], topRecipients: [], syncedAt: null, error: err?.message || 'query failed' };
   }
 }
 
@@ -235,7 +235,7 @@ export async function getContractAwardsPage(params = {}) {
 
     return { rows, total: count ?? rows.length, page: pg, pageSize: size, error: null };
   } catch (err) {
-    return { rows: [], total: 0, page: pg, pageSize: size, error: err?.message || 'supabase error' };
+    return { rows: [], total: 0, page: pg, pageSize: size, error: err?.message || 'query failed' };
   }
 }
 
@@ -474,7 +474,7 @@ export async function getContractRollups({ fiscalYear = null, limit = 40000 } = 
 /** Freshness / source line shown above the table for each data source. */
 export function contractFreshnessNote(source, syncedAt) {
   if (source === 'rollup') {
-    return 'Federal contract awards via USAspending.gov (U.S. Treasury), aggregated from BigQuery into Ezana rollups.';
+    return 'Federal contract awards via USAspending.gov (U.S. Treasury), aggregated across all fiscal years.';
   }
   if (source === 'hosted') {
     const when = syncedAt ? formatDisplayDate(syncedAt) : 'recently';
