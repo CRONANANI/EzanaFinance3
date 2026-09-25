@@ -801,10 +801,13 @@
   font-weight: var(--ds-type-strong);
   fill: var(--text-primary);
 }
+/* --text-secondary is under contrast against a tinted tile; primary at 0.8 reads
+   as a secondary line without dropping below the legibility floor. */
 .gcx-tl-val {
   font-size: var(--ds-type-disclaimer-size);
   font-variant-numeric: tabular-nums;
-  fill: var(--text-secondary);
+  fill: var(--text-primary);
+  fill-opacity: 0.8;
   font-family: var(--font-mono);
 }
 .gcx-tl-sm {

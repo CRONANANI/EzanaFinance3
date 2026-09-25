@@ -11,7 +11,7 @@
  *  - YoY and quarterly series → derived from the loaded award dates where the
  *    data supports it, else an honest empty state.
  */
-import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
+import { useMemo, useState, useEffect, useCallback, useId, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   LayoutGrid,
@@ -1320,6 +1320,32 @@ function Treemap({ recipients, onPick, colorOf }) {
   // carry a legible label. Taller viewBox gives each tile real height.
   const W = 1100;
   const H = 520;
+  // useId keeps the clip ids unique if two treemaps ever mount on one page. Its
+  // output contains colons, which are not usable inside url(#…), so strip them.
+  const uid = useId().replace(/:/g, '');
+  const probeRef = useRef(null);
+  const [fonts, setFonts] = useState(null);
+  // The probes are real <text> nodes in this SVG, so getComputedStyle returns
+  // the font each label class actually paints with, letter-spacing included.
+  // Measuring only after mount means the first paint (and any server render)
+  // matches what React produced from the estimate, so there is no hydration
+  // mismatch; the measured pass lands on the next frame.
+  useEffect(() => {
+    const g = probeRef.current;
+    if (!g) return;
+    const read = (cls) => {
+      const node = g.querySelector(`.${cls}`);
+      if (!node) return null;
+      const cs = window.getComputedStyle(node);
+      if (!cs || !cs.fontSize) return null;
+      return {
+        font: `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`,
+        letterSpacing: cs.letterSpacing === 'normal' ? '0px' : cs.letterSpacing,
+      };
+    };
+    const next = { tag: read('gcx-tl-tag'), name: read('gcx-tl-name'), sm: read('gcx-tl-sm') };
+    if (next.tag || next.name || next.sm) setFonts(next);
+  }, []);
   const GAP = 3;
   const MIN_TILE_H = 22; // never render a sliver
   const maxValue = Math.max(...recipients.map((r) => r.total), 1);
@@ -1391,11 +1417,26 @@ function Treemap({ recipients, onPick, colorOf }) {
       role="img"
       aria-label="Recipients treemap"
     >
+      {/* Font probes. Hidden from paint and from assistive tech; they exist so
+          the measurement pass can read the real computed font of each label
+          class off the DOM. */}
+      <g ref={probeRef} aria-hidden="true" visibility="hidden" pointerEvents="none">
+        <text className="gcx-tl-tag">M</text>
+        <text className="gcx-tl-name">M</text>
+        <text className="gcx-tl-sm">M</text>
+      </g>
       {tiles.map((t, i) => {
         const opacity = 0.14 + 0.5 * (t.r.total / maxValue);
         const big = t.w > 110 && t.h > 44;
         const med = !big && t.w > 80 && t.h > 26;
         const small = !big && !med && t.h > 14;
+        const clipId = `gcx-clip-${uid}-${i}`;
+        const tagText = big ? measuredTrim(t.agency, t.w, fonts?.tag, 10, 16) : null;
+        const bigName = big ? measuredTrim(t.r.name, t.w, fonts?.name, 11, 16) : null;
+        const medName = med ? measuredTrim(t.r.name, t.w, fonts?.name, 11, 14) : null;
+        const smallText = small
+          ? measuredTrim(`${t.r.name} · ${fmtUSD(t.r.total)}`, t.w, fonts?.sm, 10, 12)
+          : null;
         return (
           <g
             key={`${t.r.name}-${i}`}
@@ -1406,6 +1447,11 @@ function Treemap({ recipients, onPick, colorOf }) {
             onKeyDown={(e) => e.key === 'Enter' && onPick(t.r)}
           >
             <title>{`${t.r.name} · ${fmtUSD(t.r.total)}`}</title>
+            <defs>
+              <clipPath id={clipId}>
+                <rect x={t.x} y={t.y} width={t.w} height={t.h} rx={5} />
+              </clipPath>
+            </defs>
             <rect
               x={t.x}
               y={t.y}
@@ -1417,46 +1463,58 @@ function Treemap({ recipients, onPick, colorOf }) {
               stroke={colorOf(t.agency)}
               strokeOpacity={0.35}
             />
-            {big && (
-              <>
-                <text x={t.x + 8} y={t.y + 16} className="gcx-tl-tag">
-                  {trim(t.agency, t.w, 10, 16)}
+            {/* Every label is clipped to its own tile, so no measurement error
+                can ever paint one across a neighbour. The trims above still do
+                the work of ending a label with a readable ellipsis rather than
+                a severed glyph. */}
+            <g clipPath={`url(#${clipId})`}>
+              {big && (
+                <>
+                  <text x={t.x + 8} y={t.y + 16} className="gcx-tl-tag">
+                    {tagText}
+                  </text>
+                  <text x={t.x + 8} y={t.y + 32} className="gcx-tl-name">
+                    {bigName}
+                  </text>
+                  <text x={t.x + 8} y={t.y + 48} className="gcx-tl-val">
+                    {fmtUSD(t.r.total)}
+                  </text>
+                </>
+              )}
+              {/* A medium tile that cannot fit four characters of its name plus
+                  the ellipsis goes unlabelled, exactly as the small branch has
+                  always done; the <title> above still carries name and value. */}
+              {med && medName && (
+                <>
+                  <text x={t.x + 7} y={t.y + 15} className="gcx-tl-name">
+                    {medName}
+                  </text>
+                  <text x={t.x + 7} y={t.y + 28} className="gcx-tl-val">
+                    {fmtUSD(t.r.total)}
+                  </text>
+                </>
+              )}
+              {small && smallText && (
+                <text x={t.x + 6} y={t.y + t.h / 2 + 3} className="gcx-tl-sm">
+                  {smallText}
                 </text>
-                <text x={t.x + 8} y={t.y + 32} className="gcx-tl-name">
-                  {trim(t.r.name, t.w, 11, 16)}
-                </text>
-                <text x={t.x + 8} y={t.y + 48} className="gcx-tl-val">
-                  {fmtUSD(t.r.total)}
-                </text>
-              </>
-            )}
-            {med && (
-              <>
-                <text x={t.x + 7} y={t.y + 15} className="gcx-tl-name">
-                  {trim(t.r.name, t.w, 11, 14)}
-                </text>
-                <text x={t.x + 7} y={t.y + 28} className="gcx-tl-val">
-                  {fmtUSD(t.r.total)}
-                </text>
-              </>
-            )}
-            {small && trim(`${t.r.name} · ${fmtUSD(t.r.total)}`, t.w, 10, 12) && (
-              <text x={t.x + 6} y={t.y + t.h / 2 + 3} className="gcx-tl-sm">
-                {trim(`${t.r.name} · ${fmtUSD(t.r.total)}`, t.w, 10, 12)}
-              </text>
-            )}
+              )}
+            </g>
           </g>
         );
       })}
     </svg>
   );
 }
-/* Character-count budget for a tile label. The viewBox is in CSS pixels, so
-   `perChar` is the average advance width at the label's font-size (~0.6em for
-   the sans faces here) and `inset` is the left offset plus a matching right
-   gutter. The old constant 7 was tuned for a 9px label; once the labels were
-   raised to the 10-11px legibility floor the estimate ran short and the
-   narrowest tiles pushed their text past the SVG's right edge. */
+/* Character-count budget for a tile label, used when nothing has been measured
+   yet (server render, first client paint, or a browser that gives us no 2D
+   context). `inset` is the left offset plus a matching right gutter.
+
+   The multiplier is an average advance width, which is exactly why it is only a
+   fallback: the agency tag line is uppercase mono WITH letter-spacing, so its
+   real advance runs well past 0.62em per character and long tags such as
+   DEPARTMENT OF DEFENSE survived this trim and painted across the tile's right
+   edge. measuredTrim below replaces the estimate once the fonts are known. */
 function trim(s, w, fontPx = 10, inset = 14) {
   const max = Math.floor((w - inset) / (fontPx * 0.62));
   // Below four characters there is no label worth drawing: the old floor of
@@ -1465,6 +1523,69 @@ function trim(s, w, fontPx = 10, inset = 14) {
   // unlabelled, which is the honest presentation at that size.
   if (max < 4) return null;
   return s.length > max ? `${s.slice(0, max - 1)}…` : s;
+}
+
+/* ── Real text measurement for treemap labels ──────────────────────────────
+   One module-level 2D context, reused for every measurement. `undefined` means
+   "not tried yet", `null` means "tried and unavailable", so a browser without
+   canvas is probed once rather than on every label. */
+let measureCtx;
+function labelCtx() {
+  if (measureCtx !== undefined) return measureCtx;
+  measureCtx = null;
+  if (typeof document !== 'undefined') {
+    try {
+      measureCtx = document.createElement('canvas').getContext('2d') || null;
+    } catch {
+      measureCtx = null;
+    }
+  }
+  return measureCtx;
+}
+
+/* Width of `s` in the font described by a {font, letterSpacing} probe, in the
+   same units as the SVG viewBox (both are CSS pixels at scale 1, and the
+   viewBox scales text and geometry together, so the ratio we care about holds
+   at any rendered size). Returns null when we cannot measure. */
+function textWidth(s, probe) {
+  const c = labelCtx();
+  if (!c || !probe || !probe.font) return null;
+  c.font = probe.font;
+  const track = parseFloat(probe.letterSpacing) || 0;
+  let extra = 0;
+  if ('letterSpacing' in c) {
+    // Chromium honours ctx.letterSpacing, which also spaces correctly around
+    // kerning pairs.
+    c.letterSpacing = probe.letterSpacing || '0px';
+  } else {
+    // Everywhere else, add the tracking by hand: one gap per character.
+    extra = track * s.length;
+  }
+  const w = c.measureText(s).width + extra;
+  if ('letterSpacing' in c) c.letterSpacing = '0px';
+  return w;
+}
+
+/* The longest prefix of `s` that fits `w - inset`, with a real ellipsis at the
+   real edge rather than a guessed character count. Falls back to the estimate
+   until the fonts have been read off the DOM. Returns null when not even four
+   characters plus the ellipsis fit, which means the tile goes unlabelled. */
+function measuredTrim(s, w, probe, fontPx, inset) {
+  const avail = w - inset;
+  if (avail <= 0) return null;
+  const full = textWidth(s, probe);
+  if (full === null) return trim(s, w, fontPx, inset);
+  if (full <= avail) return s;
+  let lo = 0;
+  let hi = s.length;
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2);
+    const fits = textWidth(`${s.slice(0, mid)}…`, probe);
+    if (fits !== null && fits <= avail) lo = mid;
+    else hi = mid - 1;
+  }
+  if (lo < 4) return null;
+  return `${s.slice(0, lo)}…`;
 }
 
 /* ────────────────────────── Donut ────────────────────────── */
