@@ -67,10 +67,6 @@ import './sonar-band.css';
    Figure-light on purpose, so nothing here can go stale or be a number nobody
    sourced. The snr-anim-syn1/3/5 classes are the existing timeline keys,
    reused rather than renumbered. */
-/* Breathing room between the pinned orbital's bottom edge and the top of the
-   stack that clears it. Matches the .snr-stack flex gap. */
-const STACK_GAP = 20;
-
 const SYNTHESIS = [
   {
     cls: 'snr-anim-syn1',
@@ -901,7 +897,6 @@ export function SonarSection() {
        somewhere else, and the two custom properties have to come off the node
        they were set on. */
     const bandNode = bandRef.current;
-    const radarNode = radarRef.current;
     const apply = () => {
       const h2 = headlineRef.current;
       const inner = innerRef.current;
@@ -912,25 +907,33 @@ export function SonarSection() {
       band.style.setProperty('--snr-orb-top', `${top}px`);
 
       const cols = colsRef.current;
-      const radar = radarRef.current;
-      if (!cols || !radar) return;
+      if (!cols) return;
       const colsTop = cols.getBoundingClientRect().top - innerTop;
-      /* Height, not bottom: the radar is mid-transition to its pin on the
-         first pass, so its own top is not trustworthy yet. Its height is. */
-      const reach = top + radar.getBoundingClientRect().height + STACK_GAP;
-      band.style.setProperty('--snr-stack-pad', `${Math.max(0, Math.round(reach - colsTop))}px`);
+      /* The orbital is sized to the room the header zone actually has: from
+         its own top edge down to the work area, less a gap. Capped at 200 so
+         it does not balloon on a tall screen.
+
+         This replaced --snr-stack-pad, which measured how far the orbital
+         overhung the work area and padded the right stack down by that much.
+         That was right while the orbital docked above the stack inside the
+         work area. It lives in the header zone now, so the overhang became a
+         pad that pushed the stack past the work-area baseline and under the
+         arrow row, which is what put the bottom-right arrow on top of the
+         news card. Sizing the orbital to fit removes the overhang instead of
+         compensating for it. */
+      const size = Math.max(96, Math.min(200, Math.round(colsTop - top - 8)));
+      band.style.setProperty('--snr-orb-size', `${size}px`);
     };
     apply();
     window.addEventListener('resize', apply);
-    /* The orbital's box settles over the 0.45s width transition, so re-measure
-       as it changes rather than once on a timer. */
-    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => apply());
-    if (ro && radarNode) ro.observe(radarNode);
+    /* No ResizeObserver on the radar any more. It existed to re-measure the
+       orbital's own box for the pad; the size above is derived from the header
+       zone instead, so watching the element it sizes would only be a loop
+       waiting to happen. */
     return () => {
       window.removeEventListener('resize', apply);
-      ro?.disconnect();
       bandNode?.style.removeProperty('--snr-orb-top');
-      bandNode?.style.removeProperty('--snr-stack-pad');
+      bandNode?.style.removeProperty('--snr-orb-size');
     };
   }, [stage2]);
 

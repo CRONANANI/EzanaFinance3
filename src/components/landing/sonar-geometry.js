@@ -256,11 +256,17 @@ export function geometryFor(vw, vh, navPx) {
     g.rowH = 36;
   }
 
-  /* Content box: capped at 1440 and centred, so extra width past the tall-desktop
-     anchor becomes gutter rather than wider cards. */
-  const gutterFluid = clamp(vw * 0.0278, 16, 40);
-  g.gutter = vw >= 1920 ? (vw - 1440) / 2 : Math.round(gutterFluid);
-  g.content = Math.min(1440, vw - 2 * g.gutter);
+  /* Content box: capped at 1440 and centred, so extra width past the
+     tall-desktop anchor becomes gutter rather than wider cards.
+
+     The gutter is then whatever is left over, not the fluid minimum. Those
+     differ everywhere between 1440 and 1920: the fluid value clamps at 40
+     while the cap has already pushed the real space to 80 at 1600 and 240 at
+     1920. Reporting 40 there understated the room outside the content box,
+     which matters to anything placed in it. */
+  const gutterMin = clamp(vw * 0.0278, 16, 40);
+  g.content = Math.min(1440, vw - 2 * Math.round(gutterMin));
+  g.gutter = (vw - g.content) / 2;
 
   /* The three Live columns divide the content box in the spec's proportions,
      which reproduces 400/432/480, 376/408/454 and 420/456/516 within rounding
