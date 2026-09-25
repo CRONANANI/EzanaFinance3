@@ -2,10 +2,15 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import * as Sentry from '@sentry/nextjs';
 
 export default function Error({ error, reset }) {
   useEffect(() => {
     console.error('App error:', error);
+    /* A production crash reaches the user as this screen and nothing else, so
+       without a report the only evidence is a screenshot. Sentry gets the real
+       error; the digest below puts the correlating id ON the screenshot. */
+    Sentry.captureException(error);
   }, [error]);
 
   return (
@@ -28,6 +33,18 @@ export default function Error({ error, reset }) {
       <p style={{ color: '#9ca3af', marginBottom: '1.5rem', textAlign: 'center' }}>
         A temporary error occurred. Please try again.
       </p>
+      {error?.digest ? (
+        <p
+          style={{
+            color: '#6b7280',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '0.75rem',
+            marginBottom: '1.5rem',
+          }}
+        >
+          Reference: {error.digest}
+        </p>
+      ) : null}
       <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
         <button
           type="button"

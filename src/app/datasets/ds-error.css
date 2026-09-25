@@ -1,0 +1,54 @@
+/* Route-level dataset error panel. Tokens only; sits inside the datasets
+   chrome rather than replacing the app shell. */
+.dserr {
+  max-width: 520px;
+  margin: 64px auto;
+  padding: 0 24px;
+  text-align: center;
+  font-family: var(--font-sans);
+}
+.dserr-title {
+  font-size: var(--ds-type-section-size);
+  font-weight: var(--ds-type-strong);
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+.dserr-body {
+  font-size: var(--ds-type-body-size);
+  color: var(--text-muted);
+  margin: 0 0 12px;
+}
+.dserr-ref {
+  font-family: var(--font-mono);
+  font-size: var(--ds-type-source-size);
+  color: var(--text-faint);
+  margin: 0 0 20px;
+}
+.dserr-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.dserr-btn {
+  font-family: var(--font-sans);
+  font-size: var(--ds-type-body-size);
+  font-weight: var(--ds-type-strong);
+  padding: 9px 16px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  cursor: pointer;
+}
+.dserr-btn--solid {
+  color: #fff;
+  background: var(--emerald);
+  border: 1px solid var(--emerald);
+}
+.dserr-btn--solid:hover {
+  background: var(--emerald-hover);
+}
+.dserr-btn--ghost {
+  color: var(--text-primary);
+  background: transparent;
+  border: 1px solid var(--border-primary);
+}

@@ -31,6 +31,7 @@ import './category-bar.css';
 export default function CategoryBar({ active, activeItem }) {
   const [openCat, setOpenCat] = useState(null);
   const ref = useRef(null);
+  const activeRef = useRef(null);
   const pathname = usePathname();
   const { isAuthenticated } = useAuth();
   // Send the visitor back to the dataset page they were reading. usePathname is
@@ -44,6 +45,13 @@ export default function CategoryBar({ active, activeItem }) {
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
+  /* Below 1024 the seven dimensions scroll as one line rather than wrapping, so
+     the current one has to be brought into view or it can sit off-screen. */
+  useEffect(() => {
+    const node = activeRef.current;
+    if (!node || typeof node.scrollIntoView !== 'function') return;
+    node.scrollIntoView({ inline: 'center', block: 'nearest' });
+  }, [active]);
   return (
     <nav className="dscat-bar" ref={ref}>
       <div className="dscat-side dscat-side--start">
