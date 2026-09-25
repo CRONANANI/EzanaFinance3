@@ -1,16 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase-browser';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function SignInPage() {
+/* Where to land after a successful sign-in. Only a same-origin ABSOLUTE PATH is
+   honoured: anything starting "//" or carrying a scheme is an open-redirect
+   vector, so it falls back to the dashboard. */
+function safeNext(raw) {
+  if (!raw || typeof raw !== 'string') return '/home';
+  if (!raw.startsWith('/') || raw.startsWith('//') || raw.includes('\\')) return '/home';
+  return raw;
+}
+
+function SignInForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = safeNext(searchParams.get('next'));
 
   const handleSignIn = async (e) => {
     e.preventDefault();
@@ -22,7 +33,7 @@ export default function SignInPage() {
 
       if (signInError) throw signInError;
 
-      router.push('/home');
+      router.push(next);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -91,5 +102,15 @@ export default function SignInPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+/* useSearchParams opts the route into client-side rendering, which the App
+   Router requires a Suspense boundary for. */
+export default function SignInPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignInForm />
+    </Suspense>
   );
 }

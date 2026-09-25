@@ -1,13 +1,84 @@
 /* Shared dataset category dropdown bar (Gov Contracts + Congressional trading).
-   Tokens only; light mode. Centered trigger group with a full-width bottom rule. */
+   Tokens only; light mode.
+
+   Three zones: Home at the start, the 7 dimension triggers centred, the auth
+   actions at the end. The side columns are a fixed, EQUAL width so the centre
+   column is centred on the page rather than on whatever the sides leave over;
+   below 900px they collapse to their content and the bar keeps its balance by
+   dropping the Home label and the Log in button instead. */
 .dscat-bar {
+  display: grid;
+  grid-template-columns: 220px 1fr 220px;
+  align-items: center;
+  border-bottom: 1px solid var(--border-primary);
+  padding: 8px 20px;
+  margin-bottom: 20px;
+}
+.dscat-center {
   display: flex;
   justify-content: center;
   flex-wrap: wrap; /* 7 dimensions wrap to a second row on narrow desktops */
   gap: 4px 2px;
-  border-bottom: 1px solid var(--border-primary);
-  padding: 10px 0;
-  margin-bottom: 20px;
+}
+.dscat-side {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.dscat-side--end {
+  justify-content: flex-end;
+}
+.dscat-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: var(--ds-type-body-size);
+  font-weight: var(--ds-type-strong);
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 7px 10px;
+  border-radius: var(--radius-md, 8px);
+}
+/* --surface-hover does not exist in theme-variables.css; --bg-tertiary is the
+   hover surface .dscat-trigger already uses, so the two controls in this bar
+   share one hover tint. */
+.dscat-home:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+.dscat-btn {
+  font-family: var(--font-sans);
+  font-size: var(--ds-type-body-size);
+  font-weight: var(--ds-type-strong);
+  padding: 7px 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.dscat-btn--ghost {
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+}
+/* Button-on-emerald ink. The theme exposes no --text-on-emerald token; #fff
+   matches the convention in animated-nav.css / copy-request-inbox.css. */
+.dscat-btn--solid {
+  color: #fff;
+  background: var(--emerald);
+}
+.dscat-btn--solid:hover {
+  background: var(--emerald-hover);
+}
+@media (max-width: 900px) {
+  .dscat-bar {
+    grid-template-columns: auto 1fr auto;
+    padding: 8px 12px;
+  }
+  .dscat-home span,
+  .dscat-btn--ghost {
+    display: none; /* icon-only home, single Sign up button on phones */
+  }
 }
 .dscat {
   position: relative;
