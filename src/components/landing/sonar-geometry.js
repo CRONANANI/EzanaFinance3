@@ -61,11 +61,18 @@ export const ANCHORS = [
     /* The table prints g4 as 0 for the phone, but its own derived arrow-row
        offset only resolves with 14, and the prototype's phone branch adds the
        same 14 by hand. Taking the derived value as the real one: it is the one
-       that makes 844 sum. */
+       that makes 844 sum.
+
+       arrow / padBot: the two bouncing arrows became one continue BAR flush
+       with the band's bottom edge, so the zone is the bar's 56px at every
+       anchor and there is no padding below it — the bar is the bottom. The
+       height that used to be arrow + padBot (58 to 84, depending on the
+       anchor) minus the bar's 56 flows into the work area, which is the
+       remainder. */
     g3: 14,
     g4: 14,
-    arrow: 44,
-    padBot: 14,
+    arrow: 56,
+    padBot: 0,
     pingH: 50,
     /* The phone stacks, so it has no three-column grid and no orbital region.
        Carried anyway so every field is defined at every anchor. */
@@ -97,8 +104,8 @@ export const ANCHORS = [
     subFs: 15,
     g3: 70,
     g4: 14,
-    arrow: 44,
-    padBot: 20,
+    arrow: 56,
+    padBot: 0,
     colL: 376,
     colC: 408,
     colR: 454,
@@ -128,8 +135,8 @@ export const ANCHORS = [
     subFs: 16,
     g3: 56,
     g4: 16,
-    arrow: 48,
-    padBot: 24,
+    arrow: 56,
+    padBot: 0,
     colL: 400,
     colC: 432,
     colR: 480,
@@ -159,8 +166,8 @@ export const ANCHORS = [
     subFs: 17,
     g3: 44,
     g4: 20,
-    arrow: 52,
-    padBot: 32,
+    arrow: 56,
+    padBot: 0,
     colL: 420,
     colC: 456,
     colR: 516,

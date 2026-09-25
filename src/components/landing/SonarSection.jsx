@@ -549,10 +549,10 @@ export function SonarSection() {
       lockedRef.current = on;
       setLockedIn(on);
       /* html and body are outside React's tree, so they are set here. The
-         band's own snr-locked class is NOT: React owns that element's
-         className and would wipe an imperative toggle on the next render,
-         which is exactly what happened the first time this was written. It
-         rides lockedIn in the JSX instead. */
+         band's own snr-frozen / snr-composed classes are NOT: React owns that
+         element's className and would wipe an imperative toggle on the next
+         render, which is exactly what happened the first time this was
+         written. They ride lockedIn and composed in the JSX instead. */
       document.body.classList.toggle('snr-takeover', on);
       document.documentElement.classList.toggle('snr-takeover', on);
       if (!on) band.scrollTop = 0;
@@ -940,7 +940,19 @@ export function SonarSection() {
     const apply = () => {
       const nav = document.querySelector('.navbar, nav');
       const navPx = nav ? Math.round(nav.getBoundingClientRect().height) : undefined;
-      const g = geometryFor(window.innerWidth, window.innerHeight, navPx);
+      /* The cookie banner is fixed over the bottom of the viewport and sets its
+         own height as --cookie-banner-height on <html> (CookieConsentBanner).
+         It is real, occupied viewport, so the budget is computed against what
+         is left: the continue bar rides above the banner, and the composition
+         has to end above the bar. Measuring it here rather than only padding it
+         in CSS is what makes the cards shrink with it — their heights come from
+         this budget, so a padding change alone moved the box and left every
+         card overflowing it. */
+      const bannerPx =
+        parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue('--cookie-banner-height'),
+        ) || 0;
+      const g = geometryFor(window.innerWidth, window.innerHeight - bannerPx, navPx);
 
       const px = (k, v) => band.style.setProperty(k, `${Math.round(v * 100) / 100}px`);
       px('--snr-nav', g.nav);
@@ -995,9 +1007,15 @@ export function SonarSection() {
     apply();
     window.addEventListener('resize', apply);
     window.addEventListener('orientationchange', apply);
+    /* The cookie banner sets and removes --cookie-banner-height as an inline
+       style on <html>, with no resize event, so without this the budget would
+       hold the banner's space for the rest of the visit after it is dismissed. */
+    const bannerWatch = new MutationObserver(apply);
+    bannerWatch.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
     return () => {
       window.removeEventListener('resize', apply);
       window.removeEventListener('orientationchange', apply);
+      bannerWatch.disconnect();
     };
   }, []);
 
@@ -1228,15 +1246,29 @@ export function SonarSection() {
   const gateSub =
     gateCopy?.sub || 'Log in or create a free account to open charts, filings, and trackers.';
 
+  /* The composition is latched, and separate from the freeze. The two used to
+     be one class: releasing the lock on an upward scroll removed snr-locked,
+     which took the locked-tier geometry with it, so the grid and every card
+     resized mid-scroll and the whole band visibly jumped. snr-composed carries
+     the geometry and stays on for the rest of the visit once the band has
+     composed; snr-frozen carries only the body freeze and comes off on release.
+     Scrolling up now moves the page and nothing else. */
+  const [composed, setComposed] = useState(false);
+  useEffect(() => {
+    if (lockedIn) setComposed(true);
+  }, [lockedIn]);
+
   const arrowReady =
     (stage2Settled && typed === -1) || Boolean(pingError) || demoFailed || deadlinePassed;
 
   return (
     <section
       ref={bandRef}
-      className={`snr-band${inView ? '' : ' snr-paused'}${lockedIn ? ' snr-locked' : ''}${
-        hasPinged ? ' snr-live' : ''
-      }${stage2 ? ' snr-stage2' : ''}${live?.dossier?.fundamentals ? ' snr-has-fund' : ''}`}
+      className={`snr-band${inView ? '' : ' snr-paused'}${composed ? ' snr-composed' : ''}${
+        lockedIn ? ' snr-frozen' : ''
+      }${hasPinged ? ' snr-live' : ''}${stage2 ? ' snr-stage2' : ''}${
+        live?.dossier?.fundamentals ? ' snr-has-fund' : ''
+      }`}
     >
       <div className="snr-grid-layer" aria-hidden="true" />
 
@@ -1819,35 +1851,22 @@ export function SonarSection() {
         </div>
       </div>
 
-      {/* The arrow row is a zone of the vertical budget, not an overlay. Two
-          arrows, aligned to the content box edges per 01-BRIEF.md section 5;
-          being in the flow is what keeps them off the cards at every height,
-          and it is why the row has a measured height of its own. The release
-          logic and its fixed-position-vs-transformed-ancestor fix are the
-          original ones, restyled and re-timed only. */}
-      <div className="snr-arrows" aria-hidden={lockedIn && arrowReady ? undefined : 'true'}>
-        {lockedIn && arrowReady ? (
-          <>
-            <button
-              type="button"
-              className="snr-continue snr-anim-bounce"
-              aria-label="Continue to the rest of the page"
-              onClick={onContinue}
-            >
-              <i className="bi bi-chevron-down" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              className="snr-continue snr-anim-bounce snr-continue--end"
-              aria-label="Continue to the rest of the page"
-              onClick={onContinue}
-              tabIndex={-1}
-            >
-              <i className="bi bi-chevron-down" aria-hidden="true" />
-            </button>
-          </>
-        ) : null}
-      </div>
+      {/* One continue control: a translucent white bar flush with the band's
+          bottom edge, fading up into the green. It replaces the two bouncing
+          arrows that used to sit at the content box's edges. The bar leaves the
+          flow, so the 56px it occupies is reserved by .snr-inner's bottom
+          padding rather than by a flex row; the vertical budget still carries
+          the zone (sonar-geometry.js `arrow`). */}
+      {lockedIn && arrowReady ? (
+        <button
+          type="button"
+          className="snr-continue-bar"
+          aria-label="Continue to the rest of the page"
+          onClick={onContinue}
+        >
+          <i className="bi bi-chevron-down" aria-hidden="true" />
+        </button>
+      ) : null}
     </section>
   );
 }

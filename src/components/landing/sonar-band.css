@@ -182,7 +182,6 @@
    mid-ping with animation-play-state: paused. (0,3,0) beats the (0,2,0)
    pause rule without an !important. */
 .snr-band.snr-live .snr-anim-rowpop,
-.snr-band.snr-live .snr-anim-bounce,
 .snr-band.snr-live .snrl-wrap,
 .snr-band.snr-live .snrl-wrap * {
   animation-play-state: running;
@@ -565,7 +564,7 @@
    here is only the aesthetic one for tall screens, where a 900px column of
    prose would read worse than a 340px one. overscroll-behavior keeps a wheel
    inside it from reaching the lock. */
-.snr-band.snr-locked .snr-synth-body {
+.snr-band.snr-composed .snr-synth-body {
   max-height: 340px;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -2126,8 +2125,8 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
    because a page that can scroll while the nav is transparent is a page whose
    nav can overlap the cards. The synthesis body absorbs any overflow with its
    own internal scroll instead. */
-.snr-band.snr-locked,
-.landing-page > section.snr-band.snr-locked {
+.snr-band.snr-composed,
+.landing-page > section.snr-band.snr-composed {
   /* !important and the doubled-up selector for the same reason as the display
      reclaim above: `height: auto !important` from globals.css is what this is
      overriding. svh first as the floor every engine understands, dvh where
@@ -2147,22 +2146,22 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
    compress and the overflow lands back on the band. The synthesis body is the
    designated absorber: it is the last flex-grow in the chain and the only
    element carrying its own scroll. */
-.snr-band.snr-locked .snr-inner {
+.snr-band.snr-composed .snr-inner {
   flex: 1 1 auto;
   min-height: 0;
 }
 
-.snr-band.snr-locked .snr-cols,
-.snr-band.snr-locked .snr-col-left,
-.snr-band.snr-locked .snr-synth,
-.snr-band.snr-locked .snr-synth-body {
+.snr-band.snr-composed .snr-cols,
+.snr-band.snr-composed .snr-col-left,
+.snr-band.snr-composed .snr-synth,
+.snr-band.snr-composed .snr-synth-body {
   min-height: 0;
 }
 
 /* Stage 2 puts .snr-cols in a grid with align-items: start, which would leave
    the synthesis column at its content height inside a grid area that is
    already the right size. Stretching it is what hands the constraint down. */
-.snr-band.snr-locked .snr-col-left {
+.snr-band.snr-composed .snr-col-left {
   align-self: stretch;
 }
 
@@ -2175,12 +2174,12 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
    floor heights and would clip rather than scroll. Compression therefore
    lands where there is something to absorb it. */
 @media (max-width: 1280px) {
-  .snr-band.snr-locked .snr-col-left {
+  .snr-band.snr-composed .snr-col-left {
     flex-shrink: 1;
   }
 
-  .snr-band.snr-locked .snr-stack,
-  .snr-band.snr-locked .snr-col-dossier {
+  .snr-band.snr-composed .snr-stack,
+  .snr-band.snr-composed .snr-col-dossier {
     flex-shrink: 0;
   }
 }
@@ -2191,80 +2190,71 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
    rather than inside the earlier phone block, which is where an identical
    (0,2,0) selector would have lost on source order. */
 @media (max-width: 768px) {
-  .snr-band.snr-locked {
+  .snr-band.snr-composed {
     padding-top: 76px;
     padding-bottom: 56px;
   }
 }
 
-/* The arrow leaves the band's flow while locked and pins to the viewport, so
-   the one way down is on screen no matter how far into a tall band the
-   visitor has scrolled. Paired with the cookie-banner offset below, that is
-   what replaced the two stand-down guards this lock used to need. */
-.snr-band.snr-locked .snr-continue {
-  position: fixed;
-}
+/* Continue control: ONE translucent white bar along the bottom of the band that
+   fades up into the green, replacing the two bouncing round arrows that used to
+   sit at the content box's edges.
 
-/* Continue arrow: the one way down while locked. White on the band, round
-   hit target, gentle bounce. The snr-anim- prefix keeps it inside the pause
-   and reduced-motion rules; translateX(-50%) is the resting frame, so a
-   killed animation still leaves it centred. */
-.snr-continue {
+   It leaves the flow (absolute, flush to the band's three bottom edges), so the
+   56px it occupies is reserved by .snr-inner's bottom padding rather than by a
+   flex row. The cookie banner is fixed to the bottom of the viewport at
+   z-index 9000 and its children capture clicks, so the bar rides above it on
+   the banner's own --cookie-banner-height contract; at a flat bottom: 0 the
+   banner would cover the one control that can end the lock. */
+.snr-continue-bar {
   position: absolute;
-  /* Under the synthesis column's left edge, not the viewport centre. The
-     max() mirrors .snr-inner's centred 1440px box plus the band's own 40px
-     gutter, so the arrow tracks the content at every width instead of
-     drifting away from it on wide screens. */
-  left: max(40px, calc((100% - 1440px) / 2 + 40px));
-  /* The cookie banner is fixed to the bottom of the viewport at z-index 9000
-     and its children capture clicks, so at a flat 26px it sits on top of the
-     one control that can end the lock. --cookie-banner-height is the
-     banner's own contract, removed when it closes. */
-  bottom: calc(26px + var(--cookie-banner-height, 0px));
-  transform: none;
-  z-index: 4;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.08);
+  left: 0;
+  right: 0;
+  bottom: var(--cookie-banner-height, 0px);
+  height: 56px;
+  border: 0;
+  cursor: pointer;
   color: var(--snr-text);
-  font-size: 20px;
+  font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  z-index: 4;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.08) 45%,
+    rgba(255, 255, 255, 0.16) 100%
+  );
+  transition: background 0.2s ease;
 }
-
-.snr-continue:hover {
-  background: rgba(255, 255, 255, 0.16);
+.snr-continue-bar:hover {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.12) 45%,
+    rgba(255, 255, 255, 0.24) 100%
+  );
 }
-
-.snr-continue:focus-visible {
+.snr-continue-bar:focus-visible {
   outline: 2px solid var(--snr-mint);
-  outline-offset: 3px;
+  outline-offset: -4px;
 }
-
-/* Specificity, same story as .snr-anim-rowpop above: the shared
-   `.snr-band [class*='snr-anim-']` binding is (0,2,0) and would otherwise
-   hold the bounce at the 15s linear master duration. Match it and sit later
-   in the sheet. */
-.snr-band .snr-anim-bounce {
-  animation-name: snrBounce;
-  animation-duration: 1.6s;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
+.snr-continue-bar .bi {
+  animation: snrBarNudge 1.6s ease-in-out infinite;
 }
-
-/* translateY only: the arrow is no longer centred by transform, so a
-   translateX component here would shove it off its left anchor. */
-@keyframes snrBounce {
+@keyframes snrBarNudge {
   0%,
   100% {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .snr-continue-bar .bi {
+    animation: none;
   }
 }
 
@@ -2582,8 +2572,8 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
      First the head. In stage 2 the visitor has already pinged; the headline
      and the subhead are the pitch for an action they have taken, and the
      eyebrow keeps the band identified. Worth 173px. */
-  .snr-band.snr-locked.snr-stage2 .snr-headline,
-  .snr-band.snr-locked.snr-stage2 .snr-subhead {
+  .snr-band.snr-composed.snr-stage2 .snr-headline,
+  .snr-band.snr-composed.snr-stage2 .snr-subhead {
     display: none;
   }
 
@@ -2592,7 +2582,7 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
      card's own head carries the ticker, the company name and the range chip,
      so nothing identifying is lost, and when the legs come back empty the
      dossier stays and carries the entity alone. Worth 233px. */
-  .snr-band.snr-locked.snr-stage2.snr-has-fund .snr-col-dossier {
+  .snr-band.snr-composed.snr-stage2.snr-has-fund .snr-col-dossier {
     display: none;
   }
 
@@ -2603,8 +2593,8 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   }
 
   /* One screen on a phone means tighter cards and a shorter news list. */
-  .snr-band.snr-locked .snr-fund,
-  .snr-band.snr-locked .snr-news {
+  .snr-band.snr-composed .snr-fund,
+  .snr-band.snr-composed .snr-news {
     padding: 10px 12px;
   }
 
@@ -2617,11 +2607,11 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   /* Two items, not a max-height. The cap used to slice the third row through
      the middle, which is a clipped element by any reading of the acceptance
      test; dropping it outright is honest and hands ~48px back to the answer. */
-  .snr-band.snr-locked .snr-news-item:nth-child(n + 3) {
+  .snr-band.snr-composed .snr-news-item:nth-child(n + 3) {
     display: none;
   }
 
-  .snr-band.snr-locked .snr-col-dossier {
+  .snr-band.snr-composed .snr-col-dossier {
     padding: 12px 14px;
   }
 
@@ -2743,13 +2733,24 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
    content-visibility from blanking the page below the hero. That rule is about
    painting; these two declarations are layout, and the band takes them back at
    a specificity that wins whatever order the sheets load in. */
-.landing-page > section.snr-band.snr-locked,
-.snr-band.snr-locked {
+.landing-page > section.snr-band.snr-composed,
+.snr-band.snr-composed {
   height: 100svh !important;
   height: 100dvh !important;
   overflow: hidden;
   padding-top: calc(var(--snr-nav) + var(--snr-pad-top));
-  padding-bottom: var(--snr-pad-bot);
+  /* The continue bar is absolutely positioned and so reserves nothing of its
+     own; the zone the budget allots it (--snr-arrow, 56px) is held open here
+     instead, as it used to be by the arrow row's flex basis. --snr-pad-bot is
+     0 now — the bar IS the bottom of the band.
+
+     The cookie banner is NOT added here. Card heights come from the geometry
+     budget, not from this box, so padding alone moved the container and left
+     every card overflowing it by the banner's height. The banner is subtracted
+     from the viewport height the budget is computed against instead (see the
+     geometry driver in SonarSection.jsx), which shrinks the cards with it. */
+  padding-bottom: calc(var(--snr-pad-bot) + var(--snr-arrow));
+  position: relative;
   /* The gutter is the geometry's, not the band's old flat 80. The two were
      fighting: --snr-content is measured against the gutter, so an 80px
      padding put the content box 4px past the right edge at 1366 and 400px
@@ -2760,7 +2761,7 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
 
 /* The zone stack. Gaps are explicit elements of the budget rather than a flex
    `gap`, because the budget names each one separately and they are not equal. */
-.snr-band.snr-locked .snr-inner {
+.snr-band.snr-composed .snr-inner {
   display: flex;
   flex-direction: column;
   width: var(--snr-content);
@@ -2780,7 +2781,7 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   max-width: 100%;
 }
 
-.snr-band.snr-locked .snr-head {
+.snr-band.snr-composed .snr-head {
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
@@ -2791,13 +2792,13 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   width: var(--snr-head-max);
 }
 
-.snr-band.snr-locked .snr-eyebrow-row {
+.snr-band.snr-composed .snr-eyebrow-row {
   height: var(--snr-eyebrow);
   margin-bottom: var(--snr-g1);
   flex: 0 0 auto;
 }
 
-.snr-band.snr-locked .snr-headline {
+.snr-band.snr-composed .snr-headline {
   height: var(--snr-head-h);
   margin: 0 0 var(--snr-g2);
   font-size: var(--snr-head-fs);
@@ -2807,7 +2808,7 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   flex: 0 0 auto;
 }
 
-.snr-band.snr-locked .snr-subhead {
+.snr-band.snr-composed .snr-subhead {
   height: var(--snr-sub-h);
   margin: 0 0 var(--snr-g3);
   font-size: var(--snr-sub-fs);
@@ -2818,7 +2819,7 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
 /* The work area. Its height is the budget's remainder, and every column fills
    it, which is what puts the three columns on one top edge and one bottom
    edge. Defect 1 in 04-SPEC.md section 11. */
-.snr-band.snr-locked .snr-cols {
+.snr-band.snr-composed .snr-cols {
   flex: 0 0 var(--snr-work);
   height: var(--snr-work);
   min-height: 0;
@@ -2829,9 +2830,9 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   align-items: stretch;
 }
 
-.snr-band.snr-locked .snr-col-left,
-.snr-band.snr-locked .snr-col-dossier,
-.snr-band.snr-locked .snr-stack {
+.snr-band.snr-composed .snr-col-left,
+.snr-band.snr-composed .snr-col-dossier,
+.snr-band.snr-composed .snr-stack {
   height: 100%;
   min-height: 0;
   width: auto;
@@ -2840,18 +2841,18 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
 /* Left column: ping bar at its measured height, synthesis panel taking the
    rest. The panel is a flex column so its body can be the overflow absorber
    with a fixed head and a pinned footer. */
-.snr-band.snr-locked .snr-col-left {
+.snr-band.snr-composed .snr-col-left {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.snr-band.snr-locked .snr-pingbar {
+.snr-band.snr-composed .snr-pingbar {
   flex: 0 0 var(--snr-ping-h);
   height: var(--snr-ping-h);
 }
 
-.snr-band.snr-locked .snr-synth {
+.snr-band.snr-composed .snr-synth {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
@@ -2861,7 +2862,7 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
 /* The designated overflow absorber: everything that does not fit ends up here,
    scrolling thinly behind a bottom fade, and never as a clipped card.
    Defect 5 in section 11. */
-.snr-band.snr-locked .snr-synth-body {
+.snr-band.snr-composed .snr-synth-body {
   flex: 1 1 auto;
   min-height: 0;
   max-height: none;
@@ -2873,13 +2874,13 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
 /* The right stack: two cards and a 16 gap that together equal the work area
    exactly, so the stack ends on the same baseline as its neighbours and no
    green void opens under it. Defect 2 in section 11. */
-.snr-band.snr-locked .snr-stack {
+.snr-band.snr-composed .snr-stack {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.snr-band.snr-locked .snr-fund {
+.snr-band.snr-composed .snr-fund {
   flex: 0 0 var(--snr-chart-h);
   height: var(--snr-chart-h);
   min-height: 0;
@@ -2887,7 +2888,7 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   overflow: hidden;
 }
 
-.snr-band.snr-locked .snr-news {
+.snr-band.snr-composed .snr-news {
   flex: 0 0 var(--snr-news-h);
   height: var(--snr-news-h);
   min-height: 0;
@@ -2899,14 +2900,14 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
    the claim in the headline is eight datasets, so showing eight is the proof.
    The height comes from the geometry, which derives it from the space rather
    than from a per-tier constant. */
-.snr-band.snr-locked .snr-rows {
+.snr-band.snr-composed .snr-rows {
   display: flex;
   flex-direction: column;
   gap: var(--snr-row-gap);
   min-height: 0;
 }
 
-.snr-band.snr-locked .snr-row {
+.snr-band.snr-composed .snr-row {
   flex: 1 1 0;
   min-height: 0;
   height: var(--snr-row-h);
@@ -2915,7 +2916,7 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
 /* Only when even the floor will not fit, which is a very short desktop window.
    A thin scroll inside the card rather than a dropped dataset or a clipped
    one. */
-.snr-band[data-rows-scroll='on'].snr-locked .snr-rows {
+.snr-band[data-rows-scroll='on'].snr-composed .snr-rows {
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
@@ -2923,36 +2924,8 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
 
 /* Below the 42px row the detail line goes and the chip and flag carry the row,
    which is the short tier's treatment applied when the space asks for it. */
-.snr-band[data-row-detail='off'].snr-locked .snr-row-line {
+.snr-band[data-row-detail='off'].snr-composed .snr-row-line {
   display: none;
-}
-
-/* The arrow row is a zone of the budget, not an overlay. Being in the flow is
-   what keeps it off the cards at every height. */
-.snr-band.snr-locked .snr-arrows {
-  flex: 0 0 var(--snr-arrow);
-  height: var(--snr-arrow);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  /* The row reaches out of the content box into the gutters, so each arrow
-     sits beyond the synthesis card's left edge and the news card's right
-     edge rather than directly beneath them.
-
-     How far it can reach is the gutter itself, less a 16px margin from the
-     viewport edge, and that is a real limit rather than a safety net: at
-     1440 the gutter is 40px and the arrow is 48px, so the arrow is wider
-     than the space outside the content box and full separation is only
-     available from about 1600 up, where the gutter starts to exceed the
-     arrow. Below that the row reaches as far as it can and the arrows end up
-     straddling the content edge, which is the brief's own fallback.
-
-     Negative margins rather than a width, because the band is padded by the
-     gutter now, so a percentage width can only ever describe the box inside
-     it. */
-  --snr-arrow-reach: min(calc(var(--snr-arrow) + 24px), max(0px, calc(var(--snr-gutter) - 16px)));
-  width: calc(100% + 2 * var(--snr-arrow-reach));
-  margin-inline: calc(-1 * var(--snr-arrow-reach));
 }
 
 /* The degradation 07 C.3 asks for by name: under 560 tall below 1024 wide the
@@ -2964,20 +2937,8 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   overflow: visible;
 }
 
-.snr-band[data-tier='unlocked'] .snr-arrows,
-.snr-band[data-tier='unlocked'] .snr-continue {
+.snr-band[data-tier='unlocked'] .snr-continue-bar {
   display: none;
-}
-
-/* Two arrows, at the content box edges. The pair is decorative repetition of
-   one action, so only the first is in the tab order; the second carries
-   tabIndex -1 and the same accessible name for anyone who reaches it by
-   pointer. Static in the row, not fixed: the row is a real zone now, so the
-   old escape from a transformed ancestor is no longer needed here. */
-.snr-band.snr-locked .snr-arrows .snr-continue {
-  position: static;
-  transform: none;
-  margin: 0;
 }
 
 /* ── mini orbital contrast ──────────────────────────────────────────────────
@@ -3273,8 +3234,8 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
 
   /* The cards are their natural height in the scroller, so the desktop
      flex ratios must not pin them. */
-  .snr-band.snr-locked.snr-stage2 .snr-fund,
-  .snr-band.snr-locked.snr-stage2 .snr-news {
+  .snr-band.snr-composed.snr-stage2 .snr-fund,
+  .snr-band.snr-composed.snr-stage2 .snr-news {
     flex: 0 0 auto;
     height: auto;
   }
