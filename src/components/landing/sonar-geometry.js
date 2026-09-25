@@ -259,9 +259,26 @@ export function tierFor(vw, vh) {
  * `navPx` is the real measured nav height where the caller has one, because the
  * spec says to read it rather than assume it. It falls back to the anchor's.
  */
+/* Floor for the budget height. The work area is a REMAINDER — everything else
+   is subtracted from vh and what is left composes the cards — so a height below
+   the fixed zones does not degrade gracefully, it returns work: 0 and a subhead
+   clipped to one line. A viewport under this floor means the caller passed
+   something wrong (it once did: the cookie banner's reserve was briefly the
+   whole viewport, and the band was budgeted against a negative height). Clamping
+   here keeps the module total rather than letting a bad input out as a
+   degenerate layout; the dev warning in SonarSection's budget effect is where
+   the bad input itself surfaces. */
+const MIN_BUDGET_H = 640;
+
 export function geometryFor(vw, vh, navPx) {
-  const g = interpolate(vw);
+  /* The tier is read from the REAL height, before any flooring: 'unlocked' is
+     precisely the case where the band gives up the lock and lays out in normal
+     flow, so it does not compose against this budget and must not be floored —
+     a landscape phone at 844x390 is a legitimate viewport, not a bad input, and
+     its zones still have to sum to 390. */
   const tier = tierFor(vw, vh);
+  if (tier !== 'unlocked') vh = Math.max(vh, MIN_BUDGET_H);
+  const g = interpolate(vw);
 
   g.tier = tier;
   if (typeof navPx === 'number' && navPx > 0) g.nav = navPx;

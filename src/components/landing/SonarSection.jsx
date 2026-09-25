@@ -940,19 +940,50 @@ export function SonarSection() {
     const apply = () => {
       const nav = document.querySelector('.navbar, nav');
       const navPx = nav ? Math.round(nav.getBoundingClientRect().height) : undefined;
-      /* The cookie banner is fixed over the bottom of the viewport and sets its
-         own height as --cookie-banner-height on <html> (CookieConsentBanner).
-         It is real, occupied viewport, so the budget is computed against what
-         is left: the continue bar rides above the banner, and the composition
-         has to end above the bar. Measuring it here rather than only padding it
-         in CSS is what makes the cards shrink with it — their heights come from
-         this budget, so a padding change alone moved the box and left every
-         card overflowing it. */
-      const bannerPx =
+      /* The composition is budgeted against the REAL viewport, and deliberately
+         not shrunk for the cookie banner.
+
+         It used to subtract --cookie-banner-height so the cards would clear the
+         continue bar, which rides above the banner. That made the layout depend
+         on a variable another component publishes, and the banner publishes a
+         nonsense value whenever its element has no layout yet: it measures
+         viewportH - rect.top, and an unlaid-out element has rect.top === 0, so
+         the reserve came out as the whole viewport plus 80px. At 903px tall
+         that is 983, and geometryFor(w, 903 - 983, 64) returns work: 0 and
+         sub: 24 — a header-only card stack with a one-line subhead sitting in
+         the top third of the band, which is exactly what shipped.
+
+         The banner is a dismissible overlay and the bar lifts above it in CSS,
+         so the composition should not resize for it at all. Not subtracting it
+         also means nothing moves when the banner is dismissed. The cost is that
+         while the banner is open the bar's translucent wash overlaps the bottom
+         of the cards, which is the same overlay behaviour the round arrow it
+         replaced always had, and it ends with the banner.
+
+         The clamp stays even though bannerPx is 0, as the guard for whatever
+         reaches this effect next: at most a quarter of the viewport, and never
+         a budget below MIN_BUDGET_PX. A bad publish can no longer collapse the
+         layout, whatever its source. */
+      const MIN_BUDGET_PX = 640;
+      const rawBanner =
         parseFloat(
           getComputedStyle(document.documentElement).getPropertyValue('--cookie-banner-height'),
         ) || 0;
-      const g = geometryFor(window.innerWidth, window.innerHeight - bannerPx, navPx);
+      const clampedBanner = Math.min(Math.max(0, rawBanner), window.innerHeight * 0.25);
+      const bannerPx = 0; /* see above; clampedBanner is the documented alternative */
+      const budgetH = Math.max(MIN_BUDGET_PX, window.innerHeight - bannerPx);
+      const g = geometryFor(window.innerWidth, budgetH, navPx);
+
+      if (process.env.NODE_ENV !== 'production' && g.work < 120) {
+        console.warn('[sonar] budget collapsed', {
+          innerHeight: window.innerHeight,
+          rawBanner,
+          clampedBanner,
+          budgetH,
+          work: g.work,
+          sub: g.sub,
+        });
+      }
 
       const px = (k, v) => band.style.setProperty(k, `${Math.round(v * 100) / 100}px`);
       px('--snr-nav', g.nav);
@@ -1007,14 +1038,25 @@ export function SonarSection() {
     apply();
     window.addEventListener('resize', apply);
     window.addEventListener('orientationchange', apply);
-    /* The cookie banner sets and removes --cookie-banner-height as an inline
-       style on <html>, with no resize event, so without this the budget would
-       hold the banner's space for the rest of the visit after it is dismissed. */
-    const bannerWatch = new MutationObserver(apply);
+    /* <html>'s inline style is where --cookie-banner-height is published and
+       removed, with no resize event either way. The budget no longer reads it,
+       but the observer stays: it is also how the band recovers from anything
+       else that writes a custom property up there, and it costs one coalesced
+       frame. Coalesced to one rAF so a burst of style writes is one re-apply. */
+    let raf = 0;
+    const schedule = () => {
+      if (raf) return;
+      raf = window.requestAnimationFrame(() => {
+        raf = 0;
+        apply();
+      });
+    };
+    const bannerWatch = new MutationObserver(schedule);
     bannerWatch.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
     return () => {
       window.removeEventListener('resize', apply);
       window.removeEventListener('orientationchange', apply);
+      if (raf) window.cancelAnimationFrame(raf);
       bannerWatch.disconnect();
     };
   }, []);

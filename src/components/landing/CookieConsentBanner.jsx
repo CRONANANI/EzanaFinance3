@@ -69,9 +69,20 @@ export function CookieConsentBanner() {
       const el = document.querySelector('.cookie-banner');
       if (!el) return;
       const rect = el.getBoundingClientRect();
+      /* Not laid out yet (first paint, or any moment the banner is hidden):
+         publish nothing. An unlaid-out element measures all zeros, and the old
+         viewportH - rect.top computation turned rect.top === 0 into "the banner
+         reserves the entire viewport". Other surfaces budget themselves against
+         this variable, so that value was not merely wrong, it was destructive.
+         The RAF re-measure and the ResizeObserver below publish the real number
+         a frame later. */
+      if (rect.height === 0 || rect.width === 0) return;
       const viewportH = window.innerHeight || document.documentElement.clientHeight;
-      const fromBottom = Math.max(0, viewportH - rect.top);
-      const reserve = Math.ceil(fromBottom + COMFORTABLE_CLEARANCE_PX);
+      /* The banner's own box, plus the gap beneath it, plus clearance — so the
+         reserve can never exceed the banner's real footprint however the
+         element happens to be positioned. */
+      const gapBelow = Math.max(0, viewportH - rect.bottom);
+      const reserve = Math.ceil(rect.height + gapBelow + COMFORTABLE_CLEARANCE_PX);
       document.documentElement.style.setProperty('--cookie-banner-height', `${reserve}px`);
     };
 
