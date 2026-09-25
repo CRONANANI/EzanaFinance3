@@ -666,17 +666,37 @@
   outline: 2px solid var(--emerald);
   outline-offset: 2px;
 }
+/* An aligned grid, not a centred wrap. Wrapping sized every cell to its own
+   label, so the eleven entries (top 10 + Other) landed in a ragged scatter with
+   no two columns lining up. Equal columns and a fixed cell shape — dot, name,
+   share — make it read as a table of shares. */
 .gcx-legend-labels {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px 16px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px 16px;
   margin-top: 14px;
 }
+@media (max-width: 1024px) {
+  .gcx-legend-labels {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .gcx-legend-labels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* grid over inline-flex: the cell is the grid track's full width, so every row
+   aligns. The name takes the slack and the share is pinned right, which is what
+   makes the percentages form a column. */
 .gcx-legend-label {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: 9px minmax(0, 1fr) auto;
   align-items: center;
   gap: 6px;
+  width: 100%;
+  min-width: 0;
+  text-align: left;
   border: none;
   background: transparent;
   padding: 0;
@@ -702,12 +722,19 @@
   border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
+/* Ellipsis rather than wrap, so every cell is exactly one line tall and the
+   rows cannot drift out of alignment. The full name is on the title attribute. */
 .gcx-legend-name {
   font-size: var(--ds-type-fine-size);
   font-weight: 500;
   color: var(--text-secondary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .gcx-legend-pct {
+  justify-self: end;
   font-family: var(--font-mono);
   font-size: var(--ds-type-disclaimer-size);
   font-weight: var(--ds-type-strong);
@@ -872,89 +899,13 @@
   text-align: right;
 }
 
-/* ── list (inside .gcx-main; left edge aligns with the treemap) ── */
-.gcx-list {
-  padding: 14px 18px;
-  /* margin-top removed — the .gcx-main flex-column gap (18px) now spaces it. */
-}
-.gcx-list-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
+/* The Leading contractors list and the freshness caption were removed; the
+   explorer below them covers the same data with real filters and server
+   pagination. .gcx-list-count survives because the explorer's head reuses it. */
 .gcx-list-count {
   font-family: var(--font-mono);
   font-size: var(--ds-type-source-size);
   font-variant-numeric: tabular-nums;
-  color: var(--text-faint);
-}
-.gcx-rows {
-  display: flex;
-  flex-direction: column;
-}
-.gcx-row {
-  display: grid;
-  grid-template-columns: 26px 1fr 140px auto;
-  align-items: center;
-  gap: 12px;
-  background: none;
-  border: none;
-  border-top: 1px solid var(--border-primary);
-  padding: 9px 4px;
-  cursor: pointer;
-  text-align: left;
-}
-.gcx-row:hover {
-  background: var(--bg-tertiary);
-}
-.gcx-rank {
-  color: var(--emerald);
-  font-size: var(--ds-type-fine-size);
-  font-weight: var(--ds-type-strong);
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-}
-.gcx-row-main {
-  min-width: 0;
-}
-.gcx-row-name {
-  display: block;
-  font-size: var(--ds-type-body-size);
-  font-weight: var(--ds-type-strong);
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.gcx-row-meta {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: var(--ds-type-source-size);
-  color: var(--text-muted);
-}
-.gcx-row-bar {
-  height: 6px;
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-pill, 9999px);
-  overflow: hidden;
-}
-.gcx-row-bar-fill {
-  display: block;
-  height: 100%;
-  border-radius: var(--radius-pill, 9999px);
-}
-.gcx-row-val {
-  font-size: var(--ds-type-sub-size);
-  font-weight: var(--ds-type-strong);
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  color: var(--text-primary);
-  text-align: right;
-}
-.gcx-note {
-  font-size: var(--ds-type-source-size);
   color: var(--text-faint);
 }
 
@@ -1630,8 +1581,15 @@
 }
 
 /* ── Full-table server-paginated explorer ─────────────────────────── */
+/* The explorer keeps .gcx-card for its padding and internal spacing but drops
+   the card's frame: the table sits directly on the page background, so its own
+   row dividers do the separating instead of a box around a box. */
 .gcx-exp {
   margin-top: 18px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 .gcx-exp-head {
   display: flex;

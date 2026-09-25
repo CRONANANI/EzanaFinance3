@@ -72,6 +72,13 @@
   --emerald-glow: rgba(16, 185, 129, 0.25);
   --emerald-text: #34d399; /* Emerald that reads as text on dark */
 
+  /* The deep-green band ground. Declared here, once, because two surfaces paint
+     it: the Sonar landing band (--snr-band-bg) and the dataset category bar
+     (--dscat-bg). It is a constant, not a themed value — both surfaces supply
+     their own ground and put white ink on it in either theme, so it is not
+     redefined in the light or partner scopes below. */
+  --brand-band-green: linear-gradient(115deg, #032a21 0%, #064e3b 40%, #065f46 70%, #047857 100%);
+
   /* ── Brand: Gold (Partner) ── */
   --gold: #d4a853;
   --gold-hover: #b8922f;

@@ -31,7 +31,9 @@
 
 .snr-band {
   /* ---- ground ---- */
-  --snr-band-bg: linear-gradient(115deg, #032a21 0%, #064e3b 40%, #065f46 70%, #047857 100%);
+  /* One declaration site: theme-variables.css owns the gradient, because the
+     dataset category bar paints the same ground. */
+  --snr-band-bg: var(--brand-band-green);
   --snr-grid: rgba(255, 255, 255, 0.16);
 
   /* ---- ink ---- */

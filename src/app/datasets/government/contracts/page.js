@@ -4,7 +4,6 @@ import {
   getContractCoverage,
   getContractRollups,
   getRecentAwardFeed,
-  contractFreshnessNote,
 } from '@/lib/usaspending-store';
 import { CONTRACT_AWARDS_SAMPLE } from '../government-sample';
 import GovContractsClient from './GovContractsClient';
@@ -74,13 +73,10 @@ export default async function GovernmentContractsPage() {
     ? CONTRACT_AWARDS_SAMPLE.map((r) => ({ ...r, date: formatDisplayDate(r.date) }))
     : rows;
 
-  const noteSource = rollup ? 'rollup' : (source ?? 'sample');
-
   return (
     <GovContractsClient
       awards={awardRows}
       isLive={Boolean(rollup) || !usingSample}
-      note={contractFreshnessNote(noteSource, syncedAt)}
       coverage={coverage && coverage.total > 0 ? coverage : null}
       rollup={rollup}
       recentAwards={recentAwards}

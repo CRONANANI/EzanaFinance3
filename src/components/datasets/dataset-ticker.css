@@ -1,6 +1,6 @@
 /* Page-agnostic dataset ticker — the single source of truth for EVERY dataset
    page's scrolling strip (including Government Contracts, which used to carry its
-   own gcx-ticker marquee). Classes are dsx-. Full-bleed at one canonical 52s
+   own gcx-ticker marquee). Classes are dsx-. Full-bleed at one canonical 87s
    speed; change the width/speed here and all pages move together. Tokens only. */
 
 .dsx-ticker {
@@ -26,9 +26,11 @@
   width: max-content;
   /* THE canonical dataset ticker speed — every dataset page (including Government
      Contracts) inherits this one value. Change it here and all pages move
-     together. 52s matches the tuned Government Contracts cadence (~30% slower
-     than the original 40s). */
-  animation: dsx-tick 52s linear infinite;
+     together. 87s is the current tuning: 52 / 0.6, i.e. 40% slower than the 52s
+     that preceded it (which was itself ~30% slower than the original 40s).
+     The /datasets overview page carries its own copy of this rule in
+     ds-overview.css and has to be changed alongside it; see the note there. */
+  animation: dsx-tick 87s linear infinite;
 }
 .dsx-ticker:hover .dsx-ticker-track,
 .dsx-ticker:focus-within .dsx-ticker-track {

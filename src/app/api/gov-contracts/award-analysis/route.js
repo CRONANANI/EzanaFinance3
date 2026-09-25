@@ -2,12 +2,59 @@ import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
+import { HAIKU_MODEL } from '@/lib/sonar/llm-providers';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-// Match the model already used in ai-analyzer/route.js.
-const MODEL = 'claude-sonnet-4-20250514';
+/* The same model the Sonar pipeline runs, imported rather than retyped so the
+   two cannot drift. The previous value here was a dated Sonnet string; when the
+   API rejected it the route returned 502 and the modal showed "unavailable". */
+const MODEL = HAIKU_MODEL;
+
+/* The analysis cache lives in its own table, keyed by award id, because the two
+   source tables are not symmetrical: gov_contract_recent_awards carries an
+   `analysis` column but usaspending_contract_awards does not, so an award opened
+   from the explorer had nowhere to cache. Reads still fall back to the old
+   column so rows cached before this change are not re-generated. */
+const CACHE_TABLE = 'gov_contract_award_analyses';
+
+/* usaspending_contract_awards → the shape buildPrompt expects. The ingest cron
+   requests only seven USAspending fields, so `raw` carries no description,
+   NAICS or PSC; those come out null and the system prompt's "if the description
+   is terse or empty, say so and keep it short" rule handles the thinner record
+   honestly. The raw lookups are written for both the snake_case and the
+   USAspending title-case spellings so that widening the ingest starts
+   populating them without another change here. */
+function fromUsaspending(row) {
+  const raw = row.raw && typeof row.raw === 'object' ? row.raw : {};
+  const pick = (...keys) => {
+    for (const k of keys) {
+      const v = raw[k];
+      if (v != null && v !== '') return v;
+    }
+    return null;
+  };
+  return {
+    generated_award_id: row.generated_award_id,
+    recipient_name: row.recipient_name,
+    recipient_parent_name: pick('recipient_parent_name', 'Recipient Parent Name'),
+    awarding_agency: row.awarding_agency,
+    awarding_sub_agency: row.awarding_sub_agency,
+    funding_agency: row.funding_agency,
+    award_amount: row.award_amount,
+    action_date: row.action_date,
+    fiscal_year: row.fiscal_year,
+    naics_code: pick('naics', 'naics_code', 'NAICS Code'),
+    naics_description: pick('naics_description', 'NAICS Description'),
+    psc_code: pick('product_or_service_code', 'psc_code', 'PSC Code'),
+    psc_description: pick('product_or_service_description', 'psc_description', 'PSC Description'),
+    pop_city: pick('pop_city', 'Place of Performance City Code'),
+    pop_state: pick('pop_state', 'Place of Performance State Code'),
+    award_id_piid: row.award_id_piid,
+    description: pick('description', 'Description', 'transaction_description'),
+  };
+}
 
 const SYSTEM = `You are a careful government-procurement explainer for a finance platform.
 You are given ONE federal contract award's public USAspending record and nothing else.
@@ -23,9 +70,23 @@ supply chains the work plausibly touches. Hard rules:
 Respond with ONLY a JSON object, no prose around it, of the exact shape:
 {"summary": string, "sectors": [{"name": string, "why": string}], "uncertainty": string}`;
 
-/** Strip markdown fences and parse defensively; never throw. */
-function parseAnalysis(text) {
-  const cleaned = String(text || '')
+/** Strip markdown fences and parse defensively; never throw.
+    Accepts either the model's raw text or an already-parsed object: the cache
+    column is jsonb, so a cached row comes back as an object, while the legacy
+    per-row column stored a JSON string. */
+function parseAnalysis(input) {
+  if (input && typeof input === 'object') {
+    return {
+      summary: typeof input.summary === 'string' ? input.summary : '',
+      sectors: Array.isArray(input.sectors)
+        ? input.sectors
+            .filter((s) => s && (s.name || s.why))
+            .map((s) => ({ name: String(s.name || ''), why: String(s.why || '') }))
+        : [],
+      uncertainty: typeof input.uncertainty === 'string' ? input.uncertainty : '',
+    };
+  }
+  const cleaned = String(input || '')
     .replace(/^```(?:json)?/i, '')
     .replace(/```$/i, '')
     .trim();
@@ -55,7 +116,10 @@ function buildPrompt(a) {
     f('Awarding agency', a.awarding_agency),
     f('Awarding sub-agency', a.awarding_sub_agency),
     f('Funding agency', a.funding_agency),
-    f('Award amount (USD)', Number(a.award_amount) ? Number(a.award_amount).toLocaleString('en-US') : null),
+    f(
+      'Award amount (USD)',
+      Number(a.award_amount) ? Number(a.award_amount).toLocaleString('en-US') : null,
+    ),
     f('Action date', a.action_date),
     f('Fiscal year', a.fiscal_year),
     f('NAICS', [a.naics_code, a.naics_description].filter(Boolean).join(' — ')),
@@ -86,16 +150,43 @@ export const POST = withApiGuard(
     }
 
     const supabase = getAdminClient();
-    const { data: award } = await supabase
+
+    /* Two sources. The ticker opens awards from gov_contract_recent_awards; the
+       explorer table opens them from usaspending_contract_awards. Only the first
+       was looked up here, so every award opened from the explorer 404'd and the
+       modal showed the same "unavailable" state as a missing API key. */
+    let award = null;
+    let legacyAnalysis = null;
+    const { data: recent } = await supabase
       .from('gov_contract_recent_awards')
       .select('*')
       .eq('generated_award_id', generatedAwardId)
       .maybeSingle();
+    if (recent) {
+      award = recent;
+      legacyAnalysis = recent.analysis || null;
+    } else {
+      const { data: hosted } = await supabase
+        .from('usaspending_contract_awards')
+        .select('*')
+        .eq('generated_award_id', generatedAwardId)
+        .maybeSingle();
+      if (hosted) award = fromUsaspending(hosted);
+    }
     if (!award) return NextResponse.json({ error: 'Award not found' }, { status: 404 });
 
-    // Cache hit → return the stored analysis, no model call.
-    if (award.analysis) {
-      return NextResponse.json({ analysis: parseAnalysis(award.analysis), cached: true });
+    // Cache hit → return the stored analysis, no model call. The shared table
+    // first, then the legacy per-row column for anything cached before it.
+    const { data: cached } = await supabase
+      .from(CACHE_TABLE)
+      .select('analysis')
+      .eq('generated_award_id', generatedAwardId)
+      .maybeSingle();
+    if (cached?.analysis) {
+      return NextResponse.json({ analysis: parseAnalysis(cached.analysis), cached: true });
+    }
+    if (legacyAnalysis) {
+      return NextResponse.json({ analysis: parseAnalysis(legacyAnalysis), cached: true });
     }
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -121,13 +212,18 @@ export const POST = withApiGuard(
 
     const analysis = parseAnalysis(text);
 
-    // Persist the raw model JSON for the cache (best-effort; never blocks the
-    // response). Stored as text; parsed back on the next hit.
+    /* Persist for the cache (best-effort; never blocks the response, and never
+       fails the request if the table has not been created yet). Works for both
+       sources because the cache table is keyed by award id, not by row. */
     try {
-      await supabase
-        .from('gov_contract_recent_awards')
-        .update({ analysis: JSON.stringify(analysis), analysis_generated_at: new Date().toISOString() })
-        .eq('generated_award_id', generatedAwardId);
+      await supabase.from(CACHE_TABLE).upsert(
+        {
+          generated_award_id: generatedAwardId,
+          analysis,
+          model: MODEL,
+        },
+        { onConflict: 'generated_award_id' },
+      );
     } catch {
       /* cache write is best-effort */
     }

@@ -43,7 +43,9 @@ export class ProviderBadRequestError extends Error {
   }
 }
 
-const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
+/* Exported so other routes that want "the model the Sonar pipeline uses" can
+   import it rather than retyping the string and drifting from it. */
+export const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
 
 function trimDetail(detail) {
   return String(detail || '').slice(0, 200);

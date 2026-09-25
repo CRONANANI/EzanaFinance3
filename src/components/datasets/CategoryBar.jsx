@@ -59,11 +59,12 @@ export default function CategoryBar({ active, activeItem }) {
             <button
               type="button"
               className={`dscat-trigger ${cat.id === active ? 'is-active' : ''}`}
-              style={
-                cat.id === active
-                  ? { boxShadow: `inset 0 -2px 0 ${cat.color}`, color: cat.color }
-                  : undefined
-              }
+              /* No inline style for the active trigger any more. It used to
+                 paint the dimension's own colour as ink and an underline, which
+                 is unreadable on the green gradient the bar now wears — and an
+                 inline style would have beaten the stylesheet's translucent
+                 white pill. The dot still carries the dimension colour. */
+              ref={cat.id === active ? activeRef : undefined}
               onClick={() => setOpenCat((o) => (o === cat.id ? null : cat.id))}
             >
               <span className="dscat-dot" style={{ background: cat.color }} />

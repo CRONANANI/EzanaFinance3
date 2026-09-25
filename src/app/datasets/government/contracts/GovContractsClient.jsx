@@ -113,7 +113,6 @@ function aggregate(awards) {
 export default function GovContractsClient({
   awards = [],
   isLive = false,
-  note = '',
   coverage = null,
   rollup = null,
   recentAwards = [],
@@ -278,7 +277,14 @@ export default function GovContractsClient({
   // contractors" list below — nothing hidden; the caption states "Top N of M".
   const treemapRecipients = useMemo(() => {
     const TREEMAP_MAX = 40;
-    const PER_COL_MAX = 8;
+    /* The per-agency cap exists so the unfiltered view gives every agency column
+       a readable number of tiles. Under a filter it does the opposite: selecting
+       one agency left a single column of eight tiles beside empty space. So the
+       cap becomes the budget divided across the selected agencies — one agency
+       gets all 40, three get 13 each — and the whole treemap is used either way. */
+    const PER_COL_MAX = selectedAgencies.size
+      ? Math.max(1, Math.floor(TREEMAP_MAX / selectedAgencies.size))
+      : 8;
     const perCol = new Map();
     const out = [];
     for (const r of filtered) {
@@ -290,7 +296,7 @@ export default function GovContractsClient({
       if (out.length >= TREEMAP_MAX) break;
     }
     return out;
-  }, [filtered]);
+  }, [filtered, selectedAgencies]);
 
   // Agency share of the complete (true) obligated total — same denominator as
   // the largest-agency %, so shares never sum past 100. Sub-0.1% reads "<0.1%".
@@ -534,23 +540,12 @@ export default function GovContractsClient({
             )}
           </section>
 
-          <p className="gcx-note">{note}</p>
-
-          {/* Leading contractors — now inside .gcx-main so its left edge
-              aligns with the treemap and its width tracks the main column. */}
-          <section className="gcx-card gcx-list">
-            <div className="gcx-list-head">
-              <h2 className="gcx-hero-title">Leading contractors · {label}</h2>
-              <span className="gcx-list-count">
-                {Math.min(filtered.length, 25).toLocaleString()} shown
-              </span>
-            </div>
-            <ContractorList
-              recipients={filtered.slice(0, 25)}
-              onPick={setSelected}
-              colorOf={colorOf}
-            />
-          </section>
+          {/* The freshness caption and the Leading contractors section both came
+              out here: the explorer below is the same data with real filters and
+              server pagination, so the 25-row list was a worse duplicate of it,
+              and the caption was restating a source the page already names.
+              contractFreshnessNote stays in usaspending-store for
+              /datasets/government, which still renders it. */}
 
           {/* Full-table, server-paginated explorer (all 15 FYs, real filters) —
               scales past the overview slice above via /api/datasets/contracts. */}
@@ -686,7 +681,11 @@ function AwardAnalysis({ awardId }) {
         const json = await res.json().catch(() => ({}));
         if (!alive) return;
         if (!res.ok || !json.analysis) {
-          setState('error');
+          // A missing row and a missing API key are different problems, and
+          // showing one message for both hid the lookup bug that made every
+          // explorer-opened award look like an outage. 404 means we have no
+          // analysis for this award; 5xx means the generator is down.
+          setState(res.status === 404 ? 'missing' : 'error');
           return;
         }
         setData(json.analysis);
@@ -726,10 +725,14 @@ function AwardAnalysis({ awardId }) {
           </div>
         )}
 
-        {state === 'error' && (
+        {(state === 'error' || state === 'missing') && (
           <div className="gcx-award-error">
             <AlertCircle size={22} strokeWidth={1.75} aria-hidden="true" />
-            <p className="gcx-award-error-t">Analysis is unavailable right now</p>
+            <p className="gcx-award-error-t">
+              {state === 'missing'
+                ? 'No analysis for this award yet'
+                : 'Analysis is temporarily unavailable'}
+            </p>
             <p className="gcx-award-error-s">
               The award record on the left is complete and unaffected.
             </p>
@@ -1299,6 +1302,7 @@ function AgencyLegend({ ranking, selected, onPick, colorOf }) {
             onClick={s.pick ? () => onPick(s.key) : undefined}
             disabled={!s.pick}
             aria-pressed={s.pick ? selected.has(s.key) : undefined}
+            title={`${s.label} · ${fmtPct(pctOf(s.total))}`}
           >
             <span
               className="gcx-legend-chip-dot"
@@ -1312,6 +1316,73 @@ function AgencyLegend({ ranking, selected, onPick, colorOf }) {
       </div>
     </div>
   );
+}
+
+/* Squarified treemap (Bruls, Huizing, van Wijk). Used for the single-agency
+   view, where the column layout degenerates into one tall strip: with only one
+   column there is nothing to lay out side by side, so the agency's recipients
+   are packed across the full width instead, in rows sized by value.
+
+   Items must be sorted by value descending. Returns tiles in the given rect. */
+function squarify(items, x0, y0, w0, h0) {
+  const total = items.reduce((s, i) => s + i.value, 0) || 1;
+  const scaled = items.map((i) => ({ item: i.item, area: (i.value / total) * (w0 * h0) }));
+  const out = [];
+  let x = x0;
+  let y = y0;
+  let w = w0;
+  let h = h0;
+
+  /* Aspect ratio of the worst tile in a row laid along a side of length `len` —
+     the quantity the algorithm minimises. */
+  const worst = (row, len) => {
+    if (!row.length) return Infinity;
+    const sum = row.reduce((a, b) => a + b.area, 0);
+    if (sum <= 0 || len <= 0) return Infinity;
+    const max = Math.max(...row.map((b) => b.area));
+    const min = Math.min(...row.map((b) => b.area));
+    if (min <= 0) return Infinity;
+    return Math.max((len * len * max) / (sum * sum), (sum * sum) / (len * len * min));
+  };
+
+  const place = (row) => {
+    const sum = row.reduce((a, b) => a + b.area, 0);
+    if (sum <= 0) return;
+    // Lay the row along the shorter side, which is what keeps tiles square-ish.
+    if (w >= h) {
+      const rowW = sum / h;
+      let cy = y;
+      for (const b of row) {
+        const ih = (b.area / sum) * h;
+        out.push({ item: b.item, x, y: cy, w: rowW, h: ih });
+        cy += ih;
+      }
+      x += rowW;
+      w -= rowW;
+    } else {
+      const rowH = sum / w;
+      let cx = x;
+      for (const b of row) {
+        const iw = (b.area / sum) * w;
+        out.push({ item: b.item, x: cx, y, w: iw, h: rowH });
+        cx += iw;
+      }
+      y += rowH;
+      h -= rowH;
+    }
+  };
+
+  let row = [];
+  for (const b of scaled) {
+    const len = Math.min(w, h);
+    if (row.length && worst([...row, b], len) > worst(row, len)) {
+      place(row);
+      row = [];
+    }
+    row.push(b);
+  }
+  if (row.length) place(row);
+  return out;
 }
 
 /* ────────────────────────── Treemap ────────────────────────── */
@@ -1392,23 +1463,53 @@ function Treemap({ recipients, onPick, colorOf }) {
     widths = capped;
   }
 
-  let x = 0;
   const tiles = [];
-  columns.forEach((col, ci) => {
-    const colW = widths[ci];
-    // Tile heights are proportional WITHIN the column's shown items, with a hard
-    // readable minimum. Capped item counts keep the minimums from overflowing.
-    const itemsTotal = col.items.reduce((s, r) => s + r.total, 0) || 1;
-    const colGaps = GAP * Math.max(0, col.items.length - 1);
-    const colInner = H - colGaps;
-    let y = 0;
-    col.items.forEach((r) => {
-      const h = Math.max(MIN_TILE_H, (r.total / itemsTotal) * colInner);
-      tiles.push({ r, x, y, w: colW, h, agency: col.agency });
-      y += h + GAP;
+
+  /* One agency selected → one column, which as a column is just a tall strip
+     with the rest of the width empty. Pack it across the whole viewBox instead. */
+  if (columns.length === 1) {
+    const col = columns[0];
+    const packed = squarify(
+      col.items.map((r) => ({ item: r, value: Math.max(r.total, 0) })),
+      0,
+      0,
+      W,
+      H,
+    );
+    for (const t of packed) {
+      // The gap is taken out of each tile's right and bottom edge, so tiles
+      // separate without the rows drifting out of the box.
+      tiles.push({
+        r: t.item,
+        x: t.x,
+        y: t.y,
+        w: Math.max(1, t.w - GAP),
+        h: Math.max(1, t.h - GAP),
+        agency: col.agency,
+      });
+    }
+  } else {
+    layoutColumns();
+  }
+
+  function layoutColumns() {
+    let x = 0;
+    columns.forEach((col, ci) => {
+      const colW = widths[ci];
+      // Tile heights are proportional WITHIN the column's shown items, with a hard
+      // readable minimum. Capped item counts keep the minimums from overflowing.
+      const itemsTotal = col.items.reduce((s, r) => s + r.total, 0) || 1;
+      const colGaps = GAP * Math.max(0, col.items.length - 1);
+      const colInner = H - colGaps;
+      let y = 0;
+      col.items.forEach((r) => {
+        const h = Math.max(MIN_TILE_H, (r.total / itemsTotal) * colInner);
+        tiles.push({ r, x, y, w: colW, h, agency: col.agency });
+        y += h + GAP;
+      });
+      x += colW + GAP;
     });
-    x += colW + GAP;
-  });
+  }
 
   return (
     <svg
@@ -1706,35 +1807,6 @@ function AgencyBreakdown({ awards, colorOf }) {
             </div>
           ))}
       </div>
-    </div>
-  );
-}
-
-/* ────────────────────────── Contractor list ────────────────────────── */
-function ContractorList({ recipients, onPick, colorOf }) {
-  const max = Math.max(...recipients.map((r) => r.total), 1);
-  return (
-    <div className="gcx-rows">
-      {recipients.map((r, i) => (
-        <button type="button" className="gcx-row" key={r.name} onClick={() => onPick(r)}>
-          <span className="gcx-rank gcx-mono">{i + 1}</span>
-          <span className="gcx-row-main">
-            <span className="gcx-row-name">{r.name}</span>
-            <span className="gcx-row-meta">
-              <span className="gcx-dot" style={{ background: colorOf(r.agency) }} />
-              {r.agency}
-              {r.ticker ? ` · ${r.ticker}` : ''}
-            </span>
-          </span>
-          <span className="gcx-row-bar">
-            <span
-              className="gcx-row-bar-fill"
-              style={{ width: `${(r.total / max) * 100}%`, background: colorOf(r.agency) }}
-            />
-          </span>
-          <span className="gcx-row-val gcx-mono">{fmtUSD(r.total)}</span>
-        </button>
-      ))}
     </div>
   );
 }

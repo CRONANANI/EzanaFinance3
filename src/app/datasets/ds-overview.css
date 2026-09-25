@@ -42,7 +42,13 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ── ticker (shared pattern: white bg, 1.5px emerald bottom line) ── */
+/* ── ticker (shared pattern: white bg, 1.5px emerald bottom line) ──
+   NOTE: this is a second, independent copy of the .dsx-ticker rules that
+   dataset-ticker.css owns, keyframes included, and it wins here by import
+   order. So the "one canonical speed" that file documents is not actually
+   global — this page has always run its own. Kept in step by hand until the
+   duplicate is removed: 100s here is 60 / 0.6, the same 40% reduction applied
+   to dataset-ticker.css's 52s → 87s. */
 .dsx-ticker {
   overflow: hidden;
   background: #fff;
@@ -53,7 +59,7 @@
 .dsx-ticker-track {
   display: inline-flex;
   width: max-content;
-  animation: dsx-tick 60s linear infinite;
+  animation: dsx-tick 100s linear infinite;
 }
 .dsx-ticker:hover .dsx-ticker-track {
   animation-play-state: paused;
