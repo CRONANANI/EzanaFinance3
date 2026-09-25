@@ -22,15 +22,24 @@
   background: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  /* Pin the design tokens to their exact Option-1b values so accents resolve to
-     the BRIGHT emerald (var(--emerald)) at rest — some ancestor theme scopes redefine
-     --emerald to the darker var(--emerald-hover), which is the design's HOVER colour only.
-     Also pin the agency status colours so the treemap/legend match the mockup
+  /* The four --emerald* pins that used to sit here were self-referential
+     (--emerald: var(--emerald);). A custom property that references itself is a
+     dependency cycle, which the CSS spec resolves to the guaranteed-invalid
+     value, so on this page --emerald was invalid and --positive, which points at
+     it, was invalid too. The agency palette binds slot 0 (the top agency by
+     spend, i.e. Defense) to var(--positive), which is why every Defense tile,
+     its legend dot and the share strip's first segment painted their fallback
+     instead of emerald.
+
+     The premise behind the pins was also wrong. They were added because the page
+     appeared to resolve --emerald to "the darker hover colour": in light mode
+     --emerald is #059669, which happens to equal the DARK scope's
+     --emerald-hover. It is not a hover shade there — body.light-mode sets it
+     deliberately, "slightly deeper for contrast on white". Inheriting it is
+     correct, so --emerald is left alone and only --positive is bound.
+
+     The agency status colours stay pinned so the treemap/legend match the mockup
      regardless of which theme scope wraps the page. */
-  --emerald: var(--emerald);
-  --emerald-hover: var(--emerald-hover);
-  --emerald-bg: var(--emerald-bg);
-  --emerald-border: var(--emerald-border);
   --positive: var(--emerald);
   --warning: var(--amber);
   --info: var(--blue);
