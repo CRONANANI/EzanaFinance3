@@ -179,13 +179,81 @@ function MobileRadarFlow({ dims, sourceDetails, accentColor }) {
   );
 }
 
-export default function SonarOrbitalMap({ sourceDetails, relevance = null, hubLabel = null }) {
+export default function SonarOrbitalMap({
+  sourceDetails,
+  relevance = null,
+  hubLabel = null,
+  /* Stage 2 renders this map at roughly a sixth of its resting width. The
+     viewBox scales everything with it, so 1px rings land near a sixth of a
+     pixel and sub-pixel dots disappear into the band. Geometry that must keep
+     a real rendered size gets multiplied here; strokes are handled in
+     sonar-band.css with vector-effect, which CSS does better than arithmetic. */
+  compact = false,
+} = {}) {
   const accentColor = '#10b981';
   // `hoveredDim` is transient (mouse/focus over a dot or label); `pinnedDim`
   // persists after a click so the description card stays open. The card shows
   // whichever is active, with a pin taking precedence over a hover.
   const [hoveredDim, setHoveredDim] = useState(null);
   const [pinnedDim, setPinnedDim] = useState(null);
+
+  /* The hub and its label are the two things that must NOT scale with the
+     viewBox, and the reason is arithmetic: the map is drawn in 1120 units and
+     rendered around 140px wide in stage 2, so the r=40 hub paints a 10px disc
+     and no font size fits a two-line company name inside it.
+
+     04-SPEC.md section 4 sizes both as a fraction of the rendered diameter
+     instead, hub at 35% of it and label floored at 12 real pixels. Both need
+     the rendered width, so it is measured. Read-only: nothing here changes the
+     element's width, which CSS sets from --snr-orb-size, so there is no loop. */
+  const svgRef = useRef(null);
+  const [renderedPx, setRenderedPx] = useState(0);
+  useEffect(() => {
+    const el = svgRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(([entry]) => {
+      const w = Math.round(entry.contentRect.width);
+      setRenderedPx((prev) => (Math.abs(prev - w) > 0.5 ? w : prev));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  /* viewBox units per rendered pixel. Falls back to the resting scale before
+     the first measurement, which is also what SSR renders. */
+  const unitsPerPx = renderedPx > 0 ? 1120 / renderedPx : 1120 / 440;
+
+  /* The label is split here rather than in the markup because the hub has to
+     be big enough to hold it, so the hub's radius depends on it. */
+  const hubClip = (w) => (w.length > 12 ? `${w.slice(0, 11)}\u2026` : w);
+  const hubText = typeof hubLabel === 'string' && hubLabel.trim() ? hubLabel.trim() : null;
+  const hubWords = hubText ? hubText.split(/\s+/) : [];
+  const hubLine1 = hubText ? hubClip(hubWords.length > 1 ? hubWords[0] : hubText) : null;
+  const hubLine2 = hubWords.length > 1 ? hubClip(hubWords.slice(1).join(' ')) : null;
+  const hubLongest = Math.max(hubLine1?.length || 0, hubLine2?.length || 0);
+
+  /* Everything that must hold a real rendered size is derived from the scale,
+     not from a constant multiplier. A constant cannot work: the mini map
+     renders anywhere from about 120 to 155px wide depending on the header
+     zone, so the same multiplier lands at a different pixel size at every
+     viewport. The first pass at this used 2.2x on the dots and a hub fixed at
+     35% of the diameter, and measured out at a 1.24px dot and a 9px label.
+
+     The label floor is 12 real pixels, from 04-SPEC.md section 4, and it wins
+     over fitting the hub: the hub grows to hold it instead. That is the
+     disproportion the spec calls deliberate, and at these sizes it is the
+     only way the pinged term is readable at all. */
+  const hubLabelUnits = compact ? Math.round(12 * unitsPerPx) : null;
+  /* 35% of the diameter, which is 04-SPEC.md section 4's figure and comes out
+     around 49px rendered. Growing it to fully contain a 12px two-line label
+     instead needed r=247 of a 300 radius, which swallowed the polygon and the
+     dots and left a dark disc with a name on it. The label overflows the disc
+     by a few pixels at the longest words and reads fine over the inner rings,
+     helped by the dark backdrop the band sheet puts under the whole map. */
+  const hubR = compact ? Math.round((0.35 * 1120) / 2) : 40;
+  const dotR = (active) =>
+    compact ? Math.round((active ? 5 : 3.5) * unitsPerPx) : active ? 6 : 4.5;
+  const pulseR = compact ? Math.round(7 * unitsPerPx) : 5;
   const activeDim = pinnedDim !== null ? pinnedDim : hoveredDim;
   const togglePin = (i) => setPinnedDim((prev) => (prev === i ? null : i));
   const polyYouRef = useRef(null);
@@ -337,10 +405,11 @@ export default function SonarOrbitalMap({ sourceDetails, relevance = null, hubLa
         <div className="hidden lg:block">
           <div className="relative w-full max-w-[1100px] mx-auto">
             <svg
+              ref={svgRef}
               viewBox="0 0 1120 760"
               role="img"
               aria-label="Weighted radar chart of seven intelligence dimensions"
-              className="block w-full h-auto overflow-visible"
+              className={cn('block w-full h-auto overflow-visible', compact && 'radar--compact')}
               onClick={() => setPinnedDim(null)}
             >
               <defs>
@@ -436,6 +505,7 @@ export default function SonarOrbitalMap({ sourceDetails, relevance = null, hubLa
               <polygon
                 ref={polyYouRef}
                 points=""
+                className="radar-poly"
                 fill="rgba(16,185,129,.13)"
                 stroke="rgba(16,185,129,.34)"
                 strokeWidth="1.3"
@@ -488,11 +558,21 @@ export default function SonarOrbitalMap({ sourceDetails, relevance = null, hubLa
                       fillOpacity="0"
                       style={{ pointerEvents: 'all' }}
                     />
-                    <circle cx="0" cy="0" r={isActive ? 6 : 4.5} fill="#10b981" />
+                    {/* Radii as attributes, not CSS. The `r` property is not
+                        dependable across Safari versions, and a dot that
+                        silently keeps its authored radius is exactly the
+                        failure this is fixing. */}
                     <circle
                       cx="0"
                       cy="0"
-                      r="5"
+                      r={dotR(isActive)}
+                      className="radar-blip-dot"
+                      fill="#10b981"
+                    />
+                    <circle
+                      cx="0"
+                      cy="0"
+                      r={pulseR}
                       fill="none"
                       stroke="#10b981"
                       strokeWidth="1.4"
@@ -507,12 +587,13 @@ export default function SonarOrbitalMap({ sourceDetails, relevance = null, hubLa
               <circle
                 cx={CX}
                 cy={CY}
-                r={40}
+                r={hubR}
+                className="radar-hub-ring"
                 fill="#0a0f15"
                 stroke="rgba(16,185,129,.3)"
                 strokeWidth="1.5"
               />
-              <circle cx={CX} cy={CY} r={40} fill="url(#radar-hg)" />
+              <circle cx={CX} cy={CY} r={hubR} className="radar-hub-fill" fill="url(#radar-hg)" />
               {/* The hub names what was pinged. Two lines, because most company
                   names are two words and one line of "Lockheed Martin" does not
                   fit an r=40 hub at any readable size.
@@ -535,16 +616,24 @@ export default function SonarOrbitalMap({ sourceDetails, relevance = null, hubLa
                     </text>
                   );
                 }
-                const words = pinged.split(/\s+/);
-                const clip = (w) => (w.length > 12 ? `${w.slice(0, 11)}\u2026` : w);
-                const line1 = clip(words.length > 1 ? words[0] : pinged);
-                const line2 = words.length > 1 ? clip(words.slice(1).join(' ')) : null;
-                const longest = Math.max(line1.length, line2 ? line2.length : 0);
-                /* ~72 units of usable width inside the hub, and the face
+                const line1 = hubLine1;
+                const line2 = hubLine2;
+                const longest = hubLongest;
+                /* Usable width inside the hub, which is the hub's own radius
+                   grown under compact, less a little breathing room. The face
                    advances at roughly 0.58em, so this is the size at which the
-                   longest line just fits. Capped at the stylesheet's 30 so a
-                   three-letter ticker is not drawn comically large. */
-                const fs = Math.max(9, Math.min(30, Math.round(72 / (longest * 0.58))));
+                   longest line just fits.
+
+                   Compact takes the larger of that and the 12-real-pixel floor
+                   from 04-SPEC.md section 4, converted into viewBox units by
+                   the measured scale. The floor is what matters in practice:
+                   at the sizes this renders, a label that merely fits the hub
+                   is still too small to read. Capped at the stylesheet's 30 in
+                   the resting map so a three-letter ticker is not drawn
+                   comically large. */
+                const fs = compact
+                  ? hubLabelUnits
+                  : Math.max(9, Math.min(30, Math.round(72 / (longest * 0.58))));
                 /* Baseline maths, not guesses: 0.36em is about the cap-height
                    centre, so a single line lands on CY and a pair straddles it. */
                 const lift = Math.round(fs * 0.36);

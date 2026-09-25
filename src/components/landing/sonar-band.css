@@ -2968,3 +2968,86 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   transform: none;
   margin: 0;
 }
+
+/* ── mini orbital contrast ──────────────────────────────────────────────────
+   The map is drawn in a 1120x760 viewBox and rendered around 140px wide in
+   stage 2, so everything in it scales by about an eighth: 1px rings land near
+   an eighth of a pixel and the whole thing melts into the band. The palette
+   was never the problem, the rendered weight was.
+
+   The hex values below are the band's own palette, mint #6ee7b7 and a deep
+   hub #021a14, component-scoped as the rest of this sheet is.
+
+   Scoped to .snr-stage2 throughout, so the resting full-size map is untouched
+   and stays pixel-identical. */
+
+/* Strokes stop scaling with the viewBox and hold their authored pixel widths,
+   which is the single biggest win here and the one CSS does better than
+   arithmetic. */
+.snr-stage2 .snr-orbital svg * {
+  vector-effect: non-scaling-stroke;
+}
+
+/* A faint dark disc under the whole map lifts it off the gradient. */
+.snr-stage2 .snr-orbital {
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(2, 20, 15, 0.55) 0%,
+    rgba(2, 20, 15, 0.35) 60%,
+    transparent 72%
+  );
+}
+
+.snr-stage2 .snr-orbital .radar-grid {
+  stroke: rgba(110, 231, 183, 0.55);
+  stroke-width: 1px;
+}
+
+.snr-stage2 .snr-orbital .radar-poly {
+  fill: rgba(16, 185, 129, 0.32);
+  stroke: #6ee7b7;
+  stroke-width: 1.5px;
+}
+
+.snr-stage2 .snr-orbital .radar-blip-dot {
+  fill: #6ee7b7;
+  filter: drop-shadow(0 0 3px rgba(110, 231, 183, 0.8));
+}
+
+.snr-stage2 .snr-orbital .radar-blip-pulse {
+  stroke: rgba(110, 231, 183, 0.7);
+  stroke-width: 1px;
+}
+
+.snr-stage2 .snr-orbital .radar-hub-ring {
+  fill: #021a14;
+  stroke: #6ee7b7;
+  stroke-width: 1.5px;
+}
+
+.snr-stage2 .snr-orbital .radar-hub-fill {
+  opacity: 0.35;
+}
+
+.snr-stage2 .snr-orbital .radar-hub-label {
+  fill: #ffffff;
+  font-family: var(--snr-font-mono);
+  font-weight: 700;
+}
+
+/* Full white at this size. The resting map's 85% reads as grey once the icon
+   is 13px across. */
+.snr-stage2 .snr-orbital .radar-dim-icon {
+  opacity: 1;
+}
+
+/* The two sweeps keep turning, brighter, so the map still reads as live
+   without competing with the nodes. */
+.snr-stage2 .snr-orbital .radar-sweep1 {
+  opacity: 0.5;
+}
+
+.snr-stage2 .snr-orbital .radar-sweep2 {
+  opacity: 0.38;
+}

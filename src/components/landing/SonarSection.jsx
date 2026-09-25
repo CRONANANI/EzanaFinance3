@@ -1338,7 +1338,14 @@ export function SonarSection() {
           </div>
 
           <div ref={radarRef} className="snr-col-radar">
-            <SonarOrbital relevance={live?.relevance ?? null} hubLabel={live ? lastQuery : null} />
+            {/* compact in stage 2: the map renders at roughly a sixth of its
+                resting width there, and geometry that must keep a real
+                rendered size is sized from that rather than from the viewBox. */}
+            <SonarOrbital
+              relevance={live?.relevance ?? null}
+              hubLabel={live ? lastQuery : null}
+              compact={stage2}
+            />
           </div>
 
           <div className="snr-col-dossier" aria-hidden={hasPinged ? undefined : 'true'}>
