@@ -78,6 +78,10 @@
      their own ground and put white ink on it in either theme, so it is not
      redefined in the light or partner scopes below. */
   --brand-band-green: linear-gradient(115deg, #032a21 0%, #064e3b 40%, #065f46 70%, #047857 100%);
+  /* Ink that reads on that band in EITHER shell. --emerald-text cannot be used
+     for this: it flips to #047857 in light mode, which is one of the gradient's
+     own stops. The band is a constant, so its mint is too. */
+  --brand-band-mint: #6ee7b7;
 
   /* ── Brand: Gold (Partner) ── */
   --gold: #d4a853;

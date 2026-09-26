@@ -1,12 +1,32 @@
 /* Page-agnostic dataset ticker — the single source of truth for EVERY dataset
    page's scrolling strip (including Government Contracts, which used to carry its
-   own gcx-ticker marquee). Classes are dsx-. Full-bleed at one canonical 87s
-   speed; change the width/speed here and all pages move together. Tokens only. */
+   own gcx-ticker marquee). Classes are dsx-. Full-bleed at one canonical 124s
+   speed; change the width/speed here and all pages move together. Tokens only.
+
+   The strip paints the same deep-green band the category bar above it uses, so
+   the two read as one piece of chrome. Ink is white-on-green rather than the
+   page's text tokens, which are dark. */
 
 .dsx-ticker {
-  overflow: hidden;
-  border-bottom: 1.5px solid var(--emerald);
+  /* The same token .dscat-bar paints with, so the bar and the strip can never
+     drift apart. The mint is a sibling token for the one reason light mode
+     needs it: --emerald-text flips to a dark green there. */
+  --dsx-bg: var(--brand-band-green);
+  /* 0.88, not the 0.72 first tried. Measured against the gradient's lightest
+     stop (#047857, its 100% end): 0.72 gives 3.63:1 and 0.82 gives 4.25:1,
+     both under the 4.5:1 that 11px mono caps need. 0.88 is 4.63:1. */
+  --dsx-ink: rgba(255, 255, 255, 0.88);
+  --dsx-ink-strong: #ffffff;
+  --dsx-ink-value: var(--brand-band-mint);
+  --dsx-divider: rgba(255, 255, 255, 0.18);
+  background: var(--dsx-bg);
+  /* The green edge is the edge; the old 1.5px emerald rule under it is gone. */
+  border-bottom: 0;
+  border-radius: 12px;
+  margin-top: 12px;
   white-space: nowrap;
+  /* Clips the track to the rounded corners. */
+  overflow: hidden;
 
   /* Full-bleed: the strip spans the whole viewport edge-to-edge on EVERY dataset
      page, matching the Institutional reference. Most pages (.dsx-page) already
@@ -15,9 +35,13 @@
      width can't reach the viewport edge there. The 100vw breakout works in both:
      .dsx-page and .gcx-page are each centered in the viewport, so margin-left:50%
      + translateX(-50%) lands the left edge at 0 regardless of the parent's
-     padding/max-width. 100vw includes the scrollbar (~15px overflow), but every
-     ticker root sets overflow-x: clip, so it's clipped — no horizontal scroll. */
-  width: 100vw;
+     padding/max-width.
+
+     Inset by one gutter each side rather than reaching the viewport edges, so
+     the rounded corners are visible instead of being cut off by the edge. The
+     24px also absorbs the scrollbar that 100vw includes (~15px), which the
+     roots' overflow-x: clip used to hide. */
+  width: calc(100vw - 24px);
   margin-left: 50%;
   transform: translateX(-50%);
 }
@@ -29,8 +53,9 @@
      together. 87s is the current tuning: 52 / 0.6, i.e. 40% slower than the 52s
      that preceded it (which was itself ~30% slower than the original 40s).
      The /datasets overview page carries its own copy of this rule in
-     ds-overview.css and has to be changed alongside it; see the note there. */
-  animation: dsx-tick 87s linear infinite;
+     ds-overview.css and has to be changed alongside it; see the note there.
+     124s is 87 / 0.7, i.e. 30% slower again. */
+  animation: dsx-tick 124s linear infinite;
 }
 .dsx-ticker:hover .dsx-ticker-track,
 .dsx-ticker:focus-within .dsx-ticker-track {
@@ -58,7 +83,7 @@
   padding: 7px 14px;
   background: none;
   border: none;
-  border-right: 1px solid var(--border-primary);
+  border-right: 1px solid var(--dsx-divider);
   font: inherit;
   color: inherit;
   cursor: pointer;
@@ -69,9 +94,13 @@
 .dsx-titem:hover:not(.is-static) .dsx-tmain {
   text-decoration: underline;
 }
+.dsx-titem:hover:not(.is-static) {
+  background: rgba(255, 255, 255, 0.08);
+}
 .dsx-titem:focus-visible {
-  /* Inset so the outline isn't clipped by the ticker's overflow: hidden. */
-  outline: 2px solid var(--emerald);
+  /* Inset so the outline isn't clipped by the ticker's overflow: hidden, and
+     mint rather than --emerald, which is too close to the green ground now. */
+  outline: 2px solid var(--dsx-ink-value);
   outline-offset: -2px;
 }
 .dsx-tlead {
@@ -81,19 +110,19 @@
   letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
-  color: var(--text-muted);
+  color: var(--dsx-ink);
 }
 .dsx-tmain {
   font-size: var(--ds-type-body-size);
   font-weight: var(--ds-type-strong);
-  color: var(--text-secondary);
+  color: var(--dsx-ink-strong);
 }
 .dsx-tval {
   font-family: var(--font-mono);
   font-size: var(--ds-type-figure-size);
   font-variant-numeric: tabular-nums;
   font-weight: var(--ds-type-code-weight);
-  color: var(--text-primary);
+  color: var(--dsx-ink-value);
 }
 .dsx-mono {
   font-family: var(--font-mono);

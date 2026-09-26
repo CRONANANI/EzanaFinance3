@@ -47,8 +47,11 @@
    dataset-ticker.css owns, keyframes included, and it wins here by import
    order. So the "one canonical speed" that file documents is not actually
    global — this page has always run its own. Kept in step by hand until the
-   duplicate is removed: 100s here is 60 / 0.6, the same 40% reduction applied
-   to dataset-ticker.css's 52s → 87s. */
+   duplicate is removed. This page's strip uses different item markup
+   (.dsx-ttag / .dsx-tsub, not .dsx-tlead / .dsx-tmain / .dsx-tval), so it did
+   NOT take the green treatment the shared sheet now carries: its items would be
+   dark ink on a dark ground. It does keep pace: 143s here is 100 / 0.7, the
+   same 30% reduction applied to dataset-ticker.css's 87s → 124s. */
 .dsx-ticker {
   overflow: hidden;
   background: #fff;
@@ -59,7 +62,7 @@
 .dsx-ticker-track {
   display: inline-flex;
   width: max-content;
-  animation: dsx-tick 100s linear infinite;
+  animation: dsx-tick 143s linear infinite;
 }
 .dsx-ticker:hover .dsx-ticker-track {
   animation-play-state: paused;
