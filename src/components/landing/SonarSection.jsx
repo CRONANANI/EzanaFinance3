@@ -182,45 +182,107 @@ function fyLabel(fy) {
 }
 
 /** Award value over time. Inline SVG, no chart library, built from `series`. */
+/* A chart drawn in PIXEL space.
+
+   Both of these used viewBox="0 0 100 30" with preserveAspectRatio="none",
+   which stretches the 100x30 box to roughly 350x80. That is fine for a path,
+   and vectorEffect="non-scaling-stroke" kept its stroke honest, but it does
+   nothing for filled shapes: every <circle> stretched with the box into a wide
+   ellipse, and the last point at r 2.2 became a blob. Measuring the container
+   and using its pixel size AS the viewBox means one unit is one pixel, so a
+   circle is a circle and every dot is the same size.
+
+   A callback ref rather than an effect with [] deps: the node only exists once
+   the guard below passes, and a callback ref attaches whenever that happens
+   rather than only on the first mount. */
+function usePixelBox() {
+  const [box, setBox] = useState(null);
+  const roRef = useRef(null);
+  const setNode = useCallback((node) => {
+    if (roRef.current) {
+      roRef.current.disconnect();
+      roRef.current = null;
+    }
+    if (!node || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (width > 0 && height > 0) setBox({ w: width, h: height });
+    });
+    ro.observe(node);
+    roRef.current = ro;
+  }, []);
+  useEffect(() => () => roRef.current?.disconnect(), []);
+  return [box, setNode];
+}
+
+const CHART_INSET = 6;
+
 function AwardChart({ series }) {
+  const [box, setNode] = usePixelBox();
   if (!Array.isArray(series) || series.length < 2) return null;
-  const W = 100;
-  const H = 30;
+
+  /* Until the box is measured the SVG draws on the old nominal grid, uniformly
+     scaled. The dots are withheld until then, so the server render and the
+     first client paint agree and there is no hydration mismatch. */
+  const W = box?.w ?? 100;
+  const H = box?.h ?? 30;
   const values = series.map((d) => d.value);
   const max = Math.max(...values);
   const min = Math.min(...values, 0);
   const span = max - min || 1;
-  const x = (i) => (i / (series.length - 1)) * W;
-  const y = (v) => H - ((v - min) / span) * (H - 3) - 1.5;
+  const x = (i) => CHART_INSET + (i / (series.length - 1)) * (W - 2 * CHART_INSET);
+  const y = (v) => H - CHART_INSET - ((v - min) / span) * (H - 2 * CHART_INSET);
   const line = series.map((d, i) => `${x(i).toFixed(2)},${y(d.value).toFixed(2)}`).join(' ');
-  const area = `0,${H} ${line} ${W},${H}`;
+  const area = `${CHART_INSET},${H} ${line} ${(W - CHART_INSET).toFixed(2)},${H}`;
   const last = series[series.length - 1];
   const ticks = [0, Math.floor((series.length - 1) / 2), series.length - 1];
   return (
     <div className="snr-award-chart">
-      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
-        <polygon points={area} fill="rgba(16,185,129,.16)" />
-        <polyline
-          points={line}
-          fill="none"
-          stroke="var(--snr-mint)"
-          strokeWidth="1.4"
-          vectorEffect="non-scaling-stroke"
-        />
-        {series.map((d, i) => (
-          <circle
-            key={d.fy}
-            cx={x(i)}
-            cy={y(d.value)}
-            r={i === series.length - 1 ? 2.2 : 1.1}
-            fill="var(--snr-mint)"
-            vectorEffect="non-scaling-stroke"
-          />
-        ))}
-      </svg>
+      {/* The end value is a caption in the corner, not a label on the plot: it
+          used to sit on top of the line's last segment. */}
       <span className="snr-award-last">
         {fyLabel(last.fy)} {usdShort(last.value)}
       </span>
+      <div className="snr-award-plot" ref={setNode}>
+        <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+          <polygon points={area} fill="rgba(16,185,129,.16)" />
+          <polyline
+            points={line}
+            fill="none"
+            stroke="var(--snr-mint)"
+            strokeWidth="1.5"
+            vectorEffect="non-scaling-stroke"
+          />
+          {box
+            ? series.map((d, i) => {
+                const isLast = i === series.length - 1;
+                /* The last point is RINGED rather than drawn bigger, so every
+                   filled dot in the series is the same size. */
+                return isLast ? (
+                  <circle
+                    key={d.fy}
+                    cx={x(i)}
+                    cy={y(d.value)}
+                    r={3.5}
+                    fill="none"
+                    stroke="var(--snr-mint)"
+                    strokeOpacity={0.55}
+                    strokeWidth={1}
+                  />
+                ) : (
+                  <circle
+                    key={d.fy}
+                    cx={x(i)}
+                    cy={y(d.value)}
+                    r={2}
+                    strokeWidth={0}
+                    fill="var(--snr-mint)"
+                  />
+                );
+              })
+            : null}
+        </svg>
+      </div>
       <div className="snr-award-axis" aria-hidden="true">
         {ticks.map((i) => (
           <span key={series[i].fy}>{fyLabel(series[i].fy)}</span>
@@ -230,7 +292,6 @@ function AwardChart({ series }) {
   );
 }
 
-/** Top agencies as one stacked bar plus a legend. */
 function AgencyBar({ agencies }) {
   if (!Array.isArray(agencies) || !agencies.length) return null;
   /* Mint for the lead agency, graded neutrals behind it, so the ranking reads
@@ -249,11 +310,16 @@ function AgencyBar({ agencies }) {
           />
         ))}
       </div>
+      {/* One agency per line. As inline spans they wrapped unevenly and the
+          numbers never lined up; as a 4-column grid the shares and the amounts
+          form columns down the list. */}
       <div className="snr-agency-legend">
         {agencies.map((a, i) => (
           <span key={a.name} className="snr-agency-item">
             <i style={{ background: tone(i) }} aria-hidden="true" />
-            {a.name} {Math.round(a.share * 100)}% {usdShort(a.value)}
+            <span className="snr-agency-name">{a.name}</span>
+            <span className="snr-agency-share">{Math.round(a.share * 100)}%</span>
+            <span className="snr-agency-value">{usdShort(a.value)}</span>
           </span>
         ))}
       </div>
@@ -289,26 +355,32 @@ function relativeDay(iso) {
  * server and the client agree, and weightless on a landing page.
  */
 function Sparkline({ points }) {
+  const [box, setNode] = usePixelBox();
   if (!Array.isArray(points) || points.length < 2) return null;
+  const W = box?.w ?? 100;
+  const H = box?.h ?? 30;
   const min = Math.min(...points);
   const max = Math.max(...points);
   const span = max - min || 1;
   const d = points
-    .map(
-      (v, i) =>
-        `${((i / (points.length - 1)) * 100).toFixed(2)},${(28 - ((v - min) / span) * 26).toFixed(2)}`,
-    )
+    .map((v, i) => {
+      const px = CHART_INSET + (i / (points.length - 1)) * (W - 2 * CHART_INSET);
+      const py = H - CHART_INSET - ((v - min) / span) * (H - 2 * CHART_INSET);
+      return `${px.toFixed(2)},${py.toFixed(2)}`;
+    })
     .join(' ');
   return (
-    <svg className="snr-spark" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
-      <polyline
-        points={d}
-        fill="none"
-        stroke="var(--snr-mint)"
-        strokeWidth="1.4"
-        vectorEffect="non-scaling-stroke"
-      />
-    </svg>
+    <div className="snr-spark" ref={setNode}>
+      <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+        <polyline
+          points={d}
+          fill="none"
+          stroke="var(--snr-mint)"
+          strokeWidth="1.5"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+    </div>
   );
 }
 

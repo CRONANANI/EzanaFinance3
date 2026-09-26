@@ -2488,6 +2488,14 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   min-width: 0;
 }
 
+/* The sparkline is measured in pixel space too, so its wrapper carries the
+   height and the svg fills it. */
+.snr-spark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .snr-fund-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -3422,37 +3430,70 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   color: #f87171;
 }
 
+/* Vertical rhythm inside a rich row: name, then content lines, then the link.
+   The agency bar used to sit on the chart's axis and the legend on the bar. */
+.snr-band .snr-rich-name {
+  margin: 0 0 10px;
+}
+.snr-band .snr-stat-strip {
+  margin: 0 0 14px;
+}
+.snr-band .snr-award-chart {
+  margin: 0 0 14px;
+}
+.snr-band .snr-agency {
+  margin: 0 0 12px;
+}
+.snr-band .snr-agency-bar {
+  margin: 0 0 10px;
+}
+.snr-band .snr-rich-link {
+  margin-top: 2px;
+}
+
 .snr-band .snr-award-chart {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 2px;
 }
 
-.snr-band .snr-award-chart svg {
+/* The plot is its own measured box: usePixelBox reads this element's pixel
+   size and uses it AS the viewBox, so one SVG unit is one pixel and the dots
+   stay circular. */
+.snr-band .snr-award-plot {
+  height: 72px;
+  width: 100%;
+  min-width: 0;
+}
+
+.snr-band .snr-award-plot svg {
   display: block;
   width: 100%;
-  height: 72px;
+  height: 100%;
 }
 
 .snr-band .snr-award-axis {
   display: flex;
   justify-content: space-between;
+  margin-top: 6px;
   font-family: var(--snr-font-mono);
   font-size: 8.5px;
   letter-spacing: var(--snr-track-meta);
   color: var(--snr-text-faint);
 }
 
-/* In the axis row rather than floating over the plot. Absolutely positioned
-   top-right it ran past the row's content box and clipped its last glyph. */
+/* A caption above the plot's top-right corner, in normal flow. It sat on the
+   plot and overlapped the line's end; an earlier pass had pushed it into the
+   axis row with a negative margin, where it read as a fourth tick. In flow it
+   can neither overlap the line nor clip against the row's content box, which
+   is what absolute positioning did to it before that. */
 .snr-band .snr-award-last {
+  align-self: flex-end;
+  margin-bottom: 2px;
   font-family: var(--snr-font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 9.5px;
-  color: var(--snr-mint);
-  align-self: flex-end;
-  margin-top: -13px;
+  font-size: 10px;
+  color: var(--snr-text-muted);
 }
 
 .snr-band .snr-agency-bar {
@@ -3467,22 +3508,44 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   height: 100%;
 }
 
+/* One agency per line. Wrapped inline spans put two on one row and one on the
+   next with nothing aligned; a column of 4-column grids lines the shares and
+   the amounts up down the list. */
 .snr-band .snr-agency-legend {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px 12px;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .snr-band .snr-agency-item {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: 7px minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
   font-family: var(--snr-font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 9px;
   letter-spacing: var(--snr-track-meta);
   color: var(--snr-text-muted);
   white-space: nowrap;
+}
+
+.snr-band .snr-agency-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.snr-band .snr-agency-share {
+  text-align: right;
+  min-width: 3ch;
+}
+
+/* Right-aligned with a fixed measure, so the amounts form a column. */
+.snr-band .snr-agency-value {
+  text-align: right;
+  min-width: 7ch;
+  color: var(--snr-text);
 }
 
 .snr-band .snr-agency-item i {
@@ -3603,8 +3666,10 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
     -webkit-line-clamp: 2;
   }
 
+  /* Two legend lines in the compact tier, cut on a row boundary rather than
+     through one now that each agency has its own line. */
   .snr-band .snr-agency-legend {
-    max-height: 30px;
+    max-height: 32px;
     overflow: hidden;
   }
 }
