@@ -3359,6 +3359,59 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
     gap: 12px;
   }
 
+  /* Every slide is the deck's full height, and the card inside it stretches to
+     fill, so the synthesis card and the dossier card end on the same line just
+     above the continue bar instead of each ending wherever its content does.
+     The scrolling moves inside the cards. */
+  .snr-band.snr-composed .snr-cols {
+    align-items: stretch;
+  }
+  .snr-band.snr-composed .snr-col-left {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+    min-height: 0;
+  }
+  .snr-band.snr-composed .snr-col-left .snr-pingbar {
+    flex: 0 0 auto;
+  }
+  .snr-band.snr-composed .snr-col-left .snr-synth {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  /* The desktop cap does not apply here: the slide sets the height. */
+  .snr-band.snr-composed .snr-synth-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  /* .snr-foot, not .snr-synth-foot: the card's footnote and CTA live in
+     .snr-foot, with .snr-divider-line above it. */
+  .snr-band.snr-composed .snr-synth .snr-divider-line,
+  .snr-band.snr-composed .snr-synth .snr-foot {
+    flex: 0 0 auto;
+  }
+
+  .snr-band.snr-composed .snr-col-dossier,
+  .snr-band.snr-composed .snr-stack {
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .snr-band.snr-composed .snr-col-dossier .snr-dossier-body,
+  .snr-band.snr-composed .snr-col-dossier .snr-rows {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
   /* The stage-2 choreography is a three-column effect: the orbital shrink, the
      dossier's slide to centre and the cards' entrance from the right edge. On
      a phone the stage IS the next slide mounting, and those transforms would
