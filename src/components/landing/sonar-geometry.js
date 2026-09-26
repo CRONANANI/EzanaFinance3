@@ -56,7 +56,14 @@ export const ANCHORS = [
     head: 50,
     headFs: 20,
     g2: 8,
-    sub: 60,
+    /* Three lines, not two and a clipped third. .snr-subhead is line-height
+       1.6, so at the phone's 13px each line is 20.8px and the old 60 cut the
+       third mid-sentence (.snr-band.snr-composed .snr-subhead is a fixed
+       height with overflow: hidden). Measured on a 390px phone the copy runs
+       to FOUR lines, not the three the brief assumed: 83px of content in the
+       old 60px box. 84 is ceil(4 x 20.8); the work area is the budget's
+       remainder, so it absorbs the difference. */
+    sub: 84,
     subFs: 13,
     /* The table prints g4 as 0 for the phone, but its own derived arrow-row
        offset only resolves with 14, and the prototype's phone branch adds the

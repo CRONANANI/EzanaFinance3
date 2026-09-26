@@ -1372,6 +1372,62 @@ export function SonarSection() {
     if (lockedIn) setComposed(true);
   }, [lockedIn]);
 
+  /* A3: the deck's two one-shot tugs. Phone only, each fires once, and any
+     scroll on the deck cancels a pending one: if the visitor has already found
+     the swipe, hinting at it is noise. The class is removed on animationend so
+     will-change does not linger. */
+  const [tug, setTug] = useState(false);
+  const tuggedRef = useRef({ one: false, two: false });
+  useEffect(() => {
+    const deck = colsRef.current;
+    if (!deck || typeof window === 'undefined' || !window.matchMedia) return undefined;
+    if (!window.matchMedia('(max-width: 1023px)').matches) return undefined;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+
+    let timer = 0;
+    let cancelled = false;
+    const cancel = () => {
+      cancelled = true;
+      if (timer) window.clearTimeout(timer);
+      timer = 0;
+      setTug(false);
+    };
+    /* Passive, and it does nothing but cancel: a scroll handler that touches
+       layout is the classic way to drop frames mid-swipe. */
+    deck.addEventListener('scroll', cancel, { passive: true });
+
+    /* Tug 1: the answer landed and the dossier slide mounted. The delay lets
+       the slide mount and its type-out start, so the hint is about the NEXT
+       card rather than a card still arriving. */
+    if (hasPinged && !tuggedRef.current.one && deck.querySelector('.snr-col-dossier')) {
+      tuggedRef.current.one = true;
+      timer = window.setTimeout(() => {
+        if (!cancelled) setTug(true);
+      }, 250);
+    }
+
+    /* Tug 2: the visitor swiped to the dossier and a third slide exists. */
+    let io;
+    const dossier = deck.querySelector('.snr-col-dossier');
+    if (dossier && deck.querySelector('.snr-stack') && !tuggedRef.current.two) {
+      io = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting || tuggedRef.current.two) return;
+          tuggedRef.current.two = true;
+          setTug(true);
+        },
+        { root: deck, threshold: 0.6 },
+      );
+      io.observe(dossier);
+    }
+
+    return () => {
+      deck.removeEventListener('scroll', cancel);
+      if (timer) window.clearTimeout(timer);
+      if (io) io.disconnect();
+    };
+  }, [hasPinged, stage2]);
+
   const arrowReady =
     (stage2Settled && typed === -1) || Boolean(pingError) || demoFailed || deadlinePassed;
 
@@ -1404,7 +1460,11 @@ export function SonarSection() {
           </p>
         </div>
 
-        <div ref={colsRef} className="snr-cols">
+        <div
+          ref={colsRef}
+          className={`snr-cols${tug ? ' snr-anim-tug' : ''}`}
+          onAnimationEnd={() => setTug(false)}
+        >
           <div className="snr-col-left">
             {/* Both shaded regions go inert while the gate is up, so the
                 content the visitor cannot read is also content they cannot

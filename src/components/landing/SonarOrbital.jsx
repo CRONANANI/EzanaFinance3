@@ -25,6 +25,7 @@
 
 'use client';
 
+import { useEffect, useState } from 'react';
 import SonarOrbitalMap from '@/components/landing/SonarOrbitalMap';
 import { DIMENSION_SOURCE_DETAILS } from '@/lib/datasets/taxonomy';
 
@@ -34,6 +35,26 @@ export function SonarOrbital({
   hubTicker = null,
   compact = false,
 }) {
+  /* Nothing below 1024. The map's phone fallback is a seven-pill grid, which
+     is not what the band's mobile composition wants, and the map also runs a
+     requestAnimationFrame drift loop and framer-motion timers. display: none
+     would hide the grid and keep both running on the device least able to
+     afford them, so the component is UNMOUNTED instead.
+
+     The query is read after mount, never during render, so the server output
+     and the first client render agree and hydration stays clean; the phone
+     then drops it on the next commit. */
+  const [isPhone, setIsPhone] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const mq = window.matchMedia('(max-width: 1023px)');
+    const apply = () => setIsPhone(mq.matches);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
+  if (isPhone) return null;
+
   return (
     <div className="snr-orbital">
       <SonarOrbitalMap

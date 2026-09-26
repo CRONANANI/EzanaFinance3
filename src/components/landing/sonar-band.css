@@ -1203,7 +1203,8 @@
     padding-right: 40px;
   }
 
-  /* Below lg: one column. Radar drops above the panels and scales fluidly. */
+  /* Below lg: one column. Radar drops above the panels and scales fluidly.
+     Below 1024 this is overridden by the deck, which is a row. */
   .snr-cols {
     flex-direction: column;
     align-items: stretch;
@@ -2626,14 +2627,11 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
     display: none;
   }
 
-  /* Then the dossier, and only when the chart card is actually there to
-     replace it: .snr-has-fund is set from live.dossier.fundamentals. The fund
-     card's own head carries the ticker, the company name and the range chip,
-     so nothing identifying is lost, and when the legs come back empty the
-     dossier stays and carries the entity alone. Worth 233px. */
-  .snr-band.snr-composed.snr-stage2.snr-has-fund .snr-col-dossier {
-    display: none;
-  }
+  /* The dossier used to be hidden here once the chart card existed, to buy
+     233px back on a phone where the four stage-2 regions could not coexist
+     vertically. The deck removes the premise: each region gets its own slide,
+     so nothing has to be dropped to fit, and hiding the dossier would delete
+     the deck's middle slide outright. */
 
   /* Full width, and the chart-beside-ratios split is what keeps the card
      landscape on a phone too. */
@@ -2685,6 +2683,46 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   }
   /* The dossier appears in place rather than sliding. */
   .snr-band.snr-live .snr-col-dossier {
+    animation: none;
+  }
+}
+
+/* A3, the tug. Two one-shot nudges that hint at the swipe without performing
+   it: the deck's TRANSFORM moves, never its scrollLeft, so it cannot fight the
+   snap or leave the scroller somewhere the user did not put it. Fired from
+   SonarSection when there is a next slide and cancelled the moment the user
+   scrolls. will-change rides the class rather than sitting on the element for
+   the whole visit. */
+.snr-anim-tug {
+  animation: snrTug 900ms cubic-bezier(0.22, 1, 0.36, 1) 1;
+  will-change: transform;
+}
+@keyframes snrTug {
+  0% {
+    transform: translateX(0);
+  }
+  30% {
+    transform: translateX(-18px);
+  }
+  55% {
+    transform: translateX(0);
+  }
+  75% {
+    transform: translateX(-9px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+/* The band pauses every animation once .snr-live lands, which is exactly when
+   the first tug fires, so the tug is allowlisted at the same (0,3,0) the row
+   pop and the ping loader need. */
+.snr-band.snr-live .snr-anim-tug {
+  animation-play-state: running;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* The peek sliver alone is the affordance. */
+  .snr-anim-tug {
     animation: none;
   }
 }
@@ -3215,46 +3253,90 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
    composition where scrolling is allowed.
    ═══════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 1023px) {
-  .snr-band.snr-stage2 .snr-cols {
+  /* THE DECK. Below 1024 the work area is a horizontal, snapped deck and the
+     three existing columns are its slides. No JSX restructure: the children
+     already mount progressively (a ping mounts the dossier, its payload mounts
+     the stack), so the deck has one slide before a ping and three after.
+
+     Every advance is the user's swipe. Nothing here scrolls the deck on its
+     own; the tug below only hints. */
+  .snr-band.snr-composed .snr-cols {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-width: thin;
-    min-height: 0;
+    flex-direction: row;
+    gap: 12px;
+    height: var(--snr-work);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    /* The peek: the next slide shows this much at the right edge, which is
+       the whole affordance. */
+    padding-right: 32px;
+    scroll-padding-right: 32px;
+  }
+  .snr-band.snr-composed .snr-cols::-webkit-scrollbar {
+    display: none;
   }
 
-  .snr-band.snr-stage2 .snr-col-left,
-  .snr-band.snr-stage2 .snr-col-dossier,
-  .snr-band.snr-stage2 .snr-stack {
-    width: 100%;
-    height: auto;
-    min-height: 0;
+  /* The orbital's WRAPPER is still in the JSX after SonarOrbital returns null
+     on phones, and as a deck child an empty div is a full blank slide sitting
+     between the ping and the dossier. It was already hidden in stage 2; the
+     deck needs it gone from the start. */
+  .snr-band.snr-composed .snr-col-radar {
+    display: none;
+  }
+
+  .snr-band.snr-composed .snr-col-left,
+  .snr-band.snr-composed .snr-col-dossier,
+  .snr-band.snr-composed .snr-stack {
+    flex: 0 0 calc(100% - 32px);
+    width: auto;
+    min-width: 0;
+    height: 100%;
     margin: 0;
-    flex: 0 0 auto;
-  }
-
-  /* The poke is a three-column effect. Stacked, the dossier is an ordinary
-     card again: full border, full radius, no lip. */
-  .snr-band.snr-stage2 .snr-col-dossier {
+    scroll-snap-align: start;
+    /* One slide per swipe, never two. */
+    scroll-snap-stop: always;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
     border-radius: var(--snr-r-panel);
-    border-right: 0;
-    padding-right: 16px;
-    margin-right: 0;
+    /* C3: each slide is its own layout and paint boundary. */
+    contain: layout paint;
   }
 
-  .snr-band.snr-stage2 .snr-stack {
+  /* The dossier loses its desktop poke on phones; the deck's peek IS the poke,
+     so the negative margin, the clipped corner and the missing right edge all
+     resolve to an ordinary card.
+
+     display: flex is not redundant. A @media (max-width: 768px) rule from the
+     stacked layout hides the dossier outright ("below md the synthesis panel
+     carries the story"), which under the deck deletes slide 2 on exactly the
+     phones this task is for. Same specificity, later in the sheet, so this
+     wins. */
+  .snr-band.snr-composed .snr-col-dossier {
+    display: flex;
+    margin-right: 0;
+    padding-right: 16px;
+    border-radius: var(--snr-r-panel);
+  }
+  .snr-band.snr-composed .snr-stack {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
   }
 
-  /* 16px card padding on a phone, down from the desktop 20. */
-  .snr-band.snr-stage2 .snr-fund,
-  .snr-band.snr-stage2 .snr-news,
-  .snr-band.snr-stage2 .snr-col-dossier {
-    padding: 16px;
+  /* The stage-2 choreography is a three-column effect: the orbital shrink, the
+     dossier's slide to centre and the cards' entrance from the right edge. On
+     a phone the stage IS the next slide mounting, and those transforms would
+     fight the scroller, so they resolve to rest with no transition. */
+  .snr-band.snr-composed .snr-fund,
+  .snr-band.snr-composed .snr-news,
+  .snr-band.snr-composed .snr-col-dossier {
+    transform: none;
+    opacity: 1;
+    transition: none;
   }
 
   /* The synthesis panel is capped so it cannot push the rest of the stack
