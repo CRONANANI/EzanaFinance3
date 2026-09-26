@@ -2687,6 +2687,38 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   }
 }
 
+/* ── C: what a phone can afford ─────────────────────────────────────────
+   Everything here is scoped below 1024 and changes no desktop pixel. */
+@media (max-width: 1023px) {
+  /* Backdrop blur is the single most expensive thing in this sheet on a
+     phone: it rasterises everything behind the gate every frame. The scrim
+     carries the job on its own at a heavier mix. */
+  .snr-gate--cover,
+  .snr-band [style*='backdrop-filter'] {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: color-mix(in srgb, var(--snr-gate-scrim) 92%, #000);
+  }
+
+  /* Drop shadows on SVG marks are per-frame filter work for decoration that
+     is barely visible at this size. The card-level lift stays. */
+  .snr-band .snr-orbital .radar-blip-dot,
+  .snr-band .snr-stage2 .snr-orbital .radar-blip-dot,
+  .snr-band [class*='snr-'] svg circle {
+    filter: none;
+  }
+
+  /* No layout animation. Any transition left on a box property would run the
+     layout engine every frame while a slide is scrolling. */
+  .snr-band.snr-composed .snr-col-left,
+  .snr-band.snr-composed .snr-col-dossier,
+  .snr-band.snr-composed .snr-stack,
+  .snr-band.snr-composed .snr-synth,
+  .snr-band.snr-composed .snr-pingbar {
+    transition-property: transform, opacity;
+  }
+}
+
 /* A3, the tug. Two one-shot nudges that hint at the swipe without performing
    it: the deck's TRANSFORM moves, never its scrollLeft, so it cannot fight the
    snap or leave the scroller somewhere the user did not put it. Fired from

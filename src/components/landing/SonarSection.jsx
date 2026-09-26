@@ -839,10 +839,23 @@ export function SonarSection() {
     }
     setTyped(0);
     const total = text.length;
+    /* Same characters per second, half the renders, on phones.
+       12 chars every 16ms is 750 chars/s and about 62 setState calls a second.
+       The brief suggests 16 chars at 16ms, but that is 1000 chars/s: it makes
+       the type-out 33% FASTER and only cuts a quarter of the renders, which is
+       not what it asks for. 24 chars every 32ms is the same 750 chars/s, so
+       the effect lands in exactly the same time, with half the React commits
+       and half the layout passes on the device that needs the relief. */
+    const phone =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(max-width: 1023px)').matches;
+    const step = phone ? 24 : 12;
+    const tick = phone ? 32 : 16;
     const id = setInterval(() => {
       setTyped((n) => {
         if (n < 0) return n;
-        const next = n + 12;
+        const next = n + step;
         if (next >= total) {
           clearInterval(id);
           return -1;
@@ -852,7 +865,7 @@ export function SonarSection() {
       /* Roughly 750 chars a second, so three paragraphs land in about two
          seconds. The query types slowly because watching it fill is the
          point; the answer types fast because waiting for it is not. */
-    }, 16);
+    }, tick);
     return () => clearInterval(id);
   }, []);
 
