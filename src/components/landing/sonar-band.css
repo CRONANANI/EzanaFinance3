@@ -2202,15 +2202,20 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
 
    It leaves the flow (absolute, flush to the band's three bottom edges), so the
    56px it occupies is reserved by .snr-inner's bottom padding rather than by a
-   flex row. The cookie banner is fixed to the bottom of the viewport at
-   z-index 9000 and its children capture clicks, so the bar rides above it on
-   the banner's own --cookie-banner-height contract; at a flat bottom: 0 the
-   banner would cover the one control that can end the lock. */
+   flex row. That reserved zone IS the bar's home, so the bar is always at
+   bottom: 0 and can never land in the composition.
+
+   It used to sit at bottom: var(--cookie-banner-height) so the banner could not
+   cover the one control that ends the lock. That made the bar's position depend
+   on a value another component publishes, and any stale or over-large publish
+   lifted it into the middle of the cards. The cookie banner is a dismissible
+   overlay at z-index 9000; covering the bar while it is open is the better
+   trade. */
 .snr-continue-bar {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: var(--cookie-banner-height, 0px);
+  bottom: 0;
   height: 56px;
   border: 0;
   cursor: pointer;
