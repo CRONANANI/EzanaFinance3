@@ -18,7 +18,13 @@
   --dscat-ink: rgba(255, 255, 255, 0.82);
   --dscat-ink-strong: #fff;
   display: grid;
-  grid-template-columns: 220px 1fr 220px;
+  /* 176px, not 220, and NOT minmax. minmax(120px, 220px) looks like it lets
+     the sides yield, but it cannot: the centre is a 1fr scroll container with
+     min-width 0, so its content never demands width and the sides always
+     resolve to their max. Fixed equal sides keep the trigger group centred on
+     the page; the width is the measured one that lets all seven triggers fit
+     beside them (1043px of content in a 1048px track at 1440 and above). */
+  grid-template-columns: 176px 1fr 176px;
   align-items: center;
   background: var(--dscat-bg);
   border-bottom: 0;
@@ -167,24 +173,47 @@
   font-size: var(--ds-type-body-size);
   font-weight: var(--ds-type-strong);
   color: var(--dscat-ink);
-  padding: 7px 11px;
+  font-size: 13px;
+  padding: 7px 8px;
   border-radius: var(--radius-md, 8px);
   flex: 0 0 auto;
   scroll-snap-align: center;
   white-space: nowrap;
 }
-/* Step the triggers down before the row is allowed to scroll, so 1024 and up
-   still shows all seven outright. */
-@media (max-width: 1280px) {
-  .dscat-trigger {
-    padding: 7px 8px;
-    font-size: 13px;
+/* A measured ladder, in the order padding, then caret, then font and sides.
+   Each step is the point where the seven triggers stop fitting the centre
+   column, read off the rendered bar rather than estimated:
+
+     >1366   176px sides, 13px, caret     1043 in 1048
+     <=1366  caret hidden                  966 in  974
+     <=1320  150px sides, 12.5px, 6px      940 in  940
+     <=1220  120px sides, 12px, 5px        900 in  900   (at 1180)
+
+   Below that the row scrolls as one line with its edge fades, as designed. */
+@media (max-width: 1366px) {
+  /* The caret is decoration: the dropdown still opens on click, and the dot
+     plus the label still say what the trigger is. */
+  .dscat-trigger svg {
+    display: none;
   }
 }
-@media (max-width: 1024px) {
+@media (max-width: 1320px) {
+  .dscat-bar {
+    grid-template-columns: 150px 1fr 150px;
+  }
   .dscat-trigger {
     font-size: 12.5px;
+    padding: 7px 6px;
     gap: 5px;
+  }
+}
+@media (max-width: 1220px) {
+  .dscat-bar {
+    grid-template-columns: 120px 1fr 120px;
+  }
+  .dscat-trigger {
+    font-size: 12px;
+    padding: 7px 5px;
   }
 }
 .dscat-dot {
