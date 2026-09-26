@@ -1,34 +1,73 @@
 /* ══════════════════════════════════════════════════════════════════════
-   Social investing / live ELO section ("The Ledger", concept 4a).
-   Companion to SocialLedgerSection.jsx. All color / space / radius values
-   resolve from theme tokens (theme-variables.css). Scoped prefix: `sled-`.
+   Social investing section ("The Ledger"). Companion to
+   SocialLedgerSection.jsx. Rebuilt to docs/design/sled-handoff (v2).
+   Scoped prefix: `sled-`.
 
-   Motion: the eight feed rows run on a 14s master loop (percent-timed
-   keyframes); LIVE dots pulse at 2s. The chart is recharts and animates
-   itself.
+   TYPOGRAPHY IS FROZEN. Per 07-EZANA-INTEGRATION.md, which wins over the
+   design files, every text role keeps the face, weight, tracking, casing and
+   colour it shipped with, routed through the platform --type-* tokens. Only
+   two sizes move, because the grid depends on them: the rating figure (the
+   spec's hero clamp) and the headline/subhead clamps. The spec's section 8
+   type scale is NOT applied.
+
+   PALETTE IS FROZEN TOO. The handoff splits emerald into --sled-pos (text)
+   and --sled-pos-mark (marks) with raw hex. That split is not adopted: the
+   shipped section uses var(--emerald) as text and the freeze keeps it. It is
+   also what keeps this file inside the branding guard, which allows no raw
+   brand hex here (only sonar-band.css holds that exception).
+
+   BOTH SHELLS, NOT MODE-LOCKED. The handoff ships a light block plus a dark
+   override keyed on [data-theme], which this app does not use (the server
+   sets html.dark or html.light-mode). Rather than translate two hard-coded
+   palettes, every colour below resolves from a platform token that already
+   flips with the shell, so the section follows the theme with no second
+   block to keep in sync. The landing route is NOT light-locked --
+   landing-light-mode.css only styles the landing WHEN light-mode is active --
+   so the dark shell is reachable and directly verifiable.
+
+   The rule system is three weights doing three jobs, and there is no fourth:
+   hairline separates a label from its content, 2px opens a table, dotted
+   divides rows inside one. No card borders, no shadows, no radius above 3px.
    ══════════════════════════════════════════════════════════════════════ */
 
 .sled-section {
   width: 100%;
   background: var(--bg-primary);
   font-family: var(--font-sans);
+  /* Vertical rhythm comes from the shared --landing-gap rule in globals.css,
+     which already lists .sled-section. No second padding here. */
 }
 
-/* ── 1. Copy block ── */
-.sled-copy {
-  /* Widened from 620px so the heading and the sub each hold one line at
-     desktop; 1040 minus the 40px gutters leaves 960px of content. */
-  max-width: 1040px;
-  margin: 0 auto 56px;
-  padding: 0 40px;
-  text-align: center;
+.sled {
+  /* Layout, fluid by construction: proportional columns and clamp()s, so the
+     numbers interpolate continuously instead of snapping at breakpoints. */
+  --sled-pad: clamp(16px, 2.8vw, 40px);
+  --sled-colgap: clamp(24px, 3.2vw, 48px);
+  --sled-row: clamp(38px, 3.4vw, 46px);
+
+  /* The three rules, derived from --text-primary so both shells work. */
+  --sled-rule: var(--border-primary);
+  --sled-rule-strong: color-mix(in srgb, var(--text-primary) 82%, transparent);
+  --sled-dot: color-mix(in srgb, var(--text-primary) 20%, transparent);
 }
 
-@media (min-width: 1024px) {
-  .sled-heading,
-  .sled-sub {
-    white-space: nowrap;
-  }
+.sled-inner {
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: var(--sled-pad);
+}
+
+/* ── masthead ─────────────────────────────────────────────────────────── */
+.sled-masthead {
+  border-top: 1px solid var(--sled-rule);
+}
+.sled-mast-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 10px;
+  border-bottom: 2px solid var(--sled-rule-strong);
 }
 .sled-eyebrow {
   margin: 0;
@@ -40,258 +79,181 @@
   text-transform: uppercase;
   color: var(--emerald);
 }
+.sled-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking-marketing);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+/* A CSS dot, not an icon. */
+.sled-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--emerald);
+  animation: sledPulse 2s ease-in-out infinite;
+}
+@keyframes sledPulse {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--emerald) 40%, transparent);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--emerald) 0%, transparent);
+  }
+}
+
+/* Size only: the grid depends on the headline and subhead clamps. Weight,
+   tracking and colour are the shipped rules. */
 .sled-heading {
-  margin: 16px 0 0;
-  font-size: clamp(1.75rem, 3.4vw, 2.625rem); /* 42px design size at desktop */
+  margin: clamp(18px, 2vw, 30px) 0 0;
+  font-size: clamp(30px, 4.2vw, 60px);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.1;
+  max-width: 17ch;
   color: var(--text-primary);
 }
 .sled-sub {
-  margin: 18px 0 0;
-  font-size: 1.0625rem;
+  margin: clamp(12px, 1.2vw, 18px) 0 0;
+  font-size: clamp(14px, 1.15vw, 17px);
   line-height: 1.65;
+  max-width: 62ch;
   color: var(--text-muted);
 }
 
-/* ── 2. Two-column ledger ── */
-.sled-ledger {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 80px;
+/* ── zone B, the record: 5fr rating | 7fr chart ────────────────────────── */
+.sled-record {
+  margin-top: clamp(28px, 3.2vw, 48px);
   display: grid;
-  grid-template-columns: 420px 1fr;
-  gap: 56px;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--sled-colgap);
   align-items: stretch;
 }
-
-/* Left: event feed, borderless rows. The column is stretched to the chart
-   column's height and distributes its eight rows across it, so the first row
-   tops out level with the "Your rating" label and the last sits on the X axis
-   at every desktop width. */
-.sled-feed {
+/* space-between pins the ladder to the column's bottom so its baseline meets
+   the chart's x-axis labels. */
+.sled-ratingcol {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 100%;
-  gap: 4px;
-}
-.sled-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 8px;
-}
-.sled-row--wash {
-  background: var(--emerald-bg-subtle, color-mix(in srgb, var(--emerald) 5%, transparent));
-  border-radius: var(--radius-md);
-}
-/* 14s master loop: rows land ~1.1s apart, hold, fade together at the end.
-   Rows 1 to 5 step 8 percentage points apart; rows 6 to 8 step 5, which keeps
-   the whole feed on screen by ~54% of the loop instead of running past the
-   fade. */
-.sled-row:nth-child(1) {
-  animation: sledF1 14s ease-out infinite;
-}
-.sled-row:nth-child(2) {
-  animation: sledF2 14s ease-out infinite;
-}
-.sled-row:nth-child(3) {
-  animation: sledF3 14s ease-out infinite;
-}
-.sled-row:nth-child(4) {
-  animation: sledF4 14s ease-out infinite;
-}
-.sled-row:nth-child(5) {
-  animation: sledF5 14s ease-out infinite;
-}
-.sled-row:nth-child(6) {
-  animation: sledF6 14s ease-out infinite;
-}
-.sled-row:nth-child(7) {
-  animation: sledF7 14s ease-out infinite;
-}
-.sled-row:nth-child(8) {
-  animation: sledF8 14s ease-out infinite;
-}
-@keyframes sledF1 {
-  0%,
-  2% {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  6%,
-  94% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-  }
-}
-@keyframes sledF2 {
-  0%,
-  10% {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  14%,
-  94% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-  }
-}
-@keyframes sledF3 {
-  0%,
-  18% {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  22%,
-  94% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-  }
-}
-@keyframes sledF4 {
-  0%,
-  26% {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  30%,
-  94% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-  }
-}
-@keyframes sledF5 {
-  0%,
-  34% {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  38%,
-  94% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-  }
-}
-@keyframes sledF6 {
-  0%,
-  40% {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  44%,
-  94% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-  }
-}
-@keyframes sledF7 {
-  0%,
-  45% {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  49%,
-  94% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-  }
-}
-@keyframes sledF8 {
-  0%,
-  50% {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  54%,
-  94% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-.sled-avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 700;
-}
-/* Ink on an emerald fill: no token covers it, and the four sibling landing
-   sheets that need white on emerald all spell it out the same way. */
-.sled-avatar--check {
-  background: var(--emerald);
-  color: #ffffff;
-}
-.sled-delta {
-  width: 30px;
-  flex: none;
-  text-align: center;
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--emerald);
-}
-.sled-row-body {
-  font-size: 0.84375rem; /* 13.5px */
-  line-height: 1.45;
-  color: var(--text-secondary);
+  gap: 24px;
   min-width: 0;
 }
-.sled-row-body strong {
+.sled-rating {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+/* Size only: the spec's hero clamp. This IS the layout change. */
+.sled-rating-figure {
+  font-family: var(--font-mono);
+  font-size: clamp(62px, 8.6vw, 124px);
   font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 0.88;
+  font-variant-numeric: tabular-nums;
   color: var(--text-primary);
 }
-.sled-num {
-  font-family: var(--font-mono);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+.sled-rating-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
 }
-.sled-time {
-  margin-left: auto;
-  flex: none;
+.sled-rating-delta {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(13px, 1.15vw, 17px);
+  font-weight: 600;
+  color: var(--emerald);
+}
+.sled-rating-tier {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking-marketing);
+  text-transform: uppercase;
+  color: var(--emerald);
+}
+
+/* ── tier ladder ──────────────────────────────────────────────────────── */
+.sled-ladder {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sled-ladder-caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--text-faint);
 }
+.sled-ladder-track {
+  position: relative;
+  height: 12px;
+}
+.sled-ladder-rule {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--sled-rule);
+}
+.sled-ladder-tick {
+  position: absolute;
+  top: 2px;
+  width: 1px;
+  height: 8px;
+  background: var(--sled-dot);
+}
+.sled-ladder-marker {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 12px;
+  margin-left: -1px;
+  background: var(--emerald);
+  transition: left 120ms linear;
+}
+/* Six labels, each centred in its own segment. */
+.sled-ladder-labels {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+}
+.sled-ladder-label {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-/* Right: flat chart — no card, no border, no shadow */
-.sled-chart {
-  min-width: 0; /* the 1fr track must be allowed to shrink below its content */
+/* ── the chart cell: container only, the chart itself is untouched ─────── */
+.sled-chartcol {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 .sled-chart-head {
   display: flex;
@@ -315,6 +277,14 @@
   align-items: center;
   gap: 6px;
 }
+.sled-chart-vs {
+  margin-left: 8px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+/* Pills stay pills: 07 does not adopt the spec's underline tabs. */
 .sled-pill {
   appearance: none;
   cursor: pointer;
@@ -341,67 +311,14 @@
   background: var(--emerald-bg);
   border-color: var(--emerald-border);
 }
-.sled-live {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: 8px;
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--emerald);
-}
-.sled-live-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--emerald);
-  animation: sledPulse 2s ease-in-out infinite;
-}
-@keyframes sledPulse {
-  0%,
-  100% {
-    opacity: 1;
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--emerald) 40%, transparent);
-  }
-  50% {
-    opacity: 0.7;
-    box-shadow: 0 0 0 5px color-mix(in srgb, var(--emerald) 0%, transparent);
-  }
-}
-
-.sled-rating {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-.sled-rating-value {
-  font-family: var(--font-mono);
-  font-size: 2.75rem; /* 44px */
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-primary);
-}
-.sled-rating-delta {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--emerald);
-}
-.sled-rating-vs {
-  margin-left: auto;
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 12px;
-  color: var(--text-faint);
-}
-
+/* The chart fills the rest of its column, which is what makes its x axis land
+   on the ladder's baseline. */
 .sled-chart-wide {
+  flex: 1 1 auto;
   width: 100%;
+  /* The spec's chart is 260 tall; the clamp reaches it at the top end rather
+     than overshooting, which also buys back height the section needs. */
+  min-height: clamp(200px, 18vw, 260px);
 }
 .sled-chart-tooltip {
   background: var(--bg-secondary);
@@ -421,53 +338,158 @@
   line-height: 1.5;
 }
 
-/* ── 3. Season standings band ── */
-.sled-band {
-  margin-top: 64px;
-  border-top: 1px solid var(--border-secondary);
-  background: var(--bg-primary);
-  overflow: hidden;
+/* ── zone C, the sheets: 7fr ledger | 5fr standings ────────────────────── */
+.sled-sheets {
+  margin-top: clamp(36px, 4vw, 64px);
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: var(--sled-colgap);
+  /* One height BY STRUCTURE, never by tuned padding: stretch gives both
+     columns the taller height, the rows flex to fill it, and both sheets'
+     bottom rules land on the same y at every width above 1000px. */
+  align-items: stretch;
 }
-.sled-band-inner {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 40px 64px 48px;
-}
-.sled-band-head {
+.sled-sheet {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
+  flex-direction: column;
+  min-width: 0;
 }
-.sled-eyebrow--left {
-  text-align: left;
+.sled-sheet-head {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking-marketing);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--sled-rule);
+}
+.sled-rows {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
 }
 
-.sled-tiles {
+/* Grids, not flex rows, so every cell lines up down the column. */
+.sled-tr {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-}
-/* One compact row: rank, name, delta or badge, rating. Roughly a third of the
-   height of the old stacked card. */
-.sled-tile {
-  display: flex;
+  gap: clamp(10px, 1.1vw, 16px);
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
 }
-.sled-tile--top {
-  background: var(--bg-secondary);
+.sled-tr--ledger {
+  grid-template-columns:
+    clamp(44px, 4.4vw, 58px) minmax(0, 1fr)
+    clamp(96px, 9vw, 124px) clamp(34px, 3.4vw, 44px);
+  min-height: var(--sled-row);
+  border-bottom: 1px dotted var(--sled-dot);
 }
-.sled-tile--you {
-  border-color: color-mix(
-    in srgb,
-    var(--emerald) 35%,
-    transparent
-  ); /* stronger alpha than --emerald-border, per design; matches .plan-card--highlight precedent */
-  background: var(--emerald-bg-subtle, color-mix(in srgb, var(--emerald) 5%, transparent));
+.sled-tr--stand {
+  grid-template-columns:
+    clamp(26px, 2.6vw, 34px) minmax(0, 1fr)
+    clamp(54px, 5vw, 68px) clamp(48px, 4.6vw, 60px);
+  grid-template-rows: auto auto;
+  row-gap: 9px;
+  /* Four entries share the ledger's height, so each is two ledger rows tall. */
+  flex: 1 1 0;
+  min-height: calc(var(--sled-row) * 1.7);
+  padding-block: 8px;
+  border-bottom: 1px dotted var(--sled-dot);
+}
+.sled-rows > .sled-tr:last-child {
+  border-bottom: 0;
+}
+/* 2px opens a table: the broadsheet move that makes the section one document. */
+.sled-thead {
+  border-bottom: 2px solid var(--sled-rule-strong);
+  min-height: 0;
+  padding-bottom: 9px;
+  padding-top: 12px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking-marketing);
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.sled-thead.sled-tr--stand {
+  grid-template-rows: auto;
+  flex: 0 0 auto;
+  padding-block: 12px 9px;
+}
+.sled-ta-r {
+  text-align: right;
+}
+
+/* The new line writes itself: height animates so the rows below are pushed
+   down, rather than fading in over them. */
+.sled-tr--new {
+  overflow: hidden;
+  min-height: 0;
+  max-height: 0;
+  opacity: 0;
+  border-bottom-color: transparent;
+  transition:
+    max-height 800ms ease,
+    opacity 800ms ease;
+}
+.sled-tr--new.is-in {
+  max-height: calc(var(--sled-row) * 2);
+  min-height: var(--sled-row);
+  opacity: 1;
+  border-bottom-color: var(--sled-dot);
+}
+.sled-caret {
+  display: inline-block;
+  width: 1px;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: var(--emerald);
+}
+
+/* ── frozen text roles inside the sheets ───────────────────────────────── */
+.sled-delta {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--emerald);
+}
+.sled-delta--none {
+  color: var(--text-faint);
+  font-weight: 400;
+}
+.sled-delta--neg {
+  color: var(--negative);
+}
+.sled-row-body {
+  font-size: 0.84375rem; /* 13.5px */
+  line-height: 1.45;
+  color: var(--text-secondary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sled-row-body strong {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.sled-num {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(11px, 0.92vw, 13px);
+  color: var(--text-muted);
+}
+.sled-time {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-faint);
 }
 .sled-tile-rank {
   font-family: var(--font-mono);
@@ -475,9 +497,28 @@
   font-size: 12px;
   color: var(--text-faint);
 }
-.sled-tile--you .sled-tile-rank {
+.sled-tr--you .sled-tile-rank {
   color: var(--emerald);
   font-weight: 700;
+}
+.sled-tile-name {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.sled-tr--you .sled-tile-name {
+  font-weight: 700;
+}
+.sled-tile-handle {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--text-muted);
 }
 .sled-tile-delta {
   font-family: var(--font-mono);
@@ -495,107 +536,147 @@
 .sled-tile-delta--down {
   color: var(--negative);
 }
-.sled-tile-badge {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  color: var(--emerald);
-  background: var(--emerald-bg);
-  border: 1px solid var(--emerald-border);
-  border-radius: 9999px;
-  padding: 2px 8px;
-}
-.sled-tile-name {
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-.sled-tile--you .sled-tile-name {
-  font-weight: 700;
-}
-.sled-tile-handle {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-weight: 400;
-  font-size: 11px;
-  color: var(--text-muted);
-}
 .sled-tile-elo {
-  margin-left: auto;
   font-family: var(--font-mono);
   font-size: 1rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
 }
-.sled-tile--you .sled-tile-elo {
+.sled-tr--you .sled-tile-elo {
+  color: var(--emerald);
+}
+/* The only filled surface in the section. */
+.sled-tr--you {
+  background: var(--emerald-bg-subtle, color-mix(in srgb, var(--emerald) 5%, transparent));
+  box-shadow: inset 3px 0 0 var(--emerald);
+}
+.sled-tr--you > :first-child {
+  padding-left: 10px;
+}
+
+/* Second line of a standings entry: tier name and the rating bar, spanning
+   columns 2 to 4. */
+.sled-bar {
+  grid-column: 2 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.sled-bar-tier {
+  flex: none;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.sled-bar-track {
+  flex: 1 1 auto;
+  height: 2px;
+  min-width: 0;
+  background: var(--sled-rule);
+}
+.sled-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--text-ghost);
+  transition: width 200ms linear;
+}
+.sled-tr--you .sled-bar-fill {
+  background: var(--emerald);
+}
+
+/* Both sheets close with the same foot row, so the footers match too. */
+.sled-footrow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--sled-rule);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* ── section foot ─────────────────────────────────────────────────────── */
+.sled-foot {
+  margin-top: clamp(28px, 3vw, 44px);
+  padding-top: 14px;
+  border-top: 1px solid var(--sled-rule);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.sled-foot-note {
+  margin: 0;
+  max-width: 64ch;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+.sled-foot-cta {
+  flex: none;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--emerald);
 }
 
-/* ── Reduced motion: everything off, fully-rendered static state ── */
+/* ── reduced motion: the composed frame, nothing mid-transition ────────── */
 @media (prefers-reduced-motion: reduce) {
-  .sled-row,
-  .sled-live-dot {
+  .sled-live-dot,
+  .sled-caret {
     animation: none;
+  }
+  .sled-tr--new {
+    max-height: none;
+    min-height: var(--sled-row);
+    opacity: 1;
+    border-bottom-color: var(--sled-dot);
+    transition: none;
+  }
+  .sled-ladder-marker,
+  .sled-bar-fill {
+    transition: none;
   }
 }
 
-/* ── Responsive ── */
-@media (max-width: 1024px) {
-  .sled-ledger {
-    grid-template-columns: 1fr;
-    gap: 40px;
-    padding: 0 40px;
+/* ── responsive ───────────────────────────────────────────────────────── */
+/* Both zones collapse to one column in source order: rating, chart, ledger,
+   standings. 1024 x 768 landscape stays two columns and is the tightest
+   two-column case. */
+@media (max-width: 1000px) {
+  .sled-record,
+  .sled-sheets {
+    grid-template-columns: minmax(0, 1fr);
   }
-  /* Chart first (the payoff), feed beneath trimmed to three rows. */
-  .sled-chart {
-    order: 1;
+  /* Nothing to match once stacked, so entries take their natural height. */
+  .sled-tr--stand {
+    flex: 0 0 auto;
   }
-  .sled-feed {
-    order: 2;
+  .sled-ratingcol {
+    gap: 20px;
   }
-  .sled-row:nth-child(n + 4) {
+}
+@media (max-width: 560px) {
+  /* `1462 · 1474` cannot survive a phone column, and truncating it would be
+     worse than losing it. The standings keep all four columns. */
+  .sled-hide-sm {
     display: none;
   }
-  .sled-chart-controls {
-    flex-wrap: wrap;
+  .sled-tr--ledger {
+    grid-template-columns: 42px minmax(0, 1fr) 40px;
   }
-  .sled-band-inner {
-    padding: 32px 40px 40px;
-  }
-}
-@media (max-width: 768px) {
-  .sled-copy {
-    padding: 0 1.25rem;
-    margin-bottom: 40px;
-  }
-  .sled-ledger {
-    padding: 0 1.25rem;
-  }
-  /* The rating row is three mono runs on one line; let it wrap rather than
-     push the page sideways on a narrow phone. */
-  .sled-rating {
-    flex-wrap: wrap;
-    gap: 8px 12px;
-  }
-  .sled-rating-vs {
-    margin-left: 0;
-  }
-  .sled-tiles {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .sled-band-inner {
-    padding: 28px 1.25rem 32px;
-  }
-}
-@media (max-width: 480px) {
-  .sled-tiles {
-    grid-template-columns: 1fr;
+  .sled-ladder-label {
+    font-size: 9px;
+    letter-spacing: 0.04em;
   }
 }

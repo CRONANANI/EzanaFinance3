@@ -1,0 +1,123 @@
+{
+  "name": "social-ledger-band",
+  "version": 1,
+  "cycleMs": 7200,
+  "loops": true,
+  "note": [
+    "One rated event, three consequences. The same +24 lands in the ledger row, the rating",
+    "figure and the standings week cell inside 1.5s, so the mechanic is legible without",
+    "reading the subhead.",
+    "Everything derives from a single t. Do not start independent CSS animations per element:",
+    "the rating, the chart and the standings would drift apart within a minute and the",
+    "causal read is the whole point of the section."
+  ],
+  "restingFrame": {
+    "rating": 1474,
+    "weekDelta": "+14 this week",
+    "tierCaption": "1026 to strategist",
+    "ledgerRows": 7,
+    "chartEndsAt": "W07",
+    "standingsWeekCell": "·",
+    "gapCaption": "38 to first"
+  },
+  "reducedMotion": {
+    "rule": "@media (prefers-reduced-motion: reduce) { .sled * { animation: none !important; transition: none !important; } }",
+    "resolvesTo": "t = 4320 (60% of the loop), the composed frame",
+    "frame": {
+      "rating": 1498,
+      "weekDelta": "+38 this week",
+      "tierCaption": "1002 to strategist",
+      "ledgerRows": 8,
+      "chartEndsAt": "W08",
+      "standingsWeekCell": "+24",
+      "gapCaption": "14 to first"
+    },
+    "why": "Author every element's base style as this composed frame and let the timeline drive it away, so killing motion lands on the finished state with no second stylesheet and nothing at zero height or zero opacity."
+  },
+  "viewportGating": {
+    "pattern": "IntersectionObserver, same as the other landing sections",
+    "threshold": 0.2,
+    "action": "Hold at the resting frame until in view, then run. Pause rather than unmount on exit.",
+    "note": "This is a normal scrolling section. No scroll lock, no takeover, no continue arrows."
+  },
+  "beats": [
+    {
+      "t": 0,
+      "n": "Resting",
+      "what": "Composed resting frame, nothing moving except the live dot."
+    },
+    { "t": 600, "n": "Line writes", "what": "The new ledger row opens." },
+    { "t": 1200, "n": "Rating ticks", "what": "Odometer runs." },
+    { "t": 1800, "n": "Chart extends", "what": "W07 to W08 draws." },
+    { "t": 2600, "n": "Standings", "what": "Your row updates." },
+    { "t": 3300, "n": "Composed", "what": "Hold." },
+    { "t": 7200, "n": "Loop", "what": "Reset." }
+  ],
+  "tracks": {
+    "ledgerRow": {
+      "from": 600,
+      "to": 1400,
+      "easing": "cubic ease-out",
+      "what": "row height 0 -> --sled-row, opacity 0 -> 1, dotted bottom border fades in past the halfway point",
+      "note": "Animate height, not transform. The rows below must be pushed down, which is what makes it read as a line being written into a ledger rather than a card appearing."
+    },
+    "ledgerText": {
+      "from": 800,
+      "to": 1700,
+      "what": "the event label types in, character by character",
+      "string": "Won 'Q3 Momentum Sprint'",
+      "technique": "slice by round(len * progress); no per-character DOM"
+    },
+    "rating": {
+      "from": 1200,
+      "to": 2100,
+      "easing": "ease-in-out cubic",
+      "from_v": 1474,
+      "to_v": 1498,
+      "weekDelta": { "from_v": 14, "to_v": 38, "format": "+N this week" },
+      "note": "Round per frame. Mono tabular, so the figure does not reflow while it counts."
+    },
+    "tierLadder": {
+      "from": 1400,
+      "to": 2000,
+      "marker": "x = (tierIndex + (rating - floor) / (nextFloor - floor)) / 6, as a percentage",
+      "at1474": "21.1%",
+      "at1498": "22.2%",
+      "caption": { "from_v": 1026, "to_v": 1002, "format": "N to strategist" },
+      "note": "Driven by the same rating value as the figure, so they cannot disagree."
+    },
+    "chart": {
+      "from": 1800,
+      "to": 2600,
+      "easing": "cubic ease-out",
+      "drawMs": 400,
+      "what": "clip rect width grows from x(W07) to x(W08) + 6; the endpoint dot rides the curve from 1484 to 1498",
+      "note": "Clip, do not re-path. Re-pathing per frame re-runs the monotone solve and the curve wobbles."
+    },
+    "standings": {
+      "from": 2600,
+      "to": 3300,
+      "easing": "ease-in-out cubic",
+      "elo": { "from_v": 1474, "to_v": 1498 },
+      "weekCell": { "from": "·", "to": "+24", "class": "sled-nil -> sled-pos" },
+      "gapCaption": { "from_v": 38, "to_v": 14, "format": "N to first" },
+      "ratingBar": {
+        "from_pct": 56.0,
+        "to_pct": 72.0,
+        "note": "(rating - 1390) / 150, driven by the same value as the ELO cell"
+      },
+      "noReorder": "See 04-SPEC section 11. The fixture ratings do not support a rank change, so the row updates in place."
+    },
+    "cohortSwitch": {
+      "trigger": "tab click, not the timeline",
+      "durMs": 400,
+      "what": "the two comparison series redraw; your line and the whole left column are untouched"
+    },
+    "liveDot": { "continuous": true, "note": "the only thing that moves in the resting frame" }
+  },
+  "tuning": {
+    "ifTooSlow": "Shorten the composed hold (3300 to 6400). Everything before it is carrying meaning.",
+    "ifTooFast": "The brief caps the loop near 8s. 7200 leaves 800ms of headroom and no more.",
+    "doNot": "Do not let the rating finish before the ledger line has typed. The line has to look like the cause."
+  }
+}

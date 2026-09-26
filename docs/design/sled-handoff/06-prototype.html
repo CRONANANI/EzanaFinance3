@@ -1,0 +1,745 @@
+<title>Social Ledger Prototype</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  color-scheme: dark;
+  --tool-bg:#0c0f12; --tool-panel:#14191d; --tool-line:#242c32; --tool-text:#dfe7e3;
+  --tool-dim:#7d8c88; --tool-accent:#10b981; --redline:#ff45c8;
+}
+html,body{height:100%}
+body{margin:0;background:var(--tool-bg);color:var(--tool-text);
+  font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;overflow:hidden}
+button{font:inherit;color:inherit}
+#app{height:100%;display:flex;flex-direction:column}
+
+/* ---------- tool chrome ---------- */
+.bar{flex:0 0 auto;background:var(--tool-panel);border-bottom:1px solid var(--tool-line);
+  display:flex;align-items:center;gap:16px;padding:0 16px;height:52px;overflow-x:auto}
+#transport{border-bottom:none;border-top:1px solid var(--tool-line);height:auto;
+  padding:10px 16px 14px;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));gap:14px}
+.brand{display:flex;align-items:center;gap:9px;flex:0 0 auto}
+.brand b{font-size:13px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.brand i{width:7px;height:7px;border-radius:99px;background:var(--tool-accent);display:block}
+.grp{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+.grp>label{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.14em;
+  color:var(--tool-dim);text-transform:uppercase}
+.seg{display:flex;background:#0a0e11;border:1px solid var(--tool-line);border-radius:7px;padding:2px;gap:2px}
+.seg button{background:none;border:none;border-radius:5px;padding:5px 9px;font-size:11px;font-weight:600;
+  color:var(--tool-dim);cursor:pointer;white-space:nowrap;line-height:1.2}
+.seg button:hover{color:var(--tool-text)}
+.seg button[aria-pressed="true"]{background:var(--tool-accent);color:#04261c}
+.tgl{display:flex;align-items:center;gap:6px;background:#0a0e11;border:1px solid var(--tool-line);
+  border-radius:7px;padding:6px 10px;font-size:11px;font-weight:600;color:var(--tool-dim);cursor:pointer;flex:0 0 auto}
+.tgl[aria-pressed="true"]{color:var(--tool-text);border-color:var(--tool-accent)}
+.tgl s{width:22px;height:12px;border-radius:99px;background:#2a3339;position:relative;display:block;text-decoration:none;flex:0 0 auto}
+.tgl s::after{content:"";position:absolute;top:2px;left:2px;width:8px;height:8px;border-radius:99px;background:#6c7a78;transition:.15s}
+.tgl[aria-pressed="true"] s{background:rgba(16,185,129,.35)}
+.tgl[aria-pressed="true"] s::after{left:12px;background:var(--tool-accent)}
+.spacer{flex:1 1 auto}
+.scalelbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tool-dim);white-space:nowrap;flex:0 0 auto}
+#play{width:38px;height:38px;border-radius:99px;background:var(--tool-accent);color:#04261c;border:none;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}
+#play svg{width:16px;height:16px}
+.scrubwrap{flex:1 1 auto;min-width:160px;display:flex;flex-direction:column;gap:5px}
+#scrub{width:100%;-webkit-appearance:none;appearance:none;height:5px;border-radius:99px;
+  background:linear-gradient(90deg,var(--tool-accent) 0%,var(--tool-accent) var(--pc,0%),#242c32 var(--pc,0%));cursor:pointer}
+#scrub::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:99px;background:#fff;border:3px solid var(--tool-accent);cursor:pointer}
+#scrub::-moz-range-thumb{width:15px;height:15px;border-radius:99px;background:#fff;border:3px solid var(--tool-accent);cursor:pointer}
+.beats{position:relative;height:16px}
+.beat{position:absolute;top:0;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;font-size:8.5px;
+  color:var(--tool-dim);white-space:nowrap;cursor:pointer;padding:0 2px;background:none;border:none;line-height:1.3}
+.beat:first-child{transform:translateX(0)}
+.beat:last-child{transform:translateX(-100%)}
+.beat:hover{color:var(--tool-accent)}
+.beat::before{content:"";position:absolute;left:50%;top:-6px;width:1px;height:4px;background:#39434a}
+#tread{font-family:'JetBrains Mono',monospace;font-size:11px;min-width:92px;text-align:right;flex:0 0 auto;font-variant-numeric:tabular-nums}
+#beatname{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:var(--tool-accent);
+  min-width:118px;flex:0 0 auto;text-transform:uppercase}
+
+#stage{flex:1 1 auto;position:relative;overflow:auto;display:flex;justify-content:center;
+  align-items:flex-start;padding:28px 20px;background:#101417}
+#stage[data-mode="light"]{background:#dfe3e1}
+#frame{flex:0 0 auto;transform-origin:top center;box-shadow:0 24px 70px rgba(0,0,0,.45)}
+
+/* ============================================================
+   THE SECTION
+   Dual theme. Light is the base; dark redefines tokens only.
+   ============================================================ */
+.sled{
+  --sled-bg:#ffffff;
+  --sled-ink:#0a0e13;
+  --sled-muted:#5a6b65;
+  --sled-faint:#8a9a95;
+  --sled-rule:rgba(10,14,19,.13);
+  --sled-rule-strong:rgba(10,14,19,.82);
+  --sled-dot:rgba(10,14,19,.20);
+  --sled-pos:#047857;            /* positive TEXT, 4.6:1 on white */
+  --sled-pos-mark:#10b981;       /* fills, strokes, marks only */
+  --sled-pos-wash:rgba(16,185,129,.09);
+  --sled-neg:#b91c1c;
+  --sled-cmp-a:#6b7280;          /* leader comparison line */
+  --sled-cmp-b:#b4bcc0;          /* median comparison line */
+  --sled-you-row:rgba(16,185,129,.055);
+
+  --sled-sans:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
+  --sled-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+
+  --sled-gap:clamp(48px,6vw,96px);          /* --landing-gap */
+  --sled-pad:clamp(16px,2.8vw,40px);
+  --sled-colgap:clamp(24px,3.2vw,48px);
+  --sled-row:clamp(38px,3.4vw,46px);
+
+  --sled-fs-eyebrow:11px;
+  --sled-fs-head:clamp(30px,4.2vw,60px);
+  --sled-fs-sub:clamp(14px,1.15vw,17px);
+  --sled-fs-rating:clamp(62px,8.6vw,124px);
+  --sled-fs-body:clamp(13px,1.02vw,15px);
+  --sled-fs-mono:clamp(11px,.92vw,13px);
+
+  background:var(--sled-bg);color:var(--sled-ink);font-family:var(--sled-sans);
+  padding-block:var(--sled-gap);
+}
+.sled[data-mode="dark"]{
+  color-scheme:dark;
+  --sled-bg:#0a0e13;
+  --sled-ink:#ffffff;
+  --sled-muted:rgba(255,255,255,.66);
+  --sled-faint:rgba(255,255,255,.44);
+  --sled-rule:rgba(255,255,255,.15);
+  --sled-rule-strong:rgba(255,255,255,.88);
+  --sled-dot:rgba(255,255,255,.22);
+  --sled-pos:#34d399;            /* 8.4:1 on #0a0e13 */
+  --sled-pos-mark:#10b981;
+  --sled-pos-wash:rgba(16,185,129,.12);
+  --sled-neg:#f87171;
+  --sled-cmp-a:#9aa4ad;
+  --sled-cmp-b:#586169;
+  --sled-you-row:rgba(16,185,129,.07);
+}
+.sled *{box-sizing:border-box}
+.sled-inner{max-width:1440px;margin-inline:auto;padding-inline:var(--sled-pad)}
+
+/* --- masthead --- */
+.sled-rule-thin{height:1px;background:var(--sled-rule)}
+.sled-rule-thick{height:2px;background:var(--sled-rule-strong)}
+.sled-mast{display:flex;align-items:baseline;gap:16px;padding-block:10px}
+.sled-caps{font-family:var(--sled-mono);font-size:var(--sled-fs-eyebrow);letter-spacing:.18em;
+  text-transform:uppercase;font-weight:500}
+.sled-mast .stamp{margin-left:auto;display:flex;align-items:center;gap:7px;color:var(--sled-faint)}
+.sled-live{width:6px;height:6px;border-radius:99px;background:var(--sled-pos-mark);display:block}
+.sled-head{margin:clamp(18px,2vw,30px) 0 0;font-size:var(--sled-fs-head);font-weight:800;
+  letter-spacing:-.035em;line-height:1.02;max-width:17ch;text-wrap:balance}
+.sled-sub{margin:clamp(12px,1.2vw,18px) 0 0;font-size:var(--sled-fs-sub);line-height:1.55;
+  color:var(--sled-muted);max-width:62ch}
+
+/* --- zone B: the record --- */
+.sled-record{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);
+  gap:var(--sled-colgap);margin-top:clamp(28px,3.2vw,48px);align-items:stretch}
+.sled-cell{display:flex;flex-direction:column;min-width:0}
+.sled-cellhead{display:flex;align-items:center;gap:10px;padding-bottom:9px;color:var(--sled-faint)}
+.sled-cellhead .hair{flex:1 1 auto;height:1px;background:var(--sled-rule)}
+/* the ladder pins to the bottom so this column's baseline meets the chart's x axis */
+.sled-ratingblock{padding-top:clamp(14px,1.6vw,24px);flex:1 1 auto;display:flex;flex-direction:column;
+  justify-content:space-between;padding-bottom:26px}
+.sled-ratingrow{display:flex;align-items:baseline;gap:clamp(10px,1.2vw,18px);flex-wrap:wrap}
+.sled-rating{font-family:var(--sled-mono);font-size:var(--sled-fs-rating);font-weight:700;
+  line-height:.88;letter-spacing:-.045em;font-variant-numeric:tabular-nums;color:var(--sled-ink)}
+.sled-delta{font-family:var(--sled-mono);font-size:clamp(13px,1.15vw,17px);font-weight:600;
+  color:var(--sled-pos);font-variant-numeric:tabular-nums;white-space:nowrap}
+.sled-tier{display:flex;align-items:baseline;gap:10px;margin-top:clamp(14px,1.6vw,22px)}
+.sled-tiername{font-family:var(--sled-mono);font-size:var(--sled-fs-mono);letter-spacing:.14em;
+  text-transform:uppercase;font-weight:600;color:var(--sled-ink)}
+.sled-tiernext{font-family:var(--sled-mono);font-size:11px;color:var(--sled-faint);
+  font-variant-numeric:tabular-nums;margin-left:auto;white-space:nowrap}
+.sled-ladder{margin-top:10px;position:relative;height:30px}
+.sled-ladderline{position:absolute;left:0;right:0;top:0;height:1px;background:var(--sled-rule)}
+.sled-tick{position:absolute;top:0;width:1px;height:6px;background:var(--sled-rule)}
+.sled-ticklbl{position:absolute;top:11px;font-family:var(--sled-mono);font-size:8.5px;letter-spacing:.1em;
+  color:var(--sled-faint);text-transform:uppercase;white-space:nowrap;transform:translateX(0)}
+.sled-marker{position:absolute;top:-5px;width:2px;height:12px;background:var(--sled-pos-mark)}
+.sled-marker::after{content:"";position:absolute;left:-3px;top:-4px;width:8px;height:8px;
+  background:var(--sled-pos-mark);border-radius:99px}
+.sled-fill{position:absolute;left:0;top:0;height:1px;background:var(--sled-pos-mark)}
+
+/* cohort tabs */
+.sled-tabs{display:flex;align-items:center;gap:clamp(12px,1.4vw,22px);margin-left:auto}
+.sled-tab{background:none;border:none;padding:0 0 5px;cursor:pointer;font-family:var(--sled-mono);
+  font-size:var(--sled-fs-eyebrow);letter-spacing:.16em;text-transform:uppercase;color:var(--sled-faint);
+  border-bottom:2px solid transparent;font-weight:500}
+.sled-tab[aria-selected="true"]{color:var(--sled-ink);border-bottom-color:var(--sled-pos-mark)}
+.sled-chartwrap{flex:1 1 auto;position:relative;padding-top:clamp(14px,1.6vw,24px);min-height:0}
+.sled-chartwrap svg{display:block;width:100%;height:100%;overflow:visible}
+.sled-vs{position:absolute;left:0;top:calc(clamp(14px,1.6vw,24px) - 4px);font-family:var(--sled-mono);
+  font-size:10px;color:var(--sled-faint);letter-spacing:.1em;text-transform:uppercase}
+
+/* --- zone C: ledger + standings --- */
+/* both sheets stretch to one height: the ledger sets it with eight fixed rows, the
+   standings fill it with four double-height entries, so bottoms always meet */
+.sled-sheets{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);
+  gap:var(--sled-colgap);margin-top:clamp(36px,4vw,64px);align-items:stretch}
+.sled-ledger,.sled-stand{display:flex;flex-direction:column;min-width:0}
+.sled-rows{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+.sled-stand .sled-tr{flex:1 1 0;height:auto;min-height:calc(var(--sled-row)*1.7);
+  grid-template-rows:auto auto;row-gap:9px;align-content:center;padding-block:8px}
+.sled-bar{grid-column:2 / -1;display:flex;align-items:center;gap:10px;min-width:0}
+.sled-bar em{font-style:normal;font-family:var(--sled-mono);font-size:8.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--sled-faint);flex:0 0 auto}
+.sled-bar b{flex:1 1 auto;height:2px;background:var(--sled-rule);position:relative;display:block}
+.sled-bar b i{position:absolute;left:0;top:0;bottom:0;background:var(--sled-cmp-a);display:block}
+.sled-you .sled-bar b i{background:var(--sled-pos-mark)}
+.sled-tr.sled-you .sled-bar{padding-left:10px}
+.sled-footrow{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding-top:10px;font-family:var(--sled-mono);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--sled-faint);font-variant-numeric:tabular-nums}
+.sled-footrow a{color:var(--sled-pos);text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.sled-footrow a:hover{text-decoration:underline;text-underline-offset:3px}
+.sled-thead{display:grid;align-items:center;gap:clamp(10px,1.1vw,16px);
+  padding-bottom:8px;color:var(--sled-faint)}
+.sled-ledger .sled-thead,.sled-ledger .sled-tr{grid-template-columns:clamp(44px,4.4vw,58px) minmax(0,1fr) clamp(96px,9vw,124px) clamp(34px,3.4vw,44px)}
+.sled-stand .sled-thead,.sled-stand .sled-tr{grid-template-columns:clamp(26px,2.6vw,34px) minmax(0,1fr) clamp(54px,5vw,68px) clamp(48px,4.6vw,60px)}
+.sled-tr{display:grid;align-items:center;gap:clamp(10px,1.1vw,16px);height:var(--sled-row);
+  border-bottom:1px dotted var(--sled-dot);font-size:var(--sled-fs-body);position:relative}
+.sled-tr:last-child{border-bottom:none}
+.sled-mn{font-family:var(--sled-mono);font-variant-numeric:tabular-nums;font-size:var(--sled-fs-mono)}
+.sled-ev{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
+.sled-r{text-align:right}
+.sled-pos{color:var(--sled-pos);font-weight:600}
+.sled-neg{color:var(--sled-neg);font-weight:600}
+.sled-nil{color:var(--sled-faint)}
+.sled-when{color:var(--sled-faint);letter-spacing:.1em;text-transform:uppercase;font-size:10px;text-align:right}
+.sled-arrow{color:var(--sled-faint);padding:0 3px}
+.sled-you{background:var(--sled-you-row);box-shadow:inset 3px 0 0 var(--sled-pos-mark)}
+.sled-you .sled-nm{font-weight:700}
+.sled-tr.sled-you>*:first-child{padding-left:10px}
+.sled-handle{color:var(--sled-faint);font-family:var(--sled-mono);font-size:10px;margin-left:6px}
+.sled-new{font-family:var(--sled-mono);font-size:8.5px;letter-spacing:.12em;border:1px solid var(--sled-rule);
+  color:var(--sled-muted);padding:2px 5px;border-radius:3px;margin-left:8px}
+.sled-gap{font-family:var(--sled-mono);font-size:10px;color:var(--sled-faint);letter-spacing:.1em;
+  text-transform:uppercase;padding-top:10px;text-align:right;font-variant-numeric:tabular-nums}
+
+/* --- foot --- */
+.sled-foot{display:flex;align-items:center;gap:20px;padding-top:12px;flex-wrap:wrap}
+.sled-note{font-size:12px;color:var(--sled-faint);line-height:1.5;max-width:64ch}
+.sled-cta{margin-left:auto;display:inline-flex;align-items:center;gap:8px;color:var(--sled-pos);
+  font-size:var(--sled-fs-body);font-weight:600;text-decoration:none;white-space:nowrap}
+.sled-cta:hover{text-decoration:underline;text-underline-offset:4px}
+
+/* --- responsive --- */
+@media (max-width:1000px){
+  .sled-record{grid-template-columns:minmax(0,1fr);gap:clamp(24px,4vw,36px)}
+  .sled-sheets{grid-template-columns:minmax(0,1fr);gap:clamp(30px,5vw,44px)}
+  .sled-stand .sled-tr{flex:0 0 auto}   /* stacked: nothing to match, so rows take their natural height */
+  .sled-head{max-width:20ch}
+}
+@media (max-width:560px){
+  .sled-ledger .sled-thead,.sled-ledger .sled-tr{grid-template-columns:42px minmax(0,1fr) 40px}
+  .sled-ledger .sled-hide-sm{display:none}
+  .sled-stand .sled-thead,.sled-stand .sled-tr{grid-template-columns:24px minmax(0,1fr) 48px 54px}
+  .sled-tr{height:auto;min-height:46px;padding-block:8px}
+  .sled-ev{white-space:normal;overflow:visible}
+  .sled-foot{flex-direction:column;align-items:flex-start;gap:14px}
+  .sled-cta{margin-left:0}
+}
+
+/* redline */
+.rl{position:absolute;pointer-events:none;z-index:70}
+.rl.box{border:1px dashed var(--redline)}
+.rl.tag{font-family:'JetBrains Mono',monospace;font-size:9px;color:#fff;background:var(--redline);
+  padding:1px 4px;border-radius:3px;white-space:nowrap}
+#rlLayer{position:absolute;inset:0;pointer-events:none;z-index:60}
+@media (prefers-reduced-motion: reduce){ .sled *{animation:none!important;transition:none!important} }
+</style>
+
+<div id="app">
+  <div class="bar">
+    <div class="brand"><i></i><b>Social ledger</b></div>
+    <div class="grp"><label>Width</label>
+      <div class="seg" id="segBp">
+        <button data-v="1920">1920</button><button data-v="1536">1536</button>
+        <button data-v="1440">1440</button><button data-v="1366">1366</button>
+        <button data-v="1280">1280</button><button data-v="768">768</button>
+        <button data-v="390">390</button>
+      </div>
+    </div>
+    <div class="grp"><label>Shell</label>
+      <div class="seg" id="segMode"><button data-v="light">Light</button><button data-v="dark">Dark</button></div>
+    </div>
+    <button class="tgl" id="tglRedline" aria-pressed="false"><s></s>Redline</button>
+    <button class="tgl" id="tglRM" aria-pressed="false"><s></s>Reduced motion</button>
+    <div class="spacer"></div>
+    <div class="scalelbl" id="scaleLbl">100%</div>
+  </div>
+
+  <div id="stage" data-mode="light"><div id="frame"></div></div>
+
+  <div class="bar" id="transport">
+    <button id="play" aria-label="Play"><svg viewBox="0 0 24 24" fill="currentColor" id="playIcon"><path d="M8 5v14l11-7z"/></svg></button>
+    <div class="scrubwrap">
+      <input id="scrub" type="range" min="0" max="7200" step="10" value="0" aria-label="Timeline position">
+      <div class="beats" id="beats"></div>
+    </div>
+    <div id="beatname">Resting</div>
+    <div id="tread">0.00 / 7.20s</div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ======================= DATA (fixture, cached, never live) ======================= */
+
+var YOU = [1408,1416,1410,1428,1440,1452,1484,1498];
+var COHORTS = {
+  friends: { label:"Friends", vs:"vs. 3 friends",
+    a:[1452,1460,1466,1472,1484,1494,1504,1512], b:[1418,1424,1420,1432,1438,1448,1458,1466],
+    an:"Circle leader", bn:"Circle median" },
+  whales: { label:"Whales", vs:"vs. 13F whales",
+    a:[1470,1478,1482,1490,1496,1508,1518,1528], b:[1430,1436,1442,1448,1456,1464,1472,1480],
+    an:"Whale leader", bn:"Whale median" },
+  politicians: { label:"Politicians", vs:"vs. Congress",
+    a:[1440,1448,1444,1456,1468,1478,1492,1502], b:[1402,1408,1414,1418,1428,1436,1444,1452],
+    an:"Chamber leader", bn:"Chamber median" }
+};
+
+var TIERS = [["Novice",0],["Apprentice",1000],["Strategist",2500],["Tactician",5000],["Master",7000],["Grandmaster",8500]];
+
+/* row 0 is the event the loop writes */
+var LEDGER = [
+  { d:24, ev:"Won 'Q3 Momentum Sprint'",                       from:1474, to:1498, when:"Mon" },
+  { d:12, ev:"Top 10% weekly P&L",                             from:1462, to:1474, when:"Fri" },
+  { d:8,  ev:"Research post upvoted, consensus signal",         from:1454, to:1462, when:"Thu" },
+  { d:null, ev:"Priya S. challenged you to 'Season 4 Sprint'",  from:null, to:null, when:"Thu" },
+  { d:5,  ev:"7-day login streak",                             from:1449, to:1454, when:"Wed" },
+  { d:6,  ev:"Passed 'Options Greeks I' in the Learning Center",from:1443, to:1449, when:"Tue" },
+  { d:null, ev:"Maya K. joined your circle",                    from:null, to:null, when:"Tue" },
+  { d:-5, ev:"Weekly P&L below median",                        from:1448, to:1443, when:"Mon" }
+];
+
+var STAND = [
+  { r:1, n:"Daniel R.", h:"", elo:1512, d:null, you:false, tag:"" },
+  { r:2, n:"You",       h:"@axum", elo:1498, d:24, you:true,  tag:"" },
+  { r:3, n:"Maya K.",   h:"", elo:1470, d:null, you:false, tag:"NEW" },
+  { r:4, n:"Priya S.",  h:"", elo:1441, d:-5, you:false, tag:"" }
+];
+
+/* ======================= TIMELINE ======================= */
+
+var TL = { rowStart:600, rowEnd:1400, typeStart:800, typeEnd:1700,
+           rateStart:1200, rateEnd:2100, ladder:1400, ladderEnd:2000,
+           drawStart:1800, drawEnd:2600, standStart:2600, standEnd:3300,
+           holdEnd:6400, total:7200 };
+var BEATS = [
+  {t:0,n:"Resting"},{t:600,n:"Line writes"},{t:1200,n:"Rating ticks"},
+  {t:1800,n:"Chart extends"},{t:2600,n:"Standings"},{t:3300,n:"Composed"},{t:7200,n:"Loop"}
+];
+
+var BPS = { "1920":1920,"1536":1536,"1440":1440,"1366":1366,"1280":1280,"768":768,"390":390 };
+
+var S = { bp:"1440", mode:"light", t:0, playing:false, redline:false, rm:false, cohort:"friends" };
+
+var frame = document.getElementById("frame"), stage = document.getElementById("stage");
+var R = {};
+
+function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+function ease(x){ return x<0?0:(x>1?1:1-Math.pow(1-x,3)); }
+function easeIO(x){ return x<0?0:(x>1?1:(x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2)); }
+function lerp(a,b,p){ return a+(b-a)*p; }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function sgn(d){ return d>0?"+"+d:String(d); }
+
+/* ---- monotone cubic path, matching the platform's recharts monotone area ---- */
+function monotonePath(pts){
+  var n=pts.length, i, d=[], m=[];
+  for(i=0;i<n-1;i++) d.push((pts[i+1][1]-pts[i][1])/(pts[i+1][0]-pts[i][0]));
+  m.push(d[0]);
+  for(i=1;i<n-1;i++){
+    if(d[i-1]*d[i]<=0) m.push(0);
+    else m.push((d[i-1]+d[i])/2);
+  }
+  m.push(d[n-2]);
+  for(i=0;i<n-1;i++){
+    if(d[i]===0){ m[i]=0; m[i+1]=0; continue; }
+    var a=m[i]/d[i], b=m[i+1]/d[i], h=Math.hypot(a,b);
+    if(h>3){ m[i]=3*a*d[i]/h; m[i+1]=3*b*d[i]/h; }
+  }
+  var p="M"+pts[0][0].toFixed(2)+" "+pts[0][1].toFixed(2);
+  for(i=0;i<n-1;i++){
+    var dx=(pts[i+1][0]-pts[i][0])/3;
+    p+="C"+(pts[i][0]+dx).toFixed(2)+" "+(pts[i][1]+m[i]*dx).toFixed(2)+
+       " "+(pts[i+1][0]-dx).toFixed(2)+" "+(pts[i+1][1]-m[i+1]*dx).toFixed(2)+
+       " "+pts[i+1][0].toFixed(2)+" "+pts[i+1][1].toFixed(2);
+  }
+  return p;
+}
+
+/* ======================= CHART ======================= */
+
+var CH = { w:760, h:260, pt:14, pr:20, pb:26, pl:44, lo:1390, hi:1540 };
+
+function chartSvg(){
+  var c=CH, iw=c.w-c.pl-c.pr, ih=c.h-c.pt-c.pb;
+  var X=function(i){ return c.pl+iw*(i/(YOU.length-1)); };
+  var Y=function(v){ return c.pt+ih*(1-(v-c.lo)/(c.hi-c.lo)); };
+  var ticks=[1400,1440,1480,1520], g="", i;
+  for(i=0;i<ticks.length;i++){
+    g+='<path d="M'+c.pl+' '+Y(ticks[i]).toFixed(1)+'H'+(c.pl+iw)+'" stroke="var(--sled-rule)" stroke-width="1" stroke-dasharray="3 3"/>'+
+       '<text x="'+(c.pl-10)+'" y="'+(Y(ticks[i])+3.5).toFixed(1)+'" text-anchor="end" fill="var(--sled-faint)" '+
+       'font-family="var(--sled-mono)" font-size="11" font-variant-numeric="tabular-nums">'+ticks[i]+'</text>';
+  }
+  var xl="";
+  for(i=0;i<YOU.length;i++)
+    xl+='<text x="'+X(i).toFixed(1)+'" y="'+(c.h-8)+'" text-anchor="middle" fill="var(--sled-faint)" '+
+        'font-family="var(--sled-mono)" font-size="11" letter-spacing=".06em">W0'+(i+1)+'</text>';
+
+  return '<svg viewBox="0 0 '+c.w+' '+c.h+'" preserveAspectRatio="none" role="img" '+
+    'aria-label="Your rating against the selected cohort over eight weeks, rising from 1408 to 1498">'+
+    '<defs>'+
+      '<linearGradient id="sledFill" x1="0" y1="0" x2="0" y2="1">'+
+        '<stop offset="0" stop-color="#10b981" stop-opacity=".25"/>'+
+        '<stop offset="1" stop-color="#10b981" stop-opacity="0"/></linearGradient>'+
+      '<clipPath id="sledClip"><rect id="clipRect" x="0" y="0" width="'+c.w+'" height="'+c.h+'"/></clipPath>'+
+    '</defs>'+
+    g +
+    '<path id="cmpB" fill="none" stroke="var(--sled-cmp-b)" stroke-width="1.5" stroke-linecap="round"/>'+
+    '<path id="cmpA" fill="none" stroke="var(--sled-cmp-a)" stroke-width="1.5" stroke-linecap="round"/>'+
+    '<g clip-path="url(#sledClip)">'+
+      '<path id="youArea" fill="url(#sledFill)"/>'+
+      '<path id="youLine" fill="none" stroke="#10b981" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>'+
+    '</g>'+
+    '<circle id="youDot" r="4" fill="var(--sled-bg)" stroke="#10b981" stroke-width="2.5"/>'+
+    '<text id="lblA" fill="var(--sled-cmp-a)" stroke="var(--sled-bg)" stroke-width="3.5" paint-order="stroke" '+
+      'font-family="var(--sled-mono)" font-size="10" text-anchor="end" letter-spacing=".08em"></text>'+
+    '<text id="lblB" fill="var(--sled-cmp-b)" stroke="var(--sled-bg)" stroke-width="3.5" paint-order="stroke" '+
+      'font-family="var(--sled-mono)" font-size="10" text-anchor="end" letter-spacing=".08em"></text>'+
+    xl + '</svg>';
+}
+
+function chartUpdate(t){
+  var c=CH, iw=c.w-c.pl-c.pr, ih=c.h-c.pt-c.pb, co=COHORTS[S.cohort];
+  var X=function(i){ return c.pl+iw*(i/(YOU.length-1)); };
+  var Y=function(v){ return c.pt+ih*(1-(v-c.lo)/(c.hi-c.lo)); };
+  var mk=function(arr){ return arr.map(function(v,i){ return [X(i),Y(v)]; }); };
+
+  var youPts=mk(YOU), line=monotonePath(youPts);
+  R.youLine.setAttribute("d", line);
+  R.youArea.setAttribute("d", line+"L"+X(7).toFixed(2)+" "+(c.pt+ih)+"L"+X(0).toFixed(2)+" "+(c.pt+ih)+"Z");
+  R.cmpA.setAttribute("d", monotonePath(mk(co.a)));
+  R.cmpB.setAttribute("d", monotonePath(mk(co.b)));
+
+  /* the last segment draws; at rest the line ends at W07 */
+  var p = S.rm ? 1 : ease(clamp((t-TL.drawStart)/(TL.drawEnd-TL.drawStart),0,1));
+  var cw = lerp(X(6), X(7)+6, p);
+  R.clipRect.setAttribute("width", cw.toFixed(1));
+  var dv = S.rm ? YOU[7] : lerp(YOU[6], YOU[7], p);
+  var dx = S.rm ? X(7) : lerp(X(6), X(7), p);
+  R.youDot.setAttribute("cx", dx.toFixed(1));
+  R.youDot.setAttribute("cy", Y(dv).toFixed(1));
+
+  R.lblA.textContent = co.an; R.lblA.setAttribute("x",(X(7)-4).toFixed(1)); R.lblA.setAttribute("y",(Y(co.a[7])-9).toFixed(1));
+  R.lblB.textContent = co.bn; R.lblB.setAttribute("x",(X(7)-4).toFixed(1)); R.lblB.setAttribute("y",(Y(co.b[7])+15).toFixed(1));
+  R.vs.textContent = co.vs;
+}
+
+/* ======================= BUILD ======================= */
+
+function tierOf(v){ var i,k=0; for(i=0;i<TIERS.length;i++) if(v>=TIERS[i][1]) k=i; return k; }
+
+function ladderHtml(){
+  var h="",i;
+  /* ticks at segment boundaries, labels centred in their segment: the labels name bands, not points */
+  for(i=0;i<=TIERS.length;i++){
+    h+='<span class="sled-tick" style="left:'+(i/TIERS.length*100).toFixed(3)+'%'+(i===TIERS.length?';margin-left:-1px':'')+'"></span>';
+  }
+  for(i=0;i<TIERS.length;i++){
+    h+='<span class="sled-ticklbl" style="left:'+((i+0.5)/TIERS.length*100).toFixed(3)+'%;transform:translateX(-50%)">'+TIERS[i][0]+'</span>';
+  }
+  return '<span class="sled-ladderline"></span><span class="sled-fill" id="ladFill" style="width:0"></span>'+h+
+         '<span class="sled-marker" id="ladMark" style="left:0"></span>';
+}
+
+function ledgerRow(e,i){
+  var dcls = e.d===null ? "sled-nil" : (e.d>0?"sled-pos":"sled-neg");
+  var dtxt = e.d===null ? "·" : sgn(e.d);
+  var rat  = e.from===null ? '<span class="sled-nil">·</span>'
+           : esc(e.from)+'<span class="sled-arrow">→</span>'+esc(e.to);
+  return '<div class="sled-tr" data-row="'+i+'"'+(i===0?' id="newRow" style="overflow:hidden"':'')+'>'+
+    '<span class="sled-mn '+dcls+'">'+dtxt+'</span>'+
+    '<span class="sled-ev"'+(i===0?' id="newEv"':'')+'>'+esc(e.ev)+'</span>'+
+    '<span class="sled-mn sled-r sled-hide-sm" style="color:var(--sled-muted)">'+rat+'</span>'+
+    '<span class="sled-mn sled-when">'+e.when+'</span></div>';
+}
+
+function barPct(elo){ return ((elo-CH.lo)/(CH.hi-CH.lo)*100).toFixed(1); }
+function standRow(s,i){
+  var dcls = s.d===null ? "sled-nil" : (s.d>0?"sled-pos":"sled-neg");
+  var dtxt = s.d===null ? "·" : sgn(s.d);
+  return '<div class="sled-tr'+(s.you?" sled-you":"")+'" data-srow="'+i+'">'+
+    '<span class="sled-mn" style="color:var(--sled-faint)">0'+s.r+'</span>'+
+    '<span class="sled-ev sled-nm">'+esc(s.n)+
+      (s.h?'<span class="sled-handle">'+esc(s.h)+'</span>':'')+
+      (s.tag?'<span class="sled-new">'+s.tag+'</span>':'')+'</span>'+
+    '<span class="sled-mn sled-r '+dcls+'"'+(s.you?' id="standDelta"':'')+'>'+dtxt+'</span>'+
+    '<span class="sled-mn sled-r" style="font-weight:600"'+(s.you?' id="standElo"':'')+'>'+s.elo+'</span>'+
+    '<span class="sled-bar"><em>'+TIERS[tierOf(s.elo)][0]+'</em><b><i'+(s.you?' id="standBar"':'')+
+      ' style="width:'+barPct(s.elo)+'%"></i></b></span></div>';
+}
+
+function build(){
+  var w = BPS[S.bp];
+  frame.style.width = w+"px";
+  var tabs="", k;
+  for(k in COHORTS) tabs += '<button class="sled-tab" data-co="'+k+'" role="tab" aria-selected="'+(k===S.cohort)+'">'+COHORTS[k].label+'</button>';
+
+  var led="", i;
+  for(i=0;i<LEDGER.length;i++) led += ledgerRow(LEDGER[i],i);
+  var st="";
+  for(i=0;i<STAND.length;i++) st += standRow(STAND[i],i);
+
+  frame.innerHTML =
+  '<section class="sled" data-mode="'+S.mode+'" id="sled"><div class="sled-inner">'+
+
+    '<div class="sled-rule-thin"></div>'+
+    '<div class="sled-mast">'+
+      '<span class="sled-caps">Social investing</span>'+
+      '<span class="sled-caps stamp"><span class="sled-live"></span>Season 4 &middot; Live</span>'+
+    '</div>'+
+    '<div class="sled-rule-thick"></div>'+
+
+    '<h2 class="sled-head">Every move is on the record.</h2>'+
+    '<p class="sled-sub">Add a friend and your ratings start writing themselves: wins, streaks and research, '+
+      'each one a line in the ledger.</p>'+
+
+    '<div class="sled-record">'+
+      '<div class="sled-cell">'+
+        '<div class="sled-cellhead"><span class="sled-caps">Your rating</span><span class="hair"></span>'+
+          '<span class="sled-caps" style="color:var(--sled-faint)">@axum</span></div>'+
+        '<div class="sled-rule-thin"></div>'+
+        '<div class="sled-ratingblock">'+
+          '<div class="sled-ratingrow">'+
+            '<span class="sled-rating" id="rating">1474</span>'+
+            '<span class="sled-delta" id="ratingDelta">+14 this week</span></div>'+
+          '<div class="sled-tier"><span class="sled-tiername" id="tierName">Apprentice</span>'+
+            '<span class="sled-tiernext" id="tierNext">1026 to strategist</span></div>'+
+          '<div class="sled-ladder">'+ladderHtml()+'</div>'+
+        '</div>'+
+      '</div>'+
+
+      '<div class="sled-cell">'+
+        '<div class="sled-cellhead"><span class="sled-caps">Rating line</span><span class="hair"></span>'+
+          '<div class="sled-tabs" role="tablist">'+tabs+'</div></div>'+
+        '<div class="sled-rule-thin"></div>'+
+        '<div class="sled-chartwrap" id="chartwrap">'+chartSvg()+
+          '<span class="sled-vs" id="vs"></span></div>'+
+      '</div>'+
+    '</div>'+
+
+    '<div class="sled-sheets">'+
+      '<div class="sled-ledger">'+
+        '<div class="sled-cellhead"><span class="sled-caps">The ledger</span><span class="hair"></span>'+
+          '<span class="sled-caps" style="color:var(--sled-faint)">Last 8 events</span></div>'+
+        '<div class="sled-rule-thick"></div>'+
+        '<div class="sled-thead sled-caps" style="font-size:9.5px">'+
+          '<span>Delta</span><span>Event</span><span class="sled-r sled-hide-sm">Rating</span><span class="sled-r">When</span></div>'+
+        '<div class="sled-rule-thin"></div><div class="sled-rows">'+ led +'</div>'+
+        '<div class="sled-rule-thin"></div>'+
+        '<div class="sled-footrow"><span>Net this week <span class="sled-pos">+38</span></span>'+
+          '<a href="#">Full ledger <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" '+
+          'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h9"/><path d="M8.5 4.5 12 8l-3.5 3.5"/></svg></a></div>'+
+      '</div>'+
+
+      '<div class="sled-stand">'+
+        '<div class="sled-cellhead"><span class="sled-caps">Season 4 standings</span><span class="hair"></span>'+
+          '<span class="sled-caps" style="color:var(--sled-faint);display:flex;align-items:center;gap:6px">'+
+          '<span class="sled-live"></span>Live</span></div>'+
+        '<div class="sled-rule-thick"></div>'+
+        '<div class="sled-thead sled-caps" style="font-size:9.5px">'+
+          '<span>#</span><span>Member</span><span class="sled-r">Week</span><span class="sled-r">Rating</span></div>'+
+        '<div class="sled-rule-thin"></div><div class="sled-rows">'+ st +'</div>'+
+        '<div class="sled-rule-thin"></div>'+
+        '<div class="sled-footrow"><span>4 members</span><span id="gapLbl">38 to first</span></div>'+
+      '</div>'+
+    '</div>'+
+
+    '<div class="sled-rule-thin" style="margin-top:clamp(28px,3vw,44px)"></div>'+
+    '<div class="sled-foot">'+
+      '<p class="sled-note">Ratings measure engagement and outcomes on Ezana. '+
+        'Sample data shown. Nothing here is investment advice.</p>'+
+      '<a class="sled-cta" href="#">Start your ledger'+
+        '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" '+
+        'stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8h10"/><path d="M8.6 4l4 4-4 4"/></svg></a>'+
+    '</div>'+
+
+    '<div id="rlLayer"></div>'+
+  '</div></section>';
+
+  ["rating","ratingDelta","tierName","tierNext","ladFill","ladMark","newRow","newEv","vs",
+   "youLine","youArea","cmpA","cmpB","youDot","clipRect","lblA","lblB","standElo","standDelta",
+   "gapLbl","standBar","chartwrap","sled","rlLayer"].forEach(function(id){ R[id]=document.getElementById(id); });
+  R.rowH = null;
+
+  [].forEach.call(frame.querySelectorAll(".sled-tab"), function(b){
+    b.onclick = function(){ S.cohort=b.getAttribute("data-co");
+      [].forEach.call(frame.querySelectorAll(".sled-tab"),function(x){
+        x.setAttribute("aria-selected", x.getAttribute("data-co")===S.cohort); });
+      apply(); };
+  });
+
+  /* the chart box is fluid; give the svg a real height so preserveAspectRatio none reads right */
+  R.chartwrap.style.minHeight = "clamp(190px,17vw,272px)";
+  fit(); apply();
+}
+
+/* ======================= APPLY ======================= */
+
+function apply(){
+  var t = S.rm ? TL.total*0.6 : S.t;
+  var done = S.rm;
+
+  /* --- the new ledger line --- */
+  if (R.newRow){
+    if (!R.rowH){
+      R.newRow.style.height="";
+      R.rowH = R.newRow.getBoundingClientRect().height / (BPS[S.bp]/frame.offsetWidth || 1) || 44;
+      R.rowH = R.newRow.offsetHeight || 44;
+    }
+    var rp = done ? 1 : ease(clamp((t-TL.rowStart)/(TL.rowEnd-TL.rowStart),0,1));
+    R.newRow.style.height = (R.rowH*rp)+"px";
+    R.newRow.style.opacity = rp;
+    R.newRow.style.borderBottomColor = rp>0.5 ? "" : "transparent";
+    var full = LEDGER[0].ev;
+    var tp = done ? 1 : clamp((t-TL.typeStart)/(TL.typeEnd-TL.typeStart),0,1);
+    R.newEv.textContent = full.slice(0, Math.round(full.length*tp));
+  }
+
+  /* --- rating odometer --- */
+  var rpv = done ? 1 : easeIO(clamp((t-TL.rateStart)/(TL.rateEnd-TL.rateStart),0,1));
+  var val = Math.round(lerp(1474, 1498, rpv));
+  R.rating.textContent = val;
+  R.ratingDelta.textContent = (rpv>0.02 ? "+"+Math.round(lerp(14,38,rpv)) : "+14")+" this week";
+
+  /* --- tier ladder --- */
+  var ti = tierOf(val), lo=TIERS[ti][1], hi = ti<TIERS.length-1 ? TIERS[ti+1][1] : 10000;
+  var within = (val-lo)/(hi-lo);
+  var x = (ti + within)/TIERS.length*100;
+  R.ladMark.style.left = x.toFixed(3)+"%";
+  R.ladFill.style.width = x.toFixed(3)+"%";
+  R.tierName.textContent = TIERS[ti][0];
+  R.tierNext.textContent = ti<TIERS.length-1
+    ? (hi-val)+" to "+TIERS[ti+1][0].toLowerCase()
+    : "at the cap";
+
+  /* --- chart --- */
+  chartUpdate(t);
+
+  /* --- standings --- */
+  var sp = done ? 1 : easeIO(clamp((t-TL.standStart)/(TL.standEnd-TL.standStart),0,1));
+  if (R.standElo) R.standElo.textContent = Math.round(lerp(1474,1498,sp));
+  if (R.standDelta){
+    R.standDelta.textContent = sp>0.02 ? "+"+Math.round(lerp(0,24,sp)) : "·";
+    R.standDelta.className = "sled-mn sled-r " + (sp>0.02 ? "sled-pos" : "sled-nil");
+  }
+  if (R.gapLbl) R.gapLbl.textContent = Math.round(lerp(38,14,sp))+" to first";
+  if (R.standBar) R.standBar.style.width = barPct(lerp(1474,1498,sp))+"%";
+
+  drawRedline();
+  document.getElementById("scrub").value = S.t;
+  document.getElementById("scrub").style.setProperty("--pc",(S.t/TL.total*100).toFixed(2)+"%");
+  document.getElementById("tread").textContent = (S.t/1000).toFixed(2)+" / 7.20s";
+  var bn=BEATS[0].n; for(var q=0;q<BEATS.length;q++) if(S.t>=BEATS[q].t) bn=BEATS[q].n;
+  document.getElementById("beatname").textContent = S.rm ? "Reduced motion" : bn;
+}
+
+/* ======================= REDLINE ======================= */
+function drawRedline(){
+  if (!R.rlLayer) return;
+  R.rlLayer.innerHTML = "";
+  if (!S.redline) return;
+  var host = R.rlLayer.getBoundingClientRect();
+  function mark(el,label,off){
+    if(!el) return;
+    var r = el.getBoundingClientRect();
+    var k = BPS[S.bp]/frame.offsetWidth || 1;
+    var d=document.createElement("div"); d.className="rl box";
+    d.style.cssText="left:"+((r.left-host.left)*k)+"px;top:"+((r.top-host.top)*k)+"px;width:"+(r.width*k)+"px;height:"+(r.height*k)+"px";
+    R.rlLayer.appendChild(d);
+    var g=document.createElement("div"); g.className="rl tag";
+    g.style.cssText="left:"+((r.left-host.left)*k+3)+"px;top:"+((r.top-host.top)*k+(off||3))+"px";
+    g.textContent=label+" "+Math.round(r.width*k)+"x"+Math.round(r.height*k);
+    R.rlLayer.appendChild(g);
+  }
+  var f=frame;
+  mark(f.querySelector(".sled-inner"),"inner");
+  mark(f.querySelector(".sled-record"),"record");
+  mark(f.querySelector(".sled-record .sled-cell"),"rating col");
+  mark(f.querySelectorAll(".sled-record .sled-cell")[1],"chart col");
+  mark(f.querySelector(".sled-sheets"),"sheets",16);
+  mark(f.querySelector(".sled-ledger"),"ledger");
+  mark(f.querySelector(".sled-stand"),"standings");
+  mark(f.querySelector(".sled-ledger .sled-tr"),"row");
+  mark(f.querySelector(".sled-head"),"headline");
+}
+
+/* ======================= FIT / TRANSPORT ======================= */
+function fit(){
+  var w = BPS[S.bp];
+  var aw = stage.clientWidth - 40;
+  var k = Math.min(aw/w, 1);
+  frame.style.transform = "scale("+k+")";
+  frame.style.marginBottom = (frame.offsetHeight*(k-1))+"px";
+  document.getElementById("scaleLbl").textContent = w+"px  ·  "+Math.round(k*100)+"%";
+}
+
+var raf=null,last=0;
+function loop(ts){
+  if(!S.playing) return;
+  if(!last) last=ts;
+  S.t += ts-last; last=ts;
+  if(S.t>=TL.total) S.t=0;
+  apply(); raf=requestAnimationFrame(loop);
+}
+function play(){ if(S.rm) return; S.playing=true; last=0; setIcon(); raf=requestAnimationFrame(loop); }
+function pause(){ S.playing=false; setIcon(); if(raf) cancelAnimationFrame(raf); }
+function setIcon(){ document.getElementById("playIcon").innerHTML =
+  S.playing ? '<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/>' : '<path d="M8 5v14l11-7z"/>'; }
+
+document.getElementById("play").onclick=function(){ S.playing?pause():play(); };
+document.getElementById("scrub").oninput=function(e){ pause(); S.t=+e.target.value; apply(); };
+
+var beatsEl=document.getElementById("beats");
+BEATS.forEach(function(b){
+  var d=document.createElement("button"); d.className="beat"; d.textContent=b.n;
+  d.style.left=(b.t/TL.total*100)+"%";
+  d.onclick=function(){ pause(); S.t=b.t; apply(); };
+  beatsEl.appendChild(d);
+});
+
+function syncSeg(){
+  [].forEach.call(document.querySelectorAll("#segBp button"),function(x){
+    x.setAttribute("aria-pressed", x.getAttribute("data-v")===S.bp); });
+  [].forEach.call(document.querySelectorAll("#segMode button"),function(x){
+    x.setAttribute("aria-pressed", x.getAttribute("data-v")===S.mode); });
+}
+document.getElementById("segBp").onclick=function(e){
+  var v=e.target.getAttribute&&e.target.getAttribute("data-v"); if(!v) return;
+  S.bp=v; syncSeg(); build();
+};
+document.getElementById("segMode").onclick=function(e){
+  var v=e.target.getAttribute&&e.target.getAttribute("data-v"); if(!v) return;
+  S.mode=v; stage.setAttribute("data-mode",v); syncSeg(); build();
+};
+document.getElementById("tglRedline").onclick=function(){
+  S.redline=!S.redline; this.setAttribute("aria-pressed",S.redline); apply(); };
+document.getElementById("tglRM").onclick=function(){
+  S.rm=!S.rm; this.setAttribute("aria-pressed",S.rm);
+  if(S.rm){ pause(); } apply(); if(!S.rm) play(); };
+
+window.addEventListener("resize", function(){ fit(); apply(); });
+if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+  S.rm=true; document.getElementById("tglRM").setAttribute("aria-pressed","true");
+}
+
+syncSeg(); build();
+setTimeout(function(){ if(!S.rm) play(); }, 350);
+})();
+</script>

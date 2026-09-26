@@ -1,0 +1,170 @@
+/* ============================================================================
+   Social ledger band, section-scoped tokens
+   ----------------------------------------------------------------------------
+   This section is NOT mode-locked. It sits on the standard canvas and must work
+   in both shells. Light is the base; the dark block redefines tokens only.
+
+   Structure the cascade exactly as below. A colour defined only inside a
+   [data-theme] or media block does not apply when neither is set, which is how a
+   section ends up with one theme's text on the other theme's background.
+
+   ---------------------------------------------------------------------------
+   Contrast, the rule that shaped this palette
+   ---------------------------------------------------------------------------
+   Brand emerald #10b981 is a MARK colour, not a text colour:
+
+     #10b981 on #ffffff ........... 2.21:1   FAILS everything
+     #10b981 on #0a0e13 ........... 6.94:1   passes AA
+
+   So the positive token splits in two, and this split is the single most
+   important thing in this file:
+
+     --sled-pos       text     #047857 light (4.62:1) / #34d399 dark (8.43:1)
+     --sled-pos-mark  strokes  #10b981 in both, never applied to text
+
+   Every "+24", every tier name, every CTA uses --sled-pos. Every chart stroke,
+   gradient, live dot, ladder marker and row rule uses --sled-pos-mark. If a
+   delta looks washed out in light mode, someone has used the mark token on text.
+
+   Negative:
+     #b91c1c on #ffffff ........... 6.51:1   passes AA
+     #f87171 on #0a0e13 ........... 6.72:1   passes AA
+
+   Comparison lines are non-text marks and are exempt from the text ratio, but
+   they still need to separate from each other and from your line. Leader and
+   median differ by roughly 28 points of lightness in both shells, and your line
+   is the only one carrying a fill, so the three are distinguishable without
+   colour alone.
+
+   Muted and faint:
+     #5a6b65 on #ffffff ........... 5.94:1   body copy, passes AA
+     #8a9a95 on #ffffff ........... 3.03:1   marks, timestamps, axis ticks only
+     rgba(255,255,255,.66) on #0a0e13 ... 10.2:1
+     rgba(255,255,255,.44) on #0a0e13 ..... 5.3:1
+   ========================================================================== */
+
+.sled {
+  /* ---- surfaces ---- */
+  --sled-bg: #ffffff;
+  --sled-ink: #0a0e13;
+  --sled-muted: #5a6b65;
+  --sled-faint: #8a9a95;
+
+  /* ---- rules, the structural system: three weights, three jobs ---- */
+  --sled-rule: rgba(10, 14, 19, 0.13); /* 1px hairline, label to content */
+  --sled-rule-strong: rgba(10, 14, 19, 0.82); /* 2px, opens a table */
+  --sled-dot: rgba(10, 14, 19, 0.2); /* 1px dotted, between rows */
+
+  /* ---- positive: two tokens, never interchangeable ---- */
+  --sled-pos: #047857; /* TEXT */
+  --sled-pos-mark: #10b981; /* strokes, fills, dots */
+  --sled-pos-wash: rgba(16, 185, 129, 0.09);
+  --sled-you-row: rgba(16, 185, 129, 0.055);
+
+  --sled-neg: #b91c1c;
+
+  /* ---- chart comparison lines ---- */
+  --sled-cmp-a: #6b7280; /* leader */
+  --sled-cmp-b: #b4bcc0; /* median */
+
+  /* ---- type ---- */
+  --sled-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --sled-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  --sled-fs-eyebrow: 11px;
+  --sled-fs-head: clamp(30px, 4.2vw, 60px);
+  --sled-fs-sub: clamp(14px, 1.15vw, 17px);
+  --sled-fs-rating: clamp(62px, 8.6vw, 124px);
+  --sled-fs-body: clamp(13px, 1.02vw, 15px);
+  --sled-fs-mono: clamp(11px, 0.92vw, 13px);
+  --sled-track-caps: 0.18em;
+  --sled-track-head: -0.035em;
+
+  /* ---- layout, fluid by construction ---- */
+  --sled-gap: clamp(48px, 6vw, 96px); /* the --landing-gap contract */
+  --sled-pad: clamp(16px, 2.8vw, 40px);
+  --sled-colgap: clamp(24px, 3.2vw, 48px);
+  --sled-row: clamp(38px, 3.4vw, 46px);
+
+  /* ---- motion ---- */
+  --sled-loop: 7200ms;
+  --sled-draw: 400ms; /* the platform chart draw */
+
+  background: var(--sled-bg);
+  color: var(--sled-ink);
+  font-family: var(--sled-sans);
+  padding-block: var(--sled-gap);
+}
+
+/* System dark, unless the viewer explicitly chose light */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .sled {
+    color-scheme: dark;
+    --sled-bg: #0a0e13;
+    --sled-ink: #ffffff;
+    --sled-muted: rgba(255, 255, 255, 0.66);
+    --sled-faint: rgba(255, 255, 255, 0.44);
+    --sled-rule: rgba(255, 255, 255, 0.15);
+    --sled-rule-strong: rgba(255, 255, 255, 0.88);
+    --sled-dot: rgba(255, 255, 255, 0.22);
+    --sled-pos: #34d399;
+    --sled-pos-mark: #10b981;
+    --sled-pos-wash: rgba(16, 185, 129, 0.12);
+    --sled-you-row: rgba(16, 185, 129, 0.07);
+    --sled-neg: #f87171;
+    --sled-cmp-a: #9aa4ad;
+    --sled-cmp-b: #586169;
+  }
+}
+
+/* Explicit dark choice wins in the other direction too */
+:root[data-theme='dark'] .sled {
+  color-scheme: dark;
+  --sled-bg: #0a0e13;
+  --sled-ink: #ffffff;
+  --sled-muted: rgba(255, 255, 255, 0.66);
+  --sled-faint: rgba(255, 255, 255, 0.44);
+  --sled-rule: rgba(255, 255, 255, 0.15);
+  --sled-rule-strong: rgba(255, 255, 255, 0.88);
+  --sled-dot: rgba(255, 255, 255, 0.22);
+  --sled-pos: #34d399;
+  --sled-pos-mark: #10b981;
+  --sled-pos-wash: rgba(16, 185, 129, 0.12);
+  --sled-you-row: rgba(16, 185, 129, 0.07);
+  --sled-neg: #f87171;
+  --sled-cmp-a: #9aa4ad;
+  --sled-cmp-b: #586169;
+}
+
+/* The chart's gradient stops cannot read a CSS variable in every engine, so the
+   emerald is literal there and is the ONE place a raw hex is allowed. It is the
+   same value as --sled-pos-mark in both shells, which is why it is safe. */
+.sled .sled-fill-stop-0 {
+  stop-color: #10b981;
+  stop-opacity: 0.25;
+}
+.sled .sled-fill-stop-1 {
+  stop-color: #10b981;
+  stop-opacity: 0;
+}
+
+/* Viewport gating: the observer adds .sled-paused when the section leaves view. */
+.sled.sled-paused * {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sled * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Every numeral in this section is mono and tabular. No exceptions. */
+.sled .sled-mn,
+.sled .sled-rating,
+.sled .sled-delta,
+.sled .sled-tiernext,
+.sled .sled-gap {
+  font-family: var(--sled-mono);
+  font-variant-numeric: tabular-nums;
+}
