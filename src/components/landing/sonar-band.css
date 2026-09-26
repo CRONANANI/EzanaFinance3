@@ -2333,6 +2333,27 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
     transform 0.45s ease;
 }
 
+/* The dossier now MOUNTS on the first ping, so its arrival is a keyframe
+   rather than a transition: it and .snr-live land in the same frame, and a
+   transition needs a previous state to move from. It is allowlisted against
+   the .snr-band.snr-live * pause rule below, at the same (0,3,0) the row pop
+   and the ping loader need, or it would freeze at translateX(80px) the instant
+   it appeared. */
+@keyframes snrDossierIn {
+  from {
+    transform: translateX(80px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.snr-band.snr-live .snr-col-dossier {
+  animation: snrDossierIn 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-play-state: running;
+}
+
 /* The orbital eases up to its pin rather than jumping there. */
 .snr-col-radar {
   transition:
@@ -2639,6 +2660,10 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   .snr-news {
     transition: none;
   }
+  /* The dossier appears in place rather than sliding. */
+  .snr-band.snr-live .snr-col-dossier {
+    animation: none;
+  }
 }
 
 /* ── demo choreography ───────────────────────────────────────────────────
@@ -2833,6 +2858,16 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   grid-template-columns: var(--snr-col-l) var(--snr-col-c) var(--snr-col-r);
   gap: var(--snr-gap-col);
   align-items: stretch;
+}
+
+/* Before a ping there is no dossier, so the grid is two regions and the
+   orbital centres in what is left rather than sitting in a third column that
+   reserves space for a card the visitor has not summoned. */
+.snr-band.snr-composed:not(.snr-live) .snr-cols {
+  grid-template-columns: var(--snr-col-l) minmax(0, 1fr);
+}
+.snr-band.snr-composed:not(.snr-live) .snr-col-radar {
+  justify-self: center;
 }
 
 .snr-band.snr-composed .snr-col-left,

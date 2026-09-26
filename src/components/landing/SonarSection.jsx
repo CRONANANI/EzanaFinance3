@@ -1588,195 +1588,195 @@ export function SonarSection() {
             />
           </div>
 
-          <div className="snr-col-dossier" aria-hidden={hasPinged ? undefined : 'true'}>
-            <div className="snr-dossier-head">
-              <span className="snr-dossier-title">SOURCED MATCHES</span>
-              <span className="snr-rule" />
-              {/* The pinged term in full, or its ticker when the full name
+          {/* The dossier does not exist before a ping. It used to render as an
+              empty "Sourced matches" card poking in from the right with two dim
+              rows, which promised a result the visitor had not asked for yet.
+              Pre-ping the composition is the left column and the orbital. */}
+          {hasPinged ? (
+            <div className="snr-col-dossier">
+              <div className="snr-dossier-head">
+                <span className="snr-dossier-title">SOURCED MATCHES</span>
+                <span className="snr-rule" />
+                {/* The pinged term in full, or its ticker when the full name
                   will not fit. It used to be `slice(0, 14)`, which rendered
                   "LOCKHEED MARTIN" as "LOCKHEED MARTI": a truncation that
                   reads as a different company. A ticker is short and true,
                   where half a name is neither. */}
-              <span className="snr-meta snr-term">
-                {hasPinged
-                  ? lastQuery.length > 16 && live?.dossier?.ticker
+                <span className="snr-meta snr-term">
+                  {lastQuery.length > 16 && live?.dossier?.ticker
                     ? live.dossier.ticker.toUpperCase()
-                    : lastQuery.toUpperCase()
-                  : 'LMT'}
-              </span>
-            </div>
+                    : lastQuery.toUpperCase()}
+                </span>
+              </div>
 
-            <div className="snr-dossier-body">
-              <p className="snr-empty snr-anim-idle">
-                No matches yet.
-                <br />
-                The dossier fills as each dataset returns.
-              </p>
-
-              <div className="snr-rows" key={pingPulse}>
-                {(() => {
-                  const m = live?.dossier?.matches || null;
-                  /* A dataset is matched only when its leg actually returned
+              <div className="snr-dossier-body">
+                <div className="snr-rows" key={pingPulse}>
+                  {(() => {
+                    const m = live?.dossier?.matches || null;
+                    /* A dataset is matched only when its leg actually returned
                      something. The honesty rule: no rich row is rendered from
                      an empty leg, and a null leg falls through to the dry row
                      rather than drawing an empty frame. */
-                  const rich = {
-                    'gov-contracts': m?.contracts || null,
-                    echo: m?.echo?.length ? m.echo : null,
-                    congress: m?.congress?.length ? m.congress : null,
-                    'sec-filings': m?.sec?.length ? m.sec : null,
-                  };
-                  /* Matched rich rows first, in the brief's order, then
+                    const rich = {
+                      'gov-contracts': m?.contracts || null,
+                      echo: m?.echo?.length ? m.echo : null,
+                      congress: m?.congress?.length ? m.congress : null,
+                      'sec-filings': m?.sec?.length ? m.sec : null,
+                    };
+                    /* Matched rich rows first, in the brief's order, then
                      everything else dimmed. */
-                  const order = ['gov-contracts', 'echo', 'congress', 'sec-filings'];
-                  const sorted = [...SWEPT].sort((a, b) => {
-                    const ra = rich[a.id] ? order.indexOf(a.id) : 99;
-                    const rb = rich[b.id] ? order.indexOf(b.id) : 99;
-                    if (ra !== rb) return ra - rb;
-                    return SWEPT.indexOf(a) - SWEPT.indexOf(b);
-                  });
+                    const order = ['gov-contracts', 'echo', 'congress', 'sec-filings'];
+                    const sorted = [...SWEPT].sort((a, b) => {
+                      const ra = rich[a.id] ? order.indexOf(a.id) : 99;
+                      const rb = rich[b.id] ? order.indexOf(b.id) : 99;
+                      if (ra !== rb) return ra - rb;
+                      return SWEPT.indexOf(a) - SWEPT.indexOf(b);
+                    });
 
-                  return sorted.map((d, i) => {
-                    const data = live ? rich[d.id] : null;
-                    const hit = live?.sources?.find((sc) => sc.id === d.id);
-                    const matched = Boolean(data) || Boolean(hit?.used);
-                    const cls = `snr-row${matched ? '' : ' snr-row--dry'}${data ? ' snr-row--rich' : ''} ${
-                      hasPinged || pingPulse > 0 ? 'snr-anim-rowpop' : `snr-anim-row${i}`
-                    }`;
-                    const style =
-                      hasPinged || pingPulse > 0 ? { animationDelay: `${i * 0.08}s` } : undefined;
+                    return sorted.map((d, i) => {
+                      const data = live ? rich[d.id] : null;
+                      const hit = live?.sources?.find((sc) => sc.id === d.id);
+                      const matched = Boolean(data) || Boolean(hit?.used);
+                      const cls = `snr-row${matched ? '' : ' snr-row--dry'}${data ? ' snr-row--rich' : ''} ${
+                        hasPinged || pingPulse > 0 ? 'snr-anim-rowpop' : `snr-anim-row${i}`
+                      }`;
+                      const style =
+                        hasPinged || pingPulse > 0 ? { animationDelay: `${i * 0.08}s` } : undefined;
 
-                    return (
-                      <div key={d.id} className={cls} style={style}>
-                        <div className="snr-row-top">
-                          <span className="snr-tag">{d.chip}</span>
-                          <span className="snr-rule" />
-                          <span className="snr-src">{matched ? 'matched' : 'searched'}</span>
-                        </div>
+                      return (
+                        <div key={d.id} className={cls} style={style}>
+                          <div className="snr-row-top">
+                            <span className="snr-tag">{d.chip}</span>
+                            <span className="snr-rule" />
+                            <span className="snr-src">{matched ? 'matched' : 'searched'}</span>
+                          </div>
 
-                        {d.id === 'gov-contracts' && data ? (
-                          <div className="snr-rich">
-                            <span className="snr-rich-name">{data.recipient}</span>
-                            <div className="snr-stat-strip">
-                              <div className="snr-stat">
-                                <span className="snr-stat-label">TOTAL AWARDED</span>
-                                <span className="snr-stat-value">{usdShort(data.total)}</span>
-                                <span className="snr-stat-cap">
-                                  {fyLabel(data.coverage.fromFy)} to {fyLabel(data.coverage.toFy)}
-                                </span>
-                              </div>
-                              <div className="snr-stat">
-                                <span className="snr-stat-label">AWARDS</span>
-                                <span className="snr-stat-value">{countShort(data.awards)}</span>
-                                <span className="snr-stat-cap">contracts</span>
-                              </div>
-                              <div className="snr-stat">
-                                <span className="snr-stat-label">AVG CONTRACT</span>
-                                <span className="snr-stat-value">{usdShort(data.avg)}</span>
-                                <span className="snr-stat-cap">per award</span>
-                              </div>
-                              <div className="snr-stat">
-                                <span className="snr-stat-label">YOY</span>
-                                {data.yoy ? (
-                                  <>
-                                    <span
-                                      className={`snr-stat-value ${
-                                        data.yoy.value >= 0 ? 'snr-up' : 'snr-down'
-                                      }`}
-                                    >
-                                      {data.yoy.value >= 0 ? '+' : ''}
-                                      {(data.yoy.value * 100).toFixed(1)}%
-                                    </span>
-                                    {/* The fiscal years are named because the
+                          {d.id === 'gov-contracts' && data ? (
+                            <div className="snr-rich">
+                              <span className="snr-rich-name">{data.recipient}</span>
+                              <div className="snr-stat-strip">
+                                <div className="snr-stat">
+                                  <span className="snr-stat-label">TOTAL AWARDED</span>
+                                  <span className="snr-stat-value">{usdShort(data.total)}</span>
+                                  <span className="snr-stat-cap">
+                                    {fyLabel(data.coverage.fromFy)} to {fyLabel(data.coverage.toFy)}
+                                  </span>
+                                </div>
+                                <div className="snr-stat">
+                                  <span className="snr-stat-label">AWARDS</span>
+                                  <span className="snr-stat-value">{countShort(data.awards)}</span>
+                                  <span className="snr-stat-cap">contracts</span>
+                                </div>
+                                <div className="snr-stat">
+                                  <span className="snr-stat-label">AVG CONTRACT</span>
+                                  <span className="snr-stat-value">{usdShort(data.avg)}</span>
+                                  <span className="snr-stat-cap">per award</span>
+                                </div>
+                                <div className="snr-stat">
+                                  <span className="snr-stat-label">YOY</span>
+                                  {data.yoy ? (
+                                    <>
+                                      <span
+                                        className={`snr-stat-value ${
+                                          data.yoy.value >= 0 ? 'snr-up' : 'snr-down'
+                                        }`}
+                                      >
+                                        {data.yoy.value >= 0 ? '+' : ''}
+                                        {(data.yoy.value * 100).toFixed(1)}%
+                                      </span>
+                                      {/* The fiscal years are named because the
                                         figure is meaningless without them, and
                                         because they are complete years: a
                                         partial current year compared against a
                                         whole one is how a quick view reports a
                                         collapse that never happened. */}
-                                    <span className="snr-stat-cap">
-                                      {fyLabel(data.yoy.from)} to {fyLabel(data.yoy.to)}
-                                    </span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <span className="snr-stat-value">n/a</span>
-                                    <span className="snr-stat-cap">needs two full years</span>
-                                  </>
-                                )}
+                                      <span className="snr-stat-cap">
+                                        {fyLabel(data.yoy.from)} to {fyLabel(data.yoy.to)}
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <span className="snr-stat-value">n/a</span>
+                                      <span className="snr-stat-cap">needs two full years</span>
+                                    </>
+                                  )}
+                                </div>
                               </div>
+                              <AwardChart series={data.series} />
+                              <AgencyBar agencies={data.agencies} />
+                              <button
+                                type="button"
+                                className="snr-rich-link"
+                                onClick={() => openGate()}
+                              >
+                                Full dossier
+                                <i className="bi bi-arrow-up-right" aria-hidden="true" />
+                              </button>
                             </div>
-                            <AwardChart series={data.series} />
-                            <AgencyBar agencies={data.agencies} />
-                            <button
-                              type="button"
-                              className="snr-rich-link"
-                              onClick={() => openGate()}
-                            >
-                              Full dossier
-                              <i className="bi bi-arrow-up-right" aria-hidden="true" />
-                            </button>
-                          </div>
-                        ) : null}
+                          ) : null}
 
-                        {d.id === 'echo' && data ? (
-                          <div className="snr-rich snr-rich--echo">
-                            {data.map((a) => (
-                              <a key={a.slug} className="snr-echo-row" href={`/echo/${a.slug}`}>
-                                <span className="snr-echo-title">{a.title}</span>
-                                {a.excerpt ? (
-                                  <span className="snr-echo-excerpt">{a.excerpt}</span>
-                                ) : null}
-                                <span className="snr-echo-date">{relativeDay(a.publishedAt)}</span>
-                              </a>
-                            ))}
-                          </div>
-                        ) : null}
+                          {d.id === 'echo' && data ? (
+                            <div className="snr-rich snr-rich--echo">
+                              {data.map((a) => (
+                                <a key={a.slug} className="snr-echo-row" href={`/echo/${a.slug}`}>
+                                  <span className="snr-echo-title">{a.title}</span>
+                                  {a.excerpt ? (
+                                    <span className="snr-echo-excerpt">{a.excerpt}</span>
+                                  ) : null}
+                                  <span className="snr-echo-date">
+                                    {relativeDay(a.publishedAt)}
+                                  </span>
+                                </a>
+                              ))}
+                            </div>
+                          ) : null}
 
-                        {d.id === 'congress' && data ? (
-                          <div className="snr-rich">
-                            {data.map((t, k) => (
-                              <span key={`${t.member}-${k}`} className="snr-trade">
-                                <span className="snr-trade-member">{t.member}</span>
-                                <span
-                                  className={`snr-trade-type ${
-                                    /sale|sell/i.test(t.type) ? 'snr-down' : 'snr-up'
-                                  }`}
-                                >
-                                  {t.type}
+                          {d.id === 'congress' && data ? (
+                            <div className="snr-rich">
+                              {data.map((t, k) => (
+                                <span key={`${t.member}-${k}`} className="snr-trade">
+                                  <span className="snr-trade-member">{t.member}</span>
+                                  <span
+                                    className={`snr-trade-type ${
+                                      /sale|sell/i.test(t.type) ? 'snr-down' : 'snr-up'
+                                    }`}
+                                  >
+                                    {t.type}
+                                  </span>
+                                  <span className="snr-trade-date">{relativeDay(t.date)}</span>
                                 </span>
-                                <span className="snr-trade-date">{relativeDay(t.date)}</span>
-                              </span>
-                            ))}
-                          </div>
-                        ) : null}
+                              ))}
+                            </div>
+                          ) : null}
 
-                        {d.id === 'sec-filings' && data ? (
-                          <div className="snr-rich">
-                            {data.map((f, k) => (
-                              <span key={`${f.form}-${k}`} className="snr-trade">
-                                <span className="snr-trade-member">{f.form}</span>
-                                <span className="snr-trade-date">{relativeDay(f.filedAt)}</span>
-                              </span>
-                            ))}
-                          </div>
-                        ) : null}
+                          {d.id === 'sec-filings' && data ? (
+                            <div className="snr-rich">
+                              {data.map((f, k) => (
+                                <span key={`${f.form}-${k}`} className="snr-trade">
+                                  <span className="snr-trade-member">{f.form}</span>
+                                  <span className="snr-trade-date">{relativeDay(f.filedAt)}</span>
+                                </span>
+                              ))}
+                            </div>
+                          ) : null}
 
-                        {!data ? (
-                          <span className="snr-row-line">
-                            {matched ? d.name : 'No matches for this ping'}
-                          </span>
-                        ) : null}
-                      </div>
-                    );
-                  });
-                })()}
+                          {!data ? (
+                            <span className="snr-row-line">
+                              {matched ? d.name : 'No matches for this ping'}
+                            </span>
+                          ) : null}
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
               </div>
-            </div>
 
-            {/* The "13F, LOBBYING, WEB / 3 MORE" footer is gone. It existed
+              {/* The "13F, LOBBYING, WEB / 3 MORE" footer is gone. It existed
                 to admit that three of the eight datasets were not on screen,
                 which stopped being true once all eight render. */}
-          </div>
+            </div>
+          ) : null}
 
           {/* Stage 2's right-hand stack. In the DOM only once a ping has
               actually returned a dossier, so nothing empty is ever laid out.
