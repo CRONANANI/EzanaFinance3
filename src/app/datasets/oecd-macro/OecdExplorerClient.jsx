@@ -15,7 +15,6 @@
  */
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import CategoryBar from '@/components/datasets/CategoryBar';
 import { OECD_SERIES_BY_SLUG, OECD_CURATED_SLUGS } from '@/lib/oecd-curated';
 import OecdMacroClient from './OecdMacroClient';
 import { buildModel, allSlugsForLens, slugsForLens } from './oecd-explorer-model';
@@ -216,8 +215,6 @@ function ExplorerInner({ latest, empire, empireMatrix }) {
 
   return (
     <div className="oecd-page">
-      <CategoryBar active="lighthouse" activeItem="OECD Macro Data" />
-
       <header className="oecd-header">
         <div className="oecd-header-strip">
           <h1 className="oecd-title">OECD Economic Outlook</h1>

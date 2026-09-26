@@ -24,7 +24,6 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Zap, X } from 'lucide-react';
-import CategoryBar from '@/components/datasets/CategoryBar';
 import {
   DATASET_TAXONOMY,
   DIMENSION_IDS,
@@ -757,8 +756,6 @@ export default function DatasetsOverviewClient() {
 
   return (
     <div className="dsx-page">
-      <CategoryBar />
-
       <CrossDatasetTicker onOddsClick={setOddsMarket} />
 
       <header className="dsx-header">

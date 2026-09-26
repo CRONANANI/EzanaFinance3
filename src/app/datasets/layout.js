@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { MarketingPageShell } from '@/components/marketing/MarketingPageShell';
 import { DatasetsSubnav } from '@/components/marketing/DatasetsSubnav';
 import { DatasetComingSoon } from '@/components/marketing/DatasetComingSoon';
+import DatasetChrome from '@/components/datasets/DatasetChrome';
 import '../marketing-explore.css';
 import './dataset-type.css';
 
@@ -58,7 +59,17 @@ export default function DatasetsLayout({ children }) {
     );
   }
 
-  if (STANDALONE_ROUTES.has(pathname)) return children;
+  /* The green category bar is drawn HERE, above the page, rather than by each
+     page inside its own container: the containers clip overflow, so the bar's
+     full-bleed negative margins were cut at the content column. */
+  if (STANDALONE_ROUTES.has(pathname)) {
+    return (
+      <>
+        <DatasetChrome />
+        {children}
+      </>
+    );
+  }
 
   return (
     <MarketingPageShell>

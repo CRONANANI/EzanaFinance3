@@ -27,7 +27,6 @@ import {
   UserPlus,
   Search,
 } from 'lucide-react';
-import CategoryBar from '@/components/datasets/CategoryBar';
 import { resolveHeadshot } from '@/lib/politicians/headshots';
 import { POSITION_BASIS_NOTE, positionStatusMeta } from '@/lib/politicians/position-status';
 import { sectorsForTicker } from '@/lib/congress/policy-sector-map';
@@ -268,8 +267,6 @@ export default function PoliticalTradesClient({ devSampleTrades = null }) {
 
   return (
     <div className="ptx-page">
-      <CategoryBar active="capitol" activeItem="US House Financial Disclosures" />
-
       <TradeTicker members={members} />
 
       <header className="ptx-header">

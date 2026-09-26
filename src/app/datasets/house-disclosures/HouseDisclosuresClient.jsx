@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ExternalLink, X, Loader2, Search } from 'lucide-react';
 import { Ticker, EntityName } from '@/components/marketing/DatasetTable';
-import CategoryBar from '@/components/datasets/CategoryBar';
 import DatasetTicker from '@/components/datasets/DatasetTicker';
 import { HOUSE_FILINGS_SAMPLE, HOUSE_TRADES_SAMPLE } from './house-disclosures-sample';
 import '../../marketing-explore.css';
@@ -246,7 +245,6 @@ export function HouseDisclosuresClient({ filings }) {
 
   return (
     <div className="mkt-page">
-      <CategoryBar active="capitol" activeItem="US House Financial Disclosures" />
       <DatasetTicker
         items={tickerItems}
         ariaLabel="Recent House trade filings"

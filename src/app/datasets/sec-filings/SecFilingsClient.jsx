@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { ExternalLink, X, Loader2 } from 'lucide-react';
 import { Ticker, EntityName, TxnBadge } from '@/components/marketing/DatasetTable';
-import CategoryBar from '@/components/datasets/CategoryBar';
 import DatasetTicker from '@/components/datasets/DatasetTicker';
 import '../../marketing-explore.css';
 import './sec-filings.css';
@@ -348,7 +347,6 @@ export function SecFilingsClient({ feeds, insiderSample = [] }) {
 
   return (
     <div className="mkt-page">
-      <CategoryBar active="titans" activeItem="Insider Trading" />
       <DatasetTicker
         items={tickerItems}
         ariaLabel="Latest SEC filings"

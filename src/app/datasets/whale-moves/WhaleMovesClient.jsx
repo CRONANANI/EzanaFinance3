@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from 'react';
 import { Ticker, EntityName } from '@/components/marketing/DatasetTable';
-import CategoryBar from '@/components/datasets/CategoryBar';
 import DatasetTicker from '@/components/datasets/DatasetTicker';
 import { WEIGHTS } from '@/lib/whale-score';
 import { WHALE_MOVES_SAMPLE } from './whale-moves-sample';
@@ -69,7 +68,9 @@ function DeltaCell({ row }) {
   }
   const ct = row.change_type;
   if (!ct) return <span className="wm-muted">—</span>;
-  return <span className={`wm-delta wm-delta--${CHANGE_TONE[ct] || 'mut'}`}>{CHANGE_LABEL[ct]}</span>;
+  return (
+    <span className={`wm-delta wm-delta--${CHANGE_TONE[ct] || 'mut'}`}>{CHANGE_LABEL[ct]}</span>
+  );
 }
 
 function ScoreCell({ value }) {
@@ -128,7 +129,10 @@ export function WhaleMovesClient({ moves }) {
   }, [rows, kind, tier, sort]);
 
   const top = useMemo(
-    () => [...rows].sort((a, b) => (Number(b.whale_score) || 0) - (Number(a.whale_score) || 0)).slice(0, 5),
+    () =>
+      [...rows]
+        .sort((a, b) => (Number(b.whale_score) || 0) - (Number(a.whale_score) || 0))
+        .slice(0, 5),
     [rows],
   );
 
@@ -150,7 +154,6 @@ export function WhaleMovesClient({ moves }) {
 
   return (
     <div className="mkt-page">
-      <CategoryBar active="titans" activeItem="Whale Moves" />
       <DatasetTicker items={tickerItems} ariaLabel="Top whale moves by score" />
 
       <main className="mkt-main">
@@ -158,10 +161,10 @@ export function WhaleMovesClient({ moves }) {
           <p className="mkt-eyebrow">TITANS SHADOW · SEC EDGAR</p>
           <h1 className="mkt-h1">Whale Moves</h1>
           <p className="mkt-lead">
-            The institutional and activist bets that actually signal conviction, not just size. Every
-            move is scored by how much of the filer&apos;s own book it represents, how new it is, and
-            how concentrated the fund is — so a fresh 15%-of-portfolio bet outranks a mega-fund&apos;s
-            rounding-error rebalance.
+            The institutional and activist bets that actually signal conviction, not just size.
+            Every move is scored by how much of the filer&apos;s own book it represents, how new it
+            is, and how concentrated the fund is — so a fresh 15%-of-portfolio bet outranks a
+            mega-fund&apos;s rounding-error rebalance.
           </p>
         </div>
 
@@ -181,7 +184,9 @@ export function WhaleMovesClient({ moves }) {
               <div className="wm-hl" key={r.id ?? r.accession_no}>
                 <div className="wm-hl-top">
                   <TierBadge tier={r.tier} />
-                  <span className="wm-hl-score gcx-mono">{Math.round(Number(r.whale_score) || 0)}</span>
+                  <span className="wm-hl-score gcx-mono">
+                    {Math.round(Number(r.whale_score) || 0)}
+                  </span>
                 </div>
                 <div className="wm-hl-filer">{r.filer_name}</div>
                 <div className="wm-hl-sub">
@@ -231,7 +236,12 @@ export function WhaleMovesClient({ moves }) {
             <span className="wm-count gcx-mono">{view.length} shown</span>
           </div>
 
-          <div className="mkt-ds-table-wrap" role="region" aria-label="Whale moves table" tabIndex={0}>
+          <div
+            className="mkt-ds-table-wrap"
+            role="region"
+            aria-label="Whale moves table"
+            tabIndex={0}
+          >
             <table className="mkt-ds-table wm-table">
               <thead>
                 <tr>
@@ -271,7 +281,9 @@ export function WhaleMovesClient({ moves }) {
                         <TierBadge tier={r.tier} />
                       </td>
                       <td className="mkt-ds-mono" style={{ textAlign: 'right' }}>
-                        {r.kind === 'activist' ? fmtPct(r.percent_of_class) : fmtPct(r.conviction_pct)}
+                        {r.kind === 'activist'
+                          ? fmtPct(r.percent_of_class)
+                          : fmtPct(r.conviction_pct)}
                       </td>
                       <td>
                         <DeltaCell row={r} />
@@ -330,15 +342,15 @@ export function WhaleMovesClient({ moves }) {
           <div className="wm-source">
             <p>
               Built from SEC EDGAR — quarterly Form 13F-HR holdings and 13D/13G activist stakes,
-              parsed and stored, then scored by Ezana&apos;s composite. The 45-day 13F filing deadline
-              means holdings reflect quarter-end positions, not real-time ones — a lag inherent to the
-              disclosure, not Ezana processing.
+              parsed and stored, then scored by Ezana&apos;s composite. The 45-day 13F filing
+              deadline means holdings reflect quarter-end positions, not real-time ones — a lag
+              inherent to the disclosure, not Ezana processing.
             </p>
             <p>
-              The score is a <strong>derived Ezana metric</strong>, not a number reported by the SEC.
-              It compares each filing to the same filer&apos;s prior quarter, so scores are only fully
-              meaningful once two quarters of history are loaded; until then, positions without a prior
-              quarter read as new.
+              The score is a <strong>derived Ezana metric</strong>, not a number reported by the
+              SEC. It compares each filing to the same filer&apos;s prior quarter, so scores are
+              only fully meaningful once two quarters of history are loaded; until then, positions
+              without a prior quarter read as new.
             </p>
           </div>
         </section>

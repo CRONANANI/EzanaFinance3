@@ -22,14 +22,20 @@
   align-items: center;
   background: var(--dscat-bg);
   border-bottom: 0;
-  padding: 8px 20px;
   margin-bottom: 20px;
-  /* Full bleed out of the page's max-width container, with the inner content
-     held to the same 1440 measure the shell uses. */
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-  padding-left: max(20px, calc(50vw - 720px));
-  padding-right: max(20px, calc(50vw - 720px));
+  /* Full width by nature, not by negative margins. The bar is rendered from
+     src/app/datasets/layout.js ABOVE every page container now (DatasetChrome),
+     so it is already the width of the document. It used to break out of the
+     container with margin-inline: calc(50% - 50vw), which the containers'
+     overflow-x: clip cut off at the content column, taking the Sign up button
+     with it; 100vw also includes the scrollbar gutter, so that approach could
+     force a horizontal scrollbar as well.
+
+     The padding keeps the bar's CONTENT on the 1440 measure while the green
+     paints edge to edge. Percentages, not vw, so the scrollbar gutter is
+     excluded. */
+  width: 100%;
+  padding: 8px max(20px, calc((100% - 1440px) / 2 + 20px));
 }
 /* The seven dimensions are ONE line at every width. From 1024 up they fit
    outright (padding then font-size step down to make room); below that the row
@@ -37,7 +43,18 @@
    rather than a truncated one. */
 .dscat-center {
   display: flex;
+  /* `safe center` matters here, and the plain `center` above it is the
+     fallback for engines that do not parse it. The seven triggers are wider
+     than this track at every desktop width (measured: 1049px of content in a
+     960px track at 1440 and 1920), and plain centring pushes an overflowing
+     flex line out of BOTH ends. The first trigger ended up 89px to the left of
+     the track, underneath the Home zone, which then intercepted its clicks:
+     Capitol Watch was unclickable. Safe alignment falls back to flex-start
+     when the content overflows, so the row starts at the track's edge, the
+     overflow goes right where the scroller can reach it, and nothing hides
+     under a neighbour. */
   justify-content: center;
+  justify-content: safe center;
   flex-wrap: nowrap;
   gap: 2px;
   min-width: 0;

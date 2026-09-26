@@ -16,7 +16,6 @@
  */
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { X, ArrowUpRight, ExternalLink, Info, Download, RefreshCw } from 'lucide-react';
-import CategoryBar from '@/components/datasets/CategoryBar';
 import { ENTITY_LABEL, ENTITY_ORDER, ISSUE_LABEL } from '@/lib/lobbying/entities';
 import CompanyCard from './CompanyCard';
 import './lobbying.css';
@@ -289,8 +288,6 @@ export default function LobbyingClient() {
 
   return (
     <div className="lbx-page">
-      <CategoryBar active="capitol" activeItem="Lobbying Activity" />
-
       <LobbyingTicker filings={ticker.data?.results || []} />
 
       <header className="lbx-header">

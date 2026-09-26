@@ -8,15 +8,12 @@
  * (Capitol Watch active); 1440/32 margins; tokens only. NO mock data — honest
  * empty states when FEC data isn't populated yet.
  */
-import CategoryBar from '@/components/datasets/CategoryBar';
 import { CampaignFinanceView } from '@/components/datasets/CampaignFinanceView';
 import './campaign-finance-records.css';
 
 export default function CampaignFinanceRecordsClient() {
   return (
     <div className="cfr-page">
-      <CategoryBar active="capitol" activeItem="Campaign Finance Records" />
-
       <header className="cfr-header">
         <p className="cfr-eyebrow">DATASETS · FEC CAMPAIGN FINANCE</p>
         <h1 className="cfr-title">Campaign finance records</h1>

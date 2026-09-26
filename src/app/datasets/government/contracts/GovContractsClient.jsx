@@ -31,7 +31,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
-import CategoryBar from '@/components/datasets/CategoryBar';
 import DatasetTicker from '@/components/datasets/DatasetTicker';
 import ContractsExplorer from './ContractsExplorer';
 import ContractorQuickView from './ContractorQuickView';
@@ -347,8 +346,6 @@ export default function GovContractsClient({
 
   return (
     <div className="gcx-page">
-      <CategoryBar active="capitol" activeItem="Government Contracts" />
-
       {/* Shared, full-bleed dataset ticker (same component + speed as every other
           dataset page). Awards map to the generic item shape; _award carries the
           full record so a click still opens the award-analysis modal. */}
