@@ -51,8 +51,11 @@
   --snr-hair: rgba(167, 243, 208, 0.24);
   --snr-hair-strong: rgba(110, 231, 183, 0.34);
   --snr-divider: rgba(110, 231, 183, 0.18);
-  --snr-panel: rgba(3, 18, 14, 0.5);
-  --snr-panel-solid: rgba(4, 20, 15, 0.72);
+  /* +0.04 over the pre-outline value. The 1px borders came off every card
+     (see the border: 0 rules below); a slightly denser surface plus a soft
+     outer shadow does the separating the line used to do. */
+  --snr-panel: rgba(3, 18, 14, 0.54);
+  --snr-panel-solid: rgba(4, 20, 15, 0.76);
   /* The gate's scrim: the band gradient's darkest stop at 78%, which is what
      makes the ping bar and the panel unreadable beneath the cover while the
      emerald still reads through. It lives here rather than being mixed from
@@ -60,12 +63,14 @@
      body.snr-takeover: the gate also opens outside the lock, so that mix
      would have taken its literal fallback every time it mattered. */
   --snr-gate-scrim: rgba(3, 42, 33, 0.78);
-  --snr-field: rgba(3, 18, 14, 0.62);
+  --snr-field: rgba(3, 18, 14, 0.66);
   --snr-row: rgba(0, 0, 0, 0.22);
 
   /* ---- elevation ---- */
   --snr-glow: 0 0 24px rgba(16, 185, 129, 0.14);
   --snr-lift: 0 24px 60px rgba(0, 0, 0, 0.45);
+  /* The separation a removed 1px outline used to provide. */
+  --snr-soft: 0 10px 30px rgba(2, 24, 18, 0.35);
 
   /* ---- radar ---- */
   --snr-ring: rgba(255, 255, 255, 0.13);
@@ -343,10 +348,10 @@
   padding: 18px 64px 18px 20px;
   border-radius: var(--snr-r-panel) 0 0 var(--snr-r-panel);
   background: var(--snr-panel-solid);
-  border: 1px solid rgba(110, 231, 183, 0.3);
-  border-right: 0;
+  border: 0;
   box-shadow:
     -18px 0 44px rgba(2, 24, 18, 0.45),
+    var(--snr-soft),
     var(--snr-lift);
   display: flex;
   flex-direction: column;
@@ -385,8 +390,8 @@
   padding: 0 8px 0 18px;
   border-radius: var(--snr-r-pill);
   background: var(--snr-field);
-  border: 1px solid var(--snr-hair-strong);
-  box-shadow: var(--snr-glow);
+  border: 0;
+  box-shadow: var(--snr-soft), var(--snr-glow);
 }
 
 .snr-pingbar-icon {
@@ -497,7 +502,8 @@
   padding: 18px;
   border-radius: var(--snr-r-panel);
   background: var(--snr-panel);
-  border: 1px solid var(--snr-ring-key);
+  border: 0;
+  box-shadow: var(--snr-soft);
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -684,12 +690,20 @@
   padding: 10px 12px;
   border-radius: var(--snr-r-row);
   background: var(--snr-row);
-  border: 1px solid rgba(167, 243, 208, 0.22);
+  /* Rows separate with a hairline rather than a box: eight boxed rows inside a
+     boxed card read as a grid of frames. */
+  border: 0;
+  border-bottom: 1px solid rgba(167, 243, 208, 0.12);
   display: flex;
   flex-direction: column;
   gap: 4px;
   opacity: 1;
   transform: translateY(0);
+}
+/* A divider under the last row would read as the card's own bottom edge, which
+   is the outline this change removed. */
+.snr-rows > .snr-row:last-child {
+  border-bottom: 0;
 }
 
 .snr-row-top {
@@ -1217,7 +1231,7 @@
     margin-right: 0;
     padding: 18px;
     border-radius: var(--snr-r-panel);
-    border-right: 1px solid rgba(110, 231, 183, 0.3);
+    border-right: 0;
     box-shadow: var(--snr-lift);
   }
 
@@ -2398,7 +2412,7 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   margin-right: 0;
   padding-right: 20px;
   border-radius: var(--snr-r-panel);
-  border-right: 1px solid rgba(110, 231, 183, 0.3);
+  border-right: 0;
   box-shadow: var(--snr-lift);
 }
 
@@ -2415,7 +2429,8 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   padding: 14px 16px;
   border-radius: var(--snr-r-panel);
   background: var(--snr-panel);
-  border: 1px solid var(--snr-hair);
+  border: 0;
+  box-shadow: var(--snr-soft);
 }
 
 .snr-fund-head {
@@ -3216,7 +3231,7 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
      card again: full border, full radius, no lip. */
   .snr-band.snr-stage2 .snr-col-dossier {
     border-radius: var(--snr-r-panel);
-    border-right: 1px solid rgba(110, 231, 183, 0.3);
+    border-right: 0;
     padding-right: 16px;
     margin-right: 0;
   }
