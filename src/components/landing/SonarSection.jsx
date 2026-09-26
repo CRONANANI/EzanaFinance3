@@ -725,16 +725,43 @@ export function SonarSection() {
     };
 
     let touchY = null;
+    let touchX = null;
+    /* Whether the gesture began inside the deck. Captured on touchstart, not
+       recomputed per move: once a swipe is under way the target can change. */
+    let inDeck = false;
     const onTouchStart = (e) => {
       touchY = e.touches?.[0]?.clientY ?? null;
+      touchX = e.touches?.[0]?.clientX ?? null;
+      const deck = colsRef.current;
+      inDeck = Boolean(deck && e.target instanceof Node && deck.contains(e.target));
     };
     const onTouchMove = (e) => {
       if (!lockedRef.current || settlingRef.current || touchY === null) return;
       const dy = (e.touches?.[0]?.clientY ?? touchY) - touchY;
+      const dx = (e.touches?.[0]?.clientX ?? touchX ?? 0) - (touchX ?? 0);
       const insideBand = band.contains(e.target);
+
+      /* Inside the deck, the default is the feature. The deck's horizontal
+         snap scrolling and each slide's vertical scrolling both need it, and
+         the body is frozen anyway, so nothing here can move the page. */
+      if (inDeck) {
+        /* A release still has to be possible from a slide's top, but only for
+           a gesture that is clearly vertical: a swipe between slides is not a
+           request to leave the band. */
+        const verticalIntent = Math.abs(dy) > 1.5 * Math.abs(dx);
+        if (verticalIntent && dy > 24) {
+          const slide = e.target instanceof Element ? e.target.closest('.snr-cols > *') : null;
+          if (!slide || slide.scrollTop <= 0) release();
+        }
+        return;
+      }
+
       /* The frozen body cannot scroll, but a touch that overscrolls the band
          still triggers the browser's rubber band. Blocking at the band's
-         bottom is what keeps that from showing anything underneath. */
+         bottom is what keeps that from showing anything underneath. A
+         horizontal swipe never counts as either gesture. */
+      const horizontal = Math.abs(dx) >= Math.abs(dy);
+      if (horizontal) return;
       const atBottom = band.scrollTop + band.clientHeight >= band.scrollHeight - 2;
       if (dy < 0) {
         if (!insideBand || atBottom) e.preventDefault();
