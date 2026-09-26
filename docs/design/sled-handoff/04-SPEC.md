@@ -331,8 +331,10 @@ Unrated events carry a middle dot, not a dash, and not a zero. A zero would
 claim the event was rated and scored nothing.
 
 - **Standings**: 01 Daniel R. 1512 (flat), 02 You @axum 1498 (+24), 03 Maya K.
-  1470 (NEW), 04 Priya S. 1441 (-5). All four are Apprentice. Rating bars at
-  81.3% / 72.0% / 53.3% / 34.0%. Foot row: `4 members` left, `14 to first` right.
+  1470 (NEW), 04 Priya S. 1441 (-5), 05 Jordan T. 1418 (+3), 06 Sam O. 1396
+  (-2). All six are Apprentice. Rating bars at 81.3% / 72.0% / 53.3% / 34.0% /
+  18.7% / 4.0%. Foot row: `6 members` left, `14 to first` right. (Revision 3;
+  the original four and their numbers are unchanged.)
 - **Ledger foot row**: `Net this week +38` left, `Full ledger` link right.
 
 > **Fixture correction.** The brief's standings story has you passing Priya S. to
@@ -356,3 +358,22 @@ claim the event was rated and scored nothing.
    and the largest object in the section.
 5. The feed did not visibly cause the chart. The same +24 now lands in the ledger,
    the rating and the standings inside 1.5s.
+
+## Revision 3 (Noah, Sept 26)
+
+- Header is centered and matches the other landing sections (section-eyebrow + shared title scale); the masthead rules and the header stamp are removed. The stamp lives in the standings sheet head.
+- Standings entries are 1.4 rows tall (was 2) and the fixture has six members (Jordan T. 1418, Sam O. 1396 appended), so the sheet fills by count. Cohort copy reads vs. 5 friends / 6 members.
+- No rule below the section foot.
+
+Notes from implementing it:
+
+- The heading takes `.how-title`'s size and weight (2rem / 700, from
+  app-legacy/components/landing/features-section.css). That rule declares no
+  letter-spacing and no line-height, so neither is set on `.sled-heading`
+  either, and there are no responsive overrides of `.how-title` to track.
+- The standings sheet head did not already carry a LIVE label, so the stamp was
+  ADDED there rather than relabelled. The head is now a row: title left, stamp
+  right.
+- Section 11's fixture table gains the two members: 05 Jordan T. 1418 (+3) and
+  06 Sam O. 1396 (-2), both Apprentice. Rating bars, on the chart's
+  (rating - 1390) / 150 domain, are 18.7% and 4.0%.

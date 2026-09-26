@@ -57,27 +57,15 @@
   padding-inline: var(--sled-pad);
 }
 
-/* ── masthead ─────────────────────────────────────────────────────────── */
-.sled-masthead {
-  border-top: 1px solid var(--sled-rule);
-}
-.sled-mast-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding-block: 10px;
-  border-bottom: 2px solid var(--sled-rule-strong);
-}
-.sled-eyebrow {
-  margin: 0;
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: var(--type-eyebrow-size);
-  font-weight: var(--type-eyebrow-weight);
-  letter-spacing: var(--type-eyebrow-tracking-marketing);
-  text-transform: uppercase;
-  color: var(--emerald);
+/* ── header ───────────────────────────────────────────────────────────────
+   Centred, matching every other landing section rather than the handoff's
+   left-aligned masthead. The hairline above the eyebrow and the 2px rule under
+   it are both gone with it, and .sled-eyebrow went with them: the eyebrow is
+   now the shared .section-eyebrow. */
+.sled-head {
+  text-align: center;
+  margin: 0 auto;
+  max-width: 62ch;
 }
 .sled-stamp {
   display: inline-flex;
@@ -113,17 +101,18 @@
 
 /* Size only: the grid depends on the headline and subhead clamps. Weight,
    tracking and colour are the shipped rules. */
+/* Size and weight copied from .how-title, the other sections' h2
+   (app-legacy/components/landing/features-section.css), so the titles match.
+   That rule declares no letter-spacing or line-height, so neither is set here
+   either; the handoff's 17ch cap is dropped so the line stays single. */
 .sled-heading {
-  margin: clamp(18px, 2vw, 30px) 0 0;
-  font-size: clamp(30px, 4.2vw, 60px);
+  margin: 10px 0 0;
+  font-size: 2rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  max-width: 17ch;
   color: var(--text-primary);
 }
 .sled-sub {
-  margin: clamp(12px, 1.2vw, 18px) 0 0;
+  margin: 12px auto 0;
   font-size: clamp(14px, 1.15vw, 17px);
   line-height: 1.65;
   max-width: 62ch;
@@ -132,7 +121,7 @@
 
 /* ── zone B, the record: 5fr rating | 7fr chart ────────────────────────── */
 .sled-record {
-  margin-top: clamp(28px, 3.2vw, 48px);
+  margin-top: clamp(28px, 3vw, 44px);
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
   gap: var(--sled-colgap);
@@ -355,6 +344,10 @@
   min-width: 0;
 }
 .sled-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
@@ -389,10 +382,13 @@
     clamp(26px, 2.6vw, 34px) minmax(0, 1fr)
     clamp(54px, 5vw, 68px) clamp(48px, 4.6vw, 60px);
   grid-template-rows: auto auto;
-  row-gap: 9px;
-  /* Four entries share the ledger's height, so each is two ledger rows tall. */
+  row-gap: 4px;
+  /* Six entries now share the ledger's height at about 1.4 rows each, so the
+     sheet fills by COUNT rather than by four entries stretching to cover it.
+     Still flex: 1 1 0 inside the stretched sheet, so the two sheets remain one
+     height by structure. */
   flex: 1 1 0;
-  min-height: calc(var(--sled-row) * 1.7);
+  min-height: calc(var(--sled-row) * 1.4);
   padding-block: 8px;
   border-bottom: 1px dotted var(--sled-dot);
 }
@@ -575,7 +571,7 @@
 }
 .sled-bar-track {
   flex: 1 1 auto;
-  height: 2px;
+  height: 3px;
   min-width: 0;
   background: var(--sled-rule);
 }
@@ -628,6 +624,17 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--emerald);
+}
+
+/* The grey line under the compliance note is not this section's. Nothing
+   inside .sled-section paints below the foot (verified in the rendered DOM):
+   the rule is .bl-section's own border-top, and the Integrations section
+   follows this one on the landing page. Suppressed at the boundary rather
+   than deleted from brokerage-logos.css, so the Integrations section keeps
+   its top rule anywhere else it is ever placed. The compliance line and the
+   CTA are now the last painted things before the rhythm gap. */
+.sled-section + .bl-section {
+  border-top: 0;
 }
 
 /* ── reduced motion: the composed frame, nothing mid-transition ────────── */

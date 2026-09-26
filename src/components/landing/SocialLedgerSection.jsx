@@ -51,7 +51,7 @@ const YOU_SERIES = [1408, 1416, 1410, 1428, 1440, 1452, 1484, 1498];
 const COHORTS = {
   friends: {
     label: 'Friends',
-    caption: 'vs. 3 friends',
+    caption: 'vs. 5 friends',
     a: [1452, 1460, 1466, 1472, 1484, 1494, 1504, 1512],
     b: [1418, 1424, 1430, 1438, 1446, 1452, 1460, 1466],
   },
@@ -117,6 +117,8 @@ const STANDINGS = [
   },
   { rank: '03', name: 'Maya K.', rating: 1470, week: 'NEW', tier: 'Apprentice' },
   { rank: '04', name: 'Priya S.', rating: 1441, week: '-5', tier: 'Apprentice' },
+  { rank: '05', name: 'Jordan T.', rating: 1418, week: '+3', tier: 'Apprentice' },
+  { rank: '06', name: 'Sam O.', rating: 1396, week: '-2', tier: 'Apprentice' },
 ];
 
 /* Tier ladder. Six tiers get EQUAL segments rather than a linear 0 to 10,000
@@ -313,15 +315,13 @@ export function SocialLedgerSection() {
   return (
     <section className="sled-section sled" aria-labelledby="sled-heading" ref={sectionRef}>
       <div className="sled-inner">
-        {/* ── masthead ── */}
-        <div className="sled-masthead">
-          <div className="sled-mast-row">
-            <p className="sled-eyebrow">Social investing</p>
-            <span className="sled-stamp">
-              <i className="sled-live-dot" aria-hidden="true" />
-              Season 4 {DOT} Live
-            </span>
-          </div>
+        {/* Centred header, the same shape every other landing section uses
+            (Getting Started is the reference: section-eyebrow over a centred
+            h2). The handoff's left-aligned masthead, its hairline and its 2px
+            rule are gone; the SEASON 4 / LIVE stamp moved to the standings
+            sheet head so there is one live dot in one place. */}
+        <div className="sled-head">
+          <p className="section-eyebrow lf-mono">Social investing</p>
           <h2 id="sled-heading" className="sled-heading">
             Every move is on the record.
           </h2>
@@ -539,7 +539,13 @@ export function SocialLedgerSection() {
           </div>
 
           <div className="sled-sheet sled-standsheet">
-            <div className="sled-sheet-head">Season 4 standings</div>
+            <div className="sled-sheet-head">
+              <span>Season 4 standings</span>
+              <span className="sled-stamp">
+                <i className="sled-live-dot" aria-hidden="true" />
+                Season 4 {DOT} Live
+              </span>
+            </div>
             <div className="sled-tr sled-thead sled-tr--stand">
               <span>#</span>
               <span>Member</span>
@@ -582,7 +588,7 @@ export function SocialLedgerSection() {
               })}
             </div>
             <div className="sled-footrow">
-              <span>4 members</span>
+              <span>6 members</span>
               <span className="sled-ta-r">{frame.gap} to first</span>
             </div>
           </div>
