@@ -15,14 +15,15 @@ body.light-mode .landing-footer {
 .landing-footer-inner {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 64px 2rem 0;
+  padding: 40px 2rem 0;
 }
 
 .landing-footer-grid {
   display: grid;
   grid-template-columns: 1.6fr 1fr 1fr;
-  gap: 48px;
-  padding-bottom: 48px;
+  /* Row gap tighter, column gap unchanged. */
+  gap: 32px 48px;
+  padding-bottom: 28px;
 }
 
 .landing-footer-brand {

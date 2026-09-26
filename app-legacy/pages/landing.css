@@ -1637,8 +1637,11 @@ body:has(.landing-page) {
     color: white;
 }
 
+/* margin-bottom removed: vertical rhythm between landing sections is owned by
+   the shared --landing-gap rule in globals.css, and this 2rem stacked on top of
+   it at BOTH .features-section boundaries (Getting Started and Why Ezana),
+   measuring 128px where the token says 96. */
 .features-section {
-    margin-bottom: 2rem;
 }
 
 .features-title {

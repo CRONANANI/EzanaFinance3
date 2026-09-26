@@ -1405,10 +1405,14 @@ body::-webkit-scrollbar {
  * positioned at the right edge of the row so the question stays visually
  * centered regardless of icon presence.
  */
+/* Horizontal only. The 1.5rem top and bottom stacked on .faq-section-wrapper's
+   rhythm padding, so the FAQ's boundaries measured 24px more than the token on
+   each side. Per-section sheets own horizontal padding; the rhythm block owns
+   vertical. */
 .landing-faq-section {
   max-width: 760px;
   margin: 0 auto;
-  padding: 1.5rem 2rem;
+  padding: 0 2rem;
 }
 
 .landing-faq-container {
@@ -2740,8 +2744,11 @@ html:has(.landing-page) .navbar.navbar-sticky,
    padding-bottom here overrides their vertical values per property while
    leaving the horizontal values in those tiers untouched, which is what the
    small-viewport gutters depend on. */
+/* 80px per boundary, 40 each side. Was 96. Dropped only AFTER the leaks above
+   were removed, so the reduction is uniform rather than compensating for one
+   section's stray margin. */
 .landing-page {
-  --landing-gap: 96px;
+  --landing-gap: 80px;
 }
 
 .landing-page .bl-section,
@@ -2756,7 +2763,7 @@ html:has(.landing-page) .navbar.navbar-sticky,
 
 @media (max-width: 768px) {
   .landing-page {
-    --landing-gap: 48px;
+    --landing-gap: 40px;
   }
 }
 
@@ -3024,7 +3031,16 @@ html:has(.landing-page) .navbar .nav-link {
    is set by CookieConsentBanner.jsx; when the banner is closed the variable
    is removed and this padding becomes 0. */
 .landing-page {
-  padding-bottom: var(--cookie-banner-height, 0px);
+  /* Clamped, but at half the viewport rather than a flat 220px. The zero-rect
+     guard in CookieConsentBanner already stops the banner publishing a
+     viewport-sized value before it has laid out; this is the belt to that
+     brace. 220 was measured as too small to be the belt: at 390 the banner is
+     genuinely 274px tall and publishes 354, so a flat cap would have hidden
+     the footer's last 134px behind it. 50vh still catches a runaway publish
+     (the old failure reserved the whole viewport plus 80) without
+     under-reserving for a real, tall mobile banner. Closed, the variable is
+     removed and this is 0. */
+  padding-bottom: min(var(--cookie-banner-height, 0px), 50vh);
 }
 
 /* The centered <ul class="nav-menu"> is wide and absolute-positioned —
