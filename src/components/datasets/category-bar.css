@@ -15,17 +15,20 @@
    page content rather than over the bar. */
 /* The green block: the category bar and, when a page publishes one, the ticker
    beneath it. One element paints the gradient so the two read as a single
-   continuous piece of chrome rather than two stacked bands with a seam — and
-   one element carries the rounded bottom corners and the gap to the page
-   content below.
+   continuous piece of chrome rather than two stacked bands with a seam, and
+   one element owns the gap to the page content below.
 
-   overflow: hidden is what clips the ticker's track to those corners. It does
-   NOT clip the bar's dimension menus: those render through a portal to
-   document.body for exactly this reason. Do not remove the portal. */
+   Square, edge to edge. The bottom corners were rounded to var(--radius-xl)
+   in the pass that built this block; the block now runs to the page edges
+   instead, so no radius is declared at all rather than one being reset.
+
+   No overflow: hidden either. It was here only to clip the ticker's track to
+   those corners, and with no corners it clips nothing: the track is already
+   contained by the ticker's own overflow: hidden, and the bar's dimension
+   menus were never subject to it — they render through a portal to
+   document.body for exactly that reason. Do not remove the portal. */
 .dscat-chrome {
   background: var(--brand-band-green);
-  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-  overflow: hidden;
   margin-bottom: 20px;
 }
 /* The bar no longer paints or spaces itself; the block above does both. */

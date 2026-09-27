@@ -81,7 +81,12 @@ const VIEWPORT_MARGIN = 12;
  */
 function useHoverIntentMenu() {
   const [openId, setOpenId] = useState(null);
-  const pinned = useRef(false);
+  /* WHICH menu is pinned, not merely whether one is. A boolean conflated the
+     two and broke switching: with Capitol Watch pinned, moving the pointer to
+     Titans Shadow opened Titans by hover while the flag stayed true, so the
+     click that should have switched read "already pinned" and closed
+     everything instead. */
+  const pinnedId = useRef(null);
   const timer = useRef(null);
 
   const cancelClose = useCallback(() => {
@@ -91,16 +96,19 @@ function useHoverIntentMenu() {
     }
   }, []);
 
+  /* Hovering a different dimension retires the previous pin: the pointer has
+     moved on, and the menu that pin belonged to is no longer the one shown. */
   const open = useCallback(
     (id) => {
       cancelClose();
+      if (pinnedId.current !== id) pinnedId.current = null;
       setOpenId(id);
     },
     [cancelClose],
   );
 
   const scheduleClose = useCallback(() => {
-    if (pinned.current) return;
+    if (pinnedId.current) return;
     cancelClose();
     timer.current = setTimeout(() => {
       setOpenId(null);
@@ -110,7 +118,7 @@ function useHoverIntentMenu() {
 
   const close = useCallback(() => {
     cancelClose();
-    pinned.current = false;
+    pinnedId.current = null;
     setOpenId(null);
   }, [cancelClose]);
 
@@ -118,18 +126,24 @@ function useHoverIntentMenu() {
      merely opened pins it instead — that is what stops the hover-then-click
      gesture from undoing itself, and what makes a touch tap (which fires an
      emulated mouseenter and a click from one gesture) open rather than
-     flicker. A click on a DIFFERENT trigger always switches. */
+     flicker. A click on a DIFFERENT trigger always switches.
+
+     All of it decided here, in the event handler, and NOT inside a setState
+     updater. This used to flip the pin from within one, which is a side effect
+     in a function React requires to be pure and may call more than once: under
+     StrictMode it ran twice, the first call pinning and the second reading its
+     own write and unpinning, so a click opened and shut the menu in one
+     gesture. Hover still worked, which is what hid it. */
   const toggle = useCallback(
     (id) => {
       cancelClose();
-      setOpenId((curr) => {
-        if (curr === id && pinned.current) {
-          pinned.current = false;
-          return null;
-        }
-        pinned.current = true;
-        return id;
-      });
+      if (pinnedId.current === id) {
+        pinnedId.current = null;
+        setOpenId(null);
+        return;
+      }
+      pinnedId.current = id;
+      setOpenId(id);
     },
     [cancelClose],
   );
@@ -137,7 +151,7 @@ function useHoverIntentMenu() {
   const pin = useCallback(
     (id) => {
       cancelClose();
-      pinned.current = true;
+      pinnedId.current = id;
       setOpenId(id);
     },
     [cancelClose],
