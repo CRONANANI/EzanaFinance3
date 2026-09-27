@@ -19,17 +19,17 @@ not chosen, is the Design artifact "Government contracts page", fourth row.
 
 ## Files
 
-| File                           | What it is                                                                                                                                                              |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `00-README.md`                 | This index and the prompt to paste                                                                                                                                      |
-| `01-BRIEF.md`                  | The dataset honestly described, the jobs, the approved design, copy, constraints                                                                                        |
-| `02-INTERACTIONS.json`         | Every drill path, the member panel's behaviour, filters, sorting, states, keyboard                                                                                      |
-| `03-TOKENS.css`                | Page tokens with the contrast working; the positive colour split; panel and scrim                                                                                       |
-| `04-SPEC.md`                   | **The measured spec.** Grid, the builder, the rail, metric row, tabs, the one chart, the trades table column template, the panel, type scale, responsive rules, fixture |
-| `05-ACCEPTANCE.md`             | Ship checklist, with the chrome uniformity checks first                                                                                                                 |
-| `06-SHARED-CHROME.md`          | **The contract for the top 76px of every datasets page.** Dimension bar, ticker, dot colours, the centred title block, what is and is not shared                        |
-| `07-wireframe-resting.html`    | The page as approved, resting state, 1440 wide                                                                                                                          |
-| `08-wireframe-panel-open.html` | The same page with a member's panel open and their row selected                                                                                                         |
+| File | What it is |
+|---|---|
+| `00-README.md` | This index and the prompt to paste |
+| `01-BRIEF.md` | The dataset honestly described, the jobs, the approved design, copy, constraints |
+| `02-INTERACTIONS.json` | Every drill path, the member panel's behaviour, filters, sorting, states, keyboard |
+| `03-TOKENS.css` | Page tokens with the contrast working; the positive colour split; panel and scrim |
+| `04-SPEC.md` | **The measured spec.** Grid, the builder, the rail, metric row, tabs, the one chart, the trades table column template, the panel, type scale, responsive rules, fixture |
+| `05-ACCEPTANCE.md` | Ship checklist, with the chrome uniformity checks first |
+| `06-SHARED-CHROME.md` | **The contract for the top 76px of every datasets page.** Dimension bar, ticker, dot colours, the centred title block, what is and is not shared |
+| `07-wireframe-resting.html` | The page as approved, resting state, 1440 wide |
+| `08-wireframe-panel-open.html` | The same page with a member's panel open and their row selected |
 
 ## Read this before building
 

@@ -14,15 +14,15 @@ copy the markup page to page.
 
 ## 1. The dimension bar
 
-| Property           | Value                                                                                                                                                        |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Height             | 44px                                                                                                                                                         |
-| Background         | `#064e3b`, solid, full viewport width                                                                                                                        |
-| Text               | `#ffffff`, Plus Jakarta Sans 13px / 500                                                                                                                      |
-| Horizontal padding | 28px                                                                                                                                                         |
-| Left               | `Home` with a left-chevron glyph, then a 40px gap                                                                                                            |
-| Centre             | the seven dimension triggers, centred as a group, 18px apart                                                                                                 |
-| Right              | `Log in` (ghost pill, 1px `rgba(255,255,255,.45)` border, 7px 16px) then `Sign up` (solid `#10b981`, white 700 text, 8px 16px), both `border-radius: 9999px` |
+| Property | Value |
+|---|---|
+| Height | 44px |
+| Background | `#064e3b`, solid, full viewport width |
+| Text | `#ffffff`, Plus Jakarta Sans 13px / 500 |
+| Horizontal padding | 28px |
+| Left | `Home` with a left-chevron glyph, then a 40px gap |
+| Centre | the seven dimension triggers, centred as a group, 18px apart |
+| Right | `Log in` (ghost pill, 1px `rgba(255,255,255,.45)` border, 7px 16px) then `Sign up` (solid `#10b981`, white 700 text, 8px 16px), both `border-radius: 9999px` |
 
 **Dimension triggers.** Each is a 6px coloured dot, the dimension name, and a
 down-chevron that opens that dimension's datasets menu. The active dimension
@@ -32,15 +32,15 @@ font-weight: 600`. Inactive triggers have no pill.
 
 Dot colours, fixed and never reassigned:
 
-| Dimension                | Dot       |
-| ------------------------ | --------- |
-| Capitol Watch            | `#6ee7b7` |
-| Titans Shadow            | `#c4b5fd` |
-| Eyes Above               | `#67e8f9` |
-| Consumer Whispers        | `#fcd34d` |
-| The Hive                 | `#f9a8d4` |
+| Dimension | Dot |
+|---|---|
+| Capitol Watch | `#6ee7b7` |
+| Titans Shadow | `#c4b5fd` |
+| Eyes Above | `#67e8f9` |
+| Consumer Whispers | `#fcd34d` |
+| The Hive | `#f9a8d4` |
 | Global Empire Lighthouse | `#93c5fd` |
-| Regulatory Winds         | `#d9f99d` |
+| Regulatory Winds | `#d9f99d` |
 
 Both Government Contracts and House Financial Disclosures belong to Capitol
 Watch, so both show that pill.
@@ -50,15 +50,15 @@ style. Nothing else changes.
 
 ## 2. The ticker, the conveyor belt
 
-| Property     | Value                                                                                                                   |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| Height       | 32px, directly under the dimension bar, no gap                                                                          |
-| Background   | `#032a21`, full viewport width                                                                                          |
-| Text         | JetBrains Mono 10.5px, `letter-spacing: .06em`, uppercase labels                                                        |
-| Colours      | label `rgba(255,255,255,.75)`, subject `#ffffff` 600, value `#6ee7b7` 600, secondary `rgba(255,255,255,.5)`             |
-| Item padding | 0 18px, items separated by a 1px `rgba(255,255,255,.14)` rule                                                           |
-| Motion       | continuous leftward scroll, linear, about 40s for one pass of the list, paused on hover and on `prefers-reduced-motion` |
-| Behaviour    | every item is a link into that page's detail view                                                                       |
+| Property | Value |
+|---|---|
+| Height | 32px, directly under the dimension bar, no gap |
+| Background | `#032a21`, full viewport width |
+| Text | JetBrains Mono 10.5px, `letter-spacing: .06em`, uppercase labels |
+| Colours | label `rgba(255,255,255,.75)`, subject `#ffffff` 600, value `#6ee7b7` 600, secondary `rgba(255,255,255,.5)` |
+| Item padding | 0 18px, items separated by a 1px `rgba(255,255,255,.14)` rule |
+| Motion | continuous leftward scroll, linear, about 40s for one pass of the list, paused on hover and on `prefers-reduced-motion` |
+| Behaviour | every item is a link into that page's detail view |
 
 **Item shape is per dataset; the styling is not.** Each page supplies an array
 of items; the component renders them identically.

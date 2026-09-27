@@ -31,32 +31,32 @@
   --hfd-faint: #8a9a95;
 
   /* ---- rules ---- */
-  --hfd-rule: rgba(10, 14, 19, 0.1); /* hairline: heads, metric row, table foot */
-  --hfd-rule-strong: #0a0e13; /* 2px: opens a table */
-  --hfd-dot: rgba(10, 14, 19, 0.2); /* dotted: between rows */
-  --hfd-border: rgba(10, 14, 19, 0.12); /* inputs, pills, chips */
+  --hfd-rule: rgba(10, 14, 19, 0.10);         /* hairline: heads, metric row, table foot */
+  --hfd-rule-strong: #0a0e13;                 /* 2px: opens a table */
+  --hfd-dot: rgba(10, 14, 19, 0.20);          /* dotted: between rows */
+  --hfd-border: rgba(10, 14, 19, 0.12);       /* inputs, pills, chips */
 
   /* ---- positive, split in two on purpose ---- */
-  --hfd-pos: #047857; /* TEXT: links, tickers, BUY chip text */
-  --hfd-pos-mark: #10b981; /* MARKS: bars, underline, row rule, fills */
-  --hfd-pos-wash: rgba(16, 185, 129, 0.12); /* BUY chip and Generate button fill */
-  --hfd-pos-row: rgba(16, 185, 129, 0.07); /* the selected member's row */
-  --hfd-pos-field: rgba(16, 185, 129, 0.06); /* active select fill */
-  --hfd-pos-field-line: rgba(16, 185, 129, 0.4);
+  --hfd-pos: #047857;                         /* TEXT: links, tickers, BUY chip text */
+  --hfd-pos-mark: #10b981;                    /* MARKS: bars, underline, row rule, fills */
+  --hfd-pos-wash: rgba(16, 185, 129, 0.12);   /* BUY chip and Generate button fill */
+  --hfd-pos-row: rgba(16, 185, 129, 0.07);    /* the selected member's row */
+  --hfd-pos-field: rgba(16, 185, 129, 0.06);  /* active select fill */
+  --hfd-pos-field-line: rgba(16, 185, 129, 0.40);
 
   /* ---- sell, neutral not negative ---- */
-  --hfd-sell-mark: rgba(10, 14, 19, 0.55); /* sell bars, split-bar segment */
-  --hfd-sell-wash: rgba(10, 14, 19, 0.08); /* SELL chip fill, ink text */
+  --hfd-sell-mark: rgba(10, 14, 19, 0.55);    /* sell bars, split-bar segment */
+  --hfd-sell-wash: rgba(10, 14, 19, 0.08);    /* SELL chip fill, ink text */
 
   /* ---- states ---- */
-  --hfd-late: #b45309; /* lag over 45 days, pending text */
-  --hfd-late-mark: #f59e0b; /* 45-day line, coverage dot, spinner */
+  --hfd-late: #b45309;                        /* lag over 45 days, pending text */
+  --hfd-late-mark: #f59e0b;                   /* 45-day line, coverage dot, spinner */
   --hfd-sample-bg: #fef3c7;
   --hfd-sample-ink: #92400e;
 
   /* ---- panel ---- */
   --hfd-panel-w: 480px;
-  --hfd-panel-top: 76px; /* the shared chrome's height */
+  --hfd-panel-top: 76px;                      /* the shared chrome's height */
   --hfd-scrim: rgba(10, 14, 19, 0.22);
   --hfd-panel-shadow: -30px 0 70px rgba(10, 14, 19, 0.18);
   --hfd-panel-ms: 220ms;
@@ -65,14 +65,14 @@
   --hfd-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --hfd-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   --hfd-track-caps: 0.16em;
-  --hfd-track-chip: 0.1em;
+  --hfd-track-chip: 0.10em;
 
   /* ---- layout ---- */
   --hfd-gutter: 40px;
   --hfd-rail: 232px;
   --hfd-rail-gap: 36px;
-  --hfd-row: 42px; /* trades table */
-  --hfd-row-panel: 36px; /* panel table */
+  --hfd-row: 42px;                            /* trades table */
+  --hfd-row-panel: 36px;                      /* panel table */
   --hfd-builder-w: 720px;
   --hfd-builder-h: 44px;
 
@@ -93,70 +93,30 @@
 .hfd .hfd-ticker,
 .hfd .hfd-date,
 .hfd .hfd-bracket,
-.hfd .hfd-lag {
-  font-family: var(--hfd-mono);
-  font-variant-numeric: tabular-nums;
-}
+.hfd .hfd-lag { font-family: var(--hfd-mono); font-variant-numeric: tabular-nums; }
 
 /* The builder never goes dark. If a dark class from the old builder is still in
    the codebase, do not reuse it here. */
-.hfd .hfd-builder {
-  background: var(--hfd-bg);
-  border: 1px solid var(--hfd-border);
-  border-radius: var(--hfd-r-pill);
-}
-.hfd .hfd-builder-editor {
-  background: var(--hfd-bg);
-  border: 1px solid var(--hfd-rule);
-  border-radius: var(--hfd-r-input);
-  max-width: var(--hfd-builder-w);
-}
+.hfd .hfd-builder { background: var(--hfd-bg); border: 1px solid var(--hfd-border); border-radius: var(--hfd-r-pill); }
+.hfd .hfd-builder-editor { background: var(--hfd-bg); border: 1px solid var(--hfd-rule); border-radius: var(--hfd-r-input); max-width: var(--hfd-builder-w); }
 
 /* Selected member row */
-.hfd .hfd-row-selected {
-  background: var(--hfd-pos-row);
-  box-shadow: inset 3px 0 0 var(--hfd-pos-mark);
-}
+.hfd .hfd-row-selected { background: var(--hfd-pos-row); box-shadow: inset 3px 0 0 var(--hfd-pos-mark); }
 
 /* Panel */
-.hfd-panel {
-  position: fixed;
-  top: var(--hfd-panel-top);
-  right: 0;
-  bottom: 0;
-  width: var(--hfd-panel-w);
-  background: var(--hfd-bg);
-  border-left: 1px solid var(--hfd-rule);
-  box-shadow: var(--hfd-panel-shadow);
-  transform: translateX(0);
-  transition: transform var(--hfd-panel-ms) ease-out;
-}
-.hfd-panel[hidden] {
-  display: none;
-}
-.hfd-scrim {
-  position: fixed;
-  inset: var(--hfd-panel-top) 0 0 0;
-  background: var(--hfd-scrim);
-  transition: opacity var(--hfd-panel-ms) ease-out;
-}
+.hfd-panel { position: fixed; top: var(--hfd-panel-top); right: 0; bottom: 0; width: var(--hfd-panel-w);
+  background: var(--hfd-bg); border-left: 1px solid var(--hfd-rule); box-shadow: var(--hfd-panel-shadow);
+  transform: translateX(0); transition: transform var(--hfd-panel-ms) ease-out; }
+.hfd-panel[hidden] { display: none; }
+.hfd-scrim { position: fixed; inset: var(--hfd-panel-top) 0 0 0; background: var(--hfd-scrim);
+  transition: opacity var(--hfd-panel-ms) ease-out; }
 
 @media (prefers-reduced-motion: reduce) {
-  .hfd-panel,
-  .hfd-scrim,
-  .hfd .hfd-ticker-belt {
-    transition: none !important;
-    animation: none !important;
-  }
+  .hfd-panel, .hfd-scrim, .hfd .hfd-ticker-belt { transition: none !important; animation: none !important; }
 }
 
 /* Phone: the panel takes the whole screen */
 @media (max-width: 760px) {
-  .hfd-panel {
-    top: 0;
-    width: 100%;
-  }
-  .hfd-scrim {
-    inset: 0;
-  }
+  .hfd-panel { top: 0; width: 100%; }
+  .hfd-scrim { inset: 0; }
 }

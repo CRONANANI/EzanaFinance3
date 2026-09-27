@@ -39,3 +39,8 @@ app-legacy/
 
 # Generated content/data we don't author by hand
 **/world-atlas/**
+
+# Vendored design handoffs. These are the delivered source of truth for the
+# pages built from them, so they must round-trip exactly; reformatting them
+# makes the repo copy differ from what was handed over.
+docs/design/

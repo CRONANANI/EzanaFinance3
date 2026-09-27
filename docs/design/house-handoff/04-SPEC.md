@@ -11,30 +11,25 @@ All numbers are px.
 
 ## 1. Vertical structure at 1440
 
-| Zone          | Height | Notes                                         |
-| ------------- | -----: | --------------------------------------------- |
-| Shared chrome |     76 | nav 44 + ticker 32, see 06                    |
-| Top padding   |     28 |                                               |
-| Eyebrow row   |     14 | with the `SAMPLE DATA` chip when applicable   |
-| Gap           |     10 |                                               |
-| Title         |     36 | 32px / 700, `letter-spacing -.025em`, centred |
-| Gap           |     14 |                                               |
-| Builder pill  |     44 | 720 wide, centred                             |
-| Query line    |     14 | mono 10px under the pill, 2px gap             |
-| Gap           |     30 |                                               |
-| Body          |  flows | rail + main, scrolls normally                 |
+| Zone | Height | Notes |
+|---|---:|---|
+| Shared chrome | 76 | nav 44 + ticker 32, see 06 |
+| Top padding | 28 | |
+| Eyebrow row | 14 | with the `SAMPLE DATA` chip when applicable |
+| Gap | 10 | |
+| Title | 36 | 32px / 700, `letter-spacing -.025em`, centred |
+| Gap | 14 | |
+| Builder pill | 44 | 720 wide, centred |
+| Query line | 14 | mono 10px under the pill, 2px gap |
+| Gap | 30 | |
+| Body | flows | rail + main, scrolls normally |
 
 This page is not a takeover. It scrolls. There is no viewport budget to balance.
 
 ## 2. Horizontal grid
 
 ```css
-.hfd-body {
-  display: grid;
-  grid-template-columns: 232px minmax(0, 1fr);
-  gap: 36px;
-  padding: 0 40px;
-}
+.hfd-body { display: grid; grid-template-columns: 232px minmax(0, 1fr); gap: 36px; padding: 0 40px; }
 ```
 
 Content box 1360 inside 40px gutters, capped at 1440 and centred on wider
@@ -45,13 +40,13 @@ screens. Rail 232, gap 36, main 1092.
 The EzanaQL builder is a single light row. It is not a panel and it is never
 dark.
 
-| Property | Value                                                                                                                        |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Size     | 720 x 44, centred under the title                                                                                            |
-| Shape    | `border-radius: 9999px; border: 1px solid rgba(10,14,19,.12); background: #fff`                                              |
-| Left     | Ezana AI mark (12px sparkle glyph) + `Ezana AI` 12px / 600 in `#047857`, then a 1px 18px-tall divider                        |
-| Middle   | placeholder `Describe a report in plain English`, 13px, `#8a9a95`                                                            |
-| Right    | `Generate EzanaQL` button, 32px tall, `background: rgba(16,185,129,.12); color: #047857`, 12.5px / 700, pill                 |
+| Property | Value |
+|---|---|
+| Size | 720 x 44, centred under the title |
+| Shape | `border-radius: 9999px; border: 1px solid rgba(10,14,19,.12); background: #fff` |
+| Left | Ezana AI mark (12px sparkle glyph) + `Ezana AI` 12px / 600 in `#047857`, then a 1px 18px-tall divider |
+| Middle | placeholder `Describe a report in plain English`, 13px, `#8a9a95` |
+| Right | `Generate EzanaQL` button, 32px tall, `background: rgba(16,185,129,.12); color: #047857`, 12.5px / 700, pill |
 | Under it | the current query as one line of JetBrains Mono 10px in `#8a9a95`, then `Edit · Run · CSV · JSON` as text links in `#047857` |
 
 Clicking Edit or Generate expands an editor **in place under this line**, on
@@ -65,14 +60,14 @@ until the user edits it by hand.
 
 232 wide, `gap: 20px` between groups, no borders around the rail itself.
 
-| Control        | Spec                                                                                                                                                                               |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Member search  | 38px input, 8px radius, 1px `rgba(10,14,19,.12)`, magnifier glyph, placeholder `Member name`                                                                                       |
-| Ticker search  | same, mono placeholder `Ticker, e.g. NVDA`                                                                                                                                         |
-| Year           | mono-caps label, then a 34px select in the active style: 1px `rgba(16,185,129,.4)`, `rgba(16,185,129,.06)` fill, `#047857` text, mono                                              |
-| Transaction    | 4-segment control `ALL / BUY / SELL / EXCH`, 5px radius, mono 10px, active segment `#0a0e13` on white text                                                                         |
+| Control | Spec |
+|---|---|
+| Member search | 38px input, 8px radius, 1px `rgba(10,14,19,.12)`, magnifier glyph, placeholder `Member name` |
+| Ticker search | same, mono placeholder `Ticker, e.g. NVDA` |
+| Year | mono-caps label, then a 34px select in the active style: 1px `rgba(16,185,129,.4)`, `rgba(16,185,129,.06)` fill, `#047857` text, mono |
+| Transaction | 4-segment control `ALL / BUY / SELL / EXCH`, 5px radius, mono 10px, active segment `#0a0e13` on white text |
 | Amount bracket | six checkboxes, mono 11px, 13px emerald squares, hairline dividers, then the one-line note: `Amounts are the ranges members disclose. Nothing on this page shows an exact figure.` |
-| Disclosure lag | 3-segment `ANY / ≤45D / >45D`                                                                                                                                                      |
+| Disclosure lag | 3-segment `ANY / ≤45D / >45D` |
 
 Labels: JetBrains Mono 10px, `.16em`, `#8a9a95`, uppercase.
 
@@ -84,12 +79,12 @@ Four cells, ruled not carded: `border-top` and `border-bottom` 1px
 `rgba(10,14,19,.1)`, 1px vertical rules between cells, 14px block padding,
 20px between the rule and the text.
 
-| Cell                   | Figure                | Caption                                    |
-| ---------------------- | --------------------- | ------------------------------------------ |
-| FILINGS                | `45,000+`             | 2008 to 2026, 19 index years               |
-| PTRS IN 2026           | `400`                 | periodic transaction reports to date       |
-| TRANSACTIONS EXTRACTED | `[N]`                 | in current selection, buys [X]% sells [Y]% |
-| MOST RECENT FILING     | `Sep 24` in `#047857` | PTRs post within days, annuals in mid June |
+| Cell | Figure | Caption |
+|---|---|---|
+| FILINGS | `45,000+` | 2008 to 2026, 19 index years |
+| PTRS IN 2026 | `400` | periodic transaction reports to date |
+| TRANSACTIONS EXTRACTED | `[N]` | in current selection, buys [X]% sells [Y]% |
+| MOST RECENT FILING | `Sep 24` in `#047857` | PTRs post within days, annuals in mid June |
 
 Figure: JetBrains Mono 28px / 700, `letter-spacing -.03em`, tabular. Label:
 mono 10px `.16em` `#8a9a95`. Caption: 12px `#5a6b65`.
@@ -122,7 +117,7 @@ Dotted dividers. Each row links to the ticker view.
 ### 5.4 The trades table
 
 ```css
-grid-template-columns: minmax(0, 1.8fr) 64px minmax(0, 1.6fr) 62px 92px 92px 56px 150px 30px;
+grid-template-columns: minmax(0,1.8fr) 64px minmax(0,1.6fr) 62px 92px 92px 56px 150px 30px;
 gap: 12px;
 ```
 
@@ -130,16 +125,16 @@ Columns: MEMBER · TICKER · ASSET · TYPE · TRADED · FILED · LAG · AMOUNT
 DISCLOSED · source link. Head row mono 9.5px `.14em` `#8a9a95` under a 2px
 ink rule. Rows 42 tall, `border-bottom: 1px dotted rgba(10,14,19,.2)`.
 
-| Cell          | Spec                                                                                                                                                  |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Member        | 12.5px / 600 link, then party-state-district in mono 10px `#8a9a95` (`D-CA-12`)                                                                       |
-| Ticker        | mono 700 `#047857` link; a middle dot when the asset has none                                                                                         |
-| Asset         | 12.5px `#5a6b65`, one line, ellipsis                                                                                                                  |
-| Type          | chip, mono 10px `.1em`: BUY `rgba(16,185,129,.14)` on `#047857`; SELL `rgba(10,14,19,.08)` on ink; EXCH 1px outline `rgba(10,14,19,.16)` on `#5a6b65` |
-| Traded, Filed | mono 12.5px `#5a6b65`, ISO dates                                                                                                                      |
-| Lag           | mono, right-aligned, `16d`; over 45 days: `#b45309` 600                                                                                               |
-| Amount        | mono 12.5px, right-aligned, the bracket verbatim, `nowrap`                                                                                            |
-| Source        | 13px external-link glyph, `aria-label="Open source filing"`                                                                                           |
+| Cell | Spec |
+|---|---|
+| Member | 12.5px / 600 link, then party-state-district in mono 10px `#8a9a95` (`D-CA-12`) |
+| Ticker | mono 700 `#047857` link; a middle dot when the asset has none |
+| Asset | 12.5px `#5a6b65`, one line, ellipsis |
+| Type | chip, mono 10px `.1em`: BUY `rgba(16,185,129,.14)` on `#047857`; SELL `rgba(10,14,19,.08)` on ink; EXCH 1px outline `rgba(10,14,19,.16)` on `#5a6b65` |
+| Traded, Filed | mono 12.5px `#5a6b65`, ISO dates |
+| Lag | mono, right-aligned, `16d`; over 45 days: `#b45309` 600 |
+| Amount | mono 12.5px, right-aligned, the bracket verbatim, `nowrap` |
+| Source | 13px external-link glyph, `aria-label="Open source filing"` |
 
 The **selected member's** row (the one whose panel is open) takes
 `background: rgba(16,185,129,.07); box-shadow: inset 3px 0 0 #10b981;` and its
@@ -161,16 +156,16 @@ advice.`
 Opens from any member name anywhere on the page. It replaces the two-deep
 modal stack the Contracts page uses today.
 
-| Property | Value                                                                                                                                                       |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Width    | 480                                                                                                                                                         |
-| Position | fixed, right 0, from `top: 76px` to the bottom, so the shared chrome stays visible and usable                                                               |
-| Surface  | `#fff`, `border-left: 1px solid rgba(10,14,19,.1)`, `box-shadow: -30px 0 70px rgba(10,14,19,.18)`                                                           |
-| Scrim    | `rgba(10,14,19,.22)` over the page from 76px down; click closes                                                                                             |
-| Enter    | slide from the right, 220ms ease-out; scrim fades in over the same time; reduced motion: appear                                                             |
-| Close    | the X, Esc, the scrim, or browser back. Clicking another member swaps content in place, no second panel                                                     |
-| Scroll   | the panel body scrolls; the page behind does not                                                                                                            |
-| URL      | opening the panel pushes `/datasets/house/members/[slug]`; the same route standalone renders the profile as a full page, which is what `Open page` links to |
+| Property | Value |
+|---|---|
+| Width | 480 |
+| Position | fixed, right 0, from `top: 76px` to the bottom, so the shared chrome stays visible and usable |
+| Surface | `#fff`, `border-left: 1px solid rgba(10,14,19,.1)`, `box-shadow: -30px 0 70px rgba(10,14,19,.18)` |
+| Scrim | `rgba(10,14,19,.22)` over the page from 76px down; click closes |
+| Enter | slide from the right, 220ms ease-out; scrim fades in over the same time; reduced motion: appear |
+| Close | the X, Esc, the scrim, or browser back. Clicking another member swaps content in place, no second panel |
+| Scroll | the panel body scrolls; the page behind does not |
+| URL | opening the panel pushes `/datasets/house/members/[slug]`; the same route standalone renders the profile as a full page, which is what `Open page` links to |
 
 Panel contents, top to bottom, 20px padding, 18px between blocks:
 
@@ -198,19 +193,19 @@ Panel contents, top to bottom, 20px padding, 18px between blocks:
 
 ## 7. Type scale
 
-| Role                            | Face                      | Size       |
-| ------------------------------- | ------------------------- | ---------- |
-| Title                           | Jakarta 700               | 32         |
-| Eyebrow                         | Mono 500 `.18em`          | 10.5       |
-| Metric figure                   | Mono 700 `-.03em` tabular | 28         |
-| Panel figure                    | Mono 700 tabular          | 20         |
-| Panel name                      | Jakarta 700               | 19         |
-| Tabs                            | Jakarta 500 / 700 active  | 13.5       |
-| Table body                      | Jakarta 400 / 600 names   | 12.5       |
-| Table numerals, dates, brackets | Mono 400 tabular          | 12.5       |
-| Table head, rail labels         | Mono `.14em` to `.16em`   | 9.5 to 10  |
-| Chips                           | Mono `.1em`               | 10         |
-| Captions                        | Jakarta 400               | 11.5 to 12 |
+| Role | Face | Size |
+|---|---|---|
+| Title | Jakarta 700 | 32 |
+| Eyebrow | Mono 500 `.18em` | 10.5 |
+| Metric figure | Mono 700 `-.03em` tabular | 28 |
+| Panel figure | Mono 700 tabular | 20 |
+| Panel name | Jakarta 700 | 19 |
+| Tabs | Jakarta 500 / 700 active | 13.5 |
+| Table body | Jakarta 400 / 600 names | 12.5 |
+| Table numerals, dates, brackets | Mono 400 tabular | 12.5 |
+| Table head, rail labels | Mono `.14em` to `.16em` | 9.5 to 10 |
+| Chips | Mono `.1em` | 10 |
+| Captions | Jakarta 400 | 11.5 to 12 |
 
 Every figure, ticker, date, bracket, lag and rank is mono and tabular.
 
@@ -218,15 +213,15 @@ Every figure, ticker, date, bracket, lag and rank is mono and tabular.
 
 4-base. Used: 8, 10, 12, 14, 18, 20, 22, 28, 30, 36, 40.
 
-| Where                | Value |
-| -------------------- | ----- |
-| Page gutters         | 40    |
-| Rail to main         | 36    |
-| Rail groups          | 20    |
-| Main blocks          | 22    |
-| Chart to leaderboard | 28    |
-| Panel padding        | 20    |
-| Panel blocks         | 18    |
+| Where | Value |
+|---|---|
+| Page gutters | 40 |
+| Rail to main | 36 |
+| Rail groups | 20 |
+| Main blocks | 22 |
+| Chart to leaderboard | 28 |
+| Panel padding | 20 |
+| Panel blocks | 18 |
 
 ## 9. Responsive
 

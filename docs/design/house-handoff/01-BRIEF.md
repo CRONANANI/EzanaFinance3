@@ -40,7 +40,7 @@ researchers, SMIF students. It is a research surface, not a trading signal.
   convention. Older filings are scanned images and their trades are marked
   pending, never shown as empty.
 - **Amounts are brackets, never exact.** `$1,001 to $15,000`, `$15,001 to
-$50,000`, up to `Over $50,000,000`. The page may sort on a bracket midpoint
+  $50,000`, up to `Over $50,000,000`. The page may sort on a bracket midpoint
   internally but never displays one. A `~est.` marker sits beside any size sort.
 - PTRs post within days of filing; annual reports arrive in a mid-June wave.
 
@@ -136,10 +136,10 @@ dash and never a zero.
 
 ## 8. Open questions from the brief, and how the design answers them
 
-| Question                          | Answer                                                                              |
-| --------------------------------- | ----------------------------------------------------------------------------------- |
-| Trades or filings first?          | Trades. Filings is the second tab and the filings view expands a row to its trades. |
-| How prominent is coverage?        | A tab with an amber marker. One click away, never the opening read.                 |
-| Is there a chart worth having?    | One: transactions by month, buys versus sells, in counts.                           |
-| Member profile: overlay or route? | Both. A side panel that pushes a route; the route alone renders the full page.      |
-| How is the 45-day lag surfaced?   | A table column, a rail filter, an amber mark over 45, and a dot plot in the panel.  |
+| Question | Answer |
+|---|---|
+| Trades or filings first? | Trades. Filings is the second tab and the filings view expands a row to its trades. |
+| How prominent is coverage? | A tab with an amber marker. One click away, never the opening read. |
+| Is there a chart worth having? | One: transactions by month, buys versus sells, in counts. |
+| Member profile: overlay or route? | Both. A side panel that pushes a route; the route alone renders the full page. |
+| How is the 45-day lag surfaced? | A table column, a rail filter, an amber mark over 45, and a dot plot in the panel. |

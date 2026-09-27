@@ -8,22 +8,16 @@
   "defaultView": "trades",
   "views": ["trades", "filings", "members", "tickers", "coverage"],
   "drillPaths": [
-    {
-      "from": "ticker item (trade)",
-      "to": "trade row highlighted in the trades view, filter set to that member"
-    },
-    { "from": "ticker item (filing)", "to": "filing row in the filings view, expanded" },
-    { "from": "member name, anywhere", "to": "member panel, route pushed" },
-    { "from": "ticker symbol, anywhere", "to": "ticker view scoped to that symbol" },
-    { "from": "trade row source glyph", "to": "the original PDF at the Clerk, new tab" },
-    {
-      "from": "filing row",
-      "to": "expands in place to its extracted trades, or a pending-extraction line"
-    },
-    { "from": "member panel trade row", "to": "the original PDF at the Clerk, new tab" },
-    { "from": "member panel ticker chip", "to": "ticker view scoped to that symbol, panel closes" },
-    { "from": "member panel, Open page", "to": "/datasets/house/members/[slug] as a full page" },
-    { "from": "leaderboard ticker row", "to": "ticker view scoped to that symbol" }
+    { "from": "ticker item (trade)",        "to": "trade row highlighted in the trades view, filter set to that member" },
+    { "from": "ticker item (filing)",       "to": "filing row in the filings view, expanded" },
+    { "from": "member name, anywhere",      "to": "member panel, route pushed" },
+    { "from": "ticker symbol, anywhere",    "to": "ticker view scoped to that symbol" },
+    { "from": "trade row source glyph",     "to": "the original PDF at the Clerk, new tab" },
+    { "from": "filing row",                 "to": "expands in place to its extracted trades, or a pending-extraction line" },
+    { "from": "member panel trade row",     "to": "the original PDF at the Clerk, new tab" },
+    { "from": "member panel ticker chip",   "to": "ticker view scoped to that symbol, panel closes" },
+    { "from": "member panel, Open page",    "to": "/datasets/house/members/[slug] as a full page" },
+    { "from": "leaderboard ticker row",     "to": "ticker view scoped to that symbol" }
   ],
   "memberPanel": {
     "width": 480,
