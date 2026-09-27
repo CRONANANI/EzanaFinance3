@@ -1,0 +1,79 @@
+{
+  "name": "house-financial-disclosures",
+  "version": 1,
+  "note": [
+    "This page has no choreography loop. Its behaviour is the drill paths, the member panel,",
+    "and the honest states. Everything a click can do is listed here so nothing is improvised."
+  ],
+  "defaultView": "trades",
+  "views": ["trades", "filings", "members", "tickers", "coverage"],
+  "drillPaths": [
+    {
+      "from": "ticker item (trade)",
+      "to": "trade row highlighted in the trades view, filter set to that member"
+    },
+    { "from": "ticker item (filing)", "to": "filing row in the filings view, expanded" },
+    { "from": "member name, anywhere", "to": "member panel, route pushed" },
+    { "from": "ticker symbol, anywhere", "to": "ticker view scoped to that symbol" },
+    { "from": "trade row source glyph", "to": "the original PDF at the Clerk, new tab" },
+    {
+      "from": "filing row",
+      "to": "expands in place to its extracted trades, or a pending-extraction line"
+    },
+    { "from": "member panel trade row", "to": "the original PDF at the Clerk, new tab" },
+    { "from": "member panel ticker chip", "to": "ticker view scoped to that symbol, panel closes" },
+    { "from": "member panel, Open page", "to": "/datasets/house/members/[slug] as a full page" },
+    { "from": "leaderboard ticker row", "to": "ticker view scoped to that symbol" }
+  ],
+  "memberPanel": {
+    "width": 480,
+    "top": 76,
+    "openMs": 220,
+    "easing": "ease-out",
+    "scrim": "rgba(10,14,19,.22)",
+    "route": "/datasets/house/members/[slug]",
+    "routeBehaviour": "pushState on open; popstate closes; the same route loaded directly renders the full-page profile",
+    "closes": ["close button", "Escape", "scrim click", "browser back"],
+    "swap": "clicking another member while open replaces the content in place; there is never a second panel",
+    "focus": "focus moves to the panel heading on open and returns to the triggering link on close",
+    "bodyScroll": "locked while open on desktop; panel body scrolls",
+    "reducedMotion": "no slide; panel and scrim appear"
+  },
+  "builder": {
+    "restingState": "one 44px light pill plus one mono query line with Edit, Run, CSV, JSON links",
+    "expand": "Edit or Generate opens an editor under the query line, same white ground, 720 max width, never dark",
+    "seed": "query is derived from the rail filters and re-derives on every filter change until the user edits it",
+    "run": "results render as a table under the editor; cmd+enter runs",
+    "export": ["CSV", "JSON"],
+    "guests": "may run against public datasets; only saving needs sign-in"
+  },
+  "filters": {
+    "member": "text, debounced 250ms",
+    "ticker": "text, uppercased, debounced 250ms",
+    "year": "select, default 2026",
+    "transaction": ["ALL", "BUY", "SELL", "EXCH"],
+    "bracket": "multi-select, all on by default",
+    "lag": ["ANY", "<=45D", ">45D"],
+    "clear": "one control in the rail head resets everything to defaults",
+    "scope": "every filter scopes the metric row, the chart, the leaderboard, the active view, and the builder seed"
+  },
+  "sorting": {
+    "default": "filed_on desc",
+    "byAmount": "sorts on the bracket midpoint internally; the UI shows the bracket only and marks the sort with ~est. beside the column head",
+    "byLag": "numeric on days"
+  },
+  "states": {
+    "loading": "per filing row, a spinner in the trades count cell while extraction is fetched; never a whole-page spinner for one row",
+    "pendingExtraction": "row text 'Scanned filing, trades pending extraction' in #b45309, with the PDF link still present",
+    "noTrades": "row text 'none' in muted; the filing still opens its PDF",
+    "sample": "SAMPLE DATA chip in the eyebrow row, always visible while the ingest has not run",
+    "emptyFilter": "'No trades match. Try clearing <filter name>.' with the offending filter named and a one-click clear",
+    "noDate": "a filing with no usable date shows 'no date' in muted mono; typo dates from the source are stored without a date, never corrected",
+    "unknownFilingType": "an undocumented legacy code shows its raw letter in the type chip"
+  },
+  "keyboard": {
+    "Escape": "closes the panel, then any open sheet",
+    "cmd+enter": "runs the query when the editor is open",
+    "tab": "rail, tabs, table rows, panel; nothing decorative is focusable"
+  }
+}

@@ -32,7 +32,13 @@ function resolveActive(pathname) {
     for (const item of cat.items || []) {
       if (!item.href) continue;
       const isExact = pathname === item.href;
-      const isChild = pathname.startsWith(`${item.href}/`);
+      /* '/datasets' is the overview, not a dimension's page, and several
+         roadmap items point at it as their nearest live route. Treated as a
+         PREFIX it matches every dataset sub-route, so any page without its own
+         taxonomy entry lit whichever dimension happened to own the first such
+         item — The Hive, as it turned out. Contracts only escaped because its
+         own longer entry outranked it. Exact match still counts. */
+      const isChild = item.href !== '/datasets' && pathname.startsWith(`${item.href}/`);
       if (!isExact && !isChild) continue;
       if (!best || item.href.length > best.href.length) {
         best = { href: item.href, active: cat.id, activeItem: item.label };

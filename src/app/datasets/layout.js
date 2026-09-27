@@ -27,6 +27,8 @@ const COMING_SOON_ROUTES = new Set([
 // navs). The global app nav still wraps everything at the root layout.
 const STANDALONE_ROUTES = new Set([
   '/datasets',
+  // Financial disclosures, one implementation per chamber.
+  '/datasets/house/disclosures',
   '/datasets/campaignfinancerecords',
   '/datasets/government/contracts',
   '/datasets/government/lobbying',
