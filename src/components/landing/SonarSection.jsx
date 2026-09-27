@@ -1468,6 +1468,26 @@ export function SonarSection() {
     };
   }, [hasPinged, stage2]);
 
+  /* 2c's derived state. answerReady and answerFailed split what used to be a
+     single `live ? ... : ...` tail, so the two layers can be active
+     independently of which one is mounted. */
+  const answerReady = hasPinged && !pinging && Boolean(live);
+  const answerFailed = hasPinged && !pinging && !live;
+
+  /* The loader outlives its own active state by one fast duration, so it fades
+     out across the answer's first characters rather than unmounting into a
+     blank frame. */
+  const [loaderMounted, setLoaderMounted] = useState(false);
+  useEffect(() => {
+    if (pinging) {
+      setLoaderMounted(true);
+      return undefined;
+    }
+    if (!loaderMounted) return undefined;
+    const t = window.setTimeout(() => setLoaderMounted(false), 180);
+    return () => window.clearTimeout(t);
+  }, [pinging, loaderMounted]);
+
   const arrowReady =
     (stage2Settled && typed === -1) || Boolean(pingError) || demoFailed || deadlinePassed;
 
@@ -1558,14 +1578,13 @@ export function SonarSection() {
                 className={`snr-ping-btn snr-anim-press${btnPressed ? ' snr-ping-btn--pressed' : ''}`}
                 disabled={pinging}
               >
-                {pinging ? (
-                  <>
+                <span className="snr-btn-label">
+                  <span className={`snr-btn-text${pinging ? ' is-active' : ''}`}>
                     <span className="snr-beacon-sm snr-ping-dot" aria-hidden="true" />
                     Pinging
-                  </>
-                ) : (
-                  'Ping'
-                )}
+                  </span>
+                  <span className={`snr-btn-text${pinging ? '' : ' is-active'}`}>Ping</span>
+                </span>
               </button>
               <svg
                 className={`snr-cursor ${demoCursor ? 'snr-cursor--demo' : 'snr-anim-cursor'}`}
@@ -1590,21 +1609,38 @@ export function SonarSection() {
                 <span className="snr-beacon-sm" aria-hidden="true" />
                 <span className="snr-panel-title">LIVE SYNTHESIS</span>
                 <span className="snr-rule-soft" aria-hidden="true" />
-                {/* One label, state-driven. It used to be three absolutely
-                    positioned spans cross-fading on the master timeline, which
-                    live mode freezes: all three stopped visible and stacked on
-                    top of one another. */}
+                {/* Two spans in one grid cell, crossfading, so the label never
+                    hard-swaps and the row never reflows. This is NOT the old
+                    three-span version that live mode froze mid-fade: these are
+                    driven by state and opacity, not by the master timeline, so
+                    a freeze leaves exactly one of them at opacity 1. */}
                 <span className="snr-status" aria-hidden="true">
-                  {pinging ? 'SWEEPING 8 DATASETS' : live ? 'READY' : '8 CLAIMS CITED'}
+                  <span className={`snr-status-text${pinging ? ' is-active' : ''}`}>
+                    SWEEPING 8 DATASETS
+                  </span>
+                  <span className={`snr-status-text${pinging ? '' : ' is-active'}`}>
+                    {live ? 'READY' : '8 CLAIMS CITED'}
+                  </span>
                 </span>
               </div>
 
+              {/* 2c: the four states are stacked layers that crossfade. The card
+                  height is set by its flex parent, so swapping the ACTIVE layer
+                  never changes a box: this is transform and opacity only, and
+                  no FLIP is needed. Only the active layer scrolls and only it
+                  is in the accessibility tree. */}
               <div className="snr-synth-body">
                 <p className="snr-empty snr-anim-idle" aria-hidden="true">
                   Awaiting ping. Nothing is synthesized until you ask.
                 </p>
-                {!hasPinged ? (
-                  SYNTHESIS.map((p) => (
+
+                <div
+                  className={`snr-synth-layer snr-synth-layer--base${
+                    !hasPinged ? ' is-active' : ''
+                  }`}
+                  inert={hasPinged ? '' : undefined}
+                >
+                  {SYNTHESIS.map((p) => (
                     <p key={p.cls} className={`snr-para${p.lead ? ' snr-line-lead' : ''} ${p.cls}`}>
                       {p.segments.map((seg, i) =>
                         seg.link ? (
@@ -1622,73 +1658,89 @@ export function SonarSection() {
                       )}
                       {p.cite ? <span className="snr-cite"> {p.cite}</span> : null}
                     </p>
-                  ))
-                ) : pinging ? (
-                  /* The app's own ping loader, reused as-is. Its classes are
-                     snrl-, so none of the band's snr-anim pause rules reach
-                     it and it keeps moving while the band is frozen. */
-                  <SonarLoader caption={`Sweeping 8 datasets for “${lastQuery}”...`} />
-                ) : live ? (
-                  <>
-                    {live.grounded === false ? (
-                      /* Two different honesties: with the tool on the answer
+                  ))}
+                </div>
+
+                {/* Mounted while pinging and for one fast duration after, so it
+                    fades out OVER the answer's first characters instead of
+                    leaving a blank frame between them. */}
+                {loaderMounted ? (
+                  <div
+                    className={`snr-synth-layer${pinging ? ' is-active' : ''}`}
+                    inert={pinging ? undefined : ''}
+                  >
+                    <SonarLoader caption={`Sweeping 8 datasets for “${lastQuery}”...`} />
+                  </div>
+                ) : null}
+
+                <div
+                  className={`snr-synth-layer${answerReady ? ' is-active' : ''}`}
+                  inert={answerReady ? undefined : ''}
+                >
+                  {live ? (
+                    <>
+                      {live.grounded === false ? (
+                        /* Two different honesties: with the tool on the answer
                          is current web research; with it off it is the
                          model's own background. The chip has to say which. */
-                      <span className="snr-chip-general">
-                        {live.webUsed ? 'Web briefing' : 'General briefing'}
-                      </span>
-                    ) : null}
-                    {(() => {
-                      /* One reveal counter across the joined answer, so the
+                        <span className="snr-chip-general">
+                          {live.webUsed ? 'Web briefing' : 'General briefing'}
+                        </span>
+                      ) : null}
+                      {(() => {
+                        /* One reveal counter across the joined answer, so the
                          paragraphs type in sequence without any per-paragraph
                          bookkeeping. typed === -1 means show all of it. */
-                      const paras = live.answer.split(/\n\s*\n/).slice(0, 3);
-                      let consumed = 0;
-                      return paras.map((para, i) => {
-                        const start = consumed;
-                        consumed += para.length + 2;
-                        const shown = typed < 0 ? para : para.slice(0, Math.max(0, typed - start));
-                        if (typed >= 0 && !shown) return null;
-                        return (
-                          <p
-                            key={`live-${i}`}
-                            className={`snr-para${i === 0 ? ' snr-line-lead' : ''}`}
-                          >
-                            {shown}
-                          </p>
-                        );
-                      });
-                    })()}
-                    {typed < 0 ? (
-                      <p className="snr-para">
-                        <button type="button" className="snr-link" onClick={() => openGate()}>
-                          Open the full dossier in Sonar
-                        </button>
-                        {typeof live.remaining === 'number' ? (
-                          <span className="snr-cite"> {live.remaining} free pings left</span>
-                        ) : null}
-                      </p>
-                    ) : null}
-                  </>
-                ) : (
-                  <>
-                    <p className="snr-para snr-line-lead">
-                      {pingError || 'That ping did not land.'}
-                    </p>
-                    <p className="snr-para">
-                      <button
-                        type="button"
-                        className="snr-link"
-                        onClick={() => {
-                          setPingPulse((n) => n + 1);
-                          inputRef.current?.focus();
-                        }}
-                      >
-                        Try another ping
-                      </button>
-                    </p>
-                  </>
-                )}
+                        const paras = live.answer.split(/\n\s*\n/).slice(0, 3);
+                        let consumed = 0;
+                        return paras.map((para, i) => {
+                          const start = consumed;
+                          consumed += para.length + 2;
+                          const shown =
+                            typed < 0 ? para : para.slice(0, Math.max(0, typed - start));
+                          if (typed >= 0 && !shown) return null;
+                          return (
+                            <p
+                              key={`live-${i}`}
+                              className={`snr-para${i === 0 ? ' snr-line-lead' : ''}`}
+                            >
+                              {shown}
+                            </p>
+                          );
+                        });
+                      })()}
+                      {typed < 0 ? (
+                        <p className="snr-para">
+                          <button type="button" className="snr-link" onClick={() => openGate()}>
+                            Open the full dossier in Sonar
+                          </button>
+                          {typeof live.remaining === 'number' ? (
+                            <span className="snr-cite"> {live.remaining} free pings left</span>
+                          ) : null}
+                        </p>
+                      ) : null}
+                    </>
+                  ) : null}
+                </div>
+
+                <div
+                  className={`snr-synth-layer${answerFailed ? ' is-active' : ''}`}
+                  inert={answerFailed ? undefined : ''}
+                >
+                  <p className="snr-para snr-line-lead">{pingError || 'That ping did not land.'}</p>
+                  <p className="snr-para">
+                    <button
+                      type="button"
+                      className="snr-link"
+                      onClick={() => {
+                        setPingPulse((n) => n + 1);
+                        inputRef.current?.focus();
+                      }}
+                    >
+                      Try another ping
+                    </button>
+                  </p>
+                </div>
               </div>
 
               <div className="snr-divider-line" aria-hidden="true" />

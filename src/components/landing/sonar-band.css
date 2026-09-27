@@ -69,6 +69,12 @@
   /* ---- elevation ---- */
   --snr-glow: 0 0 24px rgba(16, 185, 129, 0.14);
   --snr-lift: 0 24px 60px rgba(0, 0, 0, 0.45);
+  /* One easing family and two durations for the synthesis card's state
+     changes, so arrivals and departures are the same everywhere in it. */
+  --snr-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --snr-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --snr-t-fast: 180ms;
+  --snr-t-base: 420ms;
   /* The separation a removed 1px outline used to provide. */
   --snr-soft: 0 10px 30px rgba(2, 24, 18, 0.35);
 
@@ -2716,6 +2722,89 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   .snr-band.snr-composed .snr-synth,
   .snr-band.snr-composed .snr-pingbar {
     transition-property: transform, opacity;
+  }
+}
+
+/* 2c: the body's states are stacked layers that crossfade, not a mount swap.
+   The body is already position: relative, so each layer pins to it and the
+   card's height never changes between states, which is what makes this safe
+   to do with transform and opacity alone: no FLIP, no layout transition.
+   Only the active layer scrolls and only it is in the accessibility tree
+   (inactive layers carry inert). */
+.snr-synth-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transition:
+    opacity var(--snr-t-fast) var(--snr-ease-in),
+    transform var(--snr-t-base) var(--snr-ease-out);
+}
+.snr-synth-layer.is-active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  transition-timing-function: var(--snr-ease-out);
+}
+
+/* 2d: the status label crossfades between its two spans rather than swapping
+   text. Both are laid on the same spot, so the row never reflows. */
+/* The pristine copy is the ONE layer left in normal flow. Everything the
+   spec names as a layer (loader, answer, error) is absolute over it, but if
+   ALL of them were, the body would have no in-flow child and collapse to
+   zero: absolutely positioned boxes contribute nothing to their container's
+   height. Keeping the base in flow is also what holds the card height steady
+   across the swap, which is what 2f asks for without a FLIP. It still fades
+   like the rest; at opacity 0 it reserves its box and nothing more. */
+.snr-synth-layer--base {
+  position: relative;
+  inset: auto;
+  overflow: visible;
+}
+
+/* One grid cell, two spans stacked in it, so the cell is as wide as the
+   longer label and neither the status row nor the button reflows mid-fade. */
+.snr-status,
+.snr-btn-label {
+  position: relative;
+  display: inline-grid;
+}
+.snr-status-text,
+.snr-btn-text {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transition: opacity var(--snr-t-fast) var(--snr-ease-in);
+  white-space: nowrap;
+}
+.snr-status-text.is-active,
+.snr-btn-text.is-active {
+  opacity: 1;
+  transition-timing-function: var(--snr-ease-out);
+}
+
+/* The dot sits in the flow of the Pinging label, so it has to come out of it
+   while that label is faded out or it would hold the button open. */
+.snr-btn-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+}
+
+/* No pressed scale is added here: the button already has one. The measured
+   pointer press sets .snr-ping-btn--pressed and the demo runs .snr-anim-press,
+   whose snrPress keyframe already scales to 0.93 and releases. Adding a second
+   transform on the same element would fight it. */
+
+@media (prefers-reduced-motion: reduce) {
+  /* States switch instantly; the layout is identical either way. */
+  .snr-synth-layer,
+  .snr-status-text,
+  .snr-btn-text {
+    transition: none;
   }
 }
 
