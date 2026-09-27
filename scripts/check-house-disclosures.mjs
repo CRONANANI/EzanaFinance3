@@ -15,9 +15,40 @@ import { matchBracket, AMOUNT_BRACKETS } from '../src/lib/house-disclosures/brac
 import { parsePtrText, looksScanned } from '../src/lib/house-disclosures/parse-ptr-pdf.js';
 
 const TAB = '\t';
-function idx(rows) {
-  const header = ['Prefix', 'Last', 'First', 'Suffix', 'FilingType', 'StateDst', 'Year', 'FilingDate', 'DocID'];
+
+/* The two layouts the Clerk actually ships. The extra columns in the older one
+   sit in the MIDDLE, which is what made a positional parser shift rather than
+   simply miss them. */
+const HEADER_9 = [
+  'Prefix',
+  'Last',
+  'First',
+  'Suffix',
+  'FilingType',
+  'StateDst',
+  'Year',
+  'FilingDate',
+  'DocID',
+];
+const HEADER_11 = [
+  'Prefix',
+  'Last',
+  'First',
+  'Suffix',
+  'FilingType',
+  'StateDst',
+  'Year',
+  'Filing Year',
+  'FilingDate',
+  'DocID',
+  'DisclosureType',
+];
+
+function withHeader(header, rows) {
   return [header, ...rows].map((r) => r.join(TAB)).join('\r\n');
+}
+function idx(rows) {
+  return withHeader(HEADER_9, rows);
 }
 
 test('index: parses columns, labels, state/district, PTR + electronic flags', () => {
@@ -39,7 +70,10 @@ test('index: parses columns, labels, state/district, PTR + electronic flags', ()
   assert.equal(ptr.filing_date, '2026-04-15');
   assert.equal(ptr.is_ptr, true);
   assert.equal(ptr.is_electronic, true);
-  assert.equal(ptr.pdf_url, 'https://disclosures-clerk.house.gov/public_disc/ptr-pdfs/2026/100012345.pdf');
+  assert.equal(
+    ptr.pdf_url,
+    'https://disclosures-clerk.house.gov/public_disc/ptr-pdfs/2026/100012345.pdf',
+  );
 
   assert.equal(annual.is_ptr, false);
   assert.equal(annual.is_electronic, false); // short DocID → scanned
@@ -48,10 +82,119 @@ test('index: parses columns, labels, state/district, PTR + electronic flags', ()
   assert.equal(annual.pdf_url, null); // non-PTR filings use a different Clerk path
 });
 
-test('index: skips malformed/short lines, requires DocID + last + type', () => {
-  const txt = ['Prefix\tLast\tFirst', 'too\tfew\tcols', '\t\t\t\tP\tCA11\t2026\t4/15/2026\t100000000'].join('\r\n');
-  const rows = parseHouseIndexTxt(txt);
-  assert.equal(rows.length, 0); // last row has empty last_name → skipped
+test('index: skips malformed/short lines, requires DocID + last', () => {
+  const txt = idx([
+    ['too', 'few', 'cols'],
+    ['', '', '', '', 'P', 'CA11', '2026', '4/15/2026', '100000000'], // no last name
+    ['', 'Nodoc', 'Ann', '', 'A', 'NY01', '2026', '1/2/2026', ''], // no doc id
+  ]);
+  assert.equal(parseHouseIndexTxt(txt).length, 0);
+});
+
+test('index: a header without the columns we depend on throws, never guesses', () => {
+  const noDocId = [
+    'Prefix',
+    'Last',
+    'First',
+    'Suffix',
+    'FilingType',
+    'StateDst',
+    'Year',
+    'FilingDate',
+  ];
+  assert.throws(
+    () =>
+      parseHouseIndexTxt(
+        withHeader(noDocId, [['Hon.', 'Pelosi', 'Nancy', '', 'P', 'CA11', '2026', '4/15/2026']]),
+      ),
+    /missing columns: docId/,
+  );
+  assert.throws(
+    () => parseHouseIndexTxt(['Prefix\tLast\tFirst', 'a\tb\tc'].join('\r\n')),
+    /missing columns/,
+  );
+  // Empty input is not a broken header — it is simply nothing to parse.
+  assert.deepEqual(parseHouseIndexTxt(''), []);
+});
+
+test('index: nine-column layout (2015-2026) has no covered_year or disclosure_type', () => {
+  const rows = parseHouseIndexTxt(
+    idx([
+      ['Hon.', 'Pelosi', 'Nancy', '', 'P', 'CA11', '2026', '4/15/2026', '100012345'],
+      ['Mr.', 'Smith', 'John', 'Jr', 'A', 'TX02', '2026', '1/2/2026', '8068'],
+      ['Mrs.', 'Doe', 'Jane', '', 'C', 'FL07', '2026', '12/1/2026', '300222333'],
+    ]),
+  );
+  assert.equal(rows.length, 3);
+  for (const r of rows) {
+    assert.equal(r.covered_year, null);
+    assert.equal(r.disclosure_type, null);
+  }
+  assert.equal(rows[0].filing_date, '2026-04-15');
+  assert.equal(rows[0].doc_id, '100012345');
+  assert.equal(rows[2].filing_date, '2026-12-01');
+  assert.equal(rows[2].doc_id, '300222333');
+});
+
+/* The bug this parser was changed to fix. Read positionally, these rows give
+   filing_date = toISO('2013') = null and doc_id = '1/2/2013'. */
+test('index: eleven-column layout (2008-2014) reads date, doc id and the extra columns', () => {
+  const rows = parseHouseIndexTxt(
+    withHeader(HEADER_11, [
+      ['Hon.', 'Pelosi', 'Nancy', '', 'P', 'CA12', '2013', '2012', '1/2/2013', '8220001', 'P'],
+      ['Mr.', 'Ryan', 'Paul', '', 'A', 'WI01', '2013', '2012', '5/15/2013', '100004321', 'A'],
+      ['Hon.', 'Lewis', 'John', '', 'C', 'GA05', '2013', '2011', '12/31/2013', '8220099', 'C'],
+    ]),
+  );
+  assert.equal(rows.length, 3);
+
+  const [ptr, annual, candidate] = rows;
+  assert.equal(ptr.doc_id, '8220001');
+  assert.equal(ptr.filing_date, '2013-01-02');
+  assert.equal(ptr.filing_year, 2013);
+  assert.equal(ptr.covered_year, 2012);
+  assert.equal(ptr.disclosure_type, 'P');
+  assert.equal(ptr.state, 'CA');
+  assert.equal(ptr.district, '12');
+  assert.equal(ptr.is_ptr, true);
+  assert.equal(ptr.is_electronic, false); // 7-digit id → scanned paper
+  assert.equal(
+    ptr.pdf_url,
+    'https://disclosures-clerk.house.gov/public_disc/ptr-pdfs/2013/8220001.pdf',
+  );
+
+  assert.equal(annual.doc_id, '100004321');
+  assert.equal(annual.filing_date, '2013-05-15');
+  assert.equal(annual.covered_year, 2012);
+  assert.equal(annual.disclosure_type, 'A');
+  assert.equal(annual.is_electronic, true);
+  assert.equal(annual.pdf_url, null); // non-PTR
+
+  assert.equal(candidate.doc_id, '8220099');
+  assert.equal(candidate.filing_date, '2013-12-31');
+  assert.equal(candidate.covered_year, 2011); // differs from filing_year
+  assert.equal(candidate.filing_year, 2013);
+});
+
+test('index: header matching is exact, so "Year" never binds to "Filing Year"', () => {
+  // Reversed order in the source would still resolve each to its own column.
+  const header = [
+    'Last',
+    'First',
+    'FilingType',
+    'StateDst',
+    'Filing Year',
+    'Year',
+    'FilingDate',
+    'DocID',
+  ];
+  const [row] = parseHouseIndexTxt(
+    withHeader(header, [['Doe', 'Jane', 'P', 'NY01', '2009', '2010', '3/4/2010', '8300123']]),
+  );
+  assert.equal(row.filing_year, 2010);
+  assert.equal(row.covered_year, 2009);
+  assert.equal(row.filing_date, '2010-03-04');
+  assert.equal(row.doc_id, '8300123');
 });
 
 test('isElectronicDocId: 9-digit 100/300 true; others false', () => {

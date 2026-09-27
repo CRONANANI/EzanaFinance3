@@ -1,0 +1,31 @@
+-- DESTRUCTIVE, and deliberately a SEPARATE migration from the column add in
+-- 20260927120000 so that applying it is its own decision. Read this before you
+-- run it.
+--
+-- Why it exists: until parse-index.js started resolving columns by header name,
+-- the 2008-2014 bundles (eleven columns, the extra two inserted mid-row) were
+-- read positionally and shifted. FilingDate landed in the DocID slot, so rows
+-- for those years were written with a primary key like '1/2/2013', a null
+-- filing_date, and a pdf_url of the form .../ptr-pdfs/2013/1/2/2013.pdf.
+--
+-- Re-running the ingest does NOT repair them. It upserts on doc_id, so the
+-- corrected row arrives under its real id ('8220001') and the shifted row stays
+-- behind under the date-shaped one. Both would then be served.
+--
+-- Real Clerk DocIDs are digits only, which is what makes the bad rows
+-- identifiable without guessing. INSPECT FIRST:
+--
+--   select filing_year, count(*)
+--     from public.house_disclosure_filings
+--    where doc_id !~ '^[0-9]+$'
+--    group by filing_year
+--    order by filing_year;
+--
+-- Expect hits only in 2008-2014. If any other year appears, stop and work out
+-- why before deleting anything.
+--
+-- Then re-run the ingest for 2008-2014 to load those years correctly:
+--   GET /api/cron/ingest-house-disclosures?years=2008,2009,2010,2011,2012,2013,2014
+
+delete from public.house_disclosure_filings
+ where doc_id !~ '^[0-9]+$';

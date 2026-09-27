@@ -8,6 +8,11 @@ import { parseHouseIndexTxt } from '@/lib/house-disclosures/parse-index';
  * public.house_disclosure_filings. One row per filing; NO trades (those are in
  * per-filing PDFs — Phase 2 / parse-house-ptrs).
  *
+ * The index ships in two column layouts (9 columns for 2015–2026, 11 for
+ * 2008–2014); parse-index.js resolves them by header name and fills
+ * covered_year / disclosure_type on the years that carry them. Each year's
+ * source row count is recorded in house_disclosure_coverage.
+ *
  * Source: the 19 yearly <YEAR>FD.txt files staged in gs://ezana-house-disclosures/
  * (2008–2026), read with the existing GCP service-account credentials (see
  * lib/house-disclosures/gcs.js — reuses google-auth-library rather than adding the
@@ -60,11 +65,33 @@ function resolveYears(searchParams) {
   return ALL_YEARS;
 }
 
+/* What the SOURCE file held for this year, recorded so a thin year reads as a
+   thin year. The Clerk's 2014 bundle really does contain only 11 filings, in
+   both the TXT and the XML; with no count on record that is indistinguishable
+   from a download that half-failed, and the page has no way to tell the
+   difference. Counted from the parsed rows rather than from what the upsert
+   wrote, because the question this answers is what the Clerk published. */
+async function recordCoverage(admin, year, rows, errors) {
+  const { error } = await admin.from('house_disclosure_coverage').upsert(
+    {
+      year,
+      filings: rows.length,
+      ptrs: rows.filter((r) => r.is_ptr).length,
+      loaded_at: new Date().toISOString(),
+    },
+    { onConflict: 'year' },
+  );
+  if (error) errors.push(`${year}: coverage ${error.message}`);
+}
+
 async function ingestYear(admin, year, errors) {
   const text = await downloadGcsText(BUCKET, `${year}FD.txt`);
   const rows = parseHouseIndexTxt(text);
   if (!rows.length) {
     errors.push(`${year}: parsed 0 rows`);
+    /* Still recorded: zero from a file that parsed is a real answer about the
+       source, and leaving the row stale would be the misleading option. */
+    await recordCoverage(admin, year, rows, errors);
     return 0;
   }
   // Chunked upsert on doc_id (idempotent). trades_parsed/needs_ocr are owned by
@@ -81,6 +108,7 @@ async function ingestYear(admin, year, errors) {
     if (error) errors.push(`${year}: upsert ${error.message}`);
     else written += chunk.length;
   }
+  await recordCoverage(admin, year, rows, errors);
   return written;
 }
 
@@ -89,7 +117,10 @@ export async function GET(request) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
   if (!isGcsConfigured()) {
-    return NextResponse.json({ ok: false, error: 'GCP credentials not configured' }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: 'GCP credentials not configured' },
+      { status: 500 },
+    );
   }
 
   const { searchParams } = new URL(request.url);
