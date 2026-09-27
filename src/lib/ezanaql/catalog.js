@@ -26,6 +26,10 @@ export const CATALOG_VERSION = '1.0.0';
 
 /** Fields present in the design/spec but NOT backed by the real ingest yet. */
 export const CATALOG_GAPS = {
+  'house.trades': {
+    unavailableFields: ['amount_midpoint', 'filed_on'],
+    note: 'amount_midpoint exists on house_trades but is a bracket midpoint kept for sorting only; exposing it would let an estimate be queried as a filed figure, so the disclosed bracket and its bounds are offered instead. filed_on is not a column of house_trades at all — the filing date lives on house_disclosure_filings; traded_on and notified_on are the dates a trade row actually carries.',
+  },
   'gov.contracts': {
     unavailableFields: ['hq_state', 'hq_city', 'naics_code', 'psc_code', 'award_type'],
     note: 'The usaspending_contract_awards ingest stores recipient, agency, amount, ticker, action_date only. HQ location, NAICS/PSC codes and award type are not ingested, so they are omitted from the catalog (querying them returns a clear "unknown field" error) rather than fabricated.',
@@ -223,6 +227,68 @@ export const CATALOG = {
     },
     'user_id',
   ),
+  /* Parsed trades from House PTR filings. Wired: public.house_trades is
+     populated by the parse-house-ptrs cron. amount_midpoint is deliberately
+     NOT exposed — it is a bracket midpoint kept for sorting, and a queryable
+     field would let an estimate be read as a filed figure. The bracket the
+     filer actually disclosed, and its two bounds, are the honest values. */
+  'house.trades': {
+    name: 'house.trades',
+    label: 'House Member Trades',
+    source: 'house-clerk',
+    access: 'public',
+    rlsColumn: null,
+    available: true,
+    hardLimit: 5000,
+    defaultLimit: 100,
+    table: 'house_trades',
+    columnMap: {
+      member_last: 'last_name',
+      member_first: 'first_name',
+      state_dst: 'state_dst',
+      ticker: 'ticker',
+      asset_name: 'asset_name',
+      tx_type: 'tx_type',
+      traded_on: 'tx_date',
+      notified_on: 'notification_date',
+      amount_bracket: 'amount_bracket_label',
+      amount_low: 'amount_low',
+      amount_high: 'amount_high',
+      doc_id: 'doc_id',
+    },
+    defaultProjection: ['member_last', 'ticker', 'tx_type', 'traded_on', 'amount_bracket'],
+    fields: {
+      member_last: { type: 'string' },
+      member_first: { type: 'string' },
+      state_dst: { type: 'string', nullable: true },
+      ticker: { type: 'string', nullable: true },
+      asset_name: { type: 'string' },
+      tx_type: { type: 'string', enum: ['P', 'S', 'E'], nullable: true },
+      traded_on: { type: 'date', nullable: true },
+      notified_on: { type: 'date', nullable: true },
+      amount_bracket: { type: 'string', nullable: true },
+      amount_low: { type: 'money', nullable: true },
+      amount_high: { type: 'money', nullable: true },
+      doc_id: { type: 'string' },
+    },
+    joinableWith: [],
+  },
+  /* Declared, not wired: there is no Senate ingest yet, so the executor
+     refuses to run it rather than returning an empty result that reads like
+     "no trades". Flip to available: true with a table/columnMap when
+     senate_trades has rows. */
+  'senate.trades': mkUnavailable('senate.trades', 'Senate Member Trades', 'senate-opr', 'public', {
+    member_last: { type: 'string' },
+    member_first: { type: 'string' },
+    state: { type: 'string', nullable: true },
+    ticker: { type: 'string', nullable: true },
+    asset_name: { type: 'string' },
+    tx_type: { type: 'string', enum: ['P', 'S', 'E'], nullable: true },
+    traded_on: { type: 'date', nullable: true },
+    notified_on: { type: 'date', nullable: true },
+    amount_bracket: { type: 'string', nullable: true },
+    doc_id: { type: 'string' },
+  }),
   'portfolio.transactions': mkUnavailable(
     'portfolio.transactions',
     'Portfolio Transactions',

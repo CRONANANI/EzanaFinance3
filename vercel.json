@@ -123,7 +123,7 @@
     },
     {
       "path": "/api/cron/parse-house-ptrs?max=15",
-      "schedule": "30 6 * * *"
+      "schedule": "0 * * * *"
     },
     {
       "path": "/api/cron/recompute-council-elo",
