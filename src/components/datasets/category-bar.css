@@ -238,48 +238,115 @@
   border-radius: var(--radius-md, 8px);
   box-shadow: none;
 }
-.dscat-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 6px;
-  min-width: 230px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg, 12px);
-  box-shadow: var(--shadow-md, 0 6px 22px rgba(15, 23, 42, 0.09));
-  padding: 6px;
-  z-index: 40;
+/* The dimension panel. PORTALLED to document.body, so it is positioned from
+   the viewport and owes nothing to the two ancestors that used to clip it
+   (.dscat-center's overflow-x scroller and its mobile mask). The old rule here
+   was `position: absolute; top: 100%; z-index: 40`, and the z-index was never
+   going to help: a clipped ancestor clips regardless of stacking.
+
+   Surface, border, radius and shadow are the landing mega-menu's
+   (.nav-datasets-panel in globals.css), copied by value rather than shared.
+   Those rules are specificity-scoped under `.navbar`, so lifting them into a
+   common sheet means either changing the navbar's specificity — a regression
+   risk across the whole marketing nav for no gain here — or duplicating the
+   selector list anyway. Padding is deliberately tighter than the landing's
+   1.25rem: that panel is seven columns wide, this one is a single column.
+
+   z-index sits above the page chrome and the landing nav's own mega-menu
+   (100), and below the app's overlay tier (9990+), so a toast or a modal still
+   wins. */
+.dscat-panel {
+  position: fixed;
+  z-index: 900;
+  min-width: 240px;
+  max-width: calc(100vw - 24px);
+  background: var(--echo-surface-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  padding: 0.6rem;
 }
-.dscat-item {
+/* Hover bridge over the 6px corridor between the trigger and this panel, which
+   belongs to neither and would otherwise start the close timer as the pointer
+   crosses it. Exactly the gap and no more: the landing nav learned the same
+   lesson from the other direction, and a strip tall enough to reach back over
+   the trigger would sit on top of it and eat the click that closes a pinned
+   menu. Its width is the panel's, which is all the pointer's path needs.
+
+   14px, not 6: the panel hangs from the BAR's bottom edge rather than the
+   trigger's, so the corridor is the 8px of bar padding below the trigger plus
+   the 6px gap. That still stops short of the trigger itself, which is the
+   line that must not be crossed — a strip over the trigger would swallow the
+   click that closes a pinned menu. */
+.dscat-panel::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 14px;
+}
+/* Column head: the dimension's dot, its name, and the same Lucide icon the
+   landing menu gives it. Mirrors .nav-datasets-col-head. */
+.dscat-panel-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 8px 10px;
-  font-family: var(--font-sans);
-  font-size: var(--ds-type-sub-size);
-  /* Item text takes its parent category's color (the same color as the category
-     dot), passed in from cat.color as --dscat-item-color. */
-  color: var(--dscat-item-color, var(--text-secondary));
-  text-decoration: none;
-  border-radius: var(--radius-md, 8px);
+  gap: 0.35rem;
+  margin: 0 0 0.35rem;
+  padding-left: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
 }
-.dscat-item:hover {
-  background: var(--bg-tertiary);
+.dscat-panel-icon {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+/* Values copied from .navbar .nav-datasets-item / .nav-datasets-item-label. */
+.dscat-item {
+  display: flex;
+  /* flex-start so a wrapped 2-line label keeps the "Soon" tag aligned to the
+     first line rather than vertically centered against the taller block. */
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.4rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background 0.14s ease;
+}
+.dscat-item-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  /* Let long labels ("Regulatory Investigations & Enforcement") wrap to two
+     lines INSIDE the panel instead of widening it. */
+  white-space: normal;
+  overflow-wrap: break-word;
+  line-height: 1.25;
+}
+.dscat-item:hover,
+.dscat-item:focus-visible {
+  background: var(--emerald-bg);
+  outline: none;
 }
 /* Non-live ("Soon") datasets: muted, non-interactive — no hover affordance. */
 .dscat-item--soon {
   cursor: default;
   opacity: 0.55;
 }
-.dscat-item--soon:hover {
+.dscat-item--soon:hover,
+.dscat-item--soon:focus-visible {
   background: none;
 }
-.dscat-item.is-active {
-  /* Active row: its category color, bolded — not a hardcoded emerald that would
-     be wrong for non-emerald categories. */
-  color: var(--dscat-item-color, var(--emerald));
+/* Kept, and deliberately NOT copied from the landing menu, which has no such
+   state: the landing has no current dataset to point at, this bar always does.
+   The category colour rather than a hardcoded emerald, which would be wrong
+   for the six non-emerald dimensions. */
+.dscat-item.is-active .dscat-item-label {
+  color: var(--dscat-item-color, var(--emerald-text));
   font-weight: var(--ds-type-strong);
 }
 /* roadmap (live:false) dataset — muted "Soon" pill, never shown as live */
@@ -298,27 +365,22 @@
   padding: 1px 6px;
 }
 
-/* Phones/tablets: four long category labels can't fit centered in one row, so
-   make the bar a left-aligned horizontal-scroll strip (swipeable) instead of
-   overflowing the viewport. Triggers keep their size and stay tappable. */
+/* Phones/tablets. What used to be here was written for a FLEX bar and stopped
+   applying when .dscat-bar became a three-zone grid: justify-content and
+   flex-wrap do nothing to a grid container, and the scroller moved to
+   .dscat-center (which has its own rules above). Its `overflow-x: auto` was a
+   third clip on the menu, and its `padding: 8px 0` silently dropped the bar's
+   content inset on the widths that need it most. All of it removed.
+
+   The panel's own width clamp is no longer needed here either: .dscat-panel
+   carries max-width: calc(100vw - 24px) at every width, and the portal clamps
+   its left edge against the measured panel width, so the rightmost dimension
+   cannot push past the viewport. */
 @media (max-width: 768px) {
-  .dscat-bar {
-    justify-content: flex-start;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 8px 0;
-  }
   .dscat {
     flex: 0 0 auto;
   }
   .dscat-trigger {
     white-space: nowrap;
-  }
-  /* Never let the dropdown push past the right edge on a narrow screen. */
-  .dscat-menu {
-    min-width: 0;
-    width: max-content;
-    max-width: calc(100vw - 24px);
   }
 }
