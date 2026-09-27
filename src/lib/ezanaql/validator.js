@@ -78,7 +78,7 @@ export function validate(ast) {
   }
   if (!dataset.available) {
     throw new EzanaQLError(
-      `Dataset "${dataset.name}" (${dataset.label}) is declared in the catalog but its query source is not wired yet — it isn't available for EzanaQL queries.`,
+      `Dataset "${dataset.name}" (${dataset.label}) is in the catalog but is not yet queryable. See the Datasets list for what is live today.`,
     );
   }
 

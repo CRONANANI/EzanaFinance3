@@ -23,6 +23,8 @@ const { validate } = await import('../src/lib/ezanaql/validator.js');
 const { SEED_QUERY, seedFromFilters } =
   await import('../src/app/datasets/government/contracts/ezanaql-seed.js');
 const { FEW_SHOT_QUERIES, FEW_SHOT } = await import('../src/app/api/ezanaql/generate/few-shots.js');
+const { CATALOG, CATALOG_VERSION, catalogSchemaForPrompt } =
+  await import('../src/lib/ezanaql/catalog.js');
 
 function assertValidates(query, label) {
   let ast;
@@ -78,4 +80,67 @@ test('few-shot prompt block embeds exactly the validated queries', () => {
   for (const q of FEW_SHOT_QUERIES) {
     assert.ok(FEW_SHOT.includes(q), 'FEW_SHOT prompt drifted from FEW_SHOT_QUERIES');
   }
+});
+
+/* A dataset marked available is a promise that the executor can run it AND
+   that it has something to return. These pin the shape of that promise, so a
+   half-finished binding fails here rather than at the first query a user
+   writes. */
+/* Every dataset carrying a `table` is checked, available or not: a binding
+   held back only because its table is empty still has to be correct, or it
+   will be wrong on the day someone flips it. */
+test('every bound dataset is bound correctly', () => {
+  for (const d of Object.values(CATALOG)) {
+    if (!d.table) continue;
+    assert.ok(d.columnMap, `${d.name} is bound to a table but has no columnMap`);
+    for (const f of d.defaultProjection) {
+      assert.ok(d.fields[f], `${d.name} projects ${f}, which is not a declared field`);
+    }
+    for (const [field, col] of Object.entries(d.columnMap)) {
+      assert.ok(d.fields[field], `${d.name} maps ${field}, which is not a declared field`);
+      /* A null column means derived, and a derived field must say how. */
+      if (col === null) {
+        assert.ok(
+          d.derived && d.derived[field],
+          `${d.name}.${field} has no column and no derivation`,
+        );
+      }
+    }
+    for (const [field, spec] of Object.entries(d.derived || {})) {
+      assert.ok(d.fields[field], `${d.name} derives ${field}, which is not a declared field`);
+      assert.ok(spec.kind, `${d.name}.${field} has no derivation kind`);
+      assert.equal(
+        d.columnMap[field] ?? null,
+        null,
+        `${d.name}.${field} is derived but also mapped to a column`,
+      );
+    }
+  }
+});
+
+/* A bracket midpoint is an estimate. It may be sorted on; it may never sit in
+   a default projection, where it would read as the amount. */
+test('estimate fields are never in a default projection', () => {
+  for (const d of Object.values(CATALOG)) {
+    for (const [field, meta] of Object.entries(d.fields || {})) {
+      if (!meta.estimate) continue;
+      assert.ok(
+        !d.defaultProjection.includes(field),
+        `${d.name} projects the estimate ${field} by default`,
+      );
+    }
+  }
+});
+
+test('the prompt schema lists live datasets and names the rest as not queryable', () => {
+  const text = catalogSchemaForPrompt();
+  const live = Object.values(CATALOG).filter((d) => d.available);
+  const dark = Object.values(CATALOG).filter((d) => !d.available);
+  assert.ok(live.length >= 4, 'expected at least the four live datasets');
+  for (const d of live) assert.match(text, new RegExp(d.name.replace('.', '\\.')));
+  assert.match(text, /Not yet queryable:/);
+  for (const d of dark) {
+    assert.ok(text.includes(d.name), `${d.name} should be named as not queryable`);
+  }
+  assert.equal(CATALOG_VERSION, '1.1.0');
 });

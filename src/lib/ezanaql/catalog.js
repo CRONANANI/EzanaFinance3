@@ -22,13 +22,17 @@
  * @typedef {'string'|'money'|'int'|'float'|'date'|'bool'} FieldType
  */
 
-export const CATALOG_VERSION = '1.0.0';
+export const CATALOG_VERSION = '1.1.0';
 
 /** Fields present in the design/spec but NOT backed by the real ingest yet. */
 export const CATALOG_GAPS = {
-  'house.trades': {
-    unavailableFields: ['amount_midpoint', 'filed_on'],
-    note: 'amount_midpoint exists on house_trades but is a bracket midpoint kept for sorting only; exposing it would let an estimate be queried as a filed figure, so the disclosed bracket and its bounds are offered instead. filed_on is not a column of house_trades at all — the filing date lives on house_disclosure_filings; traded_on and notified_on are the dates a trade row actually carries.',
+  'capitol.lobbying': {
+    unavailableFields: ['issues', 'entities', 'lobbyists', 'entity_buckets', 'issue_buckets'],
+    note: 'lobbying_filings stores these as JSONB and text arrays. The v1 grammar has no containment or array operator, so binding them would offer a filter that cannot be expressed. Omitted rather than exposed as unfilterable.',
+  },
+  'prediction.markets': {
+    unavailableFields: ['embedding', 'tsv', 'description', 'adj_ticker'],
+    note: 'embedding and tsv drive semantic and full-text search, not attribute filtering; description is noise in a result grid. Bound from prediction_market_index, which holds the rows, rather than polymarket_market_index, which is empty.',
   },
   'gov.contracts': {
     unavailableFields: ['hq_state', 'hq_city', 'naics_code', 'psc_code', 'award_type'],
@@ -68,6 +72,9 @@ export const CATALOG = {
       ticker: 'ticker',
       fiscal_year: null,
     },
+    /* Derived in-engine, not a column. Declared so the executor needs no
+       special case; see DERIVATION_KINDS there. */
+    derived: { fiscal_year: { kind: 'fiscal_year', from: 'action_date' } },
     defaultProjection: ['recipient', 'awarding_agency', 'award_value', 'action_date'],
     fields: {
       recipient: { type: 'string' },
@@ -84,35 +91,100 @@ export const CATALOG = {
   // yet. Marked unavailable so the executor returns an honest error instead of
   // a fabricated source. Adding one = bind `table`/`columnMap` (or an adapter)
   // and flip `available: true`. ────────────────────────────────────────────
-  'capitol.congress_trades': mkUnavailable(
-    'capitol.congress_trades',
-    'Congressional Trades',
-    'quiver',
-    'public',
-    {
+  /* congressional_trades is EMPTY: 0 rows, verified against the live database.
+     The binding is complete and correct, and the blocker is that nothing has
+     ingested this table yet. Left unavailable ON PURPOSE. A bound but empty
+     dataset answers "no member of Congress has traded anything", which is a
+     false finding rather than an honest refusal, and the builder's dataset
+     popover would show it as live. Flipping it is this one line. */
+  'capitol.congress_trades': {
+    name: 'capitol.congress_trades',
+    label: 'Congressional Trades',
+    source: 'quiver',
+    access: 'public',
+    rlsColumn: null,
+    available: false,
+    hardLimit: 5000,
+    defaultLimit: 100,
+    table: 'congressional_trades',
+    columnMap: {
+      politician: 'politician_name',
+      chamber: 'chamber',
+      party: 'party',
+      state: 'state',
+      ticker: 'symbol',
+      transaction_type: 'transaction_type',
+      transaction_date: 'transaction_date',
+      disclosure_date: 'disclosure_date',
+      amount_low: 'amount_min',
+      amount_high: 'amount_max',
+      amount_est: 'amount_midpoint',
+      disclosure_lag_days: null,
+    },
+    derived: {
+      disclosure_lag_days: { kind: 'day_diff', from: 'transaction_date', to: 'disclosure_date' },
+    },
+    defaultProjection: [
+      'politician',
+      'ticker',
+      'transaction_type',
+      'transaction_date',
+      'amount_low',
+      'amount_high',
+    ],
+    fields: {
       politician: { type: 'string' },
       chamber: { type: 'string' },
-      party: { type: 'string' },
+      party: { type: 'string', nullable: true },
+      state: { type: 'string', nullable: true },
       ticker: { type: 'string', nullable: true },
       transaction_type: { type: 'string' },
-      amount_range: { type: 'string' },
       transaction_date: { type: 'date' },
-      disclosure_date: { type: 'date' },
+      disclosure_date: { type: 'date', nullable: true },
+      amount_low: { type: 'money', nullable: true },
+      amount_high: { type: 'money', nullable: true },
+      amount_est: { type: 'money', nullable: true, estimate: true },
+      disclosure_lag_days: { type: 'int', derived: true, nullable: true },
     },
-  ),
-  'capitol.lobbying': mkUnavailable(
-    'capitol.lobbying',
-    'Corporate Lobbying',
-    'inside-capitol',
-    'public',
-    {
-      client: { type: 'string' },
-      registrant: { type: 'string' },
-      amount: { type: 'money' },
-      issue: { type: 'string' },
-      filing_date: { type: 'date' },
+    joinableWith: [],
+  },
+  'capitol.lobbying': {
+    name: 'capitol.lobbying',
+    label: 'Corporate Lobbying',
+    source: 'inside-capitol',
+    access: 'public',
+    rlsColumn: null,
+    available: true,
+    hardLimit: 5000,
+    defaultLimit: 100,
+    table: 'lobbying_filings',
+    columnMap: {
+      filing_uuid: 'uuid',
+      filing_year: 'filing_year',
+      period: 'filing_period',
+      posted_on: 'dt_posted',
+      amount: 'amount',
+      filing_type: 'filing_type',
+      registrant: 'registrant_name',
+      client: 'client_name',
+      lobbyist_count: 'lobbyist_count',
+      document_url: 'document_url',
     },
-  ),
+    defaultProjection: ['client', 'registrant', 'filing_year', 'period', 'amount'],
+    fields: {
+      filing_uuid: { type: 'string' },
+      filing_year: { type: 'int', nullable: true },
+      period: { type: 'string', nullable: true },
+      posted_on: { type: 'date', nullable: true },
+      amount: { type: 'money', nullable: true },
+      filing_type: { type: 'string', nullable: true },
+      registrant: { type: 'string', nullable: true },
+      client: { type: 'string', nullable: true },
+      lobbyist_count: { type: 'int', nullable: true },
+      document_url: { type: 'string', nullable: true },
+    },
+    joinableWith: [],
+  },
   'market.quotes': mkUnavailable('market.quotes', 'Market Quotes', 'alpaca', 'public', {
     ticker: { type: 'string' },
     price: { type: 'float' },
@@ -188,19 +260,47 @@ export const CATALOG = {
       change: { type: 'float' },
     },
   ),
-  'prediction.markets': mkUnavailable(
-    'prediction.markets',
-    'Prediction Markets',
-    'polymarket',
-    'public',
-    {
-      market: { type: 'string' },
-      outcome: { type: 'string' },
-      probability: { type: 'float' },
-      volume: { type: 'money' },
-      resolution_date: { type: 'date' },
+  /* prediction_market_index, NOT polymarket_market_index. The latter is empty
+     (0 rows) while this holds 18,264 markets and is what the related-markets
+     route reads. Its embedding and tsvector make it look like a pure search
+     index; the market attributes beside them are real, and are what is bound. */
+  'prediction.markets': {
+    name: 'prediction.markets',
+    label: 'Prediction Markets',
+    source: 'polymarket',
+    access: 'public',
+    rlsColumn: null,
+    available: true,
+    hardLimit: 5000,
+    defaultLimit: 100,
+    table: 'prediction_market_index',
+    columnMap: {
+      market_id: 'market_id',
+      question: 'question',
+      category: 'category',
+      platform: 'platform',
+      probability: 'probability',
+      volume: 'volume',
+      liquidity: 'liquidity',
+      ends_on: 'end_date',
+      status: 'status',
+      link: 'link',
     },
-  ),
+    defaultProjection: ['question', 'category', 'probability', 'volume', 'ends_on'],
+    fields: {
+      market_id: { type: 'string' },
+      question: { type: 'string' },
+      category: { type: 'string', nullable: true },
+      platform: { type: 'string' },
+      probability: { type: 'float', nullable: true },
+      volume: { type: 'float', nullable: true },
+      liquidity: { type: 'float', nullable: true },
+      ends_on: { type: 'date', nullable: true },
+      status: { type: 'string', nullable: true },
+      link: { type: 'string', nullable: true },
+    },
+    joinableWith: [],
+  },
   'insider.trades': mkUnavailable('insider.trades', 'Insider Trades', 'sec', 'public', {
     company: { type: 'string' },
     ticker: { type: 'string' },
@@ -227,51 +327,111 @@ export const CATALOG = {
     },
     'user_id',
   ),
-  /* Parsed trades from House PTR filings. Wired: public.house_trades is
-     populated by the parse-house-ptrs cron. amount_midpoint is deliberately
-     NOT exposed — it is a bracket midpoint kept for sorting, and a queryable
-     field would let an estimate be read as a filed figure. The bracket the
-     filer actually disclosed, and its two bounds, are the honest values. */
+  /* house_trades is EMPTY: 0 rows, verified. house_disclosure_filings holds
+     9,034 rows but trades_parsed is false on every one of them, so
+     parse-house-ptrs has not yet produced a single trade. The binding is
+     complete; left unavailable for the same reason as congress_trades, so the
+     page does not answer "no trades" when it means "not extracted yet".
+
+     amount_est is the bracket midpoint. It exists so a size ORDER BY is
+     possible at all, is marked `estimate` so the formatter labels it, and is
+     kept out of the default projection. What the filer disclosed is
+     amount_bracket, with amount_low and amount_high as its bounds. */
   'house.trades': {
     name: 'house.trades',
     label: 'House Member Trades',
     source: 'house-clerk',
     access: 'public',
     rlsColumn: null,
-    available: true,
+    available: false,
     hardLimit: 5000,
     defaultLimit: 100,
     table: 'house_trades',
     columnMap: {
+      doc_id: 'doc_id',
       member_last: 'last_name',
       member_first: 'first_name',
       state_dst: 'state_dst',
       ticker: 'ticker',
-      asset_name: 'asset_name',
-      tx_type: 'tx_type',
-      traded_on: 'tx_date',
-      notified_on: 'notification_date',
-      amount_bracket: 'amount_bracket_label',
+      asset: 'asset_name',
+      transaction_type: 'tx_type',
+      transaction_date: 'tx_date',
+      filed_on: 'notification_date',
       amount_low: 'amount_low',
       amount_high: 'amount_high',
-      doc_id: 'doc_id',
+      amount_est: 'amount_midpoint',
+      amount_bracket: 'amount_bracket_label',
+      disclosure_lag_days: null,
     },
-    defaultProjection: ['member_last', 'ticker', 'tx_type', 'traded_on', 'amount_bracket'],
+    derived: {
+      disclosure_lag_days: { kind: 'day_diff', from: 'transaction_date', to: 'filed_on' },
+    },
+    defaultProjection: [
+      'member_last',
+      'ticker',
+      'transaction_type',
+      'transaction_date',
+      'amount_bracket',
+    ],
     fields: {
+      doc_id: { type: 'string' },
+      member_last: { type: 'string', nullable: true },
+      member_first: { type: 'string', nullable: true },
+      state_dst: { type: 'string', nullable: true },
+      ticker: { type: 'string', nullable: true },
+      asset: { type: 'string' },
+      transaction_type: { type: 'string', enum: ['P', 'S', 'E'], nullable: true },
+      transaction_date: { type: 'date', nullable: true },
+      filed_on: { type: 'date', nullable: true },
+      amount_low: { type: 'money', nullable: true },
+      amount_high: { type: 'money', nullable: true },
+      amount_est: { type: 'money', nullable: true, estimate: true },
+      amount_bracket: { type: 'string', nullable: true },
+      disclosure_lag_days: { type: 'int', derived: true, nullable: true },
+    },
+    joinableWith: ['house.filings'],
+  },
+  /* The filing INDEX, one row per disclosure document; 9,034 rows today. No
+     trades here, those are in house.trades. */
+  'house.filings': {
+    name: 'house.filings',
+    label: 'House Disclosure Filings',
+    source: 'house-clerk',
+    access: 'public',
+    rlsColumn: null,
+    available: true,
+    hardLimit: 5000,
+    defaultLimit: 100,
+    table: 'house_disclosure_filings',
+    columnMap: {
+      doc_id: 'doc_id',
+      member_last: 'last_name',
+      member_first: 'first_name',
+      state_dst: 'state_dst',
+      filing_type: 'filing_type',
+      filing_year: 'filing_year',
+      covered_year: 'covered_year',
+      filing_date: 'filing_date',
+      is_ptr: 'is_ptr',
+      pdf_url: 'pdf_url',
+    },
+    defaultProjection: ['member_last', 'filing_type', 'filing_year', 'filing_date'],
+    fields: {
+      doc_id: { type: 'string' },
       member_last: { type: 'string' },
       member_first: { type: 'string' },
       state_dst: { type: 'string', nullable: true },
-      ticker: { type: 'string', nullable: true },
-      asset_name: { type: 'string' },
-      tx_type: { type: 'string', enum: ['P', 'S', 'E'], nullable: true },
-      traded_on: { type: 'date', nullable: true },
-      notified_on: { type: 'date', nullable: true },
-      amount_bracket: { type: 'string', nullable: true },
-      amount_low: { type: 'money', nullable: true },
-      amount_high: { type: 'money', nullable: true },
-      doc_id: { type: 'string' },
+      filing_type: { type: 'string' },
+      filing_year: { type: 'int' },
+      covered_year: { type: 'int', nullable: true },
+      /* Nullable on purpose: withdrawals carry no date by convention, and a
+         source date that failed the plausibility check is stored as absent
+         rather than corrected into a plausible one. */
+      filing_date: { type: 'date', nullable: true },
+      is_ptr: { type: 'bool' },
+      pdf_url: { type: 'string', nullable: true },
     },
-    joinableWith: [],
+    joinableWith: ['house.trades'],
   },
   /* Declared, not wired: there is no Senate ingest yet, so the executor
      refuses to run it rather than returning an empty result that reads like
@@ -329,13 +489,21 @@ export function getDataset(name) {
 
 /** Compact schema handed to the NL→EzanaQL model (names, fields, types, enums). */
 export function catalogSchemaForPrompt() {
-  return Object.values(CATALOG)
+  const live = Object.values(CATALOG)
     .filter((d) => d.available)
     .map((d) => {
       const fields = Object.entries(d.fields)
         .map(([f, meta]) => `${f}:${meta.type}${meta.enum ? ` [${meta.enum.join('|')}]` : ''}`)
         .join(', ');
-      return `${d.name} (${d.label}) — fields: ${fields}`;
+      return `${d.name} (${d.label}) fields: ${fields}`;
     })
     .join('\n');
+  /* Named, not hidden. The model needs to know these exist so it does not
+     invent a name for one, and needs to know it cannot target them so it does
+     not write a query the executor will refuse. */
+  const notYet = Object.values(CATALOG)
+    .filter((d) => !d.available)
+    .map((d) => d.name)
+    .join(', ');
+  return notYet ? `${live}\n\nNot yet queryable: ${notYet}` : live;
 }
