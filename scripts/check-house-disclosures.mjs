@@ -141,9 +141,11 @@ test('index: nine-column layout (2015-2026) has no covered_year or disclosure_ty
 test('index: eleven-column layout (2008-2014) reads date, doc id and the extra columns', () => {
   const rows = parseHouseIndexTxt(
     withHeader(HEADER_11, [
-      ['Hon.', 'Pelosi', 'Nancy', '', 'P', 'CA12', '2013', '2012', '1/2/2013', '8220001', 'P'],
-      ['Mr.', 'Ryan', 'Paul', '', 'A', 'WI01', '2013', '2012', '5/15/2013', '100004321', 'A'],
-      ['Hon.', 'Lewis', 'John', '', 'C', 'GA05', '2013', '2011', '12/31/2013', '8220099', 'C'],
+      // Realistic legacy values: the PTR is FilingType 'O' with the marker in
+      // DisclosureType, which is how 2,146 of 2013's 2,318 PTRs actually look.
+      ['Hon.', 'Pelosi', 'Nancy', '', 'O', 'CA12', '2013', '2012', '1/2/2013', '8220001', 'PTR'],
+      ['Mr.', 'Ryan', 'Paul', '', 'A', 'WI01', '2013', '2012', '5/15/2013', '100004321', 'FD'],
+      ['Hon.', 'Lewis', 'John', '', 'C', 'GA05', '2013', '2011', '12/31/2013', '8220099', 'FD'],
     ]),
   );
   assert.equal(rows.length, 3);
@@ -153,10 +155,11 @@ test('index: eleven-column layout (2008-2014) reads date, doc id and the extra c
   assert.equal(ptr.filing_date, '2013-01-02');
   assert.equal(ptr.filing_year, 2013);
   assert.equal(ptr.covered_year, 2012);
-  assert.equal(ptr.disclosure_type, 'P');
+  assert.equal(ptr.disclosure_type, 'PTR');
   assert.equal(ptr.state, 'CA');
   assert.equal(ptr.district, '12');
-  assert.equal(ptr.is_ptr, true);
+  assert.equal(ptr.is_ptr, true); // from DisclosureType, not FilingType
+  assert.equal(ptr.filing_type, 'O');
   assert.equal(ptr.is_electronic, false); // 7-digit id → scanned paper
   assert.equal(
     ptr.pdf_url,
@@ -166,7 +169,7 @@ test('index: eleven-column layout (2008-2014) reads date, doc id and the extra c
   assert.equal(annual.doc_id, '100004321');
   assert.equal(annual.filing_date, '2013-05-15');
   assert.equal(annual.covered_year, 2012);
-  assert.equal(annual.disclosure_type, 'A');
+  assert.equal(annual.disclosure_type, 'FD');
   assert.equal(annual.is_electronic, true);
   assert.equal(annual.pdf_url, null); // non-PTR
 
@@ -174,6 +177,65 @@ test('index: eleven-column layout (2008-2014) reads date, doc id and the extra c
   assert.equal(candidate.filing_date, '2013-12-31');
   assert.equal(candidate.covered_year, 2011); // differs from filing_year
   assert.equal(candidate.filing_year, 2013);
+});
+
+test('index: PTR detection reads whichever signal the layout provides', () => {
+  // Legacy: DisclosureType is the marker and FilingType means something else.
+  const legacy = parseHouseIndexTxt(
+    withHeader(HEADER_11, [
+      ['Hon.', 'Ptr', 'Olivia', '', 'O', 'CA12', '2013', '2012', '1/2/2013', '8220001', 'PTR'],
+      ['Hon.', 'Ptr', 'Amy', '', 'A', 'CA13', '2013', '2012', '1/3/2013', '8220002', 'ptr'],
+      ['Hon.', 'Notptr', 'Ned', '', 'O', 'NY01', '2013', '2012', '1/4/2013', '8220003', 'FD'],
+      // A legacy 'P' is NOT a PTR: its DisclosureType says otherwise, and the
+      // modern signal must not be inferred where the legacy one exists.
+      ['Hon.', 'Notptr', 'Pat', '', 'P', 'NY02', '2013', '2012', '1/5/2013', '8220004', 'FD'],
+    ]),
+  );
+  assert.deepEqual(
+    legacy.map((r) => r.is_ptr),
+    [true, true, false, false],
+  );
+  assert.equal(legacy[0].filing_type, 'O');
+  assert.equal(legacy[0].disclosure_type, 'PTR');
+  assert.equal(legacy[1].disclosure_type, 'ptr'); // raw value kept, match is case-insensitive
+  assert.equal(legacy[2].disclosure_type, 'FD');
+
+  // Modern: FilingType 'P', and no DisclosureType column to consult.
+  const modern = parseHouseIndexTxt(
+    idx([
+      ['Hon.', 'Pelosi', 'Nancy', '', 'P', 'CA11', '2026', '4/15/2026', '100012345'],
+      ['Mr.', 'Smith', 'John', '', 'A', 'TX02', '2026', '1/2/2026', '100012346'],
+    ]),
+  );
+  assert.equal(modern[0].is_ptr, true);
+  assert.equal(modern[0].disclosure_type, null);
+  assert.equal(modern[1].is_ptr, false);
+});
+
+test('index: implausible dates are rejected and the raw string is kept', () => {
+  // The six real anomalies in the Clerk's 2013 file are of these two shapes.
+  assert.equal(toISO('6/14/3013'), null);
+  assert.equal(toISO('5/15/2031'), null);
+  assert.equal(toISO('4/15/2026'), '2026-04-15');
+  assert.equal(toISO('1/2/1990'), '1990-01-02');
+  assert.equal(toISO('1/2/1989'), null); // below MIN_YEAR
+
+  const rows = parseHouseIndexTxt(
+    withHeader(HEADER_11, [
+      ['Hon.', 'Typo', 'Tam', '', 'O', 'CA12', '2013', '2012', '6/14/3013', '8220010', 'PTR'],
+      ['Hon.', 'Good', 'Gus', '', 'O', 'CA13', '2013', '2012', '5/15/2013', '8220011', 'PTR'],
+      // A withdrawal legitimately carries no date; that is absence, not error,
+      // so filing_date_raw stays null and it is not counted as a bad date.
+      ['Hon.', 'Draw', 'Wes', '', 'W', 'CA14', '2013', '2012', '', '8220012', 'FD'],
+    ]),
+  );
+  assert.equal(rows[0].filing_date, null);
+  assert.equal(rows[0].filing_date_raw, '6/14/3013');
+  assert.equal(rows[1].filing_date, '2013-05-15');
+  assert.equal(rows[1].filing_date_raw, null);
+  assert.equal(rows[2].filing_date, null);
+  assert.equal(rows[2].filing_date_raw, null);
+  assert.equal(rows.filter((r) => r.filing_date_raw).length, 1); // what bad_dates counts
 });
 
 test('index: header matching is exact, so "Year" never binds to "Filing Year"', () => {

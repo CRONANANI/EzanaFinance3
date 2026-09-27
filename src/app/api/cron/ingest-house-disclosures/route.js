@@ -77,6 +77,15 @@ async function recordCoverage(admin, year, rows, errors) {
       year,
       filings: rows.length,
       ptrs: rows.filter((r) => r.is_ptr).length,
+      /* Which SIGNAL this year's PTRs came from: the 2008-2014 files mark them
+         with DisclosureType = 'PTR', the 2015+ files with FilingType = 'P'.
+         Split out so a year reporting zero PTRs can be investigated rather
+         than assumed empty. */
+      ptrs_legacy: rows.filter((r) => r.is_ptr && r.disclosure_type).length,
+      /* Dates the source got wrong, not dates it omitted: filing_date_raw is
+         set only where a date was present and rejected, so a withdrawal's
+         legitimately blank date never counts here. */
+      bad_dates: rows.filter((r) => r.filing_date_raw).length,
       loaded_at: new Date().toISOString(),
     },
     { onConflict: 'year' },
