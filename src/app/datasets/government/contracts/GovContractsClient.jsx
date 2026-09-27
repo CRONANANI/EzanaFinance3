@@ -212,16 +212,29 @@ export default function GovContractsClient({
     return [...m.values()].sort((x, y) => y.total - x.total);
   }, [rollup, recipients, fiscalYear]);
 
-  // Colors are positional: rank the CURRENT view's agencies (selected ones when
-  // filtering, else all) by spend and bind the top 10 to slots; the rest → Other.
-  const colorRanking = useMemo(() => {
+  /* The current view's agencies, ranked by spend. This is a RENDER LIST: what
+     the legend, the share strip and the donut enumerate. It is deliberately
+     not what colours come from. It used to be called colorRanking and to feed
+     the slot map, which is what made a selected agency repaint: filtered to
+     one agency it became rank 0 of a one-item ranking and took slot 0, so
+     every agency turned emerald the moment you selected it. */
+  const viewRanking = useMemo(() => {
     if (selectedAgencies.size) return agencyTotals.filter((a) => selectedAgencies.has(a.agency));
     return agencyTotals;
   }, [agencyTotals, selectedAgencies]);
-  const slotMap = useMemo(() => buildSlotMap(colorRanking), [colorRanking]);
+  /* Colours are positional but STABLE: the top 10 agencies by total spend hold
+     their slots whatever the current filter, so an agency keeps one colour in
+     the rail, the legend, the share strip, the donut and the treemap.
+     Filtering changes which tiles show, never what colour they are. */
+  const slotMap = useMemo(() => buildSlotMap(agencyTotals), [agencyTotals]);
+  /* Still the CURRENT view's top 10, not the global one, and that is on
+     purpose: this is the cut between an agency with its own identity and one
+     folded into Other, and AgencyLegend slices the same viewRanking at the
+     same MAX_SLOTS. Binding it globally would fold a tile that the legend
+     still lists separately. */
   const topSet = useMemo(
-    () => new Set(colorRanking.slice(0, MAX_SLOTS).map((a) => a.agency)),
-    [colorRanking],
+    () => new Set(viewRanking.slice(0, MAX_SLOTS).map((a) => a.agency)),
+    [viewRanking],
   );
   const colorOf = useCallback((agency) => colorForAgency(slotMap, agency), [slotMap]);
 
@@ -453,7 +466,14 @@ export default function GovContractsClient({
                     agency={a.agency}
                     count={a.count}
                     share={shareOf(a.total)}
-                    color={topSet.has(a.agency) ? colorOf(a.agency) : OTHER_COLOR}
+                    /* The rail is a filter control listing every agency, not
+                       the legend, so it takes the agency's stable colour and
+                       nothing else. Gating on topSet greyed out every
+                       UNSELECTED row the moment you picked one, which is the
+                       same bug as the treemap's from the other end: the pill
+                       lost its identity because the view changed. colorOf
+                       already falls back to OTHER_COLOR outside the top 10. */
+                    color={colorOf(a.agency)}
                     active={selectedAgencies.has(a.agency)}
                     onClick={() => toggleAgency(a.agency)}
                   />
@@ -478,7 +498,7 @@ export default function GovContractsClient({
               value={fmtUSD(totalObligatedTrue)}
               accent="var(--emerald)"
               visual={
-                <ShareStrip ranking={colorRanking} colorOf={colorOf} total={totalObligatedTrue} />
+                <ShareStrip ranking={viewRanking} colorOf={colorOf} total={totalObligatedTrue} />
               }
               meta={isLive ? `${fmtInt(agencyTotals.length)} agencies` : 'sample'}
             />
@@ -493,7 +513,7 @@ export default function GovContractsClient({
           </div>
 
           <AgencyLegend
-            ranking={colorRanking}
+            ranking={viewRanking}
             selected={selectedAgencies}
             onPick={toggleAgency}
             colorOf={colorOf}
@@ -533,7 +553,7 @@ export default function GovContractsClient({
                 </p>
               </>
             ) : (
-              <ShareDonut ranking={colorRanking} colorOf={colorOf} />
+              <ShareDonut ranking={viewRanking} colorOf={colorOf} />
             )}
           </section>
 
