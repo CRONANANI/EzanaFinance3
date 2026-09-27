@@ -13,6 +13,28 @@
    sonar-band.css holds a sanctioned exception for it). Ink on the gradient is
    white; the dropdown panels stay light-surface cards, since they float over
    page content rather than over the bar. */
+/* The green block: the category bar and, when a page publishes one, the ticker
+   beneath it. One element paints the gradient so the two read as a single
+   continuous piece of chrome rather than two stacked bands with a seam — and
+   one element carries the rounded bottom corners and the gap to the page
+   content below.
+
+   overflow: hidden is what clips the ticker's track to those corners. It does
+   NOT clip the bar's dimension menus: those render through a portal to
+   document.body for exactly this reason. Do not remove the portal. */
+.dscat-chrome {
+  background: var(--brand-band-green);
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+/* The bar no longer paints or spaces itself; the block above does both. */
+.dscat-chrome .dscat-bar {
+  background: transparent;
+  border-radius: 0;
+  margin-bottom: 0;
+}
+
 .dscat-bar {
   --dscat-bg: var(--brand-band-green);
   --dscat-ink: rgba(255, 255, 255, 0.82);
@@ -273,18 +295,19 @@
    the trigger would sit on top of it and eat the click that closes a pinned
    menu. Its width is the panel's, which is all the pointer's path needs.
 
-   14px, not 6: the panel hangs from the BAR's bottom edge rather than the
-   trigger's, so the corridor is the 8px of bar padding below the trigger plus
-   the 6px gap. That still stops short of the trigger itself, which is the
-   line that must not be crossed — a strip over the trigger would swallow the
-   click that closes a pinned menu. */
+   6px, the gap between the green block and the panel, and no more. The panel
+   now hangs below the WHOLE block, so on a page with a ticker the pointer also
+   crosses the strip on its way down — but the strip's items are buttons, and a
+   bridge laid over them would swallow their hovers and clicks. That stretch is
+   left to the 220ms hover-intent delay instead, which is ample for a
+   deliberate move, exactly as it is on the landing nav. */
 .dscat-panel::before {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
   bottom: 100%;
-  height: 14px;
+  height: 6px;
 }
 /* Column head: the dimension's dot, its name, and the same Lucide icon the
    landing menu gives it. Mirrors .nav-datasets-col-head. */

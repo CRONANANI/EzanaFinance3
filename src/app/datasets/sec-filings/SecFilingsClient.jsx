@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ExternalLink, X, Loader2 } from 'lucide-react';
 import { Ticker, EntityName, TxnBadge } from '@/components/marketing/DatasetTable';
-import DatasetTicker from '@/components/datasets/DatasetTicker';
+import { usePublishTicker } from '@/components/datasets/ticker-slot';
 import '../../marketing-explore.css';
 import './sec-filings.css';
 
@@ -319,39 +319,60 @@ function InsiderSample({ rows }) {
   );
 }
 
-export function SecFilingsClient({ feeds, insiderSample = [] }) {
+/* Hoisted so the default is one stable array. `= []` in the signature builds a
+   fresh one on every render, which would make the ticker memo below recompute
+   each time and republish to the chrome in a loop. */
+const EMPTY_ROWS = [];
+
+export function SecFilingsClient({ feeds, insiderSample = EMPTY_ROWS }) {
   const [tab, setTab] = useState('insider');
   const [detail, setDetail] = useState(null);
-  const rows = feeds?.[tab] || [];
+  /* Memoized for the same reason as EMPTY_ROWS: a bare `|| []` hands back a new
+     array whenever the tab has no feed, which would ripple into the ticker memo
+     and republish on every render. */
+  const rows = useMemo(() => feeds?.[tab] || EMPTY_ROWS, [feeds, tab]);
 
   // Ticker: the current tab's live rows, or the insider sample when the live
   // feed is empty. Interactive (opens the detail modal) for the tabs that have
   // a parsed detail view; decorative otherwise. Omitted entirely when empty.
   const hasDetail = tab === 'institutional' || tab === 'activist';
-  const tickerItems = rows.length
-    ? rows.slice(0, 20).map((r) => ({
-        id: r.accession_no,
-        lead: r.form_type,
-        main: r.filer_name,
-        value: r.ticker || null,
-        _row: r,
-      }))
-    : tab === 'insider'
-      ? insiderSample.slice(0, 20).map((r) => ({
-          id: r.id,
-          lead: r.role,
-          main: r.insider,
-          value: r.value,
-        }))
-      : [];
+  /* Memoized, unlike the plain expression this replaces: the chrome publishes
+     on identity change, and a fresh array every render would republish every
+     render. */
+  const tickerItems = useMemo(
+    () =>
+      rows.length
+        ? rows.slice(0, 20).map((r) => ({
+            id: r.accession_no,
+            lead: r.form_type,
+            main: r.filer_name,
+            value: r.ticker || null,
+            _row: r,
+          }))
+        : tab === 'insider'
+          ? insiderSample.slice(0, 20).map((r) => ({
+              id: r.id,
+              lead: r.role,
+              main: r.insider,
+              value: r.value,
+            }))
+          : [],
+    [rows, tab, insiderSample],
+  );
+  const selectRow = useCallback((it) => setDetail(it._row), []);
+  /* Interactive only where a parsed detail view exists AND the rows are live;
+     the insider sample is decorative, as before. */
+  const onTickerSelect = rows.length && hasDetail ? selectRow : undefined;
+  /* Drawn by the layout chrome so the bar and the strip are one green block;
+     this page only supplies the items. */
+  usePublishTicker({
+    items: tickerItems,
+    onSelect: onTickerSelect,
+    ariaLabel: 'Latest SEC filings',
+  });
 
   return (
     <div className="mkt-page">
-      <DatasetTicker
-        items={tickerItems}
-        ariaLabel="Latest SEC filings"
-        onSelect={rows.length && hasDetail ? (it) => setDetail(it._row) : undefined}
-      />
       <main className="mkt-main">
         <div className="mkt-hero">
           <p className="mkt-eyebrow">SEC · EDGAR</p>

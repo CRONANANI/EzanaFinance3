@@ -19,31 +19,32 @@
   --dsx-ink-strong: #ffffff;
   --dsx-ink-value: var(--brand-band-mint);
   --dsx-divider: rgba(255, 255, 255, 0.18);
-  background: var(--dsx-bg);
+  /* No background of its own any more: .dscat-chrome paints one gradient across
+     the bar AND this strip, so they are one block rather than two bands that
+     have to be kept in sync. --dsx-bg is retained because the ink tokens above
+     are contrast-measured against that same gradient. */
+  background: transparent;
   /* The green edge is the edge; the old 1.5px emerald rule under it is gone. */
   border-bottom: 0;
-  border-radius: 12px;
-  margin-top: 12px;
+  /* A faint seam, not a gap: it separates the strip from the bar without
+     breaking the block. */
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   white-space: nowrap;
-  /* Clips the track to the rounded corners. */
+  /* Still needed: the track is width: max-content, so without this the strip
+     would widen its parent instead of scrolling inside it. */
   overflow: hidden;
 
-  /* Full-bleed: the strip spans the whole viewport edge-to-edge on EVERY dataset
-     page, matching the Institutional reference. Most pages (.dsx-page) already
-     render it outside the centered column so width:100% would suffice — but the
-     Government Contracts root (.gcx-page) is max-width + 32px-padded, so plain
-     width can't reach the viewport edge there. The 100vw breakout works in both:
-     .dsx-page and .gcx-page are each centered in the viewport, so margin-left:50%
-     + translateX(-50%) lands the left edge at 0 regardless of the parent's
-     padding/max-width.
-
-     Inset by one gutter each side rather than reaching the viewport edges, so
-     the rounded corners are visible instead of being cut off by the edge. The
-     24px also absorbs the scrollbar that 100vw includes (~15px), which the
-     roots' overflow-x: clip used to hide. */
-  width: calc(100vw - 24px);
-  margin-left: 50%;
-  transform: translateX(-50%);
+  /* A plain block inside the chrome. Everything that used to be here — the
+     100vw breakout, margin-left: 50%, translateX(-50%), the 12px radius, the
+     12px top margin — existed only because the ticker was rendered by each PAGE,
+     inside a centred max-width container it had to escape. It is rendered by the
+     layout chrome now (see ticker-slot.js), which is already full width, so the
+     breakout is not merely unnecessary, it would be wrong: 100vw includes the
+     scrollbar gutter. */
+  width: 100%;
+  margin: 0;
+  transform: none;
+  border-radius: 0;
 }
 .dsx-ticker-track {
   display: inline-flex;

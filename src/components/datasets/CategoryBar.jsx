@@ -167,18 +167,23 @@ export default function CategoryBar({ active, activeItem }) {
   // every dataset page) into a Suspense boundary under the App Router.
   const signInHref = pathname ? `/signin?next=${encodeURIComponent(pathname)}` : '/signin';
 
-  /* Left from the trigger, top from the BAR. Hanging the panel off the
-     trigger's own bottom edge put it 4px INSIDE the green block (measured:
+  /* Left from the trigger, top from the whole GREEN BLOCK. Hanging the panel
+     off the trigger's own bottom edge put it 4px inside the block (measured:
      trigger bottom 45, panel top 49, bar bottom 53), because the bar's 8px
-     padding sits below the trigger. Taking the top from the bar clears the
-     block at every width and lands all seven panels on one line. */
+     padding sits below the trigger. The block is the bar plus the ticker when
+     a page publishes one, so the anchor is .dscat-chrome rather than the bar:
+     off the bar alone the panel started at 59 and covered a 53-to-89 ticker.
+     With no ticker the two edges coincide, so this is the same answer. The
+     fallback keeps the bar usable if it is ever rendered outside the chrome.
+     All seven panels land on one line either way. */
   const place = useCallback((id) => {
     const el = triggerRefs.current[id];
     const bar = barRef.current;
     if (!el || !bar) return;
+    const block = bar.closest('.dscat-chrome') || bar;
     setPos({
       left: el.getBoundingClientRect().left,
-      top: bar.getBoundingClientRect().bottom + TRIGGER_GAP,
+      top: block.getBoundingClientRect().bottom + TRIGGER_GAP,
     });
   }, []);
 

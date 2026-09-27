@@ -18,6 +18,8 @@
 import { usePathname } from 'next/navigation';
 import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 import CategoryBar from '@/components/datasets/CategoryBar';
+import DatasetTicker from '@/components/datasets/DatasetTicker';
+import { useTickerSlot } from '@/components/datasets/ticker-slot';
 
 /* LONGEST match, not the first. Several roadmap items point at an ancestor as
    their nearest live page ('/datasets' and '/datasets/government' are both in
@@ -42,8 +44,25 @@ function resolveActive(pathname) {
 
 export default function DatasetChrome() {
   const pathname = usePathname() || '';
+  const { ticker } = useTickerSlot();
   /* The overview is not one of the datasets, so no dimension is marked there,
      which is how it rendered before this moved to the layout. */
   const hit = pathname === '/datasets' ? null : resolveActive(pathname);
-  return <CategoryBar active={hit?.active ?? null} activeItem={hit?.activeItem ?? null} />;
+  /* One green block, one set of rounded bottom corners, one bottom margin. The
+     wrapper's overflow: hidden is what clips the ticker's track to those
+     corners; it does NOT affect the bar's dimension menus, which render through
+     a portal to document.body precisely so no ancestor can clip them. A page
+     that publishes no ticker gets the bar alone, still rounded. */
+  return (
+    <div className="dscat-chrome">
+      <CategoryBar active={hit?.active ?? null} activeItem={hit?.activeItem ?? null} />
+      {ticker ? (
+        <DatasetTicker
+          items={ticker.items}
+          onSelect={ticker.onSelect}
+          ariaLabel={ticker.ariaLabel}
+        />
+      ) : null}
+    </div>
+  );
 }

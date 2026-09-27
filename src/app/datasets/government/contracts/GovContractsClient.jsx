@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
-import DatasetTicker from '@/components/datasets/DatasetTicker';
+import { usePublishTicker } from '@/components/datasets/ticker-slot';
 import ContractsExplorer from './ContractsExplorer';
 import ContractorQuickView from './ContractorQuickView';
 import { slugify } from './contractor-mock';
@@ -357,26 +357,35 @@ export default function GovContractsClient({
     return agencyTotals.filter((a) => a.agency.toLowerCase().includes(debouncedSearch));
   }, [agencyTotals, debouncedSearch]);
 
+  /* The ticker is drawn by the layout chrome, not here, so that it and the
+     category bar form one green block; this page only supplies the items.
+     Awards map to the generic item shape; _award carries the full record so a
+     click still opens the award-analysis modal. Both the items and the handler
+     are memoized because usePublishTicker republishes whenever either changes
+     identity. */
+  const tickerItems = useMemo(
+    () =>
+      recentAwards
+        .filter((a) => a.recipient && a.amount > 0)
+        .slice(0, 30)
+        .map((a) => ({
+          id: a.id,
+          lead: a.agency,
+          main: a.recipient,
+          value: fmtUSD(a.amount),
+          _award: a,
+        })),
+    [recentAwards],
+  );
+  const onTickerSelect = useCallback((it) => setSelectedAward(it._award), []);
+  usePublishTicker({
+    items: tickerItems,
+    onSelect: onTickerSelect,
+    ariaLabel: 'Latest contract awards',
+  });
+
   return (
     <div className="gcx-page">
-      {/* Shared, full-bleed dataset ticker (same component + speed as every other
-          dataset page). Awards map to the generic item shape; _award carries the
-          full record so a click still opens the award-analysis modal. */}
-      <DatasetTicker
-        ariaLabel="Latest contract awards"
-        items={recentAwards
-          .filter((a) => a.recipient && a.amount > 0)
-          .slice(0, 30)
-          .map((a) => ({
-            id: a.id,
-            lead: a.agency,
-            main: a.recipient,
-            value: fmtUSD(a.amount),
-            _award: a,
-          }))}
-        onSelect={(it) => setSelectedAward(it._award)}
-      />
-
       <header className="gcx-header">
         <p className="gcx-eyebrow">DATASETS · USASPENDING.GOV</p>
         <h1 className="gcx-title">Government contracts</h1>

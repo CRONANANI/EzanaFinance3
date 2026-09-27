@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ExternalLink, X, Loader2, Search } from 'lucide-react';
 import { Ticker, EntityName } from '@/components/marketing/DatasetTable';
-import DatasetTicker from '@/components/datasets/DatasetTicker';
+import { usePublishTicker } from '@/components/datasets/ticker-slot';
 import { HOUSE_FILINGS_SAMPLE, HOUSE_TRADES_SAMPLE } from './house-disclosures-sample';
 import '../../marketing-explore.css';
 import './house-disclosures.css';
@@ -243,14 +243,17 @@ export function HouseDisclosuresClient({ filings }) {
     [rows],
   );
 
+  /* Drawn by the layout chrome so the bar and the strip are one green block;
+     this page only supplies the items. */
+  const onTickerSelect = useCallback((it) => setDetail(it._row), []);
+  usePublishTicker({
+    items: tickerItems,
+    onSelect: onTickerSelect,
+    ariaLabel: 'Recent House trade filings',
+  });
+
   return (
     <div className="mkt-page">
-      <DatasetTicker
-        items={tickerItems}
-        ariaLabel="Recent House trade filings"
-        onSelect={(it) => setDetail(it._row)}
-      />
-
       <main className="mkt-main">
         <div className="mkt-hero">
           <p className="mkt-eyebrow">CAPITOL WATCH · HOUSE CLERK</p>

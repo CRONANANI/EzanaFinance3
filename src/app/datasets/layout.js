@@ -5,6 +5,7 @@ import { MarketingPageShell } from '@/components/marketing/MarketingPageShell';
 import { DatasetsSubnav } from '@/components/marketing/DatasetsSubnav';
 import { DatasetComingSoon } from '@/components/marketing/DatasetComingSoon';
 import DatasetChrome from '@/components/datasets/DatasetChrome';
+import { TickerSlotProvider } from '@/components/datasets/ticker-slot';
 import '../marketing-explore.css';
 import './dataset-type.css';
 
@@ -59,15 +60,17 @@ export default function DatasetsLayout({ children }) {
     );
   }
 
-  /* The green category bar is drawn HERE, above the page, rather than by each
-     page inside its own container: the containers clip overflow, so the bar's
-     full-bleed negative margins were cut at the content column. */
+  /* The green chrome — the bar AND the ticker — is drawn HERE, above the page,
+     rather than by each page inside its own container: the containers clip
+     overflow, so the bar's full-bleed negative margins were cut at the content
+     column. The ticker joined it for the same reason; pages publish their items
+     through TickerSlotProvider instead of rendering the strip themselves. */
   if (STANDALONE_ROUTES.has(pathname)) {
     return (
-      <>
+      <TickerSlotProvider>
         <DatasetChrome />
         {children}
-      </>
+      </TickerSlotProvider>
     );
   }
 

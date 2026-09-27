@@ -42,29 +42,43 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ── ticker (shared pattern: white bg, 1.5px emerald bottom line) ──
-   NOTE: this is a second, independent copy of the .dsx-ticker rules that
-   dataset-ticker.css owns, keyframes included, and it wins here by import
-   order. So the "one canonical speed" that file documents is not actually
-   global — this page has always run its own. Kept in step by hand until the
-   duplicate is removed. This page's strip uses different item markup
-   (.dsx-ttag / .dsx-tsub, not .dsx-tlead / .dsx-tmain / .dsx-tval), so it did
-   NOT take the green treatment the shared sheet now carries: its items would be
-   dark ink on a dark ground. It does keep pace: 143s here is 100 / 0.7, the
-   same 30% reduction applied to dataset-ticker.css's 87s → 124s. */
-.dsx-ticker {
+/* ── ticker (this page's own: white bg, 1.5px emerald bottom line) ──
+   This is a second, independent copy of the .dsx-ticker rules that
+   dataset-ticker.css owns, keyframes included. This page's strip uses different
+   item markup (.dsx-ttag / .dsx-tsub, not .dsx-tlead / .dsx-tmain /
+   .dsx-tval), so it deliberately did NOT take the green treatment the shared
+   sheet carries: its tags are coloured per dimension and would be dark ink, and
+   failing contrast, on a dark ground. It does keep pace: 143s here is 100 / 0.7,
+   the same 30% reduction applied to dataset-ticker.css's 87s → 124s.
+
+   Two things changed when the shared ticker moved into the layout chrome.
+   First, the selectors are scoped to `.dsx-page >`, so they can no longer reach
+   the chrome's strip and the page no longer depends on import order to win —
+   this page's ticker is a direct child of .dsx-page, the chrome's never is.
+   Second, the full-bleed breakout below is now declared HERE. It used to be
+   inherited from the shared sheet, which no longer carries it (the chrome is
+   full width by nature, so its strip does not need to escape anything). Without
+   this the page's strip would silently shrink to the centred column. */
+.dsx-page > .dsx-ticker {
   overflow: hidden;
   background: #fff;
   border-bottom: 1.5px solid var(--emerald);
   margin-bottom: 20px;
   white-space: nowrap;
+  /* .dsx-page is centred in the viewport, so 50% + translateX(-50%) lands the
+     left edge at 0 regardless of its padding and max-width. The 24px inset
+     absorbs the scrollbar that 100vw includes. */
+  width: calc(100vw - 24px);
+  margin-left: 50%;
+  transform: translateX(-50%);
+  border-radius: 12px;
 }
-.dsx-ticker-track {
+.dsx-page > .dsx-ticker .dsx-ticker-track {
   display: inline-flex;
   width: max-content;
   animation: dsx-tick 143s linear infinite;
 }
-.dsx-ticker:hover .dsx-ticker-track {
+.dsx-page > .dsx-ticker:hover .dsx-ticker-track {
   animation-play-state: paused;
 }
 @keyframes dsx-tick {

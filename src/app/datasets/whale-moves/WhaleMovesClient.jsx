@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { Ticker, EntityName } from '@/components/marketing/DatasetTable';
-import DatasetTicker from '@/components/datasets/DatasetTicker';
+import { usePublishTicker } from '@/components/datasets/ticker-slot';
 import { WEIGHTS } from '@/lib/whale-score';
 import { WHALE_MOVES_SAMPLE } from './whale-moves-sample';
 import '../../marketing-explore.css';
@@ -150,12 +150,14 @@ export function WhaleMovesClient({ moves }) {
     [rows],
   );
 
+  /* Drawn by the layout chrome so the bar and the strip are one green block;
+     this page only supplies the items. */
+  usePublishTicker({ items: tickerItems, ariaLabel: 'Top whale moves by score' });
+
   const iw = WEIGHTS.institutional;
 
   return (
     <div className="mkt-page">
-      <DatasetTicker items={tickerItems} ariaLabel="Top whale moves by score" />
-
       <main className="mkt-main">
         <div className="mkt-hero">
           <p className="mkt-eyebrow">TITANS SHADOW · SEC EDGAR</p>

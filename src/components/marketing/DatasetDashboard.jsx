@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import DatasetTicker from '@/components/datasets/DatasetTicker';
+import { usePublishTicker } from '@/components/datasets/ticker-slot';
 import { DatasetTable } from './DatasetTable';
 
 /**
@@ -52,19 +52,18 @@ export function DatasetDashboard({ config, children }) {
 
   const HighlightIcon = highlight?.icon;
 
+  /* The strip is drawn by the layout chrome, so it and the category bar are one
+     green block; this shell only forwards whatever its config supplies. The
+     config object is built per page, so its fields are already stable for as
+     long as the page is. */
+  usePublishTicker({
+    items: ticker?.items,
+    onSelect: ticker?.onSelect,
+    ariaLabel: ticker?.ariaLabel,
+  });
+
   return (
     <div className="dsx-page">
-      {/* Full-bleed chrome above a centered content column — same placement as
-          the Government Contracts page (nav flush to top, ticker directly
-          beneath, content centered below). */}
-      {ticker?.items?.length ? (
-        <DatasetTicker
-          items={ticker.items}
-          onSelect={ticker.onSelect}
-          ariaLabel={ticker.ariaLabel}
-        />
-      ) : null}
-
       <div className="dsx-main">
         <div className="mkt-hero">
           <p className="mkt-eyebrow">{eyebrow}</p>
