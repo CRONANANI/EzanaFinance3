@@ -54,14 +54,14 @@ function idx(rows) {
 
 test('index: parses columns, labels, state/district, PTR + electronic flags', () => {
   const txt = idx([
-    ['Hon.', 'Pelosi', 'Nancy', '', 'P', 'CA11', '2026', '4/15/2026', '100012345'],
+    ['Hon.', 'Pelosi', 'Nancy', '', 'P', 'CA11', '2026', '4/15/2026', '20012345'],
     ['Mr.', 'Smith', 'John', 'Jr', 'A', 'TX02', '2026', '1/2/2026', '8068'],
   ]);
   const rows = parseHouseIndexTxt(txt);
   assert.equal(rows.length, 2);
 
   const [ptr, annual] = rows;
-  assert.equal(ptr.doc_id, '100012345');
+  assert.equal(ptr.doc_id, '20012345');
   assert.equal(ptr.last_name, 'Pelosi');
   assert.equal(ptr.filing_type, 'P');
   assert.equal(ptr.filing_type_label, 'Periodic Transaction Report');
@@ -73,7 +73,7 @@ test('index: parses columns, labels, state/district, PTR + electronic flags', ()
   assert.equal(ptr.is_electronic, true);
   assert.equal(
     ptr.pdf_url,
-    'https://disclosures-clerk.house.gov/public_disc/ptr-pdfs/2026/100012345.pdf',
+    'https://disclosures-clerk.house.gov/public_disc/ptr-pdfs/2026/20012345.pdf',
   );
 
   assert.equal(annual.is_ptr, false);
@@ -123,7 +123,7 @@ test('index: nine-column layout (2015-2026) has no covered_year or disclosure_ty
     idx([
       ['Hon.', 'Pelosi', 'Nancy', '', 'P', 'CA11', '2026', '4/15/2026', '100012345'],
       ['Mr.', 'Smith', 'John', 'Jr', 'A', 'TX02', '2026', '1/2/2026', '8068'],
-      ['Mrs.', 'Doe', 'Jane', '', 'C', 'FL07', '2026', '12/1/2026', '300222333'],
+      ['Mrs.', 'Doe', 'Jane', '', 'C', 'FL07', '2026', '12/1/2026', '30022233'],
     ]),
   );
   assert.equal(rows.length, 3);
@@ -134,7 +134,7 @@ test('index: nine-column layout (2015-2026) has no covered_year or disclosure_ty
   assert.equal(rows[0].filing_date, '2026-04-15');
   assert.equal(rows[0].doc_id, '100012345');
   assert.equal(rows[2].filing_date, '2026-12-01');
-  assert.equal(rows[2].doc_id, '300222333');
+  assert.equal(rows[2].doc_id, '30022233');
 });
 
 /* The bug this parser was changed to fix. Read positionally, these rows give
@@ -145,7 +145,7 @@ test('index: eleven-column layout (2008-2014) reads date, doc id and the extra c
       // Realistic legacy values: the PTR is FilingType 'O' with the marker in
       // DisclosureType, which is how 2,146 of 2013's 2,318 PTRs actually look.
       ['Hon.', 'Pelosi', 'Nancy', '', 'O', 'CA12', '2013', '2012', '1/2/2013', '8220001', 'PTR'],
-      ['Mr.', 'Ryan', 'Paul', '', 'A', 'WI01', '2013', '2012', '5/15/2013', '100004321', 'FD'],
+      ['Mr.', 'Ryan', 'Paul', '', 'A', 'WI01', '2013', '2012', '5/15/2013', '10004321', 'FD'],
       ['Hon.', 'Lewis', 'John', '', 'C', 'GA05', '2013', '2011', '12/31/2013', '8220099', 'FD'],
     ]),
   );
@@ -167,7 +167,7 @@ test('index: eleven-column layout (2008-2014) reads date, doc id and the extra c
     'https://disclosures-clerk.house.gov/public_disc/ptr-pdfs/2013/8220001.pdf',
   );
 
-  assert.equal(annual.doc_id, '100004321');
+  assert.equal(annual.doc_id, '10004321');
   assert.equal(annual.filing_date, '2013-05-15');
   assert.equal(annual.covered_year, 2012);
   assert.equal(annual.disclosure_type, 'FD');
@@ -258,14 +258,6 @@ test('index: header matching is exact, so "Year" never binds to "Filing Year"', 
   assert.equal(row.covered_year, 2009);
   assert.equal(row.filing_date, '2010-03-04');
   assert.equal(row.doc_id, '8300123');
-});
-
-test('isElectronicDocId: 9-digit 100/300 true; others false', () => {
-  assert.equal(isElectronicDocId('100000001'), true);
-  assert.equal(isElectronicDocId('300999999'), true);
-  assert.equal(isElectronicDocId('200000001'), false); // not 100/300
-  assert.equal(isElectronicDocId('10001234'), false); // 8 digits
-  assert.equal(isElectronicDocId('8068'), false);
 });
 
 test('toISO: M/D/YYYY → YYYY-MM-DD; junk → null', () => {
@@ -433,4 +425,52 @@ test('dedupe: every doc_id in the output is unique (the Postgres precondition)',
   const ids = rows.map((r) => r.doc_id).filter(Boolean);
   assert.equal(new Set(ids).size, ids.length);
   assert.equal(rows.length, 3);
+});
+
+/* ---------------------------------------------------------------------------
+   isElectronicDocId.
+
+   The old rule wanted a 9-digit id beginning 100/300. No such id exists in the
+   Clerk's data at any year, so it matched nothing and parse-house-ptrs had
+   no work to do. Counts below are from the 48,895 rows in
+   house_disclosure_filings.
+   --------------------------------------------------------------------------- */
+
+test('electronic: 8-digit ids beginning 2 (PTRs) and 1 (annual reports)', () => {
+  assert.equal(isElectronicDocId('20026590'), true); // 5,651 PTRs, 2015-2026
+  assert.equal(isElectronicDocId('10078673'), true); // 14,680 reports, 2015-2026
+});
+
+test('electronic: legacy 7-digit ids beginning 2 (2012-2013 PTRs)', () => {
+  /* Every PTR in 2012 and 2013 is one of these — 3,131 filings, and no 8- or
+     9-prefixed id appears in either year. Same counter as the 8-digit series
+     before it rolled over, so excluding them would drop two whole years. */
+  assert.equal(isElectronicDocId('2012345'), true);
+  assert.equal(isElectronicDocId('2999999'), true);
+});
+
+test('scanned: 7-digit ids beginning 8 or 9 are paper', () => {
+  assert.equal(isElectronicDocId('9115765'), false);
+  assert.equal(isElectronicDocId('8214528'), false);
+});
+
+test('electronic: short, empty, null and 9-digit ids are not electronic', () => {
+  assert.equal(isElectronicDocId('8068'), false);
+  assert.equal(isElectronicDocId(''), false);
+  assert.equal(isElectronicDocId(null), false);
+  assert.equal(isElectronicDocId(undefined), false);
+  /* The shape the old rule looked for. It never existed; asserting it stays
+     false keeps anyone from "restoring" it. */
+  assert.equal(isElectronicDocId('100123456'), false);
+  assert.equal(isElectronicDocId('300123456'), false);
+});
+
+test('electronic: non-numeric and padded ids are rejected outright', () => {
+  assert.equal(isElectronicDocId('2002659a'), false);
+  assert.equal(isElectronicDocId(' 20026590'), false);
+  assert.equal(isElectronicDocId('20026590\n'), false);
+  /* 8-digit ids beginning 3, 4 and 5 exist (5,397 rows) and are not the
+     electronic series. */
+  assert.equal(isElectronicDocId('30012345'), false);
+  assert.equal(isElectronicDocId('40012345'), false);
 });

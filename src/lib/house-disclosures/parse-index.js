@@ -121,12 +121,39 @@ export function toISO(mdy) {
 }
 
 /**
- * DocID heuristic: an ELECTRONIC filing is a 9-digit id beginning 100/300 — its
- * PDF has real text and can be parsed directly. Short ids (e.g. '8068') are older
- * scanned paper filings that need OCR (deferred).
+ * Whether a Clerk DocID names an electronically filed document — a PDF with
+ * real extractable text — rather than a scanned paper filing.
+ *
+ * The old rule looked for a 9-digit id beginning 100 or 300. There is no such
+ * id anywhere in the Clerk's data: every DocID across 2008-2026 is 4, 7 or 8
+ * digits, so the rule matched NOTHING and parse-house-ptrs, which selects
+ * `is_ptr AND is_electronic AND NOT trades_parsed`, had nothing to work on
+ * and reported filings_parsed: 0 with no errors.
+ *
+ * What the 48,895 indexed filings actually use:
+ *
+ *   8 digits, leading 2   electronic PTR            5,651   2015-2026
+ *   7 digits, leading 2   electronic PTR (legacy)   3,131   2012-2013
+ *   7 digits, leading 9   scanned paper PTR         1,425   2015-2026
+ *   7 digits, leading 8   scanned paper PTR           594   2018-2026
+ *   8 digits, leading 1   electronic annual report 14,680   2015-2026
+ *   7 digits, leading 8/9 scanned paper, other     17,573   2008-2026
+ *   8 digits, leading 3/4/5 and 4-digit ids        other scanned/older forms
+ *
+ * The legacy 7-digit case is why this is not simply /^[12]\d{7}$/. In 2012
+ * and 2013 EVERY PTR is a 7-digit id beginning 2, with no 8- or 9-prefixed
+ * ids in those years at all — the same leading digit the electronic series
+ * uses in every later year, one digit shorter. It is the same counter before
+ * it rolled over from 2,xxx,xxx to 2x,xxx,xxx, not a different kind of
+ * document; the paper series is the separate 8/9 range. Dropping those 3,131
+ * filings would silently exclude two entire years.
+ *
+ * Erring towards electronic is the cheap direction: the PTR parser's own
+ * text-length check marks anything it cannot read as needs_ocr, so a wrong
+ * guess here costs one fetch and never produces bad trades.
  */
 export function isElectronicDocId(docId) {
-  return /^\d{9}$/.test(docId) && /^(100|300)/.test(docId);
+  return /^(2\d{6}|[12]\d{7})$/.test(String(docId || ''));
 }
 
 /** PTR source PDF path. Only valid for PTRs (FilingType 'P'); annual/other filings
