@@ -3141,3 +3141,22 @@ html:has(.landing-page) .landing-footer button {
   color: var(--emerald-text);
   text-decoration: none;
 }
+
+/* A dataset that is navigable but showing sample data. Muted, sitting where
+   the Soon tag sits, so a link is never mistaken for a live dataset. */
+.nav-datasets-sample,
+.mobile-nav-sample {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-strong);
+  border-radius: 9999px;
+  padding: 0.05rem 0.35rem;
+  margin-left: 0.4rem;
+}

@@ -42,16 +42,16 @@ export const DATASET_TAXONOMY = [
         label: 'US House Financial Disclosures',
         description: 'Official House member trades and holdings disclosed under the STOCK Act',
         href: '/datasets/house/disclosures',
-        live: false,
+        live: 'preview',
         source: 'House Clerk disclosures (disclosures-clerk.house.gov)',
         sourceType: 'gov',
       },
       {
         label: 'US Senate Financial Disclosures',
         description: 'Official Senate member trades and holdings disclosed under the STOCK Act',
-        href: '/datasets/political',
-        live: false,
-        source: 'Senate eFD · FMP',
+        href: '/datasets/senate/disclosures',
+        live: 'preview',
+        source: 'Senate Office of Public Records (efdsearch.senate.gov)',
         sourceType: 'gov',
       },
       {
@@ -430,7 +430,7 @@ export const DIMENSION_SOURCE_DETAILS = DATASET_TAXONOMY.reduce((acc, d) => {
 /** Count of live (page-backed) vs roadmap items across all dimensions. */
 export const TAXONOMY_STATS = DATASET_TAXONOMY.reduce(
   (s, d) => {
-    for (const it of d.items) it.live ? (s.live += 1) : (s.roadmap += 1);
+    for (const it of d.items) it.live === true ? (s.live += 1) : (s.roadmap += 1);
     return s;
   },
   { live: 0, roadmap: 0, dimensions: DATASET_TAXONOMY.length },
@@ -453,3 +453,26 @@ export const SOURCE_TYPE_META = {
   licensed: { label: 'Licensed', tone: 'licensed' },
   none: { label: 'Commercial', tone: 'none' },
 };
+
+/**
+ * Three states, not two. `live: true` is a dataset with real data behind it;
+ * `live: 'preview'` is a page that exists and is worth opening but is showing
+ * sample data; `live: false` is a roadmap entry with no page at all.
+ *
+ * The distinction matters because `'preview'` is a truthy string, so every
+ * `it.live ?` check silently promoted it to fully live, including the counts
+ * that tell a visitor how many datasets are real. Navigation and truth are
+ * separate questions, so they get separate helpers: use isNavigable to decide
+ * whether to render a link, and isFullyLive for any badge, count or claim.
+ */
+export function isNavigable(item) {
+  return item?.live === true || item?.live === 'preview';
+}
+
+export function isFullyLive(item) {
+  return item?.live === true;
+}
+
+export function isPreview(item) {
+  return item?.live === 'preview';
+}

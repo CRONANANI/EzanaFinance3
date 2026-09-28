@@ -29,6 +29,8 @@ import {
   DIMENSION_IDS,
   TAXONOMY_STATS,
   SOURCE_TYPE_META,
+  isNavigable,
+  isFullyLive,
 } from '@/lib/datasets/taxonomy';
 import './ds-overview.css';
 
@@ -49,7 +51,9 @@ const NODES = DATASET_TAXONOMY.map((d, i) => ({
   angle: -90 + (i * 360) / DATASET_TAXONOMY.length,
   blurb: d.blurb,
   items: d.items,
-  liveCount: d.items.filter((it) => it.live).length,
+  // Strict: a preview page is navigable but is NOT a live dataset, and
+  // this number is a claim about how much real data there is.
+  liveCount: d.items.filter((it) => isFullyLive(it)).length,
 }));
 const NODE_BY_ID = NODES.reduce((m, n) => ((m[n.id] = n), m), {});
 
@@ -63,7 +67,7 @@ const CAT_CARDS = DATASET_TAXONOMY.map((d) => ({
     .join(' · '),
   // Fully-roadmap dimensions (no live item) link to the overview, never into a
   // gated coming-soon route.
-  href: (d.items.find((it) => it.live) || { href: '/datasets' }).href,
+  href: (d.items.find((it) => isNavigable(it)) || { href: '/datasets' }).href,
   live: d.items.filter((it) => it.live).length,
   total: d.items.length,
 }));
@@ -487,14 +491,14 @@ function DimensionDatasets({ node }) {
                 </span>
               )}
             </span>
-            {it.live ? (
+            {isNavigable(it) ? (
               <ArrowRight size={13} className="dsx-ds-go" aria-hidden />
             ) : (
               <span className="dsx-ds-soon">Soon</span>
             )}
           </span>
         );
-        return it.live ? (
+        return isNavigable(it) ? (
           <a key={it.label} href={it.href} className="dsx-ds-link">
             {inner}
           </a>

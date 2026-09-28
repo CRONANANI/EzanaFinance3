@@ -42,7 +42,7 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
-import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
+import { DATASET_TAXONOMY, isNavigable, isPreview } from '@/lib/datasets/taxonomy';
 import { useAuth } from '@/components/auth-context';
 import './category-bar.css';
 
@@ -378,7 +378,7 @@ export default function CategoryBar({ active, activeItem }) {
                 ) : null}
               </p>
               {openCat.items.map((it) =>
-                it.live ? (
+                isNavigable(it) ? (
                   <a
                     key={it.label}
                     href={it.href}
@@ -388,9 +388,13 @@ export default function CategoryBar({ active, activeItem }) {
                     onClick={close}
                   >
                     <span className="dscat-item-label">{it.label}</span>
+                    {/* Navigable, but showing sample data. Said plainly where
+                        the Soon tag would sit, so the link is not mistaken for
+                        a live dataset. */}
+                    {isPreview(it) ? <span className="dscat-sample">Sample</span> : null}
                   </a>
                 ) : (
-                  // Non-live: a <span>, not an <a> — can't navigate; disabled to AT.
+                  // Roadmap only: a <span>, not an <a>, so it cannot navigate at all.
                   <span
                     key={it.label}
                     className="dscat-item dscat-item--soon"

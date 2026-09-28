@@ -24,7 +24,7 @@ import {
   TrendingUp,
   ScrollText,
 } from 'lucide-react';
-import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
+import { DATASET_TAXONOMY, isNavigable, isPreview } from '@/lib/datasets/taxonomy';
 import '@/components/ui/animated-nav.css';
 
 /* Landing-nav Datasets mega-menu — the SAME seven dimensions as the orbital map,
@@ -657,7 +657,7 @@ export function Navbar() {
                             />
                           </p>
                           {col.items.map((item) =>
-                            item.live ? (
+                            isNavigable(item) ? (
                               <a
                                 key={item.label}
                                 href={item.href}
@@ -666,6 +666,10 @@ export function Navbar() {
                                 onClick={closeDatasetsMenu}
                               >
                                 <span className="nav-datasets-item-label">{item.label}</span>
+                                {/* Navigable, but showing sample data. */}
+                                {isPreview(item) ? (
+                                  <span className="nav-datasets-sample">Sample</span>
+                                ) : null}
                               </a>
                             ) : (
                               // Non-live datasets render as a <span>, not an <a>, so they
@@ -807,7 +811,7 @@ export function Navbar() {
                         <div key={col.id} className="mobile-nav-group-col">
                           <p className="mobile-nav-group-head">{col.heading}</p>
                           {col.items.map((item) =>
-                            item.live ? (
+                            isNavigable(item) ? (
                               <a
                                 key={item.label}
                                 href={item.href}
@@ -815,6 +819,9 @@ export function Navbar() {
                                 onClick={() => setMobileMenuOpen(false)}
                               >
                                 {item.label}
+                                {isPreview(item) ? (
+                                  <em className="mobile-nav-sample">Sample</em>
+                                ) : null}
                               </a>
                             ) : (
                               <span

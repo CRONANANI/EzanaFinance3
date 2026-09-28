@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
+import { DATASET_TAXONOMY, isFullyLive } from '@/lib/datasets/taxonomy';
 import { PortfolioSignalCard } from './PortfolioSignalCard';
 import { DimensionVisual } from './dimension-visuals';
 import './dimension-scroll.css';
@@ -263,7 +263,7 @@ export function DimensionScrollSection() {
                         {d.items.slice(0, 4).map((it) => (
                           <li key={it.label} className="dscroll-source">
                             {it.label}
-                            {it.live ? null : <em className="dscroll-soon">soon</em>}
+                            {isFullyLive(it) ? null : <em className="dscroll-soon">soon</em>}
                           </li>
                         ))}
                       </ul>

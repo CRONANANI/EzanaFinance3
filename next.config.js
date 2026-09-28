@@ -55,6 +55,13 @@ const nextConfig = {
         destination: '/alternative-markets',
         permanent: true,
       },
+      /* The disclosures page moved under its chamber when the Senate page
+         joined it. Permanent, so anything linking the old path follows. */
+      {
+        source: '/datasets/house-disclosures',
+        destination: '/datasets/house/disclosures',
+        permanent: true,
+      },
       { source: '/crypto-research', destination: '/alternative-markets', permanent: true },
       { source: '/crypto-research/:path*', destination: '/alternative-markets', permanent: true },
     ];

@@ -410,3 +410,20 @@
     white-space: nowrap;
   }
 }
+/* A navigable dataset that is showing sample data. Muted, and deliberately
+   not the emerald a live item uses: it sits where Soon would sit and says
+   which of the two this is. */
+.dscat-sample {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-pill, 9999px);
+  padding: 1px 6px;
+}

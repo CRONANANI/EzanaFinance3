@@ -13,7 +13,6 @@ import './dataset-type.css';
 // live:false (so nav renders them "Soon"); this gate stops direct-URL access.
 // Reversal: remove the path here AND flip live:true in taxonomy.js.
 const COMING_SOON_ROUTES = new Set([
-  '/datasets/house-disclosures',
   '/datasets/institutional',
   '/datasets/activist',
   '/datasets/sec-filings',
@@ -30,11 +29,11 @@ const STANDALONE_ROUTES = new Set([
   // Financial disclosures, one implementation per chamber. The member routes
   // are matched by prefix below, since they carry a slug.
   '/datasets/house/disclosures',
+  '/datasets/senate/disclosures',
   '/datasets/campaignfinancerecords',
   '/datasets/government/contracts',
   '/datasets/government/lobbying',
   '/datasets/political',
-  '/datasets/house-disclosures',
   // DatasetDashboard now draws its own full-bleed CategoryBar + ticker (and the
   // bespoke sec-filings client draws the same chrome), so these opt out of the
   // marketing shell too — no "Back to home" bar, no old pill row, matching the
