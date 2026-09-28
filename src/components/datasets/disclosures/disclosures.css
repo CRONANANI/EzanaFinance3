@@ -1005,3 +1005,161 @@
   font-size: 12.5px;
   line-height: 1.5;
 }
+
+/* ── phones: the trades table becomes a card list ───────────────────────
+   Same markup, same data, same colours. The row is re-laid out as a grid
+   rather than duplicated into a second card component, so there is one table
+   to keep correct and nothing can drift between the two.
+
+   Each cell gets its OWN named area. Assigning several cells to one area
+   does not place them side by side, it stacks them on top of each other,
+   which is how the first attempt drew the ticker over the type chip and all
+   three dates over one another.
+
+   The handoff's three lines: member and district, then ticker, type and the
+   bracket, then the mono figures. The asset name keeps a line of its own
+   rather than being dropped, because "same data" is the rule. */
+@media (max-width: 760px) {
+  .dsc-table,
+  .dsc-table tbody,
+  .dsc-table tr,
+  .dsc-table td {
+    display: block;
+    width: 100%;
+  }
+  /* The head row would only repeat the labels the card now carries. */
+  .dsc-table thead {
+    display: none;
+  }
+  .dsc-table tbody tr {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    grid-template-areas:
+      'member member src'
+      'asset  asset   asset'
+      'ticker type    amount'
+      'traded filed   lag';
+    align-items: center;
+    gap: 6px 10px;
+    height: auto;
+    padding: 12px 0;
+    border-bottom: 1px dotted var(--dsc-dot);
+  }
+  .dsc-table tbody td {
+    height: auto;
+    border-bottom: 0;
+    padding: 0;
+    min-width: 0;
+    width: auto;
+  }
+  /* Positional, because the cells carry no class of their own; the column
+     order is fixed by the table head above. */
+  .dsc-table tbody td:nth-child(1) {
+    grid-area: member;
+  }
+  .dsc-table tbody td:nth-child(2) {
+    grid-area: ticker;
+  }
+  .dsc-table tbody td:nth-child(3) {
+    grid-area: asset;
+  }
+  .dsc-table tbody td:nth-child(4) {
+    grid-area: type;
+  }
+  .dsc-table tbody td:nth-child(5) {
+    grid-area: traded;
+  }
+  .dsc-table tbody td:nth-child(6) {
+    grid-area: filed;
+  }
+  .dsc-table tbody td:nth-child(7) {
+    grid-area: lag;
+    text-align: left;
+  }
+  .dsc-table tbody td:nth-child(8) {
+    grid-area: amount;
+    text-align: right;
+  }
+  .dsc-table tbody td:nth-child(9) {
+    grid-area: src;
+    text-align: right;
+  }
+  /* The last line reads as one strip, so each figure names itself. */
+  .dsc-table tbody td:nth-child(5)::before {
+    content: 'TRADED';
+  }
+  .dsc-table tbody td:nth-child(6)::before {
+    content: 'FILED';
+  }
+  .dsc-table tbody td:nth-child(7)::before {
+    content: 'LAG';
+  }
+  .dsc-table tbody td:nth-child(5)::before,
+  .dsc-table tbody td:nth-child(6)::before,
+  .dsc-table tbody td:nth-child(7)::before {
+    display: block;
+    font-family: var(--dsc-mono);
+    font-size: 9px;
+    letter-spacing: var(--dsc-track-chip);
+    color: var(--dsc-faint);
+  }
+  /* 44px minimum for anything tappable on a phone. */
+  .dsc-member,
+  .dsc-tk,
+  .dsc-src {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .dsc-asset {
+    white-space: normal;
+  }
+  .dsc-row-selected td:first-child {
+    box-shadow: none;
+  }
+  .dsc-row-selected {
+    background: var(--dsc-pos-row);
+    box-shadow: inset 3px 0 0 var(--dsc-pos-mark);
+  }
+  .dsc-tfoot {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .dsc-page {
+    margin-left: 0;
+  }
+}
+
+/* The panel's own table at phone width. Four columns of mono in 390 minus
+   padding runs the heads into each other, so the amount column gives up its
+   head (the bracket is unmistakable without one) and the type column drops
+   to the label line under the ticker. */
+@media (max-width: 760px) {
+  .dsc-p-table thead th {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    padding-right: 6px;
+  }
+  .dsc-p-table thead th:nth-child(3) {
+    font-size: 0;
+  }
+  .dsc-p-table thead th:nth-child(3)::after {
+    content: 'AMOUNT';
+    font-size: 9px;
+    letter-spacing: 0.1em;
+  }
+  .dsc-p-table tbody td {
+    font-size: 11.5px;
+    padding-right: 6px;
+  }
+  .dsc-p-table tbody td:nth-child(2) {
+    max-width: 64px;
+  }
+  .dsc-p-type {
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+}
