@@ -13,6 +13,7 @@ import {
 } from '../src/lib/house-disclosures/parse-index.js';
 import { matchBracket, AMOUNT_BRACKETS } from '../src/lib/house-disclosures/brackets.js';
 import { parsePtrText, looksScanned } from '../src/lib/house-disclosures/parse-ptr-pdf.js';
+import { dedupeByDocId } from '../src/lib/house-disclosures/dedupe.js';
 
 const TAB = '\t';
 
@@ -322,4 +323,114 @@ test('looksScanned: short/empty text flagged, real text is not', () => {
   assert.equal(looksScanned(''), true);
   assert.equal(looksScanned('   '), true);
   assert.equal(looksScanned('x'.repeat(400)), false);
+});
+
+/* ---------------------------------------------------------------------------
+   doc_id de-duplication.
+
+   The Clerk's 2015+ index files repeat some DocIDs inside a single year.
+   Postgres rejects an ON CONFLICT DO UPDATE batch that names the same conflict
+   key twice AND rejects the whole batch, which is how an ingest that parsed
+   45,774 rows wrote 2008-2014 and 2026 and lost every year in between.
+   --------------------------------------------------------------------------- */
+
+test('dedupe: same DocID twice keeps the later filing_date', () => {
+  const { rows, duplicates, duplicateIds } = dedupeByDocId([
+    { doc_id: '20001234', filing_date: '2021-05-01', last: 'EARLIER' },
+    { doc_id: '20009999', filing_date: '2021-06-01', last: 'OTHER' },
+    { doc_id: '20001234', filing_date: '2021-08-14', last: 'LATER' },
+  ]);
+  assert.equal(rows.length, 2);
+  assert.equal(duplicates, 1);
+  assert.deepEqual(duplicateIds, ['20001234']);
+  const kept = rows.find((r) => r.doc_id === '20001234');
+  assert.equal(kept.last, 'LATER');
+  assert.equal(kept.filing_date, '2021-08-14');
+  /* First-seen ordering survives: the winner takes the loser's slot rather
+     than moving to the end. */
+  assert.equal(rows[0].doc_id, '20001234');
+});
+
+test('dedupe: a null filing_date loses to a dated row, in either order', () => {
+  const datedSecond = dedupeByDocId([
+    { doc_id: 'A', filing_date: null, last: 'UNDATED' },
+    { doc_id: 'A', filing_date: '2019-02-02', last: 'DATED' },
+  ]);
+  assert.equal(datedSecond.rows.length, 1);
+  assert.equal(datedSecond.rows[0].last, 'DATED');
+
+  /* The important direction: a later-in-file undated row must NOT displace an
+     earlier dated one, or the file-order tie-break would silently win. */
+  const datedFirst = dedupeByDocId([
+    { doc_id: 'A', filing_date: '2019-02-02', last: 'DATED' },
+    { doc_id: 'A', filing_date: null, last: 'UNDATED' },
+  ]);
+  assert.equal(datedFirst.rows.length, 1);
+  assert.equal(datedFirst.rows[0].last, 'DATED');
+});
+
+test('dedupe: equal dates fall back to later file order', () => {
+  const { rows } = dedupeByDocId([
+    { doc_id: 'A', filing_date: '2020-01-01', last: 'FIRST' },
+    { doc_id: 'A', filing_date: '2020-01-01', last: 'SECOND' },
+  ]);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].last, 'SECOND');
+});
+
+test('dedupe: two undated rows collapse to the later one', () => {
+  const { rows, duplicates } = dedupeByDocId([
+    { doc_id: 'A', filing_date: null, last: 'FIRST' },
+    { doc_id: 'A', filing_date: null, last: 'SECOND' },
+  ]);
+  assert.equal(rows.length, 1);
+  assert.equal(duplicates, 1);
+  assert.equal(rows[0].last, 'SECOND');
+});
+
+test('dedupe: three copies count as two duplicates, listed once', () => {
+  const { rows, duplicates, duplicateIds } = dedupeByDocId([
+    { doc_id: 'A', filing_date: '2020-01-01' },
+    { doc_id: 'A', filing_date: '2020-03-01' },
+    { doc_id: 'A', filing_date: '2020-02-01' },
+  ]);
+  assert.equal(rows.length, 1);
+  assert.equal(duplicates, 2);
+  assert.deepEqual(duplicateIds, ['A']);
+  assert.equal(rows[0].filing_date, '2020-03-01');
+});
+
+test('dedupe: rows without a doc_id are passed through, never collapsed', () => {
+  const { rows, duplicates } = dedupeByDocId([
+    { doc_id: null, last: 'ONE' },
+    { doc_id: '', last: 'TWO' },
+    { doc_id: 'A', last: 'THREE' },
+  ]);
+  assert.equal(rows.length, 3);
+  assert.equal(duplicates, 0);
+});
+
+test('dedupe: a clean year is returned unchanged', () => {
+  const input = [
+    { doc_id: 'A', filing_date: '2020-01-01' },
+    { doc_id: 'B', filing_date: '2020-01-02' },
+    { doc_id: 'C', filing_date: null },
+  ];
+  const { rows, duplicates, duplicateIds } = dedupeByDocId(input);
+  assert.deepEqual(rows, input);
+  assert.equal(duplicates, 0);
+  assert.deepEqual(duplicateIds, []);
+});
+
+test('dedupe: every doc_id in the output is unique (the Postgres precondition)', () => {
+  const { rows } = dedupeByDocId([
+    { doc_id: 'A', filing_date: '2020-01-01' },
+    { doc_id: 'B', filing_date: '2020-01-01' },
+    { doc_id: 'A', filing_date: '2020-02-01' },
+    { doc_id: 'C', filing_date: '2020-01-01' },
+    { doc_id: 'B', filing_date: '2020-05-01' },
+  ]);
+  const ids = rows.map((r) => r.doc_id).filter(Boolean);
+  assert.equal(new Set(ids).size, ids.length);
+  assert.equal(rows.length, 3);
 });
