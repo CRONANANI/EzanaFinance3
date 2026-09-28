@@ -28,6 +28,7 @@ const EarningsAnalysisCard = dynamic(
   { ssr: false, loading: () => <div aria-hidden style={{ minHeight: 480, width: '100%' }} /> },
 );
 import { CompsAnalysisCard } from '@/components/research/models/CompsAnalysisCard';
+import { ValuationMethodSelector } from '@/components/research/models/ValuationMethodSelector';
 import DCFInteractiveModel from './dcf/DCFInteractiveModel';
 import { incrementAnalysesRun } from '@/lib/beginner-profile';
 import { useChecklist } from '@/hooks/useChecklist';
@@ -51,13 +52,17 @@ function EarningsAnalysisPanel({ symbol, onClose }) {
  * Opens below the carousel when a model card is clicked.
  * Calls /api/ai-stock-analysis with the selected model and ticker.
  */
-export function AIAnalysisPanel({ modelId, symbol, onClose, showTips = false }) {
+export function AIAnalysisPanel({ modelId, symbol, onClose, onOpenModel, showTips = false }) {
   if (modelId === 'dcf') {
     return <DCFInteractiveModel symbol={symbol} onClose={onClose} />;
   }
 
   if (modelId === 'earnings') {
     return <EarningsAnalysisPanel symbol={symbol} onClose={onClose} />;
+  }
+
+  if (modelId === 'valuation') {
+    return <ValuationMethodSelector symbol={symbol} onClose={onClose} onOpenModel={onOpenModel} />;
   }
 
   if (modelId === 'comps') {

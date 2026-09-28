@@ -25,6 +25,7 @@ import BRONZE_REST from './course-content-bronze-rest';
 import CRYPTO_BRONZE from './course-content-crypto-bronze';
 import SILVER_GOLD_PLATINUM from './course-content-silver-gold-platinum';
 import OPTIONS_ADVANCED from './course-content-options-advanced';
+import VALUATION_METHODS from './course-content-valuation-methods';
 
 const STOCKS_BRONZE = {
   'stocks-basic-1': {
@@ -1677,6 +1678,7 @@ const COURSE_CONTENT = {
   ...CRYPTO_BRONZE,
   ...SILVER_GOLD_PLATINUM,
   ...OPTIONS_ADVANCED,
+  ...VALUATION_METHODS,
 };
 
 export default COURSE_CONTENT;

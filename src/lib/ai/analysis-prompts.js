@@ -96,6 +96,21 @@ Provide a 5-year DCF valuation including revenue projections, margin estimates, 
     userPromptTemplate: () => '',
   },
 
+  /* ─── Valuation Method Selector (custom React component) ──────────────── */
+  valuation: {
+    id: 'valuation',
+    name: 'Valuation Method Selector',
+    shortName: 'Method',
+    icon: 'bi-signpost-split',
+    description: 'Which model fits this company',
+    subtitle: 'NAV · DDM · DCF · SOTP · Multiples',
+    color: 'var(--emerald)',
+    flagship: false,
+    dispatchToComponent: 'ValuationMethodSelector',
+    systemPrompt: '', // Custom component, no AI prompt needed
+    userPromptTemplate: () => '',
+  },
+
   /* ─── NEW: Comparable Company Analysis ───────────────────────────────── */
   comps: {
     id: 'comps',
@@ -327,6 +342,7 @@ export function getAllModels() {
 export function getCarouselModels() {
   const order = [
     'grpv', // Flagship
+    'valuation', // Valuation Method Selector: routes to the right model
     'dcf', // DCF Valuation (forward + reverse)
     'earnings', // Earnings Analysis
     'comps', // Comparable Company Analysis

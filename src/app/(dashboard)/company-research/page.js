@@ -183,6 +183,8 @@ function CompanyResearchPageInner() {
       setQuery(sym);
       setViewMode('stock');
     }
+    const m = searchParams.get('model');
+    if (m && CAROUSEL_MODELS.some((model) => model.id === m)) setActiveModel(m);
   }, [searchParams]);
 
   useEffect(() => {
@@ -611,6 +613,7 @@ function CompanyResearchPageInner() {
                 modelId={activeModel}
                 symbol={selectedStock}
                 onClose={handleCloseAnalysis}
+                onOpenModel={setActiveModel}
                 showTips={beginner?.showTips}
               />
             </section>

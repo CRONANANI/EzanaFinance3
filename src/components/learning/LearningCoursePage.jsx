@@ -432,6 +432,21 @@ export function LearningCoursePage() {
                   />
                   <h2 className="lc-edit-h2">{currentSectionData?.title}</h2>
                   <SectionRenderer modules={currentSectionData?.modules || []} />
+                  {isLastSection && content?.tool?.href && (
+                    <aside className="lc-tool-cta" aria-label="Apply this course in Ezana">
+                      <div className="lc-tool-cta-icon" aria-hidden="true">
+                        <i className="bi bi-tools" />
+                      </div>
+                      <div className="lc-tool-cta-body">
+                        <span className="lc-tool-cta-eyebrow">Apply it in Ezana</span>
+                        <p className="lc-tool-cta-blurb">{content.tool.blurb}</p>
+                      </div>
+                      <Link href={content.tool.href} className="lc-tool-cta-btn">
+                        {content.tool.label}
+                        <i className="bi bi-arrow-right" aria-hidden="true" />
+                      </Link>
+                    </aside>
+                  )}
                 </article>
 
                 <FooterDock

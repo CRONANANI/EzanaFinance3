@@ -411,3 +411,9 @@ body.light-mode .cr-news-chain-dot {
     animation: none;
   }
 }
+
+/* Valuation Method Selector tile icon */
+.model-metric-icon.valuation {
+  background: var(--emerald-bg);
+  color: var(--emerald);
+}

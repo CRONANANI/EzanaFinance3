@@ -1481,3 +1481,73 @@ body.light-mode .lc-edit-finstmt {
   color: var(--text-muted);
   font-style: italic;
 }
+
+/* Course to tool CTA (content.tool), shown on the final section */
+.lc-tool-cta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--emerald-border);
+  border-radius: var(--radius-lg);
+  background: var(--emerald-bg-subtle);
+}
+.lc-tool-cta-icon {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--emerald-bg);
+  color: var(--emerald);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.lc-tool-cta-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.lc-tool-cta-eyebrow {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--emerald);
+}
+.lc-tool-cta-blurb {
+  margin: 0.25rem 0 0;
+  font-size: var(--type-body-size);
+  color: var(--text-secondary);
+}
+.lc-tool-cta-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--emerald);
+  color: var(--bg-primary);
+  font-weight: 600;
+  font-size: var(--type-body-size);
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+.lc-tool-cta-btn:hover,
+.lc-tool-cta-btn:focus-visible {
+  background: var(--emerald-hover);
+}
+@media (max-width: 640px) {
+  .lc-tool-cta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lc-tool-cta-btn {
+    transition: none;
+  }
+}

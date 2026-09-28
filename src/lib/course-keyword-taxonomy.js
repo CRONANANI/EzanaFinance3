@@ -76,4 +76,14 @@ export const COURSE_KEYWORDS = {
     'Kalshi',
     'Polymarket',
   ],
+  'stocks-intermediate-9': [
+    'net asset value',
+    'dividend discount model',
+    'liquidation value',
+    'venture capital method',
+    'sum-of-the-parts',
+    'funds from operations',
+    'EV/Revenue',
+    'cap rate',
+  ],
 };
