@@ -42,6 +42,20 @@ export function ActiveTaskProvider({ children }) {
   );
 }
 
+/**
+ * For components that can render OUTSIDE the dashboard, the root Navbar above
+ * all. The provider mounts the task guide overlay, which belongs to the
+ * dashboard, so it stays where it is; a component that the root layout renders
+ * on every page asks for the context optionally and copes with null.
+ *
+ * This is the fix for a real crash: the Navbar renders the checklist icon for
+ * any signed-in visitor, so on the landing page, the datasets pages, Echo and
+ * the help center the throwing hook below fired on every render.
+ */
+export function useOptionalActiveTaskContext() {
+  return useContext(ActiveTaskContext);
+}
+
 export function useActiveTaskContext() {
   const ctx = useContext(ActiveTaskContext);
   if (!ctx) {

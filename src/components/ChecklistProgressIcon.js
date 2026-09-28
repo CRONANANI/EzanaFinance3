@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { Check, Lock, ArrowRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useChecklist } from '@/hooks/useChecklist';
 import { getTasksByStage, isStageUnlocked, CHECKLIST_STAGES } from '@/config/checklist';
-import { useActiveTaskContext } from '@/contexts/ActiveTaskContext';
+import { useOptionalActiveTaskContext } from '@/contexts/ActiveTaskContext';
 
 /**
  * Getting-Started checklist dropdown — rebuilt per the Nav Dropdowns design
@@ -22,7 +23,11 @@ import { useActiveTaskContext } from '@/contexts/ActiveTaskContext';
 export function ChecklistProgressIcon() {
   const { completedCount, totalTasks, isComplete, progress, completeTask } = useChecklist();
   const [isOpen, setIsOpen] = useState(false);
-  const { startTask } = useActiveTaskContext();
+  const router = useRouter();
+  /* Optional: the Navbar renders this on every page, and the provider only
+     exists inside the dashboard. Null off the dashboard is expected, not an
+     error. */
+  const activeTask = useOptionalActiveTaskContext();
 
   const tasksByStage = getTasksByStage();
 
@@ -67,7 +72,14 @@ export function ChecklistProgressIcon() {
   const C = 2 * Math.PI * R;
 
   const resume = () => {
-    if (nextTask) startTask(nextTask.id);
+    if (nextTask) {
+      /* Inside the dashboard the guide overlay drives the task in place.
+         Outside it there is no overlay to drive, so navigate to the task's
+         own page — the same destination startTask would route to — instead
+         of doing nothing. */
+      if (activeTask?.startTask) activeTask.startTask(nextTask.id);
+      else router.push(nextTask.page || '/home');
+    }
     setIsOpen(false);
   };
 
