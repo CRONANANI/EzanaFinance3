@@ -3,6 +3,7 @@ import { getAdminClient } from '@/lib/supabase';
 import { downloadGcsText, isGcsConfigured } from '@/lib/house-disclosures/gcs';
 import { parseHouseIndexTxt } from '@/lib/house-disclosures/parse-index';
 import { dedupeByDocId } from '@/lib/house-disclosures/dedupe';
+import { writeWithOptionalColumn } from '@/lib/db/optional-column';
 
 /**
  * Ingest the U.S. House Clerk's yearly financial-disclosure INDEX into
@@ -72,22 +73,6 @@ function resolveYears(searchParams) {
    from a download that half-failed, and the page has no way to tell the
    difference. Counted from the parsed rows rather than from what the upsert
    wrote, because the question this answers is what the Clerk published. */
-/* The duplicates column arrives in its own migration, which is applied by
-   hand after this deploys. PostgREST rejects the whole row for one unknown
-   column, so sending it unconditionally would turn every coverage write into
-   an error until the migration lands — a worse failure than the one this
-   change fixes. Detect that one case and retry without the field. */
-function isUnknownColumn(error, column) {
-  if (!error) return false;
-  /* 42703 is Postgres's own undefined_column; PGRST204 is PostgREST's schema
-     cache reporting the same thing before the query is ever sent. Both are
-     reported for exactly this case, so the code alone is enough — but only
-     trust it when the message also names the column, so an unrelated missing
-     column is not silently papered over by dropping `duplicates`. */
-  const named = String(error.message || '').includes(column);
-  return named && (error.code === '42703' || error.code === 'PGRST204');
-}
-
 async function recordCoverage(admin, year, rows, duplicates, errors) {
   const payload = {
     year,
@@ -112,20 +97,21 @@ async function recordCoverage(admin, year, rows, duplicates, errors) {
     loaded_at: new Date().toISOString(),
   };
 
-  let { error } = await admin
-    .from('house_disclosure_coverage')
-    .upsert(payload, { onConflict: 'year' });
-
-  if (isUnknownColumn(error, 'duplicates')) {
-    console.warn(
-      `[ingest-house-disclosures] ${year}: house_disclosure_coverage.duplicates is missing; ` +
-        'apply 20260928130000_house_coverage_duplicates.sql to record it. Writing without it.',
-    );
-    const { duplicates: _omit, ...withoutDuplicates } = payload;
-    ({ error } = await admin
-      .from('house_disclosure_coverage')
-      .upsert(withoutDuplicates, { onConflict: 'year' }));
-  }
+  /* The duplicates column arrives in its own migration, applied by hand
+     after this deploys. PostgREST rejects the whole row for one unknown
+     column, so sending it unconditionally would turn every coverage write
+     into an error until the migration lands — a worse failure than the one
+     this change fixes. */
+  const { error } = await writeWithOptionalColumn(
+    payload,
+    'duplicates',
+    (row) => admin.from('house_disclosure_coverage').upsert(row, { onConflict: 'year' }),
+    () =>
+      console.warn(
+        `[ingest-house-disclosures] ${year}: house_disclosure_coverage.duplicates is missing; ` +
+          'apply 20260928130000_house_coverage_duplicates.sql to record it. Writing without it.',
+      ),
+  );
 
   if (error) {
     errors.push(`${year}: coverage ${error.message}`);

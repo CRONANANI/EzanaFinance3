@@ -115,7 +115,7 @@
     },
     {
       "path": "/api/cron/ingest-lobbying?years=2026,2025,2024&pagesPerQuarter=20",
-      "schedule": "0 */3 * * *"
+      "schedule": "0 * * * *"
     },
     {
       "path": "/api/cron/ingest-house-disclosures?year=2026",

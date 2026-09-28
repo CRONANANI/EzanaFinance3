@@ -61,6 +61,32 @@ async function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+/* LDA documents 120 requests per minute with a key, which is one every 500ms.
+   Nothing used to enforce that: requests fired as fast as they completed, and
+   the only thing keeping a run inside the limit was a small per-run request
+   budget. Raising that budget so the backfill can finish in days rather than
+   weeks means the spacing has to be real, so it is enforced here, once, for
+   every LDA call rather than at each call site.
+
+   The gate is a promise chain rather than a timestamp check so that
+   concurrent callers queue behind each other instead of all reading the same
+   "last request" time and firing together. */
+const MIN_REQUEST_INTERVAL_MS = 500;
+let ldaGate = Promise.resolve();
+let lastRequestAt = 0;
+
+function paceRequest() {
+  const wait = ldaGate.then(async () => {
+    const since = Date.now() - lastRequestAt;
+    if (since < MIN_REQUEST_INTERVAL_MS) await sleep(MIN_REQUEST_INTERVAL_MS - since);
+    lastRequestAt = Date.now();
+  });
+  /* The chain must never reject, or every later request inherits the
+     rejection and the client wedges. */
+  ldaGate = wait.catch(() => {});
+  return wait;
+}
+
 /**
  * Core GET with the Token auth header, timeout, and retry/backoff on 429/5xx.
  * @param {string} path e.g. 'filings' or 'filings/<uuid>'
@@ -85,6 +111,7 @@ export async function ldaGet(path, params = {}, opts = {}) {
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     if (budget) budget.take();
+    await paceRequest();
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), DEFAULT_TIMEOUT_MS);
     try {

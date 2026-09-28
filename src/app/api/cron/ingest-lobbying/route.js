@@ -12,6 +12,7 @@ import { normalizeFiling, normalizeConstants } from '@/lib/lobbying/normalize';
 import { normalizeQuarter, QUARTERS, QUARTER_PERIOD_CODE } from '@/lib/lobbying/period';
 import { validateBatch, topCanonicalMerges } from '@/lib/lobbying/quality';
 import { bucketsForFiling, issueBucket } from '@/lib/lobbying/entities';
+import { writeWithOptionalColumn } from '@/lib/db/optional-column';
 
 /**
  * Resumable, per-quarter ingest of Senate LDA filings into Supabase.
@@ -29,10 +30,20 @@ import { bucketsForFiling, issueBucket } from '@/lib/lobbying/entities';
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+/* A backfill run is deliberately long: see REQUEST_BUDGET. */
+export const maxDuration = 300;
 
 const DEFAULT_YEARS = [2025, 2024, 2026];
-const PAGE_SIZE = 100; // LDA page_size cap
-const REQUEST_BUDGET = 110; // stay under 120/min
+/* What we ASK for, not what we get. The LDA API caps (or ignores) page_size
+   and has been returning its default 25 per page: across every stored quarter
+   the row count tracks last_page * 25, never last_page * 100. Nothing below
+   may assume this number — it is sent so that a future server-side raise is
+   picked up for free, and progress is counted from `results.length`. */
+const REQUESTED_PAGE_SIZE = 100;
+/* The client paces requests to LDA's documented 120/min, so the ceiling here
+   is the function's wall clock rather than the rate limit: 300 requests at one
+   per 500ms is 150s, inside the 300s maxDuration below. */
+const REQUEST_BUDGET = 300;
 
 function isAuthorized(request) {
   const secret = process.env.CRON_SECRET;
@@ -148,6 +159,12 @@ async function backfillQuarter(
   const periodCode = QUARTER_PERIOD_CODE[quarter];
   let lastPage = state?.last_page || 0;
   let totalCount = state?.total_count ?? null;
+  /* Rows the API actually RETURNED, cumulative across runs. This is the only
+     honest measure of how far through a quarter the backfill is, and it is
+     what completion is decided on. It counts returned rows, not upserted
+     ones: the data-quality gate can reject a batch, and that is a reason to
+     stop, not a reason to think fewer pages exist. */
+  let rowsFetched = state?.rows_fetched || 0;
   let delta = 0;
   let done = false;
   let valReason = null;
@@ -161,7 +178,7 @@ async function backfillQuarter(
         filingPeriod: periodCode,
         ordering: 'filing_uuid',
         page,
-        pageSize: PAGE_SIZE,
+        pageSize: REQUESTED_PAGE_SIZE,
       },
       { budget },
     );
@@ -175,6 +192,10 @@ async function backfillQuarter(
       done = true;
       break;
     }
+    /* Counted before the quality gate, and before any `next` check: a short
+       page is the server's cap, not the end of the quarter. The loop keeps
+       going while `next` is present however few rows came back. */
+    rowsFetched += results.length;
     const mapped = results.map(mapFilingRow);
     if (mergeSink && mergeSink.length < 4000) mergeSink.push(...mapped);
     const loaded = await loadFilings(admin, mapped);
@@ -192,14 +213,24 @@ async function backfillQuarter(
     }
   }
 
-  const complete =
-    !valReason && (done || (totalCount != null && lastPage * PAGE_SIZE >= totalCount));
+  /* Completion comes from the API, never from arithmetic on an assumed page
+     size. It used to be `lastPage * PAGE_SIZE >= totalCount` with PAGE_SIZE
+     at 100 while the server returned 25, so every quarter was declared
+     finished after a quarter of its filings — and because a complete quarter
+     moves to the incremental phase, the backfill then stopped for good. That
+     is how 27,433 filings in 2025 Q1 became 7,094 stored rows, marked done.
+
+     `done` is set by the absence of a `next` link (or an empty page), which
+     is the server telling us there is no more. rows_fetched >= totalCount is
+     the backstop for a feed that omits `next` on the last page. */
+  const complete = !valReason && (done || (totalCount != null && rowsFetched >= totalCount));
   return {
     year,
     quarter,
     period_code: periodCode,
     total_count: totalCount,
     last_page: lastPage,
+    rows_fetched: rowsFetched,
     complete,
     phase: complete ? 'incremental' : 'backfill',
     rows_upserted: (state?.rows_upserted || 0) + delta,
@@ -231,7 +262,7 @@ async function incrementalQuarter(admin, budget, { year, quarter, state }, maxPa
         filingPeriod: periodCode,
         ordering: '-dt_posted',
         page,
-        pageSize: PAGE_SIZE,
+        pageSize: REQUESTED_PAGE_SIZE,
       },
       { budget },
     );
@@ -274,6 +305,9 @@ async function incrementalQuarter(admin, budget, { year, quarter, state }, maxPa
     period_code: periodCode,
     total_count: state?.total_count ?? null,
     last_page: state?.last_page || 0,
+    /* Carried, not recomputed: neither the incremental pull nor the rescan
+       walks the backfill cursor, so the quarter's progress is unchanged. */
+    rows_fetched: state?.rows_fetched || 0,
     complete: true,
     phase: 'incremental',
     last_seen_posted:
@@ -305,7 +339,7 @@ async function rescanQuarter(admin, budget, { year, quarter, state }, pages, err
         filingPeriod: periodCode,
         ordering: '-dt_posted',
         page,
-        pageSize: PAGE_SIZE,
+        pageSize: REQUESTED_PAGE_SIZE,
       },
       { budget },
     );
@@ -329,6 +363,9 @@ async function rescanQuarter(admin, budget, { year, quarter, state }, pages, err
     period_code: periodCode,
     total_count: state?.total_count ?? null,
     last_page: state?.last_page || 0,
+    /* Carried, not recomputed: neither the incremental pull nor the rescan
+       walks the backfill cursor, so the quarter's progress is unchanged. */
+    rows_fetched: state?.rows_fetched || 0,
     complete: state?.complete ?? false,
     phase: state?.phase || 'incremental',
     last_seen_posted: state?.last_seen_posted || null,
@@ -379,9 +416,23 @@ export async function GET(request) {
 
   const persist = async (next) => {
     const { _delta, ...row } = next;
-    const { error: persistError } = await admin
-      .from('lobbying_ingest_state')
-      .upsert(row, { onConflict: 'year,quarter' });
+    /* rows_fetched arrives with its own migration, applied by hand after this
+       deploys. Until then PostgREST would reject the whole cursor write for
+       that one unknown column, which would freeze the ingest entirely — so
+       the write degrades to the old shape and says which migration is
+       outstanding. */
+    const { error: persistError } = await writeWithOptionalColumn(
+      row,
+      'rows_fetched',
+      (payload) =>
+        admin.from('lobbying_ingest_state').upsert(payload, { onConflict: 'year,quarter' }),
+      () =>
+        console.warn(
+          '[ingest-lobbying] lobbying_ingest_state.rows_fetched is missing; apply ' +
+            '20260928150000_lobbying_ingest_rows_fetched.sql. Completion still uses the ' +
+            "API's next link, but progress is not persisted across runs.",
+        ),
+    );
     if (persistError) {
       errors.push(`persist ${row.year} ${row.quarter}: ${persistError.message}`);
     }
@@ -391,6 +442,7 @@ export async function GET(request) {
       phase: row.phase,
       delta: _delta,
       lastPage: row.last_page,
+      rowsFetched: row.rows_fetched,
       totalCount: row.total_count,
       complete: row.complete,
     });

@@ -14,6 +14,7 @@ import {
 import { matchBracket, AMOUNT_BRACKETS } from '../src/lib/house-disclosures/brackets.js';
 import { parsePtrText, looksScanned } from '../src/lib/house-disclosures/parse-ptr-pdf.js';
 import { dedupeByDocId } from '../src/lib/house-disclosures/dedupe.js';
+import { isUnknownColumn, writeWithOptionalColumn } from '../src/lib/db/optional-column.js';
 
 const TAB = '\t';
 
@@ -473,4 +474,66 @@ test('electronic: non-numeric and padded ids are rejected outright', () => {
      electronic series. */
   assert.equal(isElectronicDocId('30012345'), false);
   assert.equal(isElectronicDocId('40012345'), false);
+});
+
+/* ---------------------------------------------------------------------------
+   writeWithOptionalColumn: writing a column a pending migration has not
+   created yet must degrade, not fail the whole write.
+   --------------------------------------------------------------------------- */
+
+test('optional column: a clean write passes the payload through untouched', async () => {
+  const seen = [];
+  const r = await writeWithOptionalColumn({ a: 1, dup: 2 }, 'dup', async (row) => {
+    seen.push(row);
+    return { error: null };
+  });
+  assert.equal(r.error, null);
+  assert.equal(r.degraded, false);
+  assert.equal(seen.length, 1);
+  assert.deepEqual(seen[0], { a: 1, dup: 2 });
+});
+
+test('optional column: undefined_column retries without that key only', async () => {
+  const seen = [];
+  const r = await writeWithOptionalColumn({ a: 1, dup: 2 }, 'dup', async (row) => {
+    seen.push(row);
+    return seen.length === 1
+      ? { error: { code: '42703', message: 'column "dup" does not exist' } }
+      : { error: null };
+  });
+  assert.equal(r.error, null);
+  assert.equal(r.degraded, true);
+  assert.deepEqual(seen[1], { a: 1 });
+});
+
+test('optional column: an unrelated error is returned, never retried', async () => {
+  let calls = 0;
+  const r = await writeWithOptionalColumn({ a: 1, dup: 2 }, 'dup', async () => {
+    calls += 1;
+    return { error: { code: '23505', message: 'duplicate key value' } };
+  });
+  assert.equal(calls, 1);
+  assert.equal(r.degraded, false);
+  assert.equal(r.error.code, '23505');
+});
+
+test('optional column: a missing OTHER column is not papered over', async () => {
+  /* The code says undefined_column but names a different column, so dropping
+     `dup` would not fix it and would hide the real problem. */
+  let calls = 0;
+  const r = await writeWithOptionalColumn({ a: 1, dup: 2 }, 'dup', async () => {
+    calls += 1;
+    return { error: { code: '42703', message: 'column "something_else" does not exist' } };
+  });
+  assert.equal(calls, 1);
+  assert.equal(r.degraded, false);
+});
+
+test('isUnknownColumn: needs both the code and the column name', () => {
+  assert.equal(isUnknownColumn({ code: '42703', message: 'column "dup" ...' }, 'dup'), true);
+  assert.equal(isUnknownColumn({ code: 'PGRST204', message: "'dup' column ..." }, 'dup'), true);
+  assert.equal(isUnknownColumn({ code: '42703', message: 'column "x" ...' }, 'dup'), false);
+  assert.equal(isUnknownColumn({ code: '23505', message: 'column "dup" ...' }, 'dup'), false);
+  assert.equal(isUnknownColumn(null, 'dup'), false);
+  assert.equal(isUnknownColumn({ code: '42703', message: 'column "dup"' }, ''), false);
 });
