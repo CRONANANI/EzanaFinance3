@@ -3115,3 +3115,29 @@ html:has(.landing-page) .landing-footer button {
   border-radius: var(--radius-lg, 12px);
   box-shadow: none;
 }
+
+/* The fallback bar the nav error boundary renders. Deliberately plain: it
+   exists so a navigation crash still leaves a way home and a way to sign out. */
+.nav-fallback {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-primary);
+  background: var(--bg-primary);
+}
+.nav-fallback-home {
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.nav-fallback-note {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+.nav-fallback-out {
+  margin-left: auto;
+  font-size: 12.5px;
+  color: var(--emerald-text);
+  text-decoration: none;
+}

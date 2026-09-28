@@ -11,6 +11,7 @@ import { PartnerProvider } from '@/contexts/PartnerContext';
 import { OrgProvider } from '@/contexts/OrgContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ConditionalNavbar } from '@/components/Layout/ConditionalNavbar';
+import { NavErrorBoundary } from '@/components/Layout/NavErrorBoundary';
 import { PublicMobileCta } from '@/components/public/PublicMobileCta';
 import { PartnerChromeEffects } from '@/components/partner/PartnerChromeEffects';
 import { getServerTheme } from '@/lib/user-preferences/server';
@@ -239,7 +240,10 @@ export default async function RootLayout({ children }) {
                 <OrgProvider>
                   <ToastProvider>
                     <Suspense fallback={<nav className="main-nav" style={{ minHeight: 64 }} />}>
-                      <ConditionalNavbar />
+                      {/* A nav crash costs the nav, not the application. */}
+                      <NavErrorBoundary>
+                        <ConditionalNavbar />
+                      </NavErrorBoundary>
                     </Suspense>
                     <PartnerChromeEffects />
                     {children}
