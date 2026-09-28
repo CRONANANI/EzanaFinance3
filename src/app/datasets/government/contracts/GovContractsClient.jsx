@@ -32,6 +32,7 @@ import {
 import { useAuth } from '@/components/AuthProvider';
 import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
+import DatasetPicker from '@/components/ezanaql/DatasetPicker';
 import ContractsExplorer from './ContractsExplorer';
 import ContractorQuickView from './ContractorQuickView';
 import { slugify } from './contractor-mock';
@@ -954,6 +955,9 @@ function EzanaQLTeaser({ onStart, hidden }) {
             aria-label="Describe the report you want"
           />
         </span>
+        {/* The honesty affordance: what is queryable, before a query is
+            written. Picking a dataset seeds the builder with its FROM. */}
+        <DatasetPicker onPick={(name) => onStart(`FROM ${name} `)} />
         <button
           type="button"
           className="gcx-btn gcx-btn-primary gcx-ql-gen"
@@ -962,6 +966,10 @@ function EzanaQLTeaser({ onStart, hidden }) {
           Generate EzanaQL
         </button>
       </div>
+      {/* datasetScope is only a soft preference in the generator's prompt, so
+          a query written here is not confined to this page's dataset. Saying
+          so is cheaper than letting someone discover it. */}
+      <p className="gcx-ql-scope">Queries can span any live dataset, not just this page&apos;s.</p>
     </section>
   );
 }

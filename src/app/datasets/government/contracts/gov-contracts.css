@@ -2655,3 +2655,10 @@ body.light-mode .gcx-award-ghost.is-on {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* The builder's cross-dataset hint. Quiet, one line, under the prompt row. */
+.gcx-ql-scope {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
