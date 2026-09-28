@@ -30,6 +30,23 @@
    ========================================================================== */
 
 .snr-band {
+  /* ---- stage-2 motion ----
+     One easing family and one duration for the whole stage-2 sequence, so the
+     dossier, the two right-hand cards and the orbital read as one move rather
+     than four. A long, soft ease-out: most of the distance is covered early
+     and the last few pixels settle slowly.
+
+     Everything that uses these animates TRANSFORM and OPACITY only. The stage
+     used to transition max-width, margin-right, border-radius, top, right and
+     width, which forced a full-band layout recalculation on every frame and
+     dragged the cards (which were already on transforms) around underneath.
+     Layout now changes in a single frame and the movement is a FLIP on the
+     compositor — see the flip effect in SonarSection.jsx. */
+  --snr-flip-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --snr-flip-dur: 900ms;
+  --snr-flip-delay-chart: 160ms;
+  --snr-flip-delay-news: 320ms;
+
   /* ---- ground ---- */
   /* One declaration site: theme-variables.css owns the gradient, because the
      dataset category bar paints the same ground. */
@@ -2343,15 +2360,19 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   }
 }
 
-/* The orbital at half size. max-width rather than a transform so the axis
-   icons stay crisp and the popup keeps hit-testing against real geometry. */
-.snr-orbital,
+/* The orbital's mini size is still max-width rather than a transform, so its
+   axis icons stay crisp and the popup keeps hit-testing against real geometry
+   — but it is no longer TRANSITIONED. It applies in one frame, unobserved,
+   because the orbital does not exist until after the stage has settled (it
+   mounts last; see Part 2 in SonarSection.jsx).
+
+   The dossier likewise takes its final width, margin and radius in a single
+   frame. The visible move from the edge poke to the centre column is a FLIP:
+   the inverse transform is applied inline before paint and released on the
+   next frame, so only `transform` animates and the corner radius resolves at
+   the instant of the swap, under the transform, where it cannot be seen. */
 .snr-col-dossier {
-  transition:
-    max-width 0.45s ease,
-    margin-right 0.45s ease,
-    border-radius 0.45s ease,
-    transform 0.45s ease;
+  transition: transform var(--snr-flip-dur) var(--snr-flip-ease);
 }
 
 /* The dossier now MOUNTS on the first ping, so its arrival is a keyframe
@@ -2375,12 +2396,42 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   animation-play-state: running;
 }
 
-/* The orbital eases up to its pin rather than jumping there. */
-.snr-col-radar {
-  transition:
-    top 0.45s ease,
-    right 0.45s ease,
-    width 0.45s ease;
+/* No transition on the radar column. It used to ease `top`, `right` and
+   `width` towards the pin, which is three layout properties animating for
+   450ms while everything else in the band tried to move over the top of it.
+   The orbital now MOUNTS at the pin once the news card has landed and fades
+   in on opacity and a small translate, so there is nothing to ease. */
+
+/* The orbital's entrance: opacity and an 8px lift, nothing else.
+
+   It is deliberately NOT scaled. A scaled entrance rasterises the map once
+   and resamples it on every frame, so the axis icons, the rings and the dots
+   are soft for the whole 700ms and only snap sharp at the end. Rendering it
+   at its final pixel size from the first frame means every glyph is drawn
+   once, at native resolution.
+
+   translateZ(0) rather than will-change: the element is mounted and animated
+   in the same breath, so there is no "before" in which to add the hint and
+   nothing to remove it from; a one-shot entrance can just take its layer. */
+@keyframes snrOrbitalIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.snr-col-radar--in {
+  animation: snrOrbitalIn 700ms var(--snr-flip-ease) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snr-col-radar--in {
+    animation: none;
+  }
 }
 
 /* The right-hand cards arrive from off the right edge, staggered behind the
@@ -2388,25 +2439,48 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
    on their own. The stack is in the DOM only once there is data, so its rest
    state is applied on the next frame by .snr-stage2 rather than needing a
    mount transition. */
+/* A keyframe, not a transition.
+
+   The stack is rendered only when stage 2 is on, so these cards MOUNT with
+   .snr-stage2 already applied — their very first computed style is the rest
+   state, and a transition has no previous value to move from. They were
+   appearing instantly, stagger and all, and the old rule's comment about the
+   rest state landing "on the next frame" did not describe what the browser
+   actually does. An animation runs on mount, which is what this needs.
+
+   48px, not the old 120: at 900ms the longer distance reads as a slide in
+   from off-screen, where a short offset over a long soft ease reads as a
+   settle.
+
+   `both` holds the from-state through the delay, so a card waiting its turn
+   is invisible rather than flashing at rest and then starting. Only
+   `transform` and `opacity`, so the whole stagger runs on the compositor. */
+@keyframes snrCardIn {
+  from {
+    opacity: 0;
+    transform: translate3d(48px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* The rest state is the BASE state. Under prefers-reduced-motion the band's
+   blanket `animation: none !important` takes the entrance away entirely, so
+   anything that hid the card here would hide it for good. */
 .snr-fund,
 .snr-news {
-  transform: translateX(120px);
-  opacity: 0;
-  transition:
-    transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
-    opacity 0.45s ease;
+  opacity: 1;
+  transform: none;
 }
 
 .snr-stage2 .snr-fund {
-  transform: translateX(0);
-  opacity: 1;
-  transition-delay: 0.12s;
+  animation: snrCardIn var(--snr-flip-dur) var(--snr-flip-ease) var(--snr-flip-delay-chart) both;
 }
 
 .snr-stage2 .snr-news {
-  transform: translateX(0);
-  opacity: 1;
-  transition-delay: 0.24s;
+  animation: snrCardIn var(--snr-flip-dur) var(--snr-flip-ease) var(--snr-flip-delay-news) both;
 }
 
 .snr-stage2 .snr-orbital {

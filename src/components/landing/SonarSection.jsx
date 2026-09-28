@@ -56,11 +56,41 @@
 
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { SonarOrbital } from './SonarOrbital';
 import { SonarLoader } from '@/components/sonar/SonarLoader';
 import { geometryFor } from './sonar-geometry';
 import './sonar-band.css';
+
+/**
+ * An element's resting rect, with the mount entrance taken off it first.
+ *
+ * The dossier mounts with the `snrDossierIn` keyframe, which animates
+ * `transform`. Two things follow from that, and both break a FLIP:
+ *
+ *  - a running animation is folded into getBoundingClientRect, so measuring
+ *    through one reads a position the card is only passing through;
+ *  - the keyframe is declared `both`, so even once it has FINISHED it keeps
+ *    applying its `to` state — and an animation's fill beats an inline style.
+ *    The FLIP's `transform: translate(dx, dy)` would be silently ignored.
+ *
+ * So it is cancelled, not finished. Cancelling drops the fill and lets the
+ * element fall back to its base style, which for the dossier is its resting
+ * position — the same place `finish()` would have left it, but without the
+ * animation still holding the property afterwards.
+ */
+function readSettledRect(el) {
+  if (!el) return null;
+  try {
+    for (const a of el.getAnimations?.() || []) {
+      if (a.animationName === 'snrDossierIn') a.cancel();
+    }
+  } catch {
+    /* getAnimations is unsupported, or the animation is already gone. The
+       rect below is still the best available reading. */
+  }
+  return el.getBoundingClientRect();
+}
 
 /* Three short Lockheed Martin paragraphs. Link segments render as buttons
    styled as links: clicking one opens the auth gate instead of navigating.
@@ -397,6 +427,11 @@ export function SonarSection() {
   const innerRef = useRef(null);
   const colsRef = useRef(null);
   const radarRef = useRef(null);
+  const dossierRef = useRef(null);
+  /* The dossier's rect as it stood BEFORE stage 2 applied — the "First" of the
+     FLIP. Read in the stage-2 effect, one frame before the class lands, and
+     consumed by the layout effect below. */
+  const flipFirstRef = useRef(null);
   const pingBtnRef = useRef(null);
   /* Set the moment the visitor touches the field. The demo stands down: it is
      a demonstration, not a fight over the input. */
@@ -450,6 +485,10 @@ export function SonarSection() {
      not a failure to fit. */
   const [unlocked, setUnlocked] = useState(false);
   const [stage2, setStage2] = useState(false);
+  /* The orbital is the LAST thing to arrive. It does not exist at all in the
+     pristine composition or while the demo types and loads — unmounted, not
+     hidden, so its drift loop is not running behind a display:none. */
+  const [orbitalUp, setOrbitalUp] = useState(false);
   const [stage2Settled, setStage2Settled] = useState(false);
   const [demoFailed, setDemoFailed] = useState(false);
   const [deadlinePassed, setDeadlinePassed] = useState(false);
@@ -1022,12 +1061,143 @@ export function SonarSection() {
        orbital still shrinks; the cards below render only where there is
        data for them. */
     const staging = Boolean(live.dossier || live.sources?.length);
+    /* FLIP, step 1 ("First"): the dossier's position as it stands NOW, while
+       it is still poking in at the edge, read before React applies
+       .snr-stage2. The layout effect below reads the "Last" rect after the
+       class lands and plays the difference back as a transform. */
+    if (staging) flipFirstRef.current = readSettledRect(dossierRef.current);
     setStage2(staging);
-    /* Stage 2's transitions are 450ms; settle just after so the arrow does
-       not arrive while the composition is still moving. */
-    const t = setTimeout(() => setStage2Settled(true), staging ? 500 : 0);
+    /* The stage-2 sequence now runs 900ms, and the orbital fades in for 700ms
+       after the news card lands at 320ms — so the composition is still moving
+       until roughly 1.9s. Settle after the last card is down rather than
+       after the whole sequence: the arrow's job is to say the answer has
+       arrived, and waiting on the orbital's fade would hold it back for a
+       second after everything readable is in place. */
+    const t = setTimeout(() => setStage2Settled(true), staging ? 1300 : 0);
     return () => clearTimeout(t);
   }, [live]);
+
+  /* The orbital arrives last, after the news card has landed.
+     -------------------------------------------------------------------------
+     Ordering by listening rather than by a second hardcoded delay: the news
+     card's own transitionend is the real "the sequence is done" signal, and
+     it stays correct if the stagger is ever retuned in the stylesheet.
+
+     The timer is a floor, not a duplicate. transitionend does not fire when
+     the stack never mounts (a dossier with no fundamentals, news or Echo
+     entries), when the tab is backgrounded across the whole transition, or
+     under reduced motion where there is no transition at all — and in every
+     one of those cases the orbital still has to appear. */
+  useEffect(() => {
+    if (!stage2) {
+      setOrbitalUp(false);
+      return undefined;
+    }
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      setOrbitalUp(true);
+      return undefined;
+    }
+
+    let done = false;
+    const raise = () => {
+      if (done) return;
+      done = true;
+      setOrbitalUp(true);
+    };
+
+    /* 320ms delay + 900ms duration, plus a frame's grace. */
+    const t = window.setTimeout(raise, 1280);
+    /* The news card when there is one, the chart card when the dossier had no
+       news or Echo entries to show. Whichever is last to land is the signal.
+       `animationend`, not `transitionend`: the cards mount with .snr-stage2
+       already on them, so their entrance is a keyframe. */
+    const stack = colsRef.current?.querySelector('.snr-stack');
+    const lastCard = stack?.querySelector('.snr-news') || stack?.querySelector('.snr-fund');
+    const onEnd = (e) => {
+      if (e.animationName !== 'snrCardIn') return;
+      raise();
+    };
+    lastCard?.addEventListener('animationend', onEnd);
+
+    return () => {
+      done = true;
+      window.clearTimeout(t);
+      lastCard?.removeEventListener('animationend', onEnd);
+    };
+  }, [stage2]);
+
+  /* FLIP, step 2 and 3 ("Last" and "Invert").
+     -------------------------------------------------------------------------
+     The stage-2 move used to be a transition on max-width, margin-right,
+     border-radius, top, right and width. Every one of those is a layout
+     property, so the browser re-laid out the whole band on every frame of a
+     450ms transition, and the chart and news cards — which were already
+     animating on transform — were shoved around by the columns reflowing
+     underneath them. That is the ragged motion.
+
+     Now the layout change lands in ONE frame, and the movement is played back
+     on the compositor: read where the dossier was, let it jump to where it
+     belongs, immediately offset it back to where it was with a transform, and
+     release that transform on the next frame. Nothing between those two
+     frames is ever painted, so the jump is invisible and only `transform`
+     animates.
+
+     The card's final width applies at the instant of the swap rather than
+     being scaled into place: scaling text costs a blurry frame on every step
+     of the ease, and the rows are laid out at the final width before the
+     move starts, so nothing re-flows during it. */
+  useLayoutEffect(() => {
+    if (!stage2) return undefined;
+    const el = dossierRef.current;
+    const first = flipFirstRef.current;
+    flipFirstRef.current = null;
+    if (!el || !first) return undefined;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined;
+
+    /* Measured after the mount keyframe is settled: a running CSS animation
+       both overrides an inline transform and skews getBoundingClientRect, so
+       a FLIP against it would animate from the wrong place to the wrong
+       place. */
+    const last = readSettledRect(el);
+    if (!last) return undefined;
+    const dx = first.left - last.left;
+    const dy = first.top - last.top;
+    /* Sub-pixel drift is not a move; animating it only costs a layer. */
+    if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return undefined;
+
+    el.style.willChange = 'transform';
+    el.style.transition = 'none';
+    el.style.transform = `translate(${dx}px, ${dy}px)`;
+    /* Flush the inverted position so the release below is a change the
+       browser can transition from, rather than being coalesced into one
+       no-op style recalculation. */
+    void el.offsetWidth;
+
+    const raf = requestAnimationFrame(() => {
+      /* Cleared, not re-stated: the stylesheet's own
+         `transform var(--snr-flip-dur) var(--snr-flip-ease)` takes over, so
+         the duration and easing have a single declaration site. */
+      el.style.transition = '';
+      el.style.transform = '';
+    });
+
+    const done = (e) => {
+      if (e.propertyName !== 'transform') return;
+      /* will-change holds a compositor layer for as long as it is set; it is
+         a promise about the near future, not a decoration. */
+      el.style.willChange = '';
+    };
+    el.addEventListener('transitionend', done);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      el.removeEventListener('transitionend', done);
+      el.style.willChange = '';
+      el.style.transition = '';
+      el.style.transform = '';
+    };
+  }, [stage2]);
 
   /* The measured spec, published as custom properties.
      -------------------------------------------------------------------------
@@ -1222,12 +1392,23 @@ export function SonarSection() {
          arrow row, which is what put the bottom-right arrow on top of the
          news card. Sizing the orbital to fit removes the overhang instead of
          compensating for it. */
-      /* clamp(180, room, 220). The geometry raises g3 on the desktop anchors
-         so room lands on 180 exactly rather than below it; the clamp is the
-         floor for every width between them. */
+      /* clamp(240, room, 280). The geometry puts `room` at 260 across the
+         desktop anchors and between them, so the clamp is a guard rather than
+         the thing doing the work.
+
+         Never ABOVE the room actually measured, though. The short tier gives
+         its header slack up first (g3 down to 16, subhead to one line), which
+         leaves about 110px there — and a floor of 240 against 110 would paint
+         the map straight over the top of the work area. The old floor of 180
+         had the same flaw and the same overlap; taking the smaller of the two
+         is what makes the floor safe to raise.
+
+         Rounded to a whole pixel: the SVG's strokes, axis icons and dots are
+         sized in screen pixels, and a fractional box lands them on half
+         pixels where they render soft. */
       const room = Math.round(colsTop - top - 8);
-      const size = Math.max(180, Math.min(220, room));
-      band.style.setProperty('--snr-orb-size', `${size}px`);
+      const size = Math.min(Math.max(240, Math.min(280, room)), room);
+      band.style.setProperty('--snr-orb-size', `${Math.round(size)}px`);
     };
     apply();
     window.addEventListener('resize', apply);
@@ -1800,24 +1981,31 @@ export function SonarSection() {
             ) : null}
           </div>
 
-          <div ref={radarRef} className="snr-col-radar">
-            {/* compact in stage 2: the map renders at roughly a sixth of its
-                resting width there, and geometry that must keep a real
-                rendered size is sized from that rather than from the viewBox. */}
-            <SonarOrbital
-              relevance={live?.relevance ?? null}
-              hubLabel={live ? lastQuery : null}
-              hubTicker={live?.dossier?.ticker ?? null}
-              compact={stage2}
-            />
-          </div>
+          {/* The orbital exists only once the whole stage-2 sequence has
+              landed. Pre-ping there is no map at all: the composition is the
+              left column with the ping bar and the synthesis, and the centre
+              is theirs. Unmounted rather than hidden so the drift loop is not
+              running against a map nobody can see.
+
+              It is always `compact` now, because the only state it is ever
+              rendered in is the mini pin. */}
+          {orbitalUp ? (
+            <div ref={radarRef} className="snr-col-radar snr-col-radar--in">
+              <SonarOrbital
+                relevance={live?.relevance ?? null}
+                hubLabel={live ? lastQuery : null}
+                hubTicker={live?.dossier?.ticker ?? null}
+                compact
+              />
+            </div>
+          ) : null}
 
           {/* The dossier does not exist before a ping. It used to render as an
               empty "Sourced matches" card poking in from the right with two dim
               rows, which promised a result the visitor had not asked for yet.
               Pre-ping the composition is the left column and the orbital. */}
           {hasPinged ? (
-            <div className="snr-col-dossier">
+            <div ref={dossierRef} className="snr-col-dossier">
               <div className="snr-dossier-head">
                 <span className="snr-dossier-title">SOURCED MATCHES</span>
                 <span className="snr-rule" />
