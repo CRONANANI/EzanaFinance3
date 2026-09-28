@@ -27,7 +27,8 @@ const COMING_SOON_ROUTES = new Set([
 // navs). The global app nav still wraps everything at the root layout.
 const STANDALONE_ROUTES = new Set([
   '/datasets',
-  // Financial disclosures, one implementation per chamber.
+  // Financial disclosures, one implementation per chamber. The member routes
+  // are matched by prefix below, since they carry a slug.
   '/datasets/house/disclosures',
   '/datasets/campaignfinancerecords',
   '/datasets/government/contracts',
@@ -67,7 +68,10 @@ export default function DatasetsLayout({ children }) {
      overflow, so the bar's full-bleed negative margins were cut at the content
      column. The ticker joined it for the same reason; pages publish their items
      through TickerSlotProvider instead of rendering the strip themselves. */
-  if (STANDALONE_ROUTES.has(pathname)) {
+  /* Member profiles carry a slug, so they cannot be listed by exact path. */
+  const isDisclosureMember = /^\/datasets\/(house|senate)\/members\//.test(pathname);
+
+  if (STANDALONE_ROUTES.has(pathname) || isDisclosureMember) {
     return (
       <TickerSlotProvider>
         <DatasetChrome />

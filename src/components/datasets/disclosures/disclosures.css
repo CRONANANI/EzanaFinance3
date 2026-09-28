@@ -709,3 +709,289 @@
     font-size: 24px;
   }
 }
+
+/* ── member panel and profile ────────────────────────────────────────────
+   The panel hangs below the green chrome so the dimension bar stays usable,
+   which is what the handoff asks for. It cannot use the handoff's fixed
+   76px, though: this repo's chrome is not sticky, it scrolls away, so the
+   offset is measured at open and written to --dsc-panel-top. Once the chrome
+   has scrolled past, the panel simply reaches the top of the viewport. */
+.dsc-scrim {
+  position: fixed;
+  inset: var(--dsc-panel-top, 0) 0 0 0;
+  background: var(--dsc-scrim);
+  z-index: 800;
+  animation: dsc-fade var(--dsc-panel-ms) ease-out;
+}
+.dsc-panel {
+  position: fixed;
+  top: var(--dsc-panel-top, 0);
+  right: 0;
+  bottom: 0;
+  width: var(--dsc-panel-w);
+  max-width: 100%;
+  z-index: 810;
+  display: flex;
+  flex-direction: column;
+  background: var(--dsc-bg);
+  border-left: 1px solid var(--dsc-rule);
+  box-shadow: var(--dsc-panel-shadow);
+  animation: dsc-slide var(--dsc-panel-ms) ease-out;
+}
+@keyframes dsc-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes dsc-slide {
+  from {
+    transform: translateX(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dsc-scrim,
+  .dsc-panel {
+    animation: none;
+  }
+}
+.dsc-p-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--dsc-rule);
+  flex-shrink: 0;
+}
+.dsc-p-route {
+  font-size: 10px;
+  color: var(--dsc-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.dsc-p-open {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--dsc-pos);
+  text-decoration: none;
+}
+.dsc-p-x {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--dsc-border);
+  border-radius: var(--dsc-r-pill);
+  background: var(--dsc-bg);
+  color: var(--dsc-muted);
+  cursor: pointer;
+}
+.dsc-p-body {
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.dsc-profile-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 8px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.dsc-p-id {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.dsc-p-mark {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--dsc-r-pill);
+  background: var(--dsc-pos-wash);
+  color: var(--dsc-pos);
+  font-weight: 700;
+  font-size: 15px;
+}
+.dsc-p-name {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.dsc-p-name:focus-visible {
+  outline: 2px solid var(--dsc-pos-mark);
+  outline-offset: 3px;
+}
+.dsc-p-meta {
+  margin: 3px 0 0;
+  font-size: 10.5px;
+  color: var(--dsc-faint);
+}
+.dsc-p-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--dsc-rule);
+  border-bottom: 1px solid var(--dsc-rule);
+}
+.dsc-p-stat {
+  padding: 10px 0 10px 12px;
+  border-left: 1px solid var(--dsc-rule);
+  min-width: 0;
+}
+.dsc-p-stat:first-child {
+  border-left: 0;
+  padding-left: 0;
+}
+.dsc-p-fig {
+  margin: 4px 0 0;
+  font-family: var(--dsc-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 20px;
+  font-weight: 700;
+}
+.dsc-p-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.dsc-p-block-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.dsc-p-lagcount {
+  margin-left: auto;
+  font-size: 10.5px;
+  color: var(--dsc-muted);
+}
+.dsc-p-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.dsc-p-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--dsc-border);
+  border-radius: var(--dsc-r-chip);
+  background: var(--dsc-bg);
+  font-family: var(--dsc-mono);
+  font-size: 11px;
+  color: var(--dsc-pos);
+  cursor: pointer;
+}
+.dsc-p-chip-n {
+  color: var(--dsc-faint);
+}
+.dsc-lagplot {
+  width: 100%;
+  height: 60px;
+}
+.dsc-lagplot-line {
+  stroke: var(--dsc-late-mark);
+  stroke-width: 1;
+}
+.dsc-lagdot {
+  fill: var(--dsc-pos-mark);
+}
+.dsc-lagdot--late {
+  fill: var(--dsc-late);
+}
+.dsc-p-45 {
+  font-family: var(--dsc-mono);
+  font-size: 9.5px;
+  letter-spacing: var(--dsc-track-chip);
+  color: var(--dsc-late);
+}
+.dsc-p-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.dsc-p-table thead th {
+  text-align: left;
+  padding: 0 0 6px;
+  border-bottom: 2px solid var(--dsc-rule-strong);
+  font-family: var(--dsc-mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dsc-faint);
+}
+.dsc-p-table tbody td {
+  height: var(--dsc-row-panel);
+  border-bottom: 1px dotted var(--dsc-dot);
+  font-size: 12px;
+  vertical-align: middle;
+}
+.dsc-p-type {
+  font-size: 11px;
+  color: var(--dsc-muted);
+}
+.dsc-p-link {
+  color: var(--dsc-pos);
+}
+.dsc-pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--dsc-late);
+}
+.dsc-p-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.dsc-btn {
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--dsc-r-input);
+  font-family: var(--dsc-sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+.dsc-btn--solid {
+  background: var(--dsc-pos-mark);
+  color: #04261c;
+}
+.dsc-btn--ghost {
+  border-color: var(--dsc-border);
+  background: var(--dsc-bg);
+  color: var(--dsc-ink);
+}
+.dsc-p-note {
+  margin: 0;
+  font-size: 10.5px;
+  color: var(--dsc-faint);
+}
+
+/* The panel is the whole screen on a phone, chrome included, and the route
+   still changes so back closes it. */
+@media (max-width: 760px) {
+  .dsc-panel {
+    top: 0;
+    width: 100%;
+    border-left: 0;
+  }
+  .dsc-scrim {
+    inset: 0;
+  }
+}

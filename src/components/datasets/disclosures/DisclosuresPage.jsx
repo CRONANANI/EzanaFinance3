@@ -18,10 +18,11 @@
  * and live data (stage 4) land next; the tabs other than Trades are present
  * as real controls but their views are not built yet.
  */
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 import { CHART } from '@/lib/chart-theme';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
+import MemberProfile from './MemberProfile';
 import {
   BRACKETS,
   FIXTURE_BY_MONTH,
@@ -66,8 +67,60 @@ function Metric({ label, figure, caption, positive }) {
   );
 }
 
+/** A slug that survives a round trip through the URL and back to a name. */
+export function memberSlug(name) {
+  return String(name || '')
+    .toLowerCase()
+    .replace(/[[\]]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+/** Build one member's profile out of the rows already on the page. */
+export function memberFromTrades(name, trades, config) {
+  const mine = trades.filter((t) => t.member === name);
+  const first = mine[0] || {};
+  const counts = new Map();
+  for (const t of mine) {
+    if (!t.ticker) continue;
+    counts.set(t.ticker, (counts.get(t.ticker) || 0) + 1);
+  }
+  const lags = mine
+    .map((t) => t.lag)
+    .filter((n) => typeof n === 'number')
+    .sort((a, b) => a - b);
+  return {
+    slug: memberSlug(name),
+    name,
+    party: first.party,
+    state: first.state,
+    district: config.hasDistrict ? first.district : null,
+    filings: mine.length,
+    ptrs: mine.length,
+    txns: mine.length,
+    medianLag: lags.length ? lags[Math.floor(lags.length / 2)] : null,
+    topTickers: [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([ticker, count]) => ({ ticker, count })),
+    trades: mine,
+    rows: mine.map((t) => ({
+      id: t.id,
+      ticker: t.ticker,
+      type: t.type,
+      bracket: t.bracket,
+      filed: t.filed,
+      url: t.url || null,
+      pending: Boolean(t.pending),
+    })),
+  };
+}
+
 export default function DisclosuresPage({ config, sample = true }) {
   const [tab, setTab] = useState('trades');
+  const [openMember, setOpenMember] = useState(null);
+  const triggerRef = useRef(null);
+  const pushedRef = useRef(false);
   const [tx, setTx] = useState('ALL');
   const [lag, setLag] = useState('ANY');
   const [year, setYear] = useState('2026');
@@ -129,6 +182,61 @@ export default function DisclosuresPage({ config, sample = true }) {
     if (lag !== 'ANY') where.push(lag === '≤45D' ? 'lag_days <= 45' : 'lag_days > 45');
     return `FROM ${config.builderDataset} WHERE ${where.join(' AND ')} ORDER BY filed_on DESC`;
   }, [config.builderDataset, year, tx, ticker, member, lag]);
+
+  /* The panel hangs below the green chrome, which in this repo SCROLLS AWAY
+     rather than sticking. The handoff's fixed 76px assumes a persistent
+     chrome, so the offset is measured at open instead: whatever is left of
+     the chrome below the viewport top, and zero once it has gone. */
+  const measureTop = useCallback(() => {
+    if (typeof document === 'undefined') return;
+    const chrome = document.querySelector('.dscat-chrome');
+    const bottom = chrome ? Math.max(0, chrome.getBoundingClientRect().bottom) : 0;
+    document.documentElement.style.setProperty('--dsc-panel-top', `${Math.round(bottom)}px`);
+  }, []);
+
+  const openMemberPanel = useCallback(
+    (name, el) => {
+      triggerRef.current = el || null;
+      const m = memberFromTrades(name, trades, config);
+      measureTop();
+      setOpenMember(m);
+      /* Its own URL, so it is shareable and the back button closes it. */
+      if (typeof window !== 'undefined') {
+        window.history.pushState({ dscMember: m.slug }, '', `${config.routes.member}/${m.slug}`);
+        pushedRef.current = true;
+      }
+    },
+    [trades, config, measureTop],
+  );
+
+  const closeMemberPanel = useCallback(({ fromPop = false } = {}) => {
+    setOpenMember(null);
+    if (!fromPop && pushedRef.current && typeof window !== 'undefined') {
+      window.history.back();
+    }
+    pushedRef.current = false;
+    triggerRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const onPop = () => {
+      pushedRef.current = false;
+      setOpenMember(null);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
+  useEffect(() => {
+    if (!openMember) return undefined;
+    window.addEventListener('scroll', measureTop, true);
+    window.addEventListener('resize', measureTop);
+    return () => {
+      window.removeEventListener('scroll', measureTop, true);
+      window.removeEventListener('resize', measureTop);
+    };
+  }, [openMember, measureTop]);
 
   const district = (t) =>
     config.hasDistrict ? `${t.party}-${t.state}-${t.district}` : `${t.party}-${t.state}`;
@@ -420,9 +528,18 @@ export default function DisclosuresPage({ config, sample = true }) {
                         const chip = TYPE_CHIP[t.type];
                         const late = t.lag > LAG_LIMIT;
                         return (
-                          <tr key={t.id}>
+                          <tr
+                            key={t.id}
+                            className={
+                              openMember?.name === t.member ? 'dsc-row-selected' : undefined
+                            }
+                          >
                             <td>
-                              <button type="button" className="dsc-member">
+                              <button
+                                type="button"
+                                className="dsc-member"
+                                onClick={(e) => openMemberPanel(t.member, e.currentTarget)}
+                              >
                                 {t.member}
                               </button>
                               <span className="dsc-dist">{district(t)}</span>
@@ -486,6 +603,25 @@ export default function DisclosuresPage({ config, sample = true }) {
           <p className="dsc-compliance">{config.compliance}</p>
         </main>
       </div>
+
+      {/* One panel, never two. Clicking another member swaps its contents. */}
+      {openMember ? (
+        <>
+          <button
+            type="button"
+            className="dsc-scrim"
+            aria-label="Close member panel"
+            onClick={() => closeMemberPanel()}
+          />
+          <MemberProfile
+            member={openMember}
+            config={config}
+            mode="panel"
+            onClose={() => closeMemberPanel()}
+            onTicker={() => {}}
+          />
+        </>
+      ) : null}
     </div>
   );
 }
