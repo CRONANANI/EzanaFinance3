@@ -120,6 +120,18 @@ export function MonteCarloCard() {
     [years, result],
   );
 
+  const probabilityLabel = useMemo(() => {
+    if (!result) return null;
+    const pct = Math.round(result.probability * 100);
+    if (pct >= 80) return { tone: 'is-pos', text: 'High confidence' };
+    if (pct >= 50) return { tone: 'is-pos', text: 'Plausible path' };
+    if (pct >= 25) return { tone: 'is-neg', text: 'Stretch goal — consider adjusting' };
+    return { tone: 'is-neg', text: 'Unlikely at current inputs' };
+  }, [result]);
+
+  /* The locked-preview branch below is a dev toggle. Every hook this
+     component uses runs above it, so flipping the condition to a real one
+     cannot change the hook order between renders. */
   // eslint-disable-next-line no-constant-condition -- dev toggle
   if (false) {
     return (
@@ -154,16 +166,6 @@ export function MonteCarloCard() {
       </ModelCardShell>
     );
   }
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const probabilityLabel = useMemo(() => {
-    if (!result) return null;
-    const pct = Math.round(result.probability * 100);
-    if (pct >= 80) return { tone: 'is-pos', text: 'High confidence' };
-    if (pct >= 50) return { tone: 'is-pos', text: 'Plausible path' };
-    if (pct >= 25) return { tone: 'is-neg', text: 'Stretch goal — consider adjusting' };
-    return { tone: 'is-neg', text: 'Unlikely at current inputs' };
-  }, [result]);
 
   return (
     <ModelCardShell

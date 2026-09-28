@@ -1,16 +1,5 @@
 'use client';
 
-/* eslint-disable react-hooks/rules-of-hooks --
- * Known pre-existing violation: the `modelId === 'dcf'` and
- * `modelId === 'earnings'` early returns sit above the hook calls (useState,
- * useRef, useCallback, useEffect, useMemo), so React's hook order shifts when
- * the user switches modelId between a special case and the generic path.
- *
- * Correct fix is to split this into a dispatcher + a generic-panel child so
- * hooks always run unconditionally. Tracked in docs/REFACTOR_ROADMAP.md
- * Phase 8 (page decomposition will split the AI analysis surfaces anyway).
- */
-
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { getModelConfig } from '@/lib/ai/analysis-prompts';
@@ -53,6 +42,9 @@ function EarningsAnalysisPanel({ symbol, onClose }) {
  * Calls /api/ai-stock-analysis with the selected model and ticker.
  */
 export function AIAnalysisPanel({ modelId, symbol, onClose, onOpenModel, showTips = false }) {
+  /* Pure dispatch, no hooks. Four model ids render a dedicated component
+     instead of the generic panel; keeping those branches here — above any
+     hook — means the hook order below never changes with modelId. */
   if (modelId === 'dcf') {
     return <DCFInteractiveModel symbol={symbol} onClose={onClose} />;
   }
@@ -73,6 +65,18 @@ export function AIAnalysisPanel({ modelId, symbol, onClose, onOpenModel, showTip
     );
   }
 
+  return (
+    <GenericAnalysisPanel modelId={modelId} symbol={symbol} onClose={onClose} showTips={showTips} />
+  );
+}
+
+/**
+ * The generic LLM-backed panel. Split out of AIAnalysisPanel so its hooks run
+ * unconditionally: previously they sat below four early returns, so switching
+ * from (say) the DCF model to a generic one changed the hook count between
+ * renders and React threw error #310.
+ */
+function GenericAnalysisPanel({ modelId, symbol, onClose, showTips }) {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
