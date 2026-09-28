@@ -22,6 +22,7 @@ const { parse } = await import('../src/lib/ezanaql/parser.js');
 const { validate } = await import('../src/lib/ezanaql/validator.js');
 const { SEED_QUERY, seedFromFilters } =
   await import('../src/app/datasets/government/contracts/ezanaql-seed.js');
+const { SEEDS_BY_DATASET, seedForDataset } = await import('../src/lib/ezanaql/seeds.js');
 const { FEW_SHOT_QUERIES, FEW_SHOT } = await import('../src/app/api/ezanaql/generate/few-shots.js');
 const { CATALOG, CATALOG_VERSION, catalogSchemaForPrompt } =
   await import('../src/lib/ezanaql/catalog.js');
@@ -143,4 +144,21 @@ test('the prompt schema lists live datasets and names the rest as not queryable'
     assert.ok(text.includes(d.name), `${d.name} should be named as not queryable`);
   }
   assert.equal(CATALOG_VERSION, '1.1.0');
+});
+
+/* Every page's query bar opens on one of these. A seed that does not validate
+   hands someone a bar whose Run can only refuse, which is worse than no bar. */
+test('every dataset seed validates against the catalog', () => {
+  for (const [dataset, query] of Object.entries(SEEDS_BY_DATASET)) {
+    assert.doesNotThrow(() => validate(parse(query)), `seed for ${dataset} must validate`);
+  }
+});
+
+/* A seed is only offered for a dataset that can actually answer it. */
+test('no seed targets an unavailable dataset', () => {
+  for (const dataset of Object.keys(SEEDS_BY_DATASET)) {
+    assert.equal(CATALOG[dataset]?.available, true, `${dataset} has a seed but is not live`);
+  }
+  // The fallback is the contracts seed, which must itself be live.
+  assert.doesNotThrow(() => validate(parse(seedForDataset('does.not.exist'))));
 });
