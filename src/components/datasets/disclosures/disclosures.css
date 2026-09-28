@@ -995,3 +995,13 @@
     inset: 0;
   }
 }
+/* The pending line when a live page has filings but no extracted trades. */
+.dsc-pending--block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--dsc-rule);
+  font-size: 12.5px;
+  line-height: 1.5;
+}

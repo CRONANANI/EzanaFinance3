@@ -42,7 +42,7 @@ export const DATASET_TAXONOMY = [
         label: 'US House Financial Disclosures',
         description: 'Official House member trades and holdings disclosed under the STOCK Act',
         href: '/datasets/house/disclosures',
-        live: 'preview',
+        live: true,
         source: 'House Clerk disclosures (disclosures-clerk.house.gov)',
         sourceType: 'gov',
       },

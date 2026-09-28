@@ -13,7 +13,7 @@ import { memberFromTrades, memberSlug } from './DisclosuresPage';
 import { FIXTURE_TRADES } from './fixture';
 import './disclosures.css';
 
-export default function MemberRoute({ config, slug, trades = FIXTURE_TRADES, sample = true }) {
+export default function MemberRoute({ config, slug, trades = FIXTURE_TRADES, sample = false }) {
   /* The chrome is mounted by the layout; this page publishes no ticker of its
      own, which clears whatever the list page left behind. */
   usePublishTicker({});

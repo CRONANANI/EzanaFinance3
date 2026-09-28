@@ -116,7 +116,11 @@ export function memberFromTrades(name, trades, config) {
   };
 }
 
-export default function DisclosuresPage({ config, sample = true }) {
+/* `sample` defaults to FALSE on purpose: omitting it must mean live. A
+   truthy default made a page that had been flipped to live keep rendering
+   placeholder names under no chip, which is the exact failure the chip
+   exists to prevent. Sample is now something a page asks for. */
+export default function DisclosuresPage({ config, sample = false }) {
   const [tab, setTab] = useState('trades');
   const [openMember, setOpenMember] = useState(null);
   const triggerRef = useRef(null);
@@ -128,10 +132,59 @@ export default function DisclosuresPage({ config, sample = true }) {
   const [member, setMember] = useState('');
   const [ticker, setTicker] = useState('');
 
-  /* Stage 2 renders the fixture. Stage 4 swaps this for the API and the
-     filters below start scoping it; they are wired to state now so the shape
-     of that change is a data swap, not a rewrite. */
-  const trades = FIXTURE_TRADES;
+  /* Sample renders the fixture; live fetches. There is deliberately no third
+     path: a live page that cannot reach its data shows an empty or pending
+     state, never the fixture, because fixture rows carry placeholder names
+     and would read as real filings on a page with no SAMPLE chip. */
+  const [live, setLive] = useState({ summary: null, trades: [], loaded: false });
+
+  useEffect(() => {
+    if (sample) return undefined;
+    let alive = true;
+    const base = `/api/disclosures/${config.chamber}`;
+    const qs = new URLSearchParams({ year: String(year), sort: 'filed', limit: '50' });
+    if (tx !== 'ALL') qs.set('type', tx.toLowerCase());
+    if (ticker) qs.set('ticker', ticker);
+    if (member) qs.set('member', member);
+    if (lag !== 'ANY') qs.set('lag', lag === '≤45D' ? 'le45' : 'gt45');
+    Promise.all([
+      fetch(`${base}/summary?year=${year}`).then((r) => r.json()),
+      fetch(`${base}/trades?${qs}`).then((r) => r.json()),
+    ])
+      .then(([summary, t]) => {
+        if (!alive) return;
+        setLive({ summary, trades: t?.rows || [], loaded: true, total: t?.total ?? 0 });
+      })
+      .catch(() => alive && setLive({ summary: null, trades: [], loaded: true, total: 0 }));
+    return () => {
+      alive = false;
+    };
+  }, [sample, config.chamber, year, tx, ticker, member, lag]);
+
+  const trades = sample
+    ? FIXTURE_TRADES
+    : live.trades.map((t) => ({
+        id: t.id,
+        member: t.member,
+        party: null,
+        state: t.where,
+        district: null,
+        ticker: t.ticker,
+        asset: t.asset,
+        type: t.type,
+        traded: t.traded,
+        filed: t.filed,
+        lag: t.lag,
+        bracket: t.bracket,
+        url: t.docId
+          ? `https://disclosures-clerk.house.gov/public_disc/ptr-pdfs/${year}/${t.docId}.pdf`
+          : null,
+      }));
+
+  /* The real number of PTRs whose trades have not been extracted. This is
+     what the pending state reports, so it is never a guess and never zero
+     standing in for "unknown". */
+  const pendingPtrs = sample ? 0 : (live.summary?.ptrsPending ?? 0);
 
   const tickerItems = useMemo(
     () =>
@@ -237,6 +290,30 @@ export default function DisclosuresPage({ config, sample = true }) {
       window.removeEventListener('resize', measureTop);
     };
   }, [openMember, measureTop]);
+
+  /* Figures come from the source or they do not appear. A middle dot is the
+     answer for a count we have not loaded, never a zero, which would read as
+     "the source published none". */
+  const NO_FIGURE = '·';
+  const metrics = useMemo(() => {
+    if (sample) return FIXTURE_METRICS;
+    const s2 = live.summary;
+    const n = (v) => (typeof v === 'number' ? v.toLocaleString('en-US') : NO_FIGURE);
+    return {
+      filings: s2 ? n(s2.filings) : NO_FIGURE,
+      filingsCaption: s2?.years
+        ? `${config.coverage.firstYear} to ${year}, ${s2.years} index ${s2.years === 1 ? 'year' : 'years'}`
+        : 'index years loading',
+      ptrs: s2 ? n(s2.ptrs) : NO_FIGURE,
+      ptrsCaption: 'periodic transaction reports to date',
+      txns: s2 ? n(s2.trades) : NO_FIGURE,
+      txnsCaption: s2?.trades
+        ? 'extracted from filing documents'
+        : `${n(s2?.ptrsPending)} reports awaiting extraction`,
+      recent: s2?.mostRecent || NO_FIGURE,
+      recentCaption: 'PTRs post within days, annuals in mid June',
+    };
+  }, [sample, live.summary, config.coverage.firstYear, year]);
 
   const district = (t) =>
     config.hasDistrict ? `${t.party}-${t.state}-${t.district}` : `${t.party}-${t.state}`;
@@ -389,25 +466,17 @@ export default function DisclosuresPage({ config, sample = true }) {
 
         <main className="dsc-main">
           <div className="dsc-metrics">
-            <Metric
-              label="Filings"
-              figure={FIXTURE_METRICS.filings}
-              caption={FIXTURE_METRICS.filingsCaption}
-            />
-            <Metric
-              label={`PTRs in ${year}`}
-              figure={FIXTURE_METRICS.ptrs}
-              caption={FIXTURE_METRICS.ptrsCaption}
-            />
+            <Metric label="Filings" figure={metrics.filings} caption={metrics.filingsCaption} />
+            <Metric label={`PTRs in ${year}`} figure={metrics.ptrs} caption={metrics.ptrsCaption} />
             <Metric
               label="Transactions extracted"
-              figure={FIXTURE_METRICS.txns}
-              caption={FIXTURE_METRICS.txnsCaption}
+              figure={metrics.txns}
+              caption={metrics.txnsCaption}
             />
             <Metric
               label="Most recent filing"
-              figure={FIXTURE_METRICS.recent}
-              caption={FIXTURE_METRICS.recentCaption}
+              figure={metrics.recent}
+              caption={metrics.recentCaption}
               positive
             />
           </div>
@@ -509,6 +578,17 @@ export default function DisclosuresPage({ config, sample = true }) {
                 </div>
 
                 <section>
+                  {!sample && live.loaded && !trades.length && pendingPtrs > 0 ? (
+                    /* Live on filings, but the trades inside them have not
+                       been extracted yet. Worded with the real count, never an
+                       empty table and never the fixture. */
+                    <p className="dsc-pending dsc-pending--block">
+                      <i className="bi bi-hourglass-split" aria-hidden="true" />
+                      {pendingPtrs.toLocaleString('en-US')} periodic transaction reports are
+                      awaiting extraction. Filings are live; their transactions appear here as each
+                      document is parsed.
+                    </p>
+                  ) : null}
                   <table className="dsc-table">
                     <thead>
                       <tr>
@@ -578,9 +658,21 @@ export default function DisclosuresPage({ config, sample = true }) {
                               <span className="dsc-bracket">{t.bracket}</span>
                             </td>
                             <td>
-                              <span className="dsc-src" aria-hidden="true">
-                                <i className="bi bi-box-arrow-up-right" />
-                              </span>
+                              {t.url ? (
+                                <a
+                                  className="dsc-src"
+                                  href={t.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  aria-label={config.source.docLabel}
+                                >
+                                  <i className="bi bi-box-arrow-up-right" aria-hidden="true" />
+                                </a>
+                              ) : (
+                                <span className="dsc-none" aria-hidden="true">
+                                  ·
+                                </span>
+                              )}
                             </td>
                           </tr>
                         );
