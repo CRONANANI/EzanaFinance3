@@ -1209,229 +1209,8 @@
 /* Borderless: the builder is a full-width working surface, not a card. The
    emerald AI row and the editor panel carry their own borders, so the outer
    card chrome only added a competing frame. Overrides .gcx-card. */
-.gcx-ql {
-  padding: 16px 0;
-  margin-bottom: 18px;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-}
 /* Header row centered; the close button is absolutely positioned so the title
    stays truly centered instead of offset by the button's width. */
-.gcx-ql-head {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  margin-bottom: 14px;
-}
-.gcx-ql-title {
-  font-family: var(--font-sans);
-  font-size: var(--ds-type-headline-size);
-  font-weight: var(--ds-type-headline-weight);
-  letter-spacing: var(--ds-type-headline-tracking);
-  line-height: var(--ds-type-headline-lh);
-  color: var(--text-primary);
-}
-.gcx-ql-beta {
-  font-family: var(--font-mono);
-  font-size: var(--ds-type-eyebrow-size);
-  font-weight: var(--ds-type-eyebrow-weight);
-  letter-spacing: var(--ds-type-eyebrow-tracking);
-  text-transform: uppercase;
-  font-variant-numeric: tabular-nums;
-  color: var(--emerald);
-  background: var(--emerald-bg);
-  border: 1px solid var(--emerald-border);
-  border-radius: var(--radius-sm, 4px);
-  padding: 2px 6px;
-}
-.gcx-ql-x {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  margin-left: 0; /* was auto — would fight justify-content: center */
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  line-height: 0;
-}
-.gcx-ql-ai {
-  display: flex;
-  align-items: stretch; /* was center — centering floated the button's
-                           bottom border up into the input's text baseline */
-  justify-content: center;
-  gap: 8px;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  padding: 6px 0;
-  margin-bottom: 12px;
-  font-family: var(--font-sans);
-}
-.gcx-ql-ai-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  flex: 0 0 auto; /* never shrink the badge */
-  font-size: var(--ds-type-badge-size);
-  font-weight: var(--ds-type-badge-weight);
-  color: var(--emerald);
-  white-space: nowrap;
-}
-.gcx-ql-ai-field {
-  position: relative;
-  display: flex;
-  align-items: center;
-  flex: 1 1 auto; /* was 0 1 560px — the fixed basis capped the field while
-                     the placeholder kept running, reading as a hard cut */
-  min-width: 0;
-  max-width: 560px;
-  min-height: 44px; /* shared row height with the button */
-}
-.gcx-ql-ai-input {
-  flex: 1 1 auto;
-  width: 100%;
-  min-width: 0;
-  height: 100%;
-  background: none;
-  border: none;
-  outline: none;
-  font-family: inherit;
-  font-size: var(--ds-type-sub-size);
-  color: var(--text-primary);
-  text-align: center;
-  text-overflow: ellipsis; /* honest truncation instead of a hard cut */
-}
-.gcx-ql-ai-input::placeholder {
-  color: var(--text-ghost);
-  text-overflow: ellipsis;
-}
-.gcx-ql-gen {
-  flex: 0 0 auto; /* never shrink or wrap the CTA */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px; /* matches .gcx-ql-ai-field so the underline sits on the
-                   row's baseline, not through the placeholder */
-  white-space: nowrap;
-  background: transparent;
-  color: var(--emerald);
-  border: none;
-  border-bottom: 2px solid var(--emerald);
-  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-  box-shadow: none;
-  padding: 0 10px;
-  font-family: inherit;
-  font-weight: 600;
-  transition: background 0.15s ease;
-}
-.gcx-ql-gen:hover:not(:disabled) {
-  background: var(--emerald-bg);
-  color: var(--emerald);
-}
-.gcx-ql-gen:focus-visible {
-  outline: 2px solid var(--emerald);
-  outline-offset: 2px;
-}
-.gcx-ql-gen:disabled {
-  opacity: 0.55;
-  cursor: default;
-}
-.gcx-ql-editor {
-  display: flex;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md, 8px);
-  overflow: hidden;
-  min-height: 104px;
-}
-.gcx-ql-gutter {
-  padding: 10px 8px;
-  text-align: right;
-  color: var(--text-faint);
-  font-size: var(--ds-type-fine-size);
-  line-height: var(--ds-type-fine-lh);
-  background: var(--bg-primary);
-  border-right: 1px solid var(--border-primary);
-  user-select: none;
-}
-.gcx-ql-code {
-  flex: 1;
-  border: none;
-  outline: none;
-  resize: vertical;
-  background: none;
-  padding: 10px 12px;
-  font-size: var(--ds-type-fine-size);
-  line-height: var(--ds-type-fine-lh);
-  color: var(--text-primary);
-  min-height: 104px;
-}
-.gcx-ql-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 12px;
-}
-.gcx-ql-hint {
-  font-size: var(--ds-type-disclaimer-size);
-  color: var(--text-faint);
-}
-.gcx-ql-btns {
-  display: flex;
-  gap: 8px;
-}
-.gcx-ql-error {
-  margin-top: 12px;
-  font-size: var(--ds-type-fine-size);
-  color: var(--negative);
-  background: rgba(239, 68, 68, 0.06);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: var(--radius-md, 8px);
-  padding: 9px 12px;
-}
-.gcx-ql-result {
-  margin-top: 14px;
-}
-.gcx-ql-result-meta {
-  font-size: var(--ds-type-disclaimer-size);
-  font-variant-numeric: tabular-nums;
-  color: var(--text-faint);
-  margin-bottom: 6px;
-}
-.gcx-ql-table-wrap {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  max-width: 100%;
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md, 8px);
-}
-.gcx-ql-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--ds-type-fine-size);
-  font-variant-numeric: tabular-nums;
-}
-.gcx-ql-table th {
-  text-align: left;
-  padding: 8px 10px;
-  background: var(--bg-tertiary);
-  color: var(--text-muted);
-  font-weight: var(--ds-type-strong);
-  border-bottom: 1px solid var(--border-primary);
-  white-space: nowrap;
-}
-.gcx-ql-table td {
-  padding: 7px 10px;
-  border-bottom: 1px solid var(--border-primary);
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
 
 /* ── responsive ── */
 /* Mid-size screens: trim the rail a touch so it doesn't crowd the treemap. At
@@ -1501,48 +1280,7 @@
   }
   /* EzanaQL builder: ≥16px inputs so iOS doesn't zoom on focus; let the AI row
      and the action button row wrap instead of overflowing. */
-  .gcx-ql-code {
-    font-size: 16px;
-  }
-  .gcx-ql-ai {
-    flex-wrap: wrap;
-    row-gap: 10px;
-  }
-  /* The order/basis rules previously targeted .gcx-ql-ai-input, which is not
-     a flex child of .gcx-ql-ai — the field wrapper is. They were inert. */
-  .gcx-ql-ai-badge {
-    order: 1;
-  }
-  .gcx-ql-ai-field {
-    order: 2;
-    flex: 1 1 auto;
-    max-width: none;
-  }
-  .gcx-ql-gen {
-    order: 3;
-    flex: 1 1 100%;
-    height: 36px; /* touch target */
-  }
-  .gcx-ql-ai-input {
-    font-size: 16px; /* keep — prevents iOS Safari zoom on focus */
-    text-align: left;
-  }
-  .gcx-ql-ai-input::placeholder {
-    text-align: left;
-  }
   /* Input is left-aligned here, so the caret returns to the left edge. */
-  .gcx-ql-ai-caret {
-    left: 0;
-    transform: translateY(-50%);
-  }
-  .gcx-ql-actions {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  .gcx-ql-btns {
-    flex-wrap: wrap;
-  }
 }
 
 /* ── phones ── */
@@ -1563,21 +1301,6 @@
     display: none;
   }
   /* EzanaQL AI row: stack fully — badge, field, then full-width button. */
-  .gcx-ql-ai {
-    flex-direction: column;
-    align-items: stretch;
-    row-gap: 8px;
-  }
-  .gcx-ql-ai-badge {
-    justify-content: center;
-  }
-  .gcx-ql-ai-field {
-    height: 32px;
-    width: 100%;
-  }
-  .gcx-ql-gen {
-    width: 100%;
-  }
 }
 
 /* ── Full-table server-paginated explorer ─────────────────────────── */
@@ -1825,40 +1548,9 @@
 
 /* ── EzanaQL teaser (inline preview above the body) ────────── */
 /* Match the borderless builder so the teaser reads as the same surface. */
-.gcx-qlteaser {
-  padding: 14px 0;
-  margin-bottom: 18px;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-}
-.gcx-qlteaser-head {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  margin-bottom: 10px;
-}
-.gcx-qlteaser-ai {
-  margin-bottom: 0;
-}
 
 /* Blinking affordance caret — signals the field is typable. Anchored to the
    left of the input's own (centered) line; hides on focus or once typed. */
-.gcx-ql-ai-caret {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  font-family: var(--font-mono);
-  font-size: var(--ds-type-code-size);
-  font-variant-numeric: tabular-nums;
-  color: var(--emerald);
-  animation: gcx-caret-blink 1.1s step-end infinite;
-  pointer-events: none;
-  user-select: none;
-}
 @keyframes gcx-caret-blink {
   0%,
   100% {
@@ -1869,10 +1561,6 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .gcx-ql-ai-caret {
-    animation: none;
-    opacity: 1;
-  }
 }
 
 .gcx-spin {
@@ -2657,8 +2345,3 @@ body.light-mode .gcx-award-ghost.is-on {
 }
 
 /* The builder's cross-dataset hint. Quiet, one line, under the prompt row. */
-.gcx-ql-scope {
-  margin: 8px 0 0;
-  font-size: 11px;
-  color: var(--text-muted);
-}

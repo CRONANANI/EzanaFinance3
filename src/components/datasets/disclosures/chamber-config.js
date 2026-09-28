@@ -27,7 +27,9 @@ export const HOUSE = {
   /* 2008 is the first index year; PTRs only exist from 2012, when the STOCK
      Act created them. The coverage tab states both. */
   coverage: { firstYear: 2008, ptrsFrom: 2012 },
-  builderDataset: 'house.trades',
+  /* The filing index, not house.trades: that table is bound but empty, and
+     a query bar must open on something that can answer. */
+  builderDataset: 'house.filings',
   /* A House member represents a district; the panel and the table render
      `D-CA-12`. Senators represent a state, so that segment is dropped. */
   hasDistrict: true,
@@ -54,7 +56,8 @@ export const SENATE = {
     member: '/datasets/senate/members',
   },
   coverage: { firstYear: 2012, ptrsFrom: 2012 },
-  builderDataset: 'senate.trades',
+  /* Nothing Senate-side is live yet, so the bar opens cross-dataset. */
+  builderDataset: null,
   hasDistrict: false,
   hasScannedFilings: false,
   compliance:

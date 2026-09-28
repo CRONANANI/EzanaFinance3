@@ -32,7 +32,7 @@ import {
 import { useAuth } from '@/components/AuthProvider';
 import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
-import DatasetPicker from '@/components/ezanaql/DatasetPicker';
+import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
 import ContractsExplorer from './ContractsExplorer';
 import ContractorQuickView from './ContractorQuickView';
 import { slugify } from './contractor-mock';
@@ -47,7 +47,7 @@ import {
 } from '@/lib/gov-agency-palette';
 // Seed queries live in a pure module so the ezanaql check script can validate
 // them against the catalog (catalog fields only — never raw DB columns).
-import { SEED_QUERY, seedFromFilters } from './ezanaql-seed';
+import { seedFromFilters } from './ezanaql-seed';
 import './gov-contracts.css';
 
 /* ── formatting ── */
@@ -110,6 +110,7 @@ function aggregate(awards) {
   return [...map.values()].map((r) => ({ ...r, avg: r.count ? r.total / r.count : 0 }));
 }
 
+/* placeholder */
 export default function GovContractsClient({
   awards = [],
   isLive = false,
@@ -125,13 +126,13 @@ export default function GovContractsClient({
   const [selectedAgencies, setSelectedAgencies] = useState(() => new Set());
   const [agencySearch, setAgencySearch] = useState('');
   const [minValue, setMinValue] = useState(0); // in billions
+  /* The rail's Generate report button focuses the shared bar's prompt. */
+  const barRef = useRef(null);
   const [fiscalYear, setFiscalYear] = useState('all');
   const [heroView, setHeroView] = useState('treemap');
   const [selected, setSelected] = useState(null);
   const [selectedAward, setSelectedAward] = useState(null); // ticker → award detail modal
   const [quickViewRecipient, setQuickViewRecipient] = useState(null); // explorer row → contractor quick-view
-  const [queryOpen, setQueryOpen] = useState(false);
-  const [querySeed, setQuerySeed] = useState(''); // text handed off from the teaser
 
   // Prefer pre-aggregated BigQuery rollups (scales to millions of rows); fall
   // back to client-side aggregation of the small live-award slice.
@@ -175,10 +176,6 @@ export default function GovContractsClient({
   const coverageObj = rollup?.coverage || coverage;
 
   // Typing in the teaser opens the full builder and carries the keystroke over.
-  const startBuilder = useCallback((seed) => {
-    setQuerySeed(seed || '');
-    setQueryOpen(true);
-  }, []);
 
   // Debounce the agency search box (the list can be 80-100+ long).
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -392,18 +389,15 @@ export default function GovContractsClient({
         <h1 className="gcx-title">Government contracts</h1>
       </header>
 
-      <EzanaQLTeaser onStart={startBuilder} hidden={queryOpen} />
-
-      {queryOpen && (
-        <EzanaQLBuilder
-          activeFilters={{ agencies: [...selectedAgencies], fiscalYear, minValue }}
-          seedPrompt={querySeed}
-          onClose={() => {
-            setQueryOpen(false);
-            setQuerySeed('');
-          }}
+      {/* The one shared query bar, in the same slot and at the same size as
+          every other dataset page. It replaces the teaser and the dark panel
+          that used to live here. */}
+      <div ref={barRef}>
+        <EzanaQLBar
+          datasetScope="gov.contracts"
+          seedQuery={seedFromFilters({ agencies: [...selectedAgencies], fiscalYear })}
         />
-      )}
+      </div>
 
       <div className="gcx-body">
         {/* filter rail */}
@@ -412,15 +406,14 @@ export default function GovContractsClient({
             type="button"
             className="gcx-reportbtn"
             onClick={() => {
-              if (queryOpen) {
-                setQueryOpen(false);
-                setQuerySeed('');
-              } else {
-                startBuilder('');
-              }
+              /* There is no panel to open any more; the bar is always there,
+                 so this takes you to it. */
+              const el = barRef.current?.querySelector('.eqb-input');
+              barRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+              el?.focus();
             }}
           >
-            {queryOpen ? 'Close builder' : 'Generate report'}
+            Generate report
           </button>
           <FilterGroup title="Fiscal year">
             <FiscalYearSelect value={fiscalYear} years={years} onChange={setFiscalYear} />
@@ -918,62 +911,6 @@ function AwardDetailModal({ award: a, onClose }) {
  * the full builder below and hands off the text, so the user never loses a
  * keystroke. Purely an entry point — it runs nothing on its own.
  */
-function EzanaQLTeaser({ onStart, hidden }) {
-  const [teaserFocused, setTeaserFocused] = useState(false);
-  if (hidden) return null;
-  const start = (value) => {
-    if (!value) return;
-    onStart(value);
-  };
-  return (
-    <section className="gcx-card gcx-qlteaser">
-      <div className="gcx-qlteaser-head">
-        <span className="gcx-ql-title">EzanaQL report builder</span>
-        <span className="gcx-ql-beta">BETA</span>
-      </div>
-      <div className="gcx-ql-ai gcx-qlteaser-ai">
-        <span className="gcx-ql-ai-badge">
-          <Sparkles size={12} /> Ezana AI
-        </span>
-        <span className="gcx-ql-ai-field">
-          {!teaserFocused && (
-            <span className="gcx-ql-ai-caret" aria-hidden="true">
-              |
-            </span>
-          )}
-          <input
-            className="gcx-ql-ai-input"
-            value=""
-            onFocus={() => setTeaserFocused(true)}
-            onBlur={() => setTeaserFocused(false)}
-            onChange={(e) => start(e.target.value)}
-            onPaste={(e) => {
-              e.preventDefault();
-              start(e.clipboardData.getData('text'));
-            }}
-            placeholder="Describe the report in plain English — we'll write the EzanaQL"
-            aria-label="Describe the report you want"
-          />
-        </span>
-        {/* The honesty affordance: what is queryable, before a query is
-            written. Picking a dataset seeds the builder with its FROM. */}
-        <DatasetPicker onPick={(name) => onStart(`FROM ${name} `)} />
-        <button
-          type="button"
-          className="gcx-btn gcx-btn-primary gcx-ql-gen"
-          onClick={() => onStart('')}
-        >
-          Generate EzanaQL
-        </button>
-      </div>
-      {/* datasetScope is only a soft preference in the generator's prompt, so
-          a query written here is not confined to this page's dataset. Saying
-          so is cheaper than letting someone discover it. */}
-      <p className="gcx-ql-scope">Queries can span any live dataset, not just this page&apos;s.</p>
-    </section>
-  );
-}
-
 function FilterGroup({ title, meta, children }) {
   return (
     <div className="gcx-fg">
@@ -2696,220 +2633,6 @@ function DossierOverlay({ recipient: r, series, subs, capitolStrength, colorOf, 
             Signal strength shown for datasets loaded on this page. Others activate as data ships.
           </div>
         </section>
-      </div>
-    </div>
-  );
-}
-
-/* ────────────────────────── EzanaQL builder ────────────────────────── */
-
-function EzanaQLBuilder({ activeFilters, seedPrompt = '', onClose }) {
-  const [prompt, setPrompt] = useState(seedPrompt);
-  const [promptFocused, setPromptFocused] = useState(false);
-  const promptRef = useRef(null);
-  const [code, setCode] = useState(() => seedFromFilters(activeFilters) || SEED_QUERY);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
-  const [busy, setBusy] = useState(false);
-  const [genBusy, setGenBusy] = useState(false);
-
-  // Mounted from the teaser: focus and put the caret after the handed-off text.
-  useEffect(() => {
-    const el = promptRef.current;
-    if (!el) return;
-    el.focus();
-    const n = el.value.length;
-    el.setSelectionRange(n, n);
-    // Mount-only: re-running on prompt change would fight the user's caret.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const run = async () => {
-    setBusy(true);
-    setError(null);
-    setResult(null);
-    try {
-      const res = await fetch('/api/ezanaql/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: code, format: 'table' }),
-      });
-      const data = await res.json();
-      if (!data.ok) setError(data.error || 'Query failed.');
-      else setResult(data.result);
-    } catch {
-      setError('Could not reach the query engine.');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const generate = async () => {
-    if (!prompt.trim()) return;
-    setGenBusy(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/ezanaql/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, datasetScope: 'gov.contracts' }),
-      });
-      const data = await res.json();
-      if (!data.ok) setError(data.error || 'Generation failed.');
-      else {
-        setCode(data.query);
-        if (!data.valid && data.validationError)
-          setError(`Generated query needs a fix: ${data.validationError}`);
-      }
-    } catch {
-      setError('Could not reach the report model.');
-    } finally {
-      setGenBusy(false);
-    }
-  };
-
-  const exportAs = async (format) => {
-    try {
-      const res = await fetch('/api/ezanaql/export', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: code, format }),
-      });
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        setError(d.error || 'Export failed.');
-        return;
-      }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `ezanaql-report.${format}`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      setError('Export failed.');
-    }
-  };
-
-  const onKeyDown = (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-      e.preventDefault();
-      run();
-    }
-  };
-
-  const lineCount = code.split('\n').length;
-
-  return (
-    <section className="gcx-card gcx-ql">
-      <div className="gcx-ql-head">
-        <span className="gcx-ql-title">EzanaQL report builder</span>
-        <span className="gcx-ql-beta">BETA</span>
-        <button type="button" className="gcx-ql-x" onClick={onClose} aria-label="Close builder">
-          <X size={16} />
-        </button>
-      </div>
-
-      <div className="gcx-ql-ai">
-        <span className="gcx-ql-ai-badge">
-          <Sparkles size={12} /> Ezana AI
-        </span>
-        <span className="gcx-ql-ai-field">
-          {!prompt && !promptFocused && (
-            <span className="gcx-ql-ai-caret" aria-hidden="true">
-              |
-            </span>
-          )}
-          <input
-            ref={promptRef}
-            className="gcx-ql-ai-input"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            onFocus={() => setPromptFocused(true)}
-            onBlur={() => setPromptFocused(false)}
-            placeholder="Describe the report in plain English — we'll write the EzanaQL"
-          />
-        </span>
-        <button
-          type="button"
-          className="gcx-btn gcx-btn-primary gcx-ql-gen"
-          onClick={generate}
-          disabled={genBusy}
-        >
-          {genBusy ? 'Generating…' : 'Generate EzanaQL'}
-        </button>
-      </div>
-
-      <div className="gcx-ql-editor">
-        <div className="gcx-ql-gutter gcx-mono">
-          {Array.from({ length: lineCount }, (_, i) => (
-            <div key={i}>{i + 1}</div>
-          ))}
-        </div>
-        <textarea
-          className="gcx-ql-code gcx-mono"
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          onKeyDown={onKeyDown}
-          spellCheck={false}
-        />
-      </div>
-
-      <div className="gcx-ql-actions">
-        <span className="gcx-ql-hint gcx-mono">EzanaQL · press ⌘↵ to run</span>
-        <div className="gcx-ql-btns">
-          <button type="button" className="gcx-btn gcx-btn-outline" onClick={() => exportAs('csv')}>
-            <FileDown size={13} /> Export CSV
-          </button>
-          <button
-            type="button"
-            className="gcx-btn gcx-btn-outline"
-            onClick={() => exportAs('json')}
-          >
-            <FileDown size={13} /> Export JSON
-          </button>
-          <button type="button" className="gcx-btn gcx-btn-primary" onClick={run} disabled={busy}>
-            <Play size={13} /> {busy ? 'Running…' : 'Run query'}
-          </button>
-        </div>
-      </div>
-
-      {error && <div className="gcx-ql-error">{error}</div>}
-      {result && <QueryResult result={result} />}
-    </section>
-  );
-}
-
-function QueryResult({ result }) {
-  const cols = result.columns || (result.rows?.[0] ? Object.keys(result.rows[0]) : []);
-  const rows = result.rows || [];
-  return (
-    <div className="gcx-ql-result">
-      <div className="gcx-ql-result-meta gcx-mono">{rows.length} row(s)</div>
-      <div className="gcx-ql-table-wrap">
-        <table className="gcx-ql-table gcx-mono">
-          <thead>
-            <tr>
-              {cols.map((c) => (
-                <th key={c}>{c}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.slice(0, 100).map((row, i) => (
-              <tr key={i}>
-                {cols.map((c) => (
-                  <td key={c}>
-                    {typeof row[c] === 'number'
-                      ? row[c].toLocaleString('en-US')
-                      : String(row[c] ?? '')}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
     </div>
   );

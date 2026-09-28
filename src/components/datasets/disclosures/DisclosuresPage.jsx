@@ -23,6 +23,8 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from 
 import { CHART } from '@/lib/chart-theme';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
 import MemberProfile from './MemberProfile';
+import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
+import { seedForDataset } from '@/lib/ezanaql/seeds';
 import {
   BRACKETS,
   FIXTURE_BY_MONTH,
@@ -227,14 +229,22 @@ export default function DisclosuresPage({ config, sample = false }) {
   /* Seeded from the rail, re-seeding on every filter change until the visitor
      edits it by hand. Stage 2 shows the seed; the editor lands with the live
      builder. */
+  /* Built against the chamber's QUERYABLE dataset, which for the House is the
+     filing index: house.trades is bound but its table is empty, so a seed
+     against it would open the bar on a query that can only refuse. The
+     filters that map onto filings scope it; the rest scope the page. A
+     chamber with nothing live falls back to the shared cross-dataset seed. */
   const seededQuery = useMemo(() => {
-    const where = [`filed_on >= ${year}-01-01`];
-    if (tx !== 'ALL') where.push(`tx_type = '${tx}'`);
-    if (ticker) where.push(`ticker = '${ticker.toUpperCase()}'`);
-    if (member) where.push(`member_last ~ '${member}'`);
-    if (lag !== 'ANY') where.push(lag === '≤45D' ? 'lag_days <= 45' : 'lag_days > 45');
-    return `FROM ${config.builderDataset} WHERE ${where.join(' AND ')} ORDER BY filed_on DESC`;
-  }, [config.builderDataset, year, tx, ticker, member, lag]);
+    const ds = config.builderDataset;
+    if (!ds) return seedForDataset(null);
+    const where = [`filing_year = ${year}`];
+    if (member) where.push(`member_last = "${member}"`);
+    return `FROM ${ds}
+WHERE ${where.join(' AND ')}
+SELECT member_last, filing_type, filing_year, filing_date
+ORDER BY filing_date DESC
+LIMIT 20;`;
+  }, [config.builderDataset, year, member]);
 
   /* The panel hangs below the green chrome, which in this repo SCROLLS AWAY
      rather than sticking. The handoff's fixed 76px assumes a persistent
@@ -328,34 +338,9 @@ export default function DisclosuresPage({ config, sample = false }) {
         <h1 className="dsc-title">{config.title}</h1>
       </header>
 
-      {/* The builder is one light row and never the focal point of the page. */}
-      <div className="dsc-builder-wrap">
-        <div className="dsc-builder">
-          <span className="dsc-builder-mark">
-            <i className="bi bi-stars" aria-hidden="true" />
-            Ezana AI
-          </span>
-          <span className="dsc-builder-div" aria-hidden="true" />
-          <input
-            className="dsc-builder-input"
-            placeholder="Describe a report in plain English"
-            aria-label="Describe a report in plain English"
-          />
-          <button type="button" className="dsc-builder-go">
-            Generate EzanaQL
-          </button>
-        </div>
-        <div className="dsc-query">
-          <code className="dsc-query-text">{seededQuery}</code>
-          <span className="dsc-query-links">
-            {['Edit', 'Run', 'CSV', 'JSON'].map((l) => (
-              <button type="button" key={l} className="dsc-query-link">
-                {l}
-              </button>
-            ))}
-          </span>
-        </div>
-      </div>
+      {/* The one shared query bar, same size and placement on every dataset
+          page. It was a picture of a builder here: no state, no handlers. */}
+      <EzanaQLBar datasetScope={config.builderDataset} seedQuery={seededQuery} />
 
       <div className="dsc-body">
         <aside className="dsc-rail" aria-label="Filters">

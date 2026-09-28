@@ -37,6 +37,8 @@ import {
 } from '@/components/datasets/CampaignFinanceView';
 import './pol-trades.css';
 import './pol-campaign-finance.css';
+import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
+import { seedForDataset } from '@/lib/ezanaql/seeds';
 
 /* ── party color keys (pinned on .ptx-page; SVG uses the tokens) ── */
 const PARTIES = {
@@ -277,6 +279,9 @@ export default function PoliticalTradesClient({ devSampleTrades = null }) {
           with party, chamber, and excess-return context.
         </p>
       </header>
+
+      {/* The one shared query bar, same slot and size as every dataset page. */}
+      <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
 
       <div className="ptx-body">
         <aside className="ptx-rail">

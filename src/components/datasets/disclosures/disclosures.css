@@ -62,8 +62,6 @@
   --dsc-rail-gap: 36px;
   --dsc-row: 42px;
   --dsc-row-panel: 36px;
-  --dsc-builder-w: 720px;
-  --dsc-builder-h: 44px;
 
   --dsc-r-pill: 9999px;
   --dsc-r-input: 8px;
@@ -119,96 +117,9 @@
   line-height: 1.125;
 }
 
-/* ── the quiet builder ───────────────────────────────────────────────────
-   One light row, never a panel and never dark. The data is the focal point;
-   this is not. */
-.dsc-builder-wrap {
-  margin: 14px auto 0;
-  width: min(var(--dsc-builder-w), 100%);
-}
-.dsc-builder {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  height: var(--dsc-builder-h);
-  padding: 0 6px 0 14px;
-  background: var(--dsc-bg);
-  border: 1px solid var(--dsc-border);
-  border-radius: var(--dsc-r-pill);
-}
-.dsc-builder-mark {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  flex-shrink: 0;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--dsc-pos);
-}
-.dsc-builder-div {
-  width: 1px;
-  height: 18px;
-  background: var(--dsc-border);
-  flex-shrink: 0;
-}
-.dsc-builder-input {
-  flex: 1 1 auto;
-  min-width: 0;
-  border: 0;
-  outline: none;
-  background: none;
-  font-family: var(--dsc-sans);
-  font-size: 13px;
-  color: var(--dsc-ink);
-}
-.dsc-builder-input::placeholder {
-  color: var(--dsc-faint);
-}
-.dsc-builder-go {
-  flex-shrink: 0;
-  height: 32px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: var(--dsc-r-pill);
-  background: var(--dsc-pos-wash);
-  color: var(--dsc-pos);
-  font-family: var(--dsc-sans);
-  font-size: 12.5px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.dsc-query {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 2px;
-  padding: 0 14px;
-}
-.dsc-query-text {
-  font-family: var(--dsc-mono);
-  font-size: 10px;
-  color: var(--dsc-faint);
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-.dsc-query-links {
-  display: inline-flex;
-  gap: 8px;
-  flex-shrink: 0;
-}
-.dsc-query-link {
-  border: 0;
-  background: none;
-  padding: 0;
-  font-family: var(--dsc-sans);
-  font-size: 10.5px;
-  color: var(--dsc-pos);
-  cursor: pointer;
-}
-.dsc-query-link:hover {
-  text-decoration: underline;
-}
+/* The query bar lives in src/components/ezanaql/ezanaql-bar.css now; the
+   dsc-builder and dsc-query rules that used to sit here moved there verbatim
+   when the bar became shared, so there is one set to keep correct. */
 
 /* ── body grid ───────────────────────────────────────────────────────── */
 .dsc-body {
@@ -688,9 +599,6 @@
     padding-left: 0;
     border-top: 1px solid var(--dsc-rule);
     padding-top: 16px;
-  }
-  .dsc-builder-wrap {
-    padding-inline: 16px;
   }
 }
 @media (max-width: 760px) {

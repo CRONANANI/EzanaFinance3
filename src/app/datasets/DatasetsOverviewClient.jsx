@@ -33,6 +33,8 @@ import {
   isFullyLive,
 } from '@/lib/datasets/taxonomy';
 import './ds-overview.css';
+import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
+import { seedForDataset } from '@/lib/ezanaql/seeds';
 
 /* ── 7 dimensions: the shared DATASET_TAXONOMY is the single source of truth ──
    The signal map is pure hub-and-spoke and its NODES ARE the 7 dimensions (one
@@ -770,6 +772,9 @@ export default function DatasetsOverviewClient() {
           feeds the signal engine that relates them. No black boxes.
         </p>
       </header>
+
+      {/* The one shared query bar, same slot and size as every dataset page. */}
+      <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
 
       {/* interactive category legend */}
       <div className="dsx-legend" role="group" aria-label="Filter the map by category">

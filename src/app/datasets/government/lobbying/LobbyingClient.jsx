@@ -19,6 +19,8 @@ import { X, ArrowUpRight, ExternalLink, Info, Download, RefreshCw } from 'lucide
 import { ENTITY_LABEL, ENTITY_ORDER, ISSUE_LABEL } from '@/lib/lobbying/entities';
 import CompanyCard from './CompanyCard';
 import './lobbying.css';
+import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
+import { seedForDataset } from '@/lib/ezanaql/seeds';
 
 /* period selector → API scope. The current year is 2026 (filed in arrears). */
 const PERIODS = [
@@ -298,6 +300,12 @@ export default function LobbyingClient() {
           lda.gov.
         </p>
       </header>
+
+      {/* The one shared query bar, same slot and size as every dataset page. */}
+      <EzanaQLBar
+        datasetScope={'capitol.lobbying'}
+        seedQuery={seedForDataset('capitol.lobbying')}
+      />
 
       <div className="lbx-body">
         {/* ── left filter rail ── */}

@@ -7,6 +7,8 @@ import { WEIGHTS } from '@/lib/whale-score';
 import { WHALE_MOVES_SAMPLE } from './whale-moves-sample';
 import '../../marketing-explore.css';
 import './whale-moves.css';
+import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
+import { seedForDataset } from '@/lib/ezanaql/seeds';
 
 /* ── formatting ── */
 function fmtUSD(v) {
@@ -169,6 +171,9 @@ export function WhaleMovesClient({ moves }) {
             mega-fund&apos;s rounding-error rebalance.
           </p>
         </div>
+
+        {/* The one shared query bar, same slot and size as every dataset page. */}
+        <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
 
         {!isLive && (
           <div className="wm-sample-note">

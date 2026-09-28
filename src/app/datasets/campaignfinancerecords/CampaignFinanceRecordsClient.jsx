@@ -10,6 +10,8 @@
  */
 import { CampaignFinanceView } from '@/components/datasets/CampaignFinanceView';
 import './campaign-finance-records.css';
+import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
+import { seedForDataset } from '@/lib/ezanaql/seeds';
 
 export default function CampaignFinanceRecordsClient() {
   return (
@@ -21,6 +23,9 @@ export default function CampaignFinanceRecordsClient() {
           Federal Election Commission contribution and spending data for members of Congress.
         </p>
       </header>
+
+      {/* The one shared query bar, same slot and size as every dataset page. */}
+      <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
 
       <CampaignFinanceView />
     </div>
