@@ -29,6 +29,14 @@ const nextConfig = {
     // requests are handled (used to initialise Sentry on the server +
     // edge runtimes). Already on by default in Next.js 15+.
     instrumentationHook: true,
+    /* unpdf carries a prebuilt pdfjs bundle for serverless Node. Left to the
+       bundler it gets rewritten and loses that, which is the whole reason it
+       is used here instead of pdfjs-dist — see extractPdfText in
+       src/lib/house-disclosures/parse-ptr-pdf.js. Next 14 spells this
+       `experimental.serverComponentsExternalPackages`; the top-level
+       `serverExternalPackages` is Next 15 syntax and is silently ignored
+       here, the same trap the tracing note below records. */
+    serverComponentsExternalPackages: ['unpdf'],
     optimizePackageImports: [
       'lucide-react',
       'framer-motion',

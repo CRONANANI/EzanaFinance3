@@ -27,7 +27,11 @@ const DATE_RE_G = /\b\d{1,2}\/\d{1,2}\/\d{4}\b/g;
 
 /** A PDF with almost no extractable text is a scanned image → needs OCR. */
 export function looksScanned(text, minChars = 200) {
-  return String(text || '').replace(/\s+/g, ' ').trim().length < minChars;
+  return (
+    String(text || '')
+      .replace(/\s+/g, ' ')
+      .trim().length < minChars
+  );
 }
 
 /**
@@ -112,19 +116,32 @@ function reconstructLines(items) {
 }
 
 /**
- * Extract text from a PDF buffer using pdfjs (Node, no worker). Returns '' if the
- * document can't be read. The caller uses looksScanned() on the result.
+ * Extract text from a PDF buffer.
+ *
+ * unpdf ships a pdfjs build made for serverless Node, with no DOM and no
+ * native canvas requirement. That is the whole reason it is here: this used
+ * to import `pdfjs-dist/legacy/build/pdf.mjs` directly, and from v4 onward
+ * pdfjs's Node path expects the browser geometry classes (DOMMatrix, Path2D,
+ * ImageData) and only polyfills them when the OPTIONAL native package
+ * `@napi-rs/canvas` happens to be installed. It is present in local
+ * node_modules as a transitive dependency, so everything worked here — and
+ * absent on Vercel's Node runtime, where every single getDocument threw
+ * "DOMMatrix is not defined" and parse-house-ptrs reported
+ * filings_parsed: 0 for every run.
+ *
+ * Throws rather than returning '' on a read failure. The old version
+ * swallowed the error, and '' is indistinguishable from a scan with no text
+ * layer — so an infrastructure failure would have been recorded as
+ * needs_ocr on a perfectly readable filing, permanently. Letting it throw
+ * leaves the filing untouched for the next run; looksScanned() only gets to
+ * decide when the document was actually read.
  */
 export async function extractPdfText(buffer) {
-  // Legacy build + dynamic import keeps pdfjs out of the client/edge bundle.
-  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  /* Dynamic import keeps the pdfjs build out of the client and edge bundles. */
+  const { getDocumentProxy } = await import('unpdf');
+  let doc;
   try {
-    const task = pdfjs.getDocument({
-      data: new Uint8Array(buffer),
-      isEvalSupported: false,
-      useSystemFonts: true,
-    });
-    const doc = await task.promise;
+    doc = await getDocumentProxy(new Uint8Array(buffer));
     let out = '';
     for (let p = 1; p <= doc.numPages; p++) {
       // eslint-disable-next-line no-await-in-loop
@@ -133,9 +150,16 @@ export async function extractPdfText(buffer) {
       const content = await page.getTextContent();
       out += `${reconstructLines(content.items)}\n`;
     }
-    await doc.destroy();
     return out;
-  } catch {
-    return '';
+  } catch (e) {
+    throw new Error(`pdf-extract: ${e?.message || e}`);
+  } finally {
+    /* In `finally` so a page that throws midway still releases the worker;
+       optional because the proxy's shape is unpdf's, not ours. */
+    try {
+      await doc?.destroy?.();
+    } catch {
+      /* Already torn down, or never opened. */
+    }
   }
 }

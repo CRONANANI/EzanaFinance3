@@ -82,7 +82,10 @@ export async function GET(request) {
 
       if (looksScanned(text)) {
         // eslint-disable-next-line no-await-in-loop
-        await admin.from('house_disclosure_filings').update({ needs_ocr: true }).eq('doc_id', f.doc_id);
+        await admin
+          .from('house_disclosure_filings')
+          .update({ needs_ocr: true })
+          .eq('doc_id', f.doc_id);
         scanned += 1;
         // eslint-disable-next-line no-await-in-loop
         await sleep(THROTTLE_MS);
@@ -111,13 +114,27 @@ export async function GET(request) {
         }
       }
       // eslint-disable-next-line no-await-in-loop
-      await admin.from('house_disclosure_filings').update({ trades_parsed: true }).eq('doc_id', f.doc_id);
+      await admin
+        .from('house_disclosure_filings')
+        .update({ trades_parsed: true })
+        .eq('doc_id', f.doc_id);
       parsed += 1;
 
       // eslint-disable-next-line no-await-in-loop
       await sleep(THROTTLE_MS);
     } catch (e) {
+      /* Reported and left ALONE: trades_parsed and needs_ocr both stay false,
+         so the filing is picked up again on the next run. That matters most
+         for a pdf-extract failure — returning '' and letting looksScanned()
+         see it would have written needs_ocr onto a perfectly readable filing
+         and excluded it from the query forever. */
       errors.push(`${f.doc_id}: ${e?.message || e}`);
+      /* Throttle here too. The catch used to fall straight through to the
+         next filing, so a run where every file failed the same way — which
+         is exactly what "DOMMatrix is not defined" did to all 50 — fetched
+         the Clerk as fast as the loop could go. */
+      // eslint-disable-next-line no-await-in-loop
+      await sleep(THROTTLE_MS);
     }
   }
 
