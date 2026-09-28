@@ -19,7 +19,19 @@ import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
  * Content is illustrative marketing data, not a live fetch — same as before.
  */
 
-const TARGET = 124873.4;
+/* The portfolio total the count-up lands on, and where it starts from.
+
+   START is a real starting balance rather than a fraction of the target. It
+   used to be `TARGET * 0.86`, which made the climb a fixed 14% of whatever
+   the total happened to be — a bar that barely moves and says nothing. From
+   8,412.37 to 55,318.26 the counter actually travels, which is the point of
+   having one.
+
+   The delta caption below is tied to these: 55,318.26 - 1,068.72 puts the
+   prior close at 54,249.54, and 1,068.72 of that is +1.97%. Change either
+   number and that line has to move with it. */
+const TARGET = 55318.26;
+const START = 8412.37;
 const fmtUSD = (n) =>
   '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -167,8 +179,11 @@ export function PortfolioSignalCard({ activeLabel = null, activeColor = 'var(--e
     const run = () => {
       if (ranRef.current) return;
       ranRef.current = true;
-      const dur = 1400;
-      const begin = TARGET * 0.86;
+      /* 2,200 rather than 1,400: the range is now more than five times what
+         it was, and at the old duration the digits blur past rather than
+         reading as a climb. Same cubic ease-out. */
+      const dur = 2200;
+      const begin = START;
       const start = performance.now();
       const step = (now) => {
         const p = Math.min(1, (now - start) / dur);
@@ -223,7 +238,7 @@ export function PortfolioSignalCard({ activeLabel = null, activeColor = 'var(--e
           {fmtUSD(TARGET)}
         </div>
         <div className="psc-delta">
-          +$2,418.09 <span>(+1.97%)</span>
+          +$1,068.72 <span>(+1.97%)</span>
         </div>
       </div>
 
