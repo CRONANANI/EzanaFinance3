@@ -1,7 +1,9 @@
 'use client';
 
 /**
- * Financial disclosures, House and Senate. ONE implementation, two chambers.
+ * Financial disclosures, House and Senate. ONE implementation, two chambers,
+ * mounted by PoliticianTracker behind a House | Senate switch (passed in as
+ * `headerAside`).
  *
  * Built to docs/design/house-handoff/ (04-SPEC.md for the measurements,
  * 02-INTERACTIONS.json for behaviour, 03-TOKENS.css for the palette,
@@ -122,7 +124,7 @@ export function memberFromTrades(name, trades, config) {
    truthy default made a page that had been flipped to live keep rendering
    placeholder names under no chip, which is the exact failure the chip
    exists to prevent. Sample is now something a page asks for. */
-export default function DisclosuresPage({ config, sample = false }) {
+export default function DisclosuresPage({ config, sample = false, headerAside = null }) {
   const [tab, setTab] = useState('trades');
   const [openMember, setOpenMember] = useState(null);
   const triggerRef = useRef(null);
@@ -336,6 +338,7 @@ LIMIT 20;`;
           {sample ? <span className="dsc-sample">SAMPLE DATA</span> : null}
         </p>
         <h1 className="dsc-title">{config.title}</h1>
+        {headerAside}
       </header>
 
       {/* The one shared query bar, same size and placement on every dataset

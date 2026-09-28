@@ -1,7 +1,9 @@
 /**
- * The only thing that differs between the two disclosure pages.
+ * The only thing that differs between the two chambers of the Politician
+ * Tracker (/datasets/politician-tracker).
  *
- * One implementation serves both chambers (see DisclosuresPage). Everything
+ * One page serves both chambers behind a House | Senate switch (see
+ * PoliticianTracker and DisclosuresPage). Everything
  * chamber-specific lives here, so the layout never branches on `chamber` ,
  * if a difference cannot be expressed as a value in this file, it does not
  * belong in the page.
@@ -11,7 +13,8 @@
 
 export const HOUSE = {
   chamber: 'house',
-  title: 'House financial disclosures',
+  label: 'House',
+  title: 'Politician tracker',
   eyebrow: 'DATASETS · HOUSE CLERK',
   source: {
     name: 'Clerk of the U.S. House',
@@ -21,7 +24,7 @@ export const HOUSE = {
     docLabel: 'Open source filing',
   },
   routes: {
-    page: '/datasets/house/disclosures',
+    page: '/datasets/politician-tracker?chamber=house',
     member: '/datasets/house/members',
   },
   /* 2008 is the first index year; PTRs only exist from 2012, when the STOCK
@@ -45,14 +48,15 @@ export const HOUSE = {
 
 export const SENATE = {
   chamber: 'senate',
-  title: 'Senate financial disclosures',
+  label: 'Senate',
+  title: 'Politician tracker',
   eyebrow: 'DATASETS · SENATE OPR',
   source: {
     name: 'Senate Office of Public Records',
     docLabel: 'Open source filing',
   },
   routes: {
-    page: '/datasets/senate/disclosures',
+    page: '/datasets/politician-tracker?chamber=senate',
     member: '/datasets/senate/members',
   },
   coverage: { firstYear: 2012, ptrsFrom: 2012 },
@@ -67,3 +71,10 @@ export const SENATE = {
 };
 
 export const CHAMBERS = { house: HOUSE, senate: SENATE };
+
+/** Order of the chamber switch on the Politician Tracker. */
+export const CHAMBER_ORDER = ['house', 'senate'];
+
+/* The Senate has no ingest yet, so that chamber renders the fixture under the
+   SAMPLE DATA chip. Flip this when the Senate ingest lands. */
+export const SAMPLE_CHAMBERS = new Set(['senate']);

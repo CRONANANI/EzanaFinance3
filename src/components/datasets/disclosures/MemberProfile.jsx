@@ -250,7 +250,12 @@ export default function MemberProfile({ member, config, mode = 'panel', onClose,
         <button type="button" className="dsc-btn dsc-btn--solid">
           Set an alert
         </button>
-        <a className="dsc-btn dsc-btn--ghost" href={`${config.routes.page}?member=${member.slug}`}>
+        {/* routes.page carries ?chamber= now, so the separator depends on
+            whether the route already has a query string. */}
+        <a
+          className="dsc-btn dsc-btn--ghost"
+          href={`${config.routes.page}${config.routes.page.includes('?') ? '&' : '?'}member=${member.slug}`}
+        >
           All filings, {config.coverage.firstYear} on
         </a>
       </div>

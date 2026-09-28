@@ -39,19 +39,13 @@ export const DATASET_TAXONOMY = [
     items: [
       // orbital sources
       {
-        label: 'US House Financial Disclosures',
-        description: 'Official House member trades and holdings disclosed under the STOCK Act',
-        href: '/datasets/house/disclosures',
+        label: 'Politician Tracker',
+        description:
+          'House and Senate member trades and holdings disclosed under the STOCK Act, on one page',
+        href: '/datasets/politician-tracker',
         live: true,
-        source: 'House Clerk disclosures (disclosures-clerk.house.gov)',
-        sourceType: 'gov',
-      },
-      {
-        label: 'US Senate Financial Disclosures',
-        description: 'Official Senate member trades and holdings disclosed under the STOCK Act',
-        href: '/datasets/senate/disclosures',
-        live: 'preview',
-        source: 'Senate Office of Public Records (efdsearch.senate.gov)',
+        source:
+          'House Clerk disclosures (disclosures-clerk.house.gov) · Senate Office of Public Records (efdsearch.senate.gov)',
         sourceType: 'gov',
       },
       {

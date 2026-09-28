@@ -63,11 +63,25 @@ const nextConfig = {
         destination: '/alternative-markets',
         permanent: true,
       },
-      /* The disclosures page moved under its chamber when the Senate page
-         joined it. Permanent, so anything linking the old path follows. */
+      /* House and Senate disclosures merged into one Politician Tracker page
+         with a chamber switch. Permanent, so anything linking an old path
+         lands on the right chamber rather than a 404. The oldest path
+         (/datasets/house-disclosures) previously hopped to the per-chamber
+         route; it now points at the final destination directly rather than
+         chaining two redirects. */
       {
         source: '/datasets/house-disclosures',
-        destination: '/datasets/house/disclosures',
+        destination: '/datasets/politician-tracker?chamber=house',
+        permanent: true,
+      },
+      {
+        source: '/datasets/house/disclosures',
+        destination: '/datasets/politician-tracker?chamber=house',
+        permanent: true,
+      },
+      {
+        source: '/datasets/senate/disclosures',
+        destination: '/datasets/politician-tracker?chamber=senate',
         permanent: true,
       },
       { source: '/crypto-research', destination: '/alternative-markets', permanent: true },

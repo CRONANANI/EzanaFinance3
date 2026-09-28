@@ -1071,3 +1071,28 @@
     max-width: 100%;
   }
 }
+
+/* Politician Tracker chamber switch (HOUSE | SENATE), under the page title.
+   Reuses the .dsc-seg control so it matches the filter segments exactly;
+   only its size and placement differ, so there is one segmented control in
+   this sheet rather than two that drift apart.
+
+   inline-grid, not the base rule's grid: the switch is centred under the
+   title at a fixed 220px rather than filling its column like the filter
+   segments do. */
+.dsc-chamber {
+  display: inline-grid;
+  width: 220px;
+  margin: 16px auto 0;
+}
+.dsc-chamber .dsc-seg-btn {
+  padding: 8px 0;
+  font-size: 11px;
+}
+/* The base control has no focus ring of its own. This is a primary control
+   on the page, so it gets a visible one in the positive accent, inset so it
+   is not clipped by the container's overflow: hidden. */
+.dsc-chamber .dsc-seg-btn:focus-visible {
+  outline: 2px solid var(--dsc-pos);
+  outline-offset: -2px;
+}
