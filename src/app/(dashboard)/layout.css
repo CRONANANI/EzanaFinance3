@@ -198,11 +198,22 @@ body.route-echo-article .dashboard-main,
 body.route-echo-article .dashboard-main-content,
 body.route-echo-article .dashboard-container,
 body.route-echo-article:has(.dashboard-main),
-html:has(body.route-echo-article) {
+html:has(body.route-echo-article),
+/* :has() twins so the white shell lands on first paint, before the layout's
+   useEffect adds route-echo-article. */
+html:has(.echo-article-page),
+body:has(.echo-article-page),
+/* (0,2,1) and (0,3,2): these beat the html.app-authed shell rule above. */
+html.app-authed:has(.echo-article-page),
+html.app-authed:has(.echo-article-page) > body.app-authed,
+body:has(.echo-article-page) .dashboard-main,
+body:has(.echo-article-page) .dashboard-main-content,
+body:has(.echo-article-page) .dashboard-container {
   background-color: #ffffff !important;
 }
 /* Nav matches the white page (no dark seam above a white article on the
    default theme). */
-body.route-echo-article .main-nav:not(.partner-nav) {
+body.route-echo-article .main-nav:not(.partner-nav),
+body:has(.echo-article-page) .main-nav:not(.partner-nav) {
   background: #ffffff !important;
 }

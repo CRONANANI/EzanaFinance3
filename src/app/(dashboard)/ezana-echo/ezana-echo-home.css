@@ -8,29 +8,43 @@
    ══════════════════════════════════════════════════════════════ */
 
 .eth-page {
-  background: var(--bg-primary);
+  background: var(--echo-canvas);
   color: var(--text-secondary);
   font-family: var(--font-sans);
   padding-bottom: 8px;
   margin-top: 0;
 }
 
-/* Fix 1 — uniform background on the Echo route. The page content is --bg-primary
-   (white in light) but the dashboard shell paints --app-bg (grey) around/behind it,
-   so grey shows at the edges. Force the shell — and body/html for any peek-through —
-   to --bg-primary too, scoped to body.echo-route so every OTHER dashboard page keeps
-   its normal grey shell. In dark mode --bg-primary is the dark base, so the page stays
-   uniformly dark. `html body.echo-route …` + !important beats layout.css's shell rule. */
-html body.echo-route .dashboard-main.dashboard-main-content {
-  background-color: var(--bg-primary) !important;
-  /* The echo masthead IS the top bar on this route (global navbar suppressed in
-     ConditionalNavbar), so the shell must not reserve navbar clearance — that
-     clearance is what pushed the brand/auth ~73px down vs the landing nav. */
-  padding-top: 0 !important;
-}
+/* Paint the Echo canvas (--echo-canvas, defined in ezana-echo.css, which both
+   the home and the article routes load) edge to edge. Painted through :has()
+   as well as the body classes so the first paint, before the useEffect adds
+   echo-route / route-echo-article, already matches. The html.app-authed twins
+   are load-bearing: layout.css paints `html.app-authed > body.app-authed` with
+   --app-bg !important at (0,2,2), which a bare body selector cannot beat. */
+html.app-authed:has(.eth-page),
+html.app-authed:has(.eth-page) > body.app-authed,
+html:has(.eth-page),
+html:has(.echo-article-page),
+html:has(body.echo-route),
+html:has(body.route-echo-article),
 body.echo-route,
-html:has(body.echo-route) {
-  background-color: var(--bg-primary) !important;
+body.route-echo-article,
+body:has(.eth-page),
+body:has(.echo-article-page),
+body.echo-route .dashboard-main,
+body.echo-route .dashboard-main-content,
+body.echo-route .dashboard-container,
+body:has(.eth-page) .dashboard-main,
+body:has(.eth-page) .dashboard-main-content,
+body:has(.eth-page) .dashboard-container {
+  background-color: var(--echo-canvas) !important;
+}
+
+/* Masthead is the top bar on this route (global navbar suppressed in
+   ConditionalNavbar); no navbar clearance. */
+html body.echo-route .dashboard-main.dashboard-main-content,
+html body:has(.eth-page) .dashboard-main.dashboard-main-content {
+  padding-top: 0 !important;
 }
 .eth-page *,
 .eth-page *::before,
