@@ -4030,3 +4030,132 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
     min-height: 0;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TYPE ROLES (Sept 2026). The band now speaks the datasets pages' type
+   system: Plus Jakarta Sans (--font-sans) for every word, the same face the
+   datasets CategoryBar and the ticker band below it use, and JetBrains Mono
+   (--font-mono, tabular) for figures, tickers and dates only, per the
+   branding guide ("Plus Jakarta Sans for text, JetBrains Mono for numbers").
+
+   Three roles and no fourth:
+     heading     the card titles (Live synthesis, Sourced matches, Relevant
+                 news): the --type-card-title-* ramp, sentence case.
+     subheading  labels, chips, status and meta: --type-caption-size for card
+                 level labels, --type-micro-size inside dense stat grids.
+     body        paragraphs and list rows: --type-body-size, and caption size
+                 for the dense news and match rows.
+
+   Declared last and one class deeper (.snr-band .snr-inner ...) so it wins
+   over the scattered per-class rules above, including the phone block's
+   10px floor, without !important. Colours are untouched: every rule below
+   sets metrics only, so both shells and the takeover palette still hold.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* heading */
+.snr-band .snr-inner .snr-panel-title,
+.snr-band .snr-inner .snr-dossier-title {
+  font-family: var(--font-sans);
+  font-size: var(--type-card-title-size);
+  font-weight: var(--type-card-title-weight);
+  letter-spacing: var(--type-card-title-tracking);
+  line-height: 1.25;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+/* subheading, card level */
+.snr-band .snr-inner .snr-status,
+.snr-band .snr-inner .snr-meta,
+.snr-band .snr-inner .snr-tag,
+.snr-band .snr-inner .snr-src,
+.snr-band .snr-inner .snr-news-meta,
+.snr-band .snr-inner .snr-range-chip,
+.snr-band .snr-inner .snr-echo-chip,
+.snr-band .snr-inner .snr-chip-general,
+.snr-band .snr-inner .snr-fund-name {
+  font-family: var(--font-sans);
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-caption-weight);
+  letter-spacing: 0.05em;
+}
+/* Chips and status keep their caps, now at the guide's 0.05em caps tracking
+   rather than the mono 0.14 to 0.22em; the fund name and meta stay as set. */
+.snr-band .snr-inner .snr-tag,
+.snr-band .snr-inner .snr-status,
+.snr-band .snr-inner .snr-range-chip,
+.snr-band .snr-inner .snr-echo-chip,
+.snr-band .snr-inner .snr-chip-general {
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.snr-band .snr-inner .snr-news-meta,
+.snr-band .snr-inner .snr-src,
+.snr-band .snr-inner .snr-fund-name {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* subheading, inside the dense stat grids (four across a card) */
+.snr-band .snr-inner .snr-stat-label,
+.snr-band .snr-inner .snr-stat-cap {
+  font-family: var(--font-sans);
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.snr-band .snr-inner .snr-stat-cap {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* body */
+.snr-band .snr-inner .snr-para,
+.snr-band .snr-inner .snr-empty,
+.snr-band .snr-inner .snr-footnote {
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  line-height: 1.6;
+}
+.snr-band .snr-inner .snr-footnote {
+  font-size: var(--type-caption-size);
+}
+.snr-band .snr-inner .snr-news-title,
+.snr-band .snr-inner .snr-row-line,
+.snr-band .snr-inner .snr-echo-title,
+.snr-band .snr-inner .snr-echo-excerpt,
+.snr-band .snr-inner .snr-rich-name,
+.snr-band .snr-inner .snr-trade-member,
+.snr-band .snr-inner .snr-agency-name {
+  font-family: var(--font-sans);
+  font-size: var(--type-caption-size);
+  line-height: 1.45;
+}
+.snr-band .snr-inner .snr-news-title,
+.snr-band .snr-inner .snr-rich-name {
+  font-weight: 600;
+}
+
+/* figures stay mono, tabular, whatever the rules above did to their parents */
+.snr-band .snr-inner .snr-stat-value,
+.snr-band .snr-inner .snr-fund-ticker,
+.snr-band .snr-inner .snr-award-last,
+.snr-band .snr-inner .snr-award-axis,
+.snr-band .snr-inner .snr-agency-share,
+.snr-band .snr-inner .snr-agency-value,
+.snr-band .snr-inner .snr-trade-date,
+.snr-band .snr-inner .snr-echo-date,
+.snr-band .snr-inner .snr-cite {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The status slot was a fixed 132px sized for 9.5px mono. At caption size in
+   the sans it needs its own width, and it still never reflows the head row:
+   the rule before it is the flex-grow absorber. */
+.snr-band .snr-inner .snr-status {
+  width: auto;
+  min-width: 132px;
+}

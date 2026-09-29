@@ -34,25 +34,20 @@
    area is the budget's remainder, so the height the smaller headline frees
    flows into it and the column still sums.
 
-   `g3`, the gap between the subhead and the work area, is raised on the three
-   desktop anchors for a second reason: it is the only zone the mini orbital
-   can take its room from, because the work area is the budget's remainder and
-   absorbs whatever g3 does not.
+   `g3`, the gap between the subhead and the work area, is 28 / 28 / 32 on the
+   three desktop anchors (Sept 2026, at Noah's direction). It had been raised
+   to 150 / 136 / 124 to buy the mini orbital 260px of room in the header
+   zone, which left the ping bar, and in stage 2 the sourced-matches card and
+   the chart and news stack, floating well over 100px below the subhead on
+   every desktop. The ping bar now sits one short beat under the subhead.
 
-   The orbital's room is measured from the eyebrow row down to the work area,
-   which is `eyebrow + g1 + head + g2 + sub + g3`, less an 8px gap. It was
-   180px at every desktop anchor (g3 at 70 / 56 / 44). The map at that size
-   reads as specks, so the target is now 260: g3 goes to 150 / 136 / 124, each
-   exactly +80, which puts the sum at 268 at all three. Because every other
-   term in it is linear across the anchors and the sum is the same constant at
-   each, the interpolation holds 260 at every width BETWEEN them too, not just
-   at the anchors themselves.
-
-   What it costs: the work area loses those same 80px, so the chart, news and
-   dataset rows are shorter. They are all derived from `work`, so they follow
-   automatically and the column still sums to the viewport. At 1280x720 the
-   dataset list starts scrolling inside its card, which is the absorber the
-   short tier already uses rather than a new failure.
+   The trade, stated plainly: the orbital's room is `eyebrow + g1 + head + g2 +
+   sub + g3 - 8`, so it is now about 138 / 152 / 168px at the three anchors,
+   and SonarSection sizes the map to that room (it never paints over the work
+   area). The work area gains the same ~110px, so the chart, news and dataset
+   rows get taller, which also retires the 1280x720 case where the dataset
+   list had to scroll inside its card. Everything below the header is derived
+   from `work`, so the column still sums to the viewport at every height.
 
    The phone keeps its 14, since the orbital is hidden in stage 2 there.
    Order matters: the interpolation walks it. */
@@ -123,7 +118,7 @@ export const ANCHORS = [
     g2: 10,
     sub: 44,
     subFs: 15,
-    g3: 150,
+    g3: 28,
     g4: 14,
     arrow: 56,
     padBot: 0,
@@ -154,7 +149,7 @@ export const ANCHORS = [
     g2: 12,
     sub: 48,
     subFs: 16,
-    g3: 136,
+    g3: 28,
     g4: 16,
     arrow: 56,
     padBot: 0,
@@ -185,7 +180,7 @@ export const ANCHORS = [
     g2: 14,
     sub: 52,
     subFs: 17,
-    g3: 124,
+    g3: 32,
     g4: 20,
     arrow: 56,
     padBot: 0,

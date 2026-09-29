@@ -1788,7 +1788,7 @@ export function SonarSection() {
             <div className="snr-synth" inert={gateOpen ? '' : undefined}>
               <div className="snr-panel-head">
                 <span className="snr-beacon-sm" aria-hidden="true" />
-                <span className="snr-panel-title">LIVE SYNTHESIS</span>
+                <span className="snr-panel-title">Live synthesis</span>
                 <span className="snr-rule-soft" aria-hidden="true" />
                 {/* Two spans in one grid cell, crossfading, so the label never
                     hard-swaps and the row never reflows. This is NOT the old
@@ -2007,7 +2007,7 @@ export function SonarSection() {
           {hasPinged ? (
             <div ref={dossierRef} className="snr-col-dossier">
               <div className="snr-dossier-head">
-                <span className="snr-dossier-title">SOURCED MATCHES</span>
+                <span className="snr-dossier-title">Sourced matches</span>
                 <span className="snr-rule" />
                 {/* The pinged term in full, or its ticker when the full name
                   will not fit. It used to be `slice(0, 14)`, which rendered
@@ -2254,7 +2254,7 @@ export function SonarSection() {
               {live.dossier.news.length || live.dossier.echo.length ? (
                 <div className="snr-news">
                   <div className="snr-card-head">
-                    <span className="snr-panel-title">RELEVANT NEWS</span>
+                    <span className="snr-panel-title">Relevant news</span>
                     <span className="snr-rule-soft" aria-hidden="true" />
                   </div>
                   <div className="snr-news-list">
