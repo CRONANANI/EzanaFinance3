@@ -1,32 +1,41 @@
 /**
- * SocialLedgerSection: the "Social investing" landing section, rebuilt to the
- * layout system in docs/design/sled-handoff (package v2).
+ * SocialLedgerSection: the "Social investing" landing section.
  *
- * What the handoff changed: the composition. A left-aligned masthead, two
- * mirrored proportional zones (5/7 record, 7/5 sheets), the rating figure as
- * the hero object with a tier ladder pinned to its column's bottom so its
- * baseline meets the chart's x axis, the event feed and the standings rebuilt
- * as two sheets in one rule system that are the same height BY STRUCTURE, and
- * one 7.2s clock that lands the same +24 in the ledger, the rating and the
- * standings inside 1.5s.
+ * Layout is the docs/design/sled-handoff v2 composition: a centred header,
+ * the record zone (rating | chart) and the sheets zone (ledger | standings),
+ * with both sheets one height BY STRUCTURE.
  *
- * What it deliberately did NOT change (07-EZANA-INTEGRATION.md, which wins over
- * the design files): the typography and the chart. Every text role keeps the
- * face, weight, tracking, casing and colour it shipped with; only the rating
- * figure's size and the headline/subhead clamps move, because the grid depends
- * on them. The recharts block below (data builder, cohort pills, key remount,
- * gradient, grid, ticks, domain, tooltip) is the shipped one, moved into the
- * spec's chart cell and not restyled.
+ * Motion, rebuilt (Sept 2026):
  *
- * Fixture only, never live. Per the handoff's fixture correction, the standings
- * update in place: your rating ticks and the gap to first closes. No rank change
- * is claimed, because at 1474 you are already ahead of Priya (1441) and Maya
- * (1470) and the numbers cannot support one.
+ *  - The ledger is a conveyor. Rows are chronological, oldest on top, the way
+ *    a ledger is actually written. Every cycle the whole track glides up by
+ *    exactly one row on the compositor (translate3d, no layout), the top row
+ *    fades as it leaves and the next event slides in at the bottom and types
+ *    itself. There is no max-height reflow any more, which is what made the
+ *    old write-in look like a jolt.
+ *  - The event pool is circular and its deltas sum to zero, so the loop never
+ *    has a seam: after the last event the chain is back at the first event's
+ *    starting rating and the next lap continues from there.
+ *  - The ledger fills its sheet. The viewport is stretched to the standings
+ *    sheet's height by the grid, measured, and divided into a whole number of
+ *    equal rows, so the two sheets always end on one baseline with no half
+ *    row at the bottom.
+ *  - The chart never reloads. It is a memoised component keyed on the cohort
+ *    only: the master clock does not touch its data or its key, so it draws
+ *    once on mount and again only when the visitor switches cohort.
+ *  - React re-renders only when a visible value changes (a typed character, a
+ *    rating tick, the head row advancing). The per-frame glide is written to
+ *    the track's style directly from the rAF loop.
+ *
+ * Fixture only, never live, and labelled so in the section foot. The rating
+ * chain stays inside Maya K. (1458) and Daniel R. (1512), so "You" holds
+ * rank 02 on every frame and the standings never claim a rank change the
+ * numbers cannot support.
  */
 
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -39,15 +48,12 @@ import {
 import { CHART } from '@/lib/chart-theme';
 import './social-ledger.css';
 
-/* ────────────────────────── fixture (04-SPEC section 11) ──────────────────────
-   Illustrative, cached, never live. */
+/* ────────────────────────── fixture ────────────────────────── */
 
+const DOT = '·';
 const WEEKS = ['W01', 'W02', 'W03', 'W04', 'W05', 'W06', 'W07', 'W08'];
 const YOU_SERIES = [1408, 1416, 1410, 1428, 1440, 1452, 1484, 1498];
 
-/* Friends' leader ends at 1512 because the circle leader is Daniel R., who is
-   1512 in the standings; the brief's "near 1524" would put an unnamed fifth
-   person above the whole table. */
 const COHORTS = {
   friends: {
     label: 'Friends',
@@ -69,61 +75,64 @@ const COHORTS = {
   },
 };
 
-/* The ledger, newest first. Row 0 is the one the loop writes. An unrated event
-   carries a middle dot: not a dash, and not a zero, because a zero would claim
-   the event was rated and scored nothing.
-
-   Only LEDGER_SHOWN of these render. The spec's section 3 wants the desktop
-   section near 1090px and names trimming ledger rows as the first remedy when
-   it runs long; at eight rows the section measured 1364 at 1440. Six is the
-   trim. The two dropped are the oldest, and the middle-dot treatment is still
-   shown by the Priya row, so nothing about the fixture's meaning is lost. */
-const DOT = '·';
-const LEDGER = [
-  { delta: '+24', event: "Won 'Q3 Momentum Sprint'", from: 1474, to: 1498, when: 'Mon' },
-  { delta: '+12', event: 'Top 10% weekly P&L', from: 1462, to: 1474, when: 'Fri' },
-  {
-    delta: '+8',
-    event: 'Research post upvoted, consensus signal',
-    from: 1454,
-    to: 1462,
-    when: 'Thu',
-  },
-  { delta: DOT, event: "Priya S. challenged you to 'Season 4 Sprint'", when: 'Thu' },
-  { delta: '+5', event: '7-day login streak', from: 1449, to: 1454, when: 'Wed' },
-  {
-    delta: '+6',
-    event: "Passed 'Options Greeks I' in the Learning Center",
-    from: 1443,
-    to: 1449,
-    when: 'Tue',
-  },
-  { delta: DOT, event: 'Maya K. joined your circle', when: 'Tue' },
-  { delta: '-5', event: 'Weekly P&L below median', from: 1448, to: 1443, when: 'Mon' },
+/* The circular event pool, oldest first. Every row is rated, so every column
+   has a value on every row. The deltas sum to zero (asserted below), which is
+   what lets the conveyor loop without a seam. */
+const LEDGER_START = 1466;
+const LEDGER_EVENTS = [
+  { d: 6, event: "Passed 'Options Greeks I' in the Learning Center", when: 'Mon' },
+  { d: 5, event: '7-day login streak', when: 'Mon' },
+  { d: -5, event: 'Daily P&L below circle median', when: 'Tue' },
+  { d: 4, event: "Beat Priya S. in a 'Season 4 Sprint' heat", when: 'Tue' },
+  { d: 8, event: 'Research post upvoted, consensus signal', when: 'Wed' },
+  { d: -10, event: 'Research thesis challenged and closed out', when: 'Wed' },
+  { d: 24, event: "Won 'Q3 Momentum Sprint'", when: 'Thu' },
+  { d: -6, event: 'Closed a sprint position below entry', when: 'Thu' },
+  { d: 3, event: 'Trade idea copied by 3 circle members', when: 'Fri' },
+  { d: -9, event: 'Drawdown passed your risk limit', when: 'Fri' },
+  { d: 2, event: 'Maya K. joined your circle on your referral', when: 'Sat' },
+  { d: -12, event: "Lost 'Weekend Macro Duel' to Daniel R.", when: 'Sat' },
+  { d: -4, event: 'Missed the Sunday portfolio review', when: 'Sun' },
+  { d: -6, event: 'Weekly P&L below median', when: 'Sun' },
 ];
 
-const LEDGER_SHOWN = 6;
+const LEDGER = (() => {
+  let r = LEDGER_START;
+  return LEDGER_EVENTS.map((e) => {
+    const row = { ...e, from: r, to: r + e.d };
+    r += e.d;
+    return row;
+  });
+})();
+const N = LEDGER.length;
+/* The event the composed (reduced-motion / first paint) frame lands on. */
+const PEAK = LEDGER.findIndex((e) => e.to === 1498);
 
+if (process.env.NODE_ENV !== 'production') {
+  const net = LEDGER_EVENTS.reduce((s, e) => s + e.d, 0);
+  if (net !== 0) console.warn(`[sled] ledger pool nets ${net}, the loop will seam`);
+}
+
+const mod = (n) => ((n % N) + N) % N;
+const eventAt = (seq) => LEDGER[mod(seq)];
+const signed = (n) => (n > 0 ? `+${n}` : `${n}`);
+/** Net of the `count` events ending at `endSeq` (inclusive). */
+const netOf = (endSeq, count) => {
+  let s = 0;
+  for (let k = 0; k < count; k += 1) s += eventAt(endSeq - k).d;
+  return s;
+};
+
+const LEADER = 1512;
 const STANDINGS = [
-  { rank: '01', name: 'Daniel R.', rating: 1512, week: DOT, tier: 'Apprentice' },
-  {
-    rank: '02',
-    name: 'You',
-    handle: '@axum',
-    rating: 1498,
-    week: '+24',
-    tier: 'Apprentice',
-    you: true,
-  },
-  { rank: '03', name: 'Maya K.', rating: 1470, week: 'NEW', tier: 'Apprentice' },
+  { rank: '01', name: 'Daniel R.', rating: LEADER, week: '+6', tier: 'Apprentice' },
+  { rank: '02', name: 'You', rating: 1498, week: '+24', tier: 'Apprentice', you: true },
+  { rank: '03', name: 'Maya K.', rating: 1458, week: '+4', tier: 'Apprentice' },
   { rank: '04', name: 'Priya S.', rating: 1441, week: '-5', tier: 'Apprentice' },
   { rank: '05', name: 'Jordan T.', rating: 1418, week: '+3', tier: 'Apprentice' },
   { rank: '06', name: 'Sam O.', rating: 1396, week: '-2', tier: 'Apprentice' },
 ];
 
-/* Tier ladder. Six tiers get EQUAL segments rather than a linear 0 to 10,000
-   scale: linear would put an Apprentice at 15% and crush four tiers into the
-   right half. Equal segments are honest as long as they are labelled as tiers. */
 const TIERS = [
   { name: 'Novice', floor: 0 },
   { name: 'Apprentice', floor: 1000 },
@@ -147,93 +156,198 @@ function ladderFor(rating) {
   const within = next > floor ? (rating - floor) / (next - floor) : 0;
   return {
     tier: TIERS[i].name,
-    /* marker x = (i + (rating - tierFloor) / (nextFloor - tierFloor)) / 6 */
     markerPct: ((i + within) / TIERS.length) * 100,
     toNext: Math.max(0, next - rating),
     nextName: i + 1 < TIERS.length ? TIERS[i + 1].name : null,
   };
 }
 
-/* Rating bars in the standings share the chart's domain, so the bar and the
-   line are the same statement. */
 const BAR_MIN = 1390;
 const BAR_SPAN = 150;
 const barPct = (rating) => Math.max(0, Math.min(100, ((rating - BAR_MIN) / BAR_SPAN) * 100));
 
-/* ────────────────────────── the 7.2s clock (02-TIMELINE.json) ─────────────────
-   One clock drives every beat, which is the whole point of the choreography:
-   one event, three consequences, all inside 1.5s. Beats in ms. */
-const CYCLE = 7200;
+/* ────────────────────────── the clock ──────────────────────────
+   One cycle per ledger event. Beats in ms. The glide is well under the
+   branding guide's 0.5s ceiling for state changes plus a hold, and the
+   rating, ladder and standings all land inside 1.3s of the row arriving. */
+const CYCLE = 4200;
 const BEAT = {
-  rowWrite: [600, 1400],
-  rowType: [800, 1700],
-  rating: [1200, 2100],
-  ladder: [1400, 2000],
-  chart: [1800, 2600],
-  standings: [2600, 3300],
+  shift: [300, 1000],
+  type: [650, 1500],
+  rating: [900, 1600],
+  stand: [1400, 2000],
 };
-const PRE = { rating: 1474, weekDelta: 14, standRating: 1474, gap: 38, week: DOT };
-const POST = { rating: 1498, weekDelta: 38, standRating: 1498, gap: 14, week: '+24' };
+const DEFAULT_VISIBLE = 8;
+const ROW_TARGET_PX = 44;
 
 const clamp01 = (n) => (n < 0 ? 0 : n > 1 ? 1 : n);
 const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
 const progress = (t, [a, b]) => clamp01((t - a) / (b - a));
 const lerpInt = (from, to, p) => Math.round(from + (to - from) * p);
 
-/* The composed frame: what reduced motion and an out-of-view section resolve to.
-   Nothing at zero height or opacity, nothing mid-transition. */
-const COMPOSED = {
-  rowIn: true,
-  typed: 1,
-  rating: POST.rating,
-  weekDelta: POST.weekDelta,
-  toNext: ladderFor(POST.rating).toNext,
-  markerPct: ladderFor(POST.rating).markerPct,
-  chartExtended: true,
-  standRating: POST.standRating,
-  standWeek: POST.week,
-  gap: POST.gap,
-};
-
-function frameAt(t) {
-  const write = progress(t, BEAT.rowWrite);
+/**
+ * Everything React renders for cycle `c` at time `t` into it. `c` is an
+ * absolute, ever-increasing cycle count; the event entering in cycle c is
+ * sequence c + visible. The head row (top of the viewport) is floor(c + shift).
+ */
+function frameAt(c, t, visible) {
+  const shiftP = easeInOut(progress(t, BEAT.shift));
   const ratingP = easeInOut(progress(t, BEAT.rating));
-  const ladderP = easeInOut(progress(t, BEAT.ladder));
-  const standP = progress(t, BEAT.standings);
-  const rating = lerpInt(PRE.rating, POST.rating, ratingP);
-  const ladderRating = lerpInt(PRE.rating, POST.rating, ladderP);
-  const l = ladderFor(ladderRating);
+  const standP = progress(t, BEAT.stand);
+  const seq = c + visible;
+  const ev = eventAt(seq);
+  const prev = eventAt(seq - 1);
+  const counted = ratingP > 0;
+  const rating = lerpInt(ev.from, ev.to, ratingP);
+  const standRating = lerpInt(ev.from, ev.to, standP);
+  const l = ladderFor(rating);
   return {
-    rowIn: write > 0,
-    typed: progress(t, BEAT.rowType),
+    c,
+    head: c + (shiftP >= 1 ? 1 : 0),
+    typedChars: Math.round(ev.event.length * progress(t, BEAT.type)),
+    typingSeq: seq,
     rating,
-    weekDelta: lerpInt(PRE.weekDelta, POST.weekDelta, ratingP),
-    toNext: l.toNext,
+    lastDelta: counted ? ev.d : prev.d,
+    net: counted ? netOf(seq, visible) : netOf(seq - 1, visible),
     markerPct: l.markerPct,
-    chartExtended: progress(t, BEAT.chart) > 0,
-    standRating: lerpInt(PRE.standRating, POST.standRating, standP),
-    standWeek: standP > 0.5 ? POST.week : PRE.week,
-    gap: lerpInt(PRE.gap, POST.gap, standP),
+    toNext: l.toNext,
+    tier: l.tier,
+    nextName: l.nextName,
+    standRating,
+    standWeek: signed(standP > 0.5 ? ev.d : prev.d),
+    gap: LEADER - standRating,
   };
 }
 
+/** The composed frame: the peak event landed and fully typed. */
+const composedFor = (visible) => frameAt(PEAK - visible, CYCLE - 1, visible);
+
 const sameFrame = (a, b) =>
-  a.rowIn === b.rowIn &&
-  Math.round(a.typed * 60) === Math.round(b.typed * 60) &&
+  a.c === b.c &&
+  a.head === b.head &&
+  a.typedChars === b.typedChars &&
   a.rating === b.rating &&
-  a.weekDelta === b.weekDelta &&
-  a.toNext === b.toNext &&
-  Math.round(a.markerPct * 10) === Math.round(b.markerPct * 10) &&
-  a.chartExtended === b.chartExtended &&
+  a.lastDelta === b.lastDelta &&
+  a.net === b.net &&
   a.standRating === b.standRating &&
-  a.standWeek === b.standWeek &&
-  a.gap === b.gap;
+  a.standWeek === b.standWeek;
+
+/* ────────────────────────── chart ──────────────────────────
+   Memoised on cohort alone, so the ledger clock can re-render the section as
+   often as it likes without the chart redrawing. The key is the cohort: the
+   400ms draw replays when the visitor picks a cohort, and never otherwise. */
+const RatingChart = memo(function RatingChart({ cohort }) {
+  const active = COHORTS[cohort];
+  const data = useMemo(
+    () => WEEKS.map((wk, i) => ({ wk, you: YOU_SERIES[i], a: active.a[i], b: active.b[i] })),
+    [active],
+  );
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart key={cohort} data={data}>
+        <defs>
+          <linearGradient id="sledFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--emerald)" stopOpacity={0.25} />
+            <stop offset="100%" stopColor="var(--emerald)" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid
+          strokeDasharray={CHART.gridDash}
+          stroke={CHART.gridStroke}
+          vertical={false}
+        />
+        <XAxis
+          dataKey="wk"
+          tick={CHART.tick}
+          axisLine={{ stroke: 'var(--border-primary)' }}
+          tickLine={false}
+          interval="preserveStartEnd"
+        />
+        <YAxis
+          tick={CHART.tick}
+          axisLine={false}
+          tickLine={false}
+          width={44}
+          domain={['dataMin - 16', 'dataMax + 16']}
+        />
+        <Tooltip
+          content={({ active: isActive, payload }) => {
+            if (!isActive || !payload?.length) return null;
+            return (
+              <div className="sled-chart-tooltip">
+                <div className="sled-chart-tooltip-date">{payload[0].payload.wk}</div>
+                {payload.map((entry) => (
+                  <div
+                    key={entry.dataKey}
+                    className="sled-chart-tooltip-val"
+                    style={{ color: entry.stroke }}
+                  >
+                    {entry.name}: {entry.value}
+                  </div>
+                ))}
+              </div>
+            );
+          }}
+        />
+        <Area
+          type="monotone"
+          dataKey="you"
+          name="You"
+          stroke="var(--emerald)"
+          strokeWidth={2}
+          fill="url(#sledFill)"
+          isAnimationActive
+          animationDuration={CHART.animationDuration}
+        />
+        <Area
+          type="monotone"
+          dataKey="a"
+          name="Leader"
+          stroke="var(--text-faint)"
+          strokeWidth={1.5}
+          fill="transparent"
+          isAnimationActive={false}
+        />
+        <Area
+          type="monotone"
+          dataKey="b"
+          name="Median"
+          stroke="var(--text-ghost)"
+          strokeWidth={1.5}
+          fill="transparent"
+          isAnimationActive={false}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
+  );
+});
+
+/* ────────────────────────── section ────────────────────────── */
 
 export function SocialLedgerSection() {
   const [cohort, setCohort] = useState('friends');
-  const [frame, setFrame] = useState(COMPOSED);
+  const [geom, setGeom] = useState({ visible: DEFAULT_VISIBLE, rowH: null });
+  const [frame, setFrame] = useState(() => composedFor(DEFAULT_VISIBLE));
+
   const sectionRef = useRef(null);
-  const frameRef = useRef(COMPOSED);
+  const viewportRef = useRef(null);
+  const trackRef = useRef(null);
+  const frameRef = useRef(frame);
+  const geomRef = useRef(geom);
+  /* Continuous position in rows (cycle + glide progress), written by the rAF
+     loop and read by the layout effect so the transform is always relative
+     to the head row React actually rendered. */
+  const posRef = useRef(frame.head);
+  const renderedHeadRef = useRef(frame.head);
+
+  const applyTransform = useCallback(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const rowH = geomRef.current.rowH || ROW_TARGET_PX;
+    const shift = clamp01(posRef.current - renderedHeadRef.current);
+    track.style.transform = `translate3d(0, ${(-shift * rowH).toFixed(2)}px, 0)`;
+    track.style.setProperty('--sled-shift', shift.toFixed(3));
+  }, []);
 
   const setFrameIfChanged = useCallback((next) => {
     if (sameFrame(frameRef.current, next)) return;
@@ -241,29 +355,69 @@ export function SocialLedgerSection() {
     setFrame(next);
   }, []);
 
-  /* Ticks only in viewport, and the loop pauses rather than unmounting, so the
-     section is never torn down and rebuilt on a scroll past. */
+  /* After every render, re-anchor the glide to the head row now in the DOM.
+     This is what makes the head advance invisible: the frame that drops the
+     top row also drops the one-row offset. */
+  useLayoutEffect(() => {
+    renderedHeadRef.current = frame.head;
+    applyTransform();
+  }, [frame.head, geom.rowH, applyTransform]);
+
+  /* The ledger fills whatever height the grid gives its viewport (the
+     standings sheet sets it on desktop), in a whole number of equal rows. */
+  useEffect(() => {
+    const vp = viewportRef.current;
+    if (!vp || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(([entry]) => {
+      const h = entry.contentRect.height;
+      if (!h) return;
+      const visible = Math.max(4, Math.min(14, Math.round(h / ROW_TARGET_PX)));
+      const rowH = h / visible;
+      const prev = geomRef.current;
+      if (prev.visible === visible && Math.abs((prev.rowH || 0) - rowH) < 0.5) return;
+      const next = { visible, rowH };
+      geomRef.current = next;
+      vp.style.setProperty('--sled-lrow', `${rowH.toFixed(2)}px`);
+      setGeom(next);
+    });
+    ro.observe(vp);
+    return () => ro.disconnect();
+  }, []);
+
+  /* The clock. Runs only in view, pauses rather than unmounting, and resolves
+     to the composed frame under reduced motion. */
   useEffect(() => {
     const node = sectionRef.current;
     if (!node || typeof window === 'undefined') return undefined;
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-      setFrameIfChanged(COMPOSED);
-      return undefined;
-    }
+    const visible = geom.visible;
+    const composed = composedFor(visible);
+    posRef.current = composed.head;
+    setFrameIfChanged(composed);
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined;
 
+    /* Start one cycle after the composed frame, so the first thing that moves
+       is the next event arriving, never a jump backwards. */
+    const startCycle = composed.c + 1;
     let raf = 0;
-    let start = 0;
     let running = false;
+    let elapsed = 0;
+    let last = 0;
 
     const step = (now) => {
-      if (!start) start = now;
-      setFrameIfChanged(frameAt((now - start) % CYCLE));
+      if (last) elapsed += Math.min(64, now - last);
+      last = now;
+      const n = Math.floor(elapsed / CYCLE);
+      const t = elapsed - n * CYCLE;
+      const c = startCycle + n;
+      posRef.current = c + easeInOut(progress(t, BEAT.shift));
+      setFrameIfChanged(frameAt(c, t, visible));
+      applyTransform();
       raf = window.requestAnimationFrame(step);
     };
     const run = () => {
       if (running) return;
       running = true;
-      start = 0;
+      last = 0;
       raf = window.requestAnimationFrame(step);
     };
     const pause = () => {
@@ -284,42 +438,21 @@ export function SocialLedgerSection() {
       io.disconnect();
       pause();
     };
-  }, [setFrameIfChanged]);
+  }, [geom.visible, setFrameIfChanged, applyTransform]);
 
   const active = COHORTS[cohort];
+  const visible = geom.visible;
 
-  /* The chart's beat is the existing recharts draw, not a custom path
-     animation: the data gains its eighth point on the master clock and the key
-     remount replays the 400ms draw, so the rating tick and the chart extension
-     fire together and the causal read holds. */
-  const points = frame.chartExtended ? 8 : 7;
-  const chartData = useMemo(
-    () =>
-      WEEKS.slice(0, points).map((wk, i) => ({
-        wk,
-        you: YOU_SERIES[i],
-        a: active.a[i],
-        b: active.b[i],
-      })),
-    [active, points],
-  );
-
-  const typedEvent = useMemo(() => {
-    const full = LEDGER[0].event;
-    const n = Math.round(full.length * frame.typed);
-    return full.slice(0, n);
-  }, [frame.typed]);
-
-  const ladder = ladderFor(frame.rating);
+  /* visible + 1 rows: the extra one waits below the viewport for its turn. */
+  const rows = [];
+  for (let k = 0; k <= visible; k += 1) {
+    const seq = frame.head + k;
+    rows.push({ seq, ev: eventAt(seq), leaving: k === 0, entering: k === visible });
+  }
 
   return (
     <section className="sled-section sled" aria-labelledby="sled-heading" ref={sectionRef}>
       <div className="sled-inner">
-        {/* Centred header, the same shape every other landing section uses
-            (Getting Started is the reference: section-eyebrow over a centred
-            h2). The handoff's left-aligned masthead, its hairline and its 2px
-            rule are gone; the SEASON 4 / LIVE stamp moved to the standings
-            sheet head so there is one live dot in one place. */}
         <div className="sled-head">
           <p className="section-eyebrow lf-mono">Social investing</p>
           <h2 id="sled-heading" className="sled-heading">
@@ -339,19 +472,20 @@ export function SocialLedgerSection() {
                 {frame.rating}
               </div>
               <div className="sled-rating-meta">
-                <span className="sled-rating-delta">+{frame.weekDelta} this week</span>
-                <span className="sled-rating-tier">{ladder.tier}</span>
+                <span
+                  className={`sled-rating-delta${frame.lastDelta < 0 ? ' sled-rating-delta--neg' : ''}`}
+                >
+                  {signed(frame.lastDelta)} latest
+                </span>
+                <span className="sled-rating-tier">{frame.tier}</span>
               </div>
             </div>
 
-            {/* The ladder is pinned to the bottom of the column, so its baseline
-                meets the chart's x-axis labels. That shared baseline is what
-                stops the two columns drifting. */}
             <div className="sled-ladder">
               <div className="sled-ladder-caption">
                 <span>Tier</span>
                 <span className="sled-ladder-next">
-                  {frame.toNext} to {ladder.nextName || 'cap'}
+                  {frame.toNext} to {frame.nextName || 'cap'}
                 </span>
               </div>
               <div className="sled-ladder-track">
@@ -371,9 +505,6 @@ export function SocialLedgerSection() {
                   aria-hidden="true"
                 />
               </div>
-              {/* Labels are centred in their segments, not placed at the ticks:
-                  they name bands rather than points, and tick-anchored labels
-                  collide at Master and Grandmaster under about 620px. */}
               <div className="sled-ladder-labels" aria-hidden="true">
                 {TIERS.map((t) => (
                   <span key={t.name} className="sled-ladder-label">
@@ -402,86 +533,8 @@ export function SocialLedgerSection() {
                 <span className="sled-chart-vs">{active.caption}</span>
               </div>
             </div>
-
-            {/* key remounts the chart so the 400ms draw restarts on a cohort
-                switch and on the clock's extension beat. */}
             <div className="sled-chart-wide">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart key={`${cohort}-${points}`} data={chartData}>
-                  <defs>
-                    <linearGradient id="sledFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--emerald)" stopOpacity={0.25} />
-                      <stop offset="100%" stopColor="var(--emerald)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid
-                    strokeDasharray={CHART.gridDash}
-                    stroke={CHART.gridStroke}
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="wk"
-                    tick={CHART.tick}
-                    axisLine={{ stroke: 'var(--border-primary)' }}
-                    tickLine={false}
-                    interval="preserveStartEnd"
-                  />
-                  <YAxis
-                    tick={CHART.tick}
-                    axisLine={false}
-                    tickLine={false}
-                    width={44}
-                    domain={['dataMin - 16', 'dataMax + 16']}
-                  />
-                  <Tooltip
-                    content={({ active: isActive, payload }) => {
-                      if (!isActive || !payload?.length) return null;
-                      return (
-                        <div className="sled-chart-tooltip">
-                          <div className="sled-chart-tooltip-date">{payload[0].payload.wk}</div>
-                          {payload.map((entry) => (
-                            <div
-                              key={entry.dataKey}
-                              className="sled-chart-tooltip-val"
-                              style={{ color: entry.stroke }}
-                            >
-                              {entry.name}: {entry.value}
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="you"
-                    name="You"
-                    stroke="var(--emerald)"
-                    strokeWidth={2}
-                    fill="url(#sledFill)"
-                    isAnimationActive
-                    animationDuration={CHART.animationDuration}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="a"
-                    name="Leader"
-                    stroke="var(--text-faint)"
-                    strokeWidth={1.5}
-                    fill="transparent"
-                    isAnimationActive={false}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="b"
-                    name="Median"
-                    stroke="var(--text-ghost)"
-                    strokeWidth={1.5}
-                    fill="transparent"
-                    isAnimationActive={false}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              <RatingChart cohort={cohort} />
             </div>
           </div>
         </div>
@@ -496,44 +549,50 @@ export function SocialLedgerSection() {
               <span className="sled-hide-sm">Rating</span>
               <span className="sled-ta-r">When</span>
             </div>
-            <div className="sled-rows">
-              {LEDGER.slice(0, LEDGER_SHOWN).map((row, i) => {
-                const isNew = i === 0;
-                const rated = row.delta !== DOT;
-                const neg = row.delta.startsWith('-');
-                return (
-                  <div
-                    key={row.event}
-                    className={[
-                      'sled-tr',
-                      'sled-tr--ledger',
-                      isNew && 'sled-tr--new',
-                      isNew && frame.rowIn && 'is-in',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                  >
-                    <span
-                      className={`sled-delta${rated ? '' : ' sled-delta--none'}${neg ? ' sled-delta--neg' : ''}`}
+            {/* The conveyor. The viewport clips; the track glides. aria-live
+                is off on purpose: a looping fixture announcing itself every
+                four seconds would be noise, and the rows are all in the DOM. */}
+            <div className="sled-viewport" ref={viewportRef}>
+              <div className="sled-track" ref={trackRef}>
+                {rows.map(({ seq, ev, leaving, entering }) => {
+                  const typing = seq === frame.typingSeq && frame.typedChars < ev.event.length;
+                  const text =
+                    seq === frame.typingSeq ? ev.event.slice(0, frame.typedChars) : ev.event;
+                  return (
+                    <div
+                      key={seq}
+                      className={[
+                        'sled-tr',
+                        'sled-tr--ledger',
+                        'sled-tr--roll',
+                        leaving && 'sled-tr--leaving',
+                        entering && 'sled-tr--entering',
+                        seq === frame.typingSeq && 'sled-tr--latest',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                      aria-hidden={entering ? 'true' : undefined}
                     >
-                      {row.delta}
-                    </span>
-                    <span className="sled-row-body">
-                      {isNew ? typedEvent : row.event}
-                      {isNew && frame.typed < 1 ? (
-                        <span className="sled-caret" aria-hidden="true" />
-                      ) : null}
-                    </span>
-                    <span className="sled-num sled-hide-sm">
-                      {row.from ? `${row.from} ${DOT} ${row.to}` : DOT}
-                    </span>
-                    <span className="sled-time sled-ta-r">{row.when}</span>
-                  </div>
-                );
-              })}
+                      <span className={`sled-delta${ev.d < 0 ? ' sled-delta--neg' : ''}`}>
+                        {signed(ev.d)}
+                      </span>
+                      <span className="sled-row-body">
+                        {text}
+                        {typing ? <span className="sled-caret" aria-hidden="true" /> : null}
+                      </span>
+                      <span className="sled-num sled-hide-sm">
+                        {ev.from} {DOT} {ev.to}
+                      </span>
+                      <span className="sled-time sled-ta-r">{ev.when}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
             <div className="sled-footrow">
-              <span>Net this week +{frame.weekDelta}</span>
+              <span>
+                Net {signed(frame.net)} {DOT} last {visible}
+              </span>
               <span className="sled-ta-r">Full ledger</span>
             </div>
           </div>
@@ -557,26 +616,19 @@ export function SocialLedgerSection() {
                 const rating = p.you ? frame.standRating : p.rating;
                 const week = p.you ? frame.standWeek : p.week;
                 const neg = week.startsWith('-');
-                const rated = week !== DOT && week !== 'NEW';
                 return (
                   <div
                     key={p.rank}
                     className={`sled-tr sled-tr--stand${p.you ? ' sled-tr--you' : ''}`}
                   >
                     <span className="sled-tile-rank">{p.rank}</span>
-                    <span className="sled-tile-name">
-                      {p.name}
-                      {p.handle ? <span className="sled-tile-handle"> {p.handle}</span> : null}
-                    </span>
+                    <span className="sled-tile-name">{p.name}</span>
                     <span
-                      className={`sled-tile-delta${rated && !neg ? ' sled-tile-delta--up' : ''}${neg ? ' sled-tile-delta--down' : ''}${!rated ? ' sled-tile-delta--flat' : ''}`}
+                      className={`sled-tile-delta${neg ? ' sled-tile-delta--down' : ' sled-tile-delta--up'}`}
                     >
                       {week}
                     </span>
                     <span className="sled-tile-elo sled-ta-r">{rating}</span>
-                    {/* Derived from the rating alone, on the chart's domain, so
-                        it invents nothing and gives the standings a reason to be
-                        taller than a list. */}
                     <span className="sled-bar" aria-hidden="true">
                       <span className="sled-bar-tier">{p.tier}</span>
                       <span className="sled-bar-track">
@@ -594,7 +646,6 @@ export function SocialLedgerSection() {
           </div>
         </div>
 
-        {/* ── section foot ── */}
         <div className="sled-foot">
           <p className="sled-foot-note">
             Ratings and standings shown here are illustrative sample data, not a live leaderboard

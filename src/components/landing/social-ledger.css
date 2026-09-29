@@ -141,10 +141,13 @@
   flex-direction: column;
   gap: 10px;
 }
-/* Size only: the spec's hero clamp. This IS the layout change. */
+/* Size only. Brought down from clamp(62px, 8.6vw, 124px), which rendered the
+   figure at 124px on a 1440 screen and dwarfed everything else in the zone.
+   The ladder is still pinned to the column's bottom by space-between, so the
+   shared baseline with the chart's x axis holds at the smaller size. */
 .sled-rating-figure {
   font-family: var(--font-mono);
-  font-size: clamp(62px, 8.6vw, 124px);
+  font-size: clamp(44px, 5vw, 76px);
   font-weight: 700;
   letter-spacing: -0.045em;
   line-height: 0.88;
@@ -163,6 +166,9 @@
   font-size: clamp(13px, 1.15vw, 17px);
   font-weight: 600;
   color: var(--emerald);
+}
+.sled-rating-delta--neg {
+  color: var(--negative);
 }
 .sled-rating-tier {
   font-family: var(--font-mono);
@@ -418,23 +424,45 @@
   text-align: right;
 }
 
-/* The new line writes itself: height animates so the rows below are pushed
-   down, rather than fading in over them. */
-.sled-tr--new {
+/* ── the ledger conveyor ──────────────────────────────────────────────
+   The viewport is stretched by the grid to the standings sheet's height and
+   clips; the track inside it glides up one row per cycle on the compositor.
+   Row height is --sled-lrow, written by the component as the viewport height
+   divided into a whole number of rows, so the last row always lands exactly
+   on the sheet's foot rule. --sled-shift (0 to 1) is the glide's progress,
+   written per frame by the component; the leaving row fades on it and the
+   entering row fades in on it. Nothing here animates layout. */
+.sled-viewport {
+  position: relative;
+  flex: 1 1 0;
+  min-height: calc(var(--sled-row) * 5);
   overflow: hidden;
-  min-height: 0;
-  max-height: 0;
-  opacity: 0;
-  border-bottom-color: transparent;
-  transition:
-    max-height 800ms ease,
-    opacity 800ms ease;
 }
-.sled-tr--new.is-in {
-  max-height: calc(var(--sled-row) * 2);
-  min-height: var(--sled-row);
-  opacity: 1;
-  border-bottom-color: var(--sled-dot);
+.sled-track {
+  position: absolute;
+  inset: 0 0 auto 0;
+  will-change: transform;
+  --sled-shift: 0;
+}
+.sled-tr--roll {
+  height: var(--sled-lrow, var(--sled-row));
+  min-height: 0;
+  box-sizing: border-box;
+}
+.sled-tr--leaving {
+  opacity: clamp(0, calc(1 - var(--sled-shift) * 1.6), 1);
+}
+.sled-tr--entering {
+  opacity: var(--sled-shift);
+}
+/* The newest row carries a hairline of the positive wash while it is the
+   latest, so the eye finds the event that moved the rating. */
+.sled-tr--latest {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--emerald) 7%, transparent),
+    transparent 70%
+  );
 }
 .sled-caret {
   display: inline-block;
@@ -452,10 +480,6 @@
   font-size: 12px;
   font-weight: 700;
   color: var(--emerald);
-}
-.sled-delta--none {
-  color: var(--text-faint);
-  font-weight: 400;
 }
 .sled-delta--neg {
   color: var(--negative);
@@ -509,22 +533,11 @@
 .sled-tr--you .sled-tile-name {
   font-weight: 700;
 }
-.sled-tile-handle {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-weight: 400;
-  font-size: 11px;
-  color: var(--text-muted);
-}
 .sled-tile-delta {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 11px;
   font-weight: 600;
-}
-.sled-tile-delta--flat {
-  color: var(--text-faint);
-  font-weight: 400;
 }
 .sled-tile-delta--up {
   color: var(--emerald);
@@ -643,12 +656,8 @@
   .sled-caret {
     animation: none;
   }
-  .sled-tr--new {
-    max-height: none;
-    min-height: var(--sled-row);
-    opacity: 1;
-    border-bottom-color: var(--sled-dot);
-    transition: none;
+  .sled-track {
+    will-change: auto;
   }
   .sled-ladder-marker,
   .sled-bar-fill {
@@ -665,9 +674,15 @@
   .sled-sheets {
     grid-template-columns: minmax(0, 1fr);
   }
-  /* Nothing to match once stacked, so entries take their natural height. */
+  /* Nothing to match once stacked, so entries take their natural height and
+     the ledger viewport takes an explicit seven rows instead of the height
+     the standings sheet used to hand it. */
   .sled-tr--stand {
     flex: 0 0 auto;
+  }
+  .sled-viewport {
+    flex: 0 0 auto;
+    height: calc(var(--sled-row) * 7);
   }
   .sled-ratingcol {
     gap: 20px;
