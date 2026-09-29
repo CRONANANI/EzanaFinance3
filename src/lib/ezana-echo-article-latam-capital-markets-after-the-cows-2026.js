@@ -142,11 +142,6 @@ export const latamCapitalMarketsAfterTheCows2026 = {
           change: 'Dec 2023 vs mid-2026 [VERIFY: INDEC]',
         },
         {
-          label: 'B3 IPO drought',
-          value: '45 → 0',
-          change: '2021 IPOs vs 2022-2024 [VERIFY: B3]',
-        },
-        {
           label: 'IMF program, April 2025',
           value: '$20B',
           change: 'Extended Fund Facility [VERIFY: IMF]',

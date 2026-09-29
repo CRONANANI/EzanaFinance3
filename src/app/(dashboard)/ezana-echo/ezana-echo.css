@@ -1779,19 +1779,30 @@ body.light-mode .echo-article-page .echo-callout-context {
   color: #64748b;
 }
 
-/* Stat grid â€” row of small stat tiles */
+/* Stat grid: exactly four tiles, centred, every row aligned across tiles. */
 .echo-article-page .echo-stat-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.75rem;
-  margin: 1.5rem 0;
+  margin: 1.5rem auto;
+  justify-content: center;
+  align-items: stretch;
+}
+@media (max-width: 720px) {
+  .echo-article-page .echo-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .echo-article-page .echo-stat-tile {
+  display: flex;
+  flex-direction: column;
+  min-height: 7.25rem;
   padding: 1rem;
-  border-radius: 10px;
-  background: rgba(16, 185, 129, 0.03);
-  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--emerald) 3%, transparent);
+  border: 1px solid var(--emerald-border);
+  text-align: center;
 }
 
 .echo-article-page .echo-stat-label {
@@ -1799,36 +1810,39 @@ body.light-mode .echo-article-page .echo-callout-context {
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #9ca3af;
+  color: var(--text-muted);
+  line-height: 1.25;
+  /* Two lines reserved so the value row starts at the same y in every tile. */
+  min-height: calc(0.7rem * 1.25 * 2);
   margin-bottom: 0.4rem;
 }
 
 .echo-article-page .echo-stat-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1.25rem;
   font-weight: 700;
-  color: #f0f6fc;
-  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
   line-height: 1.1;
+  min-height: calc(1.25rem * 1.1);
 }
 
 .echo-article-page .echo-stat-change {
+  margin-top: auto;
+  padding-top: 0.25rem;
   font-size: 0.8rem;
-  color: #10b981;
-  margin-top: 0.25rem;
   font-weight: 600;
+  color: var(--emerald);
+  line-height: 1.2;
+  min-height: calc(0.8rem * 1.2);
+}
+.echo-article-page .echo-stat-change--empty {
+  visibility: hidden;
 }
 
 body.light-mode .echo-article-page .echo-stat-tile {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.08);
-}
-
-body.light-mode .echo-article-page .echo-stat-label {
-  color: #64748b;
-}
-
-body.light-mode .echo-article-page .echo-stat-value {
-  color: #0f172a;
+  background: var(--surface-card);
+  border-color: var(--border-primary);
 }
 
 /* Chart figure */

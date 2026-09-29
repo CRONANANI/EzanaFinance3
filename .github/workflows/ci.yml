@@ -84,6 +84,13 @@ jobs:
         # two inline links.
         run: npm run check:help-links
 
+      - name: Echo stat grids carry exactly four stats
+        # The reader renders one centred row of four stat tiles and caps at
+        # four; every stat-grid block in an Echo article module must carry
+        # exactly 4 (docs/ECHO_ARTICLE_AUTHORING.md 5a). The frozen
+        # peter-thiel-2026 page is exempt.
+        run: npm run check:echo-stats
+
       - name: Architecture rules (dependency-cruiser)
         # No dependency cycles; presentation layer (components/hooks/contexts)
         # must not reach the server Supabase surface, even transitively.

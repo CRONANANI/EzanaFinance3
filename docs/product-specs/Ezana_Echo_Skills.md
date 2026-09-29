@@ -87,7 +87,7 @@ Articles use `contentBlocks` — an array of typed blocks that the `EchoArticleC
 ```
 
 - **Placement**: One stat-grid near the top of the article (after the opening paragraph) summarizing key data points.
-- **Count**: 3–5 stats per grid.
+- **Count**: exactly 4 stats per grid (enforced by `npm run check:echo-stats`; the frozen peter-thiel-2026 page is exempt). The article renders at most four tiles in one centred row.
 
 ### `chart`
 
@@ -147,7 +147,7 @@ Articles use `contentBlocks` — an array of typed blocks that the `EchoArticleC
 ### Required Structure (in order)
 
 1. **Opening paragraph** — State the core thesis with the most important data point. No preamble.
-2. **Stat grid** — 3–5 key metrics summarizing the article.
+2. **Stat grid**: exactly 4 key metrics summarizing the article.
 3. **Section 1** — The primary story (deepest analysis, 3–5 paragraphs + chart).
 4. **Section 2** — Secondary story or supporting analysis (2–3 paragraphs + chart).
 5. **Section 3** — Third dimension or broader context (2–3 paragraphs).

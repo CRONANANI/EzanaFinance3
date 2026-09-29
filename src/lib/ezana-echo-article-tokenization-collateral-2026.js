@@ -40,11 +40,6 @@ export const tokenizationCollateral2026 = {
           change: 'African Development Bank',
         },
         {
-          label: 'Stablecoin volume, 2025 (raw)',
-          value: '$33T',
-          change: 'vs $25.5T Visa+Mastercard combined',
-        },
-        {
           label: 'Tokenized RWAs today (ex-stablecoins)',
           value: '$30B+',
           change: '~30x since March 2024',

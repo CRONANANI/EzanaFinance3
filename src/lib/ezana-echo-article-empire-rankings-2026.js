@@ -46,11 +46,6 @@ export const empireRankings2026 = {
           change: 'Post-war peak of American output dominance',
         },
         {
-          label: 'British Empire, 1913',
-          value: '~23%',
-          change: 'of world population under one flag',
-        },
-        {
           label: 'USD share of global FX reserves',
           value: '58%',
           change: 'IMF COFER 2025 · down from 71% in 1999',

@@ -26,7 +26,6 @@ export const nvidiaSecondMostValuableArticle = {
         { label: 'Gold', value: '$31.19T', change: '#1 — 5.8x larger' },
         { label: 'Apple (AAPL)', value: '$4.39T', change: 'Overtaken — now #4' },
         { label: 'Silver', value: '$4.16T', change: 'Overtaken — now #5' },
-        { label: 'NVDA 3-Year Gain', value: '~5x', change: 'From <$1T to $5.34T' },
       ],
     },
     { type: 'heading', text: 'The new leaderboard: AI displaces consumer tech', level: 2 },

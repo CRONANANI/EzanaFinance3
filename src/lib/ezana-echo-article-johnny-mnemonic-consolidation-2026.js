@@ -31,7 +31,6 @@ export const johnnyMnemonicConsolidation2026 = {
       stats: [
         { label: 'Global M&A, H1 2026', value: '$2.8T', change: '+48% YoY — record (LSEG)' },
         { label: 'Tech deal value, H1 2026', value: '$649B', change: 'Led all sectors' },
-        { label: 'Deals above $10B closed, H1', value: '47', change: '$1.3T+ combined' },
         { label: 'Tech deals with an AI component', value: '~50%', change: 'Up from ~25% in 2024' },
         {
           label: 'Orgs consolidating security vendors',

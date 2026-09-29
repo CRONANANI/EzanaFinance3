@@ -36,7 +36,6 @@ export const africaRefiningArticle2026 = {
         { label: 'Est. Nigeria FX savings', value: '$10B/yr', change: 'From cutting fuel imports' },
         { label: 'Former import reliance', value: '>80%', change: 'Refined product, historically' },
         { label: 'Africa top-20 total', value: '3.5M bpd', change: 'Combined refining capacity' },
-        { label: 'Planned Dangote scale', value: '1.4M bpd', change: 'Would be world’s largest' },
       ],
     },
 

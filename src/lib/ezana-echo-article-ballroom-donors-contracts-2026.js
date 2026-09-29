@@ -38,7 +38,6 @@ export const ballroomDonorsContracts2026 = {
           value: '16 of 27',
           change: 'Actions active or suspended',
         },
-        { label: 'Ballroom project cost', value: '$400M', change: 'Privately funded' },
       ],
     },
     {

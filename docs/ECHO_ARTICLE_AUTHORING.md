@@ -98,6 +98,16 @@ Beyond the original figure types, six branded chart types are available —
 figure's data must be justified by the article's own text (the honesty rule
 above); never invent values to fill a chart type.
 
+## 5a. Stat grid: exactly 4 stats
+
+The `stat-grid` block near the top of an article carries **exactly 4 stats**,
+not 3 to 5. The reader renders them as one centred row of four equal tiles
+(two by two on phones), with label, value and change aligned across tiles, and
+never renders more than four. Every value must be justified by the article's own
+text. `npm run check:echo-stats` (`scripts/check-echo-stat-grid.mjs`) fails any
+`stat-grid` whose `stats` array is not length 4; the frozen
+`ezana-echo-article-peter-thiel-2026.js` is exempt.
+
 ## 6. Partner byline (optional)
 
 Paid content partners declare a top-level `partner` field on the article

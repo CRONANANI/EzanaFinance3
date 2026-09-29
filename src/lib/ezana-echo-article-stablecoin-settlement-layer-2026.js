@@ -94,11 +94,6 @@ export const stablecoinSettlementLayer2026 = {
           value: '$120B+',
           change: 'Top-20 holder, sovereigns included',
         },
-        {
-          label: 'Largest stablecoin acquisition',
-          value: '$1.8B',
-          change: 'Mastercard-BVNK, March 2026',
-        },
       ],
     },
 

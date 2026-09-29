@@ -26,7 +26,6 @@ export const africaBillionCompaniesArticle = {
         { label: 'Southern Africa', value: '160', change: 'South Africa: 147' },
         { label: 'Northern Africa', value: '73', change: 'Egypt: 33, Morocco: 20' },
         { label: 'Western Africa', value: '35', change: 'Nigeria: 23' },
-        { label: 'Foreign-HQ (no local)', value: '54', change: 'Operating but not domiciled' },
       ],
     },
     {

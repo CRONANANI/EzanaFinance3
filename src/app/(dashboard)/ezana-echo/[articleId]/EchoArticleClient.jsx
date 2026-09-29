@@ -374,18 +374,25 @@ function ArticleBlock({ block }) {
         </div>
       );
 
-    case 'stat-grid':
+    case 'stat-grid': {
+      /* Exactly four tiles, and every tile renders all three rows (the change
+         slot is held open when empty) so the green line sits at the same y in
+         all four. */
+      const tiles = (block.stats || []).slice(0, 4);
       return (
-        <div className="echo-stat-grid">
-          {block.stats.map((s, i) => (
-            <div key={i} className="echo-stat-tile">
+        <div className="echo-stat-grid" role="list">
+          {tiles.map((s, i) => (
+            <div key={i} className="echo-stat-tile" role="listitem">
               <div className="echo-stat-label">{s.label}</div>
               <div className="echo-stat-value">{s.value}</div>
-              {s.change && <div className="echo-stat-change">{s.change}</div>}
+              <div className={`echo-stat-change${s.change ? '' : ' echo-stat-change--empty'}`}>
+                {s.change || '\u00a0'}
+              </div>
             </div>
           ))}
         </div>
       );
+    }
 
     case 'chart':
       return <ArticleChart {...block} />;

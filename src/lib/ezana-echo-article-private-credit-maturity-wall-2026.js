@@ -144,11 +144,6 @@ export const privateCreditMaturityWallArticle2026 = {
           value: '$500B+',
           change: 'Committed, undeployed (mid-2025)',
         },
-        {
-          label: 'BDC sector size',
-          value: '~$400B',
-          change: 'First-ever net outflow in early 2026',
-        },
       ],
     },
     { type: 'heading', text: 'The maturity profile is back-loaded by design', level: 2 },

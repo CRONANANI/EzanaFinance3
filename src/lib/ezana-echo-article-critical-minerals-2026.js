@@ -79,7 +79,6 @@ export const criticalMineralsArticle2026 = {
         { label: 'Phosphate — Morocco', value: '69%', change: 'Fertilizer’s single chokepoint' },
         { label: 'Cobalt — DR Congo', value: '~50%', change: 'Half of the world’s reserves' },
         { label: 'Rare earths — China', value: '~48%', change: '44.0 Mt of 91.9 Mt (USGS)' },
-        { label: 'Nickel — Indonesia', value: '44%', change: 'The battery-metal anchor' },
       ],
     },
     { type: 'heading', text: 'The concentration map', level: 2 },
