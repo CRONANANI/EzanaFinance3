@@ -44,3 +44,4 @@ app-legacy/
 # pages built from them, so they must round-trip exactly; reformatting them
 # makes the repo copy differ from what was handed over.
 docs/design/
+src/lib/politicians/legislators-current.json

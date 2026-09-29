@@ -1,0 +1,298 @@
+/* Politician Tracker additions. Scoped `ptk-`; the sheet itself is the shared
+   .dsc system (disclosures.css). Sans for words, mono (.dsc-mn) for figures.
+   House is emerald, Senate is --info: told apart by hue and lightness. */
+.ptk-sub {
+  margin: 8px auto 0;
+  max-width: 56ch;
+  font-size: 14px;
+  color: var(--dsc-muted);
+}
+.ptk-body {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 30px var(--dsc-gutter) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.ptk-card {
+  border: 1px solid var(--dsc-border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  min-width: 0;
+}
+.ptk-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.ptk-compare {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 20px;
+}
+.ptk-chart {
+  height: 180px;
+}
+.ptk-swatch--house {
+  background: var(--emerald);
+}
+.ptk-swatch--senate {
+  background: var(--info);
+}
+.ptk-versus {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+.ptk-vs-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 64px 1fr 64px;
+  align-items: center;
+  gap: 10px;
+}
+.ptk-vs-fig {
+  font-weight: 600;
+  font-size: 13px;
+}
+.ptk-vs-fig--r {
+  text-align: right;
+}
+.ptk-vs-bar {
+  display: flex;
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--dsc-rule);
+}
+.ptk-vs-house {
+  background: var(--emerald);
+}
+.ptk-vs-senate {
+  background: var(--info);
+}
+.ptk-note {
+  margin: 14px 0 0;
+  font-size: 11.5px;
+  color: var(--dsc-faint);
+}
+.ptk-toolbar {
+  display: flex;
+  align-items: end;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.ptk-search {
+  position: relative;
+  flex: 1 1 320px;
+  max-width: 420px;
+}
+.ptk-search .bi {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--dsc-faint);
+  pointer-events: none;
+}
+.ptk-search .dsc-input {
+  padding-left: 34px;
+}
+.ptk-sort {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+}
+.ptk-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+.ptk-scroll {
+  overflow-x: auto;
+}
+.ptk-row {
+  cursor: pointer;
+}
+.ptk-row:hover td {
+  background: var(--dsc-pos-row);
+}
+.ptk-row:focus-visible {
+  outline: 2px solid var(--dsc-pos-mark);
+  outline-offset: -2px;
+}
+.ptk-who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.ptk-who-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ptk-name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ptk-place {
+  font-size: 10.5px;
+  color: var(--dsc-faint);
+}
+.ptk-shot {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 2px solid var(--border-primary);
+  background: var(--dsc-pos-wash);
+  color: var(--dsc-pos);
+  font-weight: 700;
+  overflow: hidden;
+}
+.ptk-shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+.ptk-chamber {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+.ptk-chamber--house {
+  color: var(--dsc-pos);
+  background: var(--dsc-pos-wash);
+  border-color: var(--dsc-pos-field-line);
+}
+.ptk-chamber--senate {
+  color: var(--info);
+  background: color-mix(in srgb, var(--info) 12%, transparent);
+  border-color: color-mix(in srgb, var(--info) 40%, transparent);
+}
+.ptk-tks {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.ptk-tk {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: var(--dsc-r-chip);
+  background: var(--dsc-sell-wash);
+}
+.ptk-state {
+  padding: 24px 0;
+  text-align: center;
+}
+/* panel */
+.ptk-id {
+  align-items: flex-start;
+}
+.ptk-id .dsc-p-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.ptk-id-place {
+  font-size: 11px;
+}
+.ptk-mini-chart {
+  height: 84px;
+  margin-bottom: 10px;
+}
+.ptk-alike {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ptk-alike-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border: 0;
+  border-bottom: 1px dotted var(--dsc-dot);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ptk-alike-row:hover .ptk-name {
+  color: var(--dsc-pos);
+}
+.ptk-alike-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ptk-alike-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10.5px;
+  color: var(--dsc-faint);
+}
+.ptk-alike-score {
+  font-weight: 700;
+  color: var(--dsc-pos);
+}
+.ptk-recipient {
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 1000px) {
+  .ptk-compare {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ptk-hide-md {
+    display: none;
+  }
+}
+@media (max-width: 640px) {
+  .ptk-hide-sm {
+    display: none;
+  }
+  .ptk-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  /* The same panel, full width, header pinned. */
+  .ptk-panel {
+    width: 100%;
+    border-left: 0;
+  }
+  .ptk-panel .dsc-p-head {
+    position: sticky;
+    top: 0;
+    background: var(--dsc-bg);
+    z-index: 1;
+  }
+  .ptk-id .ptk-shot {
+    width: 72px !important;
+    height: 72px !important;
+  }
+}
