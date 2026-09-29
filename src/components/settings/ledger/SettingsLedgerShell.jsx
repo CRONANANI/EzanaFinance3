@@ -18,6 +18,7 @@ const NAV_GROUPS = [
       { key: 'family', icon: 'bi-people', label: 'Family', sub: 'Members & sharing' },
       { key: 'plan', icon: 'bi-gem', label: 'Plan', sub: 'Subscription' },
       { key: 'billing', icon: 'bi-credit-card', label: 'Billing', sub: 'Methods & history' },
+      { key: 'referrals', icon: 'bi-gift', label: 'Referrals', sub: 'Invite & earn' },
       {
         key: 'partners',
         icon: 'bi-shield-check',
@@ -59,7 +60,7 @@ export function buildNavGroups({ partnersTabAllowed, orgTabAllowed, isOrgUser, i
   // are hidden for them.
   const isExecutive = orgTabAllowed;
   const hideForOrgNonExec =
-    isOrgUser && !isExecutive ? new Set(['plan', 'billing', 'family', 'api']) : null;
+    isOrgUser && !isExecutive ? new Set(['plan', 'billing', 'family', 'api', 'referrals']) : null;
 
   // Every org member gets a "My role & access" tab; executives also get the
   // Organization admin tab.

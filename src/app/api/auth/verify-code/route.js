@@ -28,6 +28,18 @@ async function grantEmailVerifiedElo(supabaseAdmin, userId) {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+/* Confirm a pending referral for this newly verified user and grant its
+   rewards (confirm_referral is idempotent; the profiles trigger also calls
+   it). Never blocks verification: before the referrals migration is applied
+   the RPC simply errors and is ignored. */
+async function confirmReferral(admin, userId) {
+  try {
+    await admin.rpc('confirm_referral', { p_referee: userId });
+  } catch {
+    /* ignore */
+  }
+}
+
 export async function POST(request) {
   const rl = await checkRateLimit(`auth:verify-code:${getClientIp(request)}`, {
     limit: 15,
@@ -154,6 +166,7 @@ export async function POST(request) {
 
     if (updatedRows?.length) {
       await grantEmailVerifiedElo(supabaseAdmin, user.id);
+      await confirmReferral(supabaseAdmin, user.id);
       return NextResponse.json({ success: true });
     }
 
@@ -171,6 +184,7 @@ export async function POST(request) {
     }
 
     await grantEmailVerifiedElo(supabaseAdmin, user.id);
+    await confirmReferral(supabaseAdmin, user.id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Verify code error:', error);

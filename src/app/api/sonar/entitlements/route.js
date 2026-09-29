@@ -4,6 +4,7 @@ import { getAdminClient, getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { isActivePartner } from '@/lib/partner-access';
 import { getActivePlan, getPlanTier } from '@/lib/subscription';
+import { getReferralPlanOverride } from '@/lib/referrals-server';
 import { getSonarEntitlements, describeDatasetAccess } from '@/lib/sonar/entitlements';
 
 /**
@@ -29,7 +30,8 @@ export const GET = withApiGuard(async (request, user) => {
     .select('subscription_plan, subscription_status, one_time_plan')
     .eq('id', user.id)
     .maybeSingle();
-  const planTier = getPlanTier(getActivePlan(profile));
+  const referralPlan = await getReferralPlanOverride(admin, user.id);
+  const planTier = getPlanTier(getActivePlan(profile, referralPlan));
 
   const member = await getCurrentOrgMember(userClient).catch(() => null);
   const isPartner = await isActivePartner(userClient, user).catch(() => false);

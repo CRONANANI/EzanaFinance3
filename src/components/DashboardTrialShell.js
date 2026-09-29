@@ -99,6 +99,25 @@ async function resolveTrialVerdict() {
     return { userId: user.id, blocked: false, needsOnboarding };
   }
 
+  /* An active referral reward (a month of Personal, or a year of Personal
+     Advanced) is access too. RLS lets a user read their own rewards; any
+     error (for example before the referrals migration) just means none. */
+  try {
+    const nowIso = new Date().toISOString();
+    const { data: rewards, error: rewardsError } = await supabase
+      .from('referral_rewards')
+      .select('id')
+      .eq('user_id', user.id)
+      .lte('starts_at', nowIso)
+      .gt('ends_at', nowIso)
+      .limit(1);
+    if (!rewardsError && rewards?.length) {
+      return { userId: user.id, blocked: false, needsOnboarding };
+    }
+  } catch {
+    /* fall through to the trial check */
+  }
+
   const trial = getTrialStatus(profile, user.created_at);
   return {
     userId: user.id,
@@ -126,8 +145,7 @@ export function DashboardTrialShell({ children }) {
     // Returning from the onboarding flow means the questionnaire may have just
     // been completed — drop the cached verdict so a stale needsOnboarding flag
     // can't bounce the user straight back to /onboarding.
-    const cameFromOnboarding =
-      prevPathnameRef.current?.startsWith('/onboarding') && !onOnboarding;
+    const cameFromOnboarding = prevPathnameRef.current?.startsWith('/onboarding') && !onOnboarding;
     prevPathnameRef.current = path;
     if (cameFromOnboarding) trialVerdictCache = null;
 

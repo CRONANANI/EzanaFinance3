@@ -1,0 +1,188 @@
+/* Settings, then Referrals. Tokens only; figures and the code in mono. */
+.ref-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 720px;
+}
+.ref-panel--loading {
+  min-height: 480px;
+}
+.ref-card {
+  padding: 18px 20px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+}
+.ref-eyebrow {
+  margin: 0 0 10px;
+  font-size: var(--type-eyebrow-size);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.ref-code-row,
+.ref-link-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.ref-link-row {
+  margin-top: 12px;
+}
+.ref-code {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--text-primary);
+  margin-right: auto;
+}
+.ref-url {
+  flex: 1 1 220px;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ref-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.ref-btn:hover {
+  border-color: var(--emerald-border);
+  color: var(--emerald-text);
+}
+.ref-btn--solid {
+  background: var(--emerald);
+  border-color: var(--emerald);
+  color: var(--bg-primary);
+}
+.ref-btn:focus-visible,
+.ref-link:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.ref-progress-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ref-count {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.ref-count b {
+  color: var(--text-primary);
+}
+.ref-pips {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-top: 4px;
+}
+.ref-pip {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-card-hover);
+  border: 1px solid var(--border-primary);
+}
+.ref-pip.is-on {
+  background: var(--emerald);
+  border-color: var(--emerald);
+}
+.ref-reward-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ref-reward.is-earned {
+  background: var(--gold-bg);
+  border-color: var(--gold-border);
+}
+.ref-reward.is-earned .ref-reward-title {
+  margin: 0;
+  color: var(--gold);
+}
+.ref-muted {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.ref-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--emerald-text);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.ref-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ref-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-secondary);
+}
+.ref-row:first-child {
+  border-top: 0;
+}
+.ref-email {
+  min-width: 0;
+  font-size: 13.5px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ref-chip {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--border-primary);
+  color: var(--text-muted);
+}
+.ref-chip--confirmed {
+  color: var(--emerald-text);
+  border-color: var(--emerald-border);
+  background: var(--emerald-bg-subtle);
+}
+.ref-date {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--text-muted);
+}

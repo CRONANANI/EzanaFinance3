@@ -88,6 +88,12 @@ const AnalyticsGate = dynamic(
   { ssr: false, loading: () => null },
 );
 
+/* Phones only, and only once the hero has scrolled away: no SSR markup. */
+const ReferralStickyBar = dynamic(() => import('@/components/marketing/ReferralStickyBar'), {
+  ssr: false,
+  loading: () => null,
+});
+
 export default function HomePage() {
   const [supportOpen, setSupportOpen] = useState(false);
 
@@ -140,6 +146,7 @@ export default function HomePage() {
       <ContactSupportDialog open={supportOpen} onOpenChange={setSupportOpen} />
       <CookieConsentBanner />
       <AnalyticsGate />
+      <ReferralStickyBar heroSelector="#heroSection" />
     </div>
   );
 }

@@ -32,7 +32,21 @@ export function isFreePlan(profile) {
   return profile?.subscription_status === 'free' || profile?.subscription_plan === 'free';
 }
 
-export function getActivePlan(profile) {
+/**
+ * The user's effective plan key.
+ * @param {object} profile  profiles row (subscription_* fields)
+ * @param {string|null} [referralPlan]  an active referral reward's plan
+ *   (getReferralPlanOverride in referrals-server.js). It applies when it is a
+ *   higher tier than what the user pays for, so a reward works with or
+ *   without a Stripe subscription.
+ */
+export function getActivePlan(profile, referralPlan = null) {
+  const paid = getPaidPlan(profile);
+  if (referralPlan && getPlanTier(referralPlan) > getPlanTier(paid)) return referralPlan;
+  return paid;
+}
+
+function getPaidPlan(profile) {
   if (!profile) return null;
 
   const status = profile.subscription_status;

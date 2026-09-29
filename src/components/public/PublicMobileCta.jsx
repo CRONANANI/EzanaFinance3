@@ -64,9 +64,11 @@ export function PublicMobileCta() {
     return () => observer.disconnect();
   }, []);
 
-  const excluded = EXCLUDED_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname?.startsWith(`${prefix}/`),
-  );
+  /* The landing page carries its own referral bar (ReferralStickyBar), and
+     its hero already has the sign-up CTA, so this bar stays off it. */
+  const excluded =
+    pathname === '/' ||
+    EXCLUDED_PREFIXES.some((prefix) => pathname === prefix || pathname?.startsWith(`${prefix}/`));
   const visible = !loading && !isAuthenticated && !excluded && !dismissed && !bannerOpen;
 
   /* Reserve the bar's height at the bottom of the page so a fixed bar can

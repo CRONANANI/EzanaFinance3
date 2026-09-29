@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase-browser';
 import { PasswordStrengthField } from '@/components/ui/password-strength-field';
 import { SpiralPasswordField } from '@/components/ui/spiral-password-field';
+import ReferralCodeField from '@/components/auth/ReferralCodeField';
+import { isValidCodeFormat, normalizeCode } from '@/lib/referrals';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -22,12 +24,20 @@ export default function SignUpPage() {
 
   /* Destination after sign-up and verification (?redirect=, or ?next=). */
   const [redirectTo, setRedirectTo] = useState('');
+  /* Optional referral code; ?ref= prefills it and opens the field. */
+  const [referralCode, setReferralCode] = useState('');
+  const [referralOpen, setReferralOpen] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const dest = params.get('redirect') || params.get('next');
     if (dest && dest.startsWith('/') && !dest.startsWith('//') && !dest.includes('\\')) {
       setRedirectTo(dest);
+    }
+    const ref = params.get('ref');
+    if (ref) {
+      setReferralCode(normalizeCode(ref).slice(0, 8));
+      setReferralOpen(true);
     }
     const e = params.get('error');
     if (e) {
@@ -99,6 +109,25 @@ export default function SignUpPage() {
 
       /* With Supabase "Confirm email" off, signUp creates the user and session; we verify via 6-digit code only. */
       if (data.user) {
+        /* Record the referral now, server side, as this new account: the
+           route checks the code, self-referral and account age. It never
+           blocks sign-up. */
+        if (referralCode && isValidCodeFormat(referralCode)) {
+          try {
+            await fetch('/api/referrals/apply', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(data.session?.access_token
+                  ? { Authorization: `Bearer ${data.session.access_token}` }
+                  : {}),
+              },
+              body: JSON.stringify({ code: referralCode }),
+            });
+          } catch {
+            /* sign-up already succeeded */
+          }
+        }
         router.push(
           redirectTo
             ? `/auth/verify-email?redirect=${encodeURIComponent(redirectTo)}`
@@ -235,6 +264,13 @@ export default function SignUpPage() {
                 />
               </div>
             </SpiralPasswordField>
+
+            <ReferralCodeField
+              value={referralCode}
+              onChange={setReferralCode}
+              open={referralOpen}
+              onOpenChange={setReferralOpen}
+            />
 
             <button
               type="submit"

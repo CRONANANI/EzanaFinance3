@@ -4,6 +4,7 @@ import { getAdminClient, getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { isActivePartner } from '@/lib/partner-access';
 import { getActivePlan, getPlanTier } from '@/lib/subscription';
+import { getReferralPlanOverride } from '@/lib/referrals-server';
 import { orchestrate } from '@/lib/research-copilot/orchestrate';
 import {
   getSonarEntitlements,
@@ -151,21 +152,23 @@ export const POST = withApiGuard(
     //    purpose: its whole job is to return before any further work.
     //    usedToday joins them because the QUERY is independent; only the
     //    comparison below depends on the entitlements computed after.
-    const [{ data: profile }, member, isPartner, { count: usedToday }] = await Promise.all([
-      admin
-        .from('profiles')
-        .select('subscription_plan, subscription_status, one_time_plan')
-        .eq('id', user.id)
-        .maybeSingle(),
-      getCurrentOrgMember(userClient).catch(() => null),
-      isActivePartner(userClient, user).catch(() => false),
-      admin
-        .from('sonar_queries')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .gte('created_at', startOfUtcDayISO()),
-    ]);
-    const planTier = getPlanTier(getActivePlan(profile));
+    const [{ data: profile }, member, isPartner, { count: usedToday }, referralPlan] =
+      await Promise.all([
+        admin
+          .from('profiles')
+          .select('subscription_plan, subscription_status, one_time_plan')
+          .eq('id', user.id)
+          .maybeSingle(),
+        getCurrentOrgMember(userClient).catch(() => null),
+        isActivePartner(userClient, user).catch(() => false),
+        admin
+          .from('sonar_queries')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .gte('created_at', startOfUtcDayISO()),
+        getReferralPlanOverride(admin, user.id),
+      ]);
+    const planTier = getPlanTier(getActivePlan(profile, referralPlan));
     const version = member ? 'org' : isPartner ? 'partner' : 'regular';
 
     // 2. The entitlement matrix — the single source of truth for this query.

@@ -6,6 +6,7 @@ import { DataRequestPanel } from '@/components/settings/DataRequestPanel';
 import { PlatformChangelogPanel } from '@/components/settings/PlatformChangelogPanel';
 import { PartnerManagementPanel } from '@/components/settings/PartnerManagementPanel';
 import { PayoutsPanel } from '@/components/settings/PayoutsPanel';
+import { ReferralsPanel } from '@/components/settings/ReferralsPanel';
 import { MyDetailsLedger } from './panels/MyDetailsLedger';
 import { AppearanceLedger } from './panels/AppearanceLedger';
 import { wrapLegacyPanel } from './legacy-bridge';
@@ -66,6 +67,12 @@ export const LEDGER_PAGE_META = {
     eyebrow: 'Workspace',
     title: 'Billing',
     helper: 'Payment methods, billing address, and invoice history.',
+  },
+  referrals: {
+    eyebrow: 'Workspace',
+    title: 'Referrals',
+    helper:
+      'Share your code. When 5 friends sign up with it and verify their email, you get 12 months of Personal Advanced free.',
   },
   partners: {
     eyebrow: 'Workspace',
@@ -146,4 +153,5 @@ export const LEDGER_PANEL_MAP = {
   organization: wrapLegacyPanel(OrgAdminPanel),
   'my-role': wrapLegacyPanel(MyRoleAccessPanel),
   payouts: wrapLegacyPanel(PayoutsPanel),
+  referrals: wrapLegacyPanel(ReferralsPanel),
 };

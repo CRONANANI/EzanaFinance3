@@ -13,6 +13,7 @@ import { DataRequestPanel } from '@/components/settings/DataRequestPanel';
 import { PlatformChangelogPanel } from '@/components/settings/PlatformChangelogPanel';
 import { PartnerManagementPanel } from '@/components/settings/PartnerManagementPanel';
 import { PayoutsPanel } from '@/components/settings/PayoutsPanel';
+import { ReferralsPanel } from '@/components/settings/ReferralsPanel';
 import { usePartner } from '@/contexts/PartnerContext';
 import { useUserSettings } from '@/contexts/SettingsContext';
 import { useOrg } from '@/contexts/OrgContext';
@@ -53,6 +54,12 @@ const SETTINGS_TABS = [
   { key: 'family', label: 'Family', icon: 'bi-people', desc: 'Linked family accounts' },
   { key: 'plan', label: 'Plan', icon: 'bi-gem', desc: 'Subscription & features' },
   { key: 'billing', label: 'Billing', icon: 'bi-credit-card', desc: 'Payment methods & history' },
+  {
+    key: 'referrals',
+    label: 'Referrals',
+    icon: 'bi-gift',
+    desc: 'Invite friends, earn a free year',
+  },
   { key: 'email', label: 'Email', icon: 'bi-envelope', desc: 'Email preferences' },
   { key: 'notifications', label: 'Notifications', icon: 'bi-bell', desc: 'Alert & push settings' },
   { key: 'integrations', label: 'Integrations', icon: 'bi-plug', desc: 'Connected services' },
@@ -88,6 +95,7 @@ const PANEL_MAP = {
   'my-role': MyRoleAccessPanel,
   'privacy-data': DataRequestPanel,
   payouts: PayoutsPanel,
+  referrals: ReferralsPanel,
 };
 
 function SettingsInner() {
