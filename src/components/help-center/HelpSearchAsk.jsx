@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Search, Sparkles, FileText, ChevronRight, Loader2, ArrowRight } from 'lucide-react';
 
 /**
  * The help-center search pill, upgraded to "search + ask".
@@ -11,10 +10,11 @@ import { Search, Sparkles, FileText, ChevronRight, Loader2, ArrowRight } from 'l
  *   controlled (`value`/`onChange`) so the parent page keeps filtering categories
  *   exactly as before. No endpoint call on keystroke.
  * - On submit (Enter or the "Ask AI" button) it POSTs the question to
- *   /api/help-center/ask and renders a grounded, cited answer card ABOVE the
- *   filtered category list, with source-article links. Honest empty-state when
- *   nothing matches; never a fabricated answer.
- * - ⌘K / Ctrl+K focuses the pill (the previously-decorative kbd is now wired).
+ *   /api/help-center/ask and renders a grounded, cited answer card directly
+ *   beneath the pill: an "AI answer" eyebrow, the answer, the cited source
+ *   articles, and a one-line note that answers come from Help Center articles.
+ *   Honest empty-state when nothing matches; never a fabricated answer.
+ * - Cmd+K / Ctrl+K focuses the pill.
  *
  * @param {{ audience: 'user'|'partner', value: string, onChange: (v: string) => void }} props
  */
@@ -25,7 +25,6 @@ export default function HelpSearchAsk({ audience, value, onChange }) {
   const [answeredFor, setAnsweredFor] = useState('');
   const [error, setError] = useState('');
 
-  // Wire the ⌘K / Ctrl+K shortcut to focus the pill (was cosmetic before).
   useEffect(() => {
     function onKey(e) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -75,7 +74,10 @@ export default function HelpSearchAsk({ audience, value, onChange }) {
   return (
     <div className="mx-auto max-w-2xl">
       <form onSubmit={ask} className="relative" role="search">
-        <Search className="hc-input-icon absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2" />
+        <i
+          className="bi bi-search hc-input-icon absolute left-4 top-1/2 -translate-y-1/2"
+          aria-hidden="true"
+        />
         <input
           ref={inputRef}
           type="search"
@@ -94,10 +96,10 @@ export default function HelpSearchAsk({ audience, value, onChange }) {
             aria-label="Ask AI"
           >
             {asking ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <i className="bi bi-arrow-repeat hc-spin" aria-hidden="true" />
             ) : (
               <>
-                <Sparkles className="h-4 w-4" />
+                <i className="bi bi-stars" aria-hidden="true" />
                 Ask AI
               </>
             )}
@@ -110,30 +112,27 @@ export default function HelpSearchAsk({ audience, value, onChange }) {
       </form>
       {value.trim() && !result && !asking && !error ? (
         <p className="hc-faint mt-2 text-center text-xs">
-          Press Enter or “Ask AI” for a grounded answer — typing filters the categories below.
+          Press Enter or &ldquo;Ask AI&rdquo; for an answer from our articles. Typing filters the
+          categories below.
         </p>
       ) : null}
 
       {(asking || result || error) && (
-        <div className="hc-card mt-5 p-6 text-left">
+        <div className="hc-card hc-answer mt-4 p-6 text-left" aria-live="polite">
+          <p className="hc-answer-eyebrow">
+            <i className="bi bi-stars" aria-hidden="true" />
+            AI answer
+          </p>
+
           {asking ? (
             <div className="hc-subtitle flex items-center gap-3 text-sm">
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <i className="bi bi-arrow-repeat hc-spin" aria-hidden="true" />
               Searching the help center…
             </div>
           ) : error ? (
             <p className="hc-subtitle text-sm">{error}</p>
           ) : (
             <>
-              <div className="mb-3 flex items-center gap-2">
-                <span className="hc-icon-pill h-7 w-7 rounded-lg">
-                  <Sparkles className="h-4 w-4" />
-                </span>
-                <span className="hc-title text-sm font-semibold">
-                  {isEmpty ? 'No article covers that yet' : 'Answer'}
-                </span>
-              </div>
-
               {hasAnswer ? (
                 <div className="hc-prose text-sm">
                   {result.answer.split(/\n{2,}/).map((para, i) => (
@@ -143,13 +142,13 @@ export default function HelpSearchAsk({ audience, value, onChange }) {
               ) : isEmpty ? (
                 <p className="hc-subtitle text-sm">
                   Nothing in the {audience === 'partner' ? 'partner' : 'user'} help center covers{' '}
-                  <span className="hc-accent font-semibold">“{answeredFor}”</span> yet. Browse the
-                  categories below, or contact support and we&apos;ll help directly.
+                  <span className="hc-accent font-semibold">&ldquo;{answeredFor}&rdquo;</span> yet.
+                  Browse the categories below, or contact support and we&apos;ll help directly.
                 </p>
               ) : (
                 <p className="hc-subtitle text-sm">
                   Here are the most relevant help articles for{' '}
-                  <span className="hc-accent font-semibold">“{answeredFor}”</span>:
+                  <span className="hc-accent font-semibold">&ldquo;{answeredFor}&rdquo;</span>:
                 </p>
               )}
 
@@ -158,26 +157,28 @@ export default function HelpSearchAsk({ audience, value, onChange }) {
                   <p className="hc-faint mb-2 text-xs font-semibold uppercase tracking-wide">
                     {hasAnswer ? 'Sources' : 'Related articles'}
                   </p>
-                  <div className="grid gap-2">
+                  <ul className="grid gap-2">
                     {sources.map((s) => (
-                      <Link
-                        key={`${s.audience}:${s.slug}`}
-                        href={s.url}
-                        className="hc-card-compact flex items-center gap-3 p-3"
-                      >
-                        <FileText className="hc-accent h-4 w-4 flex-shrink-0" />
-                        <span className="hc-title text-sm">{s.title}</span>
-                        {s.category ? (
-                          <span className="hc-faint ml-auto hidden text-xs sm:inline">
-                            {s.category}
-                          </span>
-                        ) : null}
-                        <ChevronRight
-                          className={`hc-faint h-4 w-4 flex-shrink-0 ${s.category ? '' : 'ml-auto'}`}
-                        />
-                      </Link>
+                      <li key={`${s.audience}:${s.slug}`}>
+                        <Link href={s.url} className="hc-card-compact flex items-center gap-3 p-3">
+                          <i
+                            className="bi bi-file-earmark-text hc-accent flex-shrink-0"
+                            aria-hidden="true"
+                          />
+                          <span className="hc-title text-sm">{s.title}</span>
+                          {s.category ? (
+                            <span className="hc-faint ml-auto hidden text-xs sm:inline">
+                              {s.category}
+                            </span>
+                          ) : null}
+                          <i
+                            className={`bi bi-chevron-right hc-faint flex-shrink-0 ${s.category ? '' : 'ml-auto'}`}
+                            aria-hidden="true"
+                          />
+                        </Link>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               )}
 
@@ -187,9 +188,13 @@ export default function HelpSearchAsk({ audience, value, onChange }) {
                   className="hc-link mt-4 inline-flex items-center gap-1 text-sm"
                 >
                   Still stuck? Contact support
-                  <ArrowRight className="h-4 w-4" />
+                  <i className="bi bi-arrow-right" aria-hidden="true" />
                 </Link>
               )}
+
+              <p className="hc-answer-note">
+                Answers are generated from Help Center articles and may be incomplete.
+              </p>
             </>
           )}
         </div>

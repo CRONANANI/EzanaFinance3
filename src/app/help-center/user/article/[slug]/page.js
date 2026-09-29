@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight, ArrowRight, FileText } from 'lucide-react';
 import { USER_ARTICLES, USER_CATEGORIES } from '@/lib/help-center-content';
 import ArticleFeedback from '@/components/help-center/ArticleFeedback';
+import { useHelpArticleView } from '@/components/help-center/useHelpArticleView';
 import { HelpSidebarNav } from '@/components/help-center/HelpSidebarNav';
 import { ArticleToc } from '@/components/help-center/ArticleToc';
 import { BrokerageAccessTable } from '@/components/help-center/BrokerageAccessTable';
@@ -35,6 +36,7 @@ export default function UserHelpArticlePage() {
   const params = useParams();
   const slug = params?.slug;
   const article = slug ? USER_ARTICLES[slug] : null;
+  useHelpArticleView('user', article ? slug : null);
 
   /*
    * Find the category this article belongs to (matched by title, since

@@ -13,26 +13,16 @@ import {
   GraduationCap,
   ChevronRight,
   ArrowRight,
-  FileText,
   Globe2,
   Bookmark,
   Scale,
 } from 'lucide-react';
 import { USER_CATEGORIES, USER_ARTICLES } from '@/lib/help-center-content';
 import HelpSearchAsk from '@/components/help-center/HelpSearchAsk';
+import TrendingArticles from '@/components/help-center/TrendingArticles';
 import '../help-center.css';
 
 const BASE = '/help-center/user';
-
-/* Hand-picked entry points, shown above the category grid. */
-const POPULAR = [
-  'connecting-your-brokerage',
-  'brokerage-access-levels',
-  'paper-trading',
-  'plans-overview',
-  'two-factor-auth',
-  'supported-brokerages',
-];
 
 const ICON_MAP = {
   BookOpen,
@@ -48,17 +38,10 @@ const ICON_MAP = {
   Scale,
 };
 
-const POPULAR_ARTICLES = [
-  { title: 'How do I connect my brokerage account?', slug: 'connecting-your-brokerage' },
-  { title: 'How does congressional trading data work?', slug: 'how-congressional-data-works' },
-  { title: 'How do I cancel my subscription?', slug: 'managing-subscription' },
-  { title: 'Is my financial data secure?', slug: 'data-security' },
-];
-
 const FAQ_ITEMS = [
   {
     q: 'How do I connect my brokerage account?',
-    a: "Go to Settings → Integrations and click Connect on any supported brokerage. You'll be redirected to Plaid's secure connection flow. Ezana receives read-only access to your positions and balances.",
+    a: 'On the Home page, choose Add Portfolio, then Connect your brokerage, and log in through the secure connection window (Plaid or SnapTrade). The window shows what access you are granting before you confirm. See Importing your portfolio from a brokerage for the full walkthrough.',
   },
   {
     q: 'What is congressional trading data?',
@@ -66,7 +49,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Can I export my portfolio data?',
-    a: 'Yes. From your Dashboard, use the Report button to export your portfolio summary. The For The Quants section allows CSV export for advanced analytics.',
+    a: 'See the Exporting your data article for what can be exported today and how to request a copy of your account data.',
   },
   {
     q: 'How do I contact support?',
@@ -112,100 +95,66 @@ export default function UserHelpCenterPage() {
         <div className="mx-auto max-w-3xl text-center">
           <Link
             href="/help-center"
-            className="hc-link-muted mb-6 inline-flex items-center gap-2 text-sm"
+            className="hc-link-muted mb-3 inline-flex items-center gap-2 text-sm"
           >
             <ChevronRight className="h-4 w-4 rotate-180" />
             Back to Help Center
           </Link>
-          <h1 className="hc-title mb-4 text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
+          <h1 className="hc-title mb-2 text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
             User Support
           </h1>
-          <p className="hc-subtitle mb-8 text-lg">
+          <p className="hc-subtitle mb-5 text-lg">
             Search our help center or browse categories below
           </p>
           <HelpSearchAsk audience="user" value={searchQuery} onChange={setSearchQuery} />
         </div>
       </section>
 
-      {!searchQuery.trim() && (
-        <section className="mx-auto max-w-6xl px-4 pt-12">
-          <h2 className="hc-title mb-5 text-lg font-semibold">Popular articles</h2>
-          <div className="hc-popular">
-            {POPULAR.map((slug) => {
-              const a = USER_ARTICLES[slug];
-              if (!a) return null;
-              return (
-                <Link key={slug} href={`${BASE}/article/${slug}`} className="hc-popular-card">
-                  <i className="bi bi-file-earmark-text" aria-hidden />
-                  {a.title}
-                </Link>
-              );
-            })}
-          </div>
+      <div className="hc-index-grid mx-auto max-w-6xl px-4 pb-16">
+        <section className="min-w-0" aria-labelledby="hc-cats-title">
+          <h2 id="hc-cats-title" className="hc-title mb-6 text-2xl font-semibold">
+            {searchQuery.trim()
+              ? `Matching categories (${filteredCategories.length})`
+              : 'Browse by category'}
+          </h2>
+          {filteredCategories.length === 0 ? (
+            <p className="hc-subtitle text-center">
+              No articles matched{' '}
+              <span className="hc-accent font-semibold">&ldquo;{searchQuery}&rdquo;</span>. Try a
+              different term or browse the categories below.
+            </p>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              {filteredCategories.map((cat) => {
+                const Icon = ICON_MAP[cat.iconName] || BookOpen;
+                const matchedCount = searchQuery.trim() ? cat.articles.length : null;
+                return (
+                  <Link
+                    key={cat.id}
+                    href={`${BASE}/category/${cat.id}`}
+                    className="hc-card-interactive group p-6"
+                  >
+                    <div className="hc-icon-pill mb-4 h-12 w-12 rounded-lg">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <h3 className="hc-title mb-2 font-semibold group-hover:text-[color:var(--emerald-text)]">
+                      {cat.title}
+                    </h3>
+                    <p className="hc-subtitle mb-4 text-sm">{cat.description}</p>
+                    <span className="hc-accent inline-flex items-center gap-1 text-sm font-medium">
+                      {matchedCount !== null
+                        ? `${matchedCount} match${matchedCount === 1 ? '' : 'es'}`
+                        : 'View articles'}
+                      <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </section>
-      )}
-
-      <section className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="hc-title mb-10 text-2xl font-semibold">
-          {searchQuery.trim()
-            ? `Matching categories (${filteredCategories.length})`
-            : 'Browse by category'}
-        </h2>
-        {filteredCategories.length === 0 ? (
-          <p className="hc-subtitle text-center">
-            No articles matched{' '}
-            <span className="hc-accent font-semibold">&ldquo;{searchQuery}&rdquo;</span>. Try a
-            different term or browse the categories below.
-          </p>
-        ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {filteredCategories.map((cat) => {
-              const Icon = ICON_MAP[cat.iconName] || BookOpen;
-              const matchedCount = searchQuery.trim() ? cat.articles.length : null;
-              return (
-                <Link
-                  key={cat.id}
-                  href={`${BASE}/category/${cat.id}`}
-                  className="hc-card-interactive group p-6"
-                >
-                  <div className="hc-icon-pill mb-4 h-12 w-12 rounded-lg">
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <h3 className="hc-title mb-2 font-semibold group-hover:text-[color:var(--emerald-text)]">
-                    {cat.title}
-                  </h3>
-                  <p className="hc-subtitle mb-4 text-sm">{cat.description}</p>
-                  <span className="hc-accent inline-flex items-center gap-1 text-sm font-medium">
-                    {matchedCount !== null
-                      ? `${matchedCount} match${matchedCount === 1 ? '' : 'es'}`
-                      : 'View articles'}
-                    <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      <section className="hc-section-alt hc-section-divider px-4 py-16">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="hc-title mb-10 text-2xl font-semibold">Popular articles</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {POPULAR_ARTICLES.map((art) => (
-              <Link
-                key={art.slug}
-                href={`${BASE}/article/${art.slug}`}
-                className="hc-card-compact flex items-center gap-4 p-4"
-              >
-                <FileText className="hc-accent h-5 w-5 flex-shrink-0" />
-                <span className="hc-title">{art.title}</span>
-                <ChevronRight className="hc-faint ml-auto h-4 w-4" />
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+        <TrendingArticles section="user" />
+      </div>
 
       <section className="mx-auto max-w-3xl px-4 py-16">
         <h2 className="hc-title mb-10 text-2xl font-semibold">Frequently asked questions</h2>

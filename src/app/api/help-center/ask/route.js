@@ -22,14 +22,15 @@ import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const ANTHROPIC_MODEL = 'claude-sonnet-4-5';
+const ANTHROPIC_MODEL = 'claude-haiku-4-5';
 const SEMANTIC_THRESHOLD = Number(process.env.HELP_CENTER_MATCH_THRESHOLD) || 0.3;
 const MAX_SOURCES = 6;
 
 const SYSTEM_PROMPT = `You are Ezana Finance's help-center assistant. Answer the user's question using ONLY the provided help-center articles. Rules:
 - Ground every statement in the provided articles. Do not use outside knowledge or invent features.
 - Cite the article title(s) you drew from, inline, like: (see "Article Title").
-- Be concise and practical — a short, direct answer, then next steps if useful.
+- Be concise and practical: a short, direct answer, then next steps if useful.
+- Never use em dashes or en dashes as punctuation; use commas, colons, periods or parentheses. Write menu paths in prose as "Settings, then Integrations".
 - If the provided articles do not cover the question, say plainly that the help center doesn't cover it yet and suggest browsing the categories or contacting support. Do NOT guess.
 - Never give financial or investment advice; describe how the product works only.`;
 
@@ -77,7 +78,11 @@ async function keywordSearch(admin, query, audience) {
     .limit(MAX_SOURCES);
   if (audience) ftq = ftq.eq('audience', audience);
 
-  let ilq = admin.from('help_center_articles').select(cols).ilike('title', `%${term}%`).limit(MAX_SOURCES);
+  let ilq = admin
+    .from('help_center_articles')
+    .select(cols)
+    .ilike('title', `%${term}%`)
+    .limit(MAX_SOURCES);
   if (audience) ilq = ilq.eq('audience', audience);
 
   const [ft, il] = await Promise.all([ftq, ilq]);
@@ -109,7 +114,7 @@ async function synthesize(query, sources) {
       },
       body: JSON.stringify({
         model: ANTHROPIC_MODEL,
-        max_tokens: 700,
+        max_tokens: 600,
         system: SYSTEM_PROMPT,
         messages: [
           {
@@ -137,8 +142,11 @@ export const POST = withApiGuard(
     if (!rl.success) return rateLimitResponse(rl);
 
     const body = await request.json().catch(() => ({}));
-    const query = String(body?.query || '').trim().slice(0, 500);
-    const audience = body?.audience === 'partner' || body?.audience === 'user' ? body.audience : null;
+    const query = String(body?.query || '')
+      .trim()
+      .slice(0, 500);
+    const audience =
+      body?.audience === 'partner' || body?.audience === 'user' ? body.audience : null;
 
     if (!query) {
       return NextResponse.json({ error: 'A question is required.' }, { status: 400 });

@@ -5,7 +5,6 @@ import Link from 'next/link';
 import {
   BookOpen,
   Code2,
-  FileText,
   Repeat,
   LayoutDashboard,
   Users,
@@ -14,41 +13,25 @@ import {
 } from 'lucide-react';
 import { PARTNER_CATEGORIES, PARTNER_ARTICLES } from '@/lib/help-center-content';
 import HelpSearchAsk from '@/components/help-center/HelpSearchAsk';
+import TrendingArticles from '@/components/help-center/TrendingArticles';
 import '../help-center.css';
 
 const BASE = '/help-center/partner';
 
-/* Hand-picked entry points, shown above the category grid. */
-const POPULAR = [
-  'partner-program-overview',
-  'becoming-a-partner',
-  'partner-brokerage-access',
-  'writing-articles',
-  'payout-schedule',
-  'partner-vs-user',
-];
-
 const ICON_MAP = { BookOpen, FileText, Repeat, LayoutDashboard, Users, Code2 };
-
-const POPULAR_ARTICLES = [
-  { title: 'How do I get my API keys?', slug: 'api-keys' },
-  { title: 'How are partner commissions calculated?', slug: 'commission-structure' },
-  { title: 'How do I become a partner?', slug: 'becoming-a-partner' },
-  { title: 'How do I track my copiers?', slug: 'reading-metrics' },
-];
 
 const FAQ_ITEMS = [
   {
     q: 'How do I join the partner program?',
-    a: "Visit our Partner page and apply. Once approved, you'll receive access to the Partner Dashboard, API keys, and referral tools. Approval typically takes 1-2 business days.",
+    a: 'Apply from the Partner page. The team reviews each application by hand; see Before you apply for what reviewers look for and how long review takes. Once approved you get the partner experience, including the Partner Dashboard.',
   },
   {
     q: 'What commission do partners earn?',
-    a: 'Commission rates vary by tier and referral type. See the Commission structure article for full details. Payouts are processed monthly via your preferred payment method.',
+    a: 'See the Commission structure article for how earnings are calculated. Payouts run monthly to the bank account you add in Settings, then Payouts.',
   },
   {
     q: 'Can I use the Ezana API for my own product?',
-    a: 'Yes. Approved partners receive API access for integration. Be sure to follow our API terms of use and rate limits.',
+    a: 'API access is requested through the Ezana API page and granted by the team. Follow the API terms of use and rate limits described there.',
   },
   {
     q: 'How do I contact partner support?',
@@ -89,100 +72,66 @@ export default function PartnerHelpCenterPage() {
         <div className="mx-auto max-w-3xl text-center">
           <Link
             href="/help-center"
-            className="hc-link-muted mb-6 inline-flex items-center gap-2 text-sm"
+            className="hc-link-muted mb-3 inline-flex items-center gap-2 text-sm"
           >
             <ChevronRight className="h-4 w-4 rotate-180" />
             Back to Help Center
           </Link>
-          <h1 className="hc-title mb-4 text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
+          <h1 className="hc-title mb-2 text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
             Partner Support
           </h1>
-          <p className="hc-subtitle mb-8 text-lg">
+          <p className="hc-subtitle mb-5 text-lg">
             Resources for Ezana partners, affiliates, and API integrators
           </p>
           <HelpSearchAsk audience="partner" value={searchQuery} onChange={setSearchQuery} />
         </div>
       </section>
 
-      {!searchQuery.trim() && (
-        <section className="mx-auto max-w-6xl px-4 pt-12">
-          <h2 className="hc-title mb-5 text-lg font-semibold">Popular articles</h2>
-          <div className="hc-popular">
-            {POPULAR.map((slug) => {
-              const a = PARTNER_ARTICLES[slug];
-              if (!a) return null;
-              return (
-                <Link key={slug} href={`${BASE}/article/${slug}`} className="hc-popular-card">
-                  <i className="bi bi-file-earmark-text" aria-hidden />
-                  {a.title}
-                </Link>
-              );
-            })}
-          </div>
+      <div className="hc-index-grid mx-auto max-w-6xl px-4 pb-16">
+        <section className="min-w-0" aria-labelledby="hc-cats-title">
+          <h2 id="hc-cats-title" className="hc-title mb-6 text-2xl font-semibold">
+            {searchQuery.trim()
+              ? `Matching categories (${filteredCategories.length})`
+              : 'Browse by category'}
+          </h2>
+          {filteredCategories.length === 0 ? (
+            <p className="hc-subtitle text-center">
+              No articles matched{' '}
+              <span className="hc-accent font-semibold">&ldquo;{searchQuery}&rdquo;</span>. Try a
+              different term or browse the categories below.
+            </p>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              {filteredCategories.map((cat) => {
+                const Icon = ICON_MAP[cat.iconName] || BookOpen;
+                const matchedCount = searchQuery.trim() ? cat.articles.length : null;
+                return (
+                  <Link
+                    key={cat.id}
+                    href={`${BASE}/category/${cat.id}`}
+                    className="hc-card-interactive group p-6"
+                  >
+                    <div className="hc-icon-pill mb-4 h-12 w-12 rounded-lg">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <h3 className="hc-title mb-2 font-semibold group-hover:text-[color:var(--emerald-text)]">
+                      {cat.title}
+                    </h3>
+                    <p className="hc-subtitle mb-4 text-sm">{cat.description}</p>
+                    <span className="hc-accent inline-flex items-center gap-1 text-sm font-medium">
+                      {matchedCount !== null
+                        ? `${matchedCount} match${matchedCount === 1 ? '' : 'es'}`
+                        : 'View articles'}
+                      <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </section>
-      )}
-
-      <section className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="hc-title mb-10 text-2xl font-semibold">
-          {searchQuery.trim()
-            ? `Matching categories (${filteredCategories.length})`
-            : 'Browse by category'}
-        </h2>
-        {filteredCategories.length === 0 ? (
-          <p className="hc-subtitle text-center">
-            No articles matched{' '}
-            <span className="hc-accent font-semibold">&ldquo;{searchQuery}&rdquo;</span>. Try a
-            different term or browse the categories below.
-          </p>
-        ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredCategories.map((cat) => {
-              const Icon = ICON_MAP[cat.iconName] || BookOpen;
-              const matchedCount = searchQuery.trim() ? cat.articles.length : null;
-              return (
-                <Link
-                  key={cat.id}
-                  href={`${BASE}/category/${cat.id}`}
-                  className="hc-card-interactive group p-6"
-                >
-                  <div className="hc-icon-pill mb-4 h-12 w-12 rounded-lg">
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <h3 className="hc-title mb-2 font-semibold group-hover:text-[color:var(--emerald-text)]">
-                    {cat.title}
-                  </h3>
-                  <p className="hc-subtitle mb-4 text-sm">{cat.description}</p>
-                  <span className="hc-accent inline-flex items-center gap-1 text-sm font-medium">
-                    {matchedCount !== null
-                      ? `${matchedCount} match${matchedCount === 1 ? '' : 'es'}`
-                      : 'View articles'}
-                    <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      <section className="hc-section-alt hc-section-divider px-4 py-16">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="hc-title mb-10 text-2xl font-semibold">Popular articles</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {POPULAR_ARTICLES.map((art) => (
-              <Link
-                key={art.slug}
-                href={`${BASE}/article/${art.slug}`}
-                className="hc-card-compact flex items-center gap-4 p-4"
-              >
-                <FileText className="hc-accent h-5 w-5 flex-shrink-0" />
-                <span className="hc-title">{art.title}</span>
-                <ChevronRight className="hc-faint ml-auto h-4 w-4" />
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+        <TrendingArticles section="partner" />
+      </div>
 
       <section className="mx-auto max-w-3xl px-4 py-16">
         <h2 className="hc-title mb-10 text-2xl font-semibold">Frequently asked questions</h2>

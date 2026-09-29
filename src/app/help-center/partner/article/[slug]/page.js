@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight, ArrowRight, FileText } from 'lucide-react';
 import { PARTNER_ARTICLES, PARTNER_CATEGORIES } from '@/lib/help-center-content';
 import ArticleFeedback from '@/components/help-center/ArticleFeedback';
+import { useHelpArticleView } from '@/components/help-center/useHelpArticleView';
 import { HelpSidebarNav } from '@/components/help-center/HelpSidebarNav';
 import { ArticleToc } from '@/components/help-center/ArticleToc';
 import { sanitizeHtml } from '@/lib/sanitize-html';
@@ -31,6 +32,7 @@ export default function PartnerHelpArticlePage() {
   const params = useParams();
   const slug = params?.slug;
   const article = slug ? PARTNER_ARTICLES[slug] : null;
+  useHelpArticleView('partner', article ? slug : null);
 
   /*
    * Find the category this article belongs to (matched by title, since
