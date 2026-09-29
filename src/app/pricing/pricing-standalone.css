@@ -247,7 +247,10 @@
   align-items: baseline;
   justify-content: center;
   gap: 0;
-  margin: 0 0 0.15rem; /* was 0 0 0.5rem — tighten price→button gap */
+  /* 0.15rem plus the 0.65rem the retired .plan-annual-note line reserved
+     (0.35rem min-height + 0.3rem margin), so the CTAs sit exactly where they
+     did when that line was still rendered empty. */
+  margin: 0 0 0.8rem;
 }
 /* $ hugs the figure; the interval gets a little breathing room after it. */
 .plan-price-currency {
@@ -255,13 +258,6 @@
 }
 .plan-price .plan-price-interval {
   margin-left: 0.3rem;
-}
-.plan-annual-note {
-  min-height: 0.35rem; /* was 1.4rem — small reserve keeps CTAs aligned across cards */
-  text-align: center;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin: 0 0 0.3rem; /* was 0 0 1.25rem */
 }
 .plan-trial-row {
   margin: 0 0 1.1rem;
@@ -316,10 +312,6 @@
   font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-muted);
-}
-/* When billing is yearly, center the annual-note line */
-.plan-card--yearly .plan-annual-note {
-  text-align: center;
 }
 
 /* ── Plan CTA ───────────────────────────────────────────────────────────── */

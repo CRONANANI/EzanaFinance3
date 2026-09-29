@@ -608,15 +608,6 @@ export default function PricingPage() {
                     </>
                   )}
                 </div>
-                <p className="plan-annual-note">
-                  {plan.isFree
-                    ? ''
-                    : price === null
-                      ? ''
-                      : billing === 'yearly'
-                        ? ''
-                        : 'Billed monthly · cancel anytime'}
-                </p>
 
                 <button
                   type="button"
