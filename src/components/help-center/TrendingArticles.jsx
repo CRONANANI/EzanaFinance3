@@ -36,7 +36,10 @@ function fallbackItems(section, n) {
 }
 
 export default function TrendingArticles({ section = 'user', limit = 6 }) {
-  const [items, setItems] = useState(null);
+  /* Start from the static fallback so the server-rendered HTML (and a reader
+     whose fetch fails) always sees real links, never empty skeleton rows;
+     live counts replace it when the API has any. */
+  const [items, setItems] = useState(() => fallbackItems(section, limit));
   const { base, arts } = CATALOG[section];
 
   useEffect(() => {
@@ -63,17 +66,11 @@ export default function TrendingArticles({ section = 'user', limit = 6 }) {
         Trending articles
       </h2>
       <p className="hc-trending-sub">
-        {items && items.some((it) => it.views != null)
+        {items.some((it) => it.views != null)
           ? 'Most visited in the last 30 days'
           : 'Good places to start'}
       </p>
-      {items === null ? (
-        <ul className="hc-trending-list" aria-busy="true" aria-label="Loading trending articles">
-          {Array.from({ length: limit }).map((_, i) => (
-            <li key={i} className="hc-trending-skel" />
-          ))}
-        </ul>
-      ) : (
+      {!items.length ? null : (
         <ol className="hc-trending-list">
           {items.map((it, i) => (
             <li key={it.slug}>

@@ -9,9 +9,14 @@ import ArticleFeedback from '@/components/help-center/ArticleFeedback';
 import { useHelpArticleView } from '@/components/help-center/useHelpArticleView';
 import { HelpSidebarNav } from '@/components/help-center/HelpSidebarNav';
 import { ArticleToc } from '@/components/help-center/ArticleToc';
-import { sanitizeHtml } from '@/lib/sanitize-html';
 import '../../../help-center.css';
 
+/* Article bodies are authored in this repo (src/lib/help-center-content.js,
+   a static module), so per src/lib/sanitize-html.js they are trusted HTML and
+   are NOT run through DOMPurify. That matters: isomorphic-dompurify loads
+   jsdom on the server, whose html-encoding-sniffer require()s an ES-only
+   module, and on Vercel's Node runtime that threw ERR_REQUIRE_ESM and
+   500'd every article page. Never feed user or DB content into these sinks. */
 const BASE = '/help-center/partner';
 const PROSE_ID = 'hc-article-body';
 
@@ -119,7 +124,7 @@ export default function PartnerHelpArticlePage() {
           <div
             id={PROSE_ID}
             className="hc-prose max-w-none"
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
+            dangerouslySetInnerHTML={{ __html: article.content || '' }}
           />
 
           {relatedArticles.length > 0 && (

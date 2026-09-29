@@ -1,23 +1,28 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { getAdminClient } from '@/lib/supabase';
+import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 import { supaEmbedConfigured } from '@/lib/embeddings-gte';
 import { embedViaSupabaseCached } from '@/lib/rag/embed-cached';
 import { logZeroResult } from '@/lib/rag/zero-results';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
+import { searchHelp } from '@/lib/help-center-search';
 
 /**
- * POST /api/help-center/ask — grounded help-center Q&A (RAG).
+ * POST /api/help-center/ask: grounded help-center Q&A (RAG).
  *
- * Body: { query, audience }. audience ∈ {'user','partner'} scopes retrieval to
- * that slice (help_center_articles.audience). Hybrid retrieve: semantic
- * (match_help_articles, gte-small 384-dim cosine) merged with a keyword ILIKE
- * fallback, then a grounded, cited answer synthesized ONLY from the retrieved
- * articles. Honest empty-state when nothing matches — never a hallucinated
- * answer. If the LLM key is absent it degrades to returning the source links.
+ * Body: { query, audience } (query 3 to 300 chars; audience 'user'|'partner').
+ * Retrieval is hybrid and layered so there are always candidate articles:
+ *   1. semantic: match_help_articles over help_center_articles (gte-small);
+ *   2. keyword: tsv websearch + title ILIKE over the same table;
+ *   3. lexical fallback: the in-repo index (src/lib/help-center-search.js),
+ *      used whenever 1 and 2 return nothing, including when the table does
+ *      not exist yet or the database is unreachable.
+ * The top three distinct articles ground a short, plain answer. Every failure
+ * degrades to { answer: null, sources } with a 200; this route never 500s, so
+ * the page can always show article links. Answers are cached per
+ * (audience, normalized query) for 24h in the function instance.
  *
- * Public (marketing surface), rate-limited. The instant substring filter on the
- * page is unchanged and offline; this endpoint is only hit on submit.
+ * Public (marketing surface), rate-limited.
  */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -25,72 +30,76 @@ export const dynamic = 'force-dynamic';
 const ANTHROPIC_MODEL = 'claude-haiku-4-5';
 const SEMANTIC_THRESHOLD = Number(process.env.HELP_CENTER_MATCH_THRESHOLD) || 0.3;
 const MAX_SOURCES = 6;
+const GROUNDING = 3;
+const CACHE_TTL = 24 * 60 * 60 * 1000;
+const CACHE_MAX = 500;
+const cache = new Map();
 
-const SYSTEM_PROMPT = `You are Ezana Finance's help-center assistant. Answer the user's question using ONLY the provided help-center articles. Rules:
-- Ground every statement in the provided articles. Do not use outside knowledge or invent features.
-- Cite the article title(s) you drew from, inline, like: (see "Article Title").
-- Be concise and practical: a short, direct answer, then next steps if useful.
-- Never use em dashes or en dashes as punctuation; use commas, colons, periods or parentheses. Write menu paths in prose as "Settings, then Integrations".
-- If the provided articles do not cover the question, say plainly that the help center doesn't cover it yet and suggest browsing the categories or contacting support. Do NOT guess.
-- Never give financial or investment advice; describe how the product works only.`;
+const SYSTEM_PROMPT = `You are the Ezana Finance help assistant. Answer ONLY from the provided help-center excerpts. Write 3 to 4 plain sentences, second person, no markdown, no bullet points, no preamble. If the excerpts don't cover the question, say so in one sentence and suggest the closest article by its title. Never give investment advice. Never use em dashes or en dashes as punctuation; use commas, colons, periods or parentheses. Write menu paths as "Settings, then Integrations".`;
 
-/** Merge semantic + keyword rows, dedupe by (audience, slug), cap. */
-function mergeSources(semantic, keyword) {
+function cacheKey(audience, query) {
+  return `${audience || 'all'}:${query.toLowerCase().replace(/\s+/g, ' ').trim()}`;
+}
+
+/** Merge rows from every retrieval layer, dedupe by (audience, slug), cap. */
+function mergeSources(...layers) {
   const byKey = new Map();
-  for (const r of semantic || []) {
-    byKey.set(`${r.audience}:${r.slug}`, {
-      audience: r.audience,
-      slug: r.slug,
-      title: r.title,
-      category: r.category || null,
-      url: r.url,
-      content: r.content || '',
-      similarity: r.similarity != null ? Number(r.similarity) : null,
-    });
-  }
-  for (const r of keyword || []) {
-    const key = `${r.audience}:${r.slug}`;
-    if (byKey.has(key)) continue; // semantic hit already has similarity
-    byKey.set(key, {
-      audience: r.audience,
-      slug: r.slug,
-      title: r.title,
-      category: r.category || null,
-      url: r.url,
-      content: r.content || '',
-      similarity: null, // keyword-only match
-    });
+  for (const rows of layers) {
+    for (const r of rows || []) {
+      const key = `${r.audience}:${r.slug}`;
+      if (byKey.has(key)) continue;
+      byKey.set(key, {
+        audience: r.audience,
+        slug: r.slug,
+        title: r.title,
+        category: r.category || null,
+        url: r.url || `/help-center/${r.audience}/article/${r.slug}`,
+        content: r.content || r.text || '',
+      });
+    }
   }
   return [...byKey.values()].slice(0, MAX_SOURCES);
 }
 
+async function semanticSearch(admin, query, audience) {
+  if (!supaEmbedConfigured()) return [];
+  try {
+    const queryEmbedding = await embedViaSupabaseCached(query);
+    if (!queryEmbedding) return [];
+    const { data, error } = await admin.rpc('match_help_articles', {
+      query_embedding: queryEmbedding,
+      match_audience: audience,
+      match_threshold: SEMANTIC_THRESHOLD,
+      match_count: MAX_SOURCES,
+    });
+    return !error && Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
 async function keywordSearch(admin, query, audience) {
   const cols = 'audience, slug, title, category, url, content';
-  // Lexical branch: full-text over the tsv column (title+body). Merges with an
-  // ILIKE-on-title fallback so exact identifiers/terms tsquery may miss still hit.
   const term = query.replace(/[%,]/g, ' ').trim();
   if (!term) return [];
-
-  let ftq = admin
-    .from('help_center_articles')
-    .select(cols)
-    .textSearch('tsv', query, { type: 'websearch', config: 'english' })
-    .limit(MAX_SOURCES);
-  if (audience) ftq = ftq.eq('audience', audience);
-
-  let ilq = admin
-    .from('help_center_articles')
-    .select(cols)
-    .ilike('title', `%${term}%`)
-    .limit(MAX_SOURCES);
-  if (audience) ilq = ilq.eq('audience', audience);
-
-  const [ft, il] = await Promise.all([ftq, ilq]);
-  const byKey = new Map();
-  for (const r of [...(ft.data || []), ...(il.data || [])]) {
-    byKey.set(`${r.audience}:${r.slug}`, r);
+  try {
+    let ftq = admin
+      .from('help_center_articles')
+      .select(cols)
+      .textSearch('tsv', query, { type: 'websearch', config: 'english' })
+      .limit(MAX_SOURCES);
+    if (audience) ftq = ftq.eq('audience', audience);
+    let ilq = admin
+      .from('help_center_articles')
+      .select(cols)
+      .ilike('title', `%${term}%`)
+      .limit(MAX_SOURCES);
+    if (audience) ilq = ilq.eq('audience', audience);
+    const [ft, il] = await Promise.all([ftq, ilq]);
+    return [...(ft.error ? [] : ft.data || []), ...(il.error ? [] : il.data || [])];
+  } catch {
+    return [];
   }
-  return [...byKey.values()].slice(0, MAX_SOURCES);
 }
 
 async function synthesize(query, sources) {
@@ -98,9 +107,10 @@ async function synthesize(query, sources) {
   if (!apiKey) return { answer: null, degraded: 'no LLM key' };
 
   const context = sources
+    .slice(0, GROUNDING)
     .map(
-      (s, i) =>
-        `[Article ${i + 1}] "${s.title}"${s.category ? ` (${s.category})` : ''}\n${(s.content || '').slice(0, 1500)}`,
+      (s) =>
+        `[slug: ${s.slug}] [title: ${s.title}]${s.category ? ` [section: ${s.category}]` : ''}\n${(s.content || '').slice(0, 1800)}`,
     )
     .join('\n\n');
 
@@ -114,12 +124,13 @@ async function synthesize(query, sources) {
       },
       body: JSON.stringify({
         model: ANTHROPIC_MODEL,
-        max_tokens: 600,
+        max_tokens: 220,
+        temperature: 0.2,
         system: SYSTEM_PROMPT,
         messages: [
           {
             role: 'user',
-            content: `Help-center articles:\n\n${context}\n\n---\nQuestion: ${query}\n\nAnswer using only the articles above, citing titles.`,
+            content: `Help-center excerpts:\n\n${context}\n\n---\nQuestion: ${query}`,
           },
         ],
       }),
@@ -133,6 +144,8 @@ async function synthesize(query, sources) {
   }
 }
 
+const publicSources = (sources) => sources.map(({ content, ...s }) => s);
+
 export const POST = withApiGuard(
   async (request) => {
     const rl = await checkRateLimit(`help-center-ask:${getClientIp(request)}`, {
@@ -142,59 +155,64 @@ export const POST = withApiGuard(
     if (!rl.success) return rateLimitResponse(rl);
 
     const body = await request.json().catch(() => ({}));
-    const query = String(body?.query || '')
-      .trim()
-      .slice(0, 500);
-    const audience =
-      body?.audience === 'partner' || body?.audience === 'user' ? body.audience : null;
+    const query = String(body?.query ?? body?.q ?? '').trim();
+    const rawAudience = body?.audience ?? body?.center;
+    const audience = rawAudience === 'partner' || rawAudience === 'user' ? rawAudience : null;
 
-    if (!query) {
-      return NextResponse.json({ error: 'A question is required.' }, { status: 400 });
+    if (query.length < 3 || query.length > 300) {
+      return NextResponse.json(
+        { error: 'Ask a question between 3 and 300 characters.' },
+        { status: 400 },
+      );
     }
 
-    const admin = getAdminClient();
+    const key = cacheKey(audience, query);
+    const hit = cache.get(key);
+    if (hit && Date.now() - hit.at < CACHE_TTL) return NextResponse.json(hit.body);
 
-    // 1) Semantic retrieval (best-effort — degrades to keyword if embed is off).
-    let semantic = [];
-    if (supaEmbedConfigured()) {
-      const queryEmbedding = await embedViaSupabaseCached(query);
-      if (queryEmbedding) {
-        const { data } = await admin.rpc('match_help_articles', {
-          query_embedding: queryEmbedding,
-          match_audience: audience,
-          match_threshold: SEMANTIC_THRESHOLD,
-          match_count: MAX_SOURCES,
-        });
-        semantic = Array.isArray(data) ? data : [];
+    /* The lexical index needs nothing but the content module, so it is the
+       floor every other layer falls back to. */
+    const lexical = searchHelp(query, { audience, limit: MAX_SOURCES, prefix: false });
+    let sources = [];
+    try {
+      let semantic = [];
+      let keyword = [];
+      if (isServerSupabaseConfigured()) {
+        const admin = getAdminClient();
+        [semantic, keyword] = await Promise.all([
+          semanticSearch(admin, query, audience),
+          keywordSearch(admin, query, audience),
+        ]);
+        if (!semantic.length && !keyword.length && !lexical.length) {
+          logZeroResult(admin, 'help-center', query);
+        }
       }
+      /* Lexical first when the database layers are empty; after them
+         otherwise, so a live index keeps the lead. */
+      sources =
+        semantic.length || keyword.length
+          ? mergeSources(semantic, keyword, lexical)
+          : mergeSources(lexical);
+    } catch {
+      sources = mergeSources(lexical);
     }
 
-    // 2) Keyword retrieval (always runs — catches exact terms semantics may miss).
-    const keyword = await keywordSearch(admin, query, audience);
-
-    const sources = mergeSources(semantic, keyword);
-
-    // 3) Honest empty-state — no fabricated answer when nothing matches. Log the
-    //    query as a content gap (fire-and-forget; never blocks the response).
     if (!sources.length) {
-      logZeroResult(admin, 'help-center', query);
-      return NextResponse.json({
-        answer: null,
-        sources: [],
-        grounded: false,
-        empty: true,
-      });
+      return NextResponse.json({ answer: null, sources: [], grounded: false, empty: true });
     }
 
-    // 4) Grounded synthesis over the retrieved articles.
     const { answer, degraded } = await synthesize(query, sources);
-
-    return NextResponse.json({
+    const payload = {
       answer: answer || null,
       grounded: Boolean(answer),
       degraded: degraded || undefined,
-      sources: sources.map(({ content, ...s }) => s), // strip bodies from the response
-    });
+      sources: publicSources(sources.slice(0, GROUNDING)),
+    };
+    if (answer) {
+      if (cache.size >= CACHE_MAX) cache.delete(cache.keys().next().value);
+      cache.set(key, { at: Date.now(), body: payload });
+    }
+    return NextResponse.json(payload);
   },
   { requireAuth: false },
 );

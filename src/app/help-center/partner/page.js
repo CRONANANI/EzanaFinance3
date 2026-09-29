@@ -5,15 +5,17 @@ import Link from 'next/link';
 import {
   BookOpen,
   Code2,
+  FileText,
   Repeat,
   LayoutDashboard,
   Users,
   ChevronRight,
   ArrowRight,
 } from 'lucide-react';
-import { PARTNER_CATEGORIES, PARTNER_ARTICLES } from '@/lib/help-center-content';
+import { PARTNER_CATEGORIES } from '@/lib/help-center-content';
 import HelpSearchAsk from '@/components/help-center/HelpSearchAsk';
 import TrendingArticles from '@/components/help-center/TrendingArticles';
+import { searchHelp } from '@/lib/help-center-search';
 import '../help-center.css';
 
 const BASE = '/help-center/partner';
@@ -24,14 +26,20 @@ const FAQ_ITEMS = [
   {
     q: 'How do I join the partner program?',
     a: 'Apply from the Partner page. The team reviews each application by hand; see Before you apply for what reviewers look for and how long review takes. Once approved you get the partner experience, including the Partner Dashboard.',
+    href: '/help-center/partner/article/before-you-apply-checklist',
+    linkLabel: 'Before you apply: partner checklist',
   },
   {
     q: 'What commission do partners earn?',
     a: 'See the Commission structure article for how earnings are calculated. Payouts run monthly to the bank account you add in Settings, then Payouts.',
+    href: '/help-center/partner/article/commission-structure',
+    linkLabel: 'Commission structure',
   },
   {
     q: 'Can I use the Ezana API for my own product?',
     a: 'API access is requested through the Ezana API page and granted by the team. Follow the API terms of use and rate limits described there.',
+    href: '/help-center/partner/article/api-overview',
+    linkLabel: 'API overview',
   },
   {
     q: 'How do I contact partner support?',
@@ -44,25 +52,14 @@ export default function PartnerHelpCenterPage() {
   const [expandedFaq, setExpandedFaq] = useState(null);
 
   const filteredCategories = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
+    const q = searchQuery.trim();
     if (!q) return PARTNER_CATEGORIES;
+    /* Same token index as the type-ahead, so "connect brokerage" or "link my
+       broker" filter to the right articles (a raw substring match did not). */
+    const hits = new Set(searchHelp(q, { audience: 'partner', limit: 200 }).map((r) => r.slug));
     return PARTNER_CATEGORIES.map((cat) => ({
       ...cat,
-      articles: cat.articles.filter((a) => {
-        const meta = PARTNER_ARTICLES[a.slug];
-        const haystack = [
-          a.title,
-          cat.title,
-          cat.description,
-          meta?.title,
-          meta?.category,
-          meta?.content,
-        ]
-          .filter(Boolean)
-          .join(' ')
-          .toLowerCase();
-        return haystack.includes(q);
-      }),
+      articles: cat.articles.filter((a) => hits.has(a.slug)),
     })).filter((cat) => cat.articles.length > 0);
   }, [searchQuery]);
 
@@ -155,7 +152,13 @@ export default function PartnerHelpCenterPage() {
                   className="hc-subtitle px-6 py-4 text-sm"
                   style={{ borderTop: '1px solid var(--border-primary)' }}
                 >
-                  {item.a}
+                  <p className="m-0">{item.a}</p>
+                  {item.href ? (
+                    <Link href={item.href} className="hc-link mt-2 inline-flex items-center gap-1">
+                      {item.linkLabel || 'Read the article'}
+                      <i className="bi bi-arrow-right" aria-hidden="true" />
+                    </Link>
+                  ) : null}
                 </div>
               )}
             </div>

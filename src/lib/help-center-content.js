@@ -293,6 +293,7 @@ export const USER_ARTICLES = {
   'creating-your-account': {
     title: 'Creating Your Ezana Finance Account',
     category: 'Getting Started',
+    keywords: ['sign up', 'register', 'new account', 'verification code', 'email confirmation'],
     content: wrap([
       'Creating an Ezana account is free and takes a couple of minutes. You need an email address you can open, a username, and a password. You do not need a bank account or a brokerage connection to sign up, and you can explore research, congressional data, and <a href="/help-center/user/article/paper-trading">paper trading</a> right away.',
       '<h3>Step-by-step</h3>',
@@ -378,6 +379,14 @@ export const USER_ARTICLES = {
   'brokerage-access-levels': {
     title: 'Brokerage Access Levels: Read-Only vs Read & Write',
     category: 'Getting Started',
+    keywords: [
+      'read only',
+      'read and write',
+      'trading access',
+      'permissions',
+      'SnapTrade',
+      'Plaid',
+    ],
     updated: 'September 2026',
     content: wrap([
       'Every brokerage account on Ezana has one of two access levels. <strong>Read-only</strong> access lets Ezana import your balances, holdings, orders, and transaction history so analytics such as <a href="/help-center/user/article/portfolio-overview">your portfolio dashboard</a> and <a href="/help-center/user/article/performance-metrics">performance metrics</a> reflect your real accounts. <strong>Read &amp; write</strong> access also authorizes trading on the account. (Placing orders from inside Ezana is not currently available; see below.) This guide explains which is which, and how to tell for your own accounts.',
@@ -406,6 +415,19 @@ export const USER_ARTICLES = {
   'connecting-your-brokerage': {
     title: 'Connecting Your External Brokerage Account',
     category: 'Getting Started',
+    keywords: [
+      'brokerage',
+      'broker',
+      'connect',
+      'link account',
+      'link my broker',
+      'Alpaca',
+      'SnapTrade',
+      'Plaid',
+      'import portfolio',
+      'sync holdings',
+      'add portfolio',
+    ],
     content: wrap([
       'Ezana can pull in holdings from brokerage accounts you already have, so your real positions feed your portfolio views and analysis. You connect through SnapTrade or Plaid, two secure connection providers. You log in with your brokerage inside their flow; Ezana never sees your password.',
       '<h3>Step-by-step</h3>',
@@ -428,6 +450,7 @@ export const USER_ARTICLES = {
   'opening-a-brokerage-account': {
     title: 'Opening an Ezana Brokerage Account',
     category: 'Getting Started',
+    keywords: ['Alpaca', 'open account', 'KYC', 'identity verification', 'brokerage account'],
     content: wrap([
       'An Ezana brokerage account is a real investment account held with Alpaca Securities LLC (member FINRA and SIPC). You apply from the Trading page. Before the application unlocks, you need to finish the Getting Started checklist, so plan on exploring the platform first.',
       '<h3>Step-by-step</h3>',
@@ -825,6 +848,7 @@ export const USER_ARTICLES = {
   'resetting-your-password': {
     title: 'Resetting Your Password',
     category: 'Account & Security',
+    keywords: ['forgot password', 'reset password', 'cannot log in', 'password rules'],
     content: wrap([
       "If you've forgotten your password, you can reset it yourself from the sign-in page in a couple of minutes. You don't need to contact support unless the email never arrives.",
       '<h3>Step-by-step</h3>',
@@ -850,6 +874,7 @@ export const USER_ARTICLES = {
   'supported-brokerages': {
     title: 'Which Brokerages We Support',
     category: 'Account & Security',
+    keywords: ['which brokers', 'broker list', 'Fidelity', 'Schwab', 'Robinhood', 'supported'],
     content: wrap([
       'Ezana connects to your existing investment accounts through two regulated aggregators, <strong>SnapTrade</strong> and <strong>Plaid</strong>, which together cover 1,000+ brokerages, crypto exchanges, and financial institutions. You pick your broker, and Ezana shows which provider can connect it.',
       '<h3>How it works</h3>',
@@ -1131,6 +1156,7 @@ export const USER_ARTICLES = {
   'first-steps': {
     title: 'Your First 5 Steps on Ezana',
     category: 'Getting Started',
+    keywords: ['getting started', 'onboarding', 'new user', 'first steps'],
     content: wrap([
       'After you sign up, the fastest way to learn Ezana is to touch each core area once. The five steps below take about an hour in total, need no connected brokerage and no real money, and leave your Home dashboard with real data to look at.',
       '<h3>Step-by-step</h3>',
@@ -1739,6 +1765,15 @@ export const USER_ARTICLES = {
   'managing-brokerage-connections': {
     title: 'Managing External Brokerage Connections',
     category: 'Account & Security',
+    keywords: [
+      'disconnect',
+      'reconnect',
+      'brokerage connection',
+      'stale holdings',
+      'sync',
+      'Plaid',
+      'SnapTrade',
+    ],
     content: wrap([
       'Ezana connects to brokerages you already use through two providers, SnapTrade and Plaid, so your holdings show up in your Ezana portfolio. This article covers adding a connection, how often it updates, and what to do when you want to change or remove one.',
       '<h3>Step-by-step: adding a connection</h3>',
@@ -1830,6 +1865,7 @@ export const USER_ARTICLES = {
   'onboarding-walkthrough': {
     title: 'The In-App Onboarding Walkthrough',
     category: 'Getting Started',
+    keywords: ['onboarding', 'questionnaire', 'guided tour', 'risk profile', 'skill level'],
     content: wrap([
       'The first time you sign in, Ezana asks a short set of questions to build your investor profile, then gives you a one-time guided tour of the app. Both take a few minutes, and neither connects an account or charges you.',
       '<h3>Step-by-step</h3>',
@@ -2391,6 +2427,7 @@ export const USER_ARTICLES = {
   'troubleshooting-login-issues': {
     title: 'Troubleshooting Login Issues',
     category: 'Account & Security',
+    keywords: ['cannot log in', 'login problem', 'sign in', 'locked out', 'verification code'],
     content: wrap([
       'Can&rsquo;t sign in? Most login problems come down to the wrong email, a password issue, an unverified email, or a two-factor (2FA) code. Work through these steps in order.',
       '<h3>Step-by-step</h3>',
@@ -2433,6 +2470,15 @@ export const USER_ARTICLES = {
   'importing-your-portfolio-from-a-brokerage': {
     title: 'Importing Your Portfolio From a Brokerage',
     category: 'Portfolio & Trading',
+    keywords: [
+      'import portfolio',
+      'import holdings',
+      'sync holdings',
+      'Plaid',
+      'SnapTrade',
+      'add portfolio',
+      'brokerage',
+    ],
     content: wrap([
       'The fastest way to get your real holdings into Ezana is to link the brokerage account where they already live. Ezana connects through one of two aggregators, SnapTrade or Plaid, and imports your positions and balances so your dashboard reflects what you actually own. You never type your brokerage password into Ezana: you sign in with the aggregator or your broker, and Ezana receives a token for your account data.',
       '<h3>Step-by-step</h3>',

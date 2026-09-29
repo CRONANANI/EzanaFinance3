@@ -17,9 +17,10 @@ import {
   Bookmark,
   Scale,
 } from 'lucide-react';
-import { USER_CATEGORIES, USER_ARTICLES } from '@/lib/help-center-content';
+import { USER_CATEGORIES } from '@/lib/help-center-content';
 import HelpSearchAsk from '@/components/help-center/HelpSearchAsk';
 import TrendingArticles from '@/components/help-center/TrendingArticles';
+import { searchHelp } from '@/lib/help-center-search';
 import '../help-center.css';
 
 const BASE = '/help-center/user';
@@ -42,14 +43,20 @@ const FAQ_ITEMS = [
   {
     q: 'How do I connect my brokerage account?',
     a: 'On the Home page, choose Add Portfolio, then Connect your brokerage, and log in through the secure connection window (Plaid or SnapTrade). The window shows what access you are granting before you confirm. See Importing your portfolio from a brokerage for the full walkthrough.',
+    href: '/help-center/user/article/connecting-your-brokerage',
+    linkLabel: 'Connecting your external brokerage account',
   },
   {
     q: 'What is congressional trading data?',
     a: "Ezana aggregates publicly disclosed trades by members of Congress under the STOCK Act. Each trade shows the politician's name, party, chamber, stock traded, transaction type, estimated dollar range, and filing date.",
+    href: '/help-center/user/article/how-congressional-data-works',
+    linkLabel: 'How congressional data works',
   },
   {
     q: 'Can I export my portfolio data?',
     a: 'See the Exporting your data article for what can be exported today and how to request a copy of your account data.',
+    href: '/help-center/user/article/exporting-your-data',
+    linkLabel: 'Exporting your data',
   },
   {
     q: 'How do I contact support?',
@@ -67,25 +74,14 @@ export default function UserHelpCenterPage() {
    * cards even when the user hasn't clicked into a category yet.
    */
   const filteredCategories = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
+    const q = searchQuery.trim();
     if (!q) return USER_CATEGORIES;
+    /* Same token index as the type-ahead, so "connect brokerage" or "link my
+       broker" filter to the right articles (a raw substring match did not). */
+    const hits = new Set(searchHelp(q, { audience: 'user', limit: 200 }).map((r) => r.slug));
     return USER_CATEGORIES.map((cat) => ({
       ...cat,
-      articles: cat.articles.filter((a) => {
-        const meta = USER_ARTICLES[a.slug];
-        const haystack = [
-          a.title,
-          cat.title,
-          cat.description,
-          meta?.title,
-          meta?.category,
-          meta?.content,
-        ]
-          .filter(Boolean)
-          .join(' ')
-          .toLowerCase();
-        return haystack.includes(q);
-      }),
+      articles: cat.articles.filter((a) => hits.has(a.slug)),
     })).filter((cat) => cat.articles.length > 0);
   }, [searchQuery]);
 
@@ -178,7 +174,13 @@ export default function UserHelpCenterPage() {
                   className="hc-subtitle px-6 py-4 text-sm"
                   style={{ borderTop: '1px solid var(--border-primary)' }}
                 >
-                  {item.a}
+                  <p className="m-0">{item.a}</p>
+                  {item.href ? (
+                    <Link href={item.href} className="hc-link mt-2 inline-flex items-center gap-1">
+                      {item.linkLabel || 'Read the article'}
+                      <i className="bi bi-arrow-right" aria-hidden="true" />
+                    </Link>
+                  ) : null}
                 </div>
               )}
             </div>
