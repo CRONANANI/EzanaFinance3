@@ -25,6 +25,13 @@ export const USER_DASHBOARD_ROUTES = [
   '/kairos-signal',
   '/settings',
   '/org-team-hub',
+  /* App-shell tools that were reachable signed out (a logged-out visitor could
+     click Sonar in the app nav and land inside the app). */
+  '/sonar',
+  '/research-copilot',
+  '/terminal',
+  '/org-trading',
+  '/org-competitions',
 ];
 
 /** Logged-in partners; unauthenticated users go to partner login */

@@ -1,11 +1,15 @@
 import Link from 'next/link';
+import { safeInternalPath } from '@/lib/sanitize';
 
 export const metadata = {
   title: 'Login | Ezana Finance',
   description: 'Sign in to your Ezana Finance account as a user or partner.',
 };
 
-export default function LoginChoicePage() {
+export default function LoginChoicePage({ searchParams }) {
+  /* Carry a destination (e.g. from /auth/continue) through to each sign-in. */
+  const target = safeInternalPath(searchParams?.redirect ?? searchParams?.next, '');
+  const withRedirect = (href) => (target ? `${href}?redirect=${encodeURIComponent(target)}` : href);
   return (
     <div className="signin-dark-lock relative min-h-screen w-full flex flex-col items-center justify-center bg-[#f8fafb] px-4 py-10 text-[#0f172a]">
       {/* Ambient glows */}
@@ -27,7 +31,7 @@ export default function LoginChoicePage() {
 
         <div className="flex flex-col gap-4">
           <Link
-            href="/auth/signin"
+            href={withRedirect('/auth/signin')}
             className="portal-login-choice group flex min-h-[6.5rem] items-center gap-4 rounded-xl border border-emerald-500/25 bg-emerald-500/5 p-4 transition-all hover:border-emerald-400/50 hover:bg-emerald-500/10"
           >
             <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 transition-colors group-hover:bg-emerald-500/25">
@@ -43,7 +47,7 @@ export default function LoginChoicePage() {
           </Link>
 
           <Link
-            href="/auth/partner-login"
+            href={withRedirect('/auth/partner-login')}
             className="portal-login-choice group flex min-h-[6.5rem] items-center gap-4 rounded-xl border border-amber-400/25 bg-amber-500/5 p-4 transition-all hover:border-amber-400/50 hover:bg-amber-500/10"
           >
             <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-amber-500/15 transition-colors group-hover:bg-amber-500/25">
@@ -59,7 +63,7 @@ export default function LoginChoicePage() {
           </Link>
 
           <Link
-            href="/auth/org-login"
+            href={withRedirect('/auth/org-login')}
             className="portal-login-choice group flex min-h-[6.5rem] items-center gap-4 rounded-xl border border-indigo-400/25 bg-indigo-500/5 p-4 transition-all hover:border-indigo-400/50 hover:bg-indigo-500/10"
           >
             <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-500/15 transition-colors group-hover:bg-indigo-500/25">
@@ -76,7 +80,7 @@ export default function LoginChoicePage() {
         <p className="mt-6 text-center text-sm text-slate-600">
           Don&apos;t have an account?{' '}
           <Link
-            href="/auth/signup"
+            href={withRedirect('/auth/signup')}
             className="font-medium text-emerald-600 hover:text-emerald-700 hover:underline"
           >
             Sign up

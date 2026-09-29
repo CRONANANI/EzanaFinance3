@@ -254,7 +254,7 @@ export default function EzanaQLBar({ datasetScope = null, seedQuery = '', onResu
           {/^(Running|Exporting)/.test(error) ? (
             <>
               {' '}
-              <a href="/signup">Create one</a>.
+              <a href="/auth/signup">Create one</a>.
             </>
           ) : null}
         </p>

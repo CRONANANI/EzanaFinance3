@@ -20,8 +20,15 @@ export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  /* Destination after sign-up and verification (?redirect=, or ?next=). */
+  const [redirectTo, setRedirectTo] = useState('');
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const dest = params.get('redirect') || params.get('next');
+    if (dest && dest.startsWith('/') && !dest.startsWith('//') && !dest.includes('\\')) {
+      setRedirectTo(dest);
+    }
     const e = params.get('error');
     if (e) {
       try {
@@ -92,7 +99,11 @@ export default function SignUpPage() {
 
       /* With Supabase "Confirm email" off, signUp creates the user and session; we verify via 6-digit code only. */
       if (data.user) {
-        router.push('/auth/verify-email');
+        router.push(
+          redirectTo
+            ? `/auth/verify-email?redirect=${encodeURIComponent(redirectTo)}`
+            : '/auth/verify-email',
+        );
         return;
       }
 

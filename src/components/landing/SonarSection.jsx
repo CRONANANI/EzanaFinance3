@@ -1969,10 +1969,16 @@ export function SonarSection() {
                   <p className="snr-gate-title">{gateTitle}</p>
                   <p className="snr-gate-sub">{gateSub}</p>
                   <div className="snr-gate-actions">
-                    <a className="snr-gate-btn snr-gate-btn-ghost" href="/signin?next=/sonar">
+                    <a
+                      className="snr-gate-btn snr-gate-btn-ghost"
+                      href="/auth/continue?next=/sonar"
+                    >
                       Log in
                     </a>
-                    <a className="snr-gate-btn snr-gate-btn-solid" href="/signup?next=/sonar">
+                    <a
+                      className="snr-gate-btn snr-gate-btn-solid"
+                      href="/auth/continue?intent=signup&next=/sonar"
+                    >
                       Sign up free
                     </a>
                   </div>

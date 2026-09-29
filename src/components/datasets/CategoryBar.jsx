@@ -179,7 +179,9 @@ export default function CategoryBar({ active, activeItem }) {
   // Send the visitor back to the dataset page they were reading. usePathname is
   // deliberate over useSearchParams: the latter forces the whole bar (and so
   // every dataset page) into a Suspense boundary under the App Router.
-  const signInHref = pathname ? `/signin?next=${encodeURIComponent(pathname)}` : '/signin';
+  const signInHref = pathname
+    ? `/auth/signin?redirect=${encodeURIComponent(pathname)}`
+    : '/auth/signin';
 
   /* Left from the trigger, top from the whole GREEN BLOCK. Hanging the panel
      off the trigger's own bottom edge put it 4px inside the block (measured:
@@ -347,7 +349,7 @@ export default function CategoryBar({ active, activeItem }) {
             <Link href={signInHref} className="dscat-btn dscat-btn--ghost">
               Log in
             </Link>
-            <Link href="/signup" className="dscat-btn dscat-btn--solid">
+            <Link href="/auth/signup" className="dscat-btn dscat-btn--solid">
               Sign up
             </Link>
           </>

@@ -50,7 +50,7 @@ const DATASET_MENU = DATASET_TAXONOMY.map((d) => ({
 
 export function Navbar() {
   const pathname = usePathname();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, loading: authLoading } = useAuth();
   const hasFullBetaAccess = hasBetaFullAccess(user);
   const { isOrgUser } = useOrg();
   useActivityTracker();
@@ -226,7 +226,11 @@ export function Navbar() {
     isTermsOfService ||
     isAccessibility ||
     isEzanaEcho ||
-    isEzanaApi;
+    isEzanaApi ||
+    /* The app top nav (Dashboard, Research, Trading, Sonar, ...) is never
+       rendered for an anonymous visitor, whatever the route: once the session
+       has resolved with no user, public app routes get the marketing nav. */
+    (!authLoading && !isAuthenticated);
   const isResearchActive =
     pathname?.includes('/inside-the-capitol') ||
     pathname?.includes('/company-research') ||
@@ -621,7 +625,7 @@ export function Navbar() {
             </span>
           </div>
           <div className="nav-sign-in-wrap nav-sign-in-wrap--echo-article">
-            <a href="/auth/login" className="nav-link nav-link-text">
+            <a href="/auth/continue" className="nav-link nav-link-text">
               Login
             </a>
             <a href="/auth/partner/apply" className="nav-link nav-link-text nav-partner-pill">
@@ -790,7 +794,7 @@ export function Navbar() {
 
           {/* Desktop sign-in — hidden on mobile via CSS */}
           <div className="nav-sign-in-wrap">
-            <a href="/auth/login" className="nav-link nav-link-text">
+            <a href="/auth/continue" className="nav-link nav-link-text">
               Login
             </a>
             <a href="/auth/partner/apply" className="nav-link nav-link-text">
@@ -805,7 +809,7 @@ export function Navbar() {
                 {/* Auth buttons at top */}
                 <div className="mobile-nav-auth">
                   <a
-                    href="/auth/login"
+                    href="/auth/continue"
                     className="mobile-nav-auth-btn mobile-nav-login"
                     onClick={() => setMobileMenuOpen(false)}
                   >

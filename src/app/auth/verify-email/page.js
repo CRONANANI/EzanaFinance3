@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase-browser';
 import { OtpInput } from '@/components/auth/OtpInput';
@@ -15,6 +15,15 @@ export default function VerifyEmailPage() {
   const [maskedEmail, setMaskedEmail] = useState('');
   const [cooldown, setCooldown] = useState(0);
   const router = useRouter();
+  /* Where to land once verified: a same-origin path from ?redirect= (set by
+     sign-up), else Home. */
+  const destRef = useRef('/home');
+  useEffect(() => {
+    const raw = new URLSearchParams(window.location.search).get('redirect');
+    if (raw && raw.startsWith('/') && !raw.startsWith('//') && !raw.includes('\\')) {
+      destRef.current = raw;
+    }
+  }, []);
 
   const redirectIfAlreadyVerified = useCallback(async () => {
     const {
@@ -31,7 +40,7 @@ export default function VerifyEmailPage() {
       .maybeSingle();
 
     if (profile?.email_verified) {
-      router.replace('/home');
+      router.replace(destRef.current);
     }
   }, [router]);
 
@@ -91,7 +100,7 @@ export default function VerifyEmailPage() {
         setSuccess('Email verified!');
         /* 1s before redirect: the staggered ring draw (0.15s + 6 * 0.05s +
            0.45s) completes inside it. */
-        setTimeout(() => router.replace('/home'), 1000);
+        setTimeout(() => router.replace(destRef.current), 1000);
       } else {
         setOtpStatus('error');
         setError(data.error);

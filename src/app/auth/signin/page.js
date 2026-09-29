@@ -8,10 +8,10 @@ export const metadata = {
 };
 
 export default function SignInPage({ searchParams }) {
-  const redirectTo =
-    safeInternalPath(searchParams?.redirect, '') !== ''
-      ? safeInternalPath(searchParams?.redirect)
-      : '/home';
+  /* ?redirect= is canonical; ?next= is accepted too (older links, the brief's
+     /sign-in?next= form). */
+  const requested = searchParams?.redirect ?? searchParams?.next;
+  const redirectTo = safeInternalPath(requested, '') !== '' ? safeInternalPath(requested) : '/home';
   const oauthErrorMessage =
     typeof searchParams?.error === 'string' ? searchParams.error : undefined;
 

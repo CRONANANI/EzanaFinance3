@@ -22,6 +22,7 @@
     "test:ezanaql": "node scripts/check-ezanaql-generate.mjs",
     "test:tracker": "node scripts/check-politician-tracker.mjs",
     "test:help-search": "node --no-warnings scripts/check-help-search.mjs",
+    "test:e2e": "playwright test",
     "check:help-routes": "node --no-warnings scripts/check-help-article-routes.mjs",
     "test:metrics": "node scripts/check-profile-metrics.mjs",
     "test:whale": "node scripts/check-whale-score.mjs",
@@ -114,6 +115,7 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^16.3.5",
+    "@playwright/test": "^1.56.1",
     "autoprefixer": "^10.6.1",
     "dependency-cruiser": "^18.3.1",
     "dotenv": "^16.6.1",

@@ -47,3 +47,7 @@ public/app-legacy/
 # Husky internals (the user-authored hooks live at .husky/<hook-name>)
 .husky/_/
 .env*.local
+
+# Playwright
+/test-results/
+/playwright-report/
