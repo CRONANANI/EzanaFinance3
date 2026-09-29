@@ -194,6 +194,11 @@
   font-size: 0.6875rem;
   font-weight: 600;
   color: var(--text-secondary);
+  /* "Dimension: Signal" titles run longer than the old bare labels; hold one line. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .psc-sig-json {
   margin: 0;

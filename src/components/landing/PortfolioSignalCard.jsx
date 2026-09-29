@@ -35,135 +35,98 @@ const START = 8412.37;
 const fmtUSD = (n) =>
   '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-/* JSON snippet builders — `j` is a syntax-highlighted span, `raw` is plain text.
-   Every space/newline is explicit so the rendered <pre> matches exactly.
-
-   The three signal blocks rotate with the pinned walkthrough: as each of the
-   seven dimensions comes on screen it leads the trio, followed by the next
-   two in taxonomy order. Unpinned, the card rests on the original three. */
+/* JSON snippet builders: `j` is a syntax-highlighted span, `raw` is plain text.
+   Every space/newline is explicit so the rendered <pre> matches exactly. */
 const j = (c, t) => ({ c, t });
 const raw = (t) => ({ t });
 
-/* One snippet per taxonomy dimension. Titles are read from DATASET_TAXONOMY at
-   render time, so they can never drift from the nav or the orbital map; only
-   the illustrative JSON lives here. whispers, capitol and titans are the
-   original three blocks, moved verbatim. */
-const SIGNAL_JSON_BY_ID = {
-  whispers: [
-    j('k', '"signal"'),
-    raw(': '),
-    j('s', '"consumer_spending"'),
-    raw(',\n'),
-    j('k', '"sector"'),
-    raw(': '),
-    j('s', '"discretionary"'),
-    raw(', '),
-    j('k', '"\u039430d"'),
-    raw(': '),
-    j('n', '+6.2%'),
-  ],
+/* One snippet: `"signal": <name>,\n<k1>: <v1>, <k2>: <v2>`. */
+const sig = (name, k1, v1, k2, v2) => [
+  j('k', '"signal"'),
+  raw(': '),
+  j('s', `"${name}"`),
+  raw(',\n'),
+  j('k', `"${k1}"`),
+  raw(': '),
+  v1,
+  raw(', '),
+  j('k', `"${k2}"`),
+  raw(': '),
+  v2,
+];
+
+/* Three signals per dimension, 21 unique snippets. The card always shows the
+   trio of the dimension on screen; nothing repeats between dimensions (no
+   `signal` value appears twice in this file; scripts/check-signal-uniqueness.mjs
+   enforces it). Values are illustrative marketing placeholders. Keys mirror
+   DATASET_TAXONOMY ids. */
+const SIGNALS_BY_DIMENSION = {
   capitol: [
-    j('k', '"signal"'),
-    raw(': '),
-    j('s', '"government_contracts"'),
-    raw(',\n'),
-    j('k', '"ticker"'),
-    raw(': '),
-    j('s', '"PLTR"'),
-    raw(', '),
-    j('k', '"value"'),
-    raw(': '),
-    j('s', '"$27M"'),
+    sig('government_contracts', 'ticker', j('s', '"PLTR"'), 'value', j('s', '"$27M"')),
+    sig('congress_trade', 'chamber', j('s', '"house"'), 'side', j('n', 'buy')),
+    sig('lobbying_spend', 'sector', j('s', '"defense"'), 'Δqoq', j('n', '+18%')),
   ],
   titans: [
-    j('k', '"signal"'),
-    raw(': '),
-    j('s', '"institutional_sell"'),
-    raw(',\n'),
-    j('k', '"filing"'),
-    raw(': '),
-    j('s', '"13F"'),
-    raw(', '),
-    j('k', '"\u0394position"'),
-    raw(': '),
-    j('neg', '-1.2M'),
+    sig('institutional_sell', 'filing', j('s', '"13F"'), 'Δposition', j('neg', '-1.2M')),
+    sig('new_position', 'manager', j('s', '"macro_fund"'), 'weight', j('n', '2.4%')),
+    sig('insider_buy', 'form', j('s', '"4"'), 'shares', j('n', '+40k')),
   ],
   eyes: [
-    j('k', '"signal"'),
-    raw(': '),
-    j('s', '"satellite_footfall"'),
-    raw(',\n'),
-    j('k', '"sector"'),
-    raw(': '),
-    j('s', '"retail"'),
-    raw(', '),
-    j('k', '"\u039430d"'),
-    raw(': '),
-    j('n', '+4.8%'),
+    sig('satellite_footfall', 'sector', j('s', '"retail"'), 'Δ30d', j('n', '+4.8%')),
+    sig('parking_density', 'chain', j('s', '"big_box"'), 'Δwow', j('neg', '-2.1%')),
+    sig('tanker_traffic', 'basin', j('s', '"gulf"'), 'vessels', j('n', '+11')),
+  ],
+  whispers: [
+    sig('consumer_spending', 'sector', j('s', '"discretionary"'), 'Δ30d', j('n', '+6.2%')),
+    sig('app_downloads', 'category', j('s', '"fintech"'), 'rank_Δ', j('n', '+3')),
+    sig('search_interest', 'term', j('s', '"refinance"'), 'Δ7d', j('neg', '-9%')),
   ],
   hive: [
-    j('k', '"signal"'),
-    raw(': '),
-    j('s', '"retail_chatter"'),
-    raw(',\n'),
-    j('k', '"cohort"'),
-    raw(': '),
-    j('s', '"retail_boards"'),
-    raw(', '),
-    j('k', '"mentions_7d"'),
-    raw(': '),
-    j('n', '+212%'),
+    sig('retail_chatter', 'cohort', j('s', '"retail_boards"'), 'mentions_7d', j('n', '+212%')),
+    sig('copy_flow', 'strategy', j('s', '"momentum"'), 'followers', j('n', '+1.4k')),
+    sig('prediction_market', 'event', j('s', '"rate_cut"'), 'odds', j('n', '64%')),
   ],
   lighthouse: [
-    j('k', '"signal"'),
-    raw(': '),
-    j('s', '"shipping_volume"'),
-    raw(',\n'),
-    j('k', '"route"'),
-    raw(': '),
-    j('s', '"transpacific"'),
-    raw(', '),
-    j('k', '"\u039430d"'),
-    raw(': '),
-    j('neg', '-3.1%'),
+    sig('shipping_volume', 'route', j('s', '"transpacific"'), 'Δ30d', j('neg', '-3.1%')),
+    sig('fx_reserve_shift', 'region', j('s', '"gcc"'), 'Δqoq', j('n', '+5%')),
+    sig('sovereign_spread', 'issuer', j('s', '"em_10y"'), 'bps', j('neg', '+35')),
   ],
   regulatory: [
-    j('k', '"signal"'),
-    raw(': '),
-    j('s', '"rule_filing"'),
-    raw(',\n'),
-    j('k', '"agency"'),
-    raw(': '),
-    j('s', '"SEC"'),
-    raw(', '),
-    j('k', '"stage"'),
-    raw(': '),
-    j('s', '"comment_period"'),
+    sig('rule_filing', 'agency', j('s', '"SEC"'), 'stage', j('s', '"comment_period"')),
+    sig(
+      'antitrust_review',
+      'deal',
+      j('s', '"vertical_merger"'),
+      'status',
+      j('s', '"second_request"'),
+    ),
+    sig('tariff_schedule', 'hs_code', j('s', '"8542"'), 'rate_Δ', j('n', '+10pp')),
   ],
 };
 
-/* Resting order when nothing is pinned: the original three blocks. */
-const DEFAULT_TRIO = ['whispers', 'capitol', 'titans'];
+const SIGNAL_TITLES = {
+  capitol: ['Contract award', 'Congressional trade', 'Lobbying spend'],
+  titans: ['13F change', 'New institutional position', 'Insider filing'],
+  eyes: ['Satellite footfall', 'Parking density', 'Tanker traffic'],
+  whispers: ['Card spend', 'App downloads', 'Search interest'],
+  hive: ['Retail chatter', 'Copy flow', 'Prediction market'],
+  lighthouse: ['Shipping volume', 'Reserve shift', 'Sovereign spread'],
+  regulatory: ['Rule filing', 'Antitrust review', 'Tariff schedule'],
+};
 
 export function PortfolioSignalCard({ activeLabel = null, activeColor = 'var(--emerald)' }) {
-  /* The three visible blocks are a rotating window over the taxonomy: the
-     active dimension leads, the next two follow, wrapping at the end. When
-     nothing is pinned the card shows the resting trio, which is also what the
-     server renders (DimensionScrollSection starts unpinned, so activeLabel is
-     null on first paint). */
+  /* The card always shows exactly the three snippets of the dimension on
+     screen. With nothing pinned (which is also what the server renders:
+     DimensionScrollSection starts unpinned, so activeLabel is null on first
+     paint) it rests on the first taxonomy dimension's trio. */
   const activeIdx = DATASET_TAXONOMY.findIndex((d) => d.label === activeLabel);
-  const visible =
-    activeIdx === -1
-      ? DEFAULT_TRIO
-      : [0, 1, 2].map((o) => DATASET_TAXONOMY[(activeIdx + o) % DATASET_TAXONOMY.length].id);
-  const signals = visible
-    .map((id) => {
-      const dim = DATASET_TAXONOMY.find((d) => d.id === id);
-      return dim && SIGNAL_JSON_BY_ID[id]
-        ? { id, name: dim.label, json: SIGNAL_JSON_BY_ID[id] }
-        : null;
-    })
-    .filter(Boolean);
+  const dim = activeIdx === -1 ? DATASET_TAXONOMY[0] : DATASET_TAXONOMY[activeIdx];
+  const trio = SIGNALS_BY_DIMENSION[dim.id] || [];
+  const signals = trio.map((json, i) => ({
+    id: `${dim.id}-${i}`,
+    name: SIGNAL_TITLES[dim.id]?.[i] ? `${dim.label}: ${SIGNAL_TITLES[dim.id][i]}` : dim.label,
+    json,
+  }));
   const valueRef = useRef(null);
   const ranRef = useRef(false);
 
@@ -260,9 +223,9 @@ export function PortfolioSignalCard({ activeLabel = null, activeColor = 'var(--e
         <span className="psc-why-headwind">headwinds</span> to watch out for:
       </div>
 
-      {/* Keying the container by the leading id restarts the entry animation
-          each time the window rotates. */}
-      <div className="psc-signals" key={signals[0]?.id || 'default'}>
+      {/* Keying the container by the dimension restarts the entry animation
+          each time the dimension on screen changes. */}
+      <div className="psc-signals" key={dim.id}>
         {signals.map((s, i) => (
           <div
             className={`psc-signal${activeIdx !== -1 && i === 0 ? ' psc-signal--active' : ''}`}

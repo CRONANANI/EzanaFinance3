@@ -91,6 +91,11 @@ jobs:
         # peter-thiel-2026 page is exempt.
         run: npm run check:echo-stats
 
+      - name: Landing signal snippets are unique per dimension
+        # The "Your portfolio" card shows the three snippets of the dimension
+        # on screen; no signal may repeat across the seven dimensions.
+        run: npm run check:signals
+
       - name: Architecture rules (dependency-cruiser)
         # No dependency cycles; presentation layer (components/hooks/contexts)
         # must not reach the server Supabase surface, even transitively.
