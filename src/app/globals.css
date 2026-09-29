@@ -2401,14 +2401,20 @@ html:has(.landing-page) .navbar .logo,
    have been a coincidence rather than a rule.
 
    Only while open. The closed state keeps pointer-events: none above, so a
-   fading panel cannot swallow a hover on the way out. */
+   fading panel cannot swallow a hover on the way out.
+
+   The height is no longer a fixed 8px: the sticky navbar changes height on
+   scroll, so Navbar.js measures the real trigger-bottom to panel-top gap on
+   open and writes it (plus 2px) to --nav-datasets-gap. The strip still ends
+   at the trigger's bottom edge, so it never climbs into the link row. 8px is
+   the measured default for the first frame. */
 .navbar .nav-datasets-mega.is-open::before {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
   bottom: 100%;
-  height: 8px;
+  height: var(--nav-datasets-gap, 8px);
 }
 
 .nav-datasets-panel {

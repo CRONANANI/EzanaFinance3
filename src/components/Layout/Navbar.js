@@ -67,44 +67,90 @@ export function Navbar() {
 
   /* Hover intent for the Datasets menu.
      -------------------------------------------------------------------------
-     Two things used to close it out from under the pointer. The trigger's
-     onClick was a toggle, so hovering (which opens) and then clicking the word
-     closed it; on a touch laptop the emulated mouseenter and the click arrive
-     from one tap, so it opened and shut in the same gesture. And mouseleave
-     closed with no delay, while the panel is anchored to the centered
-     .nav-menu rather than to the trigger, so the pointer's path down to it
-     crosses a corridor belonging to neither element.
+     The trigger's click pins rather than toggles (a hover-then-click used to
+     close it; on a touch laptop the emulated enter and the click arrive from
+     one tap). The panel is anchored to the centered .nav-menu rather than to
+     the trigger, so the pointer's path down to it crosses a corridor that
+     belongs to neither element.
 
-     Opening stays immediate. Closing waits long enough to cross that corridor,
-     and re-entering either the trigger or the panel cancels it. */
-  const cancelDatasetsClose = useCallback(() => {
-    if (datasetsCloseTimer.current) {
-      clearTimeout(datasetsCloseTimer.current);
-      datasetsCloseTimer.current = null;
+     So: opening waits OPEN_DELAY_MS, cancelled on leave, so brushing across
+     "Datasets" on the way to Pricing or Sign in never flashes the 1360px panel
+     open. Closing waits CLOSE_GRACE_MS, long enough for a slow diagonal into
+     the panel, and re-entering the trigger or the panel cancels it. Only
+     mouse pointers hover: touch and pen go through click/pin alone. On open
+     the real trigger-to-panel gap is measured into --nav-datasets-gap, which
+     sizes the CSS hover bridge at any navbar height (the sticky navbar
+     changes height on scroll). */
+  const OPEN_DELAY_MS = 90;
+  const CLOSE_GRACE_MS = 320;
+  const datasetsOpenTimer = useRef(null);
+  const datasetsMegaRef = useRef(null);
+  const datasetsTriggerRef = useRef(null);
+
+  const clearDatasetsTimer = useCallback((ref) => {
+    if (ref.current) {
+      clearTimeout(ref.current);
+      ref.current = null;
     }
   }, []);
 
-  const openDatasetsMenu = useCallback(() => {
-    cancelDatasetsClose();
-    setDatasetsOpen(true);
-  }, [cancelDatasetsClose]);
+  const cancelDatasetsClose = useCallback(() => {
+    clearDatasetsTimer(datasetsCloseTimer);
+  }, [clearDatasetsTimer]);
 
-  const scheduleDatasetsClose = useCallback(() => {
-    if (datasetsPinned) return;
-    cancelDatasetsClose();
-    datasetsCloseTimer.current = setTimeout(() => {
-      setDatasetsOpen(false);
-      datasetsCloseTimer.current = null;
-    }, 220);
-  }, [cancelDatasetsClose, datasetsPinned]);
+  /* Measure the true corridor between trigger and panel so the CSS bridge
+     covers it at any navbar height, instead of a fixed 8px guess. */
+  const measureDatasetsGap = useCallback(() => {
+    const t = datasetsTriggerRef.current;
+    const m = datasetsMegaRef.current;
+    if (!t || !m) return;
+    const gap = Math.max(
+      0,
+      Math.round(m.getBoundingClientRect().top - t.getBoundingClientRect().bottom),
+    );
+    m.style.setProperty('--nav-datasets-gap', `${gap + 2}px`);
+  }, []);
+
+  const isHoverPointer = (e) => !e || !e.pointerType || e.pointerType === 'mouse';
+
+  const openDatasetsMenu = useCallback(
+    (e) => {
+      if (!isHoverPointer(e)) return;
+      cancelDatasetsClose();
+      if (datasetsOpen) return;
+      clearDatasetsTimer(datasetsOpenTimer);
+      datasetsOpenTimer.current = setTimeout(() => {
+        datasetsOpenTimer.current = null;
+        setDatasetsOpen(true);
+        requestAnimationFrame(measureDatasetsGap);
+      }, OPEN_DELAY_MS);
+    },
+    [cancelDatasetsClose, clearDatasetsTimer, datasetsOpen, measureDatasetsGap],
+  );
+
+  const scheduleDatasetsClose = useCallback(
+    (e) => {
+      if (!isHoverPointer(e)) return;
+      clearDatasetsTimer(datasetsOpenTimer);
+      if (datasetsPinned) return;
+      cancelDatasetsClose();
+      datasetsCloseTimer.current = setTimeout(() => {
+        setDatasetsOpen(false);
+        datasetsCloseTimer.current = null;
+      }, CLOSE_GRACE_MS);
+    },
+    [cancelDatasetsClose, clearDatasetsTimer, datasetsPinned],
+  );
 
   const closeDatasetsMenu = useCallback(() => {
+    clearDatasetsTimer(datasetsOpenTimer);
     cancelDatasetsClose();
     setDatasetsPinned(false);
     setDatasetsOpen(false);
-  }, [cancelDatasetsClose]);
+  }, [cancelDatasetsClose, clearDatasetsTimer]);
 
   const onDatasetsTriggerClick = useCallback(() => {
+    clearDatasetsTimer(datasetsOpenTimer);
     cancelDatasetsClose();
     setDatasetsPinned((pinned) => {
       /* Only a click on an already-pinned menu closes it. A click on a menu
@@ -115,11 +161,18 @@ export function Navbar() {
         return false;
       }
       setDatasetsOpen(true);
+      requestAnimationFrame(measureDatasetsGap);
       return true;
     });
-  }, [cancelDatasetsClose]);
+  }, [cancelDatasetsClose, clearDatasetsTimer, measureDatasetsGap]);
 
-  useEffect(() => () => cancelDatasetsClose(), [cancelDatasetsClose]);
+  useEffect(
+    () => () => {
+      clearDatasetsTimer(datasetsOpenTimer);
+      clearDatasetsTimer(datasetsCloseTimer);
+    },
+    [clearDatasetsTimer],
+  );
 
   // Echo-article nav: reading-progress fill node (width written straight to
   // the DOM — no re-render per scroll frame), plus the headline swap state.
@@ -453,10 +506,11 @@ export function Navbar() {
     const openDatasets = () => {
       setDatasetsOpen(true);
       setDatasetsPinned(true);
+      requestAnimationFrame(measureDatasetsGap);
     };
     window.addEventListener('ezana:open-datasets-menu', openDatasets);
     return () => window.removeEventListener('ezana:open-datasets-menu', openDatasets);
-  }, []);
+  }, [measureDatasetsGap]);
 
   // Echo-article reading progress: rAF-throttled scroll listener writes the
   // fill width straight to the node. Deterministic (no Math.random); the fill
@@ -617,10 +671,11 @@ export function Navbar() {
             <li
               className="nav-item nav-datasets"
               ref={datasetsRef}
-              onMouseEnter={openDatasetsMenu}
-              onMouseLeave={scheduleDatasetsClose}
+              onPointerEnter={openDatasetsMenu}
+              onPointerLeave={scheduleDatasetsClose}
             >
               <button
+                ref={datasetsTriggerRef}
                 type="button"
                 className="nav-link nav-datasets-trigger"
                 aria-haspopup="true"
@@ -635,9 +690,10 @@ export function Navbar() {
                 />
               </button>
               <div
+                ref={datasetsMegaRef}
                 className={`nav-datasets-mega${datasetsOpen ? ' is-open' : ''}`}
-                onMouseEnter={openDatasetsMenu}
-                onMouseLeave={scheduleDatasetsClose}
+                onPointerEnter={openDatasetsMenu}
+                onPointerLeave={scheduleDatasetsClose}
                 role="menu"
                 aria-label="Datasets"
               >
