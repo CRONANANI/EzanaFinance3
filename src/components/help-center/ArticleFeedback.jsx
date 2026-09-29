@@ -6,7 +6,7 @@ import { ThumbsUp, ThumbsDown } from 'lucide-react';
 const MAX_COMMENT = 300;
 
 /**
- * "Was this article helpful?" — thumbs up/down + an optional 300-char comment.
+ * "Was this article helpful?": thumbs up/down + an optional 300-char comment.
  * Used on both user and partner help articles. POSTs to the feedback API;
  * degrades gracefully (never blocks the page) and prevents double-submits.
  */
@@ -117,7 +117,7 @@ export default function ArticleFeedback({ section, articleSlug }) {
             <div className="flex items-center gap-3">
               {status === 'error' && (
                 <span className="text-xs" style={{ color: 'var(--negative)' }} role="alert">
-                  Couldn&apos;t save — try again
+                  Couldn&apos;t save. Try again.
                 </span>
               )}
               <button

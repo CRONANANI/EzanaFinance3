@@ -16,6 +16,7 @@
     "check:echo-figures": "node scripts/check-echo-figure-count.mjs",
     "check:echo-stats": "node --no-warnings scripts/check-echo-stat-grid.mjs",
     "check:signals": "node scripts/check-signal-uniqueness.mjs",
+    "check:help-emdash": "node scripts/check-help-center-emdash.mjs",
     "test": "npm run test:whale && npm run test:house && npm run test:competitions && npm run test:judging && npm run test:recruiting && npm run test:council && npm run test:metrics && npm run test:security && npm run test:ezanaql",
     "test:security": "node scripts/check-security-guards.mjs",
     "test:ezanaql": "node scripts/check-ezanaql-generate.mjs",

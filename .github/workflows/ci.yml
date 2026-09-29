@@ -84,6 +84,11 @@ jobs:
         # two inline links.
         run: npm run check:help-links
 
+      - name: No em dashes in Help Center copy
+        # House style: Help Center articles, pages and components use commas,
+        # colons, periods or parentheses, never an em dash or &mdash;.
+        run: npm run check:help-emdash
+
       - name: Echo stat grids carry exactly four stats
         # The reader renders one centred row of four stat tiles and caps at
         # four; every stat-grid block in an Echo article module must carry
