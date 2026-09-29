@@ -35,7 +35,7 @@ body.ekp-rail-dim .echo-grail::after {
   content: '';
   position: absolute;
   inset: 0;
-  z-index: 3;
+  z-index: 4;
   background: color-mix(in srgb, var(--echo-page-bg, var(--bg-primary)) 65%, transparent);
   pointer-events: none;
 }
@@ -160,10 +160,190 @@ body.ekp-rail-dim .echo-grail::after {
   }
 }
 
+/* Stack runways exist only on the three-column layout. */
+.echo-grail-stack-gap {
+  display: none;
+}
+@media (min-width: 1280px) {
+  .echo-grail-stack-gap {
+    display: block;
+  }
+}
+
+/* ── metric placement: under the globe inline (<1280px), closing the rail on
+   the three-column layout, where the sticky block is globe-only ── */
+.echo-grail-metric--end {
+  display: none;
+}
+
+/* ── >=1280px: sticky globe + scroll-driven card stack + city news ─────────
+   The rail stretches to the grid row (align-self: stretch above), so the
+   sticky globe block travels the whole article. It sits ABOVE the cards
+   (z-index 3, opaque page ground): cards scroll up under it until they reach
+   their own sticky line, --echo-grail-card-top, written by EchoGlobeRail as
+   the sticky block's top + height + 12px. Every card is sticky at that same
+   line, so card N+1 slides up and covers card N; each carries its own
+   runway (a .echo-grail-stack-gap spacer before it) and a z-index that
+   increases down the stack. */
+@media (min-width: 1280px) {
+  .echo-grail-sticky {
+    z-index: 3;
+  }
+  .echo-grail-metric--inline {
+    display: none;
+  }
+  .echo-grail-metric--end {
+    display: block;
+    margin-top: 24px;
+  }
+  .echo-grail-cards {
+    z-index: 0;
+    background: transparent;
+    display: block;
+  }
+  .echo-grail-card {
+    position: sticky;
+    top: var(--echo-grail-card-top, 480px);
+    padding: 1rem;
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    background: var(--echo-page-bg, var(--bg-primary));
+    box-shadow: var(--shadow-sm);
+    transition:
+      border-color 0.15s ease,
+      background 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+  /* The runway per overtake. */
+  .echo-grail-stack-gap {
+    height: 40vh;
+  }
+  .echo-grail-card-city {
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+  }
+  .echo-grail-card-impact {
+    line-height: 1.65;
+  }
+  /* The card that has completed its overtake. Opaque (mixed into the page
+     ground, not a translucent wash) so the card beneath never shows through. */
+  .echo-grail-card.is-active {
+    border-color: var(--emerald);
+    background: color-mix(in srgb, var(--emerald) 8%, var(--echo-page-bg, var(--bg-primary)));
+    box-shadow: var(--shadow-glow);
+  }
+
+  .echo-grail-globe-row {
+    position: relative;
+  }
+  .echo-grail-globe-row--below .echo-grail-globe {
+    margin-bottom: 12px;
+  }
+  /* Beside the grid when the viewport has room (measured in EchoGlobeRail);
+     otherwise under the globe, inside the sticky block. */
+  .echo-grail-news--right {
+    position: absolute;
+    top: 0;
+    left: calc(100% + 20px);
+    width: 300px;
+  }
+}
+
+/* ── city news card (branding guide standard card) ── */
+.echo-grail-news {
+  padding: 12px 14px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--echo-page-bg, var(--bg-primary));
+}
+.echo-grail-news-kicker {
+  margin: 0 0 8px;
+  font-size: 0.68rem;
+  color: var(--emerald);
+}
+.echo-grail-news-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.echo-grail-news-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+.echo-grail-news-item:hover .echo-grail-news-title {
+  color: var(--emerald);
+}
+.echo-grail-news-item:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.echo-grail-news-title {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color 0.15s ease;
+}
+.echo-grail-news-meta {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.66rem;
+  color: var(--text-muted);
+}
+.echo-grail-news-empty {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-faint);
+}
+.echo-grail-news-skel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.echo-grail-news-skel span {
+  display: block;
+  height: 0.7rem;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--surface-card-hover) 0%,
+    color-mix(in srgb, var(--surface-card-hover) 40%, transparent) 50%,
+    var(--surface-card-hover) 100%
+  );
+  background-size: 200% 100%;
+}
+.echo-grail-news-skel span:last-child {
+  width: 40%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .echo-grail-news-skel span {
+    animation: echoGrailShimmer 1.2s linear infinite;
+  }
+}
+@keyframes echoGrailShimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
 /* Card state changes stay (informational) but snap instead of animating. */
 @media (prefers-reduced-motion: reduce) {
   .echo-grail-card,
-  .echo-grail-card-impact {
+  .echo-grail-card-impact,
+  .echo-grail-news-title {
     transition: none;
   }
 }
