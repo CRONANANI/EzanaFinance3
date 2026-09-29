@@ -13,38 +13,19 @@ import { AnimatedNav } from '@/components/ui/AnimatedNav';
 import { MobileAuthNavDrawer } from '@/components/Layout/MobileAuthNavDrawer';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { isBetaLockedRoute, hasBetaFullAccess } from '@/lib/beta-locked-routes';
-import {
-  ChevronDown,
-  ArrowRight,
-  Landmark,
-  Building2,
-  Radar,
-  Globe,
-  Users,
-  TrendingUp,
-  ScrollText,
-} from 'lucide-react';
+import { ChevronDown, ArrowRight } from 'lucide-react';
 import { DATASET_TAXONOMY, isNavigable, isPreview } from '@/lib/datasets/taxonomy';
 import '@/components/ui/animated-nav.css';
 
-/* Landing-nav Datasets mega-menu — the SAME seven dimensions as the orbital map,
+/* Landing-nav Datasets mega-menu: the SAME seven dimensions as the orbital map,
    the in-page CategoryBar, and the signal map, built from the shared
-   DATASET_TAXONOMY so the nav can never drift. One Lucide icon per dimension;
-   roadmap (live:false) items render a muted "Soon" tag. */
-const DIMENSION_ICON = {
-  capitol: Landmark,
-  titans: Building2,
-  eyes: Radar,
-  whispers: TrendingUp,
-  hive: Users,
-  lighthouse: Globe,
-  regulatory: ScrollText,
-};
+   DATASET_TAXONOMY (label, colour token, Bootstrap icon) so the nav can never
+   drift. Roadmap (live:false) items render a muted "Soon" tag. */
 const DATASET_MENU = DATASET_TAXONOMY.map((d) => ({
   id: d.id,
   heading: d.label,
   color: d.color,
-  icon: DIMENSION_ICON[d.id],
+  biIcon: d.biIcon,
   items: d.items.map((it) => ({ label: it.label, href: it.href, live: it.live })),
 }));
 
@@ -704,17 +685,18 @@ export function Navbar() {
                 <div className="nav-datasets-panel">
                   <div className="nav-datasets-cols">
                     {DATASET_MENU.map((col) => {
-                      const ColIcon = col.icon;
                       return (
-                        <div key={col.id} className="nav-datasets-col">
+                        <div
+                          key={col.id}
+                          className="nav-datasets-col"
+                          style={{ '--nav-dim-color': col.color }}
+                        >
                           <p className="nav-datasets-col-head">
-                            {col.heading}
-                            <ColIcon
-                              size={14}
-                              aria-hidden
-                              className="nav-datasets-col-icon"
-                              style={{ color: col.color }}
+                            <i
+                              className={`bi ${col.biIcon} nav-datasets-col-icon`}
+                              aria-hidden="true"
                             />
+                            <span className="nav-datasets-col-label">{col.heading}</span>
                           </p>
                           {col.items.map((item) =>
                             isNavigable(item) ? (
@@ -868,8 +850,15 @@ export function Navbar() {
                   {mobileDatasetsOpen && (
                     <div className="mobile-nav-group">
                       {DATASET_MENU.map((col) => (
-                        <div key={col.id} className="mobile-nav-group-col">
-                          <p className="mobile-nav-group-head">{col.heading}</p>
+                        <div
+                          key={col.id}
+                          className="mobile-nav-group-col"
+                          style={{ '--nav-dim-color': col.color }}
+                        >
+                          <p className="mobile-nav-group-head">
+                            <i className={`bi ${col.biIcon}`} aria-hidden="true" />
+                            {col.heading}
+                          </p>
                           {col.items.map((item) =>
                             isNavigable(item) ? (
                               <a

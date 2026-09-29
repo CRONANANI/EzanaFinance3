@@ -257,7 +257,19 @@
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
-  color: var(--text-faint);
+  color: var(--nav-dim-color, var(--text-faint));
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.mobile-nav-group-head .bi {
+  font-size: 1rem;
+  line-height: 1;
+}
+/* Datasets in the drawer read in their dimension's colour too. */
+.mobile-nav-group-col
+  .mobile-nav-sublink:not(.mobile-nav-sublink--soon):not(.mobile-nav-sublink--all) {
+  color: var(--nav-dim-color, var(--text-secondary));
 }
 .mobile-nav-group-col:first-child .mobile-nav-group-head {
   margin-top: 0;

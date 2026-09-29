@@ -2366,7 +2366,7 @@ html:has(.landing-page) .navbar .logo,
   left: 50%;
   /* Wide enough for all 7 dimension buckets in ONE row; 96vw cap keeps it
      inside the viewport (no horizontal page scroll). */
-  width: min(1360px, 96vw);
+  width: min(1440px, 96vw);
   padding-top: 0.6rem;
   transform: translateX(-50%) translateY(-6px);
   opacity: 0;
@@ -2430,7 +2430,10 @@ html:has(.landing-page) .navbar .logo,
   /* All 7 buckets in a single row; columns top-aligned, heights vary by item
      count (expected). minmax(0,1fr) is REQUIRED so long labels wrap inside
      their track instead of blowing the column out past the panel. */
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  /* min-content, not 0: each column is at least as wide as its (nowrap)
+     dimension heading, so "Global Empire Lighthouse" stays on one line and
+     the other columns share what is left. Item labels still wrap. */
+  grid-template-columns: repeat(7, minmax(min-content, 1fr));
   gap: 0.4rem 0.7rem;
   align-items: start;
 }
@@ -2438,7 +2441,8 @@ html:has(.landing-page) .navbar .logo,
 .nav-datasets-col-head {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.25rem;
+  white-space: nowrap;
   margin: 0 0 0.35rem;
   /* Match .nav-datasets-item's 0.5rem horizontal padding so the header
      text left-aligns with the item labels in its column. */
@@ -2448,9 +2452,19 @@ html:has(.landing-page) .navbar .logo,
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-faint);
+  transition: color 0.15s ease;
 }
+/* Hovering a dimension's column (its header or any of its datasets) turns
+   the header to the dimension's colour. */
+.nav-datasets-col:hover .nav-datasets-col-head {
+  color: var(--nav-dim-color, var(--text-faint));
+}
+/* The icon leads the label on every column and inherits the dimension colour. */
 .nav-datasets-col-icon {
   flex-shrink: 0;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--nav-dim-color, currentColor);
 }
 
 .navbar .nav-datasets-item {
@@ -2509,7 +2523,8 @@ html:has(.landing-page) .navbar .logo,
 .nav-datasets-item-label {
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--text-primary);
+  /* Every dataset reads in its dimension's colour (set per column). */
+  color: var(--nav-dim-color, var(--text-primary));
   /* Let long labels ("Regulatory Investigations & Enforcement") wrap to two
      lines INSIDE their column instead of overflowing the track. */
   white-space: normal;

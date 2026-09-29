@@ -32,34 +32,10 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  Building2,
-  ChevronDown,
-  Globe,
-  Landmark,
-  Radar,
-  ScrollText,
-  TrendingUp,
-  Users,
-} from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { DATASET_TAXONOMY, isNavigable, isPreview } from '@/lib/datasets/taxonomy';
 import { useAuth } from '@/components/auth-context';
 import './category-bar.css';
-
-/* One Lucide icon per dimension. This duplicates DIMENSION_ICON in
-   src/components/Layout/Navbar.js on purpose, and it is a known drift risk:
-   the map is a local const there, and lifting it into the shared taxonomy is
-   the fix, but that edits Navbar.js, which this change deliberately leaves
-   alone. Keep the two in step until then. */
-const DIMENSION_ICON = {
-  capitol: Landmark,
-  titans: Building2,
-  eyes: Radar,
-  whispers: TrendingUp,
-  hive: Users,
-  lighthouse: Globe,
-  regulatory: ScrollText,
-};
 
 /* Long enough for the pointer to cross the gap between a trigger and its
    panel; the landing nav uses the same 220ms for the same reason. */
@@ -296,7 +272,6 @@ export default function CategoryBar({ active, activeItem }) {
   };
 
   const openCat = openId ? DATASET_TAXONOMY.find((c) => c.id === openId) : null;
-  const OpenIcon = openCat ? DIMENSION_ICON[openCat.id] : null;
 
   return (
     <nav className="dscat-bar" ref={barRef}>
@@ -312,6 +287,7 @@ export default function CategoryBar({ active, activeItem }) {
           <div
             className="dscat"
             key={cat.id}
+            style={{ '--dscat-dim-color': cat.color }}
             onMouseEnter={() => open(cat.id)}
             onMouseLeave={scheduleClose}
           >
@@ -322,7 +298,9 @@ export default function CategoryBar({ active, activeItem }) {
                  paint the dimension's own colour as ink and an underline, which
                  is unreadable on the green gradient the bar now wears — and an
                  inline style would have beaten the stylesheet's translucent
-                 white pill. The dot still carries the dimension colour. */
+                 white pill. The dimension icon leads the label; on hover the
+                 label and icon take the dimension colour on a page-ground pill
+                 (category-bar.css), which keeps them legible on the gradient. */
               ref={(el) => {
                 triggerRefs.current[cat.id] = el;
                 if (cat.id === active) activeRef.current = el;
@@ -332,7 +310,7 @@ export default function CategoryBar({ active, activeItem }) {
               onClick={() => toggle(cat.id)}
               onKeyDown={(e) => onTriggerKeyDown(e, cat.id)}
             >
-              <span className="dscat-dot" style={{ background: cat.color }} />
+              <i className={`bi ${cat.biIcon} dscat-icon`} aria-hidden="true" />
               {cat.label} <ChevronDown size={13} />
             </button>
           </div>
@@ -361,23 +339,15 @@ export default function CategoryBar({ active, activeItem }) {
             <div
               ref={panelRef}
               className="dscat-panel"
-              style={{ left: pos.left, top: pos.top }}
+              style={{ left: pos.left, top: pos.top, '--dscat-item-color': openCat.color }}
               role="menu"
               aria-label={openCat.label}
               onMouseEnter={() => open(openCat.id)}
               onMouseLeave={scheduleClose}
             >
               <p className="dscat-panel-head">
-                <span className="dscat-dot" style={{ background: openCat.color }} />
+                <i className={`bi ${openCat.biIcon} dscat-panel-icon`} aria-hidden="true" />
                 {openCat.label}
-                {OpenIcon ? (
-                  <OpenIcon
-                    size={14}
-                    aria-hidden
-                    className="dscat-panel-icon"
-                    style={{ color: openCat.color }}
-                  />
-                ) : null}
               </p>
               {openCat.items.map((it) =>
                 isNavigable(it) ? (

@@ -241,15 +241,28 @@
     padding: 7px 5px;
   }
 }
-.dscat-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+.dscat-icon {
   flex-shrink: 0;
+  font-size: 1rem;
+  line-height: 1;
+  color: currentColor;
 }
+.dscat-trigger {
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+/* Hover: the header takes its dimension's colour. A dimension colour straight
+   on the green gradient is not legible (emerald on green, blues on deep
+   green), so the hover pill is the page ground, on which every one of the
+   seven colours reads, in both themes. */
 .dscat-trigger:hover {
-  color: var(--dscat-ink-strong);
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--dscat-dim-color, var(--dscat-ink-strong));
+  background: var(--bg-primary);
+}
+.dscat-trigger:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
 }
 /* The active dimension is a translucent white pill on the gradient. The dot
    keeps the dimension's own colour, which is the only colour left on the bar
@@ -317,18 +330,20 @@
 .dscat-panel-head {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.25rem;
   margin: 0 0 0.35rem;
   padding-left: 0.5rem;
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--text-faint);
+  white-space: nowrap;
+  color: var(--dscat-item-color, var(--text-faint));
 }
 .dscat-panel-icon {
   flex-shrink: 0;
-  margin-left: auto;
+  font-size: 1rem;
+  line-height: 1;
 }
 /* Values copied from .navbar .nav-datasets-item / .nav-datasets-item-label. */
 .dscat-item {
@@ -346,7 +361,8 @@
 .dscat-item-label {
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--text-primary);
+  /* Every dataset reads in its dimension's colour. */
+  color: var(--dscat-item-color, var(--text-primary));
   /* Let long labels ("Regulatory Investigations & Enforcement") wrap to two
      lines INSIDE the panel instead of widening it. */
   white-space: normal;

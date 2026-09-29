@@ -25,6 +25,11 @@
  *   Capitol Watch --emerald · Titans Shadow --info · Eyes Above --cyan ·
  *   Consumer Whispers --orange · The Hive --pink ·
  *   Global Empire Lighthouse --indigo · Regulatory Winds --amber.
+ *
+ * `biIcon` is the dimension's Bootstrap icon, the single source for every nav
+ * that shows the seven dimensions (landing Datasets menu, the /datasets
+ * CategoryBar triggers and panels, the mobile drawer). It replaced two
+ * duplicated per-component Lucide maps.
  */
 
 export const DATASET_TAXONOMY = [
@@ -32,6 +37,7 @@ export const DATASET_TAXONOMY = [
     id: 'capitol',
     label: 'Capitol Watch',
     color: 'var(--emerald)',
+    biIcon: 'bi-bank',
     corner: 'CAPITOL WATCH',
     tagline: "Follow your politicians' investment activity",
     blurb:
@@ -87,6 +93,7 @@ export const DATASET_TAXONOMY = [
     id: 'titans',
     label: 'Titans Shadow',
     color: 'var(--info)',
+    biIcon: 'bi-buildings',
     corner: 'TITANS SHADOW',
     tagline: 'Keep up with the giants of finance',
     blurb:
@@ -173,6 +180,7 @@ export const DATASET_TAXONOMY = [
     id: 'eyes',
     label: 'Eyes Above',
     color: 'var(--cyan)',
+    biIcon: 'bi-broadcast-pin',
     corner: 'EYES ABOVE',
     tagline: 'Watch the economy from above',
     blurb:
@@ -218,6 +226,7 @@ export const DATASET_TAXONOMY = [
     id: 'whispers',
     label: 'Consumer Whispers',
     color: 'var(--orange)',
+    biIcon: 'bi-graph-up-arrow',
     corner: 'CONSUMER WHISPERS',
     tagline: 'Catch signals from shifts in consumer behaviour',
     blurb:
@@ -262,6 +271,7 @@ export const DATASET_TAXONOMY = [
     id: 'hive',
     label: 'The Hive',
     color: 'var(--pink)',
+    biIcon: 'bi-people',
     corner: 'THE HIVE',
     tagline: 'Tap into the collective wisdom',
     blurb:
@@ -305,6 +315,7 @@ export const DATASET_TAXONOMY = [
     id: 'lighthouse',
     label: 'Global Empire Lighthouse',
     color: 'var(--indigo)',
+    biIcon: 'bi-globe2',
     corner: 'GLOBAL EMPIRE LIGHTHOUSE',
     tagline: 'Track shifts in global power and trade',
     blurb:
@@ -365,6 +376,7 @@ export const DATASET_TAXONOMY = [
     id: 'regulatory',
     label: 'Regulatory Winds',
     color: 'var(--amber)',
+    biIcon: 'bi-journal-text',
     corner: 'REGULATORY WINDS',
     tagline: 'Anticipate regulatory and legal catalysts before they hit',
     blurb:
