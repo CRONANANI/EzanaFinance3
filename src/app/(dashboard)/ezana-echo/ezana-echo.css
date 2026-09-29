@@ -1057,7 +1057,10 @@
 
 .echo-article-page {
   width: 100%;
-  background: var(--app-bg);
+  /* The page ground, exposed as a token so the Geography rail's pinned block
+     and cards paint the same colour as the page instead of --bg-primary. */
+  --echo-page-bg: var(--app-bg);
+  background: var(--echo-page-bg);
   min-height: calc(100vh - var(--navbar-height, 64px));
   --echo-chart-red: #e85d4f;
   --echo-chart-orange: #f59e0b;
@@ -1071,7 +1074,8 @@
    article root to match so no grey --app-bg peeks under the default theme. The
    base rule above stays as a sane fallback for any standalone use. */
 body.route-echo-article .echo-article-page {
-  background: #ffffff;
+  --echo-page-bg: #ffffff;
+  background: var(--echo-page-bg);
 }
 
 /* The dashboard shell pads <main> by navbar-height + 1.5rem to clear an

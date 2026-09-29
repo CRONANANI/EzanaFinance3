@@ -13,9 +13,10 @@
 }
 /* Only the compact, always-useful block (head + globe + metric chart) pins;
    the city cards flow below it and pass naturally with the page scroll. The
-   pinned block is an opaque panel layered above the cards, so a card
-   scrolling up slides under its bottom edge and disappears cleanly instead
-   of blending through the globe and chart. */
+   pinned block paints the page ground (--echo-page-bg, set on the article
+   root) so it never reads as a separate grey panel, and it sits BELOW the
+   cards: as the reader scrolls, the cards ride up over the pinned globe and
+   take over the column. */
 .echo-grail-sticky {
   position: sticky;
   /* Pin flush under the navbar and carry the usual sticky offset as internal
@@ -23,8 +24,8 @@
      rail, and a passing card can't peek through a gap above the panel. */
   top: var(--navbar-height, 64px);
   padding-top: calc(var(--echo-sticky-top, 84px) - var(--navbar-height, 64px));
-  z-index: 2;
-  background: var(--bg-primary);
+  z-index: 1;
+  background: var(--echo-page-bg, var(--bg-primary));
   padding-bottom: 8px;
 }
 /* Rail dim wash while a keyword popover overlays the rail column (body class
@@ -35,7 +36,7 @@ body.ekp-rail-dim .echo-grail::after {
   position: absolute;
   inset: 0;
   z-index: 3;
-  background: color-mix(in srgb, var(--bg-primary) 65%, transparent);
+  background: color-mix(in srgb, var(--echo-page-bg, var(--bg-primary)) 65%, transparent);
   pointer-events: none;
 }
 .echo-grail-mono {
@@ -82,7 +83,13 @@ body.ekp-rail-dim .echo-grail::after {
   text-transform: none;
   letter-spacing: 0.03em;
 }
+/* The cards ride OVER the pinned globe as the reader scrolls: they take over
+   the column; the globe never covers them. Opaque on the page ground so the
+   globe does not show through the gaps between cards. */
 .echo-grail-cards {
+  position: relative;
+  z-index: 2;
+  background: var(--echo-page-bg, var(--bg-primary));
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -95,7 +102,7 @@ body.ekp-rail-dim .echo-grail::after {
      color changes (resting hairline tone, emerald when active). */
   border-left: 2px solid var(--border-primary);
   border-radius: var(--radius-sm);
-  background: var(--bg-primary);
+  background: var(--echo-page-bg, var(--bg-primary));
   padding: 12px 14px;
   transition:
     border-color 0.2s ease,
@@ -118,7 +125,7 @@ body.ekp-rail-dim .echo-grail::after {
    left rule + slightly elevated text contrast; informational, not a link. */
 .echo-grail-card.is-active {
   border-left-color: var(--emerald);
-  background: var(--bg-secondary);
+  background: color-mix(in srgb, var(--emerald) 4%, var(--echo-page-bg, var(--bg-primary)));
 }
 .echo-grail-card.is-active .echo-grail-card-impact {
   color: var(--text-primary);

@@ -63,7 +63,8 @@ export function EchoGlobeRail({ rail, sections = [] }) {
   const [visible, setVisible] = useState(true);
   // The globe's default oceanFill is tuned for the dark hero; in the article
   // rail resolve it from the theme so it doesn't render as a black disc in
-  // light mode. Read once on mount.
+  // light mode, preferring the article page ground so the ocean matches the
+  // page. Read once on mount.
   const [oceanFill, setOceanFill] = useState(null);
 
   const cities = useMemo(() => rail?.cities ?? [], [rail]);
@@ -86,9 +87,10 @@ export function EchoGlobeRail({ rail, sections = [] }) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const cs = getComputedStyle(document.documentElement);
+    const cs = getComputedStyle(stickyRef.current || document.documentElement);
     const token =
       cs.getPropertyValue('--echo-globe-ocean').trim() ||
+      cs.getPropertyValue('--echo-page-bg').trim() ||
       cs.getPropertyValue('--bg-primary').trim();
     if (token) setOceanFill(token);
   }, []);
