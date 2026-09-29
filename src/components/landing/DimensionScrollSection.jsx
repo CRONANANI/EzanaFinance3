@@ -165,9 +165,18 @@ export function DimensionScrollSection() {
       const track = trackRef.current;
       const stage = stageRef.current;
       if (!track || !stage) return;
+      /* Swap the card now so the click feels immediate. */
+      setActive(i);
+      /* Document-relative top of the track. offsetTop was relative to the
+         positioned section, which sent the page up to Integrations. */
+      const trackTop = window.scrollY + track.getBoundingClientRect().top;
       const runway = track.offsetHeight - stage.offsetHeight;
-      const top = track.offsetTop + (runway * (i + 0.5)) / steps;
-      window.scrollTo({ top, behavior: 'smooth' });
+      if (runway <= 0) return;
+      /* Midpoint of step i's slice of the runway. The stage is sticky across
+         the whole runway, so this only changes which card is shown, not where
+         the section sits on screen. Instant, so nothing visibly drifts. */
+      const top = trackTop + (runway * (i + 0.5)) / steps;
+      window.scrollTo({ top, behavior: 'auto' });
     },
     [unpinned, steps],
   );
