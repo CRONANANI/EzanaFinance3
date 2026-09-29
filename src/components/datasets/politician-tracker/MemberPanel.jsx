@@ -4,17 +4,25 @@
  * One politician's panel: trade activity, the members they trade most like,
  * and the top federal contractors among the tickers they trade. A right side
  * panel on desktop, full width on a phone (politician-tracker.css).
+ *
+ * P3 additions: chamber ring and party tag in the identity block, a
+ * "Show all N trades" expander under the 10 most recent, and three real
+ * states for the contractor section (loading, empty, failed). `contractors`
+ * is { state: 'loading' | 'ready' | 'failed', data }.
  */
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Bar, BarChart, ResponsiveContainer, XAxis } from 'recharts';
 import { CHART } from '@/lib/chart-theme';
 import {
   contractorTrades,
   monthlyForMember,
+  seatLabel,
   similarTraders,
   usdShort,
 } from '@/lib/politicians/tracker-model';
-import Headshot from './Headshot';
+import Headshot, { ChamberChip, PartyTag } from './Headshot';
+
+const TRADES_DEFAULT = 10;
 
 const NONE = '·';
 const SIDE = {
@@ -35,12 +43,40 @@ function Stat({ label, value }) {
 
 export default function MemberPanel({ member, members, contractors, onClose, onSelect }) {
   const panelRef = useRef(null);
+  const [allTrades, setAllTrades] = useState(false);
   const monthly = useMemo(() => monthlyForMember(member), [member]);
   const alike = useMemo(() => similarTraders(member, members), [member, members]);
+  const contractData = contractors?.data || null;
   const contracted = useMemo(
-    () => contractorTrades(member, contractors?.byTicker),
-    [member, contractors],
+    () => contractorTrades(member, contractData?.byTicker),
+    [member, contractData],
   );
+  const shownTrades = allTrades ? member.trades : member.trades.slice(0, TRADES_DEFAULT);
+
+  /* A different member is a different panel: collapse the expander. */
+  useEffect(() => setAllTrades(false), [member.key]);
+
+  /* Focus trap: Tab cycles inside the dialog while it is open. */
+  useEffect(() => {
+    const onTab = (e) => {
+      if (e.key !== 'Tab' || !panelRef.current) return;
+      const els = panelRef.current.querySelectorAll(
+        'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (!els.length) return;
+      const first = els[0];
+      const last = els[els.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onTab);
+    return () => document.removeEventListener('keydown', onTab);
+  }, []);
 
   useEffect(() => {
     panelRef.current?.focus();
@@ -51,8 +87,7 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose, member.key]);
 
-  const where =
-    member.chamber === 'House' && member.district ? member.district : member.state || NONE;
+  const seat = seatLabel(member) || NONE;
 
   return (
     <aside
@@ -76,17 +111,17 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
           <Headshot
             name={member.name}
             bioguideId={member.bioguideId}
-            party={member.party}
+            chamber={member.chamber}
             size={96}
+            ring={3}
           />
           <div>
             <h2 className="dsc-p-name">{member.name}</h2>
             <p className="dsc-p-meta">
-              <span className={`ptk-chamber ptk-chamber--${String(member.chamber).toLowerCase()}`}>
-                {member.chamber || NONE}
-              </span>
-              <span className="dsc-mn ptk-id-place">
-                {member.party ? `${member.party}-${where}` : where}
+              <ChamberChip chamber={member.chamber} />
+              <span className="ptk-seat">
+                <PartyTag party={member.party} />
+                <span className="dsc-mn ptk-id-place">{seat}</span>
               </span>
             </p>
           </div>
@@ -96,7 +131,7 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
           <Stat label="Trades" value={member.count} />
           <Stat label="Buys" value={member.buys} />
           <Stat label="Sells" value={member.sells} />
-          <Stat label="Volume" value={usdShort(member.volume)} />
+          <Stat label="Volume, midpoints" value={usdShort(member.volume)} />
         </div>
 
         <section className="dsc-p-block">
@@ -130,7 +165,7 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
               </tr>
             </thead>
             <tbody>
-              {member.trades.slice(0, 10).map((t) => {
+              {shownTrades.map((t) => {
                 const side = SIDE[t.side] || SIDE.other;
                 return (
                   <tr key={t.id}>
@@ -160,6 +195,16 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
               })}
             </tbody>
           </table>
+          {member.trades.length > TRADES_DEFAULT ? (
+            <button
+              type="button"
+              className="ptk-link ptk-expander"
+              aria-expanded={allTrades}
+              onClick={() => setAllTrades((v) => !v)}
+            >
+              {allTrades ? 'Show fewer' : `Show all ${member.trades.length} trades`}
+            </button>
+          ) : null}
         </section>
 
         <section className="dsc-p-block">
@@ -172,7 +217,13 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
               {alike.map(({ member: o, shared, score }) => (
                 <li key={o.key}>
                   <button type="button" className="ptk-alike-row" onClick={() => onSelect(o)}>
-                    <Headshot name={o.name} bioguideId={o.bioguideId} party={o.party} size={28} />
+                    <Headshot
+                      name={o.name}
+                      bioguideId={o.bioguideId}
+                      chamber={o.chamber}
+                      size={40}
+                      ring={2}
+                    />
                     <span className="ptk-alike-text">
                       <span className="ptk-name">{o.name}</span>
                       <span className="ptk-alike-meta">
@@ -199,11 +250,25 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
         <section className="dsc-p-block">
           <div className="dsc-p-block-head">
             <span className="dsc-label">Government contractors they trade</span>
-            {contractors?.fiscalYear ? (
-              <span className="dsc-block-cap">FY{contractors.fiscalYear} awards</span>
+            {contractData?.fiscalYear ? (
+              <span className="dsc-block-cap">FY{contractData.fiscalYear} awards</span>
             ) : null}
           </div>
-          {contracted.length ? (
+          {contractors?.state === 'loading' ? (
+            <div aria-busy="true">
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className="ptk-skel ptk-skel--line ptk-skel--row"
+                  aria-hidden="true"
+                />
+              ))}
+            </div>
+          ) : contractors?.state === 'failed' ? (
+            <p className="dsc-note" role="status">
+              Contract data is unavailable right now.
+            </p>
+          ) : contracted.length ? (
             <table className="dsc-p-table">
               <thead>
                 <tr>
@@ -226,9 +291,8 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
             </table>
           ) : (
             <p className="dsc-note">
-              {contractors?.fiscalYear
-                ? `None of this member's traded tickers are top federal contractors in FY${contractors.fiscalYear}.`
-                : 'Contract data is loading.'}
+              No top federal contractors among the tickers traded
+              {contractData?.fiscalYear ? `, FY${contractData.fiscalYear}` : ''}.
             </p>
           )}
         </section>

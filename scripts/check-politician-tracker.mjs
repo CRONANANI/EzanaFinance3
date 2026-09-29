@@ -1,0 +1,150 @@
+/**
+ * Unit tests for the Politician Tracker model (pure functions, no React).
+ * No test runner is configured; run directly:  node scripts/check-politician-tracker.mjs
+ * (also `npm run test:tracker`).
+ */
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  buildMembers,
+  rankMembers,
+  loadedWindow,
+  filterMembers,
+  topTickers,
+  seatLabel,
+  usdShort,
+} from '../src/lib/politicians/tracker-model.js';
+import { buildFixtureTrades } from '../src/lib/politicians/tracker-fixture.js';
+
+const t = (over) => ({
+  id: over.id,
+  name: over.name,
+  chamber: over.chamber || 'House',
+  party: over.party || 'D',
+  state: over.state || 'CA',
+  district: over.district ?? 12,
+  bioguideId: over.bioguideId || over.name,
+  ticker: over.ticker ?? 'NVDA',
+  side: over.side || 'purchase',
+  amountBand: { raw: '', min: over.mid, max: over.mid, mid: over.mid ?? 1000 },
+  tradedAt: over.tradedAt || '2026-09-01',
+  filedAt: over.tradedAt || '2026-09-01',
+  sourceUrl: null,
+});
+
+const TRADES = [
+  t({ id: 1, name: 'A', mid: 5000, tradedAt: '2026-09-10' }),
+  t({ id: 2, name: 'A', mid: 5000, tradedAt: '2026-08-01', side: 'sale', ticker: 'AAPL' }),
+  t({
+    id: 3,
+    name: 'B',
+    mid: 20000,
+    tradedAt: '2026-09-20',
+    chamber: 'Senate',
+    party: 'R',
+    state: 'TX',
+    district: null,
+  }),
+  t({ id: 4, name: 'C', mid: 100, tradedAt: '2026-07-01', ticker: null, party: 'I' }),
+  t({ id: 5, name: 'C', mid: 100, tradedAt: '2026-07-02', ticker: 'NVDA' }),
+  t({ id: 6, name: 'C', mid: 100, tradedAt: '2026-07-03', ticker: 'MSFT' }),
+];
+const MEMBERS = buildMembers(TRADES);
+
+test('rankMembers: volume is the default and rank follows the sort', () => {
+  const r = rankMembers(MEMBERS);
+  assert.deepEqual(
+    r.map((m) => [m.rank, m.name, m.pctOfFirst]),
+    [
+      [1, 'B', 100],
+      [2, 'A', 50],
+      [3, 'C', 2],
+    ],
+  );
+  assert.equal(rankMembers(MEMBERS, 'trades')[0].name, 'C');
+  assert.equal(rankMembers(MEMBERS, 'latest')[0].name, 'B');
+  assert.equal(rankMembers(MEMBERS, 'nonsense')[0].name, 'B', 'unknown key falls back to volume');
+});
+
+test('rankMembers: pctOfFirst is null when the first has no volume', () => {
+  const zero = buildMembers([t({ id: 1, name: 'Z', mid: 0 })]);
+  assert.equal(rankMembers(zero)[0].pctOfFirst, null);
+});
+
+test('rankMembers: does not mutate its input', () => {
+  const before = MEMBERS.map((m) => m.name).join();
+  rankMembers(MEMBERS, 'trades');
+  assert.equal(MEMBERS.map((m) => m.name).join(), before);
+});
+
+test('loadedWindow: min and max tradedAt with a count; null when empty', () => {
+  assert.deepEqual(loadedWindow(TRADES), { from: '2026-07-01', to: '2026-09-20', count: 6 });
+  assert.equal(loadedWindow([]), null);
+  assert.equal(loadedWindow([t({ id: 9, name: 'X', tradedAt: 'garbage' })]), null);
+});
+
+test('filterMembers: chamber, party, side and query compose', () => {
+  assert.deepEqual(
+    filterMembers(MEMBERS, { chamber: 'Senate' }).map((m) => m.name),
+    ['B'],
+  );
+  assert.deepEqual(
+    filterMembers(MEMBERS, { party: 'I' }).map((m) => m.name),
+    ['C'],
+  );
+  assert.deepEqual(
+    filterMembers(MEMBERS, { side: 'sale' }).map((m) => m.name),
+    ['A'],
+  );
+  assert.deepEqual(
+    filterMembers(MEMBERS, { query: 'tx' }).map((m) => m.name),
+    ['B'],
+  );
+  assert.deepEqual(filterMembers(MEMBERS, { chamber: 'House', party: 'R' }), []);
+  assert.equal(filterMembers(MEMBERS).length, 3);
+});
+
+test('topTickers: counts, excludes null tickers, stable order on ties', () => {
+  assert.deepEqual(topTickers(TRADES, 5), [
+    { ticker: 'NVDA', count: 4 },
+    { ticker: 'AAPL', count: 1 },
+    { ticker: 'MSFT', count: 1 },
+  ]);
+  assert.equal(topTickers(TRADES, 1).length, 1);
+});
+
+test('seatLabel: CA-12 for House, state for Senate, null when unknown', () => {
+  assert.equal(seatLabel({ chamber: 'House', state: 'CA', district: 12 }), 'CA-12');
+  assert.equal(seatLabel({ chamber: 'House', state: 'IL', district: 7 }), 'IL-07');
+  assert.equal(seatLabel({ chamber: 'Senate', state: 'TX', district: null }), 'TX');
+  assert.equal(seatLabel({ chamber: 'House', state: null }), null);
+});
+
+test('usdShort: middle dot for nothing, short units otherwise', () => {
+  assert.equal(usdShort(0), '·');
+  assert.equal(usdShort(null), '·');
+  assert.equal(usdShort(4_800_000), '$4.8M');
+  assert.equal(usdShort(610_000), '$610K');
+});
+
+test('fixture: placeholder names only, sixteen members, matches the spec table', () => {
+  const trades = buildFixtureTrades();
+  assert.ok(trades.every((x) => x.name === '[Member name]'));
+  const members = rankMembers(buildMembers(trades));
+  assert.equal(members.length, 16);
+  assert.equal(members[0].count, 42);
+  assert.equal(members[0].buys, 26);
+  assert.equal(members[0].sells, 16);
+  assert.equal(usdShort(members[0].volume), '$4.8M');
+  assert.equal(members[0].lastTraded, '2026-09-24');
+  assert.equal(members[15].state, 'MT');
+});
+
+test('member slugs are unique, so every card opens its own panel', () => {
+  const members = buildMembers(buildFixtureTrades());
+  const slugs = members.map((m) => m.slug);
+  assert.equal(new Set(slugs).size, slugs.length);
+  /* Distinct real names keep their plain slug. */
+  const plain = buildMembers(TRADES).map((m) => m.slug);
+  assert.ok(plain.includes('a'));
+});

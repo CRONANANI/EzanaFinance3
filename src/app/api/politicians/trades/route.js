@@ -89,5 +89,11 @@ export async function GET(request) {
       { status: 502 },
     );
   }
-  return NextResponse.json({ ok: true, trades: merged });
+  /* Per-feed status so the page can say which chamber is missing rather
+     than silently showing half of Congress. */
+  const feeds = {
+    house: house.rows.length ? 'ok' : 'down',
+    senate: senate.rows.length ? 'ok' : 'down',
+  };
+  return NextResponse.json({ ok: true, feeds, trades: merged });
 }

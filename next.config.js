@@ -84,6 +84,18 @@ const nextConfig = {
         destination: '/datasets/politician-tracker?chamber=senate',
         permanent: true,
       },
+      /* The per-chamber member pages were replaced by the tracker's member
+         panel, which is addressed by ?member=<slug>. */
+      {
+        source: '/datasets/house/members/:slug',
+        destination: '/datasets/politician-tracker?member=:slug',
+        permanent: true,
+      },
+      {
+        source: '/datasets/senate/members/:slug',
+        destination: '/datasets/politician-tracker?member=:slug',
+        permanent: true,
+      },
       { source: '/crypto-research', destination: '/alternative-markets', permanent: true },
       { source: '/crypto-research/:path*', destination: '/alternative-markets', permanent: true },
     ];

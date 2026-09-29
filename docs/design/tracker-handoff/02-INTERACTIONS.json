@@ -1,0 +1,121 @@
+{
+  "page": "/datasets/politician-tracker",
+  "design": "P3 Portrait gallery",
+  "url": {
+    "member": "?member=<slug> opens the panel for that member; survives refresh; page.js passes it as initialMember",
+    "chamber": "?chamber=house|senate preselects the chamber filter (honours the old /datasets/house/disclosures and /datasets/senate/disclosures redirects)",
+    "sort": "?sort=volume|trades|latest, default volume; omitted from the URL when default",
+    "party": "?party=D|R|I, omitted when ALL",
+    "q": "?q=<text> for the member search, omitted when empty"
+  },
+  "toolbar": {
+    "search": {
+      "placeholder": "Search a member",
+      "match": "case-insensitive substring on name, also matches state and district text",
+      "debounce_ms": 150,
+      "clears_with": "Escape while focused, or the clear button that appears when non-empty"
+    },
+    "chamber": { "control": "segmented", "options": ["Both", "House", "Senate"], "default": "Both", "dots": { "House": "--ptk-house", "Senate": "--ptk-senate" } },
+    "party": { "control": "segmented, mono", "options": ["ALL", "D", "R", "I"], "default": "ALL" },
+    "rank_by": {
+      "label": "RANK BY",
+      "control": "segmented",
+      "options": [
+        { "key": "volume", "label": "Disclosed volume", "order": "volume desc, then count desc, then name" },
+        { "key": "trades", "label": "Most trades", "order": "count desc, then volume desc, then name" },
+        { "key": "latest", "label": "Latest trade", "order": "lastTraded desc, then volume desc, then name" }
+      ],
+      "default": "volume",
+      "rank_follows_sort": true,
+      "pct_of_first": "shown only when rank_by is volume; hidden otherwise"
+    },
+    "filters_apply_to": "gallery, dense list, and the rail's counts and chart; the rail heading says FILTERED when any filter is active",
+    "segmented_a11y": "role=radiogroup with role=radio buttons, arrow keys move, aria-checked on the active one"
+  },
+  "gallery": {
+    "count": 8,
+    "source": "first 8 of the ranked, filtered members",
+    "card": {
+      "element": "button, type=button, aria-label='[Member name], rank N, disclosed volume $X'",
+      "opens": "member panel for that member",
+      "hover": "border darkens to --ptk-hair-strong, no lift, no shadow",
+      "focus": "2px focus ring in --ptk-focus, offset 2px",
+      "selected": "when its member is open: border --ptk-house or --ptk-senate by chamber, halo 3px at 12% of the same",
+      "first": "always carries the emerald hairline and 8% halo; when selected, the selected treatment wins"
+    },
+    "portrait": {
+      "size": 88,
+      "ring": "3px, --ptk-house or --ptk-senate by chamber",
+      "fallback": "initials on --ptk-avatar-bg, mono 700, 24px",
+      "loading": "shimmer circle"
+    },
+    "fewer_than_8": "render what exists; no empty card slots"
+  },
+  "dense_list": {
+    "starts_at_rank": 9,
+    "default_rows": 8,
+    "show_all": "text button in the footer expands in place to all remaining members; label becomes SHOW LESS",
+    "row": {
+      "element": "tr with a button in the name cell, or the whole row as a button if table semantics are kept via role=row; Enter and Space open the panel",
+      "hover": "background --ptk-row-hover",
+      "selected": "background --ptk-row-selected, inset 3px left rule in the chamber colour",
+      "portrait": 32
+    },
+    "volume_bar": "width = member.volume / first.volume of the CURRENT sort's first member; bar is --ptk-ink; hidden when volume is zero or unknown, cell shows a middle dot"
+  },
+  "rail": {
+    "heading": "HOUSE VS SENATE, LOADED WINDOW",
+    "window_line": "<min tradedAt> TO <max tradedAt> · <N> DISCLOSURES, from loadedWindow(trades)",
+    "chamber_cards": "House and Senate: volume (usdShort), members, trades; tints at 6% of the chamber colour",
+    "split_rows": ["Active members", "Disclosed trades", "Trades per member", "Disclosed volume"],
+    "split_bar": "House share left in --ptk-house, Senate right in --ptk-senate; when one side is zero the bar is a single colour, never empty",
+    "chart": {
+      "type": "grouped bars, 12 months, counts",
+      "height": 110,
+      "aria": "role=img, aria-label='Monthly trade counts, House and Senate, last twelve months'",
+      "tooltip": "month, House n, Senate n; keyboard reachable via a visually hidden table under the chart"
+    },
+    "top_tickers": "topTickers(filteredTrades, 5): ticker, bar relative to the first, count; a trade with no ticker is excluded",
+    "stacks_under_gallery_at": 1000
+  },
+  "member_panel": {
+    "unchanged": ["?member= deep link", "push one history entry on open", "replaceState when swapping members", "Back closes", "Escape closes", "scrim button closes", "focus to panel on open", "focus returns to the opener on close", "panel top measured from .dscat-chrome into --dsc-panel-top"],
+    "opener": "a card or a row; focus returns to whichever opened it",
+    "identity": { "portrait": 96, "ring": "chamber colour", "party": "letter tag", "seat": "Party-District for House, Party-State for Senate as today" },
+    "trades": {
+      "default_rows": 10,
+      "expander": "Show all N trades, text button under the table, expands in place; label becomes Show fewer",
+      "row_link": "source filing when sourceUrl is present, else no link and a middle dot in the link cell"
+    },
+    "similar": "unchanged; each item shows the 40px portrait with chamber ring",
+    "contractors": {
+      "loading": "three skeleton rows",
+      "empty": "No top federal contractors among the tickers traded, FY{year}.",
+      "failed": "Contract data is unavailable right now.",
+      "failure_detection": "the contractor request rejected or returned ok:false; never left in loading"
+    }
+  },
+  "states": {
+    "loading": "skeletons: 8 card skeletons in the gallery grid, rail blocks, 8 list rows; shimmer respects prefers-reduced-motion (static blocks)",
+    "unavailable": "both feeds empty: gallery and list replaced by one line 'Disclosures are temporarily unavailable. Try again shortly.' with a Retry button; rail shows middle dots",
+    "partial": "one chamber failed: page renders the other; rail heading gains a chip 'SENATE FEED UNAVAILABLE' or 'HOUSE FEED UNAVAILABLE'",
+    "empty_filter": "No members match. Try clearing <the last-changed filter>. with a Clear filters button",
+    "sample": "SAMPLE DATA chip in the eyebrow whenever the fixture is served instead of the live feeds",
+    "reduced_motion": "no shimmer travel, no bar grow-in, no card transitions"
+  },
+  "ticker": {
+    "publish": "usePublishTicker with the 12 most recent trades as TICKER · Member name · BUY/SELL/EXCH, unchanged"
+  },
+  "keyboard": {
+    "tab_order": "search, chamber group, party group, rank-by group, cards in rank order, rail chart hidden table, list rows, show all, panel when open",
+    "cards_and_rows": "Enter or Space opens the panel",
+    "segmented": "arrow keys change the value within a group",
+    "panel": "Escape closes; focus trapped while open"
+  },
+  "analytics_events": [
+    "tracker_sort_change {key}",
+    "tracker_filter_change {chamber, party, q_length}",
+    "tracker_member_open {source: card|row|similar|deeplink, rank}",
+    "tracker_show_all {section: list|panel_trades}"
+  ]
+}

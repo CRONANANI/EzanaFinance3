@@ -1,0 +1,103 @@
+/* Politician Tracker, page-scoped tokens.
+   Every value maps onto src/app/theme-variables.css. Where a theme variable
+   with the right meaning exists, use it; the hex in the comment is what the
+   approved board used in light mode and is a target, not a new token.
+   Prefer color-mix over new colours. Nothing here is global. */
+
+.ptk-page {
+  /* ground and ink */
+  --ptk-bg: var(--bg);                                   /* #ffffff light, #0a0e13 dark */
+  --ptk-ink: var(--text);                                /* #0a0e13 / #f5f7f6 */
+  --ptk-mute: var(--text-secondary);                     /* #5a6b65 */
+  --ptk-faint: var(--text-tertiary);                     /* #8a9a95, AA on white at 11px+ only as caption */
+  --ptk-hair: color-mix(in srgb, var(--text) 10%, transparent);
+  --ptk-hair-strong: color-mix(in srgb, var(--text) 12%, transparent);
+  --ptk-rule: var(--text);                               /* the 2px list rule */
+  --ptk-dotted: color-mix(in srgb, var(--text) 20%, transparent);
+
+  /* chambers: the only two hues on the page besides ink */
+  --ptk-house: var(--emerald);                           /* #10b981 marks, rings, bars */
+  --ptk-house-text: var(--positive);                     /* #047857 light / #34d399 dark, for text on the ground */
+  --ptk-house-tint: color-mix(in srgb, var(--emerald) 6%, transparent);
+  --ptk-house-chip: color-mix(in srgb, var(--emerald) 12%, transparent);
+  --ptk-senate: var(--info);                             /* #3b82f6 */
+  --ptk-senate-text: var(--info-text, #1d4ed8);          /* if no info text token exists, derive: color-mix(in srgb, var(--info) 70%, black) light */
+  --ptk-senate-tint: color-mix(in srgb, var(--info) 6%, transparent);
+  --ptk-senate-chip: color-mix(in srgb, var(--info) 12%, transparent);
+
+  /* buys and sells: buy is emerald, sell is ink at 55%, never red */
+  --ptk-buy: var(--emerald);
+  --ptk-buy-text: var(--positive);
+  --ptk-sell: color-mix(in srgb, var(--text) 55%, transparent);
+
+  /* party: neutral by design */
+  --ptk-party-border: var(--ptk-hair-strong);
+  --ptk-party-text: var(--ptk-mute);
+
+  /* portraits */
+  --ptk-avatar-bg: color-mix(in srgb, var(--text) 8%, var(--bg));   /* #e5eae8 light */
+  --ptk-avatar-initials: var(--ptk-mute);
+
+  /* bars and tracks */
+  --ptk-track: color-mix(in srgb, var(--text) 6%, transparent);
+  --ptk-bar: var(--text);
+
+  /* cards, rows, selection */
+  --ptk-card-bg: var(--bg);
+  --ptk-card-border: var(--ptk-hair);
+  --ptk-card-first-border: color-mix(in srgb, var(--emerald) 50%, transparent);
+  --ptk-card-first-halo: color-mix(in srgb, var(--emerald) 8%, transparent);
+  --ptk-rank-badge-bg: color-mix(in srgb, var(--text) 6%, transparent);
+  --ptk-rank-first-bg: var(--text);
+  --ptk-rank-first-fg: var(--bg);
+  --ptk-row-hover: color-mix(in srgb, var(--text) 3%, transparent);
+  --ptk-row-selected: color-mix(in srgb, var(--emerald) 7%, transparent);
+  --ptk-selected-rule: var(--emerald);                   /* swap to --ptk-senate for a Senate member */
+
+  /* segmented controls */
+  --ptk-seg-border: var(--ptk-hair-strong);
+  --ptk-seg-active-bg: var(--text);
+  --ptk-seg-active-fg: var(--bg);
+  --ptk-seg-fg: var(--ptk-mute);
+
+  /* chips */
+  --ptk-chip-border: var(--ptk-hair-strong);
+  --ptk-sample-bg: var(--warning-bg, #fef3c7);
+  --ptk-sample-fg: var(--warning-text, #92400e);
+
+  /* panel and scrim, as on the House page */
+  --ptk-panel-w: 480px;
+  --ptk-panel-bg: var(--bg);
+  --ptk-panel-border: var(--ptk-hair);
+  --ptk-panel-shadow: -30px 0 70px color-mix(in srgb, var(--text) 18%, transparent);
+  --ptk-scrim: color-mix(in srgb, #0a0e13 22%, transparent);
+
+  /* focus */
+  --ptk-focus: var(--emerald);
+
+  /* type */
+  --ptk-font: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --ptk-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* radii: only the theme's */
+  --ptk-r-sm: var(--radius-sm);   /* 4  chips, bars */
+  --ptk-r-md: var(--radius-md);   /* 8  segmented, search */
+  --ptk-r-lg: var(--radius-lg);   /* 12 cards */
+  --ptk-r-pill: 99px;             /* portraits, rank badge, builder */
+
+  /* skeleton */
+  --ptk-skel-base: color-mix(in srgb, var(--text) 6%, transparent);
+  --ptk-skel-sheen: color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+/* Contrast notes
+   - --ptk-house-text (positive) on the ground is the only emerald used for text.
+     The emerald mark colour is never used for text on white.
+   - --ptk-faint is caption only, 11px and up, never for a figure.
+   - White text sits only on --ptk-seg-active-bg and --ptk-rank-first-bg (ink).
+   - In dark mode the tints stay at 6% and 12%; verify the chamber chips still
+     read at 3:1 against the dark ground, else raise chip alpha to 18%. */
+
+@media (prefers-reduced-motion: reduce) {
+  .ptk-page * { transition: none !important; animation: none !important; }
+}

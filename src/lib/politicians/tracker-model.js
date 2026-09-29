@@ -31,6 +31,21 @@ export function buildMembers(trades) {
     }
     map.get(key).trades.push(t);
   }
+  /* Slugs address the member panel (?member=). Two members can share a
+     display name (and every sample-fixture member does), so a repeat gets a
+     key suffix; the first keeps the plain name so old member URLs resolve. */
+  const seen = new Map();
+  for (const m of map.values()) {
+    const n = seen.get(m.slug) || 0;
+    seen.set(m.slug, n + 1);
+    if (n) {
+      const suffix = String(m.key)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+      m.slug = `${m.slug}-${suffix || n + 1}`;
+    }
+  }
   return [...map.values()]
     .map((m) => {
       const counts = new Map();
@@ -125,4 +140,105 @@ export function usdShort(n) {
   if (n >= 1e6) return `$${(n / 1e6).toFixed(1)}M`;
   if (n >= 1e3) return `$${Math.round(n / 1e3)}K`;
   return `$${Math.round(n)}`;
+}
+
+/* ── P3 Portrait gallery additions. Pure, tested in
+      scripts/check-politician-tracker.mjs. ────────────────────────────── */
+
+const byName = (a, b) => String(a.name || '').localeCompare(String(b.name || ''));
+const desc = (k) => (a, b) => (b[k] || 0) - (a[k] || 0);
+const descStr = (k) => (a, b) => String(b[k] || '').localeCompare(String(a[k] || ''));
+
+export const SORT_KEYS = ['volume', 'trades', 'latest'];
+
+/**
+ * Rank members for the active sort. Rank follows the sort; pctOfFirst is the
+ * ratio of this member's volume to the first-ranked member's volume as a
+ * whole percent, null when the first has no volume. It is a ratio of two
+ * midpoint sums, nothing more.
+ */
+export function rankMembers(members, sortKey = 'volume') {
+  const key = SORT_KEYS.includes(sortKey) ? sortKey : 'volume';
+  const order =
+    key === 'trades'
+      ? [desc('count'), desc('volume'), byName]
+      : key === 'latest'
+        ? [descStr('lastTraded'), desc('volume'), byName]
+        : [desc('volume'), desc('count'), byName];
+  const sorted = [...members].sort((a, b) => {
+    for (const cmp of order) {
+      const r = cmp(a, b);
+      if (r) return r;
+    }
+    return 0;
+  });
+  const first = sorted[0]?.volume || 0;
+  return sorted.map((m, i) => ({
+    ...m,
+    rank: i + 1,
+    pctOfFirst: first > 0 ? Math.round(((m.volume || 0) / first) * 100) : null,
+  }));
+}
+
+/** The date range and size of what is loaded. Null when nothing is. */
+export function loadedWindow(trades) {
+  let from = null;
+  let to = null;
+  let count = 0;
+  for (const t of trades) {
+    const d = String(t.tradedAt || '').slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) continue;
+    count += 1;
+    if (!from || d < from) from = d;
+    if (!to || d > to) to = d;
+  }
+  return count ? { from, to, count } : null;
+}
+
+/**
+ * Filter predicate for the toolbar. `chamber` is 'House' | 'Senate' | null,
+ * `party` is 'D' | 'R' | 'I' | null, `side` narrows to members with at least
+ * one trade of that side, `query` is a case-insensitive substring on the
+ * name, state and district.
+ */
+export function filterMembers(
+  members,
+  { chamber = null, party = null, side = null, query = '' } = {},
+) {
+  const q = String(query || '')
+    .trim()
+    .toLowerCase();
+  return members.filter((m) => {
+    if (chamber && m.chamber !== chamber) return false;
+    if (party && m.party !== party) return false;
+    if (side && !m.trades.some((t) => t.side === side)) return false;
+    if (q) {
+      const hay = `${m.name} ${m.state || ''} ${m.district || ''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+/** Most traded tickers across a set of trades; rows with no ticker are skipped. */
+export function topTickers(trades, n = 5) {
+  const counts = new Map();
+  for (const t of trades) if (t.ticker) counts.set(t.ticker, (counts.get(t.ticker) || 0) + 1);
+  return [...counts]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, n)
+    .map(([ticker, count]) => ({ ticker, count }));
+}
+
+/** `CA-12` for a House member with a district, else the state, else null. */
+export function seatLabel(m) {
+  if (m.chamber === 'House' && m.state && m.district != null && m.district !== '') {
+    return `${m.state}-${String(m.district).padStart(2, '0')}`;
+  }
+  return m.state || null;
+}
+
+/** Trades belonging to a set of members, for the rail's counts and chart. */
+export function tradesOf(members) {
+  return members.flatMap((m) => m.trades);
 }
