@@ -20,7 +20,7 @@ import {
   similarTraders,
   usdShort,
 } from '@/lib/politicians/tracker-model';
-import Headshot, { ChamberChip, PartyTag } from './Headshot';
+import Headshot, { AVATAR_SIZE, ChamberChip, PartyTag } from './Headshot';
 
 const TRADES_DEFAULT = 10;
 
@@ -112,7 +112,8 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
             name={member.name}
             bioguideId={member.bioguideId}
             chamber={member.chamber}
-            size={96}
+            photoUrl={member.photoUrl}
+            size={AVATAR_SIZE.profile}
             ring={3}
           />
           <div>
@@ -221,7 +222,8 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
                       name={o.name}
                       bioguideId={o.bioguideId}
                       chamber={o.chamber}
-                      size={40}
+                      photoUrl={o.photoUrl}
+                      size={AVATAR_SIZE.row}
                       ring={2}
                     />
                     <span className="ptk-alike-text">

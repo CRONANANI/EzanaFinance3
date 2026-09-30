@@ -126,6 +126,14 @@
       "schedule": "0 * * * *"
     },
     {
+      "path": "/api/cron/ingest-congress-trades",
+      "schedule": "15 6 * * *"
+    },
+    {
+      "path": "/api/cron/ingest-congress-trades?only=photos&max=120",
+      "schedule": "45 6 * * *"
+    },
+    {
       "path": "/api/cron/sync-house-bq",
       "schedule": "30 7 * * *"
     },

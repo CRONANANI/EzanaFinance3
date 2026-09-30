@@ -13,6 +13,8 @@ import {
   topTickers,
   seatLabel,
   usdShort,
+  mergeServerRankings,
+  serverWindow,
 } from '../src/lib/politicians/tracker-model.js';
 import { buildFixtureTrades } from '../src/lib/politicians/tracker-fixture.js';
 
@@ -147,4 +149,50 @@ test('member slugs are unique, so every card opens its own panel', () => {
   /* Distinct real names keep their plain slug. */
   const plain = buildMembers(TRADES).map((m) => m.slug);
   assert.ok(plain.includes('a'));
+});
+
+test('mergeServerRankings keeps SQL aggregates, loaded trades and slugs', () => {
+  const local = buildMembers([
+    t({ id: 'a', name: 'Jane Roe', bioguideId: 'R000001', mid: 1000 }),
+    t({ id: 'b', name: 'Jane Roe', bioguideId: 'R000001', mid: 3000, ticker: 'AAPL' }),
+  ]);
+  const merged = mergeServerRankings(local, [
+    {
+      bioguideId: 'R000001',
+      name: 'Jane Roe',
+      chamber: 'House',
+      count: 40,
+      buys: 30,
+      sells: 10,
+      volume: 900000,
+      lastTraded: '2026-09-20',
+      topTickers: ['NVDA'],
+      photoUrl: 'https://x.supabase.co/storage/v1/object/public/congress-photos/R000001.jpg',
+    },
+    {
+      bioguideId: 'R000002',
+      name: 'Jane Roe',
+      chamber: 'Senate',
+      party: 'R',
+      state: 'TX',
+      count: 5,
+      buys: 5,
+      sells: 0,
+      volume: 50000,
+      lastTraded: '2026-08-01',
+      topTickers: ['MSFT', 'AAPL'],
+    },
+  ]);
+  assert.equal(merged.length, 2);
+  assert.equal(merged[0].slug, local[0].slug);
+  assert.equal(merged[0].count, 40);
+  assert.equal(merged[0].trades.length, 2);
+  assert.match(merged[0].photoUrl, /congress-photos/);
+  assert.notEqual(merged[1].slug, merged[0].slug);
+  assert.deepEqual(merged[1].trades, []);
+  assert.deepEqual([...merged[1].tickerSet], ['MSFT', 'AAPL']);
+  const ranked = rankMembers(merged, 'volume');
+  assert.equal(ranked[0].bioguideId, 'R000001');
+  const w = serverWindow(merged, 365, new Date('2026-09-30T00:00:00Z'));
+  assert.deepEqual(w, { from: '2025-09-30', to: '2026-09-20', count: 45 });
 });

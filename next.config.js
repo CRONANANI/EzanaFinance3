@@ -122,6 +122,8 @@ const nextConfig = {
       { protocol: 'https', hostname: 'cdn.plaid.com', pathname: '/**' },
       // Official public-domain congressional portraits (politician headshots).
       { protocol: 'https', hostname: 'unitedstates.github.io', pathname: '/images/congress/**' },
+      { protocol: 'https', hostname: 'theunitedstates.io', pathname: '/images/congress/**' },
+      { protocol: 'https', hostname: 'bioguide.congress.gov', pathname: '/**' },
     ],
   },
 };

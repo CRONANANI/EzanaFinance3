@@ -26,6 +26,7 @@ export function buildMembers(trades) {
         state: t.state,
         district: t.district,
         bioguideId: t.bioguideId,
+        photoUrl: t.photoUrl || null,
         trades: [],
       });
     }
@@ -241,4 +242,71 @@ export function seatLabel(m) {
 /** Trades belonging to a set of members, for the rail's counts and chart. */
 export function tradesOf(members) {
   return members.flatMap((m) => m.trades);
+}
+
+/* ── Server aggregates (/api/politicians/summary). ─────────────────────── */
+
+/**
+ * Members from the server's politician_rankings rows, which cover the whole
+ * trailing window (the browser only loads the newest disclosures). Each row
+ * keeps the aggregates from SQL; a member whose trades are loaded also keeps
+ * them (the panel, ticker counts and similar traders read those). A member
+ * with none loaded gets an empty `trades` list and its top tickers from SQL;
+ * the page fetches its trades when the panel opens. Slugs stay unique and
+ * a loaded member keeps its existing slug, so ?member= URLs resolve.
+ */
+export function mergeServerRankings(localMembers, rankings) {
+  const byId = new Map();
+  const slugs = new Set();
+  for (const m of localMembers) {
+    if (m.bioguideId) byId.set(m.bioguideId, m);
+    slugs.add(m.slug);
+  }
+  const out = [];
+  for (const r of rankings || []) {
+    const local = r.bioguideId ? byId.get(r.bioguideId) : null;
+    const agg = {
+      count: r.count,
+      buys: r.buys,
+      sells: r.sells,
+      volume: r.volume,
+      lastTraded: r.lastTraded,
+      photoUrl: r.photoUrl || local?.photoUrl || null,
+      party: r.party || local?.party || null,
+      district: r.district ?? local?.district ?? null,
+    };
+    if (local) {
+      out.push({ ...local, ...agg });
+      continue;
+    }
+    let slug = slugify(r.name);
+    if (slugs.has(slug)) slug = `${slug}-${String(r.bioguideId || out.length).toLowerCase()}`;
+    slugs.add(slug);
+    const tickers = (r.topTickers || []).map((ticker) => ({ ticker, n: null }));
+    out.push({
+      key: r.bioguideId || `${r.chamber}:${norm(r.name)}`,
+      slug,
+      name: r.name,
+      chamber: r.chamber,
+      state: r.state,
+      bioguideId: r.bioguideId,
+      trades: [],
+      tickers,
+      tickerSet: new Set(tickers.map((t) => t.ticker)),
+      ...agg,
+    });
+  }
+  return out;
+}
+
+/** The window the server aggregates cover. */
+export function serverWindow(rankings, windowDays, now = new Date()) {
+  const count = (rankings || []).reduce((s, r) => s + (r.count || 0), 0);
+  if (!count) return null;
+  const from = new Date(now.getTime() - windowDays * 86400000).toISOString().slice(0, 10);
+  const to = (rankings || []).reduce(
+    (mx, r) => (r.lastTraded && r.lastTraded > mx ? r.lastTraded : mx),
+    '',
+  );
+  return { from, to: to || now.toISOString().slice(0, 10), count };
 }

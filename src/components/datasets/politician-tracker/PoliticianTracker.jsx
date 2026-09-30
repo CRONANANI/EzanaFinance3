@@ -28,16 +28,18 @@ import {
   chamberStats,
   filterMembers,
   loadedWindow,
+  mergeServerRankings,
   monthlyByChamber,
   rankMembers,
   seatLabel,
+  serverWindow,
   SORT_KEYS,
   topTickers,
   tradesOf,
   usdShort,
 } from '@/lib/politicians/tracker-model';
 import { buildFixtureTrades } from '@/lib/politicians/tracker-fixture';
-import Headshot, { ChamberChip, PartyTag } from './Headshot';
+import Headshot, { AVATAR_SIZE, ChamberChip, PartyTag } from './Headshot';
 import MemberPanel from './MemberPanel';
 import Segmented from './Segmented';
 import '@/components/datasets/disclosures/disclosures.css';
@@ -158,7 +160,15 @@ function Card({ m, selected, showPct, onOpen }) {
       <span className="ptk-card-chip">
         <ChamberChip chamber={m.chamber} />
       </span>
-      <Headshot name={m.name} bioguideId={m.bioguideId} chamber={m.chamber} size={88} ring={3} />
+      <Headshot
+        name={m.name}
+        bioguideId={m.bioguideId}
+        chamber={m.chamber}
+        photoUrl={m.photoUrl}
+        size={AVATAR_SIZE.card}
+        ring={3}
+        priority
+      />
       <span className="ptk-card-name">{m.name}</span>
       <span className="ptk-seat">
         <PartyTag party={m.party} />
@@ -227,6 +237,11 @@ export default function PoliticianTracker({
   const [lastFilter, setLastFilter] = useState(null);
   const [showAll, setShowAll] = useState(false);
 
+  /* SQL aggregates for the current filters ({ key, data }), and trades
+     fetched for a member whose rows were not in the loaded pages. */
+  const [summary, setSummary] = useState(null);
+  const [memberTrades, setMemberTrades] = useState({});
+
   const [openSlug, setOpenSlug] = useState(initialMember);
   const triggerRef = useRef(null);
   const pushedRef = useRef(false);
@@ -292,6 +307,26 @@ export default function PoliticianTracker({
     };
   }, [reload]);
 
+  /* ── server aggregates: rankings, monthly and tickers over the whole
+        window, filtered in SQL. Unavailable (503) → the local model. ── */
+  const summaryKey = `${chamber || ''}|${party || ''}|${query.trim()}|${sort}|${reload}`;
+  useEffect(() => {
+    const ctrl = new AbortController();
+    const qs = new URLSearchParams({ sort });
+    if (chamber) qs.set('chamber', chamber.toLowerCase());
+    if (party) qs.set('party', party);
+    if (query.trim()) qs.set('q', query.trim());
+    fetch(`/api/politicians/summary?${qs}`, { signal: ctrl.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setSummary({ key: summaryKey, data: d?.ok ? d : null }))
+      .catch(() => {
+        if (!ctrl.signal.aborted) setSummary({ key: summaryKey, data: null });
+      });
+    return () => ctrl.abort();
+    // summaryKey captures every input
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [summaryKey]);
+
   /* ── search debounce ── */
   useEffect(() => {
     const id = setTimeout(() => setQuery(queryInput), 150);
@@ -308,9 +343,16 @@ export default function PoliticianTracker({
 
   /* ── model ── */
   const members = useMemo(() => buildMembers(trades), [trades]);
+  const server =
+    status === 'ready' && summary?.key === summaryKey && summary.data?.rankings?.length
+      ? summary.data
+      : null;
   const filtered = useMemo(
-    () => filterMembers(members, { chamber, party, query }),
-    [members, chamber, party, query],
+    () =>
+      server
+        ? mergeServerRankings(members, server.rankings)
+        : filterMembers(members, { chamber, party, query }),
+    [server, members, chamber, party, query],
   );
   const ranked = useMemo(() => rankMembers(filtered, sort), [filtered, sort]);
   const gallery = ranked.slice(0, GALLERY);
@@ -320,16 +362,55 @@ export default function PoliticianTracker({
 
   const filteredTrades = useMemo(() => tradesOf(filtered), [filtered]);
   const stats = useMemo(() => chamberStats(filtered), [filtered]);
-  const monthly = useMemo(() => monthlyByChamber(filteredTrades), [filteredTrades]);
-  const tickers = useMemo(() => topTickers(filteredTrades, 5), [filteredTrades]);
-  const windowInfo = useMemo(() => loadedWindow(filteredTrades), [filteredTrades]);
+  const monthly = useMemo(
+    () => (server ? server.monthly.slice(-12) : monthlyByChamber(filteredTrades)),
+    [server, filteredTrades],
+  );
+  const tickers = useMemo(
+    () => (server ? server.tickers.slice(0, 5) : topTickers(filteredTrades, 5)),
+    [server, filteredTrades],
+  );
+  const windowInfo = useMemo(
+    () =>
+      server ? serverWindow(server.rankings, server.windowDays) : loadedWindow(filteredTrades),
+    [server, filteredTrades],
+  );
   const anyFilter = Boolean(chamber || party || query.trim());
   const loaded = status === 'ready' || status === 'sample';
 
-  const openMember = useMemo(
-    () => (openSlug ? members.find((m) => m.slug === openSlug) || null : null),
-    [members, openSlug],
-  );
+  const openMember = useMemo(() => {
+    if (!openSlug) return null;
+    const m =
+      filtered.find((x) => x.slug === openSlug) || members.find((x) => x.slug === openSlug) || null;
+    const extra = m?.bioguideId ? memberTrades[m.bioguideId] : null;
+    if (!m || !extra?.length) return m;
+    const built = buildMembers(extra)[0];
+    return { ...m, trades: built.trades, tickers: built.tickers, tickerSet: built.tickerSet };
+  }, [filtered, members, openSlug, memberTrades]);
+
+  /* A ranked member whose trades were not in the loaded pages: fetch them
+     for the panel. */
+  const needTrades =
+    openMember?.bioguideId &&
+    openMember.trades.length < (openMember.count || 0) &&
+    !memberTrades[openMember.bioguideId]
+      ? openMember.bioguideId
+      : null;
+  useEffect(() => {
+    if (!needTrades) return undefined;
+    let alive = true;
+    fetch(`/api/politicians/trades?bioguide=${encodeURIComponent(needTrades)}&limit=500`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (alive && d?.trades?.length) {
+          setMemberTrades((prev) => ({ ...prev, [needTrades]: d.trades }));
+        }
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [needTrades]);
 
   /* ── ticker strip (unchanged contract) ── */
   const tickerItems = useMemo(
@@ -568,10 +649,14 @@ export default function PoliticianTracker({
             )}
           </section>
 
-          <aside className="ptk-rail" aria-label="House versus Senate, loaded window">
+          <aside
+            className="ptk-rail"
+            aria-label={`House versus Senate, ${server ? 'trailing 12 months' : 'loaded window'}`}
+          >
             <div className="ptk-rail-head">
               <span className="ptk-eyebrow dsc-mn">
-                HOUSE VS SENATE, {anyFilter ? 'FILTERED' : 'LOADED WINDOW'}
+                HOUSE VS SENATE,{' '}
+                {anyFilter ? 'FILTERED' : server ? 'TRAILING 12 MONTHS' : 'LOADED WINDOW'}
                 {feeds?.house === 'down' ? (
                   <span className="ptk-feed-chip dsc-mn">HOUSE FEED UNAVAILABLE</span>
                 ) : null}
@@ -772,7 +857,8 @@ export default function PoliticianTracker({
                                 name={m.name}
                                 bioguideId={m.bioguideId}
                                 chamber={m.chamber}
-                                size={32}
+                                photoUrl={m.photoUrl}
+                                size={AVATAR_SIZE.row}
                                 ring={2}
                               />
                               <span className="ptk-who-text">
@@ -866,7 +952,7 @@ export default function PoliticianTracker({
           />
           <MemberPanel
             member={openMember}
-            members={members}
+            members={server ? filtered : members}
             contractors={contractors}
             onClose={close}
             onSelect={(m) => open(m)}
