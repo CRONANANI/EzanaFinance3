@@ -719,6 +719,19 @@
   gap: 10px;
   padding: 24px 0;
 }
+.ptk-stale {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+}
+.ptk-stale-cap {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-caption-weight);
+  color: var(--dsc-muted);
+}
 .ptk-skel {
   display: block;
   border-radius: var(--radius-sm);

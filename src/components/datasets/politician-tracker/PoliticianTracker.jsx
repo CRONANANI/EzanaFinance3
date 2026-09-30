@@ -44,6 +44,19 @@ import '@/components/datasets/disclosures/disclosures.css';
 import './politician-tracker.css';
 
 const NONE = '·';
+
+/** '29 Sep 2026, 14:05' in the reader's locale; the raw string if unparseable. */
+function formatUpdated(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return String(iso || '');
+  return d.toLocaleString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
 const PAGES = [0, 1, 2];
 const GALLERY = 8;
 const LIST_DEFAULT = 8;
@@ -200,6 +213,9 @@ export default function PoliticianTracker({
   const [trades, setTrades] = useState([]);
   const [status, setStatus] = useState('loading'); // loading | ready | empty | sample
   const [feeds, setFeeds] = useState(null);
+  /* ISO time of the last good fetch when the route served its snapshot
+     (X-Data-Stale), else null. */
+  const [staleAt, setStaleAt] = useState(null);
   const [contractors, setContractors] = useState({ state: 'loading', data: null });
   const [reload, setReload] = useState(0);
 
@@ -223,8 +239,12 @@ export default function PoliticianTracker({
     Promise.all(
       PAGES.map((p) =>
         fetch(`/api/politicians/trades?page=${p}&limit=500`)
-          .then(async (r) => ({ status: r.status, body: r.ok ? await r.json() : null }))
-          .catch(() => ({ status: 0, body: null })),
+          .then(async (r) => ({
+            status: r.status,
+            stale: r.headers.get('X-Data-Stale') === 'true',
+            body: r.ok ? await r.json() : null,
+          }))
+          .catch(() => ({ status: 0, stale: false, body: null })),
       ),
     ).then((pages) => {
       if (!alive) return;
@@ -235,6 +255,7 @@ export default function PoliticianTracker({
       if (pages.every((p) => p.status === 503)) {
         setTrades(buildFixtureTrades());
         setFeeds(null);
+        setStaleAt(null);
         setStatus('sample');
         return;
       }
@@ -252,8 +273,10 @@ export default function PoliticianTracker({
           merged.push({ ...t, id });
         }
       }
+      const stalePage = pages.find((pg) => pg.stale && pg.body?.fetchedAt);
       setTrades(merged);
       setFeeds(f);
+      setStaleAt(stalePage ? stalePage.body.fetchedAt : null);
       setStatus(merged.length ? 'ready' : 'empty');
     });
     setContractors({ state: 'loading', data: null });
@@ -481,6 +504,20 @@ export default function PoliticianTracker({
         {status === 'empty' ? (
           <div className="ptk-unavailable" role="status">
             <p className="dsc-note">Disclosures are temporarily unavailable. Try again shortly.</p>
+            <button
+              type="button"
+              className="dsc-btn dsc-btn--ghost"
+              onClick={() => setReload((n) => n + 1)}
+            >
+              Retry
+            </button>
+          </div>
+        ) : null}
+
+        {/* ── stale: the route served its last good snapshot ── */}
+        {status === 'ready' && staleAt ? (
+          <div className="ptk-stale" role="status">
+            <p className="ptk-stale-cap">Last updated {formatUpdated(staleAt)}</p>
             <button
               type="button"
               className="dsc-btn dsc-btn--ghost"
