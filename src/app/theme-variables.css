@@ -63,6 +63,8 @@
 
   /* ── Brand: Emerald (User) ── */
   --emerald: #10b981;
+  /* Text, icons and rules on a brand-green surface (same in every theme). */
+  --color-on-primary: #ffffff;
   --emerald-hover: #059669;
   --emerald-dark: #047857;
   --emerald-bg: rgba(16, 185, 129, 0.08);
