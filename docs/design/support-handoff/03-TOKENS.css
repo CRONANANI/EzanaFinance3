@@ -1,0 +1,72 @@
+/* Support centre pages, page-scoped tokens.
+   Every value maps onto src/app/theme-variables.css. The hex in each comment
+   is what the approved boards used in light mode: a target, not a new token.
+   Prefer color-mix over new colours. Nothing here is global. */
+
+.hc-page {
+  /* ground and ink */
+  --hc-bg: var(--bg);                                   /* #ffffff / #0a0e13 */
+  --hc-ink: var(--text);                                /* #0a0e13 */
+  --hc-mute: var(--text-secondary);                     /* #5a6b65 */
+  --hc-faint: var(--text-tertiary);                     /* #8a9a95, captions and mono-caps labels only */
+  --hc-hair: color-mix(in srgb, var(--text) 10%, transparent);
+  --hc-hair-strong: color-mix(in srgb, var(--text) 12%, transparent);
+  --hc-dotted: color-mix(in srgb, var(--text) 20%, transparent);
+
+  /* the one accent */
+  --hc-emerald: var(--emerald);                         /* #10b981 marks, solid Ask AI, Contact Support */
+  --hc-positive: var(--positive);                       /* #047857 light / #34d399 dark: links, labels, counts */
+  --hc-tint: color-mix(in srgb, var(--emerald) 8%, transparent);     /* icon tiles, highlighted rail rows */
+  --hc-tint-strong: color-mix(in srgb, var(--emerald) 14%, transparent); /* tinted Ask AI, BEST MATCH tag, Ask button */
+  --hc-focus-halo: color-mix(in srgb, var(--emerald) 10%, transparent);
+  --hc-pill-active-border: color-mix(in srgb, var(--emerald) 60%, transparent);
+
+  /* surfaces */
+  --hc-card-bg: var(--bg);
+  --hc-card-border: var(--hc-hair);
+  --hc-card-radius: var(--radius-lg);                   /* 12 */
+  --hc-panel-radius: 14px;                              /* answer card, related card, help card; use --radius-xl (16) if 14 is not a token */
+  --hc-pill-radius: 99px;
+
+  /* rail */
+  --hc-rail-row-radius: var(--radius-md);               /* 8 */
+  --hc-rail-highlight: var(--hc-tint);
+  --hc-rail-dim: 0.5;
+  --hc-rail-count: var(--hc-positive);
+
+  /* controls */
+  --hc-btn-primary-bg: var(--hc-emerald);
+  --hc-btn-primary-fg: #ffffff;
+  --hc-btn-secondary-border: var(--hc-hair-strong);
+  --hc-btn-secondary-fg: var(--hc-ink);
+  --hc-btn-tint-bg: var(--hc-tint-strong);
+  --hc-btn-tint-fg: var(--hc-positive);
+  --hc-chip-border: var(--hc-hair-strong);
+  --hc-chip-fg: var(--hc-mute);
+  --hc-feedback-border: var(--hc-hair-strong);
+
+  /* type */
+  --hc-font: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --hc-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* skeleton */
+  --hc-skel-base: color-mix(in srgb, var(--text) 6%, transparent);
+  --hc-skel-sheen: color-mix(in srgb, var(--text) 10%, transparent);
+
+  /* focus */
+  --hc-focus: var(--emerald);
+}
+
+/* Contrast notes
+   - --hc-positive is the only emerald used for text on the ground.
+     The emerald mark colour carries white text only on solid buttons.
+   - --hc-faint is for captions, mono-caps labels and read times at 10px and
+     up; never for body copy or a control label.
+   - In dark mode keep the tints at 8% and 14%; check the highlighted rail
+     row still separates from the ground at 3:1, else raise to 12% and 18%.
+   - White text on --hc-emerald passes at 13px 700 only; do not use it for
+     smaller or lighter text. */
+
+@media (prefers-reduced-motion: reduce) {
+  .hc-page * { transition: none !important; animation: none !important; }
+}

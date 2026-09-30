@@ -1,6 +1,6 @@
 /**
  * Help Center lexical search: one index over both help centers, used by the
- * as-you-type matches in HelpSearchAsk, the hub pages' category filter, and
+ * the support centre model (support-model.js), the article pages, and
  * /api/help-center/ask as its retrieval fallback. Pure and synchronous, built
  * from the static content module, so it works with no network and no
  * database: search never depends on the AI endpoint being up.

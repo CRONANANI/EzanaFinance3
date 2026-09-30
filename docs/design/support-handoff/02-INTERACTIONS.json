@@ -1,0 +1,110 @@
+{
+  "pages": ["/help/user-support", "/help/partner-support"],
+  "note": "Paths are illustrative; keep the routes the site uses today. One template, audience prop picks the content source.",
+  "url": {
+    "q": "?q=<question> puts the page in the answered state on load and after Ask; removed on Clear and browse",
+    "history": "Ask pushes one entry (home -> answered). A follow-up replaces that entry. Clear and browse pops it. Back from answered returns to home with the pill emptied.",
+    "audience": "from the route, never a query param"
+  },
+  "search_pill": {
+    "placeholder": "Ask anything, e.g. How do I connect my brokerage?",
+    "submit": ["Enter in the field", "Ask AI button"],
+    "min_length": 3,
+    "typeahead": "none in this iteration; the pill is a question box, not a filter",
+    "states": {
+      "empty": "hairline border, tinted Ask AI",
+      "typing": "same as empty; Ask AI enables at 3+ characters",
+      "asking": "emerald border and 3px halo, Ask AI shows a 14px spinner and reads Asking; field stays editable",
+      "answered": "emerald border and halo, solid emerald Ask AI; 'Clear and browse' link appears under the pill"
+    },
+    "try_chips": {
+      "home_only": true,
+      "click": "fills the pill and submits immediately",
+      "count": 4
+    }
+  },
+  "ask_flow": {
+    "request": "existing Ask AI endpoint with {question, audience}",
+    "expects": "{ answer: string, steps?: string[], sources: [{id,title,category,url,readMinutes}], matches: [{articleId,category,score}] }",
+    "derive": {
+      "matchesByCategory": "count of distinct matched articles per category; drives the rail highlights and the Keep reading counts",
+      "relatedArticles": "matches sorted by score desc, sources first; first gets BEST MATCH; show 6, 'See all N results' expands in place",
+      "keepReading": "top 3 categories by match count; per category up to 3 matched articles that are not already sources; header count is the full match count for that category",
+      "stillTrending": "first 3 of the audience's trending list, excluding anything already in sources or related"
+    },
+    "in_place": "the home body unmounts and the answered body mounts; the header stays; scroll position resets to the top of the answer card",
+    "streaming": "if the endpoint streams, the answer text fills in with a caret; sources, rail counts, Keep reading and Related render when the final payload arrives, as skeletons until then",
+    "no_sources": "render the no-answer state; never show answer text without at least one source"
+  },
+  "category_rail": {
+    "component": "one component, mode = resting | matches",
+    "resting": {
+      "header": "ALL CATEGORIES with total count",
+      "row": "icon tile, name, chevron; whole row is a link to the category page"
+    },
+    "matches": {
+      "header": "ALL CATEGORIES / MATCHES",
+      "row_with_matches": "background --hc-tint, count in --hc-positive mono 600 on the right; row links to the category page filtered by ?q=",
+      "row_without": "opacity .5, middle dot on the right, still a link",
+      "note": "one line under the list, 11px faint",
+      "sorting": "keep the canonical category order; do not resort by count"
+    },
+    "a11y": "a nav landmark labelled Categories; counts are read as 'N matching articles' via visually hidden text"
+  },
+  "answer_card": {
+    "label": "AI ANSWER with the spark mark; right side 'from N help articles'",
+    "steps": "render the numbered list only when the payload includes steps; never derive steps from the prose",
+    "sources": "chips in payload order; each opens the article; max 5 visible, '+N more' expands",
+    "footer": "caveat left, 'Was this helpful?' plus thumbs right",
+    "feedback": {
+      "click": "thumb fills; the pair disables; a 'Thanks' text replaces the question",
+      "down": "also reveals a one-line optional text field 'What was missing?' with Send",
+      "event": "help_answer_feedback {audience, q_hash, helpful, comment_length}"
+    }
+  },
+  "follow_up": {
+    "field": "pill, placeholder 'e.g. Which brokerages support SnapTrade?'",
+    "submit": "Enter or Ask; the question moves into the main pill, the new answer replaces the card in place, history entry replaced",
+    "context": "send the previous question and answer ids as context to the endpoint if it supports it; otherwise send the follow-up alone"
+  },
+  "keep_reading": {
+    "cards": 3,
+    "per_card": "icon, category name, match count, up to 3 article links, 'All {category} articles'",
+    "fewer_categories": "render what exists; with one category the card spans the middle column at full width",
+    "empty": "hide the section entirely when no matches remain after removing sources"
+  },
+  "related_articles": {
+    "visible": 6,
+    "row": "icon tile, title (wraps to 2 lines max), category, read time, BEST MATCH tag on the first",
+    "see_all": "expands in place to all matches; label becomes 'Show fewer'"
+  },
+  "home_blocks": {
+    "start_here": "three cards = the three most-opened categories for the audience (from analytics or a configured list); card is a link",
+    "faq": "four questions in two columns; clicking one submits it to Ask AI (it is a question, not an article)",
+    "recently_updated": "five most recently updated articles for the audience; 'All updates' opens the changelog view of the help centre",
+    "trending": "six most-viewed articles in the last 7 days for the audience; 'All popular articles' opens the list",
+    "help_card": "Contact Support opens the contact form for the audience; Back to Help Center is a link"
+  },
+  "states": {
+    "loading_home": "skeletons for the three Start here cards, five updated rows, six trending rows, twelve rail rows; nav and header render immediately",
+    "asking": "answer card skeleton (label, 5 text lines, 3 chip pills), Keep reading and Related skeletons, rail rows keep their names with count placeholders",
+    "no_answer": "answer card replaced by a quiet card: 'We could not find an answer in the help centre. Try different words, browse a category, or contact support.' with Browse categories and Contact Support; rail stays in resting mode; Related shows keyword matches if any, else hidden",
+    "error": "same card shape: 'The assistant is unavailable right now. Browse a category or try again in a moment.' with Try again; the home body stays visible underneath in dimmed form only if the swap has not happened yet",
+    "empty_audience_list": "a block with no items (e.g. no trending yet) is hidden, never an empty heading",
+    "reduced_motion": "no shimmer travel, no caret blink, no card transitions"
+  },
+  "keyboard": {
+    "tab_order_home": "nav, crumb, pill, Ask AI, Try chips, rail rows, Start here cards, FAQ rows, updated rows, All updates, help card buttons, trending rows, All popular",
+    "tab_order_answered": "nav, crumb, pill, Ask AI, Clear and browse, rail rows, source chips, thumbs, follow-up field, Ask, Keep reading links, Related rows, See all, Still trending rows, help card buttons",
+    "escape": "in the pill: clears the text; in the follow-up: clears the text",
+    "focus_after_ask": "moves to the answer card heading (AI ANSWER) with tabindex=-1"
+  },
+  "analytics_events": [
+    "help_ask {audience, q_hash, source: pill|try_chip|faq|follow_up}",
+    "help_answer_shown {audience, q_hash, sources, matched_categories}",
+    "help_no_answer {audience, q_hash}",
+    "help_answer_feedback {audience, q_hash, helpful}",
+    "help_article_open {audience, article_id, from: source_chip|related|keep_reading|trending|updated|rail}",
+    "help_contact_click {audience, from: home|answered|no_answer}"
+  ]
+}
