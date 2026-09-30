@@ -147,7 +147,7 @@
    shared baseline with the chart's x axis holds at the smaller size. */
 .sled-rating-figure {
   font-family: var(--font-mono);
-  font-size: clamp(44px, 5vw, 76px);
+  font-size: clamp(32px, 3.4vw, 52px);
   font-weight: 700;
   letter-spacing: -0.045em;
   line-height: 0.88;
@@ -253,19 +253,11 @@
 .sled-chart-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  /* The label is gone; the cohort controls hold the right edge on their own. */
+  justify-content: flex-end;
   gap: 16px;
   flex-wrap: wrap;
   margin-bottom: 16px;
-}
-.sled-chart-label {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: var(--type-eyebrow-size);
-  font-weight: var(--type-eyebrow-weight);
-  letter-spacing: var(--type-eyebrow-tracking-marketing);
-  text-transform: uppercase;
-  color: var(--text-muted);
 }
 .sled-chart-controls {
   display: flex;
@@ -327,6 +319,14 @@
 .sled-chart-tooltip-date {
   color: var(--text-muted);
   margin-bottom: 4px;
+}
+.sled-pin-rule {
+  stroke: var(--border-primary);
+  stroke-dasharray: 3 3;
+}
+.sled-chart-tooltip--pinned {
+  width: max-content;
+  pointer-events: none;
 }
 .sled-chart-tooltip-val {
   font-weight: 600;

@@ -32,11 +32,12 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronDown } from 'lucide-react';
 import { DATASET_TAXONOMY, isNavigable, isPreview } from '@/lib/datasets/taxonomy';
 import { useAuth } from '@/components/auth-context';
 import './category-bar.css';
 
+/* Steps of the measured nav fit (see the density effect). */
+const DENSITY_MAX = 4;
 /* Long enough for the pointer to cross the gap between a trigger and its
    panel; the landing nav uses the same 220ms for the same reason. */
 const CLOSE_DELAY = 220;
@@ -253,6 +254,40 @@ export default function CategoryBar({ active, activeItem }) {
     close();
   }, [pathname, close]);
 
+  /* Measured fit, not a width ladder. At 1024 and up, step the density until
+     the seven triggers fit the centre column, re-measuring on resize and once
+     the web font has loaded (the fallback face is narrower, which is how the
+     old hand-tuned ladder came to clip Regulatory Winds). Below 1024 the row
+     scrolls as one line with edge fades, as before. The observer watches the
+     bar, not the centre, so writing data-density cannot loop. */
+  useLayoutEffect(() => {
+    const bar = barRef.current;
+    const center = bar?.querySelector('.dscat-center');
+    if (!bar || !center) return undefined;
+    const mq = window.matchMedia('(min-width: 1024px)');
+    let raf = 0;
+    const fit = () => {
+      bar.dataset.density = '0';
+      if (!mq.matches) return;
+      let d = 0;
+      while (d < DENSITY_MAX && center.scrollWidth > center.clientWidth + 1) {
+        d += 1;
+        bar.dataset.density = String(d);
+      }
+    };
+    fit();
+    const ro = new ResizeObserver(() => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(fit);
+    });
+    ro.observe(bar);
+    document.fonts?.ready?.then(fit);
+    return () => {
+      ro.disconnect();
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
   /* Below 1024 the seven dimensions scroll as one line rather than wrapping, so
      the current one has to be brought into view or it can sit off-screen. */
   useEffect(() => {
@@ -311,7 +346,7 @@ export default function CategoryBar({ active, activeItem }) {
               onKeyDown={(e) => onTriggerKeyDown(e, cat.id)}
             >
               <i className={`bi ${cat.biIcon} dscat-icon`} aria-hidden="true" />
-              {cat.label} <ChevronDown size={13} />
+              {cat.label} <i className="bi bi-chevron-down dscat-caret" aria-hidden="true" />
             </button>
           </div>
         ))}

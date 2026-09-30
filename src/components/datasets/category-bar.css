@@ -205,42 +205,57 @@
   scroll-snap-align: center;
   white-space: nowrap;
 }
-/* A measured ladder, in the order padding, then caret, then font and sides.
-   Each step is the point where the seven triggers stop fitting the centre
-   column, read off the rendered bar rather than estimated:
+/* Laptop fit is measured, not a width ladder: CategoryBar steps
+   data-density from 0 to 4 until the seven triggers fit .dscat-center. Each
+   step keeps everything the one before it removed. */
+.dscat-caret {
+  font-size: 10px;
+  line-height: 1;
+}
 
-     >1366   176px sides, 13px, caret     1043 in 1048
-     <=1366  caret hidden                  966 in  974
-     <=1320  150px sides, 12.5px, 6px      940 in  940
-     <=1220  120px sides, 12px, 5px        900 in  900   (at 1180)
+/* density 1: caret goes (decoration; the dropdown still opens on click) */
+.dscat-bar[data-density='1'] .dscat-caret,
+.dscat-bar[data-density='2'] .dscat-caret,
+.dscat-bar[data-density='3'] .dscat-caret,
+.dscat-bar[data-density='4'] .dscat-caret {
+  display: none;
+}
 
-   Below that the row scrolls as one line with its edge fades, as designed. */
-@media (max-width: 1366px) {
-  /* The caret is decoration: the dropdown still opens on click, and the dot
-     plus the label still say what the trigger is. */
-  .dscat-trigger svg {
-    display: none;
-  }
+/* density 2: narrower sides, tighter triggers */
+.dscat-bar[data-density='2'],
+.dscat-bar[data-density='3'],
+.dscat-bar[data-density='4'] {
+  grid-template-columns: 150px 1fr 150px;
 }
-@media (max-width: 1320px) {
-  .dscat-bar {
-    grid-template-columns: 150px 1fr 150px;
-  }
-  .dscat-trigger {
-    font-size: 12.5px;
-    padding: 7px 6px;
-    gap: 5px;
-  }
+.dscat-bar[data-density='2'] .dscat-trigger {
+  font-size: 12.5px;
+  padding: 7px 6px;
+  gap: 5px;
 }
-@media (max-width: 1220px) {
-  .dscat-bar {
-    grid-template-columns: 120px 1fr 120px;
-  }
-  .dscat-trigger {
-    font-size: 12px;
-    padding: 7px 5px;
-  }
+
+/* density 3: dimension icons go, text steps down */
+.dscat-bar[data-density='3'] .dscat-icon,
+.dscat-bar[data-density='4'] .dscat-icon {
+  display: none;
 }
+.dscat-bar[data-density='3'] .dscat-trigger {
+  font-size: 12px;
+  padding: 7px 5px;
+}
+
+/* density 4: icon-only Home, Log in hidden (Sign up stays), smallest text */
+.dscat-bar[data-density='4'] {
+  grid-template-columns: 120px 1fr 120px;
+}
+.dscat-bar[data-density='4'] .dscat-trigger {
+  font-size: 11.5px;
+  padding: 6px 4px;
+}
+.dscat-bar[data-density='4'] .dscat-home span,
+.dscat-bar[data-density='4'] .dscat-btn--ghost {
+  display: none;
+}
+
 .dscat-icon {
   flex-shrink: 0;
   font-size: 1rem;

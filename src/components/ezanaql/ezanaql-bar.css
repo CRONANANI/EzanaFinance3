@@ -13,7 +13,7 @@
   --eqb-rule: var(--border-primary);
   --eqb-pos: var(--emerald-text);
   --eqb-wash: var(--emerald-bg);
-  --eqb-w: 720px;
+  --eqb-w: 820px;
   --eqb-h: 44px;
   margin: 14px auto 0;
   width: min(var(--eqb-w), 100%);
@@ -74,19 +74,11 @@
   opacity: 0.6;
   cursor: default;
 }
-/* The one grey mono line. */
-.eqb-line {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 2px;
-  padding: 0 14px;
-}
 .eqb-query {
   font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--eqb-faint);
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--eqb-ink);
   min-width: 0;
   overflow-wrap: anywhere;
   /* Two lines at most, then it truncates; the whole query is in Edit. */
@@ -99,27 +91,79 @@
 .eqb-query.is-swapping {
   opacity: 0.35;
 }
-.eqb-links {
+
+/* Actions live in the pill, after Generate, behind a hairline divider. */
+.eqb-actions {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 2px;
   flex-shrink: 0;
+  padding-left: 6px;
+  border-left: 1px solid var(--eqb-border);
 }
-.eqb-link {
+.eqb-act {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 9px;
   border: 0;
+  border-radius: var(--radius-pill, 9999px);
   background: none;
-  padding: 0;
+  color: var(--eqb-muted);
   font-family: var(--font-sans);
-  font-size: 10.5px;
-  color: var(--eqb-pos);
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
-.eqb-link:hover {
-  text-decoration: underline;
+.eqb-act:hover,
+.eqb-act[aria-pressed='true'] {
+  background: var(--eqb-wash);
+  color: var(--eqb-pos);
 }
-.eqb-link[disabled] {
+.eqb-act[disabled] {
   opacity: 0.5;
   cursor: default;
+}
+
+/* The example query: a quiet code chip under the pill. */
+.eqb-code {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+}
+.eqb-code-tag {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--eqb-pos);
+}
+.eqb-tok-kw {
+  color: var(--eqb-pos);
+  font-weight: 700;
+}
+.eqb-tok-str {
+  color: var(--eqb-muted);
+}
+.eqb-tok-num {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eqb-act {
+    transition: none;
+  }
 }
 /* Shown only while the prompt has focus, in the same grey as the query. */
 .eqb-hint {
@@ -225,6 +269,9 @@
     padding-left: 10px;
   }
   .eqb-mark span {
+    display: none;
+  }
+  .eqb-act span {
     display: none;
   }
 }

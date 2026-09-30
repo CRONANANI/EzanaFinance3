@@ -361,6 +361,76 @@ export default function SupportCenter({ audience = 'user', initialQuestion = '' 
     ask(value, { source: 'pill', history: pushedRef.current ? 'replace' : 'push' });
   };
 
+  /* The pill and its Try/Clear row, written once: in the header once a
+     question is asked, at the top of the home grid (level with the rail)
+     before that. Only one is ever mounted, so inputRef is unambiguous. */
+  const searchBlock = (
+    <>
+      <form
+        className={`hcs-pill${answered ? ' is-active' : ''}${phase === 'asking' ? ' is-asking' : ''}`}
+        role="search"
+        onSubmit={submitPill}
+      >
+        <i className="bi bi-search hcs-pill-icon" aria-hidden="true" />
+        <input
+          ref={inputRef}
+          type="search"
+          className="hcs-pill-input"
+          placeholder="Ask anything, e.g. How do I connect my brokerage?"
+          aria-label="Ask the help centre a question"
+          value={value}
+          enterKeyHint="search"
+          autoComplete="off"
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape' && value) {
+              e.preventDefault();
+              setValue('');
+            }
+          }}
+        />
+        <button
+          type="submit"
+          className={`hcs-ask${hasQ ? ' is-solid' : ''}`}
+          disabled={!hasQ || phase === 'asking'}
+          aria-label="Ask AI"
+        >
+          {phase === 'asking' ? (
+            <>
+              <i className="bi bi-arrow-repeat hcs-spin" aria-hidden="true" />
+              <span className="hcs-ask-label">Asking</span>
+            </>
+          ) : (
+            <>
+              <i className="bi bi-stars" aria-hidden="true" />
+              <span className="hcs-ask-label">Ask AI</span>
+            </>
+          )}
+        </button>
+      </form>
+
+      {answered ? (
+        <button type="button" className="hcs-clear" onClick={clear}>
+          <i className="bi bi-chevron-left" aria-hidden="true" /> Clear and browse
+        </button>
+      ) : (
+        <p className="hcs-try">
+          <span className="hcs-try-label">Try:</span>
+          {cfg.tryChips.map((c) => (
+            <button
+              key={c}
+              type="button"
+              className="hcs-chip"
+              onClick={() => ask(c, { source: 'try_chip' })}
+            >
+              {c}
+            </button>
+          ))}
+        </p>
+      )}
+    </>
+  );
+
   return (
     <div className="hc-page hcs">
       {/* ── header, both states ── */}
@@ -380,73 +450,13 @@ export default function SupportCenter({ audience = 'user', initialQuestion = '' 
           Search the help centre or ask the assistant. Answers cite the articles they come from.
         </p>
 
-        <form
-          className={`hcs-pill${answered ? ' is-active' : ''}${phase === 'asking' ? ' is-asking' : ''}`}
-          role="search"
-          onSubmit={submitPill}
-        >
-          <i className="bi bi-search hcs-pill-icon" aria-hidden="true" />
-          <input
-            ref={inputRef}
-            type="search"
-            className="hcs-pill-input"
-            placeholder="Ask anything, e.g. How do I connect my brokerage?"
-            aria-label="Ask the help centre a question"
-            value={value}
-            enterKeyHint="search"
-            autoComplete="off"
-            onChange={(e) => setValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape' && value) {
-                e.preventDefault();
-                setValue('');
-              }
-            }}
-          />
-          <button
-            type="submit"
-            className={`hcs-ask${hasQ ? ' is-solid' : ''}`}
-            disabled={!hasQ || phase === 'asking'}
-            aria-label="Ask AI"
-          >
-            {phase === 'asking' ? (
-              <>
-                <i className="bi bi-arrow-repeat hcs-spin" aria-hidden="true" />
-                <span className="hcs-ask-label">Asking</span>
-              </>
-            ) : (
-              <>
-                <i className="bi bi-stars" aria-hidden="true" />
-                <span className="hcs-ask-label">Ask AI</span>
-              </>
-            )}
-          </button>
-        </form>
-
-        {answered ? (
-          <button type="button" className="hcs-clear" onClick={clear}>
-            <i className="bi bi-chevron-left" aria-hidden="true" /> Clear and browse
-          </button>
-        ) : (
-          <p className="hcs-try">
-            <span className="hcs-try-label">Try:</span>
-            {cfg.tryChips.map((c) => (
-              <button
-                key={c}
-                type="button"
-                className="hcs-chip"
-                onClick={() => ask(c, { source: 'try_chip' })}
-              >
-                {c}
-              </button>
-            ))}
-          </p>
-        )}
+        {answered ? searchBlock : null}
       </header>
 
       {/* ── home ── */}
       {!answered ? (
         <div className="hcs-grid hcs-grid--home">
+          <div className="hcs-search">{searchBlock}</div>
           <CategoryRail categories={categories} mode="resting" />
 
           <div className="hcs-main">

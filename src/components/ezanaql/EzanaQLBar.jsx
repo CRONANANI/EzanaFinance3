@@ -14,10 +14,32 @@
  * place on the same white ground, so the data stays the focal point.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import DatasetPicker from './DatasetPicker';
 import './ezanaql-bar.css';
 
 const MAX_EDITOR_LINES = 8;
+
+/* Every keyword the parser (src/lib/ezanaql/parser.js) knows. */
+const EQB_KW =
+  /^(SELECT|FROM|JOIN|ON|WHERE|AND|OR|NOT|IN|IS|NULL|TRUE|FALSE|AS|ORDER|GROUP|BY|HAVING|ASC|DESC|LIMIT|OFFSET|BETWEEN|LIKE|CONTAINS|STARTS|ENDS|WITH|DISTINCT|CASE|WHEN|THEN|ELSE|END|LAST|YTD)$/i;
+
+/* Display-only highlighting. The query string itself is never altered, so
+   Run and Export send exactly what the visitor sees. */
+function QueryTokens({ code }) {
+  const parts = code.split(/('(?:[^']|'')*'|\b\d+(?:\.\d+)?\b|\s+|[A-Za-z_.]+)/).filter(Boolean);
+  return parts.map((p, i) => {
+    let cls = null;
+    if (p.startsWith("'")) cls = 'eqb-tok-str';
+    else if (/^\d/.test(p)) cls = 'eqb-tok-num';
+    else if (EQB_KW.test(p)) cls = 'eqb-tok-kw';
+    return cls ? (
+      <span key={i} className={cls}>
+        {p}
+      </span>
+    ) : (
+      p
+    );
+  });
+}
 
 export default function EzanaQLBar({ datasetScope = null, seedQuery = '', onResult }) {
   const [prompt, setPrompt] = useState('');
@@ -155,14 +177,6 @@ export default function EzanaQLBar({ datasetScope = null, seedQuery = '', onResu
     }
   };
 
-  const pick = (name) => {
-    setDirty(true);
-    setCode((c) =>
-      c.trim() ? `FROM ${name}\n${c.replace(/^FROM\s+\S+\s*/i, '')}` : `FROM ${name} `,
-    );
-    setEditing(true);
-  };
-
   const rows = result?.rows || [];
   const columns = result?.columns || [];
   const keys = result?.keys || columns;
@@ -195,36 +209,58 @@ export default function EzanaQLBar({ datasetScope = null, seedQuery = '', onResu
         <button type="button" className="eqb-go" onClick={generate} disabled={busy === 'gen'}>
           {busy === 'gen' ? 'Generating' : 'Generate EzanaQL'}
         </button>
-      </div>
-
-      <div className="eqb-line">
-        <code className={`eqb-query${swapping ? ' is-swapping' : ''}`}>{code}</code>
-        <span className="eqb-links">
-          <button type="button" className="eqb-link" onClick={() => setEditing((v) => !v)}>
-            {editing ? 'Close' : 'Edit'}
-          </button>
-          <button type="button" className="eqb-link" onClick={run} disabled={busy === 'run'}>
-            {busy === 'run' ? 'Running' : 'Run'}
+        <span className="eqb-actions" role="group" aria-label="Query actions">
+          <button
+            type="button"
+            className="eqb-act"
+            onClick={() => setEditing((v) => !v)}
+            aria-pressed={editing}
+            aria-label={editing ? 'Close editor' : 'Edit query'}
+          >
+            <i className="bi bi-pencil" aria-hidden="true" />
+            <span>{editing ? 'Close' : 'Edit'}</span>
           </button>
           <button
             type="button"
-            className="eqb-link"
+            className="eqb-act"
+            onClick={run}
+            disabled={busy === 'run'}
+            aria-label={busy === 'run' ? 'Running query' : 'Run query'}
+          >
+            <i className="bi bi-play-fill" aria-hidden="true" />
+            <span>{busy === 'run' ? 'Running' : 'Run'}</span>
+          </button>
+          <button
+            type="button"
+            className="eqb-act"
             onClick={() => exportAs('csv')}
             disabled={busy === 'csv'}
+            aria-label="Export CSV"
           >
-            CSV
+            <i className="bi bi-filetype-csv" aria-hidden="true" />
+            <span>CSV</span>
           </button>
           <button
             type="button"
-            className="eqb-link"
+            className="eqb-act"
             onClick={() => exportAs('json')}
             disabled={busy === 'json'}
+            aria-label="Export JSON"
           >
-            JSON
+            <i className="bi bi-filetype-json" aria-hidden="true" />
+            <span>JSON</span>
           </button>
-          <DatasetPicker onPick={pick} />
         </span>
       </div>
+
+      {code.trim() ? (
+        <div className="eqb-code">
+          <span className="eqb-code-tag">EzanaQL</span>
+          <code className={`eqb-query${swapping ? ' is-swapping' : ''}`}>
+            <QueryTokens code={code} />
+          </code>
+        </div>
+      ) : null}
 
       {/* Only while the prompt has focus: true everywhere, and noise until
           someone is actually about to type. */}

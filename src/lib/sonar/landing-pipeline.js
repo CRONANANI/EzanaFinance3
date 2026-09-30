@@ -537,17 +537,185 @@ async function matchCongress(admin, { ticker }) {
   }
 }
 
+async function matchSec(admin, { ticker }) {
+  if (!admin || !ticker) return null;
+  try {
+    const { data } = await admin
+      .from('sec_filings')
+      .select('form_type, filer_name, filed_at')
+      .eq('ticker', ticker.toUpperCase())
+      .order('filed_at', { ascending: false })
+      .limit(3);
+    if (!data?.length) return null;
+    return data.map((r) => ({
+      form: String(r.form_type || ''),
+      filer: String(r.filer_name || ''),
+      filedAt: r.filed_at || null,
+    }));
+  } catch (e) {
+    console.error('[sonar-pipeline] sec matches failed:', e?.message);
+    return null;
+  }
+}
+
+async function match13f(admin, { ticker }) {
+  if (!admin || !ticker) return null;
+  try {
+    const { data } = await admin
+      .from('whale_moves')
+      .select('filer_name, change_type, value_usd, quarter, filed_at')
+      .eq('kind', 'institutional')
+      .eq('ticker', ticker.toUpperCase())
+      .order('filed_at', { ascending: false })
+      .limit(3);
+    if (!data?.length) return null;
+    return data.map((r) => ({
+      filer: String(r.filer_name || ''),
+      changeType: r.change_type || null,
+      valueUsd: r.value_usd == null ? null : Number(r.value_usd),
+      quarter: r.quarter || null,
+    }));
+  } catch (e) {
+    console.error('[sonar-pipeline] 13f matches failed:', e?.message);
+    return null;
+  }
+}
+
+async function matchLobbying(admin, { ticker, name }) {
+  if (!admin) return null;
+  try {
+    /* The verified ticker map first; a name prefix only as the fallback. */
+    let clients = [];
+    if (ticker) {
+      const { data } = await admin
+        .from('lobbying_client_tickers')
+        .select('client_name')
+        .eq('ticker', ticker.toUpperCase());
+      clients = (data || []).map((r) => r.client_name).filter(Boolean);
+    }
+    const prefix = String(name || '')
+      .replace(/[%_,()]/g, ' ')
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .join(' ')
+      .toUpperCase();
+    if (!clients.length && !prefix) return null;
+
+    let q = admin
+      .from('lobbying_filings')
+      .select('filing_year, amount, registrant_name, client_name, dt_posted');
+    q = clients.length ? q.in('client_name', clients) : q.ilike('client_name', `${prefix}%`);
+    const { data } = await q.order('dt_posted', { ascending: false }).limit(1000);
+    if (!data?.length) return null;
+
+    const years = data.map((r) => Number(r.filing_year)).filter(Number.isFinite);
+    const byRegistrant = new Map();
+    for (const r of data) {
+      const k = r.registrant_name || 'Unknown';
+      byRegistrant.set(k, (byRegistrant.get(k) || 0) + 1);
+    }
+
+    /* In-house spend only: filings where the registrant IS the client, for
+       the latest COMPLETE calendar year. Adding outside firms' reported
+       income on top would double count, and a partial year would understate. */
+    let inHouse = null;
+    if (prefix) {
+      const nowYear = new Date().getUTCFullYear();
+      const own = data.filter((r) =>
+        String(r.registrant_name || '')
+          .toUpperCase()
+          .startsWith(prefix),
+      );
+      const ownYears = [...new Set(own.map((r) => Number(r.filing_year)))]
+        .filter((y) => Number.isFinite(y) && y < nowYear)
+        .sort((a, b) => b - a);
+      if (ownYears.length) {
+        const spend = own
+          .filter((r) => Number(r.filing_year) === ownYears[0])
+          .reduce((s, r) => s + (Number(r.amount) || 0), 0);
+        if (spend > 0) inHouse = { year: ownYears[0], spend };
+      }
+    }
+
+    return {
+      client: String(data[0].client_name || name || ''),
+      filings: data.length,
+      fromYear: years.length ? Math.min(...years) : null,
+      toYear: years.length ? Math.max(...years) : null,
+      registrantCount: byRegistrant.size,
+      registrants: [...byRegistrant.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([n]) => n),
+      inHouse,
+    };
+  } catch (e) {
+    console.error('[sonar-pipeline] lobbying matches failed:', e?.message);
+    return null;
+  }
+}
+
+/* Search terms only, never data. A market found through these is labelled
+   "related" on the card, because it is about the company's exposure rather
+   than the company. Extend per ticker as coverage grows. */
+const RELATED_MARKET_TERMS = {
+  LMT: ['F-35', 'defense budget', 'Pentagon'],
+};
+
+async function matchMarkets(admin, { ticker, name }) {
+  if (!admin || !name) return null;
+  const run = async (terms) => {
+    const ors = terms
+      .map(
+        (t) =>
+          `question.ilike.%${String(t)
+            .replace(/[,()%*]/g, ' ')
+            .trim()}%`,
+      )
+      .join(',');
+    const { data } = await admin
+      .from('prediction_market_index')
+      .select('question, probability, platform, volume')
+      .or(ors)
+      .order('volume', { ascending: false, nullsFirst: false })
+      .limit(2);
+    return data || [];
+  };
+  try {
+    const first = name.split(/\s+/)[0];
+    const direct = first && first.length >= 5 ? [name, first] : [name];
+    let rows = await run(direct);
+    let related = false;
+    const extra = ticker ? RELATED_MARKET_TERMS[ticker.toUpperCase()] : null;
+    if (!rows.length && extra) {
+      rows = await run(extra);
+      related = true;
+    }
+    if (!rows.length) return null;
+    return rows.map((r) => ({
+      question: String(r.question || ''),
+      probability: r.probability == null ? null : Number(r.probability),
+      platform: r.platform || null,
+      related,
+    }));
+  } catch (e) {
+    console.error('[sonar-pipeline] market matches failed:', e?.message);
+    return null;
+  }
+}
+
 export async function buildMatches({ ticker, name }, admin) {
-  const [echo, contracts, congress] = await Promise.all([
+  const [echo, contracts, congress, sec, thirteenF, lobbying, markets] = await Promise.all([
     matchEcho(admin, { name, ticker }),
     matchContracts(admin, { name }),
     matchCongress(admin, { ticker }),
+    matchSec(admin, { ticker }),
+    match13f(admin, { ticker }),
+    matchLobbying(admin, { ticker, name }),
+    matchMarkets(admin, { ticker, name }),
   ]);
-  /* sec stays null: the landing pipeline has no EDGAR leg, and adding one
-     means fetching EDGAR's full ticker-to-CIK map on the landing critical
-     path, which needs a caching decision of its own. Null renders SEC as a
-     dry row, which is honest. */
-  return { echo, contracts, congress, sec: null };
+  return { echo, contracts, congress, sec, thirteenF, lobbying, markets };
 }
 
 export async function buildDossier({ ticker, name }, admin) {
@@ -875,7 +1043,7 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
             'matches',
             () => buildMatches(resolved, admin),
             (m) =>
-              `echo=${m.echo?.length || 0} contracts=${m.contracts ? 'y' : 'n'} congress=${m.congress?.length || 0} sec=${m.sec ? 'y' : 'n'}`,
+              `echo=${m.echo?.length || 0} contracts=${m.contracts ? 'y' : 'n'} congress=${m.congress?.length || 0} sec=${m.sec?.length || 0} 13f=${m.thirteenF?.length || 0} lobbying=${m.lobbying ? 'y' : 'n'} markets=${m.markets?.length || 0}`,
           );
         } catch {
           dossier.matches = null;

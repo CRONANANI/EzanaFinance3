@@ -244,9 +244,11 @@
   height: 56px;
   margin-top: 8px;
   padding: 0 6px 0 18px;
-  border: 1px solid var(--hcs-hair-strong);
+  /* No outline at rest and the page ground shows through; the focus rule
+     below restores an emerald border and halo while the field is in use. */
+  border: 1px solid transparent;
   border-radius: 99px;
-  background: var(--surface-input);
+  background: transparent;
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease;
@@ -374,7 +376,37 @@
 .hcs-grid--home {
   grid-template-columns: 268px minmax(0, 1fr) 300px;
   column-gap: 32px;
-  margin-top: 30px;
+  /* auto then 1fr: the rail spans both rows, and a long rail must stretch
+     the lower row, not push Start here away from the search. */
+  grid-template-rows: auto 1fr;
+  row-gap: 26px;
+  margin-top: 18px;
+}
+/* Home: the search sits at the top of the middle column, and the rail starts
+   on that same row, so All Categories is level with the pill. */
+.hcs-grid--home .hcs-search {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.hcs-grid--home .hcs-search .hcs-pill {
+  margin-top: 0;
+}
+.hcs-grid--home .hcs-rail {
+  grid-column: 1;
+  grid-row: 1 / 3;
+}
+.hcs-grid--home .hcs-main {
+  grid-column: 2;
+  grid-row: 2;
+}
+.hcs-grid--home .hcs-side {
+  grid-column: 3;
+  grid-row: 2;
 }
 .hcs-grid--answered {
   grid-template-columns: 232px minmax(0, 1fr) 320px;
@@ -487,17 +519,20 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 18px 18px 16px;
-  border: 1px solid var(--hcs-hair);
-  border-radius: var(--radius-lg);
-  background: var(--surface-card);
+  /* No outline and no horizontal inset: the text starts on the section
+     heading's left edge. Hover is carried by the title's colour. */
+  padding: 12px 0 14px;
+  border: 0;
+  background: none;
   color: inherit;
   text-decoration: none;
   min-width: 0;
-  transition: border-color 0.15s ease;
 }
-.hcs-start-card:hover {
-  border-color: var(--border-hover);
+.hcs-start-card .hcs-start-name {
+  transition: color 0.15s ease;
+}
+.hcs-start-card:hover .hcs-start-name {
+  color: var(--hcs-positive);
 }
 .hcs-start-name {
   font-size: 14px;
@@ -524,9 +559,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 18px;
-  border: 1px solid var(--hcs-hair);
-  border-radius: var(--radius-md);
+  /* A dotted hairline between rows keeps the borderless list a list. */
+  padding: 12px 0;
+  border: 0;
+  border-bottom: 1px dotted var(--hcs-dotted);
+  border-radius: 0;
   background: none;
   font: inherit;
   font-size: 13.5px;
@@ -534,10 +571,10 @@
   color: var(--hcs-ink);
   text-align: left;
   cursor: pointer;
-  transition: border-color 0.15s ease;
+  transition: color 0.15s ease;
 }
 .hcs-faq:hover {
-  border-color: var(--border-hover);
+  color: var(--hcs-positive);
 }
 .hcs-faq .hcs-chev {
   font-size: 12px;
@@ -580,10 +617,9 @@
   display: flex;
   align-items: center;
   gap: 24px;
-  padding: 18px 22px;
-  border: 1px solid var(--hcs-hair);
-  border-radius: var(--radius-xl);
-  background: var(--surface-card);
+  padding: 18px 0;
+  border: 0;
+  background: none;
 }
 .hcs-help-text {
   flex: 1 1 auto;
@@ -1022,8 +1058,16 @@
   }
 }
 @media (max-width: 1000px) {
+  .hcs-grid--home .hcs-search,
+  .hcs-grid--home .hcs-rail,
+  .hcs-grid--home .hcs-main,
+  .hcs-grid--home .hcs-side {
+    grid-column: auto;
+    grid-row: auto;
+  }
   .hcs-grid--home,
   .hcs-grid--answered {
+    grid-template-rows: none;
     grid-template-columns: minmax(0, 1fr);
     row-gap: 24px;
   }

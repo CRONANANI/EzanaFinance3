@@ -143,9 +143,9 @@ const SYNTHESIS = [
 ];
 /* Deterministic SSR fallback for the dossier. Replaced after hydration when
    /api/landing/sonar-fixture returns enough real rows. */
-/* The eight datasets a ping sweeps, in the order the band claims them.
-   All eight are always listed: the headline says eight datasets are joined,
-   so showing eight is the proof, and a searched-but-dry one at reduced
+/* The seven datasets a ping sweeps, in the order the band claims them.
+   All seven are always listed: the headline says seven datasets are joined,
+   so showing seven is the proof, and a searched-but-dry one at reduced
    strength is a finding rather than an absence.
 
    `chip` is the short form, and it is short on purpose. The chips used to be
@@ -162,7 +162,6 @@ const SWEPT = [
   { id: 'prediction-markets', chip: 'MARKETS', name: 'Prediction markets' },
   { id: '13f', chip: '13F', name: '13F institutional holdings' },
   { id: 'lobbying', chip: 'LOBBYING', name: 'Lobbying disclosures' },
-  { id: 'web', chip: 'WEB', name: 'Live web' },
 ];
 
 const ROWS = [
@@ -985,7 +984,7 @@ export function SonarSection() {
            a day, so a response produced before a pipeline fix keeps serving
            for up to 24h after the deploy that fixed it. Bumping this asks
            for a different URL, which is a different cache entry. */
-          const res = await fetch('/api/landing/demo-ping?v=7');
+          const res = await fetch('/api/landing/demo-ping?v=8');
           const data = await res.json().catch(() => null);
           if (!alive) return;
           if (res.ok && data?.answer) {
@@ -2006,11 +2005,13 @@ export function SonarSection() {
             </div>
           ) : null}
 
-          {/* The dossier does not exist before a ping. It used to render as an
-              empty "Sourced matches" card poking in from the right with two dim
-              rows, which promised a result the visitor had not asked for yet.
-              Pre-ping the composition is the left column and the orbital. */}
-          {hasPinged ? (
+          {/* The dossier mounts only once an answer has landed: not before a
+              ping, and not while the demo or a visitor's ping is still typing
+              or loading. It used to render as an empty "Sourced matches" card
+              poking in from the right with two dim rows, which promised a
+              result the visitor had not been given yet. Until then the
+              composition is the left column and Live Synthesis. */}
+          {hasPinged && live ? (
             <div ref={dossierRef} className="snr-col-dossier">
               <div className="snr-dossier-head">
                 <span className="snr-dossier-title">Sourced matches</span>
@@ -2040,10 +2041,21 @@ export function SonarSection() {
                       echo: m?.echo?.length ? m.echo : null,
                       congress: m?.congress?.length ? m.congress : null,
                       'sec-filings': m?.sec?.length ? m.sec : null,
+                      '13f': m?.thirteenF?.length ? m.thirteenF : null,
+                      lobbying: m?.lobbying || null,
+                      'prediction-markets': m?.markets?.length ? m.markets : null,
                     };
                     /* Matched rich rows first, in the brief's order, then
                      everything else dimmed. */
-                    const order = ['gov-contracts', 'echo', 'congress', 'sec-filings'];
+                    const order = [
+                      'gov-contracts',
+                      'echo',
+                      'congress',
+                      'sec-filings',
+                      '13f',
+                      'lobbying',
+                      'prediction-markets',
+                    ];
                     const sorted = [...SWEPT].sort((a, b) => {
                       const ra = rich[a.id] ? order.indexOf(a.id) : 99;
                       const rb = rich[b.id] ? order.indexOf(b.id) : 99;
@@ -2171,8 +2183,87 @@ export function SonarSection() {
                             <div className="snr-rich">
                               {data.map((f, k) => (
                                 <span key={`${f.form}-${k}`} className="snr-trade">
-                                  <span className="snr-trade-member">{f.form}</span>
+                                  <span className="snr-trade-type">{f.form}</span>
+                                  <span className="snr-trade-member">{f.filer}</span>
                                   <span className="snr-trade-date">{relativeDay(f.filedAt)}</span>
+                                </span>
+                              ))}
+                            </div>
+                          ) : null}
+
+                          {d.id === '13f' && data ? (
+                            <div className="snr-rich">
+                              {data.map((h, k) => (
+                                <span key={`${h.filer}-${k}`} className="snr-trade">
+                                  <span className="snr-trade-member">{h.filer}</span>
+                                  {h.changeType ? (
+                                    <span
+                                      className={`snr-trade-type ${
+                                        /trim|exit/i.test(h.changeType) ? 'snr-down' : 'snr-up'
+                                      }`}
+                                    >
+                                      {h.changeType}
+                                    </span>
+                                  ) : null}
+                                  <span className="snr-trade-date">
+                                    {[usdShort(h.valueUsd), h.quarter].filter(Boolean).join(' · ')}
+                                  </span>
+                                </span>
+                              ))}
+                            </div>
+                          ) : null}
+
+                          {d.id === 'lobbying' && data ? (
+                            <div className="snr-rich">
+                              <span className="snr-rich-name">{data.client}</span>
+                              <div className="snr-stat-strip snr-stat-strip--3">
+                                <div className="snr-stat">
+                                  <span className="snr-stat-label">FILINGS</span>
+                                  <span className="snr-stat-value">{countShort(data.filings)}</span>
+                                  <span className="snr-stat-cap">
+                                    {data.fromYear} to {data.toYear}
+                                  </span>
+                                </div>
+                                <div className="snr-stat">
+                                  <span className="snr-stat-label">FIRMS</span>
+                                  <span className="snr-stat-value">
+                                    {countShort(data.registrantCount)}
+                                  </span>
+                                  <span className="snr-stat-cap">registrants</span>
+                                </div>
+                                <div className="snr-stat">
+                                  <span className="snr-stat-label">IN-HOUSE</span>
+                                  <span className="snr-stat-value">
+                                    {data.inHouse ? usdShort(data.inHouse.spend) : 'n/a'}
+                                  </span>
+                                  <span className="snr-stat-cap">
+                                    {data.inHouse
+                                      ? `${data.inHouse.year} self-reported`
+                                      : 'no self-filing'}
+                                  </span>
+                                </div>
+                              </div>
+                              {data.registrants.map((r) => (
+                                <span key={r} className="snr-trade">
+                                  <span className="snr-trade-member">{r}</span>
+                                </span>
+                              ))}
+                            </div>
+                          ) : null}
+
+                          {d.id === 'prediction-markets' && data ? (
+                            <div className="snr-rich">
+                              {data.map((mk, k) => (
+                                <span key={`${mk.question}-${k}`} className="snr-trade">
+                                  <span className="snr-trade-member">{mk.question}</span>
+                                  {typeof mk.probability === 'number' ? (
+                                    <span className="snr-trade-type snr-up">
+                                      {Math.round(mk.probability * 100)}% YES
+                                    </span>
+                                  ) : null}
+                                  <span className="snr-trade-date">
+                                    {mk.related ? 'related' : mk.platform}
+                                  </span>
                                 </span>
                               ))}
                             </div>

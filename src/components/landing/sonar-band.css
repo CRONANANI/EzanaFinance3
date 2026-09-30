@@ -3757,7 +3757,7 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   color: var(--snr-emerald);
 }
 .snr-band .snr-down {
-  color: #f87171;
+  color: var(--negative);
 }
 
 /* Vertical rhythm inside a rich row: name, then content lines, then the link.
@@ -3767,6 +3767,9 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
 }
 .snr-band .snr-stat-strip {
   margin: 0 0 14px;
+}
+.snr-band .snr-stat-strip--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 .snr-band .snr-award-chart {
   margin: 0 0 14px;

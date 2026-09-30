@@ -43,7 +43,7 @@ import {
   CartesianGrid,
   XAxis,
   YAxis,
-  Tooltip,
+  Customized,
 } from 'recharts';
 import { CHART } from '@/lib/chart-theme';
 import './social-ledger.css';
@@ -232,6 +232,71 @@ const sameFrame = (a, b) =>
   a.standRating === b.standRating &&
   a.standWeek === b.standWeek;
 
+/* The readout is pinned, not hovered: one week, always shown. */
+const PIN_WEEK = 'W05';
+const PIN_INDEX = WEEKS.indexOf(PIN_WEEK);
+const PIN_SERIES = [
+  { key: 'you', name: 'You', color: 'var(--emerald)', r: 4 },
+  { key: 'a', name: 'Leader', color: 'var(--text-faint)', r: 3 },
+  { key: 'b', name: 'Median', color: 'var(--text-ghost)', r: 3 },
+];
+const PIN_W = 132;
+const PIN_H = 88;
+const PIN_GAP = 12;
+
+/* Recharts clones Customized with the chart's props and state (xAxisMap,
+   yAxisMap, offset, data), so this re-lays out on every resize and cohort
+   switch with no measuring of our own. The card flips to the left of the
+   rule if it would cross the plot's right edge. */
+function PinnedReadout({ xAxisMap, yAxisMap, offset, data }) {
+  const xAxis = xAxisMap && Object.values(xAxisMap)[0];
+  const yAxis = yAxisMap && Object.values(yAxisMap)[0];
+  const row = data?.[PIN_INDEX];
+  if (!xAxis?.scale || !yAxis?.scale || !offset || !row) return null;
+  const bw = typeof xAxis.scale.bandwidth === 'function' ? xAxis.scale.bandwidth() : 0;
+  const x = xAxis.scale(row.wk) + bw / 2;
+  if (!Number.isFinite(x)) return null;
+  const right = offset.left + offset.width;
+  const cardX = x + PIN_GAP + PIN_W > right ? x - PIN_GAP - PIN_W : x + PIN_GAP;
+
+  return (
+    <g className="sled-pin" aria-hidden="true">
+      <line
+        className="sled-pin-rule"
+        x1={x}
+        x2={x}
+        y1={offset.top}
+        y2={offset.top + offset.height}
+      />
+      {PIN_SERIES.map((s) => (
+        <circle
+          key={s.key}
+          cx={x}
+          cy={yAxis.scale(row[s.key])}
+          r={s.r}
+          style={{ fill: s.color, stroke: 'var(--bg-primary)', strokeWidth: 1.5 }}
+        />
+      ))}
+      <foreignObject
+        x={cardX}
+        y={offset.top + 4}
+        width={PIN_W}
+        height={PIN_H}
+        style={{ overflow: 'visible' }}
+      >
+        <div className="sled-chart-tooltip sled-chart-tooltip--pinned">
+          <div className="sled-chart-tooltip-date">{row.wk}</div>
+          {PIN_SERIES.map((s) => (
+            <div key={s.key} className="sled-chart-tooltip-val" style={{ color: s.color }}>
+              {s.name}: {row[s.key]}
+            </div>
+          ))}
+        </div>
+      </foreignObject>
+    </g>
+  );
+}
+
 /* ────────────────────────── chart ──────────────────────────
    Memoised on cohort alone, so the ledger clock can re-render the section as
    often as it likes without the chart redrawing. The key is the cohort: the
@@ -270,25 +335,6 @@ const RatingChart = memo(function RatingChart({ cohort }) {
           width={44}
           domain={['dataMin - 16', 'dataMax + 16']}
         />
-        <Tooltip
-          content={({ active: isActive, payload }) => {
-            if (!isActive || !payload?.length) return null;
-            return (
-              <div className="sled-chart-tooltip">
-                <div className="sled-chart-tooltip-date">{payload[0].payload.wk}</div>
-                {payload.map((entry) => (
-                  <div
-                    key={entry.dataKey}
-                    className="sled-chart-tooltip-val"
-                    style={{ color: entry.stroke }}
-                  >
-                    {entry.name}: {entry.value}
-                  </div>
-                ))}
-              </div>
-            );
-          }}
-        />
         <Area
           type="monotone"
           dataKey="you"
@@ -317,6 +363,7 @@ const RatingChart = memo(function RatingChart({ cohort }) {
           fill="transparent"
           isAnimationActive={false}
         />
+        <Customized component={PinnedReadout} />
       </AreaChart>
     </ResponsiveContainer>
   );
@@ -517,7 +564,6 @@ export function SocialLedgerSection() {
 
           <div className="sled-chartcol">
             <div className="sled-chart-head">
-              <span className="sled-chart-label">Your rating {DOT} @axum</span>
               <div className="sled-chart-controls">
                 {Object.entries(COHORTS).map(([key, c]) => (
                   <button
