@@ -12,7 +12,7 @@
  *   'reduced'      — a partial sale after buys (position likely trimmed, not closed)
  *   'unclear'      — sales with no visible prior buy, exchanges/other, or empty
  */
-import { isPartialSale } from './normalize-trade';
+import { isPartialSale } from './normalize-trade.js';
 
 /**
  * @param {Array} trades canonical trades for one member+ticker (any order).

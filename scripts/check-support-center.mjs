@@ -23,7 +23,11 @@ import {
 
 test('categoriesFor: canonical order, counts, Bootstrap icons, urls', () => {
   const cats = categoriesFor('user');
-  assert.equal(cats.length, 12);
+  /* 11 since Inside the Capitol folded into Research Tools. */
+  assert.equal(cats.length, 11);
+  assert.ok(!cats.some((c) => c.id === 'congressional-trading'));
+  const research = cats.find((c) => c.id === 'research');
+  assert.ok(research.count >= 7);
   assert.equal(cats[0].title, 'Getting Started');
   assert.ok(cats.every((c) => c.icon.startsWith('bi-')));
   assert.ok(cats.every((c) => c.count > 0));

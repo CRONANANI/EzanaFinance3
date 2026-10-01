@@ -29,16 +29,17 @@ import {
   filterMembers,
   loadedWindow,
   mergeServerRankings,
+  mostHeldTickers,
   monthlyByChamber,
   rankMembers,
   seatLabel,
   serverWindow,
   SORT_KEYS,
-  topTickers,
   tradesOf,
   usdShort,
 } from '@/lib/politicians/tracker-model';
 import { buildFixtureTrades } from '@/lib/politicians/tracker-fixture';
+import { POSITION_BASIS_NOTE } from '@/lib/politicians/position-status';
 import Headshot, { AVATAR_SIZE, ChamberChip, PartyTag } from './Headshot';
 import MemberPanel from './MemberPanel';
 import Segmented from './Segmented';
@@ -343,8 +344,16 @@ export default function PoliticianTracker({
 
   /* ── model ── */
   const members = useMemo(() => buildMembers(trades), [trades]);
+  /* The server ranking no longer waits for the three trade pages: the
+     summary is small and edge-cached, so the Top eight (and their
+     portraits) render from it as soon as it lands, and loaded trades merge
+     in by bioguideId afterwards without remounting a card. Never over the
+     sample fixture or the unavailable state. */
   const server =
-    status === 'ready' && summary?.key === summaryKey && summary.data?.rankings?.length
+    status !== 'sample' &&
+    status !== 'empty' &&
+    summary?.key === summaryKey &&
+    summary.data?.rankings?.length
       ? summary.data
       : null;
   const filtered = useMemo(
@@ -366,8 +375,11 @@ export default function PoliticianTracker({
     () => (server ? server.monthly.slice(-12) : monthlyByChamber(filteredTrades)),
     [server, filteredTrades],
   );
-  const tickers = useMemo(
-    () => (server ? server.tickers.slice(0, 5) : topTickers(filteredTrades, 5)),
+  /* Most HELD, not most traded: members whose disclosures show a position
+     still open (inferred, see POSITION_BASIS_NOTE). Server-wide when the
+     RPC is live, else inferred from the loaded trades. */
+  const held = useMemo(
+    () => (server?.held ? server.held.slice(0, 5) : mostHeldTickers(filteredTrades, 5)),
     [server, filteredTrades],
   );
   const windowInfo = useMemo(
@@ -377,6 +389,8 @@ export default function PoliticianTracker({
   );
   const anyFilter = Boolean(chamber || party || query.trim());
   const loaded = status === 'ready' || status === 'sample';
+  /* The ranking can be on screen before the trades are. */
+  const rankingReady = loaded || Boolean(server);
 
   const openMember = useMemo(() => {
     if (!openSlug) return null;
@@ -617,13 +631,13 @@ export default function PoliticianTracker({
               <span className="ptk-cap">ring colour is chamber, letter tag is party</span>
             </div>
 
-            {status === 'loading' ? (
+            {!rankingReady ? (
               <div className="ptk-cards" aria-busy="true">
                 {Array.from({ length: GALLERY }, (_, i) => (
                   <CardSkeleton key={i} />
                 ))}
               </div>
-            ) : loaded && !ranked.length && anyFilter ? (
+            ) : rankingReady && !ranked.length && anyFilter ? (
               <div className="ptk-empty" role="status">
                 <p className="dsc-note">
                   No members match. Try clearing{' '}
@@ -783,27 +797,34 @@ export default function PoliticianTracker({
 
             <div className="ptk-rail-block">
               <div className="ptk-rail-block-head">
-                <span className="ptk-eyebrow dsc-mn">MOST TRADED TICKERS</span>
+                <span className="ptk-eyebrow dsc-mn">MOST HELD TICKERS</span>
+                <span className="ptk-cap">members holding</span>
               </div>
-              {status === 'loading' ? (
+              {status === 'loading' && !server?.held ? (
                 Array.from({ length: 5 }, (_, i) => (
                   <Skel key={i} className="ptk-skel--line ptk-skel--row" />
                 ))
-              ) : tickers.length ? (
+              ) : held.length ? (
                 <ul className="ptk-tickers">
-                  {tickers.map((t) => (
+                  {held.map((t) => (
                     <li key={t.ticker} className="ptk-ticker-row">
                       <span className="dsc-mn ptk-ticker-sym">{t.ticker}</span>
                       <span className="ptk-track" aria-hidden="true">
-                        <i style={{ width: `${(t.count / tickers[0].count) * 100}%` }} />
+                        <i style={{ width: `${(t.holders / held[0].holders) * 100}%` }} />
                       </span>
-                      <span className="dsc-mn ptk-ticker-n">{t.count}</span>
+                      <span
+                        className="dsc-mn ptk-ticker-n"
+                        aria-label={`${t.holders} member${t.holders === 1 ? '' : 's'} holding`}
+                      >
+                        {t.holders}
+                      </span>
                     </li>
                   ))}
                 </ul>
               ) : (
                 <p className="dsc-note">{NONE}</p>
               )}
+              <p className="ptk-note">{POSITION_BASIS_NOTE}</p>
             </div>
           </aside>
         </div>
@@ -818,14 +839,14 @@ export default function PoliticianTracker({
                   <th className="dsc-mn">POLITICIAN</th>
                   <th className="dsc-mn ptk-col-chamber">CHAMBER</th>
                   <th className="dsc-mn">DISCLOSED VOLUME</th>
-                  <th className="dsc-mn ptk-th--r">TRADES</th>
-                  <th className="dsc-mn ptk-col-bs">BUYS / SELLS</th>
-                  <th className="dsc-mn ptk-th--r ptk-col-last">LAST TRADE</th>
-                  <th className="dsc-mn ptk-col-tks">TOP TICKERS</th>
+                  <th className="dsc-mn ptk-th--c">TRADES</th>
+                  <th className="dsc-mn ptk-th--c ptk-col-bs">BUYS / SELLS</th>
+                  <th className="dsc-mn ptk-th--c ptk-col-last">LAST TRADE</th>
+                  <th className="dsc-mn ptk-th--c ptk-col-tks">TOP TICKERS</th>
                 </tr>
               </thead>
               <tbody>
-                {status === 'loading'
+                {!rankingReady
                   ? Array.from({ length: LIST_DEFAULT }, (_, i) => (
                       <tr key={i} className="ptk-row ptk-row--skel" aria-hidden="true">
                         <td colSpan={8}>
@@ -887,17 +908,17 @@ export default function PoliticianTracker({
                               ) : null}
                             </span>
                           </td>
-                          <td className="dsc-mn ptk-td--r">{m.count}</td>
-                          <td className="dsc-mn ptk-col-bs">
+                          <td className="dsc-mn ptk-td--c">{m.count}</td>
+                          <td className="dsc-mn ptk-td--c ptk-col-bs">
                             <b className="ptk-buy-n">{m.buys}</b>
                             <span className="ptk-slash"> / </span>
                             <b>{m.sells}</b>
                           </td>
-                          <td className="dsc-mn ptk-td--r ptk-td-mute ptk-col-last">
+                          <td className="dsc-mn ptk-td--c ptk-td-mute ptk-col-last">
                             {m.lastTraded || NONE}
                           </td>
-                          <td className="ptk-col-tks">
-                            <Tickers tickers={m.tickers} cls="ptk-tks--sm" />
+                          <td className="ptk-td--c ptk-col-tks">
+                            <Tickers tickers={m.tickers} cls="ptk-tks--sm ptk-tks--center" />
                           </td>
                         </tr>
                       );
@@ -911,7 +932,7 @@ export default function PoliticianTracker({
               full profile.
             </p>
             <span className="dsc-mn ptk-list-count">
-              {!loaded ? (
+              {!rankingReady ? (
                 NONE
               ) : rest.length === 0 ? (
                 `ALL ${ranked.length} SHOWN`

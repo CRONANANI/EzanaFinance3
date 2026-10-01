@@ -15,6 +15,7 @@ import {
   usdShort,
   mergeServerRankings,
   serverWindow,
+  mostHeldTickers,
 } from '../src/lib/politicians/tracker-model.js';
 import { buildFixtureTrades } from '../src/lib/politicians/tracker-fixture.js';
 
@@ -195,4 +196,24 @@ test('mergeServerRankings keeps SQL aggregates, loaded trades and slugs', () => 
   assert.equal(ranked[0].bioguideId, 'R000001');
   const w = serverWindow(merged, 365, new Date('2026-09-30T00:00:00Z'));
   assert.deepEqual(w, { from: '2025-09-30', to: '2026-09-20', count: 45 });
+});
+
+test('mostHeldTickers counts members whose latest action leaves the position open', () => {
+  const row = (id, name, ticker, side, tradedAt, sideRaw) => ({
+    ...t({ id, name, bioguideId: name, ticker, side, tradedAt }),
+    sideRaw: sideRaw || (side === 'purchase' ? 'Purchase' : 'Sale (Full)'),
+  });
+  const held = mostHeldTickers([
+    row('1', 'A', 'NVDA', 'purchase', '2026-01-01'),
+    row('2', 'B', 'NVDA', 'purchase', '2026-01-02'),
+    row('3', 'B', 'NVDA', 'sale', '2026-03-01', 'Sale (Partial)'),
+    row('4', 'C', 'NVDA', 'purchase', '2026-01-01'),
+    row('5', 'C', 'NVDA', 'sale', '2026-02-01'),
+    row('6', 'D', 'AAPL', 'sale', '2026-02-01'),
+    row('7', 'A', 'MSFT', 'purchase', '2026-02-01'),
+  ]);
+  assert.deepEqual(held, [
+    { ticker: 'NVDA', holders: 2, buys: 2 },
+    { ticker: 'MSFT', holders: 1, buys: 1 },
+  ]);
 });

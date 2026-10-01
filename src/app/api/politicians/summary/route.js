@@ -6,6 +6,8 @@
  *   rankings  politician_rankings      (table + Top-eight cards)
  *   monthly   congress_monthly_counts  (Trades by month)
  *   tickers   congress_top_tickers     (Most traded tickers)
+ *   held      congress_most_held_tickers (Most held tickers, inferred; null
+ *             until that migration is applied)
  *
  * Query: ?chamber=house|senate&party=D|R|I&q=<name or state>&sort=volume|trades|latest.
  * 503 when the RPCs are unavailable (migration not applied, no service key);

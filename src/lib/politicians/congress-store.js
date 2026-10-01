@@ -1,8 +1,11 @@
 /**
  * Read layer for the Politician Tracker over public.congress_trades /
- * public.congress_members and the three RPCs (politician_rankings,
- * congress_monthly_counts, congress_top_tickers). Written by the daily cron
- * only; nothing here calls a third party.
+ * public.congress_members and the RPCs (politician_rankings,
+ * congress_monthly_counts, congress_top_tickers, and the optional
+ * congress_most_held_tickers). Written by the daily cron only; nothing here
+ * calls a third party.
+ *
+ *   held  congress_most_held_tickers (Most held tickers, inferred)
  *
  * Rows come back in the canonical trade shape the page already binds to
  * (see normalize-trade.js), so the tracker model and member panel are
@@ -161,13 +164,18 @@ export async function readSummary({
   const client = db();
   if (!client) return { error: 'not configured' };
   const f = { p_chamber: chamber, p_party: party, p_q: q };
-  const [r, m, t] = await Promise.all([
+  const [r, m, t, h] = await Promise.all([
     client.rpc('politician_rankings', { window_days: windowDays, ...f, p_sort: sort, lim: 600 }),
     client.rpc('congress_monthly_counts', { window_days: windowDays, ...f }),
     client.rpc('congress_top_tickers', { window_days: windowDays, lim: tickerLimit, ...f }),
+    /* Every disclosure on file (window_days null), so older open positions
+       still count. Optional: until the migration is applied this errors and
+       the page infers holdings from its loaded trades instead. */
+    client.rpc('congress_most_held_tickers', { window_days: null, lim: tickerLimit, ...f }),
   ]);
   const error = r.error?.message || m.error?.message || t.error?.message || null;
   if (error) return { error };
+  if (h.error) console.warn(`[politicians/summary] most held: ${h.error.message}`);
   return {
     error: null,
     rankings: (r.data || []).map((x) => ({
@@ -195,5 +203,13 @@ export async function readSummary({
       count: Number(x.trades) || 0,
       members: Number(x.members) || 0,
     })),
+    held: h.error
+      ? null
+      : (h.data || []).map((x) => ({
+          ticker: x.ticker,
+          holders: Number(x.holders) || 0,
+          buys: Number(x.buys) || 0,
+          lastBuy: x.last_buy || null,
+        })),
   };
 }

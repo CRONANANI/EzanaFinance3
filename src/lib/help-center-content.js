@@ -103,24 +103,6 @@ export const USER_CATEGORIES = [
     ],
   },
   {
-    id: 'congressional-trading',
-    title: 'Inside the Capitol',
-    description: 'Track and analyze congressional trades',
-    iconName: 'Activity',
-    articles: [
-      { title: 'How Congressional Trading Data Works', slug: 'how-congressional-data-works' },
-      { title: 'Understanding Congressional Disclosures', slug: 'understanding-disclosures' },
-      { title: 'Following Specific Politicians', slug: 'following-politicians' },
-      {
-        title: 'Top Performing Politicians Methodology',
-        slug: 'top-performing-politicians-methodology',
-      },
-      { title: 'Interpreting Congressional Trade Data', slug: 'interpreting-trade-data' },
-      { title: 'Filtering and Searching Congressional Trades', slug: 'using-filters' },
-      { title: 'Congressional Trade Alert System', slug: 'trade-alerts' },
-    ],
-  },
-  {
     id: 'portfolio',
     title: 'Portfolio & Trading',
     description: 'Manage investments and place trades',
@@ -161,11 +143,22 @@ export const USER_CATEGORIES = [
   {
     id: 'research',
     title: 'Research Tools',
-    description: 'Company research, market analysis, quant tools',
+    description: 'Company research, market analysis, congressional trades, quant tools',
     iconName: 'BarChart3',
     articles: [
       { title: 'Using Company Research', slug: 'company-research' },
       { title: 'Market Analysis Tools', slug: 'market-analysis' },
+      // Inside the Capitol (formerly its own category; folded in here).
+      { title: 'How Congressional Trading Data Works', slug: 'how-congressional-data-works' },
+      { title: 'Understanding Congressional Disclosures', slug: 'understanding-disclosures' },
+      { title: 'Following Specific Politicians', slug: 'following-politicians' },
+      {
+        title: 'Top Performing Politicians Methodology',
+        slug: 'top-performing-politicians-methodology',
+      },
+      { title: 'Interpreting Congressional Trade Data', slug: 'interpreting-trade-data' },
+      { title: 'Filtering and Searching Congressional Trades', slug: 'using-filters' },
+      { title: 'Congressional Trade Alert System', slug: 'trade-alerts' },
       { title: 'For The Quants: Advanced Analytics', slug: 'quant-tools' },
       { title: 'Financial Analytics Views', slug: 'financial-analytics-views' },
       { title: 'Researching a Stock End-to-End', slug: 'research-workflow' },
@@ -474,7 +467,7 @@ export const USER_ARTICLES = {
   },
   'how-congressional-data-works': {
     title: 'How Congressional Trading Data Works',
-    category: 'Inside the Capitol',
+    category: 'Research Tools',
     content: wrap([
       'Under the STOCK Act of 2012, members of Congress must publicly report stock, bond, and other securities transactions over $1,000 within 45 days. Ezana collects these public filings, turns them into structured, searchable data, and shows them on the <strong>Inside The Capitol</strong> page.',
       '<h3>How it works</h3>',
@@ -494,7 +487,7 @@ export const USER_ARTICLES = {
   },
   'following-politicians': {
     title: 'Following Specific Politicians',
-    category: 'Inside the Capitol',
+    category: 'Research Tools',
     content: wrap([
       'Every member of Congress who files trades has a profile on Ezana. You can open any profile from Inside The Capitol, and you can keep the members you care about on a watchlist so they are easy to find again.',
       '<h3>Step-by-step</h3>',
@@ -514,7 +507,7 @@ export const USER_ARTICLES = {
   },
   'interpreting-trade-data': {
     title: 'Interpreting Congressional Trade Data',
-    category: 'Inside the Capitol',
+    category: 'Research Tools',
     content: wrap([
       'Congressional disclosures are useful, but they are not a trading signal on their own. This guide explains what each field means, what it cannot tell you, and how to look for patterns worth researching further.',
       '<h3>How it works</h3>',
@@ -534,7 +527,7 @@ export const USER_ARTICLES = {
   },
   'using-filters': {
     title: 'Filtering and Searching Congressional Trades',
-    category: 'Inside the Capitol',
+    category: 'Research Tools',
     content: wrap([
       'The <strong>Latest Trades</strong> card on Inside The Capitol shows the newest congressional trades. A few quick filters help you narrow it down to the activity you care about, and the Top Performing Politicians card lets you jump straight to a member&rsquo;s profile.',
       '<h3>Step-by-step</h3>',
@@ -555,7 +548,7 @@ export const USER_ARTICLES = {
   },
   'trade-alerts': {
     title: 'Congressional Trade Alert System',
-    category: 'Inside the Capitol',
+    category: 'Research Tools',
     content: wrap([
       'Ezana can drop new congressional trade disclosures into your notification bell, focused on the tickers you care about. Alerts are on by default, and you can switch them off at any time from <strong>Settings, then Notifications</strong>.',
       '<h3>How it works</h3>',
@@ -1246,7 +1239,7 @@ export const USER_ARTICLES = {
   // ── New: Inside the Capitol (expanded) ────────────────────────────────
   'top-performing-politicians-methodology': {
     title: 'Top Performing Politicians Methodology',
-    category: 'Inside the Capitol',
+    category: 'Research Tools',
     content: wrap([
       'The Top Performing Politicians chart on Inside the Capitol ranks members of Congress by <strong>estimated profit and loss on disclosed trades</strong>. It is an estimate built from public filings, not a report of anyone&rsquo;s actual portfolio return, and that distinction matters.',
       '<h3>How it works</h3>',
@@ -1256,7 +1249,7 @@ export const USER_ARTICLES = {
       '<h3>Things to know</h3>',
       '<ul><li>A range midpoint can be far from the real amount. A trade reported as $15,001 to $50,000 could be anywhere in that band.</li><li>Disclosures do not include cost basis, taxes, or account-level sizing.</li><li>Late filings are common, so a year&rsquo;s figures can change after the fact.</li><li>Figures refresh weekly for the current and previous year.</li><li>During the beta, Inside the Capitol may show a &ldquo;coming in v1.0&rdquo; notice for some accounts.</li></ul>',
       'Use the ranking as a signal about disclosed activity, not as a precise track record.',
-      '<p>Next in Inside the Capitol: <a href="/help-center/user/article/following-politicians">Following Specific Politicians</a> and <a href="/help-center/user/article/interpreting-trade-data">Interpreting Congressional Trade Data</a>.</p>',
+      '<p>Next in Research Tools: <a href="/help-center/user/article/following-politicians">Following Specific Politicians</a> and <a href="/help-center/user/article/interpreting-trade-data">Interpreting Congressional Trade Data</a>.</p>',
       '<h3>Related articles</h3>',
       '<ul><li><a href="/help-center/user/article/understanding-disclosures">Understanding Congressional Disclosures</a></li><li><a href="/help-center/user/article/interpreting-trade-data">Interpreting Congressional Trade Data</a></li><li><a href="/help-center/user/article/how-congressional-data-works">How Congressional Trading Data Works</a></li></ul>',
       '<h3>FAQ</h3>',
@@ -1267,7 +1260,7 @@ export const USER_ARTICLES = {
   },
   'understanding-disclosures': {
     title: 'Understanding Congressional Disclosures',
-    category: 'Inside the Capitol',
+    category: 'Research Tools',
     content: wrap([
       'The STOCK Act of 2012 requires members of Congress to publicly disclose covered securities transactions over $1,000, including trades by their spouses and dependent children, within 45 days of the transaction. Inside the Capitol turns those filings into a searchable feed. This article explains what the filings contain and what they leave out.',
       '<h3>What gets disclosed</h3>',
@@ -1279,7 +1272,7 @@ export const USER_ARTICLES = {
       'Ezana shows the amount ranges as filed. It does not add or adjust amounts.',
       '<h3>Things to know</h3>',
       '<ul><li><strong>Why trades appear late.</strong> The 45-day rule is often missed. The standard late fee is $200 and can be waived, so some members file months after trading. A long average reporting time on a profile is a sign of this.</li><li><strong>Spouse trades are included.</strong> The law covers spouses and dependents too.</li><li><strong>Beta access.</strong> During the beta, Inside the Capitol may show a &ldquo;coming in v1.0&rdquo; notice for some accounts.</li></ul>',
-      '<p>Next in Inside the Capitol: <a href="/help-center/user/article/how-congressional-data-works">How Congressional Trading Data Works</a> and <a href="/help-center/user/article/following-politicians">Following Specific Politicians</a>.</p>',
+      '<p>Next in Research Tools: <a href="/help-center/user/article/how-congressional-data-works">How Congressional Trading Data Works</a> and <a href="/help-center/user/article/following-politicians">Following Specific Politicians</a>.</p>',
       '<h3>Related articles</h3>',
       '<ul><li><a href="/help-center/user/article/how-congressional-data-works">How Congressional Trading Data Works</a></li><li><a href="/help-center/user/article/top-performing-politicians-methodology">Top Performing Politicians Methodology</a></li><li><a href="/help-center/user/article/interpreting-trade-data">Interpreting Congressional Trade Data</a></li></ul>',
       '<h3>FAQ</h3>',

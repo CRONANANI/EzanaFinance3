@@ -4,11 +4,13 @@
  * Support centre landing page: ONE template, two audiences (user, partner),
  * two states (home, answered). Built to docs/design/support-handoff/.
  *
- * Home: centred crumb, eyebrow, title, subline, the Ask AI pill with Try
- * chips, then category rail / Start here + FAQs + Recently updated + help
- * card / Trending.
+ * Home: the Ask AI pill with Try chips directly under the top nav, at the
+ * top of the middle column and level with the category rail, then Start
+ * here + FAQs + Recently updated + help card / Trending. There is no visible
+ * crumb, eyebrow, title or subline; the page title is a screen-reader-only
+ * h1.
  *
- * Answered: same header with the question in the pill and "Clear and browse",
+ * Answered: a header holding the pill with the question and "Clear and browse",
  * then the rail in matches mode / answer card + follow-up + Keep reading /
  * Related articles + Still trending, with the help card across the bottom.
  *
@@ -433,25 +435,11 @@ export default function SupportCenter({ audience = 'user', initialQuestion = '' 
 
   return (
     <div className="hc-page hcs">
-      {/* ── header, both states ── */}
-      <header className="hcs-head">
-        <p className="hcs-crumb">
-          <Link href="/help-center" className="hcs-crumb-link">
-            <i className="bi bi-chevron-left" aria-hidden="true" /> Back to Help Center
-          </Link>
-          <span className="hcs-crumb-sep" aria-hidden="true">
-            /
-          </span>
-          <span className="hcs-crumb-here">{cfg.title}</span>
-        </p>
-        <p className="hcs-eyebrow hcs-mono">{cfg.eyebrow}</p>
-        <h1 className="hcs-title">{cfg.title}</h1>
-        <p className="hcs-sub">
-          Search the help centre or ask the assistant. Answers cite the articles they come from.
-        </p>
-
-        {answered ? searchBlock : null}
-      </header>
+      {/* Visible crumb, eyebrow, title and subline removed so the search sits
+          directly under the top nav. The h1 stays for screen readers. The
+          header only renders once a question is asked, to hold the pill. */}
+      <h1 className="hcs-sr">{cfg.title}</h1>
+      {answered ? <header className="hcs-head">{searchBlock}</header> : null}
 
       {/* ── home ── */}
       {!answered ? (

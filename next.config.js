@@ -57,6 +57,13 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      /* Inside the Capitol is no longer its own user help-centre category; its
+         articles live under Research Tools. */
+      {
+        source: '/help-center/user/category/congressional-trading',
+        destination: '/help-center/user/category/research',
+        permanent: true,
+      },
       { source: '/commodities-research', destination: '/alternative-markets', permanent: true },
       {
         source: '/commodities-research/:path*',

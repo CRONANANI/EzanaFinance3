@@ -34,7 +34,8 @@ export const BI_ICON = {
   GraduationCap: 'bi-mortarboard',
   Globe2: 'bi-globe',
   Building2: 'bi-diagram-3',
-  Scale: 'bi-scales',
+  /* bi-scales is not a Bootstrap Icons 1.11 glyph and rendered blank. */
+  Scale: 'bi-journal-text',
   FileText: 'bi-file-earmark-text',
   Repeat: 'bi-arrow-repeat',
   LayoutDashboard: 'bi-grid-1x2',
@@ -58,7 +59,7 @@ export const AUDIENCES = {
     ],
     /* The three most-opened categories. Configured until view analytics
        per category exist; ids from help-center-content.js. */
-    startHere: ['getting-started', 'portfolio', 'congressional-trading'],
+    startHere: ['getting-started', 'portfolio', 'research'],
     faqs: [
       'How do I connect my brokerage account?',
       'What is congressional trading data?',

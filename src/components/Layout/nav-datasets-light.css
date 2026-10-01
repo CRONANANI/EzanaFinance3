@@ -1,0 +1,78 @@
+/* Marketing header Datasets mega-menu: a white panel with black text. Only
+   the destinations that are live and navigable (every <a> row, plus the
+   Ezana API and View all datasets footer links) read in Ezana green; roadmap
+   ("Soon") rows stay black with their pill. Scoped to .navbar
+   .nav-datasets-mega and overrides globals.css by specificity.
+
+   Contrast: --emerald-dark on white clears 4.5:1 in every theme (the brand
+   --emerald does not), so live text uses it. The panel is pinned white in
+   dark mode too, as requested, so ink is a fixed near-black mixed from the
+   white token rather than --text-primary (which flips to light in dark). */
+
+.navbar .nav-datasets-mega {
+  --nds-bg: var(--color-on-primary);
+  --nds-ink: color-mix(in srgb, black 92%, var(--color-on-primary));
+  --nds-live: var(--emerald-dark);
+  --nds-hair: color-mix(in srgb, black 10%, transparent);
+  --nds-wash: color-mix(in srgb, var(--emerald) 10%, transparent);
+}
+
+.navbar .nav-datasets-mega .nav-datasets-panel {
+  background: var(--nds-bg);
+  border: 1px solid var(--nds-hair);
+  color: var(--nds-ink);
+}
+
+/* Headings, icons and every row label: black by default. */
+.navbar .nav-datasets-mega .nav-datasets-col-head,
+.navbar .nav-datasets-mega .nav-datasets-col:hover .nav-datasets-col-head,
+.navbar .nav-datasets-mega .nav-datasets-col-icon,
+.navbar .nav-datasets-mega .nav-datasets-item-label {
+  color: var(--nds-ink);
+}
+
+/* Live, navigable datasets: green. */
+.navbar .nav-datasets-mega a.nav-datasets-item .nav-datasets-item-label {
+  color: var(--nds-live);
+  font-weight: 600;
+}
+.navbar .nav-datasets-mega a.nav-datasets-item:hover,
+.navbar .nav-datasets-mega a.nav-datasets-item:focus-visible {
+  background: var(--nds-wash);
+}
+.navbar .nav-datasets-mega .nav-datasets-item:focus-visible,
+.navbar .nav-datasets-mega .nav-datasets-foot:focus-visible {
+  outline: 2px solid var(--nds-live);
+  outline-offset: 1px;
+}
+
+/* "Soon" rows: full-strength black, no hover affordance; the pill marks them. */
+.navbar .nav-datasets-mega .nav-datasets-item--soon {
+  opacity: 1;
+}
+.navbar .nav-datasets-mega .nav-datasets-item--soon:hover,
+.navbar .nav-datasets-mega .nav-datasets-item--soon:focus-visible {
+  background: none;
+}
+
+/* Pills: "Soon" and "Sample". */
+.navbar .nav-datasets-mega .nav-datasets-soon,
+.navbar .nav-datasets-mega .nav-datasets-sample {
+  color: color-mix(in srgb, var(--nds-ink) 65%, var(--nds-bg));
+  background: color-mix(in srgb, black 5%, transparent);
+  border-color: var(--nds-hair);
+}
+
+/* Footer links ("Ezana API", "View all datasets"): live, so green. */
+.navbar .nav-datasets-mega .nav-datasets-foot,
+.navbar .nav-datasets-mega .nav-datasets-foot:hover {
+  color: var(--nds-live);
+}
+.navbar .nav-datasets-mega .nav-datasets-foot:hover {
+  background: var(--nds-wash);
+}
+
+/* Hairlines bracketing the footer. */
+.navbar .nav-datasets-mega .nav-datasets-divider {
+  background: var(--nds-hair);
+}

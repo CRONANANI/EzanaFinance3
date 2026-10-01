@@ -353,12 +353,17 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: var(--dscat-item-color, var(--text-faint));
+}
+/* Text is plain ink; only the icon keeps the dimension colour. Scoped under
+   the panel so it outranks light-mode.css's `body.light-mode p`. */
+.dscat-panel .dscat-panel-head {
+  color: var(--text-primary);
 }
 .dscat-panel-icon {
   flex-shrink: 0;
   font-size: 1rem;
   line-height: 1;
+  color: var(--dscat-item-color, currentColor);
 }
 /* Values copied from .navbar .nav-datasets-item / .nav-datasets-item-label. */
 .dscat-item {
@@ -376,8 +381,9 @@
 .dscat-item-label {
   font-size: 0.8125rem;
   font-weight: 500;
-  /* Every dataset reads in its dimension's colour. */
-  color: var(--dscat-item-color, var(--text-primary));
+  /* Every dataset reads in plain ink. Only the page the visitor is on
+     (.is-active, below) takes the dimension colour. */
+  color: var(--text-primary);
   /* Let long labels ("Regulatory Investigations & Enforcement") wrap to two
      lines INSIDE the panel instead of widening it. */
   white-space: normal;
@@ -389,10 +395,11 @@
   background: var(--emerald-bg);
   outline: none;
 }
-/* Non-live ("Soon") datasets: muted, non-interactive — no hover affordance. */
+/* Non-live ("Soon") datasets: full-strength ink, non-interactive, no hover
+   affordance. The Soon pill marks them. */
 .dscat-item--soon {
   cursor: default;
-  opacity: 0.55;
+  opacity: 1;
 }
 .dscat-item--soon:hover,
 .dscat-item--soon:focus-visible {

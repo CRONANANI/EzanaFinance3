@@ -621,6 +621,15 @@
 .ptk-td--r {
   text-align: right;
 }
+/* Trades, Buys / Sells, Last trade and Top tickers: centred in their
+   column, heading and values alike. */
+.ptk-table .ptk-th--c,
+.ptk-table .ptk-td--c {
+  text-align: center;
+}
+.ptk-tks--sm.ptk-tks--center {
+  justify-content: center;
+}
 .ptk-td-mute {
   color: var(--ptk-mute);
 }

@@ -16,7 +16,7 @@ import { isBetaLockedRoute, hasBetaFullAccess } from '@/lib/beta-locked-routes';
 import { ChevronDown, ArrowRight } from 'lucide-react';
 import { DATASET_TAXONOMY, isNavigable, isPreview } from '@/lib/datasets/taxonomy';
 import '@/components/ui/animated-nav.css';
-import './nav-datasets-green.css';
+import './nav-datasets-light.css';
 
 /* Landing-nav Datasets mega-menu: the SAME seven dimensions as the orbital map,
    the in-page CategoryBar, and the signal map, built from the shared

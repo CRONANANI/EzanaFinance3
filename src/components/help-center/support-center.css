@@ -184,55 +184,8 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding-top: 26px;
+  padding-top: 12px;
   gap: 10px;
-}
-.hcs-crumb {
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
-  color: var(--hcs-mute);
-}
-.hcs-crumb-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: inherit;
-  text-decoration: none;
-}
-.hcs-crumb-link .bi {
-  font-size: 11px;
-}
-.hcs-crumb-link:hover {
-  color: var(--hcs-ink);
-}
-.hcs-crumb-sep {
-  color: var(--hcs-faint);
-}
-.hcs-crumb-here {
-  font-weight: 600;
-  color: var(--hcs-ink);
-}
-.hcs-eyebrow {
-  margin: 0;
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
-  color: var(--hcs-positive);
-}
-.hcs-title {
-  margin: 0;
-  font-size: 34px;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.1;
-}
-.hcs-sub {
-  margin: 0;
-  font-size: 14px;
-  color: var(--hcs-mute);
-  max-width: 60ch;
 }
 .hcs-pill {
   position: relative;
@@ -244,11 +197,11 @@
   height: 56px;
   margin-top: 8px;
   padding: 0 6px 0 18px;
-  /* No outline at rest and the page ground shows through; the focus rule
-     below restores an emerald border and halo while the field is in use. */
-  border: 1px solid transparent;
+  /* A hairline outline at rest on the page ground, so the field reads as a
+     field; the focus rule below swaps in the emerald border and halo. */
+  border: 1px solid var(--hcs-hair-strong);
   border-radius: 99px;
-  background: transparent;
+  background: var(--hcs-bg);
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease;
@@ -380,7 +333,7 @@
      the lower row, not push Start here away from the search. */
   grid-template-rows: auto 1fr;
   row-gap: 26px;
-  margin-top: 18px;
+  margin-top: 16px;
 }
 /* Home: the search sits at the top of the middle column, and the rail starts
    on that same row, so All Categories is level with the pill. */
@@ -412,7 +365,7 @@
   grid-template-columns: 232px minmax(0, 1fr) 320px;
   column-gap: 28px;
   row-gap: 22px;
-  margin-top: 26px;
+  margin-top: 18px;
 }
 .hcs-grid--answered .hcs-rail {
   grid-row: 1 / 3;

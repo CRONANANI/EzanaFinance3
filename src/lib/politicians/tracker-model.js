@@ -4,6 +4,8 @@
  * figure is a count or a sum of disclosed-range midpoints.
  */
 
+import { inferPositionStatus } from './position-status.js';
+
 const norm = (n) =>
   String(n || '')
     .toLowerCase()
@@ -229,6 +231,37 @@ export function topTickers(trades, n = 5) {
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
     .slice(0, n)
     .map(([ticker, count]) => ({ ticker, count }));
+}
+
+/**
+ * Tickers held by the most members right now, as far as the loaded
+ * disclosures show. Per member and ticker, inferPositionStatus decides; a
+ * 'likely-holds' or 'reduced' position counts as still held. This is an
+ * INFERENCE from STOCK Act filings (bands, not share counts) and the panel
+ * says so (POSITION_BASIS_NOTE). Local fallback for the server's
+ * congress_most_held_tickers RPC, same shape: { ticker, holders, buys }.
+ */
+export function mostHeldTickers(trades, n = 5) {
+  const groups = new Map();
+  for (const t of trades) {
+    if (!t.ticker) continue;
+    const who = t.bioguideId || `${t.chamber}:${norm(t.name)}`;
+    const k = `${who}|${t.ticker}`;
+    if (!groups.has(k)) groups.set(k, { ticker: t.ticker, rows: [] });
+    groups.get(k).rows.push(t);
+  }
+  const byTicker = new Map();
+  for (const { ticker, rows } of groups.values()) {
+    const status = inferPositionStatus(rows);
+    if (status !== 'likely-holds' && status !== 'reduced') continue;
+    const cur = byTicker.get(ticker) || { ticker, holders: 0, buys: 0 };
+    cur.holders += 1;
+    cur.buys += rows.filter((r) => r.side === 'purchase').length;
+    byTicker.set(ticker, cur);
+  }
+  return [...byTicker.values()]
+    .sort((a, b) => b.holders - a.holders || b.buys - a.buys || a.ticker.localeCompare(b.ticker))
+    .slice(0, n);
 }
 
 /** `CA-12` for a House member with a district, else the state, else null. */
