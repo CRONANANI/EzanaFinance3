@@ -169,3 +169,32 @@ test('resolveCandidates: never a trade without a bioguide, dedupes, counts', () 
   assert.equal(out.unmatched.size, 1);
   assert.equal(out.skipped, 1);
 });
+
+test('resolveCandidates skips future-dated and dated-after-disclosure trades', () => {
+  const base = {
+    first_name: 'Nancy',
+    last_name: 'Pelosi',
+    state_dst: 'CA11',
+    ticker: 'NVDA',
+    asset_name: 'NVIDIA Corporation',
+    tx_type: 'P',
+    amount_low: 1001,
+    amount_high: 15000,
+  };
+  const ok = candidateFromHouse({
+    ...base,
+    tx_date: '2026-09-01',
+    notification_date: '2026-09-10',
+  });
+  const future = candidateFromHouse({ ...base, ticker: null, tx_date: '2027-12-15' });
+  const afterDisclosure = candidateFromHouse({
+    ...base,
+    ticker: 'AAPL',
+    tx_date: '2026-09-20',
+    notification_date: '2026-09-10',
+  });
+  const out = resolveCandidates([ok, future, afterDisclosure], index, known);
+  assert.equal(out.rows.length, 1);
+  assert.equal(out.rows[0].transaction_date, '2026-09-01');
+  assert.equal(out.skipped, 2);
+});

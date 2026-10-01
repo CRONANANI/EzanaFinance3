@@ -337,8 +337,22 @@ export function resolveCandidates(candidates, index, knownIds) {
   const matchedBy = { bioguide: 0, last_state: 0, exact: 0, fuzzy: 0 };
   const seen = new Set();
   let skipped = 0;
+  /* A trade dated after today, or after the day it was disclosed, is a
+     parser misread (house_trades holds rows dated as late as 2027-12-15,
+     mostly untickered lines with no notification date). Landing them would
+     put a future "last trade" on a member's row and float them to the top
+     of Latest trade, so they are skipped, not repaired. One day of grace
+     covers time-zone edges. */
+  const latestOk = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
   for (const c of candidates) {
     if (!c.row.transaction_date || !c.row.type) {
+      skipped += 1;
+      continue;
+    }
+    if (
+      c.row.transaction_date > latestOk ||
+      (c.row.disclosure_date && c.row.transaction_date > c.row.disclosure_date)
+    ) {
       skipped += 1;
       continue;
     }
