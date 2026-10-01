@@ -168,7 +168,7 @@ create or replace function public.congress_monthly_counts(
 )
 returns table (month date, house bigint, senate bigint)
 language sql stable set search_path = public as $$
-  select date_trunc('month', ct.transaction_date)::date month,
+  select date_trunc('month', ct.transaction_date)::date as month,
          count(*) filter (where ct.chamber = 'house') house,
          count(*) filter (where ct.chamber = 'senate') senate
   from public.congress_trades ct
