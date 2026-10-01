@@ -92,6 +92,15 @@
   outline-offset: 2px;
 }
 
+/* ── EzanaQL ──────────────────────────────────────────────────────────── */
+/* The shared bar centres itself (margin: 14px auto 0). On this page it sits
+   in .ptk-body and starts at the same left edge as the search field, so the
+   pill, its code line and the editor all share the toolbar's left edge.
+   Page-scoped: the bar's own stylesheet is untouched. */
+.ptk-ql .eqb {
+  margin: 0;
+}
+
 /* ── toolbar ─────────────────────────────────────────────────────────── */
 .ptk-toolbar {
   display: flex;
@@ -338,17 +347,27 @@
 }
 
 /* ── gallery + rail grid ─────────────────────────────────────────────── */
+/* Row 1 holds the gallery heading alone; row 2 holds the cards and the rail,
+   so the rail (Rank by first) is top-aligned with the first row of cards. */
 .ptk-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 380px;
+  grid-template-areas:
+    'head .'
+    'cards rail';
   column-gap: 28px;
+  row-gap: 12px;
   align-items: start;
 }
 .ptk-gallery-head {
+  grid-area: head;
   display: flex;
   align-items: baseline;
   gap: 12px;
-  margin-bottom: 12px;
+}
+.ptk-gallery {
+  grid-area: cards;
+  min-width: 0;
 }
 .ptk-gallery-head .ptk-cap {
   font-size: 12.5px;
@@ -450,10 +469,11 @@
 
 /* ── rail ────────────────────────────────────────────────────────────── */
 .ptk-rail {
+  grid-area: rail;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 4px 0 0 28px;
+  padding: 0 0 0 28px;
   border-left: 1px solid var(--ptk-hair);
   min-width: 0;
 }
@@ -461,6 +481,14 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+.ptk-rankby {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ptk-hair);
 }
 .ptk-rail-head .ptk-eyebrow {
   display: flex;
@@ -593,8 +621,26 @@
 .ptk-list {
   border-top: 2px solid var(--ptk-ink);
 }
+/* Every member is listed (500+ rows), so the list scrolls inside itself
+   with the column headings pinned. */
 .ptk-list-scroll {
-  overflow-x: auto;
+  overflow: auto;
+  max-height: min(78vh, 900px);
+}
+.ptk-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--dsc-bg);
+}
+.ptk-row-sep td {
+  height: 34px;
+  padding: 0 6px;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  color: var(--ptk-faint);
+  border-bottom: 1px solid var(--ptk-hair);
+  background: var(--ptk-row-hover);
 }
 .ptk-table {
   width: 100%;
@@ -887,7 +933,14 @@
 @media (max-width: 1000px) {
   .ptk-grid {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'head'
+      'cards'
+      'rail';
     row-gap: 24px;
+  }
+  .ptk-rankby {
+    grid-column: 1 / -1;
   }
   .ptk-rail {
     display: grid;

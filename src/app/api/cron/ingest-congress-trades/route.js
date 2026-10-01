@@ -13,10 +13,10 @@ import LEGISLATORS from '@/lib/politicians/legislators-current.json';
  *
  * Trade sources and why (parser decision): the repo already parses House
  * Clerk PTR PDFs into public.house_trades (/api/cron/parse-house-ptrs,
- * hourly), so House trades come from the primary source. There is no
- * Senate eFD ingest yet (public.senate_trades exists, empty), and no
- * maintained npm STOCK Act parser worth adopting, so Senate trades keep FMP
- * as their source behind FMP_CONGRESS_ENABLED, landed here, never live.
+ * hourly), so House trades come from the primary source. Senate
+ * trades come from public.senate_trades, filled from eFD by the hourly
+ * /api/cron/ingest-senate-ptrs. FMP stays as an optional extra behind
+ * FMP_CONGRESS_ENABLED (the current key answers 402 for both chambers).
  *
  * After the ingest the newest rows are written to congress_trades_snapshot,
  * the route's fallback.
@@ -25,6 +25,7 @@ import LEGISLATORS from '@/lib/politicians/legislators-current.json';
  *   GET /api/cron/ingest-congress-trades                 members + all trades
  *   GET /api/cron/ingest-congress-trades?chamber=house   one chamber's sources
  *   GET /api/cron/ingest-congress-trades?only=photos     mirror portraits (bounded)
+ *   GET /api/cron/ingest-congress-trades?days=4500       backfill (default 400 days)
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -68,6 +69,9 @@ export async function GET(request) {
       fmpEnabled: fmpEnabled(),
       chamber,
       skipMembers: searchParams.get('members') === '0',
+      /* Backfill: ?days= widens the window the source tables are read over
+         (house_trades reaches back to 2015). Upserts are idempotent. */
+      windowDays: Math.min(Math.max(Number(searchParams.get('days')) || 400, 30), 4500),
     });
 
     /* Refresh the route's fallback from what is now in the table. */

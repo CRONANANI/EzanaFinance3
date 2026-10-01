@@ -7,8 +7,8 @@
  * party is called at request time.
  *
  * Query: ?page=0&limit=200, and SQL-side filters ?chamber=house|senate,
- * ?party=D|R|I, ?q=<name>, ?bioguide=<id>, ?ticker=<symbol>. Newest
- * disclosures first, trailing 365 days.
+ * ?party=D|R|I, ?q=<name>, ?bioguide=<id>, ?ticker=<symbol>, and the period
+ * ?days=<7..36500> (365 when absent). Newest disclosures first.
  *
  * Upstream failure never blanks the page: when the read fails, or the table
  * is empty, the last good payload in public.congress_trades_snapshot (written
@@ -19,10 +19,12 @@ import { NextResponse } from 'next/server';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import {
   chamberParam,
+  daysParam,
   partyParam,
   queryParam,
   readFeeds,
   readTrades,
+  WINDOW_DAYS,
 } from '@/lib/politicians/congress-store';
 import { pageSnapshot, readTradesSnapshot } from '@/lib/politicians/trades-snapshot';
 
@@ -69,13 +71,17 @@ export async function GET(request) {
       : null,
   };
   const filtered = Object.values(filters).some(Boolean);
+  const windowDays = daysParam(searchParams.get('days'));
 
-  const { trades, error } = await readTrades({ ...filters, page, limit });
+  const { trades, error } = await readTrades({ ...filters, page, limit, windowDays });
   if (error) console.warn(`[politicians/trades] read failed: ${error}`);
 
   /* An unfiltered first page with no rows means nothing has been ingested
-     yet; a filtered or later page may legitimately be empty. */
-  if (error || (!filtered && page === 0 && trades.length === 0)) {
+     yet; a filtered or later page, or a short period, may legitimately be
+     empty (the snapshot is the default year, so it must not stand in for a
+     30-day view). */
+  const defaultView = !filtered && windowDays === WINDOW_DAYS;
+  if (error || (defaultView && page === 0 && trades.length === 0)) {
     const stale = await staleResponse(page, limit, error ? 'read failed' : 'not yet ingested');
     if (stale) return stale;
     /* 503 is the page's "no source configured" signal (sample fixture). */
@@ -91,6 +97,6 @@ export async function GET(request) {
     );
   }
 
-  const feeds = page === 0 && !filtered ? await readFeeds() : null;
+  const feeds = page === 0 && !filtered ? await readFeeds(windowDays) : null;
   return NextResponse.json({ ok: true, feeds, trades }, { headers: CACHE });
 }

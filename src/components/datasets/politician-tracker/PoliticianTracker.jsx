@@ -17,7 +17,7 @@
  * The shared green chrome and ticker are drawn by the datasets layout. The
  * page publishes ticker items through usePublishTicker and nothing else.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { CHART } from '@/lib/chart-theme';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
@@ -30,6 +30,9 @@ import {
   loadedWindow,
   mergeServerRankings,
   mostHeldTickers,
+  DEFAULT_PERIOD,
+  PERIODS,
+  periodMeta,
   monthlyByChamber,
   rankMembers,
   seatLabel,
@@ -62,7 +65,8 @@ function formatUpdated(iso) {
 }
 const PAGES = [0, 1, 2];
 const GALLERY = 8;
-const LIST_DEFAULT = 8;
+/* Skeleton rows while the ranking loads. The list itself shows every member. */
+const LIST_SKELETON = 8;
 
 const SORTS = [
   { value: 'volume', label: 'Disclosed volume', heading: 'disclosed volume' },
@@ -94,11 +98,12 @@ function readUrl() {
     chamber: ch === 'house' ? 'House' : ch === 'senate' ? 'Senate' : null,
     party: ['D', 'R', 'I'].includes(party) ? party : null,
     sort: SORT_KEYS.includes(p.get('sort')) ? p.get('sort') : 'volume',
+    period: PERIODS.some((x) => x.value === p.get('period')) ? p.get('period') : DEFAULT_PERIOD,
     q: p.get('q') || '',
   };
 }
 
-function writeUrl({ member, chamber, party, sort, q }, push = false) {
+function writeUrl({ member, chamber, party, sort, period, q }, push = false) {
   if (typeof window === 'undefined') return;
   const url = new URL(window.location.href);
   const set = (k, v) => (v ? url.searchParams.set(k, v) : url.searchParams.delete(k));
@@ -106,6 +111,7 @@ function writeUrl({ member, chamber, party, sort, q }, push = false) {
   set('chamber', chamber ? chamber.toLowerCase() : null);
   set('party', party);
   set('sort', sort === 'volume' ? null : sort);
+  set('period', period === DEFAULT_PERIOD ? null : period);
   set('q', q.trim());
   window.history[push ? 'pushState' : 'replaceState'](
     { ...(window.history.state || {}), ptkMember: member || null },
@@ -219,6 +225,7 @@ export default function PoliticianTracker({
   initialChamber = null,
   initialParty = null,
   initialSort = 'volume',
+  initialPeriod = DEFAULT_PERIOD,
   initialQuery = '',
 }) {
   const [trades, setTrades] = useState([]);
@@ -233,10 +240,11 @@ export default function PoliticianTracker({
   const [chamber, setChamber] = useState(initialChamber);
   const [party, setParty] = useState(initialParty);
   const [sort, setSort] = useState(initialSort);
+  const [period, setPeriod] = useState(initialPeriod);
+  const pMeta = periodMeta(period);
   const [queryInput, setQueryInput] = useState(initialQuery);
   const [query, setQuery] = useState(initialQuery);
   const [lastFilter, setLastFilter] = useState(null);
-  const [showAll, setShowAll] = useState(false);
 
   /* SQL aggregates for the current filters ({ key, data }), and trades
      fetched for a member whose rows were not in the loaded pages. */
@@ -254,7 +262,7 @@ export default function PoliticianTracker({
     setStatus('loading');
     Promise.all(
       PAGES.map((p) =>
-        fetch(`/api/politicians/trades?page=${p}&limit=500`)
+        fetch(`/api/politicians/trades?page=${p}&limit=500&days=${pMeta.days}`)
           .then(async (r) => ({
             status: r.status,
             stale: r.headers.get('X-Data-Stale') === 'true',
@@ -293,7 +301,10 @@ export default function PoliticianTracker({
       setTrades(merged);
       setFeeds(f);
       setStaleAt(stalePage ? stalePage.body.fetchedAt : null);
-      setStatus(merged.length ? 'ready' : 'empty');
+      /* A period with no disclosures is a real, empty answer; only a
+         failed read is "unavailable". */
+      const answered = pages.some((pg) => pg.body?.ok);
+      setStatus(merged.length || answered ? 'ready' : 'empty');
     });
     setContractors({ state: 'loading', data: null });
     fetch('/api/politicians/contractor-exposure')
@@ -306,14 +317,14 @@ export default function PoliticianTracker({
     return () => {
       alive = false;
     };
-  }, [reload]);
+  }, [reload, pMeta.days]);
 
   /* ── server aggregates: rankings, monthly and tickers over the whole
         window, filtered in SQL. Unavailable (503) → the local model. ── */
-  const summaryKey = `${chamber || ''}|${party || ''}|${query.trim()}|${sort}|${reload}`;
+  const summaryKey = `${chamber || ''}|${party || ''}|${query.trim()}|${sort}|${pMeta.days}|${reload}`;
   useEffect(() => {
     const ctrl = new AbortController();
-    const qs = new URLSearchParams({ sort });
+    const qs = new URLSearchParams({ sort, days: String(pMeta.days) });
     if (chamber) qs.set('chamber', chamber.toLowerCase());
     if (party) qs.set('party', party);
     if (query.trim()) qs.set('q', query.trim());
@@ -336,11 +347,11 @@ export default function PoliticianTracker({
 
   /* ── url sync for filters (replace) ── */
   useEffect(() => {
-    writeUrl({ member: openSlug, chamber, party, sort, q: query }, false);
+    writeUrl({ member: openSlug, chamber, party, sort, period, q: query }, false);
     // openSlug is written by open/close below with push semantics; it is read
     // here only so a filter change does not drop it from the URL.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chamber, party, sort, query]);
+  }, [chamber, party, sort, period, query]);
 
   /* ── model ── */
   const members = useMemo(() => buildMembers(trades), [trades]);
@@ -364,16 +375,21 @@ export default function PoliticianTracker({
     [server, members, chamber, party, query],
   );
   const ranked = useMemo(() => rankMembers(filtered, sort), [filtered, sort]);
-  const gallery = ranked.slice(0, GALLERY);
-  const rest = ranked.slice(GALLERY);
-  const listRows = showAll ? rest : rest.slice(0, LIST_DEFAULT);
+  /* The Top eight are members WITH disclosed trades; everyone else, including
+     every sitting member with none in the period, is in the list below. */
+  const traders = ranked.filter((m) => (m.count || 0) > 0);
+  const gallery = traders.slice(0, GALLERY);
+  const galleryKeys = new Set(gallery.map((m) => m.key));
+  const rest = ranked.filter((m) => !galleryKeys.has(m.key));
+  const firstQuiet = rest.findIndex((m) => !(m.count > 0));
   const first = ranked[0] || null;
 
   const filteredTrades = useMemo(() => tradesOf(filtered), [filtered]);
   const stats = useMemo(() => chamberStats(filtered), [filtered]);
   const monthly = useMemo(
-    () => (server ? server.monthly.slice(-12) : monthlyByChamber(filteredTrades)),
-    [server, filteredTrades],
+    () =>
+      server ? server.monthly.slice(-pMeta.months) : monthlyByChamber(filteredTrades, pMeta.months),
+    [server, filteredTrades, pMeta.months],
   );
   /* Most HELD, not most traded: members whose disclosures show a position
      still open (inferred, see POSITION_BASIS_NOTE). Server-wide when the
@@ -454,19 +470,19 @@ export default function PoliticianTracker({
       setOpenSlug(m.slug);
       /* One history entry per panel session: swapping members replaces it,
          so Back always closes the panel rather than walking through members. */
-      writeUrl({ member: m.slug, chamber, party, sort, q: query }, !swapping);
+      writeUrl({ member: m.slug, chamber, party, sort, period, q: query }, !swapping);
       if (!swapping) pushedRef.current = true;
     },
-    [openSlug, chamber, party, sort, query, measureTop],
+    [openSlug, chamber, party, sort, period, query, measureTop],
   );
 
   const close = useCallback(() => {
     setOpenSlug(null);
     if (pushedRef.current) window.history.back();
-    else writeUrl({ member: null, chamber, party, sort, q: query }, false);
+    else writeUrl({ member: null, chamber, party, sort, period, q: query }, false);
     pushedRef.current = false;
     triggerRef.current?.focus();
-  }, [chamber, party, sort, query]);
+  }, [chamber, party, sort, period, query]);
 
   useEffect(() => {
     const onPop = () => {
@@ -496,7 +512,6 @@ export default function PoliticianTracker({
   const pick = (setter, name) => (v) => {
     setter(v);
     setLastFilter(name);
-    setShowAll(false);
   };
   const clearFilters = () => {
     setChamber(null);
@@ -526,13 +541,17 @@ export default function PoliticianTracker({
         </p>
         <h1 className="dsc-title">Politician tracker</h1>
         <p className="ptk-sub">
-          Every member of the House and Senate with disclosed trades, in one list.
+          Every member of the House and Senate, ranked by their disclosed trades.
         </p>
       </header>
 
-      <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
-
       <div className="ptk-body">
+        {/* EzanaQL sits inside the body so its left edge (pill, code line and
+            editor) lines up with the search field below it. */}
+        <div className="ptk-ql">
+          <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
+        </div>
+
         {/* ── toolbar ── */}
         <div className="ptk-toolbar" role="search" aria-label="Filter and rank politicians">
           <label className="ptk-search">
@@ -546,7 +565,6 @@ export default function PoliticianTracker({
               onChange={(e) => {
                 setQueryInput(e.target.value);
                 setLastFilter('search');
-                setShowAll(false);
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Escape' && queryInput) {
@@ -582,16 +600,13 @@ export default function PoliticianTracker({
             onChange={pick(setParty, 'party')}
             mono
           />
-          <span className="ptk-toolbar-spacer" />
-          <span className="ptk-rankby-label dsc-mn">RANK BY</span>
+          <span className="ptk-rankby-label dsc-mn">PERIOD</span>
           <Segmented
-            label="Rank by"
-            value={sort}
-            options={SORTS}
-            onChange={(v) => {
-              setSort(v);
-              setShowAll(false);
-            }}
+            label="Period"
+            value={period}
+            options={PERIODS}
+            onChange={(v) => setPeriod(v)}
+            mono
           />
         </div>
 
@@ -624,20 +639,25 @@ export default function PoliticianTracker({
         ) : null}
 
         {/* ── gallery + rail ── */}
+        {/* Two columns, two rows: the gallery heading alone in row 1, then
+            the cards and the rail side by side in row 2, so the rail (Rank
+            by first) starts level with the top row of cards. */}
         <div className="ptk-grid">
-          <section className="ptk-gallery" aria-label={`Top eight by ${sortMeta.heading}`}>
-            <div className="ptk-gallery-head">
-              <h2 className="ptk-h2">Top eight by {sortMeta.heading}</h2>
-              <span className="ptk-cap">ring colour is chamber, letter tag is party</span>
-            </div>
+          <div className="ptk-gallery-head">
+            <h2 className="ptk-h2" id="ptk-gallery-title">
+              Top eight by {sortMeta.heading}
+            </h2>
+            <span className="ptk-cap">ring colour is chamber, letter tag is party</span>
+          </div>
 
+          <section className="ptk-gallery" aria-labelledby="ptk-gallery-title">
             {!rankingReady ? (
               <div className="ptk-cards" aria-busy="true">
                 {Array.from({ length: GALLERY }, (_, i) => (
                   <CardSkeleton key={i} />
                 ))}
               </div>
-            ) : rankingReady && !ranked.length && anyFilter ? (
+            ) : rankingReady && !traders.length && anyFilter ? (
               <div className="ptk-empty" role="status">
                 <p className="dsc-note">
                   No members match. Try clearing{' '}
@@ -647,6 +667,10 @@ export default function PoliticianTracker({
                 <button type="button" className="dsc-btn dsc-btn--ghost" onClick={clearFilters}>
                   Clear filters
                 </button>
+              </div>
+            ) : rankingReady && !traders.length ? (
+              <div className="ptk-empty" role="status">
+                <p className="dsc-note">No disclosed trades in this period. Try a longer period.</p>
               </div>
             ) : (
               <div className="ptk-cards">
@@ -665,12 +689,26 @@ export default function PoliticianTracker({
 
           <aside
             className="ptk-rail"
-            aria-label={`House versus Senate, ${server ? 'trailing 12 months' : 'loaded window'}`}
+            aria-label={`Ranking and House versus Senate, ${pMeta.heading.toLowerCase()}`}
           >
+            <div className="ptk-rankby">
+              <span className="ptk-rankby-label dsc-mn">RANK BY</span>
+              <Segmented
+                label="Rank by"
+                value={sort}
+                options={SORTS}
+                onChange={(v) => setSort(v)}
+              />
+            </div>
+
             <div className="ptk-rail-head">
               <span className="ptk-eyebrow dsc-mn">
                 HOUSE VS SENATE,{' '}
-                {anyFilter ? 'FILTERED' : server ? 'TRAILING 12 MONTHS' : 'LOADED WINDOW'}
+                {anyFilter
+                  ? `${pMeta.heading}, FILTERED`
+                  : server
+                    ? pMeta.heading
+                    : 'LOADED WINDOW'}
                 {feeds?.house === 'down' ? (
                   <span className="ptk-feed-chip dsc-mn">HOUSE FEED UNAVAILABLE</span>
                 ) : null}
@@ -746,7 +784,7 @@ export default function PoliticianTracker({
               <div
                 className="ptk-chart"
                 role="img"
-                aria-label="Monthly trade counts, House and Senate, last twelve months"
+                aria-label={`Monthly trade counts, House and Senate, ${pMeta.heading.toLowerCase()}`}
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
@@ -830,7 +868,7 @@ export default function PoliticianTracker({
         </div>
 
         {/* ── dense list, rank 9 on ── */}
-        <section className="ptk-list" aria-label="The rest of the ranking">
+        <section className="ptk-list" aria-label="Every member, ranked">
           <div className="ptk-list-scroll">
             <table className="ptk-table">
               <thead>
@@ -847,80 +885,98 @@ export default function PoliticianTracker({
               </thead>
               <tbody>
                 {!rankingReady
-                  ? Array.from({ length: LIST_DEFAULT }, (_, i) => (
+                  ? Array.from({ length: LIST_SKELETON }, (_, i) => (
                       <tr key={i} className="ptk-row ptk-row--skel" aria-hidden="true">
                         <td colSpan={8}>
                           <Skel className="ptk-skel--line ptk-skel--row" />
                         </td>
                       </tr>
                     ))
-                  : listRows.map((m) => {
+                  : rest.map((m, i) => {
                       const selected = openMember?.key === m.key;
                       const ch = String(m.chamber || '').toLowerCase();
+                      const quiet = !(m.count > 0);
                       return (
-                        <tr
-                          key={m.key}
-                          tabIndex={0}
-                          className={`ptk-row${selected ? ` ptk-row--selected ptk-row--selected-${ch}` : ''}`}
-                          aria-selected={selected}
-                          onClick={(e) => open(m, e.currentTarget)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              open(m, e.currentTarget);
-                            }
-                          }}
-                        >
-                          <td className="dsc-mn ptk-td-rank">{String(m.rank).padStart(2, '0')}</td>
-                          <td>
-                            <span className="ptk-who">
-                              <Headshot
-                                name={m.name}
-                                bioguideId={m.bioguideId}
-                                chamber={m.chamber}
-                                photoUrl={m.photoUrl}
-                                size={AVATAR_SIZE.row}
-                                ring={2}
-                              />
-                              <span className="ptk-who-text">
-                                <span className="ptk-name">{m.name}</span>
-                                <span className="ptk-seat">
-                                  <PartyTag party={m.party} />
-                                  <span className="dsc-mn">{seatLabel(m) || NONE}</span>
+                        <Fragment key={m.key}>
+                          {i === firstQuiet ? (
+                            <tr className="ptk-row-sep" aria-hidden="true">
+                              <td colSpan={8} className="dsc-mn">
+                                NO DISCLOSED TRADES, {pMeta.heading} · {rest.length - firstQuiet}{' '}
+                                MEMBERS
+                              </td>
+                            </tr>
+                          ) : null}
+                          <tr
+                            tabIndex={0}
+                            className={`ptk-row${selected ? ` ptk-row--selected ptk-row--selected-${ch}` : ''}`}
+                            aria-selected={selected}
+                            onClick={(e) => open(m, e.currentTarget)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                open(m, e.currentTarget);
+                              }
+                            }}
+                          >
+                            <td className="dsc-mn ptk-td-rank">
+                              {m.rank ? String(m.rank).padStart(2, '0') : NONE}
+                            </td>
+                            <td>
+                              <span className="ptk-who">
+                                <Headshot
+                                  name={m.name}
+                                  bioguideId={m.bioguideId}
+                                  chamber={m.chamber}
+                                  photoUrl={m.photoUrl}
+                                  size={AVATAR_SIZE.row}
+                                  ring={2}
+                                />
+                                <span className="ptk-who-text">
+                                  <span className="ptk-name">{m.name}</span>
+                                  <span className="ptk-seat">
+                                    <PartyTag party={m.party} />
+                                    <span className="dsc-mn">{seatLabel(m) || NONE}</span>
+                                  </span>
                                 </span>
                               </span>
-                            </span>
-                          </td>
-                          <td className="ptk-col-chamber">
-                            <ChamberChip chamber={m.chamber} />
-                          </td>
-                          <td>
-                            <span className="ptk-vol">
-                              <span className="dsc-mn ptk-vol-fig">{usdShort(m.volume)}</span>
-                              {m.volume > 0 && first?.volume > 0 ? (
-                                <span className="ptk-track ptk-col-volbar" aria-hidden="true">
-                                  <i
-                                    style={{
-                                      width: `${Math.min(100, (m.volume / first.volume) * 100)}%`,
-                                    }}
-                                  />
-                                </span>
-                              ) : null}
-                            </span>
-                          </td>
-                          <td className="dsc-mn ptk-td--c">{m.count}</td>
-                          <td className="dsc-mn ptk-td--c ptk-col-bs">
-                            <b className="ptk-buy-n">{m.buys}</b>
-                            <span className="ptk-slash"> / </span>
-                            <b>{m.sells}</b>
-                          </td>
-                          <td className="dsc-mn ptk-td--c ptk-td-mute ptk-col-last">
-                            {m.lastTraded || NONE}
-                          </td>
-                          <td className="ptk-td--c ptk-col-tks">
-                            <Tickers tickers={m.tickers} cls="ptk-tks--sm ptk-tks--center" />
-                          </td>
-                        </tr>
+                            </td>
+                            <td className="ptk-col-chamber">
+                              <ChamberChip chamber={m.chamber} />
+                            </td>
+                            <td>
+                              <span className="ptk-vol">
+                                <span className="dsc-mn ptk-vol-fig">{usdShort(m.volume)}</span>
+                                {m.volume > 0 && first?.volume > 0 ? (
+                                  <span className="ptk-track ptk-col-volbar" aria-hidden="true">
+                                    <i
+                                      style={{
+                                        width: `${Math.min(100, (m.volume / first.volume) * 100)}%`,
+                                      }}
+                                    />
+                                  </span>
+                                ) : null}
+                              </span>
+                            </td>
+                            <td className="dsc-mn ptk-td--c">{quiet ? NONE : m.count}</td>
+                            <td className="dsc-mn ptk-td--c ptk-col-bs">
+                              {quiet ? (
+                                NONE
+                              ) : (
+                                <>
+                                  <b className="ptk-buy-n">{m.buys}</b>
+                                  <span className="ptk-slash"> / </span>
+                                  <b>{m.sells}</b>
+                                </>
+                              )}
+                            </td>
+                            <td className="dsc-mn ptk-td--c ptk-td-mute ptk-col-last">
+                              {m.lastTraded || NONE}
+                            </td>
+                            <td className="ptk-td--c ptk-col-tks">
+                              <Tickers tickers={m.tickers} cls="ptk-tks--sm ptk-tks--center" />
+                            </td>
+                          </tr>
+                        </Fragment>
                       );
                     })}
               </tbody>
@@ -928,31 +984,13 @@ export default function PoliticianTracker({
           </div>
           <div className="ptk-list-foot">
             <p>
-              The rest of the ranking continues here, same order. Select a row or a card for the
-              full profile.
+              Every sitting member, same order as the cards: members who traded in the period first,
+              then those with no disclosed trades. Select a row or a card for the full profile.
             </p>
             <span className="dsc-mn ptk-list-count">
-              {!rankingReady ? (
-                NONE
-              ) : rest.length === 0 ? (
-                `ALL ${ranked.length} SHOWN`
-              ) : (
-                <>
-                  {GALLERY + 1} TO {GALLERY + listRows.length} OF {ranked.length}
-                  {rest.length > LIST_DEFAULT ? (
-                    <>
-                      {' · '}
-                      <button
-                        type="button"
-                        className="ptk-link"
-                        onClick={() => setShowAll((v) => !v)}
-                      >
-                        {showAll ? 'SHOW LESS' : 'SHOW ALL'}
-                      </button>
-                    </>
-                  ) : null}
-                </>
-              )}
+              {!rankingReady
+                ? NONE
+                : `${ranked.length} MEMBERS · ${traders.length} WITH DISCLOSED TRADES`}
             </span>
           </div>
         </section>

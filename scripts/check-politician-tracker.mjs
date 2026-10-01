@@ -17,6 +17,12 @@ import {
   serverWindow,
   mostHeldTickers,
 } from '../src/lib/politicians/tracker-model.js';
+import {
+  chamberStats as chamberStatsAll,
+  periodMeta,
+  PERIODS,
+  rankMembers as rankAll,
+} from '../src/lib/politicians/tracker-model.js';
 import { buildFixtureTrades } from '../src/lib/politicians/tracker-fixture.js';
 
 const t = (over) => ({
@@ -216,4 +222,52 @@ test('mostHeldTickers counts members whose latest action leaves the position ope
     { ticker: 'NVDA', holders: 2, buys: 2 },
     { ticker: 'MSFT', holders: 1, buys: 1 },
   ]);
+});
+
+test('members with no trades in the period rank after every trader, unranked', () => {
+  const quiet = {
+    key: 'q',
+    name: 'Aaron Quiet',
+    chamber: 'House',
+    count: 0,
+    buys: 0,
+    sells: 0,
+    volume: 0,
+    lastTraded: null,
+  };
+  const busy = {
+    key: 'b',
+    name: 'Zed Busy',
+    chamber: 'House',
+    count: 3,
+    buys: 2,
+    sells: 1,
+    volume: 0,
+    lastTraded: '2026-09-01',
+  };
+  for (const sort of ['volume', 'trades', 'latest']) {
+    const r = rankAll([quiet, busy], sort);
+    assert.equal(r[0].key, 'b', sort);
+    assert.equal(r[0].rank, 1);
+    assert.equal(r[1].rank, null, 'no rank without a trade');
+  }
+});
+
+test('chamber stats count active members only', () => {
+  const s = chamberStatsAll([
+    { chamber: 'House', count: 4, buys: 3, sells: 1, volume: 10 },
+    { chamber: 'House', count: 0, buys: 0, sells: 0, volume: 0 },
+  ]);
+  assert.equal(s.House.members, 1);
+  assert.equal(s.House.perMember, 4);
+  assert.equal(s.Senate.members, 0);
+});
+
+test('periods: 1Y is the default and unknown values fall back to it', () => {
+  assert.deepEqual(
+    PERIODS.map((p) => p.value),
+    ['30d', '90d', '6m', '1y', '2y', 'all'],
+  );
+  assert.equal(periodMeta('nope').days, 365);
+  assert.equal(periodMeta('30d').days, 30);
 });

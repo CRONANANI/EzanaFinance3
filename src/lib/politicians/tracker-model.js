@@ -75,7 +75,10 @@ export function buildMembers(trades) {
 export function chamberStats(members) {
   const out = {};
   for (const ch of ['House', 'Senate']) {
-    const ms = members.filter((m) => m.chamber === ch);
+    /* Active members only: the ranking now also lists sitting members with
+       no disclosed trade in the window, and they must not dilute the
+       per-member figures or count as "active". */
+    const ms = members.filter((m) => m.chamber === ch && (m.count || 0) > 0);
     const trades = ms.reduce((s, m) => s + m.count, 0);
     out[ch] = {
       members: ms.length,
@@ -162,12 +165,15 @@ export const SORT_KEYS = ['volume', 'trades', 'latest'];
  */
 export function rankMembers(members, sortKey = 'volume') {
   const key = SORT_KEYS.includes(sortKey) ? sortKey : 'volume';
+  /* Members with a disclosed trade in the window always come first; the
+     sitting members with none follow alphabetically and carry no rank. */
+  const traded = (a, b) => Number((b.count || 0) > 0) - Number((a.count || 0) > 0);
   const order =
     key === 'trades'
-      ? [desc('count'), desc('volume'), byName]
+      ? [traded, desc('count'), desc('volume'), byName]
       : key === 'latest'
-        ? [descStr('lastTraded'), desc('volume'), byName]
-        : [desc('volume'), desc('count'), byName];
+        ? [traded, descStr('lastTraded'), desc('volume'), byName]
+        : [traded, desc('volume'), desc('count'), byName];
   const sorted = [...members].sort((a, b) => {
     for (const cmp of order) {
       const r = cmp(a, b);
@@ -178,7 +184,7 @@ export function rankMembers(members, sortKey = 'volume') {
   const first = sorted[0]?.volume || 0;
   return sorted.map((m, i) => ({
     ...m,
-    rank: i + 1,
+    rank: (m.count || 0) > 0 ? i + 1 : null,
     pctOfFirst: first > 0 ? Math.round(((m.volume || 0) / first) * 100) : null,
   }));
 }
@@ -263,6 +269,19 @@ export function mostHeldTickers(trades, n = 5) {
     .sort((a, b) => b.holders - a.holders || b.buys - a.buys || a.ticker.localeCompare(b.ticker))
     .slice(0, n);
 }
+
+/* ── Period filter. `days` is what /api/politicians/{trades,summary} take;
+      `months` is how many bars Trades by month shows. ─────────────────── */
+export const PERIODS = [
+  { value: '30d', label: '30D', days: 30, months: 2, heading: 'LAST 30 DAYS' },
+  { value: '90d', label: '90D', days: 90, months: 4, heading: 'LAST 90 DAYS' },
+  { value: '6m', label: '6M', days: 182, months: 7, heading: 'LAST 6 MONTHS' },
+  { value: '1y', label: '1Y', days: 365, months: 12, heading: 'TRAILING 12 MONTHS' },
+  { value: '2y', label: '2Y', days: 730, months: 24, heading: 'LAST 2 YEARS' },
+  { value: 'all', label: 'ALL', days: 36500, months: 24, heading: 'ALL DISCLOSURES' },
+];
+export const DEFAULT_PERIOD = '1y';
+export const periodMeta = (v) => PERIODS.find((p) => p.value === v) || PERIODS[3];
 
 /** `CA-12` for a House member with a district, else the state, else null. */
 export function seatLabel(m) {

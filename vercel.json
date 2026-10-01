@@ -126,6 +126,10 @@
       "schedule": "0 * * * *"
     },
     {
+      "path": "/api/cron/ingest-senate-ptrs?max=40",
+      "schedule": "20 * * * *"
+    },
+    {
       "path": "/api/cron/ingest-congress-trades",
       "schedule": "15 6 * * *"
     },

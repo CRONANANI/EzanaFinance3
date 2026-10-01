@@ -43,6 +43,12 @@ export function partyParam(v) {
   return s === 'D' || s === 'R' || s === 'I' ? s : null;
 }
 /** Search text, trimmed and stripped of PostgREST/LIKE metacharacters. */
+/** Trailing window in days from ?days=; WINDOW_DAYS when absent or invalid. */
+export function daysParam(v) {
+  const n = Math.round(Number(v));
+  return Number.isFinite(n) && n >= 7 && n <= 36500 ? n : WINDOW_DAYS;
+}
+
 export function queryParam(v) {
   const s = String(v || '')
     .replace(/[%_,()*\\]/g, ' ')
@@ -165,7 +171,7 @@ export async function readSummary({
   if (!client) return { error: 'not configured' };
   const f = { p_chamber: chamber, p_party: party, p_q: q };
   const [r, m, t, h] = await Promise.all([
-    client.rpc('politician_rankings', { window_days: windowDays, ...f, p_sort: sort, lim: 600 }),
+    client.rpc('politician_rankings', { window_days: windowDays, ...f, p_sort: sort, lim: 1000 }),
     client.rpc('congress_monthly_counts', { window_days: windowDays, ...f }),
     client.rpc('congress_top_tickers', { window_days: windowDays, lim: tickerLimit, ...f }),
     /* Every disclosure on file (window_days null), so older open positions
