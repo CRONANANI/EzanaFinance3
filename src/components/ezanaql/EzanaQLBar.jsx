@@ -17,6 +17,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import './ezanaql-bar.css';
 
 const MAX_EDITOR_LINES = 8;
+/* Phones get a taller editor: a query is several clauses long, and typing
+   into a three-line box under a keyboard is guesswork. Mirrors the 760px
+   breakpoint in ezanaql-bar.css. */
+const MOBILE_QUERY = '(max-width: 760px)';
+const MOBILE_EDITOR_LINES = 10;
 
 /* Every keyword the parser (src/lib/ezanaql/parser.js) knows. */
 const EQB_KW =
@@ -54,8 +59,18 @@ export default function EzanaQLBar({ datasetScope = null, seedQuery = '', onResu
   const [error, setError] = useState(null);
   const [note, setNote] = useState(null);
   const [result, setResult] = useState(null);
+  const [mobile, setMobile] = useState(false);
   const promptRef = useRef(null);
   const editorRef = useRef(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia?.(MOBILE_QUERY);
+    if (!mq) return undefined;
+    const sync = () => setMobile(mq.matches);
+    sync();
+    mq.addEventListener?.('change', sync);
+    return () => mq.removeEventListener?.('change', sync);
+  }, []);
 
   useEffect(() => {
     if (dirty) return;
@@ -63,7 +78,13 @@ export default function EzanaQLBar({ datasetScope = null, seedQuery = '', onResu
   }, [seedQuery, dirty]);
 
   useEffect(() => {
-    if (editing) editorRef.current?.focus();
+    if (!editing) return;
+    const el = editorRef.current;
+    if (!el) return;
+    el.focus();
+    /* On a phone the keyboard takes half the screen; keep the editor and its
+       Run button in view above it. */
+    el.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
   }, [editing]);
 
   const post = useCallback(async (path, body) => {
@@ -195,6 +216,7 @@ export default function EzanaQLBar({ datasetScope = null, seedQuery = '', onResu
           className="eqb-input"
           placeholder="Describe a report in plain English"
           aria-label="Describe a report in plain English"
+          enterKeyHint="go"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onFocus={() => setFocused(true)}
@@ -207,7 +229,13 @@ export default function EzanaQLBar({ datasetScope = null, seedQuery = '', onResu
           }}
         />
         <button type="button" className="eqb-go" onClick={generate} disabled={busy === 'gen'}>
-          {busy === 'gen' ? 'Generating' : 'Generate EzanaQL'}
+          {busy === 'gen' ? (
+            'Generating'
+          ) : (
+            <>
+              Generate<span className="eqb-go-long"> EzanaQL</span>
+            </>
+          )}
         </button>
         <span className="eqb-actions" role="group" aria-label="Query actions">
           <button
@@ -254,12 +282,20 @@ export default function EzanaQLBar({ datasetScope = null, seedQuery = '', onResu
       </div>
 
       {code.trim() ? (
-        <div className="eqb-code">
+        /* The query itself opens the editor: on a phone the pencil is a
+           small target, the query is the obvious one. */
+        <button
+          type="button"
+          className="eqb-code"
+          onClick={() => setEditing(true)}
+          aria-label="Edit this EzanaQL query"
+          aria-expanded={editing}
+        >
           <span className="eqb-code-tag">EzanaQL</span>
           <code className={`eqb-query${swapping ? ' is-swapping' : ''}`}>
             <QueryTokens code={code} />
           </code>
-        </div>
+        </button>
       ) : null}
 
       {/* Only while the prompt has focus: true everywhere, and noise until
@@ -269,19 +305,46 @@ export default function EzanaQLBar({ datasetScope = null, seedQuery = '', onResu
       ) : null}
 
       {editing ? (
-        <textarea
-          ref={editorRef}
-          className="eqb-editor"
-          rows={Math.min(MAX_EDITOR_LINES, Math.max(3, code.split('\n').length))}
-          value={code}
-          spellCheck={false}
-          aria-label="EzanaQL query"
-          onChange={(e) => {
-            setDirty(true);
-            setCode(e.target.value);
-          }}
-          onKeyDown={onEditorKey}
-        />
+        <div className="eqb-edit">
+          <textarea
+            ref={editorRef}
+            className="eqb-editor"
+            rows={
+              mobile
+                ? MOBILE_EDITOR_LINES
+                : Math.min(MAX_EDITOR_LINES, Math.max(3, code.split('\n').length))
+            }
+            value={code}
+            placeholder="FROM congress.trades WHERE ticker = 'NVDA' LIMIT 50"
+            spellCheck={false}
+            autoCapitalize="off"
+            autoCorrect="off"
+            autoComplete="off"
+            aria-label="EzanaQL query"
+            onChange={(e) => {
+              setDirty(true);
+              setCode(e.target.value);
+            }}
+            onKeyDown={onEditorKey}
+          />
+          {/* Run sits under the editor too: the pill's Run is off screen once
+              a phone keyboard is up. */}
+          <div className="eqb-edit-bar">
+            <span className="eqb-edit-hint">Ctrl or Cmd + Enter to run</span>
+            <button type="button" className="eqb-edit-close" onClick={() => setEditing(false)}>
+              Close
+            </button>
+            <button
+              type="button"
+              className="eqb-edit-run"
+              onClick={run}
+              disabled={busy === 'run' || !code.trim()}
+            >
+              <i className="bi bi-play-fill" aria-hidden="true" />
+              {busy === 'run' ? 'Running' : 'Run query'}
+            </button>
+          </div>
+        </div>
       ) : null}
 
       {error ? (

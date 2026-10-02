@@ -19,6 +19,14 @@
   width: min(var(--eqb-w), 100%);
   font-family: var(--font-sans);
 }
+/* Self-contained sizing: the bar must not depend on a page's reset for its
+   width + padding maths (the full-width editor and the phone layout). */
+.eqb,
+.eqb *,
+.eqb *::before,
+.eqb *::after {
+  box-sizing: border-box;
+}
 .eqb-pill {
   display: flex;
   align-items: center;
@@ -130,15 +138,26 @@
   cursor: default;
 }
 
-/* The example query: a quiet code chip under the pill. */
+/* The example query under the pill. Transparent: it reads as part of the
+   page, not as a panel. It is a button, because tapping it opens the editor. */
 .eqb-code {
   display: flex;
   align-items: baseline;
   gap: 10px;
+  width: 100%;
   margin-top: 8px;
   padding: 8px 14px;
+  border: 0;
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: text;
+}
+.eqb-code:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
 }
 .eqb-code-tag {
   flex-shrink: 0;
@@ -178,7 +197,8 @@
   width: 100%;
   max-width: var(--eqb-w);
   padding: 10px 12px;
-  background: var(--bg-primary);
+  /* Page ground, like the code line above it; the rule marks the field. */
+  background: transparent;
   border: 1px solid var(--eqb-rule);
   border-radius: var(--radius-md);
   font-family: var(--font-mono);
@@ -186,6 +206,51 @@
   line-height: 1.5;
   color: var(--eqb-ink);
   resize: vertical;
+  display: block;
+}
+.eqb-editor::placeholder {
+  color: var(--eqb-faint);
+}
+/* Under the editor: the hint, Close, and a Run that is always reachable. */
+.eqb-edit-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.eqb-edit-hint {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 10.5px;
+  color: var(--eqb-faint);
+}
+.eqb-edit-close,
+.eqb-edit-run {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-pill, 9999px);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.eqb-edit-close {
+  background: none;
+  color: var(--eqb-muted);
+}
+.eqb-edit-run {
+  background: var(--eqb-wash);
+  color: var(--eqb-pos);
+}
+.eqb-edit-run[disabled] {
+  opacity: 0.6;
+  cursor: default;
 }
 .eqb-editor:focus {
   outline: 2px solid var(--emerald);
@@ -260,18 +325,86 @@
   text-transform: uppercase;
   color: var(--eqb-muted);
 }
+/* Phones: the pill becomes two rows, so the prompt gets the full width
+   instead of the sliver left over by six buttons. Row 1 is the prompt; row 2
+   is Generate plus the four actions, each a 40px target. Inputs are 16px so
+   iOS does not zoom the page on focus. */
 @media (max-width: 760px) {
+  /* No gutter of its own: every page that hosts the bar already pads 16px,
+     and a second 16px left the phone prompt under 240px at 320 wide. */
   .eqb {
     width: 100%;
-    padding-inline: 16px;
   }
   .eqb-pill {
-    padding-left: 10px;
+    flex-wrap: wrap;
+    height: auto;
+    row-gap: 8px;
+    column-gap: 8px;
+    padding: 8px;
+    border-radius: var(--radius-lg);
   }
-  .eqb-mark span {
-    display: none;
+  .eqb-mark {
+    padding-left: 4px;
   }
+  .eqb-mark span,
+  .eqb-div,
+  .eqb-go-long,
   .eqb-act span {
     display: none;
+  }
+  .eqb-input {
+    flex: 1 1 calc(100% - 32px);
+    height: 40px;
+    font-size: 16px;
+  }
+  .eqb-go {
+    flex: 1 1 auto;
+    height: 40px;
+  }
+  .eqb-actions {
+    gap: 4px;
+    padding-left: 0;
+    border-left: 0;
+  }
+  .eqb-act {
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 15px;
+  }
+  .eqb-code {
+    padding-inline: 4px;
+  }
+  /* More of the query is readable before it truncates. */
+  .eqb-query {
+    -webkit-line-clamp: 4;
+  }
+  .eqb-editor {
+    min-height: 220px;
+    font-size: 16px;
+    resize: none;
+  }
+  .eqb-edit-hint {
+    display: none;
+  }
+  .eqb-edit-bar {
+    justify-content: flex-end;
+  }
+  .eqb-edit-close,
+  .eqb-edit-run {
+    height: 44px;
+  }
+  .eqb-edit-run {
+    flex: 1 1 auto;
+  }
+  .eqb-scroll {
+    max-height: 60vh;
+    -webkit-overflow-scrolling: touch;
+  }
+  .eqb-hint,
+  .eqb-msg,
+  .eqb-note {
+    padding-inline: 4px;
   }
 }
