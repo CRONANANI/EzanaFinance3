@@ -1,10 +1,11 @@
 // src/lib/ezana-echo-article-sovereign-wealth-league-table-2026.js
-// Ezana Echo DRAFT article: the twelve largest sovereign wealth funds, ranked.
-// status: 'draft' until Noah's editorial review clears the manifest below.
+// Ezana Echo article: the twelve largest sovereign wealth funds, ranked.
+// Published 2 Oct 2026 at Noah's direction with manifest items 12 to 20 still
+// marked [VERIFY]; they stay listed below until each is checked.
 // No chart colors are hardcoded; every figure reads --echo-chart-* tokens.
 //
 // ============================================================
-// FACT CHECK MANIFEST (status: draft, nothing publishes until cleared)
+// FACT CHECK MANIFEST
 // Verified against primary or near-primary sources on 2 Oct 2026:
 //  1. League-table AUM (NBIM $2.28T, SAFE IC $2.05T, CIC $1.57T, GIC $1.16T, ADIA $1.13T,
 //     KIA $1.0T, PIF $906B, QIA $580B, ICD $458B, TWF $443B, Temasek $401B, Mubadala $385B)
@@ -929,5 +930,5 @@ export const sovereignWealthLeagueTable2026 = {
   likes: 0,
   comments: 0,
   reads: 0,
-  status: 'draft',
+  status: 'published',
 };

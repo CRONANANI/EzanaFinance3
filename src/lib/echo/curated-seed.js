@@ -59,6 +59,7 @@ const SOURCE = [
   hantavirusArticle,
   semiconductorArticle,
   privateCreditMaturityWallArticle2026,
+  sovereignWealthLeagueTable2026,
   // Drafts (invisible until status flips to published + reseed):
   bitcoinInstitutionalHolders2026,
   stablecoinSettlementLayer2026,
@@ -70,7 +71,6 @@ const SOURCE = [
   tariffWinnersContractLosers2026,
   centralBankGoldCycle2026,
   datacenterPowerCrunch2026,
-  sovereignWealthLeagueTable2026,
 ];
 
 /**
