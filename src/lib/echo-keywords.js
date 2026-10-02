@@ -3175,6 +3175,71 @@ export const KEYWORDS = {
     courseId: 'stocks-advanced-7',
     courseTitle: 'Macroeconomics for Traders',
   },
+
+  /* ════════════════════════════════════════════════════════════════════════
+     Sovereign Wealth League Table article keywords
+     ════════════════════════════════════════════════════════════════════════ */
+
+  'sovereign-wealth-fund': {
+    id: 'sovereign-wealth-fund',
+    term: 'Sovereign Wealth Fund',
+    definition:
+      'A state-owned investment fund that invests national savings, such as commodity revenue, foreign-exchange reserves or stakes in state companies, across global markets over long horizons. Unlike a central bank, it is built to seek returns rather than to defend a currency.',
+    template: 'timeline',
+    templateData: {
+      title: 'How the largest sovereign funds arrived',
+      events: [
+        {
+          year: '1953',
+          label: 'Kuwait Investment Board',
+          detail: 'The first modern sovereign fund, today KIA at ~$1.0T',
+        },
+        {
+          year: '1974',
+          label: 'Temasek founded',
+          detail: 'Singapore state companies under one owner',
+        },
+        {
+          year: '1990',
+          label: "Norway's petroleum fund legislated",
+          detail: 'First transfer in 1996',
+        },
+        {
+          year: '2007',
+          label: 'China Investment Corporation',
+          detail: 'Reserves diversified into higher-return assets',
+        },
+        {
+          year: '2026',
+          label: 'Norway leads at $2.28T',
+          detail: 'Top 12 funds hold ~$12.4T (Global SWF)',
+        },
+      ],
+    },
+    realWorld:
+      'Sovereign fund sizes are often estimates: five of the twelve largest funds publish no total of their own, so league tables mix audited figures with third-party models.',
+    courseId: 'stocks-advanced-7',
+    courseTitle: 'Macroeconomics for Traders',
+  },
+
+  'fiscal-rule': {
+    id: 'fiscal-rule',
+    term: 'Fiscal Rule (Norway)',
+    definition:
+      "Norway's budget rule lets the government run a structural non-oil deficit roughly equal to the expected real return on its sovereign fund, estimated at 3% of the fund's value. Oil revenue flows into the fund; only the expected return flows out.",
+    template: 'formula',
+    templateData: {
+      formula: 'Spending ceiling ≈ 3% × Fund value',
+      example: {
+        title: 'Norway, 30 June 2026',
+        substitution: 'Fund value: NOK 22,683bn · Rate: 3% · Ceiling: ~NOK 680bn a year',
+      },
+    },
+    realWorld:
+      'The rule is why the fund keeps compounding: it doubled from NOK 10,000bn in 2019 to more than NOK 20,000bn in 2025 while still financing the national budget.',
+    courseId: 'stocks-advanced-7',
+    courseTitle: 'Macroeconomics for Traders',
+  },
 };
 
 export function getKeywordById(id) {
