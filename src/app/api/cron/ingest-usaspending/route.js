@@ -121,14 +121,24 @@ export async function GET(request) {
       const { data: latest } = await admin
         .from(TABLE)
         .select('action_date')
+        .lte('action_date', end_date)
         .order('action_date', { ascending: false })
         .limit(1)
         .maybeSingle();
       cursor = latest?.action_date || currentFederalFiscalYear().start_date;
     }
+    /* The stored date is the award's Start Date, which can sit years ahead of
+       when it was awarded. A cursor taken from it once reached 2027-12-03, so
+       every run asked USAspending for [2027-12-03, today], a backwards window,
+       got nothing, and reported "done" with 0 ingested from mid-September.
+       The window now always ends today and starts no later than 7 days back. */
+    const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+    if (cursor > weekAgo) cursor = weekAgo;
 
     let ingested = 0;
     let skipped = 0;
+    /* The checkpoint is the day this run covered up to (today), never a
+       Start Date read off a row. */
     let maxSeen = cursor;
     const errors = [];
 
@@ -153,7 +163,6 @@ export async function GET(request) {
         }
         const d = parseIsoYmd(r['Start Date']);
         const action_date = `${d.y}-${pad2(d.mo)}-${pad2(d.d)}`;
-        if (action_date > maxSeen) maxSeen = action_date;
         const sym = tickerForRecipient(recipient);
         rows.push({
           generated_award_id: gid,
@@ -175,7 +184,9 @@ export async function GET(request) {
       for (let i = 0; i < rows.length; i += UPSERT_BATCH) {
         const batch = rows.slice(i, i + UPSERT_BATCH);
         // eslint-disable-next-line no-await-in-loop
-        const { error } = await admin.from(TABLE).upsert(batch, { onConflict: 'generated_award_id' });
+        const { error } = await admin
+          .from(TABLE)
+          .upsert(batch, { onConflict: 'generated_award_id' });
         if (error) errors.push(`upsert p${page}: ${error.message}`);
         else ingested += batch.length;
       }
@@ -186,19 +197,29 @@ export async function GET(request) {
       await sleep(POLITE_DELAY_MS);
     }
 
-    // Advance the checkpoint to the newest action_date seen (never backwards).
+    // Advance the checkpoint to today unless a page or upsert failed; a failed
+    // run keeps its start so the next run retries the same window. Hitting the
+    // API's 10k cap is not a failure to retry (a retry would hit it again).
+    if (!errors.some((e) => !e.startsWith('hit 10k'))) maxSeen = end_date;
     await admin.from(PROGRESS).upsert(
       {
         job: JOB,
         cursor_date: maxSeen,
         status: errors.length ? 'error' : 'done',
-        detail: { last_run_ingested: ingested, last_run_skipped: skipped, window: [cursor, end_date] },
+        detail: {
+          last_run_ingested: ingested,
+          last_run_skipped: skipped,
+          window: [cursor, end_date],
+        },
         updated_at: syncedAt,
       },
       { onConflict: 'job' },
     );
 
-    return NextResponse.json({ ingested, skipped, cursor_from: cursor, cursor_to: maxSeen, errors }, { status: 200 });
+    return NextResponse.json(
+      { ingested, skipped, cursor_from: cursor, cursor_to: maxSeen, errors },
+      { status: 200 },
+    );
   } catch (err) {
     console.error('[cron/ingest-usaspending]', err);
     return NextResponse.json(

@@ -164,6 +164,14 @@
     {
       "path": "/api/cron/index-echo-articles?limit=500",
       "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/ingest-fec?cycle=2026&limit=40",
+      "schedule": "35 */6 * * *"
+    },
+    {
+      "path": "/api/cron/ingest-congress",
+      "schedule": "50 */6 * * *"
     }
   ]
 }

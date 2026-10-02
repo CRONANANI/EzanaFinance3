@@ -43,12 +43,29 @@ export async function GET(request) {
 
   try {
     const admin = getAdminClient();
-    const { data, error } = await admin
+    /* Paged. One select is capped server-side at 5,000 rows, which silently
+       cut 2026 (16,345 filings) to 5,000: the cards showed $90M of $633M in
+       spend and about a third of registrants and clients. Count first, then
+       fetch every page concurrently, the getContractRollups pattern. */
+    const PAGE = 1000;
+    const { count, error: countErr } = await admin
       .from('lobbying_filings')
-      .select('registrant_name,client_name,amount,synced_at,filing_period,dt_posted,lobbyists')
-      .eq('filing_year', year)
-      .limit(8000);
-    if (error || !Array.isArray(data) || !data.length) return NextResponse.json(empty);
+      .select('uuid', { count: 'exact', head: true })
+      .eq('filing_year', year);
+    if (countErr || !count) return NextResponse.json(empty);
+    const pages = await Promise.all(
+      Array.from({ length: Math.ceil(Math.min(count, 100000) / PAGE) }, (_, i) =>
+        admin
+          .from('lobbying_filings')
+          .select('registrant_name,client_name,amount,synced_at,filing_period,dt_posted,lobbyists')
+          .eq('filing_year', year)
+          .order('uuid', { ascending: true })
+          .range(i * PAGE, i * PAGE + PAGE - 1),
+      ),
+    );
+    if (pages.some((pg) => pg.error)) return NextResponse.json(empty);
+    const data = pages.flatMap((pg) => pg.data || []);
+    if (!data.length) return NextResponse.json(empty);
 
     const rangeCutoff = period === 'range' ? Date.now() - days * 86400000 : null;
     const quarter = ['q1', 'q2', 'q3', 'q4'].includes(period) ? period : null;
