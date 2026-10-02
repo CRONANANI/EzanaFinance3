@@ -386,6 +386,8 @@ export async function runSenateEfdIngest({
       state: f.state,
       ticker: t.ticker,
       asset_name: t.asset_name,
+      asset_type: t.asset_type,
+      owner: t.owner,
       tx_type: t.tx_type,
       tx_date: t.tx_date,
       notification_date: f.filing_date,

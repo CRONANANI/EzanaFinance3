@@ -240,6 +240,17 @@ export function sourceHash(r) {
     r.amount_max ?? '',
     (r.owner || '').toLowerCase(),
   ];
+  /* Untickered rows (municipal bonds, funds, private stock) differ only by
+     asset, so the asset joins the key for them. Appended only when there is
+     no ticker, so every tickered row keeps the hash it already has. */
+  if (!r.ticker) {
+    parts.push(
+      String(r.asset_name || '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase(),
+    );
+  }
   return createHash('sha256').update(parts.join('|')).digest('hex');
 }
 
@@ -290,7 +301,9 @@ export function candidateFromSenate(st) {
       type: normalizeType(st.tx_type),
       amount_min: numOrNull(st.amount_low),
       amount_max: numOrNull(st.amount_high),
-      owner: null,
+      /* Self / Spouse / Joint / Child. Part of source_hash, so a senator's
+         and a spouse's identical same-day trades stay two rows. */
+      owner: st.owner ? String(st.owner).trim() : null,
       source: 'senate_efd',
       source_url: filing.report_url || null,
     },
@@ -546,7 +559,7 @@ export async function runCongressIngest({
     const r = await pageAll(
       db,
       'senate_trades',
-      'id, first_name, last_name, state, ticker, asset_name, tx_type, tx_date, notification_date, amount_low, amount_high, senate_disclosure_filings(report_url, filing_date, state)',
+      'id, first_name, last_name, state, ticker, asset_name, owner, tx_type, tx_date, notification_date, amount_low, amount_high, senate_disclosure_filings(report_url, filing_date, state)',
       'tx_date',
       since,
       log,
