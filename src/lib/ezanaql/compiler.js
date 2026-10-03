@@ -27,6 +27,22 @@ export function resolveRelDate(node, now) {
       const d = new Date(nowD.getTime() - node.n * 86400000);
       return { kind: 'date', value: d.toISOString().slice(0, 10) };
     }
+    case 'last_weeks': {
+      const d = new Date(nowD.getTime() - node.n * 7 * 86400000);
+      return { kind: 'date', value: d.toISOString().slice(0, 10) };
+    }
+    /* Calendar arithmetic, not 30- or 365-day approximations: LAST 5 YEARS on
+       2026-10-03 is 2021-10-03. Clamped by Date itself at month ends. */
+    case 'last_months': {
+      const d = new Date(nowD.getTime());
+      d.setUTCMonth(d.getUTCMonth() - node.n);
+      return { kind: 'date', value: d.toISOString().slice(0, 10) };
+    }
+    case 'last_years': {
+      const d = new Date(nowD.getTime());
+      d.setUTCFullYear(d.getUTCFullYear() - node.n);
+      return { kind: 'date', value: d.toISOString().slice(0, 10) };
+    }
     case 'last_quarter': {
       const d = new Date(nowD.getTime() - 91 * 86400000);
       return { kind: 'date', value: d.toISOString().slice(0, 10) };

@@ -142,6 +142,9 @@ export default function EzanaQLBar({ datasetScope = null, seedQuery = '', onResu
         setError(data.error || 'That query did not run.');
         return;
       }
+      /* Engine notes (a row cap hit, a JOIN that multiplied a sum) are part
+         of the answer: shown with it, never swallowed. */
+      if (Array.isArray(data.notes) && data.notes.length) setNote(data.notes.join(' '));
       if (typeof onResult === 'function') onResult(data.result);
       else setResult(data.result);
     } catch {
@@ -315,7 +318,7 @@ export default function EzanaQLBar({ datasetScope = null, seedQuery = '', onResu
                 : Math.min(MAX_EDITOR_LINES, Math.max(3, code.split('\n').length))
             }
             value={code}
-            placeholder="FROM congress.trades WHERE ticker = 'NVDA' LIMIT 50"
+            placeholder='FROM capitol.congress_trades WHERE ticker = "NVDA" LIMIT 50'
             spellCheck={false}
             autoCapitalize="off"
             autoCorrect="off"

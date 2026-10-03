@@ -25,11 +25,18 @@ export { CATALOG, CATALOG_GAPS, CATALOG_VERSION, catalogSchemaForPrompt } from '
 export async function runEzanaQL({ query, admin, userId = null, format: fmtOverride }) {
   try {
     const ast = parse(query);
-    const { dataset } = validate(ast);
+    const { dataset, joined } = validate(ast);
     const fmt = fmtOverride || ast.as || 'table';
-    const result = await execute({ ast, dataset, admin, userId });
+    const result = await execute({ ast, dataset, joined, admin, userId });
     const formatted = format(result, fmt);
-    return { ok: true, format: fmt, dataset: dataset.name, result: formatted };
+    return {
+      ok: true,
+      format: fmt,
+      dataset: dataset.name,
+      joined: joined ? joined.name : null,
+      notes: result.notes || [],
+      result: formatted,
+    };
   } catch (err) {
     if (err instanceof EzanaQLError || err?.userFacing) {
       return { ok: false, error: err.message };

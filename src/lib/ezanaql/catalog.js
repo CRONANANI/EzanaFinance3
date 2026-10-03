@@ -22,7 +22,7 @@
  * @typedef {'string'|'money'|'int'|'float'|'date'|'bool'} FieldType
  */
 
-export const CATALOG_VERSION = '1.1.0';
+export const CATALOG_VERSION = '1.2.0';
 
 /** Fields present in the design/spec but NOT backed by the real ingest yet. */
 export const CATALOG_GAPS = {
@@ -84,41 +84,44 @@ export const CATALOG = {
       ticker: { type: 'string', nullable: true },
       fiscal_year: { type: 'int', derived: true },
     },
-    joinableWith: [],
+    joinableWith: ['capitol.congress_trades'],
+    joinKeys: ['ticker'],
   },
 
   // ── Declared for the roadmap, but their real EzanaQL query path is not wired
   // yet. Marked unavailable so the executor returns an honest error instead of
   // a fabricated source. Adding one = bind `table`/`columnMap` (or an adapter)
   // and flip `available: true`. ────────────────────────────────────────────
-  /* congressional_trades is EMPTY: 0 rows, verified against the live database.
-     The binding is complete and correct, and the blocker is that nothing has
-     ingested this table yet. Left unavailable ON PURPOSE. A bound but empty
-     dataset answers "no member of Congress has traded anything", which is a
-     false finding rather than an honest refusal, and the builder's dataset
-     popover would show it as live. Flipping it is this one line. */
+  /* Bound to the congress_trades_enriched view (migration
+     20261003130000_ezanaql_joins.sql): every STOCK Act trade the tracker
+     shows, House PTRs and Senate eFD alike, with the member's name, party and
+     state joined in from congress_members. The old binding pointed at the
+     empty Quiver table and was held unavailable for that reason. */
   'capitol.congress_trades': {
     name: 'capitol.congress_trades',
     label: 'Congressional Trades',
-    source: 'quiver',
+    source: 'house-clerk + senate-efd',
     access: 'public',
     rlsColumn: null,
-    available: false,
+    available: true,
     hardLimit: 5000,
     defaultLimit: 100,
-    table: 'congressional_trades',
+    table: 'congress_trades_enriched',
     columnMap: {
-      politician: 'politician_name',
+      politician: 'member_name',
+      bioguide_id: 'bioguide_id',
       chamber: 'chamber',
       party: 'party',
       state: 'state',
-      ticker: 'symbol',
-      transaction_type: 'transaction_type',
+      ticker: 'ticker',
+      asset_name: 'asset_name',
+      transaction_type: 'type',
       transaction_date: 'transaction_date',
       disclosure_date: 'disclosure_date',
+      owner: 'owner',
       amount_low: 'amount_min',
       amount_high: 'amount_max',
-      amount_est: 'amount_midpoint',
+      amount_est: 'amount_mid',
       disclosure_lag_days: null,
     },
     derived: {
@@ -134,20 +137,30 @@ export const CATALOG = {
     ],
     fields: {
       politician: { type: 'string' },
-      chamber: { type: 'string' },
-      party: { type: 'string', nullable: true },
+      bioguide_id: { type: 'string' },
+      chamber: { type: 'string', enum: ['house', 'senate'] },
+      party: { type: 'string', enum: ['D', 'R', 'I'], nullable: true },
       state: { type: 'string', nullable: true },
       ticker: { type: 'string', nullable: true },
-      transaction_type: { type: 'string' },
+      asset_name: { type: 'string', nullable: true },
+      transaction_type: {
+        type: 'string',
+        enum: ['purchase', 'sale', 'sale_partial', 'exchange'],
+      },
       transaction_date: { type: 'date' },
       disclosure_date: { type: 'date', nullable: true },
+      owner: { type: 'string', nullable: true },
       amount_low: { type: 'money', nullable: true },
       amount_high: { type: 'money', nullable: true },
       amount_est: { type: 'money', nullable: true, estimate: true },
       disclosure_lag_days: { type: 'int', derived: true, nullable: true },
     },
-    joinableWith: [],
+    /* Joins are on `ticker` only (see joinKeys). Both sides must list each
+       other, so a join is a deliberate, declared pairing. */
+    joinableWith: ['gov.contracts'],
+    joinKeys: ['ticker'],
   },
+
   'capitol.lobbying': {
     name: 'capitol.lobbying',
     label: 'Corporate Lobbying',
@@ -487,6 +500,12 @@ export function getDataset(name) {
   return CATALOG[name] || null;
 }
 
+/** The part after the namespace: gov.contracts → contracts. It prefixes the
+ *  joined dataset's fields in a JOIN (congress_trades.politician). */
+export function shortName(datasetName) {
+  return String(datasetName).split('.').pop();
+}
+
 /** Compact schema handed to the NL→EzanaQL model (names, fields, types, enums). */
 export function catalogSchemaForPrompt() {
   const live = Object.values(CATALOG)
@@ -495,7 +514,12 @@ export function catalogSchemaForPrompt() {
       const fields = Object.entries(d.fields)
         .map(([f, meta]) => `${f}:${meta.type}${meta.enum ? ` [${meta.enum.join('|')}]` : ''}`)
         .join(', ');
-      return `${d.name} (${d.label}) fields: ${fields}`;
+      const joins = (d.joinableWith || [])
+        .filter((j) => CATALOG[j]?.available)
+        .map((j) => `${j} ON ${(d.joinKeys || []).join('|')}`);
+      return `${d.name} (${d.label}) fields: ${fields}${
+        joins.length ? `; joinable with ${joins.join(', ')}` : ''
+      }`;
     })
     .join('\n');
   /* Named, not hidden. The model needs to know these exist so it does not

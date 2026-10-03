@@ -48,6 +48,13 @@ SELECT question, category, probability, volume, ends_on
 ORDER BY volume DESC
 LIMIT 20;`;
 
+/** Every STOCK Act trade, newest first: the Politician Tracker's own data. */
+export const SEED_CONGRESS = `FROM capitol.congress_trades
+WHERE transaction_date >= LAST 90 DAYS
+SELECT politician, party, ticker, transaction_type, transaction_date, amount_low, amount_high
+ORDER BY transaction_date DESC
+LIMIT 50;`;
+
 /** The House filing index. Its trades table is not populated yet, so the
  *  disclosures bar seeds from filings, which do return rows. */
 export const SEED_HOUSE_FILINGS = `FROM house.filings
@@ -64,6 +71,7 @@ export const SEEDS_BY_DATASET = {
   'gov.contracts': SEED_QUERY,
   'capitol.lobbying': SEED_LOBBYING,
   'prediction.markets': SEED_PREDICTION,
+  'capitol.congress_trades': SEED_CONGRESS,
   'house.filings': SEED_HOUSE_FILINGS,
 };
 

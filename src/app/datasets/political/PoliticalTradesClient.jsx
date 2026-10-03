@@ -281,7 +281,10 @@ export default function PoliticalTradesClient({ devSampleTrades = null }) {
       </header>
 
       {/* The one shared query bar, same slot and size as every dataset page. */}
-      <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
+      <EzanaQLBar
+        datasetScope="capitol.congress_trades"
+        seedQuery={seedForDataset('capitol.congress_trades')}
+      />
 
       <div className="ptx-body">
         <aside className="ptx-rail">

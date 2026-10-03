@@ -557,7 +557,10 @@ export default function PoliticianTracker({
             {/* Full width of the card column: pill, code line and editor
                 share the toolbar's left and right edges. */}
             <div className="ptk-ql">
-              <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
+              <EzanaQLBar
+                datasetScope="capitol.congress_trades"
+                seedQuery={seedForDataset('capitol.congress_trades')}
+              />
             </div>
 
             {/* ── toolbar ── */}

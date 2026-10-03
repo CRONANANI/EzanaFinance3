@@ -6,7 +6,7 @@
  * user-facing errors — never stack traces or DB internals.
  */
 import { EzanaQLError } from './parser';
-import { getDataset, CATALOG } from './catalog';
+import { getDataset, CATALOG, shortName } from './catalog';
 
 export const AGGREGATIONS = new Set([
   'SUM',
@@ -66,30 +66,101 @@ function suggest(name, candidates) {
   return bestD <= Math.max(2, Math.floor(name.length / 3)) ? best : null;
 }
 
-/**
- * Validate an AST against the catalog. Returns { dataset } (the resolved catalog
- * entry) on success; throws EzanaQLError otherwise.
- */
-export function validate(ast) {
-  const dataset = getDataset(ast.from);
+function resolveDataset(name, clause) {
+  const dataset = getDataset(name);
   if (!dataset) {
-    const s = suggest(ast.from, Object.keys(CATALOG));
-    throw new EzanaQLError(`Unknown dataset "${ast.from}".${s ? ` Did you mean "${s}"?` : ''}`);
+    const s = suggest(name, Object.keys(CATALOG));
+    throw new EzanaQLError(
+      `Unknown dataset "${name}"${clause ? ` in ${clause}` : ''}.${s ? ` Did you mean "${s}"?` : ''}`,
+    );
   }
   if (!dataset.available) {
     throw new EzanaQLError(
       `Dataset "${dataset.name}" (${dataset.label}) is in the catalog but is not yet queryable. See the Datasets list for what is live today.`,
     );
   }
+  return dataset;
+}
+
+/**
+ * Validate an AST against the catalog. Returns { dataset, joined } (the
+ * resolved catalog entries; `joined` is null without a JOIN) on success;
+ * throws EzanaQLError otherwise.
+ *
+ * Field names in a JOIN: the FROM dataset's fields are bare; the joined
+ * dataset's are shortname.field (congress_trades.politician). A bare name the
+ * FROM dataset lacks resolves to the joined dataset when it has it, so the
+ * prefix is only required to break a tie. The executor keys rows the same
+ * way, so a resolved name here is a row key there. SEMI JOIN adds no fields.
+ */
+export function validate(ast) {
+  const dataset = resolveDataset(ast.from);
+
+  // JOIN — only if both datasets declare each other joinable, on a declared key.
+  let joined = null;
+  let joinPrefix = null;
+  if (ast.join) {
+    joined = resolveDataset(ast.join.dataset, 'JOIN');
+    if (joined.name === dataset.name)
+      throw new EzanaQLError(`${dataset.name} cannot be joined to itself.`);
+    if (
+      !(dataset.joinableWith || []).includes(joined.name) ||
+      !(joined.joinableWith || []).includes(dataset.name)
+    ) {
+      throw new EzanaQLError(
+        `Datasets ${dataset.name} and ${joined.name} are not declared joinable. Joins are only allowed between catalog-declared joinable datasets.`,
+      );
+    }
+    const key = ast.join.on;
+    const keys = (dataset.joinKeys || []).filter((k) => (joined.joinKeys || []).includes(k));
+    if (!keys.includes(key)) {
+      throw new EzanaQLError(
+        `${dataset.name} and ${joined.name} join ON ${keys.map((k) => `"${k}"`).join(' or ')}, not "${key}".`,
+      );
+    }
+    if (!dataset.fields[key] || !joined.fields[key]) {
+      throw new EzanaQLError(`Join key "${key}" must be a field of both datasets.`);
+    }
+    joinPrefix = shortName(joined.name);
+  }
 
   const validFields = new Set(Object.keys(dataset.fields));
+  const joinedFields = joined && !ast.join.semi ? new Set(Object.keys(joined.fields)) : new Set();
   const aliases = new Set();
 
-  const checkField = (name) => {
-    if (validFields.has(name) || aliases.has(name)) return;
-    const s = suggest(name, [...validFields]);
+  /* Returns the resolved row key for a field reference, rewriting the AST
+     node in place so the executor sees one spelling. */
+  const checkField = (name, node) => {
+    if (validFields.has(name) || aliases.has(name)) return name;
+    if (joinPrefix && name.startsWith(`${joinPrefix}.`)) {
+      const bare = name.slice(joinPrefix.length + 1);
+      if (joinedFields.has(bare)) return name;
+      if (joined && ast.join.semi && joined.fields[bare]) {
+        throw new EzanaQLError(
+          `"${name}" is not available: SEMI JOIN only filters ${dataset.name} by ${joined.name}, it adds no fields. Use JOIN to read them.`,
+        );
+      }
+      const s = suggest(bare, [...joinedFields]);
+      throw new EzanaQLError(
+        `Unknown field "${bare}" in ${joined.name}.${s ? ` Did you mean "${joinPrefix}.${s}"?` : ''}`,
+      );
+    }
+    if (joinedFields.has(name)) {
+      const resolved = `${joinPrefix}.${name}`;
+      if (node) node.name = resolved;
+      return resolved;
+    }
+    if (joined && ast.join.semi && joined.fields[name]) {
+      throw new EzanaQLError(
+        `"${name}" is not available: SEMI JOIN only filters ${dataset.name} by ${joined.name}, it adds no fields. Use JOIN to read them.`,
+      );
+    }
+    const candidates = [...validFields, ...[...joinedFields].map((f) => `${joinPrefix}.${f}`)];
+    const s = suggest(name, candidates);
     throw new EzanaQLError(
-      `Unknown field "${name}" in ${dataset.name}.${s ? ` Did you mean "${s}"?` : ''}`,
+      `Unknown field "${name}" in ${dataset.name}${joined ? ` (or ${joined.name})` : ''}.${
+        s ? ` Did you mean "${s}"?` : ''
+      }`,
     );
   };
 
@@ -97,7 +168,7 @@ export function validate(ast) {
     if (!v || typeof v !== 'object') return;
     switch (v.type) {
       case 'field':
-        checkField(v.name);
+        checkField(v.name, v);
         return;
       case 'func':
         validateFunction(v);
@@ -147,17 +218,6 @@ export function validate(ast) {
     }
   };
 
-  // JOIN — only if both datasets declare each other joinable.
-  if (ast.join) {
-    const other = getDataset(ast.join.dataset);
-    if (!other) throw new EzanaQLError(`Unknown dataset "${ast.join.dataset}" in JOIN.`);
-    if (!dataset.joinableWith.includes(other.name) || !other.joinableWith.includes(dataset.name)) {
-      throw new EzanaQLError(
-        `Datasets ${dataset.name} and ${other.name} are not declared joinable. Joins are only allowed between catalog-declared joinable datasets.`,
-      );
-    }
-  }
-
   // WHERE (RLS is injected later by the compiler and cannot be removed here).
   if (ast.where) walkPredicate(ast.where);
 
@@ -169,9 +229,9 @@ export function validate(ast) {
     }
   }
 
-  if (ast.groupBy) ast.groupBy.forEach(checkField);
+  if (ast.groupBy) ast.groupBy = ast.groupBy.map((f) => checkField(f));
   if (ast.having) walkPredicate(ast.having);
-  if (ast.orderBy) ast.orderBy.forEach((s) => checkField(s.field));
+  if (ast.orderBy) ast.orderBy.forEach((s) => (s.field = checkField(s.field)));
 
   // LIMIT within hard cap.
   if (ast.limit != null) {
@@ -184,7 +244,7 @@ export function validate(ast) {
   }
   if (ast.offset != null && ast.offset < 0) throw new EzanaQLError('OFFSET cannot be negative.');
 
-  return { dataset };
+  return { dataset, joined };
 }
 
 function validateFunction(fn) {

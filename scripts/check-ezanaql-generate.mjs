@@ -143,7 +143,8 @@ test('the prompt schema lists live datasets and names the rest as not queryable'
   for (const d of dark) {
     assert.ok(text.includes(d.name), `${d.name} should be named as not queryable`);
   }
-  assert.equal(CATALOG_VERSION, '1.1.0');
+  assert.equal(CATALOG_VERSION, '1.2.0');
+  assert.match(text, /capitol\.congress_trades .*joinable with gov\.contracts ON ticker/);
 });
 
 /* Every page's query bar opens on one of these. A seed that does not validate
@@ -161,4 +162,266 @@ test('no seed targets an unavailable dataset', () => {
   }
   // The fallback is the contracts seed, which must itself be live.
   assert.doesNotThrow(() => validate(parse(seedForDataset('does.not.exist'))));
+});
+
+// ── joins and relative dates (catalog 1.2) ────────────────────────────────
+
+const { resolveRelDate } = await import('../src/lib/ezanaql/compiler.js');
+
+test('SEMI JOIN and JOIN parse, validate and resolve joined fields', () => {
+  const semi = parse(
+    'FROM gov.contracts SEMI JOIN capitol.congress_trades ON ticker SELECT recipient, SUM(award_value) AS t GROUP BY recipient;',
+  );
+  const r = validate(semi);
+  assert.equal(r.joined.name, 'capitol.congress_trades');
+  assert.equal(semi.join.semi, true);
+
+  const inner = parse(
+    'FROM gov.contracts JOIN capitol.congress_trades ON ticker SELECT recipient, politician, congress_trades.party ORDER BY politician;',
+  );
+  validate(inner);
+  /* A bare joined-only field is rewritten to its prefixed form, so the
+     executor and the validator agree on one spelling. */
+  assert.equal(inner.select[1].expr.name, 'congress_trades.politician');
+  assert.equal(inner.select[2].expr.name, 'congress_trades.party');
+  assert.equal(inner.orderBy[0].field, 'congress_trades.politician');
+});
+
+test('join rejections name the rule', () => {
+  const bad = [
+    [
+      'FROM gov.contracts SEMI JOIN capitol.congress_trades ON ticker SELECT politician;',
+      /SEMI JOIN only filters/,
+    ],
+    ['FROM gov.contracts JOIN capitol.lobbying ON ticker;', /not declared joinable/],
+    ['FROM gov.contracts JOIN capitol.congress_trades ON recipient;', /join ON "ticker"/],
+    ['FROM gov.contracts JOIN gov.contracts ON ticker;', /cannot be joined to itself/],
+    ['FROM gov.contracts JOIN house.trades ON ticker;', /not yet queryable/],
+  ];
+  for (const [q, re] of bad) assert.throws(() => validate(parse(q)), re, q);
+});
+
+test('LAST N DAYS|WEEKS|MONTHS|YEARS resolve by calendar', () => {
+  const now = new Date('2026-10-03T12:00:00Z');
+  const at = (q) =>
+    resolveRelDate(parse(`FROM gov.contracts WHERE action_date >= ${q};`).where.right, now).value;
+  assert.equal(at('LAST 30 DAYS'), '2026-09-03');
+  assert.equal(at('LAST 2 WEEKS'), '2026-09-19');
+  assert.equal(at('LAST 6 MONTHS'), '2026-04-03');
+  assert.equal(at('LAST 5 YEARS'), '2021-10-03');
+  assert.equal(at('LAST 1 YEAR'), '2025-10-03');
+  assert.throws(
+    () => parse('FROM gov.contracts WHERE action_date >= LAST 5;'),
+    /DAYS, WEEKS, MONTHS or YEARS/,
+  );
+  assert.throws(
+    () => parse('FROM gov.contracts WHERE action_date >= LAST 0 DAYS;'),
+    /positive whole number/,
+  );
+});
+
+// ── executor join semantics, over a tiny in-memory stand-in for PostgREST ──
+
+const { execute } = await import('../src/lib/ezanaql/executor.js');
+
+function fakeAdmin(tables, { rpc = true } = {}) {
+  const calls = [];
+  const from = (table) => {
+    const preds = [];
+    let lim = Infinity;
+    const q = {
+      select: () => q,
+      limit: (n) => ((lim = n), q),
+      eq: (c, v) => (preds.push((r) => r[c] === v), q),
+      neq: (c, v) => (preds.push((r) => r[c] !== v), q),
+      gt: (c, v) => (preds.push((r) => r[c] > v), q),
+      gte: (c, v) => (preds.push((r) => r[c] >= v), q),
+      lt: (c, v) => (preds.push((r) => r[c] < v), q),
+      lte: (c, v) => (preds.push((r) => r[c] <= v), q),
+      in: (c, vs) => (preds.push((r) => vs.includes(r[c])), q),
+      not: (c, op, v) => (op === 'is' && v === null && preds.push((r) => r[c] != null), q),
+      then: (ok) => {
+        calls.push(table);
+        ok({
+          data: (tables[table] || []).filter((r) => preds.every((p) => p(r))).slice(0, lim),
+          error: null,
+        });
+      },
+    };
+    return q;
+  };
+  return {
+    calls,
+    from,
+    rpc: async (name, args) => {
+      calls.push(`rpc:${name}`);
+      if (!rpc) return { data: null, error: { message: 'missing' } };
+      const have = new Set((tables[args.p_table] || []).map((r) => r[args.p_column]));
+      return { data: args.p_keys.filter((k) => have.has(k)), error: null };
+    },
+  };
+}
+
+const TABLES = {
+  usaspending_contract_awards: [
+    {
+      recipient_name: 'LOCKHEED',
+      awarding_agency: 'DoD',
+      award_amount: 100,
+      action_date: '2026-08-01',
+      ticker: 'LMT',
+    },
+    {
+      recipient_name: 'LOCKHEED',
+      awarding_agency: 'DoD',
+      award_amount: 50,
+      action_date: '2026-08-02',
+      ticker: 'LMT',
+    },
+    {
+      recipient_name: 'NOBODY TRADES INC',
+      awarding_agency: 'DoD',
+      award_amount: 999,
+      action_date: '2026-08-02',
+      ticker: 'ZZZ',
+    },
+    {
+      recipient_name: 'PRIVATE CO',
+      awarding_agency: 'DoD',
+      award_amount: 999,
+      action_date: '2026-08-02',
+      ticker: null,
+    },
+  ],
+  congress_trades_enriched: [
+    {
+      member_name: 'A',
+      bioguide_id: 'A1',
+      chamber: 'house',
+      party: 'D',
+      state: 'CA',
+      ticker: 'LMT',
+      asset_name: 'Lockheed',
+      type: 'purchase',
+      transaction_date: '2026-07-01',
+      disclosure_date: '2026-07-20',
+      owner: null,
+      amount_min: 1001,
+      amount_max: 15000,
+      amount_mid: 8000,
+    },
+    {
+      member_name: 'B',
+      bioguide_id: 'B1',
+      chamber: 'senate',
+      party: 'R',
+      state: 'TX',
+      ticker: 'LMT',
+      asset_name: 'Lockheed',
+      type: 'sale',
+      transaction_date: '2026-07-02',
+      disclosure_date: '2026-07-21',
+      owner: null,
+      amount_min: 1001,
+      amount_max: 15000,
+      amount_mid: 8000,
+    },
+    {
+      member_name: 'A',
+      bioguide_id: 'A1',
+      chamber: 'house',
+      party: 'D',
+      state: 'CA',
+      ticker: 'LMT',
+      asset_name: 'Lockheed',
+      type: 'purchase',
+      transaction_date: '2026-07-03',
+      disclosure_date: '2026-07-22',
+      owner: null,
+      amount_min: 1001,
+      amount_max: 15000,
+      amount_mid: 8000,
+    },
+    {
+      member_name: 'C',
+      bioguide_id: 'C1',
+      chamber: 'house',
+      party: 'D',
+      state: 'NY',
+      ticker: 'NVDA',
+      asset_name: 'NVIDIA',
+      type: 'purchase',
+      transaction_date: '2026-07-03',
+      disclosure_date: '2026-07-22',
+      owner: null,
+      amount_min: 1001,
+      amount_max: 15000,
+      amount_mid: 8000,
+    },
+  ],
+};
+
+async function run(q, admin) {
+  const ast = parse(q);
+  const { dataset, joined } = validate(ast);
+  return execute({
+    ast,
+    dataset,
+    joined,
+    admin,
+    userId: null,
+    now: Date.parse('2026-10-03T00:00:00Z'),
+  });
+}
+
+test('SEMI JOIN filters the FROM rows and never multiplies a sum', async () => {
+  for (const rpc of [true, false]) {
+    const admin = fakeAdmin(TABLES, { rpc });
+    const out = await run(
+      'FROM gov.contracts SEMI JOIN capitol.congress_trades ON ticker SELECT recipient, SUM(award_value) AS t GROUP BY recipient ORDER BY t DESC;',
+      admin,
+    );
+    assert.deepEqual(out.rows, [{ recipient: 'LOCKHEED', t: 150 }], `rpc=${rpc}`);
+    assert.deepEqual(out.notes, []);
+    assert.ok(admin.calls.includes('rpc:ezanaql_matching_keys'));
+    if (!rpc) assert.ok(admin.calls.filter((c) => c === 'congress_trades_enriched').length >= 1);
+  }
+});
+
+test('JOIN yields one row per pair, exposes prefixed fields, and flags a fanned-out SUM', async () => {
+  const admin = fakeAdmin(TABLES);
+  const pairs = await run(
+    'FROM gov.contracts JOIN capitol.congress_trades ON ticker SELECT recipient, politician, congress_trades.party, transaction_date ORDER BY transaction_date;',
+    admin,
+  );
+  assert.equal(pairs.rowCount, 6); // 2 awards × 3 LMT trades
+  assert.deepEqual(Object.keys(pairs.rows[0]), [
+    'recipient',
+    'congress_trades.politician',
+    'congress_trades.party',
+    'congress_trades.transaction_date',
+  ]);
+
+  const members = await run(
+    'FROM gov.contracts JOIN capitol.congress_trades ON ticker WHERE party = "D" SELECT recipient, COUNT(DISTINCT politician) AS members GROUP BY recipient;',
+    admin,
+  );
+  assert.deepEqual(members.rows, [{ recipient: 'LOCKHEED', members: 1 }]);
+
+  const fanned = await run(
+    'FROM gov.contracts JOIN capitol.congress_trades ON ticker SELECT recipient, SUM(award_value) AS t GROUP BY recipient;',
+    admin,
+  );
+  assert.equal(fanned.rows[0].t, 450); // 150 × 3 trades, the trap
+  assert.match(fanned.notes[0], /award_value is summed once per matching congress_trades row/);
+});
+
+test('joined-side filters are pushed to the joined fetch, not the FROM fetch', async () => {
+  const admin = fakeAdmin(TABLES);
+  const out = await run(
+    'FROM capitol.congress_trades JOIN gov.contracts ON ticker WHERE transaction_type = "purchase" AND contracts.award_value >= 100 SELECT politician, contracts.award_value;',
+    admin,
+  );
+  assert.equal(out.rowCount, 2); // A's two purchases × the one ≥100 award
+  assert.ok(out.rows.every((r) => r.politician === 'A' && r['contracts.award_value'] === 100));
 });

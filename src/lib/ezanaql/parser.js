@@ -3,8 +3,14 @@
  * tokens exist at all). See EzanaQL_Language_Spec.md §2–§6.
  *
  * Shape:
- *   FROM dataset [JOIN dataset ON key] [WHERE cond] [SELECT proj]
+ *   FROM dataset [[SEMI] JOIN dataset ON key] [WHERE cond] [SELECT proj]
  *   [GROUP BY fields] [HAVING cond] [ORDER BY sort] [LIMIT n [OFFSET m]] [AS fmt];
+ *
+ * JOIN is an inner join on one shared field (one output row per matching
+ * pair; the joined dataset's fields are addressed as shortname.field, e.g.
+ * congress_trades.politician). SEMI JOIN keeps the rows of the FROM dataset
+ * whose key appears in the other and adds no fields, so sums over the FROM
+ * dataset are not multiplied by the number of matches.
  */
 
 export class EzanaQLError extends Error {
@@ -55,6 +61,7 @@ const KEYWORDS = new Set([
   'END',
   'LAST',
   'YTD',
+  'SEMI',
 ]);
 
 // Multipliers for money shorthand suffixes.
@@ -199,12 +206,14 @@ class Parser {
     this.eatKw('FROM');
     q.from = this.parseDatasetRef();
 
-    if (this.isKw('JOIN')) {
+    if (this.isKw('JOIN') || this.isKw('SEMI')) {
+      const semi = this.isKw('SEMI');
       this.next();
+      if (semi) this.eatKw('JOIN');
       const joinDataset = this.parseDatasetRef();
       this.eatKw('ON');
       const key = this.parseIdent();
-      q.join = { dataset: joinDataset, on: key };
+      q.join = { dataset: joinDataset, on: key, semi };
     }
 
     if (this.isKw('WHERE')) {
@@ -459,7 +468,8 @@ class Parser {
       return { type: 'lit', value: null, valueType: 'null' };
     }
 
-    // relative date keywords: LAST 30 DAYS | LAST QUARTER | YTD | FY2026
+    // relative date keywords:
+    //   LAST <n> DAYS | WEEKS | MONTHS | YEARS, LAST QUARTER, YTD, FY2026
     if (this.isKw('YTD')) {
       this.next();
       return { type: 'reldate', kind: 'ytd' };
@@ -469,15 +479,23 @@ class Parser {
       const isWord = (w) => this.peek().type === 'ident' && this.peek().value.toUpperCase() === w;
       if (this.peek().type === 'number') {
         const nTok = this.next();
-        if (!isWord('DAYS')) throw new EzanaQLError('Expected "DAYS" after LAST <n>.');
+        if (!Number.isInteger(nTok.value) || nTok.value <= 0)
+          throw new EzanaQLError('LAST <n> needs a positive whole number.');
+        /* Singular accepted too (LAST 1 YEAR). */
+        const unit = ['DAYS', 'WEEKS', 'MONTHS', 'YEARS'].find(
+          (u) => isWord(u) || isWord(u.slice(0, -1)),
+        );
+        if (!unit) throw new EzanaQLError('Expected DAYS, WEEKS, MONTHS or YEARS after LAST <n>.');
         this.next();
-        return { type: 'reldate', kind: 'last_days', n: nTok.value };
+        return { type: 'reldate', kind: `last_${unit.toLowerCase()}`, n: nTok.value };
       }
       if (isWord('QUARTER')) {
         this.next();
         return { type: 'reldate', kind: 'last_quarter' };
       }
-      throw new EzanaQLError('Expected "N DAYS" or "QUARTER" after LAST.');
+      throw new EzanaQLError(
+        'Expected "N DAYS", "N WEEKS", "N MONTHS", "N YEARS" or "QUARTER" after LAST.',
+      );
     }
 
     if (t.type === 'ident') {
