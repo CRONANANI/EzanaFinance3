@@ -9,13 +9,20 @@ export function getServerSupabase() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !key) {
-    throw new Error(
-      'Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY'
-    );
+    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
   }
 
   _serverClient = createClient(url, key, {
     auth: { autoRefreshToken: false, persistSession: false },
+    /* Never through the Next/Vercel Data Cache. supabase-js reads are GET
+       requests, so without this a select could be answered from a cached
+       response that survives deploys: /api/cron/parse-house-ptrs re-read the
+       same 40 already-parsed filings on every run while 5,611 waited. Routes
+       that want caching set it on their own response (Cache-Control /
+       s-maxage), not on the database read. */
+    global: {
+      fetch: (input, init = {}) => fetch(input, { ...init, cache: 'no-store' }),
+    },
   });
 
   return _serverClient;
