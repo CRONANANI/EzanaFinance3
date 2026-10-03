@@ -213,6 +213,9 @@ export async function readSummary({
       ? null
       : (h.data || []).map((x) => ({
           ticker: x.ticker,
+          /* Null until 20261003100000 is applied; the chart falls back to
+             the ticker. */
+          company: x.company || null,
           holders: Number(x.holders) || 0,
           buys: Number(x.buys) || 0,
           lastBuy: x.last_buy || null,

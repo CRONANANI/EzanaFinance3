@@ -93,11 +93,13 @@
 }
 
 /* ── EzanaQL ──────────────────────────────────────────────────────────── */
-/* The shared bar centres itself (margin: 14px auto 0). On this page it sits
-   in .ptk-body and starts at the same left edge as the search field, so the
-   pill, its code line and the editor all share the toolbar's left edge.
-   Page-scoped: the bar's own stylesheet is untouched. */
+/* The shared bar centres itself at a fixed 820px. Here it fills the card
+   column instead, so the pill, its code line and the editor are exactly the
+   width of the four cards. Page-scoped: the bar's own stylesheet is
+   untouched. */
 .ptk-ql .eqb {
+  --eqb-w: 100%;
+  width: 100%;
   margin: 0;
 }
 
@@ -107,6 +109,47 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
+}
+/* The search field takes the slack, so the toolbar's right edge (the end of
+   the period control) lands on the cards' right edge. */
+.ptk-toolbar .ptk-search {
+  flex: 1 1 140px;
+  width: auto;
+  min-width: 140px;
+}
+/* Below about 1280 the four controls no longer fit beside the search on one
+   line. The search takes the first line at full width; the controls take the
+   second, spread edge to edge, so both lines still end on the cards' right
+   edge. */
+@media (min-width: 641px) and (max-width: 1279px) {
+  .ptk-toolbar .ptk-search {
+    flex-basis: 100%;
+  }
+  /* The period control is pushed to the right edge, on the second line or,
+     about 1000 to 1100, on a third. Chamber and party stay together left. */
+  .ptk-toolbar .ptk-period {
+    margin-left: auto;
+  }
+}
+/* The card column is narrow here (the rail is still beside it), so the
+   EzanaQL actions go icon-only to leave the prompt room. Their aria-labels
+   are unchanged. */
+@media (min-width: 1001px) and (max-width: 1200px) {
+  .ptk-ql .eqb-act span {
+    display: none;
+  }
+}
+/* The period label and its control wrap together, never apart. */
+.ptk-period {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+@media (max-width: 1280px) {
+  /* 30D … ALL names itself; the control keeps its aria-label. */
+  .ptk-period .ptk-rankby-label {
+    display: none;
+  }
 }
 .ptk-toolbar-spacer {
   flex: 1 1 auto;
@@ -353,17 +396,151 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 380px;
   grid-template-areas:
-    'head .'
+    'controls held'
     'cards rail';
   column-gap: 28px;
   row-gap: 12px;
   align-items: start;
 }
+/* EzanaQL, the toolbar, any status note and the gallery heading, stacked in
+   the card column so each is exactly the cards' width. */
+.ptk-controls {
+  grid-area: controls;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
 .ptk-gallery-head {
-  grid-area: head;
   display: flex;
   align-items: baseline;
   gap: 12px;
+}
+
+/* ── most held companies (beside the controls, above Rank by) ─────────── */
+/* Stretches to the controls' height so the rail below starts level with the
+   first row of cards; the plot takes whatever height is left. Shares the
+   rail's left rule so the right column reads as one. */
+.ptk-held {
+  grid-area: held;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 0 0 14px 28px;
+  border-left: 1px solid var(--ptk-hair);
+  border-bottom: 1px solid var(--ptk-hair);
+}
+.ptk-held-title {
+  margin: 0;
+  font-weight: 400;
+}
+.ptk-held-plot {
+  position: relative;
+  flex: 1 1 auto;
+  /* Small enough that the controls, not this chart, set the row height:
+     the plot then stretches to fill whatever the controls leave. */
+  min-height: 96px;
+  display: flex;
+}
+.ptk-held-cols {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 2px;
+  align-items: stretch;
+}
+.ptk-held-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  border-radius: var(--radius-sm);
+  cursor: default;
+  outline: none;
+}
+.ptk-held-col:focus-visible {
+  box-shadow: 0 0 0 2px var(--ptk-focus);
+}
+.ptk-held-n {
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ptk-mute);
+  line-height: 1;
+}
+/* The slot is the full plot height; the bar inside grows from its floor. */
+.ptk-held-slot {
+  flex: 1 1 auto;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  border-bottom: 1px solid var(--ptk-hair-strong);
+}
+.ptk-held-slot i {
+  display: block;
+  width: min(22px, 70%);
+  border-radius: 4px 4px 0 0;
+  background: color-mix(in srgb, var(--ptk-ink) 72%, transparent);
+  transition: background 0.15s ease;
+}
+.ptk-held-col.is-active .ptk-held-slot i {
+  /* Full ink, not the House green: one series, no chamber meaning. */
+  background: var(--ptk-ink);
+}
+.ptk-held-col.is-active .ptk-held-n {
+  color: var(--ptk-ink);
+}
+.ptk-held-tk {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ptk-ink);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+.ptk-held-tip {
+  position: absolute;
+  top: 0;
+  transform: translateX(var(--ptk-tip-shift, -50%));
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--ptk-hair-strong);
+  border-radius: var(--radius-md);
+  background: var(--dsc-bg);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--dsc-ink) 10%, transparent);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.ptk-held-tip-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ptk-ink);
+}
+.ptk-held-tip-row {
+  font-size: 10.5px;
+  color: var(--ptk-mute);
+}
+.ptk-held-cols--skel {
+  align-items: end;
+}
+.ptk-held-skel {
+  display: block;
+  align-self: end;
+  width: min(22px, 70%);
+  justify-self: center;
+  border-radius: 4px 4px 0 0;
+  background: var(--ptk-skel-base);
 }
 .ptk-gallery {
   grid-area: cards;
@@ -934,10 +1111,18 @@
   .ptk-grid {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
-      'head'
+      'controls'
       'cards'
+      'held'
       'rail';
     row-gap: 24px;
+  }
+  .ptk-held {
+    min-height: 220px;
+    padding: 24px 0 0;
+    border-left: 0;
+    border-bottom: 0;
+    border-top: 1px solid var(--ptk-hair);
   }
   .ptk-rankby {
     grid-column: 1 / -1;
@@ -1039,6 +1224,7 @@
   /* The strip scrolls sideways; the controls keep their natural width
      instead of shrinking until their labels clip. */
   .ptk-toolbar > .ptk-seg,
+  .ptk-toolbar > .ptk-period,
   .ptk-toolbar > .ptk-rankby-label {
     flex: 0 0 auto;
   }

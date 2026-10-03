@@ -219,8 +219,8 @@ test('mostHeldTickers counts members whose latest action leaves the position ope
     row('7', 'A', 'MSFT', 'purchase', '2026-02-01'),
   ]);
   assert.deepEqual(held, [
-    { ticker: 'NVDA', holders: 2, buys: 2 },
-    { ticker: 'MSFT', holders: 1, buys: 1 },
+    { ticker: 'NVDA', holders: 2, buys: 2, company: null },
+    { ticker: 'MSFT', holders: 1, buys: 1, company: null },
   ]);
 });
 
@@ -270,4 +270,40 @@ test('periods: 1Y is the default and unknown values fall back to it', () => {
   );
   assert.equal(periodMeta('nope').days, 365);
   assert.equal(periodMeta('30d').days, 30);
+});
+
+test('companyLabel: disclosure asset names to short company names', async () => {
+  const { companyLabel } = await import('../src/lib/politicians/tracker-model.js');
+  assert.equal(companyLabel('Amazon.com, Inc.'), 'Amazon.com');
+  assert.equal(companyLabel('NVIDIA Corporation - Common Stock'), 'NVIDIA');
+  assert.equal(companyLabel('Alphabet Inc. - Class C Capital Stock'), 'Alphabet');
+  assert.equal(companyLabel('Berkshire Hathaway Inc. New'), 'Berkshire Hathaway');
+  assert.equal(companyLabel('JP Morgan Chase & Co.'), 'JP Morgan Chase');
+  assert.equal(companyLabel('Johnson & Johnson'), 'Johnson & Johnson');
+  assert.equal(companyLabel('The Home Depot, Inc.'), 'Home Depot');
+  assert.equal(companyLabel(null), '');
+});
+
+test('mostHeldTickers: share classes of one company are one holding', async () => {
+  const { mostHeldTickers } = await import('../src/lib/politicians/tracker-model.js');
+  const t = (bioguideId, ticker, tradedAt) => ({
+    bioguideId,
+    ticker,
+    side: 'purchase',
+    sideRaw: 'Purchase',
+    tradedAt,
+    assetName: 'Alphabet Inc. - Class A Common Stock',
+  });
+  const out = mostHeldTickers(
+    [
+      t('A000001', 'GOOG', '2025-01-02'),
+      t('A000001', 'GOOGL', '2025-02-02'),
+      t('B000002', 'GOOG', '2025-03-02'),
+    ],
+    10,
+  );
+  assert.equal(out.length, 1);
+  assert.equal(out[0].ticker, 'GOOGL');
+  assert.equal(out[0].holders, 2);
+  assert.equal(out[0].company, 'Alphabet Inc. - Class A Common Stock');
 });

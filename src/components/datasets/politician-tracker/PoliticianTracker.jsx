@@ -45,6 +45,7 @@ import { buildFixtureTrades } from '@/lib/politicians/tracker-fixture';
 import { POSITION_BASIS_NOTE } from '@/lib/politicians/position-status';
 import Headshot, { AVATAR_SIZE, ChamberChip, PartyTag } from './Headshot';
 import MemberPanel from './MemberPanel';
+import MostHeldChart from './MostHeldChart';
 import Segmented from './Segmented';
 import '@/components/datasets/disclosures/disclosures.css';
 import './politician-tracker.css';
@@ -395,7 +396,7 @@ export default function PoliticianTracker({
      still open (inferred, see POSITION_BASIS_NOTE). Server-wide when the
      RPC is live, else inferred from the loaded trades. */
   const held = useMemo(
-    () => (server?.held ? server.held.slice(0, 5) : mostHeldTickers(filteredTrades, 5)),
+    () => (server?.held ? server.held.slice(0, 10) : mostHeldTickers(filteredTrades, 10)),
     [server, filteredTrades],
   );
   const windowInfo = useMemo(
@@ -546,109 +547,126 @@ export default function PoliticianTracker({
       </header>
 
       <div className="ptk-body">
-        {/* EzanaQL sits inside the body so its left edge (pill, code line and
-            editor) lines up with the search field below it. */}
-        <div className="ptk-ql">
-          <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
-        </div>
-
-        {/* ── toolbar ── */}
-        <div className="ptk-toolbar" role="search" aria-label="Filter and rank politicians">
-          <label className="ptk-search">
-            <i className="bi bi-search" aria-hidden="true" />
-            <span className="ptk-sr">Search a member</span>
-            <input
-              ref={searchRef}
-              className="dsc-input"
-              placeholder="Search a member"
-              value={queryInput}
-              onChange={(e) => {
-                setQueryInput(e.target.value);
-                setLastFilter('search');
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape' && queryInput) {
-                  e.preventDefault();
-                  setQueryInput('');
-                }
-              }}
-            />
-            {queryInput ? (
-              <button
-                type="button"
-                className="ptk-search-x"
-                aria-label="Clear search"
-                onClick={() => {
-                  setQueryInput('');
-                  searchRef.current?.focus();
-                }}
-              >
-                <i className="bi bi-x" aria-hidden="true" />
-              </button>
-            ) : null}
-          </label>
-          <Segmented
-            label="Chamber"
-            value={chamber}
-            options={CHAMBERS}
-            onChange={pick(setChamber, 'chamber')}
-          />
-          <Segmented
-            label="Party"
-            value={party}
-            options={PARTIES}
-            onChange={pick(setParty, 'party')}
-            mono
-          />
-          <span className="ptk-rankby-label dsc-mn">PERIOD</span>
-          <Segmented
-            label="Period"
-            value={period}
-            options={PERIODS}
-            onChange={(v) => setPeriod(v)}
-            mono
-          />
-        </div>
-
-        {/* ── unavailable ── */}
-        {status === 'empty' ? (
-          <div className="ptk-unavailable" role="status">
-            <p className="dsc-note">Disclosures are temporarily unavailable. Try again shortly.</p>
-            <button
-              type="button"
-              className="dsc-btn dsc-btn--ghost"
-              onClick={() => setReload((n) => n + 1)}
-            >
-              Retry
-            </button>
-          </div>
-        ) : null}
-
-        {/* ── stale: the route served its last good snapshot ── */}
-        {status === 'ready' && staleAt ? (
-          <div className="ptk-stale" role="status">
-            <p className="ptk-stale-cap">Last updated {formatUpdated(staleAt)}</p>
-            <button
-              type="button"
-              className="dsc-btn dsc-btn--ghost"
-              onClick={() => setReload((n) => n + 1)}
-            >
-              Retry
-            </button>
-          </div>
-        ) : null}
-
-        {/* ── gallery + rail ── */}
-        {/* Two columns, two rows: the gallery heading alone in row 1, then
-            the cards and the rail side by side in row 2, so the rail (Rank
-            by first) starts level with the top row of cards. */}
+        {/* ── controls, most held, gallery + rail ── */}
+        {/* Two columns. Left: EzanaQL, the toolbar and the gallery heading
+            stacked in one cell, so all three are exactly the width of the
+            four cards beneath them. Right: Most held companies beside that
+            stack, then the rail (Rank by first) beside the cards. */}
         <div className="ptk-grid">
-          <div className="ptk-gallery-head">
-            <h2 className="ptk-h2" id="ptk-gallery-title">
-              Top eight by {sortMeta.heading}
-            </h2>
-            <span className="ptk-cap">ring colour is chamber, letter tag is party</span>
+          <div className="ptk-controls">
+            {/* Full width of the card column: pill, code line and editor
+                share the toolbar's left and right edges. */}
+            <div className="ptk-ql">
+              <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
+            </div>
+
+            {/* ── toolbar ── */}
+            <div className="ptk-toolbar" role="search" aria-label="Filter and rank politicians">
+              <label className="ptk-search">
+                <i className="bi bi-search" aria-hidden="true" />
+                <span className="ptk-sr">Search a member</span>
+                <input
+                  ref={searchRef}
+                  className="dsc-input"
+                  placeholder="Search a member"
+                  value={queryInput}
+                  onChange={(e) => {
+                    setQueryInput(e.target.value);
+                    setLastFilter('search');
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape' && queryInput) {
+                      e.preventDefault();
+                      setQueryInput('');
+                    }
+                  }}
+                />
+                {queryInput ? (
+                  <button
+                    type="button"
+                    className="ptk-search-x"
+                    aria-label="Clear search"
+                    onClick={() => {
+                      setQueryInput('');
+                      searchRef.current?.focus();
+                    }}
+                  >
+                    <i className="bi bi-x" aria-hidden="true" />
+                  </button>
+                ) : null}
+              </label>
+              <Segmented
+                label="Chamber"
+                value={chamber}
+                options={CHAMBERS}
+                onChange={pick(setChamber, 'chamber')}
+              />
+              <Segmented
+                label="Party"
+                value={party}
+                options={PARTIES}
+                onChange={pick(setParty, 'party')}
+                mono
+              />
+              <span className="ptk-period">
+                <span className="ptk-rankby-label dsc-mn">PERIOD</span>
+                <Segmented
+                  label="Period"
+                  value={period}
+                  options={PERIODS}
+                  onChange={(v) => setPeriod(v)}
+                  mono
+                />
+              </span>
+            </div>
+
+            {/* ── unavailable ── */}
+            {status === 'empty' ? (
+              <div className="ptk-unavailable" role="status">
+                <p className="dsc-note">
+                  Disclosures are temporarily unavailable. Try again shortly.
+                </p>
+                <button
+                  type="button"
+                  className="dsc-btn dsc-btn--ghost"
+                  onClick={() => setReload((n) => n + 1)}
+                >
+                  Retry
+                </button>
+              </div>
+            ) : null}
+
+            {/* ── stale: the route served its last good snapshot ── */}
+            {status === 'ready' && staleAt ? (
+              <div className="ptk-stale" role="status">
+                <p className="ptk-stale-cap">Last updated {formatUpdated(staleAt)}</p>
+                <button
+                  type="button"
+                  className="dsc-btn dsc-btn--ghost"
+                  onClick={() => setReload((n) => n + 1)}
+                >
+                  Retry
+                </button>
+              </div>
+            ) : null}
+            <div className="ptk-gallery-head">
+              <h2 className="ptk-h2" id="ptk-gallery-title">
+                Top eight by {sortMeta.heading}
+              </h2>
+              <span className="ptk-cap">ring colour is chamber, letter tag is party</span>
+            </div>
           </div>
+
+          <section className="ptk-held" aria-labelledby="ptk-held-title">
+            <div className="ptk-rail-block-head">
+              <h2 className="ptk-eyebrow dsc-mn ptk-held-title" id="ptk-held-title">
+                MOST HELD COMPANIES
+              </h2>
+              <span className="ptk-cap">top 10 · members holding</span>
+            </div>
+            <MostHeldChart items={held} loading={status === 'loading' && !server?.held} />
+            <p className="ptk-note">{POSITION_BASIS_NOTE}</p>
+          </section>
 
           <section className="ptk-gallery" aria-labelledby="ptk-gallery-title">
             {!rankingReady ? (
@@ -831,38 +849,6 @@ export default function PoliticianTracker({
                   ))}
                 </tbody>
               </table>
-            </div>
-
-            <div className="ptk-rail-block">
-              <div className="ptk-rail-block-head">
-                <span className="ptk-eyebrow dsc-mn">MOST HELD TICKERS</span>
-                <span className="ptk-cap">members holding</span>
-              </div>
-              {status === 'loading' && !server?.held ? (
-                Array.from({ length: 5 }, (_, i) => (
-                  <Skel key={i} className="ptk-skel--line ptk-skel--row" />
-                ))
-              ) : held.length ? (
-                <ul className="ptk-tickers">
-                  {held.map((t) => (
-                    <li key={t.ticker} className="ptk-ticker-row">
-                      <span className="dsc-mn ptk-ticker-sym">{t.ticker}</span>
-                      <span className="ptk-track" aria-hidden="true">
-                        <i style={{ width: `${(t.holders / held[0].holders) * 100}%` }} />
-                      </span>
-                      <span
-                        className="dsc-mn ptk-ticker-n"
-                        aria-label={`${t.holders} member${t.holders === 1 ? '' : 's'} holding`}
-                      >
-                        {t.holders}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="dsc-note">{NONE}</p>
-              )}
-              <p className="ptk-note">{POSITION_BASIS_NOTE}</p>
             </div>
           </aside>
         </div>

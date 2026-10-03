@@ -247,22 +247,69 @@ export function topTickers(trades, n = 5) {
  * says so (POSITION_BASIS_NOTE). Local fallback for the server's
  * congress_most_held_tickers RPC, same shape: { ticker, holders, buys }.
  */
+/* Share classes of one company count as one holding: a member with GOOG
+   and GOOGL holds Alphabet once. Mirrors the CASE in the
+   congress_most_held_tickers RPC. */
+export const SHARE_CLASS = {
+  GOOG: 'GOOGL',
+  'BRK.A': 'BRK.B',
+  FOX: 'FOXA',
+  NWS: 'NWSA',
+  UA: 'UAA',
+};
+export const companyTicker = (t) => {
+  const u = String(t || '').toUpperCase();
+  return SHARE_CLASS[u] || u;
+};
+
+/**
+ * A disclosure's asset name as a short company name:
+ * "Amazon.com, Inc." -> "Amazon.com", "NVIDIA Corporation - Common Stock" ->
+ * "NVIDIA", "Berkshire Hathaway Inc. New" -> "Berkshire Hathaway".
+ */
+export function companyLabel(name) {
+  let s = String(name || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!s) return '';
+  s = s.split(/\s+-\s+/)[0];
+  s = s.replace(
+    /\b(Common Stock|Capital Stock|Ordinary Shares?|American Depositary Shares?.*|ADRs?|Class [A-C]\b.*)$/i,
+    '',
+  );
+  s = s.replace(/\s+New$/i, '');
+  for (let i = 0; i < 2; i += 1) {
+    s = s
+      .replace(
+        /[,\s]+(Inc|Incorporated|Corporation|Corp|Company|Co|plc|Ltd|Limited|N\.?V|S\.?A|AG|SE|L\.?P)\.?$/i,
+        '',
+      )
+      .trim();
+  }
+  return s
+    .replace(/^The\s+/i, '')
+    .replace(/[,\s&]+$/, '')
+    .trim();
+}
+
 export function mostHeldTickers(trades, n = 5) {
   const groups = new Map();
   for (const t of trades) {
     if (!t.ticker) continue;
+    const ticker = companyTicker(t.ticker);
     const who = t.bioguideId || `${t.chamber}:${norm(t.name)}`;
-    const k = `${who}|${t.ticker}`;
-    if (!groups.has(k)) groups.set(k, { ticker: t.ticker, rows: [] });
+    const k = `${who}|${ticker}`;
+    if (!groups.has(k)) groups.set(k, { ticker, rows: [] });
     groups.get(k).rows.push(t);
   }
   const byTicker = new Map();
   for (const { ticker, rows } of groups.values()) {
     const status = inferPositionStatus(rows);
     if (status !== 'likely-holds' && status !== 'reduced') continue;
-    const cur = byTicker.get(ticker) || { ticker, holders: 0, buys: 0 };
+    const cur = byTicker.get(ticker) || { ticker, holders: 0, buys: 0, company: null };
     cur.holders += 1;
     cur.buys += rows.filter((r) => r.side === 'purchase').length;
+    if (!cur.company) cur.company = rows.find((r) => r.assetName)?.assetName || null;
     byTicker.set(ticker, cur);
   }
   return [...byTicker.values()]
