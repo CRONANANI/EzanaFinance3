@@ -1250,3 +1250,85 @@
     background: var(--ptk-skel-base);
   }
 }
+
+/* ── member panel: estimated portfolio (PortfolioCharts) ───────────────── */
+/* Ranked bar lists, one ink: label, bar, share and estimated dollars on each
+   row, so nothing depends on hovering. */
+.ptk-pf-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.ptk-pf-row {
+  display: grid;
+  grid-template-columns: minmax(0, 11rem) minmax(0, 1fr) 78px;
+  align-items: center;
+  gap: 10px;
+}
+.ptk-pf-name {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+.ptk-pf-tag {
+  flex-shrink: 0;
+  min-width: 3.4em;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ptk-ink);
+}
+.ptk-pf-label {
+  min-width: 0;
+  font-size: 12px;
+  color: var(--ptk-mute);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ptk-pf-track {
+  display: block;
+  height: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--ptk-track);
+  overflow: hidden;
+}
+.ptk-pf-track i {
+  display: block;
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  background: color-mix(in srgb, var(--ptk-ink) 72%, transparent);
+}
+.ptk-pf-val {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 6px;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ptk-ink);
+  white-space: nowrap;
+}
+.ptk-pf-usd {
+  font-size: 10.5px;
+  color: var(--ptk-faint);
+}
+.ptk-pf .ptk-note {
+  margin-top: 8px;
+}
+.ptk-asset-cell {
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  color: var(--ptk-mute);
+}
+@media (max-width: 420px) {
+  .ptk-pf-row {
+    grid-template-columns: minmax(0, 8rem) minmax(0, 1fr) 64px;
+  }
+  .ptk-pf-usd {
+    display: none;
+  }
+}

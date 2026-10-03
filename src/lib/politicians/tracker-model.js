@@ -277,7 +277,7 @@ export function companyLabel(name) {
     /\b(Common Stock|Capital Stock|Ordinary Shares?|American Depositary Shares?.*|ADRs?|Class [A-C]\b.*)$/i,
     '',
   );
-  s = s.replace(/\s+New$/i, '');
+  s = s.replace(/\s+(New|Units?)$/i, '');
   for (let i = 0; i < 2; i += 1) {
     s = s
       .replace(

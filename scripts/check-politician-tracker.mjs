@@ -281,6 +281,7 @@ test('companyLabel: disclosure asset names to short company names', async () => 
   assert.equal(companyLabel('JP Morgan Chase & Co.'), 'JP Morgan Chase');
   assert.equal(companyLabel('Johnson & Johnson'), 'Johnson & Johnson');
   assert.equal(companyLabel('The Home Depot, Inc.'), 'Home Depot');
+  assert.equal(companyLabel('AllianceBernstein Holding l.P. units'), 'AllianceBernstein Holding');
   assert.equal(companyLabel(null), '');
 });
 

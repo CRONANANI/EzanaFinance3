@@ -1,8 +1,9 @@
 'use client';
 
 /**
- * One politician's panel: trade activity, the members they trade most like,
- * and the top federal contractors among the tickers they trade. A right side
+ * One politician's panel: their estimated open portfolio (top holdings and
+ * sector breakdown, PortfolioCharts), trade activity, the members they trade
+ * most like, and the top federal contractors among the tickers they trade. A right side
  * panel on desktop, full width on a phone (politician-tracker.css).
  *
  * P3 additions: chamber ring and party tag in the identity block, a
@@ -21,8 +22,18 @@ import {
   usdShort,
 } from '@/lib/politicians/tracker-model';
 import Headshot, { AVATAR_SIZE, ChamberChip, PartyTag } from './Headshot';
+import PortfolioCharts from './PortfolioCharts';
 
 const TRADES_DEFAULT = 10;
+
+/* A row with no ticker (a bond, a Treasury, a private holding) shows the
+   start of its asset name instead of a dot. */
+const shortAsset = (name) => {
+  const s = String(name || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return s.length > 22 ? `${s.slice(0, 21)}…` : s;
+};
 
 const NONE = '·';
 const SIDE = {
@@ -55,6 +66,29 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
 
   /* A different member is a different panel: collapse the expander. */
   useEffect(() => setAllTrades(false), [member.key]);
+
+  /* Estimated open portfolio, over every disclosure on file (not only the
+     loaded window), fetched per member. Sample members have no bioguide. */
+  const [portfolio, setPortfolio] = useState({ state: 'loading', data: null });
+  useEffect(() => {
+    if (!member.bioguideId) {
+      setPortfolio({ state: 'unavailable', data: null });
+      return undefined;
+    }
+    const ctrl = new AbortController();
+    setPortfolio({ state: 'loading', data: null });
+    fetch(`/api/politicians/portfolio?bioguide=${encodeURIComponent(member.bioguideId)}`, {
+      signal: ctrl.signal,
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) =>
+        setPortfolio(d?.ok ? { state: 'ready', data: d } : { state: 'failed', data: null }),
+      )
+      .catch(() => {
+        if (!ctrl.signal.aborted) setPortfolio({ state: 'failed', data: null });
+      });
+    return () => ctrl.abort();
+  }, [member.bioguideId]);
 
   /* Focus trap: Tab cycles inside the dialog while it is open. */
   useEffect(() => {
@@ -135,6 +169,8 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
           <Stat label="Volume, midpoints" value={usdShort(member.volume)} />
         </div>
 
+        <PortfolioCharts state={portfolio.state} data={portfolio.data} />
+
         <section className="dsc-p-block">
           <div className="dsc-p-block-head">
             <span className="dsc-label">Trade activity</span>
@@ -158,7 +194,7 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
           <table className="dsc-p-table">
             <thead>
               <tr>
-                <th>Ticker</th>
+                <th>Asset</th>
                 <th>Type</th>
                 <th>Amount</th>
                 <th>Traded</th>
@@ -170,7 +206,17 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
                 const side = SIDE[t.side] || SIDE.other;
                 return (
                   <tr key={t.id}>
-                    <td className="dsc-mn">{t.ticker || NONE}</td>
+                    <td className="dsc-mn">
+                      {t.ticker ? (
+                        t.ticker
+                      ) : t.assetName ? (
+                        <span className="ptk-asset-cell" title={t.assetName}>
+                          {shortAsset(t.assetName)}
+                        </span>
+                      ) : (
+                        NONE
+                      )}
+                    </td>
                     <td>
                       <span className={`dsc-chip ${side.cls}`}>{side.label}</span>
                     </td>

@@ -222,3 +222,42 @@ export async function readSummary({
         })),
   };
 }
+
+/**
+ * One member's estimated open portfolio (politician_portfolio RPC): top
+ * holdings by estimated size and the sector breakdown. Estimates from
+ * disclosed ranges, never holdings; see the 20261003120000 migration.
+ * @returns {Promise<{ portfolio: object|null, error: string|null }>}
+ */
+export async function readPortfolio(bioguide, limit = 10) {
+  const client = db();
+  if (!client) return { portfolio: null, error: 'not configured' };
+  const { data, error } = await client.rpc('politician_portfolio', {
+    p_bioguide: bioguide,
+    p_limit: limit,
+  });
+  if (error) return { portfolio: null, error: error.message };
+  const d = data || {};
+  const num = (v) => (v == null ? null : Number(v));
+  return {
+    error: null,
+    portfolio: {
+      total: num(d.total) || 0,
+      positions: num(d.positions) || 0,
+      stockPositions: num(d.stockPositions) || 0,
+      holdings: (d.holdings || []).map((h) => ({
+        ticker: h.ticker,
+        company: h.company || null,
+        sector: h.sector || 'Unclassified',
+        est: num(h.est) || 0,
+        share: num(h.share) || 0,
+      })),
+      sectors: (d.sectors || []).map((x) => ({
+        sector: x.sector,
+        est: num(x.est) || 0,
+        positions: num(x.positions) || 0,
+        share: num(x.share) || 0,
+      })),
+    },
+  };
+}
