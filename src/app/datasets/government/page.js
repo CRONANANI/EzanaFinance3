@@ -11,6 +11,12 @@ import { CONTRACT_AWARDS_SAMPLE, TOP_RECIPIENTS } from './government-sample';
  * never blank. The interactive search row lives in the client
  * GovernmentContractsDashboard.
  */
+export const metadata = {
+  title: 'Government activity: contracts, lobbying & patents | Ezana',
+  description:
+    'Federal contract awards from USAspending.gov, lobbying disclosures (LD-1/LD-2) and patent publications, entity-resolved to public companies where the match is unambiguous. Synced daily; every record links to its source.',
+};
+
 export const dynamic = 'force-dynamic';
 
 const SOURCE = {

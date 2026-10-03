@@ -46,6 +46,18 @@ export function FooterSection({ onContactClick }) {
           </div>
 
           <div className="landing-footer-col">
+            <h4>Explore</h4>
+            <nav className="landing-footer-links" aria-label="Explore">
+              <a href="/ezana-echo">Ezana Echo</a>
+              <a href="/datasets">Datasets</a>
+              <a href="/datasets/politician-tracker">Politician Tracker</a>
+              <a href="/datasets/government/contracts">Government Contracts</a>
+              <a href="/datasets/prediction-markets">Prediction Markets</a>
+              <a href="/ezana-api">API</a>
+            </nav>
+          </div>
+
+          <div className="landing-footer-col">
             <h4>Connect</h4>
             <div className="landing-footer-socials">
               <a

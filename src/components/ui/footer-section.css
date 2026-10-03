@@ -20,7 +20,7 @@ body.light-mode .landing-footer {
 
 .landing-footer-grid {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
   /* Row gap tighter, column gap unchanged. */
   gap: 32px 48px;
   padding-bottom: 28px;
