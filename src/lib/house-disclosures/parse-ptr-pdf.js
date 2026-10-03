@@ -22,9 +22,6 @@
 import { matchBracket } from './brackets.js';
 import { toISO } from './parse-index.js';
 
-const DATE_RE = /\b\d{1,2}\/\d{1,2}\/\d{4}\b/;
-const DATE_RE_G = /\b\d{1,2}\/\d{1,2}\/\d{4}\b/g;
-
 /** A PDF with almost no extractable text is a scanned image → needs OCR. */
 export function looksScanned(text, minChars = 200) {
   return (
@@ -32,6 +29,57 @@ export function looksScanned(text, minChars = 200) {
       .replace(/\s+/g, ' ')
       .trim().length < minChars
   );
+}
+
+/* A PTR row is one visual line in the PDF (owner, the first line of the
+   asset cell, type, dates, amount), but the asset cell WRAPS: the ticker and
+   the asset-type code usually land on the next line or two, e.g.
+     JT Alphabet Inc. - Class C Capital Stock S 01/13/2025 01/13/2025 $1,001 - $15,000
+     (GOOG) [ST]
+   Reading the row line alone left about four in five stocks without a ticker.
+   The lines after a row, up to the next row or the filing-status / owner /
+   description block, are the rest of that asset cell. */
+/* The row anchor: transaction type, then the transaction and notification
+   dates. Anchoring on the type + two dates, not on the first date in the
+   line, matters for bonds, whose names carry a maturity date
+   ("PA ST UNIV 5.0% 09/01/2035 ... P 04/08/2025 04/08/2025"); the first date
+   there is the maturity, which used to become the trade date. */
+const ROW_RE =
+  /(?:^|\s)([PSE])(\s*\(partial\))?\s+(\d{1,2}\/\d{1,2}\/\d{4})\s+(\d{1,2}\/\d{1,2}\/\d{4})(?=\s|$)/i;
+/* Case-insensitive because pre-2021 PTRs embed a font whose capitals extract
+   as lowercase glyphs: "8x8 Inc (EgHT) [ST]", "[gS]". A candidate still needs
+   an uppercase letter, so "(partial)" and other lowercase words never match. */
+const TICKER_RE = /\(([A-Za-z][A-Za-z0-9]{0,5}(?:[.\-][A-Za-z0-9]{1,2})?)\)/g;
+const ASSET_TYPE_RE = /\[([A-Za-z]{2})\]/;
+/* The cap-gains checkbox renders as a run of single glyphs ("g f e d c b"). */
+const GLYPH_LINE_RE = /^(?:[a-z]\s)+[a-z]?$/i;
+
+/** True for a line that ends an asset cell: a labelled block (filing status,
+    subholding of, description, location: all "X  Y : value"), a footnote,
+    or the next section's spaced-out heading. */
+function endsAssetCell(line) {
+  if (/:/.test(line)) return true;
+  if (/^\*/.test(line)) return true;
+  if (/^(?:[A-Z]\s{2,}){2,}/.test(line)) return true; // "I    V    D" section heads
+  return false;
+}
+
+/* Amount after the row anchor: a canonical STOCK Act bracket, or, for the
+   small trades some members report exactly (under $1,001, e.g. "$581.86"),
+   that exact figure as both bounds. Those were dropped before because no
+   bracket matched. */
+function amountAfter(text) {
+  const b = matchBracket(text);
+  if (b) return b;
+  const m = text.match(/\$\s*([\d,]+(?:\.\d{1,2})?)/);
+  if (!m) return null;
+  const v = Number(m[1].replace(/,/g, ''));
+  if (!Number.isFinite(v) || v <= 0 || v >= 1001) return null;
+  return { low: v, high: v, midpoint: v, label: `$${m[1]}` };
+}
+
+function isRow(line) {
+  return ROW_RE.test(line) && Boolean(amountAfter(line.slice(line.search(ROW_RE))));
 }
 
 /**
@@ -46,38 +94,58 @@ export function parsePtrText(text) {
     .filter(Boolean);
 
   const trades = [];
-  for (const line of lines) {
-    const bracket = matchBracket(line);
-    if (!bracket) continue; // no disclosed amount → not a transaction row
-    const dates = line.match(DATE_RE_G) || [];
-    if (!dates.length) continue;
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (!isRow(line)) continue; // no disclosed amount + date → not a transaction row
+    const m = line.match(ROW_RE);
+    // The amount is read after the anchor, so a dollar figure inside an asset
+    // name cannot be taken for it.
+    const bracket = amountAfter(line.slice(m.index));
+    const dates = [m[3], m[4]];
 
-    // Everything before the first date is the "head": [owner] asset (TICKER) TX.
-    const head = line.slice(0, line.search(DATE_RE)).trim();
+    // Transaction type: P / S / E, where a sale may read "S (partial)". The
+    // old trailing-letter pattern missed the partial form, which left tx_type
+    // null and the row dropped by the congress ingest.
+    const txType = m[2] ? 'S (partial)' : m[1].toUpperCase();
+    // Everything before the anchor is the "head": [owner] asset.
+    const assetHead = line.slice(0, m.index).trim();
 
-    // Transaction type is a trailing standalone P/S/E in the head.
-    let txType = null;
-    let assetHead = head;
-    const tx = head.match(/\b([PSE])\b\s*$/);
-    if (tx) {
-      txType = tx[1];
-      assetHead = head.slice(0, tx.index).trim();
+    // The wrapped remainder of the asset cell. Stray amount fragments that
+    // wrapped onto the same visual line ("$100,000") are not asset text.
+    const cont = [];
+    for (let j = i + 1; j < lines.length && cont.length < 4; j += 1) {
+      const next = lines[j];
+      if (isRow(next) || endsAssetCell(next)) break;
+      if (GLYPH_LINE_RE.test(next)) continue;
+      const textPart = next.replace(/\$\s*[\d,]+/g, '').trim();
+      if (textPart) cont.push(textPart);
     }
+    const cell = [assetHead, ...cont].join(' ').replace(/\s+/g, ' ').trim();
 
-    // Ticker: ONLY a parenthesized 1–5 letter symbol. Null otherwise.
-    const tk = assetHead.match(/\(([A-Z]{1,5})\)/);
-    const ticker = tk ? tk[1] : null;
+    // Ticker: ONLY a parenthesized symbol, the last one in the cell (a
+    // company name can itself contain parentheses). Null otherwise.
+    const tks = [...cell.matchAll(TICKER_RE)].filter((t) => /[A-Z]/.test(t[1]));
+    const ticker = tks.length ? tks[tks.length - 1][1].toUpperCase() : null;
+    const at = cell.match(ASSET_TYPE_RE);
 
-    let asset = assetHead
-      .replace(/\([A-Z]{1,5}\)/, '')
+    // Owner code at the start of the row: SP spouse, JT joint, DC dependent
+    // child; none means the member. Part of the congress_trades key, so a
+    // member's and a spouse's identical same-day trades stay two rows.
+    const ow = assetHead.match(/^(SP|DC|JT)\b/);
+    let asset = cell
+      .replace(tks.length ? tks[tks.length - 1][0] : /(?!)/, '')
+      .replace(ASSET_TYPE_RE, '')
       .replace(/^(SP|DC|JT)\b[\s:.-]*/, '') // strip owner code
       .replace(/[\s|]+$/, '')
+      .replace(/\s+/g, ' ')
       .trim();
     if (!asset) continue;
 
     trades.push({
       ticker,
       asset_name: asset,
+      asset_type: at ? at[1].toUpperCase() : null,
+      owner: ow ? ow[1] : null,
       tx_type: txType,
       tx_date: toISO(dates[0]),
       notification_date: dates[1] ? toISO(dates[1]) : null,
@@ -85,7 +153,7 @@ export function parsePtrText(text) {
       amount_high: bracket.high,
       amount_midpoint: bracket.midpoint,
       amount_bracket_label: bracket.label,
-      raw_row: line,
+      raw_row: [line, ...cont].join(' | '),
     });
   }
   return { trades };

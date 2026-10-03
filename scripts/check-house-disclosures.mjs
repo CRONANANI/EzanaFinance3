@@ -537,3 +537,67 @@ test('isUnknownColumn: needs both the code and the column name', () => {
   assert.equal(isUnknownColumn(null, 'dup'), false);
   assert.equal(isUnknownColumn({ code: '42703', message: 'column "dup"' }, ''), false);
 });
+
+/* ── wrapped asset cells (real PTR layouts, 2021 to 2026) ── */
+
+test('parsePtrText: ticker and asset type on the wrapped line', () => {
+  const { trades } = parsePtrText(
+    [
+      'JT Alphabet Inc. - Class C Capital Stock S 01/13/2025 01/13/2025 $1,001 - $15,000',
+      '(GOOG) [ST]',
+      'F S : New',
+      'SP UnitedHealth Group Incorporated P 04/10/2025 05/15/2025 $1,001 - $15,000',
+      'Common Stock (UNH) [ST]',
+      'F S : New',
+    ].join('\n'),
+  );
+  assert.equal(trades.length, 2);
+  assert.equal(trades[0].ticker, 'GOOG');
+  assert.equal(trades[0].asset_type, 'ST');
+  assert.equal(trades[0].owner, 'JT');
+  assert.equal(trades[0].asset_name, 'Alphabet Inc. - Class C Capital Stock');
+  assert.equal(trades[1].ticker, 'UNH');
+  assert.equal(trades[1].owner, 'SP');
+  assert.equal(trades[1].asset_name, 'UnitedHealth Group Incorporated Common Stock');
+});
+
+test('parsePtrText: "S (partial)" is a sale, not a missing type', () => {
+  const { trades } = parsePtrText(
+    'US Treasury Bill 912797JR9 [GS] S (partial) 01/08/2025 02/04/2025 $15,001 -\n$50,000\nF S : New',
+  );
+  assert.equal(trades.length, 1);
+  assert.equal(trades[0].tx_type, 'S (partial)');
+  assert.equal(trades[0].tx_date, '2025-01-08');
+  assert.equal(trades[0].amount_low, 15001);
+});
+
+test('parsePtrText: a bond maturity date is not the trade date, and its wrap is not a row', () => {
+  const { trades } = parsePtrText(
+    [
+      'PA ST UNIV 5.0% 09/01/2035 DTD P 04/08/2025 04/08/2025 $50,001 -',
+      'REV RE; 4.0%; Due 09/01/2041 [GS] $100,000',
+      'F S : New',
+    ].join('\n'),
+  );
+  assert.equal(trades.length, 1);
+  assert.equal(trades[0].tx_date, '2025-04-08');
+  assert.equal(trades[0].tx_type, 'P');
+  assert.equal(trades[0].asset_type, 'GS');
+});
+
+test('parsePtrText: exact sub-$1,001 amounts are kept as filed', () => {
+  const { trades } = parsePtrText('Centene Corporation (CNC) [ST] S 02/16/2021 02/16/2021 $581.86');
+  assert.equal(trades.length, 1);
+  assert.equal(trades[0].amount_low, 581.86);
+  assert.equal(trades[0].amount_high, 581.86);
+  assert.equal(trades[0].ticker, 'CNC');
+});
+
+test('parsePtrText: pre-2021 fonts that extract capitals as lowercase', () => {
+  const { trades } = parsePtrText(
+    '8x8 Inc (EgHT) [ST] P 03/10/2020 04/01/2020 $15,001 -\ng f e d c\n$50,000\nF IlINg S TATuS : New',
+  );
+  assert.equal(trades.length, 1);
+  assert.equal(trades[0].ticker, 'EGHT');
+  assert.equal(trades[0].asset_name, '8x8 Inc');
+});

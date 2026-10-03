@@ -69,6 +69,9 @@ export async function GET(request) {
       fmpEnabled: fmpEnabled(),
       chamber,
       skipMembers: searchParams.get('members') === '0',
+      /* One-off: load every member who has served since 2012 as a former
+         member, so trades by people no longer in Congress can match. */
+      historical: searchParams.get('historical') === '1',
       /* Backfill: ?days= widens the window the source tables are read over
          (house_trades reaches back to 2015). Upserts are idempotent. */
       windowDays: Math.min(Math.max(Number(searchParams.get('days')) || 400, 30), 4500),

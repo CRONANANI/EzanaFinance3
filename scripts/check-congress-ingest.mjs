@@ -6,11 +6,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
+  buildFormerIndex,
   buildMemberIndex,
   candidateFromFmp,
   candidateFromHouse,
   cleanName,
+  historicalToMembers,
   legislatorsToMembers,
+  matchFormer,
   matchMember,
   normalizeType,
   parseBand,
@@ -197,4 +200,71 @@ test('resolveCandidates skips future-dated and dated-after-disclosure trades', (
   assert.equal(out.rows.length, 1);
   assert.equal(out.rows[0].transaction_date, '2026-09-01');
   assert.equal(out.skipped, 2);
+});
+
+test('former members: matched by name + state across chambers, sitting members first', () => {
+  const former = [
+    {
+      bioguide_id: 'M001190',
+      first_name: 'Markwayne',
+      last_name: 'Mullin',
+      full_name: 'Markwayne Mullin',
+      state: 'OK',
+      chamber: 'senate',
+    },
+    {
+      bioguide_id: 'X000001',
+      first_name: 'John',
+      last_name: 'Smith',
+      full_name: 'John Smith',
+      state: 'TX',
+      chamber: 'house',
+    },
+    {
+      bioguide_id: 'X000002',
+      first_name: 'John',
+      last_name: 'Smith',
+      full_name: 'John Smith',
+      state: 'TX',
+      chamber: 'house',
+    },
+  ];
+  const idx = buildFormerIndex(former);
+  /* A House trade by someone whose last term was in the Senate still matches. */
+  assert.equal(
+    matchFormer(idx, { first: 'Markwayne', last: 'Mullin', chamber: 'house', state: 'OK' })?.member
+      .bioguide_id,
+    'M001190',
+  );
+  /* Senate filings carry no state: an unambiguous name still matches. */
+  assert.equal(
+    matchFormer(idx, { first: 'Markwayne', last: 'Mullin', chamber: 'senate', state: null })?.member
+      .bioguide_id,
+    'M001190',
+  );
+  /* Two former members with one name and state: nobody, never a guess. */
+  assert.equal(
+    matchFormer(idx, { first: 'John', last: 'Smith', chamber: 'house', state: 'TX' }),
+    null,
+  );
+  assert.equal(matchFormer(null, { first: 'A', last: 'B', chamber: 'house' }), null);
+});
+
+test('historicalToMembers keeps only people who served since 2012', () => {
+  const list = [
+    {
+      id: { bioguide: 'A000001' },
+      name: { first: 'Old', last: 'Timer' },
+      terms: [{ type: 'rep', state: 'NY', district: 1, party: 'Democrat', end: '2009-01-03' }],
+    },
+    {
+      id: { bioguide: 'B000002' },
+      name: { first: 'Recent', last: 'Member' },
+      terms: [{ type: 'rep', state: 'GA', district: 14, party: 'Republican', end: '2027-01-03' }],
+    },
+  ];
+  assert.deepEqual(
+    historicalToMembers(list).map((m) => m.bioguide_id),
+    ['B000002'],
+  );
 });

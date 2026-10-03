@@ -108,10 +108,16 @@ export async function GET(request) {
         // eslint-disable-next-line no-await-in-loop
         const { error: insErr } = await admin.from('house_trades').insert(rows);
         if (insErr) {
+          /* Not marked parsed: a failed insert (a missing column, say) used to
+             fall through and flag the filing done with no trades, which
+             removed it from the queue for good. Left as is, the next run
+             retries it. */
           errors.push(`${f.doc_id}: insert ${insErr.message}`);
-        } else {
-          tradeRows += rows.length;
+          // eslint-disable-next-line no-await-in-loop
+          await sleep(THROTTLE_MS);
+          continue;
         }
+        tradeRows += rows.length;
       }
       // eslint-disable-next-line no-await-in-loop
       await admin

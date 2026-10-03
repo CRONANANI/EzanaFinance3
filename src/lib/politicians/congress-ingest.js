@@ -22,6 +22,13 @@ import { createHash } from 'node:crypto';
 
 export const LEGISLATORS_URL =
   'https://unitedstates.github.io/congress-legislators/legislators-current.json';
+/* Everyone who has left Congress. Only needed once (?historical=1): the rows
+   persist in congress_members with in_office = false and every later run
+   matches against them from the table. */
+export const LEGISLATORS_HISTORICAL_URL =
+  'https://unitedstates.github.io/congress-legislators/legislators-historical.json';
+/* The STOCK Act took effect in 2012; nobody who left before then filed a PTR. */
+export const HISTORICAL_SINCE = '2012-01-01';
 export const PHOTO_BASE = 'https://theunitedstates.io/images/congress/225x275';
 export const BIOGUIDE_PHOTO_BASE = 'https://bioguide.congress.gov/photo';
 export const PHOTO_BUCKET = 'congress-photos';
@@ -122,6 +129,86 @@ export function legislatorsToMembers(list) {
     out.push(row);
   }
   return out;
+}
+
+/** Former members who served on or after `since`, as member rows. */
+export function historicalToMembers(list, since = HISTORICAL_SINCE) {
+  const recent = (Array.isArray(list) ? list : []).filter(
+    (p) => Array.isArray(p?.terms) && p.terms.some((t) => String(t.end || '') >= since),
+  );
+  return legislatorsToMembers(recent);
+}
+
+/**
+ * Index of FORMER members (congress_members rows with in_office = false).
+ * Chamber is deliberately not part of the key: a member's row carries the
+ * chamber of their last term, so a House trade by someone who later served in
+ * the Senate (or the reverse) would never match on chamber. Name + state is
+ * the key instead; a name shared by two former members is ambiguous and
+ * matches nobody rather than the wrong person.
+ */
+export function buildFormerIndex(rows) {
+  const byNameState = new Map();
+  const byName = new Map();
+  const byLastState = new Map();
+  const put = (map, k, m) => {
+    if (!k) return;
+    const prev = map.get(k);
+    map.set(k, prev === undefined || prev?.bioguide_id === m.bioguide_id ? m : null);
+  };
+  for (const m of rows || []) {
+    const st = m.state ? String(m.state).toUpperCase() : '';
+    for (const n of [m.full_name, `${m.first_name} ${m.last_name}`]) {
+      const cn = cleanName(n);
+      if (!cn) continue;
+      put(byNameState, `${cn}|${st}`, m);
+      put(byName, cn, m);
+    }
+    put(byLastState, `${cleanName(m.last_name).split(' ').pop()}|${st}`, m);
+  }
+  return { byNameState, byName, byLastState, all: rows || [] };
+}
+
+/** @returns {{ member: object, how: 'former' } | null} */
+export function matchFormer(index, who) {
+  if (!index) return null;
+  const state = who.state ? String(who.state).slice(0, 2).toUpperCase() : null;
+  const full = cleanName(who.full || `${who.first || ''} ${who.last || ''}`);
+  const last = cleanName(who.last || full)
+    .split(' ')
+    .pop();
+  /* Each key is tried in turn. A key present with a null value means two
+     former members share it: that is a definite "can't tell", so it stops the
+     search rather than falling through to a looser rule that would guess. */
+  const keys = [
+    state ? [index.byNameState, `${full}|${state}`] : [index.byName, full],
+    state && last ? [index.byLastState, `${last}|${state}`] : null,
+  ].filter(Boolean);
+  for (const [map, k] of keys) {
+    if (!map.has(k)) continue;
+    const m = map.get(k);
+    return m ? { member: m, how: 'former' } : null;
+  }
+  /* Fuzzy only within the same state: across eras a similar name in another
+     state is more likely a different person than a spelling variant. A tie
+     between two people is no match. */
+  if (!state) return null;
+  let best = null;
+  let tie = false;
+  for (const m of index.all) {
+    if (String(m.state || '').toUpperCase() !== state) continue;
+    const score = Math.max(
+      trigramSimilarity(full, m.full_name),
+      trigramSimilarity(full, `${m.first_name} ${m.last_name}`),
+    );
+    if (!best || score > best.score) {
+      best = { member: m, score };
+      tie = false;
+    } else if (score === best.score && m.bioguide_id !== best.member.bioguide_id) tie = true;
+  }
+  return best && !tie && best.score >= FUZZY_THRESHOLD
+    ? { member: best.member, how: 'former' }
+    : null;
 }
 
 /** The DB row (drops the matcher-only nickname). */
@@ -276,7 +363,8 @@ export function candidateFromHouse(ht) {
       type: normalizeType(ht.tx_type),
       amount_min: numOrNull(ht.amount_low),
       amount_max: numOrNull(ht.amount_high),
-      owner: null,
+      /* SP / JT / DC from the PTR; null is the member. Part of source_hash. */
+      owner: ht.owner || null,
       source: 'house_clerk',
       source_url: filing.pdf_url || null,
     },
@@ -344,10 +432,10 @@ export function candidateFromFmp(raw, chamber) {
  * Resolve candidates into insertable rows. Pure.
  * @returns {{ rows: object[], unmatched: Map<string, object>, skipped: number, matchedBy: object }}
  */
-export function resolveCandidates(candidates, index, knownIds) {
+export function resolveCandidates(candidates, index, knownIds, formerIndex = null) {
   const rows = [];
   const unmatched = new Map();
-  const matchedBy = { bioguide: 0, last_state: 0, exact: 0, fuzzy: 0 };
+  const matchedBy = { bioguide: 0, last_state: 0, exact: 0, fuzzy: 0, former: 0 };
   const seen = new Set();
   let skipped = 0;
   /* A trade dated after today, or after the day it was disclosed, is a
@@ -374,7 +462,9 @@ export function resolveCandidates(candidates, index, knownIds) {
       id = c.bioguideHint;
       matchedBy.bioguide += 1;
     } else {
-      const hit = matchMember(index, c.who);
+      /* Sitting members first, then former members, so adding the historical
+         roster can never pull a trade away from a current member. */
+      const hit = matchMember(index, c.who) || matchFormer(formerIndex, c.who);
       if (hit) {
         id = hit.member.bioguide_id;
         matchedBy[hit.how] += 1;
@@ -472,6 +562,7 @@ export async function runCongressIngest({
   windowDays = 400,
   fmpPages = 10,
   skipMembers = false,
+  historical = false,
   log = console.log,
 }) {
   const summary = {
@@ -531,11 +622,50 @@ export async function runCongressIngest({
     }
   }
 
-  /* Trades may only reference members in the table; former members already
-     there (in_office = false) still match by id. */
-  const { data: known } = await db.from('congress_members').select('bioguide_id');
+  /* 1b. former members, once (?historical=1). Inserted, never upserted, so a
+     sitting member's row is never touched; in_office = false. */
+  if (historical) {
+    try {
+      const res = await fetchImpl(LEGISLATORS_HISTORICAL_URL, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const hist = historicalToMembers(await res.json());
+      const rows = hist.map((m) => ({ ...memberRow(m), in_office: false }));
+      let added = 0;
+      for (let i = 0; i < rows.length; i += WRITE_BATCH) {
+        const { data, error } = await db
+          .from('congress_members')
+          .upsert(rows.slice(i, i + WRITE_BATCH), {
+            onConflict: 'bioguide_id',
+            ignoreDuplicates: true,
+          })
+          .select('bioguide_id');
+        if (error) throw new Error(error.message);
+        added += data?.length || 0;
+      }
+      summary.members.historical = { candidates: rows.length, added };
+    } catch (err) {
+      summary.errors.push(`historical members: ${err?.message || err}`);
+    }
+  }
+
+  /* Trades may only reference members in the table. Sitting members match
+     through the index built from the fresh roster; former members
+     (in_office = false) match through their own index, read from the table. */
+  const known = [];
+  for (let from = 0; ; from += PAGE) {
+    /* Paged: with former members loaded the table outgrows one select. */
+    const { data, error } = await db
+      .from('congress_members')
+      .select('bioguide_id, first_name, last_name, full_name, state, chamber, in_office')
+      .order('bioguide_id', { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) throw new Error(`congress_members read: ${error.message}`);
+    known.push(...(data || []));
+    if (!data || data.length < PAGE) break;
+  }
   const knownIds = new Set((known || []).map((k) => k.bioguide_id));
   const index = buildMemberIndex(members.filter((m) => knownIds.has(m.bioguide_id)));
+  const formerIndex = buildFormerIndex((known || []).filter((k) => k.in_office === false));
 
   /* 2. trade candidates */
   const since = new Date(Date.now() - windowDays * 86400000).toISOString().slice(0, 10);
@@ -547,7 +677,7 @@ export async function runCongressIngest({
     const r = await pageAll(
       db,
       'house_trades',
-      'id, first_name, last_name, state_dst, ticker, asset_name, tx_type, tx_date, notification_date, amount_low, amount_high, house_disclosure_filings(pdf_url, filing_date, state_dst)',
+      'id, first_name, last_name, state_dst, ticker, asset_name, owner, tx_type, tx_date, notification_date, amount_low, amount_high, house_disclosure_filings(pdf_url, filing_date, state_dst)',
       'tx_date',
       since,
       log,
@@ -591,7 +721,12 @@ export async function runCongressIngest({
   summary.candidates = candidates.length;
 
   /* 3. resolve + write */
-  const { rows, unmatched, skipped, matchedBy } = resolveCandidates(candidates, index, knownIds);
+  const { rows, unmatched, skipped, matchedBy } = resolveCandidates(
+    candidates,
+    index,
+    knownIds,
+    formerIndex,
+  );
   summary.skipped = skipped;
   summary.matchedBy = matchedBy;
   summary.unmatchedNames = unmatched.size;

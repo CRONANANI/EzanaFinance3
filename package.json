@@ -25,6 +25,7 @@
     "test:congress": "node scripts/check-congress-ingest.mjs",
     "test:senate": "node scripts/check-senate-efd.mjs",
     "ingest:congress": "node scripts/ingest-congress.mjs",
+    "parse:house-backfill": "node scripts/drain-house-ptrs.mjs",
     "test:help-search": "node --no-warnings scripts/check-help-search.mjs",
     "test:referrals": "node --no-warnings scripts/check-referrals.mjs",
     "test:e2e": "playwright test",
