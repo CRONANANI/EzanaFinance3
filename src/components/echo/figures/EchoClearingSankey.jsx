@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { EchoFigureShell } from './EchoFigureShell';
+import { textWidth, truncate } from './fit';
 
 /**
  * F4 · clearing-sankey — an editorial Sankey (no d3). Source nodes stacked in
@@ -12,8 +13,13 @@ import { EchoFigureShell } from './EchoFigureShell';
  */
 
 const W = 1120;
-const SRC_X = 180;
-const DST_X = 940;
+/* Gutters size themselves to the longest label on each side (within
+   bounds); what still does not fit is truncated rather than cut by the
+   frame. */
+const SRC_MIN = 180;
+const SRC_MAX = 380;
+const DST_MIN = 180;
+const DST_MAX = 420;
 const BAR_W = 4;
 const ROW = 38;
 const GROUP_GAP = 30;
@@ -37,6 +43,27 @@ export function EchoClearingSankey({
   flows = [],
 }) {
   const [selected, setSelected] = useState(null);
+
+  const { SRC_X, DST_X } = useMemo(() => {
+    const srcNodes = sourceGroups.flatMap((g) => g.nodes);
+    const left = Math.max(
+      0,
+      ...sourceGroups.map((g) =>
+        textWidth(String(g.label).toUpperCase(), 15, { letterSpacing: 0.8 }),
+      ),
+      ...srcNodes.map((n) => textWidth(n.name, 16.5)),
+      ...srcNodes.map((n) => textWidth(n.display || '', 15)),
+    );
+    const right = Math.max(
+      0,
+      ...destinations.map((d) => textWidth(d.name, 16.5)),
+      ...destinations.map((d) => textWidth(d.sub || '', 15)),
+    );
+    return {
+      SRC_X: Math.min(SRC_MAX, Math.max(SRC_MIN, left + 16)),
+      DST_X: W - Math.min(DST_MAX, Math.max(DST_MIN, right + 20)),
+    };
+  }, [sourceGroups, destinations]);
 
   const { srcPos, dstPos, height } = useMemo(() => {
     const sp = {};
@@ -133,7 +160,7 @@ export function EchoClearingSankey({
                 letterSpacing="0.8"
                 fill="var(--text-faint)"
               >
-                {String(g.label).toUpperCase()}
+                {truncate(String(g.label).toUpperCase(), SRC_X - 4, 15, { letterSpacing: 0.8 })}
               </text>
               {g.nodes.map((n) => (
                 <g key={n.id}>
@@ -146,24 +173,24 @@ export function EchoClearingSankey({
                   />
                   <text
                     x={SRC_X - 8}
-                    y={srcPos[n.id] - 1}
+                    y={srcPos[n.id] - (n.display ? 4 : 5)}
                     textAnchor="end"
                     className="echo-fig-mono"
                     fontSize="16.5"
                     fill="var(--text-primary)"
                   >
-                    {n.name}
+                    {truncate(n.name, SRC_X - 12, 16.5)}
                   </text>
                   {n.display && (
                     <text
                       x={SRC_X - 8}
-                      y={srcPos[n.id] + 11}
+                      y={srcPos[n.id] + 14}
                       textAnchor="end"
                       className="echo-fig-mono"
                       fontSize="15"
                       fill="var(--text-muted)"
                     >
-                      {n.display}
+                      {truncate(n.display, SRC_X - 12, 15)}
                     </text>
                   )}
                 </g>
@@ -183,23 +210,23 @@ export function EchoClearingSankey({
               />
               <text
                 x={DST_X + 10}
-                y={dstPos[d.id] - 1}
+                y={dstPos[d.id] - (d.sub ? 4 : 5)}
                 className="echo-fig-mono"
                 fontSize="16.5"
                 fontWeight="700"
                 fill="var(--text-primary)"
               >
-                {d.name}
+                {truncate(d.name, W - DST_X - 14, 16.5)}
               </text>
               {d.sub && (
                 <text
                   x={DST_X + 10}
-                  y={dstPos[d.id] + 11}
+                  y={dstPos[d.id] + 14}
                   className="echo-fig-mono"
                   fontSize="15"
                   fill="var(--text-muted)"
                 >
-                  {d.sub}
+                  {truncate(d.sub, W - DST_X - 14, 15)}
                 </text>
               )}
             </g>

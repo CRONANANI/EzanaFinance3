@@ -134,9 +134,11 @@ export function EchoBubbleField({
               height={zoneRect.h}
               fill="var(--emerald-bg-subtle)"
             />
+            {/* Named on the zone's top edge, outside the band where the
+                bubbles sit, so the name never lands on a bubble's label. */}
             <text
               x={zoneRect.x + zoneRect.w - 8}
-              y={zoneRect.y + 20}
+              y={zoneRect.y - 6}
               textAnchor="end"
               className="echo-fig-mono"
               fontSize="15"
@@ -302,21 +304,25 @@ export function EchoBubbleField({
           {yLabel}
         </text>
 
-        {/* caption / legend */}
-        <text
-          x={plotLeft}
-          y={PAD.t - 60}
-          fontSize="15"
-          fill="var(--text-faint)"
-          style={{ fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums' }}
-        >
-          {`x = ${xLabel} · y = ${yLabel} · size = ${zLabel}`}
-        </text>
+        {/* caption / legend: three encodings on three short lines (one long
+            line ran past a 680-wide frame), the count on its own at the right. */}
+        {[`x = ${xLabel}`, `y = ${yLabel}`, `size = ${zLabel}`].map((line, i) => (
+          <text
+            key={line}
+            x={plotLeft}
+            y={PAD.t - 68 + i * 16}
+            fontSize="13"
+            fill="var(--text-faint)"
+            style={{ fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums' }}
+          >
+            {line}
+          </text>
+        ))}
         <text
           x={plotRight}
-          y={PAD.t - 60}
+          y={PAD.t - 68}
           textAnchor="end"
-          fontSize="15"
+          fontSize="13"
           fill="var(--text-faint)"
           style={{ fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums' }}
         >

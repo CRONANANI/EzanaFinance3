@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { EchoFigureShell } from './EchoFigureShell';
+import { textWidth, thinStep, truncate } from './fit';
 
 /*
  * EchoMultiAxis — block type `multi-axis`.
@@ -84,6 +85,16 @@ export function EchoMultiAxis({ figureLabel, kicker, hint, source, categories = 
     return { s, color: SLOT_COLORS[si] ?? SLOT_COLORS[0], dom, sy, si };
   });
 
+  /* Category labels: only every k-th is drawn when they would touch; the
+     active one is always drawn so the hover readout has its anchor. */
+  const catStep = thinStep(categories, bandW, 15);
+  /* Right-hand axis titles stack above the plot and are kept inside the
+     frame; two titles on one line used to run into each other and off the
+     right edge. */
+  const rightTitleW = W - (PLOT.r + 6) - 6;
+  const titleFor = (m) => `${m.s.label}${m.s.unit ? ` (${m.s.unit})` : ''}`;
+  const leftTitleW = PLOT.r - (PLOT.l - 44) - 8;
+
   const barMeta = meta.filter((m) => m.s.kind === 'bar');
   const lineMeta = meta.filter((m) => m.s.kind !== 'bar');
   const leftMeta = meta[0];
@@ -134,9 +145,8 @@ export function EchoMultiAxis({ figureLabel, kicker, hint, source, categories = 
             </text>
           ))}
         {leftMeta && (
-          <text x={PLOT.l - 44} y={PLOT.t - 20} style={SERIF} fontSize="15" fill={leftMeta.color}>
-            {leftMeta.s.label}
-            {leftMeta.s.unit ? ` (${leftMeta.s.unit})` : ''}
+          <text x={PLOT.l - 44} y={PLOT.t - 13} style={SERIF} fontSize="15" fill={leftMeta.color}>
+            {truncate(titleFor(leftMeta), leftTitleW, 15, { mono: false })}
           </text>
         )}
 
@@ -163,9 +173,14 @@ export function EchoMultiAxis({ figureLabel, kicker, hint, source, categories = 
                 {fmt(v)}
               </text>
             ))}
-            <text x={PLOT.r + 6} y={PLOT.t - 20} style={SERIF} fontSize="15" fill={axis2Meta.color}>
-              {axis2Meta.s.label}
-              {axis2Meta.s.unit ? ` (${axis2Meta.s.unit})` : ''}
+            <text
+              x={PLOT.r + 6}
+              y={PLOT.t - (axis3Meta ? 31 : 13)}
+              style={SERIF}
+              fontSize="15"
+              fill={axis2Meta.color}
+            >
+              {truncate(titleFor(axis2Meta), rightTitleW, 15, { mono: false })}
             </text>
           </>
         )}
@@ -188,33 +203,28 @@ export function EchoMultiAxis({ figureLabel, kicker, hint, source, categories = 
                 {fmt(v)}
               </text>
             ))}
-            <text
-              x={PLOT.r + 60}
-              y={PLOT.t - 20}
-              style={SERIF}
-              fontSize="15"
-              fill={axis3Meta.color}
-            >
-              {axis3Meta.s.label}
-              {axis3Meta.s.unit ? ` (${axis3Meta.s.unit})` : ''}
+            <text x={PLOT.r + 6} y={PLOT.t - 13} style={SERIF} fontSize="15" fill={axis3Meta.color}>
+              {truncate(titleFor(axis3Meta), rightTitleW, 15, { mono: false })}
             </text>
           </g>
         )}
 
         {/* X category labels + vertical guide at the active column. */}
-        {categories.map((c, i) => (
-          <text
-            key={`xc-${c}`}
-            x={center(i)}
-            y={PLOT.b + 22}
-            textAnchor="middle"
-            style={MONO}
-            fontSize="15"
-            fill={i === activeIdx ? 'var(--text-muted)' : 'var(--text-faint)'}
-          >
-            {c}
-          </text>
-        ))}
+        {categories.map((c, i) =>
+          i % catStep !== 0 && i !== activeIdx && i !== n - 1 ? null : (
+            <text
+              key={`xc-${c}`}
+              x={center(i)}
+              y={PLOT.b + 22}
+              textAnchor="middle"
+              style={MONO}
+              fontSize="15"
+              fill={i === activeIdx ? 'var(--text-muted)' : 'var(--text-faint)'}
+            >
+              {c}
+            </text>
+          ),
+        )}
         {n > 0 && (
           <line
             x1={center(activeIdx)}
@@ -304,23 +314,23 @@ export function EchoMultiAxis({ figureLabel, kicker, hint, source, categories = 
         <g>
           <rect
             x={PLOT.l + 4}
-            y={16}
+            y={14}
             width={286}
-            height={30 + meta.length * 19}
+            height={24 + meta.length * 15}
             rx="6"
             fill="var(--bg-tertiary)"
             stroke="var(--border-secondary)"
           />
-          <text x={PLOT.l + 16} y={37} style={SERIF} fontSize="15" fill="var(--text-muted)">
+          <text x={PLOT.l + 16} y={31} style={SERIF} fontSize="15" fill="var(--text-muted)">
             {categories[activeIdx] ?? '—'}
           </text>
           {meta.map((m, ri) => {
-            const rowY = 52 + ri * 19;
+            const rowY = 46 + ri * 15;
             const val = (m.s.values ?? [])[activeIdx];
             return (
               <g key={`ro-${m.s.label}`}>
                 <rect x={PLOT.l + 16} y={rowY - 9} width={10} height={10} rx="2" fill={m.color} />
-                <text x={PLOT.l + 32} y={rowY} style={SERIF} fontSize="14" fill="var(--text-muted)">
+                <text x={PLOT.l + 32} y={rowY} style={SERIF} fontSize="13" fill="var(--text-muted)">
                   {m.s.label}
                 </text>
                 <text

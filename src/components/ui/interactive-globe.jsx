@@ -1901,22 +1901,23 @@ export function InteractiveGlobe({
     // Focus hold: while a focusTarget is set (Echo rail scroll sync), the
     // globe eases toward the rotation that centers that lat/lng and the
     // auto-rotate yields, so the focused region stays front and center.
-    // Closed form: with p = R(-cosφ·sinλ, sinφ, cosφ·cosλ) and the render
-    // order Ry(yaw)·Rx(pitch)·p, centering p at (0,0,-R) solves to
-    //   pitch = atan2(sinφ, cosφ·cosλ)
-    //   yaw   = atan2(-cosφ·sinλ, -(sinφ·sin(pitch) + cosφ·cosλ·cos(pitch)))
+    //
+    // Rotation order is Rx(pitch)·Ry(yaw)·p: yaw first, about the globe's
+    // own polar axis, then pitch tilts the whole globe toward or away from
+    // the viewer. So auto-rotate (which only advances yaw) always spins the
+    // Earth about its pole, however the view is tilted. The previous order
+    // (pitch first) spun it about the screen's vertical axis instead, and
+    // after a focus on a high-latitude city left the pitch at 60° the globe
+    // kept turning sideways around a tilted axis.
+    //
+    // Closed form: with p = R(-cosφ·sinλ, sinφ, cosφ·cosλ), yaw = λ + 180°
+    // brings the meridian to the front (z < 0) and pitch = -φ brings the
+    // parallel to the equator line, so the point sits at (0, 0, -R).
     // Deterministic fixed-factor easing; a user drag always wins.
     const focus = focusRef.current;
     if (focus && focus.lat != null && focus.lng != null && !dragRef.current.active) {
-      const phi = (focus.lat * Math.PI) / 180;
-      const lam = (focus.lng * Math.PI) / 180;
-      const pitch = Math.atan2(Math.sin(phi), Math.cos(phi) * Math.cos(lam));
-      const yaw = Math.atan2(
-        -Math.cos(phi) * Math.sin(lam),
-        -(Math.sin(phi) * Math.sin(pitch) + Math.cos(phi) * Math.cos(lam) * Math.cos(pitch)),
-      );
-      const yawDeg = (yaw * 180) / Math.PI;
-      const pitchDeg = Math.max(-90, Math.min(90, (pitch * 180) / Math.PI));
+      const yawDeg = focus.lng + 180;
+      const pitchDeg = Math.max(-90, Math.min(90, -focus.lat));
       const dYaw = ((yawDeg - rotationRef.current[0] + 540) % 360) - 180;
       const dPitch = pitchDeg - rotationRef.current[1];
       if (reducedMotionRef.current || (Math.abs(dYaw) < 0.15 && Math.abs(dPitch) < 0.15)) {
@@ -1927,8 +1928,14 @@ export function InteractiveGlobe({
         rotationRef.current[1] += dPitch * 0.06;
       }
     } else if (autoRotateRef.current && !dragRef.current.active && !pausedRef.current) {
-      // Auto-rotate: increment longitude in degrees each frame (skip while paused).
+      // Auto-rotate: advance longitude each frame, and ease the tilt back to
+      // upright so a globe left tilted by a focus or a drag rights itself.
       rotationRef.current[0] += autoRotateSpeed;
+      if (Math.abs(rotationRef.current[1]) > 0.05) {
+        rotationRef.current[1] -= rotationRef.current[1] * (reducedMotionRef.current ? 1 : 0.03);
+      } else {
+        rotationRef.current[1] = 0;
+      }
     }
 
     // Convert degrees to radians for rotation math
@@ -1995,8 +2002,8 @@ export function InteractiveGlobe({
       y *= radius;
       z *= radius;
 
-      [x, y, z] = rotateX(x, y, z, rx);
       [x, y, z] = rotateY(x, y, z, ry);
+      [x, y, z] = rotateX(x, y, z, rx);
 
       // Visible hemisphere for this projection (camera-facing): z <= 0
       if (z > 0) continue;
@@ -2062,8 +2069,8 @@ export function InteractiveGlobe({
         let mx = -Math.cos(latRad) * Math.sin(lngRad) * radius;
         let my = Math.sin(latRad) * radius;
         let mz = Math.cos(latRad) * Math.cos(lngRad) * radius;
-        [mx, my, mz] = rotateX(mx, my, mz, rx);
         [mx, my, mz] = rotateY(mx, my, mz, ry);
+        [mx, my, mz] = rotateX(mx, my, mz, rx);
         if (mz > 0) continue; // back hemisphere → hidden, exactly like the dots
         const mcos = -mz / radius;
         if (mcos <= 0.05) continue;

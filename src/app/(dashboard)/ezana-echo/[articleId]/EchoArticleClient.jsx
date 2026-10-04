@@ -26,7 +26,6 @@ import { EchoArticleFooter } from '@/components/echo/footer/EchoArticleFooter';
 import { EchoCtaCallout } from '@/components/echo/EchoCtaCallout';
 import { InteractiveChartCTAOverlay } from '@/components/echo/InteractiveChartCTAOverlay';
 import ThielNetworkPie from '@/components/echo/ThielNetworkPie';
-import EchoMetadataSidebar from '@/components/echo/EchoMetadataSidebar';
 import { EchoGlobeRail } from '@/components/echo/EchoGlobeRail';
 import { EchoKeywordProvider, useKeywordPopup } from '@/components/echo/EchoKeywordContext';
 import { EchoKeywordPopup } from '@/components/echo/EchoKeywordPopup';
@@ -50,7 +49,7 @@ import { EchoTileGrid } from '@/components/echo/figures/EchoTileGrid';
 import { EchoMarketTreemap } from '@/components/echo/figures/EchoMarketTreemap';
 import { formatPublishedDate } from '@/lib/echo-format';
 import { createArticleTracker } from '@/lib/echo-article-tracker';
-import { useAnonymousEchoTracker, trackAnonMetaClick } from '@/hooks/useAnonymousEchoTracker';
+import { useAnonymousEchoTracker } from '@/hooks/useAnonymousEchoTracker';
 import { getTag } from '@/lib/echo-tag-taxonomy';
 import { getKeywordById } from '@/lib/echo-keywords';
 import { SECTOR_DOMINANCE_DATA, SECTOR_ERAS } from '@/lib/ezana-echo-article-sector-dominance';
@@ -2758,19 +2757,6 @@ export default function EchoArticleClient({
     articleBodyRef,
   });
 
-  // Metadata-chip click → article_meta_click, routed to the same pathway keyword
-  // clicks use: logged-in → /api/notifications/track, logged-out → anon-track.
-  const handleMetaClick = useCallback(
-    (dimension, value) => {
-      if (user?.id && articleTracker) {
-        articleTracker.recordMetaClick(dimension, value);
-      } else if (!isAuthenticated) {
-        trackAnonMetaClick({ articleId: article?.id, dimension, value });
-      }
-    },
-    [user?.id, isAuthenticated, articleTracker, article?.id],
-  );
-
   async function handleArchive() {
     if (!confirm('Archive this article? It will be hidden from non-admin users.')) return;
     setBusy(true);
@@ -2940,18 +2926,11 @@ export default function EchoArticleClient({
 
         {/* Zones B + C — metadata sidebar | article body */}
         <div className={`echo-article-grid${hasGrail && grailWide ? ' echo-has-grail' : ''}`}>
-          {/* Left column: non-sticky metadata card on top, then the sticky
-              contents rail beneath it. The stack stretches to the row height
-              so the rail can still slide; align-items:start on the grid keeps
-              the card's top on the same line as the body's first line. */}
+          {/* Left column: the sticky contents rail. The metadata card that
+              used to sit above it (tickers, sectors, geos, themes) is not
+              shown to readers any more; the dimensions still drive search,
+              related articles and the tag taxonomy behind the scenes. */}
           <div className="echo-side-stack">
-            <aside className="echo-rail-meta" aria-label="Article metadata card">
-              <EchoMetadataSidebar
-                tickers={tickers}
-                meta={article.meta ?? {}}
-                onMetaClick={handleMetaClick}
-              />
-            </aside>
             <div className="echo-side-col">
               <EchoContentsRail blocks={blocks} />
             </div>

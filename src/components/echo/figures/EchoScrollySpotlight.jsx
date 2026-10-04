@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { EchoFigureShell } from './EchoFigureShell';
+import { textWidth } from './fit';
 
 /**
  * F27 · scrolly-spotlight — a scroll-driven section: the chart stays pinned
@@ -135,16 +136,24 @@ export function EchoScrollySpotlight({
           <g key={s.key} opacity={on ? 1 : 0.25} className="echo-scrolly-series">
             {s.fill && <path d={area} fill={s.color} opacity="0.12" />}
             <path d={d} fill="none" stroke={s.color} strokeWidth={on && emph ? 2.6 : 2} />
-            <text
-              x={sx(s.data.at(-1).x) + 6}
-              y={sy(s.data.at(-1).y) + 4}
-              className="echo-fig-mono"
-              fontSize="13.5"
-              fontWeight="700"
-              fill={s.color}
-            >
-              {s.label}
-            </text>
+            {(() => {
+              const lx = sx(s.data.at(-1).x);
+              const ly = sy(s.data.at(-1).y);
+              const fits = lx + 6 + textWidth(s.label, 13.5) <= CW - 4;
+              return (
+                <text
+                  x={fits ? lx + 6 : Math.min(lx, CW - 4)}
+                  y={fits ? ly + 4 : ly - 10}
+                  textAnchor={fits ? 'start' : 'end'}
+                  className="echo-fig-mono"
+                  fontSize="13.5"
+                  fontWeight="700"
+                  fill={s.color}
+                >
+                  {s.label}
+                </text>
+              );
+            })()}
           </g>
         );
       })}

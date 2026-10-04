@@ -2,11 +2,19 @@
 
 import { useMemo, useState } from 'react';
 import { EchoFigureShell } from './EchoFigureShell';
+import { textWidth, truncate } from './fit';
 
 const W = 1120;
 const ROW_H = 34;
 const GROUP_GAP = 42;
-const PAD = { l: 220, r: 230, t: 34, b: 40 };
+const GROUP_HEAD = 36; // header line, then clear air before the first row
+/* Left and right gutters size themselves to the longest name and outcome
+   label (within bounds), so neither is cut at the frame. */
+const PAD = { t: 34, b: 40 };
+const NAME_MIN = 220;
+const NAME_MAX = 340;
+const OUTCOME_MIN = 150;
+const OUTCOME_MAX = 300;
 
 const OUTCOME_COLOR = {
   continuing: 'var(--emerald)', // emerald = alive/continuing, per branding guide
@@ -25,18 +33,28 @@ export function EchoLifelines({
   groups = [],
 }) {
   const [selected, setSelected] = useState(null);
+  const gutters = useMemo(() => {
+    const rows = groups.flatMap((g) => g.rows);
+    const name = Math.max(0, ...rows.map((r) => textWidth(r.name, 16.5)));
+    const outcome = Math.max(0, ...rows.map((r) => textWidth(`→ ${r.outcome?.label || ''}`, 15)));
+    return {
+      l: Math.min(NAME_MAX, Math.max(NAME_MIN, name + 24)),
+      r: Math.min(OUTCOME_MAX, Math.max(OUTCOME_MIN, outcome + 30)),
+    };
+  }, [groups]);
   const x = useMemo(() => {
     const span = endYear - startYear;
     return (yr) =>
-      PAD.l +
-      ((Math.min(Math.max(yr, startYear), endYear) - startYear) / span) * (W - PAD.l - PAD.r);
-  }, [startYear, endYear]);
+      gutters.l +
+      ((Math.min(Math.max(yr, startYear), endYear) - startYear) / span) *
+        (W - gutters.l - gutters.r);
+  }, [startYear, endYear, gutters]);
 
   const layout = useMemo(() => {
     let y = PAD.t;
     return groups.map((g) => {
       const gy = y;
-      y += 22;
+      y += GROUP_HEAD;
       const rows = g.rows.map((r) => {
         const ry = y;
         y += ROW_H;
@@ -103,14 +121,14 @@ export function EchoLifelines({
                   onClick={() => setSelected(active ? null : `${g.label}:${ri}`)}
                 >
                   <text
-                    x={PAD.l - 12}
+                    x={gutters.l - 12}
                     y={r.y + 4}
                     textAnchor="end"
                     className="echo-fig-mono"
                     fontSize="16.5"
                     fill={active ? 'var(--emerald)' : 'var(--text-primary)'}
                   >
-                    {r.name}
+                    {truncate(r.name, gutters.l - 20, 16.5)}
                   </text>
                   <rect
                     x={x(r.from) - 5}
@@ -157,7 +175,7 @@ export function EchoLifelines({
                       fontSize="15"
                       fill="var(--text-muted)"
                     >
-                      → {r.outcome.label}
+                      {truncate(`→ ${r.outcome.label}`, W - xEnd - 18, 15)}
                     </text>
                   )}
                 </g>

@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { EchoFigureShell } from './EchoFigureShell';
+import { spreadVertical, truncate } from './fit';
 
 const W = 640;
 const H = 440;
@@ -130,6 +131,28 @@ export function EchoVariablePie({
         leaderOuter,
       };
     });
+    /* Labels on each side are pushed apart so thin adjacent slices do not
+       stack their text; the leader still points at the slice. */
+    for (const side of ['start', 'end', 'middle']) {
+      const group = arcs.filter((a) => a.anchor === side);
+      const ys = spreadVertical(
+        group.map((a) => a.labelPt.y),
+        36,
+        24,
+        H - 58,
+      );
+      group.forEach((a, i) => {
+        /* Sub-label is the widest line (~13 mono chars); keep it in frame. */
+        const subW = 17 * 13 * 0.6;
+        const lx =
+          side === 'end'
+            ? Math.max(subW + 6, a.labelPt.x)
+            : side === 'start'
+              ? Math.min(W - subW - 6, a.labelPt.x)
+              : a.labelPt.x;
+        a.labelPt = { x: lx, y: ys[i] };
+      });
+    }
     return { arcs, single };
   }, [slices, minRadiusPct]);
 
@@ -184,33 +207,52 @@ export function EchoVariablePie({
               fontFamily="var(--font-serif)"
               fill="var(--text-primary)"
             >
-              {a.label}
+              {truncate(
+                a.label,
+                a.anchor === 'middle'
+                  ? 220
+                  : Math.max(60, a.anchor === 'start' ? W - a.labelPt.x - 6 : a.labelPt.x - 6),
+                16,
+                { mono: false },
+              )}
             </text>
             <text
               x={a.labelPt.x}
               y={a.labelPt.y + 13}
               textAnchor={a.anchor}
               className="echo-fig-mono"
-              fontSize="15"
+              fontSize="13"
               fill="var(--text-muted)"
               style={{ fontVariantNumeric: 'tabular-nums' }}
             >
-              {`${yLabel} ${fmt(a.y)} (${fmt(a.pct)}%) · ${zLabel} ${fmt(a.z)}`}
+              {/* value · share · radius value; the caption names the units */}
+              {`${fmt(a.y)} · ${Math.round(a.pct)}% · r ${fmt(a.z)}`}
             </text>
           </g>
         ))}
 
-        {/* Encoding caption */}
+        {/* Encoding caption, two lines so it fits the 640 frame */}
         <text
           x={CX}
-          y={H - 16}
+          y={H - 30}
           textAnchor="middle"
           className="echo-fig-mono"
-          fontSize="15"
+          fontSize="13"
           fill="var(--text-faint)"
           style={{ fontVariantNumeric: 'tabular-nums' }}
         >
-          {`angle = ${yLabel} · radius = ${zLabel}`}
+          {truncate(`angle = ${yLabel}`, W - 16, 13)}
+        </text>
+        <text
+          x={CX}
+          y={H - 14}
+          textAnchor="middle"
+          className="echo-fig-mono"
+          fontSize="13"
+          fill="var(--text-faint)"
+          style={{ fontVariantNumeric: 'tabular-nums' }}
+        >
+          {truncate(`radius (r) = ${zLabel}`, W - 16, 13)}
         </text>
       </svg>
     </EchoFigureShell>

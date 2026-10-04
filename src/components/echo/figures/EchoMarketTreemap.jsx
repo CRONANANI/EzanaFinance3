@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { EchoFigureShell } from './EchoFigureShell';
+import { textWidth } from './fit';
 
 /**
  * EchoMarketTreemap — block type `market-treemap`.
@@ -201,9 +202,13 @@ export function EchoMarketTreemap({ figureLabel, kicker, hint, source, groups = 
               const { fill, fillOpacity } = perfFill(leaf.perf);
               const short = Math.min(leaf.w, leaf.h);
               const fs = Math.min(30, Math.max(TEXT_FLOOR, Math.floor(short * 0.24)));
-              // Only label tiles that can actually seat two ≥15-unit lines.
-              const fits = fs >= TEXT_FLOOR && leaf.w >= fs * 3 && leaf.h >= fs * 2.4;
               const labelIsNum = isNumericLabel(leaf.label);
+              // Only label tiles that can seat two ≥15-unit lines AND the
+              // label's own width; a long name in a narrow tile used to run
+              // across its neighbours.
+              const nameW = textWidth(leaf.label, fs, { mono: labelIsNum });
+              const fits =
+                fs >= TEXT_FLOOR && leaf.w >= Math.max(fs * 3, nameW + 16) && leaf.h >= fs * 2.4;
               return (
                 <g
                   key={`${g.key}-${leaf.label}-${li}`}

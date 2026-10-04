@@ -31,6 +31,7 @@
     "test:help-search": "node --no-warnings scripts/check-help-search.mjs",
     "test:referrals": "node --no-warnings scripts/check-referrals.mjs",
     "test:e2e": "playwright test",
+    "audit:echo-figures": "node scripts/audit-echo-figures.mjs",
     "check:help-routes": "node --no-warnings scripts/check-help-article-routes.mjs",
     "test:metrics": "node scripts/check-profile-metrics.mjs",
     "test:whale": "node scripts/check-whale-score.mjs",
