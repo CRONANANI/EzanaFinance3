@@ -55,6 +55,13 @@ SELECT politician, party, ticker, transaction_type, transaction_date, amount_low
 ORDER BY transaction_date DESC
 LIMIT 50;`;
 
+/** What members still hold, most widely held first. */
+export const SEED_HOLDINGS = `FROM capitol.holdings
+SELECT ticker, COUNT(DISTINCT politician) AS holders, SUM(est_value) AS est_held
+GROUP BY ticker
+ORDER BY holders DESC
+LIMIT 20;`;
+
 /** The House filing index. Its trades table is not populated yet, so the
  *  disclosures bar seeds from filings, which do return rows. */
 export const SEED_HOUSE_FILINGS = `FROM house.filings
@@ -72,6 +79,7 @@ export const SEEDS_BY_DATASET = {
   'capitol.lobbying': SEED_LOBBYING,
   'prediction.markets': SEED_PREDICTION,
   'capitol.congress_trades': SEED_CONGRESS,
+  'capitol.holdings': SEED_HOLDINGS,
   'house.filings': SEED_HOUSE_FILINGS,
 };
 

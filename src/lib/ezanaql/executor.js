@@ -16,9 +16,12 @@
  *              theirs, and emit one row per matching pair. The joined side's
  *              fields are keyed shortname.field, the spelling the validator
  *              resolved every reference to. WHERE conjuncts that touch only
- *              one side are pushed to that side's fetch.
- * Anything the caller should know about the answer (a row cap was hit, a SUM
- * was multiplied by a JOIN) comes back in `notes`, never silently.
+ *              one side are pushed to that side's fetch. Aggregates see each
+ *              side's rows once (sideRows): SUM(award_value) across contracts
+ *              × holders is the sum of the awards, and COUNT(DISTINCT
+ *              holdings.politician) the holders, in the same query.
+ * Anything the caller should know about the answer (a row cap was hit, a
+ * COUNT() counted pairs) comes back in `notes`, never silently.
  */
 import { EzanaQLError } from './parser';
 import { evalPredicate, evalScalar, rlsFilter, resolveRelDate } from './compiler';
@@ -271,32 +274,6 @@ async function matchingKeys({ joined, key, keys, admin, userId, notes }) {
   return found;
 }
 
-/** SUM/AVG over a FROM-side field through a JOIN counts each FROM row once
- *  per match. Not an error (sometimes intended), always a note. */
-function fanOutNotes(ast, dataset, joined) {
-  const prefix = shortName(joined.name);
-  const seen = new Set();
-  const out = [];
-  const walk = (node) => {
-    if (!node || typeof node !== 'object') return;
-    if (Array.isArray(node)) return node.forEach(walk);
-    if (node.type === 'func' && (node.name === 'SUM' || node.name === 'AVG')) {
-      for (const f of fieldNames(node.args)) {
-        if (!dataset.fields[f] || seen.has(`${node.name}:${f}`)) continue;
-        seen.add(`${node.name}:${f}`);
-        const verb = node.name === 'SUM' ? 'summed' : 'averaged';
-        out.push(
-          `${f} is ${verb} once per matching ${prefix} row, so each ${shortName(dataset.name)} row counts as many times as it has matches. To filter ${dataset.name} by ${joined.name} without multiplying, use SEMI JOIN.`,
-        );
-      }
-    }
-    for (const v of Object.values(node)) if (v && typeof v === 'object') walk(v);
-  };
-  walk(ast.select);
-  walk(ast.having);
-  return out;
-}
-
 /** The rows the rest of the pipeline works on, joins resolved. */
 async function sourceRows({ ast, dataset, joined, admin, userId, now, notes }) {
   if (!ast.join || !joined) {
@@ -346,28 +323,80 @@ async function sourceRows({ ast, dataset, joined, admin, userId, now, notes }) {
     keyIn: { field: key, keys },
   });
   const byKey = new Map();
-  for (const j of joinedRows) {
+  joinedRows.forEach((j, idx) => {
     const k = keyOf(j[key]);
-    if (k == null) continue;
-    const rec = {};
+    if (k == null) return;
+    const rec = { [JOINED_ROW]: idx };
     for (const [f, v] of Object.entries(j)) rec[`${prefix}.${f}`] = v;
     if (!byKey.has(k)) byKey.set(k, []);
     byKey.get(k).push(rec);
-  }
+  });
   const ctx = { now };
   const out = [];
-  for (const r of fromRows) {
+  fromRows.forEach((r, idx) => {
     for (const j of byKey.get(keyOf(r[key])) || []) {
-      const row = { ...r, ...j };
+      const row = { ...r, ...j, [FROM_ROW]: idx };
       if (evalPredicate(ast.where, row, ctx)) out.push(row);
     }
+  });
+  if (countsPairs(ast)) {
+    notes.push(
+      `COUNT() with no field counts matched pairs (one ${shortName(dataset.name)} row × one ${prefix} row). For rows of one side, count one of its fields, e.g. COUNT(DISTINCT ${prefix}.${Object.keys(joined.fields)[0]}).`,
+    );
   }
-  notes.push(...fanOutNotes(ast, dataset, joined));
+  return out;
+}
+
+/* Symbols, so the origin tags never collide with a field and never reach a
+   projection (projections read named fields only). */
+const FROM_ROW = Symbol('fromRow');
+const JOINED_ROW = Symbol('joinedRow');
+
+/* Does any aggregate in the query count bare pairs? */
+function countsPairs(ast) {
+  let hit = false;
+  const walk = (node) => {
+    if (!node || typeof node !== 'object' || hit) return;
+    if (Array.isArray(node)) return node.forEach(walk);
+    if (node.type === 'func' && node.name === 'COUNT' && node.args.length === 0) hit = true;
+    for (const v of Object.values(node)) if (v && typeof v === 'object') walk(v);
+  };
+  walk(ast.select);
+  walk(ast.having);
+  return hit;
+}
+
+/**
+ * The rows an aggregate should see. In a joined result every FROM row is
+ * repeated once per match (and vice versa), so an aggregate over one side's
+ * field is taken over that side's distinct rows: SUM(award_value) across a
+ * contracts × trades join is the sum of the contracts, once each, and
+ * COUNT(politician) is the number of trade rows, not trades × awards. An
+ * expression that mixes both sides, and COUNT() with no field, see the pairs.
+ */
+function sideRows(fn, rows, ctx) {
+  if (!rows.length || !(FROM_ROW in rows[0])) return rows;
+  const prefix = ctx.joinPrefix;
+  const names = [...fieldNames(fn.args)];
+  if (!names.length) return rows;
+  const joinedSide = names.every((n) => prefix && n.startsWith(`${prefix}.`));
+  const fromSide = names.every((n) => !(prefix && n.startsWith(`${prefix}.`)));
+  if (!joinedSide && !fromSide) return rows;
+  const tag = joinedSide ? JOINED_ROW : FROM_ROW;
+  const seen = new Set();
+  const out = [];
+  for (const r of rows) {
+    const id = r[tag];
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push(r);
+  }
   return out;
 }
 
 /* ── aggregation over a group of rows ── */
-function aggregate(fn, rows, ctx) {
+function aggregate(fn, allRows, ctx) {
+  const rows = sideRows(fn, allRows, ctx);
   const vals = (arg) => rows.map((r) => evalScalar(arg, r, ctx)).filter((v) => v != null);
   const nums = (arg) =>
     vals(arg)
@@ -434,7 +463,7 @@ function evalProjection(expr, groupRows, ctx) {
  * objects keyed by column name (projection alias or field/expr label).
  */
 export async function execute({ ast, dataset, joined = null, admin, userId, now = Date.now() }) {
-  const ctx = { now };
+  const ctx = { now, joinPrefix: joined ? shortName(joined.name) : null };
   const notes = [];
 
   const work = (async () => {

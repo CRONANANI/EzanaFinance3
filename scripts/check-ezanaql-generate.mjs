@@ -143,7 +143,7 @@ test('the prompt schema lists live datasets and names the rest as not queryable'
   for (const d of dark) {
     assert.ok(text.includes(d.name), `${d.name} should be named as not queryable`);
   }
-  assert.equal(CATALOG_VERSION, '1.3.0');
+  assert.equal(CATALOG_VERSION, '1.4.0');
   assert.match(text, /capitol\.congress_trades .*joinable with gov\.contracts ON ticker/);
 });
 
@@ -185,6 +185,18 @@ test('SEMI JOIN and JOIN parse, validate and resolve joined fields', () => {
   assert.equal(inner.select[1].expr.name, 'congress_trades.politician');
   assert.equal(inner.select[2].expr.name, 'congress_trades.party');
   assert.equal(inner.orderBy[0].field, 'congress_trades.politician');
+});
+
+test('capitol.holdings validates, joins contracts, and is distinct from trades', () => {
+  const q = parse(
+    'FROM gov.contracts JOIN capitol.holdings ON ticker WHERE action_date >= LAST 5 YEARS SELECT ticker, parent, SUM(award_value) AS contracts, COUNT(DISTINCT holdings.politician) AS holders GROUP BY ticker, parent HAVING SUM(award_value) >= 100M ORDER BY holders DESC LIMIT 10;',
+  );
+  const r = validate(q);
+  assert.equal(r.joined.name, 'capitol.holdings');
+  assert.throws(
+    () => validate(parse('FROM capitol.holdings JOIN capitol.congress_trades ON ticker;')),
+    /not declared joinable/,
+  );
 });
 
 test('join rejections name the rule', () => {
@@ -388,7 +400,7 @@ test('SEMI JOIN filters the FROM rows and never multiplies a sum', async () => {
   }
 });
 
-test('JOIN yields one row per pair, exposes prefixed fields, and flags a fanned-out SUM', async () => {
+test('JOIN pairs rows, and each aggregate sees its own side once', async () => {
   const admin = fakeAdmin(TABLES);
   const pairs = await run(
     'FROM gov.contracts JOIN capitol.congress_trades ON ticker SELECT recipient, politician, congress_trades.party, transaction_date ORDER BY transaction_date;',
@@ -402,18 +414,35 @@ test('JOIN yields one row per pair, exposes prefixed fields, and flags a fanned-
     'congress_trades.transaction_date',
   ]);
 
+  /* The question that motivated this: a FROM-side sum and a joined-side
+     distinct count in one query, both right. */
+  const both = await run(
+    'FROM gov.contracts JOIN capitol.congress_trades ON ticker SELECT recipient, SUM(award_value) AS t, COUNT(DISTINCT politician) AS members, COUNT(transaction_date) AS trades GROUP BY recipient;',
+    admin,
+  );
+  assert.deepEqual(both.rows, [{ recipient: 'LOCKHEED', t: 150, members: 2, trades: 3 }]);
+  assert.deepEqual(both.notes, []);
+
+  /* HAVING over the FROM side sees the FROM rows once too. */
+  const having = await run(
+    'FROM gov.contracts JOIN capitol.congress_trades ON ticker SELECT recipient, COUNT(DISTINCT politician) AS members GROUP BY recipient HAVING SUM(award_value) >= 150;',
+    admin,
+  );
+  assert.deepEqual(having.rows, [{ recipient: 'LOCKHEED', members: 2 }]);
+
   const members = await run(
     'FROM gov.contracts JOIN capitol.congress_trades ON ticker WHERE party = "D" SELECT recipient, COUNT(DISTINCT politician) AS members GROUP BY recipient;',
     admin,
   );
   assert.deepEqual(members.rows, [{ recipient: 'LOCKHEED', members: 1 }]);
 
-  const fanned = await run(
-    'FROM gov.contracts JOIN capitol.congress_trades ON ticker SELECT recipient, SUM(award_value) AS t GROUP BY recipient;',
+  /* Bare COUNT() is the one aggregate that sees pairs, and says so. */
+  const bare = await run(
+    'FROM gov.contracts JOIN capitol.congress_trades ON ticker SELECT recipient, COUNT() AS pairs GROUP BY recipient;',
     admin,
   );
-  assert.equal(fanned.rows[0].t, 450); // 150 × 3 trades, the trap
-  assert.match(fanned.notes[0], /award_value is summed once per matching congress_trades row/);
+  assert.equal(bare.rows[0].pairs, 6);
+  assert.match(bare.notes[0], /COUNT\(\) with no field counts matched pairs/);
 });
 
 test('joined-side filters are pushed to the joined fetch, not the FROM fetch', async () => {

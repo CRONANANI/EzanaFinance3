@@ -22,7 +22,7 @@
  * @typedef {'string'|'money'|'int'|'float'|'date'|'bool'} FieldType
  */
 
-export const CATALOG_VERSION = '1.3.0';
+export const CATALOG_VERSION = '1.4.0';
 
 /** Fields present in the design/spec but NOT backed by the real ingest yet. */
 export const CATALOG_GAPS = {
@@ -96,7 +96,7 @@ export const CATALOG = {
       ticker_source: { type: 'string', nullable: true },
       fiscal_year: { type: 'int', derived: true },
     },
-    joinableWith: ['capitol.congress_trades'],
+    joinableWith: ['capitol.congress_trades', 'capitol.holdings'],
     joinKeys: ['ticker'],
   },
 
@@ -169,6 +169,54 @@ export const CATALOG = {
     },
     /* Joins are on `ticker` only (see joinKeys). Both sides must list each
        other, so a join is a deliberate, declared pairing. */
+    joinableWith: ['gov.contracts'],
+    joinKeys: ['ticker'],
+  },
+
+  /* Positions members still hold, inferred the way the tracker's Most-held
+     chart and member portfolio infer them: the member has a buy and their
+     latest action on the ticker is a purchase or partial sale. Bound to the
+     congress_open_positions view (migration 20261003150000). est_value is a
+     midpoint estimate, never a reported holding; STOCK Act filings report
+     trades in ranges, not positions. "Politicians who own X" is this
+     dataset; "politicians who traded X" is capitol.congress_trades. */
+  'capitol.holdings': {
+    name: 'capitol.holdings',
+    label: 'Congressional Holdings (inferred open positions)',
+    source: 'house-clerk + senate-efd',
+    access: 'public',
+    rlsColumn: null,
+    available: true,
+    hardLimit: 5000,
+    defaultLimit: 100,
+    table: 'congress_open_positions',
+    columnMap: {
+      politician: 'member_name',
+      bioguide_id: 'bioguide_id',
+      chamber: 'chamber',
+      party: 'party',
+      state: 'state',
+      ticker: 'ticker',
+      est_value: 'est_value',
+      first_buy: 'first_buy',
+      last_trade: 'last_date',
+      last_action: 'last_type',
+      trades: 'trades',
+    },
+    defaultProjection: ['politician', 'party', 'ticker', 'last_action', 'last_trade'],
+    fields: {
+      politician: { type: 'string' },
+      bioguide_id: { type: 'string' },
+      chamber: { type: 'string', enum: ['house', 'senate'], nullable: true },
+      party: { type: 'string', enum: ['D', 'R', 'I'], nullable: true },
+      state: { type: 'string', nullable: true },
+      ticker: { type: 'string' },
+      est_value: { type: 'money', estimate: true },
+      first_buy: { type: 'date', nullable: true },
+      last_trade: { type: 'date' },
+      last_action: { type: 'string', enum: ['purchase', 'sale_partial'] },
+      trades: { type: 'int' },
+    },
     joinableWith: ['gov.contracts'],
     joinKeys: ['ticker'],
   },

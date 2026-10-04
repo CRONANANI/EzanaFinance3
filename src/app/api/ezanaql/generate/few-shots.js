@@ -48,13 +48,30 @@ GROUP BY parent, ticker
 HAVING SUM(award_value) >= 100M
 ORDER BY awarded DESC
 LIMIT 10;`,
-  /* JOIN: the answer needs the trades' own fields, so pairs are wanted. */
+  /* JOIN: the answer needs the trades' own fields. Each aggregate sees its
+     own side once, so a count of trades counts trade rows, not pairs. */
   `FROM gov.contracts
 JOIN capitol.congress_trades ON ticker
 WHERE transaction_date >= LAST 2 YEARS
-SELECT ticker, recipient, COUNT(DISTINCT congress_trades.politician) AS members, COUNT() AS trades
-GROUP BY ticker, recipient
+SELECT ticker, parent, COUNT(DISTINCT congress_trades.politician) AS members, COUNT(congress_trades.transaction_date) AS trades
+GROUP BY ticker, parent
 ORDER BY members DESC
+LIMIT 10;`,
+  /* Holdings, not trades: "own" means a position still open. SUM(award_value)
+     is over the awards once each; the holder count is over the holdings. */
+  `FROM gov.contracts
+JOIN capitol.holdings ON ticker
+WHERE action_date >= LAST 5 YEARS
+SELECT ticker, parent, SUM(award_value) AS contracts, COUNT(DISTINCT holdings.politician) AS holders
+GROUP BY ticker, parent
+HAVING SUM(award_value) >= 100M
+ORDER BY holders DESC
+LIMIT 10;`,
+  `FROM capitol.holdings
+WHERE party = "R"
+SELECT ticker, COUNT(DISTINCT politician) AS holders, SUM(est_value) AS est_held
+GROUP BY ticker
+ORDER BY holders DESC
 LIMIT 10;`,
 ];
 
@@ -91,4 +108,14 @@ ${FEW_SHOT_QUERIES[5]}
 Example 7
 User: For each federal contractor, how many members of Congress have traded its stock in the last two years?
 EzanaQL:
-${FEW_SHOT_QUERIES[6]}`;
+${FEW_SHOT_QUERIES[6]}
+
+Example 8
+User: Top ten companies that have the most politicians owning shares of it currently that have received at least 100M in government contracts in the last 5 years.
+EzanaQL:
+${FEW_SHOT_QUERIES[7]}
+
+Example 9
+User: Which stocks do the most Republican members currently hold?
+EzanaQL:
+${FEW_SHOT_QUERIES[8]}`;
