@@ -44,9 +44,18 @@ export async function GET(request) {
     p_limit: 25,
   });
   if (error) {
+    // PGRST202 / 42883: the RPC is not in the database (its migration has not
+    // been run). Say so in the log, where the fix is, instead of failing
+    // silently behind the generic message.
+    const missing = error.code === 'PGRST202' || error.code === '42883';
+    console.error(
+      missing
+        ? '[contracts/company] contractor_company_card() does not exist: run supabase/migrations/20261004100000_contractor_company_card.sql'
+        : `[contracts/company] contractor_company_card(${ticker}) failed: ${error.code || ''} ${error.message || error}`,
+    );
     return NextResponse.json(
       { ok: false, error: 'Company details are unavailable right now.' },
-      { status: 503 },
+      { status: 503, headers: { 'Cache-Control': 'no-store' } },
     );
   }
   return NextResponse.json(
