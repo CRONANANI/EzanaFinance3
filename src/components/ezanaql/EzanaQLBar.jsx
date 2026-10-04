@@ -14,6 +14,7 @@
  * place on the same white ground, so the data stays the focal point.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { columnAlign, formatCell } from '@/lib/ezanaql/grid-format';
 import './ezanaql-bar.css';
 
 const MAX_EDITOR_LINES = 8;
@@ -46,7 +47,25 @@ function QueryTokens({ code }) {
   });
 }
 
-export default function EzanaQLBar({ datasetScope = null, seedQuery = '', onResult }) {
+/**
+ * @param {object} props
+ * @param {string|null} [props.datasetScope]  catalog dataset the page is about
+ * @param {string} [props.seedQuery]           query the bar opens with
+ * @param {(result: object) => void} [props.onResult]  take the result instead of rendering it
+ * @param {'stack'|'split'} [props.layout]     'split': once a result is in, the bar
+ *   widens to its container and the query sits left, the table right
+ * @param {(row: object, ctx: { window: object|null, keys: string[] }) => void} [props.onRowClick]
+ *   makes result rows clickable; the page decides what a row opens
+ * @param {(row: object) => boolean} [props.rowClickable]  which rows (default: those with a ticker)
+ */
+export default function EzanaQLBar({
+  datasetScope = null,
+  seedQuery = '',
+  onResult,
+  layout = 'stack',
+  onRowClick,
+  rowClickable = (row) => row.ticker != null && row.ticker !== '',
+}) {
   const [prompt, setPrompt] = useState('');
   const [focused, setFocused] = useState(false);
   const [code, setCode] = useState(seedQuery);
@@ -207,191 +226,231 @@ export default function EzanaQLBar({ datasetScope = null, seedQuery = '', onResu
   const rows = result?.rows || [];
   const columns = result?.columns || [];
   const keys = result?.keys || columns;
+  const types = result?.columnTypes || keys.map(() => null);
+  const aligns = keys.map((k, i) => columnAlign(types[i], rows, k));
   const shown = rows.slice(0, 50);
+  const split = layout === 'split' && !!result;
+  const clickable = typeof onRowClick === 'function';
+
+  const openRow = (r) => {
+    if (!clickable || !rowClickable(r)) return;
+    onRowClick(r, { window: result?.window || null, keys });
+  };
+
+  const resultsPanel = result ? (
+    <div className="eqb-results">
+      <div className="eqb-results-head">
+        <span>
+          {rows.length > 50 ? `Showing 50 of ${rows.length} rows` : `${rows.length} rows`}
+        </span>
+        {clickable && rows.some(rowClickable) ? (
+          <span className="eqb-results-hint">Click a company for its contracts and holders</span>
+        ) : null}
+        <button type="button" className="eqb-results-x" onClick={() => setResult(null)}>
+          Hide
+        </button>
+      </div>
+      <div className="eqb-scroll">
+        <table className="eqb-table">
+          <thead>
+            <tr>
+              {columns.map((c, i) => (
+                <th key={c} className={aligns[i] === 'right' ? 'eqb-num' : undefined}>
+                  {c}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {shown.map((r, i) => {
+              const can = clickable && rowClickable(r);
+              return (
+                <tr
+                  key={i}
+                  className={can ? 'eqb-row--link' : undefined}
+                  tabIndex={can ? 0 : undefined}
+                  role={can ? 'button' : undefined}
+                  aria-label={can ? `Open ${r.parent || r.recipient || r.ticker}` : undefined}
+                  onClick={can ? () => openRow(r) : undefined}
+                  onKeyDown={
+                    can
+                      ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            openRow(r);
+                          }
+                        }
+                      : undefined
+                  }
+                >
+                  {keys.map((k, j) => (
+                    <td key={k} className={aligns[j] === 'right' ? 'eqb-num' : undefined}>
+                      {formatCell(r[k], types[j])}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  ) : null;
 
   return (
-    <div className="eqb">
-      <div className="eqb-pill">
-        <span className="eqb-mark">
-          <i className="bi bi-stars" aria-hidden="true" />
-          <span>Ezana AI</span>
-        </span>
-        <span className="eqb-div" aria-hidden="true" />
-        <input
-          ref={promptRef}
-          className="eqb-input"
-          placeholder="Describe a report in plain English"
-          aria-label="Describe a report in plain English"
-          enterKeyHint="go"
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              generate();
-            }
-          }}
-        />
-        <button type="button" className="eqb-go" onClick={generate} disabled={busy === 'gen'}>
-          {busy === 'gen' ? (
-            'Generating'
-          ) : (
-            <>
-              Generate<span className="eqb-go-long"> EzanaQL</span>
-            </>
-          )}
-        </button>
-        <span className="eqb-actions" role="group" aria-label="Query actions">
-          <button
-            type="button"
-            className="eqb-act"
-            onClick={() => setEditing((v) => !v)}
-            aria-pressed={editing}
-            aria-label={editing ? 'Close editor' : 'Edit query'}
-          >
-            <i className="bi bi-pencil" aria-hidden="true" />
-            <span>{editing ? 'Close' : 'Edit'}</span>
-          </button>
-          <button
-            type="button"
-            className="eqb-act"
-            onClick={run}
-            disabled={busy === 'run'}
-            aria-label={busy === 'run' ? 'Running query' : 'Run query'}
-          >
-            <i className="bi bi-play-fill" aria-hidden="true" />
-            <span>{busy === 'run' ? 'Running' : 'Run'}</span>
-          </button>
-          <button
-            type="button"
-            className="eqb-act"
-            onClick={() => exportAs('csv')}
-            disabled={busy === 'csv'}
-            aria-label="Export CSV"
-          >
-            <i className="bi bi-filetype-csv" aria-hidden="true" />
-            <span>CSV</span>
-          </button>
-          <button
-            type="button"
-            className="eqb-act"
-            onClick={() => exportAs('json')}
-            disabled={busy === 'json'}
-            aria-label="Export JSON"
-          >
-            <i className="bi bi-filetype-json" aria-hidden="true" />
-            <span>JSON</span>
-          </button>
-        </span>
-      </div>
-
-      {code.trim() ? (
-        /* The query itself opens the editor: on a phone the pencil is a
-           small target, the query is the obvious one. */
-        <button
-          type="button"
-          className="eqb-code"
-          onClick={() => setEditing(true)}
-          aria-label="Edit this EzanaQL query"
-          aria-expanded={editing}
-        >
-          <span className="eqb-code-tag">EzanaQL</span>
-          <code className={`eqb-query${swapping ? ' is-swapping' : ''}`}>
-            <QueryTokens code={code} />
-          </code>
-        </button>
-      ) : null}
-
-      {/* Only while the prompt has focus: true everywhere, and noise until
-          someone is actually about to type. */}
-      {focused ? (
-        <p className="eqb-hint">Queries can span any live dataset, not just this page&apos;s.</p>
-      ) : null}
-
-      {editing ? (
-        <div className="eqb-edit">
-          <textarea
-            ref={editorRef}
-            className="eqb-editor"
-            rows={
-              mobile
-                ? MOBILE_EDITOR_LINES
-                : Math.min(MAX_EDITOR_LINES, Math.max(3, code.split('\n').length))
-            }
-            value={code}
-            placeholder='FROM capitol.congress_trades WHERE ticker = "NVDA" LIMIT 50'
-            spellCheck={false}
-            autoCapitalize="off"
-            autoCorrect="off"
-            autoComplete="off"
-            aria-label="EzanaQL query"
-            onChange={(e) => {
-              setDirty(true);
-              setCode(e.target.value);
+    <div className={`eqb${split ? ' eqb--split' : ''}`}>
+      <div className="eqb-main">
+        <div className="eqb-pill">
+          <span className="eqb-mark">
+            <i className="bi bi-stars" aria-hidden="true" />
+            <span>Ezana AI</span>
+          </span>
+          <span className="eqb-div" aria-hidden="true" />
+          <input
+            ref={promptRef}
+            className="eqb-input"
+            placeholder="Describe a report in plain English"
+            aria-label="Describe a report in plain English"
+            enterKeyHint="go"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                generate();
+              }
             }}
-            onKeyDown={onEditorKey}
           />
-          {/* Run sits under the editor too: the pill's Run is off screen once
-              a phone keyboard is up. */}
-          <div className="eqb-edit-bar">
-            <span className="eqb-edit-hint">Ctrl or Cmd + Enter to run</span>
-            <button type="button" className="eqb-edit-close" onClick={() => setEditing(false)}>
-              Close
+          <button type="button" className="eqb-go" onClick={generate} disabled={busy === 'gen'}>
+            {busy === 'gen' ? (
+              'Generating'
+            ) : (
+              <>
+                Generate<span className="eqb-go-long"> EzanaQL</span>
+              </>
+            )}
+          </button>
+          <span className="eqb-actions" role="group" aria-label="Query actions">
+            <button
+              type="button"
+              className="eqb-act"
+              onClick={() => setEditing((v) => !v)}
+              aria-pressed={editing}
+              aria-label={editing ? 'Close editor' : 'Edit query'}
+            >
+              <i className="bi bi-pencil" aria-hidden="true" />
+              <span>{editing ? 'Close' : 'Edit'}</span>
             </button>
             <button
               type="button"
-              className="eqb-edit-run"
+              className="eqb-act"
               onClick={run}
-              disabled={busy === 'run' || !code.trim()}
+              disabled={busy === 'run'}
+              aria-label={busy === 'run' ? 'Running query' : 'Run query'}
             >
               <i className="bi bi-play-fill" aria-hidden="true" />
-              {busy === 'run' ? 'Running' : 'Run query'}
+              <span>{busy === 'run' ? 'Running' : 'Run'}</span>
             </button>
-          </div>
-        </div>
-      ) : null}
-
-      {error ? (
-        <p className="eqb-msg" role="status">
-          {error}
-        </p>
-      ) : null}
-      {note ? <p className="eqb-note">{note}</p> : null}
-
-      {result ? (
-        <div className="eqb-results">
-          <div className="eqb-results-head">
-            <span>
-              {rows.length > 50 ? `Showing 50 of ${rows.length} rows` : `${rows.length} rows`}
-            </span>
-            <button type="button" className="eqb-results-x" onClick={() => setResult(null)}>
-              Hide
+            <button
+              type="button"
+              className="eqb-act"
+              onClick={() => exportAs('csv')}
+              disabled={busy === 'csv'}
+              aria-label="Export CSV"
+            >
+              <i className="bi bi-filetype-csv" aria-hidden="true" />
+              <span>CSV</span>
             </button>
-          </div>
-          <div className="eqb-scroll">
-            <table className="eqb-table">
-              <thead>
-                <tr>
-                  {columns.map((c) => (
-                    <th key={c}>{c}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {shown.map((r, i) => (
-                  <tr key={i}>
-                    {keys.map((k) => (
-                      <td key={k}>{r[k] == null ? '·' : String(r[k])}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+            <button
+              type="button"
+              className="eqb-act"
+              onClick={() => exportAs('json')}
+              disabled={busy === 'json'}
+              aria-label="Export JSON"
+            >
+              <i className="bi bi-filetype-json" aria-hidden="true" />
+              <span>JSON</span>
+            </button>
+          </span>
         </div>
-      ) : null}
+
+        {code.trim() ? (
+          /* The query itself opens the editor: on a phone the pencil is a
+           small target, the query is the obvious one. */
+          <button
+            type="button"
+            className="eqb-code"
+            onClick={() => setEditing(true)}
+            aria-label="Edit this EzanaQL query"
+            aria-expanded={editing}
+          >
+            <span className="eqb-code-tag">EzanaQL</span>
+            <code className={`eqb-query${swapping ? ' is-swapping' : ''}`}>
+              <QueryTokens code={code} />
+            </code>
+          </button>
+        ) : null}
+
+        {/* Only while the prompt has focus: true everywhere, and noise until
+          someone is actually about to type. */}
+        {focused ? (
+          <p className="eqb-hint">Queries can span any live dataset, not just this page&apos;s.</p>
+        ) : null}
+
+        {editing ? (
+          <div className="eqb-edit">
+            <textarea
+              ref={editorRef}
+              className="eqb-editor"
+              rows={
+                mobile
+                  ? MOBILE_EDITOR_LINES
+                  : Math.min(MAX_EDITOR_LINES, Math.max(3, code.split('\n').length))
+              }
+              value={code}
+              placeholder='FROM capitol.congress_trades WHERE ticker = "NVDA" LIMIT 50'
+              spellCheck={false}
+              autoCapitalize="off"
+              autoCorrect="off"
+              autoComplete="off"
+              aria-label="EzanaQL query"
+              onChange={(e) => {
+                setDirty(true);
+                setCode(e.target.value);
+              }}
+              onKeyDown={onEditorKey}
+            />
+            {/* Run sits under the editor too: the pill's Run is off screen once
+              a phone keyboard is up. */}
+            <div className="eqb-edit-bar">
+              <span className="eqb-edit-hint">Ctrl or Cmd + Enter to run</span>
+              <button type="button" className="eqb-edit-close" onClick={() => setEditing(false)}>
+                Close
+              </button>
+              <button
+                type="button"
+                className="eqb-edit-run"
+                onClick={run}
+                disabled={busy === 'run' || !code.trim()}
+              >
+                <i className="bi bi-play-fill" aria-hidden="true" />
+                {busy === 'run' ? 'Running' : 'Run query'}
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {error ? (
+          <p className="eqb-msg" role="status">
+            {error}
+          </p>
+        ) : null}
+        {note ? <p className="eqb-note">{note}</p> : null}
+      </div>
+
+      {resultsPanel}
     </div>
   );
 }

@@ -35,6 +35,7 @@ import { usePublishTicker } from '@/components/datasets/ticker-slot';
 import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
 import ContractsExplorer from './ContractsExplorer';
 import ContractorQuickView from './ContractorQuickView';
+import CompanyCard from '@/components/ezanaql/CompanyCard';
 import { slugify } from './contractor-mock';
 // Positional palette: raw awarding_agency strings are the source of truth (no
 // regex bucketing); colors bind to spend-rank slots (top 10) + Other.
@@ -133,6 +134,9 @@ export default function GovContractsClient({
   const [selected, setSelected] = useState(null);
   const [selectedAward, setSelectedAward] = useState(null); // ticker → award detail modal
   const [quickViewRecipient, setQuickViewRecipient] = useState(null); // explorer row → contractor quick-view
+  /* EzanaQL result row with a ticker → company card: the awards in the
+     query's window and the members still holding the stock. */
+  const [companyCard, setCompanyCard] = useState(null);
 
   // Prefer pre-aggregated BigQuery rollups (scales to millions of rows); fall
   // back to client-side aggregation of the small live-award slice.
@@ -396,6 +400,14 @@ export default function GovContractsClient({
         <EzanaQLBar
           datasetScope="gov.contracts"
           seedQuery={seedFromFilters({ agencies: [...selectedAgencies], fiscalYear })}
+          layout="split"
+          onRowClick={(row, ctx) =>
+            setCompanyCard({
+              ticker: String(row.ticker).toUpperCase(),
+              name: row.parent || row.recipient || null,
+              since: ctx.window?.since || null,
+            })
+          }
         />
       </div>
 
@@ -587,6 +599,14 @@ export default function GovContractsClient({
         <AwardDetailModal award={selectedAward} onClose={() => setSelectedAward(null)} />
       )}
 
+      {companyCard && (
+        <CompanyCard
+          ticker={companyCard.ticker}
+          name={companyCard.name}
+          since={companyCard.since}
+          onClose={() => setCompanyCard(null)}
+        />
+      )}
       {quickViewRecipient && (
         <ContractorQuickView
           recipient={quickViewRecipient}

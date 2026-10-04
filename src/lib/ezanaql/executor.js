@@ -394,6 +394,88 @@ function sideRows(fn, rows, ctx) {
   return out;
 }
 
+/* ── column types, so a grid can format money as money ── */
+function fieldType(name, dataset, joined) {
+  if (dataset.fields[name]) return dataset.fields[name].type;
+  if (joined) {
+    const prefix = shortName(joined.name);
+    const bare = name.startsWith(`${prefix}.`) ? name.slice(prefix.length + 1) : name;
+    if (joined.fields[bare]) return joined.fields[bare].type;
+  }
+  return null;
+}
+
+/**
+ * The display type of a projected expression: a field's declared type;
+ * COUNT is an int; SUM/AVG/MIN/MAX/MEDIAN/PERCENTILE/ROUND/ABS keep the type
+ * of what they are over (SUM of money is money); date parts are ints; text
+ * functions are strings. Unknown stays null and renders as text.
+ */
+function columnType(expr, dataset, joined) {
+  if (!expr) return null;
+  if (expr.type === 'field') return fieldType(expr.name, dataset, joined);
+  if (expr.type === 'lit') return expr.valueType === 'number' ? 'float' : expr.valueType || null;
+  if (expr.type === 'reldate') return 'date';
+  if (expr.type !== 'func') return null;
+  const inner = expr.args?.[0] ? columnType(expr.args[0], dataset, joined) : null;
+  switch (expr.name) {
+    case 'COUNT':
+    case 'YEAR':
+    case 'QUARTER':
+    case 'MONTH':
+    case 'DAYS_AGO':
+    case 'FISCAL_YEAR':
+    case 'RANK':
+      return 'int';
+    case 'SUM':
+    case 'MIN':
+    case 'MAX':
+    case 'MEDIAN':
+    case 'PERCENTILE':
+    case 'ABS':
+    case 'ROUND':
+    case 'COALESCE':
+    case 'MOVING_AVG':
+      return inner;
+    case 'AVG':
+      return inner === 'money' ? 'money' : inner === 'int' ? 'float' : inner;
+    case 'PCT_CHANGE':
+    case 'YOY':
+    case 'CAGR':
+      return 'float';
+    case 'UPPER':
+    case 'LOWER':
+    case 'TRIM':
+    case 'CONCAT':
+      return 'string';
+    case 'NOW':
+    case 'DATE_TRUNC':
+      return 'date';
+    default:
+      return inner;
+  }
+}
+
+/**
+ * The date window the query asked for on the FROM dataset, read off its
+ * top-level AND conjuncts: `action_date >= LAST 5 YEARS` → { field, since }.
+ * A page can hand it to a drill-in (the company card) so "contracts in this
+ * window" means the window the user chose. Null when there is none.
+ */
+function dateWindow(ast, dataset, now) {
+  for (const p of conjuncts(ast.where)) {
+    if (p.type !== 'compare' || !['>=', '>'].includes(p.op)) continue;
+    if (p.left?.type !== 'field' || dataset.fields[p.left.name]?.type !== 'date') continue;
+    let since = null;
+    if (p.right?.type === 'reldate') since = resolveRelDate(p.right, now).value;
+    else if (p.right?.type === 'lit' && typeof p.right.value === 'string') since = p.right.value;
+    if (since && /^\d{4}-\d{2}-\d{2}/.test(String(since))) {
+      return { field: p.left.name, since: String(since).slice(0, 10) };
+    }
+  }
+  return null;
+}
+
 /* ── aggregation over a group of rows ── */
 function aggregate(fn, allRows, ctx) {
   const rows = sideRows(fn, allRows, ctx);
@@ -483,11 +565,12 @@ export async function execute({ ast, dataset, joined = null, admin, userId, now 
 
     let outRows;
     let columns;
+    let projectionUsed;
 
     if (hasGroupBy || selectHasAgg) {
       // group rows
       const groups = new Map();
-      const keyOf = (r) => (hasGroupBy ? ast.groupBy.map((f) => r[f]).join(' ') : '__all__');
+      const keyOf = (r) => (hasGroupBy ? ast.groupBy.map((f) => r[f]).join('\u0000') : '__all__');
       for (const r of rows) {
         const k = keyOf(r);
         if (!groups.has(k)) groups.set(k, []);
@@ -499,6 +582,7 @@ export async function execute({ ast, dataset, joined = null, admin, userId, now 
           ? ast.groupBy.map((f) => ({ expr: { type: 'field', name: f }, alias: null }))
           : []);
       columns = projection.map(label);
+      projectionUsed = projection;
       outRows = [];
       for (const groupRows of groups.values()) {
         // HAVING (aggregate predicate over the group)
@@ -519,6 +603,7 @@ export async function execute({ ast, dataset, joined = null, admin, userId, now 
       const projection =
         ast.select || defaults.map((f) => ({ expr: { type: 'field', name: f }, alias: null }));
       columns = projection.map(label);
+      projectionUsed = projection;
       outRows = rows.map((r) => {
         const rec = {};
         projection.forEach((item, idx) => {
@@ -546,7 +631,15 @@ export async function execute({ ast, dataset, joined = null, admin, userId, now 
     const limit = ast.limit != null ? ast.limit : dataset.defaultLimit;
     outRows = outRows.slice(offset, offset + limit);
 
-    return { columns, rows: outRows, rowCount: outRows.length, notes };
+    const columnTypes = projectionUsed.map((item) => columnType(item.expr, dataset, joined));
+    return {
+      columns,
+      columnTypes,
+      rows: outRows,
+      rowCount: outRows.length,
+      notes,
+      window: dateWindow(ast, dataset, now),
+    };
   })();
 
   return Promise.race([

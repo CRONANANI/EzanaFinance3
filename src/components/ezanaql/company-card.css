@@ -1,0 +1,424 @@
+/* Company card (prefix ccd-): the dialog opened from an EzanaQL result row
+   with a ticker. Tokens only; mono for every number, sans for everything
+   else; the standard card surface, border and radius. */
+.ccd-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: var(--bg-overlay);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 48px 16px 24px;
+  overflow-y: auto;
+}
+.ccd {
+  width: min(880px, 100%);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-sans);
+  animation: ccd-in 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+@keyframes ccd-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ccd {
+    animation: none;
+  }
+}
+.ccd,
+.ccd * {
+  box-sizing: border-box;
+}
+.ccd-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.ccd-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px 14px;
+  border-bottom: 1px solid var(--border-secondary);
+}
+.ccd-eyebrow {
+  margin: 0 0 4px;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.ccd-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.ccd-x {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+.ccd-x:hover,
+.ccd-x:focus-visible {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+  outline: none;
+}
+.ccd-body {
+  padding: 16px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.ccd-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.ccd-stat {
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ccd-stat-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.ccd-stat-value {
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.ccd-stat-value--text {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ccd-stat-sub {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+}
+.ccd-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ccd-h {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.ccd-note,
+.ccd-chart-note {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--text-faint);
+}
+.ccd-empty {
+  margin: 0;
+  padding: 16px 24px;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* chart */
+.ccd-chart {
+  position: relative;
+}
+.ccd-chart svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.ccd-grid {
+  stroke: var(--border-secondary);
+  stroke-dasharray: 3 3;
+}
+.ccd-tick {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--text-muted);
+}
+.ccd-tick--ink {
+  fill: var(--text-primary);
+}
+.ccd-line {
+  fill: none;
+  stroke: var(--emerald);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.ccd-last {
+  fill: var(--bg-secondary);
+  stroke: var(--emerald);
+  stroke-width: 2;
+}
+.ccd-marker {
+  cursor: pointer;
+  outline: none;
+}
+.ccd-stem {
+  stroke: var(--text-ghost);
+  stroke-width: 1;
+}
+.ccd-buy {
+  fill: var(--bg-secondary);
+  stroke: var(--text-primary);
+  stroke-width: 1.5;
+}
+.ccd-marker.is-active .ccd-buy,
+.ccd-marker:focus-visible .ccd-buy {
+  fill: var(--emerald);
+  stroke: var(--emerald);
+}
+.ccd-marker.is-active .ccd-stem,
+.ccd-marker:focus-visible .ccd-stem {
+  stroke: var(--emerald);
+}
+.ccd-portrait-ring {
+  fill: var(--bg-tertiary);
+  stroke: var(--text-ghost);
+  stroke-width: 2;
+}
+.ccd-portrait--D .ccd-portrait-ring {
+  stroke: var(--blue);
+}
+.ccd-portrait--R .ccd-portrait-ring {
+  stroke: var(--negative);
+}
+.ccd-portrait--I .ccd-portrait-ring {
+  stroke: var(--purple);
+}
+.ccd-marker.is-active .ccd-portrait-ring,
+.ccd-marker:focus-visible .ccd-portrait-ring {
+  stroke-width: 3;
+}
+.ccd-portrait-initials {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: 600;
+  fill: var(--text-primary);
+}
+.ccd-count-bg {
+  fill: var(--text-primary);
+}
+.ccd-count {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 700;
+  fill: var(--bg-secondary);
+}
+.ccd-tip {
+  position: absolute;
+  top: 0;
+  transform: translateX(var(--ccd-tip-shift, -50%));
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 1;
+}
+.ccd-tip-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* holders */
+.ccd-holders {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 16px;
+}
+.ccd-holder {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-secondary);
+  min-width: 0;
+}
+.ccd-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--text-ghost);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ccd-avatar--D {
+  border-color: var(--blue);
+}
+.ccd-avatar--R {
+  border-color: var(--negative);
+}
+.ccd-avatar--I {
+  border-color: var(--purple);
+}
+.ccd-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+.ccd-holder-main,
+.ccd-holder-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.ccd-holder-right {
+  align-items: flex-end;
+  text-align: right;
+}
+.ccd-holder-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ccd-holder-meta {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ccd-holder-est {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* awards table */
+.ccd-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.ccd-table th,
+.ccd-table td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-secondary);
+  white-space: nowrap;
+}
+.ccd-table th {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+}
+.ccd-table .ccd-num {
+  text-align: right;
+}
+.ccd-ellipsis {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* loading */
+.ccd-skel {
+  height: 72px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    90deg,
+    var(--bg-tertiary) 25%,
+    var(--surface-card-hover) 50%,
+    var(--bg-tertiary) 75%
+  );
+  background-size: 200% 100%;
+  animation: ccd-shimmer 1.5s ease-in-out infinite;
+}
+.ccd-skel--tall {
+  height: 220px;
+}
+@keyframes ccd-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .ccd-backdrop {
+    padding: 12px 8px;
+  }
+  .ccd-head,
+  .ccd-body {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .ccd-stats,
+  .ccd-holders {
+    grid-template-columns: 1fr;
+  }
+  .ccd-table {
+    display: block;
+    overflow-x: auto;
+  }
+  .ccd-ellipsis {
+    max-width: 180px;
+  }
+}

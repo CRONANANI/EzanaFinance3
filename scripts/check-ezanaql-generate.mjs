@@ -495,3 +495,78 @@ test('every seeded contractor key is already normalised, and private rows carry 
     assert.match(ticker, /^[A-Z]{1,5}$/, `odd prefix ticker for ${k}: ${ticker}`);
   }
 });
+
+// ── column types and the date window, for the grid and the company card ──
+
+test('results carry a display type per column and the query date window', async () => {
+  const admin = fakeAdmin(TABLES);
+  const out = await run(
+    'FROM gov.contracts JOIN capitol.congress_trades ON ticker WHERE action_date >= LAST 5 YEARS SELECT ticker, recipient, SUM(award_value) AS t, COUNT(DISTINCT politician) AS members, AVG(award_value) AS avg, transaction_date GROUP BY ticker, recipient, transaction_date;',
+    admin,
+  );
+  assert.deepEqual(out.columnTypes, ['string', 'string', 'money', 'int', 'money', 'date']);
+  assert.deepEqual(out.window, { field: 'action_date', since: '2021-10-03' });
+
+  const none = await run('FROM gov.contracts SELECT recipient, award_value LIMIT 1;', admin);
+  assert.deepEqual(none.columnTypes, ['string', 'money']);
+  assert.equal(none.window, null);
+});
+
+const { formatCell, columnAlign } = await import('../src/lib/ezanaql/grid-format.js');
+
+test('grid cells format by type', () => {
+  assert.equal(formatCell(1272663951.02, 'money'), '$1,272,663,951');
+  assert.equal(formatCell(999.5, 'money'), '$999.50');
+  assert.equal(formatCell(-2500, 'money'), '-$2,500');
+  assert.equal(formatCell(16, 'int'), '16');
+  assert.equal(formatCell(12345678, 'int'), '12,345,678');
+  assert.equal(formatCell(3.14159, 'float'), '3.14');
+  assert.equal(formatCell(1272663951.02, null), '1,272,663,951.02');
+  assert.equal(formatCell('2026-10-30', 'date'), 'Oct 30, 2026');
+  assert.equal(formatCell(true, 'bool'), 'Yes');
+  assert.equal(formatCell(null, 'money'), '·');
+  assert.equal(formatCell('LMT', 'string'), 'LMT');
+  assert.equal(columnAlign('money', [], 'x'), 'right');
+  assert.equal(columnAlign(null, [{ x: 1 }, { x: 2 }], 'x'), 'right');
+  assert.equal(columnAlign(null, [{ x: 'a' }], 'x'), 'left');
+});
+
+const { layoutChart, rangeFor, niceTicks } = await import('../src/lib/contracts/company-chart.js');
+
+test('company chart lays out markers on the nearest close and stacks collisions', () => {
+  const candles = [];
+  for (let i = 0; i < 400; i++) {
+    const d = new Date(Date.UTC(2024, 0, 1) + i * 2 * 86400000);
+    candles.push({ date: d.toISOString().slice(0, 10), close: 100 + i / 4 });
+  }
+  const L = layoutChart(
+    candles,
+    [
+      { bioguide_id: 'A', date: '2024-03-10', amount: 8000 },
+      { bioguide_id: 'A', date: '2024-03-10', amount: 8000 },
+      { bioguide_id: 'B', date: '2024-03-12', amount: 32500 },
+      { bioguide_id: 'C', date: '2025-06-01', amount: 8000 },
+      { bioguide_id: 'D', date: '1999-01-01', amount: 1 }, // outside the series: dropped
+    ],
+    { A: { name: 'A' } },
+  );
+  assert.equal(L.ok, true);
+  assert.equal(L.markers.length, 3);
+  assert.deepEqual(
+    L.markers.map((m) => [m.bioguide_id, m.buys, m.level]),
+    [
+      ['A', 2, 0],
+      ['B', 1, 1],
+      ['C', 1, 0],
+    ],
+  );
+  assert.equal(L.markers[0].amount, 16000);
+  assert.ok(L.markers[1].my < L.markers[0].my, 'stacked marker sits higher');
+  assert.ok(L.markers[0].cy > L.markers[0].my, 'portrait sits above the line');
+  assert.equal(layoutChart([], [], {}).ok, false);
+  assert.deepEqual(niceTicks(283, 612).ticks, [200, 300, 400, 500, 600, 700]);
+  const now = Date.parse('2026-10-03');
+  assert.equal(rangeFor([{ date: '2015-12-29' }], now), 'ALL');
+  assert.equal(rangeFor([{ date: '2024-02-13' }], now), '3Y');
+  assert.equal(rangeFor([], now), '5Y');
+});

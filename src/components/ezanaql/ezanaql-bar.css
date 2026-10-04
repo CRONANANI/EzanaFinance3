@@ -408,3 +408,70 @@
     padding-inline: 4px;
   }
 }
+
+/* ── split layout: query left, results right ──
+   Opt-in per page (layout="split"). Once a result is in, the bar grows to
+   its container's width, so on the contracts page its left edge lines up
+   with the filter rail, and the table takes the right-hand column. With no
+   result it is the same 820px centred bar as everywhere else. */
+.eqb--split {
+  width: 100%;
+  max-width: none;
+  display: grid;
+  grid-template-columns: minmax(0, 11fr) minmax(0, 13fr);
+  gap: 20px;
+  align-items: start;
+}
+.eqb--split .eqb-main {
+  min-width: 0;
+}
+.eqb--split .eqb-results {
+  margin-top: 0;
+  min-width: 0;
+}
+.eqb--split .eqb-scroll {
+  max-height: min(560px, 70vh);
+}
+/* In the narrower left column the pill drops the action labels and lets the
+   prompt keep a usable width; the actions keep their icons and aria-labels. */
+.eqb--split .eqb-pill {
+  padding-right: 4px;
+}
+.eqb--split .eqb-go-long,
+.eqb--split .eqb-act span {
+  display: none;
+}
+.eqb--split .eqb-input {
+  flex-basis: 140px;
+}
+@media (max-width: 1100px) {
+  .eqb--split {
+    grid-template-columns: 1fr;
+  }
+  .eqb--split .eqb-results {
+    margin-top: 10px;
+  }
+  .eqb--split .eqb-go-long,
+  .eqb--split .eqb-act span {
+    display: inline;
+  }
+}
+
+/* numbers right-aligned; a clickable row says so on hover and focus */
+.eqb-table .eqb-num {
+  text-align: right;
+}
+.eqb-results-hint {
+  color: var(--eqb-faint);
+}
+.eqb-row--link {
+  cursor: pointer;
+  outline: none;
+}
+.eqb-row--link:hover td,
+.eqb-row--link:focus-visible td {
+  background: var(--eqb-wash);
+}
+.eqb-row--link td:first-child {
+  color: var(--eqb-pos);
+}

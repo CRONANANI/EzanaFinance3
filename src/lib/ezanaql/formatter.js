@@ -43,5 +43,17 @@ export function format(result, fmt = 'table') {
   }
   // table (preview) — structured for the UI grid. `keys` keeps the real field
   // names so the grid can read each cell while showing the labelled header.
-  return { contentType: 'application/json', columns, keys: source, rows, rowCount: rows.length };
+  return {
+    contentType: 'application/json',
+    columns,
+    keys: source,
+    /* Per-column display types (money, int, float, date, string, bool) in
+       `keys` order, so the grid formats $1,272,663,951 as money and a count
+       as a count. Null where the engine cannot tell. */
+    columnTypes: result.columnTypes || source.map(() => null),
+    rows,
+    rowCount: rows.length,
+    /* The date window the query asked for, if any: { field, since }. */
+    window: result.window || null,
+  };
 }
