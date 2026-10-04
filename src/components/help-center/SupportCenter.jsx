@@ -38,6 +38,7 @@ import {
   trendingFallback,
 } from '@/lib/help-center/support-model';
 import CategoryRail from './CategoryRail';
+import PlatformChangelog from './PlatformChangelog';
 import './support-center.css';
 
 const MIN_Q = 3;
@@ -882,6 +883,9 @@ export default function SupportCenter({ audience = 'user', initialQuestion = '' 
           </div>
         </div>
       )}
+
+      {/* ── platform changelog + feedback, below everything, both states ── */}
+      <PlatformChangelog />
     </div>
   );
 }

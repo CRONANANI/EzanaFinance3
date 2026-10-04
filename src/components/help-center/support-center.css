@@ -395,6 +395,46 @@
   padding-left: 0;
 }
 
+/* Home, desktop: the category rail, the "Still need help?" card and the
+   Trending list all END on one line. The rail spans both rows and sets the
+   height; the middle column pushes the help card to its foot, and the
+   trending rows share the column's height so the last one lands there too.
+   The 10px matches .hcs-rail-row's bottom padding, so the help buttons and
+   the last trending rule sit level with the bottom of the last category
+   tile, not the row's padding. */
+@media (min-width: 1001px) {
+  .hcs-grid--home .hcs-main,
+  .hcs-grid--home .hcs-side {
+    align-self: stretch;
+  }
+  .hcs-grid--home .hcs-main > .hcs-help {
+    margin-top: auto;
+    align-items: flex-end;
+    padding-bottom: 10px;
+  }
+  .hcs-grid--home .hcs-side {
+    padding-bottom: 10px;
+  }
+  .hcs-grid--home .hcs-side > .hcs-trending {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .hcs-grid--home .hcs-side .hcs-trend-list {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .hcs-grid--home .hcs-side .hcs-trend-list > li {
+    flex: 1 1 auto;
+    display: flex;
+  }
+  .hcs-grid--home .hcs-side .hcs-trend-row {
+    flex: 1 1 auto;
+    align-content: center;
+  }
+}
+
 /* ── category rail ───────────────────────────────────────────────────── */
 .hcs-rail {
   min-width: 0;
@@ -1001,6 +1041,189 @@
 }
 
 /* ── responsive ──────────────────────────────────────────────────────── */
+/* ── platform changelog + feedback ───────────────────────────────────── */
+.hcs-cl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  column-gap: 40px;
+  align-items: start;
+  margin-top: 48px;
+  padding-top: 28px;
+  border-top: 1px solid var(--hcs-hair-strong);
+}
+.hcs-cl-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.hcs-cl-entry {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 20px;
+  padding: 16px 0;
+  border-bottom: 1px dotted var(--hcs-dotted);
+}
+.hcs-cl-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.hcs-cl-date {
+  font-size: 12px;
+  color: var(--hcs-mute);
+}
+.hcs-cl-tag {
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  padding: 2px 7px;
+  border: 1px solid var(--hcs-hair-strong);
+  border-radius: var(--radius-sm);
+  color: var(--hcs-mute);
+}
+.hcs-cl-tag--feature {
+  color: var(--hcs-positive);
+  border-color: var(--hcs-active-border);
+  background: var(--hcs-tint);
+}
+.hcs-cl-title {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+.hcs-cl-body {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--hcs-mute);
+  white-space: pre-line;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.hcs-cl-body.is-open {
+  display: block;
+  -webkit-line-clamp: unset;
+}
+.hcs-cl-more {
+  margin-top: 6px;
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.hcs-cl-load {
+  margin-top: 16px;
+}
+.hcs-cl-empty {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--hcs-mute);
+}
+.hcs-cl-entry .hcs-skel--line {
+  grid-column: 1 / -1;
+}
+
+/* feedback */
+.hcs-fb {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid var(--hcs-hair-strong);
+  border-radius: var(--radius-lg);
+  background: var(--hcs-bg);
+}
+.hcs-fb-sub,
+.hcs-fb--sent p {
+  margin: -6px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--hcs-mute);
+}
+.hcs-fb--sent {
+  align-items: flex-start;
+}
+.hcs-fb--sent p {
+  margin: 0;
+}
+.hcs-fb--sent .hcs-tile {
+  color: var(--hcs-positive);
+}
+.hcs-fb-areas {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: 6px;
+}
+.hcs-fb-areas legend {
+  margin-bottom: 6px;
+}
+.hcs-fb-area {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 9px 12px;
+  border: 1px solid var(--hcs-hair-strong);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.hcs-fb-area input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.hcs-fb-area.is-on {
+  border-color: var(--hcs-active-border);
+  background: var(--hcs-tint);
+}
+.hcs-fb-area:focus-within {
+  outline: 2px solid var(--hcs-emerald);
+  outline-offset: 2px;
+}
+.hcs-fb-area-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+.hcs-fb-area-hint {
+  font-size: 11.5px;
+  color: var(--hcs-mute);
+}
+.hcs-fb-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.hcs-fb-count {
+  align-self: flex-end;
+  font-size: 10.5px;
+  color: var(--hcs-faint);
+}
+.hcs-fb-err {
+  margin: 0;
+  font-size: 12px;
+  color: var(--danger);
+}
+.hcs-fb-hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.hcs-fb-send {
+  align-self: flex-start;
+}
+
 @media (max-width: 1200px) {
   .hcs-grid--home {
     grid-template-columns: 240px minmax(0, 1fr) 280px;
@@ -1011,6 +1234,10 @@
   }
 }
 @media (max-width: 1000px) {
+  .hcs-cl {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 28px;
+  }
   .hcs-grid--home .hcs-search,
   .hcs-grid--home .hcs-rail,
   .hcs-grid--home .hcs-main,
@@ -1077,6 +1304,14 @@
   }
 }
 @media (max-width: 640px) {
+  .hcs-cl-entry {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .hcs-cl-meta {
+    flex-direction: row;
+    align-items: center;
+  }
   .hcs {
     --hcs-gutter: 16px;
   }
