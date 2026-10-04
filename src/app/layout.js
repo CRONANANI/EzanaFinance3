@@ -27,10 +27,39 @@ import { resolveRouteShellClasses } from '@/lib/route-shell';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ezana.world';
+
+/* The link-preview card every page inherits when it is shared by text
+   message or on social media: 1200x630, the Walia ibex alone (no text),
+   centred and sized so apps that crop to a square (WhatsApp, some SMS
+   clients) still show the whole animal. Without this, apps fell back to the
+   square transparent icon and cut it off. Config-based on purpose (not an
+   opengraph-image file): a page that sets its own openGraph, like an Echo
+   article with its hero image, replaces this whole object, so its own image
+   wins. Pages that set only a title keep this card, and apps take the
+   headline from that page's <title>. */
+const SHARE_IMAGE = {
+  url: '/og/ezana-share.png',
+  width: 1200,
+  height: 630,
+  alt: 'Ezana Finance, the Walia ibex mark',
+};
+
 export const metadata = {
+  metadataBase: new URL(SITE_URL),
   title: 'Ezana Finance - Follow the moves that matter',
   description:
     'Track congressional trades, analyze market intelligence, and manage your portfolio with institutional-grade tools.',
+  openGraph: {
+    siteName: 'Ezana Finance',
+    type: 'website',
+    locale: 'en_US',
+    images: [SHARE_IMAGE],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: [SHARE_IMAGE.url],
+  },
   // Favicon + apple-touch icon are served by Next's file conventions from
   // src/app/favicon.ico, src/app/icon.png and src/app/apple-icon.png (the Walia
   // ibex mark). No explicit `icons` here so those files are the single source
