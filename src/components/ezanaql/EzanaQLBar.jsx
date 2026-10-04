@@ -103,8 +103,12 @@ export default function EzanaQLBar({ datasetScope = null, seedQuery = '', onResu
     setNote(null);
     try {
       const res = await post('/api/ezanaql/generate', { prompt, datasetScope });
-      const data = await res.json();
-      if (!data.ok) {
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 429) {
+        setError(
+          'Too many requests to the report model from this connection; try again in a minute.',
+        );
+      } else if (!data.ok) {
         setError(data.error || 'That request could not be turned into a query.');
       } else {
         /* The line animates to its new text rather than snapping, so it is
@@ -133,9 +137,8 @@ export default function EzanaQLBar({ datasetScope = null, seedQuery = '', onResu
     try {
       const res = await post('/api/ezanaql/run', { query: code, format: 'table' });
       const data = await res.json().catch(() => ({}));
-      if (res.status === 401) {
-        /* The engine's own answer, not a euphemism: running needs an account. */
-        setError('Running a query needs a free account.');
+      if (res.status === 429) {
+        setError('Too many queries from this connection just now; try again in a minute.');
         return;
       }
       if (!data.ok) {
@@ -162,8 +165,8 @@ export default function EzanaQLBar({ datasetScope = null, seedQuery = '', onResu
       setNote(null);
       try {
         const res = await post('/api/ezanaql/export', { query: code, format });
-        if (res.status === 401) {
-          setError('Exporting needs a free account.');
+        if (res.status === 429) {
+          setError('Too many exports from this connection just now; try again in a minute.');
           return;
         }
         if (!res.ok) {
@@ -353,12 +356,6 @@ export default function EzanaQLBar({ datasetScope = null, seedQuery = '', onResu
       {error ? (
         <p className="eqb-msg" role="status">
           {error}
-          {/^(Running|Exporting)/.test(error) ? (
-            <>
-              {' '}
-              <a href="/auth/signup">Create one</a>.
-            </>
-          ) : null}
         </p>
       ) : null}
       {note ? <p className="eqb-note">{note}</p> : null}

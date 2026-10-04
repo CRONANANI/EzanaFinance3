@@ -6,7 +6,7 @@
  * model (same Anthropic provider the rest of the app uses), constrained to emit
  * EzanaQL only. The returned text is validated by the same parser/validator
  * before it is handed back — the AI is a convenience layer; the validator is the
- * security boundary (spec §9). Auth required.
+ * security boundary (spec §9). Session optional; guests are rate-limited per IP.
  */
 import { NextResponse } from 'next/server';
 import { requireUser } from '@/lib/supabase';
@@ -40,19 +40,20 @@ ${FEW_SHOT}`;
 }
 
 export async function POST(request) {
-  let user;
+  /* Every live dataset is public data (the catalog's only user_private
+     dataset is unavailable, and rlsFilter refuses it without a user anyway),
+     so a session is optional: it only widens the rate limit. Guests are
+     limited per IP, more tightly because each call spends model credit. */
+  let user = null;
   try {
     ({ user } = await requireUser(request));
   } catch {
     user = null;
   }
-  if (!user)
-    return NextResponse.json({ ok: false, error: 'Authentication required.' }, { status: 401 });
-
-  const rl = await checkRateLimit(`ezanaql:generate:${user.id || getClientIp(request)}`, {
-    interval: 60000,
-    limit: 15,
-  });
+  const rl = await checkRateLimit(
+    user ? `ezanaql:generate:${user.id}` : `ezanaql:generate:ip:${getClientIp(request)}`,
+    { interval: 60000, limit: user ? 15 : 6 },
+  );
   if (!rl.success) return rateLimitResponse(rl);
 
   let body;
@@ -61,7 +62,8 @@ export async function POST(request) {
   } catch {
     return NextResponse.json({ ok: false, error: 'Invalid request body.' }, { status: 400 });
   }
-  const prompt = typeof body?.prompt === 'string' ? body.prompt.trim() : '';
+  const MAX_PROMPT = 600;
+  const prompt = typeof body?.prompt === 'string' ? body.prompt.trim().slice(0, MAX_PROMPT) : '';
   const scope = typeof body?.datasetScope === 'string' ? body.datasetScope : 'gov.contracts';
   if (!prompt)
     return NextResponse.json(
