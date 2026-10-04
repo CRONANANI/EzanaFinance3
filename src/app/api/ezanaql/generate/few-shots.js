@@ -43,8 +43,8 @@ LIMIT 10;`,
   `FROM gov.contracts
 SEMI JOIN capitol.congress_trades ON ticker
 WHERE action_date >= LAST 5 YEARS
-SELECT recipient, ticker, SUM(award_value) AS awarded
-GROUP BY recipient, ticker
+SELECT parent, ticker, SUM(award_value) AS awarded
+GROUP BY parent, ticker
 HAVING SUM(award_value) >= 100M
 ORDER BY awarded DESC
 LIMIT 10;`,

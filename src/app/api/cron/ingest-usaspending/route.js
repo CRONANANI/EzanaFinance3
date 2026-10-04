@@ -67,6 +67,7 @@ function buildBody(start_date, end_date, page) {
     fields: [
       'Award ID',
       'Recipient Name',
+      'recipient_id',
       'Award Amount',
       'Awarding Agency',
       'Awarding Sub Agency',
@@ -168,6 +169,8 @@ export async function GET(request) {
           generated_award_id: gid,
           award_id_piid: r['Award ID'] || null,
           recipient_name: recipient,
+          recipient_id:
+            typeof r.recipient_id === 'string' && r.recipient_id ? r.recipient_id : null,
           award_amount: Number(r['Award Amount']),
           awarding_agency: r['Awarding Agency'] || null,
           awarding_sub_agency: r['Awarding Sub Agency'] || null,

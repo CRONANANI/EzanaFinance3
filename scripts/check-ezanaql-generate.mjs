@@ -143,7 +143,7 @@ test('the prompt schema lists live datasets and names the rest as not queryable'
   for (const d of dark) {
     assert.ok(text.includes(d.name), `${d.name} should be named as not queryable`);
   }
-  assert.equal(CATALOG_VERSION, '1.2.0');
+  assert.equal(CATALOG_VERSION, '1.3.0');
   assert.match(text, /capitol\.congress_trades .*joinable with gov\.contracts ON ticker/);
 });
 
@@ -263,7 +263,7 @@ function fakeAdmin(tables, { rpc = true } = {}) {
 }
 
 const TABLES = {
-  usaspending_contract_awards: [
+  contract_awards_resolved: [
     {
       recipient_name: 'LOCKHEED',
       awarding_agency: 'DoD',
@@ -424,4 +424,45 @@ test('joined-side filters are pushed to the joined fetch, not the FROM fetch', a
   );
   assert.equal(out.rowCount, 2); // A's two purchases × the one ≥100 award
   assert.ok(out.rows.every((r) => r.politician === 'A' && r['contracts.award_value'] === 100));
+});
+
+// ── contractor name keys: JS and SQL must agree ─────────────────────────────
+// The SQL function is fixed text in the migration; this pins the JS to a
+// corpus whose SQL output was checked against production once (md5 of the
+// sorted keys of all 8,221 recipient names on 2026-10-03 matched). The
+// cases below are the ones that decide the matching rules.
+
+const { nameKey } = await import('../src/lib/contractors/name-key.js');
+
+test('nameKey normalises the way contractor_name_key() does', () => {
+  const cases = [
+    ['FEDEX SUPPLY CHAIN DISTRIBUTION SYSTEM, INC.', 'FEDEX SUPPLY CHAIN DISTRIBUTION SYSTEM'],
+    ['The Boeing Company', 'BOEING'],
+    ['CACI, INC. - FEDERAL', 'CACI FEDERAL'],
+    ['M. A. MORTENSON COMPANY', 'M MORTENSON'],
+    ['BRASFIELD & GORRIE LLC', 'BRASFIELD GORRIE'],
+    ['3M COMPANY', '3M'],
+    ['Phillips 66 Company', 'PHILLIPS'],
+    ['Booz Allen Hamilton Inc. Class A Common Stock', 'BOOZ ALLEN HAMILTON'],
+    ['CSL Ltd ADR', 'CSL'],
+    ['', ''],
+    [null, ''],
+  ];
+  for (const [input, want] of cases) assert.equal(nameKey(input), want, JSON.stringify(input));
+});
+
+test('every seeded contractor key is already normalised, and private rows carry no ticker', async () => {
+  const { readFileSync } = await import('node:fs');
+  const data = JSON.parse(readFileSync(new URL('./data/contractor-tickers.json', import.meta.url)));
+  assert.ok(data.exact.length > 3000);
+  assert.ok(data.prefix.length > 300);
+  for (const [k, ticker, , isPublic] of data.exact) {
+    assert.equal(nameKey(k), k, `not normalised: ${k}`);
+    if (!isPublic) assert.equal(ticker, null, `private row with ticker: ${k}`);
+    else assert.match(ticker, /^[A-Z]{1,5}$/, `odd ticker for ${k}: ${ticker}`);
+  }
+  for (const [k, ticker] of data.prefix) {
+    assert.equal(nameKey(k), k, `prefix not normalised: ${k}`);
+    assert.match(ticker, /^[A-Z]{1,5}$/, `odd prefix ticker for ${k}: ${ticker}`);
+  }
 });

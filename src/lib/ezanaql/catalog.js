@@ -22,7 +22,7 @@
  * @typedef {'string'|'money'|'int'|'float'|'date'|'bool'} FieldType
  */
 
-export const CATALOG_VERSION = '1.2.0';
+export const CATALOG_VERSION = '1.3.0';
 
 /** Fields present in the design/spec but NOT backed by the real ingest yet. */
 export const CATALOG_GAPS = {
@@ -36,7 +36,7 @@ export const CATALOG_GAPS = {
   },
   'gov.contracts': {
     unavailableFields: ['hq_state', 'hq_city', 'naics_code', 'psc_code', 'award_type'],
-    note: 'The usaspending_contract_awards ingest stores recipient, agency, amount, ticker, action_date only. HQ location, NAICS/PSC codes and award type are not ingested, so they are omitted from the catalog (querying them returns a clear "unknown field" error) rather than fabricated.',
+    note: 'The usaspending ingest stores recipient, recipient_id, agency, amount, action_date. HQ location, NAICS/PSC codes and award type are not ingested, so they are omitted from the catalog (querying them returns a clear "unknown field" error) rather than fabricated. ticker / parent / is_public come from contract_awards_resolved.',
   },
 };
 
@@ -53,6 +53,12 @@ export const CATALOG_GAPS = {
  * }>}
  */
 export const CATALOG = {
+  /* Bound to contract_awards_resolved (migration 20261003140000): the awards
+     table plus the USAspending parent and the resolved ticker. `ticker` is the
+     parent's where one is known (CACI NSS → CACI, FedEx Supply Chain → FDX);
+     `is_public` is true / false / null (unknown); `ticker_source` says how
+     the ticker was arrived at. Known-private contractors (Deloitte, Bechtel,
+     Kiewit) read is_public = false, not "missing". */
   'gov.contracts': {
     name: 'gov.contracts',
     label: 'Federal Contract Awards',
@@ -62,14 +68,17 @@ export const CATALOG = {
     available: true,
     hardLimit: 5000,
     defaultLimit: 100,
-    table: 'usaspending_contract_awards',
+    table: 'contract_awards_resolved',
     // catalog field -> real DB column (null = derived in-engine, not a column)
     columnMap: {
       recipient: 'recipient_name',
+      parent: 'parent_name',
       awarding_agency: 'awarding_agency',
       award_value: 'award_amount',
       action_date: 'action_date',
       ticker: 'ticker',
+      is_public: 'is_public',
+      ticker_source: 'ticker_source',
       fiscal_year: null,
     },
     /* Derived in-engine, not a column. Declared so the executor needs no
@@ -78,10 +87,13 @@ export const CATALOG = {
     defaultProjection: ['recipient', 'awarding_agency', 'award_value', 'action_date'],
     fields: {
       recipient: { type: 'string' },
+      parent: { type: 'string', nullable: true },
       awarding_agency: { type: 'string' },
       award_value: { type: 'money' },
       action_date: { type: 'date' },
       ticker: { type: 'string', nullable: true },
+      is_public: { type: 'bool', nullable: true },
+      ticker_source: { type: 'string', nullable: true },
       fiscal_year: { type: 'int', derived: true },
     },
     joinableWith: ['capitol.congress_trades'],

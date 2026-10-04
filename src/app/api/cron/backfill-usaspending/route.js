@@ -16,6 +16,11 @@ import { fyWindow, isPlausibleAward, tickerForRecipient, parseIsoYmd } from '@/l
  *     → processes up to maxPages pages from the checkpoint and returns progress.
  *       Re-invoke until { done: true }. Idempotent (upsert on generated_award_id).
  *
+ *   A fiscal-year range, with its own checkpoint (job backfill-usaspending:fy2026-2026):
+ *     GET /api/cron/backfill-usaspending?startFy=2026&endFy=2026&maxPages=25
+ *     → the same walk over just those years. Used to re-pull rows ingested
+ *       before recipient_id was requested, so they pick it up on upsert.
+ *
  * USAspending caps spending_by_award pagination at page*limit <= 10,000, so each
  * FY is sub-windowed BY MONTH; a month that still hits the 10k cap is logged
  * (reason 'month_capped') so it can be sub-sliced further. Nothing is fabricated;
@@ -44,6 +49,7 @@ const MAX_RETRIES = 4;
 const FIELDS = [
   'Award ID',
   'Recipient Name',
+  'recipient_id',
   'Award Amount',
   'Awarding Agency',
   'Awarding Sub Agency',
@@ -127,14 +133,23 @@ async function countMode() {
   for (let y = START_FY; y <= END_FY; y++) {
     const w = fyWindow(y);
     // eslint-disable-next-line no-await-in-loop
-    const { ok, json, status } = await postJson(COUNT_URL, { filters: filtersFor(w.start_date, w.end_date) });
+    const { ok, json, status } = await postJson(COUNT_URL, {
+      filters: filtersFor(w.start_date, w.end_date),
+    });
     const count = ok ? Number(json?.results?.contracts ?? 0) : null;
-    perFy.push({ fiscal_year: y, partial: w.partial || false, count, error: ok ? null : `http ${status}` });
+    perFy.push({
+      fiscal_year: y,
+      partial: w.partial || false,
+      count,
+      error: ok ? null : `http ${status}`,
+    });
     if (count) total += count;
     // eslint-disable-next-line no-await-in-loop
     await sleep(POLITE_DELAY_MS);
   }
-  const anomalies = perFy.filter((r) => r.count != null && r.count < 1000).map((r) => r.fiscal_year);
+  const anomalies = perFy
+    .filter((r) => r.count != null && r.count < 1000)
+    .map((r) => r.fiscal_year);
   return NextResponse.json({
     mode: 'count',
     window: `FY${START_FY}-FY${END_FY}`,
@@ -158,6 +173,7 @@ function toRow(r, fyEndYear, nowYear, syncedAt, reasons) {
     generated_award_id: gid,
     award_id_piid: r['Award ID'] || null,
     recipient_name: recipient,
+    recipient_id: typeof r.recipient_id === 'string' && r.recipient_id ? r.recipient_id : null,
     award_amount: Number(r['Award Amount']),
     awarding_agency: r['Awarding Agency'] || null,
     awarding_sub_agency: r['Awarding Sub Agency'] || null,
@@ -185,18 +201,32 @@ export async function GET(request) {
     try {
       return await countMode();
     } catch (err) {
-      return NextResponse.json({ mode: 'count', error: err?.message || 'count failed' }, { status: 500 });
+      return NextResponse.json(
+        { mode: 'count', error: err?.message || 'count failed' },
+        { status: 500 },
+      );
     }
   }
 
-  const maxPages = Math.min(Math.max(Number(searchParams.get('maxPages')) || MAX_PAGES_DEFAULT, 1), 200);
+  const maxPages = Math.min(
+    Math.max(Number(searchParams.get('maxPages')) || MAX_PAGES_DEFAULT, 1),
+    200,
+  );
+  const fyParam = (k, dflt) => {
+    const n = Number(searchParams.get(k));
+    return Number.isInteger(n) && n >= START_FY && n <= END_FY ? n : dflt;
+  };
+  const startFy = fyParam('startFy', START_FY);
+  const endFy = Math.max(startFy, fyParam('endFy', END_FY));
+  const ranged = startFy !== START_FY || endFy !== END_FY;
+  const job = ranged ? `${JOB}:fy${startFy}-${endFy}` : JOB;
   const admin = getAdminClient();
   const syncedAt = new Date().toISOString();
   const nowYear = new Date().getUTCFullYear();
 
   // Resume from checkpoint (or start at FY2008, month 0, page 1).
-  const { data: ck } = await admin.from(PROGRESS).select('*').eq('job', JOB).maybeSingle();
-  let fy = ck?.fiscal_year || START_FY;
+  const { data: ck } = await admin.from(PROGRESS).select('*').eq('job', job).maybeSingle();
+  let fy = ck?.fiscal_year || startFy;
   let month = ck?.sub_window || 0;
   let page = ck?.page || 1;
   const reasons = { ...(ck?.detail?.reasons || {}) };
@@ -206,7 +236,7 @@ export async function GET(request) {
   let skipped = 0;
   const errors = [];
 
-  while (pagesDone < maxPages && fy <= END_FY) {
+  while (pagesDone < maxPages && fy <= endFy) {
     const win = monthWindow(fy, month);
     if (!win) {
       // Month in the future → this FY is complete; advance.
@@ -275,11 +305,11 @@ export async function GET(request) {
     await sleep(POLITE_DELAY_MS);
   }
 
-  const done = fy > END_FY;
+  const done = fy > endFy;
   await admin.from(PROGRESS).upsert(
     {
-      job: JOB,
-      fiscal_year: done ? END_FY : fy,
+      job,
+      fiscal_year: done ? endFy : fy,
       sub_window: done ? 11 : month,
       page: done ? 1 : page,
       status: done ? 'done' : 'running',
@@ -291,6 +321,8 @@ export async function GET(request) {
 
   return NextResponse.json({
     done,
+    job,
+    window: `FY${startFy}-FY${endFy}`,
     cursor: { fiscal_year: fy, month, page },
     pages_done: pagesDone,
     ingested,

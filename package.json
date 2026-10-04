@@ -27,6 +27,7 @@
     "ingest:congress": "node scripts/ingest-congress.mjs",
     "parse:house-backfill": "node scripts/drain-house-ptrs.mjs",
     "seed:ticker-sectors": "node scripts/seed-ticker-sectors.mjs",
+    "seed:contractor-tickers": "node scripts/seed-contractor-tickers.mjs",
     "test:help-search": "node --no-warnings scripts/check-help-search.mjs",
     "test:referrals": "node --no-warnings scripts/check-referrals.mjs",
     "test:e2e": "playwright test",
