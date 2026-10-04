@@ -8,6 +8,7 @@
  */
 import { getAdminClient } from '@/lib/supabase';
 import { ensureCuratedSeeded, CURATED_GLOBE_RAILS } from '@/lib/echo/curated-seed';
+import { CHART_OF_THE_WEEK, buildChartOfTheWeek } from '@/lib/echo/chart-of-the-week';
 
 const admin = getAdminClient();
 
@@ -75,6 +76,27 @@ export async function getHubData() {
   const articles = await getPublishedArticles();
   const featured = articles.find((a) => a.featured) || articles[0] || null;
   return { articles, featured };
+}
+
+/**
+ * The home page's Chart of the Week: the configured figure, read from the
+ * article's own content_blocks. null when the pick is unset, unpublished, or
+ * its figure cannot be drawn (the bento then packs without the chart slot).
+ */
+export async function getChartOfTheWeek() {
+  const cfg = CHART_OF_THE_WEEK;
+  if (!cfg?.slug) return null;
+  const { data, error } = await admin
+    .from('echo_articles')
+    .select('article_slug, article_title, content_blocks, article_status')
+    .eq('article_slug', cfg.slug)
+    .maybeSingle();
+  if (error || !data || data.article_status !== 'published') return null;
+  return buildChartOfTheWeek(cfg, {
+    slug: data.article_slug,
+    title: data.article_title,
+    contentBlocks: data.content_blocks,
+  });
 }
 
 /** Co-authors credited on an article (by article DB id). */

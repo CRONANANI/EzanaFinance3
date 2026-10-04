@@ -1062,10 +1062,10 @@
    paint from it (custom properties inherit down, never up). The :has() forms
    hold on first paint, before the body classes arrive. ezana-echo-home.css
    and layout.css paint the shell from it. */
-html:has(.eth-page),
+html:has(.ech-page),
 html:has(body.echo-route),
 body.echo-route,
-body:has(.eth-page) {
+body:has(.ech-page) {
   --echo-canvas: var(--bg-primary);
 }
 html:has(.echo-article-page),
