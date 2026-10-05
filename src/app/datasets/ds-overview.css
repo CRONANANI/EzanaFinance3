@@ -48,8 +48,9 @@
    item markup (.dsx-ttag / .dsx-tsub, not .dsx-tlead / .dsx-tmain /
    .dsx-tval), so it deliberately did NOT take the green treatment the shared
    sheet carries: its tags are coloured per dimension and would be dark ink, and
-   failing contrast, on a dark ground. It does keep pace: 143s here is 100 / 0.7,
-   the same 30% reduction applied to dataset-ticker.css's 87s → 124s.
+   failing contrast, on a dark ground. Its live speed comes from useTickerSpeed
+   (TICKER_PX_PER_SEC), the same pixels-per-second rate as every other belt;
+   143s below is only the no-JS fallback.
 
    Two things changed when the shared ticker moved into the layout chrome.
    First, the selectors are scoped to `.dsx-page >`, so they can no longer reach
@@ -110,6 +111,15 @@
 }
 .dsx-tval.pos {
   color: var(--emerald);
+}
+/* The overview belt reads in the top-nav face (Plus Jakarta Sans), tags and
+   figures included. Figures keep tabular numerals so values do not jitter. */
+.dsx-page > .dsx-ticker .dsx-titem,
+.dsx-page > .dsx-ticker .dsx-mono {
+  font-family: var(--font-sans);
+}
+.dsx-page > .dsx-ticker .dsx-tval {
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── header ── */

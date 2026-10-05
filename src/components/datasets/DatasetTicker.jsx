@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
+import { useTickerSpeed } from './useTickerSpeed';
 import './dataset-ticker.css';
 
 /**
@@ -20,6 +21,8 @@ export default function DatasetTicker({ items, onSelect, ariaLabel = 'Latest act
     const list = (items || []).filter((it) => it && it.main).slice(0, 30);
     return list.length ? [...list, ...list] : []; // duplicate for a seamless marquee
   }, [items]);
+  const trackRef = useRef(null);
+  useTickerSpeed(trackRef, [loop.length]);
 
   if (!loop.length) return null;
 
@@ -27,7 +30,7 @@ export default function DatasetTicker({ items, onSelect, ariaLabel = 'Latest act
 
   return (
     <div className="dsx-ticker" aria-label={ariaLabel}>
-      <div className="dsx-ticker-track">
+      <div className="dsx-ticker-track" ref={trackRef}>
         {loop.map((it, i) => {
           const inner = (
             <>

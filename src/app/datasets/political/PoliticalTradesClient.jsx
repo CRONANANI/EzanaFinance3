@@ -39,6 +39,7 @@ import './pol-trades.css';
 import './pol-campaign-finance.css';
 import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
 import { seedForDataset } from '@/lib/ezanaql/seeds';
+import { useTickerSpeed } from '@/components/datasets/useTickerSpeed';
 
 /* ── party color keys (pinned on .ptx-page; SVG uses the tokens) ── */
 const PARTIES = {
@@ -538,10 +539,12 @@ function TradeTicker({ members }) {
       .filter((x) => x.name && x.ticker);
     return list.length ? [...list, ...list] : [];
   }, [members]);
+  const trackRef = useRef(null);
+  useTickerSpeed(trackRef, [items.length]);
   if (!items.length) return null;
   return (
     <div className="ptx-ticker" aria-hidden="true">
-      <div className="ptx-ticker-track">
+      <div className="ptx-ticker-track" ref={trackRef}>
         {items.map((it, i) => (
           <div className="ptx-titem" key={i}>
             <span className="ptx-mono ptx-tp" style={{ color: it.party.color }}>

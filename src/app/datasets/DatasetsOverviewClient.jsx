@@ -22,7 +22,7 @@
  * breadth/clustering, vig-free implied probability vs. model edge). It is
  * informational only — no return promises or advice phrasing.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, Zap, X } from 'lucide-react';
 import {
   DATASET_TAXONOMY,
@@ -35,6 +35,7 @@ import {
 import './ds-overview.css';
 import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
 import { seedForDataset } from '@/lib/ezanaql/seeds';
+import { useTickerSpeed } from '@/components/datasets/useTickerSpeed';
 
 /* ── 7 dimensions: the shared DATASET_TAXONOMY is the single source of truth ──
    The signal map is pure hub-and-spoke and its NODES ARE the 7 dimensions (one
@@ -251,6 +252,8 @@ async function loadTickerItems() {
 
 function CrossDatasetTicker({ onOddsClick }) {
   const [items, setItems] = useState([]);
+  const trackRef = useRef(null);
+  useTickerSpeed(trackRef, [items.length]);
 
   useEffect(() => {
     let alive = true;
@@ -273,7 +276,7 @@ function CrossDatasetTicker({ onOddsClick }) {
   const loop = [...items, ...items];
   return (
     <div className="dsx-ticker">
-      <div className="dsx-ticker-track">
+      <div className="dsx-ticker-track" ref={trackRef}>
         {loop.map((it, i) => {
           const color = CATS[it.cat].color;
           const inner = (

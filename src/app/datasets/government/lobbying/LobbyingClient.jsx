@@ -14,13 +14,14 @@
  * Family standards: shared CategoryBar (Capitol Watch active), 1440/32 page,
  * page-scoped `lbx-` classes, Plus Jakarta UI + JetBrains Mono numerics, Lucide.
  */
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { X, ArrowUpRight, ExternalLink, Info, Download, RefreshCw } from 'lucide-react';
 import { ENTITY_LABEL, ENTITY_ORDER, ISSUE_LABEL } from '@/lib/lobbying/entities';
 import CompanyCard from './CompanyCard';
 import './lobbying.css';
 import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
 import { seedForDataset } from '@/lib/ezanaql/seeds';
+import { useTickerSpeed } from '@/components/datasets/useTickerSpeed';
 
 /* period selector → API scope. The current year is 2026 (filed in arrears). */
 const PERIODS = [
@@ -673,11 +674,13 @@ function LobbyingTicker({ filings }) {
     () => filings.filter((f) => f.client && hasReportedAmount(f)).slice(0, 16),
     [filings],
   );
+  const trackRef = useRef(null);
+  useTickerSpeed(trackRef, [items.length]);
   if (!items.length) return <div className="lbx-ticker lbx-ticker--empty" aria-hidden />;
   const loop = [...items, ...items];
   return (
     <div className="lbx-ticker" aria-hidden="true">
-      <div className="lbx-ticker-track">
+      <div className="lbx-ticker-track" ref={trackRef}>
         {loop.map((f, i) => (
           <span className="lbx-titem" key={i}>
             <span className="lbx-ttag">LOBBYING</span>

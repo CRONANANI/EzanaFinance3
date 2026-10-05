@@ -1,8 +1,11 @@
-/* Marketing header Datasets mega-menu: a white panel with black text. Only
-   the destinations that are live and navigable (every <a> row, plus the
-   Ezana API and View all datasets footer links) read in Ezana green; roadmap
-   ("Soon") rows stay black with their pill. Scoped to .navbar
-   .nav-datasets-mega and overrides globals.css by specificity.
+/* Marketing header Datasets mega-menu: a white panel. Each column heading
+   and icon reads in its dimension's colour (--nav-dim-color, set per column
+   by Navbar.js from the taxonomy); the heading text is mixed toward the ink
+   so pale hues still clear 4.5:1 on white. Row labels are black, and the
+   destinations that are live and navigable (every <a> row, plus the Ezana
+   API and View all datasets footer links) read in Ezana green; roadmap rows
+   stay black with a green "Soon" pill. Scoped to .navbar .nav-datasets-mega
+   and overrides globals.css by specificity.
 
    Contrast: --emerald-dark on white clears 4.5:1 in every theme (the brand
    --emerald does not), so live text uses it. The panel is pinned white in
@@ -23,10 +26,18 @@
   color: var(--nds-ink);
 }
 
-/* Headings, icons and every row label: black by default. */
+/* Each dimension's heading and icon read in that dimension's colour. The
+   heading text is mixed 40% toward the ink so the palest hues still clear
+   4.5:1 on the white panel (amber, the lowest, measures 4.85:1; at 20% it
+   was 3.14:1); the icon keeps the full hue. */
 .navbar .nav-datasets-mega .nav-datasets-col-head,
-.navbar .nav-datasets-mega .nav-datasets-col:hover .nav-datasets-col-head,
-.navbar .nav-datasets-mega .nav-datasets-col-icon,
+.navbar .nav-datasets-mega .nav-datasets-col:hover .nav-datasets-col-head {
+  color: color-mix(in srgb, var(--nav-dim-color, var(--nds-ink)) 60%, var(--nds-ink));
+}
+.navbar .nav-datasets-mega .nav-datasets-col-icon {
+  color: var(--nav-dim-color, var(--nds-ink));
+}
+/* Row labels: black by default (live rows turn green below). */
 .navbar .nav-datasets-mega .nav-datasets-item-label {
   color: var(--nds-ink);
 }
@@ -55,8 +66,13 @@
   background: none;
 }
 
-/* Pills: "Soon" and "Sample". */
-.navbar .nav-datasets-mega .nav-datasets-soon,
+/* "Soon": green text on a light green wash. */
+.navbar .nav-datasets-mega .nav-datasets-soon {
+  color: var(--nds-live);
+  background: var(--nds-wash);
+  border-color: color-mix(in srgb, var(--emerald) 35%, transparent);
+}
+/* "Sample": neutral. */
 .navbar .nav-datasets-mega .nav-datasets-sample {
   color: color-mix(in srgb, var(--nds-ink) 65%, var(--nds-bg));
   background: color-mix(in srgb, black 5%, transparent);

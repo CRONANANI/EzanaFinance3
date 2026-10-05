@@ -326,8 +326,10 @@
   display: grid;
   align-items: start;
 }
+/* Home: two columns now that Trending is gone; Start here, FAQs, Recently
+   updated and Still need help take the full width beside the rail. */
 .hcs-grid--home {
-  grid-template-columns: 268px minmax(0, 1fr) 300px;
+  grid-template-columns: 268px minmax(0, 1fr);
   column-gap: 32px;
   /* auto then 1fr: the rail spans both rows, and a long rail must stretch
      the lower row, not push Start here away from the search. */
@@ -355,10 +357,6 @@
 }
 .hcs-grid--home .hcs-main {
   grid-column: 2;
-  grid-row: 2;
-}
-.hcs-grid--home .hcs-side {
-  grid-column: 3;
   grid-row: 2;
 }
 .hcs-grid--answered {
@@ -395,43 +393,19 @@
   padding-left: 0;
 }
 
-/* Home, desktop: the category rail, the "Still need help?" card and the
-   Trending list all END on one line. The rail spans both rows and sets the
-   height; the middle column pushes the help card to its foot, and the
-   trending rows share the column's height so the last one lands there too.
-   The 10px matches .hcs-rail-row's bottom padding, so the help buttons and
-   the last trending rule sit level with the bottom of the last category
-   tile, not the row's padding. */
+/* Home, desktop: the category rail and the "Still need help?" card END on
+   one line. The rail spans both rows and sets the height; the main column
+   pushes the help card to its foot. The 10px matches .hcs-rail-row's bottom
+   padding, so the help buttons sit level with the bottom of the last
+   category tile, not the row's padding. */
 @media (min-width: 1001px) {
-  .hcs-grid--home .hcs-main,
-  .hcs-grid--home .hcs-side {
+  .hcs-grid--home .hcs-main {
     align-self: stretch;
   }
   .hcs-grid--home .hcs-main > .hcs-help {
     margin-top: auto;
     align-items: flex-end;
     padding-bottom: 10px;
-  }
-  .hcs-grid--home .hcs-side {
-    padding-bottom: 10px;
-  }
-  .hcs-grid--home .hcs-side > .hcs-trending {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-  }
-  .hcs-grid--home .hcs-side .hcs-trend-list {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-  }
-  .hcs-grid--home .hcs-side .hcs-trend-list > li {
-    flex: 1 1 auto;
-    display: flex;
-  }
-  .hcs-grid--home .hcs-side .hcs-trend-row {
-    flex: 1 1 auto;
-    align-content: center;
   }
 }
 
@@ -1226,7 +1200,7 @@
 
 @media (max-width: 1200px) {
   .hcs-grid--home {
-    grid-template-columns: 240px minmax(0, 1fr) 280px;
+    grid-template-columns: 240px minmax(0, 1fr);
     column-gap: 24px;
   }
   .hcs-grid--answered {
@@ -1240,8 +1214,7 @@
   }
   .hcs-grid--home .hcs-search,
   .hcs-grid--home .hcs-rail,
-  .hcs-grid--home .hcs-main,
-  .hcs-grid--home .hcs-side {
+  .hcs-grid--home .hcs-main {
     grid-column: auto;
     grid-row: auto;
   }

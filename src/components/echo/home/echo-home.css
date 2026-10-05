@@ -30,7 +30,8 @@
   --ech-deep-border: color-mix(in srgb, var(--emerald) 45%, transparent);
   --ech-deep-fg: #ffffff;
   --ech-deep-mute: rgba(255, 255, 255, 0.72);
-  --ech-deep-faint: rgba(255, 255, 255, 0.5);
+  /* 0.62, not 0.5: the 11px note on the lighter dark-mode band needs it to clear 4.5:1. */
+  --ech-deep-faint: rgba(255, 255, 255, 0.62);
   --ech-deep-accent: #6ee7b7;
   --ech-deep-field: rgba(255, 255, 255, 0.06);
   --ech-deep-field-border: rgba(255, 255, 255, 0.25);
@@ -280,6 +281,22 @@ body.light-mode .ech-page {
   font-size: 10px;
   letter-spacing: 0.06em;
   color: var(--ech-faint);
+}
+/* Every Most read card ends on the same line: the link fills the grid cell,
+   the title always reserves its three clamped lines, and the reads line sits
+   at the foot whatever the title length. */
+.ech-most__cell {
+  display: flex;
+}
+.ech-most__cell a {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.ech-most__text {
+  min-height: calc(1.35em * 3);
+}
+.ech-most__reads {
+  margin-top: auto;
 }
 .ech-most__cell a:hover .ech-most__text {
   color: var(--ech-positive);
@@ -922,6 +939,28 @@ body.light-mode .ech-page {
   font-size: 14px;
   font-weight: 600;
   color: var(--ech-deep-accent);
+}
+/* The band is dark green in both themes, so its ink never follows the page
+   theme. Scoped under .ech-page .ech-brief to outrank the global
+   body.light-mode h2 / p rules in light-mode.css. */
+.ech-page .ech-brief .ech-brief__title {
+  color: var(--ech-deep-fg);
+}
+.ech-page .ech-brief .ech-brief__body {
+  color: var(--ech-deep-mute);
+}
+.ech-page .ech-brief .ech-kicker--deep {
+  color: var(--ech-deep-accent);
+}
+.ech-page .ech-brief .ech-brief__note {
+  color: var(--ech-deep-faint);
+}
+.ech-page .ech-brief .ech-brief__note.is-error,
+.ech-page .ech-brief .ech-brief__done {
+  color: var(--ech-deep-accent);
+}
+.ech-page .ech-brief .ech-brief__row input {
+  color: var(--ech-deep-fg);
 }
 
 /* ---------- Footer ---------- */

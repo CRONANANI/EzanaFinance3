@@ -6,7 +6,8 @@
  *
  * Home: the Ask AI pill with Try chips directly under the top nav, at the
  * top of the middle column and level with the category rail, then Start
- * here + FAQs + Recently updated + help card / Trending. There is no visible
+ * here + FAQs + Recently updated + help card, across the full width beside
+ * the rail (Trending appears only in the answered view). There is no visible
  * crumb, eyebrow, title or subline; the page title is a screen-reader-only
  * h1.
  *
@@ -522,16 +523,6 @@ export default function SupportCenter({ audience = 'user', initialQuestion = '' 
 
             <HelpCard cfg={cfg} from="home" />
           </div>
-
-          <aside className="hcs-side">
-            <TrendingList
-              items={trending}
-              base={cfg.base}
-              label="TRENDING THIS WEEK"
-              icon="bi-graph-up-arrow"
-              rows={6}
-            />
-          </aside>
         </div>
       ) : (
         /* ── answered ── */

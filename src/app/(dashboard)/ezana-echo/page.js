@@ -29,6 +29,7 @@ import {
   toStory,
 } from '@/lib/echo/home-feed';
 import { AOTM_HISTORY } from '@/lib/ezana-echo-mock';
+import { withHomeImage } from '@/lib/echo/home-card-images';
 
 import './ezana-echo.css';
 import './ezana-echo-home.css';
@@ -177,7 +178,7 @@ export default function EzanaEchoPage() {
     () => hub.articles.filter((a) => !archivedSet.has(a.id)),
     [hub.articles, archivedSet],
   );
-  const allStories = useMemo(() => cards.map(toStory), [cards]);
+  const allStories = useMemo(() => cards.map(toStory).map(withHomeImage), [cards]);
 
   const imageUrls = useMemo(
     () => [...new Set(allStories.map((s) => s.image).filter(Boolean))].sort(),
