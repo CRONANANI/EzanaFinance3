@@ -297,6 +297,55 @@ export default function EzanaQLBar({
     </div>
   ) : null;
 
+  /* The four query actions. Desktop: inside the pill, after Generate.
+     Phones: on their own row with the EzanaQL label, so the prompt keeps the
+     whole pill. Both copies render; CSS shows one (display:none also takes
+     the other out of the accessibility tree), so nothing shifts on load. */
+  const actionsFor = (where) => (
+    <span className={`eqb-actions eqb-actions--${where}`} role="group" aria-label="Query actions">
+      <button
+        type="button"
+        className="eqb-act"
+        onClick={() => setEditing((v) => !v)}
+        aria-pressed={editing}
+        aria-label={editing ? 'Close editor' : 'Edit query'}
+      >
+        <i className="bi bi-pencil" aria-hidden="true" />
+        <span>{editing ? 'Close' : 'Edit'}</span>
+      </button>
+      <button
+        type="button"
+        className="eqb-act"
+        onClick={run}
+        disabled={busy === 'run'}
+        aria-label={busy === 'run' ? 'Running query' : 'Run query'}
+      >
+        <i className="bi bi-play-fill" aria-hidden="true" />
+        <span>{busy === 'run' ? 'Running' : 'Run'}</span>
+      </button>
+      <button
+        type="button"
+        className="eqb-act"
+        onClick={() => exportAs('csv')}
+        disabled={busy === 'csv'}
+        aria-label="Export CSV"
+      >
+        <i className="bi bi-filetype-csv" aria-hidden="true" />
+        <span>CSV</span>
+      </button>
+      <button
+        type="button"
+        className="eqb-act"
+        onClick={() => exportAs('json')}
+        disabled={busy === 'json'}
+        aria-label="Export JSON"
+      >
+        <i className="bi bi-filetype-json" aria-hidden="true" />
+        <span>JSON</span>
+      </button>
+    </span>
+  );
+
   return (
     <div className={`eqb${split ? ' eqb--split' : ''}`}>
       <div className="eqb-main">
@@ -323,57 +372,35 @@ export default function EzanaQLBar({
               }
             }}
           />
-          <button type="button" className="eqb-go" onClick={generate} disabled={busy === 'gen'}>
-            {busy === 'gen' ? (
-              'Generating'
-            ) : (
-              <>
-                Generate<span className="eqb-go-long"> EzanaQL</span>
-              </>
-            )}
+          <button
+            type="button"
+            className="eqb-go"
+            onClick={generate}
+            disabled={busy === 'gen'}
+            aria-label={busy === 'gen' ? 'Generating query' : 'Generate EzanaQL query'}
+          >
+            <i
+              className={`bi ${busy === 'gen' ? 'bi-hourglass-split' : 'bi-arrow-up'} eqb-go-ic`}
+              aria-hidden="true"
+            />
+            <span className="eqb-go-txt" aria-hidden="true">
+              {busy === 'gen' ? (
+                'Generating'
+              ) : (
+                <>
+                  Generate<span className="eqb-go-long"> EzanaQL</span>
+                </>
+              )}
+            </span>
           </button>
-          <span className="eqb-actions" role="group" aria-label="Query actions">
-            <button
-              type="button"
-              className="eqb-act"
-              onClick={() => setEditing((v) => !v)}
-              aria-pressed={editing}
-              aria-label={editing ? 'Close editor' : 'Edit query'}
-            >
-              <i className="bi bi-pencil" aria-hidden="true" />
-              <span>{editing ? 'Close' : 'Edit'}</span>
-            </button>
-            <button
-              type="button"
-              className="eqb-act"
-              onClick={run}
-              disabled={busy === 'run'}
-              aria-label={busy === 'run' ? 'Running query' : 'Run query'}
-            >
-              <i className="bi bi-play-fill" aria-hidden="true" />
-              <span>{busy === 'run' ? 'Running' : 'Run'}</span>
-            </button>
-            <button
-              type="button"
-              className="eqb-act"
-              onClick={() => exportAs('csv')}
-              disabled={busy === 'csv'}
-              aria-label="Export CSV"
-            >
-              <i className="bi bi-filetype-csv" aria-hidden="true" />
-              <span>CSV</span>
-            </button>
-            <button
-              type="button"
-              className="eqb-act"
-              onClick={() => exportAs('json')}
-              disabled={busy === 'json'}
-              aria-label="Export JSON"
-            >
-              <i className="bi bi-filetype-json" aria-hidden="true" />
-              <span>JSON</span>
-            </button>
-          </span>
+          {actionsFor('pill')}
+        </div>
+
+        {/* Phones only (CSS): the EzanaQL label and the four actions on one
+            row under the prompt. */}
+        <div className="eqb-tools">
+          <span className="eqb-code-tag">EzanaQL</span>
+          {actionsFor('row')}
         </div>
 
         {code.trim() ? (

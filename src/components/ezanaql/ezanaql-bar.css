@@ -325,60 +325,95 @@
   text-transform: uppercase;
   color: var(--eqb-muted);
 }
-/* Phones: the pill becomes two rows, so the prompt gets the full width
-   instead of the sliver left over by six buttons. Row 1 is the prompt; row 2
-   is Generate plus the four actions, each a 40px target. Inputs are 16px so
-   iOS does not zoom the page on focus. */
+/* Desktop: the actions sit in the pill; the phone tools row and the
+   Generate icon are not shown. */
+.eqb-tools,
+.eqb-go-ic {
+  display: none;
+}
+
+/* Phones: one row for the prompt, one for the actions, then the query.
+   The prompt keeps the whole pill (a 16px field so iOS does not zoom on
+   focus, a 48px row) with Generate as a 40px arrow at its end, like a
+   message box. The four actions move out of the pill onto their own row
+   beside the EzanaQL label, each a 40px target with its aria-label. The
+   query shows two lines; tapping it opens the full editor. */
 @media (max-width: 760px) {
-  /* No gutter of its own: every page that hosts the bar already pads 16px,
-     and a second 16px left the phone prompt under 240px at 320 wide. */
+  /* No gutter of its own: every page that hosts the bar already pads 16px. */
   .eqb {
     width: 100%;
   }
   .eqb-pill {
-    flex-wrap: wrap;
-    height: auto;
-    row-gap: 8px;
-    column-gap: 8px;
-    padding: 8px;
-    border-radius: var(--radius-lg);
+    height: 48px;
+    gap: 8px;
+    padding: 0 4px 0 14px;
   }
-  .eqb-mark {
-    padding-left: 4px;
+  .eqb-pill:focus-within {
+    border-color: var(--emerald);
+    box-shadow: 0 0 0 3px var(--eqb-wash);
   }
   .eqb-mark span,
   .eqb-div,
-  .eqb-go-long,
-  .eqb-act span {
+  .eqb-go-txt,
+  .eqb-actions--pill {
     display: none;
   }
+  .eqb-mark {
+    font-size: 14px;
+  }
   .eqb-input {
-    flex: 1 1 calc(100% - 32px);
-    height: 40px;
+    height: 46px;
     font-size: 16px;
   }
   .eqb-go {
-    flex: 1 1 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
     height: 40px;
+    padding: 0;
+    background: var(--emerald);
+    color: var(--bg-primary);
   }
-  .eqb-actions {
-    gap: 4px;
+  .eqb-go-ic {
+    display: inline;
+    font-size: 18px;
+    line-height: 1;
+  }
+  .eqb-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    padding-left: 4px;
+  }
+  .eqb-actions--row {
+    margin-left: auto;
+    gap: 2px;
     padding-left: 0;
     border-left: 0;
+  }
+  .eqb-actions--row .eqb-act span {
+    display: none;
   }
   .eqb-act {
     justify-content: center;
     min-width: 40px;
     height: 40px;
     padding: 0;
-    font-size: 15px;
+    font-size: 16px;
+  }
+  /* The label is on the tools row now; the query line is just the query. */
+  .eqb-code .eqb-code-tag {
+    display: none;
   }
   .eqb-code {
-    padding-inline: 4px;
+    margin-top: 0;
+    padding: 2px 4px 6px;
   }
-  /* More of the query is readable before it truncates. */
   .eqb-query {
-    -webkit-line-clamp: 4;
+    font-size: 11px;
+    -webkit-line-clamp: 2;
   }
   .eqb-editor {
     min-height: 220px;
@@ -451,6 +486,10 @@
   .eqb--split .eqb-results {
     margin-top: 10px;
   }
+}
+/* Stacked again, the pill is wide enough for its labels. Not on phones,
+   where the actions are icons on their own row. */
+@media (min-width: 761px) and (max-width: 1100px) {
   .eqb--split .eqb-go-long,
   .eqb--split .eqb-act span {
     display: inline;

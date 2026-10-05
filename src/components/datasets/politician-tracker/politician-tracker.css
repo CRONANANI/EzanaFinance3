@@ -416,6 +416,43 @@
   align-items: baseline;
   gap: 12px;
 }
+/* Phone and tablet Rank by (see the responsive block); hidden on desktop,
+   where the rail's control sits beside the cards. */
+.ptk-sort-inline {
+  display: none;
+  position: relative;
+  align-items: center;
+}
+.ptk-sort-inline select {
+  height: 36px;
+  padding: 0 30px 0 10px;
+  border: 1px solid var(--ptk-hair-strong);
+  border-radius: var(--radius-md);
+  background: var(--dsc-bg);
+  color: var(--ptk-ink);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+.ptk-sort-inline select:focus-visible {
+  outline: 2px solid var(--ptk-focus);
+  outline-offset: 2px;
+}
+.ptk-sort-inline .bi {
+  position: absolute;
+  right: 10px;
+  font-size: 12px;
+  color: var(--ptk-mute);
+  pointer-events: none;
+}
+/* Chip + seat wrapper: no box of its own on desktop (the chip stays pinned
+   to the card's top-right corner); one line under the name on phones. */
+.ptk-card-meta {
+  display: contents;
+}
 
 /* ── most held companies (beside the controls, above Rank by) ─────────── */
 /* Stretches to the controls' height so the rail below starts level with the
@@ -635,6 +672,10 @@
   margin-top: -6px;
   font-size: 10.5px;
   color: var(--ptk-faint);
+}
+/* "65% of #1" wraps as one piece, never between "of" and "#1". */
+.ptk-card-pct {
+  white-space: nowrap;
 }
 .ptk-card-line {
   display: flex;
@@ -1125,7 +1166,27 @@
     border-top: 1px solid var(--ptk-hair);
   }
   .ptk-rankby {
-    grid-column: 1 / -1;
+    display: none;
+  }
+  .ptk-gallery-head {
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: 4px;
+  }
+  .ptk-sort-inline {
+    display: inline-flex;
+  }
+  /* Read by screen readers as part of the heading; the select shows it. */
+  .ptk-h2-sort {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .ptk-gallery-head .ptk-cap {
+    flex-basis: 100%;
   }
   .ptk-rail {
     display: grid;
@@ -1149,44 +1210,181 @@
   .ptk-body {
     padding-left: 16px;
     padding-right: 16px;
+    gap: 14px;
   }
+  .ptk-controls {
+    gap: 12px;
+  }
+  .ptk-grid {
+    row-gap: 18px;
+  }
+
+  /* Toolbar: search on its own full-width line, chamber and party sharing
+     the next, the period control across the last. Every control stays
+     visible (no sideways scroll strip) and every target is 40 to 44px. */
+  .ptk-toolbar {
+    gap: 8px;
+  }
+  .ptk-toolbar .ptk-search {
+    flex: 1 1 100%;
+    max-width: none;
+    min-width: 0;
+    height: 44px;
+  }
+  .ptk-search .dsc-input {
+    height: 44px;
+    font-size: 16px;
+  }
+  .ptk-search-x {
+    width: 36px;
+    height: 36px;
+  }
+  /* Border-box, so a control's set width and height include its border:
+     the party control is exactly as wide as the dropdown below it, and every
+     control on a line is the same height. */
+  .ptk-toolbar .ptk-seg {
+    box-sizing: border-box;
+    height: 40px;
+  }
+  .ptk-toolbar > .ptk-seg:first-of-type {
+    flex: 1 1 auto;
+  }
+  .ptk-toolbar > .ptk-seg .ptk-seg-btn,
+  .ptk-period .ptk-seg-btn {
+    flex: 1 1 0;
+    justify-content: center;
+    padding: 0 10px;
+  }
+  .ptk-toolbar .ptk-period {
+    flex: 1 1 100%;
+    margin-left: 0;
+  }
+  .ptk-period .ptk-seg {
+    flex: 1 1 auto;
+  }
+
+  .ptk-gallery-head .ptk-h2 {
+    font-size: 15px;
+  }
+  /* The party control and the Rank by dropdown share one width and both
+     sit on the right edge, so the dropdown's left edge lines up with ALL and
+     its right edge with I (and with the cards' right edge). */
+  .ptk {
+    --ptk-party-w: 132px;
+  }
+  .ptk-toolbar > .ptk-seg-party {
+    flex: 0 0 var(--ptk-party-w);
+    width: var(--ptk-party-w);
+    /* If it wraps under chamber (narrowest phones) it stays on the right. */
+    margin-left: auto;
+  }
+  /* mobile-responsive.css gives every button a 44px min-width below 768px;
+     four of those (176px) cannot fit the 132px control, which clipped I.
+     The buttons keep their 44px height and share the width (~33px each). */
+  .ptk-toolbar > .ptk-seg-party .ptk-seg-btn {
+    min-width: 0;
+  }
+  .ptk-sort-inline {
+    margin-left: auto;
+    width: var(--ptk-party-w);
+  }
+  .ptk-sort-inline select {
+    width: 100%;
+    height: 40px;
+  }
+
   .ptk-rail {
     grid-template-columns: 1fr;
   }
+  .ptk-held {
+    min-height: 180px;
+    padding-top: 18px;
+  }
   .ptk-cards {
     grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
   }
-  /* Horizontal card: portrait left, text right. */
+
+  /* Compact card, about half the old height: portrait left; name and
+     volume on the first line, chamber/party/seat and share of #1 on the
+     second; the buy/sell bar and counts full width under them. */
   .ptk-card {
     display: grid;
-    grid-template-columns: 64px minmax(0, 1fr);
-    column-gap: 14px;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    grid-template-areas:
+      'shot name vol'
+      'shot meta pct'
+      'bar  bar  bar'
+      'line line line'
+      'tks  tks  tks';
+    column-gap: 12px;
+    row-gap: 4px;
     align-items: center;
     text-align: left;
-    padding: 16px 14px 14px;
+    padding: 12px 14px;
   }
   .ptk-card .ptk-shot {
-    grid-row: 1 / span 4;
-    width: 64px !important;
-    height: 64px !important;
+    grid-area: shot;
+    width: 48px !important;
+    height: 48px !important;
     margin-top: 0;
   }
-  .ptk-card .ptk-tks {
-    justify-content: flex-start;
+  .ptk-rank {
+    top: 6px;
+    left: 6px;
+    z-index: 1;
+    padding: 1px 6px;
+    font-size: 10px;
   }
-  .ptk-card-vol {
-    font-size: 22px;
+  .ptk-card-name {
+    grid-area: name;
+    font-size: 14px;
+  }
+  .ptk-card-meta {
+    grid-area: meta;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
   }
   .ptk-card-chip {
     position: static;
-    grid-column: 2;
-    justify-self: start;
   }
-  /* Everything but the portrait lives in the text column; without this the
-     caption and counts auto-flowed back into the 64px portrait column. */
-  .ptk-card > :not(.ptk-shot):not(.ptk-rank) {
-    grid-column: 2;
+  .ptk-card-vol {
+    grid-area: vol;
+    justify-self: end;
+    font-size: 18px;
   }
+  .ptk-card-cap {
+    grid-area: pct;
+    justify-self: end;
+    margin-top: 0;
+    white-space: nowrap;
+  }
+  /* The caption is said once, in the gallery heading's cap line, not on
+     every card; "36% of #1" stays. */
+  .ptk-card-cap-txt {
+    display: none;
+  }
+  .ptk-card .ptk-split {
+    grid-area: bar;
+    margin-top: 6px;
+  }
+  .ptk-card-line {
+    grid-area: line;
+  }
+  .ptk-card .ptk-tks {
+    grid-area: tks;
+    justify-content: flex-start;
+    margin-top: 2px;
+  }
+  .ptk-card--skel {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
   .ptk-col-bs,
   .ptk-col-last,
   .ptk-col-volbar {
@@ -1212,30 +1410,12 @@
     height: 72px !important;
   }
 }
-@media (max-width: 420px) {
-  .ptk-toolbar {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-bottom: 4px;
-  }
-  .ptk-search {
-    flex: 0 0 160px;
-  }
-  /* The strip scrolls sideways; the controls keep their natural width
-     instead of shrinking until their labels clip. */
-  .ptk-toolbar > .ptk-seg,
-  .ptk-toolbar > .ptk-period,
-  .ptk-toolbar > .ptk-rankby-label {
-    flex: 0 0 auto;
-  }
-  .ptk-rankby-label {
-    white-space: nowrap;
-  }
-  .ptk-seg-btn {
-    min-height: 44px;
-  }
-  .ptk-toolbar .ptk-seg {
-    height: 44px;
+@media (max-width: 400px) {
+  /* Chamber and party still share a line at 375; the toolbar's flex-wrap
+     drops party under chamber only on the narrowest phones. */
+  .ptk-toolbar > .ptk-seg .ptk-seg-btn {
+    padding: 0 8px;
+    gap: 4px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

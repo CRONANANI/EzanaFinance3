@@ -69,10 +69,12 @@ const GALLERY = 8;
 /* Skeleton rows while the ranking loads. The list itself shows every member. */
 const LIST_SKELETON = 8;
 
+/* `short` is the phone dropdown's text: it shares the party control's
+   width there, so its edges line up with ALL and I. */
 const SORTS = [
-  { value: 'volume', label: 'Disclosed volume', heading: 'disclosed volume' },
-  { value: 'trades', label: 'Most trades', heading: 'most trades' },
-  { value: 'latest', label: 'Latest trade', heading: 'latest trade' },
+  { value: 'volume', label: 'Disclosed volume', heading: 'disclosed volume', short: 'Volume' },
+  { value: 'trades', label: 'Most trades', heading: 'most trades', short: 'Trades' },
+  { value: 'latest', label: 'Latest trade', heading: 'latest trade', short: 'Latest' },
 ];
 const CHAMBERS = [
   { value: null, label: 'Both' },
@@ -151,6 +153,8 @@ function Tickers({ tickers, n = 3, cls = '' }) {
   );
 }
 
+const plural = (n, word) => (n === 1 ? word : `${word}s`);
+
 function Card({ m, selected, showPct, onOpen }) {
   const seat = seatLabel(m);
   const ch = String(m.chamber || '').toLowerCase();
@@ -165,9 +169,6 @@ function Card({ m, selected, showPct, onOpen }) {
       onClick={(e) => onOpen(m, e.currentTarget)}
     >
       <span className={`ptk-rank dsc-mn${m.rank === 1 ? ' ptk-rank--first' : ''}`}>#{m.rank}</span>
-      <span className="ptk-card-chip">
-        <ChamberChip chamber={m.chamber} />
-      </span>
       <Headshot
         name={m.name}
         bioguideId={m.bioguideId}
@@ -178,30 +179,42 @@ function Card({ m, selected, showPct, onOpen }) {
         priority
       />
       <span className="ptk-card-name">{m.name}</span>
-      <span className="ptk-seat">
-        <PartyTag party={m.party} />
-        <span className="dsc-mn">{seat || NONE}</span>
+      {/* Chip and seat travel together: on desktop the wrapper is
+          display:contents (the chip stays pinned top-right); on phones it is
+          one line under the name. */}
+      <span className="ptk-card-meta">
+        <span className="ptk-card-chip">
+          <ChamberChip chamber={m.chamber} />
+        </span>
+        <span className="ptk-seat">
+          <PartyTag party={m.party} />
+          <span className="dsc-mn">{seat || NONE}</span>
+        </span>
       </span>
       <span className="ptk-card-vol dsc-mn">{usdShort(m.volume)}</span>
       <span className="ptk-card-cap">
-        disclosed volume, midpoints
+        <span className="ptk-card-cap-txt">disclosed volume, midpoints</span>
         {showPct && m.pctOfFirst != null && m.rank !== 1 ? (
-          <span className="dsc-mn"> · {m.pctOfFirst}% of #1</span>
+          <span className="dsc-mn ptk-card-pct">
+            <span className="ptk-card-cap-txt"> · </span>
+            {m.pctOfFirst}% of #1
+          </span>
         ) : null}
       </span>
       <SplitBar left={m.buys} right={m.sells} leftCls="ptk-split--buy" rightCls="ptk-split--sell" />
       <span className="ptk-card-line dsc-mn">
         <span>
-          <b className="ptk-buy-n">{m.buys}</b> buys
+          <b className="ptk-buy-n">{m.buys}</b> {plural(m.buys, 'buy')}
         </span>
         <span>
-          <b>{m.count}</b> trades
+          <b>{m.count}</b> {plural(m.count, 'trade')}
         </span>
         <span>
-          <b>{m.sells}</b> sells
+          <b>{m.sells}</b> {plural(m.sells, 'sell')}
         </span>
       </span>
-      <Tickers tickers={m.tickers} />
+      {/* No placeholder dot on a card: an empty line reads as a stray mark. */}
+      {m.tickers?.length ? <Tickers tickers={m.tickers} /> : null}
     </button>
   );
 }
@@ -605,6 +618,7 @@ export default function PoliticianTracker({
                 onChange={pick(setChamber, 'chamber')}
               />
               <Segmented
+                className="ptk-seg-party"
                 label="Party"
                 value={party}
                 options={PARTIES}
@@ -654,8 +668,23 @@ export default function PoliticianTracker({
             ) : null}
             <div className="ptk-gallery-head">
               <h2 className="ptk-h2" id="ptk-gallery-title">
-                Top eight by {sortMeta.heading}
+                Top eight by <span className="ptk-h2-sort">{sortMeta.heading}</span>
               </h2>
+              {/* Below 1000px the rail, and its Rank by, sits under the cards
+                  and the chart, far from what it orders. There the heading's
+                  last words become this select instead (CSS shows one or the
+                  other; the heading text stays for screen readers). */}
+              <label className="ptk-sort-inline">
+                <span className="ptk-sr">Rank by</span>
+                <select value={sort} onChange={(e) => setSort(e.target.value)}>
+                  {SORTS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.short}
+                    </option>
+                  ))}
+                </select>
+                <i className="bi bi-chevron-down" aria-hidden="true" />
+              </label>
               <span className="ptk-cap">ring colour is chamber, letter tag is party</span>
             </div>
           </div>
