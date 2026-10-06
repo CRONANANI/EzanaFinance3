@@ -9,6 +9,7 @@ import { getCreatorTier } from '@/lib/creator-tiers';
 import { getPostType, STANDARD_DISCLAIMER } from '@/lib/post-types';
 import { RichContent } from '../_legacy_v1/RichContent';
 import { MiniChart } from '../_legacy_v1/MiniChart';
+import ContentActionsMenu from '@/components/moderation/ContentActionsMenu';
 
 export const ConvictionLike = forwardRef(function ConvictionLike(
   { post, onChange, compact = false },
@@ -90,6 +91,7 @@ export const ConvictionLike = forwardRef(function ConvictionLike(
       <button
         type="button"
         onClick={handleQuickLike}
+        data-haptic
         onContextMenu={handleOpen}
         title="Click to like · Right-click to stake conviction"
         style={{
@@ -742,6 +744,18 @@ export function PostHeader({ post, showSkill = true, onDelete }) {
       <span className="post-ts ez-mono" title={post.timeAgo}>
         {post.timeAgo || '—'}
       </span>
+      {!isOwner && (
+        /* Report and block (required for user-generated content in the apps). */
+        <span onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0 }}>
+          <ContentActionsMenu
+            contentType="community_post"
+            contentId={post.id}
+            authorId={u.id}
+            authorName={u.display_name || 'this member'}
+            onBlocked={() => onDelete?.(post.id)}
+          />
+        </span>
+      )}
       {isOwner && (
         <div ref={menuRef} style={{ position: 'relative', flexShrink: 0 }}>
           <button

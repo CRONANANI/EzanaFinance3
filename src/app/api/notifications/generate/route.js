@@ -4,6 +4,7 @@ import { classifyEvent } from '@/lib/notifications/event-classifier';
 import { scoreEventForUser } from '@/lib/notifications/matching-engine';
 import { buildUserProfile } from '@/lib/notifications/interest-profile';
 import { PERSONA_NOTIFICATION_CAPS } from '@/lib/ml/persona-assignment';
+import { insertNotificationAndPush } from '@/lib/push/fanout';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -171,7 +172,7 @@ export async function GET(request) {
                 ? 'inside-the-capitol'
                 : 'market_news';
 
-        const { error: insErr } = await admin.from('user_notifications').insert({
+        const { error: insErr } = await insertNotificationAndPush(admin, {
           user_id: profile.user_id,
           type: notifType,
           title,
@@ -245,7 +246,7 @@ export async function GET(request) {
 
           const direction = changePct >= 0 ? '📈 up' : '📉 down';
           const priceNum = Number(q.price || 0);
-          const { error: insPortErr } = await admin.from('user_notifications').insert({
+          const { error: insPortErr } = await insertNotificationAndPush(admin, {
             user_id: profile.user_id,
             type: 'portfolio_alerts',
             title: `${sym} ${direction} ${Math.abs(changePct).toFixed(1)}%`,

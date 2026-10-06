@@ -16,6 +16,7 @@ import { useProfileActivity } from '@/hooks/useProfileActivity';
 import { computeProfileMetrics } from '@/lib/profile-metrics';
 import { CreatorBadge } from '@/components/community/redesign_v2/CreatorBadge';
 import './copy-request-button.css';
+import { enableNativePush } from '@/lib/native-push-client';
 
 /* ProfileEloCard renders a Recharts Elo-history area chart and lives in the
    sidebar aside (below the fold on narrow viewports). Defer it so Recharts
@@ -491,6 +492,7 @@ export function ProfilePageClient({ username }) {
         .insert({ follower_id: user.id, following_id: profile.id });
       setFollowing(true);
       setFollowerCount((c) => c + 1);
+      enableNativePush();
     }
   }
 
@@ -568,6 +570,7 @@ export function ProfilePageClient({ username }) {
                       <button
                         type="button"
                         onClick={toggleFollow}
+                        data-haptic
                         className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-400 hover:bg-emerald-500/20"
                       >
                         {following ? 'Unfollow' : 'Follow'}

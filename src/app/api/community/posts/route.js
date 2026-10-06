@@ -4,6 +4,9 @@ import { awardXP } from '@/lib/rewards';
 import { sanitizeInput } from '@/lib/sanitize';
 import { withDemoPosts } from '@/lib/community/demo-data';
 import { ALLOWED_POST_TYPES } from '@/lib/post-types';
+import { insertNotificationAndPush } from '@/lib/push/fanout';
+import { visibleTo, isBlockedPair } from '@/lib/moderation/blocks';
+import { communityTermsGate } from '@/lib/moderation/terms';
 
 export const dynamic = 'force-dynamic';
 
@@ -124,7 +127,9 @@ async function fetchConvictionAvgs(postIds) {
   return avgs;
 }
 
-async function buildEnrichedResponse(supabase, user, list) {
+async function buildEnrichedResponse(supabase, user, rawList) {
+  /* Moderation-hidden posts and posts across a block never reach the feed. */
+  const list = await visibleTo(admin, user?.id, rawList);
   const userIds = [...new Set(list.map((p) => p.user_id))];
 
   let profileMap = {};
@@ -192,7 +197,7 @@ export async function GET(request) {
     const to = from + LIMIT - 1;
 
     const selectCols =
-      'id, user_id, content, mentioned_ticker, image_url, poll_data, ticker_embed, post_type, disclosure, likes_count, comments_count, reposts_count, created_at';
+      'id, user_id, content, mentioned_ticker, image_url, poll_data, ticker_embed, post_type, disclosure, likes_count, comments_count, reposts_count, created_at, moderation_hidden_at';
 
     if (tab === 'signal') {
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -452,6 +457,12 @@ export async function POST(request) {
 
     const { user, client: supabase } = await requireUser(request);
 
+    const termsGate = await communityTermsGate(admin, user.id);
+    if (termsGate) return termsGate;
+    if (parentPostForNotif && (await isBlockedPair(admin, user.id, parentPostForNotif.user_id))) {
+      return NextResponse.json({ error: 'You cannot reply to this post.' }, { status: 403 });
+    }
+
     // Partner-only post formats (Analyst Take / Trade Idea / Market Brief).
     // Gated server-side: only a partner's top-level post may carry a post_type,
     // and a disclosure is only stored alongside a valid type.
@@ -531,7 +542,7 @@ export async function POST(request) {
           }
 
           const commentContent = content.trim();
-          await admin.from('user_notifications').insert({
+          await insertNotificationAndPush(admin, {
             user_id: parentPostForNotif.user_id,
             type: 'community',
             title: `${commenterName} commented on your post`,

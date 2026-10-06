@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { SaveAuthPrompt } from '@/components/echo/EchoSaveButton';
+import ContentActionsMenu from '@/components/moderation/ContentActionsMenu';
+import { useCommunityTerms } from '@/components/moderation/useCommunityTerms';
 
 function formatCommentDate(iso) {
   if (!iso) return '';
@@ -24,6 +26,7 @@ export function EchoFooterComments({ articleId }) {
   const [submitting, setSubmitting] = useState(false);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const textareaRef = useRef(null);
+  const { ensureAccepted, termsModal } = useCommunityTerms();
 
   const redirectParam = encodeURIComponent(pathname || `/ezana-echo/${articleId}`);
 
@@ -56,6 +59,8 @@ export function EchoFooterComments({ articleId }) {
       setShowAuthPrompt(true);
       return;
     }
+    /* Community guidelines are agreed once, before the first comment. */
+    if (!(await ensureAccepted())) return;
     setSubmitting(true);
     try {
       const res = await fetch('/api/echo/comments', {
@@ -89,6 +94,7 @@ export function EchoFooterComments({ articleId }) {
 
   return (
     <section className="echo-footer-comments">
+      {termsModal}
       <h3 className="echo-comments-heading">Comments</h3>
       {comments.length === 0 ? (
         <p className="echo-comments-subhead">
@@ -132,6 +138,14 @@ export function EchoFooterComments({ articleId }) {
               <div className="echo-comments-item-meta">
                 <b>{c.author?.name || 'Reader'}</b>
                 {c.createdAt && ` · ${formatCommentDate(c.createdAt)}`}
+                <ContentActionsMenu
+                  className="echo-comments-item-menu"
+                  contentType="echo_comment"
+                  contentId={c.id}
+                  authorId={c.userId}
+                  authorName={c.author?.name || 'this reader'}
+                  onBlocked={(id) => setComments((prev) => prev.filter((x) => x.userId !== id))}
+                />
               </div>
               <div className="echo-comments-item-body">{c.content}</div>
             </div>

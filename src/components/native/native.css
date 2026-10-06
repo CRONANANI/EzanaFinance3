@@ -1,0 +1,79 @@
+/* Native app shell (iOS and Android). Every rule is scoped under .is-native,
+   which NativeBridge sets on <html> only inside the app, so the website is
+   untouched. */
+
+/* Safe areas: the WebView runs edge to edge (viewport-fit=cover). */
+html.is-native .main-nav,
+html.is-native .navbar-sticky {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+html.is-native .mobile-bottom-nav {
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+}
+html.is-native body {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Where a web-only feature used to be (WebOnly). */
+.native-web-only {
+  margin: 8px 0;
+  font-family: var(--font-sans);
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+
+/* Face ID / fingerprint lock screen. */
+.native-lock {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: env(safe-area-inset-top, 0px) 24px env(safe-area-inset-bottom, 0px);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  text-align: center;
+}
+.native-lock-icon {
+  font-size: 2.5rem;
+  color: var(--emerald);
+}
+.native-lock-title {
+  margin: 0;
+  font-size: var(--type-section-size);
+  font-weight: var(--type-section-weight);
+}
+.native-lock-msg {
+  margin: 0;
+  font-size: var(--type-body-size);
+  color: var(--text-muted);
+}
+.native-lock-btn {
+  min-height: 44px;
+  padding: 0 28px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--emerald);
+  color: var(--bg-primary);
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  font-weight: 600;
+  cursor: pointer;
+}
+.native-lock-btn:focus-visible {
+  outline: 2px solid var(--emerald-text);
+  outline-offset: 3px;
+}
+
+.native-web-only-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 24px;
+}

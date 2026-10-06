@@ -776,9 +776,16 @@ body.light-mode .echo-comments-composer {
 }
 
 .echo-comments-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 9.5px; /* was 12px */
   color: var(--text-muted);
   margin-bottom: 4px; /* was 6px */
+}
+
+.echo-comments-item-menu {
+  margin-left: auto;
 }
 
 .echo-comments-item-meta b {

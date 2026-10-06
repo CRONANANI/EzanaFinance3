@@ -205,7 +205,12 @@ export async function LinkageCard({ card }) {
                   ))}
                 </dl>
               </div>
-              <RowActions ticker={r.ticker || null} query={r.query || null} label={r.title} />
+              <RowActions
+                ticker={r.ticker || null}
+                query={r.query || null}
+                label={r.title}
+                shareUrl={r.href && !r.external ? r.href : null}
+              />
             </li>
           ))}
         </ol>

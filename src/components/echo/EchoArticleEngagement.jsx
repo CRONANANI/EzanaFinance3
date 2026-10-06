@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { useEchoEngagement } from '@/hooks/useEchoEngagement';
+import { shareLink } from '@/lib/share';
 
 const SAVED_KEY = 'echo_saved_articles';
 
@@ -84,19 +85,13 @@ export function EchoArticleEngagement({ articleId, articleTitle, articleTracker 
         ? `${window.location.origin}/ezana-echo/${articleId}`
         : `/ezana-echo/${articleId}`;
     const title = articleTitle || 'Ezana Echo';
-    try {
-      if (typeof navigator !== 'undefined' && navigator.share) {
-        await navigator.share({ title, url });
-        articleTracker?.recordShare?.('native');
-      } else if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(url);
-        setActionMessage({ type: 'info', text: 'Link copied to clipboard' });
-        articleTracker?.recordShare?.('link');
-      }
-    } catch (err) {
-      if (err?.name !== 'AbortError') {
-        setActionMessage({ type: 'error', text: 'Could not share. Try copying the URL.' });
-      }
+    const result = await shareLink({ title, url });
+    if (result === 'native' || result === 'shared') articleTracker?.recordShare?.('native');
+    else if (result === 'copied') {
+      setActionMessage({ type: 'info', text: 'Link copied to clipboard' });
+      articleTracker?.recordShare?.('link');
+    } else if (result === 'failed') {
+      setActionMessage({ type: 'error', text: 'Could not share. Try copying the URL.' });
     }
   }, [articleId, articleTitle, articleTracker]);
 

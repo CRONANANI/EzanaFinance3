@@ -9,6 +9,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getCurrentUser, getAdminClient } from '@/lib/supabase';
+import { visibleTo } from '@/lib/moderation/blocks';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,7 +46,9 @@ export const GET = withApiGuard(
 
       let query = admin
         .from('messages')
-        .select('id, conversation_id, sender_id, content, created_at, read_at')
+        .select(
+          'id, conversation_id, sender_id, content, created_at, read_at, moderation_hidden_at',
+        )
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: false })
         .limit(limit);
@@ -73,7 +76,9 @@ export const GET = withApiGuard(
         (otherProfile?.full_name || otherProfile?.user_settings?.display_name || '').trim() ||
         'Member';
 
-      const formatted = (messages || []).map((m) => ({
+      /* Hidden by moderation, or sent across a block: not shown. */
+      const visible = await visibleTo(admin, user.id, messages || [], 'sender_id');
+      const formatted = visible.map((m) => ({
         id: m.id,
         sender_id: m.sender_id,
         content: m.content,

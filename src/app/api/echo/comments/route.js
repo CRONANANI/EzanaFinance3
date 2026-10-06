@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
 import { sanitizeText } from '@/lib/sanitize';
+import { visibleTo } from '@/lib/moderation/blocks';
+import { communityTermsGate } from '@/lib/moderation/terms';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -30,7 +32,7 @@ export const GET = withApiGuard(
 
       const { data: comments, error: commentsErr } = await admin
         .from('echo_article_comments')
-        .select('id, user_id, content, created_at')
+        .select('id, user_id, content, created_at, moderation_hidden_at')
         .eq('article_id', articleId)
         .is('deleted_at', null)
         .order('created_at', { ascending: true })
@@ -41,7 +43,9 @@ export const GET = withApiGuard(
         return NextResponse.json({ error: 'Could not load comments' }, { status: 500 });
       }
 
-      const userIds = [...new Set((comments || []).map((c) => c.user_id))];
+      /* Moderation-hidden comments and comments across a block are not shown. */
+      const visible = await visibleTo(admin, user?.id, comments || []);
+      const userIds = [...new Set(visible.map((c) => c.user_id))];
       const authorsByUserId = {};
 
       if (userIds.length > 0) {
@@ -70,7 +74,7 @@ export const GET = withApiGuard(
         }
       }
 
-      const hydrated = (comments || []).map((c) => ({
+      const hydrated = visible.map((c) => ({
         id: c.id,
         userId: c.user_id,
         content: c.content,
@@ -106,6 +110,8 @@ export const POST = withApiGuard(
       if (!content) {
         return NextResponse.json({ error: 'Comment content required' }, { status: 400 });
       }
+      const termsGate = await communityTermsGate(admin, user.id);
+      if (termsGate) return termsGate;
 
       const { data: inserted, error: insertErr } = await admin
         .from('echo_article_comments')

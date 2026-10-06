@@ -10,6 +10,8 @@ import { ReferralsPanel } from '@/components/settings/ReferralsPanel';
 import { MyDetailsLedger } from './panels/MyDetailsLedger';
 import { AppearanceLedger } from './panels/AppearanceLedger';
 import { wrapLegacyPanel } from './legacy-bridge';
+import { BiometricUnlockSetting } from '@/components/native/BiometricUnlockSetting';
+import { BlockedMembersSetting } from '@/components/moderation/BlockedMembersSetting';
 
 /* SettingsPanels.jsx is one ~1644-line client module. The Ledger only ever
    renders the active tab's panel, so each panel is deferred via next/dynamic —
@@ -135,11 +137,33 @@ export function eyebrowFor(activeTab, visibleKeys, groupLabel) {
   return num ? `${num} · ${groupLabel}` : groupLabel;
 }
 
+/* The app adds a Face ID / fingerprint toggle above the password panel. */
+const LegacyPassword = wrapLegacyPanel(PasswordPanel);
+function PasswordWithBiometric(props) {
+  return (
+    <>
+      <BiometricUnlockSetting />
+      <LegacyPassword {...props} />
+    </>
+  );
+}
+
+/* Privacy and data also lists blocked members (report and block, UGC rules). */
+const LegacyPrivacy = wrapLegacyPanel(DataRequestPanel);
+function PrivacyWithBlocks(props) {
+  return (
+    <>
+      <BlockedMembersSetting />
+      <LegacyPrivacy {...props} />
+    </>
+  );
+}
+
 export const LEDGER_PANEL_MAP = {
   'my-details': MyDetailsLedger,
   appearance: AppearanceLedger,
   profile: wrapLegacyPanel(ProfilePanel),
-  password: wrapLegacyPanel(PasswordPanel),
+  password: PasswordWithBiometric,
   family: wrapLegacyPanel(FamilyPanel),
   plan: wrapLegacyPanel(PlanPanel),
   billing: wrapLegacyPanel(BillingPanel),
@@ -147,7 +171,7 @@ export const LEDGER_PANEL_MAP = {
   notifications: wrapLegacyPanel(NotificationsWithOrg),
   integrations: wrapLegacyPanel(IntegrationsPanel),
   api: wrapLegacyPanel(ApiPanel),
-  'privacy-data': wrapLegacyPanel(DataRequestPanel),
+  'privacy-data': PrivacyWithBlocks,
   'platform-changelog': wrapLegacyPanel(PlatformChangelogPanel),
   partners: wrapLegacyPanel(PartnerManagementPanel),
   organization: wrapLegacyPanel(OrgAdminPanel),

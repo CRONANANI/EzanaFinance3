@@ -15,6 +15,7 @@ import {
   TRACK_BADGE_LABELS,
   LEVEL_BADGE_LABELS,
 } from '@/lib/learning-progress-logic';
+import { insertNotificationAndPush } from '@/lib/push/fanout';
 
 export const dynamic = 'force-dynamic';
 
@@ -312,7 +313,7 @@ export const POST = withApiGuard(
                   .maybeSingle();
                 const lp = learnPref?.notification_prefs || {};
                 if (lp.learning_progress !== false) {
-                  await admin.from('user_notifications').insert({
+                  await insertNotificationAndPush(admin, {
                     user_id: user.id,
                     type: 'learning',
                     title: `🎓 Course completed: ${course.title}`,
@@ -343,7 +344,7 @@ export const POST = withApiGuard(
               }
               if (learningNotifPrefs.learning_progress === false) continue;
               try {
-                await admin.from('user_notifications').insert({
+                await insertNotificationAndPush(admin, {
                   user_id: user.id,
                   type: 'learning',
                   title: `🏅 Badge unlocked: ${b.label}`,

@@ -1,0 +1,187 @@
+/* modm- : report / block menu and the community terms prompt. */
+.modm {
+  position: relative;
+  display: inline-flex;
+}
+.modm-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.modm-trigger:hover,
+.modm-trigger:focus-visible {
+  background: color-mix(in srgb, var(--text-faint) 12%, transparent);
+  color: var(--text-primary);
+  outline: none;
+}
+.modm-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 50;
+  min-width: 160px;
+  padding: 4px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--bg-primary) 20%, transparent);
+}
+.modm-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  text-align: left;
+  cursor: pointer;
+}
+.modm-menu button:hover,
+.modm-menu button:focus-visible {
+  background: var(--emerald-bg);
+  outline: none;
+}
+.modm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: color-mix(in srgb, var(--bg-primary) 30%, transparent);
+  backdrop-filter: blur(2px);
+}
+.modm-dialog {
+  width: min(440px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 20px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+.modm-title {
+  margin: 0 0 12px;
+  font-size: var(--type-section-size);
+  font-weight: var(--type-section-weight);
+}
+.modm-msg {
+  margin: 0 0 12px;
+  font-size: var(--type-body-size);
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.modm-msg a {
+  color: var(--emerald-text);
+}
+.modm-reasons {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 0;
+  border: 0;
+  font-size: var(--type-body-size);
+}
+.modm-reasons legend {
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.modm-reasons label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+.modm-details {
+  display: grid;
+  gap: 4px;
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+.modm-details textarea {
+  padding: 8px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+}
+.modm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+.modm-actions button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  cursor: pointer;
+}
+.modm-actions .modm-primary {
+  border-color: var(--emerald);
+  background: var(--emerald);
+  color: var(--bg-primary);
+}
+.modm-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.modm-actions button:focus-visible,
+.modm-trigger:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+
+.modb-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.modb-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+}
+.modb-unblock {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  cursor: pointer;
+}
+.modb-unblock:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}

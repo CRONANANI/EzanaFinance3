@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { usePlaidLink } from 'react-plaid-link';
 import { supabase } from '@/lib/supabase-browser';
+import { WebOnly } from '@/components/native/WebOnly';
 
 const LINK_TOKEN_KEY = 'plaid_link_token';
 
@@ -14,7 +15,7 @@ function clearStoredLinkToken() {
   }
 }
 
-export function PlaidLinkButton({ onSuccess, className = '' }) {
+function PlaidLinkButtonInner({ onSuccess, className = '' }) {
   const [linkToken, setLinkToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -175,6 +176,15 @@ export function PlaidLinkButton({ onSuccess, className = '' }) {
 
       {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
     </div>
+  );
+}
+
+/* Account linking is web-only in the v1 apps. */
+export function PlaidLinkButton(props) {
+  return (
+    <WebOnly>
+      <PlaidLinkButtonInner {...props} />
+    </WebOnly>
   );
 }
 

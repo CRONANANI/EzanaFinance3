@@ -508,6 +508,7 @@ export default function EzanaQLBar({
               type="button"
               className="eqb-ract"
               onClick={addTickersToWatchlist}
+              data-haptic
               disabled={watchState === 'busy' || watchState === 'done'}
               title={isGuest ? 'Requires an account' : undefined}
             >

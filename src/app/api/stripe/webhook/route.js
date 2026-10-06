@@ -58,6 +58,7 @@ export async function POST(request) {
               subscription_status: subscription.status,
               subscription_id: subscription.id,
               subscription_plan: planKey,
+              subscription_source: 'stripe',
               current_period_end: periodEnd,
               subscription_period_end: periodEnd,
               current_plan: subscription.items?.data?.[0]?.price?.id ?? null,
@@ -79,6 +80,7 @@ export async function POST(request) {
 
         const updateData = {
           subscription_status: subscription.status,
+          subscription_source: 'stripe',
           current_period_end: subscription.current_period_end
             ? new Date(subscription.current_period_end * 1000).toISOString()
             : null,

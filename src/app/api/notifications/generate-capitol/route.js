@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
+import { insertNotificationAndPush } from '@/lib/push/fanout';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -103,7 +104,7 @@ export async function GET(request) {
         if (existing) continue;
 
         const typeLabel = trade.type || trade.transactionType || 'Trade';
-        await admin.from('user_notifications').insert({
+        await insertNotificationAndPush(admin, {
           user_id: profile.user_id,
           type: 'inside-the-capitol',
           title: `${emoji} ${representative} · ${typeLabel}${symbol ? ` ($${symbol})` : ''}`,

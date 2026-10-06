@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireUser, getAdminClient } from '@/lib/supabase';
 import { awardXP } from '@/lib/rewards';
+import { insertNotificationAndPush } from '@/lib/push/fanout';
 
 export const dynamic = 'force-dynamic';
 
@@ -70,7 +71,7 @@ export async function POST(request) {
                 }
 
                 const body = postRow.content || '';
-                await admin.from('user_notifications').insert({
+                await insertNotificationAndPush(admin, {
                   user_id: postRow.user_id,
                   type: 'community',
                   title: `${likerName} liked your post`,

@@ -12,6 +12,9 @@ import { useAchievements } from '@/hooks/useAchievements';
 import { computeProfileMetrics } from '@/lib/profile-metrics';
 
 import { ProfileNav } from './ProfileNav';
+import ContentActionsMenu from '@/components/moderation/ContentActionsMenu';
+import { shareLink } from '@/lib/share';
+import { enableNativePush } from '@/lib/native-push-client';
 import { IdentityHero } from './IdentityHero';
 import { CreatorTrackRecord } from './CreatorTrackRecord';
 import { PerfStats } from './PerfStats';
@@ -424,27 +427,13 @@ export function ProfilePageStripe({ username }) {
         .insert({ follower_id: user.id, following_id: profile.id });
       setFollowing(true);
       setFollowerCount((c) => c + 1);
+      enableNativePush();
     }
   }, [user?.id, profile?.id, isOwn, following]);
 
   const handleShare = useCallback(async () => {
     const url = `${window.location.origin}/profile/${profile?.username || username}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: profile?.full_name || profile?.username || username,
-          url,
-        });
-      } catch {
-        /* cancelled */
-      }
-    } else {
-      try {
-        await navigator.clipboard.writeText(url);
-      } catch {
-        /* unavailable */
-      }
-    }
+    await shareLink({ title: profile?.full_name || profile?.username || username, url });
   }, [profile, username]);
 
   if (loading) {
@@ -501,6 +490,16 @@ export function ProfilePageStripe({ username }) {
         onFollow={toggleFollow}
         isFollowing={following}
         showActions={!isOwn && !!user?.id}
+        moreMenu={
+          !isOwn && profile?.id ? (
+            <ContentActionsMenu
+              contentType="profile"
+              contentId={profile.id}
+              authorId={profile.id}
+              authorName={profileUser.name || 'this member'}
+            />
+          ) : null
+        }
       />
 
       <div className="profile-stripe-body">

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import ShareButton from '@/components/native/ShareButton';
 import { hubHref } from '@/lib/datasets/hubs';
 import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 import './hub-query-link.css';
@@ -17,6 +18,7 @@ export default function HubQueryLink({ dimension }) {
         Query this data with EzanaQL
       </Link>
       <span className="hql-meta">on the {dim.label} hub</span>
+      <ShareButton className="hql-share" title="Ezana dataset" label="Share this page" />
     </p>
   );
 }

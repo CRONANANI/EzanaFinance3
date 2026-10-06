@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireUser, getAdminClient } from '@/lib/supabase';
 import { resend } from '@/lib/services/resend';
 import { awardXP } from '@/lib/rewards';
+import { insertNotificationAndPush } from '@/lib/push/fanout';
 
 export const dynamic = 'force-dynamic';
 
@@ -122,7 +123,7 @@ export async function POST(request) {
 
         // ── In-app notification: "[Name] started following you" ──
         try {
-          await admin.from('user_notifications').insert({
+          await insertNotificationAndPush(admin, {
             user_id: target_user_id,
             title: `${followerName} started following you`,
             content: 'Check out their profile and follow them back to become friends!',

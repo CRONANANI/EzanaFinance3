@@ -51,3 +51,11 @@ public/app-legacy/
 # Playwright
 /test-results/
 /playwright-report/
+
+# Mobile signing material never lives in the repo (Codemagic holds it).
+*.jks
+*.keystore
+*.p8
+*.mobileprovision
+GoogleService-Info.plist
+google-services.json

@@ -1,6 +1,7 @@
 'use client';
 
 import { CheckCheck, Check } from 'lucide-react';
+import ContentActionsMenu from '@/components/moderation/ContentActionsMenu';
 
 function getInitials(name) {
   if (!name) return '?';
@@ -50,11 +51,7 @@ export function MessageBubble({
         (showAvatar ? (
           sender?.avatar_url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={sender.avatar_url}
-              alt=""
-              className="m-bubble-row__avatar"
-            />
+            <img src={sender.avatar_url} alt="" className="m-bubble-row__avatar" />
           ) : (
             <div className="m-bubble-row__avatar-fallback" aria-hidden>
               {getInitials(senderName)}
@@ -65,9 +62,7 @@ export function MessageBubble({
         ))}
 
       <div className="m-bubble-col">
-        {!isSelf && showAvatar && senderName && (
-          <div className="m-bubble-sender">{senderName}</div>
-        )}
+        {!isSelf && showAvatar && senderName && <div className="m-bubble-sender">{senderName}</div>}
         <div
           className={`m-bubble ${isSelf ? 'm-bubble--self' : 'm-bubble--theirs'}${
             isMatched ? ' m-bubble--matched' : ''
@@ -78,6 +73,14 @@ export function MessageBubble({
           </p>
           <div className="m-bubble__foot">
             <span>{time}</span>
+            {!isSelf && message.id ? (
+              <ContentActionsMenu
+                contentType="message"
+                contentId={message.id}
+                authorId={message.sender_id}
+                authorName={senderName || 'this member'}
+              />
+            ) : null}
             {isSelf &&
               (message.read_at ? (
                 <CheckCheck size={12} aria-label="Read" />

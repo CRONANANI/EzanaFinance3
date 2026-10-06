@@ -7,6 +7,7 @@ import { getInitials, extractTickerFromContent } from '@/lib/community-utils';
 import { TICKER_SEARCH_DATA } from '@/lib/tickerSearchData';
 import { POST_TYPE_LIST, STANDARD_DISCLAIMER } from '@/lib/post-types';
 import { Avatar } from './Atoms';
+import { useCommunityTerms } from '@/components/moderation/useCommunityTerms';
 
 const VALID_PERIODS = ['1D', '1W', '1M', '3M', '1Y'];
 
@@ -253,6 +254,7 @@ export function EvoComposer({
   onClearQuote,
 }) {
   const { user } = useAuth();
+  const { ensureAccepted, termsModal } = useCommunityTerms();
   const [text, setText] = useState('');
   const [mode, setMode] = useState(null);
   const [image, setImage] = useState(null);
@@ -301,6 +303,8 @@ export function EvoComposer({
 
   const handlePost = async () => {
     if (!canPost) return;
+    /* Community guidelines are agreed once, before the first post. */
+    if (!(await ensureAccepted())) return;
     setPosting(true);
     try {
       let image_url = null;
@@ -418,6 +422,7 @@ export function EvoComposer({
       style={{ padding: 14, marginBottom: 16 }}
       data-composer-anchor
     >
+      {termsModal}
       <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
         <Avatar author={author} size={36} />
         <div style={{ flex: 1 }}>
@@ -652,6 +657,7 @@ export function EvoComposer({
               <button
                 type="button"
                 onClick={handlePost}
+                data-haptic
                 disabled={!canPost}
                 className="ez-btn ez-btn--primary"
                 style={{ fontSize: 13, opacity: canPost ? 1 : 0.5 }}

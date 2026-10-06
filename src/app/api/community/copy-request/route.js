@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireUser, getAdminClient } from '@/lib/supabase';
 import { awardELO } from '@/lib/elo';
 import { isDemoViewer, DEMO_COPY_REQUESTS } from '@/lib/community/demo-data';
+import { insertNotificationAndPush } from '@/lib/push/fanout';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -248,7 +249,7 @@ export async function POST(request) {
         'Someone'
       ).trim();
 
-      await admin.from('user_notifications').insert({
+      await insertNotificationAndPush(admin, {
         user_id: targetUserId,
         title: `${requesterName} wants to copy your portfolio`,
         content: message || 'Review this request and decide whether to approve it.',
@@ -360,7 +361,7 @@ export async function PATCH(request) {
           targetProfile?.user_settings?.display_name ||
           'They'
         ).trim();
-        await admin.from('user_notifications').insert({
+        await insertNotificationAndPush(admin, {
           user_id: req.requester_id,
           title: `${targetName} approved your copy request`,
           content: 'You can now mirror their portfolio strategy.',

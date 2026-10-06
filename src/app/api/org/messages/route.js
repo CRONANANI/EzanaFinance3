@@ -3,6 +3,7 @@ import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient, getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 
 import { getMemberPermissions } from '@/lib/org-permissions-config';
+import { insertNotificationAndPush } from '@/lib/push/fanout';
 
 export const dynamic = 'force-dynamic';
 
@@ -129,7 +130,7 @@ export const POST = withApiGuard(
           .maybeSingle();
         const senderName = member.display_name || 'A team member';
         if (recipRow?.user_id) {
-          await admin.from('user_notifications').insert({
+          await insertNotificationAndPush(admin, {
             user_id: recipRow.user_id,
             title: 'Team message',
             content: `${senderName} sent you: ${subject || 'a message'}`,

@@ -1,0 +1,20 @@
+{
+  "appId": "world.ezana.app",
+  "appName": "Ezana",
+  "webDir": "mobile/www",
+  "server": {
+    "url": "https://ezana.world/home",
+    "allowNavigation": ["ezana.world", "*.ezana.world"],
+    "errorPath": "offline.html"
+  },
+  "ios": { "contentInset": "never", "scheme": "Ezana", "appendUserAgent": "EzanaApp/1.0 (iOS)" },
+  "android": { "appendUserAgent": "EzanaApp/1.0 (Android)", "allowMixedContent": false },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 600,
+      "backgroundColor": "#0a0e13",
+      "showSpinner": false
+    },
+    "PushNotifications": { "presentationOptions": ["badge", "sound", "alert"] }
+  }
+}

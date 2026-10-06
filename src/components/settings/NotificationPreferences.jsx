@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase-browser';
+import { enableNativePush } from '@/lib/native-push-client';
+import { useIsNativeApp } from '@/components/native/useIsNativeApp';
 
 const PREFS = [
   {
@@ -105,7 +107,10 @@ export function NotificationPreferences() {
     })();
   }, []);
 
+  const native = useIsNativeApp();
   const updatePref = async (key, value) => {
+    /* In the apps, turning an alert on is the moment to ask for push. */
+    if (value === true) enableNativePush();
     const updated = { ...prefs, [key]: value };
     setPrefs(updated);
     const {
@@ -150,6 +155,26 @@ export function NotificationPreferences() {
           ))}
         </select>
       </div>
+
+      {native ? (
+        <div
+          className="settings-toggle-row"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <div className="settings-toggle-info">
+            <span className="settings-toggle-label">Push to this phone</span>
+            <span className="settings-toggle-desc">
+              Send these alerts to your phone as notifications, at most 20 a day.
+            </span>
+          </div>
+          <button
+            type="button"
+            className={`settings-switch ${prefs.mobile_push !== false ? 'on' : ''}`}
+            onClick={() => updatePref('mobile_push', !(prefs.mobile_push !== false))}
+            aria-label="Toggle push to this phone"
+          />
+        </div>
+      ) : null}
 
       {PREFS.map((p) => (
         <div

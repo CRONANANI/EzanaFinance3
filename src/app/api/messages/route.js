@@ -5,6 +5,8 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getCurrentUser, getAdminClient } from '@/lib/supabase';
 import { sanitizeInput } from '@/lib/sanitize';
+import { insertNotificationAndPush } from '@/lib/push/fanout';
+import { isBlockedPair, blockedBothWays } from '@/lib/moderation/blocks';
 
 export const dynamic = 'force-dynamic';
 
@@ -93,36 +95,41 @@ export const GET = withApiGuard(
         unreadMap.set(row.conversation_id, (unreadMap.get(row.conversation_id) || 0) + 1);
       }
 
-      const result = convos.map((c) => {
-        const otherId = c.participant_a === user.id ? c.participant_b : c.participant_a;
-        const prof = profileMap[otherId];
-        const displayName =
-          (prof?.full_name || prof?.user_settings?.display_name || '').trim() || 'Member';
-        const lastMsg = lastMsgMap.get(c.id);
+      const blocked = await blockedBothWays(admin, user.id);
+      const result = convos
+        .filter(
+          (c) => !blocked.has(c.participant_a === user.id ? c.participant_b : c.participant_a),
+        )
+        .map((c) => {
+          const otherId = c.participant_a === user.id ? c.participant_b : c.participant_a;
+          const prof = profileMap[otherId];
+          const displayName =
+            (prof?.full_name || prof?.user_settings?.display_name || '').trim() || 'Member';
+          const lastMsg = lastMsgMap.get(c.id);
 
-        return {
-          id: c.id,
-          other_user: {
-            id: otherId,
-            name: displayName,
-            avatar_url: prof?.avatar_url || null,
-          },
-          last_message: lastMsg
-            ? {
-                content:
-                  lastMsg.content.length > 100
-                    ? `${lastMsg.content.slice(0, 100)}…`
-                    : lastMsg.content,
-                sender_id: lastMsg.sender_id,
-                created_at: lastMsg.created_at,
-                is_mine: lastMsg.sender_id === user.id,
-              }
-            : null,
-          unread_count: unreadMap.get(c.id) || 0,
-          last_message_at: c.last_message_at,
-          created_at: c.created_at,
-        };
-      });
+          return {
+            id: c.id,
+            other_user: {
+              id: otherId,
+              name: displayName,
+              avatar_url: prof?.avatar_url || null,
+            },
+            last_message: lastMsg
+              ? {
+                  content:
+                    lastMsg.content.length > 100
+                      ? `${lastMsg.content.slice(0, 100)}…`
+                      : lastMsg.content,
+                  sender_id: lastMsg.sender_id,
+                  created_at: lastMsg.created_at,
+                  is_mine: lastMsg.sender_id === user.id,
+                }
+              : null,
+            unread_count: unreadMap.get(c.id) || 0,
+            last_message_at: c.last_message_at,
+            created_at: c.created_at,
+          };
+        });
 
       return NextResponse.json({ conversations: result });
     } catch (e) {
@@ -157,6 +164,11 @@ export const POST = withApiGuard(
           { error: 'Message too long (max 5000 characters)' },
           { status: 400 },
         );
+      }
+
+      /* A block in either direction stops new messages both ways. */
+      if (await isBlockedPair(admin, user.id, toUserId)) {
+        return NextResponse.json({ error: 'You cannot message this member.' }, { status: 403 });
       }
 
       const mutual = await areMutualFollows(user.id, toUserId);
@@ -253,7 +265,7 @@ export const POST = withApiGuard(
               'Someone';
           }
 
-          await admin.from('user_notifications').insert({
+          await insertNotificationAndPush(admin, {
             user_id: toUserId,
             type: 'community',
             title: `New message from ${senderName}`,

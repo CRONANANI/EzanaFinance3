@@ -3,7 +3,14 @@
 import Link from 'next/link';
 import { page, shape, type as typeTokens } from './profile-design-tokens';
 
-export function ProfileNav({ userName, onShare, onFollow, isFollowing, showActions = true }) {
+export function ProfileNav({
+  userName,
+  onShare,
+  onFollow,
+  isFollowing,
+  showActions = true,
+  moreMenu = null,
+}) {
   return (
     <header
       style={{
@@ -67,6 +74,7 @@ export function ProfileNav({ userName, onShare, onFollow, isFollowing, showActio
           <button
             type="button"
             onClick={onFollow}
+            data-haptic
             style={{
               background: page.ink,
               border: 'none',
@@ -82,6 +90,7 @@ export function ProfileNav({ userName, onShare, onFollow, isFollowing, showActio
           >
             {isFollowing ? 'Following' : 'Follow'}
           </button>
+          {moreMenu}
         </div>
       )}
     </header>

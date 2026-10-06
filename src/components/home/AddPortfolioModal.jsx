@@ -8,6 +8,7 @@ import { BrandMark, brandColor, resolveBrandKey } from './brokerage-brand-marks'
 import { CountryFlag, inferCountry } from './brokerage-country-flags';
 import { ProviderMark } from './provider-brand-marks';
 import './add-portfolio-modal.css';
+import { useIsNativeApp } from '@/components/native/useIsNativeApp';
 
 const EZANA_LOGO = '/logo-tight.png';
 const PLAID_LINK_SCRIPT = 'https://cdn.plaid.com/link/v2/stable/link-initialize.js';
@@ -31,7 +32,29 @@ function InstitutionLogo({ inst, size = 56 }) {
   );
 }
 
-export function AddPortfolioModal({ open, onClose, onConnected }) {
+export function AddPortfolioModal(props) {
+  /* Brokerage and bank linking is web-only in the v1 apps. */
+  const native = useIsNativeApp();
+  if (native) {
+    if (!props.open) return null;
+    return (
+      <div className="apm-overlay" onClick={props.onClose}>
+        <div className="apm-card apm-card--grid" onClick={(e) => e.stopPropagation()}>
+          <div className="apm-grid-head">
+            <button type="button" className="apm-close" onClick={props.onClose} aria-label="Close">
+              ×
+            </button>
+            <h2 className="apm-grid-title">Connect your brokerage</h2>
+          </div>
+          <p className="native-web-only">Available on ezana.world</p>
+        </div>
+      </div>
+    );
+  }
+  return <AddPortfolioModalInner {...props} />;
+}
+
+function AddPortfolioModalInner({ open, onClose, onConnected }) {
   const [step, setStep] = useState('grid');
   const [selected, setSelected] = useState(null);
   const [chosenProvider, setChosenProvider] = useState(null);

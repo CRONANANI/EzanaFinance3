@@ -27,3 +27,27 @@
 .hql-meta {
   color: var(--text-muted);
 }
+
+.hql-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  cursor: pointer;
+}
+.hql-share:hover {
+  border-color: var(--emerald);
+}
+.hql-share:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}

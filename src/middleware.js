@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
+import { isNativeRequest, isNativeBlockedApi, nativeRedirectFor } from '@/lib/native';
 import {
   matchesRoutePrefix,
   PARTNER_DASHBOARD_ROUTES,
@@ -21,11 +22,38 @@ const MFA_REQUIRE_ENROLLMENT = process.env.MFA_REQUIRE_ENROLLMENT === 'true';
 export async function middleware(request) {
   const pathname = request.nextUrl.pathname;
 
+  /* App and Android link verification files: Apple and Google fetch these
+     directly and reject any redirect, so they pass through untouched. */
+  if (pathname.startsWith('/.well-known/')) return NextResponse.next();
+
+  /* Inside the iOS and Android apps (user-agent suffix EzanaApp/): real-money
+     trading, account linking and web checkout are web-only in v1, and the
+     landing page gives way to Home. Browsers never match. */
+  if (isNativeRequest(request.headers)) {
+    if (pathname.startsWith('/api/')) {
+      if (isNativeBlockedApi(pathname)) {
+        return NextResponse.json(
+          { error: 'This feature is available on ezana.world.' },
+          { status: 403 },
+        );
+      }
+    } else {
+      const to = nativeRedirectFor(pathname);
+      if (to) {
+        const url = request.nextUrl.clone();
+        url.pathname = to;
+        url.search = '';
+        return NextResponse.redirect(url);
+      }
+    }
+  }
+
   // Global rate limit: 100 req/min per IP on /api/* (excludes auth + webhooks)
   if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth/')) {
     const skipPaths = [
       '/api/webhooks/',
       '/api/stripe/webhook',
+      '/api/revenuecat/webhook',
       '/api/alpaca/webhook',
       '/api/trading/webhook',
     ];

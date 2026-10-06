@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Ezana</string>
+    <string name="title_activity_main">Ezana</string>
+    <string name="package_name">world.ezana.app</string>
+    <string name="custom_url_scheme">world.ezana.app</string>
+</resources>

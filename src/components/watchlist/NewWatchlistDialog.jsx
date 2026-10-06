@@ -2,14 +2,32 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Plus, Sparkles, Search, Bell, Check, Building2, Users, Bitcoin, Droplet } from 'lucide-react';
+import {
+  X,
+  Plus,
+  Sparkles,
+  Search,
+  Bell,
+  Check,
+  Building2,
+  Users,
+  Bitcoin,
+  Droplet,
+} from 'lucide-react';
 import { CompanySearch } from '@/components/research/CompanySearch';
 import { getThemeSuggestions } from '@/lib/watchlist-suggestions';
 import './new-watchlist-dialog.css';
+import { enableNativePush } from '@/lib/native-push-client';
 
 const PRESET_COLORS = [
-  '#ef4444', '#f97316', '#eab308', '#22c55e',
-  '#06b6d4', '#10b981', '#8b5cf6', '#ec4899',
+  '#ef4444',
+  '#f97316',
+  '#eab308',
+  '#22c55e',
+  '#06b6d4',
+  '#10b981',
+  '#8b5cf6',
+  '#ec4899',
 ];
 
 /**
@@ -33,8 +51,14 @@ const ITEM_KINDS = [
 // Common suggestions so users can one-click a popular identifier without
 // needing to remember the FMP futures ticker.
 const POLITICIAN_SUGGESTIONS = [
-  'Nancy Pelosi', 'Dan Crenshaw', 'Josh Gottheimer', 'Tommy Tuberville',
-  'Ro Khanna', 'Pat Toomey', 'Richard Burr', 'Kevin Hern',
+  'Nancy Pelosi',
+  'Dan Crenshaw',
+  'Josh Gottheimer',
+  'Tommy Tuberville',
+  'Ro Khanna',
+  'Pat Toomey',
+  'Richard Burr',
+  'Kevin Hern',
 ];
 const CRYPTO_SUGGESTIONS = ['BTC', 'ETH', 'SOL', 'ADA', 'DOGE', 'XRP', 'LINK', 'AVAX'];
 const COMMODITY_SUGGESTIONS = [
@@ -202,7 +226,10 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
         return true;
       }
       if (kind === 'crypto') {
-        const sym = trimmed.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
+        const sym = trimmed
+          .toUpperCase()
+          .replace(/[^A-Z0-9]/g, '')
+          .slice(0, 10);
         if (!sym) return false;
         addTicker({
           kind: 'crypto',
@@ -212,7 +239,10 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
         return true;
       }
       if (kind === 'commodity') {
-        const sym = trimmed.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
+        const sym = trimmed
+          .toUpperCase()
+          .replace(/[^A-Z0-9]/g, '')
+          .slice(0, 10);
         if (!sym) return false;
         addTicker({
           kind: 'commodity',
@@ -258,8 +288,7 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
       const failed = itemResults.filter((r) => r && r.ok === false);
       if (failed.length === itemResults.length && itemResults.length > 0) {
         throw new Error(
-          failed[0]?.reason ||
-            'Watchlist was created but no tickers could be added.',
+          failed[0]?.reason || 'Watchlist was created but no tickers could be added.',
         );
       }
       if (failed.length > 0) {
@@ -291,7 +320,18 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
     } finally {
       setSubmitting(false);
     }
-  }, [canSubmit, createList, addItem, name, tickers, color, alertsOn, description, onCreated, onOpenChange]);
+  }, [
+    canSubmit,
+    createList,
+    addItem,
+    name,
+    tickers,
+    color,
+    alertsOn,
+    description,
+    onCreated,
+    onOpenChange,
+  ]);
 
   const handleSearchSelect = useCallback(
     (result) => {
@@ -334,8 +374,12 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
       >
         <header className="nwd-header">
           <div>
-            <h2 id="nwd-title" className="nwd-title">Create a new watchlist</h2>
-            <p className="nwd-sub">Name your list, add companies, and get suggestions based on your theme.</p>
+            <h2 id="nwd-title" className="nwd-title">
+              Create a new watchlist
+            </h2>
+            <p className="nwd-sub">
+              Name your list, add companies, and get suggestions based on your theme.
+            </p>
           </div>
           <button
             type="button"
@@ -350,7 +394,9 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
         <div className="nwd-body">
           {/* 1 ── Watchlist name */}
           <div className="nwd-field">
-            <label className="nwd-label" htmlFor="nwd-name">Watchlist name</label>
+            <label className="nwd-label" htmlFor="nwd-name">
+              Watchlist name
+            </label>
             <input
               id="nwd-name"
               ref={nameInputRef}
@@ -392,12 +438,16 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
 
             {kind === 'stock' ? (
               <div className="nwd-search-wrap" style={{ marginTop: '0.6rem' }}>
-                <label className="nwd-label nwd-label-inline"><Search size={14} /> Search for a company</label>
+                <label className="nwd-label nwd-label-inline">
+                  <Search size={14} /> Search for a company
+                </label>
                 <CompanySearch
                   placeholder="Search by ticker or company name…"
                   onSelect={handleSearchSelect}
                 />
-                <div className="nwd-hint nwd-hint-muted">Results are filtered to NYSE &amp; NASDAQ listings.</div>
+                <div className="nwd-hint nwd-hint-muted">
+                  Results are filtered to NYSE &amp; NASDAQ listings.
+                </div>
               </div>
             ) : (
               <div className="nwd-search-wrap" style={{ marginTop: '0.6rem' }}>
@@ -442,9 +492,7 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
                 {kind === 'politician' && (
                   <div className="nwd-quickpicks">
                     {POLITICIAN_SUGGESTIONS.map((p) => {
-                      const added = tickers.some(
-                        (t) => t.kind === 'politician' && t.symbol === p,
-                      );
+                      const added = tickers.some((t) => t.kind === 'politician' && t.symbol === p);
                       return (
                         <button
                           key={p}
@@ -463,9 +511,7 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
                 {kind === 'crypto' && (
                   <div className="nwd-quickpicks">
                     {CRYPTO_SUGGESTIONS.map((c) => {
-                      const added = tickers.some(
-                        (t) => t.kind === 'crypto' && t.symbol === c,
-                      );
+                      const added = tickers.some((t) => t.kind === 'crypto' && t.symbol === c);
                       return (
                         <button
                           key={c}
@@ -510,14 +556,17 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
           {kind === 'stock' && name.trim() && (
             <div className="nwd-field">
               <div className="nwd-label nwd-label-row">
-                <span className="nwd-label-inline"><Sparkles size={14} /> {heading}</span>
+                <span className="nwd-label-inline">
+                  <Sparkles size={14} /> {heading}
+                </span>
                 <span className="nwd-hint">NYSE &amp; NASDAQ only</span>
               </div>
               {loadingSuggestions ? (
                 <div className="nwd-muted">Finding matches…</div>
               ) : suggestions.length === 0 ? (
                 <div className="nwd-muted">
-                  No matches yet — try keywords like <em>AI</em>, <em>dividends</em>, <em>clean energy</em>, <em>chips</em>, or <em>defense</em>.
+                  No matches yet — try keywords like <em>AI</em>, <em>dividends</em>,{' '}
+                  <em>clean energy</em>, <em>chips</em>, or <em>defense</em>.
                 </div>
               ) : (
                 <div className="nwd-suggestions">
@@ -528,8 +577,12 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
                       <div key={s.symbol} className="nwd-sug-row">
                         <div className="nwd-sug-main">
                           <span className="nwd-sug-sym">{s.symbol}</span>
-                          <span className="nwd-sug-name" title={s.name}>{s.name}</span>
-                          <span className={`nwd-badge nwd-badge-${s.exchange.toLowerCase()}`}>{s.exchange}</span>
+                          <span className="nwd-sug-name" title={s.name}>
+                            {s.name}
+                          </span>
+                          <span className={`nwd-badge nwd-badge-${s.exchange.toLowerCase()}`}>
+                            {s.exchange}
+                          </span>
                           {s.sector && <span className="nwd-sug-sector">{s.sector}</span>}
                         </div>
                         <div className="nwd-sug-side">
@@ -538,7 +591,8 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
                           )}
                           {s.changePct != null && (
                             <span className={`nwd-sug-chg ${chgCls}`}>
-                              {s.changePct >= 0 ? '+' : ''}{s.changePct.toFixed(2)}%
+                              {s.changePct >= 0 ? '+' : ''}
+                              {s.changePct.toFixed(2)}%
                             </span>
                           )}
                           <button
@@ -547,7 +601,15 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
                             disabled={added}
                             onClick={() => addTicker(s)}
                           >
-                            {added ? <><Check size={12} /> Added</> : <><Plus size={12} /> Add</>}
+                            {added ? (
+                              <>
+                                <Check size={12} /> Added
+                              </>
+                            ) : (
+                              <>
+                                <Plus size={12} /> Add
+                              </>
+                            )}
                           </button>
                         </div>
                       </div>
@@ -580,14 +642,16 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
                       className={`nwd-chip nwd-chip-${itemKind}`}
                     >
                       <span className="nwd-chip-sym">{t.symbol}</span>
-                      <span className="nwd-chip-name" title={t.name}>{t.name}</span>
+                      <span className="nwd-chip-name" title={t.name}>
+                        {t.name}
+                      </span>
                       {itemKind === 'stock' && t.exchange && (
-                        <span className={`nwd-badge nwd-badge-${t.exchange.toLowerCase()}`}>{t.exchange}</span>
+                        <span className={`nwd-badge nwd-badge-${t.exchange.toLowerCase()}`}>
+                          {t.exchange}
+                        </span>
                       )}
                       {itemKind !== 'stock' && (
-                        <span className={`nwd-badge nwd-badge-${itemKind}`}>
-                          {itemKind}
-                        </span>
+                        <span className={`nwd-badge nwd-badge-${itemKind}`}>{itemKind}</span>
                       )}
                       <button
                         type="button"
@@ -626,7 +690,9 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
 
           {/* 6 ── Notes */}
           <div className="nwd-field">
-            <label className="nwd-label" htmlFor="nwd-notes">Notes (optional)</label>
+            <label className="nwd-label" htmlFor="nwd-notes">
+              Notes (optional)
+            </label>
             <textarea
               id="nwd-notes"
               className="nwd-textarea"
@@ -643,7 +709,10 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
             <input
               type="checkbox"
               checked={alertsOn}
-              onChange={(e) => setAlertsOn(e.target.checked)}
+              onChange={(e) => {
+                setAlertsOn(e.target.checked);
+                if (e.target.checked) enableNativePush();
+              }}
             />
             <Bell size={14} />
             <span>Notify me on major price moves (±5%)</span>

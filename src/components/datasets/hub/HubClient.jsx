@@ -11,6 +11,7 @@ import { useAuth } from '@/components/AuthProvider';
 import EzanaQLBar, { AccountGate } from '@/components/ezanaql/EzanaQLBar';
 import CompanyCard from '@/components/ezanaql/CompanyCard';
 import { addTickersToWatchlist } from '@/components/ezanaql/watchlist-add';
+import ShareButton from '@/components/native/ShareButton';
 
 const HubQuery = createContext({ runRequest: null, requestRun: () => {} });
 
@@ -64,7 +65,7 @@ export function HubBar({ dimension, seedQuery, examplePrompts }) {
 }
 
 /** Watchlist (ticker rows, account only) and Query this, on one linkage row. */
-export function RowActions({ ticker, query, label }) {
+export function RowActions({ ticker, query, label, shareUrl = null }) {
   const { requestRun } = useContext(HubQuery);
   const { isAuthenticated, loading } = useAuth() || {};
   const [state, setState] = useState('idle'); // idle | busy | done | error
@@ -96,6 +97,7 @@ export function RowActions({ ticker, query, label }) {
           type="button"
           className="hub-act"
           onClick={addToWatchlist}
+          data-haptic
           disabled={state === 'busy' || state === 'done'}
           aria-label={`Add ${ticker} to watchlist`}
         >
@@ -128,6 +130,7 @@ export function RowActions({ ticker, query, label }) {
           <span>Query this</span>
         </button>
       ) : null}
+      <ShareButton className="hub-act" title={label} url={shareUrl || undefined} />
       {gate ? (
         <div className="hub-gate">
           <AccountGate action="watchlist" onClose={closeGate} />
