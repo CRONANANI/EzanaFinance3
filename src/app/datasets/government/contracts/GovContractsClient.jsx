@@ -32,10 +32,11 @@ import {
 import { useAuth } from '@/components/AuthProvider';
 import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
-import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
 import ContractsExplorer from './ContractsExplorer';
 import ContractorQuickView from './ContractorQuickView';
-import CompanyCard from '@/components/ezanaql/CompanyCard';
+import Link from 'next/link';
+import HubQueryLink from '@/components/datasets/HubQueryLink';
+import { hubHref } from '@/lib/datasets/hubs';
 import { slugify } from './contractor-mock';
 // Positional palette: raw awarding_agency strings are the source of truth (no
 // regex bucketing); colors bind to spend-rank slots (top 10) + Other.
@@ -48,7 +49,6 @@ import {
 } from '@/lib/gov-agency-palette';
 // Seed queries live in a pure module so the ezanaql check script can validate
 // them against the catalog (catalog fields only — never raw DB columns).
-import { seedFromFilters } from './ezanaql-seed';
 import './gov-contracts.css';
 
 /* ── formatting ── */
@@ -127,16 +127,11 @@ export default function GovContractsClient({
   const [selectedAgencies, setSelectedAgencies] = useState(() => new Set());
   const [agencySearch, setAgencySearch] = useState('');
   const [minValue, setMinValue] = useState(0); // in billions
-  /* The rail's Generate report button focuses the shared bar's prompt. */
-  const barRef = useRef(null);
   const [fiscalYear, setFiscalYear] = useState('all');
   const [heroView, setHeroView] = useState('treemap');
   const [selected, setSelected] = useState(null);
   const [selectedAward, setSelectedAward] = useState(null); // ticker → award detail modal
   const [quickViewRecipient, setQuickViewRecipient] = useState(null); // explorer row → contractor quick-view
-  /* EzanaQL result row with a ticker → company card: the awards in the
-     query's window and the members still holding the stock. */
-  const [companyCard, setCompanyCard] = useState(null);
 
   // Prefer pre-aggregated BigQuery rollups (scales to millions of rows); fall
   // back to client-side aggregation of the small live-award slice.
@@ -393,40 +388,15 @@ export default function GovContractsClient({
         <h1 className="gcx-title">Government contracts</h1>
       </header>
 
-      {/* The one shared query bar, in the same slot and at the same size as
-          every other dataset page. It replaces the teaser and the dark panel
-          that used to live here. */}
-      <div ref={barRef}>
-        <EzanaQLBar
-          datasetScope="gov.contracts"
-          seedQuery={seedFromFilters({ agencies: [...selectedAgencies], fiscalYear })}
-          layout="split"
-          onRowClick={(row, ctx) =>
-            setCompanyCard({
-              ticker: String(row.ticker).toUpperCase(),
-              name: row.parent || row.recipient || null,
-              since: ctx.window?.since || null,
-            })
-          }
-        />
-      </div>
+      {/* EzanaQL lives on the Capitol Watch hub, scoped to its datasets. */}
+      <HubQueryLink dimension="capitol" />
 
       <div className="gcx-body">
         {/* filter rail */}
         <aside className="gcx-rail">
-          <button
-            type="button"
-            className="gcx-reportbtn"
-            onClick={() => {
-              /* There is no panel to open any more; the bar is always there,
-                 so this takes you to it. */
-              const el = barRef.current?.querySelector('.eqb-input');
-              barRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-              el?.focus();
-            }}
-          >
+          <Link className="gcx-reportbtn" href={hubHref('capitol')}>
             Generate report
-          </button>
+          </Link>
           <FilterGroup title="Fiscal year">
             <FiscalYearSelect value={fiscalYear} years={years} onChange={setFiscalYear} />
           </FilterGroup>
@@ -599,14 +569,6 @@ export default function GovContractsClient({
         <AwardDetailModal award={selectedAward} onClose={() => setSelectedAward(null)} />
       )}
 
-      {companyCard && (
-        <CompanyCard
-          ticker={companyCard.ticker}
-          name={companyCard.name}
-          since={companyCard.since}
-          onClose={() => setCompanyCard(null)}
-        />
-      )}
       {quickViewRecipient && (
         <ContractorQuickView
           recipient={quickViewRecipient}

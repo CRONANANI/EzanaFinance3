@@ -19,8 +19,7 @@ import { X, ArrowUpRight, ExternalLink, Info, Download, RefreshCw } from 'lucide
 import { ENTITY_LABEL, ENTITY_ORDER, ISSUE_LABEL } from '@/lib/lobbying/entities';
 import CompanyCard from './CompanyCard';
 import './lobbying.css';
-import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
-import { seedForDataset } from '@/lib/ezanaql/seeds';
+import HubQueryLink from '@/components/datasets/HubQueryLink';
 import { useTickerSpeed } from '@/components/datasets/useTickerSpeed';
 
 /* period selector → API scope. The current year is 2026 (filed in arrears). */
@@ -302,11 +301,8 @@ export default function LobbyingClient() {
         </p>
       </header>
 
-      {/* The one shared query bar, same slot and size as every dataset page. */}
-      <EzanaQLBar
-        datasetScope={'capitol.lobbying'}
-        seedQuery={seedForDataset('capitol.lobbying')}
-      />
+      {/* EzanaQL lives on the dimension hub, scoped to its datasets. */}
+      <HubQueryLink dimension="capitol" />
 
       <div className="lbx-body">
         {/* ── left filter rail ── */}

@@ -22,6 +22,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { columnAlign, formatCell } from '@/lib/ezanaql/grid-format';
+import { DIMENSION_LABELS } from '@/lib/ezanaql/catalog';
+import { addTickersToWatchlist as addToWatchlist } from './watchlist-add';
 import './ezanaql-bar.css';
 
 const MAX_EDITOR_LINES = 8;
@@ -62,7 +64,7 @@ const GATE_WHAT = {
 };
 
 /* Explains why an account action did not happen, in place under the bar. */
-function AccountGate({ action, onClose }) {
+export function AccountGate({ action, onClose }) {
   const ref = useRef(null);
   const [here, setHere] = useState('/datasets');
   useEffect(() => {
@@ -123,8 +125,15 @@ function relativeDate(iso) {
 }
 
 /**
+ * Lives on the dimension hubs only. Every call carries the hub's dimension and
+ * the server refuses datasets outside it.
+ *
  * @param {object} props
- * @param {string|null} [props.datasetScope]  catalog dataset the page is about
+ * @param {string} props.dimension             dataset dimension id (capitol, titans, ...)
+ * @param {string|null} [props.datasetScope]  catalog dataset to prefer when generating
+ * @param {string[]} [props.examplePrompts]   example prompts shown as chips
+ * @param {{ id: number, query: string }|null} [props.runRequest]  a new id fills the
+ *   editor with `query` and runs it (the hub's "Query this")
  * @param {string} [props.seedQuery]           query the bar opens with
  * @param {(result: object) => void} [props.onResult]  take the result instead of rendering it
  * @param {'stack'|'split'} [props.layout]     'split': once a result is in, the bar
@@ -134,7 +143,10 @@ function relativeDate(iso) {
  * @param {(row: object) => boolean} [props.rowClickable]  which rows (default: those with a ticker)
  */
 export default function EzanaQLBar({
+  dimension,
   datasetScope = null,
+  examplePrompts = [],
+  runRequest = null,
   seedQuery = '',
   onResult,
   layout = 'stack',
@@ -203,37 +215,45 @@ export default function EzanaQLBar({
     return res;
   }, []);
 
-  const generate = useCallback(async () => {
-    if (!prompt.trim() || busy) return;
-    setBusy('gen');
-    setError(null);
-    setNote(null);
-    try {
-      const res = await post('/api/ezanaql/generate', { prompt, datasetScope });
-      const data = await res.json().catch(() => ({}));
-      if (res.status === 429) {
-        setError(
-          'Too many requests to the report model from this connection; try again in a minute.',
-        );
-      } else if (!data.ok) {
-        setError(data.error || 'That request could not be turned into a query.');
-      } else {
-        /* The line animates to its new text rather than snapping, so it is
+  const generate = useCallback(
+    async (override) => {
+      const text = typeof override === 'string' ? override : prompt;
+      if (!text.trim() || busy) return;
+      setBusy('gen');
+      setError(null);
+      setNote(null);
+      try {
+        const res = await post('/api/ezanaql/generate', {
+          prompt: text,
+          dimension,
+          datasetScope,
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 429) {
+          setError(
+            'Too many requests to the report model from this connection; try again in a minute.',
+          );
+        } else if (!data.ok) {
+          setError(data.error || 'That request could not be turned into a query.');
+        } else {
+          /* The line animates to its new text rather than snapping, so it is
            visible that the query changed. */
-        setSwapping(true);
-        setDirty(true);
-        setCode(data.query);
-        window.setTimeout(() => setSwapping(false), 160);
-        if (!data.valid && data.validationError) {
-          setError(`The generated query needs a fix: ${data.validationError}`);
+          setSwapping(true);
+          setDirty(true);
+          setCode(data.query);
+          window.setTimeout(() => setSwapping(false), 160);
+          if (!data.valid && data.validationError) {
+            setError(`The generated query needs a fix: ${data.validationError}`);
+          }
         }
+      } catch {
+        setError('Could not reach the report model.');
+      } finally {
+        setBusy(null);
       }
-    } catch {
-      setError('Could not reach the report model.');
-    } finally {
-      setBusy(null);
-    }
-  }, [prompt, datasetScope, busy, post]);
+    },
+    [prompt, dimension, datasetScope, busy, post],
+  );
 
   /* Generate, Run and viewing results are open to everyone. Exports, the
      watchlist and saved reports belong to an account. */
@@ -271,7 +291,7 @@ export default function EzanaQLBar({
       setSaveState('idle');
       setWatchState('idle');
       try {
-        const res = await post('/api/ezanaql/run', { query: q, format: 'table' });
+        const res = await post('/api/ezanaql/run', { query: q, dimension, format: 'table' });
         const data = await res.json().catch(() => ({}));
         if (res.status === 429) {
           setError('Too many queries from this connection just now; try again in a minute.');
@@ -292,9 +312,19 @@ export default function EzanaQLBar({
         setBusy(null);
       }
     },
-    [code, busy, post, onResult],
+    [code, busy, post, onResult, dimension],
   );
   const run = useCallback(() => runQuery(), [runQuery]);
+
+  /* The hub's "Query this": a new request id fills the editor and runs. */
+  const lastRunRequest = useRef(null);
+  useEffect(() => {
+    if (!runRequest || busy || runRequest.id === lastRunRequest.current) return;
+    lastRunRequest.current = runRequest.id;
+    setDirty(true);
+    setCode(runRequest.query);
+    runQuery(runRequest.query);
+  }, [runRequest, runQuery, busy]);
 
   const exportAs = useCallback(
     async (format) => {
@@ -304,7 +334,7 @@ export default function EzanaQLBar({
       setError(null);
       setNote(null);
       try {
-        const res = await post('/api/ezanaql/export', { query: code, format });
+        const res = await post('/api/ezanaql/export', { query: code, dimension, format });
         if (res.status === 401) {
           setGate(format);
           return;
@@ -335,7 +365,7 @@ export default function EzanaQLBar({
         setBusy(null);
       }
     },
-    [code, busy, post, needsAccount],
+    [code, busy, post, needsAccount, dimension],
   );
 
   const onEditorKey = (e) => {
@@ -373,27 +403,11 @@ export default function EzanaQLBar({
     if (!tickers.length || needsAccount('watchlist')) return;
     setWatchState('busy');
     try {
-      const listsRes = await fetch('/api/watchlists'); // GET seeds the default list
-      if (listsRes.status === 401) {
+      if ((await addToWatchlist(tickers)) === 'auth') {
         setGate('watchlist');
         setWatchState('idle');
         return;
       }
-      if (!listsRes.ok) throw new Error(String(listsRes.status));
-      const { watchlists } = await listsRes.json();
-      const listId = watchlists?.[0]?.id;
-      if (!listId) throw new Error('no list');
-      const results = await Promise.all(
-        tickers.map((ticker) =>
-          fetch(`/api/watchlists/${listId}/items`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type: 'stock', ticker }),
-          }),
-        ),
-      );
-      /* 409 is "already on the list", which is the outcome we wanted. */
-      if (results.some((r) => !r.ok && r.status !== 409)) throw new Error('partial');
       setWatchState('done');
     } catch {
       setWatchState('error');
@@ -409,7 +423,7 @@ export default function EzanaQLBar({
         title: (prompt.trim() || code.trim()).slice(0, 120),
         prompt: prompt.trim() || null,
         query: code,
-        datasetScope,
+        dimension,
         rowCount: rows.length,
       });
       if (res.status === 401) {
@@ -435,7 +449,7 @@ export default function EzanaQLBar({
     if (!next || saved) return;
     setSavedState('busy');
     try {
-      const res = await fetch('/api/ezanaql/saved');
+      const res = await fetch(`/api/ezanaql/saved?dimension=${encodeURIComponent(dimension)}`);
       const d = await res.json().catch(() => ({}));
       if (!res.ok || !d.ok) throw new Error('load failed');
       setSaved(d.reports || []);
@@ -669,7 +683,7 @@ export default function EzanaQLBar({
           <button
             type="button"
             className="eqb-go"
-            onClick={generate}
+            onClick={() => generate()}
             disabled={busy === 'gen'}
             aria-label={busy === 'gen' ? 'Generating query' : 'Generate EzanaQL query'}
           >
@@ -697,6 +711,25 @@ export default function EzanaQLBar({
           {actionsFor('row')}
         </div>
 
+        {examplePrompts.length ? (
+          <div className="eqb-chips" role="group" aria-label="Example prompts">
+            {examplePrompts.map((p) => (
+              <button
+                key={p}
+                type="button"
+                className="eqb-chip"
+                disabled={busy === 'gen'}
+                onClick={() => {
+                  setPrompt(p);
+                  generate(p);
+                }}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
         {code.trim() ? (
           /* The query itself opens the editor: on a phone the pencil is a
            small target, the query is the obvious one. */
@@ -717,7 +750,9 @@ export default function EzanaQLBar({
         {/* Only while the prompt has focus: true everywhere, and noise until
           someone is actually about to type. */}
         {focused ? (
-          <p className="eqb-hint">Queries can span any live dataset, not just this page&apos;s.</p>
+          <p className="eqb-hint">
+            Queries can span every live {DIMENSION_LABELS[dimension] || 'hub'} dataset.
+          </p>
         ) : null}
 
         {editing ? (

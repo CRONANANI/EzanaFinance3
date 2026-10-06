@@ -167,6 +167,27 @@
   width: fit-content;
   max-width: 100%;
 }
+.dsx-legend-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.dsx-legend-hub {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill, 9999px);
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+.dsx-legend-hub:hover,
+.dsx-legend-hub:focus-visible {
+  color: var(--emerald-text);
+  background: var(--emerald-bg);
+  outline: none;
+}
 .dsx-legend-chip {
   display: inline-flex;
   align-items: center;

@@ -1,0 +1,29 @@
+.hql {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 16px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.hql .bi {
+  color: var(--emerald-text);
+}
+.hql-link {
+  color: var(--emerald-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+.hql-link:hover {
+  text-decoration: underline;
+}
+.hql-link:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.hql-meta {
+  color: var(--text-muted);
+}

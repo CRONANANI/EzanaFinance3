@@ -184,6 +184,45 @@
     transition: none;
   }
 }
+/* Example prompts on a hub: one tap generates the query. */
+.eqb-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0 14px;
+  max-width: var(--eqb-w);
+}
+.eqb-chip {
+  min-height: 28px;
+  padding: 4px 11px;
+  border: 1px solid var(--eqb-border);
+  border-radius: var(--radius-pill, 9999px);
+  background: var(--bg-primary);
+  color: var(--eqb-ink);
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.eqb-chip:hover:not(:disabled) {
+  border-color: var(--emerald);
+}
+.eqb-chip:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.eqb-chip:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+@media (prefers-reduced-motion: reduce) {
+  .eqb-chip {
+    transition: none;
+  }
+}
 /* Shown only while the prompt has focus, in the same grey as the query. */
 .eqb-hint {
   margin: 4px 0 0;
@@ -438,6 +477,7 @@
     -webkit-overflow-scrolling: touch;
   }
   .eqb-hint,
+  .eqb-chips,
   .eqb-msg,
   .eqb-note {
     padding-inline: 4px;

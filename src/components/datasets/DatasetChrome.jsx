@@ -20,6 +20,7 @@ import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 import CategoryBar from '@/components/datasets/CategoryBar';
 import DatasetTicker from '@/components/datasets/DatasetTicker';
 import { useTickerSlot } from '@/components/datasets/ticker-slot';
+import { dimensionForSlug } from '@/lib/datasets/hubs';
 
 /* LONGEST match, not the first. Several roadmap items point at an ancestor as
    their nearest live page ('/datasets' and '/datasets/government' are both in
@@ -27,6 +28,9 @@ import { useTickerSlot } from '@/components/datasets/ticker-slot';
    /datasets/government/contracts. Matching on an exact path or a true path
    segment, then keeping the longest hit, resolves to the real page. */
 function resolveActive(pathname) {
+  /* A hub lights its own dimension (no item: the hub is the dimension). */
+  const hub = dimensionForSlug(pathname.replace(/^\/datasets\//, ''));
+  if (hub) return { href: pathname, active: hub, activeItem: null };
   let best = null;
   for (const cat of DATASET_TAXONOMY) {
     for (const item of cat.items || []) {

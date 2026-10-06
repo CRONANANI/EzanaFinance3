@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import {
   hasLdaKey,
@@ -497,6 +498,9 @@ export async function GET(request) {
   if (topMerges.length) {
     console.warn('[ingest-lobbying] top canonical client merges:', JSON.stringify(topMerges));
   }
+
+  // The dimension hubs summarise this table.
+  if (results.some((r) => r.delta)) revalidateTag('hubs');
 
   return NextResponse.json({
     ok: true,

@@ -4,8 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
-import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
-import { seedForDataset } from '@/lib/ezanaql/seeds';
+import HubQueryLink from '@/components/datasets/HubQueryLink';
 import { DatasetTable } from './DatasetTable';
 
 /**
@@ -27,10 +26,6 @@ export function DatasetDashboard({ config, children }) {
     table,
     tableLink,
     sampleNote,
-    /* The EzanaQL catalog dataset this page is about, when one is bound and
-       live. Pages without one leave it unset and the bar opens cross-dataset;
-       it is never pointed at a dataset that cannot answer. */
-    dataset = null,
     source,
     cta,
     onRowClick,
@@ -77,10 +72,8 @@ export function DatasetDashboard({ config, children }) {
           <p className="mkt-lead">{lead}</p>
         </div>
 
-        {/* The one shared query bar, same slot and size as every dataset page.
-            `dataset` is this page's catalog dataset when it has one that is
-            live; otherwise the bar opens cross-dataset on a query that runs. */}
-        <EzanaQLBar datasetScope={dataset || null} seedQuery={seedForDataset(dataset)} />
+        {/* EzanaQL lives on the dimension hub, scoped to its datasets. */}
+        {activeCategory ? <HubQueryLink dimension={activeCategory} /> : null}
 
         {searches.length > 0 && (
           <div className="mkt-ds-search-row" role="search">

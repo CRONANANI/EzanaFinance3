@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import {
   searchFilings,
@@ -273,6 +274,9 @@ export async function GET(request) {
     perFamily[family] = res.count;
     errors.push(...res.errors);
   }
+
+  // The dimension hubs summarise this table.
+  if (Object.values(perFamily).some(Boolean)) revalidateTag('hubs');
 
   return NextResponse.json({
     ok: errors.length === 0,

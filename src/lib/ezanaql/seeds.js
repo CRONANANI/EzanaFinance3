@@ -86,3 +86,26 @@ export const SEEDS_BY_DATASET = {
 export function seedForDataset(dataset) {
   return SEEDS_BY_DATASET[dataset] || SEED_QUERY;
 }
+
+/** The 13F securities held by the most funds. */
+export const SEED_TITANS = `FROM titans.holdings_13f
+WHERE period >= LAST 6 MONTHS
+SELECT ticker, COUNT(DISTINCT filer) AS funds, SUM(value) AS reported_value
+GROUP BY ticker
+ORDER BY funds DESC
+LIMIT 20;`;
+
+/** The latest OECD unemployment rates, highest first. */
+export const SEED_LIGHTHOUSE = `FROM lighthouse.oecd
+WHERE indicator = "eo-unr" AND year = 2025
+SELECT country, value, unit
+ORDER BY value DESC
+LIMIT 20;`;
+
+/** Each hub's bar opens on a query from its own dimension. */
+export const HUB_SEEDS = {
+  capitol: SEED_CONGRESS,
+  titans: SEED_TITANS,
+  hive: SEED_PREDICTION,
+  lighthouse: SEED_LIGHTHOUSE,
+};

@@ -6,8 +6,7 @@
  * compare two ETFs' overlap (per shared security, the smaller weight).
  */
 import { useEffect, useMemo, useState } from 'react';
-import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
-import { seedForDataset } from '@/lib/ezanaql/seeds';
+import HubQueryLink from '@/components/datasets/HubQueryLink';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
 import { usd, int, pct, shortDate, OPENFIGI_NOTE, NOT_REPORTED } from '@/lib/titans/format';
 import './etf-holdings.css';
@@ -330,7 +329,7 @@ export default function EtfHoldingsClient({ funds, notCovered }) {
         </dl>
       </header>
 
-      <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
+      <HubQueryLink dimension="titans" />
 
       {!funds.length ? (
         <p className="etfx-empty etfx-section">

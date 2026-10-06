@@ -31,6 +31,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
+import { hubHref } from '@/lib/datasets/hubs';
 import { usePathname } from 'next/navigation';
 import { DATASET_TAXONOMY, isNavigable, isPreview } from '@/lib/datasets/taxonomy';
 import { useAuth } from '@/components/auth-context';
@@ -380,10 +381,25 @@ export default function CategoryBar({ active, activeItem }) {
               onMouseEnter={() => open(openCat.id)}
               onMouseLeave={scheduleClose}
             >
-              <p className="dscat-panel-head">
+              {/* The heading opens the dimension's hub. */}
+              <a
+                href={hubHref(openCat.id)}
+                className="dscat-panel-head dscat-panel-head--link"
+                role="menuitem"
+                onClick={close}
+              >
                 <i className={`bi ${openCat.biIcon} dscat-panel-icon`} aria-hidden="true" />
                 {openCat.label}
-              </p>
+              </a>
+              <a
+                href={hubHref(openCat.id)}
+                className={`dscat-item ${active === openCat.id && !activeItem ? 'is-active' : ''}`}
+                style={{ '--dscat-item-color': openCat.color }}
+                role="menuitem"
+                onClick={close}
+              >
+                <span className="dscat-item-label">Overview and EzanaQL</span>
+              </a>
               {openCat.items.map((it) =>
                 isNavigable(it) ? (
                   <a

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { isBigQueryConfigured } from '@/lib/bigquery-client';
 import { getOecdSeriesCoverage, getOecdSeriesObservations } from '@/lib/bigquery-oecd';
@@ -64,8 +65,7 @@ export async function GET(request) {
 
   const { searchParams } = new URL(request.url);
   const oneSlug = searchParams.get('slug');
-  const slugs =
-    oneSlug && OECD_CURATED_SLUGS.includes(oneSlug) ? [oneSlug] : OECD_CURATED_SLUGS;
+  const slugs = oneSlug && OECD_CURATED_SLUGS.includes(oneSlug) ? [oneSlug] : OECD_CURATED_SLUGS;
 
   const admin = getAdminClient();
   const syncedAt = new Date().toISOString();
@@ -128,6 +128,9 @@ export async function GET(request) {
     observationRows = res.count;
     errors.push(...res.errors);
   }
+
+  // The dimension hubs summarise this table.
+  if (observationRows) revalidateTag('hubs');
 
   return NextResponse.json({
     ok: errors.length === 0,

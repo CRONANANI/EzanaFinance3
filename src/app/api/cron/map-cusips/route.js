@@ -171,7 +171,10 @@ export async function GET(request) {
   else if (applied) applied = { ...applied, etf_holdings: etfApplied };
 
   const wrote = mapped > 0 || (applied && Object.values(applied).some((n) => Number(n) > 0));
-  if (wrote) revalidateTag('titans');
+  if (wrote) {
+    revalidateTag('titans');
+    revalidateTag('hubs');
+  }
 
   return NextResponse.json({
     ok: errors.length === 0,

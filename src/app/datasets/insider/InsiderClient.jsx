@@ -7,8 +7,7 @@
  * awards, exercises and other codes are listed but de-emphasised.
  */
 import { useCallback, useMemo, useState } from 'react';
-import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
-import { seedForDataset } from '@/lib/ezanaql/seeds';
+import HubQueryLink from '@/components/datasets/HubQueryLink';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
 import { TRANSACTION_CODES } from '@/lib/sec/form4-codes';
 import { usd, int, money2, shortDate, NOT_REPORTED } from '@/lib/titans/format';
@@ -211,7 +210,7 @@ export default function InsiderClient({ overview }) {
         </dl>
       </header>
 
-      <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
+      <HubQueryLink dimension="titans" />
 
       {!o || (!o.topBuys.length && !o.topSells.length) ? (
         <p className="insx-empty insx-section">

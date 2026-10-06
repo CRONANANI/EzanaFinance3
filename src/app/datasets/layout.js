@@ -6,6 +6,7 @@ import { DatasetsSubnav } from '@/components/marketing/DatasetsSubnav';
 import { DatasetComingSoon } from '@/components/marketing/DatasetComingSoon';
 import DatasetChrome from '@/components/datasets/DatasetChrome';
 import { TickerSlotProvider } from '@/components/datasets/ticker-slot';
+import { HUB_SLUGS } from '@/lib/datasets/hubs';
 import '../marketing-explore.css';
 import './dataset-type.css';
 
@@ -45,6 +46,8 @@ const STANDALONE_ROUTES = new Set([
   '/datasets/oecd-macro',
   '/datasets/markets',
   '/datasets/prediction-markets',
+  // The seven dimension hubs (src/lib/datasets/hubs.js).
+  ...Object.values(HUB_SLUGS).map((slug) => `/datasets/${slug}`),
 ]);
 
 export default function DatasetsLayout({ children }) {

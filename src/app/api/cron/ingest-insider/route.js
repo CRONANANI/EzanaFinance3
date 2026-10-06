@@ -135,7 +135,10 @@ export async function GET(request) {
     }
   }
 
-  if (rows) revalidateTag('titans');
+  if (rows) {
+    revalidateTag('titans');
+    revalidateTag('hubs');
+  }
 
   return NextResponse.json({
     ok: errors.length === 0,

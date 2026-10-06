@@ -240,7 +240,10 @@ export async function GET(request) {
     }
   }
 
-  if (rowsWritten) revalidateTag('titans');
+  if (rowsWritten) {
+    revalidateTag('titans');
+    revalidateTag('hubs');
+  }
 
   return NextResponse.json({
     ok: errors.length === 0,

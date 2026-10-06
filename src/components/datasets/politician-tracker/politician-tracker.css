@@ -92,17 +92,6 @@
   outline-offset: 2px;
 }
 
-/* ── EzanaQL ──────────────────────────────────────────────────────────── */
-/* The shared bar centres itself at a fixed 820px. Here it fills the card
-   column instead, so the pill, its code line and the editor are exactly the
-   width of the four cards. Page-scoped: the bar's own stylesheet is
-   untouched. */
-.ptk-ql .eqb {
-  --eqb-w: 100%;
-  width: 100%;
-  margin: 0;
-}
-
 /* ── toolbar ─────────────────────────────────────────────────────────── */
 .ptk-toolbar {
   display: flex;
@@ -129,14 +118,6 @@
      about 1000 to 1100, on a third. Chamber and party stay together left. */
   .ptk-toolbar .ptk-period {
     margin-left: auto;
-  }
-}
-/* The card column is narrow here (the rail is still beside it), so the
-   EzanaQL actions go icon-only to leave the prompt room. Their aria-labels
-   are unchanged. */
-@media (min-width: 1001px) and (max-width: 1200px) {
-  .ptk-ql .eqb-act span {
-    display: none;
   }
 }
 /* The period label and its control wrap together, never apart. */

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { fetchCommitteeSources, toCommitteeRows, toMemberRows } from '@/lib/congress/committees';
 
@@ -100,6 +101,9 @@ export async function GET(request) {
     .delete({ count: 'exact' })
     .lt('synced_at', runStart);
   const errors = [mErr, sErr, pErr].filter(Boolean).map((e) => e.message);
+
+  // The dimension hubs summarise this table.
+  if (members.length) revalidateTag('hubs');
 
   return NextResponse.json({
     ok: errors.length === 0,

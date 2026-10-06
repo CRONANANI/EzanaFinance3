@@ -8,8 +8,7 @@ import { usePublishTicker } from '@/components/datasets/ticker-slot';
 import { OPENFIGI_NOTE } from '@/lib/titans/format';
 import '../../marketing-explore.css';
 import './sec-filings.css';
-import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
-import { seedForDataset } from '@/lib/ezanaql/seeds';
+import HubQueryLink from '@/components/datasets/HubQueryLink';
 
 const TABS = [
   { id: 'insider', label: 'Insider (Form 4)' },
@@ -389,8 +388,8 @@ export function SecFilingsClient({ feeds, insiderSample = EMPTY_ROWS }) {
           </p>
         </div>
 
-        {/* The one shared query bar, same slot and size as every dataset page. */}
-        <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
+        {/* EzanaQL lives on the dimension hub, scoped to its datasets. */}
+        <HubQueryLink dimension="titans" />
 
         <div className="secf-tabs" role="tablist" aria-label="Filing type">
           {TABS.map((t) => (

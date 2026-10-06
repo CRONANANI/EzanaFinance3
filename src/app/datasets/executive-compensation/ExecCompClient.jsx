@@ -17,8 +17,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
-import { seedForDataset } from '@/lib/ezanaql/seeds';
+import HubQueryLink from '@/components/datasets/HubQueryLink';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
 import { CHART } from '@/lib/chart-theme';
 import { usd, NOT_REPORTED } from '@/lib/titans/format';
@@ -286,7 +285,7 @@ export default function ExecCompClient({ rows }) {
         </dl>
       </header>
 
-      <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
+      <HubQueryLink dimension="titans" />
 
       {open ? <Detail row={open} onClose={() => setOpen(null)} /> : null}
 

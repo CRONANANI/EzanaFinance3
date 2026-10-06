@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import {
   hasCongressKey,
@@ -174,6 +175,9 @@ export async function GET(request) {
   } catch (e) {
     errors.push(`meetings: ${e?.message}`);
   }
+
+  // The dimension hubs summarise this table.
+  if (billsUpserted || meetingsUpserted) revalidateTag('hubs');
 
   return NextResponse.json({
     ok: true,

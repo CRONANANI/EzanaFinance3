@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { hasFecKey, createFecBudget, getCandidatesTotalsByIds } from '@/lib/fec/client';
 import { buildMemberFinance } from '@/lib/fec/member-finance';
@@ -224,6 +225,9 @@ export async function GET(request) {
   }
 
   const remainingWithoutRow = members.filter((m) => !lastDetail.has(m.bioguideId)).length;
+
+  // The dimension hubs summarise this table.
+  if (totalsUpdated || detailUpdated) revalidateTag('hubs');
 
   return NextResponse.json({
     ok: true,

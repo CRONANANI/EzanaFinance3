@@ -33,9 +33,8 @@ import {
   isFullyLive,
 } from '@/lib/datasets/taxonomy';
 import './ds-overview.css';
-import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
-import { seedForDataset } from '@/lib/ezanaql/seeds';
 import { useTickerSpeed } from '@/components/datasets/useTickerSpeed';
+import { hubHref } from '@/lib/datasets/hubs';
 
 /* ── 7 dimensions: the shared DATASET_TAXONOMY is the single source of truth ──
    The signal map is pure hub-and-spoke and its NODES ARE the 7 dimensions (one
@@ -68,9 +67,6 @@ const CAT_CARDS = DATASET_TAXONOMY.map((d) => ({
     .map((it) => it.label)
     .slice(0, 4)
     .join(' · '),
-  // Fully-roadmap dimensions (no live item) link to the overview, never into a
-  // gated coming-soon route.
-  href: (d.items.find((it) => isNavigable(it)) || { href: '/datasets' }).href,
   live: d.items.filter((it) => it.live).length,
   total: d.items.length,
 }));
@@ -776,22 +772,28 @@ export default function DatasetsOverviewClient() {
         </p>
       </header>
 
-      {/* The one shared query bar, same slot and size as every dataset page. */}
-      <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
-
-      {/* interactive category legend */}
+      {/* interactive category legend; each chip filters the map, the arrow
+          beside it opens that dimension's hub */}
       <div className="dsx-legend" role="group" aria-label="Filter the map by category">
         {Object.entries(CATS).map(([key, c]) => (
-          <button
-            key={key}
-            type="button"
-            className={`dsx-legend-chip${categoryFilter === key ? ' is-active' : ''}`}
-            aria-pressed={categoryFilter === key}
-            onClick={() => toggleCategory(key)}
-          >
-            <span className="dsx-legend-dot" style={{ background: c.color }} />
-            {c.label}
-          </button>
+          <span key={key} className="dsx-legend-group">
+            <button
+              type="button"
+              className={`dsx-legend-chip${categoryFilter === key ? ' is-active' : ''}`}
+              aria-pressed={categoryFilter === key}
+              onClick={() => toggleCategory(key)}
+            >
+              <span className="dsx-legend-dot" style={{ background: c.color }} />
+              {c.label}
+            </button>
+            <a
+              className="dsx-legend-hub"
+              href={hubHref(key)}
+              aria-label={`Open the ${c.label} hub`}
+            >
+              <i className="bi bi-arrow-up-right" aria-hidden="true" />
+            </a>
+          </span>
         ))}
       </div>
 
@@ -820,7 +822,7 @@ export default function DatasetsOverviewClient() {
         {CAT_CARDS.map((card) => {
           const c = CATS[card.cat];
           return (
-            <a key={card.cat} href={card.href} className="dsx-catcard">
+            <a key={card.cat} href={hubHref(card.cat)} className="dsx-catcard">
               <span className="dsx-catcard-name">
                 <span className="dsx-legend-dot" style={{ background: c.color }} />
                 {c.label}

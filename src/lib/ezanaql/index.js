@@ -11,7 +11,16 @@ import { execute } from './executor';
 import { format } from './formatter';
 
 export { EzanaQLError } from './parser';
-export { CATALOG, CATALOG_GAPS, CATALOG_VERSION, catalogSchemaForPrompt } from './catalog';
+export {
+  CATALOG,
+  CATALOG_GAPS,
+  CATALOG_VERSION,
+  DIMENSION_DATASETS,
+  DIMENSION_LABELS,
+  isDimension,
+  dimensionHasQueryableData,
+  catalogSchemaForPrompt,
+} from './catalog';
 
 /**
  * Validate + run an EzanaQL query.
@@ -19,13 +28,20 @@ export { CATALOG, CATALOG_GAPS, CATALOG_VERSION, catalogSchemaForPrompt } from '
  * @param {string} opts.query   EzanaQL text
  * @param {object} opts.admin   Supabase client (service-role for public, user-scoped for private)
  * @param {string|null} opts.userId  Authenticated user id (required for user_private datasets)
+ * @param {string} [opts.dimension]  dataset dimension the query is scoped to
  * @param {'table'|'csv'|'json'} [opts.format]
  * @returns {Promise<{ ok: true, format: string, result: object }|{ ok: false, error: string }>}
  */
-export async function runEzanaQL({ query, admin, userId = null, format: fmtOverride }) {
+export async function runEzanaQL({
+  query,
+  admin,
+  userId = null,
+  dimension = null,
+  format: fmtOverride,
+}) {
   try {
     const ast = parse(query);
-    const { dataset, joined } = validate(ast);
+    const { dataset, joined } = validate(ast, { dimension });
     const fmt = fmtOverride || ast.as || 'table';
     const result = await execute({ ast, dataset, joined, admin, userId });
     const formatted = format(result, fmt);
@@ -47,10 +63,10 @@ export async function runEzanaQL({ query, admin, userId = null, format: fmtOverr
 }
 
 /** Validate only (used to gate AI-generated queries before running). */
-export function validateEzanaQL(query) {
+export function validateEzanaQL(query, { dimension = null } = {}) {
   try {
     const ast = parse(query);
-    validate(ast);
+    validate(ast, { dimension });
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err?.userFacing ? err.message : 'Invalid query.' };

@@ -123,7 +123,10 @@ export async function GET(request) {
   }
 
   const total = Object.values(perMetric).reduce((s, n) => s + n, 0);
-  if (total) revalidateTag('titans');
+  if (total) {
+    revalidateTag('titans');
+    revalidateTag('hubs');
+  }
 
   return NextResponse.json({
     ok: errors.length === 0,

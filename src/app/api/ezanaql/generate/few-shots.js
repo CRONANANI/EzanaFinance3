@@ -5,7 +5,7 @@
  * to emit invalid queries).
  */
 
-export const FEW_SHOT_QUERIES = [
+const CAPITOL_QUERIES = [
   `FROM gov.contracts
 WHERE awarding_agency = "DoD" AND fiscal_year = 2026
 SELECT recipient, SUM(award_value) AS total, YOY(award_value) AS yoy_change
@@ -27,11 +27,6 @@ SELECT filing_year, SUM(amount) AS spend
 GROUP BY filing_year
 ORDER BY filing_year DESC
 LIMIT 20;`,
-  `FROM prediction.markets
-WHERE category = "Politics"
-SELECT question, probability, volume, ends_on
-ORDER BY volume DESC
-LIMIT 10;`,
   `FROM capitol.congress_trades
 WHERE transaction_date >= LAST 6 MONTHS AND transaction_type = "purchase"
 SELECT politician, party, COUNT() AS buys, SUM(amount_est) AS est_bought
@@ -75,47 +70,153 @@ ORDER BY holders DESC
 LIMIT 10;`,
 ];
 
-export const FEW_SHOT = `Example 1
-User: Top 10 defense contractors this fiscal year by total award value, with year-over-year change.
-EzanaQL:
-${FEW_SHOT_QUERIES[0]}
+/* Committee seats and campaign finance, the two Capitol datasets that key on
+   bioguide_id. */
+const CAPITOL_MEMBER_QUERIES = [
+  `FROM capitol.congress_trades
+SEMI JOIN capitol.committee_seats ON bioguide_id
+WHERE transaction_date >= LAST 90 DAYS AND transaction_type = "purchase"
+SELECT politician, party, ticker, transaction_date, amount_low, amount_high
+ORDER BY transaction_date DESC
+LIMIT 25;`,
+  `FROM capitol.campaign_finance
+WHERE cycle = 2026
+SELECT politician, party, state, receipts, cash_on_hand
+ORDER BY receipts DESC
+LIMIT 10;`,
+];
 
-Example 2
-User: Every NASA award over 50 million dollars, newest first.
-EzanaQL:
-${FEW_SHOT_QUERIES[1]}
+const TITANS_QUERIES = [
+  `FROM titans.holdings_13f
+WHERE period >= LAST 6 MONTHS
+SELECT ticker, COUNT(DISTINCT filer) AS funds, SUM(value) AS reported_value
+GROUP BY ticker
+ORDER BY funds DESC
+LIMIT 10;`,
+  `FROM titans.activist_stakes
+WHERE filed_on >= LAST 90 DAYS AND percent_of_class >= 5
+SELECT filer, company, ticker, percent_of_class, filed_on
+ORDER BY filed_on DESC
+LIMIT 25;`,
+  `FROM titans.whale_moves
+SEMI JOIN titans.activist_stakes ON ticker
+SELECT filer, ticker, change_type, whale_score, quarter
+ORDER BY whale_score DESC
+LIMIT 20;`,
+];
 
-Example 3
-User: How much has Lockheed Martin spent on lobbying each year?
-EzanaQL:
-${FEW_SHOT_QUERIES[2]}
+/* category is empty in today's index, so the examples filter on what is
+   filled: probability, volume and liquidity. */
+const HIVE_QUERIES = [
+  `FROM prediction.markets
+SELECT question, probability, volume, ends_on
+ORDER BY volume DESC
+LIMIT 10;`,
+  `FROM prediction.markets
+WHERE probability >= 0.4 AND probability <= 0.6 AND volume >= 1M
+SELECT question, probability, volume, liquidity
+ORDER BY volume DESC
+LIMIT 20;`,
+];
 
-Example 4
-User: The most traded political prediction markets.
-EzanaQL:
-${FEW_SHOT_QUERIES[3]}
+const LIGHTHOUSE_QUERIES = [
+  `FROM lighthouse.oecd
+WHERE country_code = "USA" AND year >= 2020
+SELECT indicator, year, value, unit
+ORDER BY indicator ASC, year DESC
+LIMIT 60;`,
+  `FROM lighthouse.oecd
+WHERE indicator = "eo-unr" AND year = 2025
+SELECT country, value, unit
+ORDER BY value DESC
+LIMIT 10;`,
+];
 
-Example 5
-User: Which members of Congress bought the most stock in the last six months?
-EzanaQL:
-${FEW_SHOT_QUERIES[4]}
+/** Worked examples per dataset dimension: { user, query }. */
+export const FEW_SHOTS_BY_DIMENSION = {
+  capitol: [
+    {
+      user: 'Top 10 defense contractors this fiscal year by total award value, with year-over-year change.',
+      query: CAPITOL_QUERIES[0],
+    },
+    { user: 'Every NASA award over 50 million dollars, newest first.', query: CAPITOL_QUERIES[1] },
+    {
+      user: 'How much has Lockheed Martin spent on lobbying each year?',
+      query: CAPITOL_QUERIES[2],
+    },
+    {
+      user: 'Which members of Congress bought the most stock in the last six months?',
+      query: CAPITOL_QUERIES[3],
+    },
+    {
+      user: 'Top 10 companies that received at least 100M in government contracts in the past 5 years that politicians have traded.',
+      query: CAPITOL_QUERIES[4],
+    },
+    {
+      user: 'For each federal contractor, how many members of Congress have traded its stock in the last two years?',
+      query: CAPITOL_QUERIES[5],
+    },
+    {
+      user: 'Top ten companies that have the most politicians owning shares of it currently that have received at least 100M in government contracts in the last 5 years.',
+      query: CAPITOL_QUERIES[6],
+    },
+    {
+      user: 'Which stocks do the most Republican members currently hold?',
+      query: CAPITOL_QUERIES[7],
+    },
+    {
+      user: 'Recent stock purchases by members who sit on a committee.',
+      query: CAPITOL_MEMBER_QUERIES[0],
+    },
+    {
+      user: 'Which members raised the most money this cycle?',
+      query: CAPITOL_MEMBER_QUERIES[1],
+    },
+  ],
+  titans: [
+    {
+      user: 'Which stocks are held by the most institutional funds right now?',
+      query: TITANS_QUERIES[0],
+    },
+    {
+      user: 'Activist stakes above 5 percent filed in the last 90 days.',
+      query: TITANS_QUERIES[1],
+    },
+    {
+      user: 'The highest scored whale moves in stocks that also have an activist stake.',
+      query: TITANS_QUERIES[2],
+    },
+  ],
+  hive: [
+    { user: 'The biggest prediction markets by volume.', query: HIVE_QUERIES[0] },
+    {
+      user: 'Close calls: markets near 50 percent with at least 1M traded.',
+      query: HIVE_QUERIES[1],
+    },
+  ],
+  lighthouse: [
+    {
+      user: 'Every OECD indicator for the United States since 2020.',
+      query: LIGHTHOUSE_QUERIES[0],
+    },
+    {
+      user: 'Which countries have the highest unemployment rate in 2025?',
+      query: LIGHTHOUSE_QUERIES[1],
+    },
+  ],
+  eyes: [],
+  whispers: [],
+  regulatory: [],
+};
 
-Example 6
-User: Top 10 companies that received at least 100M in government contracts in the past 5 years that politicians have traded.
-EzanaQL:
-${FEW_SHOT_QUERIES[5]}
+/** Every example query, for the check script. */
+export const FEW_SHOT_QUERIES = Object.values(FEW_SHOTS_BY_DIMENSION).flatMap((list) =>
+  list.map((e) => e.query),
+);
 
-Example 7
-User: For each federal contractor, how many members of Congress have traded its stock in the last two years?
-EzanaQL:
-${FEW_SHOT_QUERIES[6]}
-
-Example 8
-User: Top ten companies that have the most politicians owning shares of it currently that have received at least 100M in government contracts in the last 5 years.
-EzanaQL:
-${FEW_SHOT_QUERIES[7]}
-
-Example 9
-User: Which stocks do the most Republican members currently hold?
-EzanaQL:
-${FEW_SHOT_QUERIES[8]}`;
+/** The prompt block of worked examples for one dimension. */
+export function fewShotFor(dimension) {
+  return (FEW_SHOTS_BY_DIMENSION[dimension] || [])
+    .map((e, i) => `Example ${i + 1}\nUser: ${e.user}\nEzanaQL:\n${e.query}`)
+    .join('\n\n');
+}

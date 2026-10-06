@@ -317,7 +317,10 @@ export async function GET(request) {
     {},
   );
 
-  if (holdingsRows || Number(applied) > 0) revalidateTag('titans');
+  if (holdingsRows || Number(applied) > 0) {
+    revalidateTag('titans');
+    revalidateTag('hubs');
+  }
 
   return NextResponse.json({
     ok: errors.length === 0,

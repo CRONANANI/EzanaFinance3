@@ -21,8 +21,7 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { CHART } from '@/lib/chart-theme';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
-import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
-import { seedForDataset } from '@/lib/ezanaql/seeds';
+import HubQueryLink from '@/components/datasets/HubQueryLink';
 import {
   buildMembers,
   chamberStats,
@@ -569,14 +568,7 @@ export default function PoliticianTracker({
             stack, then the rail (Rank by first) beside the cards. */}
         <div className="ptk-grid">
           <div className="ptk-controls">
-            {/* Full width of the card column: pill, code line and editor
-                share the toolbar's left and right edges. */}
-            <div className="ptk-ql">
-              <EzanaQLBar
-                datasetScope="capitol.congress_trades"
-                seedQuery={seedForDataset('capitol.congress_trades')}
-              />
-            </div>
+            <HubQueryLink dimension="capitol" />
 
             {/* ── toolbar ── */}
             <div className="ptk-toolbar" role="search" aria-label="Filter and rank politicians">

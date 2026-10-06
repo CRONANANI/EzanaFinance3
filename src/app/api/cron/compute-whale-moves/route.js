@@ -432,7 +432,10 @@ export async function GET(request) {
   });
   if (snapErr) errors.push(`snapshot ${period}: ${snapErr.message}`);
 
-  if (instRows || actRows || snapshot) revalidateTag('titans');
+  if (instRows || actRows || snapshot) {
+    revalidateTag('titans');
+    revalidateTag('hubs');
+  }
 
   return NextResponse.json({
     ok: errors.length === 0,

@@ -1,12 +1,13 @@
 /**
  * POST /api/ezanaql/export — run a query and stream a CSV/JSON download.
- * Body: { query: string, format: 'csv'|'json' }. Session required: running a
+ * Body: { query: string, dimension: string, format: 'csv'|'json' }. Session required: running a
  * report is open to guests, downloading it is an account feature.
  */
 import { NextResponse } from 'next/server';
 import { requireUser, getAdminClient } from '@/lib/supabase';
 import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { runEzanaQL } from '@/lib/ezanaql';
+import { requireDimension } from '@/lib/ezanaql/request-scope';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,6 +31,8 @@ export async function POST(request) {
   } catch {
     return NextResponse.json({ ok: false, error: 'Invalid request body.' }, { status: 400 });
   }
+  const scope = requireDimension(body);
+  if (scope.response) return scope.response;
   const query = typeof body?.query === 'string' ? body.query : '';
   const format = body?.format === 'json' ? 'json' : 'csv';
   if (!query.trim())
@@ -39,6 +42,7 @@ export async function POST(request) {
     query,
     admin: getAdminClient(),
     userId: user.id,
+    dimension: scope.dimension,
     format,
   });
   if (!out.ok) return NextResponse.json(out, { status: 400 });

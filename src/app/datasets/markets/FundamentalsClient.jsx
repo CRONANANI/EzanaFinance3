@@ -7,8 +7,7 @@
  * values only. Prices are not shown yet.
  */
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
-import { seedForDataset } from '@/lib/ezanaql/seeds';
+import HubQueryLink from '@/components/datasets/HubQueryLink';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
 import { PolicyMomentumCard } from '@/components/congress/PolicyMomentumCard';
 import { usd, money2, signedPct, shortDate, NOT_REPORTED } from '@/lib/titans/format';
@@ -204,7 +203,7 @@ export default function FundamentalsClient({ table }) {
         </dl>
       </header>
 
-      <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
+      <HubQueryLink dimension="titans" />
 
       <p className="fndx-note fndx-section">Prices are not shown yet.</p>
 

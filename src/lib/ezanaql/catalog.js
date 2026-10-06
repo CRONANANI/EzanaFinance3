@@ -22,7 +22,20 @@
  * @typedef {'string'|'money'|'int'|'float'|'date'|'bool'} FieldType
  */
 
-export const CATALOG_VERSION = '1.4.0';
+export const CATALOG_VERSION = '1.5.0';
+
+/* Every Titans Shadow dataset keys on ticker, so each is joinable with all the
+   others. Joins stay inside a dimension. */
+const TITANS = [
+  'titans.holdings_13f',
+  'titans.activist_stakes',
+  'titans.whale_moves',
+  'titans.insider_trades',
+  'titans.fundamentals',
+  'titans.exec_comp',
+  'titans.etf_holdings',
+];
+const TITANS_PEERS = (self) => TITANS.filter((n) => n !== self);
 
 /** Fields present in the design/spec but NOT backed by the real ingest yet. */
 export const CATALOG_GAPS = {
@@ -169,8 +182,8 @@ export const CATALOG = {
     },
     /* Joins are on `ticker` only (see joinKeys). Both sides must list each
        other, so a join is a deliberate, declared pairing. */
-    joinableWith: ['gov.contracts'],
-    joinKeys: ['ticker'],
+    joinableWith: ['gov.contracts', 'capitol.committee_seats', 'capitol.campaign_finance'],
+    joinKeys: ['ticker', 'bioguide_id'],
   },
 
   /* Positions members still hold, inferred the way the tracker's Most-held
@@ -374,18 +387,246 @@ export const CATALOG = {
     },
     joinableWith: [],
   },
-  /* Bound to sec_insider_transactions (migration 20261006000500): one row per
-     Form 4 transaction line, from the filing XML or the SEC insider data sets.
-     transaction_type is the SEC code (P open-market buy, S sale, A award, M
-     exercise, F tax withholding, G gift). price and value are null when the
-     filing did not report them. */
-  'insider.trades': {
-    name: 'insider.trades',
-    label: 'Insider Trades (Form 4)',
+  /* ── Capitol Watch: committee seats and campaign finance (migration
+     20261006000900). Both key on bioguide_id, the member id the trades carry. */
+  'capitol.committee_seats': {
+    name: 'capitol.committee_seats',
+    label: 'Committee Assignments',
+    source: 'congress-legislators',
+    access: 'public',
+    rlsColumn: null,
+    available: true,
+    hardLimit: 5000,
+    defaultLimit: 100,
+    table: 'ezq_committee_seats',
+    columnMap: {
+      committee_id: 'committee_thomas_id',
+      committee: 'committee',
+      chamber: 'chamber',
+      is_subcommittee: 'is_subcommittee',
+      parent_committee: 'parent_committee',
+      bioguide_id: 'bioguide_id',
+      politician: 'member_name',
+      party: 'party',
+      state: 'state',
+      side: 'side',
+      rank: 'rank',
+      title: 'title',
+    },
+    defaultProjection: ['politician', 'party', 'committee', 'side', 'title'],
+    fields: {
+      committee_id: { type: 'string' },
+      committee: { type: 'string' },
+      chamber: { type: 'string', nullable: true },
+      is_subcommittee: { type: 'bool', nullable: true },
+      parent_committee: { type: 'string', nullable: true },
+      bioguide_id: { type: 'string' },
+      politician: { type: 'string', nullable: true },
+      party: { type: 'string', nullable: true },
+      state: { type: 'string', nullable: true },
+      side: { type: 'string', nullable: true },
+      rank: { type: 'int', nullable: true },
+      title: { type: 'string', nullable: true },
+    },
+    joinableWith: ['capitol.congress_trades', 'capitol.campaign_finance'],
+    joinKeys: ['bioguide_id'],
+  },
+  'capitol.campaign_finance': {
+    name: 'capitol.campaign_finance',
+    label: 'Campaign Finance (FEC candidate totals)',
+    source: 'fec',
+    access: 'public',
+    rlsColumn: null,
+    available: true,
+    hardLimit: 5000,
+    defaultLimit: 100,
+    table: 'ezq_campaign_finance',
+    columnMap: {
+      bioguide_id: 'bioguide_id',
+      cycle: 'cycle',
+      candidate_id: 'candidate_id',
+      politician: 'member_name',
+      party: 'party',
+      office: 'office',
+      state: 'state',
+      receipts: 'receipts',
+      disbursements: 'disbursements',
+      cash_on_hand: 'cash_on_hand',
+      individual_contributions: 'individual_itemized_contributions',
+      pac_contributions: 'pac_contributions',
+      debts: 'debts',
+      coverage_start: 'coverage_start_date',
+      coverage_end: 'coverage_end_date',
+    },
+    defaultProjection: ['politician', 'party', 'cycle', 'receipts', 'cash_on_hand'],
+    fields: {
+      bioguide_id: { type: 'string' },
+      cycle: { type: 'int' },
+      candidate_id: { type: 'string', nullable: true },
+      politician: { type: 'string', nullable: true },
+      party: { type: 'string', nullable: true },
+      office: { type: 'string', nullable: true },
+      state: { type: 'string', nullable: true },
+      receipts: { type: 'money', nullable: true },
+      disbursements: { type: 'money', nullable: true },
+      cash_on_hand: { type: 'money', nullable: true },
+      individual_contributions: { type: 'money', nullable: true },
+      pac_contributions: { type: 'money', nullable: true },
+      debts: { type: 'money', nullable: true },
+      coverage_start: { type: 'date', nullable: true },
+      coverage_end: { type: 'date', nullable: true },
+    },
+    joinableWith: ['capitol.congress_trades', 'capitol.committee_seats'],
+    joinKeys: ['bioguide_id'],
+  },
+
+  /* ── Titans Shadow (migration 20261006000900). Every entry keys on ticker
+     and declares the others joinable, so any two can be joined or semi
+     joined; joins never cross a dimension. */
+  'titans.holdings_13f': {
+    name: 'titans.holdings_13f',
+    label: 'Institutional Holdings (13F)',
     source: 'sec',
     access: 'public',
     rlsColumn: null,
     available: true,
+    hardLimit: 5000,
+    defaultLimit: 100,
+    table: 'ezq_13f_holdings',
+    columnMap: {
+      accession_no: 'accession_no',
+      filer_cik: 'filer_cik',
+      filer: 'filer_name',
+      form_type: 'form_type',
+      period: 'period_of_report',
+      filed_on: 'filed_at',
+      issuer: 'issuer',
+      cusip: 'cusip',
+      ticker: 'ticker',
+      value: 'value_usd',
+      shares: 'shares',
+      share_type: 'share_type',
+      put_call: 'put_call',
+    },
+    defaultProjection: ['filer', 'ticker', 'value', 'shares', 'period'],
+    fields: {
+      accession_no: { type: 'string' },
+      filer_cik: { type: 'string', nullable: true },
+      filer: { type: 'string', nullable: true },
+      form_type: { type: 'string', nullable: true },
+      period: { type: 'date', nullable: true },
+      filed_on: { type: 'date', nullable: true },
+      issuer: { type: 'string', nullable: true },
+      cusip: { type: 'string', nullable: true },
+      ticker: { type: 'string', nullable: true },
+      value: { type: 'money', nullable: true },
+      shares: { type: 'float', nullable: true },
+      share_type: { type: 'string', nullable: true },
+      put_call: { type: 'string', nullable: true },
+    },
+    joinableWith: TITANS_PEERS('titans.holdings_13f'),
+    joinKeys: ['ticker'],
+  },
+  'titans.activist_stakes': {
+    name: 'titans.activist_stakes',
+    label: 'Activist Stakes (Schedule 13D and 13G)',
+    source: 'sec',
+    access: 'public',
+    rlsColumn: null,
+    available: true,
+    hardLimit: 5000,
+    defaultLimit: 100,
+    table: 'ezq_activist_stakes',
+    columnMap: {
+      accession_no: 'accession_no',
+      filer_cik: 'filer_cik',
+      filer: 'filer_name',
+      form_type: 'form_type',
+      filed_on: 'filed_at',
+      event_date: 'event_date',
+      company: 'subject_name',
+      company_cik: 'subject_cik',
+      ticker: 'ticker',
+      percent_of_class: 'percent_of_class',
+      shares: 'shares',
+      is_amendment: 'is_amendment',
+    },
+    defaultProjection: ['filer', 'company', 'ticker', 'percent_of_class', 'filed_on'],
+    fields: {
+      accession_no: { type: 'string' },
+      filer_cik: { type: 'string', nullable: true },
+      filer: { type: 'string', nullable: true },
+      form_type: { type: 'string', nullable: true },
+      filed_on: { type: 'date', nullable: true },
+      event_date: { type: 'date', nullable: true },
+      company: { type: 'string', nullable: true },
+      company_cik: { type: 'string', nullable: true },
+      ticker: { type: 'string', nullable: true },
+      percent_of_class: { type: 'float', nullable: true },
+      shares: { type: 'float', nullable: true },
+      is_amendment: { type: 'bool', nullable: true },
+    },
+    joinableWith: TITANS_PEERS('titans.activist_stakes'),
+    joinKeys: ['ticker'],
+  },
+  'titans.whale_moves': {
+    name: 'titans.whale_moves',
+    label: 'Whale Moves (scored fund moves)',
+    source: 'sec',
+    access: 'public',
+    rlsColumn: null,
+    available: true,
+    hardLimit: 5000,
+    defaultLimit: 100,
+    table: 'whale_moves',
+    columnMap: {
+      kind: 'kind',
+      filer: 'filer_name',
+      filer_cik: 'filer_cik',
+      ticker: 'ticker',
+      issuer: 'issuer',
+      quarter: 'quarter',
+      value: 'value_usd',
+      conviction_pct: 'conviction_pct',
+      change_type: 'change_type',
+      percent_of_class: 'percent_of_class',
+      form: 'form',
+      whale_score: 'whale_score',
+      tier: 'tier',
+      filed_on: 'filed_at',
+    },
+    defaultProjection: ['filer', 'ticker', 'change_type', 'whale_score', 'quarter'],
+    fields: {
+      kind: { type: 'string', nullable: true },
+      filer: { type: 'string', nullable: true },
+      filer_cik: { type: 'string', nullable: true },
+      ticker: { type: 'string', nullable: true },
+      issuer: { type: 'string', nullable: true },
+      quarter: { type: 'string', nullable: true },
+      value: { type: 'money', nullable: true },
+      conviction_pct: { type: 'float', nullable: true },
+      change_type: { type: 'string', nullable: true },
+      percent_of_class: { type: 'float', nullable: true },
+      form: { type: 'string', nullable: true },
+      whale_score: { type: 'float', nullable: true },
+      tier: { type: 'string', nullable: true },
+      filed_on: { type: 'date', nullable: true },
+    },
+    joinableWith: TITANS_PEERS('titans.whale_moves'),
+    joinKeys: ['ticker'],
+  },
+  /* Bound to sec_insider_transactions (migration 20261006000500): one row per
+     Form 4 transaction line. transaction_type is the SEC code (P open-market
+     buy, S sale, A award, M exercise, F tax withholding, G gift). price and
+     value are null when the filing did not report them.
+     available: false until the table has rows (0 on Oct 6, 2026). */
+  'titans.insider_trades': {
+    name: 'titans.insider_trades',
+    label: 'Insider Trades (Form 4)',
+    source: 'sec',
+    access: 'public',
+    rlsColumn: null,
+    available: false,
     hardLimit: 5000,
     defaultLimit: 100,
     table: 'sec_insider_transactions',
@@ -416,17 +657,58 @@ export const CATALOG = {
       transaction_date: { type: 'date', nullable: true },
       filed_on: { type: 'date', nullable: true },
     },
-    joinableWith: [],
+    joinableWith: TITANS_PEERS('titans.insider_trades'),
+    joinKeys: ['ticker'],
+  },
+  /* Bound to sec_fundamentals (migration 20261006000600): one row per company,
+     metric and XBRL frame (CY2025, CY2025Q3, CY2025Q3I). Values as reported;
+     nothing derived. available: false until the table has rows. */
+  'titans.fundamentals': {
+    name: 'titans.fundamentals',
+    label: 'Company Fundamentals (SEC XBRL)',
+    source: 'sec',
+    access: 'public',
+    rlsColumn: null,
+    available: false,
+    hardLimit: 5000,
+    defaultLimit: 100,
+    table: 'sec_fundamentals',
+    columnMap: {
+      cik: 'cik',
+      ticker: 'ticker',
+      company: 'entity_name',
+      metric: 'concept',
+      frame: 'frame',
+      period_type: 'period_type',
+      period_end: 'period_end',
+      value: 'value',
+      unit: 'unit',
+    },
+    defaultProjection: ['ticker', 'metric', 'frame', 'value'],
+    fields: {
+      cik: { type: 'string' },
+      ticker: { type: 'string', nullable: true },
+      company: { type: 'string', nullable: true },
+      metric: { type: 'string' },
+      frame: { type: 'string' },
+      period_type: { type: 'string', nullable: true },
+      period_end: { type: 'date', nullable: true },
+      value: { type: 'float', nullable: true },
+      unit: { type: 'string', nullable: true },
+    },
+    joinableWith: TITANS_PEERS('titans.fundamentals'),
+    joinKeys: ['ticker'],
   },
   /* Bound to sec_exec_comp (migration 20261006000700): pay versus performance
-     from proxy XBRL, one row per company, fiscal year and PEO. */
-  'executive.compensation': {
-    name: 'executive.compensation',
+     from proxy XBRL, one row per company, fiscal year and PEO.
+     available: false until the table has rows. */
+  'titans.exec_comp': {
+    name: 'titans.exec_comp',
     label: 'Executive Compensation (pay versus performance)',
     source: 'sec',
     access: 'public',
     rlsColumn: null,
-    available: true,
+    available: false,
     hardLimit: 5000,
     defaultLimit: 100,
     table: 'sec_exec_comp',
@@ -457,25 +739,28 @@ export const CATALOG = {
       peer_tsr: { type: 'float', nullable: true },
       net_income: { type: 'money', nullable: true },
     },
-    joinableWith: [],
+    joinableWith: TITANS_PEERS('titans.exec_comp'),
+    joinKeys: ['ticker'],
   },
-  /* Bound to sec_etf_holdings (migration 20261006000800): Form N-PORT holdings
-     of the tracked ETFs, the two latest report dates per fund. ticker comes
-     from the CUSIP map and is null when unmapped. */
-  'etf.holdings': {
-    name: 'etf.holdings',
+  /* Bound to the ezq_etf_holdings view: Form N-PORT holdings of the tracked
+     ETFs with the fund's own ticker. ticker is the holding's, from the CUSIP
+     map, null when unmapped. available: false until sec_etf_holdings has rows. */
+  'titans.etf_holdings': {
+    name: 'titans.etf_holdings',
     label: 'ETF Holdings (Form N-PORT)',
     source: 'sec',
     access: 'public',
     rlsColumn: null,
-    available: true,
+    available: false,
     hardLimit: 5000,
     defaultLimit: 100,
-    table: 'sec_etf_holdings',
+    table: 'ezq_etf_holdings',
     columnMap: {
       series_id: 'series_id',
+      etf: 'etf_ticker',
+      fund_name: 'fund_name',
       report_date: 'report_date',
-      holding: 'name',
+      holding: 'holding_name',
       ticker: 'ticker',
       cusip: 'cusip',
       value: 'value_usd',
@@ -483,9 +768,11 @@ export const CATALOG = {
       asset_category: 'asset_category',
       country: 'country',
     },
-    defaultProjection: ['series_id', 'holding', 'ticker', 'weight_pct', 'value'],
+    defaultProjection: ['etf', 'holding', 'ticker', 'weight_pct', 'value'],
     fields: {
       series_id: { type: 'string' },
+      etf: { type: 'string', nullable: true },
+      fund_name: { type: 'string', nullable: true },
       report_date: { type: 'date' },
       holding: { type: 'string', nullable: true },
       ticker: { type: 'string', nullable: true },
@@ -494,6 +781,42 @@ export const CATALOG = {
       weight_pct: { type: 'float', nullable: true },
       asset_category: { type: 'string', nullable: true },
       country: { type: 'string', nullable: true },
+    },
+    joinableWith: TITANS_PEERS('titans.etf_holdings'),
+    joinKeys: ['ticker'],
+  },
+
+  /* ── Global Empire Lighthouse: OECD annual observations, one row per
+     indicator (ezana slug), country and year. No join key: nothing else in
+     the dimension shares one yet. */
+  'lighthouse.oecd': {
+    name: 'lighthouse.oecd',
+    label: 'OECD Macro Data',
+    source: 'oecd',
+    access: 'public',
+    rlsColumn: null,
+    available: true,
+    hardLimit: 5000,
+    defaultLimit: 100,
+    table: 'oecd_series_observations',
+    columnMap: {
+      indicator: 'ezana_slug',
+      country_code: 'ref_area',
+      country: 'ref_area_name',
+      year: 'year',
+      value: 'obs_value',
+      status: 'obs_status',
+      unit: 'unit_label',
+    },
+    defaultProjection: ['indicator', 'country', 'year', 'value', 'unit'],
+    fields: {
+      indicator: { type: 'string' },
+      country_code: { type: 'string' },
+      country: { type: 'string', nullable: true },
+      year: { type: 'int' },
+      value: { type: 'float', nullable: true },
+      status: { type: 'string', nullable: true },
+      unit: { type: 'string', nullable: true },
     },
     joinableWith: [],
   },
@@ -576,6 +899,7 @@ export const CATALOG = {
       disclosure_lag_days: { type: 'int', derived: true, nullable: true },
     },
     joinableWith: ['house.filings'],
+    joinKeys: ['doc_id'],
   },
   /* The filing INDEX, one row per disclosure document; 9,034 rows today. No
      trades here, those are in house.trades. */
@@ -618,6 +942,7 @@ export const CATALOG = {
       pdf_url: { type: 'string', nullable: true },
     },
     joinableWith: ['house.trades'],
+    joinKeys: ['doc_id'],
   },
   /* Declared, not wired: there is no Senate ingest yet, so the executor
      refuses to run it rather than returning an empty result that reads like
@@ -679,17 +1004,72 @@ export function shortName(datasetName) {
   return String(datasetName).split('.').pop();
 }
 
-/** Compact schema handed to the NL→EzanaQL model (names, fields, types, enums). */
-export function catalogSchemaForPrompt() {
+/**
+ * Catalog datasets per dataset dimension. EzanaQL runs on the dimension hubs
+ * only, and a hub's bar can reach only its own dimension's datasets: the
+ * validator refuses anything else. Ids match DATASET_TAXONOMY; the labels are
+ * repeated here so this module stays import free for the check scripts.
+ */
+export const DIMENSION_DATASETS = {
+  capitol: [
+    'gov.contracts',
+    'capitol.congress_trades',
+    'capitol.holdings',
+    'capitol.lobbying',
+    'capitol.committee_seats',
+    'capitol.campaign_finance',
+    'house.trades',
+    'house.filings',
+  ],
+  titans: TITANS,
+  eyes: [],
+  whispers: [],
+  hive: ['prediction.markets'],
+  lighthouse: ['lighthouse.oecd'],
+  regulatory: [],
+};
+
+export const DIMENSION_LABELS = {
+  capitol: 'Capitol Watch',
+  titans: 'Titans Shadow',
+  eyes: 'Eyes Above',
+  whispers: 'Consumer Whispers',
+  hive: 'The Hive',
+  lighthouse: 'Global Empire Lighthouse',
+  regulatory: 'Regulatory Winds',
+};
+
+export const isDimension = (id) =>
+  typeof id === 'string' && Object.prototype.hasOwnProperty.call(DIMENSION_DATASETS, id);
+
+/** The dimension a catalog dataset belongs to, or null. */
+export function dimensionOfDataset(name) {
+  return Object.keys(DIMENSION_DATASETS).find((d) => DIMENSION_DATASETS[d].includes(name)) || null;
+}
+
+/** True when at least one of the dimension's datasets can be queried today. */
+export function dimensionHasQueryableData(dimension) {
+  return (DIMENSION_DATASETS[dimension] || []).some((n) => CATALOG[n]?.available);
+}
+
+/**
+ * Compact schema handed to the NL→EzanaQL model (names, fields, types, enums).
+ * With a dimension, only that dimension's datasets are listed.
+ */
+export function catalogSchemaForPrompt(dimension = null) {
+  const inScope = (d) => !dimension || (DIMENSION_DATASETS[dimension] || []).includes(d.name);
   const live = Object.values(CATALOG)
-    .filter((d) => d.available)
+    .filter((d) => d.available && inScope(d))
     .map((d) => {
       const fields = Object.entries(d.fields)
         .map(([f, meta]) => `${f}:${meta.type}${meta.enum ? ` [${meta.enum.join('|')}]` : ''}`)
         .join(', ');
       const joins = (d.joinableWith || [])
-        .filter((j) => CATALOG[j]?.available)
-        .map((j) => `${j} ON ${(d.joinKeys || []).join('|')}`);
+        .filter((j) => CATALOG[j]?.available && inScope(CATALOG[j]))
+        .map((j) => {
+          const keys = (d.joinKeys || []).filter((k) => (CATALOG[j].joinKeys || []).includes(k));
+          return `${j} ON ${keys.join('|')}`;
+        });
       return `${d.name} (${d.label}) fields: ${fields}${
         joins.length ? `; joinable with ${joins.join(', ')}` : ''
       }`;
@@ -699,7 +1079,7 @@ export function catalogSchemaForPrompt() {
      invent a name for one, and needs to know it cannot target them so it does
      not write a query the executor will refuse. */
   const notYet = Object.values(CATALOG)
-    .filter((d) => !d.available)
+    .filter((d) => !d.available && inScope(d))
     .map((d) => d.name)
     .join(', ');
   return notYet ? `${live}\n\nNot yet queryable: ${notYet}` : live;

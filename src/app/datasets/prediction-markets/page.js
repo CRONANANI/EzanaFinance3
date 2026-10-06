@@ -7,9 +7,6 @@ import { PREDICTION_MARKETS_SAMPLE, TOP_MARKETS } from './prediction-markets-sam
 import { LegislationMarketsSection } from '@/components/congress/LegislationMarketsSection';
 
 const config = {
-  /* Bound and live in the EzanaQL catalog, so the page's query bar opens
-     on it rather than cross-dataset. */
-  dataset: 'prediction.markets',
   title: 'Prediction markets data',
   lead: 'What the crowd is pricing in — live event and election odds with the liquidity and volume context to judge how meaningful each implied probability is.',
   searches: [

@@ -10,8 +10,7 @@
  */
 import { CampaignFinanceView } from '@/components/datasets/CampaignFinanceView';
 import './campaign-finance-records.css';
-import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
-import { seedForDataset } from '@/lib/ezanaql/seeds';
+import HubQueryLink from '@/components/datasets/HubQueryLink';
 
 export default function CampaignFinanceRecordsClient() {
   return (
@@ -24,8 +23,8 @@ export default function CampaignFinanceRecordsClient() {
         </p>
       </header>
 
-      {/* The one shared query bar, same slot and size as every dataset page. */}
-      <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
+      {/* EzanaQL lives on the dimension hub, scoped to its datasets. */}
+      <HubQueryLink dimension="capitol" />
 
       <CampaignFinanceView />
     </div>

@@ -1,6 +1,8 @@
 /**
  * POST /api/ezanaql/generate — natural language → EzanaQL.
- * Body: { prompt: string, datasetScope?: string }.
+ * Body: { prompt: string, dimension: string, datasetScope?: string }. The
+ * prompt carries only the dimension's datasets and few-shots, and the result is
+ * validated against the dimension.
  *
  * Sends the sentence + the Catalog schema + few-shot examples to the report-gen
  * model (same Anthropic provider the rest of the app uses), constrained to emit
@@ -12,8 +14,9 @@ import { NextResponse } from 'next/server';
 import { requireUser } from '@/lib/supabase';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { catalogSchemaForPrompt, validateEzanaQL } from '@/lib/ezanaql';
+import { requireDimension } from '@/lib/ezanaql/request-scope';
 // Pure module so the ezanaql check script can validate the examples.
-import { FEW_SHOT } from './few-shots';
+import { fewShotFor } from './few-shots';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,21 +26,24 @@ export const dynamic = 'force-dynamic';
 // without a deploy.
 const ANTHROPIC_MODEL = process.env.EZANAQL_MODEL || 'claude-haiku-4-5-20251001';
 
-function buildSystemPrompt(scope) {
+/* Dataset-specific guidance, sent only with the Capitol Watch schema. */
+const CAPITOL_NOTES = `gov.contracts.ticker is the PARENT company's ticker where known (a subsidiary resolves to its listed parent); is_public = false means a known-private contractor, null means unknown. "Public contractors" → WHERE is_public = TRUE.
+"Politicians who own / hold / currently own X" is capitol.holdings (one row per member per ticker still held). "Politicians who traded / bought / sold X" is capitol.congress_trades (one row per trade).`;
+
+const JOIN_NOTES = `Joins: only between datasets the schema marks "joinable with", on the key it names. Use SEMI JOIN when the second dataset only filters the first ("companies that politicians have traded"): it keeps the FROM rows that have a match and adds no fields. Use JOIN when the answer needs the second dataset's fields (which politician, how many members): its fields are addressed as shortname.field (holdings.politician, contracts.parent), or bare when the name is unambiguous. In a JOIN each aggregate sees one side's rows once, so SUM(award_value) and COUNT(DISTINCT holdings.politician) are both correct in the same query; only COUNT() with no field counts pairs, so always count a field.`;
+
+function buildSystemPrompt(dimension, scope) {
   return `You translate a plain-English report request into a single EzanaQL query.
 EzanaQL is a SQL-like, query-only DSL. Output ONLY the EzanaQL query — no prose, no markdown fences, no explanation.
 
 Grammar: FROM dataset [[SEMI] JOIN dataset ON key] [WHERE cond] [SELECT projection] [GROUP BY fields] [HAVING cond] [ORDER BY sort] [LIMIT n [OFFSET m]] [AS csv|json|table]; . FROM is required and first. Strings use double quotes. Money shorthand: 50M, 1.2B. Relative dates: LAST 30 DAYS, LAST 6 MONTHS, LAST 5 YEARS, LAST QUARTER, YTD, FY2026. Aggregations: SUM/AVG/MIN/MAX/COUNT()/COUNT(DISTINCT f)/MEDIAN (COUNT takes () or one field, never *). Functions: YOY, PCT_CHANGE, YEAR, QUARTER, FISCAL_YEAR, ROUND, ABS, UPPER, LOWER, COALESCE. There is NO INSERT/UPDATE/DELETE.
-gov.contracts.ticker is the PARENT company's ticker where known (a subsidiary resolves to its listed parent); is_public = false means a known-private contractor, null means unknown. "Public contractors" → WHERE is_public = TRUE.
-Joins: only between datasets the schema marks "joinable with", on the key it names. Use SEMI JOIN when the second dataset only filters the first ("companies that politicians have traded"): it keeps the FROM rows that have a match and adds no fields. Use JOIN when the answer needs the second dataset's fields (which politician, how many members): its fields are addressed as shortname.field (holdings.politician, contracts.parent), or bare when the name is unambiguous. In a JOIN each aggregate sees one side's rows once, so SUM(award_value) and COUNT(DISTINCT holdings.politician) are both correct in the same query; only COUNT() with no field counts pairs, so always count a field.
-"Politicians who own / hold / currently own X" is capitol.holdings (one row per member per ticker still held). "Politicians who traded / bought / sold X" is capitol.congress_trades (one row per trade).
-
-You may ONLY reference these datasets and their exact fields:
-${catalogSchemaForPrompt()}
+${JOIN_NOTES}
+${dimension === 'capitol' ? `${CAPITOL_NOTES}\n` : ''}You may ONLY reference these datasets and their exact fields:
+${catalogSchemaForPrompt(dimension)}
 
 ${scope ? `Prefer the dataset "${scope}" unless the request clearly needs another.` : ''}
 
-${FEW_SHOT}`;
+${fewShotFor(dimension)}`;
 }
 
 export async function POST(request) {
@@ -65,7 +71,9 @@ export async function POST(request) {
   }
   const MAX_PROMPT = 600;
   const prompt = typeof body?.prompt === 'string' ? body.prompt.trim().slice(0, MAX_PROMPT) : '';
-  const scope = typeof body?.datasetScope === 'string' ? body.datasetScope : 'gov.contracts';
+  const dim = requireDimension(body);
+  if (dim.response) return dim.response;
+  const scope = typeof body?.datasetScope === 'string' ? body.datasetScope : null;
   if (!prompt)
     return NextResponse.json(
       { ok: false, error: 'Describe the report you want.' },
@@ -92,7 +100,7 @@ export async function POST(request) {
         model: ANTHROPIC_MODEL,
         max_tokens: 400,
         temperature: 0,
-        system: buildSystemPrompt(scope),
+        system: buildSystemPrompt(dim.dimension, scope),
         messages: [{ role: 'user', content: prompt }],
       }),
     });
@@ -140,7 +148,7 @@ export async function POST(request) {
 
   // Validate the generated query so we never hand back something the engine
   // would reject. If invalid, still return the text so the user can edit it.
-  const check = validateEzanaQL(query);
+  const check = validateEzanaQL(query, { dimension: dim.dimension });
   return NextResponse.json({
     ok: true,
     query,

@@ -37,8 +37,7 @@ import {
 } from '@/components/datasets/CampaignFinanceView';
 import './pol-trades.css';
 import './pol-campaign-finance.css';
-import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
-import { seedForDataset } from '@/lib/ezanaql/seeds';
+import HubQueryLink from '@/components/datasets/HubQueryLink';
 import { useTickerSpeed } from '@/components/datasets/useTickerSpeed';
 
 /* ── party color keys (pinned on .ptx-page; SVG uses the tokens) ── */
@@ -281,11 +280,8 @@ export default function PoliticalTradesClient({ devSampleTrades = null }) {
         </p>
       </header>
 
-      {/* The one shared query bar, same slot and size as every dataset page. */}
-      <EzanaQLBar
-        datasetScope="capitol.congress_trades"
-        seedQuery={seedForDataset('capitol.congress_trades')}
-      />
+      {/* EzanaQL lives on the dimension hub, scoped to its datasets. */}
+      <HubQueryLink dimension="capitol" />
 
       <div className="ptx-body">
         <aside className="ptx-rail">

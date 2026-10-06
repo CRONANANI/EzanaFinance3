@@ -357,7 +357,10 @@ export async function GET(request) {
       `[ingest-sec-holdings] retention removed ${removed} holdings older than ${oldestKept}`,
     );
 
-  if (holdingsRows || positions || removed) revalidateTag('titans');
+  if (holdingsRows || positions || removed) {
+    revalidateTag('titans');
+    revalidateTag('hubs');
+  }
 
   return NextResponse.json({
     ok: errors.length === 0,

@@ -262,6 +262,13 @@
   align-items: center;
   gap: 0.25rem;
 }
+.mobile-nav-group-link {
+  text-decoration: none;
+}
+.mobile-nav-group-link:focus-visible {
+  outline: 2px solid var(--nav-dim-color, var(--emerald));
+  outline-offset: 2px;
+}
 .mobile-nav-group-head .bi {
   font-size: 1rem;
   line-height: 1;

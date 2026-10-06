@@ -6,7 +6,14 @@
  * user-facing errors — never stack traces or DB internals.
  */
 import { EzanaQLError } from './parser';
-import { getDataset, CATALOG, shortName } from './catalog';
+import {
+  getDataset,
+  CATALOG,
+  shortName,
+  DIMENSION_DATASETS,
+  DIMENSION_LABELS,
+  isDimension,
+} from './catalog';
 
 export const AGGREGATIONS = new Set([
   'SUM',
@@ -66,10 +73,16 @@ function suggest(name, candidates) {
   return bestD <= Math.max(2, Math.floor(name.length / 3)) ? best : null;
 }
 
-function resolveDataset(name, clause) {
+function resolveDataset(name, clause, dimension = null) {
   const dataset = getDataset(name);
+  const scope = dimension ? DIMENSION_DATASETS[dimension] : null;
+  if (dataset && scope && !scope.includes(dataset.name)) {
+    throw new EzanaQLError(
+      `That dataset is not part of ${DIMENSION_LABELS[dimension]}. Open its hub to query it.`,
+    );
+  }
   if (!dataset) {
-    const s = suggest(name, Object.keys(CATALOG));
+    const s = suggest(name, scope || Object.keys(CATALOG));
     throw new EzanaQLError(
       `Unknown dataset "${name}"${clause ? ` in ${clause}` : ''}.${s ? ` Did you mean "${s}"?` : ''}`,
     );
@@ -83,7 +96,8 @@ function resolveDataset(name, clause) {
 }
 
 /**
- * Validate an AST against the catalog. Returns { dataset, joined } (the
+ * Validate an AST against the catalog. With `dimension`, the FROM and JOIN
+ * datasets must both belong to that dimension (DIMENSION_DATASETS). Returns { dataset, joined } (the
  * resolved catalog entries; `joined` is null without a JOIN) on success;
  * throws EzanaQLError otherwise.
  *
@@ -93,14 +107,17 @@ function resolveDataset(name, clause) {
  * prefix is only required to break a tie. The executor keys rows the same
  * way, so a resolved name here is a row key there. SEMI JOIN adds no fields.
  */
-export function validate(ast) {
-  const dataset = resolveDataset(ast.from);
+export function validate(ast, { dimension = null } = {}) {
+  if (dimension != null && !isDimension(dimension)) {
+    throw new EzanaQLError('Unknown dataset dimension.');
+  }
+  const dataset = resolveDataset(ast.from, null, dimension);
 
   // JOIN — only if both datasets declare each other joinable, on a declared key.
   let joined = null;
   let joinPrefix = null;
   if (ast.join) {
-    joined = resolveDataset(ast.join.dataset, 'JOIN');
+    joined = resolveDataset(ast.join.dataset, 'JOIN', dimension);
     if (joined.name === dataset.name)
       throw new EzanaQLError(`${dataset.name} cannot be joined to itself.`);
     if (

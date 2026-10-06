@@ -359,6 +359,15 @@
 .dscat-panel .dscat-panel-head {
   color: var(--text-primary);
 }
+.dscat-panel-head--link {
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+.dscat-panel-head--link:hover,
+.dscat-panel-head--link:focus-visible {
+  text-decoration: underline;
+  outline: none;
+}
 .dscat-panel-icon {
   flex-shrink: 0;
   font-size: 1rem;

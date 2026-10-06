@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { embedViaSupabase, supaEmbedConfigured } from '@/lib/embeddings-gte';
 
@@ -205,6 +206,9 @@ export async function GET(request) {
   } catch {
     /* best-effort */
   }
+
+  // The dimension hubs summarise this table.
+  if (upserted || pruned) revalidateTag('hubs');
 
   return NextResponse.json({
     ok: true,

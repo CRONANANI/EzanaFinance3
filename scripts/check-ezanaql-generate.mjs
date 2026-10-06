@@ -23,7 +23,8 @@ const { validate } = await import('../src/lib/ezanaql/validator.js');
 const { SEED_QUERY, seedFromFilters } =
   await import('../src/app/datasets/government/contracts/ezanaql-seed.js');
 const { SEEDS_BY_DATASET, seedForDataset } = await import('../src/lib/ezanaql/seeds.js');
-const { FEW_SHOT_QUERIES, FEW_SHOT } = await import('../src/app/api/ezanaql/generate/few-shots.js');
+const { FEW_SHOT_QUERIES, FEW_SHOTS_BY_DIMENSION, fewShotFor } =
+  await import('../src/app/api/ezanaql/generate/few-shots.js');
 const { CATALOG, CATALOG_VERSION, catalogSchemaForPrompt } =
   await import('../src/lib/ezanaql/catalog.js');
 
@@ -77,9 +78,12 @@ test('every few-shot example query validates against the catalog', () => {
   FEW_SHOT_QUERIES.forEach((q, i) => assertValidates(q, `few-shot #${i + 1}`));
 });
 
-test('few-shot prompt block embeds exactly the validated queries', () => {
-  for (const q of FEW_SHOT_QUERIES) {
-    assert.ok(FEW_SHOT.includes(q), 'FEW_SHOT prompt drifted from FEW_SHOT_QUERIES');
+test('each dimension prompt block embeds exactly its validated queries', () => {
+  for (const [dimension, list] of Object.entries(FEW_SHOTS_BY_DIMENSION)) {
+    const block = fewShotFor(dimension);
+    for (const { query } of list) {
+      assert.ok(block.includes(query), `${dimension} few-shot block drifted from its queries`);
+    }
   }
 });
 
@@ -143,7 +147,7 @@ test('the prompt schema lists live datasets and names the rest as not queryable'
   for (const d of dark) {
     assert.ok(text.includes(d.name), `${d.name} should be named as not queryable`);
   }
-  assert.equal(CATALOG_VERSION, '1.4.0');
+  assert.equal(CATALOG_VERSION, '1.5.0');
   assert.match(text, /capitol\.congress_trades .*joinable with gov\.contracts ON ticker/);
 });
 

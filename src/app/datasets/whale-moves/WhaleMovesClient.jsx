@@ -9,8 +9,7 @@ import { ALLOW_SAMPLE, OPENFIGI_NOTE } from '@/lib/titans/format';
 import { schedule13Kind } from '@/lib/sec-13f-parse';
 import '../../marketing-explore.css';
 import './whale-moves.css';
-import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
-import { seedForDataset } from '@/lib/ezanaql/seeds';
+import HubQueryLink from '@/components/datasets/HubQueryLink';
 
 /* ── formatting ── */
 function fmtUSD(v) {
@@ -183,8 +182,8 @@ export function WhaleMovesClient({ moves }) {
           </p>
         </div>
 
-        {/* The one shared query bar, same slot and size as every dataset page. */}
-        <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
+        {/* EzanaQL lives on the dimension hub, scoped to its datasets. */}
+        <HubQueryLink dimension="titans" />
 
         {isSample && (
           <div className="wm-sample-note">

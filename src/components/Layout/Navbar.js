@@ -17,6 +17,7 @@ import { ChevronDown, ArrowRight } from 'lucide-react';
 import { DATASET_TAXONOMY, isNavigable, isPreview } from '@/lib/datasets/taxonomy';
 import '@/components/ui/animated-nav.css';
 import './nav-datasets-light.css';
+import { hubHref } from '@/lib/datasets/hubs';
 
 /* Landing-nav Datasets mega-menu: the SAME seven dimensions as the orbital map,
    the in-page CategoryBar, and the signal map, built from the shared
@@ -697,7 +698,13 @@ export function Navbar() {
                               className={`bi ${col.biIcon} nav-datasets-col-icon`}
                               aria-hidden="true"
                             />
-                            <span className="nav-datasets-col-label">{col.heading}</span>
+                            <a
+                              className="nav-datasets-col-label nav-datasets-col-link"
+                              href={hubHref(col.id)}
+                              onClick={() => setDatasetsOpen(false)}
+                            >
+                              {col.heading}
+                            </a>
                           </p>
                           {col.items.map((item) =>
                             isNavigable(item) ? (
@@ -856,10 +863,14 @@ export function Navbar() {
                           className="mobile-nav-group-col"
                           style={{ '--nav-dim-color': col.color }}
                         >
-                          <p className="mobile-nav-group-head">
+                          <a
+                            className="mobile-nav-group-head mobile-nav-group-link"
+                            href={hubHref(col.id)}
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
                             <i className={`bi ${col.biIcon}`} aria-hidden="true" />
                             {col.heading}
-                          </p>
+                          </a>
                           {col.items.map((item) =>
                             isNavigable(item) ? (
                               <a

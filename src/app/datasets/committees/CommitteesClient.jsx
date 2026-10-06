@@ -15,8 +15,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
-import { seedForDataset } from '@/lib/ezanaql/seeds';
+import HubQueryLink from '@/components/datasets/HubQueryLink';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
 import './committees.css';
 
@@ -635,7 +634,7 @@ export default function CommitteesClient() {
         </dl>
       </header>
 
-      <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
+      <HubQueryLink dimension="capitol" />
 
       <div className="cmx-seg" role="group" aria-label="View">
         <button

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { mirrorPhotos, runCongressIngest } from '@/lib/politicians/congress-ingest';
 import { readFeeds, readTrades } from '@/lib/politicians/congress-store';
@@ -88,6 +89,9 @@ export async function GET(request) {
     summary.snapshot = pages.length
       ? await writeTradesSnapshot({ trades: pages, feeds: await readFeeds() })
       : false;
+
+    // The dimension hubs summarise this table.
+    if (summary) revalidateTag('hubs');
 
     return NextResponse.json({ ok: summary.errors.length === 0, summary });
   } catch (err) {

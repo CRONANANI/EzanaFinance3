@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import {
   currentFederalFiscalYear,
@@ -218,6 +219,9 @@ export async function GET(request) {
       },
       { onConflict: 'job' },
     );
+
+    // The dimension hubs summarise this table.
+    if (ingested) revalidateTag('hubs');
 
     return NextResponse.json(
       { ingested, skipped, cursor_from: cursor, cursor_to: maxSeen, errors },
