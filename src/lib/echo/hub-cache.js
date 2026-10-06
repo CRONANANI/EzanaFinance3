@@ -36,7 +36,9 @@ function slim(card) {
     tickers: card.tickers,
     featured: card.featured,
     articleOfMonth: card.articleOfMonth || null,
-    heroImage: heroSrc ? { src: heroSrc, alt: card.heroImage?.alt || '' } : null,
+    heroImage: heroSrc
+      ? { src: heroSrc, alt: card.heroImage?.alt || '', position: card.heroImage?.position || null }
+      : null,
     coverImage: keep(card.coverImage),
   };
 }

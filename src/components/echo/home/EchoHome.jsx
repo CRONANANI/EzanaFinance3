@@ -209,6 +209,7 @@ function Hero({ hero }) {
         src={hero.image}
         className="ech-hero__img"
         alt={hero.imageAlt || ''}
+        position={hero.imagePosition}
         sizes="(max-width: 640px) 100vw, 1440px"
         eager
       />
@@ -486,6 +487,7 @@ function Tile({ tile, isAdmin, onArchive, archiving }) {
             src={s.image}
             className="ech-tile__img"
             alt={s.imageAlt || ''}
+            position={s.imagePosition}
             sizes={
               tile.kind === 'feature'
                 ? '(max-width: 640px) 100vw, (max-width: 1000px) 50vw, 720px'
@@ -562,7 +564,7 @@ function MiniChart({ series = [], independent = false, label }) {
    span keeps the old box rules; the image fills it, object-fit cover. Remote
    images (none today) skip the optimiser so an unlisted host cannot break
    the page. */
-function Picture({ src, className, alt, eager = false, sizes }) {
+function Picture({ src, className, alt, eager = false, sizes, position = null }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [src]);
   if (!src || failed)
@@ -576,6 +578,7 @@ function Picture({ src, className, alt, eager = false, sizes }) {
         sizes={sizes}
         priority={eager}
         quality={70}
+        style={position ? { objectPosition: position } : undefined}
         unoptimized={/^https?:/.test(src)}
         onError={() => setFailed(true)}
       />

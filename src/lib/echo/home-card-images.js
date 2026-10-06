@@ -24,5 +24,5 @@ export const HOME_CARD_IMAGES = {};
 /** The home override for a story, if one exists. */
 export function withHomeImage(story) {
   const img = story && HOME_CARD_IMAGES[story.id];
-  return img ? { ...story, image: img.src, imageAlt: img.alt } : story;
+  return img ? { ...story, image: img.src, imageAlt: img.alt, imagePosition: null } : story;
 }

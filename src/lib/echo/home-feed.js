@@ -105,6 +105,12 @@ export function cardImage(card) {
   return card?.heroImage?.src || card?.coverImage || null;
 }
 
+/** Optional crop focus for the hero image, as "N% N%"; anything else is dropped. */
+function imagePosition(card) {
+  const pos = card?.heroImage?.src && card.heroImage.position;
+  return typeof pos === 'string' && /^\d{1,3}% \d{1,3}%$/.test(pos) ? pos : null;
+}
+
 /** Hub card -> the story shape the packer and tiles read. */
 export function toStory(card) {
   const section = sectionById(card.category);
@@ -119,6 +125,7 @@ export function toStory(card) {
     mins: card.readTime || 1,
     image: cardImage(card),
     imageAlt: card.heroImage?.alt || '',
+    imagePosition: imagePosition(card),
     href: `/ezana-echo/${card.id}`,
     publishedAt: card.publishedAt || null,
     geos: Array.isArray(card.geos) ? card.geos : [],
