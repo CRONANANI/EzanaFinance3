@@ -51,11 +51,55 @@ export const AUDIENCES = {
     eyebrow: 'HELP CENTER · USER SUPPORT',
     contact: 'mailto:contact@ezana.world',
     contactLabel: 'Contact Support',
-    tryChips: [
-      'Connect a brokerage',
-      'Export my portfolio',
-      'Congressional data',
-      'Cancel my plan',
+    quickAsks: [
+      {
+        label: 'Connect a brokerage',
+        hint: 'Link an account through Plaid',
+        icon: 'bi-bank',
+        q: 'How do I connect my brokerage account?',
+      },
+      {
+        label: 'Export my portfolio',
+        hint: 'Download holdings and trades',
+        icon: 'bi-download',
+        q: 'How do I export my portfolio data?',
+      },
+      {
+        label: 'Congressional data',
+        hint: 'How member trades reach Ezana',
+        icon: 'bi-building',
+        q: 'How does congressional trading data work?',
+      },
+      {
+        label: 'Gain Learning ELO',
+        hint: 'Pass courses to climb',
+        icon: 'bi-mortarboard',
+        q: 'How do I earn Learning ELO from lessons and quizzes?',
+      },
+      {
+        label: 'Paper trading',
+        hint: 'Practise with $100,000',
+        icon: 'bi-controller',
+        q: 'How does paper trading work?',
+      },
+      {
+        label: 'Set price alerts',
+        hint: 'Get pinged on big moves',
+        icon: 'bi-bell',
+        q: 'How do I set up price alerts?',
+      },
+      {
+        label: 'Turn on 2FA',
+        hint: 'Secure your account',
+        icon: 'bi-shield-lock',
+        q: 'Enabling two-factor authentication',
+      },
+      {
+        label: 'Cancel my plan',
+        hint: 'Change or end a subscription',
+        icon: 'bi-x-circle',
+        q: 'How do I cancel my subscription?',
+      },
     ],
     /* The three most-opened categories. Configured until view analytics
        per category exist; ids from help-center-content.js. */
@@ -74,7 +118,57 @@ export const AUDIENCES = {
     eyebrow: 'HELP CENTER · PARTNER SUPPORT',
     contact: 'mailto:partners@ezana.world',
     contactLabel: 'Contact partner support',
-    tryChips: ['Invite team members', 'Seats and roles', 'SSO setup', 'Billing for organisations'],
+    /* The old Team / SSO / org-billing chips had no partner articles behind them. */
+    quickAsks: [
+      {
+        label: 'Become a partner',
+        hint: 'Apply and get approved',
+        icon: 'bi-patch-check',
+        q: 'How do I become an Ezana partner?',
+      },
+      {
+        label: 'Set up your profile',
+        hint: 'What followers see',
+        icon: 'bi-person-badge',
+        q: 'How do I set up my partner profile?',
+      },
+      {
+        label: 'Write for Echo',
+        hint: 'Apply and submit articles',
+        icon: 'bi-pencil-square',
+        q: 'How do I apply to write for Ezana Echo?',
+      },
+      {
+        label: 'Article performance',
+        hint: 'Reads and engagement',
+        icon: 'bi-graph-up',
+        q: 'How do I track my article performance?',
+      },
+      {
+        label: 'Commissions',
+        hint: 'How partner earnings work',
+        icon: 'bi-percent',
+        q: 'How do partner commissions work?',
+      },
+      {
+        label: 'Getting paid',
+        hint: 'Payout schedule',
+        icon: 'bi-calendar-check',
+        q: 'How and when do I get paid?',
+      },
+      {
+        label: 'Fix a payout',
+        hint: 'Common payout problems',
+        icon: 'bi-cash-coin',
+        q: 'How do I fix payout problems?',
+      },
+      {
+        label: 'Use the partner API',
+        hint: 'Keys and endpoints',
+        icon: 'bi-code-slash',
+        q: 'How do I use the Ezana partner API?',
+      },
+    ],
     startHere: ['onboarding', 'dashboard', 'copy-trading'],
     faqs: [
       'How do I join the partner program?',

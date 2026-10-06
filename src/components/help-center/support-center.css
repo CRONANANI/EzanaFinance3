@@ -182,18 +182,22 @@
 .hcs-head {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  /* stretch, so the pill fills the width in the answered view too */
+  align-items: stretch;
   text-align: center;
   padding-top: 12px;
   gap: 10px;
+}
+.hcs-head .hcs-clear {
+  align-self: center;
 }
 .hcs-pill {
   position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
-  width: 760px;
-  max-width: 100%;
+  width: 100%;
+  max-width: none;
   height: 56px;
   margin-top: 8px;
   padding: 0 6px 0 18px;
@@ -275,32 +279,78 @@
     transform: rotate(360deg);
   }
 }
-.hcs-try {
+/* Quick-ask cards: the common questions as one tap each, full width under
+   the pill. Same tile, hairline and hover language as the rail rows. */
+.hcs-quick {
+  list-style: none;
   margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.hcs-quick-card {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-}
-.hcs-try-label {
-  font-size: 12px;
-  color: var(--hcs-faint);
-}
-.hcs-chip {
-  padding: 5px 10px;
+  gap: 12px;
+  width: 100%;
+  height: 100%;
+  padding: 12px 14px;
   border: 1px solid var(--hcs-hair-strong);
-  border-radius: 99px;
-  background: none;
+  border-radius: var(--radius-md);
+  background: var(--hcs-bg);
+  color: inherit;
   font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.hcs-quick-card:hover {
+  border-color: var(--hcs-active-border);
+  background: var(--hcs-tint);
+}
+.hcs-quick-card:focus-visible {
+  outline: 2px solid var(--hcs-emerald);
+  outline-offset: 2px;
+}
+.hcs-quick-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.hcs-quick-label {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--hcs-ink);
+}
+.hcs-quick-card:hover .hcs-quick-label {
+  color: var(--hcs-positive);
+}
+.hcs-quick-hint {
   font-size: 12px;
   color: var(--hcs-mute);
-  cursor: pointer;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.hcs-chip:hover {
-  border-color: var(--border-hover);
-  color: var(--hcs-ink);
+@media (max-width: 1000px) {
+  .hcs-quick {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 420px) {
+  .hcs-quick {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hcs-quick-card {
+    transition: none;
+  }
 }
 .hcs-clear {
   display: inline-flex;
@@ -337,15 +387,15 @@
   row-gap: 26px;
   margin-top: 16px;
 }
-/* Home: the search sits at the top of the middle column, and the rail starts
-   on that same row, so All Categories is level with the pill. */
+/* Home: the search and the quick-ask cards span the page; the rail and the
+   main column start together on the row below. */
 .hcs-grid--home .hcs-search {
-  grid-column: 2;
+  grid-column: 1 / -1;
   grid-row: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 10px;
+  align-items: stretch;
+  gap: 14px;
   min-width: 0;
 }
 .hcs-grid--home .hcs-search .hcs-pill {
@@ -353,11 +403,26 @@
 }
 .hcs-grid--home .hcs-rail {
   grid-column: 1;
-  grid-row: 1 / 3;
+  grid-row: 2;
 }
 .hcs-grid--home .hcs-main {
   grid-column: 2;
   grid-row: 2;
+}
+/* The rail head and the first section head share one 24px header row, so
+   ALL CATEGORIES and Start here read on the same line. */
+.hcs-grid--home .hcs-rail-head,
+.hcs-grid--home .hcs-main > section:first-child .hcs-sec-head {
+  min-height: 24px;
+  align-items: center;
+  margin-top: 0;
+  padding-top: 0;
+}
+/* The rail head's 6px gap moves from padding to margin: inside the 24px row
+   the padding lifted ALL CATEGORIES 3px above Start here. */
+.hcs-grid--home .hcs-rail-head {
+  padding-bottom: 0;
+  margin-bottom: 6px;
 }
 .hcs-grid--answered {
   grid-template-columns: 232px minmax(0, 1fr) 320px;
@@ -1015,91 +1080,23 @@
 }
 
 /* ── responsive ──────────────────────────────────────────────────────── */
-/* ── platform changelog + feedback ───────────────────────────────────── */
+/* ── platform changelog link + feedback ──────────────────────────────── */
+/* Changelog link + feedback: the link on its own line, the form under it. */
 .hcs-cl {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
-  column-gap: 40px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
   margin-top: 48px;
   padding-top: 28px;
   border-top: 1px solid var(--hcs-hair-strong);
 }
-.hcs-cl-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.hcs-cl-link {
+  font-size: 14px;
 }
-.hcs-cl-entry {
-  display: grid;
-  grid-template-columns: 150px minmax(0, 1fr);
-  gap: 20px;
-  padding: 16px 0;
-  border-bottom: 1px dotted var(--hcs-dotted);
-}
-.hcs-cl-meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-}
-.hcs-cl-date {
-  font-size: 12px;
-  color: var(--hcs-mute);
-}
-.hcs-cl-tag {
-  font-size: 9.5px;
-  letter-spacing: 0.14em;
-  padding: 2px 7px;
-  border: 1px solid var(--hcs-hair-strong);
-  border-radius: var(--radius-sm);
-  color: var(--hcs-mute);
-}
-.hcs-cl-tag--feature {
-  color: var(--hcs-positive);
-  border-color: var(--hcs-active-border);
-  background: var(--hcs-tint);
-}
-.hcs-cl-title {
-  margin: 0;
-  font-size: 14.5px;
-  font-weight: 650;
-  line-height: 1.35;
-}
-.hcs-cl-body {
-  margin: 6px 0 0;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--hcs-mute);
-  white-space: pre-line;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.hcs-cl-body.is-open {
-  display: block;
-  -webkit-line-clamp: unset;
-}
-.hcs-cl-more {
-  margin-top: 6px;
-  border: 0;
-  padding: 0;
-  background: none;
-  font: inherit;
-  font-size: 12.5px;
-  cursor: pointer;
-}
-.hcs-cl-load {
-  margin-top: 16px;
-}
-.hcs-cl-empty {
-  margin: 12px 0 0;
-  font-size: 13px;
-  color: var(--hcs-mute);
-}
-.hcs-cl-entry .hcs-skel--line {
-  grid-column: 1 / -1;
+.hcs-cl-side {
+  width: 100%;
+  max-width: 560px;
 }
 
 /* feedback */
@@ -1208,10 +1205,6 @@
   }
 }
 @media (max-width: 1000px) {
-  .hcs-cl {
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: 28px;
-  }
   .hcs-grid--home .hcs-search,
   .hcs-grid--home .hcs-rail,
   .hcs-grid--home .hcs-main {
@@ -1277,26 +1270,11 @@
   }
 }
 @media (max-width: 640px) {
-  .hcs-cl-entry {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 8px;
-  }
-  .hcs-cl-meta {
-    flex-direction: row;
-    align-items: center;
-  }
   .hcs {
     --hcs-gutter: 16px;
   }
   .hcs-pill {
     width: 100%;
-  }
-  .hcs-try {
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    width: 100%;
-    overflow-x: auto;
-    padding-bottom: 4px;
   }
   .hcs-start,
   .hcs-faqs,
@@ -1339,7 +1317,6 @@
   .hcs-ask-label {
     display: none;
   }
-  .hcs-chip,
   .hcs-faq,
   .hcs-rail-row {
     min-height: 44px;

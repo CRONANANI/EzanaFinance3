@@ -4,7 +4,7 @@
  * Support centre landing page: ONE template, two audiences (user, partner),
  * two states (home, answered). Built to docs/design/support-handoff/.
  *
- * Home: the Ask AI pill with Try chips directly under the top nav, at the
+ * Home: the Ask AI pill with quick-ask cards directly under the top nav, at the
  * top of the middle column and level with the category rail, then Start
  * here + FAQs + Recently updated + help card, across the full width beside
  * the rail (Trending appears only in the answered view). There is no visible
@@ -418,19 +418,26 @@ export default function SupportCenter({ audience = 'user', initialQuestion = '' 
           <i className="bi bi-chevron-left" aria-hidden="true" /> Clear and browse
         </button>
       ) : (
-        <p className="hcs-try">
-          <span className="hcs-try-label">Try:</span>
-          {cfg.tryChips.map((c) => (
-            <button
-              key={c}
-              type="button"
-              className="hcs-chip"
-              onClick={() => ask(c, { source: 'try_chip' })}
-            >
-              {c}
-            </button>
+        <ul className="hcs-quick" aria-label="Common questions">
+          {cfg.quickAsks.map((c) => (
+            <li key={c.label}>
+              <button
+                type="button"
+                className="hcs-quick-card"
+                onClick={() => ask(c.q, { source: 'try_chip' })}
+              >
+                <span className="hcs-tile hcs-tile--34" aria-hidden="true">
+                  <i className={`bi ${c.icon}`} />
+                </span>
+                <span className="hcs-quick-text">
+                  <span className="hcs-quick-label">{c.label}</span>
+                  <span className="hcs-quick-hint">{c.hint}</span>
+                </span>
+                <i className="bi bi-chevron-right hcs-chev" aria-hidden="true" />
+              </button>
+            </li>
           ))}
-        </p>
+        </ul>
       )}
     </>
   );
