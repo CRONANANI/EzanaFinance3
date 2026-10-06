@@ -147,6 +147,14 @@ body.light-mode .ech-page {
   inset: 0;
   background: var(--ech-image-bg);
 }
+/* next/image fills its wrapper; the wrapper keeps the old box rules. */
+.ech-img-box {
+  position: relative;
+  overflow: hidden;
+}
+.ech-img-box > img {
+  object-fit: cover;
+}
 .ech-hero__card {
   position: absolute;
   left: 32px;
@@ -1054,6 +1062,10 @@ body.light-mode .ech-page {
     display: block;
     height: 260px;
     border-radius: var(--ech-r-hero);
+  }
+  /* A fill image needs a positioned box; the 260px height sizes it. */
+  .ech-hero__img.ech-img-box {
+    position: relative;
   }
   .ech-hero__card {
     position: relative;

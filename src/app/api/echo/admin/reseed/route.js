@@ -3,6 +3,8 @@ import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
 import { isAdminUser } from '@/lib/admin-helpers';
 import { ensureCuratedSeeded, resetCuratedSeedCache } from '@/lib/echo/curated-seed';
+import { revalidateTag } from 'next/cache';
+import { ECHO_HUB_TAG } from '@/lib/echo/hub-cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,6 +34,8 @@ export const POST = withApiGuard(
     }
 
     const withRail = (data || []).filter((r) => r.globe_rail).length;
+    // The home reads a cached hub; new or changed curated content shows now.
+    revalidateTag(ECHO_HUB_TAG);
     return NextResponse.json({ ok: true, total: data?.length ?? 0, withRail });
   },
   { requireAuth: true },

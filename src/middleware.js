@@ -126,6 +126,19 @@ export async function middleware(request) {
     return NextResponse.next({ request: { headers: forwardedHeaders } });
   }
 
+  /* The Ezana Echo home is public reading and renders nothing per user on the
+     server (the admin bits are client side). It needs the CSP nonce but not
+     the getUser() round trip or the profile gates, which cost every visitor a
+     network hop before the first byte. Article and author pages are NOT on
+     this path: the article page reads the session server side (admin preview
+     of drafts and archived pieces, personalised "more"), which needs the
+     session refresh below. */
+  if (request.method === 'GET' && pathname === '/ezana-echo') {
+    const echoResponse = NextResponse.next({ request: { headers: forwardedHeaders } });
+    echoResponse.headers.set('Content-Security-Policy', cspHeader);
+    return echoResponse;
+  }
+
   let response = NextResponse.next({ request: { headers: forwardedHeaders } });
   response.headers.set('Content-Security-Policy', cspHeader);
 

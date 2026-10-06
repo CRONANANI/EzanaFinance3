@@ -17,6 +17,9 @@ function shouldSkipTrialCheck(pathname, isPartner) {
   if (pathname === '/onboarding') return true;
   if (pathname.startsWith('/payment/')) return true;
   if (pathname.startsWith('/auth')) return true;
+  /* Ezana Echo is public reading; the trial gate never applies, and waiting
+     on it put a spinner where the server-rendered page should be. */
+  if (pathname === '/ezana-echo' || pathname.startsWith('/ezana-echo/')) return true;
   const partnerPrefixes = [
     '/partner-home',
     '/partner-dashboard',

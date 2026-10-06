@@ -10,6 +10,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { packTiles } from '@/lib/echo/bento-layout';
 import { SECTIONS, REGIONS, RANGES, DEFAULT_FILTERS, emptyMessage } from '@/lib/echo/home-feed';
 import './echo-home.css';
@@ -204,7 +205,13 @@ function Hero({ hero }) {
   const short = (SECTION_SHORT[hero.section] || '').toUpperCase();
   return (
     <Link className="ech-hero" href={hero.href}>
-      <Picture src={hero.image} className="ech-hero__img" alt={hero.imageAlt || ''} eager />
+      <Picture
+        src={hero.image}
+        className="ech-hero__img"
+        alt={hero.imageAlt || ''}
+        sizes="(max-width: 640px) 100vw, 1440px"
+        eager
+      />
       <span className="ech-hero__card">
         <span className="ech-kicker">{hero.kicker}</span>
         <span className="ech-hero__title">{hero.title}</span>
@@ -475,7 +482,16 @@ function Tile({ tile, isAdmin, onArchive, archiving }) {
     <div className={cls}>
       <Link className="ech-tile__link" href={s.href}>
         {pictured ? (
-          <Picture src={s.image} className="ech-tile__img" alt={s.imageAlt || ''} />
+          <Picture
+            src={s.image}
+            className="ech-tile__img"
+            alt={s.imageAlt || ''}
+            sizes={
+              tile.kind === 'feature'
+                ? '(max-width: 640px) 100vw, (max-width: 1000px) 50vw, 720px'
+                : '(max-width: 640px) 100vw, (max-width: 1000px) 50vw, 360px'
+            }
+          />
         ) : null}
         <Meta story={s} dark={dark} />
         <span className="ech-tile__title">{s.title}</span>
@@ -541,24 +557,29 @@ function MiniChart({ series = [], independent = false, label }) {
   );
 }
 
-function Picture({ src, className, alt, eager = false }) {
+/* Article images go through next/image, so the optimiser serves AVIF/WebP at
+   the rendered size instead of the original multi-megabyte files. The wrapper
+   span keeps the old box rules; the image fills it, object-fit cover. Remote
+   images (none today) skip the optimiser so an unlisted host cannot break
+   the page. */
+function Picture({ src, className, alt, eager = false, sizes }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [src]);
   if (!src || failed)
     return <span className={`${className} ech-img-fallback`} aria-hidden="true" />;
-  // Article images are public/ paths of mixed sizes, shown object-fit cover in
-  // fixed boxes, as the previous Echo cards rendered them.
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      className={className}
-      src={src}
-      alt={alt}
-      loading={eager ? 'eager' : 'lazy'}
-      fetchPriority={eager ? 'high' : undefined}
-      decoding="async"
-      onError={() => setFailed(true)}
-    />
+    <span className={`${className} ech-img-box`}>
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes={sizes}
+        priority={eager}
+        quality={70}
+        unoptimized={/^https?:/.test(src)}
+        onError={() => setFailed(true)}
+      />
+    </span>
   );
 }
 

@@ -4,6 +4,8 @@ import { getUserClient } from '@/lib/supabase';
 import { isAdminUser } from '@/lib/admin-helpers';
 import { archiveArticle, republishArticle } from '@/lib/echo-article-status';
 import { getArticleBySlug } from '@/lib/echo-data';
+import { revalidateTag } from 'next/cache';
+import { ECHO_HUB_TAG } from '@/lib/echo/hub-cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,6 +40,7 @@ export const POST = withApiGuard(
         userEmail: user.email,
         notes,
       });
+      revalidateTag(ECHO_HUB_TAG);
       return NextResponse.json({ ok: true, status: result });
     } catch (err) {
       return NextResponse.json({ error: err.message }, { status: 500 });
@@ -71,6 +74,7 @@ export const DELETE = withApiGuard(
         userId: user.id,
         userEmail: user.email,
       });
+      revalidateTag(ECHO_HUB_TAG);
       return NextResponse.json({ ok: true, status: result });
     } catch (err) {
       return NextResponse.json({ error: err.message }, { status: 500 });

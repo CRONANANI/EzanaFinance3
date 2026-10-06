@@ -7,6 +7,8 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getCurrentUser, getAdminClient } from '@/lib/supabase';
+import { revalidateTag } from 'next/cache';
+import { ECHO_HUB_TAG } from '@/lib/echo/hub-cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -147,6 +149,7 @@ export const POST = withApiGuard(
       return NextResponse.json({ error: 'Failed to save article' }, { status: 500 });
     }
 
+    revalidateTag(ECHO_HUB_TAG);
     return NextResponse.json({ success: true, article });
   },
   { requireAuth: true },
@@ -189,6 +192,7 @@ export const PATCH = withApiGuard(
 
     if (updateErr) return NextResponse.json({ error: 'Update failed' }, { status: 500 });
 
+    revalidateTag(ECHO_HUB_TAG);
     return NextResponse.json({ success: true, article });
   },
   { requireAuth: true },

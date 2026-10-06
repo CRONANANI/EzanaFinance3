@@ -1,13 +1,15 @@
 /**
  * Live Echo data layer. The reader is served entirely from the database
- * (public.echo_articles); the curated catalog is seeded on first access via
- * ensureCuratedSeeded. Rows are mapped to the shape the Echo UI already
+ * (public.echo_articles). Reads never seed: the curated catalog is written to
+ * the database only by POST /api/echo/admin/reseed, which runs after every
+ * Echo deploy (mandatory). Seeding on the read path made every cold process
+ * upsert ~30 full articles before answering. Rows are mapped to the shape the Echo UI already
  * expects (slug-as-id, author as a string, rich contentBlocks/heroImage).
  *
  * Server-only: depends on the service-role admin client.
  */
 import { getAdminClient } from '@/lib/supabase';
-import { ensureCuratedSeeded, CURATED_GLOBE_RAILS } from '@/lib/echo/curated-seed';
+import { CURATED_GLOBE_RAILS } from '@/lib/echo/curated-seed';
 import { CHART_OF_THE_WEEK, buildChartOfTheWeek } from '@/lib/echo/chart-of-the-week';
 
 const admin = getAdminClient();
@@ -57,7 +59,6 @@ function mapFull(row) {
 
 /** All published articles as light cards (newest first). */
 export async function getPublishedArticles() {
-  await ensureCuratedSeeded(admin);
   const { data, error } = await admin
     .from('echo_articles')
     .select(CARD_COLS)
@@ -150,7 +151,6 @@ async function getSeriesSummary(seriesId, currentSlug) {
 
 /** Full article by slug (any status), with series + co-authors. Side-effect free. */
 export async function getArticleBySlug(slug) {
-  await ensureCuratedSeeded(admin);
   const { data, error } = await admin
     .from('echo_articles')
     .select('*')

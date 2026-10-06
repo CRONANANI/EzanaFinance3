@@ -1,23 +1,18 @@
 /**
- * /api/echo/hub — public Echo hub payload (cards + featured + the Chart of the
- * Week), served from the database.
+ * /api/echo/hub: public Echo hub payload (cards + featured + the Chart of the
+ * Week). Served from the same five-minute data cache as the server-rendered
+ * home (lib/echo/hub-cache.js), so it is cheap for every caller.
  */
 import { NextResponse } from 'next/server';
-import { getHubData, getChartOfTheWeek } from '@/lib/echo-data';
+import { getEchoHubCached } from '@/lib/echo/hub-cache';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET() {
   try {
-    const [{ articles, featured }, chart] = await Promise.all([
-      getHubData(),
-      // The chart is optional: a failure here never costs the reader the feed.
-      getChartOfTheWeek().catch((e) => {
-        console.error('[echo] chart of the week:', e?.message || e);
-        return null;
-      }),
-    ]);
+    const { articles, chart } = await getEchoHubCached();
+    const featured = articles.find((a) => a.featured) || articles[0] || null;
     return NextResponse.json({ articles, featured, chart });
   } catch (e) {
     console.error('[echo] hub route:', e?.message || e);
