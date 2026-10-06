@@ -28,6 +28,9 @@ const STANDALONE_ROUTES = new Set([
   '/datasets/government/contracts',
   '/datasets/government/lobbying',
   '/datasets/committees',
+  '/datasets/insider',
+  '/datasets/executive-compensation',
+  '/datasets/etf-holdings',
   '/datasets/political',
   // DatasetDashboard now draws its own full-bleed CategoryBar + ticker (and the
   // bespoke sec-filings client draws the same chrome), so these opt out of the

@@ -51,3 +51,19 @@ export const OPENFIGI_NOTE =
 /** Sample data renders only in local development with the explicit flag. */
 export const ALLOW_SAMPLE =
   process.env.NEXT_PUBLIC_ALLOW_SAMPLE_DATA === 'true' && process.env.NODE_ENV !== 'production';
+
+/** Shown wherever the SEC filing did not report a figure. */
+export const NOT_REPORTED = 'Not reported';
+
+/** 12.345 -> '+12.3%'. */
+export function signedPct(v, digits = 1) {
+  const n = Number(v);
+  if (v == null || !Number.isFinite(n)) return null;
+  return `${n > 0 ? '+' : ''}${n.toFixed(digits)}%`;
+}
+
+/** 2.5 -> '$2.50' (per-share amounts). */
+export function money2(v) {
+  const n = Number(v);
+  return v == null || !Number.isFinite(n) ? null : `$${n.toFixed(2)}`;
+}

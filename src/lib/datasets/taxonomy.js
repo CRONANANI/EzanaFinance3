@@ -136,17 +136,17 @@ export const DATASET_TAXONOMY = [
       {
         label: 'Insider Trading', // was "SEC & Institutional"
         description: 'Corporate officer and director Form 4 transactions',
-        href: '/datasets/sec-filings',
-        live: false,
-        source: 'SEC EDGAR — Form 4',
+        href: '/datasets/insider',
+        live: true,
+        source: 'SEC EDGAR, Form 4',
         sourceType: 'gov',
       },
       {
         label: 'Executive Compensation', // was "SEC & Institutional"
         description: 'Named-executive pay and equity awards from proxy filings',
-        href: '/datasets/sec-filings',
-        live: false,
-        source: 'SEC EDGAR — DEF 14A',
+        href: '/datasets/executive-compensation',
+        live: true,
+        source: 'SEC EDGAR XBRL, pay versus performance',
         sourceType: 'gov',
       },
       {
@@ -161,17 +161,17 @@ export const DATASET_TAXONOMY = [
       {
         label: 'ETF Holdings', // was "SEC & Institutional"
         description: 'ETF constituent weights and the flows that move them',
-        href: '/datasets/sec-filings',
-        live: false,
-        source: 'SEC EDGAR — N-PORT',
+        href: '/datasets/etf-holdings',
+        live: true,
+        source: 'SEC EDGAR, Form N-PORT',
         sourceType: 'gov',
       },
       {
         label: 'Prices & Fundamentals', // was "Markets & Equities"
         description: 'Real-time prices, fundamentals, and analyst ratings',
         href: '/datasets/markets',
-        live: false,
-        source: 'FMP · Finnhub · Alpha Vantage',
+        live: true,
+        source: 'SEC EDGAR XBRL (fundamentals) · prices pending',
         sourceType: 'licensed',
       },
     ],

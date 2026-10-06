@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ExternalLink, X, Loader2 } from 'lucide-react';
 import { Ticker, EntityName, TxnBadge } from '@/components/marketing/DatasetTable';
@@ -407,6 +408,12 @@ export function SecFilingsClient({ feeds, insiderSample = EMPTY_ROWS }) {
         </div>
 
         <section className="mkt-ds-section" aria-live="polite">
+          {tab === 'insider' ? (
+            <p className="mkt-ds-sample-note">
+              <Link href="/datasets/insider">See parsed transactions</Link>: open-market buys and
+              sales, cluster buys and a search by ticker or insider.
+            </p>
+          ) : null}
           {rows.length > 0 ? (
             <LiveFeed rows={rows} family={tab} onOpen={setDetail} />
           ) : tab === 'insider' && insiderSample.length ? (

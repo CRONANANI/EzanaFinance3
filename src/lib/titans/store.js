@@ -247,3 +247,9 @@ const cachedFund = unstable_cache(loadFund, ['titans-fund-v1'], CACHE);
 export function getFundHoldings(cik) {
   return cachedFund(String(cik || ''));
 }
+
+/* ── Titans Shadow steps 2 to 4 (each in its own module) ───────────── */
+export { getInsiderOverview, searchInsider } from './insider-store';
+export { getFundamentalsTable, getFundamentalsHistory } from './fundamentals-store';
+export { getExecCompTable, getExecCompHistory } from './exec-comp-store';
+export { getEtfFunds, getEtfFund, getEtfHolders, getEtfOverlap } from './etf-store';

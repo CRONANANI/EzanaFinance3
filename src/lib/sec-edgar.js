@@ -44,6 +44,11 @@ async function secFetch(url) {
   return res.json();
 }
 
+/** JSON from any SEC host (data.sec.gov XBRL APIs, sec.gov files), throttled. */
+export function secFetchJson(url) {
+  return secFetch(url);
+}
+
 /** Fetch a raw text document (e.g. a 13F INFORMATION TABLE XML exhibit). */
 export async function secFetchText(url) {
   await throttle();

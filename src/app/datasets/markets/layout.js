@@ -1,7 +1,7 @@
 export const metadata = {
-  title: 'Markets & equities data | Ezana',
+  title: 'Company fundamentals | Ezana',
   description:
-    'Top movers, sector performance and index-level data for US equities, refreshed through the trading day. The market context the congressional, lobbying and contract datasets are read against.',
+    'Reported revenue, earnings, cash flow and balance sheets for US-listed companies, from SEC EDGAR XBRL filings.',
 };
 
 export default function Layout({ children }) {

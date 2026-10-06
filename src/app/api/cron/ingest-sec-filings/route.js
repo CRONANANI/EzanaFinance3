@@ -19,7 +19,7 @@ import {
  * throttle). Families are fetched SEQUENTIALLY so the throttle holds.
  *
  * Auth: CRON_SECRET bearer (or ?key=).
- *   GET /api/cron/ingest-sec-filings?days=3[&pages=5]
+ *   GET /api/cron/ingest-sec-filings?days=3[&pages=5][&families=insider]
  *
  * Schedule 13D/13G: since the SEC's structured-data rules (Dec 2024) these are
  * filed as SCHEDULE 13D / SCHEDULE 13G (+ /A); older filings used SC 13D /
@@ -51,7 +51,7 @@ const ACTIVIST_FORMS = [
 ].join(',');
 
 const FORM_FAMILIES = [
-  { family: 'insider', forms: '4' },
+  { family: 'insider', forms: '4,4/A' },
   { family: 'institutional', forms: '13F-HR,13F-HR/A' },
   { family: 'activist', forms: ACTIVIST_FORMS },
 ];
@@ -255,8 +255,17 @@ export async function GET(request) {
     });
   }
 
+  // ?families=insider limits a run to some families (the hourly insider run).
+  const only = (searchParams.get('families') || '')
+    .split(',')
+    .map((f) => f.trim())
+    .filter(Boolean);
+  const families = only.length
+    ? FORM_FAMILIES.filter((f) => only.includes(f.family))
+    : FORM_FAMILIES;
+
   // Sequential per family so the throttle in secFetch holds.
-  for (const { family, forms } of FORM_FAMILIES) {
+  for (const { family, forms } of families) {
     // eslint-disable-next-line no-await-in-loop
     const rows = await fetchFamily({ family, forms, startdt, enddt, pages, cikTicker, errors });
     // eslint-disable-next-line no-await-in-loop

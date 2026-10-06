@@ -5,7 +5,8 @@ import { createFigiClient, CUSIP_RE } from '@/lib/openfigi';
 
 /**
  * Hourly CUSIP to ticker mapping via OpenFIGI into sec_cusip_map, then
- * apply_cusip_tickers() fills tickers on 13F holdings, whale moves and
+ * apply_cusip_tickers() and apply_cusip_tickers_etf() fill tickers on 13F
+ * holdings, ETF holdings (Form N-PORT), whale moves and
  * Schedule 13D/13G stakes.
  *
  * Needs a lookup: CUSIPs on 13F rows without a ticker and on activist stakes,
@@ -69,6 +70,25 @@ async function candidateCusips(admin) {
   for (const r of act || []) {
     const c = norm(r.subject_cusip);
     if (CUSIP_RE.test(c)) set.add(c);
+  }
+  // ETF holdings (Form N-PORT) without a ticker.
+  for (let from = 0; from < 200000; from += PAGE) {
+    // eslint-disable-next-line no-await-in-loop
+    const { data, error } = await admin
+      .from('sec_etf_holdings')
+      .select('cusip')
+      .is('ticker', null)
+      .not('cusip', 'is', null)
+      .order('series_id')
+      .order('report_date')
+      .order('line_no')
+      .range(from, from + PAGE - 1);
+    if (error) throw new Error(`etf holdings: ${error.message}`);
+    for (const r of data || []) {
+      const c = norm(r.cusip);
+      if (CUSIP_RE.test(c)) set.add(c);
+    }
+    if (!data || data.length < PAGE) break;
   }
   return [...set];
 }
@@ -146,6 +166,9 @@ export async function GET(request) {
   const { data: applyData, error: applyErr } = await admin.rpc('apply_cusip_tickers');
   if (applyErr) errors.push(`apply_cusip_tickers: ${applyErr.message}`);
   else applied = applyData;
+  const { data: etfApplied, error: etfErr } = await admin.rpc('apply_cusip_tickers_etf');
+  if (etfErr) errors.push(`apply_cusip_tickers_etf: ${etfErr.message}`);
+  else if (applied) applied = { ...applied, etf_holdings: etfApplied };
 
   const wrote = mapped > 0 || (applied && Object.values(applied).some((n) => Number(n) > 0));
   if (wrote) revalidateTag('titans');
