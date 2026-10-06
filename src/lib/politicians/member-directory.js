@@ -1,17 +1,16 @@
 /**
- * Member directory — attaches PARTY (and authoritative chamber/state) to a
- * canonical trade, since FMP's trade rows don't reliably carry party.
+ * Member directory: attaches party (and authoritative chamber/state) to a
+ * canonical trade, and supplies every current member to the FEC and committee
+ * joins.
  *
- * Source of truth: the public-domain unitedstates/congress-legislators dataset
- * (`legislators-current.json` — bioguide, party, chamber, state). The full set
- * should be VENDORED (a trimmed name/bioguide/party/chamber/state copy) or
- * refreshed via cron; it changes rarely. It is not vendored here yet (the build
- * sandbox can't fetch it), so this ships a seed of frequently-surfaced members
- * plus a robust fallback chain — unknown members render a NEUTRAL party (never
- * guessed). Drop the vendored JSON in and spread it into DIRECTORY to complete.
+ * Source of truth: the public-domain unitedstates/congress-legislators dataset,
+ * vendored as `legislators-current.json` (bioguide, name, party, chamber,
+ * state, district, FEC IDs) and refreshed by scripts/vendor-legislators.mjs.
+ * The small DIRECTORY seed below only covers members missing from that file.
+ * Unknown members render a neutral party, never a guessed one.
  *
- * Enrichment priority: directory-by-bioguideId → directory-by-name → FMP
- * partyHint (real when present) → null (neutral "?").
+ * Enrichment priority: vendored-by-bioguideId, seed, name match, FMP partyHint
+ * (real when present), then null (neutral "?").
  */
 
 import LEGISLATORS from './legislators-current.json';
@@ -33,71 +32,48 @@ export function normalizeParty(p) {
 }
 
 /**
- * Seed directory (keyed by BioGuideID). Trimmed to the fields the UI needs.
- * TODO(vendored data): replace/augment with the full legislators-current trim.
+ * Seed directory (keyed by BioGuideID) for members MISSING from the vendored
+ * legislators file only. The vendored record always wins: it carries the
+ * `id.fec` list and the authoritative name, chamber, state and party.
  *
- * `fecIds` mirrors the `id.fec` array in the unitedstates/congress-legislators
- * dataset (a member can have several FEC candidate IDs across cycles/offices).
- * It powers the campaign-finance (OpenFEC) join. Only a couple of well-known,
- * stable IDs are seeded here as worked examples; the rest resolve at runtime via
- * the cached `/candidates/search/` name+state fallback (see resolveFecCandidateId
- * in src/lib/fec/join.js). Dropping in the vendored JSON with `id.fec` populates
- * the full set and makes the direct join exhaustive.
+ * Oct 2026 audit: all six former seed entries were already in the vendored
+ * file, and two were wrong (H001077 is Clay Higgins, House LA-3, not John
+ * Hickenlooper, who is H000273; Tuberville's FEC ID is S0AL00230, not
+ * S0AL00214). They were removed. Add an entry here only for someone the
+ * vendored file does not know.
  */
-export const DIRECTORY = {
-  T000278: {
-    fullName: 'Tommy Tuberville',
-    party: 'R',
-    chamber: 'Senate',
-    state: 'AL',
-    fecIds: ['S0AL00214'],
-  },
-  P000197: {
-    fullName: 'Nancy Pelosi',
-    party: 'D',
-    chamber: 'House',
-    state: 'CA',
-    fecIds: ['H8CA05035'],
-  },
-  C001120: { fullName: 'Dan Crenshaw', party: 'R', chamber: 'House', state: 'TX', fecIds: [] },
-  G000583: { fullName: 'Josh Gottheimer', party: 'D', chamber: 'House', state: 'NJ', fecIds: [] },
-  H001077: {
-    fullName: 'John Hickenlooper',
-    party: 'D',
-    chamber: 'Senate',
-    state: 'CO',
-    fecIds: [],
-  },
-  C001047: {
-    fullName: 'Shelley Moore Capito',
-    party: 'R',
-    chamber: 'Senate',
-    state: 'WV',
-    fecIds: [],
-  },
-};
+export const DIRECTORY = {};
+
+function vendoredMember(bioguideId) {
+  return (bioguideId && V_BY_ID.get(bioguideId)) || null;
+}
+
+function seedMember(bioguideId) {
+  const m = bioguideId && DIRECTORY[bioguideId];
+  return m ? { bioguideId, district: null, fecIds: [], ...m } : null;
+}
 
 /**
- * FEC candidate IDs known for a member from the vendored directory (may be
- * empty — callers then fall back to the cached name+state candidate search).
+ * FEC candidate IDs filed by a member: the vendored `fecIds` when the member is
+ * in the vendored file, else the seed's. May be empty; callers then fall back
+ * to the cached name+state candidate search.
  * @returns {string[]}
  */
 export function fecIdsForMember(bioguideId) {
-  const m = bioguideId && DIRECTORY[bioguideId];
-  if (Array.isArray(m?.fecIds) && m.fecIds.length) return m.fecIds;
-  const v = bioguideId && V_BY_ID.get(bioguideId);
-  return Array.isArray(v?.fecIds) ? v.fecIds : [];
+  const m = vendoredMember(bioguideId) || seedMember(bioguideId);
+  return Array.isArray(m?.fecIds) ? m.fecIds : [];
 }
 
-/** Directory lookup by bioguideId → { fullName, party, chamber, state, fecIds }. */
+/** Member by bioguideId -> { bioguideId, fullName, party, chamber, state, district, fecIds }. */
 export function memberByBioguide(bioguideId) {
-  const m = bioguideId && DIRECTORY[bioguideId];
-  return m ? { bioguideId, ...m } : null;
+  return vendoredMember(bioguideId) || seedMember(bioguideId);
 }
 
-/** All seeded members (used to scope cross-member FEC aggregates to Congress). */
-export function allDirectoryMembers() {
-  return Object.entries(DIRECTORY).map(([bioguideId, m]) => ({ bioguideId, ...m }));
+/** Every current member of Congress (vendored set, plus any seed-only entries). */
+export function allCurrentMembers() {
+  const out = [...V_BY_ID.values()];
+  for (const id of Object.keys(DIRECTORY)) if (!V_BY_ID.has(id)) out.push(seedMember(id));
+  return out;
 }
 
 // Secondary index by normalized name (built from the seed above).
@@ -128,7 +104,8 @@ for (const l of LEGISLATORS) {
     party: l.party,
     chamber: l.chamber,
     state: l.state,
-    fecIds: l.fecIds,
+    district: l.district ?? null,
+    fecIds: Array.isArray(l.fecIds) ? l.fecIds : [],
   };
   V_BY_ID.set(l.bioguide, entry);
   for (const n of [l.full, `${l.first} ${l.last}`, l.nick ? `${l.nick} ${l.last}` : null]) {
@@ -157,7 +134,10 @@ export function enrichTrade(trade) {
   let dir = null;
   let partySource = null;
 
-  if (trade.bioguideId && DIRECTORY[trade.bioguideId]) {
+  if (trade.bioguideId && V_BY_ID.has(trade.bioguideId)) {
+    dir = V_BY_ID.get(trade.bioguideId);
+    partySource = 'directory';
+  } else if (trade.bioguideId && DIRECTORY[trade.bioguideId]) {
     dir = { bioguideId: trade.bioguideId, ...DIRECTORY[trade.bioguideId] };
     partySource = 'directory';
   } else if (trade.name && BY_NAME[normName(trade.name)]) {
@@ -187,5 +167,5 @@ export function enrichTrade(trade) {
   };
 }
 
-/** Count of members in the directory (for a "Members tracked" reference). */
-export const DIRECTORY_SIZE = Object.keys(DIRECTORY).length;
+/** Count of current members known (for a "Members tracked" reference). */
+export const DIRECTORY_SIZE = allCurrentMembers().length;

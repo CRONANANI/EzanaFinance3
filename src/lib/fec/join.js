@@ -2,7 +2,8 @@
  * Bioguide ↔ FEC candidate-id join — SERVER ONLY.
  *
  * Resolution order for a Congress member's FEC candidate id(s):
- *   1. Vendored directory `id.fec` (member-directory.js `fecIds`) — exact, free.
+ *   1. Vendored directory `id.fec` (member-directory.js `fecIds`), narrowed by
+ *      pickFecCandidateId to the ID for the seat the member holds now.
  *   2. Cached `/candidates/search/` by name + state + office — one API call the
  *      first time, then reused from the fec_candidate_totals cache keyed by
  *      bioguide. Never hammered per request.
@@ -14,6 +15,9 @@
  */
 import { memberByBioguide, fecIdsForMember } from '@/lib/politicians/member-directory';
 import { searchCandidates } from './client';
+import { pickFecCandidateId } from './pick-id';
+
+export { pickFecCandidateId };
 
 const OFFICE_FROM_CHAMBER = { House: 'H', Senate: 'S' };
 
@@ -24,12 +28,11 @@ const OFFICE_FROM_CHAMBER = { House: 'H', Senate: 'S' };
  * @returns {Promise<{candidateId:string|null, source:'directory'|'search'|null, all:string[]}>}
  */
 export async function resolveFecCandidateId(bioguideId, { cycle, budget } = {}) {
-  const seeded = fecIdsForMember(bioguideId);
-  if (seeded.length) {
-    return { candidateId: seeded[0], source: 'directory', all: seeded };
-  }
-
   const member = memberByBioguide(bioguideId);
+  const seeded = fecIdsForMember(bioguideId);
+  const picked = pickFecCandidateId(member, seeded);
+  if (picked) return { candidateId: picked, source: 'directory', all: seeded };
+
   if (!member?.fullName) return { candidateId: null, source: null, all: [] };
 
   const office = OFFICE_FROM_CHAMBER[member.chamber];

@@ -60,6 +60,7 @@ export async function GET(request) {
             pac: Number(data.other_political_committee_contributions) || 0,
             debts: Number(data.debts_owed_by_committee) || 0,
             hasRaisedFunds: !!data.has_raised_funds,
+            coverageStart: data.coverage_start_date,
             coverageEnd: data.coverage_end_date,
             sizeBuckets: data.size_buckets || [],
             topStates: data.top_states || [],

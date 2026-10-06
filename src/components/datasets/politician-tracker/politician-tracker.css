@@ -1512,3 +1512,33 @@
     display: none;
   }
 }
+
+/* Member panel: committee chips into /datasets/committees. */
+.ptk-cmte-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ptk-cmte-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  font-size: var(--type-caption-size);
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+.ptk-cmte-chip:hover {
+  border-color: color-mix(in srgb, var(--emerald) 40%, var(--border-primary));
+  color: var(--emerald);
+}
+.ptk-cmte-chip:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.ptk-cmte-title {
+  color: var(--text-faint);
+}

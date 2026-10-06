@@ -170,8 +170,12 @@
       "schedule": "0 5 * * *"
     },
     {
-      "path": "/api/cron/ingest-fec?cycle=2026&limit=40",
-      "schedule": "35 */6 * * *"
+      "path": "/api/cron/ingest-fec?cycle=2026",
+      "schedule": "35 * * * *"
+    },
+    {
+      "path": "/api/cron/ingest-committees",
+      "schedule": "20 6 * * *"
     },
     {
       "path": "/api/cron/ingest-congress",

@@ -12,6 +12,7 @@
  * is { state: 'loading' | 'ready' | 'failed', data }.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { Bar, BarChart, ResponsiveContainer, XAxis } from 'recharts';
 import { CHART } from '@/lib/chart-theme';
 import {
@@ -25,6 +26,42 @@ import Headshot, { AVATAR_SIZE, ChamberChip, PartyTag } from './Headshot';
 import PortfolioCharts from './PortfolioCharts';
 
 const TRADES_DEFAULT = 10;
+
+/* The member's committees as chips into the Committee Assignments page.
+   Hidden while loading, on failure and when the member holds no seat. */
+function CommitteeChips({ bioguideId }) {
+  const [list, setList] = useState([]);
+  useEffect(() => {
+    setList([]);
+    if (!bioguideId) return undefined;
+    const ctrl = new AbortController();
+    fetch(`/api/committees/member/${encodeURIComponent(bioguideId)}`, { signal: ctrl.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setList(Array.isArray(d?.committees) ? d.committees : []))
+      .catch(() => {});
+    return () => ctrl.abort();
+  }, [bioguideId]);
+  if (!list.length) return null;
+  return (
+    <section className="dsc-p-block">
+      <div className="dsc-p-block-head">
+        <span className="dsc-label">Committees</span>
+      </div>
+      <div className="ptk-cmte-chips">
+        {list.map((c) => (
+          <Link
+            key={c.thomasId}
+            className="ptk-cmte-chip"
+            href={`/datasets/committees?committee=${c.thomasId}`}
+          >
+            {c.shortName || c.name}
+            {c.title ? <span className="ptk-cmte-title"> · {c.title}</span> : null}
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 /* A row with no ticker (a bond, a Treasury, a private holding) shows the
    start of its asset name instead of a dot. */
@@ -168,6 +205,8 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
           <Stat label="Sells" value={member.sells} />
           <Stat label="Volume, midpoints" value={usdShort(member.volume)} />
         </div>
+
+        <CommitteeChips bioguideId={member.bioguideId} />
 
         <PortfolioCharts state={portfolio.state} data={portfolio.data} />
 

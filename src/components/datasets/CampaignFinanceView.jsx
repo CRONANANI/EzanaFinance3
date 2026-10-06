@@ -41,6 +41,19 @@ function fmtUSD(v) {
 }
 const fmtMoney = fmtUSD;
 
+/* "2025-01-01", "2026-06-30" -> "Jan 2025 to Jun 2026" (UTC, so a date never
+   slips a month). Null when either end is unknown. */
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function fmtMonth(iso) {
+  const d = iso ? new Date(`${String(iso).slice(0, 10)}T00:00:00Z`) : null;
+  return d && !Number.isNaN(d.getTime()) ? `${MON[d.getUTCMonth()]} ${d.getUTCFullYear()}` : null;
+}
+function fmtPeriod(start, end) {
+  const a = fmtMonth(start);
+  const b = fmtMonth(end);
+  return a && b ? `${a} to ${b}` : null;
+}
+
 function initials(name) {
   return (name || '')
     .split(/\s+/)
@@ -355,6 +368,10 @@ function TopRaisersCard({ cycle, onSelectMember }) {
         />
         PAC (other committee) · Source: FEC · api.open.fec.gov · cycle {cycle}
       </p>
+      <p className="pcf-modal-sub">
+        Totals cover the two-year {cycle} cycle through each member&apos;s latest report, so a
+        senator not on this ballot shows only this cycle&apos;s activity.
+      </p>
     </section>
   );
 }
@@ -562,6 +579,14 @@ export function MemberCampaignFinance({ member: m, cycle = 2026 }) {
         </div>
       ) : (
         <>
+          {fmtPeriod(finance.coverageStart, finance.coverageEnd) && (
+            <div className="pcf-modal-sub">
+              Two-year cycle, filed through{' '}
+              <span className="pcf-mono">
+                {fmtPeriod(finance.coverageStart, finance.coverageEnd)}
+              </span>
+            </div>
+          )}
           <div className="pcf-modal-grid">
             <div className="pcf-modal-stat">
               <div className="pcf-modal-stat-label">Raised</div>

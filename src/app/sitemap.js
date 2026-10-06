@@ -30,6 +30,7 @@ const DATASET_PATHS = [
   '/datasets/government/lobbying',
   '/datasets/political',
   '/datasets/campaignfinancerecords',
+  '/datasets/committees',
   '/datasets/prediction-markets',
   '/datasets/markets',
   '/datasets/global',

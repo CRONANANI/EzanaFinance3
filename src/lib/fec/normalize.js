@@ -10,15 +10,21 @@ const num = (v) => {
   return Number.isFinite(n) ? n : 0;
 };
 
-/** CandidateTotal row → normalized member-finance core. */
+/**
+ * Candidate totals row → normalized member-finance core. Two OpenFEC shapes
+ * reach here: /candidate/{id}/totals/ (CandidateTotalsDetail: cash and debts
+ * are last_cash_on_hand_end_period / last_debts_owed_by_committee) and
+ * /candidates/totals/ (CandidateTotal: cash_on_hand_end_period /
+ * debts_owed_by_committee). Read whichever is present.
+ */
 export function normalizeCandidateTotals(row = {}) {
   return {
     raised: num(row.receipts),
     spent: num(row.disbursements),
-    cashOnHand: num(row.cash_on_hand_end_period),
+    cashOnHand: num(row.last_cash_on_hand_end_period ?? row.cash_on_hand_end_period),
     individualItemized: num(row.individual_itemized_contributions),
     pac: num(row.other_political_committee_contributions),
-    debts: num(row.debts_owed_by_committee),
+    debts: num(row.last_debts_owed_by_committee ?? row.debts_owed_by_committee),
     hasRaisedFunds: !!row.has_raised_funds,
     coverageStart: row.coverage_start_date || null,
     coverageEnd: row.coverage_end_date || null,

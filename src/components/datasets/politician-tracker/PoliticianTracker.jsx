@@ -424,8 +424,10 @@ export default function PoliticianTracker({
 
   const openMember = useMemo(() => {
     if (!openSlug) return null;
-    const m =
-      filtered.find((x) => x.slug === openSlug) || members.find((x) => x.slug === openSlug) || null;
+    /* ?member= takes a slug, or a bioguide ID (links from Committee
+       Assignments); slugs are lowercase, so the two never collide. */
+    const hit = (x) => x.slug === openSlug || (x.bioguideId && x.bioguideId === openSlug);
+    const m = filtered.find(hit) || members.find(hit) || null;
     const extra = m?.bioguideId ? memberTrades[m.bioguideId] : null;
     if (!m || !extra?.length) return m;
     const built = buildMembers(extra)[0];

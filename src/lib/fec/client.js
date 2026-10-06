@@ -61,12 +61,15 @@ export async function fecGet(path, params = {}, opts = {}) {
   if (!key) throw new Error('fec: missing campaigndatagov key');
   const { budget, retries = 2 } = opts;
 
-  const clean = {};
+  /* Array values repeat the parameter (candidate_id=A&candidate_id=B), which
+     is how OpenFEC list arguments are read. */
+  const qs = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
     if (v === undefined || v === null || v === '') continue;
-    clean[k] = v;
+    if (Array.isArray(v)) v.forEach((item) => qs.append(k, item));
+    else qs.append(k, v);
   }
-  const qs = new URLSearchParams({ ...clean, api_key: key });
+  qs.append('api_key', key);
   const url = `${BASE}/${path.replace(/^\//, '')}/?${qs.toString()}`;
 
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -110,9 +113,29 @@ export function searchCandidates({ name, state, office, cycle, page = 1, perPage
   );
 }
 
-/** A candidate's financial totals for a cycle (CandidateTotal schema). */
+/**
+ * A candidate's financial totals for one two-year cycle (CandidateTotalsDetail).
+ * election_full=false: OpenFEC defaults to the full election period, which for
+ * a senator not on this cycle's ballot returns no row at all.
+ */
 export function getCandidateTotals(candidateId, { cycle } = {}, opts) {
-  return fecGet(`candidate/${candidateId}/totals`, { cycle, per_page: 20 }, opts);
+  return fecGet(
+    `candidate/${candidateId}/totals`,
+    { cycle, election_full: false, per_page: 20 },
+    opts,
+  );
+}
+
+/**
+ * Two-year totals for many candidates in one call (CandidateTotal via
+ * /candidates/totals/, which reads candidate_id as a repeated list argument).
+ */
+export function getCandidatesTotalsByIds(candidateIds, { cycle } = {}, opts) {
+  return fecGet(
+    'candidates/totals',
+    { candidate_id: candidateIds, cycle, election_full: false, per_page: 100 },
+    opts,
+  );
 }
 
 export function getCandidate(candidateId, opts) {
