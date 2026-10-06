@@ -514,3 +514,215 @@
 .eqb-row--link td:first-child {
   color: var(--eqb-pos);
 }
+
+/* Result actions: Add to watchlist, Save report. */
+.eqb-results-acts {
+  display: inline-flex;
+  gap: 6px;
+  margin-left: auto;
+}
+.eqb-results-acts + .eqb-results-x {
+  margin-left: 4px;
+}
+.eqb-ract {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--eqb-border);
+  border-radius: var(--radius-pill, 9999px);
+  background: var(--bg-primary);
+  color: var(--eqb-ink);
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.eqb-ract:hover:not(:disabled) {
+  border-color: var(--emerald);
+  color: var(--eqb-pos);
+}
+.eqb-ract:disabled {
+  cursor: default;
+  color: var(--eqb-pos);
+}
+.eqb-lock {
+  font-size: 9px;
+  color: var(--eqb-faint);
+}
+
+/* Saved reports: expands in place like the editor, same rule and radius. */
+.eqb-saved {
+  margin-top: 8px;
+  width: 100%;
+  max-width: var(--eqb-w);
+  padding: 6px 12px;
+  border: 1px solid var(--eqb-rule);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+}
+.eqb-saved-empty {
+  margin: 6px 0;
+  font-size: 12.5px;
+  color: var(--eqb-muted);
+}
+.eqb-saved-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.eqb-saved-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--eqb-rule);
+}
+.eqb-saved-row:last-child {
+  border-bottom: 0;
+}
+.eqb-saved-open {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: var(--eqb-ink);
+  cursor: pointer;
+}
+.eqb-saved-title {
+  max-width: 100%;
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.eqb-saved-open:hover .eqb-saved-title {
+  color: var(--eqb-pos);
+}
+.eqb-saved-meta {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--eqb-faint);
+}
+.eqb-saved-del {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 99px;
+  background: none;
+  color: var(--eqb-muted);
+  cursor: pointer;
+}
+.eqb-saved-del:hover {
+  color: var(--danger);
+}
+
+/* Account gate: expands in place on the same white ground. */
+.eqb-gate {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px 14px;
+  margin-top: 10px;
+  padding: 14px 40px 14px 14px;
+  border: 1px solid color-mix(in srgb, var(--emerald) 35%, transparent);
+  border-radius: var(--radius-lg);
+  background: var(--eqb-wash);
+}
+.eqb-gate:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.eqb-gate-ic {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 99px;
+  background: var(--bg-primary);
+  color: var(--eqb-pos);
+}
+.eqb-gate-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--eqb-ink);
+}
+.eqb-gate-sub {
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--eqb-muted);
+}
+.eqb-gate-actions {
+  display: flex;
+  gap: 8px;
+}
+.eqb-gate-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--eqb-border);
+  border-radius: var(--radius-pill, 9999px);
+  background: var(--bg-primary);
+  color: var(--eqb-ink);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+/* --emerald-dark, not --emerald: white on the brand emerald is about 3.8:1;
+   on the dark step it clears 4.5:1 in both themes. */
+.eqb-gate-btn--primary {
+  border-color: var(--emerald-dark);
+  background: var(--emerald-dark);
+  color: var(--color-on-primary);
+}
+.eqb-gate-x {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 99px;
+  background: none;
+  color: var(--eqb-muted);
+  cursor: pointer;
+}
+@media (max-width: 760px) {
+  .eqb-gate {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .eqb-gate-actions {
+    grid-column: 1 / -1;
+  }
+  .eqb-gate-btn {
+    flex: 1 1 0;
+    justify-content: center;
+    min-height: 44px;
+  }
+  .eqb-results-acts {
+    flex-wrap: wrap;
+  }
+  .eqb-saved-open {
+    min-height: 44px;
+  }
+  .eqb-saved-del {
+    width: 44px;
+    height: 44px;
+  }
+}

@@ -12,8 +12,15 @@
  *
  * It never becomes a dark panel. Edit, results and every message expand in
  * place on the same white ground, so the data stays the focal point.
+ *
+ * Access: generating, running and viewing results are open to everyone.
+ * CSV / JSON export, adding result tickers to the watchlist, saving a report
+ * and the Saved list need an account; a guest who tries one gets an in-place
+ * gate pointing to the waitlist or sign in. The export route enforces its
+ * own 401; the saved-reports routes are session-only.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useAuth } from '@/components/AuthProvider';
 import { columnAlign, formatCell } from '@/lib/ezanaql/grid-format';
 import './ezanaql-bar.css';
 
@@ -44,6 +51,74 @@ function QueryTokens({ code }) {
     ) : (
       p
     );
+  });
+}
+
+const GATE_WHAT = {
+  csv: 'export this report as CSV',
+  json: 'export this report as JSON',
+  watchlist: 'add these tickers to your watchlist',
+  save: 'save this report to your research',
+};
+
+/* Explains why an account action did not happen, in place under the bar. */
+function AccountGate({ action, onClose }) {
+  const ref = useRef(null);
+  const [here, setHere] = useState('/datasets');
+  useEffect(() => {
+    setHere(`${window.location.pathname}${window.location.search}`);
+    ref.current?.focus();
+    const onKey = (e) => e.key === 'Escape' && onClose();
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+  const r = encodeURIComponent(here);
+  return (
+    <div
+      className="eqb-gate"
+      role="dialog"
+      aria-labelledby="eqb-gate-title"
+      tabIndex={-1}
+      ref={ref}
+    >
+      <span className="eqb-gate-ic" aria-hidden="true">
+        <i className="bi bi-lock" />
+      </span>
+      <div className="eqb-gate-text">
+        <p id="eqb-gate-title" className="eqb-gate-title">
+          Create an account to {GATE_WHAT[action]}
+        </p>
+        <p className="eqb-gate-sub">
+          Running reports stays free without one. Ezana is opening access in waves: join the
+          waitlist and we will email you an invite.
+        </p>
+      </div>
+      <div className="eqb-gate-actions">
+        <a className="eqb-gate-btn eqb-gate-btn--primary" href={`/auth/signup?redirect=${r}`}>
+          Join the waitlist
+        </a>
+        <a className="eqb-gate-btn" href={`/auth/signin?redirect=${r}`}>
+          Sign in
+        </a>
+      </div>
+      <button type="button" className="eqb-gate-x" onClick={onClose} aria-label="Dismiss">
+        <i className="bi bi-x-lg" aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
+function relativeDate(iso) {
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t)) return '';
+  const days = Math.floor((Date.now() - t) / 86400000);
+  if (days <= 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  if (days < 30) return `${days} days ago`;
+  return new Date(t).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   });
 }
 
@@ -81,6 +156,19 @@ export default function EzanaQLBar({
   const [mobile, setMobile] = useState(false);
   const promptRef = useRef(null);
   const editorRef = useRef(null);
+  const { isAuthenticated, loading: authLoading } = useAuth() || {};
+  const [gate, setGate] = useState(null); // null | 'csv' | 'json' | 'watchlist' | 'save'
+  const [saved, setSaved] = useState(null); // list once loaded
+  const [savedOpen, setSavedOpen] = useState(false);
+  const [savedState, setSavedState] = useState('idle'); // idle | busy | error
+  const [saveState, setSaveState] = useState('idle'); // idle | busy | done | error
+  const [watchState, setWatchState] = useState('idle'); // idle | busy | done | error
+  /* An account action clicked before the session has resolved waits here,
+     then runs (or opens the gate) once we know who this is. */
+  const pendingRef = useRef(null);
+  const actionsRef = useRef({});
+  /* Lock icons only once we know the visitor is a guest. */
+  const isGuest = !authLoading && !isAuthenticated;
 
   useEffect(() => {
     const mq = window.matchMedia?.(MOBILE_QUERY);
@@ -147,43 +235,80 @@ export default function EzanaQLBar({
     }
   }, [prompt, datasetScope, busy, post]);
 
-  const run = useCallback(async () => {
-    if (!code.trim() || busy) return;
-    setBusy('run');
-    setError(null);
-    setNote(null);
-    setResult(null);
-    try {
-      const res = await post('/api/ezanaql/run', { query: code, format: 'table' });
-      const data = await res.json().catch(() => ({}));
-      if (res.status === 429) {
-        setError('Too many queries from this connection just now; try again in a minute.');
-        return;
+  /* Generate, Run and viewing results are open to everyone. Exports, the
+     watchlist and saved reports belong to an account. */
+  const needsAccount = useCallback(
+    (action) => {
+      if (authLoading) {
+        pendingRef.current = action;
+        return true;
       }
-      if (!data.ok) {
-        setError(data.error || 'That query did not run.');
-        return;
+      if (isAuthenticated) return false;
+      setGate(action);
+      return true;
+    },
+    [isAuthenticated, authLoading],
+  );
+
+  useEffect(() => {
+    if (isAuthenticated) setGate(null);
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (authLoading || !pendingRef.current) return;
+    const action = pendingRef.current;
+    pendingRef.current = null;
+    actionsRef.current[action]?.();
+  }, [authLoading]);
+
+  const runQuery = useCallback(
+    async (q = code) => {
+      if (!q.trim() || busy) return;
+      setBusy('run');
+      setError(null);
+      setNote(null);
+      setResult(null);
+      setSaveState('idle');
+      setWatchState('idle');
+      try {
+        const res = await post('/api/ezanaql/run', { query: q, format: 'table' });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 429) {
+          setError('Too many queries from this connection just now; try again in a minute.');
+          return;
+        }
+        if (!data.ok) {
+          setError(data.error || 'That query did not run.');
+          return;
+        }
+        /* Engine notes (a row cap hit, a JOIN that multiplied a sum) are part
+           of the answer: shown with it, never swallowed. */
+        if (Array.isArray(data.notes) && data.notes.length) setNote(data.notes.join(' '));
+        if (typeof onResult === 'function') onResult(data.result);
+        else setResult(data.result);
+      } catch {
+        setError('Could not reach the query engine.');
+      } finally {
+        setBusy(null);
       }
-      /* Engine notes (a row cap hit, a JOIN that multiplied a sum) are part
-         of the answer: shown with it, never swallowed. */
-      if (Array.isArray(data.notes) && data.notes.length) setNote(data.notes.join(' '));
-      if (typeof onResult === 'function') onResult(data.result);
-      else setResult(data.result);
-    } catch {
-      setError('Could not reach the query engine.');
-    } finally {
-      setBusy(null);
-    }
-  }, [code, busy, post, onResult]);
+    },
+    [code, busy, post, onResult],
+  );
+  const run = useCallback(() => runQuery(), [runQuery]);
 
   const exportAs = useCallback(
     async (format) => {
       if (!code.trim() || busy) return;
+      if (needsAccount(format)) return;
       setBusy(format);
       setError(null);
       setNote(null);
       try {
         const res = await post('/api/ezanaql/export', { query: code, format });
+        if (res.status === 401) {
+          setGate(format);
+          return;
+        }
         if (res.status === 429) {
           setError('Too many exports from this connection just now; try again in a minute.');
           return;
@@ -210,7 +335,7 @@ export default function EzanaQLBar({
         setBusy(null);
       }
     },
-    [code, busy, post],
+    [code, busy, post, needsAccount],
   );
 
   const onEditorKey = (e) => {
@@ -232,6 +357,123 @@ export default function EzanaQLBar({
   const split = layout === 'split' && !!result;
   const clickable = typeof onRowClick === 'function';
 
+  /* Unique listed tickers in the result, capped so one click never floods a list. */
+  const tickers = useMemo(() => {
+    const seen = new Set();
+    for (const r of result?.rows || []) {
+      const raw = r.ticker ?? r.symbol;
+      const t = typeof raw === 'string' ? raw.trim().toUpperCase() : '';
+      if (t && /^[A-Z.-]{1,10}$/.test(t)) seen.add(t);
+      if (seen.size >= 25) break;
+    }
+    return [...seen];
+  }, [result]);
+
+  const addTickersToWatchlist = async () => {
+    if (!tickers.length || needsAccount('watchlist')) return;
+    setWatchState('busy');
+    try {
+      const listsRes = await fetch('/api/watchlists'); // GET seeds the default list
+      if (listsRes.status === 401) {
+        setGate('watchlist');
+        setWatchState('idle');
+        return;
+      }
+      if (!listsRes.ok) throw new Error(String(listsRes.status));
+      const { watchlists } = await listsRes.json();
+      const listId = watchlists?.[0]?.id;
+      if (!listId) throw new Error('no list');
+      const results = await Promise.all(
+        tickers.map((ticker) =>
+          fetch(`/api/watchlists/${listId}/items`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'stock', ticker }),
+          }),
+        ),
+      );
+      /* 409 is "already on the list", which is the outcome we wanted. */
+      if (results.some((r) => !r.ok && r.status !== 409)) throw new Error('partial');
+      setWatchState('done');
+    } catch {
+      setWatchState('error');
+      setError('Some tickers could not be added to your watchlist. Try again.');
+    }
+  };
+
+  const saveReport = async () => {
+    if (!code.trim() || needsAccount('save')) return;
+    setSaveState('busy');
+    try {
+      const res = await post('/api/ezanaql/saved', {
+        title: (prompt.trim() || code.trim()).slice(0, 120),
+        prompt: prompt.trim() || null,
+        query: code,
+        datasetScope,
+        rowCount: rows.length,
+      });
+      if (res.status === 401) {
+        setGate('save');
+        setSaveState('idle');
+        return;
+      }
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok || !d.ok) throw new Error(d.error || 'save failed');
+      setSaveState('done');
+      setSaved((list) => (list ? [d.report, ...list] : list));
+    } catch (e) {
+      setSaveState('error');
+      setError(
+        e.message && e.message !== 'save failed' ? e.message : 'That report could not be saved.',
+      );
+    }
+  };
+
+  const toggleSaved = async () => {
+    const next = !savedOpen;
+    setSavedOpen(next);
+    if (!next || saved) return;
+    setSavedState('busy');
+    try {
+      const res = await fetch('/api/ezanaql/saved');
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok || !d.ok) throw new Error('load failed');
+      setSaved(d.reports || []);
+      setSavedState('idle');
+    } catch {
+      setSavedState('error');
+    }
+  };
+
+  const openSaved = (report) => {
+    setDirty(true);
+    setCode(report.query);
+    setSavedOpen(false);
+    runQuery(report.query);
+  };
+
+  const deleteSaved = async (id) => {
+    try {
+      const res = await fetch(`/api/ezanaql/saved/${id}`, { method: 'DELETE' });
+      if (!res.ok && res.status !== 404) throw new Error('delete failed');
+      setSaved((list) => (list ? list.filter((r) => r.id !== id) : list));
+    } catch {
+      setError('That saved report could not be deleted.');
+    }
+  };
+
+  /* Latest handlers for an action that waited on the session. */
+  actionsRef.current = {
+    csv: () => exportAs('csv'),
+    json: () => exportAs('json'),
+    watchlist: addTickersToWatchlist,
+    save: saveReport,
+  };
+
+  const closeGate = useCallback(() => setGate(null), []);
+
+  const lock = isGuest ? <i className="bi bi-lock-fill eqb-lock" aria-hidden="true" /> : null;
+
   const openRow = (r) => {
     if (!clickable || !rowClickable(r)) return;
     onRowClick(r, { window: result?.window || null, keys });
@@ -246,6 +488,42 @@ export default function EzanaQLBar({
         {clickable && rows.some(rowClickable) ? (
           <span className="eqb-results-hint">Click a company for its contracts and holders</span>
         ) : null}
+        <span className="eqb-results-acts">
+          {tickers.length ? (
+            <button
+              type="button"
+              className="eqb-ract"
+              onClick={addTickersToWatchlist}
+              disabled={watchState === 'busy' || watchState === 'done'}
+              title={isGuest ? 'Requires an account' : undefined}
+            >
+              <i
+                className={`bi ${watchState === 'done' ? 'bi-check2' : 'bi-bookmark-plus'}`}
+                aria-hidden="true"
+              />
+              {watchState === 'done'
+                ? `Added ${tickers.length}`
+                : watchState === 'busy'
+                  ? 'Adding'
+                  : `Add ${tickers.length} to watchlist`}
+              {lock}
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className="eqb-ract"
+            onClick={saveReport}
+            disabled={saveState === 'busy' || saveState === 'done'}
+            title={isGuest ? 'Requires an account' : undefined}
+          >
+            <i
+              className={`bi ${saveState === 'done' ? 'bi-check2' : 'bi-journal-plus'}`}
+              aria-hidden="true"
+            />
+            {saveState === 'done' ? 'Saved' : saveState === 'busy' ? 'Saving' : 'Save report'}
+            {lock}
+          </button>
+        </span>
         <button type="button" className="eqb-results-x" onClick={() => setResult(null)}>
           Hide
         </button>
@@ -328,21 +606,37 @@ export default function EzanaQLBar({
         className="eqb-act"
         onClick={() => exportAs('csv')}
         disabled={busy === 'csv'}
-        aria-label="Export CSV"
+        aria-label={isGuest ? 'Export CSV (requires an account)' : 'Export CSV'}
+        title={isGuest ? 'Requires an account' : undefined}
       >
         <i className="bi bi-filetype-csv" aria-hidden="true" />
         <span>CSV</span>
+        {lock}
       </button>
       <button
         type="button"
         className="eqb-act"
         onClick={() => exportAs('json')}
         disabled={busy === 'json'}
-        aria-label="Export JSON"
+        aria-label={isGuest ? 'Export JSON (requires an account)' : 'Export JSON'}
+        title={isGuest ? 'Requires an account' : undefined}
       >
         <i className="bi bi-filetype-json" aria-hidden="true" />
         <span>JSON</span>
+        {lock}
       </button>
+      {isAuthenticated ? (
+        <button
+          type="button"
+          className="eqb-act"
+          onClick={toggleSaved}
+          aria-expanded={savedOpen}
+          aria-label="Saved reports"
+        >
+          <i className="bi bi-journal-bookmark" aria-hidden="true" />
+          <span>Saved</span>
+        </button>
+      ) : null}
     </span>
   );
 
@@ -469,12 +763,49 @@ export default function EzanaQLBar({
           </div>
         ) : null}
 
+        {savedOpen && isAuthenticated ? (
+          <div className="eqb-saved" aria-label="Saved reports">
+            {savedState === 'busy' ? (
+              <p className="eqb-saved-empty">Loading saved reports</p>
+            ) : savedState === 'error' ? (
+              <p className="eqb-saved-empty">Saved reports could not be loaded.</p>
+            ) : !saved || !saved.length ? (
+              <p className="eqb-saved-empty">
+                No saved reports yet. Run a report and choose Save report.
+              </p>
+            ) : (
+              <ul className="eqb-saved-list">
+                {saved.map((r) => (
+                  <li key={r.id} className="eqb-saved-row">
+                    <button type="button" className="eqb-saved-open" onClick={() => openSaved(r)}>
+                      <span className="eqb-saved-title">{r.title}</span>
+                      <span className="eqb-saved-meta">
+                        {relativeDate(r.created_at)}
+                        {r.row_count != null ? ` · ${r.row_count} rows` : ''}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      className="eqb-saved-del"
+                      onClick={() => deleteSaved(r.id)}
+                      aria-label="Delete saved report"
+                    >
+                      <i className="bi bi-trash" aria-hidden="true" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ) : null}
+
         {error ? (
           <p className="eqb-msg" role="status">
             {error}
           </p>
         ) : null}
         {note ? <p className="eqb-note">{note}</p> : null}
+        {gate ? <AccountGate action={gate} onClose={closeGate} /> : null}
       </div>
 
       {resultsPanel}

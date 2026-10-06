@@ -3,7 +3,7 @@
  *
  * Records the signed-in user as a referee of `code`, as 'pending' until they
  * verify their email (confirm_referral then grants the rewards). Called by
- * the sign-up form right after supabase.auth.signUp succeeds; the referee is
+ * the invite account form right after the account is created; the referee is
  * always the session's user, never a body field. Enforced here:
  *   - the account is new (within APPLY_WINDOW_MS): codes apply at sign-up only;
  *   - no self-referral, and no referral between the same person's addresses

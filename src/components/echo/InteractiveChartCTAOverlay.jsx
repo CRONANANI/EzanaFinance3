@@ -90,7 +90,7 @@ export function InteractiveChartCTAOverlay({ teaserHeadline, teaserBody, childre
                 className="echo-chart-cta-btn echo-chart-cta-btn-primary"
                 onClick={() => router.push(`/auth/signup?redirect=${redirectParam}`)}
               >
-                Sign up free
+                Join the waitlist
               </button>
               <button
                 type="button"

@@ -1,115 +1,139 @@
+/**
+ * POST /api/waitlist: join the Ezana waitlist (the /auth/signup form).
+ *
+ * Body: { firstName, lastName, email, role, organization?, useCase?,
+ *         heardFrom?, referralCode?, plan?, redirect? }
+ *
+ * No email enumeration: an address already on the list gets the same success
+ * body as a new one and no second email. An admin later approves the row from
+ * /admin/waitlist, which emails a one-time invite link.
+ */
 import { NextResponse } from 'next/server';
+import { Resend } from 'resend';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
-import { Resend } from 'resend';
+import { isValidCodeFormat, normalizeCode } from '@/lib/referrals';
+import { safeInternalPath, escapeHtml } from '@/lib/sanitize';
+import { EMAIL_RE } from '@/lib/auth/password-rules';
+import { senderAddress } from '@/lib/waitlist/invite';
+import { WAITLIST_HEARD_FROM, WAITLIST_ROLES } from '@/lib/waitlist/options';
 
 export const dynamic = 'force-dynamic';
+
+const ROLE_VALUES = WAITLIST_ROLES.map((o) => o.value);
+const HEARD_VALUES = WAITLIST_HEARD_FROM.map((o) => o.value);
+
+const SUCCESS = {
+  success: true,
+  message: "You're on the list. We'll email you when your invite is ready.",
+};
+
+const str = (v) => (typeof v === 'string' ? v.trim() : '');
 
 export const POST = withApiGuard(
   async (request) => {
     try {
-      const body = await request.json();
-      const { email, fullName, referralSource } = body;
-
-      // Validate email
-      if (!email || !email.includes('@')) {
-        return NextResponse.json(
-          { error: 'Please provide a valid email address' },
-          { status: 400 },
-        );
+      const body = await request.json().catch(() => null);
+      if (!body || typeof body !== 'object') {
+        return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
       }
 
-      // Normalize email
-      const normalizedEmail = email.toLowerCase().trim();
+      const firstName = str(body.firstName);
+      const lastName = str(body.lastName);
+      const email = str(body.email).toLowerCase();
+      const role = str(body.role);
+      const organization = str(body.organization);
+      const useCase = str(body.useCase);
+      const heardFrom = str(body.heardFrom);
+      const referralRaw = str(body.referralCode);
+      const plan = str(body.plan);
+      const redirectRaw = str(body.redirect);
 
-      // Initialize Supabase client
+      const errors = {};
+      if (!firstName || firstName.length > 60) errors.firstName = 'Enter your first name.';
+      if (!lastName || lastName.length > 60) errors.lastName = 'Enter your last name.';
+      if (!EMAIL_RE.test(email) || email.length > 254) {
+        errors.email = 'Enter a valid email address.';
+      }
+      if (!ROLE_VALUES.includes(role)) errors.role = 'Choose what describes you.';
+      if (organization.length > 120) errors.organization = 'Keep this under 120 characters.';
+      if (useCase.length > 500) errors.useCase = 'Keep this under 500 characters.';
+      if (heardFrom && !HEARD_VALUES.includes(heardFrom)) {
+        errors.heardFrom = 'Choose one of the options.';
+      }
+      if (referralRaw && !isValidCodeFormat(referralRaw)) {
+        errors.referralCode = 'That referral code does not look right.';
+      }
+      if (plan.length > 20) errors.plan = 'Invalid plan.';
+      if (Object.keys(errors).length) {
+        return NextResponse.json({ error: 'Please check the form.', errors }, { status: 400 });
+      }
+
+      const referralCode = referralRaw ? normalizeCode(referralRaw) : null;
+      const redirect = redirectRaw ? safeInternalPath(redirectRaw, '') || null : null;
       const supabase = getAdminClient();
 
-      // Check if email already exists
-      const { data: existingUser } = await supabase
+      /* Already listed: same answer as a new entry, and no second email. */
+      const { data: existing } = await supabase
         .from('waitlist')
-        .select('email, legacy_number')
-        .eq('email', normalizedEmail)
-        .single();
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+      if (existing) return NextResponse.json(SUCCESS, { status: 200 });
 
-      if (existingUser) {
-        return NextResponse.json(
-          {
-            error: 'This email is already on the waitlist!',
-            legacyNumber: existingUser.legacy_number,
-          },
-          { status: 409 },
-        );
-      }
-
-      // Get request headers for tracking
       const forwardedFor = request.headers.get('x-forwarded-for');
-      const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : 'unknown';
-      const userAgent = request.headers.get('user-agent') || 'unknown';
-
-      // Insert email into waitlist table
       const { data, error: insertError } = await supabase
         .from('waitlist')
-        .insert([
-          {
-            email: normalizedEmail,
-            full_name: fullName || null,
-            referral_source: referralSource || 'landing_page',
-            ip_address: ipAddress,
-            user_agent: userAgent,
-            status: 'pending',
-            metadata: {
-              signup_page: 'main_landing',
-              signup_timestamp: new Date().toISOString(),
-            },
+        .insert({
+          email,
+          full_name: `${firstName} ${lastName}`,
+          referral_source: 'signup_page',
+          ip_address: forwardedFor ? forwardedFor.split(',')[0].trim() : 'unknown',
+          user_agent: (request.headers.get('user-agent') || 'unknown').slice(0, 400),
+          status: 'pending',
+          metadata: {
+            first_name: firstName,
+            last_name: lastName,
+            role,
+            organization: organization || null,
+            use_case: useCase || null,
+            heard_from: heardFrom || null,
+            referral_code: referralCode,
+            plan: plan || null,
+            redirect,
+            signup_page: 'auth_signup',
+            signup_timestamp: new Date().toISOString(),
           },
-        ])
-        .select()
+        })
+        .select('legacy_user, legacy_number')
         .single();
 
       if (insertError) {
-        console.error('Supabase insert error:', insertError);
+        /* A racing duplicate on the unique email: same answer as success. */
+        if (insertError.code === '23505') return NextResponse.json(SUCCESS, { status: 200 });
+        console.error('[waitlist] insert error:', insertError);
         return NextResponse.json(
-          { error: 'Failed to join waitlist. Please try again.' },
+          { error: 'Could not join the waitlist. Please try again.' },
           { status: 500 },
         );
       }
 
-      // Determine legacy status message
-      const isLegacy = data.legacy_user;
-      const legacyNumber = data.legacy_number;
-
-      // Send confirmation email using Resend - initialize lazily at request time
       if (process.env.RESEND_API_KEY) {
         try {
-          const resend = new Resend(process.env.RESEND_API_KEY);
-          await resend.emails.send({
-            from: 'Ezana Finance <waitlist@ezanafinance.com>',
-            to: normalizedEmail,
-            subject: isLegacy
-              ? `You're Legacy Member #${legacyNumber}! 🎉`
-              : "You're on the Ezana Finance Waitlist! 🎉",
-            html: generateWaitlistEmail(normalizedEmail, isLegacy, legacyNumber),
+          await new Resend(process.env.RESEND_API_KEY).emails.send({
+            from: senderAddress(),
+            to: email,
+            subject: "You're on the Ezana waitlist",
+            html: waitlistEmail(firstName, data?.legacy_user, data?.legacy_number),
           });
         } catch (emailError) {
-          console.error('Email send error:', emailError);
-          // Don't fail the request if email fails - user is still on waitlist
+          console.error('[waitlist] email send error:', emailError);
         }
       }
 
-      return NextResponse.json(
-        {
-          success: true,
-          message: isLegacy
-            ? `Welcome, Legacy Member #${legacyNumber}! Check your email for confirmation.`
-            : "You're on the waitlist! Check your email for confirmation.",
-          legacyUser: isLegacy,
-          legacyNumber: legacyNumber,
-        },
-        { status: 201 },
-      );
+      return NextResponse.json(SUCCESS, { status: 200 });
     } catch (error) {
-      console.error('Waitlist API error:', error);
+      console.error('[waitlist] error:', error);
       return NextResponse.json(
         { error: 'An unexpected error occurred. Please try again.' },
         { status: 500 },
@@ -119,80 +143,36 @@ export const POST = withApiGuard(
   { requireAuth: false, strict: true },
 );
 
-// Email template generator function
-function generateWaitlistEmail(email, isLegacy, legacyNumber) {
+function waitlistEmail(firstName, isLegacy, legacyNumber) {
+  const name = escapeHtml(firstName || 'there');
   const legacyBadge = isLegacy
     ? `
-    <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; padding: 20px; margin: 24px 0; text-align: center;">
-      <p style="color: rgba(255,255,255,0.8); font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 8px;">Legacy Member</p>
-      <p style="color: #ffffff; font-size: 48px; font-weight: 800; margin: 0; line-height: 1;">#${legacyNumber}</p>
-      <p style="color: rgba(255,255,255,0.8); font-size: 14px; margin: 12px 0 0;">of the first 1,000 members</p>
-    </div>
-  `
+    <div style="background:#047857;border-radius:12px;padding:20px;margin:24px 0;text-align:center;">
+      <p style="color:#d1fae5;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 8px;">Legacy Member</p>
+      <p style="color:#ffffff;font-size:44px;font-weight:800;margin:0;line-height:1;">#${Number(legacyNumber) || ''}</p>
+      <p style="color:#d1fae5;font-size:14px;margin:12px 0 0;">of the first 1,000 members</p>
+    </div>`
     : '';
-
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body style="margin: 0; padding: 0; background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-      <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-        <!-- Header -->
-        <div style="text-align: center; margin-bottom: 40px;">
-          <h1 style="color: #10b981; font-size: 28px; margin: 0;">Ezana Finance</h1>
-          <p style="color: #6e7681; font-size: 14px; margin-top: 8px;">Follow the moves that matter</p>
-        </div>
-        
-        <!-- Main Content -->
-        <div style="background: linear-gradient(180deg, rgba(22, 27, 34, 0.95) 0%, rgba(13, 17, 23, 0.98) 100%); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px; padding: 40px; text-align: center;">
-          <div style="width: 60px; height: 60px; background: rgba(16, 185, 129, 0.1); border-radius: 50%; margin: 0 auto 24px; line-height: 60px;">
-            <span style="font-size: 28px;">🎉</span>
-          </div>
-          
-          <h2 style="color: #f0f6fc; font-size: 24px; margin: 0 0 16px;">
-            ${isLegacy ? "You're a Legacy Member!" : "You're on the list!"}
-          </h2>
-          
-          ${legacyBadge}
-          
-          <p style="color: #8b949e; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
-            ${
-              isLegacy
-                ? "Congratulations! As one of our first 1,000 members, you'll receive exclusive benefits including lifetime discounts, early feature access, and a special Legacy badge on your profile."
-                : "Thank you for joining the Ezana Finance waitlist. You'll be among the first to access institutional-grade market intelligence when we launch."
-            }
-          </p>
-          
-          <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 20px; margin: 24px 0; text-align: left;">
-            <h3 style="color: #10b981; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 12px;">What you'll get access to:</h3>
-            <ul style="color: #c9d1d9; font-size: 14px; margin: 0; padding-left: 20px; line-height: 1.8;">
-              <li>Real-time congressional trading alerts</li>
-              <li>Hedge fund 13F filings & analysis</li>
-              <li>Legendary investor portfolio tracking</li>
-              <li>Community insights & discussions</li>
-              ${isLegacy ? '<li><strong style="color: #10b981;">Legacy member exclusive benefits</strong></li>' : ''}
-            </ul>
-          </div>
-          
-          <p style="color: #6e7681; font-size: 14px; margin: 24px 0 0;">
-            We'll notify you as soon as early access is available.
-          </p>
-        </div>
-        
-        <!-- Footer -->
-        <div style="text-align: center; margin-top: 40px;">
-          <p style="color: #6e7681; font-size: 12px; margin: 0;">
-            © 2026 Ezana Finance. All rights reserved.
-          </p>
-          <p style="color: #6e7681; font-size: 12px; margin: 8px 0 0;">
-            You received this email because you signed up for the Ezana Finance waitlist.
-          </p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#f8fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+  <div style="max-width:560px;margin:0 auto;padding:40px 20px;">
+    <p style="color:#047857;font-size:20px;font-weight:700;margin:0 0 28px;text-align:center;">Ezana Finance</p>
+    <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:16px;padding:36px;">
+      <h1 style="color:#111827;font-size:22px;margin:0 0 14px;">You're on the list, ${name}.</h1>
+      ${legacyBadge}
+      <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 14px;">
+        Thanks for joining the Ezana waitlist. We are opening access in waves so every new member gets a working account and real support.
+      </p>
+      <p style="color:#374151;font-size:15px;line-height:1.6;margin:0;">
+        When your wave opens we will email you a personal invite link. It is good for 14 days and lets you create your account in under a minute.
+      </p>
+    </div>
+    <p style="color:#6b7280;font-size:12px;text-align:center;margin:28px 0 0;">
+      You received this email because you joined the Ezana Finance waitlist.
+    </p>
+  </div>
+</body>
+</html>`;
 }

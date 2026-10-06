@@ -83,7 +83,7 @@ export default function LoginChoicePage({ searchParams }) {
             href={withRedirect('/auth/signup')}
             className="font-medium text-emerald-600 hover:text-emerald-700 hover:underline"
           >
-            Sign up
+            Join the waitlist
           </Link>
         </p>
       </div>

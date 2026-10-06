@@ -1,6 +1,7 @@
 /**
  * POST /api/ezanaql/run — validate → compile → execute → return results.
- * Body: { query: string, format?: 'table'|'csv'|'json' }. Session optional; guests are rate-limited per IP.
+ * Body: { query: string, format?: 'table'|'csv'|'json' }. Session optional; guests are
+ * rate-limited per IP and always get the table format (files need an account).
  */
 import { NextResponse } from 'next/server';
 import { requireUser, getAdminClient } from '@/lib/supabase';
@@ -33,7 +34,8 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: 'Invalid request body.' }, { status: 400 });
   }
   const query = typeof body?.query === 'string' ? body.query : '';
-  const format = ['table', 'csv', 'json'].includes(body?.format) ? body.format : 'table';
+  /* Guests see the table; file formats are the export feature, which needs an account. */
+  const format = user && ['table', 'csv', 'json'].includes(body?.format) ? body.format : 'table';
   if (!query.trim())
     return NextResponse.json({ ok: false, error: 'No query provided.' }, { status: 400 });
 

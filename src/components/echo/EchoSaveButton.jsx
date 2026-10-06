@@ -45,7 +45,7 @@ export function SaveAuthPrompt({
             className="echo-chart-cta-btn echo-chart-cta-btn-primary"
             onClick={onSignUp}
           >
-            Sign up free
+            Join the waitlist
           </button>
           <button
             type="button"

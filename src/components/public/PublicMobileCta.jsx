@@ -117,10 +117,10 @@ export function PublicMobileCta() {
   if (!visible) return null;
 
   return (
-    <div className="pcta-bar" role="complementary" aria-label="Sign up">
+    <div className="pcta-bar" role="complementary" aria-label="Join the waitlist">
       <p className="pcta-copy">Your edge is waiting.</p>
       <a className="pcta-btn" href="/auth/signup">
-        Get started
+        Join the waitlist
       </a>
       <button type="button" className="pcta-close" onClick={dismiss} aria-label="Dismiss">
         <i className="bi bi-x-lg" aria-hidden />

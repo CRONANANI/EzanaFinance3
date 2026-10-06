@@ -363,7 +363,7 @@ export default function CategoryBar({ active, activeItem }) {
               Log in
             </Link>
             <Link href="/auth/signup" className="dscat-btn dscat-btn--solid">
-              Sign up
+              Join the waitlist
             </Link>
           </>
         )}

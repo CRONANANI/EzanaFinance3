@@ -390,7 +390,7 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
                     href="/auth/signup"
                     className="font-medium text-emerald-600 transition-colors hover:text-emerald-300"
                   >
-                    Sign up
+                    Join the waitlist
                   </Link>
                 </>
               )}

@@ -1,0 +1,248 @@
+/* /auth/signup: the waitlist form and the invite account form. Page-scoped
+   (wl-). The auth pages are always light (signin-dark-lock), whatever the
+   visitor's theme, so the inks are mixed from the white token rather than
+   theme tokens that would flip in dark mode. */
+.wl-page {
+  --wl-card: var(--color-on-primary);
+  --wl-ink: color-mix(in srgb, black 88%, var(--wl-card));
+  --wl-body: color-mix(in srgb, black 68%, var(--wl-card));
+  --wl-mute: color-mix(in srgb, black 52%, var(--wl-card));
+  --wl-hair: color-mix(in srgb, black 14%, var(--wl-card));
+  --wl-field: color-mix(in srgb, black 2%, var(--wl-card));
+  --wl-accent: var(--emerald-dark);
+  --wl-danger: color-mix(in srgb, var(--danger) 85%, black);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  font-family: var(--font-sans);
+}
+.wl-card {
+  width: 100%;
+  max-width: 480px;
+  padding: 32px;
+  border: 1px solid color-mix(in srgb, var(--emerald) 22%, transparent);
+  border-radius: var(--radius-xl);
+  background: var(--wl-card);
+  box-shadow: 0 20px 50px color-mix(in srgb, black 8%, transparent);
+  color: var(--wl-ink);
+}
+.wl-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.wl-brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--wl-accent);
+  color: var(--color-on-primary);
+  font-size: 18px;
+}
+.wl-brand-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--wl-accent);
+}
+.wl-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  color: var(--wl-ink);
+}
+.wl-sub {
+  margin: 8px 0 22px;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--wl-body);
+}
+.wl-alert {
+  margin-bottom: 18px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--wl-danger) 30%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--wl-danger) 6%, var(--wl-card));
+  font-size: 13px;
+  color: var(--wl-danger);
+}
+.wl-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.wl-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.wl-field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.wl-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wl-body);
+}
+.wl-req {
+  color: var(--wl-accent);
+}
+.wl-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--wl-hair);
+  border-radius: var(--radius-md);
+  background: var(--wl-field);
+  font: inherit;
+  font-size: 16px; /* 16px stops iOS zooming on focus */
+  color: var(--wl-ink);
+}
+.wl-input:focus {
+  outline: 2px solid var(--emerald);
+  outline-offset: 1px;
+  border-color: var(--emerald);
+}
+.wl-input[aria-invalid='true'] {
+  border-color: var(--wl-danger);
+}
+.wl-input[readonly] {
+  color: var(--wl-mute);
+  background: color-mix(in srgb, black 5%, var(--wl-card));
+}
+.wl-textarea {
+  resize: vertical;
+  min-height: 84px;
+}
+.wl-count {
+  align-self: flex-end;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--wl-mute);
+}
+.wl-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--wl-mute);
+}
+.wl-err {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--wl-danger);
+}
+.wl-pwd {
+  padding: 18px 16px;
+}
+.wl-submit {
+  min-height: 46px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--wl-accent);
+  color: var(--color-on-primary);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.wl-submit:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--wl-accent) 88%, black);
+}
+.wl-submit:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.wl-submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.wl-foot {
+  margin: 22px 0 0;
+  font-size: 13.5px;
+  text-align: center;
+  color: var(--wl-body);
+}
+.wl-link {
+  color: var(--wl-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+.wl-link:hover {
+  text-decoration: underline;
+}
+.wl-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.wl-done-ic {
+  display: inline-grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--emerald) 12%, var(--wl-card));
+  color: var(--wl-accent);
+  font-size: 22px;
+}
+.wl-done-ic--warn {
+  background: color-mix(in srgb, black 6%, var(--wl-card));
+  color: var(--wl-body);
+}
+.wl-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13.5px;
+  color: var(--wl-body);
+}
+.wl-skel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0 20px;
+}
+.wl-skel-line {
+  width: 80%;
+  height: 12px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, black 7%, var(--wl-card));
+  animation: wl-pulse 1.4s ease-in-out infinite;
+}
+.wl-skel-line--title {
+  width: 60%;
+  height: 20px;
+}
+@keyframes wl-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wl-skel-line {
+    animation: none;
+  }
+}
+@media (max-width: 480px) {
+  .wl-card {
+    padding: 24px 18px;
+  }
+  .wl-row {
+    grid-template-columns: 1fr;
+  }
+}

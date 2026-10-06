@@ -93,7 +93,7 @@ export default async function ContinuePage({ searchParams }) {
               type="submit"
               className="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-700 transition-colors hover:bg-slate-50"
             >
-              Create a new account
+              Join the waitlist
             </button>
           </form>
         </div>

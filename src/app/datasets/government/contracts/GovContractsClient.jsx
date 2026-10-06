@@ -2264,10 +2264,10 @@ function WatchlistCta({ recipient: r }) {
             <X size={14} />
           </button>
           <div className="gcx-auth-pop-title">Track {r.name} in your watchlist</div>
-          <div className="gcx-auth-pop-sub">Free to start · No brokerage required</div>
+          <div className="gcx-auth-pop-sub">Access opens in waves · No brokerage required</div>
           <div className="gcx-auth-pop-actions">
             <a className="gcx-btn gcx-btn-primary" href={`/auth/signup?redirect=${returnTo}`}>
-              Sign up
+              Join the waitlist
             </a>
             {/* /auth/signin is the working login form that honors ?redirect=
                 (validated by safeInternalPath); /auth/login is a chooser page

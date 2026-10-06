@@ -4,6 +4,8 @@
  */
 
 export const USER_DASHBOARD_ROUTES = [
+  /* Admin pages; the UI and the APIs re-check ADMIN_EMAILS. */
+  '/admin',
   '/onboarding',
   '/select-plan',
   '/payment',

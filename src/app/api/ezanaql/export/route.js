@@ -1,29 +1,27 @@
 /**
  * POST /api/ezanaql/export — run a query and stream a CSV/JSON download.
- * Body: { query: string, format: 'csv'|'json' }. Session optional; guests are rate-limited per IP.
+ * Body: { query: string, format: 'csv'|'json' }. Session required: running a
+ * report is open to guests, downloading it is an account feature.
  */
 import { NextResponse } from 'next/server';
 import { requireUser, getAdminClient } from '@/lib/supabase';
-import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { runEzanaQL } from '@/lib/ezanaql';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
-  /* Every live dataset is public data (the catalog's only user_private
-     dataset is unavailable, and rlsFilter refuses it without a user anyway),
-     so a session is optional: it only widens the rate limit. Guests are
-     limited per IP, more tightly. */
+  /* Unauthenticated requests stop here, before any work. */
   let user = null;
   try {
     ({ user } = await requireUser(request));
   } catch {
-    user = null;
+    return NextResponse.json(
+      { ok: false, code: 'auth_required', error: 'Create an account to export reports.' },
+      { status: 401 },
+    );
   }
-  const rl = await checkRateLimit(
-    user ? `ezanaql:export:${user.id}` : `ezanaql:export:ip:${getClientIp(request)}`,
-    { interval: 60000, limit: user ? 15 : 8 },
-  );
+  const rl = await checkRateLimit(`ezanaql:export:${user.id}`, { interval: 60000, limit: 15 });
   if (!rl.success) return rateLimitResponse(rl);
 
   let body;
@@ -40,7 +38,7 @@ export async function POST(request) {
   const out = await runEzanaQL({
     query,
     admin: getAdminClient(),
-    userId: user?.id ?? null,
+    userId: user.id,
     format,
   });
   if (!out.ok) return NextResponse.json(out, { status: 400 });

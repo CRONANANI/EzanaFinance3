@@ -113,7 +113,7 @@ export function SubscribeButton({ authorId, className = '' }) {
             </p>
             <div className="echo-auth-modal-actions">
               <Link href="/auth/signup" className="echo-btn-primary">
-                Sign Up Free
+                Join the waitlist
               </Link>
               <Link href="/auth/login" className="echo-btn-secondary">
                 Login
