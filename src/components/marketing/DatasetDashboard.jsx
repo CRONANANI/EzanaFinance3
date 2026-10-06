@@ -116,7 +116,10 @@ export function DatasetDashboard({ config, children }) {
               </span>
             </div>
             {highlight.desc ? <p className="mkt-ds-highlight-desc">{highlight.desc}</p> : null}
-            {highlight.items ? (
+            {highlight.items && !highlight.items.length && highlight.emptyText ? (
+              <p className="mkt-ds-sample-note">{highlight.emptyText}</p>
+            ) : null}
+            {highlight.items?.length ? (
               <ol className="mkt-ds-leader">
                 {highlight.items.map((it, i) => {
                   // Opt-in: a `highlight.onItemClick` handler makes each row an
@@ -168,6 +171,7 @@ export function DatasetDashboard({ config, children }) {
           <DatasetTable
             columns={table.columns}
             rows={filteredRows}
+            emptyText={table.rows.length === 0 && table.emptyText ? table.emptyText : undefined}
             onRowClick={onRowClick}
             getRowLabel={getRowLabel}
           />
@@ -191,6 +195,9 @@ export function DatasetDashboard({ config, children }) {
                 <p key={i}>{para}</p>
               ))}
             </div>
+            {source.note ? (
+              <p className="mkt-ds-sample-note mkt-ds-source-note">{source.note}</p>
+            ) : null}
           </section>
         )}
 

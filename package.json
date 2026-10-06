@@ -24,6 +24,7 @@
     "test:support": "node scripts/check-support-center.mjs",
     "test:echo-home": "node scripts/check-echo-home.mjs",
     "test:fec-join": "node scripts/check-fec-join.mjs",
+    "test:titans": "node scripts/check-titans.mjs",
     "test:tracker": "node scripts/check-politician-tracker.mjs",
     "test:congress": "node scripts/check-congress-ingest.mjs",
     "test:senate": "node scripts/check-senate-efd.mjs",

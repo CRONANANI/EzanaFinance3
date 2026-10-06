@@ -3,7 +3,7 @@
  * signal. The page reads this small Supabase table (populated by the
  * compute-whale-moves cron) rather than scoring at request time. Plain anon
  * client (public RLS read); only the cron writes. Returns [] on any error or
- * empty table so the page falls through to its clearly-labeled sample.
+ * empty table so the page shows its honest empty state.
  */
 import { createClient } from '@supabase/supabase-js';
 
@@ -20,7 +20,7 @@ function getAnonClient() {
 
 /**
  * Highest-scoring whale moves, best first. Returns [] on any error/empty so the
- * page shows its sample.
+ * page shows its empty state.
  * @param {{ kind?: 'institutional'|'activist', limit?: number }} opts
  */
 export async function getWhaleMoves({ kind, limit = 100 } = {}) {

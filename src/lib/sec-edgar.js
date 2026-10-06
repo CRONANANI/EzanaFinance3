@@ -56,7 +56,7 @@ export async function secFetchText(url) {
 /**
  * Newest filings of one or more form types across all filers.
  * @param {{forms:string, from?:number, startdt:string, enddt:string}} opts
- *   forms: '13F-HR' | 'SC 13D,SC 13G' | '4'
+ *   forms: comma list, e.g. '13F-HR' | 'SCHEDULE 13D,SC 13D' | '4'
  */
 export async function searchFilings({ forms, from = 0, startdt, enddt }) {
   const params = new URLSearchParams({
@@ -119,11 +119,8 @@ export function find13FInfoTableUrl(indexJson, { cik, accessionNo }) {
   const { base } = edgarUrls({ accessionNo, cik });
   const items = indexJson?.directory?.item || [];
   const xmls = items.filter((it) => /\.xml$/i.test(it?.name || ''));
-  const named = xmls.find((it) =>
-    /info.?table|informationtable|form13f.*table/i.test(it.name),
-  );
-  const chosen =
-    named || xmls.find((it) => !/primary_?doc/i.test(it.name)) || xmls[0] || null;
+  const named = xmls.find((it) => /info.?table|informationtable|form13f.*table/i.test(it.name));
+  const chosen = named || xmls.find((it) => !/primary_?doc/i.test(it.name)) || xmls[0] || null;
   return chosen ? `${base}/${chosen.name}` : null;
 }
 

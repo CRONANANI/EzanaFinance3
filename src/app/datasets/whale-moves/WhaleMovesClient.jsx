@@ -5,6 +5,8 @@ import { Ticker, EntityName } from '@/components/marketing/DatasetTable';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
 import { WEIGHTS } from '@/lib/whale-score';
 import { WHALE_MOVES_SAMPLE } from './whale-moves-sample';
+import { ALLOW_SAMPLE, OPENFIGI_NOTE } from '@/lib/titans/format';
+import { schedule13Kind } from '@/lib/sec-13f-parse';
 import '../../marketing-explore.css';
 import './whale-moves.css';
 import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
@@ -13,14 +15,20 @@ import { seedForDataset } from '@/lib/ezanaql/seeds';
 /* ── formatting ── */
 function fmtUSD(v) {
   const n = Number(v) || 0;
-  if (!n) return '—';
+  if (!n) return '–';
   if (n >= 1e12) return `$${(n / 1e12).toFixed(2)}T`;
   if (n >= 1e9) return `$${(n / 1e9).toFixed(2)}B`;
   if (n >= 1e6) return `$${(n / 1e6).toFixed(0)}M`;
   return `$${n.toFixed(0)}`;
 }
 function fmtPct(v) {
-  return v == null ? '—' : `${Number(v).toFixed(1)}%`;
+  return v == null ? '–' : `${Number(v).toFixed(1)}%`;
+}
+
+/** Any 13D/13G spelling ('13D', 'SC 13G', …) -> 'Schedule 13D' / 'Schedule 13G'. */
+function formLabel(form) {
+  const k = schedule13Kind(form);
+  return k ? `Schedule ${k}` : 'Schedule 13D/13G';
 }
 
 // Change type → label + tone (institutional). Activist rows carry no change_type;
@@ -56,7 +64,7 @@ const TIER_TONE = {
 };
 
 function TierBadge({ tier }) {
-  if (!tier) return <span className="wm-muted">—</span>;
+  if (!tier) return <span className="wm-muted">–</span>;
   return <span className={`wm-tier wm-tier--${TIER_TONE[tier] || 'mut'}`}>{tier}</span>;
 }
 
@@ -64,12 +72,12 @@ function DeltaCell({ row }) {
   if (row.kind === 'activist') {
     return (
       <span className={`wm-delta wm-delta--${row.factors?.escalated ? 'pos' : 'mut'}`}>
-        {row.factors?.escalated ? 'Escalated' : row.form || '—'}
+        {row.factors?.escalated ? 'Escalated' : formLabel(row.form)}
       </span>
     );
   }
   const ct = row.change_type;
-  if (!ct) return <span className="wm-muted">—</span>;
+  if (!ct) return <span className="wm-muted">–</span>;
   return (
     <span className={`wm-delta wm-delta--${CHANGE_TONE[ct] || 'mut'}`}>{CHANGE_LABEL[ct]}</span>
   );
@@ -90,11 +98,13 @@ function ScoreCell({ value }) {
 /** The one-line "why it scored" summary used in the highlight card. */
 function dominantFactor(row) {
   if (row.kind === 'activist') {
-    return `${row.form || '13D/G'} at ${fmtPct(row.percent_of_class)}`;
+    return `${formLabel(row.form)} at ${fmtPct(row.percent_of_class)}`;
   }
   const ct = CHANGE_LABEL[row.change_type] || row.change_type || 'position';
   return `${ct.toLowerCase()} · ${fmtPct(row.conviction_pct)} of book`;
 }
+
+const NO_ROWS = [];
 
 const SORTS = [
   { id: 'score', label: 'Whale Score' },
@@ -104,12 +114,13 @@ const SORTS = [
 const KINDS = [
   { id: 'all', label: 'All filers' },
   { id: 'institutional', label: 'Institutional (13F)' },
-  { id: 'activist', label: 'Activist (13D/13G)' },
+  { id: 'activist', label: 'Activist (Schedule 13D/13G)' },
 ];
 
 export function WhaleMovesClient({ moves }) {
   const isLive = Array.isArray(moves) && moves.length > 0;
-  const rows = isLive ? moves : WHALE_MOVES_SAMPLE;
+  const isSample = !isLive && ALLOW_SAMPLE;
+  const rows = isLive ? moves : isSample ? WHALE_MOVES_SAMPLE : NO_ROWS;
 
   const [kind, setKind] = useState('all');
   const [tier, setTier] = useState('all');
@@ -167,7 +178,7 @@ export function WhaleMovesClient({ moves }) {
           <p className="mkt-lead">
             The institutional and activist bets that actually signal conviction, not just size.
             Every move is scored by how much of the filer&apos;s own book it represents, how new it
-            is, and how concentrated the fund is — so a fresh 15%-of-portfolio bet outranks a
+            is, and how concentrated the fund is, so a fresh 15%-of-portfolio bet outranks a
             mega-fund&apos;s rounding-error rebalance.
           </p>
         </div>
@@ -175,36 +186,44 @@ export function WhaleMovesClient({ moves }) {
         {/* The one shared query bar, same slot and size as every dataset page. */}
         <EzanaQLBar datasetScope={null} seedQuery={seedForDataset(null)} />
 
-        {!isLive && (
+        {isSample && (
           <div className="wm-sample-note">
-            Sample data — not live. Whale Moves is a derived dataset: the live feed appears once the
-            SEC EDGAR ingestion has loaded two quarters of 13F history (the score needs a prior
-            quarter to diff against).
+            Sample data (local development only). Whale Moves is a derived dataset: the live feed
+            appears once two quarters of 13F filings are loaded.
+          </div>
+        )}
+        {!isLive && !isSample && (
+          <div className="wm-sample-note" role="status">
+            Scores appear once two quarters of 13F filings are loaded. Each filer&apos;s latest
+            quarter is compared with its prior one, and the prior quarter is still being read from
+            SEC EDGAR.
           </div>
         )}
 
-        {/* Highlight — highest-conviction moves this quarter */}
-        <section className="mkt-ds-section">
-          <h2 className="mkt-section-title">Highest-conviction moves this quarter</h2>
-          <div className="wm-highlights">
-            {top.map((r) => (
-              <div className="wm-hl" key={r.id ?? r.accession_no}>
-                <div className="wm-hl-top">
-                  <TierBadge tier={r.tier} />
-                  <span className="wm-hl-score gcx-mono">
-                    {Math.round(Number(r.whale_score) || 0)}
-                  </span>
+        {/* Highlight: highest-conviction moves this quarter */}
+        {top.length > 0 && (
+          <section className="mkt-ds-section">
+            <h2 className="mkt-section-title">Highest-conviction moves this quarter</h2>
+            <div className="wm-highlights">
+              {top.map((r) => (
+                <div className="wm-hl" key={r.id ?? r.accession_no}>
+                  <div className="wm-hl-top">
+                    <TierBadge tier={r.tier} />
+                    <span className="wm-hl-score gcx-mono">
+                      {Math.round(Number(r.whale_score) || 0)}
+                    </span>
+                  </div>
+                  <div className="wm-hl-filer">{r.filer_name}</div>
+                  <div className="wm-hl-sub">
+                    {r.ticker ? <Ticker symbol={r.ticker} /> : null}
+                    <span className="wm-hl-issuer">{r.issuer}</span>
+                  </div>
+                  <div className="wm-hl-why">{dominantFactor(r)}</div>
                 </div>
-                <div className="wm-hl-filer">{r.filer_name}</div>
-                <div className="wm-hl-sub">
-                  {r.ticker ? <Ticker symbol={r.ticker} /> : null}
-                  <span className="wm-hl-issuer">{r.issuer}</span>
-                </div>
-                <div className="wm-hl-why">{dominantFactor(r)}</div>
-              </div>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Controls + table */}
         <section className="mkt-ds-section">
@@ -271,7 +290,9 @@ export function WhaleMovesClient({ moves }) {
                 {view.length === 0 ? (
                   <tr>
                     <td className="mkt-ds-empty" colSpan={7}>
-                      No moves match the current filters.
+                      {rows.length
+                        ? 'No moves match the current filters.'
+                        : 'No scored moves yet. Scores appear once two quarters of 13F filings are loaded.'}
                     </td>
                   </tr>
                 ) : (
@@ -309,20 +330,20 @@ export function WhaleMovesClient({ moves }) {
           </div>
         </section>
 
-        {/* Explainer — the four factors and their weights, so the number is transparent */}
+        {/* Explainer: the four factors and their weights, so the number is transparent */}
         <section className="mkt-ds-section">
           <h2 className="mkt-section-title">How the Whale Score works</h2>
           <div className="wm-explainer">
             <p className="wm-explainer-lead">
-              A 0–100 composite. Institutional moves weight four factors; activist filings (13D/13G)
-              are scored separately on form, stake size, and escalation. It&apos;s Ezana&apos;s own
-              metric, not an SEC figure.
+              A 0 to 100 composite. Institutional moves weight four factors; activist filings
+              (Schedule 13D/13G) are scored separately on form, stake size, and escalation.
+              It&apos;s Ezana&apos;s own metric, not an SEC figure.
             </p>
             <div className="wm-factors">
               <Factor
                 w={iw.conviction}
                 name="Conviction"
-                desc="Position as a share of the filer's own portfolio — the best 'is this a bet' signal, and why size alone can't top the list."
+                desc="Position as a share of the filer's own portfolio: the best 'is this a bet' signal, and why size alone can't top the list."
               />
               <Factor
                 w={iw.newness}
@@ -337,7 +358,7 @@ export function WhaleMovesClient({ moves }) {
               <Factor
                 w={iw.size}
                 name="Absolute size"
-                desc="Above the $100M gate, bigger is marginally stronger — capped low by design so it can't dominate."
+                desc="Above the $100M gate, bigger is marginally stronger, capped low by design so it can't dominate."
               />
             </div>
           </div>
@@ -348,18 +369,19 @@ export function WhaleMovesClient({ moves }) {
           <h2 className="mkt-section-title">How we source it</h2>
           <div className="wm-source">
             <p>
-              Built from SEC EDGAR — quarterly Form 13F-HR holdings and 13D/13G activist stakes,
+              Built from SEC EDGAR: quarterly Form 13F-HR holdings and Schedule 13D/13G stakes,
               parsed and stored, then scored by Ezana&apos;s composite. The 45-day 13F filing
-              deadline means holdings reflect quarter-end positions, not real-time ones — a lag
-              inherent to the disclosure, not Ezana processing.
+              deadline means holdings reflect quarter-end positions, not real-time ones, a lag
+              inherent to the disclosure.
             </p>
             <p>
               The score is a <strong>derived Ezana metric</strong>, not a number reported by the
-              SEC. It compares each filing to the same filer&apos;s prior quarter, so scores are
-              only fully meaningful once two quarters of history are loaded; until then, positions
-              without a prior quarter read as new.
+              SEC. Scores compare each filer&apos;s latest quarter with the prior one; a filing is
+              scored only once that prior quarter is loaded, so a position is never called new just
+              because its history is missing.
             </p>
           </div>
+          <p className="mkt-ds-sample-note mkt-ds-source-note">{OPENFIGI_NOTE}</p>
         </section>
       </main>
     </div>

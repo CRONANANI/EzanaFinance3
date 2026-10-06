@@ -1,70 +1,41 @@
-'use client';
+import { getActivistStakes } from '@/lib/titans/store';
+import { int, pct, shortDate } from '@/lib/titans/format';
+import ActivistClient from './ActivistClient';
 
-import { Crosshair, Search, TrendingUp } from 'lucide-react';
-import { DatasetDashboard } from '@/components/marketing/DatasetDashboard';
-import { Ticker, EntityName } from '@/components/marketing/DatasetTable';
-import { ACTIVIST_SAMPLE, TOP_ACTIVIST_STAKES } from './activist-sample';
+/**
+ * Activist & block positions (Schedule 13D / 13G). Server component: loads the
+ * newest parsed stakes and hands plain rows to the client dashboard. Empty ->
+ * honest empty state; samples only under NEXT_PUBLIC_ALLOW_SAMPLE_DATA in
+ * local development.
+ */
+export const dynamic = 'force-dynamic';
 
-const config = {
-  title: 'Activist & block positions (13D / 13G)',
-  lead: 'When an investor crosses 5% of a company, the SEC requires disclosure within days. 13D signals intent to influence; 13G signals a passive stake. Both, parsed and tracked as they cross the threshold.',
-  searches: [
-    {
-      id: 'filer',
-      label: 'Filer search',
-      placeholder: 'Search by investor…',
-      icon: Crosshair,
-      keys: ['filer'],
-    },
-    {
-      id: 'subject',
-      label: 'Target search',
-      placeholder: 'Search by ticker or company…',
-      icon: Search,
-      keys: ['ticker', 'subject'],
-    },
-  ],
-  highlight: {
-    badge: 'New',
-    icon: TrendingUp,
-    title: 'Latest 5%+ stakes disclosed',
-    desc: 'The newest positions to cross the 5% reporting threshold, 13D (activist) and 13G (passive) alike.',
-    items: TOP_ACTIVIST_STAKES,
-  },
-  table: {
-    caption: 'Recent 13D / 13G filings (sample)',
-    columns: [
-      { key: 'filer', label: 'Investor', render: (v) => <EntityName>{v}</EntityName> },
-      { key: 'ticker', label: 'Target', render: (v) => <Ticker symbol={v} /> },
-      { key: 'subject', label: 'Company' },
-      { key: 'form', label: 'Form' },
-      { key: 'percent', label: '% of class', align: 'right', mono: true },
-      { key: 'date', label: 'Filed', mono: true },
-    ],
-    rows: ACTIVIST_SAMPLE,
-  },
-  sampleNote: 'Sample of recent 13D / 13G filings — full live dataset coming from SEC EDGAR.',
-  source: {
-    title: 'How we source it',
-    body: [
-      'Sourced from SEC EDGAR Schedules 13D and 13G — required when an investor acquires beneficial ownership of more than 5% of a voting class. 13D (activist intent) is due within 5 business days; 13G (passive) on a longer schedule.',
-      'The filer, subject company, and reported percent-of-class are parsed from each schedule’s cover page. Where a percentage is not cleanly disclosed it is shown as unavailable rather than estimated.',
-    ],
-  },
-  cta: { href: '/auth/login', label: 'Explore in the app' },
-  activeCategory: 'titans',
-  activeItem: 'Activist',
-  ticker: {
-    ariaLabel: 'Latest 13D / 13G filings',
-    items: ACTIVIST_SAMPLE.slice(0, 20).map((r) => ({
-      id: r.id,
-      lead: r.filer,
-      main: r.subject || r.ticker,
-      value: r.percent,
-    })),
-  },
+export const metadata = {
+  title: 'Activist and block positions (Schedule 13D/13G) | Ezana',
+  description:
+    'Schedule 13D and 13G filings from SEC EDGAR: who crossed 5% of which company, with the reported stake.',
 };
 
-export default function ActivistDatasetPage() {
-  return <DatasetDashboard config={config} />;
+const FORM_LABEL = { '13D': 'Schedule 13D', '13G': 'Schedule 13G' };
+
+export default async function ActivistDatasetPage() {
+  let stakes = [];
+  try {
+    stakes = await getActivistStakes({ limit: 150 });
+  } catch (e) {
+    console.error('[titans] activist stakes:', e?.message || e);
+  }
+  const rows = stakes.map((s) => ({
+    id: s.accessionNo,
+    filer: s.filer || 'Unknown filer',
+    ticker: s.ticker,
+    subject: s.subject,
+    form: `${FORM_LABEL[s.form] || 'Schedule 13D/13G'}${s.isAmendment ? '/A' : ''}`,
+    percent: pct(s.percentOfClass),
+    shares: int(s.shares),
+    eventDate: shortDate(s.eventDate),
+    date: shortDate(s.filedAt),
+    href: s.href,
+  }));
+  return <ActivistClient rows={rows} />;
 }

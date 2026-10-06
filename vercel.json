@@ -106,16 +106,20 @@
       "schedule": "40 7 * * *"
     },
     {
-      "path": "/api/cron/ingest-sec-filings?days=7",
-      "schedule": "0 8 * * *"
+      "path": "/api/cron/ingest-sec-filings?days=3",
+      "schedule": "0 8,20 * * *"
     },
     {
-      "path": "/api/cron/ingest-sec-holdings?max13f=12&maxActivist=15",
-      "schedule": "30 8 * * *"
+      "path": "/api/cron/ingest-sec-holdings?max13f=40&maxActivist=40",
+      "schedule": "30 * * * *"
     },
     {
-      "path": "/api/cron/compute-whale-moves?maxFilings=20&maxActivist=25",
-      "schedule": "0 9 * * *"
+      "path": "/api/cron/map-cusips",
+      "schedule": "15 * * * *"
+    },
+    {
+      "path": "/api/cron/compute-whale-moves?maxFilings=60&maxActivist=60",
+      "schedule": "50 * * * *"
     },
     {
       "path": "/api/cron/ingest-lobbying?years=2026,2025,2024&pagesPerQuarter=20",

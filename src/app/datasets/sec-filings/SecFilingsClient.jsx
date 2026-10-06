@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ExternalLink, X, Loader2 } from 'lucide-react';
 import { Ticker, EntityName, TxnBadge } from '@/components/marketing/DatasetTable';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
+import { OPENFIGI_NOTE } from '@/lib/titans/format';
 import '../../marketing-explore.css';
 import './sec-filings.css';
 import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
@@ -12,19 +13,19 @@ import { seedForDataset } from '@/lib/ezanaql/seeds';
 const TABS = [
   { id: 'insider', label: 'Insider (Form 4)' },
   { id: 'institutional', label: 'Institutional (13F)' },
-  { id: 'activist', label: 'Activist (13D/13G)' },
+  { id: 'activist', label: 'Activist (Schedule 13D/13G)' },
 ];
 
 const EMPTY_COPY = {
   insider: 'No live Form 4 filings yet.',
   institutional: 'No live 13F filings yet.',
-  activist: 'No live 13D/13G filings yet.',
+  activist: 'No live Schedule 13D/13G filings yet.',
 };
 
 /* filed_at is an ISO timestamp; format stably (no locale/TZ hydration drift). */
 function fmtFiled(iso) {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ''));
-  if (!m) return '—';
+  if (!m) return '–';
   const months = [
     'Jan',
     'Feb',
@@ -50,7 +51,7 @@ function fmtUSD(v) {
   return `$${n.toFixed(0)}`;
 }
 function fmtInt(v) {
-  return v == null ? '—' : (Number(v) || 0).toLocaleString('en-US');
+  return v == null ? '–' : (Number(v) || 0).toLocaleString('en-US');
 }
 
 function LiveFeed({ rows, family, onOpen }) {
@@ -83,7 +84,7 @@ function LiveFeed({ rows, family, onOpen }) {
                 <span className="secf-form">{r.form_type}</span>
               </td>
               <td>
-                {r.ticker ? <Ticker symbol={r.ticker} /> : <span className="secf-muted">—</span>}
+                {r.ticker ? <Ticker symbol={r.ticker} /> : <span className="secf-muted">–</span>}
               </td>
               <td className="secf-mono">{fmtFiled(r.filed_at)}</td>
               <td className="secf-link-cell">
@@ -109,7 +110,7 @@ function LiveFeed({ rows, family, onOpen }) {
 
 /* Detail card fetched on open. 13F → holdings table (sortable by value);
    13D/13G → subject + percent-of-class. Parsed rows come from Supabase, never
-   fabricated — an unparsed filing shows an honest "not parsed yet" state. */
+   fabricated: an unparsed filing shows an honest "not parsed yet" state. */
 function SecDetailModal({ filing, onClose }) {
   const [state, setState] = useState('loading'); // loading | error | ready
   const [holdings, setHoldings] = useState([]);
@@ -208,7 +209,7 @@ function SecDetailModal({ filing, onClose }) {
                         {h.ticker ? (
                           <Ticker symbol={h.ticker} />
                         ) : (
-                          <span className="secf-muted">—</span>
+                          <span className="secf-muted">–</span>
                         )}
                       </td>
                       <td className="secf-mono">{fmtUSD(h.value_usd)}</td>
@@ -223,7 +224,7 @@ function SecDetailModal({ filing, onClose }) {
             </div>
           ) : (
             <div className="secf-empty">
-              Holdings not parsed yet — the positions table appears after the next holdings sync.
+              Holdings not parsed yet. The positions table appears after the next holdings sync.
             </div>
           ))}
 
@@ -233,12 +234,12 @@ function SecDetailModal({ filing, onClose }) {
             <div className="secf-position">
               <div className="secf-fact">
                 <div className="secf-fact-k">Subject</div>
-                <div className="secf-fact-v">{position.subject_name || '—'}</div>
+                <div className="secf-fact-v">{position.subject_name || '–'}</div>
               </div>
               <div className="secf-fact">
                 <div className="secf-fact-k">Percent of class</div>
                 <div className="secf-fact-v secf-mono">
-                  {position.percent_of_class != null ? `${position.percent_of_class}%` : '—'}
+                  {position.percent_of_class != null ? `${position.percent_of_class}%` : '–'}
                 </div>
               </div>
               <div className="secf-fact">
@@ -248,7 +249,7 @@ function SecDetailModal({ filing, onClose }) {
             </div>
           ) : (
             <div className="secf-empty">
-              Stake not parsed yet — subject and percent-of-class appear after the next holdings
+              Stake not parsed yet. Subject and percent-of-class appear after the next holdings
               sync.
             </div>
           ))}
@@ -270,14 +271,15 @@ function SecDetailModal({ filing, onClose }) {
   );
 }
 
-/* Insider sample — shown ONLY when the live insider feed is empty, clearly
-   labeled as sample data (the same honest-fallback pattern the contracts page
-   uses). No sample exists for 13F/13D-G, so those show an empty state. */
+/* Insider sample: shown ONLY in local development with
+   NEXT_PUBLIC_ALLOW_SAMPLE_DATA, when the live insider feed is empty, and
+   labeled as sample data. No sample exists for 13F/13D-G. */
 function InsiderSample({ rows }) {
   return (
     <>
       <div className="secf-sample-note">
-        Sample data — not live. The live Form 4 feed appears here after the next EDGAR sync.
+        Sample data (local development only). The live Form 4 feed appears here after the next EDGAR
+        sync.
       </div>
       <div className="mkt-ds-table-wrap">
         <table className="mkt-ds-table secf-table">
@@ -380,9 +382,9 @@ export function SecFilingsClient({ feeds, insiderSample = EMPTY_ROWS }) {
           <p className="mkt-eyebrow">SEC · EDGAR</p>
           <h1 className="mkt-h1">SEC filings</h1>
           <p className="mkt-lead">
-            Live filings straight from SEC EDGAR — insider transactions (Form 4), institutional
-            holdings (13F), and activist stakes (13D/13G). Newest first, each linking to the filing
-            on SEC.gov.
+            Live filings straight from SEC EDGAR: insider transactions (Form 4), institutional
+            holdings (13F), and activist stakes (Schedule 13D/13G). Newest first, each linking to
+            the filing on SEC.gov.
           </p>
         </div>
 
@@ -422,6 +424,7 @@ export function SecFilingsClient({ feeds, insiderSample = EMPTY_ROWS }) {
             standard SEC disclosure lag between a transaction and its filing is inherent to the
             data, not Ezana processing.
           </p>
+          <p className="mkt-ds-sample-note">{OPENFIGI_NOTE}</p>
         </section>
       </main>
 

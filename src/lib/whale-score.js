@@ -49,7 +49,7 @@ const clamp01 = (x) => Math.max(0, Math.min(1, x));
  *   kind: 'institutional' | 'activist',
  *   valueUsd, sharesNow, sharesPrior,            // institutional
  *   fundTotalUsd, fundPositionCount,             // institutional context
- *   percentOfClass, priorPercentOfClass, form,   // activist ('SC 13D'|'SC 13G')
+ *   percentOfClass, priorPercentOfClass, form,   // activist ('13D'|'13G', any spelling)
  * }
  */
 export function whaleScore(move) {
@@ -108,8 +108,10 @@ function activistScore(m) {
   if (!m.percentOfClass || m.percentOfClass < MIN_ACTIVIST_PCT) {
     return { score: 0, tier: null, factors: { belowGate: true } };
   }
-  // 13D (intent to influence) is a stronger signal than 13G (passive).
-  const formScore = m.form === 'SC 13D' ? W.form13D : W.form13G;
+  // 13D (intent to influence) is a stronger signal than 13G (passive). Any
+  // spelling counts: '13D', 'SC 13D', 'SCHEDULE 13D', with or without /A.
+  const is13D = /13\s*D\b/i.test(String(m.form || ''));
+  const formScore = is13D ? W.form13D : W.form13G;
   // Higher stake = stronger. 5% floor, 25%+ is dominant.
   const stakeScore = clamp01((m.percentOfClass - 5) / 20) * W.stake;
   // Escalation: stake grew since last filing.
@@ -119,7 +121,7 @@ function activistScore(m) {
   const score = Math.round(formScore + stakeScore + escalation);
   return {
     score: Math.min(score, 100),
-    tier: m.form === 'SC 13D' ? 'Activist stake' : 'Quiet accumulation',
+    tier: is13D ? 'Activist stake' : 'Quiet accumulation',
     factors: { form: m.form, percentOfClass: m.percentOfClass, escalated: escalation > 0 },
   };
 }
