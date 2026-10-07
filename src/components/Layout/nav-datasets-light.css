@@ -1,64 +1,65 @@
-/* Marketing header Datasets mega-menu: a white panel. Each column heading
-   and icon reads in its dimension's colour (--nav-dim-color, set per column
-   by Navbar.js from the taxonomy); the heading text is mixed toward the ink
-   so pale hues still clear 4.5:1 on white. Row labels are black, and the
-   destinations that are live and navigable (every <a> row, plus the Ezana
-   API and View all datasets footer links) read in Ezana green; roadmap rows
-   stay black with a green "Soon" pill. Scoped to .navbar .nav-datasets-mega
-   and overrides globals.css by specificity.
+/* Landing-page Datasets mega-menu: the same design and colours as the
+   dimension menus on dataset pages (src/components/datasets/category-bar.css).
+   Grey panel, ink headings with the icon in the dimension's colour, ink rows,
+   grey "Soon" pills, emerald hover. Theme-aware: follows light and dark mode
+   exactly as the dataset-page panels do. Scoped to .navbar .nav-datasets-mega
+   to outrank globals.css.
 
-   Contrast: --emerald-dark on white clears 4.5:1 in every theme (the brand
-   --emerald does not), so live text uses it. The panel is pinned white in
-   dark mode too, as requested, so ink is a fixed near-black mixed from the
-   white token rather than --text-primary (which flips to light in dark). */
-
-.navbar .nav-datasets-mega {
-  --nds-bg: var(--color-on-primary);
-  --nds-ink: color-mix(in srgb, black 92%, var(--color-on-primary));
-  --nds-live: var(--emerald-dark);
-  --nds-hair: color-mix(in srgb, black 10%, transparent);
-  --nds-wash: color-mix(in srgb, var(--emerald) 10%, transparent);
-}
+   The pills use the global --type-eyebrow-* tokens: the --ds-type-* aliases
+   that category-bar.css reads load only on /datasets pages. */
 
 .navbar .nav-datasets-mega .nav-datasets-panel {
-  background: var(--nds-bg);
-  border: 1px solid var(--nds-hair);
-  color: var(--nds-ink);
+  background: var(--echo-surface-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  color: var(--text-primary);
 }
 
-/* Each dimension's heading and icon read in that dimension's colour. The
-   heading text is mixed 40% toward the ink so the palest hues still clear
-   4.5:1 on the white panel (amber, the lowest, measures 4.85:1; at 20% it
-   was 3.14:1); the icon keeps the full hue. */
+/* Heading: small uppercase ink text; only the icon (and the Hub link) carry
+   the dimension colour. Matches .dscat-panel-head. */
 .navbar .nav-datasets-mega .nav-datasets-col-head,
 .navbar .nav-datasets-mega .nav-datasets-col:hover .nav-datasets-col-head {
-  color: color-mix(in srgb, var(--nav-dim-color, var(--nds-ink)) 60%, var(--nds-ink));
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0 0 0.35rem;
+  padding-left: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-primary);
 }
 .navbar .nav-datasets-mega .nav-datasets-col-icon {
-  color: var(--nav-dim-color, var(--nds-ink));
-}
-/* Row labels: black by default (live rows turn green below). */
-.navbar .nav-datasets-mega .nav-datasets-item-label {
-  color: var(--nds-ink);
+  flex-shrink: 0;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--nav-dim-color, currentColor);
 }
 
-/* Live, navigable datasets: green. */
+/* Rows: plain ink, the same size and padding as .dscat-item. */
+.navbar .nav-datasets-mega .nav-datasets-item {
+  padding: 0.4rem 0.5rem;
+  border-radius: var(--radius-md);
+}
+.navbar .nav-datasets-mega .nav-datasets-item-label,
 .navbar .nav-datasets-mega a.nav-datasets-item .nav-datasets-item-label {
-  color: var(--nds-live);
-  font-weight: 600;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--text-primary);
 }
 .navbar .nav-datasets-mega a.nav-datasets-item:hover,
 .navbar .nav-datasets-mega a.nav-datasets-item:focus-visible {
-  background: var(--nds-wash);
-}
-.navbar .nav-datasets-mega .nav-datasets-item:focus-visible,
-.navbar .nav-datasets-mega .nav-datasets-foot:focus-visible {
-  outline: 2px solid var(--nds-live);
-  outline-offset: 1px;
+  background: var(--emerald-bg);
+  outline: none;
 }
 
-/* "Soon" rows: full-strength black, no hover affordance; the pill marks them. */
+/* Roadmap rows: full-strength ink, no hover; the grey pill marks them. */
 .navbar .nav-datasets-mega .nav-datasets-item--soon {
+  cursor: default;
   opacity: 1;
 }
 .navbar .nav-datasets-mega .nav-datasets-item--soon:hover,
@@ -66,39 +67,70 @@
   background: none;
 }
 
-/* "Soon": green text on a light green wash. */
-.navbar .nav-datasets-mega .nav-datasets-soon {
-  color: var(--nds-live);
-  background: var(--nds-wash);
-  border-color: color-mix(in srgb, var(--emerald) 35%, transparent);
-}
-/* "Sample": neutral. */
+/* "Soon" and "Sample": the same grey mono pills as .dscat-soon / .dscat-sample. */
+.navbar .nav-datasets-mega .nav-datasets-soon,
 .navbar .nav-datasets-mega .nav-datasets-sample {
-  color: color-mix(in srgb, var(--nds-ink) 65%, var(--nds-bg));
-  background: color-mix(in srgb, black 5%, transparent);
-  border-color: var(--nds-hair);
+  flex-shrink: 0;
+  margin-left: 0;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-pill, 9999px);
+  padding: 1px 6px;
+}
+.navbar .nav-datasets-mega .nav-datasets-soon {
+  color: var(--text-faint);
+}
+.navbar .nav-datasets-mega .nav-datasets-sample {
+  color: var(--text-muted);
 }
 
-/* Footer links ("Ezana API", "View all datasets"): live, so green. */
+/* Footer links: ink like the rows, emerald hover like the rows. */
 .navbar .nav-datasets-mega .nav-datasets-foot,
 .navbar .nav-datasets-mega .nav-datasets-foot:hover {
-  color: var(--nds-live);
+  color: var(--text-primary);
 }
-.navbar .nav-datasets-mega .nav-datasets-foot:hover {
-  background: var(--nds-wash);
+.navbar .nav-datasets-mega .nav-datasets-foot:hover,
+.navbar .nav-datasets-mega .nav-datasets-foot:focus-visible {
+  background: var(--emerald-bg);
+  outline: none;
 }
-
-/* Hairlines bracketing the footer. */
 .navbar .nav-datasets-mega .nav-datasets-divider {
-  background: var(--nds-hair);
+  background: var(--border-primary);
 }
 
-/* The column heading opens the dimension's hub. */
-.navbar .nav-datasets-mega .nav-datasets-col-link {
-  color: inherit;
-  text-decoration: none;
+/* The Hub link widens each head. Where seven heads plus their Hub links no
+   longer fit one row, only the Hub link drops under its title; the title is
+   never truncated and the columns never scroll. */
+@media (max-width: 1360px) {
+  .navbar .nav-datasets-mega .nav-datasets-col-head,
+  .navbar .nav-datasets-mega .nav-datasets-col:hover .nav-datasets-col-head {
+    flex-wrap: wrap;
+    row-gap: 0.15rem;
+  }
+  .navbar .nav-datasets-mega .nav-datasets-col-head .dshub-link {
+    margin-left: 0;
+  }
 }
-.navbar .nav-datasets-mega .nav-datasets-col-link:hover,
-.navbar .nav-datasets-mega .nav-datasets-col-link:focus-visible {
-  text-decoration: underline;
+/* With the Hub link free to wrap and tighter gutters, the seven columns fit
+   one row down to about 1060px, so the horizontal-scroll fallback in
+   globals.css (max-width: 1120px) only applies below that. */
+@media (min-width: 1060px) and (max-width: 1120px) {
+  .navbar .nav-datasets-mega .nav-datasets-panel {
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
+  }
+  .navbar .nav-datasets-mega .nav-datasets-cols {
+    display: grid;
+    overflow-x: visible;
+    column-gap: 0.35rem;
+  }
+  .navbar .nav-datasets-mega .nav-datasets-col {
+    min-width: 0;
+  }
 }

@@ -34,6 +34,7 @@ import Link from 'next/link';
 import { hubHref } from '@/lib/datasets/hubs';
 import { usePathname } from 'next/navigation';
 import { DATASET_TAXONOMY, isNavigable, isPreview } from '@/lib/datasets/taxonomy';
+import HubLink from './HubLink';
 import { useAuth } from '@/components/auth-context';
 import './category-bar.css';
 
@@ -301,9 +302,12 @@ export default function CategoryBar({ active, activeItem }) {
     if (e.key !== 'ArrowDown') return;
     e.preventDefault();
     pin(id);
-    /* The panel has not rendered yet on this frame. */
+    /* The panel has not rendered yet on this frame. The Hub link is the
+       panel's first focusable item; Tab continues into the dataset rows. */
     requestAnimationFrame(() => {
-      panelRef.current?.querySelector('.dscat-item:not([aria-disabled="true"])')?.focus();
+      panelRef.current
+        ?.querySelector('.dshub-link, .dscat-item:not([aria-disabled="true"])')
+        ?.focus();
     });
   };
 
@@ -381,25 +385,18 @@ export default function CategoryBar({ active, activeItem }) {
               onMouseEnter={() => open(openCat.id)}
               onMouseLeave={scheduleClose}
             >
-              {/* The heading opens the dimension's hub. */}
-              <a
-                href={hubHref(openCat.id)}
-                className="dscat-panel-head dscat-panel-head--link"
-                role="menuitem"
-                onClick={close}
-              >
+              {/* The heading is a label; the Hub link beside it opens the hub. */}
+              <p className="dscat-panel-head">
                 <i className={`bi ${openCat.biIcon} dscat-panel-icon`} aria-hidden="true" />
                 {openCat.label}
-              </a>
-              <a
-                href={hubHref(openCat.id)}
-                className={`dscat-item ${active === openCat.id && !activeItem ? 'is-active' : ''}`}
-                style={{ '--dscat-item-color': openCat.color }}
-                role="menuitem"
-                onClick={close}
-              >
-                <span className="dscat-item-label">Overview and EzanaQL</span>
-              </a>
+                <HubLink
+                  dimensionId={openCat.id}
+                  dimensionLabel={openCat.label}
+                  color={openCat.color}
+                  active={pathname === hubHref(openCat.id)}
+                  onNavigate={close}
+                />
+              </p>
               {openCat.items.map((it) =>
                 isNavigable(it) ? (
                   <a

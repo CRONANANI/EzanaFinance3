@@ -1,0 +1,49 @@
+/* "Hub ->" next to a dimension title. Same colour as the dimension's icon. */
+.dshub-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: var(--radius-sm);
+  color: var(--dshub-color, var(--emerald-text));
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.14s ease;
+}
+.dshub-link:hover,
+.dshub-link:focus-visible {
+  background: color-mix(in srgb, var(--dshub-color, var(--emerald)) 12%, transparent);
+  outline: none;
+}
+.dshub-link:focus-visible {
+  box-shadow: 0 0 0 2px var(--dshub-color, var(--emerald));
+}
+.dshub-link.is-active .dshub-word {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.dshub-arrow {
+  font-size: 0.75rem;
+  line-height: 1;
+  transition: transform 0.14s ease;
+}
+.dshub-link:hover .dshub-arrow,
+.dshub-link:focus-visible .dshub-arrow {
+  transform: translateX(2px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .dshub-link,
+  .dshub-arrow {
+    transition: none;
+  }
+  .dshub-link:hover .dshub-arrow,
+  .dshub-link:focus-visible .dshub-arrow {
+    transform: none;
+  }
+}

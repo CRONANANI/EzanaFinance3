@@ -13,11 +13,11 @@ import { AnimatedNav } from '@/components/ui/AnimatedNav';
 import { MobileAuthNavDrawer } from '@/components/Layout/MobileAuthNavDrawer';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { isBetaLockedRoute, hasBetaFullAccess } from '@/lib/beta-locked-routes';
-import { ChevronDown, ArrowRight } from 'lucide-react';
 import { DATASET_TAXONOMY, isNavigable, isPreview } from '@/lib/datasets/taxonomy';
 import '@/components/ui/animated-nav.css';
 import './nav-datasets-light.css';
 import { hubHref } from '@/lib/datasets/hubs';
+import HubLink from '@/components/datasets/HubLink';
 
 /* Landing-nav Datasets mega-menu: the SAME seven dimensions as the orbital map,
    the in-page CategoryBar, and the signal map, built from the shared
@@ -670,10 +670,9 @@ export function Navbar() {
                 onClick={onDatasetsTriggerClick}
               >
                 Datasets
-                <ChevronDown
-                  size={14}
-                  aria-hidden
-                  className={`nav-datasets-caret${datasetsOpen ? ' is-open' : ''}`}
+                <i
+                  aria-hidden="true"
+                  className={`bi bi-chevron-down nav-datasets-caret${datasetsOpen ? ' is-open' : ''}`}
                 />
               </button>
               <div
@@ -698,13 +697,14 @@ export function Navbar() {
                               className={`bi ${col.biIcon} nav-datasets-col-icon`}
                               aria-hidden="true"
                             />
-                            <a
-                              className="nav-datasets-col-label nav-datasets-col-link"
-                              href={hubHref(col.id)}
-                              onClick={() => setDatasetsOpen(false)}
-                            >
-                              {col.heading}
-                            </a>
+                            <span className="nav-datasets-col-label">{col.heading}</span>
+                            <HubLink
+                              dimensionId={col.id}
+                              dimensionLabel={col.heading}
+                              color={col.color}
+                              active={pathname === hubHref(col.id)}
+                              onNavigate={closeDatasetsMenu}
+                            />
                           </p>
                           {col.items.map((item) =>
                             isNavigable(item) ? (
@@ -750,7 +750,7 @@ export function Navbar() {
                     onClick={closeDatasetsMenu}
                   >
                     Ezana API
-                    <ArrowRight size={14} aria-hidden />
+                    <i className="bi bi-arrow-right" aria-hidden="true" />
                   </a>
                   <div className="nav-datasets-divider" />
                   <a
@@ -760,7 +760,7 @@ export function Navbar() {
                     onClick={closeDatasetsMenu}
                   >
                     View all datasets
-                    <ArrowRight size={14} aria-hidden />
+                    <i className="bi bi-arrow-right" aria-hidden="true" />
                   </a>
                 </div>
               </div>
@@ -863,14 +863,17 @@ export function Navbar() {
                           className="mobile-nav-group-col"
                           style={{ '--nav-dim-color': col.color }}
                         >
-                          <a
-                            className="mobile-nav-group-head mobile-nav-group-link"
-                            href={hubHref(col.id)}
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
+                          <p className="mobile-nav-group-head">
                             <i className={`bi ${col.biIcon}`} aria-hidden="true" />
-                            {col.heading}
-                          </a>
+                            <span>{col.heading}</span>
+                            <HubLink
+                              dimensionId={col.id}
+                              dimensionLabel={col.heading}
+                              color={col.color}
+                              active={pathname === hubHref(col.id)}
+                              onNavigate={() => setMobileMenuOpen(false)}
+                            />
+                          </p>
                           {col.items.map((item) =>
                             isNavigable(item) ? (
                               <a
