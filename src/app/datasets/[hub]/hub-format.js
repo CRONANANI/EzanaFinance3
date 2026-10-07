@@ -14,6 +14,11 @@ export function fmt(kind, v) {
       return shortDate(v);
     case 'num':
       return Number(v).toLocaleString('en-US', { maximumFractionDigits: 2 });
+    case 'signed-pct': {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return null;
+      return `${n > 0 ? '+' : ''}${n.toFixed(1)}%`;
+    }
     case 'signed': {
       const s = Number(v).toLocaleString('en-US', { maximumFractionDigits: 2 });
       return Number(v) > 0 ? `+${s}` : s;

@@ -61,6 +61,7 @@ const GATE_WHAT = {
   json: 'export this report as JSON',
   watchlist: 'add these tickers to your watchlist',
   save: 'save this report to your research',
+  'hub-save': 'add this data to your research profile and watchlist',
 };
 
 /* Explains why an account action did not happen, in place under the bar. */

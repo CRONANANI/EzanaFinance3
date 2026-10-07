@@ -38,22 +38,39 @@ export const HUB_LINKAGES = {
     {
       id: 'capitol-near-contracts',
       title: 'Trades near contract awards',
-      why: 'A member traded a stock within 30 days of a federal contract award to the same company.',
-      window: 'Trades in the last 12 months; awards within 30 days either side',
-      sources: 'House Clerk and Senate disclosures, USAspending.gov',
-      empty: 'Appears when a disclosed trade falls within 30 days of an award to the same company.',
+      wide: true,
+      why: 'The best 30-day returns on trades made within 30 days of a federal contract award to the same company, by politicians, corporate insiders, institutions and whales.',
+      window: 'Trades and filings in the last 2 years; awards within 30 days either side',
+      sources:
+        'House Clerk and Senate disclosures, SEC Forms 4, 13F, 13D and 13G, USAspending.gov, daily closing prices',
+      coverage:
+        'Returns run from the first close on or after the trade to the first close 30 days later; a sale counts as a gain when the price fell. Institutions and whales are measured from the filing date, since 13F and 13D/G filings carry no trade date.',
+      empty:
+        'Appears once a trade near an award has 30 days of price history after it. New awards and disclosures arrive daily.',
+    },
+    {
+      id: 'capitol-award-leaders',
+      title: 'Who reads contract awards best',
+      why: 'Rankings of the traders whose moves around federal contract awards paid off most often, and the companies whose stock tends to rise after their awards.',
+      window: 'Trades and awards in the last 2 years',
+      sources:
+        'House Clerk and Senate disclosures, SEC filings, USAspending.gov, daily closing prices',
+      coverage:
+        'Insight score: average 30-day return times hit rate, scaled down for small samples so one lucky trade does not top the table.',
+      empty: 'Fills once traders have measured trades near contract awards.',
+      badges: true,
     },
     {
       id: 'capitol-committee-sectors',
       title: "Trades in sectors a member's committees oversee",
-      why: 'A member traded a company in a sector their committee has jurisdiction over.',
-      window: 'Trades in the last 180 days',
+      why: 'Companies a member traded in a sector their committee oversees, ranked by confidence: the largest share of any one committee whose members hold the stock. Every committee with a holder is listed.',
+      window: 'Trades in the last 180 days; holdings as of the latest disclosures',
       sources: 'House Clerk and Senate disclosures, congress-legislators project',
       empty:
         'Appears when a member trades a mapped ticker in a sector one of their committees oversees. Tickers outside the sector map are not guessed.',
       noteKey: 'committee',
       coverage:
-        'Committee counts cover the full committee. Holding means disclosures show a purchase not followed by a full sale; members report up to 45 days after a trade.',
+        'Committee counts cover full committees of 10 or more members, not subcommittees or smaller panels. Holding means disclosures show a purchase not followed by a full sale; members report up to 45 days after a trade.',
     },
     {
       id: 'capitol-lobbying-contracts',

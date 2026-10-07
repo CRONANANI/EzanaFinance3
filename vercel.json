@@ -106,6 +106,10 @@
       "schedule": "40 7 * * *"
     },
     {
+      "path": "/api/cron/sync-award-prices",
+      "schedule": "20 8 * * 1-6"
+    },
+    {
       "path": "/api/cron/ingest-sec-filings?days=3",
       "schedule": "0 8,20 * * *"
     },

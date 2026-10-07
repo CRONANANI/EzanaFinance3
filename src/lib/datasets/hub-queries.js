@@ -22,6 +22,16 @@ WHERE bioguide_id = "${q(bioguideId)}" AND transaction_date >= LAST 180 DAYS
 SELECT politician, ticker, transaction_type, transaction_date, amount_low, amount_high
 ORDER BY transaction_date DESC
 LIMIT 50;`,
+  tickerHolders: (ticker) => `FROM capitol.holdings
+WHERE ticker = "${q(ticker)}"
+SELECT politician, party, chamber, est_value, last_trade
+ORDER BY est_value DESC
+LIMIT 50;`,
+  tickerAwards: (ticker) => `FROM gov.contracts
+WHERE ticker = "${q(ticker)}" AND action_date >= LAST 12 MONTHS
+SELECT recipient, awarding_agency, award_value, action_date
+ORDER BY action_date DESC
+LIMIT 50;`,
   lobbyingClient: (client) => `FROM capitol.lobbying
 WHERE client = "${q(client)}"
 SELECT filing_year, period, registrant, amount
@@ -58,6 +68,8 @@ LIMIT 1;`,
 export const HUB_QUERY_DIMENSION = {
   memberTicker: 'capitol',
   memberRecent: 'capitol',
+  tickerHolders: 'capitol',
+  tickerAwards: 'capitol',
   lobbyingClient: 'capitol',
   raiserTrades: 'capitol',
   whaleTicker: 'titans',

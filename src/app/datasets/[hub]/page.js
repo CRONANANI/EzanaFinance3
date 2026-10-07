@@ -116,7 +116,7 @@ export default function HubPage({ params }) {
             <div className="hub-links">
               {linkages.map((card) => (
                 <Suspense key={card.id} fallback={<LinkageSkeleton card={card} />}>
-                  <LinkageCard card={card} />
+                  <LinkageCard card={card} dimension={dim.id} />
                 </Suspense>
               ))}
             </div>

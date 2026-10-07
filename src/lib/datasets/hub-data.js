@@ -743,80 +743,160 @@ export async function getDatasetSummary(label) {
 /* ── linkage cards ──────────────────────────────────────────────────── */
 
 /**
- * For each row's (committee, ticker): how many of the committee's members
- * hold the ticker (inferred from disclosures) and how many bought or sold it
- * since `since`. A failure here leaves the rows without numbers rather than
- * failing the card.
+ * Every full committee with at least one member who still holds each ticker
+ * (inferred from disclosures), as [{ id, name, chamber, seats, holders,
+ * share, names }] sorted by share of the committee holding, highest first.
  */
-async function attachCommitteeStats(admin, rows, since) {
-  const pairs = [];
-  const seen = new Set();
-  for (const r of rows) {
-    const k = `${r._committee.id}|${r.ticker}`;
-    if (seen.has(k)) continue;
-    seen.add(k);
-    pairs.push({ committee: r._committee.id, ticker: r.ticker });
+/* Panels smaller than this (Senate Ethics, select panels, caucuses and
+   commissions of 6 to 9 members) are left out: one holder there reads as a
+   double-digit share and would top every ticker's confidence. Every standing
+   committee has at least this many seats. */
+const MIN_COMMITTEE_SEATS = 10;
+
+async function committeeHoldersByTicker(admin, tickers) {
+  const out = new Map();
+  if (!tickers.length) return out;
+  const { data, error } = await timed(
+    admin.rpc('hub_ticker_committee_holders', { p_tickers: tickers }),
+  );
+  if (error) throw new Error(error.message);
+  for (const r of data || []) {
+    if (!r.seats || r.seats < MIN_COMMITTEE_SEATS) continue;
+    const t = String(r.ticker).toUpperCase();
+    if (!out.has(t)) out.set(t, []);
+    out.get(t).push({
+      id: r.committee_thomas_id,
+      name: shortCommitteeName(r.committee),
+      chamber: r.chamber,
+      seats: r.seats,
+      holders: r.holders,
+      share: r.seats ? r.holders / r.seats : 0,
+      names: r.holder_names || [],
+    });
   }
-  let stats = new Map();
-  if (pairs.length) {
-    const { data, error } = await timed(
-      admin.rpc('hub_committee_ticker_stats', { p_pairs: pairs, p_since: since }),
-    );
-    if (error) {
-      console.error('[hub-data] committee stats', error.message);
-    } else {
-      stats = new Map(
-        (data || []).map((s) => [`${s.committee_thomas_id}|${String(s.ticker).toUpperCase()}`, s]),
-      );
-    }
+  for (const list of out.values()) {
+    list.sort((x, y) => y.share - x.share || y.holders - x.holders || x.name.localeCompare(y.name));
   }
-  return rows.map(({ _committee, ...r }) => {
-    const s = stats.get(`${String(_committee.id).toUpperCase()}|${r.ticker}`);
-    if (!s || !s.seats) return r;
-    return {
-      ...r,
-      stat: {
-        committee: _committee.name,
-        ticker: r.ticker,
-        seats: s.seats,
-        holders: s.holders,
-        share: s.holders / s.seats,
-        holderNames: s.holder_names || [],
-        buyers: s.buyers,
-        sellers: s.sellers,
-        windowDays: 180,
-      },
-    };
-  });
+  return out;
+}
+
+const ACTOR_LABEL = {
+  politician: 'Politician',
+  insider: 'Insider',
+  institution: 'Institution',
+  whale: 'Whale',
+};
+
+/** Daily closes for one award chart: 30 days before the earlier of the trade
+    and the award to 40 days after the later one. */
+async function awardChartSeries(admin, r) {
+  const t0 = r.trade_date < r.award_date ? r.trade_date : r.award_date;
+  const t1 = r.trade_date > r.award_date ? r.trade_date : r.award_date;
+  const from = new Date(Date.parse(t0) - 30 * 86400000).toISOString().slice(0, 10);
+  const to = new Date(Date.parse(t1) + 40 * 86400000).toISOString().slice(0, 10);
+  const { data, error } = await admin
+    .from('price_data_cache')
+    .select('date, close')
+    .eq('ticker', r.ticker)
+    .gte('date', from)
+    .lte('date', to)
+    .order('date');
+  if (error) throw new Error(error.message);
+  return (data || [])
+    .filter((p) => Number.isFinite(Number(p.close)))
+    .map((p) => [p.date, Number(p.close)]);
+}
+
+function actorHref(r) {
+  if (r.actor_type === 'politician') {
+    return `/datasets/politician-tracker?member=${encodeURIComponent(r.actor_id)}`;
+  }
+  if (r.actor_type === 'insider') return '/datasets/insider';
+  if (r.actor_type === 'institution') return '/datasets/institutional';
+  return '/datasets/whale-moves';
 }
 
 const LINKAGES = {
-  /* Capitol 1: members who traded a stock within 30 days of a federal contract
-     award to the same company. */
+  /* Capitol 1: the best-returning trades by a politician, insider,
+     institution or whale within 30 days of a federal contract award to the
+     same company, each with its price chart around the award. */
   async 'capitol-near-contracts'(admin) {
-    const { data, error } = await timed(
-      admin.rpc('hub_capitol_trades_near_contracts', {
-        p_since: isoDaysAgo(365),
-        p_window_days: 30,
-        p_limit: 10,
-      }),
-    );
+    const { data, error } = await timed(admin.rpc('hub_award_window_top', { p_limit: 10 }));
     if (error) throw new Error(error.message);
-    return (data || []).map((r) => ({
-      key: `${r.bioguide_id}-${r.ticker}`,
+    const rows = data || [];
+    const series = await Promise.all(rows.map((r) => awardChartSeries(admin, r)));
+    return rows.map((r, i) => ({
+      key: `${r.actor_type}-${r.source_id}`,
       ticker: r.ticker,
-      title: r.member_name || r.bioguide_id,
-      party: r.party,
+      title: r.actor_name || r.actor_id,
+      party: r.actor_type === 'politician' ? r.actor_detail : null,
+      tag: ACTOR_LABEL[r.actor_type] || r.actor_type,
       cells: [
         { label: 'Ticker', value: r.ticker, kind: 'ticker' },
-        { label: 'Trades', value: r.trades, kind: 'int' },
-        { label: 'Awards in window', value: r.awards, kind: 'int' },
-        { label: 'Award value', value: num(r.award_value), kind: 'usd' },
-        { label: 'Top agency', value: r.top_agency, kind: 'text' },
+        { label: r.side === 'buy' ? 'Bought' : 'Sold', value: r.trade_date, kind: 'date' },
+        { label: '30-day return', value: num(r.ret_30d_pct), kind: 'signed-pct' },
+        { label: 'Award', value: num(r.award_amount), kind: 'usd' },
+        { label: 'Award date', value: r.award_date, kind: 'date' },
+        { label: 'Agency', value: r.awarding_agency, kind: 'text' },
       ],
-      query: Q.memberTicker(r.bioguide_id, r.ticker),
-      href: `/datasets/politician-tracker?member=${encodeURIComponent(r.bioguide_id)}`,
+      chart: {
+        ticker: r.ticker,
+        side: r.side,
+        points: series[i],
+        tradeDate: r.trade_date,
+        awardDate: r.award_date,
+        entryDate: r.entry_date,
+        exitDate: r.exit_date,
+        retPct: num(r.ret_30d_pct),
+        basis: r.date_basis,
+      },
+      query: Q.tickerAwards(r.ticker),
+      href: actorHref(r),
     }));
+  },
+
+  /* Capitol 1b: who reads contract awards best, and which companies' stock
+     moves after their awards. */
+  async 'capitol-award-leaders'(admin) {
+    const [leaders, companies] = await Promise.all([
+      timed(admin.rpc('hub_award_leaders', { p_limit: 10, p_min_trades: 1 })),
+      timed(admin.rpc('hub_award_companies', { p_limit: 8 })),
+    ]);
+    if (leaders.error) throw new Error(leaders.error.message);
+    if (companies.error) throw new Error(companies.error.message);
+    const rows = (leaders.data || []).map((r) => ({
+      key: `${r.actor_type}-${r.actor_id}`,
+      ticker: r.best_ticker,
+      title: r.actor_name || r.actor_id,
+      party: r.actor_type === 'politician' ? r.actor_detail : null,
+      tag: ACTOR_LABEL[r.actor_type] || r.actor_type,
+      badge: r.quick_step ? 'quick-step' : null,
+      cells: [
+        { label: 'Insight score', value: num(r.score), kind: 'num' },
+        { label: 'Trades', value: r.trades, kind: 'int' },
+        { label: 'Avg 30-day return', value: num(r.avg_ret_pct), kind: 'signed-pct' },
+        {
+          label: 'Hit rate',
+          value: num(r.hit_rate) == null ? null : num(r.hit_rate) * 100,
+          kind: 'pct',
+        },
+        { label: 'Best', value: r.best_ticker, kind: 'ticker' },
+      ],
+      query: r.best_ticker ? Q.tickerAwards(r.best_ticker) : null,
+      href: actorHref(r),
+    }));
+    const extra = {
+      companies: (companies.data || []).map((c) => ({
+        ticker: c.ticker,
+        awardDates: c.award_dates,
+        awardValue: num(c.award_value),
+        avgMovePct: num(c.avg_move_pct),
+        hitRate: num(c.hit_rate),
+        agency: c.top_agency,
+        badge: c.quick_step ? 'quick-step' : null,
+      })),
+    };
+    return { rows, extra };
   },
 
   /* Capitol 2: trades in sectors the member's committees oversee. */
@@ -876,38 +956,52 @@ const LINKAGES = {
         if (!m.has(key)) m.set(key, parent || c);
       }
     }
-    const out = [];
-    const seen = new Set();
+    /* One candidate per ticker: its most recent trade by a member whose
+       committee oversees the ticker's sector. */
+    const byTicker = new Map();
     for (const t of trades) {
       const ticker = String(t.ticker).toUpperCase();
+      if (byTicker.has(ticker)) continue;
       const m = oversight.get(String(t.bioguide_id || '').toUpperCase());
       if (!m) continue;
       const hit = sectorsForTicker(ticker).find((k) => m.has(k));
       if (!hit) continue;
-      const k = `${t.bioguide_id}-${ticker}`;
-      if (seen.has(k)) continue;
-      seen.add(k);
-      const committee = m.get(hit);
-      out.push({
-        key: k,
+      byTicker.set(ticker, { t, hit, committee: m.get(hit) });
+      if (byTicker.size >= 60) break;
+    }
+    const holders = await committeeHoldersByTicker(admin, [...byTicker.keys()]);
+    const out = [...byTicker.entries()].map(([ticker, { t, hit, committee }]) => {
+      const committees = holders.get(ticker) || [];
+      const top = committees[0] || null;
+      return {
+        key: ticker,
         ticker,
-        // Not rendered: the (committee, ticker) pair attachCommitteeStats reads.
-        _committee: { id: committee.thomas_id, name: shortCommitteeName(committee.name) },
-        title: t.member_name || t.bioguide_id,
-        party: t.party,
+        title: ticker,
+        confidence: top ? top.share : 0,
         cells: [
-          { label: 'Ticker', value: ticker, kind: 'ticker' },
+          {
+            label: 'Latest trade',
+            value: `${t.member_name || t.bioguide_id}${t.party ? ` (${t.party})` : ''}`,
+            kind: 'text',
+          },
           { label: 'Trade', value: t.type, kind: 'text' },
           { label: 'Date', value: t.transaction_date, kind: 'date' },
-          { label: 'Committee', value: shortCommitteeName(committee.name), kind: 'text' },
+          { label: 'Oversight', value: shortCommitteeName(committee.name), kind: 'text' },
           { label: 'Sector', value: sectorLabel(hit), kind: 'text' },
         ],
-        query: Q.memberRecent(t.bioguide_id),
+        committees,
+        query: Q.tickerHolders(ticker),
         href: `/datasets/committees?member=${encodeURIComponent(t.bioguide_id)}`,
-      });
-      if (out.length >= 10) break;
-    }
-    return attachCommitteeStats(admin, out, since);
+      };
+    });
+    /* Confidence: the highest share of any one committee holding the ticker. */
+    out.sort(
+      (x, y) =>
+        y.confidence - x.confidence ||
+        (y.committees[0]?.holders || 0) - (x.committees[0]?.holders || 0) ||
+        x.ticker.localeCompare(y.ticker),
+    );
+    return out.slice(0, 10);
   },
 
   /* Capitol 3: verified public lobbying clients with contracts too. */
@@ -1380,12 +1474,14 @@ function titansRow(r) {
 async function loadLinkageOrThrow(id) {
   const fn = LINKAGES[id];
   if (!fn || !configured()) return { rows: [] };
-  return { rows: await fn(getAdminClient()) };
+  const out = await fn(getAdminClient());
+  /* A loader returns its rows, or { rows, extra } when its card shows more. */
+  return Array.isArray(out) ? { rows: out } : { rows: out?.rows || [], extra: out?.extra || null };
 }
 
-/* v2: errors are thrown inside the cache and caught outside, so a timeout is
+/* v3, row shapes changed. Errors are thrown inside the cache and caught outside, so a timeout is
    retried on the next request instead of being served for 15 minutes. */
-const cachedLinkage = unstable_cache(loadLinkageOrThrow, ['hub-linkage-v2'], CACHE);
+const cachedLinkage = unstable_cache(loadLinkageOrThrow, ['hub-linkage-v3'], CACHE);
 
 export async function getLinkage(id) {
   try {

@@ -111,8 +111,13 @@
 /* ── cards ── */
 .hub-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(168px, 1fr);
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
 }
 .hub-links {
   display: grid;
@@ -333,13 +338,6 @@
   font-size: 0.65rem;
   color: var(--text-faint);
 }
-.hub-gate {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 6px);
-  z-index: 5;
-  width: min(420px, 86vw);
-}
 
 /* ── roadmap ── */
 .hub-will-list {
@@ -396,9 +394,6 @@
 
 /* ── responsive ── */
 @media (max-width: 1100px) {
-  .hub-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
   .hub-links {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -408,7 +403,10 @@
     padding: 0 16px 48px;
   }
   .hub-grid {
-    grid-template-columns: minmax(0, 1fr);
+    grid-auto-columns: minmax(150px, 46%);
+  }
+  .hub-row-acts {
+    flex-wrap: wrap;
   }
   .hub-stats dd {
     font-size: var(--type-value-sm-size);
@@ -419,52 +417,561 @@
   .hub-row-acts {
     flex-direction: row;
   }
-  .hub-gate {
-    left: 0;
-    right: auto;
-  }
 }
 
-/* committee ownership on a linkage row */
-.hub-cstat {
-  display: grid;
-  gap: 4px;
-  margin-top: 8px;
-  padding: 8px 10px;
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--hub-accent) 6%, transparent);
-  border: 1px solid color-mix(in srgb, var(--hub-accent) 18%, transparent);
+/* ── compact dataset cards (one line) ── */
+.hub-ds {
+  gap: 6px;
+  padding: 12px 14px;
+  scroll-snap-align: start;
 }
-/* Scoped under .hub-cstat to outrank light-mode.css's body.light-mode p. */
-.hub-cstat .hub-cstat-line {
+.hub-ds-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+.hub-ds-title {
   margin: 0;
   font-size: var(--type-caption-size);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.hub-ds-sub {
+  margin: 0;
+  font-size: var(--type-micro-size);
+  color: var(--text-faint);
+}
+.hub-ds-num {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 6px;
+  margin: 0;
+}
+.hub-ds-value {
+  font-size: var(--type-value-sm-size);
+  font-weight: 600;
+}
+.hub-ds-label,
+.hub-ds-second {
+  font-size: var(--type-micro-size);
+  color: var(--text-muted);
+}
+.hub-ds-second {
+  flex-basis: 100%;
+  color: var(--text-faint);
+}
+.hub-ds-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: auto;
+  font-size: var(--type-micro-size);
+  color: var(--text-faint);
+}
+
+/* ── wide linkage cards and row extras ── */
+.hub-link--wide {
+  grid-column: 1 / -1;
+}
+.hub-who {
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--hub-accent) 12%, transparent);
+  color: var(--text-muted);
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+}
+.hub-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ── committee confidence ── */
+.hub-conf {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--hub-accent) 18%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--hub-accent) 5%, transparent);
+}
+.hub-conf-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+.hub-conf-score {
+  font-size: var(--type-value-sm-size);
+  font-weight: 700;
   color: var(--text-primary);
 }
-.hub-cstat-bar {
+.hub-conf-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hub-conf-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(60px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--type-micro-size);
+}
+.hub-conf-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+.hub-conf-chamber {
+  margin-left: 6px;
+  color: var(--text-faint);
+}
+.hub-conf-bar {
   height: 4px;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--text-faint) 18%, transparent);
   overflow: hidden;
 }
-.hub-cstat-bar > span {
+.hub-conf-bar > span {
   display: block;
   width: var(--w, 0%);
   height: 100%;
   border-radius: inherit;
   background: var(--hub-accent);
-  transition: width 0.4s ease;
 }
-.hub-cstat .hub-cstat-sub {
-  margin: 0;
+.hub-conf-num {
+  display: inline-flex;
+  gap: 6px;
+  justify-content: flex-end;
+  min-width: 92px;
+  color: var(--text-primary);
+}
+.hub-conf-of {
+  color: var(--text-faint);
+}
+.hub-conf-more summary {
+  cursor: pointer;
   font-size: var(--type-micro-size);
   color: var(--text-muted);
 }
-.hub-cstat-names {
+.hub-conf-more[open] summary {
+  margin-bottom: 4px;
+}
+.hub-conf-none {
+  margin: 8px 0 0;
+  font-size: var(--type-micro-size);
   color: var(--text-faint);
 }
+
+/* ── award trade chart ── */
+.hub-chart {
+  margin: 10px 0 0;
+}
+.hub-chart-plot {
+  position: relative;
+}
+.hub-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 190px;
+  touch-action: pan-y;
+  cursor: crosshair;
+}
+.hub-chart svg:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.hub-chart-grid {
+  stroke: var(--border-secondary);
+  stroke-dasharray: 3 3;
+}
+.hub-chart-tick {
+  fill: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.hub-chart-label {
+  fill: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+}
+.hub-chart-line {
+  fill: none;
+  stroke: var(--text-faint);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+.hub-chart-hold {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.hub-chart-hold.is-up {
+  stroke: var(--emerald);
+}
+.hub-chart-hold.is-down {
+  stroke: var(--negative);
+}
+.hub-chart-award {
+  stroke: var(--hub-accent);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.hub-chart-dot {
+  stroke: var(--bg-primary);
+  stroke-width: 2;
+}
+.hub-chart-dot.is-trade {
+  fill: var(--text-primary);
+}
+.hub-chart-dot.is-up {
+  fill: var(--emerald);
+}
+.hub-chart-dot.is-down {
+  fill: var(--negative);
+}
+.hub-chart-dot.is-hover {
+  fill: var(--text-primary);
+}
+.hub-chart-cross {
+  stroke: var(--text-muted);
+  stroke-width: 1;
+}
+.hub-chart-tip {
+  position: absolute;
+  top: 0;
+  transform: translateX(8px);
+  display: grid;
+  gap: 1px;
+  padding: 5px 8px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--text-primary) 4%, var(--bg-primary));
+  box-shadow: var(--shadow-sm);
+  font-size: var(--type-micro-size);
+  color: var(--text-muted);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.hub-chart-tip[data-flip] {
+  transform: translateX(calc(-100% - 8px));
+}
+.hub-chart-tip strong {
+  color: var(--text-primary);
+}
+.hub-chart-cap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 4px;
+  font-size: var(--type-micro-size);
+  color: var(--text-muted);
+}
+.hub-chart-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.hub-chart-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 0;
+  border-top: 2px solid var(--text-faint);
+}
+.hub-chart-swatch.is-award {
+  border-top: 2px dashed var(--hub-accent);
+}
+.hub-chart-swatch.is-up {
+  border-top-color: var(--emerald);
+}
+.hub-chart-swatch.is-down {
+  border-top-color: var(--negative);
+}
+.hub-chart-empty {
+  margin: 8px 0 0;
+  font-size: var(--type-micro-size);
+  color: var(--text-faint);
+}
+
+/* ── Quick Step badge ── */
+.hub-badge {
+  position: relative;
+  display: inline-flex;
+}
+.hub-badge-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, var(--emerald) 45%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--emerald) 12%, transparent);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: help;
+}
+.hub-badge-btn .bi {
+  color: var(--emerald);
+}
+.hub-badge.is-locked .hub-badge-btn {
+  border-color: var(--border-primary);
+  background: transparent;
+  color: var(--text-muted);
+}
+.hub-badge.is-locked .hub-badge-btn .bi {
+  color: var(--text-faint);
+}
+.hub-badge.is-compact .hub-badge-btn {
+  padding: 1px 6px;
+}
+.hub-badge-btn:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.hub-badge-tip {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  display: grid;
+  gap: 6px;
+  width: min(300px, 80vw);
+  padding: 12px 14px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--text-primary) 4%, var(--bg-primary));
+  box-shadow: var(--shadow-lg);
+  font-weight: 400;
+  text-align: left;
+  white-space: normal;
+}
+.hub-row-title .hub-badge-tip {
+  right: auto;
+  left: 0;
+}
+.hub-badge-tip-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--type-caption-size);
+  color: var(--text-primary);
+}
+.hub-badge-tip-title .bi {
+  color: var(--emerald);
+}
+.hub-badge-tip-h {
+  font-size: var(--type-micro-size);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+}
+.hub-badge-tip-p,
+.hub-badge-tip-me {
+  font-size: var(--type-micro-size);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.hub-badge-tip-me {
+  padding-top: 6px;
+  border-top: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+.hub-badge-tip-link {
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  color: var(--emerald);
+}
+
+/* ── companies after awards (leaders card) ── */
+.hub-cos {
+  display: grid;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-primary);
+}
+.hub-cos-title {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+}
+.hub-cos-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hub-cos-item {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--type-micro-size);
+}
+.hub-cos-tk {
+  font-weight: 600;
+}
+.hub-cos-meta {
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hub-cos-move.is-up {
+  color: var(--emerald);
+}
+.hub-cos-move.is-down {
+  color: var(--negative);
+}
+
+/* ── Watchlist / Save menu ── */
+.hub-save {
+  position: relative;
+}
+.hub-save > .hub-act {
+  width: 100%;
+}
+.hub-caret {
+  font-size: 0.65rem;
+  color: var(--text-faint);
+}
+.hub-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 15;
+  display: grid;
+  gap: 2px;
+  width: min(280px, 86vw);
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--text-primary) 4%, var(--bg-primary));
+  box-shadow: var(--shadow-lg);
+}
+.hub-menu-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+.hub-menu-item:hover:not(:disabled),
+.hub-menu-item:focus-visible {
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
+  outline: none;
+}
+.hub-menu-item:disabled {
+  cursor: default;
+}
+.hub-menu-item .bi {
+  margin-top: 2px;
+  color: var(--emerald);
+}
+.hub-menu-item span {
+  display: grid;
+  gap: 2px;
+}
+.hub-menu-item strong {
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+}
+.hub-menu-item small {
+  font-size: var(--type-micro-size);
+  color: var(--text-muted);
+}
+
+/* ── centred account prompt ── */
+.hub-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: color-mix(in srgb, var(--bg-primary) 35%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: hub-modal-in 0.18s ease-out;
+}
+.hub-modal-card {
+  width: min(480px, 100%);
+}
+.hub-modal-card .eqb-gate {
+  grid-template-columns: auto minmax(0, 1fr);
+  margin-top: 0;
+  padding: 20px 44px 20px 20px;
+  border-color: color-mix(in srgb, var(--emerald) 40%, var(--border-primary));
+  background: color-mix(in srgb, var(--text-primary) 4%, var(--bg-primary));
+  box-shadow: var(--shadow-xl);
+}
+.hub-modal-card .eqb-gate-actions {
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+}
+@keyframes hub-modal-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
-  .hub-cstat-bar > span {
-    transition: none;
+  .hub-modal {
+    animation: none;
+  }
+}
+@media (max-width: 640px) {
+  .hub-conf-item {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .hub-conf-bar {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+  .hub-menu {
+    right: auto;
+    left: 0;
+  }
+  .hub-cos-item {
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+  }
+  .hub-cos-item .hub-badge {
+    grid-column: 1 / -1;
   }
 }
