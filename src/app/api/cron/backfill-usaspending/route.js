@@ -305,6 +305,12 @@ export async function GET(request) {
     await sleep(POLITE_DELAY_MS);
   }
 
+  // The hub's contract-award linkage reads a materialized copy of resolved awards.
+  if (ingested) {
+    const { error: mvErr } = await admin.rpc('refresh_contract_award_tickers');
+    if (mvErr) errors.push(`refresh awards mv: ${mvErr.message}`);
+  }
+
   const done = fy > endFy;
   await admin.from(PROGRESS).upsert(
     {

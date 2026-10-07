@@ -52,6 +52,8 @@ export const HUB_LINKAGES = {
       empty:
         'Appears when a member trades a mapped ticker in a sector one of their committees oversees. Tickers outside the sector map are not guessed.',
       noteKey: 'committee',
+      coverage:
+        'Committee counts cover the full committee. Holding means disclosures show a purchase not followed by a full sale; members report up to 45 days after a trade.',
     },
     {
       id: 'capitol-lobbying-contracts',

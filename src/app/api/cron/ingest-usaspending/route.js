@@ -220,6 +220,12 @@ export async function GET(request) {
       { onConflict: 'job' },
     );
 
+    // The hub's contract-award linkage reads a materialized copy of resolved awards.
+    if (ingested) {
+      const { error: mvErr } = await admin.rpc('refresh_contract_award_tickers');
+      if (mvErr) errors.push(`refresh awards mv: ${mvErr.message}`);
+    }
+
     // The dimension hubs summarise this table.
     if (ingested) revalidateTag('hubs');
 

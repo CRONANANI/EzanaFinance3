@@ -154,6 +154,39 @@ export function CardSkeleton({ label }) {
 
 /* ── linkage cards ────────────────────────────────────────────────────── */
 
+/* Committee ownership for one (committee, ticker) row. */
+function CommitteeStat({ stat }) {
+  const pctText = `${(stat.share * 100).toFixed(1)}%`;
+  const width = `${Math.min(100, Math.max(0, stat.share * 100))}%`;
+  const names = stat.holderNames.length
+    ? stat.holderNames.join(', ') + (stat.holders > stat.holderNames.length ? ' and others' : '')
+    : null;
+  return (
+    <div className="hub-cstat">
+      <p className="hub-cstat-line">
+        <span className="hub-mono">
+          {stat.holders} of {stat.seats}
+        </span>{' '}
+        {stat.committee} members <span className="hub-mono">({pctText})</span> hold{' '}
+        <span className="hub-mono">{stat.ticker}</span>
+      </p>
+      <div
+        className="hub-cstat-bar"
+        role="img"
+        aria-label={`${pctText} of ${stat.committee} members hold ${stat.ticker}`}
+      >
+        <span style={{ '--w': width }} />
+      </div>
+      <p className="hub-cstat-sub">
+        <span className="hub-mono">{stat.sellers}</span> sold{' · '}
+        <span className="hub-mono">{stat.buyers}</span> bought in the last{' '}
+        <span className="hub-mono">{stat.windowDays}</span> days
+        {names ? <span className="hub-cstat-names"> · Holding: {names}</span> : null}
+      </p>
+    </div>
+  );
+}
+
 export async function LinkageCard({ card }) {
   const { rows, error } = await getLinkage(card.id);
   /* A preview of a dataset that is not live shows only when it has rows. */
@@ -172,7 +205,10 @@ export async function LinkageCard({ card }) {
       ) : null}
       {card.coverage ? <p className="hub-card-note">{card.coverage}</p> : null}
       {error ? (
-        <p className="hub-empty">This signal could not be loaded just now.</p>
+        <p className="hub-empty">
+          This signal could not be loaded just now. It refreshes on its own; reload the page in a
+          minute to try again.
+        </p>
       ) : !rows.length ? (
         <p className="hub-empty">{card.empty}</p>
       ) : (
@@ -204,6 +240,7 @@ export async function LinkageCard({ card }) {
                     </div>
                   ))}
                 </dl>
+                {r.stat ? <CommitteeStat stat={r.stat} /> : null}
               </div>
               <RowActions
                 ticker={r.ticker || null}

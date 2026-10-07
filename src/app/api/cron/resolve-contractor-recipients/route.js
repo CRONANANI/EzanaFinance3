@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 
 /**
@@ -165,6 +166,11 @@ export async function GET(request) {
 
   const { data: resolved, error: resErr } = await admin.rpc('contractor_resolve_tickers');
   if (resErr && errors.length < 10) errors.push(`resolve: ${resErr.message}`);
+
+  // New tickers change which awards resolve; refresh the hub's copy of them.
+  const { error: mvErr } = await admin.rpc('refresh_contract_award_tickers');
+  if (mvErr && errors.length < 10) errors.push(`refresh awards mv: ${mvErr.message}`);
+  revalidateTag('hubs');
 
   const { data: remainingRows } = await admin.rpc('contractor_recipients_todo', { p_limit: 1000 });
   const remaining = Array.isArray(remainingRows) ? remainingRows.length : null;

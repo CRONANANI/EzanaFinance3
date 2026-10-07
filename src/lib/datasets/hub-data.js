@@ -37,6 +37,11 @@ const day = (v) => (v ? String(v).slice(0, 10) : null);
 const isoDaysAgo = (n) => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
 const thisYear = () => new Date().getUTCFullYear();
 
+/* An RPC that takes longer than this is abandoned; the card shows its retry
+   state and the next request tries again. */
+const RPC_TIMEOUT_MS = 9000;
+const timed = (q) => q.abortSignal(AbortSignal.timeout(RPC_TIMEOUT_MS));
+
 function configured() {
   return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
@@ -716,30 +721,86 @@ async function oecdLatest(admin) {
 /** Labels that have a summary loader (the rest render as not live). */
 export const SUMMARY_LABELS = Object.keys(SUMMARIES);
 
-async function loadSummary(label) {
+async function loadSummaryOrThrow(label) {
   const fn = SUMMARIES[label];
   if (!fn || !configured()) return null;
+  return fn(getAdminClient());
+}
+
+/* v2: errors are thrown inside the cache and caught outside, so a failure is
+   retried on the next request instead of being served for 15 minutes. */
+const cachedSummary = unstable_cache(loadSummaryOrThrow, ['hub-summary-v2'], CACHE);
+
+export async function getDatasetSummary(label) {
   try {
-    return await fn(getAdminClient());
+    return await cachedSummary(label);
   } catch (e) {
     console.error('[hub-data] summary', label, e?.message || e);
     return { error: true };
   }
 }
 
-export const getDatasetSummary = unstable_cache(loadSummary, ['hub-summary-v1'], CACHE);
-
 /* ── linkage cards ──────────────────────────────────────────────────── */
+
+/**
+ * For each row's (committee, ticker): how many of the committee's members
+ * hold the ticker (inferred from disclosures) and how many bought or sold it
+ * since `since`. A failure here leaves the rows without numbers rather than
+ * failing the card.
+ */
+async function attachCommitteeStats(admin, rows, since) {
+  const pairs = [];
+  const seen = new Set();
+  for (const r of rows) {
+    const k = `${r._committee.id}|${r.ticker}`;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    pairs.push({ committee: r._committee.id, ticker: r.ticker });
+  }
+  let stats = new Map();
+  if (pairs.length) {
+    const { data, error } = await timed(
+      admin.rpc('hub_committee_ticker_stats', { p_pairs: pairs, p_since: since }),
+    );
+    if (error) {
+      console.error('[hub-data] committee stats', error.message);
+    } else {
+      stats = new Map(
+        (data || []).map((s) => [`${s.committee_thomas_id}|${String(s.ticker).toUpperCase()}`, s]),
+      );
+    }
+  }
+  return rows.map(({ _committee, ...r }) => {
+    const s = stats.get(`${String(_committee.id).toUpperCase()}|${r.ticker}`);
+    if (!s || !s.seats) return r;
+    return {
+      ...r,
+      stat: {
+        committee: _committee.name,
+        ticker: r.ticker,
+        seats: s.seats,
+        holders: s.holders,
+        share: s.holders / s.seats,
+        holderNames: s.holder_names || [],
+        buyers: s.buyers,
+        sellers: s.sellers,
+        windowDays: 180,
+      },
+    };
+  });
+}
 
 const LINKAGES = {
   /* Capitol 1: members who traded a stock within 30 days of a federal contract
      award to the same company. */
   async 'capitol-near-contracts'(admin) {
-    const { data, error } = await admin.rpc('hub_capitol_trades_near_contracts', {
-      p_since: isoDaysAgo(365),
-      p_window_days: 30,
-      p_limit: 10,
-    });
+    const { data, error } = await timed(
+      admin.rpc('hub_capitol_trades_near_contracts', {
+        p_since: isoDaysAgo(365),
+        p_window_days: 30,
+        p_limit: 10,
+      }),
+    );
     if (error) throw new Error(error.message);
     return (data || []).map((r) => ({
       key: `${r.bioguide_id}-${r.ticker}`,
@@ -830,6 +891,8 @@ const LINKAGES = {
       out.push({
         key: k,
         ticker,
+        // Not rendered: the (committee, ticker) pair attachCommitteeStats reads.
+        _committee: { id: committee.thomas_id, name: shortCommitteeName(committee.name) },
         title: t.member_name || t.bioguide_id,
         party: t.party,
         cells: [
@@ -844,7 +907,7 @@ const LINKAGES = {
       });
       if (out.length >= 10) break;
     }
-    return out;
+    return attachCommitteeStats(admin, out, since);
   },
 
   /* Capitol 3: verified public lobbying clients with contracts too. */
@@ -1314,15 +1377,21 @@ function titansRow(r) {
   };
 }
 
-async function loadLinkage(id) {
+async function loadLinkageOrThrow(id) {
   const fn = LINKAGES[id];
   if (!fn || !configured()) return { rows: [] };
+  return { rows: await fn(getAdminClient()) };
+}
+
+/* v2: errors are thrown inside the cache and caught outside, so a timeout is
+   retried on the next request instead of being served for 15 minutes. */
+const cachedLinkage = unstable_cache(loadLinkageOrThrow, ['hub-linkage-v2'], CACHE);
+
+export async function getLinkage(id) {
   try {
-    return { rows: await fn(getAdminClient()) };
+    return await cachedLinkage(id);
   } catch (e) {
     console.error('[hub-data] linkage', id, e?.message || e);
     return { rows: [], error: true };
   }
 }
-
-export const getLinkage = unstable_cache(loadLinkage, ['hub-linkage-v1'], CACHE);

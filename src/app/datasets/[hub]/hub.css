@@ -424,3 +424,47 @@
     right: auto;
   }
 }
+
+/* committee ownership on a linkage row */
+.hub-cstat {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--hub-accent) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--hub-accent) 18%, transparent);
+}
+/* Scoped under .hub-cstat to outrank light-mode.css's body.light-mode p. */
+.hub-cstat .hub-cstat-line {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  color: var(--text-primary);
+}
+.hub-cstat-bar {
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-faint) 18%, transparent);
+  overflow: hidden;
+}
+.hub-cstat-bar > span {
+  display: block;
+  width: var(--w, 0%);
+  height: 100%;
+  border-radius: inherit;
+  background: var(--hub-accent);
+  transition: width 0.4s ease;
+}
+.hub-cstat .hub-cstat-sub {
+  margin: 0;
+  font-size: var(--type-micro-size);
+  color: var(--text-muted);
+}
+.hub-cstat-names {
+  color: var(--text-faint);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hub-cstat-bar > span {
+    transition: none;
+  }
+}
