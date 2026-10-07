@@ -1,0 +1,82 @@
+/* Capitol Watch hub, page-scoped tokens.
+   Map onto src/app/theme-variables.css. Hex values in comments are the light
+   mode targets from the approved board, not new tokens. Nothing here is global. */
+
+.cwh-page {
+  /* ground and ink */
+  --cwh-bg: var(--bg);                                   /* #ffffff */
+  --cwh-ink: var(--text);                                /* #0a0e13 */
+  --cwh-mute: var(--text-secondary);                     /* #5a6b65 */
+  --cwh-faint: var(--text-tertiary);                     /* #8a9a95, captions, mono-caps labels, sources */
+  --cwh-hair: color-mix(in srgb, var(--text) 10%, transparent);
+  --cwh-hair-strong: color-mix(in srgb, var(--text) 12%, transparent);
+  --cwh-dotted: color-mix(in srgb, var(--text) 18%, transparent);
+  --cwh-quiet: color-mix(in srgb, var(--text) 3%, var(--bg));   /* #f6f8f7 query block, reasons, detail boxes */
+
+  /* emerald: brand, gain, selection */
+  --cwh-emerald: var(--emerald);                         /* #10b981 marks, chart gain segment, solid buttons, top borders */
+  --cwh-positive: var(--positive);                       /* #047857 light / #34d399 dark: text for gains, links, labels */
+  --cwh-tint: color-mix(in srgb, var(--emerald) 8%, transparent);
+  --cwh-tint-strong: color-mix(in srgb, var(--emerald) 14%, transparent);
+  --cwh-focus-halo: color-mix(in srgb, var(--emerald) 10%, transparent);
+
+  /* losses only */
+  --cwh-negative: var(--negative);                       /* red, losses and the loss segment of a chart, nothing else */
+
+  /* sells are not losses */
+  --cwh-sell: color-mix(in srgb, var(--text) 55%, transparent);
+
+  /* party marks: non-semantic, never red */
+  --cwh-dem: #3b6fd8;                                    /* use the theme's info blue if it has one */
+  --cwh-rep: #c2410c;                                    /* orange; keep clearly distinct from --cwh-negative */
+
+  /* late filings */
+  --cwh-late: #b45309;
+
+  /* Ezana gold: Quick Step badge icon and its explainer ONLY (founder exception
+     to the design system rule that reserves gold for the Partner app) */
+  --cwh-gold: var(--gold, #d4a853);
+  --cwh-gold-tint: color-mix(in srgb, var(--cwh-gold) 10%, transparent);
+  --cwh-badge-bg: var(--text);                           /* ink pill behind the gold bolt */
+  --cwh-badge-fg: var(--bg);
+
+  /* heatmap scale: emerald alpha from 6% to 86% across the observed range */
+  --cwh-heat-min: color-mix(in srgb, var(--emerald) 6%, transparent);
+  --cwh-heat-max: color-mix(in srgb, var(--emerald) 86%, transparent);
+  --cwh-heat-dark-text-threshold: 8;                     /* percent at which cell text turns white */
+
+  /* cards */
+  --cwh-card-radius: var(--radius-lg);                   /* 12 */
+  --cwh-card-border: var(--cwh-hair);
+  --cwh-card-accent: var(--emerald);                     /* 2px top border */
+
+  /* controls */
+  --cwh-pill-active-bg: var(--text);
+  --cwh-pill-active-fg: var(--bg);
+  --cwh-pill-border: var(--cwh-hair-strong);
+  --cwh-sample-bg: var(--warning-bg, #fef3c7);
+  --cwh-sample-fg: var(--warning-text, #92400e);
+
+  /* drawer */
+  --cwh-drawer-w: 560px;
+  --cwh-scrim: color-mix(in srgb, #0a0e13 28%, transparent);
+  --cwh-drawer-shadow: -30px 0 70px color-mix(in srgb, var(--text) 18%, transparent);
+
+  /* type */
+  --cwh-font: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --cwh-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* skeleton */
+  --cwh-skel-base: color-mix(in srgb, var(--text) 6%, transparent);
+  --cwh-skel-sheen: color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+/* Dark mode: grounds resolve through the theme. Keep the card top border at
+   full emerald. Raise --cwh-tint to 12% and the heatmap floor to 10% if cells
+   and selected tiles do not separate from the ground at 3:1. The gold bolt
+   stays #d4a853 on the ink pill; in dark mode the pill becomes
+   color-mix(in srgb, var(--text) 12%, var(--bg)) with a 1px --cwh-hair border. */
+
+@media (prefers-reduced-motion: reduce) {
+  .cwh-page * { animation: none !important; transition: none !important; }
+}

@@ -1,0 +1,127 @@
+{
+  "page": "/datasets/capitol-watch",
+  "url": {
+    "q": "?q=<ezanaql text> restores the last query and its result table; omitted for the default query",
+    "signal": "?signal=<event id> opens the carousel on that event; replaceState as the user flips",
+    "tab": "?tab=awards|readers|committees|lobbying|raisers, default awards, omitted when default",
+    "member": "?member=<slug> opens the member drawer; one history entry per drawer; swapping member replaces it",
+    "cell": "not persisted"
+  },
+  "nav": "shared component per 06-SHARED-NAV.md; this page sets Capitol Watch as active and nothing else",
+  "ezanaql": {
+    "bar": {
+      "states": ["idle (placeholder, tinted button)", "typed (question shown, emerald border and halo, solid button)", "generating (button spinner)", "ran (query block updated, results card refreshed)"],
+      "prompts": "Try chips fill the bar and generate immediately",
+      "query_block": "mono, shows the generated EzanaQL; Edit opens an inline editor in the same light block; Run re-runs; Saved reports opens this hub's saved list"
+    },
+    "results_card": {
+      "default": "on load, shows the default query's result so the card is never empty",
+      "rows_visible": 12,
+      "scroll": "the table scrolls inside the card; header row stays visible",
+      "ticker_click": "opens the existing company card (federal contracts and which members hold it)",
+      "member_click": "opens the member drawer",
+      "actions": { "Save": "saves the report to this hub's Saved list (account-gated if Saved needs an account today)", "CSV": "account-gated", "JSON": "account-gated", "Watchlist": "account-gated", "Open full table": "navigates to the full results view" },
+      "signed_out": "gated actions show a lock and open the centred account modal",
+      "states": { "loading": "skeleton rows", "error": "This query could not run just now. Check it or try again.", "empty": "No rows match this query." }
+    }
+  },
+  "top_signals": {
+    "source": "high-signal events this week across Capitol datasets plus the user's saved rules",
+    "order": "rankHighSignalEvents: linked-dataset count desc, then flagged date desc",
+    "filters": ["All", "Trade before award", "Committee overlap", "Lobbied, then won", "Same month as insiders", "My signals"],
+    "view": "one event at a time, full width",
+    "navigation": {
+      "arrows": "previous and next; wrap at the ends",
+      "counter": "N OF TOTAL for the active filter",
+      "preview_strip": "five cards: current plus the next four; clicking one jumps to it; the strip pages forward as the user advances",
+      "keyboard": "Left and Right arrows when the carousel has focus; the region has aria-roledescription=carousel and each event aria-roledescription=slide with 'N of TOTAL'",
+      "swipe": "on touch devices"
+    },
+    "auto_advance": "none (respects reading time and reduced motion)",
+    "card": {
+      "reasons": "one per linked dataset, each with the fact, date, amount and dataset label",
+      "chart": "60 days of daily closes, dashed award line, trade marker, 30 days after the trade drawn heavier in green (gain) or red (loss); crosshair on hover and keyboard with date and close",
+      "facts": "four, event-type dependent (trade before award: 30D return, Award, Oversight, Agency)",
+      "actions": "Watchlist (gated), Query this (opens EzanaQL with the event's query), Share",
+      "measurement_note": "always shown"
+    }
+  },
+  "rule_builder": {
+    "placement": "under the carousel; expanded by default for first-time visitors, collapsible; remembers collapsed state per viewer",
+    "step_1_datasets": {
+      "capitol": ["Politician Tracker", "Government Contracts", "Committee Assignments", "Lobbying Activity", "Campaign Finance"],
+      "other_dimensions": ["Form 4 insiders", "13F institutions", "13D/G whales", "Prediction markets"],
+      "rule": "minimum two selected; an event qualifies only when every selected dataset has a record for the same company or member",
+      "unsupported_join": "chip renders with a PREVIEW tag and a dashed border; selectable only when the data layer supports the join",
+      "overlap_preview": "linked chips of the current selection"
+    },
+    "step_2_conditions": {
+      "conditions": [
+        { "id": "trade_within_days", "label": "Trade within {N} of an award to the same company", "values": [7, 14, 30, 60, 90], "default": 30, "requires": ["Politician Tracker", "Government Contracts"] },
+        { "id": "award_min", "label": "Award of at least {X}", "values": ["$10M", "$50M", "$100M", "$500M", "$1B"], "default": "$100M", "requires": ["Government Contracts"] },
+        { "id": "committee_oversees", "label": "Member's committee oversees the company's sector", "values": ["Any", "a chosen committee"], "requires": ["Committee Assignments"] },
+        { "id": "trader_types", "label": "Traders", "values": ["Politicians", "Insiders", "Institutions", "Whales"], "multi": true },
+        { "id": "amount_floor", "label": "Trade amount at least {X} (disclosed range floor)", "values": ["$1K", "$15K", "$50K", "$100K"], "default_off": true },
+        { "id": "party", "label": "Party", "values": ["Any", "D", "R", "I"], "default_off": true },
+        { "id": "window", "label": "Window", "values": ["30D", "90D", "180D", "12M"], "default": "90D" }
+      ],
+      "visibility": "a condition shows only when the datasets it requires are selected",
+      "plain_english": "hands the rule to EzanaQL, which shows the generated query and fills the conditions it can map"
+    },
+    "step_3_preview": {
+      "count": "matchSignalRule(rule).count, debounced 300ms after any change",
+      "list": "first three matches with ticker, one-line description, 30D return; '+N more' opens them in the carousel under My signals",
+      "name": "required to save; default suggested from the conditions",
+      "save": "account-gated; on save the rule appears as a My signals chip and its events join the carousel",
+      "alert": "account-gated; daily email when a new event matches",
+      "signed_out": "preview fully works; Save and Alert show a lock and open the account modal"
+    },
+    "my_signals_chips": "click filters the carousel to that rule; a menu offers Edit, Rename, Pause alerts, Delete"
+  },
+  "signals_panel": {
+    "tabs": ["A Trades near contract awards", "B Who reads awards best", "C Committee overlap", "D Lobbying and contracts", "E Top raisers who trade"],
+    "default": "A",
+    "a11y": "role=tablist; arrow keys move between tabs",
+    "row_actions": "Watchlist / Save (gated), Query this, Share on every row",
+    "per_tab_footer": "time window and named sources, always"
+  },
+  "heatmap": {
+    "toggle": "House | Senate",
+    "cell": "button; shade from the share; value printed; title gives committee, sector and share",
+    "select": "outlines the cell and fills the detail box: committee by sector, share, N of M members, holders with tickers and last trade, Query this cell",
+    "default_selected": "the highest-share cell",
+    "keyboard": "arrow keys move across cells; Enter selects"
+  },
+  "leaderboard": {
+    "quick_step": "badge appears next to qualifying traders; hover or tap explains it; signed-in users with a linked brokerage see their own progress in the explainer box",
+    "row_click": "member rows open the member drawer; insiders, institutions and whales open their own profile when one exists"
+  },
+  "portfolio": {
+    "filters": { "party": ["All", "Democrats", "Republicans"], "chamber": ["All", "House", "Senate"] },
+    "row_click": "opens the company card"
+  },
+  "member_drawer": {
+    "reference": "reference/member-drawer.html",
+    "width": 560,
+    "content": "identity, committees, four stats, tabs Signals Trades Holdings Committees Donors, signals involving the member, recent trades, holdings that won awards, sources",
+    "behaviour": "Escape and scrim close; focus returns to the opener; Open full page links to the member page"
+  },
+  "states": {
+    "loading": "each module streams in on its own with skeleton bars",
+    "empty": "honest copy saying what fills it",
+    "error": "This signal could not be loaded just now. It refreshes on its own; reload in a minute.",
+    "signed_out": "account actions show a lock and open the centred account modal",
+    "preview": "PREVIEW tag on modules or chips fed by datasets not fully live",
+    "reduced_motion": "no chart draw-in, no carousel slide animation"
+  },
+  "analytics_events": [
+    "cwh_query_run {source: bar|prompt|query_this|plain_english}",
+    "cwh_signal_view {event_id, position, filter}",
+    "cwh_signal_flip {direction|jump}",
+    "cwh_rule_change {datasets, conditions}",
+    "cwh_rule_save {matches}",
+    "cwh_tab {tab}",
+    "cwh_heatmap_cell {committee, sector}",
+    "cwh_drawer_open {member, from}"
+  ]
+}

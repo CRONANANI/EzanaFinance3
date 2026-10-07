@@ -1,0 +1,87 @@
+/* Capitol Watch hub, page-scoped tokens (CORRECTED for this repo).
+   The design package's original mapping (03-TOKENS.original.css) pointed at
+   --text, --bg, --text-tertiary and --warning-text, which do not exist in
+   src/app/theme-variables.css (and lint:branding rejects --text-tertiary).
+   This file maps the same intent onto tokens that exist. Hex values in
+   comments are the light-mode targets from the approved board. Nothing here
+   is global: everything hangs off .cwh-page. */
+
+.cwh-page {
+  /* ground and ink */
+  --cwh-bg: var(--bg-primary);                                   /* #ffffff */
+  --cwh-ink: var(--text-primary);                                /* #0a0e13 */
+  --cwh-mute: var(--text-muted);                                 /* #5a6b65 */
+  --cwh-faint: var(--text-faint);                                /* #8a9a95 captions, mono-caps labels, sources */
+  --cwh-hair: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  --cwh-hair-strong: color-mix(in srgb, var(--text-primary) 12%, transparent);
+  --cwh-dotted: color-mix(in srgb, var(--text-primary) 18%, transparent);
+  --cwh-quiet: color-mix(in srgb, var(--text-primary) 3%, var(--bg-primary));  /* #f6f8f7 */
+
+  /* emerald: brand, gain, selection */
+  --cwh-emerald: var(--emerald);
+  --cwh-positive: var(--positive);
+  --cwh-tint: color-mix(in srgb, var(--emerald) 8%, transparent);
+  --cwh-tint-strong: color-mix(in srgb, var(--emerald) 14%, transparent);
+  --cwh-focus-halo: color-mix(in srgb, var(--emerald) 10%, transparent);
+
+  /* losses only */
+  --cwh-negative: var(--negative);
+
+  /* sells are not losses */
+  --cwh-sell: color-mix(in srgb, var(--text-primary) 55%, transparent);
+
+  /* party marks: non-semantic, never red */
+  --cwh-dem: var(--info);                                        /* blue */
+  --cwh-rep: color-mix(in srgb, var(--warning) 70%, var(--negative)); /* orange, distinct from --cwh-negative */
+
+  /* late filings */
+  --cwh-late: var(--warning);
+
+  /* Ezana gold: Quick Step badge icon and its explainer ONLY (founder-approved exception) */
+  --cwh-gold: var(--gold);
+  --cwh-gold-tint: color-mix(in srgb, var(--gold) 10%, transparent);
+  --cwh-badge-bg: var(--text-primary);
+  --cwh-badge-fg: var(--bg-primary);
+
+  /* heatmap scale: emerald alpha from 6% to 86% across the observed range */
+  --cwh-heat-min: color-mix(in srgb, var(--emerald) 6%, transparent);
+  --cwh-heat-max: color-mix(in srgb, var(--emerald) 86%, transparent);
+
+  /* cards */
+  --cwh-card-radius: var(--radius-lg);                           /* 12 */
+  --cwh-card-border: var(--cwh-hair);
+  --cwh-card-accent: var(--emerald);
+
+  /* controls */
+  --cwh-pill-active-bg: var(--text-primary);
+  --cwh-pill-active-fg: var(--bg-primary);
+  --cwh-pill-border: var(--cwh-hair-strong);
+  --cwh-sample-bg: var(--warning-bg);
+  --cwh-sample-fg: var(--warning);
+
+  /* drawer */
+  --cwh-drawer-w: 560px;
+  --cwh-scrim: color-mix(in srgb, var(--text-primary) 28%, transparent);
+  --cwh-drawer-shadow: -30px 0 70px color-mix(in srgb, var(--text-primary) 18%, transparent);
+
+  /* type: the repo's font tokens (never raw font stacks; lint:branding rejects them) */
+  --cwh-font: var(--font-sans);
+  --cwh-mono: var(--font-mono);
+
+  /* skeleton */
+  --cwh-skel-base: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  --cwh-skel-sheen: color-mix(in srgb, var(--text-primary) 10%, transparent);
+}
+
+/* Dark mode resolves through the theme. If cells or selected tiles do not
+   separate from the ground at 3:1, raise --cwh-tint to 12% and the heatmap
+   floor to 10% under the theme's dark selector. In dark mode the badge pill
+   becomes color-mix(in srgb, var(--text-primary) 12%, var(--bg-primary))
+   with a 1px --cwh-hair border; the bolt stays var(--gold). */
+
+@media (prefers-reduced-motion: reduce) {
+  .cwh-page * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
