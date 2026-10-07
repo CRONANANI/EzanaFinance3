@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { requireUser, getAdminClient } from '@/lib/supabase';
 import { resend } from '@/lib/services/resend';
+import { escapeHtml } from '@/lib/sanitize';
+import { emailFooterHtml } from '@/lib/email/footer';
+import { listUnsubscribeHeaders, unsubscribeUrl } from '@/lib/email/unsubscribe';
 import { awardXP } from '@/lib/rewards';
 import { insertNotificationAndPush } from '@/lib/push/fanout';
 
@@ -92,16 +95,28 @@ export async function POST(request) {
           }
 
           const toEmail = authData?.user?.email;
-          if (process.env.RESEND_API_KEY && toEmail) {
+          /* A notification email, not transactional: only when the person has
+             community emails on in Settings (off by default), with a one-click
+             unsubscribe that works signed out. */
+          const { data: targetProfile } = await admin
+            .from('profiles')
+            .select('user_settings')
+            .eq('id', target_user_id)
+            .maybeSingle();
+          const wantsEmail = targetProfile?.user_settings?.notifications_email_community === true;
+          if (process.env.RESEND_API_KEY && toEmail && wantsEmail) {
+            const unsub = unsubscribeUrl(target_user_id, 'community');
+            const safeName = escapeHtml(followerName);
             await resend.emails.send({
               from: 'Ezana Finance <noreply@ezana.world>',
               to: toEmail,
               subject: `${followerName} followed you on Ezana`,
+              headers: listUnsubscribeHeaders(unsub),
               html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; color: #fff; padding: 40px; border-radius: 12px;">
           <h2 style="color: #10b981;">You have a new follower!</h2>
           <p style="color: #ccc; font-size: 16px;">
-            <strong>${followerName}</strong> just followed you on Ezana Finance.
+            <strong>${safeName}</strong> just followed you on Ezana Finance.
           </p>
           <p style="color: #888; font-size: 14px;">
             Head to the Community Center to follow them back and check out their profile.
@@ -110,9 +125,10 @@ export async function POST(request) {
           <a href="${SITE_ORIGIN}/community/profile/${user.id}" style="display: inline-block; background: #10b981; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 16px;">
             View Their Profile
           </a>
-          <p style="color: #555; font-size: 12px; margin-top: 30px;">
-            Ezana Finance · ezana.world
-          </p>
+          ${emailFooterHtml({
+            unsubscribeUrl: unsub,
+            unsubscribeLabel: 'Unsubscribe from community emails',
+          })}
         </div>
       `,
             });

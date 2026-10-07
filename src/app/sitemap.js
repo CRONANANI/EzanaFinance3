@@ -55,6 +55,7 @@ const STATIC_PATHS = [
   ['/accessibility', 0.2, 'yearly'],
   ['/privacy-policy', 0.2, 'yearly'],
   ['/terms-of-service', 0.2, 'yearly'],
+  ['/copyright', 0.2, 'yearly'],
 ];
 
 /* Help-centre URLs are derived from the content module the pages render, so

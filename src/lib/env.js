@@ -24,6 +24,8 @@ const optional = [
   'ANTHROPIC_API_KEY',
 ];
 
+const dmcaVars = ['DMCA_AGENT_NAME', 'DMCA_AGENT_ADDRESS', 'DMCA_AGENT_EMAIL', 'DMCA_AGENT_PHONE'];
+
 export function validateEnv() {
   // Next.js sets this during `next build` page-data collection. A runtime secret
   // that isn't set yet must not abort the build of the whole app.
@@ -42,6 +44,15 @@ export function validateEnv() {
     // Warn only — these fail fast at the point of use, not at boot/build.
     console.warn(
       `[ENV] Missing runtime-feature vars (features needing them will error until set): ${missingRuntime.join(', ')}`,
+    );
+  }
+
+  /* The copyright page names the DMCA designated agent; until it is
+     registered and these are set, the page shows legal@ezana.world. */
+  const missingDmca = dmcaVars.filter((key) => !process.env[key]);
+  if (missingDmca.length > 0) {
+    console.warn(
+      `[ENV] DMCA designated agent not configured (the /copyright page shows the fallback contact): ${missingDmca.join(', ')}`,
     );
   }
 

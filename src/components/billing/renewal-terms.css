@@ -1,0 +1,22 @@
+/* Renewal terms beside a subscribe button: readable body copy, not fine print. */
+.renewal-terms {
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  text-align: left;
+}
+.renewal-terms strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+.renewal-terms a {
+  color: var(--emerald-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.renewal-terms a:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}

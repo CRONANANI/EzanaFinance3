@@ -54,7 +54,10 @@ export const POST = withApiGuard(
     } catch {
       body = {};
     }
-    const ok = await unsubscribe(body?.token, body?.reason);
+    /* Mail apps send RFC 8058 one-click as a form POST to the List-Unsubscribe
+       URL, so the token is in the query string, not a JSON body. */
+    const token = body?.token || new URL(request.url).searchParams.get('token');
+    const ok = await unsubscribe(token, body?.reason);
     return NextResponse.json({ ok });
   },
   { requireAuth: false, strict: true },

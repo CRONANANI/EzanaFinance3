@@ -1733,8 +1733,10 @@ function project(x, y, z, cx, cy, fov) {
   return [x * scale + cx, -y * scale + cy, z];
 }
 
-export const LAND_GEOJSON_URL =
-  'https://raw.githubusercontent.com/martynafford/natural-earth-geojson/refs/heads/master/110m/physical/ne_110m_land.json';
+/* Natural Earth 110m land (public domain), served from ezana.world so loading
+   the globe sends nothing to a third-party host. Source:
+   github.com/martynafford/natural-earth-geojson, 110m/physical/ne_110m_land.json */
+export const LAND_GEOJSON_URL = '/geo/ne_110m_land.json';
 
 export function InteractiveGlobe({
   className,

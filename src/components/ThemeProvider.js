@@ -96,6 +96,7 @@ function isMarketingBrandLockedLightPath(pathname) {
   // Public legal pages render light like the rest of the marketing site.
   if (pathname === '/privacy-policy') return true;
   if (pathname === '/terms-of-service') return true;
+  if (pathname === '/copyright') return true;
   if (pathname === '/accessibility') return true;
   return false;
 }

@@ -28,6 +28,9 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Check, Minus, ArrowRight, Sparkles, ShieldCheck, Loader2 } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
+import RenewalTerms from '@/components/billing/RenewalTerms';
+import { PLANS as CATALOG } from '@/config/pricing';
+import { RENEWAL_POLICY_TEXT } from '@/lib/billing/renewal-terms';
 import './pricing-standalone.css';
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -331,7 +334,15 @@ const COMPARISON_FEATURES = [
   },
 ];
 
+/** The Stripe catalog plan (price and period actually charged) for a card. */
+const catalogPlan = (plan, billing) =>
+  CATALOG[plan.stripeKey?.[billing === 'yearly' ? 'year' : 'month']] || null;
+
 const FAQ_ITEMS = [
+  {
+    q: 'How does automatic renewal work?',
+    a: RENEWAL_POLICY_TEXT,
+  },
   {
     q: 'Do I need a credit card to start the free trial?',
     a: 'Yes, a card is required so your account can continue seamlessly once the trial ends — but you will not be charged for 14 days, and you can cancel anytime from your account settings during the trial with zero charge.',
@@ -621,6 +632,9 @@ export default function PricingPage() {
                   {!isPending ? <ArrowRight size={16} aria-hidden /> : null}
                 </button>
                 {isContact ? <p className="plan-finesub">We reply within 1 business day</p> : null}
+                {!plan.isFree && !isContact ? (
+                  <RenewalTerms plan={catalogPlan(plan, billing)} className="plan-renewal" />
+                ) : null}
 
                 <div className="plan-features-divider" />
                 <div className="plan-features-label">What&apos;s included</div>
@@ -785,7 +799,10 @@ export default function PricingPage() {
           >
             Start 14-day free trial <ArrowRight size={18} aria-hidden />
           </button>
-          <div className="pricing-bottom-finesub">No charge for 14 days · Cancel anytime</div>
+          <RenewalTerms
+            plan={catalogPlan(PLANS.find((p) => p.highlight) || PLANS[1], billing)}
+            className="pricing-bottom-renewal"
+          />
         </div>
       </section>
 
@@ -796,6 +813,9 @@ export default function PricingPage() {
           <Link href="/">Home</Link>
           <Link href="/#features">Features</Link>
           <Link href="/auth/login">Sign in</Link>
+          <Link href="/terms-of-service">Terms</Link>
+          <Link href="/privacy-policy">Privacy</Link>
+          <Link href="/copyright">Copyright</Link>
         </div>
       </footer>
     </div>

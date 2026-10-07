@@ -168,7 +168,7 @@ export function Navbar() {
   const isAuthPage = pathname?.startsWith('/auth');
   const isHelpCenter = pathname?.startsWith('/help-center');
   const isPrivacyPolicy = pathname === '/privacy-policy';
-  const isTermsOfService = pathname === '/terms-of-service';
+  const isTermsOfService = pathname === '/terms-of-service' || pathname === '/copyright';
   const isAccessibility = pathname === '/accessibility';
   const isEzanaEcho = pathname?.startsWith('/ezana-echo');
   // Individual article pages only — the Echo index, archived, and author

@@ -7,6 +7,8 @@ import { PLANS } from '@/config/pricing';
 import { supabase } from '@/lib/supabase-browser';
 import { hasActiveSubscription } from '@/lib/subscription';
 import { getTrialStatus } from '@/lib/trial';
+import RenewalTerms from '@/components/billing/RenewalTerms';
+import { TRIAL_DAYS } from '@/lib/billing/renewal-terms';
 import './subscribe.css';
 
 function SubscribeCheckoutContent() {
@@ -161,8 +163,8 @@ function SubscribeCheckoutContent() {
       <div className="pricing-header">
         <h1>Choose Your Plan</h1>
         <p>
-          7-day free trial on every plan. Your card won&apos;t be charged until the trial ends.
-          Cancel anytime before then.
+          {TRIAL_DAYS}-day free trial on every plan. Your card won&apos;t be charged until the trial
+          ends. Cancel anytime before then.
         </p>
         {!signedIn && (
           <p className="pricing-auth-hint">
@@ -227,8 +229,11 @@ function SubscribeCheckoutContent() {
                   ? 'Redirecting…'
                   : !plan.priceId
                     ? 'Coming soon'
-                    : 'Start free trial'}
+                    : hasPaidSubscription
+                      ? 'Switch to this plan'
+                      : 'Start free trial'}
               </button>
+              {plan.priceId ? <RenewalTerms plan={plan} trial={!hasPaidSubscription} /> : null}
             </div>
           );
         })}

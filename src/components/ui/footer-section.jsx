@@ -119,6 +119,7 @@ export function FooterSection({ onContactClick }) {
             <a href="/help-center">Help Center</a>
             <a href="/privacy-policy">Privacy Policy</a>
             <a href="/terms-of-service">Terms of Service</a>
+            <a href="/copyright">Copyright</a>
             <a href="/accessibility">Accessibility</a>
             <button
               type="button"

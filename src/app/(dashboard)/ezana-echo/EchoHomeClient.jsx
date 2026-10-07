@@ -12,7 +12,7 @@
  *   - filters live in the URL (?section=&region=&range=&q=, defaults omitted,
  *     replaceState) and apply to the bento only, never the hero or Most read
  *   - paging is client-side over the hub payload, PAGE_SIZE stories a page
- *   - The Evening Brief posts to /api/newsletter/subscribe (the Echo list)
+ *   - The Evening Brief posts to /api/newsletter/marketing/subscribe (double opt-in)
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -183,11 +183,18 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
 
   const status = hub.status;
 
-  const subscribe = async (email) => {
-    const res = await fetch('/api/newsletter/subscribe', {
+  /* Double opt-in with a stored consent record: nothing is sent until the
+     reader clicks the confirmation email. */
+  const subscribe = async (email, consentText) => {
+    const res = await fetch('/api/newsletter/marketing/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, step: 'email' }),
+      body: JSON.stringify({
+        email,
+        marketing_consent: true,
+        consent_text: consentText,
+        source: 'echo_evening_brief',
+      }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
   };

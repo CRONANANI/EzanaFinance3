@@ -6,6 +6,7 @@
  *   { action: 'decline', note?, notify? }
  */
 import { NextResponse } from 'next/server';
+import { emailFooterHtml } from '@/lib/email/footer';
 import { Resend } from 'resend';
 import { getAdminClient } from '@/lib/supabase';
 import { escapeHtml, sanitizeUUID } from '@/lib/sanitize';
@@ -107,6 +108,7 @@ function shell(inner) {
 <div style="max-width:560px;margin:0 auto;padding:40px 20px;">
 <p style="color:#047857;font-size:20px;font-weight:700;margin:0 0 28px;text-align:center;">Ezana Finance</p>
 <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:16px;padding:36px;">${inner}</div>
+${emailFooterHtml()}
 </div></body></html>`;
 }
 

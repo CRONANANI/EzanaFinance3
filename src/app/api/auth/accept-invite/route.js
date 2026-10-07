@@ -1,16 +1,18 @@
 /**
- * POST /api/auth/accept-invite  { token, username, password }
+ * POST /api/auth/accept-invite  { token, username, password, ageConfirmed }
  *
  * The only way to create an account: a live waitlist invite. The account is
  * created server side for the invited email (already proven by the link), the
  * new-user trigger writes the profile row, then the username is set and the
  * invite is marked joined and its token cleared. Never returns the token.
+ * The 18+ confirmation is required and its time is kept in user_metadata.
  */
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { findInvite, inviteNames } from '@/lib/waitlist/invite';
 import { USERNAME_RE, validatePassword } from '@/lib/auth/password-rules';
+import { isTrue } from '@/lib/legal/consent';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,6 +35,13 @@ export async function POST(request) {
     console.error('[accept-invite] lookup failed:', err?.message || err);
   }
   if (!invite) return NextResponse.json(DEAD, { status: 404 });
+
+  if (!isTrue(body?.ageConfirmed)) {
+    return NextResponse.json(
+      { ok: false, field: 'ageConfirmed', error: 'You must be 18 or older to use Ezana.' },
+      { status: 400 },
+    );
+  }
 
   const pwdErrors = validatePassword(password);
   if (pwdErrors.length) {
@@ -82,6 +91,8 @@ export async function POST(request) {
       first_name: firstName,
       last_name: lastName,
       username,
+      age_confirmed: true,
+      age_confirmed_at: new Date().toISOString(),
     },
   });
   if (createErr || !created?.user) {

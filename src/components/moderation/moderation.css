@@ -185,3 +185,23 @@
   outline: 2px solid var(--emerald);
   outline-offset: 2px;
 }
+
+/* Copyright claims link out to the policy (they need a formal notice). */
+.modm-copyright {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  font-size: 0.8125rem;
+  color: var(--emerald-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.modm-copyright i {
+  font-size: 0.7rem;
+}
+.modm-copyright:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}

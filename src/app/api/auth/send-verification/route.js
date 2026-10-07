@@ -4,6 +4,7 @@ import { getAdminClient, requireUser } from '@/lib/supabase';
 import { enforceAuthRateLimit } from '@/lib/auth-rate-limit';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { sanitizeEmail } from '@/lib/sanitize';
+import { emailFooterHtml } from '@/lib/email/footer';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -138,6 +139,7 @@ export async function POST(request) {
           </div>
           <p style="color: #666; font-size: 14px;">This code expires in 10 minutes.</p>
           <p style="color: #666; font-size: 14px;">If you did not create an account with Ezana Finance, you can safely ignore this email.</p>
+          ${emailFooterHtml()}
         </div>`,
     });
 

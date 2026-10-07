@@ -242,3 +242,10 @@
 .privacy-policy-termly th {
   border-color: var(--border-secondary) !important;
 }
+
+/* Copyright agent contact block (/copyright). */
+.legal-address {
+  margin: 0 0 1rem;
+  font-style: normal;
+  line-height: 1.7;
+}

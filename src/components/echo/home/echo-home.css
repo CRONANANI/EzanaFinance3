@@ -942,6 +942,27 @@ body.light-mode .ech-page {
 .ech-brief__note.is-error {
   color: var(--ech-deep-accent);
 }
+.ech-brief__consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ech-deep-mute);
+  cursor: pointer;
+}
+.ech-brief__consent input {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 1px 0 0;
+  accent-color: var(--ech-deep-accent);
+  cursor: pointer;
+}
+.ech-brief__consent input:focus-visible {
+  outline: 2px solid var(--ech-deep-accent);
+  outline-offset: 2px;
+}
 .ech-brief__done {
   margin: 0;
   font-size: 14px;

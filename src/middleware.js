@@ -123,10 +123,12 @@ export async function middleware(request) {
   const cspHeader = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}'${isProd ? '' : " 'unsafe-eval'"} https://js.stripe.com https://cdn.vercel-insights.com https://vercel.live https://cdn.plaid.com`,
-    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
+    "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
-    "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com",
-    "connect-src 'self' https://api.open-meteo.com https://archive-api.open-meteo.com https://www.alphavantage.co https://financialmodelingprep.com https://finnhub.io https://api.stripe.com https://gamma-api.polymarket.com https://clob.polymarket.com https://*.supabase.co wss://*.supabase.co https://*.alpaca.markets https://*.vercel-insights.com https://*.finnhub.io wss://*.finnhub.io https://*.vercel.live https://api.anthropic.com https://raw.githubusercontent.com https://*.sentry.io https://cdn.plaid.com https://production.plaid.com https://sandbox.plaid.com",
+    "font-src 'self'",
+    "connect-src 'self' https://api.open-meteo.com https://archive-api.open-meteo.com https://www.alphavantage.co https://financialmodelingprep.com https://finnhub.io https://api.stripe.com https://gamma-api.polymarket.com https://clob.polymarket.com https://*.supabase.co wss://*.supabase.co https://*.alpaca.markets https://*.vercel-insights.com https://*.finnhub.io wss://*.finnhub.io https://*.vercel.live https://api.anthropic.com https://*.sentry.io https://cdn.plaid.com https://production.plaid.com https://sandbox.plaid.com https://stream.mux.com https://*.mux.com",
+    // Learning videos: Mux HLS manifests and segments (hls.js fetches them; Safari plays them natively).
+    "media-src 'self' blob: https://stream.mux.com https://*.mux.com",
     "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://vercel.live https://cdn.plaid.com",
     // Allow same-origin + blob web workers (e.g. Sentry replay compression).
     // Without this they fall through to default-src 'self', which blocks blob:.

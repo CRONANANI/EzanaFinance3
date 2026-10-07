@@ -121,9 +121,19 @@ export default function ModerationAdminPage() {
               ) : null}
               <div className="mod-actions">
                 {g.contentType !== 'profile' ? (
-                  <button type="button" disabled={busy === key} onClick={() => act(g, 'hide')}>
-                    Hide
-                  </button>
+                  <>
+                    <button type="button" disabled={busy === key} onClick={() => act(g, 'hide')}>
+                      Hide
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busy === key}
+                      onClick={() => act(g, 'copyright')}
+                      title="Hide after a valid copyright notice and email the uploader how to counter-notify"
+                    >
+                      Remove for copyright
+                    </button>
+                  </>
                 ) : null}
                 <button type="button" disabled={busy === key} onClick={() => act(g, 'dismiss')}>
                   Dismiss

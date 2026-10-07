@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/services/stripe';
 import { PLANS } from '@/config/pricing';
+import { TRIAL_DAYS, renewalText, trialEndDate } from '@/lib/billing/renewal-terms';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -103,6 +104,17 @@ export const POST = withApiGuard(
 
       const safeCancel = cancelPath || '/onboarding';
 
+      /* The renewal terms shown beside the button, repeated above Stripe's
+         subscribe button, plus a required Terms of Service checkbox when
+         enabled (needs the Terms URL set in Stripe, Settings, Public details).
+         The date is in UTC here: the server does not know the visitor's time
+         zone (the page beside the button shows it in their own). */
+      const trial = !hasExistingSubscription;
+      const renewal = renewalText(plan, {
+        trial,
+        endDate: trial ? `${trialEndDate(new Date(), 'UTC')} (UTC)` : undefined,
+      });
+
       /** All catalog plans use recurring Stripe Prices (monthly or yearly) in subscription mode. */
       const sessionParams = {
         customer: customerId,
@@ -111,12 +123,18 @@ export const POST = withApiGuard(
         success_url: `${origin}/home?checkout=success`,
         cancel_url: `${origin}${safeCancel}?canceled=true`,
         payment_method_collection: 'always',
+        custom_text: { submit: { message: renewal.slice(0, 1200) } },
+        /* Stripe rejects the session if no Terms URL is set in its dashboard,
+           so this switches on only once STRIPE_TERMS_CONSENT=true is set. */
+        ...(process.env.STRIPE_TERMS_CONSENT === 'true'
+          ? { consent_collection: { terms_of_service: 'required' } }
+          : {}),
         subscription_data: {
           metadata: {
             supabase_user_id: user.id,
             plan_key: planKey,
           },
-          ...(hasExistingSubscription ? {} : { trial_period_days: 14 }),
+          ...(hasExistingSubscription ? {} : { trial_period_days: TRIAL_DAYS }),
         },
         metadata: {
           supabase_user_id: user.id,

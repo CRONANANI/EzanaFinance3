@@ -7,6 +7,8 @@ import { PLANS } from '@/config/pricing';
 import { supabase } from '@/lib/supabase-browser';
 import { hasActiveSubscription } from '@/lib/subscription';
 import { getTrialStatus } from '@/lib/trial';
+import RenewalTerms from '@/components/billing/RenewalTerms';
+import { TRIAL_DAYS } from '@/lib/billing/renewal-terms';
 import '../pricing/pricing.css';
 
 function SelectPlanContent() {
@@ -184,8 +186,8 @@ function SelectPlanContent() {
         <div className="pricing-free-banner" role="status">
           <i className="bi bi-info-circle" aria-hidden="true" />
           <span>
-            Start your 7-day free trial — enter payment on the next screen. You won&apos;t be
-            charged until the trial ends.
+            Start your {TRIAL_DAYS}-day free trial. Enter payment on the next screen. You won&apos;t
+            be charged until the trial ends.
           </span>
         </div>
       )}
@@ -212,8 +214,8 @@ function SelectPlanContent() {
       <div className="pricing-header">
         <h1>Choose your plan</h1>
         <p>
-          7-day free trial on every plan. Your card won&apos;t be charged until the trial ends.
-          Cancel anytime before then and you won&apos;t be charged.
+          {TRIAL_DAYS}-day free trial on every paid plan. Your card won&apos;t be charged until the
+          trial ends. Cancel anytime before then and you won&apos;t be charged.
         </p>
         {!signedIn && (
           <p className="pricing-auth-hint">
@@ -294,8 +296,13 @@ function SelectPlanContent() {
                     ? 'Get Started Free'
                     : !plan.priceId
                       ? 'Coming soon'
-                      : 'Start free trial'}
+                      : hasPaidSubscription
+                        ? 'Switch to this plan'
+                        : 'Start free trial'}
               </button>
+              {!isFree && plan.priceId ? (
+                <RenewalTerms plan={plan} trial={!hasPaidSubscription} />
+              ) : null}
             </div>
           );
         })}

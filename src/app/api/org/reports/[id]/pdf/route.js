@@ -93,10 +93,13 @@ export const GET = withApiGuard(
     const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8" />
 <title>${esc(report.title)}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
 <style>
+  /* Self-hosted fonts (public/fonts/site), so opening a report sends nothing
+     to a third-party font host. */
+  @font-face { font-family:'Plus Jakarta Sans'; font-style:normal; font-weight:200 800; font-display:swap; src:url('${origin}/fonts/site/plus-jakarta-sans-latin-wght-normal.woff2') format('woff2-variations'); }
+  @font-face { font-family:'Plus Jakarta Sans'; font-style:normal; font-weight:200 800; font-display:swap; src:url('${origin}/fonts/site/plus-jakarta-sans-latin-ext-wght-normal.woff2') format('woff2-variations'); unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+  @font-face { font-family:'JetBrains Mono'; font-style:normal; font-weight:500; font-display:swap; src:url('${origin}/fonts/site/jetbrains-mono-latin-500-normal.woff2') format('woff2'); }
+  @font-face { font-family:'JetBrains Mono'; font-style:normal; font-weight:700; font-display:swap; src:url('${origin}/fonts/site/jetbrains-mono-latin-700-normal.woff2') format('woff2'); }
   :root { --em:#10b981; --gold:#d4a853; --ink:#0f172a; --muted:#64748b; --line:#e5e7eb; }
   * { box-sizing:border-box; }
   body { margin:0; font-family:'Plus Jakarta Sans',-apple-system,sans-serif; color:var(--ink); background:#fff; }

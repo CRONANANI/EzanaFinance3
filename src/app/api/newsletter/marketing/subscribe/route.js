@@ -134,7 +134,9 @@ export const POST = withApiGuard(
             confirm_token: confirmToken,
             confirm_sent_at: nowIso,
             source: typeof source === 'string' ? source.slice(0, 64) : 'landing_footer',
-            metadata: { signup_page: 'landing_footer' },
+            metadata: {
+              signup_page: typeof source === 'string' ? source.slice(0, 64) : 'landing_footer',
+            },
           },
         ])
         .select('unsubscribe_token')

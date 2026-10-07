@@ -378,6 +378,12 @@
   font-size: 0.875rem;
   color: var(--text-faint);
 }
+/* Renewal terms in the same block as the button (scoped to beat the card's p rules). */
+.pricing-cards-section .renewal-terms.plan-renewal {
+  margin: 0.6rem 0 0;
+  font-size: 0.78rem;
+  text-align: left;
+}
 
 .plan-features-divider {
   height: 1px;
@@ -717,6 +723,12 @@
   margin-top: 0.75rem;
   font-size: 0.75rem;
   color: var(--text-faint);
+}
+.pricing-bottom-cta-card .renewal-terms.pricing-bottom-renewal {
+  max-width: 34rem;
+  margin: 0.9rem auto 0;
+  font-size: 0.8125rem;
+  text-align: center;
 }
 
 /* ── Footer ─────────────────────────────────────────────────────────────── */

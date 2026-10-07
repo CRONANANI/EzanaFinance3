@@ -162,6 +162,17 @@ export default function ContentActionsMenu({
                           {r.label}
                         </label>
                       ))}
+                      {/* Copyright claims need the legal elements of a notice,
+                          so they go through the copyright policy, not here. */}
+                      <a
+                        className="modm-copyright"
+                        href="/copyright"
+                        target="_blank"
+                        rel="noopener"
+                      >
+                        Copyright infringement: send a notice
+                        <i className="bi bi-box-arrow-up-right" aria-hidden="true" />
+                      </a>
                     </fieldset>
                     <label className="modm-details">
                       Anything else (optional)

@@ -19,5 +19,6 @@ Sentry.init({
 
   tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 
-  sendDefaultPii: true,
+  /* No IP address, cookies or headers on events. */
+  sendDefaultPii: false,
 });

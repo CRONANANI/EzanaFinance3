@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BILLING_SETTINGS_PATH, RENEWAL_POLICY_TEXT } from '@/lib/billing/renewal-terms';
 import '../legal-pages.css';
 
 export const metadata = {
@@ -7,7 +8,7 @@ export const metadata = {
     'The terms and conditions that govern your access to and use of the Ezana Finance platform.',
 };
 
-const LAST_UPDATED = 'June 12, 2026';
+const LAST_UPDATED = 'October 7, 2026';
 
 export default function TermsOfServicePage() {
   return (
@@ -28,12 +29,12 @@ export default function TermsOfServicePage() {
 
         <Section title="1. Acceptance of these Terms">
           <p>
-            By accessing or using the Services, you confirm that you have read, understood, and agree
-            to be bound by these Terms and by our{' '}
+            By accessing or using the Services, you confirm that you have read, understood, and
+            agree to be bound by these Terms and by our{' '}
             <Link href="/privacy-policy">Privacy Policy</Link>, which is incorporated here by
             reference. If you do not agree, you may not use the Services. If you are using the
-            Services on behalf of an organization, you represent that you are authorized to bind that
-            organization to these Terms.
+            Services on behalf of an organization, you represent that you are authorized to bind
+            that organization to these Terms.
           </p>
         </Section>
 
@@ -58,9 +59,9 @@ export default function TermsOfServicePage() {
         <Section title="4. Subscriptions, billing, and free trials">
           <ul>
             <li>
-              Paid plans are billed in advance on a recurring basis (monthly or annually) through our
-              payment processor. By subscribing, you authorize us to charge your payment method on
-              each renewal until you cancel.
+              Paid plans are billed in advance on a recurring basis (monthly or annually) through
+              our payment processor. By subscribing, you authorize us to charge your payment method
+              on each renewal until you cancel.
             </li>
             <li>
               Where a free trial is offered, your selected plan begins automatically at the end of
@@ -68,23 +69,32 @@ export default function TermsOfServicePage() {
               price at sign-up.
             </li>
             <li>
-              Prices, taxes, and plan features may change; we will give reasonable notice of material
-              changes, and changes take effect at your next billing cycle.
+              Prices, taxes, and plan features may change; we will give reasonable notice of
+              material changes, and changes take effect at your next billing cycle.
             </li>
           </ul>
         </Section>
 
-        <Section title="5. Cancellation and refunds">
+        <Section title="5. Automatic renewal">
+          <p>{RENEWAL_POLICY_TEXT}</p>
           <p>
-            You may cancel at any time from your account settings. If you cancel during a free trial,
-            you will not be charged. If you cancel during a paid period, you keep access until the end
-            of that period, and we do not provide prorated refunds except where required by law. If
-            you are charged in error, contact us within a reasonable time and we will work with you in
-            good faith to resolve it.
+            The price, the billing period and the date your trial ends are shown next to the
+            subscribe button and again on the checkout page before you confirm. To cancel, open{' '}
+            <Link href={BILLING_SETTINGS_PATH}>Settings, Billing</Link> and choose Manage billing.
           </p>
         </Section>
 
-        <Section title="6. Acceptable use">
+        <Section title="6. Cancellation and refunds">
+          <p>
+            You may cancel at any time from your account settings. If you cancel during a free
+            trial, you will not be charged. If you cancel during a paid period, you keep access
+            until the end of that period, and we do not provide prorated refunds except where
+            required by law. If you are charged in error, contact us within a reasonable time and we
+            will work with you in good faith to resolve it.
+          </p>
+        </Section>
+
+        <Section title="7. Acceptable use">
           <p>You agree not to:</p>
           <ul>
             <li>Use the Services for any unlawful, fraudulent, or abusive purpose;</li>
@@ -101,19 +111,23 @@ export default function TermsOfServicePage() {
           </ul>
         </Section>
 
-        <Section title="7. Not financial, investment, tax, or legal advice">
+        <Section title="8. Not financial, investment, tax, or legal advice">
           <p>
-            Ezana provides research, data, analytics, and educational tools to help you make your own
-            decisions. <strong>Nothing on the Services constitutes financial, investment, tax, legal,
-            or other professional advice</strong>, a recommendation, or a solicitation to buy or sell
-            any security or asset. We are not a broker-dealer, investment adviser, or financial
-            planner. Investing involves risk, including the possible loss of principal, and past
-            performance does not guarantee future results. You are solely responsible for your
-            decisions and should consult a licensed professional where appropriate.
+            Ezana provides research, data, analytics, and educational tools to help you make your
+            own decisions.{' '}
+            <strong>
+              Nothing on the Services constitutes financial, investment, tax, legal, or other
+              professional advice
+            </strong>
+            , a recommendation, or a solicitation to buy or sell any security or asset. We are not a
+            broker-dealer, investment adviser, or financial planner. Investing involves risk,
+            including the possible loss of principal, and past performance does not guarantee future
+            results. You are solely responsible for your decisions and should consult a licensed
+            professional where appropriate.
           </p>
         </Section>
 
-        <Section title="8. Market data and third-party sources">
+        <Section title="9. Market data and third-party sources">
           <p>
             The Services aggregate information from third-party data providers and public sources.
             Such data may be delayed, incomplete, or inaccurate, and is provided &quot;as is&quot;
@@ -122,7 +136,7 @@ export default function TermsOfServicePage() {
           </p>
         </Section>
 
-        <Section title="9. Brokerage connections and paper trading">
+        <Section title="10. Brokerage connections and paper trading">
           <p>
             Where you connect a brokerage account, connections are made through regulated, read-only
             aggregators; we can read positions and balances to power your analysis but cannot move
@@ -132,41 +146,52 @@ export default function TermsOfServicePage() {
           </p>
         </Section>
 
-        <Section title="10. Intellectual property">
+        <Section title="11. Intellectual property">
           <p>
             The Services, including all software, text, design, logos, and content we provide, are
-            owned by Ezana or our licensors and are protected by intellectual property laws. We grant
-            you a limited, non-exclusive, non-transferable, revocable license to use the Services for
-            your personal, non-commercial use in accordance with these Terms. All rights not expressly
-            granted are reserved.
+            owned by Ezana or our licensors and are protected by intellectual property laws. We
+            grant you a limited, non-exclusive, non-transferable, revocable license to use the
+            Services for your personal, non-commercial use in accordance with these Terms. All
+            rights not expressly granted are reserved.
           </p>
         </Section>
 
-        <Section title="11. Your content">
+        <Section title="12. Your content">
           <p>
             You retain ownership of content you submit (such as notes, watchlists, or feedback). You
-            grant us a worldwide, royalty-free license to host, store, and use that content solely to
-            operate and improve the Services. You are responsible for your content and represent that
-            you have the rights to submit it.
+            grant us a worldwide, royalty-free license to host, store, and use that content solely
+            to operate and improve the Services. You are responsible for your content and represent
+            that you have the rights to submit it.
           </p>
         </Section>
 
-        <Section title="12. Privacy">
+        <Section title="13. Copyright and repeat infringers">
+          <p>
+            Do not upload or post material you do not have the right to share. We respond to notices
+            of claimed copyright infringement under the U.S. Digital Millennium Copyright Act and
+            similar laws: we remove or disable access to the material, tell the person who posted
+            it, and let them send a counter-notice. We close the accounts of people who repeatedly
+            infringe. How to send a notice or counter-notice, and where, is set out in our{' '}
+            <Link href="/copyright">Copyright and DMCA policy</Link>.
+          </p>
+        </Section>
+
+        <Section title="14. Privacy">
           <p>
             Our <Link href="/privacy-policy">Privacy Policy</Link> explains how we collect, use, and
             share personal information. By using the Services, you consent to those practices.
           </p>
         </Section>
 
-        <Section title="13. Third-party services and links">
+        <Section title="15. Third-party services and links">
           <p>
             The Services may contain links to or integrations with third-party websites and services
-            that we do not control. We are not responsible for their content, policies, or practices,
-            and your use of them is governed by their own terms.
+            that we do not control. We are not responsible for their content, policies, or
+            practices, and your use of them is governed by their own terms.
           </p>
         </Section>
 
-        <Section title="14. Disclaimers">
+        <Section title="16. Disclaimers">
           <p>
             The Services are provided &quot;as is&quot; and &quot;as available&quot; without
             warranties of any kind, whether express, implied, or statutory, including warranties of
@@ -175,56 +200,56 @@ export default function TermsOfServicePage() {
           </p>
         </Section>
 
-        <Section title="15. Limitation of liability">
+        <Section title="17. Limitation of liability">
           <p>
-            To the maximum extent permitted by law, Ezana and its affiliates, officers, employees, and
-            suppliers will not be liable for any indirect, incidental, special, consequential, or
-            punitive damages, or for any loss of profits, data, or goodwill, arising out of or related
-            to your use of the Services. Our total liability for any claim relating to the Services
-            will not exceed the greater of the amount you paid us in the twelve months before the
-            claim or USD $100. Some jurisdictions do not allow certain limitations, so some of the
-            above may not apply to you.
+            To the maximum extent permitted by law, Ezana and its affiliates, officers, employees,
+            and suppliers will not be liable for any indirect, incidental, special, consequential,
+            or punitive damages, or for any loss of profits, data, or goodwill, arising out of or
+            related to your use of the Services. Our total liability for any claim relating to the
+            Services will not exceed the greater of the amount you paid us in the twelve months
+            before the claim or USD $100. Some jurisdictions do not allow certain limitations, so
+            some of the above may not apply to you.
           </p>
         </Section>
 
-        <Section title="16. Indemnification">
+        <Section title="18. Indemnification">
           <p>
-            You agree to indemnify and hold harmless Ezana from any claims, damages, liabilities, and
-            expenses (including reasonable legal fees) arising from your misuse of the Services or your
-            violation of these Terms or applicable law.
+            You agree to indemnify and hold harmless Ezana from any claims, damages, liabilities,
+            and expenses (including reasonable legal fees) arising from your misuse of the Services
+            or your violation of these Terms or applicable law.
           </p>
         </Section>
 
-        <Section title="17. Termination">
+        <Section title="19. Termination">
           <p>
-            You may stop using the Services at any time. We may suspend or terminate your access if you
-            breach these Terms, if required by law, or to protect the Services or other users. Upon
-            termination, the rights granted to you will end, while provisions that by their nature
-            should survive (such as intellectual property, disclaimers, and limitation of liability)
-            will continue to apply.
+            You may stop using the Services at any time. We may suspend or terminate your access if
+            you breach these Terms, if required by law, or to protect the Services or other users.
+            Upon termination, the rights granted to you will end, while provisions that by their
+            nature should survive (such as intellectual property, disclaimers, and limitation of
+            liability) will continue to apply.
           </p>
         </Section>
 
-        <Section title="18. Changes to the Services and these Terms">
+        <Section title="20. Changes to the Services and these Terms">
           <p>
-            We may modify the Services or these Terms from time to time. When changes are material, we
-            will provide reasonable notice, such as by posting the updated Terms with a new
+            We may modify the Services or these Terms from time to time. When changes are material,
+            we will provide reasonable notice, such as by posting the updated Terms with a new
             &quot;Last updated&quot; date or notifying you in the product. Your continued use of the
             Services after changes take effect constitutes acceptance of the revised Terms.
           </p>
         </Section>
 
-        <Section title="19. Governing law and dispute resolution">
+        <Section title="21. Governing law and dispute resolution">
           <p>
-            These Terms are governed by the laws applicable where Ezana is established, without regard
-            to conflict-of-laws principles. You agree to first attempt to resolve any dispute with us
-            informally by contacting us. Any dispute that cannot be resolved informally will be
-            subject to the exclusive jurisdiction of the competent courts in that location, except
-            where applicable law provides otherwise.
+            These Terms are governed by the laws applicable where Ezana is established, without
+            regard to conflict-of-laws principles. You agree to first attempt to resolve any dispute
+            with us informally by contacting us. Any dispute that cannot be resolved informally will
+            be subject to the exclusive jurisdiction of the competent courts in that location,
+            except where applicable law provides otherwise.
           </p>
         </Section>
 
-        <Section title="20. Contact us">
+        <Section title="22. Contact us">
           <p>
             Questions about these Terms? Reach us at{' '}
             <a href="mailto:contact@ezana.world">contact@ezana.world</a>.

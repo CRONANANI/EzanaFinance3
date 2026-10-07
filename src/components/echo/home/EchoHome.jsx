@@ -13,6 +13,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { packTiles } from '@/lib/echo/bento-layout';
 import { SECTIONS, REGIONS, RANGES, DEFAULT_FILTERS, emptyMessage } from '@/lib/echo/home-feed';
+import { NEWSLETTER_CONSENT_TEXT } from '@/lib/newsletter/config';
 import './echo-home.css';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -31,7 +32,7 @@ const fmtReads = (n) => `${Number(n || 0).toLocaleString('en-US')} READS`;
  * @param {Function} props.onLoadMore
  * @param {'loading'|'ready'|'error'} props.status
  * @param {Function} props.onRetry
- * @param {Function} props.onSubscribe     async (email) => void, throws on failure
+ * @param {Function} props.onSubscribe     async (email, consentText) => void, throws on failure
  * @param {boolean}  props.searchOpen
  * @param {Function} props.onSearchOpenChange
  * @param {boolean}  [props.isAdmin]
@@ -612,7 +613,9 @@ function BentoSkeleton() {
 /* ---------- The Evening Brief ---------- */
 function EveningBrief({ onSubscribe }) {
   const [email, setEmail] = useState('');
-  const [state, setState] = useState('idle'); // idle | submitting | success | error | invalid
+  const [consent, setConsent] = useState(false);
+  // idle | submitting | success | error | invalid | consent
+  const [state, setState] = useState('idle');
   const submit = async (e) => {
     e.preventDefault();
     const v = email.trim();
@@ -620,15 +623,20 @@ function EveningBrief({ onSubscribe }) {
       setState('invalid');
       return;
     }
+    // Express consent: an unticked box the reader ticks, never implied.
+    if (!consent) {
+      setState('consent');
+      return;
+    }
     setState('submitting');
     try {
-      await onSubscribe(v);
+      await onSubscribe(v, NEWSLETTER_CONSENT_TEXT);
       setState('success');
     } catch {
       setState('error');
     }
   };
-  const errored = state === 'invalid' || state === 'error';
+  const errored = state === 'invalid' || state === 'error' || state === 'consent';
   return (
     <section className="ech-brief" aria-labelledby="ech-brief-h">
       <div className="ech-brief__copy">
@@ -643,7 +651,7 @@ function EveningBrief({ onSubscribe }) {
       </div>
       {state === 'success' ? (
         <p className="ech-brief__done" role="status">
-          You&rsquo;re in. The Evening Brief will land in your inbox.
+          Almost there. Check your inbox and confirm your address to start the Evening Brief.
         </p>
       ) : (
         <form className="ech-brief__form" onSubmit={submit} noValidate>
@@ -659,7 +667,7 @@ function EveningBrief({ onSubscribe }) {
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
-                if (state === 'invalid' || state === 'error') setState('idle');
+                if (errored) setState('idle');
               }}
               aria-invalid={state === 'invalid'}
               aria-describedby="ech-brief-note"
@@ -674,6 +682,18 @@ function EveningBrief({ onSubscribe }) {
               Subscribe
             </button>
           </div>
+          <label className="ech-brief__consent" htmlFor="ech-brief-consent">
+            <input
+              id="ech-brief-consent"
+              type="checkbox"
+              checked={consent}
+              onChange={(e) => {
+                setConsent(e.target.checked);
+                if (state === 'consent') setState('idle');
+              }}
+            />
+            <span>{NEWSLETTER_CONSENT_TEXT}</span>
+          </label>
           <span
             id="ech-brief-note"
             className={`ech-brief__note${errored ? ' is-error' : ''}`}
@@ -681,9 +701,11 @@ function EveningBrief({ onSubscribe }) {
           >
             {state === 'invalid'
               ? 'Enter a valid email address.'
-              : state === 'error'
-                ? 'That didn’t go through. Check the address and try again.'
-                : 'Free. Unsubscribe anytime.'}
+              : state === 'consent'
+                ? 'Tick the box above to subscribe.'
+                : state === 'error'
+                  ? 'That didn’t go through. Check the address and try again.'
+                  : 'Free. We send a confirmation email first.'}
           </span>
         </form>
       )}

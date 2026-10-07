@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { emailFooterHtml } from '@/lib/email/footer';
 import { randomBytes } from 'crypto';
 import { requireUser, getAdminClient } from '@/lib/supabase';
 import { stripe } from '@/lib/services/stripe';
@@ -196,6 +197,7 @@ function buildDeletionEmail({ reactivationUrl, formattedDate, email }) {
           </p>
         </td></tr>
       </table>
+      ${emailFooterHtml()}
     </td></tr>
   </table>
 </body>

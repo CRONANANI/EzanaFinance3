@@ -2,7 +2,12 @@
  * POST /api/waitlist: join the Ezana waitlist (the /auth/signup form).
  *
  * Body: { firstName, lastName, email, role, organization?, useCase?,
- *         heardFrom?, referralCode?, plan?, redirect? }
+ *         heardFrom?, referralCode?, plan?, redirect?, ageConfirmed,
+ *         marketingConsent? }
+ *
+ * ageConfirmed (18+) is required. marketingConsent is optional and off by
+ * default; the stored wording is always the server's own copy, never what the
+ * client sent, so the consent record matches the form exactly.
  *
  * No email enumeration: an address already on the list gets the same success
  * body as a new one and no second email. An admin later approves the row from
@@ -17,6 +22,8 @@ import { safeInternalPath, escapeHtml } from '@/lib/sanitize';
 import { EMAIL_RE } from '@/lib/auth/password-rules';
 import { senderAddress } from '@/lib/waitlist/invite';
 import { WAITLIST_HEARD_FROM, WAITLIST_ROLES } from '@/lib/waitlist/options';
+import { AGE_CONFIRM_TEXT, WAITLIST_MARKETING_CONSENT_TEXT, isTrue } from '@/lib/legal/consent';
+import { emailFooterHtml } from '@/lib/email/footer';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,6 +72,11 @@ export const POST = withApiGuard(
         errors.referralCode = 'That referral code does not look right.';
       }
       if (plan.length > 20) errors.plan = 'Invalid plan.';
+      if (!isTrue(body.ageConfirmed)) {
+        errors.ageConfirmed = 'You must be 18 or older to use Ezana.';
+      }
+      const marketingConsent = isTrue(body.marketingConsent);
+      const consentAt = new Date().toISOString();
       if (Object.keys(errors).length) {
         return NextResponse.json({ error: 'Please check the form.', errors }, { status: 400 });
       }
@@ -102,7 +114,13 @@ export const POST = withApiGuard(
             plan: plan || null,
             redirect,
             signup_page: 'auth_signup',
-            signup_timestamp: new Date().toISOString(),
+            signup_timestamp: consentAt,
+            age_confirmed: true,
+            age_confirmed_text: AGE_CONFIRM_TEXT,
+            age_confirmed_at: consentAt,
+            marketing_consent: marketingConsent,
+            marketing_consent_text: WAITLIST_MARKETING_CONSENT_TEXT,
+            marketing_consent_at: marketingConsent ? consentAt : null,
           },
         })
         .select('legacy_user, legacy_number')
@@ -172,6 +190,7 @@ function waitlistEmail(firstName, isLegacy, legacyNumber) {
     <p style="color:#6b7280;font-size:12px;text-align:center;margin:28px 0 0;">
       You received this email because you joined the Ezana Finance waitlist.
     </p>
+    ${emailFooterHtml()}
   </div>
 </body>
 </html>`;

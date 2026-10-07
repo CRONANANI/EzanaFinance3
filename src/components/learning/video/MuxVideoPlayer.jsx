@@ -3,11 +3,10 @@
 import { useEffect, useRef } from 'react';
 import { muxStreamUrl, muxPosterUrl } from '@/lib/video-format';
 
-const HLS_CDN = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js';
-
 /**
- * Plays a Mux video by playback id. Uses native HLS where available (Safari),
- * otherwise lazy-loads hls.js from a CDN — so there's no build-time dependency.
+ * Plays a Mux video by playback id. Uses native HLS where available (Safari);
+ * elsewhere hls.js (bundled from npm, never a CDN) is loaded on the first
+ * play, so pages with a video that nobody plays never download it.
  */
 export function MuxVideoPlayer({ playbackId, poster, label = 'Video', className, style }) {
   const videoRef = useRef(null);
@@ -16,32 +15,34 @@ export function MuxVideoPlayer({ playbackId, poster, label = 'Video', className,
     const video = videoRef.current;
     if (!video || !playbackId) return undefined;
     const src = muxStreamUrl(playbackId);
-    let hls;
-
-    const attachHls = () => {
-      if (!videoRef.current || !window.Hls) return;
-      hls = new window.Hls();
-      hls.loadSource(src);
-      hls.attachMedia(videoRef.current);
-    };
+    let hls = null;
+    let cancelled = false;
 
     if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = src;
-    } else if (window.Hls) {
-      attachHls();
-    } else {
-      let script = document.getElementById('hlsjs-cdn');
-      if (!script) {
-        script = document.createElement('script');
-        script.id = 'hlsjs-cdn';
-        script.src = HLS_CDN;
-        document.body.appendChild(script);
-      }
-      script.addEventListener('load', attachHls);
-      if (window.Hls) attachHls();
+      return undefined;
     }
 
+    const onFirstPlay = async () => {
+      video.removeEventListener('play', onFirstPlay);
+      const { default: Hls } = await import('hls.js');
+      if (cancelled || !videoRef.current) return;
+      if (!Hls.isSupported()) {
+        video.src = src;
+        return;
+      }
+      hls = new Hls();
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        videoRef.current?.play().catch(() => {});
+      });
+      hls.loadSource(src);
+      hls.attachMedia(videoRef.current);
+    };
+    video.addEventListener('play', onFirstPlay);
+
     return () => {
+      cancelled = true;
+      video.removeEventListener('play', onFirstPlay);
       if (hls) hls.destroy();
     };
   }, [playbackId]);

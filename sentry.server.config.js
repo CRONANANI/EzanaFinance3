@@ -36,5 +36,6 @@ Sentry.init({
   profileSessionSampleRate: 1.0,
   profileLifecycle: 'trace',
 
-  sendDefaultPii: true,
+  /* No IP address, cookies or headers on events. */
+  sendDefaultPii: false,
 });

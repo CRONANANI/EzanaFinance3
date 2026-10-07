@@ -8,6 +8,7 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { getAdminClient } from '@/lib/supabase';
 import { escapeHtml, sanitizeUUID } from '@/lib/sanitize';
+import { emailFooterHtml } from '@/lib/email/footer';
 import { requireWaitlistAdmin } from '@/lib/waitlist/admin';
 import {
   INVITE_TTL_DAYS,
@@ -105,6 +106,7 @@ function inviteEmail(firstName, url) {
     <p style="color:#6b7280;font-size:12px;text-align:center;margin:28px 0 0;">
       You received this email because you joined the Ezana Finance waitlist.
     </p>
+    ${emailFooterHtml()}
   </div>
 </body>
 </html>`;

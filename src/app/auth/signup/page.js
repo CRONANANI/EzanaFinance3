@@ -20,6 +20,7 @@ import ReferralCodeField from '@/components/auth/ReferralCodeField';
 import { isValidCodeFormat, normalizeCode } from '@/lib/referrals';
 import { safeInternalPath } from '@/lib/sanitize';
 import { EMAIL_RE, validatePassword } from '@/lib/auth/password-rules';
+import { AGE_CONFIRM_TEXT, WAITLIST_MARKETING_CONSENT_TEXT } from '@/lib/legal/consent';
 import { WAITLIST_HEARD_FROM, WAITLIST_ROLES, WAITLIST_USE_CASE_MAX } from '@/lib/waitlist/options';
 import './signup.css';
 
@@ -48,6 +49,33 @@ function Brand() {
         <i className="bi bi-graph-up-arrow" />
       </span>
       <span className="wl-brand-name">Ezana Finance</span>
+    </div>
+  );
+}
+
+function Check({ id, checked, onChange, required, error, children }) {
+  return (
+    <div className="wl-field">
+      <label className="wl-check" htmlFor={id}>
+        <input
+          id={id}
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          required={required}
+          aria-invalid={!!error || undefined}
+          aria-describedby={error ? `${id}-err` : undefined}
+        />
+        <span>
+          {children}
+          {required ? <span className="wl-req"> *</span> : null}
+        </span>
+      </label>
+      {error ? (
+        <p className="wl-err" id={`${id}-err`} role="alert">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -81,6 +109,8 @@ function WaitlistForm({ params }) {
     useCase: '',
     heardFrom: '',
   });
+  const [ageOk, setAgeOk] = useState(false);
+  const [marketing, setMarketing] = useState(false);
   const [referralCode, setReferralCode] = useState(params.ref);
   const [referralOpen, setReferralOpen] = useState(!!params.ref);
   const [errors, setErrors] = useState({});
@@ -101,6 +131,7 @@ function WaitlistForm({ params }) {
     if (!f.lastName.trim()) errs.lastName = 'Enter your last name.';
     if (!EMAIL_RE.test(f.email.trim())) errs.email = 'Enter a valid email address.';
     if (!f.role) errs.role = 'Choose what describes you.';
+    if (!ageOk) errs.ageConfirmed = 'You must be 18 or older to use Ezana.';
     if (referralCode && !isValidCodeFormat(referralCode)) {
       errs.referralCode = 'That referral code does not look right.';
     }
@@ -116,6 +147,9 @@ function WaitlistForm({ params }) {
           ...f,
           email: f.email.trim(),
           referralCode: referralCode || undefined,
+          ageConfirmed: ageOk,
+          marketingConsent: marketing,
+          marketingConsentText: WAITLIST_MARKETING_CONSENT_TEXT,
           plan: params.plan || undefined,
           redirect: params.redirect || undefined,
         }),
@@ -275,6 +309,12 @@ function WaitlistForm({ params }) {
             {errors.referralCode}
           </p>
         ) : null}
+        <Check id="wl-age" checked={ageOk} onChange={setAgeOk} required error={errors.ageConfirmed}>
+          {AGE_CONFIRM_TEXT}
+        </Check>
+        <Check id="wl-news" checked={marketing} onChange={setMarketing}>
+          {WAITLIST_MARKETING_CONSENT_TEXT}
+        </Check>
         <button type="submit" className="wl-submit" disabled={busy}>
           {busy ? 'Joining' : 'Join the waitlist'}
         </button>
@@ -296,6 +336,7 @@ function InviteForm({ token }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [ageOk, setAgeOk] = useState(false);
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -321,6 +362,7 @@ function InviteForm({ token }) {
     const pwd = validatePassword(password);
     if (pwd.length) errs.password = `Password must contain: ${pwd.join(', ')}`;
     else if (password !== confirm) errs.confirm = 'Passwords do not match.';
+    if (!ageOk) errs.ageConfirmed = 'You must be 18 or older to use Ezana.';
     setErrors(errs);
     if (Object.keys(errs).length) return;
 
@@ -329,7 +371,7 @@ function InviteForm({ token }) {
       const res = await fetch('/api/auth/accept-invite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, username, password }),
+        body: JSON.stringify({ token, username, password, ageConfirmed: ageOk }),
       });
       const d = await res.json().catch(() => ({}));
       if (!res.ok || !d.ok) {
@@ -466,6 +508,15 @@ function InviteForm({ token }) {
             {errors.confirm}
           </p>
         ) : null}
+        <Check
+          id="wl-inv-age"
+          checked={ageOk}
+          onChange={setAgeOk}
+          required
+          error={errors.ageConfirmed}
+        >
+          {AGE_CONFIRM_TEXT}
+        </Check>
         <button type="submit" className="wl-submit" disabled={busy}>
           {busy ? 'Creating account' : 'Create account'}
         </button>
