@@ -106,10 +106,6 @@
       "schedule": "40 7 * * *"
     },
     {
-      "path": "/api/cron/ingest-tse-assets?year=2022",
-      "schedule": "10 9 3 * *"
-    },
-    {
       "path": "/api/cron/sync-award-prices",
       "schedule": "20 8 * * 1-6"
     },

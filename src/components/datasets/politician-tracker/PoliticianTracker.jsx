@@ -240,7 +240,6 @@ export default function PoliticianTracker({
   initialSort = 'volume',
   initialPeriod = DEFAULT_PERIOD,
   initialQuery = '',
-  countryControl = null,
 }) {
   const [trades, setTrades] = useState([]);
   const [status, setStatus] = useState('loading'); // loading | ready | empty | sample
@@ -559,7 +558,6 @@ export default function PoliticianTracker({
         <p className="ptk-sub">
           Every member of the House and Senate, ranked by their disclosed trades.
         </p>
-        {countryControl ? <div className="ptk-country">{countryControl}</div> : null}
       </header>
 
       <div className="ptk-body">

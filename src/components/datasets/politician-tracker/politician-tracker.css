@@ -1523,10 +1523,3 @@
 .ptk-cmte-title {
   color: var(--text-faint);
 }
-
-/* ── country switch (United States | Brazil), under the header ── */
-.ptk-country {
-  display: flex;
-  justify-content: center;
-  margin-top: 12px;
-}
