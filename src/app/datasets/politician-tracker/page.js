@@ -1,10 +1,10 @@
 import ReactDOM from 'react-dom';
-import PoliticianTracker from '@/components/datasets/politician-tracker/PoliticianTracker';
+import PoliticianTrackerByCountry from '@/components/datasets/politician-tracker/PoliticianTrackerByCountry';
 
 export const metadata = {
   title: 'Politician tracker | Ezana',
   description:
-    'Every member of the U.S. House and Senate with disclosed trades under the STOCK Act, ranked by disclosed volume, with each politician’s trade activity, the members they trade most like, and the federal contractors among the companies they trade. Amounts are the ranges members disclose.',
+    'Every member of the U.S. House and Senate with disclosed trades under the STOCK Act, ranked by disclosed volume, and Brazil’s elected officeholders ranked by the assets they declared to the Superior Electoral Court. Filter by country.',
 };
 
 /* Portrait origins. The avatars load unoptimized, straight from these
@@ -29,7 +29,8 @@ const PERIOD_KEYS = ['30d', '90d', '6m', '1y', '2y', 'all'];
 
 const str = (v) => (typeof v === 'string' ? v : null);
 
-/* Query params the page honours on first paint: ?member= opens the panel,
+/* Query params the page honours on first paint: ?country=br opens Brazil
+   (declared assets; ?year= and ?filing= restore it), ?member= opens the panel,
    ?chamber= (from the old per-chamber redirects) preselects the chamber
    filter, ?party=, ?sort=, ?period= and ?q= restore the toolbar. Defaults are omitted
    from the URL the page writes back. */
@@ -40,7 +41,8 @@ export default function Page({ searchParams }) {
   const sort = str(searchParams?.sort);
   const period = str(searchParams?.period);
   return (
-    <PoliticianTracker
+    <PoliticianTrackerByCountry
+      initialCountry={String(str(searchParams?.country) || '').toLowerCase() === 'br' ? 'br' : 'us'}
       initialMember={str(searchParams?.member)}
       initialChamber={ch === 'house' ? 'House' : ch === 'senate' ? 'Senate' : null}
       initialParty={['D', 'R', 'I'].includes(party) ? party : null}

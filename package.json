@@ -34,6 +34,7 @@
     "test:congress": "node scripts/check-congress-ingest.mjs",
     "test:senate": "node scripts/check-senate-efd.mjs",
     "ingest:congress": "node scripts/ingest-congress.mjs",
+    "ingest:tse": "node scripts/ingest-tse-assets.mjs",
     "parse:house-backfill": "node scripts/drain-house-ptrs.mjs",
     "seed:ticker-sectors": "node scripts/seed-ticker-sectors.mjs",
     "seed:contractor-tickers": "node scripts/seed-contractor-tickers.mjs",

@@ -1,0 +1,261 @@
+/* Politician tracker, Brazil. Scoped `ptb-`, on the same .dsc sheet and
+   --ptk-* properties as the US tracker (politician-tracker.css). Mono for
+   every figure. Growth reads emerald, decline reads ink at 55%, never red,
+   as on the US side. */
+
+.ptb-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.ptb-toolbar .ptk-search {
+  flex: 1 1 200px;
+  width: auto;
+  min-width: 180px;
+}
+.ptb-toolbar .ptk-seg {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+/* Buttons keep their width so a long control scrolls rather than squeezing
+   its labels into each other. */
+.ptb-toolbar .ptk-seg-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.ptb-table .ptk-vol-fig {
+  min-width: 84px;
+  white-space: nowrap;
+}
+.ptb-select .dsc-select {
+  height: 36px;
+  min-width: 132px;
+}
+
+.ptb-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.ptb-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  border: 1px solid var(--ptk-hair);
+  border-radius: var(--radius-md);
+  background: var(--ptk-hair);
+  overflow: hidden;
+}
+.ptb-stats > div {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  background: var(--dsc-bg);
+}
+.ptb-stats dd {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ptk-ink);
+}
+.ptb-offices {
+  padding: 14px 16px;
+  border: 1px solid var(--ptk-hair);
+  border-radius: var(--radius-md);
+}
+.ptb-offices ul,
+.ptb-groups,
+.ptb-history,
+.ptb-items {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ptb-group {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(48px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--ptk-ink);
+}
+.ptb-group-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ptb-bar {
+  display: block;
+  height: 6px;
+  border-radius: var(--radius-sm);
+  background: var(--ptk-track);
+  overflow: hidden;
+}
+.ptb-bar i {
+  display: block;
+  height: 100%;
+  background: var(--ptk-house);
+}
+.ptb-group-val {
+  min-width: 64px;
+  text-align: right;
+  font-size: 12px;
+}
+.ptb-faint {
+  color: var(--ptk-faint);
+}
+.ptb-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ptb-link .ptb-faint {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 400;
+}
+.ptb-link:hover .ptb-faint,
+.ptb-link:focus-visible .ptb-faint {
+  text-decoration: underline;
+}
+.ptb-link:focus-visible {
+  outline: 2px solid var(--ptk-focus);
+  outline-offset: 2px;
+}
+
+.ptb-up {
+  color: var(--ptk-buy-text);
+}
+.ptb-down {
+  color: var(--ptk-sell);
+}
+.ptb-skel {
+  display: block;
+  height: 14px;
+  border-radius: var(--radius-sm);
+  background: var(--ptk-skel-base);
+}
+.ptb-more {
+  margin: 12px auto 0;
+  display: block;
+}
+
+/* ── filing panel ── */
+.ptb-id {
+  align-items: center;
+}
+.ptb-mono-avatar {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--ptk-avatar-bg);
+  color: var(--ptk-mute);
+  font-size: 22px;
+  font-weight: 600;
+}
+.ptb-party {
+  padding: 1px 6px;
+  border: 1px solid var(--ptk-hair-strong);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+}
+.ptb-panel .dsc-p-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.ptb-fullname {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--ptk-faint);
+}
+.ptb-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--ptk-hair);
+}
+.ptb-item-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.ptb-item-desc {
+  font-size: 13px;
+  color: var(--ptk-ink);
+  overflow-wrap: anywhere;
+}
+.ptb-item-type {
+  font-size: 11px;
+  color: var(--ptk-faint);
+}
+.ptb-item-val {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--ptk-ink);
+}
+.ptb-history-row {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--ptk-ink);
+}
+.ptb-note {
+  margin: 8px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.ptb-note a {
+  color: var(--ptk-house-text);
+}
+
+@media (max-width: 900px) {
+  .ptb-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .ptb-toolbar .ptk-search {
+    flex-basis: 100%;
+  }
+  .ptb-select,
+  .ptb-select .dsc-select {
+    flex: 1 1 0;
+    width: 100%;
+    min-width: 0;
+  }
+  .ptb-col-items {
+    display: none;
+  }
+  .ptb-stats dd {
+    font-size: 16px;
+  }
+  .ptk-country {
+    padding: 0 16px;
+  }
+  .ptk-country .ptk-seg {
+    width: 100%;
+  }
+  .ptk-country .ptk-seg-btn {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+}
