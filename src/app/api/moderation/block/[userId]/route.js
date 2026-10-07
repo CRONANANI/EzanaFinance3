@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 export const DELETE = withApiGuard(
   async (request, user, context) => {
     const rl = await checkRateLimit(`moderation:unblock:${user.id}`, {
-      interval: 60 * 60 * 1000,
+      window: '1 h',
       limit: 60,
     });
     if (!rl.success) return rateLimitResponse(rl);

@@ -38,7 +38,7 @@ export const GET = withApiGuard(
 export const POST = withApiGuard(
   async (request, user) => {
     const rl = await checkRateLimit(`moderation:block:${user.id}`, {
-      interval: 60 * 60 * 1000,
+      window: '1 h',
       limit: 60,
     });
     if (!rl.success) return rateLimitResponse(rl);

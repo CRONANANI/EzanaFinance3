@@ -381,6 +381,39 @@
   margin-left: 0.5rem;
 }
 
+/* Live endpoint chip */
+.ea-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--ea-emerald-text);
+  background: color-mix(in srgb, var(--ea-emerald) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ea-emerald) 40%, transparent);
+  padding: 0.12rem 0.45rem;
+  border-radius: 9999px;
+}
+.ea-soon i,
+.ea-live i {
+  font-size: 0.7rem;
+}
+.ea-ep-scope {
+  color: var(--ea-muted, inherit);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+.ea-tier-limit {
+  margin: -0.4rem 0 0.75rem;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  color: var(--ea-muted, inherit);
+}
+
 /* ── Light code blocks (white bg, hairline border, dark text) ─────────── */
 .ea-code {
   margin: 1rem 0;

@@ -1,7 +1,7 @@
 /**
- * Node ESM resolve hook for scripts/check-mobile.mjs only: maps the `@/`
- * alias to src/ and retries extensionless relative imports with `.js`, the
- * way webpack resolves them, so the modules under test load untouched.
+ * Node ESM resolve hook for scripts/check-mobile.mjs and check-ezana-api.mjs:
+ * maps the `@/` alias to src/ and retries extensionless relative and package
+ * subpath imports (`next/cache`) with `.js`, the way webpack resolves them, so the modules under test load untouched.
  */
 import { pathToFileURL } from 'node:url';
 import { existsSync } from 'node:fs';
@@ -27,7 +27,9 @@ export async function resolve(specifier, context, nextResolve) {
   } catch (err) {
     if (
       err?.code === 'ERR_MODULE_NOT_FOUND' &&
-      (specifier.startsWith('./') || specifier.startsWith('../')) &&
+      (specifier.startsWith('./') ||
+        specifier.startsWith('../') ||
+        /^[\w@][^:]*\//.test(specifier)) &&
       !/\.[a-z]+$/i.test(specifier)
     ) {
       return nextResolve(`${specifier}.js`, context);

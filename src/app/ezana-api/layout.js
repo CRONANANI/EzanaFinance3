@@ -1,7 +1,7 @@
 export const metadata = {
-  title: 'Ezana API — Data & Signals for Traders and Institutions',
+  title: 'Ezana API: data and signals for traders and institutions',
   description:
-    'Lease Ezana’s congressional-trading, lobbying, prediction-market, and market datasets through a versioned REST API. Documentation, endpoints, and access tiers.',
+    'Ezana’s congressional trading, committee, lobbying, campaign finance, contract, prediction-market and SEC datasets through a versioned REST API. Documentation, endpoints and access tiers.',
 };
 
 export default function EzanaApiLayout({ children }) {

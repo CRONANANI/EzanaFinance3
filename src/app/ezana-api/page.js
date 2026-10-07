@@ -1,49 +1,54 @@
 'use client';
 
 /* ============================================================================
- *  EZANA API — documentation landing page (/ezana-api)
+ *  EZANA API: documentation (/ezana-api)
  *  ----------------------------------------------------------------------------
- *  Docs-style page positioning the Ezana API as a signal-from-noise engine for
- *  traders and quant firms. All-white surfaces (separation via hairline borders
- *  only), a sticky left legend with scroll-spy (a sticky pill bar on mobile),
- *  Plus Jakarta Sans for text and JetBrains Mono (tabular-nums) for every
- *  number / path / method / code block. Restrained, self-animating SVG visuals
- *  render static under prefers-reduced-motion.
- *
- *  The global top nav comes from the root layout (ConditionalNavbar). Everything
- *  here is documentation/scaffolding — endpoints and payloads are illustrative
- *  placeholders, marked roadmap/coming-soon where not yet live.
+ *  Endpoint groups, Live and Roadmap badges, tier cards and rate limits all
+ *  render from src/lib/ezana-api/registry.js and tiers.js, the same source the
+ *  /v1 router and the OpenAPI spec use, so the docs cannot drift from what the
+ *  API serves. All-white surfaces, a sticky legend with scroll-spy, Plus
+ *  Jakarta Sans for text and JetBrains Mono for paths, numbers and code.
+ *  Visuals render static under prefers-reduced-motion.
  * ==========================================================================*/
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import {
-  ArrowRight,
-  Terminal,
-  KeyRound,
-  Map,
-  TrendingUp,
-  Newspaper,
-  Network,
-  Zap,
-  History,
-  Gauge,
-  Landmark,
-  Banknote,
-  Building2,
-  LineChart,
-  Rocket,
-  Filter,
-  AlertTriangle,
-  Webhook,
-  Database,
-  GitBranch,
-  ShieldCheck,
-  HelpCircle,
-  Waypoints,
-  GitCompareArrows,
-} from 'lucide-react';
+import { GROUPS, LIVE_ENDPOINTS, ENDPOINTS, PARAMS } from '@/lib/ezana-api/registry';
+import { TIERS as API_TIERS, TIER_ORDER } from '@/lib/ezana-api/tiers';
 import './ezana-api.css';
+
+/* Bootstrap Icons in place of the old icon components; same props. */
+function biIcon(name) {
+  function BiIcon({ size = 16, className = '' }) {
+    return (
+      <i
+        className={`bi ${name}${className ? ` ${className}` : ''}`}
+        style={{ fontSize: size, lineHeight: 1 }}
+        aria-hidden="true"
+      />
+    );
+  }
+  BiIcon.displayName = name;
+  return BiIcon;
+}
+const ArrowRight = biIcon('bi-arrow-right');
+const Terminal = biIcon('bi-terminal');
+const KeyRound = biIcon('bi-key');
+const Map = biIcon('bi-map');
+const TrendingUp = biIcon('bi-graph-up-arrow');
+const Newspaper = biIcon('bi-newspaper');
+const Network = biIcon('bi-diagram-3');
+const Zap = biIcon('bi-lightning-charge');
+const History = biIcon('bi-clock-history');
+const Gauge = biIcon('bi-speedometer2');
+const Rocket = biIcon('bi-rocket-takeoff');
+const Filter = biIcon('bi-funnel');
+const AlertTriangle = biIcon('bi-exclamation-triangle');
+const Webhook = biIcon('bi-broadcast');
+const Database = biIcon('bi-database');
+const GitBranch = biIcon('bi-git');
+const ShieldCheck = biIcon('bi-shield-check');
+const HelpCircle = biIcon('bi-question-circle');
 
 /* Legend / scroll-spy order. */
 const SECTIONS = [
@@ -63,432 +68,84 @@ const SECTIONS = [
   { id: 'roadmap', label: 'How we build & ship' },
 ];
 
-const ENDPOINT_GROUPS = [
-  {
-    key: 'congress',
-    title: 'Congressional trading',
-    base: '/v1/congress',
-    Icon: Landmark,
-    framing:
-      'Insider-flow signal — what informed, access-rich actors are trading, structured for signal extraction, not just raw disclosures.',
-    routes: [
-      {
-        path: '/v1/congress/trades',
-        desc: 'Disclosed House & Senate trades, filterable by member, ticker, party, and filing date — the raw substrate for an informed-flow factor.',
-      },
-      {
-        path: '/v1/congress/trades/{id}',
-        desc: 'A single disclosure with STOCK Act filing metadata and disclosure lag, to model the delay between the trade and when the market saw it.',
-      },
-      {
-        path: '/v1/congress/members',
-        desc: 'Roster of all 535 members with disclosure history and committee assignments, so you can weight signal by seat and sector oversight.',
-      },
-      {
-        path: '/v1/congress/members/{id}/trades',
-        desc: 'Full trade history for one member — build per-actor track records and conviction weights.',
-      },
-      {
-        path: '/v1/congress/committees/{id}/activity',
-        desc: 'Trading activity rolled up by committee, aligning flow with the sectors a committee actually oversees.',
-      },
-      {
-        path: '/v1/congress/signals/insider-flow',
-        desc: 'Pre-computed insider-flow score per ticker — a drop-in feature ranking names by informed-actor accumulation.',
-      },
-    ],
-  },
-  {
-    key: 'lobbying',
-    title: 'Lobbying & influence',
-    base: '/v1/lobbying',
-    Icon: Network,
-    framing:
-      'Influence-flow signal — map corporate influence spend to sector and price exposure before the thesis is consensus.',
-    routes: [
-      {
-        path: '/v1/lobbying/filings',
-        desc: 'LDA lobbying filings by registrant, client, issue area, and quarter — where policy money is moving and which issuers are exposed.',
-      },
-      {
-        path: '/v1/lobbying/filings/{uuid}',
-        desc: 'One filing in full, with issues lobbied, lobbyists, and reported spend.',
-      },
-      {
-        path: '/v1/lobbying/clients/{id}',
-        desc: 'Spend history and issue exposure for a single client, ready to join against your position book for a policy-risk overlay.',
-      },
-      {
-        path: '/v1/lobbying/top-spenders',
-        desc: 'Leaderboard of influence spend by client and sector over a window — spot ramps early.',
-      },
-      {
-        path: '/v1/lobbying/issues/mix',
-        desc: 'Breakdown of spend by issue area, so you can tilt toward the policy themes gaining budget.',
-      },
-      {
-        path: '/v1/lobbying/registrants/{id}',
-        desc: 'Activity for a lobbying firm across its client book — a cross-issuer influence network view.',
-      },
-      {
-        path: '/v1/lobbying/signals/policy-exposure',
-        desc: 'Per-ticker policy-exposure score blending spend, issues, and contract adjacency into one feature.',
-      },
-    ],
-  },
-  {
-    key: 'fec',
-    title: 'Campaign finance (FEC)',
-    base: '/v1/fec',
-    Icon: Banknote,
-    framing:
-      'Political-capital signal — who funds whom, tied back to the sectors and issuers with the most at stake.',
-    routes: [
-      {
-        path: '/v1/fec/contributions',
-        desc: 'Itemized contributions filterable by contributor, committee, cycle, and employer — map corporate and executive giving.',
-      },
-      {
-        path: '/v1/fec/committees/{id}',
-        desc: 'A committee’s receipts, disbursements, and affiliations over a cycle.',
-      },
-      {
-        path: '/v1/fec/candidates/{id}/funding',
-        desc: 'Funding profile for a candidate — sector concentration and top backers.',
-      },
-      {
-        path: '/v1/fec/signals/sector-giving',
-        desc: 'Net political giving by sector as a directional signal on regulatory posture.',
-      },
-    ],
-  },
-  {
-    key: 'contracts',
-    title: 'Government contracts (USASpending)',
-    base: '/v1/contracts',
-    Icon: Building2,
-    framing:
-      'Revenue-visibility signal — federal award flow mapped to publicly traded recipients, ahead of guidance.',
-    routes: [
-      {
-        path: '/v1/contracts/awards',
-        desc: 'Awarded federal contracts filterable by recipient, agency, NAICS, and date — mapped to public parents.',
-      },
-      {
-        path: '/v1/contracts/recipients/{id}',
-        desc: 'Award history for one recipient — backlog and momentum for an issuer.',
-      },
-      {
-        path: '/v1/contracts/agencies/{id}/spending',
-        desc: 'Spending by agency and program, to anticipate which vendors benefit.',
-      },
-      {
-        path: '/v1/contracts/signals/award-momentum',
-        desc: 'Per-ticker award-momentum score — acceleration in federal revenue exposure.',
-      },
-    ],
-  },
-  {
-    key: 'predictions',
-    title: 'Prediction markets',
-    base: '/v1/predictions',
-    Icon: Gauge,
-    framing:
-      'Consensus & odds signal — real-money probabilities for the events your positions are exposed to.',
-    routes: [
-      {
-        path: '/v1/predictions/markets',
-        desc: 'Live and historical prediction markets by topic and status — a real-money probability for each event.',
-      },
-      {
-        path: '/v1/predictions/markets/{id}',
-        desc: 'One market with current odds, liquidity, and resolution criteria.',
-      },
-      {
-        path: '/v1/predictions/markets/{id}/history',
-        desc: 'Point-in-time odds series for a market — the input to event-driven backtests.',
-      },
-      {
-        path: '/v1/predictions/consensus',
-        desc: 'Aggregated consensus probability across correlated markets for a theme.',
-      },
-      {
-        path: '/v1/predictions/movers',
-        desc: 'Markets with the largest odds moves over a window — where conviction is shifting fastest.',
-      },
-    ],
-  },
-  {
-    key: 'news',
-    title: 'News engineering',
-    base: '/v1/news',
-    Icon: Newspaper,
-    framing:
-      'The signal layer — news structured, entity-tagged, and semantically linked to tickers, events, and odds so headlines become machine-usable features.',
-    routes: [
-      {
-        path: '/v1/news/search',
-        desc: 'Semantic news search over structured, deduplicated articles — retrieve by meaning, not keywords.',
-      },
-      {
-        path: '/v1/news/{id}/entities',
-        desc: 'Entities resolved from one article to tickers, people, and issues — build per-name news-flow features.',
-      },
-      {
-        path: '/v1/news/{id}/related-markets',
-        desc: 'Prediction markets and securities an article is semantically linked to, with confidence scores.',
-      },
-      {
-        path: '/v1/news/signals/odds-moves',
-        desc: 'News items time-aligned to the odds moves they preceded — a news→consensus lead signal.',
-      },
-      {
-        path: '/v1/news/sentiment/by-entity',
-        desc: 'Rolling entity-level sentiment derived from structured news flow.',
-      },
-    ],
-  },
-  {
-    key: 'markets',
-    title: 'Market data & signals',
-    base: '/v1/markets',
-    Icon: LineChart,
-    framing:
-      'The price layer — the series you regress every other signal against, plus composite and correlation features.',
-    routes: [
-      {
-        path: '/v1/markets/quotes',
-        desc: 'Reference and end-of-day market data for a symbol universe — the price series behind every feature.',
-      },
-      {
-        path: '/v1/markets/signals',
-        desc: 'Composite Ezana signals blending the datasets above into a single score per name.',
-      },
-      {
-        path: '/v1/signals/correlations',
-        desc: 'Discovered relationships between obscure datasets and price — the non-obvious links you can trade around.',
-      },
-      {
-        path: '/v1/signals/backtests/{id}',
-        desc: 'Point-in-time backtest results for a signal spec, with disclosure lag preserved so history isn’t contaminated by hindsight.',
-      },
-    ],
-  },
-  {
-    key: 'cross-signal',
-    title: 'Cross-dimensional signals',
-    base: '/v1/cross',
-    Icon: Waypoints,
-    framing:
-      'The signals that only exist because we hold all seven dimensions at once — joins across influence, capital, and consensus that no single-vendor feed can reconstruct.',
-    routes: [
-      {
-        path: '/v1/cross/influence-to-capital',
-        desc: 'Aligns lobbying and campaign-finance spend (Capitol Watch) against subsequent institutional accumulation (Titans Shadow) per issuer, surfacing names where influence money leads the smart money.',
-      },
-      {
-        path: '/v1/cross/contract-to-insider',
-        desc: 'Joins federal contract-award momentum (Capitol Watch) with corporate insider buying (Titans Shadow) on the awarded issuer, flagging where the people closest to the win are also buying.',
-      },
-      {
-        path: '/v1/cross/policy-to-price',
-        desc: 'Maps bill progression and agency rulings (Regulatory Winds) onto the sector baskets they move (Titans Shadow prices), scoring each ticker by unrealized regulatory catalyst.',
-      },
-      {
-        path: '/v1/cross/consensus-vs-fundamentals',
-        desc: 'Contrasts prediction-market odds (The Hive) with the fundamentals and analyst path (Titans Shadow) for the same event, isolating where crowd conviction diverges from the sell-side.',
-      },
-      {
-        path: '/v1/cross/demand-to-guidance',
-        desc: 'Regresses consumer demand signals — search, web traffic, card spend (Consumer Whispers) — against forward guidance and revisions (Titans Shadow) to catch demand inflections ahead of the print.',
-      },
-      {
-        path: '/v1/cross/macro-regime-overlay',
-        desc: 'Tags every other signal with the prevailing macro and geopolitical regime (Global Empire Lighthouse) so a factor can be conditioned on the environment it actually works in.',
-      },
-      {
-        path: '/v1/cross/composite/{ticker}',
-        desc: 'One call returns a per-ticker rollup of every cross-dimensional signal above, weighted and decayed by disclosure lag — a drop-in composite feature.',
-      },
-    ],
-  },
-  {
-    key: 'relationships',
-    title: 'Trend relationships & lead-lag',
-    base: '/v1/relationships',
-    Icon: GitCompareArrows,
-    framing:
-      'Time-structured relationships between dimensions — which trend leads which, by how long, and when the usual link breaks.',
-    routes: [
-      {
-        path: '/v1/relationships/lead-lag',
-        desc: 'Estimated lead-lag between any two dimension series for a ticker or sector (e.g. patent momentum → price), returning the lag in days and the strength of the relationship.',
-      },
-      {
-        path: '/v1/relationships/divergence',
-        desc: 'Flags where two normally-correlated dimensions have decoupled — insider selling into rising retail sentiment, say — ranked by how far the pair has drifted from its historical link.',
-      },
-      {
-        path: '/v1/relationships/confirmation',
-        desc: 'Counts how many independent dimensions currently agree on a name, turning multi-source corroboration into a single conviction score.',
-      },
-      {
-        path: '/v1/relationships/network/{entity}',
-        desc: 'Returns the influence graph around an entity — the politicians, lobbyists, contractors, and institutions linked to it across dimensions — for second-order exposure mapping.',
-      },
-      {
-        path: '/v1/relationships/regime-shift',
-        desc: 'Detects the moment a cross-dimensional relationship structurally changes, so you can retire or re-weight a factor before it quietly stops working.',
-      },
-      {
-        path: '/v1/relationships/backtest',
-        desc: 'Point-in-time backtest of any relationship above with disclosure lag preserved, so a lead-lag edge is measured on the data you would actually have had.',
-      },
-    ],
-  },
-];
+const ENDPOINT_GROUPS = GROUPS.map((g) => ({
+  ...g,
+  Icon: biIcon(g.icon),
+  routes: g.routes.map((r) => ({ ...r, desc: r.summary })),
+}));
 
-const TIERS = [
-  {
-    name: 'Developer',
-    price: 'Free',
-    detail: 'Evaluation key',
-    features: [
-      'Sandbox signal data',
-      '60 requests / min',
-      'Congress flow (delayed)',
-      'Community support',
-    ],
-  },
-  {
-    name: 'Trader',
-    price: 'Lease',
-    detail: 'Per-seat monthly',
-    features: [
-      'Live congress & lobbying signal',
-      '600 requests / min',
-      'Prediction-market odds',
-      'Email support',
-    ],
-  },
-  {
-    name: 'Quant Firm',
-    price: 'Scale',
-    detail: 'Systematic desks',
-    features: [
-      'Full signal + news-engineering feeds',
-      'High-throughput limits',
-      'Backtest-ready history',
-      'Priority support',
-    ],
-    highlight: true,
-  },
-  {
-    name: 'Institution',
-    price: 'Custom',
-    detail: 'Volume + SLA',
-    features: [
-      'Full warehouse access',
-      'Custom rate limits',
-      'Bulk & backfill exports',
-      'Dedicated support + SLA',
-    ],
-  },
-];
+const TIERS = TIER_ORDER.map((id) => API_TIERS[id]);
 
-const QUERY_PARAMS = [
-  { name: 'ticker', type: 'string', desc: 'Filter to a symbol (repeatable for a universe).' },
-  { name: 'from', type: 'date', desc: 'Inclusive start date (ISO 8601, e.g. 2026-01-01).' },
-  { name: 'to', type: 'date', desc: 'Inclusive end date (ISO 8601).' },
-  { name: 'limit', type: 'int', desc: 'Page size, 1–200 (default 50).' },
-  { name: 'cursor', type: 'string', desc: 'Opaque cursor from the previous page’s page.next.' },
-];
+const QUERY_PARAMS = ['ticker', 'from', 'to', 'limit', 'cursor'].map((name) => ({
+  name,
+  type: PARAMS[name].type,
+  desc: PARAMS[name].desc,
+}));
 
 const ERROR_CODES = [
   {
     code: '400',
-    name: 'Bad Request',
-    meaning: 'Malformed query — an invalid param, date, or cursor.',
+    name: 'invalid_param',
+    meaning: 'An unknown, malformed or out-of-range parameter or cursor.',
   },
-  { code: '401', name: 'Unauthorized', meaning: 'Missing or invalid bearer token.' },
+  { code: '401', name: 'invalid_key', meaning: 'Missing, unknown, revoked or expired key.' },
   {
     code: '403',
-    name: 'Forbidden',
-    meaning: 'Key is valid but not scoped to this dataset or tier.',
+    name: 'not_in_scope',
+    meaning: 'The key is valid but not scoped for this dataset.',
   },
-  { code: '404', name: 'Not Found', meaning: 'No resource matches the id/path.' },
+  {
+    code: '404',
+    name: 'not_found',
+    meaning: 'No endpoint at the path, or no record with that id.',
+  },
   {
     code: '429',
-    name: 'Too Many Requests',
-    meaning: 'Rate limit exceeded — back off and retry after Reset.',
+    name: 'rate_limited',
+    meaning: 'Rate limit exceeded. Wait for Retry-After seconds.',
   },
   {
     code: '500',
-    name: 'Server Error',
-    meaning: 'Unexpected error on our side — safe to retry with backoff.',
+    name: 'internal_error',
+    meaning: 'Unexpected error on our side. Safe to retry with backoff.',
   },
+  { code: '501', name: 'not_available', meaning: 'A Roadmap endpoint that is not built yet.' },
 ];
 
 const COVERAGE_ROWS = [
   {
     dataset: 'Congressional trades',
-    source: 'House Clerk · Senate eFD',
-    depth: '2012 → present',
-    cadence: 'Ingested continuously',
+    source: 'House Clerk, Senate Office of Public Records',
+    cadence: 'Daily',
   },
-  {
-    dataset: 'Lobbying',
-    source: 'Senate LDA',
-    depth: '2013 → present',
-    cadence: 'Quarterly + backfill',
-  },
-  { dataset: 'Campaign finance', source: 'FEC', depth: '2003 → present', cadence: 'Daily' },
-  { dataset: 'Gov. contracts', source: 'USASpending', depth: '2008 → present', cadence: 'Daily' },
-  {
-    dataset: 'Prediction markets',
-    source: 'Polymarket',
-    depth: '2021 → present',
-    cadence: 'Near real-time',
-  },
-  {
-    dataset: 'News',
-    source: 'Multi-source, structured',
-    depth: 'Rolling 5-yr',
-    cadence: 'Streaming',
-  },
-  {
-    dataset: 'Market data',
-    source: 'Reference + EOD',
-    depth: '2000 → present',
-    cadence: 'End of day',
-  },
+  { dataset: 'Committee assignments', source: 'congress-legislators project', cadence: 'Daily' },
+  { dataset: 'Lobbying', source: 'Senate LDA', cadence: 'Hourly' },
+  { dataset: 'Campaign finance', source: 'FEC', cadence: 'Hourly' },
+  { dataset: 'Government contracts', source: 'USAspending', cadence: 'Daily' },
+  { dataset: 'Prediction markets', source: 'Polymarket', cadence: 'Every two hours' },
+  { dataset: '13F, activist stakes, whale moves', source: 'SEC EDGAR', cadence: 'Hourly' },
+  { dataset: 'Insider transactions (Form 4)', source: 'SEC EDGAR', cadence: 'Twice an hour' },
 ];
 
 const CHANGELOG = [
   {
-    date: '2026-07-01',
-    text: 'Added News-engineering signal endpoints (odds-moves, sentiment-by-entity).',
+    date: '2026-10-06',
+    text: `v1 is live: ${LIVE_ENDPOINTS.length} endpoints over congressional trades, committees, lobbying, campaign finance, contracts, prediction markets and SEC filings, with issued keys, per-key rate limits, usage metering and an OpenAPI spec.`,
   },
-  {
-    date: '2026-05-18',
-    text: 'Correlations endpoint (/v1/signals/correlations) enters private beta.',
-  },
-  { date: '2026-03-09', text: 'Cursor pagination standardized across all list endpoints.' },
-  { date: '2026-01-15', text: 'v1 congressional-trading + lobbying endpoints published.' },
 ];
 
 const FAQ = [
   {
     q: 'How do I authenticate?',
-    a: 'A bearer token in the Authorization header on every HTTPS request. Keys are scoped to your lease tier and datasets — see Authentication.',
+    a: 'A bearer token in the Authorization header on every HTTPS request. Keys are scoped to your tier and datasets; see Authentication.',
   },
   {
     q: 'What are the rate limits?',
-    a: 'Per-key and tier-dependent (60/min on Developer up to custom on Institution). Every response carries X-RateLimit-* headers; a 429 means back off until Reset.',
+    a: 'Per key and per tier, from 60 a minute on Developer to custom on Institution. Every response carries X-RateLimit-* headers; a 429 carries Retry-After.',
   },
   {
     q: 'Can I redistribute the data?',
-    a: 'No wholesale redistribution of raw feeds. You may use signal and derived features in your own analysis and products; primary-source attribution is preserved in every payload.',
+    a: 'No wholesale redistribution of raw feeds. You may use the data and derived features in your own analysis and products; every response names its public source in meta.source.',
   },
   {
     q: 'Is there an SLA?',
@@ -496,7 +153,7 @@ const FAQ = [
   },
   {
     q: 'Do you offer backtest-ready history?',
-    a: 'Yes — series are point-in-time with disclosure lag preserved, so backtests aren’t contaminated by hindsight. Depth varies by dataset (see Data coverage).',
+    a: 'Trades carry both the trade date and the disclosure date, and filings carry their filing dates, so you can backtest on what was public at the time. Point-in-time odds history is on the roadmap.',
   },
   {
     q: 'Are the signals investment advice?',
@@ -507,56 +164,66 @@ const FAQ = [
 const ROADMAP_STEPS = [
   {
     n: 1,
-    title: 'Request → scoped API key',
-    body: 'A requester submits the access form. On approval we issue a scoped key backed by a key registry — only a salted hash is stored, never the raw key — bound to a lease tier and dataset scopes.',
+    title: 'Request, approval, claim (live)',
+    body: 'Submit the access form. On approval we email a one-time claim link; the key is generated when you claim it and shown once. Only a keyed hash of each key is stored. Developer keys are self-serve in Settings.',
   },
   {
     n: 2,
-    title: 'Versioned /v1/* routes over the warehouse',
-    body: 'Stable, versioned REST routes read directly from the same warehouse that powers the product, so API consumers get the identical sourced-and-attributed data behind the app.',
+    title: 'Versioned /v1 routes (live)',
+    body: 'Stable, versioned REST routes over the same sourced data that powers the product. Endpoints not built yet answer 501 and are marked Roadmap here.',
   },
   {
     n: 3,
-    title: 'Per-key rate limiting + usage metering',
-    body: 'Each request is authenticated, rate-limited per key, and metered. Usage rolls up per key and per dataset for quotas, dashboards, and billing.',
+    title: 'Per-key rate limits and metering (live)',
+    body: 'Every request is authenticated, rate-limited per key and metered per key, day and endpoint.',
   },
   {
     n: 4,
-    title: 'Billing & lease-tier tie-in',
-    body: 'Metered usage and tier feed billing (Stripe), so Developer/Trader/Quant Firm/Institution leases map cleanly to signal entitlements and overage.',
+    title: 'Billing tie-in (roadmap)',
+    body: 'Metered usage feeding billing for the Trader and Quant Firm tiers. Until then, paid tiers are invoiced directly.',
   },
   {
     n: 5,
-    title: 'Docs + changelog',
-    body: 'This page is the front door; a versioned changelog tracks new endpoints, fields, and deprecations so integrators can upgrade safely.',
+    title: 'Docs, OpenAPI and changelog (live)',
+    body: 'This page, the OpenAPI spec at /v1/openapi.json and the changelog are generated from the same endpoint registry the API serves.',
   },
 ];
 
-const CURL_SNIPPET = `curl https://api.ezana.world/v1/congress/trades?ticker=NVDA&limit=20 \\
-  -H "Authorization: Bearer $EZANA_API_KEY" \\
-  -H "Accept: application/json"`;
+const CURL_SNIPPET = `curl -H "Authorization: Bearer $EZANA_API_KEY" \\
+  "https://ezana.world/v1/congress/trades?ticker=NVDA&limit=5"`;
 
 const JS_SNIPPET = `const res = await fetch(
-  "https://api.ezana.world/v1/congress/trades?ticker=NVDA&limit=20",
+  "https://ezana.world/v1/congress/trades?ticker=NVDA&limit=5",
   { headers: { Authorization: \`Bearer \${process.env.EZANA_API_KEY}\` } }
 );
-const { data, page } = await res.json();`;
+const { data, page, meta } = await res.json();`;
 
+/* The response shape, with placeholder values. */
 const RESPONSE_SNIPPET = `{
   "data": [
     {
-      "id": "trd_9f2c1a",
-      "member": "Rep. Jane Doe",
-      "party": "D",
+      "id": "<uuid>",
+      "member": {
+        "bioguide_id": "<bioguide id>",
+        "name": "<member name>",
+        "party": "D",
+        "chamber": "house",
+        "state": "CA"
+      },
       "ticker": "NVDA",
+      "asset": "<asset description>",
       "transaction": "purchase",
-      "amount_range": "$15,001 - $50,000",
-      "traded_at": "2026-05-14",
-      "disclosed_at": "2026-06-02",
-      "disclosure_lag_days": 19
+      "amount_min": 15001,
+      "amount_max": 50000,
+      "owner": "self",
+      "traded_at": "<YYYY-MM-DD>",
+      "disclosed_at": "<YYYY-MM-DD>",
+      "disclosure_lag_days": 19,
+      "source": "House Clerk"
     }
   ],
-  "page": { "next": "cursor_abc", "has_more": true }
+  "page": { "limit": 5, "has_more": true, "next": "<cursor>" },
+  "meta": { "request_id": "<uuid>", "source": "House Clerk and Senate Office of Public Records", "delayed_days": 30 }
 }`;
 
 const ERROR_ENVELOPE = `{
@@ -564,7 +231,8 @@ const ERROR_ENVELOPE = `{
     "code": "rate_limited",
     "status": 429,
     "message": "Rate limit exceeded. Retry after the window resets.",
-    "request_id": "req_7c1f0a"
+    "request_id": "<uuid>",
+    "docs": "https://ezana.world/ezana-api#rate-limits"
   }
 }`;
 
@@ -578,7 +246,10 @@ const REQ_DATASETS = [
   { key: 'fec', label: 'Campaign finance' },
   { key: 'contracts', label: 'Gov contracts' },
   { key: 'predictions', label: 'Prediction markets' },
-  { key: 'news', label: 'News signals' },
+  { key: 'committees', label: 'Committee activity' },
+  { key: 'institutional', label: '13F, activist, whale moves' },
+  { key: 'insider', label: 'Insider transactions' },
+  { key: 'news', label: 'News signals (roadmap)' },
 ];
 const REQ_ROLES = [
   { value: '', label: 'Select…' },
@@ -708,8 +379,8 @@ function RequestAccessModal({ open, onClose }) {
 
         {status === 'done' ? (
           <div className="ea-modal-done">
-            <p className="ea-modal-done-title">Request received — we&apos;ll be in touch.</p>
-            <p>We review access requests manually and reply from api@ezana.world.</p>
+            <p className="ea-modal-done-title">Request received.</p>
+            <p>We review requests within two business days and email you a claim link.</p>
             <button type="button" className="ea-btn ea-btn--primary" onClick={onClose}>
               Done
             </button>
@@ -860,7 +531,7 @@ function RequestFlow() {
 
 /* ── Visual 3: data-coverage freshness strip (decorative ticks) ── */
 function CoverageStrip() {
-  const tiles = ['Congress', 'Lobbying', 'FEC', 'Contracts', 'Predictions', 'News', 'Markets'];
+  const tiles = ['Congress', 'Committees', 'Lobbying', 'FEC', 'Contracts', 'Predictions', 'SEC'];
   return (
     <div className="ea-cov-strip" aria-hidden>
       {tiles.map((t, i) => (
@@ -920,16 +591,14 @@ export default function EzanaApiPage() {
           </span>
           <h1 className="ea-h1">Find the trend before the market does.</h1>
           <p className="ea-lede">
-            The Ezana API exposes the relationships between under-watched data — congressional
-            trades, lobbying flows, prediction-market odds, and alternative signals — and how
-            markets actually move, so traders and quant firms can act on signal others miss.
-            It&apos;s powered by elite <strong>news engineering</strong>: we structure and enrich
-            market-moving news into machine-usable signal, entity-tagged and semantically linked to
-            the securities and events it touches.
+            The Ezana API serves the under-watched public data that moves markets, structured for
+            models: congressional trades and the committees members sit on, lobbying spend, campaign
+            finance, federal contracts, prediction-market odds, 13F holdings, activist stakes and
+            insider transactions. Every record names its public source.
           </p>
           <div className="ea-viz-frame ea-viz-frame--hero">
             <HeroSignal />
-            <span className="ea-viz-cap">Illustrative — noise resolving into signal</span>
+            <span className="ea-viz-cap">Illustrative: noise resolving into signal</span>
           </div>
           <div className="ea-hero-actions">
             <a
@@ -948,8 +617,9 @@ export default function EzanaApiPage() {
             </a>
           </div>
           <p className="ea-hero-note">
-            Built for quant desks, systematic traders, and research teams. Documentation preview —
-            several endpoints are marked <em>coming soon</em> while the API is being rolled out.
+            Built for quant desks, systematic traders and research teams. {LIVE_ENDPOINTS.length} of{' '}
+            {ENDPOINTS.length} documented endpoints are live today; the rest are marked{' '}
+            <em>Roadmap</em> and answer 501 until they ship.
           </p>
         </div>
       </header>
@@ -987,35 +657,37 @@ export default function EzanaApiPage() {
           <section id="overview" className="ea-section">
             <h2>Overview</h2>
             <p>
-              Most alternative data is noise until something connects it to price. The Ezana API is
-              that connection: it turns obscure, overlooked datasets into tradeable signal and maps
-              the non-obvious relationships between what informed actors do, what policy money
-              chases, what the crowd is betting, and where markets move next. Every field traces to
-              a primary source — House &amp; Senate disclosures, SEC EDGAR, FEC records, prediction
-              markets, and structured news — so a signal is auditable back to where it came from.
+              Most alternative data is noise until something connects it to price. The Ezana API
+              turns overlooked public datasets into structured inputs: what informed actors trade,
+              where policy money goes, who funds whom, which companies win federal contracts, what
+              the crowd is betting, and what large funds, activists and insiders do. Every field
+              traces to a primary source (House and Senate disclosures, Senate LDA, FEC,
+              USAspending, Polymarket, SEC EDGAR), so a signal is auditable back to where it came
+              from.
             </p>
             <p>
-              It&apos;s built for traders, quant firms, and systematic and research desks who want
-              inputs, not opinions — features you can drop into a model, backtest, and trade around.
-              What sets it apart is <strong>news engineering</strong>: real-time structuring,
-              entity-tagging, and semantic linking of market-moving news to securities, events, and
-              prediction-market odds.
+              It is built for traders, quant firms and research desks who want inputs, not opinions:
+              features you can drop into a model, backtest and trade around. News engineering,
+              cross-dimensional signals and lead-lag relationships are on the roadmap and marked as
+              such below.
             </p>
             <div className="ea-feature-grid">
               <div className="ea-feature">
                 <TrendingUp size={18} aria-hidden />
-                <h3>Obscure data → market trends</h3>
+                <h3>Under-watched data, structured</h3>
                 <p>
-                  Non-obvious relationships between under-watched datasets and price, surfaced as
-                  signal before they&apos;re consensus.
+                  Disclosures and filings most desks never parse, cleaned, typed and joined to
+                  tickers where the mapping is known.
                 </p>
               </div>
               <div className="ea-feature">
                 <Newspaper size={18} aria-hidden />
-                <h3>News engineering</h3>
+                <h3>
+                  News engineering <span className="ea-soon ea-soon--inline">Roadmap</span>
+                </h3>
                 <p>
-                  Market-moving news structured and enriched into machine-usable signal — the core
-                  competency behind the feeds.
+                  Market-moving news structured, entity-tagged and linked to tickers, events and
+                  odds.
                 </p>
               </div>
               <div className="ea-feature">
@@ -1025,23 +697,23 @@ export default function EzanaApiPage() {
               </div>
               <div className="ea-feature">
                 <Network size={18} aria-hidden />
-                <h3>Entity-linked &amp; queryable</h3>
+                <h3>Linked identifiers</h3>
                 <p>
-                  Everything resolved to tickers, people, and issues, and semantically searchable by
-                  meaning.
+                  Members by bioguide id, filers and issuers by SEC CIK, contractors by USAspending
+                  recipient id, securities by ticker and CUSIP.
                 </p>
               </div>
               <div className="ea-feature">
                 <Zap size={18} aria-hidden />
-                <h3>Low-latency</h3>
-                <p>Signal delivered close to the event, so you act while the edge is still live.</p>
+                <h3>Fresh</h3>
+                <p>Sources are synced hourly to daily; see Data coverage for each dataset.</p>
               </div>
               <div className="ea-feature">
                 <History size={18} aria-hidden />
-                <h3>Backtest-ready history</h3>
+                <h3>Disclosure dates kept</h3>
                 <p>
-                  Point-in-time series with disclosure lag preserved, so backtests aren&apos;t
-                  contaminated by hindsight.
+                  Trades carry the trade and the disclosure date, filings their filing date, so a
+                  backtest only sees what was public at the time.
                 </p>
               </div>
             </div>
@@ -1060,8 +732,10 @@ export default function EzanaApiPage() {
                 <div>
                   <h3>Get a key</h3>
                   <p>
-                    Request a scoped key at <a href="mailto:api@ezana.world">api@ezana.world</a> and
-                    export it as <code>EZANA_API_KEY</code>.
+                    Create a free Developer key in{' '}
+                    <Link href="/settings?tab=api">Settings, API</Link>, or request a higher tier
+                    below. Export it as <code>EZANA_API_KEY</code>. Keys belong on your server,
+                    never in a browser or an app.
                   </p>
                 </div>
               </li>
@@ -1092,8 +766,9 @@ export default function EzanaApiPage() {
                 <div>
                   <h3>Read the response</h3>
                   <p>
-                    Every list response returns a <code>data</code> array and a <code>page</code>{' '}
-                    cursor. Follow <code>page.next</code> to paginate.
+                    Every list response returns a <code>data</code> array, a <code>page</code>{' '}
+                    cursor and <code>meta</code> (request id, public source, and the delay applied
+                    to your key). Follow <code>page.next</code> to paginate.
                   </p>
                   <div className="ea-code">
                     <div className="ea-code-head">
@@ -1112,11 +787,11 @@ export default function EzanaApiPage() {
           <section id="getting-access" className="ea-section">
             <h2>Getting access</h2>
             <p>
-              Access is lease-based — you&apos;re leasing signal and structured alternative data,
-              not a static dump. Tell us the signal families you need and your expected volume, and
-              we issue a scoped API key for the matching tier. Reach us at{' '}
-              <a href="mailto:api@ezana.world">api@ezana.world</a> or from your{' '}
-              <Link href="/pricing">plan</Link> — Enterprise plans include API access.
+              Developer keys are free and self-serve in{' '}
+              <Link href="/settings?tab=api">Settings, API</Link> (up to two, data delayed 30 days).
+              For the Trader, Quant Firm and Institution tiers, request access below: we review
+              requests within two business days and email you a one-time claim link. Questions:{' '}
+              <a href="mailto:api@ezana.world">api@ezana.world</a>.
             </p>
             <div className="ea-tiers">
               {TIERS.map((t) => (
@@ -1126,6 +801,13 @@ export default function EzanaApiPage() {
                     <span className="ea-tier-detail">{t.detail}</span>
                   </div>
                   <div className="ea-tier-price">{t.price}</div>
+                  <p className="ea-tier-limit">
+                    {t.ratePerMin
+                      ? `${t.ratePerMin.toLocaleString('en-US')} requests / min`
+                      : 'Custom rate limit'}
+                    {' · '}
+                    {t.delayDays ? `${t.delayDays}-day delay` : 'no delay'}
+                  </p>
                   <ul className="ea-tier-feats">
                     {t.features.map((f) => (
                       <li key={f}>{f}</li>
@@ -1134,10 +816,13 @@ export default function EzanaApiPage() {
                 </div>
               ))}
             </div>
-            <p className="ea-soon-note">
-              <span className="ea-soon">Coming soon</span> Self-serve key issuance and a request
-              form. For now, access is granted manually on request.
-            </p>
+            <button
+              type="button"
+              className="ea-btn ea-btn--primary"
+              onClick={() => setReqOpen(true)}
+            >
+              Request access <ArrowRight size={15} />
+            </button>
           </section>
 
           {/* Authentication */}
@@ -1146,7 +831,10 @@ export default function EzanaApiPage() {
             <p>
               The API uses bearer-token authentication. Pass your key in the{' '}
               <code>Authorization</code> header on every request over HTTPS. Keys are scoped to your
-              lease tier and datasets; never expose a key in client-side code.
+              tier and datasets; never expose a key in client-side code. Keys look like{' '}
+              <code>ezk_live_XXXXXXXX_…</code>, are shown once when created or claimed, and are
+              stored only as a keyed hash. To rotate, create a new key, switch over, then revoke the
+              old one. Keys in query strings are refused.
             </p>
             <div className="ea-code">
               <div className="ea-code-head">
@@ -1157,19 +845,17 @@ export default function EzanaApiPage() {
                 <code>{CURL_SNIPPET}</code>
               </pre>
             </div>
-            <p className="ea-soon-note">
-              <span className="ea-soon">Placeholder</span> The token format and key-rotation flow
-              are illustrative and will be finalized at launch.
-            </p>
           </section>
 
           {/* Endpoints */}
           <section id="endpoints" className="ea-section">
             <h2>Endpoints</h2>
             <p>
-              Endpoints are grouped by signal family under a versioned <code>/v1</code> prefix —
-              each group framed by what a quant would actually do with it. Responses are JSON and
-              cursor-paginated. The shapes below are illustrative placeholders.
+              Endpoints are grouped by signal family under a versioned <code>/v1</code> prefix.
+              Responses are JSON and list endpoints are cursor-paginated. <strong>Live</strong>{' '}
+              endpoints serve data today; <strong>Roadmap</strong> endpoints answer{' '}
+              <code>501 not_available</code> until they ship. The full contract, with parameters and
+              response fields, is in the <a href="/v1/openapi.json">OpenAPI spec</a>.
             </p>
             <div className="ea-viz-frame">
               <RequestFlow />
@@ -1191,8 +877,22 @@ export default function EzanaApiPage() {
                         <div className="ea-ep-sig">
                           <Method method="GET" />
                           <code>{r.path}</code>
+                          {r.status === 'live' ? (
+                            <span className="ea-live">
+                              <i className="bi bi-check-circle-fill" aria-hidden="true" /> Live
+                            </span>
+                          ) : (
+                            <span className="ea-soon ea-soon--inline">
+                              <i className="bi bi-hourglass-split" aria-hidden="true" /> Roadmap
+                            </span>
+                          )}
                         </div>
-                        <p>{r.desc}</p>
+                        <p>
+                          {r.desc}
+                          {r.status === 'live' && r.scope ? (
+                            <span className="ea-ep-scope"> Scope: {r.scope}.</span>
+                          ) : null}
+                        </p>
                       </li>
                     ))}
                   </ul>
@@ -1297,10 +997,9 @@ export default function EzanaApiPage() {
             </h2>
             <p>
               Rather than poll, subscribe to events and let Ezana push. Register a signed HTTPS
-              endpoint and choose event types — a new congressional filing for a watched ticker, a
-              large prediction-market odds move, or a fresh news→market match above a confidence
-              threshold. Deliveries are retried with backoff and signed with a per-subscription
-              secret.
+              endpoint and choose event types: a new congressional filing for a watched ticker, a
+              large prediction-market odds move, or a fresh news match above a confidence threshold.
+              Deliveries are retried with backoff and signed with a per-subscription secret.
             </p>
             <div className="ea-code">
               <div className="ea-code-head">
@@ -1327,10 +1026,7 @@ export default function EzanaApiPage() {
               <Database size={18} aria-hidden className="ea-h2-icon" />
               Data coverage &amp; freshness
             </h2>
-            <p>
-              Every dataset traces to a primary source, with point-in-time history and a defined
-              update cadence. Depth and cadence below are indicative.
-            </p>
+            <p>Every live dataset traces to a primary source and is synced on the cadence below.</p>
             <div className="ea-viz-frame">
               <CoverageStrip />
             </div>
@@ -1340,7 +1036,6 @@ export default function EzanaApiPage() {
                   <tr>
                     <th>Dataset</th>
                     <th>Source</th>
-                    <th>History</th>
                     <th>Cadence</th>
                   </tr>
                 </thead>
@@ -1349,7 +1044,6 @@ export default function EzanaApiPage() {
                     <tr key={r.dataset}>
                       <td>{r.dataset}</td>
                       <td>{r.source}</td>
-                      <td className="ea-mono">{r.depth}</td>
                       <td>{r.cadence}</td>
                     </tr>
                   ))}
@@ -1368,14 +1062,42 @@ export default function EzanaApiPage() {
               </a>
               ). Every response carries <code>X-RateLimit-Limit</code>,{' '}
               <code>X-RateLimit-Remaining</code>, and <code>X-RateLimit-Reset</code> headers;
-              exceeding your limit returns <code>429 Too Many Requests</code>.
+              exceeding your limit returns <code>429 rate_limited</code> with{' '}
+              <code>Retry-After</code>. Developer keys see data with a 30-day delay on trades,
+              filings and transactions; <code>meta.delayed_days</code> says when a delay applied.
             </p>
+            <div className="ea-table-wrap">
+              <table className="ea-table">
+                <thead>
+                  <tr>
+                    <th>Tier</th>
+                    <th>Requests / min</th>
+                    <th>Delay</th>
+                    <th>Datasets</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {TIERS.map((t) => (
+                    <tr key={t.id}>
+                      <td>{t.name}</td>
+                      <td className="ea-mono">
+                        {t.ratePerMin ? t.ratePerMin.toLocaleString('en-US') : 'Custom'}
+                      </td>
+                      <td className="ea-mono">{t.delayDays ? `${t.delayDays} days` : 'None'}</td>
+                      <td>{t.scopes.join(', ')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <ul className="ea-terms">
               <li>
-                Data is licensed for your own analysis and products — no wholesale redistribution of
-                raw feeds.
+                Data is licensed for your own analysis and products, with no wholesale
+                redistribution of raw feeds.
               </li>
-              <li>Attribution of underlying primary sources is preserved in every payload.</li>
+              <li>
+                Every response names its public source in <code>meta.source</code>.
+              </li>
               <li>Signals are informational, not investment advice.</li>
             </ul>
             <p className="ea-soon-note">
@@ -1392,7 +1114,7 @@ export default function EzanaApiPage() {
             </h2>
             <p>
               The API is versioned in the path (<code>/v1</code>). Within a version we only make
-              additive changes — new endpoints and fields — never breaking ones. Breaking changes
+              additive changes (new endpoints and fields), never breaking ones. Breaking changes
               ship under a new version with a migration window and deprecation notices.
             </p>
             <ul className="ea-changelog">
@@ -1424,16 +1146,16 @@ export default function EzanaApiPage() {
                 <ShieldCheck size={18} aria-hidden />
                 <h3>Hashed at rest</h3>
                 <p>
-                  Only a salted hash of each key is stored — never the raw secret. If our store
-                  leaked, keys stay safe.
+                  Only a keyed hash (HMAC-SHA256) of each key is stored, never the raw secret, and
+                  keys are compared in constant time.
                 </p>
               </div>
               <div className="ea-feature">
                 <History size={18} aria-hidden />
                 <h3>Rotation</h3>
                 <p>
-                  Rotate or revoke a key at any time; overlapping keys let you roll without
-                  downtime.
+                  Revoke a key at any time in Settings; it stops working on the next request. Create
+                  the new key first to roll without downtime.
                 </p>
               </div>
               <div className="ea-feature">
@@ -1471,7 +1193,7 @@ export default function EzanaApiPage() {
             </h2>
             <p>
               The outline below is how the Ezana API is built and distributed to users who request
-              it. It is a roadmap — items ship incrementally.
+              it. It is a roadmap; items ship incrementally.
             </p>
             <ol className="ea-steps">
               {ROADMAP_STEPS.map((s) => (
@@ -1487,8 +1209,8 @@ export default function EzanaApiPage() {
             <div className="ea-cta">
               <h3>Ready to trade on signal others miss?</h3>
               <p>
-                Request an evaluation key and we&apos;ll get you a scoped token wired to the signal
-                families your models need.
+                Create a Developer key in Settings, or request a higher tier for live data and more
+                throughput.
               </p>
               <button
                 type="button"

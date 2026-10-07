@@ -1,0 +1,65 @@
+/* eac- : API key claim page. */
+.eac-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 48px 16px 80px;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+}
+.eac-title {
+  margin: 0 0 12px;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
+}
+.eac-muted {
+  font-size: var(--type-body-size);
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.eac-muted a {
+  color: var(--emerald-text);
+}
+.eac-warn {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.eac-btn,
+.eac-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--emerald);
+  color: var(--bg-primary);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  cursor: pointer;
+}
+.eac-btn:focus-visible,
+.eac-copy:focus-visible {
+  outline: 2px solid var(--emerald-text);
+  outline-offset: 2px;
+}
+.eac-key {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+}
+.eac-key code {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: var(--type-body-size);
+  overflow-wrap: anywhere;
+}

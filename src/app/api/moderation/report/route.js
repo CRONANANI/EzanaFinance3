@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
 export const POST = withApiGuard(
   async (request, user) => {
     const rl = await checkRateLimit(`moderation:report:${user.id}`, {
-      interval: 60 * 60 * 1000,
+      window: '1 h',
       limit: 30,
     });
     if (!rl.success) return rateLimitResponse(rl);

@@ -9,6 +9,7 @@ import { PayoutsPanel } from '@/components/settings/PayoutsPanel';
 import { ReferralsPanel } from '@/components/settings/ReferralsPanel';
 import { MyDetailsLedger } from './panels/MyDetailsLedger';
 import { AppearanceLedger } from './panels/AppearanceLedger';
+import { ApiKeysLedger } from './panels/ApiKeysLedger';
 import { wrapLegacyPanel } from './legacy-bridge';
 import { BiometricUnlockSetting } from '@/components/native/BiometricUnlockSetting';
 import { BlockedMembersSetting } from '@/components/moderation/BlockedMembersSetting';
@@ -31,7 +32,6 @@ const PlanPanel = dynLedgerPanel('PlanPanel');
 const BillingPanel = dynLedgerPanel('BillingPanel');
 const EmailPanel = dynLedgerPanel('EmailPanel');
 const IntegrationsPanel = dynLedgerPanel('IntegrationsPanel');
-const ApiPanel = dynLedgerPanel('ApiPanel');
 
 export const LEDGER_PAGE_META = {
   'my-details': {
@@ -170,7 +170,7 @@ export const LEDGER_PANEL_MAP = {
   email: wrapLegacyPanel(EmailPanel),
   notifications: wrapLegacyPanel(NotificationsWithOrg),
   integrations: wrapLegacyPanel(IntegrationsPanel),
-  api: wrapLegacyPanel(ApiPanel),
+  api: ApiKeysLedger,
   'privacy-data': PrivacyWithBlocks,
   'platform-changelog': wrapLegacyPanel(PlatformChangelogPanel),
   partners: wrapLegacyPanel(PartnerManagementPanel),

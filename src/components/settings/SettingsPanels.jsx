@@ -13,6 +13,7 @@ import { NotificationPreferences } from './NotificationPreferences';
 import { PersonalizationPanel } from './PersonalizationPanel';
 import { useBeginnerLevelContext } from '@/contexts/BeginnerLevelContext';
 import { MfaSetupPanel } from './MfaSetupPanel';
+import { ApiKeysLedger } from '@/components/settings/ledger/panels/ApiKeysLedger';
 
 /* ═══════════════════════════════════════════════════════════
    SETTINGS PANELS — 10 panels with full form fields
@@ -1643,93 +1644,15 @@ export function IntegrationsPanel({ onSave }) {
   );
 }
 
-export function ApiPanel({ onSave }) {
-  const [keyVisible, setKeyVisible] = useState(false);
-  const apiKey = 'ez_live_sk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+/* The API tab: real keys and usage (the legacy shell renders the same panel). */
+export function ApiPanel() {
   return (
     <div className="settings-panel">
       <div className="settings-panel-header">
         <h2 className="settings-panel-title">API</h2>
-        <p className="settings-panel-desc">API keys, usage, and webhook configuration.</p>
+        <p className="settings-panel-desc">Your Ezana API keys and usage.</p>
       </div>
-      <div className="settings-section">
-        <h3 className="settings-section-title">
-          <i className="bi bi-key" />
-          API key
-        </h3>
-        <div className="settings-api-key">
-          <code>{keyVisible ? apiKey : '••••••••••••••••••••••••••••••••••••••••'}</code>
-          <div className="settings-api-key-actions">
-            <button
-              type="button"
-              className="settings-api-key-btn"
-              onClick={() => setKeyVisible(!keyVisible)}
-              title={keyVisible ? 'Hide' : 'Show'}
-            >
-              <i className={`bi bi-${keyVisible ? 'eye-slash' : 'eye'}`} />
-            </button>
-            <button
-              type="button"
-              className="settings-api-key-btn"
-              title="Copy"
-              onClick={() => navigator.clipboard.writeText(apiKey)}
-            >
-              <i className="bi bi-clipboard" />
-            </button>
-          </div>
-        </div>
-        <div className="settings-field">
-          <span className="settings-label">API usage this month</span>
-          <div className="settings-usage-bar">
-            <div className="settings-usage-fill" style={{ width: '42%' }} />
-          </div>
-          <div className="settings-usage-text">
-            <span>4,200</span>
-            <span>10,000 limit</span>
-          </div>
-        </div>
-        <h3 className="settings-section-title">
-          <i className="bi bi-link" />
-          Endpoints
-        </h3>
-        <table className="settings-table">
-          <thead>
-            <tr>
-              <th>Endpoint</th>
-              <th>Usage</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>GET /api/v1/trades</td>
-              <td>1,200</td>
-            </tr>
-            <tr>
-              <td>GET /api/v1/watchlist</td>
-              <td>800</td>
-            </tr>
-          </tbody>
-        </table>
-        <h3 className="settings-section-title">
-          <i className="bi bi-broadcast" />
-          Webhook
-        </h3>
-        <div className="settings-row single">
-          <div className="settings-field">
-            <label className="settings-label">Webhook URL</label>
-            <input
-              type="url"
-              className="settings-input"
-              placeholder="https://your-server.com/webhook"
-            />
-          </div>
-        </div>
-        <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>
-            Save changes
-          </button>
-        </div>
-      </div>
+      <ApiKeysLedger />
     </div>
   );
 }

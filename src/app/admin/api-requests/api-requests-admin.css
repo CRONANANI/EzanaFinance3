@@ -1,0 +1,142 @@
+.aar-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+}
+.aar-title {
+  margin: 0 0 12px;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
+}
+.aar-h2 {
+  margin: 32px 0 8px;
+  font-size: var(--type-section-size);
+}
+.aar-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.aar-tabs button,
+.aar-actions button,
+.aar-table button,
+.aar-primary {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  text-transform: capitalize;
+  cursor: pointer;
+}
+.aar-tabs button.is-on,
+.aar-primary {
+  border-color: var(--emerald);
+  background: var(--emerald);
+  color: var(--bg-primary);
+}
+.aar-list {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  list-style: none;
+}
+.aar-item {
+  padding: 14px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+}
+.aar-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+}
+.aar-status {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.aar-use {
+  margin: 8px 0;
+  font-size: var(--type-body-size);
+  white-space: pre-wrap;
+}
+.aar-meta {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+.aar-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.aar-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  font-size: var(--type-body-size);
+}
+.aar-form label {
+  display: grid;
+  gap: 4px;
+}
+.aar-form select,
+.aar-form input[type='number'],
+.aar-form input[type='date'] {
+  min-height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+.aar-form fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  border: 0;
+  padding: 0;
+}
+.aar-check {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+}
+.aar-error {
+  color: var(--danger, var(--text-primary));
+}
+.aar-ok {
+  color: var(--emerald-text);
+}
+.aar-link {
+  display: block;
+  margin-top: 6px;
+  overflow-wrap: anywhere;
+}
+.aar-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--type-caption-size);
+}
+.aar-table th,
+.aar-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--border-primary);
+  text-align: left;
+}
+.aar-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}

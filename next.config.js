@@ -55,6 +55,11 @@ const nextConfig = {
       '/privacy-policy': ['./src/app/privacy-policy/privacy-policy-source.html'],
     },
   },
+  /* Ezana API v1: documented URLs are ezana.world/v1/...; the router lives
+     under /api/v1. */
+  async rewrites() {
+    return [{ source: '/v1/:path*', destination: '/api/v1/:path*' }];
+  },
   async redirects() {
     return [
       /* Inside the Capitol is no longer its own user help-centre category; its

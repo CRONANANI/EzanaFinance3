@@ -26,6 +26,13 @@ export async function middleware(request) {
      directly and reject any redirect, so they pass through untouched. */
   if (pathname.startsWith('/.well-known/')) return NextResponse.next();
 
+  /* Ezana API v1: keys authenticate and rate-limit per key in the route, so
+     skip the session lookup, profile gates, CSP nonce and per-IP limit here
+     (next.config.js still adds the security headers). */
+  if (pathname === '/v1' || pathname.startsWith('/v1/') || pathname.startsWith('/api/v1/')) {
+    return NextResponse.next();
+  }
+
   /* Inside the iOS and Android apps (user-agent suffix EzanaApp/): real-money
      trading, account linking and web checkout are web-only in v1, and the
      landing page gives way to Home. Browsers never match. */

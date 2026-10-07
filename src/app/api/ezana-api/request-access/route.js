@@ -7,7 +7,17 @@ export const dynamic = 'force-dynamic';
 
 const ROLES = ['trader', 'quant_firm', 'institution', 'developer', 'other'];
 const VOLUMES = ['<10k', '10-100k', '100k-1M', '1M+'];
-const DATASETS = ['congress', 'lobbying', 'fec', 'contracts', 'predictions', 'news'];
+const DATASETS = [
+  'congress',
+  'committees',
+  'lobbying',
+  'fec',
+  'contracts',
+  'predictions',
+  'institutional',
+  'insider',
+  'news',
+];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
