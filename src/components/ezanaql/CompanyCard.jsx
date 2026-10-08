@@ -78,6 +78,7 @@ function Portrait({ holder, cx, cy, r, id }) {
   );
 }
 
+/** Exported for the Capitol Watch company card (same chart, same portraits). */
 export function PriceChart({ ticker, candles, purchases, holders }) {
   const holdersById = useMemo(
     () => Object.fromEntries((holders || []).map((h) => [h.bioguide_id, h])),

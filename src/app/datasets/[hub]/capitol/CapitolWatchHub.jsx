@@ -4,7 +4,7 @@
  * redesign (docs/design/capitol-watch-hub). Every module streams on its own
  * Suspense boundary with a skeleton, so one slow read never holds the page.
  */
-import { Suspense } from 'react';
+import { Suspense, cache } from 'react';
 import { HubQueryProvider } from '@/components/datasets/hub/HubClient';
 import { getLinkage } from '@/lib/datasets/hub-data';
 import { getCapitolEvents } from '@/lib/datasets/capitol-hub/events';
@@ -14,6 +14,9 @@ import {
   getLobbyingRatio,
   getPortfolio,
 } from '@/lib/datasets/capitol-hub/data';
+import { getDatasetVisuals } from '@/lib/datasets/capitol-hub/dataset-visuals';
+import { summaryFor } from '../HubCards';
+import { DatasetTile, DatasetTileSkeleton, orderTiles } from './DatasetTiles';
 import CwhProvider from './CwhProvider';
 import CwhHeader from './CwhHeader';
 import SignalCarousel from './SignalCarousel';
@@ -23,7 +26,6 @@ import { TABS } from './tabs';
 import Heatmap from './Heatmap';
 import Leaderboard from './Leaderboard';
 import Portfolio from './Portfolio';
-import DatasetTiles, { TilesSkeleton } from './DatasetTiles';
 import './capitol-hub.css';
 
 /* ── modules ──────────────────────────────────────────────────────────── */
@@ -113,6 +115,14 @@ function CardSkeleton({ label, className = '' }) {
   );
 }
 
+/* One visuals read per request, shared by the five tiles. */
+const visualsOnce = cache(() => getDatasetVisuals());
+
+async function DatasetTileAsync({ item, index }) {
+  const [summary, visuals] = await Promise.all([summaryFor(item.label), visualsOnce()]);
+  return <DatasetTile item={item} summary={summary} visuals={visuals} index={index} />;
+}
+
 /* ── page ─────────────────────────────────────────────────────────────── */
 
 export default function CapitolWatchHub({ dimension }) {
@@ -177,9 +187,16 @@ export default function CapitolWatchHub({ dimension }) {
               </h2>
               <span className="cwh-caption">open any for the full table</span>
             </div>
-            <Suspense fallback={<TilesSkeleton items={dimension.items} />}>
-              <DatasetTiles items={dimension.items} />
-            </Suspense>
+            <div className="cwh-dst-grid">
+              {orderTiles(dimension.items).map((item, index) => (
+                <Suspense
+                  key={item.label}
+                  fallback={<DatasetTileSkeleton item={item} index={index} />}
+                >
+                  <DatasetTileAsync item={item} index={index} />
+                </Suspense>
+              ))}
+            </div>
           </section>
         </div>
         <footer className="cwh-tokens cwh-sources">

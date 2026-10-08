@@ -1,170 +1,210 @@
 'use client';
 
 /**
- * The Capitol Watch company card: opened from any ticker on the hub.
+ * Capitol Watch company card: opens from any ticker on the hub (Congress's
+ * portfolio, the Venn, the signals tables).
  *
- *   left   the stock chart (1M to 10Y), with a portrait on each purchase by
- *          a sitting member who still holds it, and recent news under it
- *   right  federal contracts over the last ten fiscal years (totals, ten
- *          year bars, agencies, largest and latest awards), then the sitting
- *          members with the largest estimated positions
+ *   left   the stock chart (1M to 10Y), with a portrait on each purchase by a
+ *          member who still holds the stock; recent news below it
+ *   right  federal contracts over the last ten fiscal years (bars by year,
+ *          agency split, largest awards, latest awards); then the members
+ *          with the largest estimated positions
  *
- * Three parallel reads (card, prices, news) through the shared prefetch
- * cache, which a hover on the ticker has usually filled; each section paints
- * when its own data lands. A dialog: Escape and the scrim close it, Tab is
- * trapped, focus returns to the opener (CwhProvider). Selecting a holder
- * closes the card and opens the member drawer. `data-ready="true"` marks the
- * moment the card part is on screen.
+ * Three requests (card, prices, news) start together and each section paints
+ * when its own data lands; a pointer over a ticker prefetches the card and
+ * the 1Y prices (CwhProvider). A dialog: Escape and the scrim close it, focus
+ * returns to the opener, Tab stays inside.
+ *
+ * STOCK Act disclosures report dollar ranges per trade, never share counts,
+ * so positions are ranked by estimated dollar value and the card says so.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import MemberAvatar from '@/components/datasets/politician-tracker/MemberAvatar';
 import { PriceChart } from '@/components/ezanaql/CompanyCard';
-import { getJson, companyUrl } from '@/components/datasets/prefetch-cache';
+import { getJson } from '@/components/datasets/prefetch-cache';
 import { PartyTag } from './bits';
-import { DASH, count, longDate, money, monthDay, range as rangeText } from './cwh-format';
+import { DASH, count, longDate, money, monthDay, pct0, range, signed } from './cwh-format';
 
 const RANGES = ['1M', '6M', '1Y', '5Y', '10Y'];
 
-function useCompanyPart(ticker, part, rangeKey = null) {
-  const [state, setState] = useState({ status: 'loading', d: null });
+export const companyUrl = (ticker, part = 'card', r = '1Y') =>
+  `/api/datasets/capitol/company?ticker=${encodeURIComponent(ticker)}&part=${part}${
+    part === 'prices' ? `&range=${r}` : ''
+  }`;
+
+function useJson(url) {
+  const [state, setState] = useState({ status: 'loading' });
   useEffect(() => {
+    if (!url) return undefined;
     let live = true;
-    setState({ status: 'loading', d: null });
-    getJson(companyUrl(ticker, part, rangeKey))
+    setState((s) => (s.data ? { ...s, status: 'refresh' } : { status: 'loading' }));
+    getJson(url)
       .then(
-        ({ ok, d }) => live && setState(ok ? { status: 'ready', d } : { status: 'error', d: null }),
+        ({ ok, d }) => live && setState(ok ? { status: 'ready', data: d } : { status: 'error' }),
       )
-      .catch(() => live && setState({ status: 'error', d: null }));
+      .catch(() => live && setState({ status: 'error' }));
     return () => {
       live = false;
     };
-  }, [ticker, part, rangeKey]);
+  }, [url]);
   return state;
 }
 
-function Skel({ n = 4 }) {
-  return (
-    <div aria-busy="true">
-      {Array.from({ length: n }, (_, i) => (
-        <span key={i} className="cwh-skel" />
-      ))}
-    </div>
-  );
+function ago(iso) {
+  const t = Date.parse(iso || '');
+  if (!Number.isFinite(t)) return '';
+  const h = Math.round((Date.now() - t) / 3600000);
+  if (h < 1) return 'just now';
+  if (h < 24) return `${h}h ago`;
+  const d = Math.round(h / 24);
+  return d < 14 ? `${d}d ago` : monthDay(iso);
 }
 
-function YearBars({ years, partialFy }) {
-  const max = Math.max(1, ...years.map((y) => y.total));
-  return (
-    <div className="cwh-co-years">
-      <ol className="cwh-co-bars" aria-label="Federal contract value by fiscal year">
-        {years.map((y) => {
-          const partial = y.fy === partialFy;
-          const label = `FY${y.fy}: ${money(y.total)}, ${count(y.awards)} awards${partial ? ' (fiscal year in progress)' : ''}`;
-          return (
-            <li key={y.fy} title={label}>
-              <span className="cwh-sr">{label}</span>
-              <span
-                className={`cwh-co-bar${partial ? ' is-partial' : ''}${y.total ? '' : ' is-zero'}`}
-                style={{ height: `${Math.max(2, (y.total / max) * 100)}%` }}
-                aria-hidden="true"
-              />
-            </li>
-          );
-        })}
-      </ol>
-      <div className="cwh-co-bar-axis" aria-hidden="true">
-        <span className="cwh-mono">FY{String(years[0]?.fy).slice(2)}</span>
-        <span className="cwh-mono">FY{String(years[years.length - 1]?.fy).slice(2)}</span>
-      </div>
-    </div>
-  );
-}
+const Skel = ({ n = 4, tall = false }) => (
+  <div aria-busy="true">
+    {Array.from({ length: n }, (_, i) => (
+      <span key={i} className={`cwh-skel${tall ? ' cwh-skel--chart' : ''}`} />
+    ))}
+  </div>
+);
 
-function Contracts({ card }) {
-  const c = card.contracts;
-  const agencyMax = Math.max(1, ...(c.agencies || []).map((a) => a.total));
-  const latest = c.latest || [];
-  const latestList = latest.length ? (
-    <>
-      <p className="cwh-label cwh-co-gap">Latest awards, 6 months</p>
-      <ul className="cwh-co-awards">
-        {latest.slice(0, 5).map((a) => (
-          <li key={a.id}>
-            <span className="cwh-mono cwh-mute">{monthDay(a.date)}</span>
-            <span className="cwh-co-agency">{a.agency || DASH}</span>
-            <span className="cwh-mono cwh-strong">{money(a.amount)}</span>
-          </li>
+/* ── contracts ─────────────────────────────────────────────────────── */
+
+function YearBars({ years }) {
+  const max = years.reduce((m, y) => Math.max(m, y.total), 0);
+  const [active, setActive] = useState(null);
+  const shown = active != null ? years[active] : null;
+  return (
+    <div className="cwh-co-bars-wrap">
+      <div
+        className="cwh-co-bars"
+        role="list"
+        aria-label="Federal contract obligations by fiscal year"
+        onMouseLeave={() => setActive(null)}
+      >
+        {years.map((y, i) => (
+          <div
+            key={y.fy}
+            role="listitem"
+            className={`cwh-co-bar${active === i ? ' is-active' : ''}`}
+            tabIndex={0}
+            aria-label={`FY${y.fy}: ${money(y.total)}, ${count(y.n)} awards`}
+            onMouseEnter={() => setActive(i)}
+            onFocus={() => setActive(i)}
+            onBlur={() => setActive(null)}
+          >
+            <span className="cwh-co-bar-track">
+              <i style={{ height: `${max ? Math.max(2, (y.total / max) * 100) : 0}%` }} />
+            </span>
+            <span className="cwh-co-bar-fy">{String(y.fy).slice(2)}</span>
+          </div>
         ))}
-      </ul>
-    </>
-  ) : null;
+      </div>
+      <p className="cwh-co-bar-read" aria-live="polite">
+        {shown ? (
+          <>
+            <b>FY{shown.fy}</b> {money(shown.total)} · {count(shown.n)} awards
+          </>
+        ) : (
+          <span className="cwh-faint">Hover a year for its total</span>
+        )}
+      </p>
+    </div>
+  );
+}
 
-  if (c.preparing) {
+function Contracts({ c }) {
+  if (!c.historyReady && !c.recent.length) {
     return (
-      <>
-        <p className="cwh-caption">
-          The ten-year contract history is being prepared and appears after its first weekly update.
-          Recent awards are shown meanwhile.
-        </p>
-        {latestList || <p className="cwh-caption">No federal awards in the last 6 months.</p>}
-      </>
-    );
-  }
-  if (!c.matched) {
-    return (
-      <>
-        <p className="cwh-caption">
-          No federal contracts are matched to this company in the last ten fiscal years.
-        </p>
-        {latestList}
-      </>
+      <p className="cwh-empty">
+        No federal contracts matched to this company. Contracts are matched to listed companies by
+        recipient name.
+      </p>
     );
   }
   return (
     <>
-      <dl className="cwh-co-kpis">
-        <div>
-          <dt className="cwh-label">10-year total</dt>
-          <dd className="cwh-mono">{money(c.total)}</dd>
-        </div>
-        <div>
-          <dt className="cwh-label">Awards</dt>
-          <dd className="cwh-mono">{count(c.awards)}</dd>
-        </div>
-        <div>
-          <dt className="cwh-label">Top agency</dt>
-          <dd className="cwh-co-top" title={c.topAgency || undefined}>
-            {c.topAgency || DASH}
-          </dd>
-        </div>
-      </dl>
-      <YearBars years={c.years} partialFy={c.partialFy} />
-      {c.agencies?.length ? (
+      {c.historyReady && c.fyFrom ? (
         <>
-          <p className="cwh-label cwh-co-gap">By agency</p>
-          <ul className="cwh-dr-bars cwh-dr-bars--names">
-            {c.agencies.map((a) => (
-              <li key={a.agency}>
-                <span className="cwh-dr-bar-name">{a.agency}</span>
-                <span className="cwh-port-bar" aria-hidden="true">
-                  <i style={{ width: `${(a.total / agencyMax) * 100}%` }} />
-                </span>
-                <span className="cwh-mono">{money(a.total)}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="cwh-co-kpis">
+            <div>
+              <span className="cwh-label">
+                FY{c.fyFrom} to FY{c.fyTo}
+              </span>
+              <b className="cwh-mono">{money(c.total)}</b>
+            </div>
+            <div>
+              <span className="cwh-label">Awards</span>
+              <b className="cwh-mono">{count(c.count)}</b>
+            </div>
+            <div>
+              <span className="cwh-label">Top agency</span>
+              <b className="cwh-co-kpi-text">{c.agencies[0]?.agency || DASH}</b>
+            </div>
+          </div>
+          {c.total > 0 ? (
+            <YearBars years={c.years} />
+          ) : (
+            <p className="cwh-caption">No prime awards matched in these ten fiscal years.</p>
+          )}
+          {c.agencies.length ? (
+            <ul className="cwh-co-agencies" aria-label="Awarding agencies">
+              {c.agencies.map((a) => (
+                <li key={a.agency}>
+                  <span className="cwh-co-agency-name" title={a.agency}>
+                    {a.agency}
+                  </span>
+                  <span className="cwh-port-bar" aria-hidden="true">
+                    <i style={{ width: `${a.share * 100}%` }} />
+                  </span>
+                  <span className="cwh-mono">{pct0(a.share * 100)}</span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {c.top.length ? (
+            <>
+              <p className="cwh-label cwh-co-sub">Largest awards</p>
+              <table className="cwh-table cwh-co-table">
+                <thead>
+                  <tr>
+                    <th scope="col">AGENCY</th>
+                    <th scope="col">DATE</th>
+                    <th scope="col" className="is-num">
+                      AMOUNT
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {c.top.slice(0, 5).map((a) => (
+                    <tr key={a.id}>
+                      <td
+                        className="cwh-co-ellipsis"
+                        title={`${a.agency || ''} · ${a.recipient || ''}`}
+                      >
+                        {a.agency || DASH}
+                      </td>
+                      <td className="cwh-mono cwh-mute">{longDate(a.date)}</td>
+                      <td className="cwh-mono is-num cwh-strong">{money(a.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          ) : null}
         </>
-      ) : null}
-      {c.top?.length ? (
+      ) : (
+        <p className="cwh-caption">The ten-year history is being prepared; latest awards below.</p>
+      )}
+      {c.recent.length ? (
         <>
-          <p className="cwh-label cwh-co-gap">Largest awards</p>
-          <ul className="cwh-co-awards">
-            {c.top.map((a) => (
+          <p className="cwh-label cwh-co-sub">Latest awards, 6 months</p>
+          <ul className="cwh-co-recent">
+            {c.recent.slice(0, 5).map((a) => (
               <li key={a.id}>
-                <span className="cwh-mono cwh-mute">
-                  {a.date ? String(a.date).slice(0, 4) : DASH}
-                </span>
-                <span className="cwh-co-agency" title={a.recipient || undefined}>
+                <span className="cwh-mono cwh-mute">{monthDay(a.date)}</span>
+                <span className="cwh-co-ellipsis" title={a.agency}>
                   {a.agency || DASH}
                 </span>
                 <span className="cwh-mono cwh-strong">{money(a.amount)}</span>
@@ -173,94 +213,87 @@ function Contracts({ card }) {
           </ul>
         </>
       ) : null}
-      {latestList}
     </>
   );
 }
 
-function Holders({ card, onMember }) {
-  const list = card.holders || [];
+/* ── holders ───────────────────────────────────────────────────────── */
+
+function Holders({ h, onMember }) {
+  if (!h.count) {
+    return <p className="cwh-empty">No member&apos;s disclosures show an open position.</p>;
+  }
+  const max = h.rows.reduce((m, r) => Math.max(m, r.est_value || 0), 0);
   return (
     <>
-      {list.length ? (
-        <ol className="cwh-co-holders">
-          {list.map((h, i) => (
-            <li key={h.bioguideId}>
-              <span className="cwh-mono cwh-faint">{i + 1}</span>
-              <span className="cwh-co-holder">
-                <button
-                  type="button"
-                  className="cwh-who-name"
-                  data-member={h.bioguideId}
-                  onClick={() => onMember(h.bioguideId, { name: h.name, party: h.party })}
-                >
-                  {h.name}
-                </button>
-                <span className="cwh-co-meta">
-                  <PartyTag party={h.party} />{' '}
-                  <span className="cwh-mono cwh-mute">
-                    {h.chamber === 'senate' ? 'Sen.' : 'Rep.'} {h.state || ''}
-                  </span>
-                </span>
+      <p className="cwh-co-holders-sum">
+        <b className="cwh-mono">{count(h.count)}</b> members hold it · est.{' '}
+        <b className="cwh-mono">{money(h.totalEst)}</b> between them
+      </p>
+      <ol className="cwh-co-holders">
+        {h.rows.slice(0, 8).map((r, i) => (
+          <li key={r.bioguide_id}>
+            <span className="cwh-mono cwh-faint cwh-co-rank">{i + 1}</span>
+            <MemberAvatar
+              name={r.name}
+              bioguideId={r.bioguide_id}
+              chamber={r.chamber}
+              photoUrl={r.photo_url}
+              size={32}
+            />
+            <span className="cwh-co-holder-main">
+              <button
+                type="button"
+                className="cwh-who-name"
+                data-member={r.bioguide_id}
+                onClick={() => onMember(r)}
+              >
+                {r.name}
+              </button>
+              <span className="cwh-co-holder-meta">
+                <PartyTag party={r.party} /> {r.chamber === 'senate' ? 'Senate' : 'House'}
+                {r.state ? ` · ${r.state}` : ''} · last{' '}
+                {r.last_action === 'sale_partial' ? 'partial sale' : 'buy'} {monthDay(r.last_trade)}
+              </span>
+            </span>
+            <span className="cwh-co-holder-val">
+              <span className="cwh-port-bar" aria-hidden="true">
+                <i style={{ width: `${max ? ((r.est_value || 0) / max) * 100 : 0}%` }} />
               </span>
               <span
-                className="cwh-mono cwh-strong cwh-co-val"
-                title={`Disclosed purchases still held: ${rangeText(h.estLow, h.estHigh)}`}
+                className="cwh-mono cwh-strong"
+                title={
+                  r.est_high > 0
+                    ? `Purchases since the last full sale: ${range(r.est_low, r.est_high)}`
+                    : undefined
+                }
               >
-                ~{money(h.estValue)}
+                ~{money(r.est_value)}
               </span>
-              <span className="cwh-mono cwh-mute cwh-co-last">
-                {String(h.lastType || '').startsWith('sale') ? 'TRIM' : 'BUY'}{' '}
-                {h.lastDate ? monthDay(h.lastDate) : DASH}
-              </span>
-            </li>
-          ))}
-        </ol>
-      ) : (
-        <p className="cwh-caption">No sitting member holds this stock, from disclosures on file.</p>
-      )}
+            </span>
+          </li>
+        ))}
+      </ol>
+      {h.count > 8 ? <p className="cwh-caption">and {h.count - 8} more members</p> : null}
       <p className="cwh-note">
-        Sitting members only
-        {card.holderCount > list.length ? ` (top ${list.length} of ${card.holderCount})` : ''}.
-        Holdings are inferred from STOCK Act disclosures, which report dollar ranges, never share
-        counts, so members rank by estimated position value.
+        Sitting members only. Disclosures report dollar ranges, not share counts, so members are
+        ranked by the estimated value of their open position: the midpoints of their disclosed buys
+        since their last full sale, less partial sales. Inferred, not reported.
       </p>
     </>
   );
 }
 
-function News({ ticker }) {
-  const news = useCompanyPart(ticker, 'news');
-  if (news.status === 'loading') return <Skel n={3} />;
-  const items = news.d?.items || [];
-  if (news.status === 'error' || !items.length) {
-    return <p className="cwh-caption">No headlines for this company in the last 30 days.</p>;
-  }
-  return (
-    <ul className="cwh-co-news">
-      {items.map((n) => (
-        <li key={n.url}>
-          <a href={n.url} target="_blank" rel="noopener noreferrer">
-            {n.headline}
-            <span className="cwh-sr"> (opens in a new tab)</span>
-          </a>
-          <span className="cwh-mono cwh-mute">
-            {n.source ? `${n.source} · ` : ''}
-            {n.date ? longDate(n.date) : ''}
-          </span>
-        </li>
-      ))}
-    </ul>
-  );
-}
+/* ── the card ──────────────────────────────────────────────────────── */
 
-export default function CompanyPanel({ ticker, name, onClose, onMember }) {
-  const [mounted, setMounted] = useState(false);
-  const [range, setRange] = useState('1Y');
-  const card = useCompanyPart(ticker, 'card');
-  const prices = useCompanyPart(ticker, 'prices', range);
-  const closeRef = useRef(null);
+export default function CompanyPanel({ ticker, name: givenName, onClose, onMember }) {
+  const [rng, setRng] = useState('1Y');
+  const card = useJson(companyUrl(ticker, 'card'));
+  const prices = useJson(companyUrl(ticker, 'prices', rng));
+  const news = useJson(companyUrl(ticker, 'news'));
   const panelRef = useRef(null);
+  const closeRef = useRef(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -299,32 +332,18 @@ export default function CompanyPanel({ ticker, name, onClose, onMember }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [mounted, onClose]);
 
-  const d = card.d;
-  const chartHolders = useMemo(
-    () =>
-      (d?.holders || []).map((h) => ({
-        bioguide_id: h.bioguideId,
-        name: h.name,
-        party: h.party,
-        photo_url: h.photo,
-      })),
-    [d],
-  );
-  const candles = useMemo(() => prices.d?.candles || [], [prices.d]);
-  /* Only purchases inside the chart's range get a portrait. */
-  const purchases = useMemo(() => {
-    const from = candles[0]?.date;
-    return (d?.purchases || []).filter((p) => !from || p.date >= from);
-  }, [d, candles]);
-
+  const d = card.data;
+  const p = prices.data;
+  const holdersById = useMemo(() => d?.holders?.rows || [], [d]);
   if (!mounted) return null;
-  const title = name || d?.company || ticker;
+
+  const title = givenName || d?.name || ticker;
 
   return createPortal(
     <div className="cwh-tokens cwh-co-root">
       <button
         type="button"
-        className="cwh-dr-scrim"
+        className="cwh-co-scrim"
         aria-label="Close company"
         tabIndex={-1}
         onClick={onClose}
@@ -335,15 +354,31 @@ export default function CompanyPanel({ ticker, name, onClose, onMember }) {
         aria-modal="true"
         aria-labelledby="cwh-co-title"
         aria-busy={card.status === 'loading'}
-        data-ready={card.status === 'ready' ? 'true' : 'false'}
+        data-ready={card.status === 'ready' ? 'true' : undefined}
         ref={panelRef}
       >
         <header className="cwh-co-head">
-          <div>
-            <p className="cwh-label">Capitol Watch / Company</p>
-            <h2 className="cwh-co-title" id="cwh-co-title">
-              <span className="cwh-mono">{ticker}</span> {title !== ticker ? title : ''}
-            </h2>
+          <div className="cwh-co-id">
+            <span className="cwh-co-ticker cwh-mono">{ticker}</span>
+            <div>
+              <h2 className="cwh-co-title" id="cwh-co-title">
+                {title}
+              </h2>
+              <p className="cwh-co-subtitle">
+                {d?.sector ? <span className="cwh-chip">{d.sector.toUpperCase()}</span> : null}
+                {p ? (
+                  <span className="cwh-co-quote">
+                    <b className="cwh-mono">${p.last.toFixed(2)}</b>
+                    <span
+                      className={`cwh-mono ${p.changePct == null ? '' : p.changePct >= 0 ? 'is-pos' : 'is-neg'}`}
+                    >
+                      {signed(p.changePct)} {rng}
+                    </span>
+                    <span className="cwh-faint cwh-mono">close {monthDay(p.lastDate)}</span>
+                  </span>
+                ) : null}
+              </p>
+            </div>
           </div>
           <button
             type="button"
@@ -356,60 +391,110 @@ export default function CompanyPanel({ ticker, name, onClose, onMember }) {
           </button>
         </header>
 
-        <div className="cwh-co-grid">
+        <div className="cwh-co-body">
           <div className="cwh-co-left">
-            <div className="cwh-co-sec-head">
-              <h3 className="cwh-h4">Stock price</h3>
-              <div className="cwh-pills cwh-pills--sm" role="group" aria-label="Chart range">
-                {RANGES.map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    className={`cwh-pill${range === r ? ' is-active' : ''}`}
-                    aria-pressed={range === r}
-                    onClick={() => setRange(r)}
-                  >
-                    {r}
-                  </button>
-                ))}
+            <section className="cwh-co-section" aria-labelledby="cwh-co-chart-h">
+              <div className="cwh-co-section-head">
+                <h3 className="cwh-h4" id="cwh-co-chart-h">
+                  Stock price
+                </h3>
+                <div className="cwh-pills cwh-pills--sm" role="group" aria-label="Chart range">
+                  {RANGES.map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      className={`cwh-pill${rng === r ? ' is-active' : ''}`}
+                      aria-pressed={rng === r}
+                      onClick={() => setRng(r)}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-            {prices.status === 'loading' ? (
-              <Skel n={5} />
-            ) : candles.length >= 2 ? (
-              <PriceChart
-                ticker={ticker}
-                candles={candles}
-                purchases={purchases}
-                holders={chartHolders}
-              />
-            ) : (
-              <p className="cwh-empty">No price history is available for {ticker} just now.</p>
-            )}
-            <h3 className="cwh-h4 cwh-co-gap">Recent news</h3>
-            <News ticker={ticker} />
+              {prices.status === 'loading' ? (
+                <Skel n={1} tall />
+              ) : prices.status === 'error' || !p?.candles?.length ? (
+                <p className="cwh-empty">Price history is not available for {ticker} right now.</p>
+              ) : (
+                <div className={prices.status === 'refresh' ? 'is-busy' : undefined}>
+                  <PriceChart
+                    ticker={ticker}
+                    candles={p.candles}
+                    purchases={(d?.purchases || []).filter((x) => x.date >= p.candles[0].date)}
+                    holders={holdersById}
+                  />
+                </div>
+              )}
+            </section>
+
+            <section className="cwh-co-section" aria-labelledby="cwh-co-news-h">
+              <div className="cwh-co-section-head">
+                <h3 className="cwh-h4" id="cwh-co-news-h">
+                  Recent news
+                </h3>
+                <span className="cwh-caption">Last 30 days</span>
+              </div>
+              {news.status === 'loading' ? (
+                <Skel n={4} />
+              ) : news.status === 'error' || !news.data?.items?.length ? (
+                <p className="cwh-empty">No recent headlines for {ticker}.</p>
+              ) : (
+                <ul className="cwh-co-news">
+                  {news.data.items.map((a) => (
+                    <li key={a.url}>
+                      <a href={a.url} target="_blank" rel="noopener noreferrer">
+                        <span className="cwh-co-news-meta">
+                          {a.source ? <b>{a.source}</b> : null}
+                          <span className="cwh-mono">{ago(a.date)}</span>
+                        </span>
+                        <span className="cwh-co-news-h">
+                          {a.headline} <i className="bi bi-box-arrow-up-right" aria-hidden="true" />
+                        </span>
+                        {a.summary ? <span className="cwh-co-news-s">{a.summary}</span> : null}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
           </div>
 
           <div className="cwh-co-right">
-            <h3 className="cwh-h4">Federal contracts, last ten fiscal years</h3>
-            {card.status === 'loading' ? (
-              <Skel n={6} />
-            ) : card.status === 'error' || !d ? (
-              <p className="cwh-empty">Company details could not be loaded just now.</p>
-            ) : (
-              <Contracts card={d} />
-            )}
-            <h3 className="cwh-h4 cwh-co-gap">Members with the largest positions</h3>
-            {card.status === 'loading' ? (
-              <Skel n={5} />
-            ) : d ? (
-              <Holders card={d} onMember={onMember} />
-            ) : null}
+            <section className="cwh-co-section" aria-labelledby="cwh-co-contracts-h">
+              <div className="cwh-co-section-head">
+                <h3 className="cwh-h4" id="cwh-co-contracts-h">
+                  Government contracts, 10 years
+                </h3>
+              </div>
+              {card.status === 'loading' ? (
+                <Skel n={5} />
+              ) : card.status === 'error' ? (
+                <p className="cwh-empty">Contracts could not be loaded just now.</p>
+              ) : (
+                <Contracts c={d.contracts} />
+              )}
+            </section>
+
+            <section className="cwh-co-section" aria-labelledby="cwh-co-holders-h">
+              <div className="cwh-co-section-head">
+                <h3 className="cwh-h4" id="cwh-co-holders-h">
+                  Members with the largest positions
+                </h3>
+              </div>
+              {card.status === 'loading' ? (
+                <Skel n={5} />
+              ) : card.status === 'error' ? (
+                <p className="cwh-empty">Holders could not be loaded just now.</p>
+              ) : (
+                <Holders h={d.holders} onMember={onMember} />
+              )}
+            </section>
           </div>
         </div>
         <p className="cwh-note cwh-co-src">
-          Sources: USAspending.gov (federal contracts), House Clerk and Senate eFD (holdings), daily
-          closes from market data providers, company news from financial news providers.
+          Sources: USAspending.gov (prime awards, federal fiscal years), House Clerk and Senate eFD
+          (STOCK Act), daily closing prices, company news. Nothing here is investment advice.
         </p>
       </section>
     </div>,

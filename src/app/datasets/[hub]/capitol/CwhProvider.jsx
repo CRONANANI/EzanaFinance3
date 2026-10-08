@@ -9,8 +9,7 @@
  *                   pointer over, focus or touch (one delegated listener).
  *   hub events      the carousel's events, so the drawer lists a member's
  *                   signals without another request
- *   company card    openCompany({ ticker, name }): the CompanyPanel; any
- *                   element with data-ticker warms its card and 1Y chart
+ *   company card    openCompany({ ticker, name })
  *   EzanaQL         requestQuery(query): fills the bar and runs (Query this)
  *   account gate    gate(action): the centred account prompt
  *   My signals      the reader's saved rules and the events each matches
@@ -28,12 +27,38 @@ import { useAuth } from '@/components/AuthProvider';
 import { GateModal, useHubQuery } from '@/components/datasets/hub/HubClient';
 import {
   listenForMemberIntent,
-  listenForTickerIntent,
-  prefetchCompany,
+  prefetchJson,
   prefetchMember,
 } from '@/components/datasets/prefetch-cache';
-import CompanyPanel from './CompanyPanel';
+import CompanyPanel, { companyUrl } from './CompanyPanel';
 import MemberDrawer from './MemberDrawer';
+
+const TICKER = /^[A-Z][A-Z0-9.-]{0,9}$/;
+
+/* Warm the company card (its data and 1Y prices) on intent over any
+   [data-company] element or ticker button. Once per ticker per 30 s. */
+function listenForCompanyIntent(root) {
+  const seen = new Map();
+  const handler = (e) => {
+    const el = e.target?.closest?.('[data-company], .cwh-tk');
+    if (!el || !root.contains(el)) return;
+    const t = String(el.getAttribute('data-company') || el.textContent || '')
+      .trim()
+      .toUpperCase();
+    if (!TICKER.test(t) || Date.now() - (seen.get(t) || 0) < 30000) return;
+    seen.set(t, Date.now());
+    prefetchJson(companyUrl(t, 'card'));
+    prefetchJson(companyUrl(t, 'prices', '1Y'));
+  };
+  root.addEventListener('pointerover', handler, { passive: true });
+  root.addEventListener('focusin', handler);
+  root.addEventListener('touchstart', handler, { passive: true });
+  return () => {
+    root.removeEventListener('pointerover', handler);
+    root.removeEventListener('focusin', handler);
+    root.removeEventListener('touchstart', handler);
+  };
+}
 
 const Cwh = createContext(null);
 
@@ -100,8 +125,7 @@ export default function CwhProvider({ children }) {
 
   /* Warm the drawer's reads on intent, anywhere on the page. */
   useEffect(() => listenForMemberIntent(document.body, prefetchMember), []);
-  useEffect(() => listenForTickerIntent(document.body, prefetchCompany), []);
-  const companyOpener = useRef(null);
+  useEffect(() => listenForCompanyIntent(document.body), []);
 
   const openMember = useCallback((bioguideId, hint = null) => {
     const id = String(bioguideId || '').toUpperCase();
@@ -130,22 +154,22 @@ export default function CwhProvider({ children }) {
     window.setTimeout(() => el?.focus?.(), 0);
   }, []);
 
-  const openCompany = useCallback((c) => {
-    if (!c?.ticker) return;
-    prefetchCompany(c.ticker);
-    companyOpener.current = document.activeElement;
-    setCompany({
-      ticker: String(c.ticker).toUpperCase(),
-      name: c.name || null,
-      since: c.since || null,
-    });
-  }, []);
-
+  const companyOpener = useRef(null);
   const closeCompany = useCallback(() => {
     setCompany(null);
     const el = companyOpener.current;
     companyOpener.current = null;
     window.setTimeout(() => el?.focus?.(), 0);
+  }, []);
+
+  const openCompany = useCallback((c) => {
+    if (!c?.ticker) return;
+    if (!companyOpener.current) companyOpener.current = document.activeElement;
+    setCompany({
+      ticker: String(c.ticker).toUpperCase(),
+      name: c.name || null,
+      since: c.since || null,
+    });
   }, []);
 
   /* Query this: the hub's shared channel, so row actions reach this bar. */
@@ -316,10 +340,10 @@ export default function CwhProvider({ children }) {
           ticker={company.ticker}
           name={company.name}
           onClose={closeCompany}
-          onMember={(id, hint) => {
-            companyOpener.current = null;
+          onMember={(m) => {
             setCompany(null);
-            openMember(id, hint);
+            companyOpener.current = null;
+            openMember(m.bioguide_id, { name: m.name, party: m.party });
           }}
         />
       ) : null}

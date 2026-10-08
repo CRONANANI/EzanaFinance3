@@ -65,7 +65,6 @@ function Cell({ k, row, onTicker, onMember }) {
       <button
         type="button"
         className="cwh-rc-tk"
-        data-ticker={String(v).toUpperCase()}
         onClick={() => onTicker(row)}
         aria-label={`Open ${v} company card`}
       >

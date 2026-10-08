@@ -45,12 +45,6 @@ import {
   ranks,
   spearman,
 } from '../src/app/datasets/[hub]/capitol/stats.js';
-import { tenYears } from '../src/lib/datasets/capitol-hub/company-history.js';
-import {
-  fiscalYearPartial,
-  monthPartial,
-  quarterPartial,
-} from '../src/app/datasets/[hub]/capitol/tile-periods.js';
 
 const TODAY = '2026-10-07';
 
@@ -594,42 +588,39 @@ test('new conditions narrow matches; a rule saved without them is unchanged', ()
   );
 });
 
-/* ── Oct 8 evening: company card and dataset tiles ─────────────────────── */
+/* ── Oct 8 pm: company card shaping ── */
 
-test('tenYears rolls agency rows into ten zero-filled fiscal years', () => {
-  const rows = [
-    {
-      fiscal_year: 2026,
-      awarding_agency: 'Department of Defense',
-      award_count: 3,
-      total_amount: 900,
-    },
-    { fiscal_year: 2026, awarding_agency: 'NASA', award_count: 1, total_amount: 100 },
-    { fiscal_year: 2020, awarding_agency: 'NASA', award_count: 2, total_amount: 50 },
-    { fiscal_year: 2010, awarding_agency: 'NASA', award_count: 9, total_amount: 9e9 },
-  ];
-  const t = tenYears(rows, 2027);
-  assert.equal(t.years.length, 10);
-  assert.equal(t.years[0].fy, 2018);
-  assert.equal(t.years[9].fy, 2027);
-  assert.equal(t.years.find((y) => y.fy === 2026).total, 1000);
-  assert.equal(t.years.find((y) => y.fy === 2019).total, 0, 'missing years are zero');
-  assert.equal(t.total, 1050, 'years outside the window are not counted');
-  assert.equal(t.topAgency, 'NASA');
-  assert.equal(t.partialFy, 2027);
+import { cleanAssetName, contractSummary } from '../src/lib/datasets/capitol-hub/company-format.js';
+
+test('company card: asset names lose the share-class tail', () => {
+  assert.equal(cleanAssetName('Amazon.com, Inc. - Common Stock'), 'Amazon.com, Inc.');
+  assert.equal(
+    cleanAssetName('Berkshire Hathaway Inc. New Common Stock'),
+    'Berkshire Hathaway Inc.',
+  );
+  assert.equal(cleanAssetName('Alphabet Inc. - Class A Common Stock'), 'Alphabet Inc.');
+  assert.equal(cleanAssetName('AT&T Inc.'), 'AT&T Inc.');
+  assert.equal(cleanAssetName(null), '');
 });
 
-test('tile periods: this month, quarters with reports due, fiscal years loaded early', () => {
-  assert.equal(monthPartial('2026-10', '2026-10-08'), true);
-  assert.equal(monthPartial('2026-09', '2026-10-08'), false);
-  assert.equal(quarterPartial(2026, 'q3', '2026-10-08'), true, 'Q3 reports due Oct 20');
-  assert.equal(quarterPartial(2026, 'q3', '2026-10-21'), false);
-  assert.equal(quarterPartial(2026, 'q2', '2026-10-08'), false);
-  assert.equal(fiscalYearPartial(2026, null, '2026-10-08'), false);
-  assert.equal(
-    fiscalYearPartial(2026, '2026-07-25', '2026-10-08'),
-    true,
-    'loaded before it closed',
+test('company card: ten fiscal years, zeros filled, agencies ranked with shares', () => {
+  const rows = [
+    { fiscal_year: 2016, awarding_agency: 'Old', award_count: 9, total_amount: 999 },
+    { fiscal_year: 2018, awarding_agency: 'Defense', award_count: 3, total_amount: 300 },
+    { fiscal_year: 2018, awarding_agency: 'NASA', award_count: 1, total_amount: 100 },
+    { fiscal_year: 2026, awarding_agency: 'Defense', award_count: 2, total_amount: 600 },
+  ];
+  const c = contractSummary(rows, 2026);
+  assert.equal(c.fyFrom, 2017);
+  assert.equal(c.fyTo, 2026);
+  assert.equal(c.years.length, 10);
+  assert.deepEqual(
+    c.years.map((y) => y.total),
+    [0, 400, 0, 0, 0, 0, 0, 0, 0, 600],
   );
-  assert.equal(fiscalYearPartial(2027, null, '2026-10-08'), true, 'still running');
+  assert.equal(c.total, 1000);
+  assert.equal(c.count, 6);
+  assert.equal(c.agencies[0].agency, 'Defense');
+  assert.ok(Math.abs(c.agencies[0].share - 0.9) < 1e-12);
+  assert.deepEqual(contractSummary([], null).years, []);
 });

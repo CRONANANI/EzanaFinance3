@@ -1,298 +1,343 @@
 /**
- * Capitol Watch company card: three independent reads, so each section of
- * the card paints when its own data lands. SERVER ONLY.
+ * Capitol Watch company card: one listed company, three reads. SERVER ONLY.
  *
- *   card    name, ten fiscal years of federal contracts (company_contract_
- *           history, synced weekly from the warehouse), the largest awards,
- *           the latest awards (last 6 months), and the sitting members with
- *           the largest estimated positions plus their purchases for the
- *           chart. Indexed tables only: milliseconds.
- *   prices  daily closes for a range: FMP, then Alpaca, then the stored
- *           closes in price_data_cache.
- *   news    the last 30 days of company headlines: Finnhub, then Alpha
- *           Vantage.
+ *   getCapitolCompany(ticker)        name, sector, 10 fiscal years of federal
+ *                                    contracts, recent awards, and the members
+ *                                    with the largest estimated positions
+ *                                    (indexed tables only: a few ms each)
+ *   getCapitolCompanyPrices(t, range) daily closes (FMP, Alpaca, then cache)
+ *   getCapitolCompanyNews(ticker)    recent company headlines (Finnhub, then
+ *                                    Alpha Vantage)
  *
- * STOCK Act disclosures report dollar ranges, never share counts, so holders
- * rank by estimated position value.
+ * Cached under `hubs` (15 min for the card, 1 h for prices and news).
+ * Errors are thrown inside the cache and answered as { error } outside, so a
+ * failure is never cached.
+ *
+ * Positions are inferred from STOCK Act disclosures, which report dollar
+ * ranges per trade, never share counts. "Largest positions" is therefore the
+ * estimated dollar value of each member's open position.
  */
 import { unstable_cache } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { configured, timed } from '@/lib/datasets/hub-data';
 import { fetchAV, getAlphaVantageApiKey } from '@/lib/alpha-vantage';
-import { fetchDailyWithFallback } from '@/lib/prices/daily';
-import { currentFiscalYear, HISTORY_YEARS } from '@/lib/contracts/fiscal-year';
-import { tenYears } from './company-history';
+import { getDailyBars } from '@/lib/prices/daily-bars';
 import { isoDaysAgo, num, up } from './lookups';
+import { cleanAssetName, contractSummary } from './company-format';
 
-const CACHE = { revalidate: 900, tags: ['hubs'] };
-const MARKET_CACHE = { revalidate: 3600, tags: ['hubs'] };
-const HOLDERS = 12;
+const CARD_CACHE = { revalidate: 900, tags: ['hubs'] };
+const SLOW_CACHE = { revalidate: 3600, tags: ['hubs'] };
+const YEARS = 10;
+const TICKER = /^[A-Z][A-Z0-9.-]{0,9}$/;
 
-export const TICKER = /^[A-Z][A-Z0-9.-]{0,9}$/;
-export const RANGES = { '1M': 31, '6M': 183, '1Y': 366, '5Y': 1827, '10Y': 3653 };
+export const PRICE_RANGES = { '1M': 31, '6M': 183, '1Y': 366, '5Y': 1830, '10Y': 3660 };
 
-const check = (r) => {
-  if (r.error) throw new Error(r.error.message);
-  return r.data || [];
-};
+const guard =
+  (label, fn) =>
+  async (...args) => {
+    try {
+      return await fn(...args);
+    } catch (e) {
+      console.error('[capitol-company]', label, e?.message || e);
+      return { error: true };
+    }
+  };
 
-/* ── card ─────────────────────────────────────────────────────────────── */
+/* The latest fiscal year loaded into the contracts corpus (cached a day). */
+const latestFiscalYear = unstable_cache(
+  async () => {
+    const { data, error } = await getAdminClient()
+      .from('gov_contract_coverage')
+      .select('fiscal_year')
+      .order('fiscal_year', { ascending: false })
+      .limit(1);
+    if (error) throw new Error(error.message);
+    return data?.[0]?.fiscal_year || null;
+  },
+  ['capitol-company-latest-fy-v1'],
+  { revalidate: 86400, tags: ['hubs'] },
+);
 
-async function loadCardOrThrow(ticker) {
-  if (!configured()) return { ticker, empty: true };
+async function loadCompanyOrThrow(ticker) {
+  if (!configured()) throw new Error('not configured');
   const admin = getAdminClient();
-  const [names, history, anyHistory, top, latest, positions] = await Promise.all([
-    timed(admin.from('contractor_tickers').select('company').eq('ticker', ticker).limit(20)).then(
-      check,
+  const t = up(ticker);
+  const today = new Date().toISOString().slice(0, 10);
+  const [names, sector, asset, holders, purchases, history, top, recent, fyTo] = await Promise.all([
+    timed(admin.from('contractor_tickers').select('company').eq('ticker', t).limit(20)),
+    timed(admin.from('ticker_sectors').select('sector').eq('ticker', t).maybeSingle()),
+    timed(
+      admin
+        .from('congress_trades')
+        .select('asset_name')
+        .eq('ticker', t)
+        .not('asset_name', 'is', null)
+        .order('transaction_date', { ascending: false })
+        .limit(1),
     ),
-    timed(
-      admin
-        .from('company_contract_history')
-        .select('fiscal_year, awarding_agency, award_count, total_amount, synced_at')
-        .eq('ticker', ticker)
-        .gte('fiscal_year', currentFiscalYear() - HISTORY_YEARS + 1)
-        .limit(2000),
-    ).then(check),
-    timed(admin.from('company_contract_history').select('ticker').limit(1)).then(check),
-    timed(
-      admin
-        .from('company_contract_top_awards')
-        .select('generated_award_id, recipient_name, awarding_agency, award_amount, action_date')
-        .eq('ticker', ticker)
-        .order('award_amount', { ascending: false })
-        .limit(5),
-    ).then(check),
-    timed(
-      admin
-        .from('mv_contract_award_tickers')
-        .select('generated_award_id, action_date, award_amount, awarding_agency')
-        .eq('ticker', ticker)
-        .gte('action_date', isoDaysAgo(183))
-        .order('action_date', { ascending: false })
-        .limit(8),
-    ).then(check),
     timed(
       admin
         .from('mv_congress_open_positions')
         .select(
-          'bioguide_id, member_name, chamber, party, state, est_value, est_low, est_high, last_date, last_type',
+          'bioguide_id, member_name, chamber, party, state, est_value, est_low, est_high, first_buy, last_date, last_type, trades',
         )
-        .eq('ticker', ticker)
+        .eq('ticker', t)
         .order('est_value', { ascending: false })
-        .limit(200),
-    ).then(check),
+        .limit(100),
+    ),
+    timed(
+      admin
+        .from('congress_trades')
+        .select('bioguide_id, transaction_date, amount_mid')
+        .eq('ticker', t)
+        .eq('type', 'purchase')
+        .gte('transaction_date', isoDaysAgo(YEARS * 366))
+        .order('transaction_date', { ascending: true })
+        .limit(2000),
+    ),
+    timed(
+      admin
+        .from('company_contract_history')
+        .select('fiscal_year, awarding_agency, award_count, total_amount')
+        .eq('ticker', t)
+        .limit(2000),
+    ),
+    timed(
+      admin
+        .from('company_contract_top_awards')
+        .select(
+          'generated_award_id, recipient_name, awarding_agency, award_amount, action_date, fiscal_year',
+        )
+        .eq('ticker', t)
+        .order('award_amount', { ascending: false })
+        .limit(10),
+    ),
+    timed(
+      admin
+        .from('mv_contract_award_tickers')
+        .select('generated_award_id, action_date, award_amount, awarding_agency')
+        .eq('ticker', t)
+        .gte('action_date', isoDaysAgo(180))
+        .lte('action_date', today)
+        .order('action_date', { ascending: false })
+        .limit(8),
+    ),
+    latestFiscalYear().catch(() => null),
   ]);
+  for (const r of [names, sector, asset, holders, purchases, recent]) {
+    if (r.error) throw new Error(r.error.message);
+  }
+  /* The history tables arrive with migration 20261008000800 and fill on the
+     first sync; until then the card shows recent awards only. */
+  const historyReady = !history.error && !top.error;
 
-  /* Sitting members only: a former member stops filing, so their last buy
-     would otherwise stay "open" forever. */
-  const ids = [...new Set(positions.map((p) => up(p.bioguide_id)))];
-  const members = ids.length
-    ? await timed(
-        admin
-          .from('congress_members')
-          .select('bioguide_id, full_name, chamber, party, state, in_office, photo_url')
-          .in('bioguide_id', ids),
-      ).then(check)
-    : [];
-  const sitting = new Map(members.filter((m) => m.in_office).map((m) => [up(m.bioguide_id), m]));
-  const holdersAll = positions
-    .filter((p) => sitting.has(up(p.bioguide_id)))
-    .map((p) => {
-      const m = sitting.get(up(p.bioguide_id));
-      return {
-        bioguideId: up(p.bioguide_id),
-        name: m.full_name || p.member_name,
-        party: m.party || p.party,
-        chamber: String(m.chamber || p.chamber || '').toLowerCase() || null,
-        state: m.state || p.state || null,
-        photo: m.photo_url || null,
-        estValue: num(p.est_value),
-        estLow: num(p.est_low),
-        estHigh: num(p.est_high),
-        lastDate: p.last_date,
-        lastType: p.last_type,
-      };
-    })
-    .sort((a, b) => (b.estValue || 0) - (a.estValue || 0));
-  const holders = holdersAll.slice(0, HOLDERS);
+  /* Sitting members only: a former member's last disclosure says nothing
+     about what they hold today. */
+  const all = holders.data || [];
+  let members = new Map();
+  if (all.length) {
+    const { data, error } = await timed(
+      admin
+        .from('congress_members')
+        .select('bioguide_id, photo_url, in_office')
+        .in(
+          'bioguide_id',
+          all.map((h) => h.bioguide_id),
+        ),
+    );
+    if (error) throw new Error(error.message);
+    members = new Map((data || []).map((m) => [m.bioguide_id, m]));
+  }
+  const held = all.filter((h) => members.get(h.bioguide_id)?.in_office !== false);
+  const photos = new Map([...members.values()].map((m) => [m.bioguide_id, m.photo_url]));
+  const ids = held.map((h) => h.bioguide_id);
+  const holderIds = new Set(ids);
+  const shortest = (names.data || [])
+    .map((n) => n.company)
+    .filter(Boolean)
+    .sort((a, b) => a.length - b.length)[0];
 
-  /* Purchases by the shown holders, for the chart's portraits. */
-  const purchases = holders.length
-    ? await timed(
-        admin
-          .from('congress_trades')
-          .select('bioguide_id, transaction_date, amount_min, amount_max, type')
-          .in(
-            'bioguide_id',
-            holders.map((h) => h.bioguideId),
-          )
-          .eq('ticker', ticker)
-          .eq('type', 'purchase')
-          .gte('transaction_date', isoDaysAgo(3660))
-          .order('transaction_date', { ascending: false })
-          .limit(300),
-      ).then(check)
-    : [];
-
-  const company =
-    names
-      .map((r) => r.company)
-      .filter(Boolean)
-      .sort((a, b) => a.length - b.length)[0] || null;
-  const tenYear = tenYears(history);
   return {
-    ticker,
-    company,
-    contracts: {
-      ...tenYear,
-      /* The weekly history has never run anywhere yet: say so instead of "none". */
-      preparing: !anyHistory.length,
-      matched: history.length > 0,
-      syncedAt: history[0]?.synced_at || null,
-      top: top.map((a) => ({
-        id: a.generated_award_id,
-        recipient: a.recipient_name,
-        agency: a.awarding_agency,
-        amount: num(a.award_amount),
-        date: a.action_date,
+    ticker: t,
+    name: cleanAssetName(asset.data?.[0]?.asset_name) || shortest || t,
+    sector: sector.data?.sector || null,
+    holders: {
+      count: held.length,
+      totalEst: held.reduce((s, h) => s + (num(h.est_value) || 0), 0),
+      rows: held.slice(0, 15).map((h) => ({
+        bioguide_id: h.bioguide_id,
+        name: h.member_name,
+        chamber: h.chamber,
+        party: h.party,
+        state: h.state,
+        photo_url: photos.get(h.bioguide_id) || null,
+        est_value: num(h.est_value),
+        est_low: num(h.est_low),
+        est_high: num(h.est_high),
+        first_buy: h.first_buy,
+        last_trade: h.last_date,
+        last_action: h.last_type,
+        trades: num(h.trades),
       })),
-      latest: latest.map((a) => ({
+    },
+    /* Purchases by current holders only: the chart's portraits. */
+    purchases: (purchases.data || [])
+      .filter((p) => holderIds.has(p.bioguide_id))
+      .map((p) => ({
+        bioguide_id: p.bioguide_id,
+        date: p.transaction_date,
+        amount: num(p.amount_mid),
+      })),
+    contracts: {
+      historyReady,
+      ...contractSummary(historyReady ? history.data || [] : [], fyTo),
+      top: historyReady
+        ? (top.data || []).map((a) => ({
+            id: a.generated_award_id,
+            recipient: a.recipient_name,
+            agency: a.awarding_agency,
+            amount: num(a.award_amount),
+            date: a.action_date,
+            fy: a.fiscal_year,
+          }))
+        : [],
+      recent: (recent.data || []).map((a) => ({
         id: a.generated_award_id,
         agency: a.awarding_agency,
         amount: num(a.award_amount),
         date: a.action_date,
       })),
     },
-    holders,
-    holderCount: holdersAll.length,
-    purchases: purchases.map((p) => ({
-      bioguide_id: up(p.bioguide_id),
-      date: p.transaction_date,
-      amount:
-        num(p.amount_min) != null && num(p.amount_max) != null
-          ? (num(p.amount_min) + num(p.amount_max)) / 2
-          : num(p.amount_min),
-    })),
   };
 }
-const cachedCard = unstable_cache(loadCardOrThrow, ['capitol-company-card-v1'], CACHE);
-export const getCompanyCard = (ticker) => cachedCard(up(ticker));
+const cachedCompany = unstable_cache(loadCompanyOrThrow, ['capitol-company-v1'], CARD_CACHE);
 
-/* ── prices ───────────────────────────────────────────────────────────── */
+/** The card's data, or { error }. */
+export const getCapitolCompany = guard('card', (ticker) => {
+  const t = up(ticker);
+  if (!TICKER.test(t)) throw new Error('bad ticker');
+  return cachedCompany(t);
+});
 
 async function loadPricesOrThrow(ticker, range) {
-  const days = RANGES[range] || RANGES['1Y'];
-  const to = new Date().toISOString().slice(0, 10);
+  const days = PRICE_RANGES[range] || PRICE_RANGES['1Y'];
   const from = isoDaysAgo(days);
-  const live = await fetchDailyWithFallback(ticker, from, to);
-  let rows = live.rows;
-  let source = live.source;
-  if (!rows.length && configured()) {
-    const { data, error } = await timed(
-      getAdminClient()
-        .from('price_data_cache')
-        .select('date, close')
-        .eq('ticker', ticker)
-        .gte('date', from)
-        .order('date')
-        .limit(4000),
-    );
-    if (!error && data?.length) {
-      rows = data;
-      source = 'stored';
-    }
-  }
-  const candles = rows
-    .map((r) => ({ date: String(r.date).slice(0, 10), close: num(r.close) }))
-    .filter((r) => r.close != null)
-    .sort((a, b) => a.date.localeCompare(b.date));
-  return { ticker, range, source, candles };
+  const { candles, source } = await getDailyBars(ticker, from);
+  if (!candles.length) throw new Error('no prices');
+  const first = candles[0].close;
+  const last = candles[candles.length - 1];
+  return {
+    range,
+    candles,
+    source,
+    last: last.close,
+    lastDate: last.date,
+    changePct: first > 0 ? (last.close / first - 1) * 100 : null,
+  };
 }
-const cachedPrices = unstable_cache(loadPricesOrThrow, ['capitol-company-prices-v1'], MARKET_CACHE);
-export const getCompanyPrices = (ticker, range) =>
-  cachedPrices(up(ticker), RANGES[range] ? range : '1Y');
+const cachedPrices = unstable_cache(loadPricesOrThrow, ['capitol-company-prices-v1'], SLOW_CACHE);
 
-/* ── news ─────────────────────────────────────────────────────────────── */
+/** { range, candles, last, lastDate, changePct } or { error }. */
+export const getCapitolCompanyPrices = guard('prices', (ticker, range = '1Y') => {
+  const t = up(ticker);
+  if (!TICKER.test(t)) throw new Error('bad ticker');
+  return cachedPrices(t, PRICE_RANGES[range] ? range : '1Y');
+});
 
-async function finnhubNews(ticker, from, to) {
-  const key = process.env.FINNHUB_API_KEY;
-  if (!key) return null;
-  const qs = new URLSearchParams({ symbol: ticker.replace(/\./g, '-'), from, to, token: key });
-  const res = await fetch(`https://finnhub.io/api/v1/company-news?${qs}`, {
-    cache: 'no-store',
-    signal: AbortSignal.timeout(8000),
+const trim = (s, n) => {
+  const v = String(s || '').trim();
+  return v.length > n ? `${v.slice(0, n - 1).trimEnd()}…` : v;
+};
+
+async function finnhubNews(ticker) {
+  const token = process.env.FINNHUB_API_KEY;
+  if (!token) return [];
+  const qs = new URLSearchParams({
+    symbol: ticker,
+    from: isoDaysAgo(30),
+    to: new Date().toISOString().slice(0, 10),
+    token,
   });
-  if (!res.ok) return null;
-  const list = await res.json();
-  if (!Array.isArray(list)) return null;
-  return list
-    .filter((n) => n.headline && n.url)
-    .sort((a, b) => (b.datetime || 0) - (a.datetime || 0))
-    .map((n) => ({
-      headline: n.headline,
-      source: n.source || null,
-      url: n.url,
-      date: n.datetime ? new Date(n.datetime * 1000).toISOString() : null,
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 6000);
+  try {
+    const res = await fetch(`https://finnhub.io/api/v1/company-news?${qs}`, {
+      cache: 'no-store',
+      signal: ctrl.signal,
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (Array.isArray(data) ? data : []).map((a) => ({
+      headline: a.headline,
+      source: a.source,
+      url: a.url,
+      date: a.datetime ? new Date(a.datetime * 1000).toISOString() : null,
+      summary: a.summary,
+      image: a.image || null,
     }));
+  } catch {
+    return [];
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function alphaNews(ticker) {
-  if (!getAlphaVantageApiKey()) return null;
-  const d = await fetchAV({
-    function: 'NEWS_SENTIMENT',
-    tickers: ticker,
-    limit: '20',
-    sort: 'LATEST',
-  });
-  const feed = Array.isArray(d?.feed) ? d.feed : null;
-  if (!feed) return null;
-  return feed
-    .filter((n) => n.title && n.url)
-    .map((n) => {
-      const m = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})/.exec(String(n.time_published || ''));
+  if (!getAlphaVantageApiKey()) return [];
+  try {
+    const data = await fetchAV(
+      { function: 'NEWS_SENTIMENT', tickers: ticker, limit: '20', sort: 'LATEST' },
+      1800,
+    );
+    return (Array.isArray(data?.feed) ? data.feed : []).map((a) => {
+      const ts = String(a.time_published || '');
+      const date =
+        ts.length >= 8
+          ? `${ts.slice(0, 4)}-${ts.slice(4, 6)}-${ts.slice(6, 8)}T${ts.slice(9, 11) || '00'}:${ts.slice(11, 13) || '00'}:00Z`
+          : null;
       return {
-        headline: n.title,
-        source: n.source || null,
-        url: n.url,
-        date: m ? `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:00Z` : null,
+        headline: a.title,
+        source: a.source,
+        url: a.url,
+        date,
+        summary: a.summary,
+        image: a.banner_image || null,
       };
     });
+  } catch {
+    return [];
+  }
 }
 
 async function loadNewsOrThrow(ticker) {
-  const to = new Date().toISOString().slice(0, 10);
-  const from = isoDaysAgo(30);
-  let items = null;
-  let source = null;
-  try {
-    items = await finnhubNews(ticker, from, to);
-    if (items) source = 'finnhub';
-  } catch {
-    items = null;
-  }
-  if (!items?.length) {
-    try {
-      const av = await alphaNews(ticker);
-      if (av) {
-        items = av;
-        source = 'alphavantage';
-      }
-    } catch {
-      /* both sources failed: the card says no headlines */
-    }
-  }
-  const cutoff = Date.parse(from);
+  let items = await finnhubNews(ticker);
+  if (!items.length) items = await alphaNews(ticker);
   const seen = new Set();
-  const list = (items || [])
-    .filter((n) => !n.date || Date.parse(n.date) >= cutoff)
-    .filter((n) => {
-      const k = n.headline.toLowerCase();
-      if (seen.has(k)) return false;
-      seen.add(k);
-      return true;
-    })
-    .slice(0, 8);
-  return { ticker, source, configured: source != null || Boolean(items), items: list };
+  const out = [];
+  for (const a of items) {
+    const key = String(a.headline || '')
+      .toLowerCase()
+      .replace(/\W+/g, ' ')
+      .trim();
+    if (!a.headline || !a.url || !/^https?:\/\//.test(a.url) || seen.has(key)) continue;
+    seen.add(key);
+    out.push({
+      headline: trim(a.headline, 160),
+      source: a.source || null,
+      url: a.url,
+      date: a.date,
+      summary: a.summary ? trim(a.summary, 200) : null,
+    });
+    if (out.length >= 8) break;
+  }
+  out.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  return { items: out };
 }
-const cachedNews = unstable_cache(loadNewsOrThrow, ['capitol-company-news-v1'], MARKET_CACHE);
-export const getCompanyNews = (ticker) => cachedNews(up(ticker));
+const cachedNews = unstable_cache(loadNewsOrThrow, ['capitol-company-news-v1'], SLOW_CACHE);
+
+/** { items: [{ headline, source, url, date, summary }] } or { error }. */
+export const getCapitolCompanyNews = guard('news', (ticker) => {
+  const t = up(ticker);
+  if (!TICKER.test(t)) throw new Error('bad ticker');
+  return cachedNews(t);
+});

@@ -329,7 +329,6 @@ export default function LobbyingRatio({ initial }) {
                         <button
                           type="button"
                           className="cwh-tk"
-                          data-ticker={r.ticker}
                           onClick={() => openCompany({ ticker: r.ticker, name: r.company })}
                         >
                           {r.ticker}

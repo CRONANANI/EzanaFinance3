@@ -1,322 +1,366 @@
 /**
- * The five datasets at the foot of the Capitol Watch hub, as a bento of
- * tiles: Politician Tracker and Government Contracts wide on the first row,
- * Lobbying, Campaign Finance and Committees on the second. Each tile is one
- * link with an accent colour, an icon, a headline figure, two supporting
- * figures, its own small visual and a live dot with the last update.
+ * The five Capitol datasets at the foot of the hub, as a bento of tiles.
+ * Server components: each tile is one link (the whole tile opens the dataset)
+ * with the dataset's headline figure, two supporting figures, a small visual
+ * of its own shape, and how fresh it is.
  *
- * Server components only, no client JavaScript. Tiles are in DOM order so
- * tab order matches what is seen. Visuals come from one precomputed row
- * (getDatasetVisuals); periods still filling (this month, quarters whose
- * reports are not yet due, a fiscal year loaded before it closed) draw dashed
- * and say so in their tooltip. Every bar has a <title>; axis labels are HTML,
- * so they never stretch with the drawing.
+ *   Politician Tracker     trades disclosed per month, 12 months
+ *   Government Contracts   obligations per fiscal year, 10 years
+ *   Lobbying Activity      reported spend per quarter, 8 quarters
+ *   Campaign Finance       money raised by party this cycle, top raisers
+ *   Committee Assignments  seats by chamber and party
+ *
+ * Visuals come from mv_capitol_dataset_visuals (dataset-visuals.js); when it
+ * is missing the tile still renders its figures. SVG only, no client JS;
+ * every bar carries a <title> with its exact value.
  */
 import Link from 'next/link';
-import { getDatasetVisuals } from '@/lib/datasets/capitol-hub/data';
-import { summaryFor } from '../HubCards';
 import { fmt } from '../hub-format';
-import { money } from './cwh-format';
-import {
-  fiscalYearPartial,
-  monthLabel,
-  monthPartial,
-  quarterLabel,
-  quarterPartial,
-} from './tile-periods';
+import { DASH } from './cwh-format';
 
-const DASH = '–';
-
-const TILES = {
-  'Politician Tracker': { key: 'trades', icon: 'bi-bank', accent: 'emerald', wide: true },
-  'Government Contracts': { key: 'contracts', icon: 'bi-briefcase', accent: 'info', wide: true },
-  'Lobbying Activity': { key: 'lobbying', icon: 'bi-megaphone', accent: 'amber' },
-  'Campaign Finance Records': { key: 'finance', icon: 'bi-cash-stack', accent: 'purple' },
-  'Committee Assignments': { key: 'committees', icon: 'bi-diagram-3', accent: 'cyan' },
+const META = {
+  'Politician Tracker': { icon: 'bi-bank', tone: 'tracker', sub: 'STOCK Act trades and holdings' },
+  'Government Contracts': { icon: 'bi-briefcase', tone: 'contracts', sub: 'Federal prime awards' },
+  'Lobbying Activity': { icon: 'bi-megaphone', tone: 'lobbying', sub: 'Senate LDA filings' },
+  'Campaign Finance Records': {
+    icon: 'bi-cash-stack',
+    tone: 'finance',
+    sub: 'FEC receipts by member',
+    name: 'Campaign Finance',
+  },
+  'Committee Assignments': { icon: 'bi-diagram-3', tone: 'committees', sub: 'Who oversees what' },
 };
-const ORDER = Object.keys(TILES);
-const PARTY = { D: 'Democrats', R: 'Republicans', I: 'Independents' };
 
-/* ── visuals ──────────────────────────────────────────────────────────── */
+/* Bento order: the two wide tiles, then the three narrow ones. */
+export const TILE_ORDER = [
+  'Politician Tracker',
+  'Government Contracts',
+  'Lobbying Activity',
+  'Campaign Finance Records',
+  'Committee Assignments',
+];
+export const orderTiles = (items) =>
+  [...items].sort(
+    (a, b) => (TILE_ORDER.indexOf(a.label) + 1 || 99) - (TILE_ORDER.indexOf(b.label) + 1 || 99),
+  );
 
-function Bars({ items, label, axis }) {
-  const max = Math.max(1, ...items.map((i) => i.value || 0));
-  const n = items.length;
-  const W = 100;
-  const H = 40;
-  const gap = 1.6;
-  const bw = (W - gap * (n - 1)) / n;
+const MONTH = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+const MONTH_LONG = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
+function usd(v) {
+  const n = Number(v) || 0;
+  if (n >= 1e12) return `$${(n / 1e12).toFixed(2)}T`;
+  if (n >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `$${(n / 1e6).toFixed(0)}M`;
+  if (n >= 1e3) return `$${(n / 1e3).toFixed(0)}K`;
+  return `$${Math.round(n)}`;
+}
+
+/* ── shared bar chart ─────────────────────────────────────────────── */
+
+function Bars({ data, caption }) {
+  if (!data?.length) return null;
+  const W = 280;
+  const H = 70;
+  const gap = 4;
+  const bw = (W - gap * (data.length - 1)) / data.length;
+  const max = data.reduce((m, d) => Math.max(m, d.v), 0) || 1;
   return (
-    <div className="cwh-tile-vis">
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        preserveAspectRatio="none"
-        className="cwh-tile-bars"
-        role="img"
-        aria-label={label}
-      >
-        {items.map((it, i) => {
-          const h = Math.max(it.value ? 1.5 : 0.6, ((it.value || 0) / max) * (H - 1));
+    <figure className="cwh-dst-viz">
+      {/* Bars stretch to the tile's width; the axis labels sit in HTML below
+          so the text never stretches with them. */}
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={caption} preserveAspectRatio="none">
+        {data.map((d, i) => {
+          const h = Math.max(2, (d.v / max) * H);
           return (
             <rect
-              key={it.key}
+              key={d.key}
               x={i * (bw + gap)}
               y={H - h}
               width={bw}
               height={h}
-              rx="0.8"
-              className={it.partial ? 'is-partial' : undefined}
+              rx="2"
               vectorEffect="non-scaling-stroke"
+              className={`cwh-dst-bar${d.partial ? ' is-partial' : ''}${i === data.length - 1 ? ' is-last' : ''}`}
             >
-              <title>{it.title}</title>
+              <title>{d.title}</title>
             </rect>
           );
         })}
       </svg>
-      <div className="cwh-tile-axis" aria-hidden="true">
-        <span className="cwh-mono">{axis[0]}</span>
-        <span className="cwh-mono">{axis[1]}</span>
-      </div>
-    </div>
+      <span className="cwh-dst-ticks" aria-hidden="true" style={{ '--n': data.length }}>
+        {data.map((d) => (
+          <span key={d.key}>{d.tick || ''}</span>
+        ))}
+      </span>
+      <figcaption className="cwh-dst-cap">{caption}</figcaption>
+    </figure>
   );
 }
 
-function TradesVis({ v }) {
-  const items = (v || []).map((r) => {
-    const partial = monthPartial(r.m);
-    return {
-      key: r.m,
-      value: r.n,
-      partial,
-      title: `${monthLabel(r.m)}: ${fmt('int', r.n) ?? 0} disclosures${partial ? ' (month in progress)' : ''}`,
-    };
-  });
-  if (!items.length) return null;
+/* ── per-dataset visuals ──────────────────────────────────────────── */
+
+function TradesViz({ v }) {
+  const rows = v?.trades || [];
+  const now = new Date().toISOString().slice(0, 7);
   return (
     <Bars
-      items={items}
-      label="Trades disclosed per month, last 12 months"
-      axis={[monthLabel(items[0].key), monthLabel(items[items.length - 1].key)]}
+      caption="Trades disclosed per month, last 12 months"
+      data={rows.map((r) => {
+        const m = Number(String(r.m).slice(5, 7)) - 1;
+        return {
+          key: r.m,
+          v: Number(r.n) || 0,
+          tick: MONTH[m],
+          partial: r.m === now,
+          title: `${MONTH_LONG[m]} ${String(r.m).slice(0, 4)}: ${Number(r.n).toLocaleString('en-US')} trades${r.m === now ? ' (month to date)' : ''}`,
+        };
+      })}
     />
   );
 }
 
-function ContractsVis({ v }) {
-  const items = (v || []).map((r) => {
-    const partial = fiscalYearPartial(r.fy, r.synced);
-    return {
-      key: String(r.fy),
-      value: Number(r.total) || 0,
-      partial,
-      title: `FY${r.fy}: ${money(r.total)} obligated${partial ? ' (loaded before the fiscal year closed)' : ''}`,
-    };
-  });
-  if (!items.length) return null;
+function ContractsViz({ v }) {
+  const rows = v?.contracts || [];
   return (
     <Bars
-      items={items}
-      label="Federal contract obligations per fiscal year"
-      axis={[`FY${items[0].key}`, `FY${items[items.length - 1].key}`]}
+      caption="Obligations per federal fiscal year"
+      data={rows.map((r, i) => {
+        /* Loaded before the fiscal year closed (Sep 30): a partial year. */
+        const partial = Boolean(r.synced) && String(r.synced).slice(0, 10) < `${r.fy}-09-30`;
+        return {
+          key: r.fy,
+          v: Number(r.total) || 0,
+          tick: i === 0 || i === rows.length - 1 || i % 3 === 0 ? `FY${String(r.fy).slice(2)}` : '',
+          partial,
+          title: `FY${r.fy}: ${usd(r.total)} across ${Number(r.n).toLocaleString('en-US')} awards${partial ? ' (loaded before the year closed)' : ''}`,
+        };
+      })}
     />
   );
 }
 
-function LobbyingVis({ v }) {
-  const items = (v || []).map((r) => {
-    const partial = quarterPartial(r.y, r.q);
-    return {
-      key: `${r.y}-${r.q}`,
-      value: Number(r.spend) || 0,
-      partial,
-      title: `${quarterLabel(r.y, r.q)}: ${money(r.spend)} reported${partial ? ' (reports still due)' : ''}`,
-    };
-  });
-  if (!items.length) return null;
-  const first = v[0];
-  const last = v[v.length - 1];
+/* A quarter's filings are due 20 days after it ends; until then it is partial. */
+function quarterOpen(y, q) {
+  const end = new Date(Date.UTC(Number(y), Number(String(q).slice(1)) * 3, 0));
+  return Date.now() < end.getTime() + 20 * 86400000;
+}
+
+function LobbyingViz({ v }) {
+  const rows = v?.lobbying || [];
   return (
     <Bars
-      items={items}
-      label="Lobbying spend per quarter"
-      axis={[quarterLabel(first.y, first.q), quarterLabel(last.y, last.q)]}
+      caption="Reported lobbying spend per quarter"
+      data={rows.map((r) => {
+        const open = quarterOpen(r.y, r.q);
+        return {
+          key: `${r.y}${r.q}`,
+          v: Number(r.spend) || 0,
+          tick: `${String(r.q).toUpperCase()} ${String(r.y).slice(2)}`,
+          partial: open,
+          title: `${String(r.q).toUpperCase()} ${r.y}: ${usd(r.spend)}, ${Number(r.n).toLocaleString('en-US')} filings${open ? ' (filings still arriving)' : ''}`,
+        };
+      })}
     />
   );
 }
 
-function FinanceVis({ v }) {
-  const parties = (v?.byParty || []).filter((p) => PARTY[p.party]);
-  const total = parties.reduce((s, p) => s + (Number(p.raised) || 0), 0);
+const PARTY = { D: 'is-dem', R: 'is-rep', I: 'is-ind' };
+
+function FinanceViz({ v }) {
+  const f = v?.finance;
+  const parts = (f?.byParty || []).filter((p) => Number(p.raised) > 0);
+  const total = parts.reduce((s, p) => s + Number(p.raised), 0);
   if (!total) return null;
   return (
-    <div className="cwh-tile-vis">
-      <div
-        className="cwh-tile-stack"
-        role="img"
-        aria-label={`Money raised in the ${v.cycle} cycle by party`}
-      >
-        {parties.map((p) => (
+    <figure className="cwh-dst-viz">
+      <div className="cwh-dst-split" role="img" aria-label="Money raised this cycle by party">
+        {parts.map((p) => (
           <span
             key={p.party}
-            className={`is-${p.party}`}
-            style={{ width: `${(100 * (Number(p.raised) || 0)) / total}%` }}
-            title={`${PARTY[p.party]}: ${money(p.raised)} across ${p.members} members`}
+            className={PARTY[p.party] || 'is-ind'}
+            style={{ flexGrow: Number(p.raised) }}
+            title={`${p.party}: ${usd(p.raised)} raised by ${p.members} members`}
           />
         ))}
       </div>
-      <ol className="cwh-tile-top">
-        {(v.top || []).slice(0, 3).map((t) => (
+      <div className="cwh-dst-split-legend">
+        {parts.map((p) => (
+          <span key={p.party}>
+            <i className={PARTY[p.party] || 'is-ind'} aria-hidden="true" /> {p.party}{' '}
+            <b className="cwh-mono">{Math.round((Number(p.raised) / total) * 100)}%</b>
+          </span>
+        ))}
+      </div>
+      <ol className="cwh-dst-top">
+        {(f?.top || []).slice(0, 3).map((t) => (
           <li key={t.name}>
-            <span className="cwh-tile-top-name">
-              {t.name} <span className={`cwh-tile-party is-${t.party}`}>{t.party}</span>
-            </span>
-            <span className="cwh-mono">{money(t.raised)}</span>
+            <span className="cwh-dst-top-name">{t.name}</span>
+            <span className={`cwh-party ${PARTY[t.party] || 'is-ind'}`}>{t.party}</span>
+            <b className="cwh-mono">{usd(t.raised)}</b>
           </li>
         ))}
       </ol>
-    </div>
+      <figcaption className="cwh-dst-cap">Raised by party, {f.cycle} cycle; top raisers</figcaption>
+    </figure>
   );
 }
 
-function CommitteesVis({ v }) {
-  const chambers = ['house', 'senate']
-    .map((c) => ({
-      chamber: c,
-      rows: (v || []).filter((r) => r.chamber === c && PARTY[r.party]),
-    }))
-    .filter((c) => c.rows.length);
+function CommitteesViz({ v }) {
+  const rows = v?.committees || [];
+  const by = (ch) => rows.filter((r) => r.chamber === ch);
+  const chambers = [
+    ['house', 'House'],
+    ['senate', 'Senate'],
+  ].filter(([c]) => by(c).length);
   if (!chambers.length) return null;
   return (
-    <div className="cwh-tile-vis">
-      {chambers.map((c) => {
-        const seats = c.rows.reduce((s, r) => s + (r.seats || 0), 0);
+    <figure className="cwh-dst-viz">
+      {chambers.map(([c, label]) => {
+        const list = by(c).sort((a, b) => String(a.party).localeCompare(String(b.party)));
+        const seats = list.reduce((s, r) => s + Number(r.seats), 0);
+        const members = list.reduce((s, r) => s + Number(r.members), 0);
         return (
-          <div key={c.chamber} className="cwh-tile-chamber">
-            <span className="cwh-tile-chamber-l">{c.chamber === 'house' ? 'House' : 'Senate'}</span>
+          <div key={c} className="cwh-dst-chamber">
+            <span className="cwh-dst-chamber-l">
+              {label}
+              <span className="cwh-mono cwh-faint"> {members}</span>
+            </span>
             <div
-              className="cwh-tile-stack"
+              className="cwh-dst-split"
               role="img"
-              aria-label={`${c.chamber === 'house' ? 'House' : 'Senate'} committee seats by party`}
+              aria-label={`${label} committee seats by party`}
             >
-              {c.rows.map((r) => (
+              {list.map((r) => (
                 <span
                   key={r.party}
-                  className={`is-${r.party}`}
-                  style={{ width: `${(100 * r.seats) / seats}%` }}
-                  title={`${PARTY[r.party]}: ${r.seats} seats, ${r.members} members`}
+                  className={PARTY[r.party] || 'is-ind'}
+                  style={{ flexGrow: Number(r.seats) }}
+                  title={`${label} ${r.party}: ${r.seats} seats, ${r.members} members`}
                 />
               ))}
             </div>
-            <span className="cwh-mono cwh-tile-chamber-n">{fmt('int', seats)}</span>
+            <span className="cwh-mono cwh-dst-chamber-n">{seats.toLocaleString('en-US')}</span>
           </div>
         );
       })}
-    </div>
+      <figcaption className="cwh-dst-cap">Committee seats by party; members in grey</figcaption>
+    </figure>
   );
 }
 
-const VISUAL = {
-  trades: TradesVis,
-  contracts: ContractsVis,
-  lobbying: LobbyingVis,
-  finance: FinanceVis,
-  committees: CommitteesVis,
+const VIZ = {
+  'Politician Tracker': TradesViz,
+  'Government Contracts': ContractsViz,
+  'Lobbying Activity': LobbyingViz,
+  'Campaign Finance Records': FinanceViz,
+  'Committee Assignments': CommitteesViz,
 };
 
-/* ── tiles ────────────────────────────────────────────────────────────── */
+/* ── the tile ─────────────────────────────────────────────────────── */
 
-async function Tile({ item, visuals }) {
-  const t = TILES[item.label];
-  const s = await summaryFor(item.label);
+export function DatasetTile({ item, summary: s, visuals, index }) {
+  const meta = META[item.label] || { icon: 'bi-database', tone: 'tracker', sub: '' };
   const ok = s && !s.empty && !s.error;
   const [lead, ...rest] = ok ? s.numbers || [] : [];
-  const Vis = VISUAL[t.key];
-  const vData = visuals && !visuals.error && !visuals.empty ? visuals[t.key] : null;
+  const Viz = VIZ[item.label];
+  const today = new Date().toISOString().slice(0, 10);
+  const fresh = ok && s.freshest && s.freshest <= today ? s.freshest : null;
   return (
     <Link
       href={item.href}
-      className={`cwh-tile cwh-tile--${t.accent}${t.wide ? ' cwh-tile--wide' : ''}`}
+      className={`cwh-dst cwh-dst--${meta.tone}`}
+      aria-label={`Open ${item.label}`}
       title={item.description}
     >
-      <span className="cwh-tile-head">
-        <span className="cwh-tile-icon" aria-hidden="true">
-          <i className={`bi ${t.icon}`} />
+      <span className="cwh-dst-head">
+        <span className="cwh-dst-icon" aria-hidden="true">
+          <i className={`bi ${meta.icon}`} />
         </span>
-        <span className="cwh-tile-name">{item.label}</span>
-        <i className="bi bi-arrow-up-right cwh-tile-go" aria-hidden="true" />
+        <span className="cwh-dst-names">
+          <span className="cwh-dst-name">{meta.name || item.label}</span>
+          <span className="cwh-dst-sub">{meta.sub}</span>
+        </span>
+        <span className="cwh-dst-n cwh-mono" aria-hidden="true">
+          {String(index + 1).padStart(2, '0')}
+        </span>
       </span>
+
       {s?.error ? (
         <span className="cwh-caption">Figures unavailable just now</span>
       ) : !ok ? (
         <span className="cwh-caption">No records yet</span>
       ) : (
-        <>
-          <span className="cwh-tile-lead">{fmt(lead.kind, lead.value) ?? DASH}</span>
-          <span className="cwh-tile-label">{lead.label}</span>
-          <span className="cwh-tile-sub">
-            {rest.slice(0, 2).map((n) => (
-              <span key={n.label}>
-                <b className={n.kind === 'text' ? undefined : 'cwh-mono'}>
-                  {fmt(n.kind, n.value) ?? DASH}
-                </b>{' '}
-                {n.label.toLowerCase()}
+        <span className="cwh-dst-figs">
+          <span className="cwh-dst-lead">
+            <b className="cwh-mono">{fmt(lead.kind, lead.value) ?? DASH}</b>
+            <span>{lead.label}</span>
+          </span>
+          <span className="cwh-dst-rest">
+            {rest.slice(0, 2).map((x) => (
+              <span key={x.label} className="cwh-dst-stat">
+                <span className="cwh-dst-stat-l">{x.label}</span>
+                <b className={x.kind === 'text' ? 'cwh-dst-stat-t' : 'cwh-mono'}>
+                  {fmt(x.kind, x.value) ?? DASH}
+                </b>
               </span>
             ))}
           </span>
-        </>
+        </span>
       )}
-      {vData ? <Vis v={vData} /> : null}
-      <span className="cwh-tile-foot">
-        <span className={`cwh-tile-dot${ok ? ' is-live' : ''}`} aria-hidden="true" />
-        <span className="cwh-mono">
-          {ok && s.freshest ? `UPDATED ${fmt('date', s.freshest).toUpperCase()}` : 'AWAITING DATA'}
+
+      {Viz && visuals && !visuals.error ? <Viz v={visuals} /> : null}
+
+      <span className="cwh-dst-foot">
+        <span className="cwh-dst-fresh">
+          {fresh ? (
+            <>
+              <i className="cwh-dst-live" aria-hidden="true" /> Updated {fmt('date', fresh)}
+            </>
+          ) : (
+            ''
+          )}
+        </span>
+        <span className="cwh-dst-open">
+          Open dataset <i className="bi bi-arrow-right" aria-hidden="true" />
         </span>
       </span>
     </Link>
   );
 }
 
-function TileSkeleton({ item }) {
-  const t = TILES[item.label] || {};
+export function DatasetTileSkeleton({ item, index }) {
+  const meta = META[item.label] || { icon: 'bi-database', tone: 'tracker', sub: '' };
   return (
-    <div
-      className={`cwh-tile cwh-tile--${t.accent || 'emerald'}${t.wide ? ' cwh-tile--wide' : ''}`}
-      aria-busy="true"
-    >
-      <span className="cwh-tile-head">
-        <span className="cwh-tile-icon" aria-hidden="true">
-          <i className={`bi ${t.icon || 'bi-database'}`} />
+    <div className={`cwh-dst cwh-dst--${meta.tone}`} aria-busy="true">
+      <span className="cwh-dst-head">
+        <span className="cwh-dst-icon" aria-hidden="true">
+          <i className={`bi ${meta.icon}`} />
         </span>
-        <span className="cwh-tile-name">{item.label}</span>
+        <span className="cwh-dst-names">
+          <span className="cwh-dst-name">{meta.name || item.label}</span>
+          <span className="cwh-dst-sub">{meta.sub}</span>
+        </span>
+        <span className="cwh-dst-n cwh-mono" aria-hidden="true">
+          {String(index + 1).padStart(2, '0')}
+        </span>
       </span>
       <span className="cwh-skel" />
       <span className="cwh-skel cwh-skel--short" />
-    </div>
-  );
-}
-
-const ordered = (items) =>
-  ORDER.map((label) => items.find((i) => i.label === label)).filter(Boolean);
-
-/** The skeleton while the tiles load, in the same order. */
-export function TilesSkeleton({ items }) {
-  return (
-    <div className="cwh-tiles" aria-busy="true" aria-label="Datasets loading">
-      {ordered(items).map((item) => (
-        <TileSkeleton key={item.label} item={item} />
-      ))}
-    </div>
-  );
-}
-
-/** The bento, in its fixed order; datasets not in the map are left out. */
-export default async function DatasetTiles({ items }) {
-  const visuals = await getDatasetVisuals();
-  const list = ordered(items);
-  return (
-    <div className="cwh-tiles">
-      {list.map((item) => (
-        <Tile key={item.label} item={item} visuals={visuals} />
-      ))}
+      <span className="cwh-skel cwh-skel--chart cwh-dst-skel-viz" />
     </div>
   );
 }

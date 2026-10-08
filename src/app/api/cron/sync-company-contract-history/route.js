@@ -2,26 +2,28 @@ import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { isBigQueryConfigured } from '@/lib/bigquery-client';
-import { readCompanyContracts } from '@/lib/bigquery-company-contracts';
+import { companyTopAwards, companyYearTotals } from '@/lib/bigquery-company-contracts';
 
 /**
- * GET /api/cron/sync-company-contract-history  (weekly, Sundays 04:25 UTC)
+ * GET /api/cron/sync-company-contract-history
  *
- * Ten fiscal years of federal contracts for every listed company in
- * contractor_tickers, read from the warehouse in two queries (by ticker,
- * fiscal year and agency; and the 15 largest awards per ticker), written to
- * company_contract_history and company_contract_top_awards for the Capitol
- * Watch company card. Rows this run did not see are removed afterwards, so a
- * re-matched or retired name key does not linger.
+ * Ten fiscal years of federal contracts for every ticker in contractor_tickers,
+ * from BigQuery into company_contract_history (ticker x FY x agency) and
+ * company_contract_top_awards (15 largest per ticker), for the Capitol Watch
+ * company card. Weekly; idempotent (upserts, then rows from earlier runs are
+ * removed only after a complete run).
  *
- * ?dry=1 reports the bytes each query would scan and writes nothing. Auth:
- * CRON_SECRET as a Bearer header or ?key=.
+ *   ?dry=1      report the bytes each query would scan, write nothing
+ *   ?fyTo=2026  last fiscal year (default: the latest in gov_contract_coverage)
+ *
+ * CRON_SECRET bearer (or ?key=).
  */
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-const CHUNK = 1000;
-const GB = 1024 ** 3;
+const YEARS = 10;
+const CHUNK = 500;
 
 function isAuthorized(request) {
   const secret = process.env.CRON_SECRET;
@@ -34,125 +36,182 @@ function isAuthorized(request) {
   }
 }
 
-async function upsert(admin, table, rows, onConflict) {
+/* BigQuery numeric and date cells come back as number | string | { value }. */
+const val = (v) => (v != null && typeof v === 'object' && 'value' in v ? v.value : v);
+const num = (v) => Number(val(v)) || 0;
+
+async function upsert(admin, table, rows, onConflict, errors) {
+  let n = 0;
   for (let i = 0; i < rows.length; i += CHUNK) {
     // eslint-disable-next-line no-await-in-loop
     const { error } = await admin.from(table).upsert(rows.slice(i, i + CHUNK), { onConflict });
-    if (error) throw new Error(`${table}: ${error.message}`);
+    if (error) errors.push(`${table}@${i}: ${error.message}`);
+    else n += Math.min(CHUNK, rows.length - i);
   }
+  return n;
 }
-
-const day = (v) => {
-  if (!v) return null;
-  const s = typeof v === 'object' && v.value ? v.value : String(v);
-  return s.slice(0, 10);
-};
-const num = (v) => {
-  const n = Number(typeof v === 'object' && v != null && 'value' in v ? v.value : v);
-  return Number.isFinite(n) ? n : null;
-};
 
 export async function GET(request) {
   if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
   if (!isBigQueryConfigured()) {
-    return NextResponse.json(
-      { ok: false, error: 'GCP_PROJECT_ID and GCP_SERVICE_ACCOUNT_JSON are not set' },
-      { status: 500 },
-    );
+    return NextResponse.json({ ok: false, error: 'BigQuery not configured' }, { status: 503 });
   }
   const started = Date.now();
-  const runStart = new Date().toISOString();
-  const dry = new URL(request.url).searchParams.get('dry') === '1';
+  const sp = new URL(request.url).searchParams;
+  const dryRun = sp.get('dry') === '1';
   const admin = getAdminClient();
+  const errors = [];
 
-  /* Every name key that resolves to a listed ticker. */
-  const pairs = [];
+  /* Name keys -> tickers (a ticker can have several recipient names). */
+  const keyRows = [];
   for (let from = 0; ; from += 1000) {
     // eslint-disable-next-line no-await-in-loop
     const { data, error } = await admin
       .from('contractor_tickers')
-      .select('name_key, ticker, is_public')
+      .select('name_key, ticker')
       .not('ticker', 'is', null)
       .order('name_key')
       .range(from, from + 999);
     if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
-    for (const r of data || []) {
-      if (r.is_public === false || !r.name_key) continue;
-      pairs.push({ key: r.name_key, ticker: String(r.ticker).toUpperCase() });
-    }
+    keyRows.push(...(data || []));
     if (!data || data.length < 1000) break;
   }
+  const tickerOf = new Map(
+    keyRows.filter((r) => r.name_key).map((r) => [r.name_key, String(r.ticker).toUpperCase()]),
+  );
+  const keys = [...tickerOf.keys()];
+  if (!keys.length) return NextResponse.json({ ok: false, error: 'no name keys' }, { status: 500 });
 
-  const out = await readCompanyContracts(pairs, { dryRun: dry });
-  const gb = {
-    history: out.bytes.history == null ? null : Math.round((out.bytes.history / GB) * 100) / 100,
-    top: out.bytes.top == null ? null : Math.round((out.bytes.top / GB) * 100) / 100,
-  };
-  if (out.error) {
-    return NextResponse.json(
-      { ok: false, dry, keys: pairs.length, gb, error: out.error },
-      { status: 500 },
-    );
+  let fyTo = Number(sp.get('fyTo')) || null;
+  if (!fyTo) {
+    const { data } = await admin
+      .from('gov_contract_coverage')
+      .select('fiscal_year')
+      .order('fiscal_year', { ascending: false })
+      .limit(1);
+    fyTo = data?.[0]?.fiscal_year || new Date().getUTCFullYear();
   }
-  if (dry) {
-    return NextResponse.json({
-      ok: true,
-      dry,
-      keys: pairs.length,
-      tickers: new Set(pairs.map((p) => p.ticker)).size,
-      fromFiscalYear: out.fy0,
-      gb,
-      ms: Date.now() - started,
-    });
-  }
+  const fyFrom = fyTo - YEARS + 1;
 
-  try {
-    const history = out.history.map((r) => ({
-      ticker: r.ticker,
-      fiscal_year: Number(r.fiscal_year),
-      awarding_agency: r.awarding_agency || 'Unknown agency',
-      award_count: num(r.award_count),
-      total_amount: num(r.total_amount),
-      synced_at: runStart,
-    }));
-    const top = out.top.map((r) => ({
-      ticker: r.ticker,
-      generated_award_id: String(r.generated_award_id),
-      recipient_name: r.recipient_name || null,
-      awarding_agency: r.awarding_agency || null,
-      award_amount: num(r.award_amount),
-      action_date: day(r.action_date),
-      fiscal_year: num(r.fiscal_year),
-      synced_at: runStart,
-    }));
-    await upsert(admin, 'company_contract_history', history, 'ticker,fiscal_year,awarding_agency');
-    await upsert(admin, 'company_contract_top_awards', top, 'ticker,generated_award_id');
-    /* Only after both writes succeeded: drop what this run did not see. */
-    const stale = await Promise.all([
-      admin.from('company_contract_history').delete({ count: 'exact' }).lt('synced_at', runStart),
-      admin
-        .from('company_contract_top_awards')
-        .delete({ count: 'exact' })
-        .lt('synced_at', runStart),
+  if (dryRun) {
+    const [a, b] = await Promise.all([
+      companyYearTotals({ keys, fyFrom, fyTo, dryRun: true }),
+      companyTopAwards({ keys, fyFrom, fyTo, dryRun: true }),
     ]);
-    revalidateTag('hubs');
     return NextResponse.json({
-      ok: true,
-      keys: pairs.length,
-      tickers: new Set(history.map((r) => r.ticker)).size,
-      historyRows: history.length,
-      topAwards: top.length,
-      removed: { history: stale[0].count || 0, top: stale[1].count || 0 },
-      fromFiscalYear: out.fy0,
-      gb,
-      ms: Date.now() - started,
+      ok: !a.error && !b.error,
+      dryRun: true,
+      keys: keys.length,
+      fyFrom,
+      fyTo,
+      bytes: { yearTotals: a.bytes, topAwards: b.bytes },
+      gb: { yearTotals: a.bytes / 1e9, topAwards: b.bytes / 1e9 },
+      errors: [a.error, b.error].filter(Boolean),
     });
-  } catch (e) {
+  }
+
+  const [years, tops] = await Promise.all([
+    companyYearTotals({ keys, fyFrom, fyTo }),
+    companyTopAwards({ keys, fyFrom, fyTo }),
+  ]);
+  if (years.error || tops.error) {
     return NextResponse.json(
-      { ok: false, gb, error: String(e?.message || e), ms: Date.now() - started },
-      { status: 500 },
+      { ok: false, errors: [years.error, tops.error].filter(Boolean) },
+      { status: 502 },
     );
   }
+
+  const syncedAt = new Date().toISOString();
+
+  /* ticker x FY x agency (several name keys of one ticker add up). */
+  const agg = new Map();
+  for (const r of years.rows) {
+    const ticker = tickerOf.get(val(r.name_key));
+    if (!ticker) continue;
+    const fy = num(r.fiscal_year);
+    const agency = val(r.awarding_agency) || 'Other';
+    const k = `${ticker}|${fy}|${agency}`;
+    const cur = agg.get(k) || {
+      ticker,
+      fiscal_year: fy,
+      awarding_agency: agency,
+      award_count: 0,
+      total_amount: 0,
+      synced_at: syncedAt,
+    };
+    cur.award_count += num(r.awards);
+    cur.total_amount += num(r.total);
+    agg.set(k, cur);
+  }
+  const historyRows = [...agg.values()].map((r) => ({
+    ...r,
+    total_amount: Math.round(r.total_amount * 100) / 100,
+  }));
+
+  /* 15 largest per ticker across its name keys. */
+  const byTicker = new Map();
+  for (const r of tops.rows) {
+    const ticker = tickerOf.get(val(r.name_key));
+    const id = val(r.generated_award_id);
+    if (!ticker || !id) continue;
+    if (!byTicker.has(ticker)) byTicker.set(ticker, []);
+    byTicker.get(ticker).push({
+      ticker,
+      generated_award_id: String(id),
+      recipient_name: val(r.recipient_name) || null,
+      awarding_agency: val(r.awarding_agency) || null,
+      award_amount: num(r.award_amount),
+      action_date: val(r.action_date) ? String(val(r.action_date)).slice(0, 10) : null,
+      fiscal_year: num(r.fiscal_year) || null,
+      synced_at: syncedAt,
+    });
+  }
+  const topRows = [];
+  for (const list of byTicker.values()) {
+    const seen = new Set();
+    list
+      .sort((a, b) => b.award_amount - a.award_amount)
+      .filter((a) => !seen.has(a.generated_award_id) && seen.add(a.generated_award_id))
+      .slice(0, 15)
+      .forEach((a) => topRows.push(a));
+  }
+
+  const wroteHistory = await upsert(
+    admin,
+    'company_contract_history',
+    historyRows,
+    'ticker,fiscal_year,awarding_agency',
+    errors,
+  );
+  const wroteTop = await upsert(
+    admin,
+    'company_contract_top_awards',
+    topRows,
+    'ticker,generated_award_id',
+    errors,
+  );
+
+  /* Only a complete run clears what earlier runs wrote and this one did not. */
+  if (!errors.length) {
+    const a = await admin.from('company_contract_history').delete().lt('synced_at', syncedAt);
+    const b = await admin.from('company_contract_top_awards').delete().lt('synced_at', syncedAt);
+    if (a.error) errors.push(`prune history: ${a.error.message}`);
+    if (b.error) errors.push(`prune top: ${b.error.message}`);
+  }
+  revalidateTag('hubs');
+
+  return NextResponse.json({
+    ok: errors.length === 0,
+    keys: keys.length,
+    fyFrom,
+    fyTo,
+    tickers: new Set(historyRows.map((r) => r.ticker)).size,
+    historyRows: wroteHistory,
+    topRows: wroteTop,
+    gbBilled: ((years.bytes || 0) + (tops.bytes || 0)) / 1e9,
+    ms: Date.now() - started,
+    errors: errors.slice(0, 10),
+  });
 }

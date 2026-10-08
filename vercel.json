@@ -6,6 +6,10 @@
   "outputDirectory": ".next",
   "crons": [
     {
+      "path": "/api/cron/sync-company-contract-history",
+      "schedule": "25 4 * * 0"
+    },
+    {
       "path": "/api/cron/platform-aggregates",
       "schedule": "0 6 * * *"
     },
@@ -104,10 +108,6 @@
     {
       "path": "/api/cron/resolve-contractor-recipients",
       "schedule": "40 7 * * *"
-    },
-    {
-      "path": "/api/cron/sync-company-contract-history",
-      "schedule": "25 4 * * 0"
     },
     {
       "path": "/api/cron/eyes-portwatch",

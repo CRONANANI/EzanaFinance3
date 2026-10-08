@@ -79,12 +79,7 @@ function TickerBtn({ ticker, name }) {
   const { openCompany } = useCwh();
   if (!ticker) return <span className="cwh-faint">{DASH}</span>;
   return (
-    <button
-      type="button"
-      className="cwh-tk"
-      data-ticker={ticker}
-      onClick={() => openCompany({ ticker, name })}
-    >
+    <button type="button" className="cwh-tk" onClick={() => openCompany({ ticker, name })}>
       {ticker}
     </button>
   );
