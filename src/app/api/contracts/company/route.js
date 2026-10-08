@@ -58,8 +58,17 @@ export async function GET(request) {
       { status: 503, headers: { 'Cache-Control': 'no-store' } },
     );
   }
+  /* One jsonb object; anything else (no row, an older table-returning
+     version) is treated as unavailable rather than handed to the card. */
+  const card = Array.isArray(data) ? data[0] : data;
+  if (!card || typeof card !== 'object') {
+    return NextResponse.json(
+      { ok: false, error: 'Company details are unavailable right now.' },
+      { status: 503, headers: { 'Cache-Control': 'no-store' } },
+    );
+  }
   return NextResponse.json(
-    { ok: true, card: data },
+    { ok: true, card },
     { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=3600' } },
   );
 }

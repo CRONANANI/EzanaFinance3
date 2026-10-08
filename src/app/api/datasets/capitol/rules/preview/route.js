@@ -16,6 +16,12 @@ import {
   validateRule,
 } from '@/lib/datasets/capitol-hub/signals';
 import { getRulePool, todayIso } from '@/lib/datasets/capitol-hub/pool';
+import { pricesAround } from '@/lib/datasets/capitol-hub/lookups';
+import { getAdminClient } from '@/lib/supabase';
+import { configured } from '@/lib/datasets/hub-data';
+
+/* Events that get a price chart, as on the carousel. */
+const PRICED_EVENTS = 12;
 
 export const dynamic = 'force-dynamic';
 
@@ -32,6 +38,23 @@ export async function POST(request) {
   try {
     const pool = await getRulePool(rule.window);
     const { count, matches } = matchSignalRule(rule, pool, { today: todayIso() });
+    let events;
+    if (body?.full) {
+      events = matches.slice(0, 30).map((m) => buildRuleEvent(m, rule));
+      /* The first charts get their closes, read in parallel; a failed read
+         leaves that chart in its loading state. */
+      if (configured()) {
+        const admin = getAdminClient();
+        const priced = await Promise.all(
+          events
+            .slice(0, PRICED_EVENTS)
+            .map((e) => pricesAround(admin, e.ticker, e.awardDate || e.tradeDate).catch(() => [])),
+        );
+        priced.forEach((p, i) => {
+          events[i].prices = p;
+        });
+      }
+    }
     return NextResponse.json({
       ok: true,
       count,
@@ -42,7 +65,7 @@ export async function POST(request) {
         return30d: m.ret30 ?? null,
         bioguideId: m.member?.bioguideId || null,
       })),
-      events: body?.full ? matches.slice(0, 30).map((m) => buildRuleEvent(m, rule)) : undefined,
+      events,
     });
   } catch (e) {
     console.error('[capitol-hub] rule preview', e?.message || e);

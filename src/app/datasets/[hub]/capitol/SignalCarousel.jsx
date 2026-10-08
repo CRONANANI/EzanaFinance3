@@ -178,7 +178,8 @@ function EventCard({ e, index, total }) {
 }
 
 export default function SignalCarousel({ events = [], days = 7, error = false }) {
-  const { rules, ruleEvents } = useCwh();
+  const { rules, ruleEvents, ruleErrors } = useCwh();
+  const pendingSignal = useRef(null);
   const [filter, setFilter] = useState('all');
   const [ruleId, setRuleId] = useState(null);
   const [index, setIndex] = useState(0);
@@ -211,12 +212,31 @@ export default function SignalCarousel({ events = [], days = 7, error = false })
     if (id) {
       const i = events.findIndex((e) => e.id === id);
       if (i >= 0) setIndex(i);
+      /* Not a built-in event: it may be one of My signals, which load later. */ else
+        pendingSignal.current = id;
     }
     ready.current = true;
   }, [events]);
 
+  /* ?signal= for a My signals event, once the reader's rules have matched. */
   useEffect(() => {
-    if (!ready.current || !current) return;
+    const id = pendingSignal.current;
+    if (!id) return;
+    for (const [rid, list] of Object.entries(ruleEvents)) {
+      const ranked = rankHighSignalEvents(list || []);
+      const i = ranked.findIndex((e) => e.id === id);
+      if (i >= 0) {
+        pendingSignal.current = null;
+        setFilter('mine');
+        setRuleId(rid);
+        setIndex(i);
+        return;
+      }
+    }
+  }, [ruleEvents]);
+
+  useEffect(() => {
+    if (!ready.current || !current || pendingSignal.current) return;
     setParam('signal', at === 0 && filter === 'all' ? null : current.id);
   }, [current, at, filter]);
 
@@ -363,7 +383,9 @@ export default function SignalCarousel({ events = [], days = 7, error = false })
             <p className="cwh-empty">
               {filter === 'mine'
                 ? rules?.length
-                  ? 'None of your signals match an event in their window yet. New disclosures arrive daily.'
+                  ? (ruleId ? ruleErrors[ruleId] : Object.values(ruleErrors).some(Boolean))
+                    ? 'Your signals could not be checked just now. Try again in a minute.'
+                    : 'None of your signals match an event in their window yet. New disclosures arrive daily.'
                   : 'Save a rule below and the events it matches appear here.'
                 : 'No event links two Capitol datasets in the last 30 days yet. Signals appear as new disclosures, awards and filings arrive.'}
             </p>

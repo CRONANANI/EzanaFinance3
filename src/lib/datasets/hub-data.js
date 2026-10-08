@@ -183,91 +183,33 @@ const SUMMARIES = {
 
   async 'Lobbying Activity'(admin) {
     const year = thisYear();
-    const records = await count(() =>
-      admin.from('lobbying_filings').select('uuid', { count: 'exact', head: true }),
-    );
-    if (!records) return { empty: true, records };
-    const total = await count(() =>
-      admin
-        .from('lobbying_filings')
-        .select('uuid', { count: 'exact', head: true })
-        .eq('filing_year', year),
-    );
-    const rows = await readAll(
-      () =>
-        admin
-          .from('lobbying_filings')
-          .select('uuid, amount, client_name')
-          .eq('filing_year', year)
-          .order('uuid'),
-      total,
-    );
-    const spend = rows.reduce((s, r) => s + (num(r.amount) || 0), 0);
-    const top = topBy(
-      rows,
-      (r) => r.client_name,
-      (r) => num(r.amount),
-    );
-    const { data: latest } = await admin
-      .from('lobbying_filings')
-      .select('dt_posted')
-      .not('dt_posted', 'is', null)
-      .order('dt_posted', { ascending: false })
-      .limit(1);
+    const { data, error } = await timed(admin.rpc('hub_lobbying_summary', { p_year: year }));
+    if (error) throw new Error(error.message);
+    const s = data?.[0];
+    if (!s || !Number(s.records)) return { empty: true, records: 0 };
     return {
-      records,
-      freshest: day(latest?.[0]?.dt_posted),
+      records: Number(s.records),
+      freshest: day(s.freshest),
       numbers: [
-        n(`Filings in ${year}`, total),
-        n(`Reported spend, ${year}`, spend, 'usd'),
-        n('Top spender', top ? top.key : null, 'text'),
+        n(`Filings in ${year}`, Number(s.filings)),
+        n(`Reported spend, ${year}`, num(s.spend), 'usd'),
+        n('Top spender', s.top_client || null, 'text'),
       ],
     };
   },
 
   async 'Government Contracts'(admin) {
-    const since = isoDaysAgo(90);
-    const records = await count(() =>
-      admin
-        .from('usaspending_contract_awards')
-        .select('generated_award_id', { count: 'exact', head: true }),
-    );
-    if (!records) return { empty: true, records };
-    const total = await count(() =>
-      admin
-        .from('usaspending_contract_awards')
-        .select('generated_award_id', { count: 'exact', head: true })
-        .gte('action_date', since),
-    );
-    const rows = await readAll(
-      () =>
-        admin
-          .from('usaspending_contract_awards')
-          .select('generated_award_id, award_amount, recipient_name')
-          .gte('action_date', since)
-          .order('generated_award_id'),
-      total,
-    );
-    const value = rows.reduce((s, r) => s + (num(r.award_amount) || 0), 0);
-    const top = topBy(
-      rows,
-      (r) => r.recipient_name,
-      (r) => num(r.award_amount),
-    );
-    const { data: latest } = await admin
-      .from('usaspending_contract_awards')
-      .select('action_date')
-      /* Some awards carry a future action date; freshness is what has happened. */
-      .lte('action_date', isoDaysAgo(0))
-      .order('action_date', { ascending: false })
-      .limit(1);
+    const { data, error } = await timed(admin.rpc('hub_contracts_summary', { p_days: 90 }));
+    if (error) throw new Error(error.message);
+    const s = data?.[0];
+    if (!s || !Number(s.records)) return { empty: true, records: 0 };
     return {
-      records,
-      freshest: day(latest?.[0]?.action_date),
+      records: Number(s.records),
+      freshest: day(s.freshest),
       numbers: [
-        n('Awards, last 90 days', total),
-        n('Total value', value, 'usd'),
-        n('Top recipient', top ? top.key : null, 'text'),
+        n('Awards, last 90 days', Number(s.awards)),
+        n('Total value', num(s.award_value), 'usd'),
+        n('Top recipient', s.top_recipient || null, 'text'),
       ],
     };
   },
@@ -1017,101 +959,35 @@ const LINKAGES = {
   /* Capitol 3: verified public lobbying clients with contracts too. */
   async 'capitol-lobbying-contracts'(admin) {
     const year = thisYear();
-    const { data: clients, error } = await admin
-      .from('lobbying_client_tickers')
-      .select('client_name, ticker, company_label')
-      .eq('verified', true);
+    const { data, error } = await timed(
+      admin.rpc('hub_lobbying_contracts', { p_year: year, p_limit: 10 }),
+    );
     if (error) throw new Error(error.message);
-    if (!clients?.length) return [];
-    const names = [...new Set(clients.map((c) => c.client_name))];
-    const tickers = [...new Set(clients.map((c) => String(c.ticker).toUpperCase()))];
-    const since = isoDaysAgo(365);
-    const [lobbyTotal, awardTotal] = await Promise.all([
-      count(() =>
-        admin
-          .from('lobbying_filings')
-          .select('uuid', { count: 'exact', head: true })
-          .eq('filing_year', year)
-          .in('client_name', names),
-      ),
-      count(() =>
-        admin
-          .from('usaspending_contract_awards')
-          .select('generated_award_id', { count: 'exact', head: true })
-          .gte('action_date', since)
-          .in('ticker', tickers),
-      ),
-    ]);
-    const [lobby, awards] = await Promise.all([
-      readAll(
-        () =>
-          admin
-            .from('lobbying_filings')
-            .select('uuid, client_name, amount')
-            .eq('filing_year', year)
-            .in('client_name', names)
-            .order('uuid'),
-        lobbyTotal,
-      ),
-      readAll(
-        () =>
-          admin
-            .from('usaspending_contract_awards')
-            .select('generated_award_id, ticker, award_amount')
-            .gte('action_date', since)
-            .in('ticker', tickers)
-            .order('generated_award_id'),
-        awardTotal,
-      ),
-    ]);
-    const spend = new Map();
-    for (const r of lobby)
-      spend.set(r.client_name, (spend.get(r.client_name) || 0) + (num(r.amount) || 0));
-    const awarded = new Map();
-    for (const r of awards) {
-      const t = String(r.ticker).toUpperCase();
-      const a = awarded.get(t) || { n: 0, v: 0 };
-      a.n += 1;
-      a.v += num(r.award_amount) || 0;
-      awarded.set(t, a);
-    }
-    const byTicker = new Map();
-    for (const c of clients) {
-      const t = String(c.ticker).toUpperCase();
-      const cur = byTicker.get(t) || {
-        ticker: t,
-        label: c.company_label || c.client_name,
-        spend: 0,
-        clients: [],
-      };
-      cur.spend += spend.get(c.client_name) || 0;
-      cur.clients.push(c.client_name);
-      byTicker.set(t, cur);
-    }
-    return [...byTicker.values()]
-      .map((r) => ({ ...r, awards: awarded.get(r.ticker) || { n: 0, v: 0 } }))
-      .filter((r) => r.spend > 0 && r.awards.n > 0)
-      .sort((a, b) => b.awards.v - a.awards.v)
-      .slice(0, 10)
-      .map((r) => ({
+    return (data || []).map((r) => {
+      const label = r.company_label || r.client_name;
+      const spend = num(r.spend) || 0;
+      const awardsN = r.awards || 0;
+      const awardsV = num(r.award_value) || 0;
+      return {
         key: r.ticker,
         ticker: r.ticker,
-        title: r.label,
-        company: r.label,
-        client: r.clients[0],
+        title: label,
+        company: label,
+        client: r.client_name,
         year,
-        spend: r.spend,
-        awardsN: r.awards.n,
-        awardsV: r.awards.v,
+        spend,
+        awardsN,
+        awardsV,
         cells: [
           { label: 'Ticker', value: r.ticker, kind: 'ticker' },
-          { label: `Lobbying, ${year}`, value: r.spend, kind: 'usd' },
-          { label: 'Awards, 12 months', value: r.awards.n, kind: 'int' },
-          { label: 'Award value', value: r.awards.v, kind: 'usd' },
+          { label: `Lobbying, ${year}`, value: spend, kind: 'usd' },
+          { label: 'Awards, 12 months', value: awardsN, kind: 'int' },
+          { label: 'Award value', value: awardsV, kind: 'usd' },
         ],
-        query: Q.lobbyingClient(r.clients[0]),
+        query: Q.lobbyingClient(r.client_name),
         href: '/datasets/government/lobbying',
-      }));
+      };
+    });
   },
 
   /* Capitol 4: top raisers this cycle with their disclosed trades. */

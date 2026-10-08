@@ -1,30 +1,52 @@
 'use client';
 
 /**
- * The hub header: title, stats and the EzanaQL bar on the left, the result
+ * The hub header: title and the EzanaQL bar on the left, the result
  * card on the right. The bar opens with the hub's seed query already run, so
  * the card is never empty. Tickers open the company card; members open the
  * drawer. Save, CSV, JSON and Watchlist belong to an account.
  */
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
-import { addTickersToWatchlist } from '@/components/ezanaql/watchlist-add';
+import { addTickersToWatchlist, WATCHLIST_BATCH } from '@/components/ezanaql/watchlist-add';
 import { HUB_QUERIES } from '@/lib/datasets/hub-queries';
 import { useCwh } from './CwhProvider';
 import { DASH, money, monthDay, partyClass, range } from './cwh-format';
 
 const SEED = HUB_QUERIES.capitolHubSeed();
-const SEED_QUESTION = 'Which members bought stock in the last 90 days?';
+const SEED_LABEL = 'Members who bought stock in the last 90 days';
+
+/* "Open full table": the dataset page for the dataset the query reads. */
+const FULL_TABLE = {
+  'capitol.congress_trades': '/datasets/politician-tracker',
+  'capitol.holdings': '/datasets/politician-tracker',
+  'house.trades': '/datasets/politician-tracker',
+  'house.filings': '/datasets/politician-tracker',
+  'gov.contracts': '/datasets/government/contracts',
+  'capitol.lobbying': '/datasets/government/lobbying',
+  'capitol.campaign_finance': '/datasets/campaignfinancerecords',
+  'capitol.committee_seats': '/datasets/committees',
+};
+const fromOf = (q) => (/\bFROM\s+([a-z_]+\.[a-z_0-9]+)/i.exec(q || '') || [])[1]?.toLowerCase();
+
+/* The first line of a query, when nothing better titles its result. */
+const firstLine = (q) =>
+  String(q || '')
+    .split('\n')
+    .map((l) => l.trim())
+    .find(Boolean)
+    ?.slice(0, 120) || 'EzanaQL query';
+
+/* A joined result names its columns by dataset (congress_trades.ticker). */
+const field = (row, k) => row[k] ?? row[`congress_trades.${k}`];
 const PROMPTS = [
   'Top 10 contractors by award value this fiscal year',
   'Members who raised the most money this cycle',
   'Who holds LMT?',
 ];
-const SCOPE =
-  'Scoped to Capitol data: congressional trades, inferred holdings, contracts, lobbying, committee seats and campaign finance.';
 
 /* Columns the card hides: ids that only route a click. */
-const HIDDEN = new Set(['bioguide_id']);
+const HIDDEN = new Set(['bioguide_id', 'congress_trades.bioguide_id']);
 const LABEL = {
   politician: 'Member',
   transaction_type: 'Type',
@@ -37,7 +59,8 @@ const isMoneyKey = (k) => /(amount|value|receipts|spend|award|cash)/.test(k);
 
 function Cell({ k, row, onTicker, onMember }) {
   const v = row[k];
-  if (k === 'ticker' && v) {
+  const base = k.replace(/^congress_trades\./, '');
+  if (base === 'ticker' && v) {
     return (
       <button
         type="button"
@@ -49,9 +72,10 @@ function Cell({ k, row, onTicker, onMember }) {
       </button>
     );
   }
-  if (k === 'politician' && v) {
-    return row.bioguide_id ? (
-      <button type="button" className="cwh-rc-who" onClick={() => onMember(row.bioguide_id)}>
+  if (base === 'politician' && v) {
+    const bio = field(row, 'bioguide_id');
+    return bio ? (
+      <button type="button" className="cwh-rc-who" onClick={() => onMember(bio)}>
         {v}
       </button>
     ) : (
@@ -76,10 +100,15 @@ function Cell({ k, row, onTicker, onMember }) {
 }
 
 function ResultCard({ state, result, query, question, ms }) {
-  const { openCompany, openMember, gate, isAuthenticated, authLoading } = useCwh();
+  const { openCompany, openMember, gate, isAuthenticated, authLoading, bumpSaved } = useCwh();
   const [busy, setBusy] = useState(null);
   const [done, setDone] = useState({});
   const [note, setNote] = useState('');
+  /* A new result can be saved and added afresh. */
+  useEffect(() => {
+    setDone({});
+    setNote('');
+  }, [result]);
   const guest = !authLoading && !isAuthenticated;
   const rows = useMemo(() => result?.rows || [], [result]);
   const keys = (result?.keys || result?.columns || []).filter(
@@ -88,7 +117,7 @@ function ResultCard({ state, result, query, question, ms }) {
   const tickers = useMemo(() => {
     const s = new Set();
     for (const r of rows) {
-      const t = String(r.ticker || '')
+      const t = String(field(r, 'ticker') || '')
         .trim()
         .toUpperCase();
       if (/^[A-Z.-]{1,10}$/.test(t)) s.add(t);
@@ -143,12 +172,17 @@ function ResultCard({ state, result, query, question, ms }) {
         if (!res.ok || !d.ok) throw new Error(d.error || 'save');
         setDone((m) => ({ ...m, save: true }));
         setNote('Saved to your reports for this hub');
+        bumpSaved();
       } else if (kind === 'watch') {
         if (!tickers.length) return;
         const r = await addTickersToWatchlist(tickers);
         if (r === 'auth') return gate('watchlist');
         setDone((m) => ({ ...m, watch: true }));
-        setNote(`${tickers.length} tickers added to your watchlist`);
+        setNote(
+          tickers.length > WATCHLIST_BATCH
+            ? `First ${WATCHLIST_BATCH} tickers added to your watchlist`
+            : `${tickers.length} tickers added to your watchlist`,
+        );
       }
     } catch (e) {
       setNote(
@@ -162,7 +196,7 @@ function ResultCard({ state, result, query, question, ms }) {
   };
 
   const lock = guest ? <i className="bi bi-lock cwh-lock" aria-hidden="true" /> : null;
-  const fullHref = '/datasets/politician-tracker';
+  const fullHref = FULL_TABLE[fromOf(query)] || '/datasets/politician-tracker';
 
   return (
     <section className="cwh-card cwh-rc" aria-labelledby="cwh-rc-q" aria-busy={state === 'running'}>
@@ -212,7 +246,7 @@ function ResultCard({ state, result, query, question, ms }) {
                         row={r}
                         onTicker={(row) =>
                           openCompany({
-                            ticker: row.ticker,
+                            ticker: field(row, 'ticker'),
                             name: row.parent || row.recipient || row.asset_name || null,
                             since: result?.window?.since || null,
                           })
@@ -280,14 +314,13 @@ function ResultCard({ state, result, query, question, ms }) {
 }
 
 export default function CwhHeader({ intro }) {
-  const { runRequest } = useCwh();
+  const { runRequest, savedVersion } = useCwh();
   const [state, setState] = useState('idle');
   const [result, setResult] = useState(null);
   const [query, setQuery] = useState(SEED);
-  const [question, setQuestion] = useState(SEED_QUESTION);
+  const [question, setQuestion] = useState(SEED_LABEL);
   const [ms, setMs] = useState(null);
   const started = useRef(0);
-  const lastRun = useRef(null);
 
   const onRunState = useCallback((s) => {
     if (s === 'running') {
@@ -296,21 +329,15 @@ export default function CwhHeader({ intro }) {
     } else if (s === 'error') setState('error');
   }, []);
 
-  const onResult = useCallback(
-    (r, meta) => {
-      setMs(Math.round(performance.now() - started.current));
-      setResult(r);
-      setState('done');
-      const q = meta?.query || SEED;
-      setQuery(q);
-      if (q.trim() === SEED.trim()) setQuestion(SEED_QUESTION);
-      else if (runRequest && runRequest.id !== lastRun.current && runRequest.query === q) {
-        lastRun.current = runRequest.id;
-        setQuestion('Query this');
-      } else setQuestion('Your EzanaQL query');
-    },
-    [runRequest],
-  );
+  const onResult = useCallback((r, meta) => {
+    setMs(Math.round(performance.now() - started.current));
+    setResult(r);
+    setState('done');
+    const q = meta?.query || SEED;
+    setQuery(q);
+    /* The prompt, the row's title, the seed's question, or the query itself. */
+    setQuestion(meta?.label || (q.trim() === SEED.trim() ? SEED_LABEL : firstLine(q)));
+  }, []);
 
   return (
     <header className="cwh-head">
@@ -326,7 +353,8 @@ export default function CwhHeader({ intro }) {
             onRunState={onRunState}
             queryBlock
             autoRun
-            scopeLine={SCOPE}
+            runOnGenerate
+            savedVersion={savedVersion}
           />
         </div>
       </div>

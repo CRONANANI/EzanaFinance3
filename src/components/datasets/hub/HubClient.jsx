@@ -16,15 +16,16 @@ import ShareButton from '@/components/native/ShareButton';
 
 const HubQuery = createContext({ runRequest: null, requestRun: () => {} });
 
-/** The hub's "Query this" channel: { runRequest, requestRun(query) }. */
+/** The hub's "Query this" channel: { runRequest, requestRun(query, label) }. */
 export const useHubQuery = () => useContext(HubQuery);
 
 export function HubQueryProvider({ children }) {
   const [runRequest, setRunRequest] = useState(null);
   const seq = useRef(0);
-  const requestRun = useCallback((query) => {
+  /* label: what the run answers (a row's title), for a page that titles results. */
+  const requestRun = useCallback((query, label = null) => {
     seq.current += 1;
-    setRunRequest({ id: seq.current, query });
+    setRunRequest({ id: seq.current, query, label });
     const bar = document.getElementById('hub-ezanaql');
     const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     bar?.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
@@ -274,7 +275,7 @@ export function RowActions({ ticker, query, label, dimension = null, shareUrl = 
         <button
           type="button"
           className="hub-act"
-          onClick={() => requestRun(query)}
+          onClick={() => requestRun(query, label)}
           aria-label={`Query this: ${label}`}
         >
           <i className="bi bi-terminal" aria-hidden="true" />

@@ -254,13 +254,12 @@ export async function GET(request) {
           });
           if (insPortErr) continue;
 
-          await admin
-            .from('notification_delivery_log')
-            .insert({
-              user_id: profile.user_id,
-              event_fingerprint: fp,
-            })
-            .catch(() => {});
+          /* Best-effort. Query builders have no .catch, so read the error. */
+          const { error: logErr } = await admin.from('notification_delivery_log').insert({
+            user_id: profile.user_id,
+            event_fingerprint: fp,
+          });
+          if (logErr) console.warn('[notification-generator] delivery log', logErr.message);
 
           dayCounts[profile.user_id] = (dayCounts[profile.user_id] || 0) + 1;
           totalSent += 1;

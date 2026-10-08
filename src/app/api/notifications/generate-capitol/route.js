@@ -111,13 +111,12 @@ export async function GET(request) {
           content: `Congressional trade disclosure${symbol ? ` for $${symbol}` : ''}. Check Inside the Capitol for details.`,
         });
 
-        await admin
-          .from('notification_delivery_log')
-          .insert({
-            user_id: profile.user_id,
-            event_fingerprint: fingerprint,
-          })
-          .catch(() => {});
+        /* Best-effort. Query builders have no .catch, so read the error. */
+        const { error: logErr } = await admin.from('notification_delivery_log').insert({
+          user_id: profile.user_id,
+          event_fingerprint: fingerprint,
+        });
+        if (logErr) console.warn('[notifications capitol] delivery log', logErr.message);
 
         totalSent += 1;
       }

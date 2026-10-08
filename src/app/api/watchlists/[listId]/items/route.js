@@ -79,14 +79,13 @@ export const POST = withApiGuard(
       }
 
       const admin = getAdminClient();
-      await admin
-        .from('activity_breadcrumbs')
-        .insert({
-          user_id: user.id,
-          event_type: 'watchlist_add',
-          event_data: { ticker: data.ticker, watchlist_id: listId },
-        })
-        .catch(() => {});
+      /* Best-effort. Query builders have no .catch, so read the error. */
+      const { error: bcErr } = await admin.from('activity_breadcrumbs').insert({
+        user_id: user.id,
+        event_type: 'watchlist_add',
+        event_data: { ticker: data.ticker, watchlist_id: listId },
+      });
+      if (bcErr) console.warn('[watchlist items] breadcrumb', bcErr.message);
 
       return NextResponse.json({
         item: {
@@ -148,14 +147,13 @@ export const DELETE = withApiGuard(
       }
 
       const admin = getAdminClient();
-      await admin
-        .from('activity_breadcrumbs')
-        .insert({
-          user_id: user.id,
-          event_type: 'watchlist_remove',
-          event_data: { ticker, watchlist_id: listId },
-        })
-        .catch(() => {});
+      /* Best-effort. Query builders have no .catch, so read the error. */
+      const { error: bcErr } = await admin.from('activity_breadcrumbs').insert({
+        user_id: user.id,
+        event_type: 'watchlist_remove',
+        event_data: { ticker, watchlist_id: listId },
+      });
+      if (bcErr) console.warn('[watchlist items] breadcrumb', bcErr.message);
 
       return NextResponse.json({ success: true });
     } catch (e) {

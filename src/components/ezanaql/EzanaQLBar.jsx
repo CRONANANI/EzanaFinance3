@@ -23,7 +23,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { columnAlign, formatCell } from '@/lib/ezanaql/grid-format';
 import { DIMENSION_LABELS } from '@/lib/ezanaql/catalog';
-import { addTickersToWatchlist as addToWatchlist } from './watchlist-add';
+import { addTickersToWatchlist as addToWatchlist, WATCHLIST_BATCH } from './watchlist-add';
 import './ezanaql-bar.css';
 
 const MAX_EDITOR_LINES = 8;
@@ -148,9 +148,11 @@ function relativeDate(iso) {
  *   with Edit, Run and Saved reports; the pill then carries only Generate (the page shows
  *   exports with its own result card). onResult also receives { query }.
  * @param {boolean} [props.autoRun]  run the seed query once on mount
- * @param {string} [props.scopeLine]  one line under the query block naming the data in scope
  * @param {(state: 'running' | 'error' | 'done') => void} [props.onRunState]  run progress,
  *   for a page that renders its own result card
+ * @param {boolean} [props.runOnGenerate]  Generate and the prompt chips also run the query;
+ *   onResult then receives { query, label } with the prompt as the label
+ * @param {number} [props.savedVersion]  bump to make the bar reload its Saved reports list
  */
 export default function EzanaQLBar({
   dimension,
@@ -164,8 +166,9 @@ export default function EzanaQLBar({
   rowClickable = (row) => row.ticker != null && row.ticker !== '',
   queryBlock = false,
   autoRun = false,
-  scopeLine = null,
   onRunState,
+  runOnGenerate = false,
+  savedVersion = 0,
 }) {
   const [prompt, setPrompt] = useState('');
   const [focused, setFocused] = useState(false);
@@ -233,6 +236,7 @@ export default function EzanaQLBar({
     async (override) => {
       const text = typeof override === 'string' ? override : prompt;
       if (!text.trim() || busy) return;
+      let toRun = null;
       setBusy('gen');
       setError(null);
       setNote(null);
@@ -258,6 +262,8 @@ export default function EzanaQLBar({
           window.setTimeout(() => setSwapping(false), 160);
           if (!data.valid && data.validationError) {
             setError(`The generated query needs a fix: ${data.validationError}`);
+          } else if (runOnGenerate) {
+            toRun = data.query;
           }
         }
       } catch {
@@ -265,8 +271,10 @@ export default function EzanaQLBar({
       } finally {
         setBusy(null);
       }
+      /* The run starts once Generate has let go of the busy flag. */
+      if (toRun) runQueryRef.current?.(toRun, text.trim(), { force: true });
     },
-    [prompt, dimension, datasetScope, busy, post],
+    [prompt, dimension, datasetScope, busy, post, runOnGenerate],
   );
 
   /* Generate, Run and viewing results are open to everyone. Exports, the
@@ -295,9 +303,11 @@ export default function EzanaQLBar({
     actionsRef.current[action]?.();
   }, [authLoading]);
 
+  /* label: what the reader asked for (a prompt, a row's title); it rides to
+     onResult so a page can title the result. */
   const runQuery = useCallback(
-    async (q = code) => {
-      if (!q.trim() || busy) return;
+    async (q = code, label = null, { force = false } = {}) => {
+      if (!q.trim() || (busy && !force)) return;
       setBusy('run');
       setError(null);
       setNote(null);
@@ -320,7 +330,7 @@ export default function EzanaQLBar({
         /* Engine notes (a row cap hit, a JOIN that multiplied a sum) are part
            of the answer: shown with it, never swallowed. */
         if (Array.isArray(data.notes) && data.notes.length) setNote(data.notes.join(' '));
-        if (typeof onResult === 'function') onResult(data.result, { query: q });
+        if (typeof onResult === 'function') onResult(data.result, { query: q, label });
         else setResult(data.result);
         outcome = 'done';
       } catch {
@@ -333,6 +343,8 @@ export default function EzanaQLBar({
     [code, busy, post, onResult, onRunState, dimension],
   );
   const run = useCallback(() => runQuery(), [runQuery]);
+  const runQueryRef = useRef(runQuery);
+  runQueryRef.current = runQuery;
 
   /* autoRun: the seed query runs once so the page's result is never empty. */
   const autoRan = useRef(false);
@@ -350,7 +362,7 @@ export default function EzanaQLBar({
     lastRunRequest.current = runRequest.id;
     setDirty(true);
     setCode(runRequest.query);
-    runQuery(runRequest.query);
+    runQuery(runRequest.query, runRequest.label || null);
   }, [runRequest, runQuery, busy]);
 
   const exportAs = useCallback(
@@ -470,10 +482,7 @@ export default function EzanaQLBar({
     }
   };
 
-  const toggleSaved = async () => {
-    const next = !savedOpen;
-    setSavedOpen(next);
-    if (!next || saved) return;
+  const loadSaved = async () => {
     setSavedState('busy');
     try {
       const res = await fetch(`/api/ezanaql/saved?dimension=${encodeURIComponent(dimension)}`);
@@ -485,12 +494,41 @@ export default function EzanaQLBar({
       setSavedState('error');
     }
   };
+  const toggleSaved = () => {
+    const next = !savedOpen;
+    setSavedOpen(next);
+    /* While the session resolves the panel shows its loading line; the
+       effect below loads it, or opens the account prompt for a guest. */
+    if (!next || saved || authLoading) return;
+    loadSaved();
+  };
+  useEffect(() => {
+    if (authLoading || !savedOpen || saved || savedState !== 'idle') return;
+    if (isAuthenticated) loadSaved();
+    else {
+      setSavedOpen(false);
+      setGate('save');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, isAuthenticated, savedOpen]);
+
+  /* The page saved a report elsewhere: drop the cached list so it reloads. */
+  const lastSavedVersion = useRef(savedVersion);
+  useEffect(() => {
+    if (savedVersion === lastSavedVersion.current) return;
+    lastSavedVersion.current = savedVersion;
+    if (!isAuthenticated) return;
+    fetch(`/api/ezanaql/saved?dimension=${encodeURIComponent(dimension)}`)
+      .then((r) => r.json())
+      .then((d) => d?.ok && setSaved(d.reports || []))
+      .catch(() => {});
+  }, [savedVersion, isAuthenticated, dimension]);
 
   const openSaved = (report) => {
     setDirty(true);
     setCode(report.query);
     setSavedOpen(false);
-    runQuery(report.query);
+    runQuery(report.query, report.title || null);
   };
 
   const deleteSaved = async (id) => {
@@ -544,10 +582,12 @@ export default function EzanaQLBar({
                 aria-hidden="true"
               />
               {watchState === 'done'
-                ? `Added ${tickers.length}`
+                ? tickers.length > WATCHLIST_BATCH
+                  ? `First ${WATCHLIST_BATCH} tickers added`
+                  : `Added ${tickers.length}`
                 : watchState === 'busy'
                   ? 'Adding'
-                  : `Add ${tickers.length} to watchlist`}
+                  : `Add ${Math.min(tickers.length, WATCHLIST_BATCH)} to watchlist`}
               {lock}
             </button>
           ) : null}
@@ -803,7 +843,7 @@ export default function EzanaQLBar({
               <button
                 type="button"
                 className="eqb-qblock-act is-saved"
-                onClick={() => (isAuthenticated ? toggleSaved() : setGate('save'))}
+                onClick={() => (isAuthenticated || authLoading ? toggleSaved() : setGate('save'))}
                 aria-expanded={isAuthenticated ? savedOpen : undefined}
               >
                 Saved reports
@@ -813,7 +853,6 @@ export default function EzanaQLBar({
             </div>
           </div>
         ) : null}
-        {queryBlock && scopeLine ? <p className="eqb-scope">{scopeLine}</p> : null}
 
         {editing ? (
           <div className="eqb-edit">
@@ -858,9 +897,9 @@ export default function EzanaQLBar({
           </div>
         ) : null}
 
-        {savedOpen && isAuthenticated ? (
+        {savedOpen && (isAuthenticated || authLoading) ? (
           <div className="eqb-saved" aria-label="Saved reports">
-            {savedState === 'busy' ? (
+            {savedState === 'busy' || authLoading ? (
               <p className="eqb-saved-empty">Loading saved reports</p>
             ) : savedState === 'error' ? (
               <p className="eqb-saved-empty">Saved reports could not be loaded.</p>

@@ -157,14 +157,13 @@ export const POST = withApiGuard(
           .select()
           .single();
         if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-        await admin
-          .from('activity_breadcrumbs')
-          .insert({
-            user_id: user.id,
-            event_type: 'course_start',
-            event_data: { course_id: courseId, track: course.track },
-          })
-          .catch(() => {});
+        /* Best-effort. Query builders have no .catch, so read the error. */
+        const { error: bcErr } = await admin.from('activity_breadcrumbs').insert({
+          user_id: user.id,
+          event_type: 'course_start',
+          event_data: { course_id: courseId, track: course.track },
+        });
+        if (bcErr) console.warn('[learning progress] breadcrumb', bcErr.message);
         return NextResponse.json({ progress: ins });
       }
 
@@ -278,14 +277,13 @@ export const POST = withApiGuard(
             if (!existing?.quiz_passed) {
               await awardXP(user.id, 50, `Completed course quiz: ${course.title}`, 'learning');
 
-              await admin
-                .from('activity_breadcrumbs')
-                .insert({
-                  user_id: user.id,
-                  event_type: 'course_complete',
-                  event_data: { course_id: courseId, score: scorePct, xp: 50 },
-                })
-                .catch(() => {});
+              /* Best-effort. Query builders have no .catch, so read the error. */
+              const { error: bcErr } = await admin.from('activity_breadcrumbs').insert({
+                user_id: user.id,
+                event_type: 'course_complete',
+                event_data: { course_id: courseId, score: scorePct, xp: 50 },
+              });
+              if (bcErr) console.warn('[learning progress] breadcrumb', bcErr.message);
 
               const courseEloDelta = ELO_PER_COURSE_LEVEL[course.level] || 10;
               const tierName = LEVEL_TO_TIER_NAME[course.level] || 'bronze';

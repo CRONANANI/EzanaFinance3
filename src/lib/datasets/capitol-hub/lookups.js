@@ -6,7 +6,7 @@
 import { sectorsForTicker } from '@/lib/congress/policy-sector-map';
 import { sectorsForCommittee, sectorLabel } from '@/lib/congress/committee-sectors';
 import { shortCommitteeName } from '@/lib/congress/committee-data';
-import { count, readAll } from '@/lib/datasets/hub-data';
+import { count, readAll, timed } from '@/lib/datasets/hub-data';
 
 export const DAY = 86400000;
 export const isoDaysAgo = (n, from = Date.now()) =>
@@ -87,47 +87,17 @@ export function oversightFor(oversight, bioguideId, ticker) {
 }
 
 /**
- * Verified lobbying clients by ticker with this year's reported spend.
+ * Verified lobbying clients by ticker with this year's reported spend
+ * (hub_lobbying_by_ticker, migration 20261008000200).
  * @returns {Map<string, { client, spend, year }>}
  */
 export async function lobbyingByTicker(admin) {
   const year = new Date().getUTCFullYear();
-  const { data: clients, error } = await admin
-    .from('lobbying_client_tickers')
-    .select('client_name, ticker')
-    .eq('verified', true);
+  const { data, error } = await timed(admin.rpc('hub_lobbying_by_ticker', { p_year: year }));
   if (error) throw new Error(error.message);
-  if (!clients?.length) return new Map();
-  const names = [...new Set(clients.map((c) => c.client_name))];
-  const total = await count(() =>
-    admin
-      .from('lobbying_filings')
-      .select('uuid', { count: 'exact', head: true })
-      .eq('filing_year', year)
-      .in('client_name', names),
-  );
-  const rows = total
-    ? await readAll(
-        () =>
-          admin
-            .from('lobbying_filings')
-            .select('uuid, client_name, amount')
-            .eq('filing_year', year)
-            .in('client_name', names)
-            .order('uuid'),
-        total,
-      )
-    : [];
-  const spend = new Map();
-  for (const r of rows)
-    spend.set(r.client_name, (spend.get(r.client_name) || 0) + (num(r.amount) || 0));
   const out = new Map();
-  for (const c of clients) {
-    if (!spend.has(c.client_name)) continue;
-    const t = up(c.ticker);
-    const cur = out.get(t);
-    const s = spend.get(c.client_name);
-    if (!cur || s > cur.spend) out.set(t, { client: c.client_name, spend: s, year });
+  for (const r of data || []) {
+    out.set(up(r.ticker), { client: r.client_name, spend: num(r.spend) || 0, year });
   }
   return out;
 }
@@ -180,13 +150,15 @@ export async function pricesAround(admin, ticker, center) {
   const c = Date.parse(center);
   const from = new Date(c - 45 * DAY).toISOString().slice(0, 10);
   const to = new Date(c + 45 * DAY).toISOString().slice(0, 10);
-  const { data, error } = await admin
-    .from('price_data_cache')
-    .select('date, close')
-    .eq('ticker', up(ticker))
-    .gte('date', from)
-    .lte('date', to)
-    .order('date');
+  const { data, error } = await timed(
+    admin
+      .from('price_data_cache')
+      .select('date, close')
+      .eq('ticker', up(ticker))
+      .gte('date', from)
+      .lte('date', to)
+      .order('date'),
+  );
   if (error) throw new Error(error.message);
   return (data || [])
     .filter((p) => num(p.close) != null)

@@ -11,7 +11,7 @@
  */
 import { unstable_cache } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
-import { configured, count, readAll } from '@/lib/datasets/hub-data';
+import { configured, count, readAll, timed } from '@/lib/datasets/hub-data';
 import { RULE_CONDITIONS, RULE_WINDOWS } from './signals';
 import {
   DAY,
@@ -53,32 +53,38 @@ async function loadPoolOrThrow(window) {
   const awardSince = isoDaysAgo(days + AWARD_REACH_DAYS);
 
   const tradeTotal = await count(() =>
-    admin
-      .from('congress_trades_enriched')
-      .select('id', { count: 'exact', head: true })
-      .gte('transaction_date', since)
-      .not('ticker', 'is', null),
+    timed(
+      admin
+        .from('congress_trades_enriched')
+        .select('id', { count: 'exact', head: true })
+        .gte('transaction_date', since)
+        .not('ticker', 'is', null),
+    ),
   );
+  /* The indexed, pre-resolved copy of awards with a ticker. */
   const awardTotal = await count(() =>
-    admin
-      .from('contract_awards_resolved')
-      .select('generated_award_id', { count: 'exact', head: true })
-      .gte('action_date', awardSince)
-      .not('ticker', 'is', null),
+    timed(
+      admin
+        .from('mv_contract_award_tickers')
+        .select('ticker', { count: 'exact', head: true })
+        .gte('action_date', awardSince),
+    ),
   );
   const [trades, awards, insiders, whales, fecRows, lobbying, returns] = await Promise.all([
     tradeTotal
       ? readAll(
           () =>
-            admin
-              .from('congress_trades_enriched')
-              .select(
-                'id, bioguide_id, member_name, party, ticker, asset_name, type, transaction_date, amount_min, amount_max',
-              )
-              .gte('transaction_date', since)
-              .not('ticker', 'is', null)
-              .order('transaction_date', { ascending: false })
-              .order('id'),
+            timed(
+              admin
+                .from('congress_trades_enriched')
+                .select(
+                  'id, bioguide_id, member_name, party, ticker, asset_name, type, transaction_date, amount_min, amount_max',
+                )
+                .gte('transaction_date', since)
+                .not('ticker', 'is', null)
+                .order('transaction_date', { ascending: false })
+                .order('id'),
+            ),
           tradeTotal,
           20,
         )
@@ -86,41 +92,54 @@ async function loadPoolOrThrow(window) {
     awardTotal
       ? readAll(
           () =>
-            admin
-              .from('contract_awards_resolved')
-              .select('generated_award_id, ticker, action_date, award_amount, awarding_agency')
-              .gte('action_date', awardSince)
-              .not('ticker', 'is', null)
-              .order('generated_award_id'),
+            timed(
+              admin
+                .from('mv_contract_award_tickers')
+                .select('ticker, action_date, award_amount, awarding_agency')
+                .gte('action_date', awardSince)
+                .order('ticker')
+                .order('action_date')
+                .order('award_amount')
+                .order('awarding_agency'),
+            ),
           awardTotal,
           20,
         )
       : [],
-    admin
-      .from('sec_insider_transactions')
-      .select('issuer_ticker, transaction_date, transaction_code')
-      .in('transaction_code', ['P', 'S'])
-      .gte('transaction_date', isoDaysAgo(days + INSIDER_REACH_DAYS))
-      .order('transaction_date', { ascending: false })
-      .limit(5000),
-    admin
-      .from('whale_moves')
-      .select('ticker, kind, filed_at')
-      .gte('filed_at', since)
-      .order('filed_at', { ascending: false })
-      .limit(5000),
-    admin
-      .from('ezq_campaign_finance')
-      .select('bioguide_id, cycle, receipts')
-      .not('receipts', 'is', null)
-      .order('cycle', { ascending: false })
-      .limit(2000),
-    lobbyingByTicker(admin),
-    admin
-      .from('mv_award_window_trades')
-      .select('source_id, ret_30d_pct')
-      .eq('actor_type', 'politician')
-      .limit(2000),
+    timed(
+      admin
+        .from('sec_insider_transactions')
+        .select('issuer_ticker, transaction_date, transaction_code')
+        .in('transaction_code', ['P', 'S'])
+        .gte('transaction_date', isoDaysAgo(days + INSIDER_REACH_DAYS))
+        .order('transaction_date', { ascending: false })
+        .limit(5000),
+    ),
+    timed(
+      admin
+        .from('whale_moves')
+        .select('ticker, kind, filed_at')
+        .gte('filed_at', since)
+        .order('filed_at', { ascending: false })
+        .limit(5000),
+    ),
+    timed(
+      admin
+        .from('ezq_campaign_finance')
+        .select('bioguide_id, cycle, receipts')
+        .not('receipts', 'is', null)
+        .order('cycle', { ascending: false })
+        .limit(2000),
+    ),
+    /* Optional: a rule without lobbying still runs if this read fails. */
+    lobbyingByTicker(admin).catch(() => new Map()),
+    timed(
+      admin
+        .from('mv_award_window_trades')
+        .select('source_id, ret_30d_pct')
+        .eq('actor_type', 'politician')
+        .limit(2000),
+    ),
   ]);
   for (const r of [insiders, whales, fecRows, returns])
     if (r.error) throw new Error(r.error.message);
@@ -251,7 +270,7 @@ async function loadPoolOrThrow(window) {
   return [...tradeCandidates, ...companyCandidates.filter((c) => c.flaggedAt)];
 }
 
-const cachedPool = unstable_cache(loadPoolOrThrow, ['capitol-rule-pool-v1'], CACHE);
+const cachedPool = unstable_cache(loadPoolOrThrow, ['capitol-rule-pool-v2'], CACHE);
 
 /** The pool for a window, or throws (the route answers with its error state). */
 export async function getRulePool(window) {

@@ -405,3 +405,19 @@ test('congressPortfolio ranks by members and keeps 16', () => {
   assert.equal(p.rows[0].rank, 1);
   assert.equal(p.maxMembers, 20);
 });
+
+test('the committee condition is fixed: toggling it never changes the count', () => {
+  const base = defaultRule();
+  const toggled = (on) => ({
+    ...base,
+    conditions: base.conditions.map((c) =>
+      c.id === 'committee_oversees' ? { ...c, enabled: on } : c,
+    ),
+  });
+  const a = matchSignalRule(toggled(true), POOL, { today: TODAY }).count;
+  const b = matchSignalRule(toggled(false), POOL, { today: TODAY }).count;
+  assert.equal(a, b);
+  /* Committee Assignments itself still decides: without it the count changes. */
+  const noCommittee = { ...base, datasets: ['Politician Tracker', 'Government Contracts'] };
+  assert.ok(matchSignalRule(noCommittee, POOL, { today: TODAY }).count >= a);
+});

@@ -477,29 +477,6 @@ html:not(.light-mode) .cwh-tokens {
   line-height: 1.5;
   color: var(--cwh-mute);
 }
-.cwh-stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin: 0;
-  border: 1px solid var(--cwh-hair);
-  border-radius: var(--radius-md);
-}
-.cwh-stat {
-  display: grid;
-  gap: 4px;
-  padding: 12px 18px;
-}
-.cwh-stat + .cwh-stat {
-  border-left: 1px solid var(--cwh-hair);
-}
-.cwh-stat dd {
-  margin: 0;
-  font-family: var(--cwh-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--cwh-ink);
-}
 
 /* The EzanaQL bar, restyled to the hub's spec within this page only. */
 .cwh-query .eqb-main {
@@ -537,13 +514,6 @@ html:not(.light-mode) .cwh-tokens {
 .cwh-query .eqb-pill:focus-within .eqb-go {
   background: var(--cwh-emerald);
   color: var(--bg-primary);
-}
-.cwh-query .eqb-chips::before {
-  content: 'Try';
-  align-self: center;
-  margin-right: 2px;
-  font-size: 11.5px;
-  color: var(--cwh-faint);
 }
 .cwh-query .eqb-chip {
   padding: 5px 10px;
@@ -601,12 +571,6 @@ html:not(.light-mode) .cwh-tokens {
 }
 .eqb-qblock-act.is-saved {
   color: var(--cwh-mute);
-}
-.eqb-scope {
-  margin: 0;
-  font-size: 11px;
-  line-height: 1.5;
-  color: var(--cwh-faint);
 }
 
 /* result card */
@@ -742,6 +706,75 @@ button.cwh-rc-who:hover {
   margin: 0;
   font-size: 11px;
   color: var(--cwh-positive);
+}
+
+/* header: tighter, one shared left edge */
+.cwh-page {
+  padding-top: 20px;
+}
+.cwh-head {
+  gap: 28px;
+  align-items: start;
+}
+.cwh-head-left {
+  gap: 10px;
+}
+.cwh-head-left > *,
+.cwh-query,
+.cwh-query .eqb-main,
+.cwh-query .eqb-main > :not(.eqb-pill) {
+  margin-left: 0;
+  padding-left: 0;
+}
+.cwh-title {
+  font-size: 28px;
+}
+.cwh-purpose {
+  max-width: 52ch;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.cwh-query .eqb-main {
+  gap: 8px;
+}
+/* the bar centres itself at 820px elsewhere; here it fills the column */
+.cwh-query .eqb {
+  width: 100%;
+  margin: 0;
+}
+.cwh-query .eqb-main,
+.cwh-query .eqb-pill,
+.cwh-query .eqb-main > .eqb-code,
+.cwh-query .eqb-main > .eqb-qblock {
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+}
+/* prompt chips start on the same left edge as the bar and the title */
+.cwh-query .eqb-chips {
+  justify-content: flex-start;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  gap: 6px;
+}
+.cwh-query .eqb-chip {
+  min-height: 28px;
+  padding: 4px 10px;
+}
+/* the query block keeps its own inner padding; its outer edge aligns */
+.cwh-query .eqb-main > .eqb-code,
+.cwh-query .eqb-main > .eqb-qblock {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+.cwh-rc {
+  min-height: 0;
+  height: 100%;
+  max-height: 440px;
+  /* The left column alone sets the row's height; the card fills it and its
+     table scrolls inside. */
+  contain: size;
 }
 
 /* ── top signals ──────────────────────────────────────────────────────── */
@@ -1445,6 +1478,10 @@ button.cwh-rc-who:hover {
   height: 14px;
   margin: 0;
   accent-color: var(--cwh-emerald);
+}
+.cwh-cond-fixed {
+  font-size: 11px;
+  color: var(--cwh-faint);
 }
 .cwh-cond-check-static {
   color: var(--cwh-positive);
@@ -2343,6 +2380,8 @@ button.cwh-port-row:hover {
     grid-template-columns: minmax(0, 1fr);
   }
   .cwh-rc {
+    contain: none;
+    height: auto;
     min-height: 0;
     max-height: 440px;
   }
@@ -2405,12 +2444,6 @@ button.cwh-port-row:hover {
   }
   .cwh-title {
     font-size: 28px;
-  }
-  .cwh-stat {
-    padding: 10px 12px;
-  }
-  .cwh-stat dd {
-    font-size: 15px;
   }
   .cwh-event {
     padding: 18px 16px 16px;

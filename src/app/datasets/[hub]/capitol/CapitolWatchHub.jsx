@@ -33,52 +33,6 @@ const DATASET_ICON = {
   'Committee Assignments': 'bi-diagram-3',
 };
 
-/* ── header stats ─────────────────────────────────────────────────────── */
-
-async function Stats({ dimension }) {
-  const live = dimension.items.filter((it) => it.live);
-  const sums = await Promise.all(live.map((it) => summaryFor(it.label)));
-  const records = sums.reduce((s, x) => s + (x?.records || 0), 0);
-  const today = new Date().toISOString().slice(0, 10);
-  const latest = sums.reduce(
-    (m, x) => (x?.freshest && x.freshest <= today && x.freshest > (m || '') ? x.freshest : m),
-    null,
-  );
-  return (
-    <dl className="cwh-stats">
-      <div className="cwh-stat">
-        <dt className="cwh-label">Live datasets</dt>
-        <dd>
-          {live.length} of {dimension.items.length}
-        </dd>
-      </div>
-      <div className="cwh-stat">
-        <dt className="cwh-label">Records</dt>
-        <dd>{records ? fmt('int', records) : DASH}</dd>
-      </div>
-      <div className="cwh-stat">
-        <dt className="cwh-label">Latest data</dt>
-        <dd>{latest ? fmt('date', latest) : DASH}</dd>
-      </div>
-    </dl>
-  );
-}
-
-function StatsSkeleton() {
-  return (
-    <dl className="cwh-stats" aria-busy="true">
-      {['Live datasets', 'Records', 'Latest data'].map((l) => (
-        <div className="cwh-stat" key={l}>
-          <dt className="cwh-label">{l}</dt>
-          <dd>
-            <span className="cwh-skel cwh-skel--short" />
-          </dd>
-        </div>
-      ))}
-    </dl>
-  );
-}
-
 /* ── modules ──────────────────────────────────────────────────────────── */
 
 async function TopSignals() {
@@ -217,9 +171,6 @@ export default function CapitolWatchHub({ dimension }) {
         What Congress is doing with money right now: trades, committees, campaign cash, lobbying and
         the contracts that follow.
       </p>
-      <Suspense fallback={<StatsSkeleton />}>
-        <Stats dimension={dimension} />
-      </Suspense>
     </>
   );
 

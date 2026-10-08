@@ -297,7 +297,12 @@ export default function RuleBuilder() {
       return;
     }
     if (!enough) return;
-    const payload = { ...rule, name: name.trim() || suggested, alerts: withAlerts || rule.alerts };
+    /* Alerts are sent only when set here (Alert me): a toggle from the rule's
+       menu is never overwritten by a stale copy on Update. */
+    const { alerts: _stale, ...rest } = rule;
+    const payload = { ...rest, name: name.trim() || suggested };
+    if (withAlerts) payload.alerts = true;
+    else if (!editingId) payload.alerts = false;
     setSaving(withAlerts ? 'alert' : 'save');
     setMessage('');
     const out = editingId ? await updateRule(editingId, payload) : await saveRule(payload);
@@ -344,11 +349,20 @@ export default function RuleBuilder() {
     setMessage('');
   };
 
+  /* A change from a rule's menu also lands in the builder when it is that rule. */
+  const syncFromMenu = (r, out) => {
+    if (!out?.rule || r.id !== editingId) return;
+    setRule((x) => ({ ...x, alerts: out.rule.alerts, name: out.rule.name }));
+    setAlertsOn(out.rule.alerts);
+    setNameTouched(true);
+  };
+
   const rename = async (r) => {
     // eslint-disable-next-line no-alert
     const next = window.prompt('Rename this signal', r.name);
     if (next == null || !next.trim()) return;
     const out = await updateRule(r.id, { name: next.trim().slice(0, 80) });
+    syncFromMenu(r, out);
     setMessage(out.error || 'Signal renamed.');
   };
 
@@ -393,6 +407,7 @@ export default function RuleBuilder() {
                 onRename={() => rename(r)}
                 onToggleAlerts={async () => {
                   const out = await updateRule(r.id, { alerts: !r.alerts });
+                  syncFromMenu(r, out);
                   setMessage(
                     out.error ||
                       (r.alerts ? 'Alerts paused.' : 'Alerts on. Email alerts start soon.'),
@@ -529,14 +544,25 @@ export default function RuleBuilder() {
             <span className="cwh-step-n">2</span> Set what makes it high signal
           </p>
           <div className="cwh-conds">
-            {RULE_CONDITIONS.filter((c) => visible.includes(c.id)).map((def) => (
-              <ConditionRow
-                key={def.id}
-                def={def}
-                cond={rule.conditions.find((c) => c.id === def.id)}
-                onChange={setCondition}
-              />
-            ))}
+            {RULE_CONDITIONS.filter((c) => visible.includes(c.id)).map((def) =>
+              def.id === 'committee_oversees' ? (
+                /* Selecting Committee Assignments already requires it: fixed, no toggle. */
+                <div key={def.id} className="cwh-cond is-fixed">
+                  <span className="cwh-cond-check-static" aria-hidden="true">
+                    <i className="bi bi-check2" />
+                  </span>
+                  <span className="cwh-cond-label">{def.label[0]}</span>
+                  <span className="cwh-cond-fixed">Required by Committee Assignments</span>
+                </div>
+              ) : (
+                <ConditionRow
+                  key={def.id}
+                  def={def}
+                  cond={rule.conditions.find((c) => c.id === def.id)}
+                  onChange={setCondition}
+                />
+              ),
+            )}
             <div className="cwh-cond">
               <span className="cwh-cond-check-static" aria-hidden="true">
                 <i className="bi bi-check2" />

@@ -287,7 +287,8 @@ export default function CompanyCard({ ticker, name, since, onClose }) {
                 <span className="ccd-stat-label">Contracts</span>
                 <span className="ccd-stat-value ccd-mono">{usdShort(card.total)}</span>
                 <span className="ccd-stat-sub ccd-mono">
-                  {card.awardCount.toLocaleString('en-US')} award{card.awardCount === 1 ? '' : 's'}
+                  {Number(card.awardCount || 0).toLocaleString('en-US')} award
+                  {card.awardCount === 1 ? '' : 's'}
                 </span>
               </div>
               <div className="ccd-stat">

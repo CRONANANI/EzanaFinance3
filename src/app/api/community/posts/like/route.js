@@ -36,14 +36,13 @@ export async function POST(request) {
             .eq('id', post_id)
             .maybeSingle();
           if (postRow?.user_id && postRow.user_id !== user.id) {
-            await admin
-              .from('activity_breadcrumbs')
-              .insert({
-                user_id: user.id,
-                event_type: 'post_like',
-                event_data: { post_id, author_id: postRow.user_id },
-              })
-              .catch(() => {});
+            /* Best-effort. Query builders have no .catch, so read the error. */
+            const { error: bcErr } = await admin.from('activity_breadcrumbs').insert({
+              user_id: user.id,
+              event_type: 'post_like',
+              event_data: { post_id, author_id: postRow.user_id },
+            });
+            if (bcErr) console.warn('[post like] breadcrumb', bcErr.message);
             await awardXP(postRow.user_id, 5, 'Received a like on your post', 'community');
 
             // ── Notify post author of like ──

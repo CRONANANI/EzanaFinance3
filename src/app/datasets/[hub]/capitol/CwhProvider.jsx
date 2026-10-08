@@ -120,7 +120,15 @@ export default function CwhProvider({ children }) {
 
   /* Query this: the hub's shared channel, so row actions reach this bar. */
   const { runRequest, requestRun } = useHubQuery();
-  const requestQuery = useCallback((query) => query && requestRun(query), [requestRun]);
+  const requestQuery = useCallback(
+    (query, label) => query && requestRun(query, label),
+    [requestRun],
+  );
+
+  /* Bumped after the result card saves a report, so the bar reloads its list. */
+  const [savedVersion, setSavedVersion] = useState(0);
+  const bumpSaved = useCallback(() => setSavedVersion((v) => v + 1), []);
+  const [ruleErrors, setRuleErrors] = useState({}); // ruleId -> true when its check failed
 
   const gate = useCallback((action) => setGateAction(action), []);
 
@@ -129,11 +137,13 @@ export default function CwhProvider({ children }) {
     const pairs = await Promise.all(
       list.map((r) =>
         previewRule(r)
-          .then((d) => [r.id, d.events || []])
-          .catch(() => [r.id, []]),
+          .then((d) => [r.id, d.events || [], false])
+          .catch(() => [r.id, [], true]),
       ),
     );
-    setRuleEvents(Object.fromEntries(pairs));
+    /* Merge: an unsaved rule's preview and other rules keep their entries. */
+    setRuleEvents((m) => ({ ...m, ...Object.fromEntries(pairs.map(([id, ev]) => [id, ev])) }));
+    setRuleErrors((m) => ({ ...m, ...Object.fromEntries(pairs.map(([id, , err]) => [id, err])) }));
   }, []);
 
   const refreshRules = useCallback(async () => {
@@ -158,6 +168,7 @@ export default function CwhProvider({ children }) {
     else {
       setRules(null);
       setRuleEvents({});
+      setRuleErrors({});
     }
   }, [loading, isAuthenticated, refreshRules]);
 
@@ -172,8 +183,11 @@ export default function CwhProvider({ children }) {
     if (!res.ok || !d.ok) return { error: d.error || 'That signal could not be saved.' };
     setRules((cur) => [...(cur || []), d.rule]);
     previewRule(d.rule)
-      .then((p) => setRuleEvents((m) => ({ ...m, [d.rule.id]: p.events || [] })))
-      .catch(() => {});
+      .then((p) => {
+        setRuleEvents((m) => ({ ...m, [d.rule.id]: p.events || [] }));
+        setRuleErrors((m) => ({ ...m, [d.rule.id]: false }));
+      })
+      .catch(() => setRuleErrors((m) => ({ ...m, [d.rule.id]: true })));
     return { rule: d.rule };
   }, []);
 
@@ -186,6 +200,13 @@ export default function CwhProvider({ children }) {
     const d = await res.json().catch(() => ({}));
     if (!res.ok || !d.ok) return { error: d.error || 'That signal could not be updated.' };
     setRules((cur) => (cur || []).map((r) => (r.id === id ? d.rule : r)));
+    /* Its conditions may have changed: refresh what it matches. */
+    previewRule(d.rule)
+      .then((p) => {
+        setRuleEvents((m) => ({ ...m, [id]: p.events || [] }));
+        setRuleErrors((m) => ({ ...m, [id]: false }));
+      })
+      .catch(() => setRuleErrors((m) => ({ ...m, [id]: true })));
     return { rule: d.rule };
   }, []);
 
@@ -198,6 +219,7 @@ export default function CwhProvider({ children }) {
       delete next[id];
       return next;
     });
+    setRuleErrors((m) => ({ ...m, [id]: false }));
     return { ok: true };
   }, []);
 
@@ -217,6 +239,9 @@ export default function CwhProvider({ children }) {
       gate,
       rules,
       ruleEvents,
+      ruleErrors,
+      savedVersion,
+      bumpSaved,
       saveRule,
       updateRule,
       deleteRule,
@@ -232,6 +257,9 @@ export default function CwhProvider({ children }) {
       gate,
       rules,
       ruleEvents,
+      ruleErrors,
+      savedVersion,
+      bumpSaved,
       saveRule,
       updateRule,
       deleteRule,

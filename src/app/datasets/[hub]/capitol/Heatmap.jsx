@@ -198,6 +198,7 @@ export default function Heatmap({ house, senate }) {
                             .slice(0, 20)
                             .join(','),
                         ),
+                        `Holders in ${cell.committee} × ${SECTOR_SHORT[cell.sector] || cell.sector}`,
                       )
                     }
                   >
