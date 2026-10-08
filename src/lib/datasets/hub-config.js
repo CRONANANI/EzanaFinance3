@@ -22,6 +22,11 @@ export const HUB_EXAMPLE_PROMPTS = {
     'Close calls: markets near 50 percent with real volume',
     'The most liquid markets right now',
   ],
+  eyes: [
+    'Daily transits through the Suez Canal over the last 90 days',
+    'Ports with the most calls in the last 30 days',
+    'Companies granted the most patents in the last 12 months',
+  ],
   lighthouse: [
     'Which countries have the highest unemployment in 2025?',
     'Every indicator for the United States since 2020',
@@ -126,6 +131,40 @@ export const HUB_LINKAGES = {
       empty: 'Appears as Schedule 13D and 13G stakes are filed.',
     },
   ],
+  eyes: [
+    {
+      id: 'eyes-chokepoints',
+      title: 'Chokepoints moving off normal',
+      why: 'The maritime chokepoints whose ship transits over the last 7 days of data are furthest from their 1-year average, up or down.',
+      window: 'Last 7 days of data against the 365 days before',
+      sources: 'IMF PortWatch',
+      coverage:
+        'Transits are estimated from ship position (AIS) data by the IMF and published with a lag of several weeks.',
+      empty: 'Appears once a year of daily chokepoint transits is loaded from IMF PortWatch.',
+    },
+    {
+      id: 'eyes-patent-leaders',
+      title: 'Patent momentum leaders',
+      why: 'Public companies whose patent grants grew most over the last 12 months against the 12 before, with how many members of Congress hold the stock.',
+      window: 'Grants in the last 24 months; holdings as of the latest disclosures',
+      sources: 'USPTO PatentsView (PatentSearch API), House Clerk and Senate disclosures',
+      coverage:
+        'Companies with at least 50 grants in the last 12 months. Holding is inferred: disclosures show a purchase not followed by a full sale. Assignees are matched to tickers by company name.',
+      empty: 'Appears once two years of patent grants are loaded and matched to tickers.',
+    },
+    {
+      id: 'eyes-pressure',
+      title: 'Supply chain pressure',
+      why: 'The supply chain pressure index and its 12-month trend, North American freight shipments against a year ago, and how many chokepoints are running well below normal.',
+      window: 'Latest month of each index; last 7 days of chokepoint data',
+      sources:
+        'Federal Reserve Bank of New York (GSCPI), Cass Freight Index via FRED, IMF PortWatch',
+      coverage:
+        'A chokepoint counts as well below normal when its 7-day average is more than 20% under its 1-year average.',
+      empty:
+        'Appears once the pressure index, the freight index or chokepoint transits are loaded.',
+    },
+  ],
   lighthouse: [
     {
       id: 'lighthouse-oecd-moves',
@@ -179,11 +218,6 @@ export const HUB_LINKAGES = {
 
 /** Planned source for each dataset without live data (docs/DATASETS_ROADMAP.md). */
 export const PLANNED_SOURCE = {
-  'Patent Activity': 'USPTO PatentsView and the USPTO Open Data Portal',
-  'Satellite Imagery': 'Copernicus Sentinel-2 and 5P, NASA Black Marble, NASA FIRMS',
-  'Commercial Real Estate Activity':
-    'FRED commercial real estate series, Census construction spending',
-  'Supply Chain Monitoring': 'IMF PortWatch, NY Fed supply chain pressure index, Census trade API',
   'Search Interest Data': 'Google Trends API (by application), Wikipedia pageviews',
   'Web Traffic Analytics': 'Cloudflare Radar, Tranco ranking',
   'App Download Velocity': 'Apple top-chart rankings',
@@ -205,16 +239,6 @@ export const PLANNED_SOURCE = {
 
 /** For dimensions without live data: the first two roadmap datasets and their signal. */
 export const HUB_WILL_SHOW = {
-  eyes: [
-    {
-      dataset: 'Patent Activity',
-      signal: 'Patent grant and application momentum by assignee, matched to tickers.',
-    },
-    {
-      dataset: 'Supply Chain Monitoring',
-      signal: 'Daily port calls and chokepoint transits, and the supply chain pressure index.',
-    },
-  ],
   whispers: [
     {
       dataset: 'Consumer Spending Trends',

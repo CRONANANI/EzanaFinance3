@@ -77,6 +77,16 @@ LIMIT 30;`,
 WHERE market_id = "${q(marketId)}"
 SELECT question, probability, volume, liquidity, ends_on, link
 LIMIT 1;`,
+  eyesChokepoint: (name) => `FROM eyes.chokepoints
+WHERE chokepoint = "${q(name)}" AND date >= LAST 90 DAYS
+SELECT date, chokepoint, transits, tankers, container_ships
+ORDER BY date DESC
+LIMIT 90;`,
+  eyesPatentsTicker: (ticker) => `FROM eyes.patents
+WHERE ticker = "${q(ticker)}"
+SELECT patent_id, patent_date, title, cpc_section
+ORDER BY patent_date DESC
+LIMIT 50;`,
 };
 
 /** Which dimension each template belongs to (for the check script). */
@@ -93,4 +103,6 @@ export const HUB_QUERY_DIMENSION = {
   activistTicker: 'titans',
   oecdSeries: 'lighthouse',
   market: 'hive',
+  eyesChokepoint: 'eyes',
+  eyesPatentsTicker: 'eyes',
 };

@@ -106,6 +106,18 @@
       "schedule": "40 7 * * *"
     },
     {
+      "path": "/api/cron/eyes-portwatch",
+      "schedule": "40 6 * * *"
+    },
+    {
+      "path": "/api/cron/eyes-fred",
+      "schedule": "5 7 * * *"
+    },
+    {
+      "path": "/api/cron/eyes-patents",
+      "schedule": "25 9 * * 3"
+    },
+    {
       "path": "/api/cron/sync-award-prices",
       "schedule": "20 8 * * 1-6"
     },

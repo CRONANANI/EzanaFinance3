@@ -102,10 +102,19 @@ SELECT country, value, unit
 ORDER BY value DESC
 LIMIT 20;`;
 
+/** Chokepoints by average daily transits over the last 90 days (the data lags several weeks). */
+export const SEED_EYES = `FROM eyes.chokepoints
+WHERE date >= LAST 90 DAYS
+SELECT chokepoint, AVG(transits) AS avg_transits, AVG(tankers) AS avg_tankers
+GROUP BY chokepoint
+ORDER BY avg_transits DESC
+LIMIT 28;`;
+
 /** Each hub's bar opens on a query from its own dimension. */
 export const HUB_SEEDS = {
   capitol: SEED_CONGRESS,
   titans: SEED_TITANS,
+  eyes: SEED_EYES,
   hive: SEED_PREDICTION,
   lighthouse: SEED_LIGHTHOUSE,
 };

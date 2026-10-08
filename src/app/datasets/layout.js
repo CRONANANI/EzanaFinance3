@@ -46,6 +46,11 @@ const STANDALONE_ROUTES = new Set([
   '/datasets/oecd-macro',
   '/datasets/markets',
   '/datasets/prediction-markets',
+  // Eyes Above: the four open-data datasets.
+  '/datasets/supply-chain',
+  '/datasets/commercial-real-estate',
+  '/datasets/patents',
+  '/datasets/night-lights',
   // The seven dimension hubs (src/lib/datasets/hubs.js).
   ...Object.values(HUB_SLUGS).map((slug) => `/datasets/${slug}`),
 ]);

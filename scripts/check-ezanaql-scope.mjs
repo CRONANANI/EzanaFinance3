@@ -84,6 +84,8 @@ test('in-dimension FROM and JOIN validate', () => {
   );
   check('FROM prediction.markets SELECT question LIMIT 5;', 'hive');
   check('FROM lighthouse.oecd SELECT country, value LIMIT 5;', 'lighthouse');
+  check('FROM eyes.chokepoints SELECT chokepoint, transits LIMIT 5;', 'eyes');
+  check('FROM eyes.patents SELECT ticker, patent_date LIMIT 5;', 'eyes');
 });
 
 test('out-of-dimension FROM is refused with the hub message', () => {
@@ -98,6 +100,10 @@ test('out-of-dimension FROM is refused with the hub message', () => {
   assert.throws(
     () => check('FROM prediction.markets SELECT question LIMIT 5;', 'eyes'),
     /not part of Eyes Above/,
+  );
+  assert.throws(
+    () => check('FROM eyes.ports SELECT port LIMIT 5;', 'capitol'),
+    /not part of Capitol Watch/,
   );
 });
 
@@ -117,10 +123,10 @@ test('an unknown dimension is refused', () => {
 });
 
 test('dimensions without queryable data are closed', () => {
-  for (const dim of ['eyes', 'whispers', 'regulatory']) {
+  for (const dim of ['whispers', 'regulatory']) {
     assert.equal(dimensionHasQueryableData(dim), false, `${dim} should be closed`);
   }
-  for (const dim of ['capitol', 'titans', 'hive', 'lighthouse']) {
+  for (const dim of ['capitol', 'titans', 'eyes', 'hive', 'lighthouse']) {
     assert.equal(dimensionHasQueryableData(dim), true, `${dim} should be open`);
   }
 });

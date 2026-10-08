@@ -119,6 +119,20 @@ ORDER BY volume DESC
 LIMIT 20;`,
 ];
 
+const EYES_QUERIES = [
+  `FROM eyes.chokepoints
+WHERE chokepoint = "Suez Canal" AND date >= LAST 90 DAYS
+SELECT date, chokepoint, transits, tankers, container_ships
+ORDER BY date DESC
+LIMIT 90;`,
+  `FROM eyes.patents
+WHERE patent_date >= LAST 12 MONTHS AND ticker IS NOT NULL
+SELECT ticker, COUNT(patent_id) AS grants
+GROUP BY ticker
+ORDER BY grants DESC
+LIMIT 20;`,
+];
+
 const LIGHTHOUSE_QUERIES = [
   `FROM lighthouse.oecd
 WHERE country_code = "USA" AND year >= 2020
@@ -204,7 +218,16 @@ export const FEW_SHOTS_BY_DIMENSION = {
       query: LIGHTHOUSE_QUERIES[1],
     },
   ],
-  eyes: [],
+  eyes: [
+    {
+      user: 'Daily transits through the Suez Canal over the last 90 days.',
+      query: EYES_QUERIES[0],
+    },
+    {
+      user: 'Which companies were granted the most patents in the last 12 months?',
+      query: EYES_QUERIES[1],
+    },
+  ],
   whispers: [],
   regulatory: [],
 };

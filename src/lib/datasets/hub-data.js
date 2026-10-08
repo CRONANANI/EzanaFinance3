@@ -642,6 +642,151 @@ const SUMMARIES = {
       ],
     };
   },
+
+  /* ── Eyes Above ──────────────────────────────────────────────────── */
+
+  async 'Supply Chain Monitoring'(admin) {
+    const [portDays, chokeDays, choke, ports, gscpi] = await Promise.all([
+      count(() =>
+        admin.from('eyes_port_activity').select('portid', { count: 'exact', head: true }),
+      ),
+      count(() =>
+        admin.from('eyes_chokepoint_transits').select('portid', { count: 'exact', head: true }),
+      ),
+      timed(admin.rpc('eyes_chokepoint_change', { p_days: 7 })),
+      count(() =>
+        admin
+          .from('eyes_ports')
+          .select('portid', { count: 'exact', head: true })
+          .eq('tracked', true),
+      ),
+      eyesSeriesLatest(admin, 'GSCPI'),
+    ]);
+    if (choke.error) throw new Error(choke.error.message);
+    const records = portDays + chokeDays;
+    if (!records && !gscpi) return { empty: true, records: 0 };
+    const rows = choke.data || [];
+    const mover = rows.find((c) => num(c.change_pct) != null);
+    return {
+      records,
+      freshest: day(rows[0]?.last_date) || day(gscpi?.date),
+      numbers: [
+        n(
+          mover ? `${mover.portname}, 7 days vs 1 year` : 'Biggest chokepoint move',
+          mover ? num(mover.change_pct) : null,
+          'signed-pct',
+        ),
+        n('Ports tracked', ports),
+        n('Supply chain pressure (GSCPI)', gscpi ? gscpi.value : null, 'signed'),
+      ],
+    };
+  },
+
+  async 'Commercial Real Estate Activity'(admin) {
+    const { data: series, error } = await admin
+      .from('eyes_series')
+      .select('series_id, last_date')
+      .eq('dataset', 'cre');
+    if (error) throw new Error(error.message);
+    if (!series?.length) return { empty: true, records: 0 };
+    const [records, delinquency, prices] = await Promise.all([
+      count(() =>
+        admin
+          .from('eyes_series_obs')
+          .select('series_id', { count: 'exact', head: true })
+          .in(
+            'series_id',
+            series.map((x) => x.series_id),
+          ),
+      ),
+      eyesSeriesLatest(admin, 'DRCRELEXFACBS'),
+      eyesSeriesLatest(admin, 'COMREPUSQ159N'),
+    ]);
+    return {
+      records,
+      freshest: series.reduce(
+        (m, x) => (x.last_date && x.last_date > (m || '') ? x.last_date : m),
+        null,
+      ),
+      numbers: [
+        n('Indicators tracked', series.length),
+        n('CRE loan delinquency rate', delinquency ? delinquency.value : null, 'pct'),
+        n('CRE prices, year over year', prices ? prices.value : null, 'signed-pct'),
+      ],
+    };
+  },
+
+  async 'Patent Activity'(admin) {
+    const head = () =>
+      admin.from('eyes_patents').select('patent_id', { count: 'exact', head: true });
+    const records = await count(head);
+    if (!records) return { empty: true, records };
+    const [year, matched, latest, top] = await Promise.all([
+      count(() => head().gt('patent_date', isoDaysAgo(365))),
+      count(() => head().not('ticker', 'is', null)),
+      admin
+        .from('eyes_patents')
+        .select('patent_date')
+        .order('patent_date', { ascending: false })
+        .limit(1),
+      timed(admin.rpc('eyes_patent_momentum', { p_limit: 1, p_min_grants: 1 })),
+    ]);
+    const lead = top.data?.[0];
+    return {
+      records,
+      freshest: day(latest.data?.[0]?.patent_date),
+      numbers: [
+        n('Grants, last 12 months', year),
+        n('Matched to a ticker', matched),
+        n('Most granted', lead ? `${lead.ticker} (${lead.grants_12m})` : null, 'text'),
+      ],
+    };
+  },
+
+  async 'Satellite Imagery'(admin) {
+    const records = await count(() =>
+      admin.from('eyes_night_lights').select('region_id', { count: 'exact', head: true }),
+    );
+    if (!records) return { empty: true, records };
+    const { data: last, error } = await admin
+      .from('eyes_night_lights')
+      .select('month')
+      .order('month', { ascending: false })
+      .limit(1);
+    if (error) throw new Error(error.message);
+    const month = last?.[0]?.month;
+    const prior = `${Number(month.slice(0, 4)) - 1}${month.slice(4, 10)}`;
+    const [now, then, regions] = await Promise.all([
+      admin.from('eyes_night_lights').select('region_id, mean_radiance').eq('month', month),
+      admin.from('eyes_night_lights').select('region_id, mean_radiance').eq('month', prior),
+      admin.from('eyes_regions').select('region_id, name'),
+    ]);
+    const base = new Map((then.data || []).map((r) => [r.region_id, num(r.mean_radiance)]));
+    const names = new Map((regions.data || []).map((r) => [r.region_id, r.name]));
+    let best = null;
+    for (const r of now.data || []) {
+      const a = num(r.mean_radiance);
+      const b = base.get(r.region_id);
+      if (a == null || !b) continue;
+      const ch = (100 * (a - b)) / b;
+      if (!best || Math.abs(ch) > Math.abs(best.ch)) best = { id: r.region_id, ch };
+    }
+    return {
+      records,
+      freshest: day(month),
+      numbers: [
+        n('Regions with a reading', (now.data || []).filter((r) => r.mean_radiance != null).length),
+        n('Latest month', monthLabel(month), 'text'),
+        n(
+          'Largest change vs a year ago',
+          best
+            ? `${names.get(best.id) || best.id} ${best.ch > 0 ? '+' : ''}${best.ch.toFixed(1)}%`
+            : null,
+          'text',
+        ),
+      ],
+    };
+  },
 };
 
 function fmtUsd(v) {
@@ -660,6 +805,57 @@ async function oecdLatest(admin) {
   return data || [];
 }
 
+/* ── Eyes Above helpers ─────────────────────────────────────────────── */
+
+/** The latest non-null observation of one Eyes series, or null. */
+async function eyesSeriesLatest(admin, id) {
+  const { data, error } = await admin
+    .from('eyes_series_obs')
+    .select('date, value')
+    .eq('series_id', id)
+    .not('value', 'is', null)
+    .order('date', { ascending: false })
+    .limit(1);
+  if (error) throw new Error(error.message);
+  const r = data?.[0];
+  return r ? { date: r.date, value: num(r.value) } : null;
+}
+
+/** The last `n` non-null observations of one Eyes series, oldest first. */
+async function eyesSeriesTail(admin, id, nn) {
+  const { data, error } = await admin
+    .from('eyes_series_obs')
+    .select('date, value')
+    .eq('series_id', id)
+    .not('value', 'is', null)
+    .order('date', { ascending: false })
+    .limit(nn);
+  if (error) throw new Error(error.message);
+  return (data || []).map((r) => ({ date: r.date, value: num(r.value) })).reverse();
+}
+
+function monthLabel(iso) {
+  const m = /^(\d{4})-(\d{2})/.exec(String(iso || ''));
+  if (!m) return null;
+  return new Date(Date.UTC(+m[1], +m[2] - 1, 1)).toLocaleDateString('en-US', {
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+}
+
+const CPC_SECTION_NAMES = {
+  A: 'Human necessities',
+  B: 'Operations and transport',
+  C: 'Chemistry and metallurgy',
+  D: 'Textiles and paper',
+  E: 'Fixed constructions',
+  F: 'Mechanical engineering',
+  G: 'Physics',
+  H: 'Electricity',
+  Y: 'Emerging cross-sectional',
+};
+
 /** Labels that have a summary loader (the rest render as not live). */
 export const SUMMARY_LABELS = Object.keys(SUMMARIES);
 
@@ -673,9 +869,22 @@ async function loadSummaryOrThrow(label) {
    retried on the next request instead of being served for 15 minutes. */
 const cachedSummary = unstable_cache(loadSummaryOrThrow, ['hub-summary-v2'], CACHE);
 
+/* The Eyes Above summaries also carry the `eyes` tag, so the Eyes ingest
+   crons (which revalidate `eyes`) refresh the hub as well as the pages. */
+const EYES_SUMMARY_LABELS = new Set([
+  'Supply Chain Monitoring',
+  'Commercial Real Estate Activity',
+  'Patent Activity',
+  'Satellite Imagery',
+]);
+const cachedEyesSummary = unstable_cache(loadSummaryOrThrow, ['hub-summary-eyes-v1'], {
+  ...CACHE,
+  tags: ['hubs', 'eyes'],
+});
+
 export async function getDatasetSummary(label) {
   try {
-    return await cachedSummary(label);
+    return await (EYES_SUMMARY_LABELS.has(label) ? cachedEyesSummary : cachedSummary)(label);
   } catch (e) {
     console.error('[hub-data] summary', label, e?.message || e);
     return { error: true };
@@ -1185,6 +1394,151 @@ const LINKAGES = {
     }));
   },
 
+  /* Eyes 1: chokepoints furthest from their 1-year average. */
+  async 'eyes-chokepoints'(admin) {
+    const { data, error } = await timed(admin.rpc('eyes_chokepoint_change', { p_days: 7 }));
+    if (error) throw new Error(error.message);
+    return (data || [])
+      .filter((c) => num(c.change_pct) != null)
+      .slice(0, 6)
+      .map((c) => ({
+        key: c.portid,
+        title: c.portname,
+        cells: [
+          { label: 'Change', value: num(c.change_pct), kind: 'signed-pct' },
+          { label: 'Transits / day, 7 days', value: num(c.recent_avg), kind: 'num' },
+          { label: '1-year average', value: num(c.base_avg), kind: 'num' },
+          { label: 'Data through', value: c.last_date, kind: 'date' },
+        ],
+        query: Q.eyesChokepoint(c.portname),
+        href: '/datasets/supply-chain',
+      }));
+  },
+
+  /* Eyes 2: patent momentum leaders, with how many members hold each. */
+  async 'eyes-patent-leaders'(admin) {
+    const { data, error } = await timed(
+      admin.rpc('eyes_patent_momentum', { p_limit: 500, p_min_grants: 50 }),
+    );
+    if (error) throw new Error(error.message);
+    const top = (data || [])
+      .filter((m) => num(m.change_pct) != null)
+      .sort((a, b) => num(b.change_pct) - num(a.change_pct))
+      .slice(0, 10);
+    if (!top.length) return [];
+    const { data: held, error: hErr } = await timed(
+      admin
+        .from('congress_open_positions')
+        .select('bioguide_id, ticker')
+        .in(
+          'ticker',
+          top.map((m) => m.ticker),
+        )
+        .limit(5000),
+    );
+    if (hErr) throw new Error(hErr.message);
+    const holders = new Map();
+    for (const h of held || []) {
+      const t = String(h.ticker || '').toUpperCase();
+      if (!holders.has(t)) holders.set(t, new Set());
+      holders.get(t).add(h.bioguide_id);
+    }
+    return top.map((m) => ({
+      key: m.ticker,
+      ticker: m.ticker,
+      title: m.assignee || m.ticker,
+      cells: [
+        { label: 'Ticker', value: m.ticker, kind: 'ticker' },
+        { label: 'Grants, 12 mo', value: num(m.grants_12m), kind: 'int' },
+        { label: '12 mo before', value: num(m.grants_prior_12m), kind: 'int' },
+        { label: 'Change', value: num(m.change_pct), kind: 'signed-pct' },
+        {
+          label: 'Top field',
+          value: m.top_cpc ? CPC_SECTION_NAMES[m.top_cpc] || m.top_cpc : null,
+          kind: 'text',
+        },
+        {
+          label: 'Held by members of Congress (inferred)',
+          value: holders.get(String(m.ticker).toUpperCase())?.size || 0,
+          kind: 'int',
+        },
+      ],
+      query: Q.eyesPatentsTicker(m.ticker),
+      href: '/datasets/patents',
+    }));
+  },
+
+  /* Eyes 3: supply chain pressure in one card. */
+  async 'eyes-pressure'(admin) {
+    const [gscpi, ship, choke] = await Promise.all([
+      eyesSeriesTail(admin, 'GSCPI', 13),
+      eyesSeriesTail(admin, 'FRGSHPUSM649NCIS', 13),
+      timed(admin.rpc('eyes_chokepoint_change', { p_days: 7 })),
+    ]);
+    if (choke.error) throw new Error(choke.error.message);
+    const rows = [];
+    const gLast = gscpi[gscpi.length - 1];
+    if (gLast) {
+      const gYear = gscpi.length === 13 ? gscpi[0] : null;
+      rows.push({
+        key: 'gscpi',
+        title: 'Global Supply Chain Pressure Index',
+        cells: [
+          { label: 'Latest', value: gLast.value, kind: 'signed' },
+          { label: 'Month', value: monthLabel(gLast.date), kind: 'text' },
+          { label: '12 months earlier', value: gYear ? gYear.value : null, kind: 'signed' },
+          {
+            label: '12-month trend',
+            value: gYear ? gLast.value - gYear.value : null,
+            kind: 'signed',
+          },
+        ],
+        query: null,
+        href: '/datasets/supply-chain',
+      });
+    }
+    const sLast = ship[ship.length - 1];
+    if (sLast) {
+      const sYear = ship.find(
+        (p) => p.date === `${Number(sLast.date.slice(0, 4)) - 1}${sLast.date.slice(4)}`,
+      );
+      rows.push({
+        key: 'cass',
+        title: 'Cass Freight Index, shipments',
+        cells: [
+          { label: 'Index', value: sLast.value, kind: 'num' },
+          {
+            label: 'Year over year',
+            value: sYear?.value ? (100 * (sLast.value - sYear.value)) / sYear.value : null,
+            kind: 'signed-pct',
+          },
+          { label: 'Month', value: monthLabel(sLast.date), kind: 'text' },
+        ],
+        query: null,
+        href: '/datasets/supply-chain',
+      });
+    }
+    const cp = choke.data || [];
+    if (cp.length) {
+      rows.push({
+        key: 'chokepoints-below',
+        title: 'Chokepoints more than 20% below normal',
+        cells: [
+          {
+            label: 'Chokepoints',
+            value: cp.filter((c) => num(c.change_pct) != null && num(c.change_pct) < -20).length,
+            kind: 'int',
+          },
+          { label: 'Of tracked', value: cp.length, kind: 'int' },
+          { label: 'Data through', value: cp[0]?.last_date, kind: 'date' },
+        ],
+        query: null,
+        href: '/datasets/supply-chain',
+      });
+    }
+    return rows;
+  },
+
   /* Lighthouse 1: largest moves in the latest OECD release. */
   async 'lighthouse-oecd-moves'(admin) {
     const obs = await oecdLatest(admin);
@@ -1375,9 +1729,14 @@ async function loadLinkageOrThrow(id) {
    retried on the next request instead of being served for 15 minutes. */
 const cachedLinkage = unstable_cache(loadLinkageOrThrow, ['hub-linkage-v4'], CACHE);
 
+const cachedEyesLinkage = unstable_cache(loadLinkageOrThrow, ['hub-linkage-eyes-v1'], {
+  ...CACHE,
+  tags: ['hubs', 'eyes'],
+});
+
 export async function getLinkage(id) {
   try {
-    return await cachedLinkage(id);
+    return await (String(id).startsWith('eyes-') ? cachedEyesLinkage : cachedLinkage)(id);
   } catch (e) {
     console.error('[hub-data] linkage', id, e?.message || e);
     return { rows: [], error: true };

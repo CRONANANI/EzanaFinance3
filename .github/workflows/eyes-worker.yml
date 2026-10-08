@@ -1,0 +1,76 @@
+name: Eyes Above worker
+
+# Monthly: NASA Black Marble night lights and the NY Fed GSCPI (Python).
+# Manual: a patents backfill or a PortWatch / FRED run (Node, the same code
+# as the Vercel crons), or either Python job with a longer window.
+on:
+  schedule:
+    - cron: '17 6 15 * *'
+  workflow_dispatch:
+    inputs:
+      job:
+        description: 'night_lights | gscpi | patents_backfill | portwatch | fred | all (all = night_lights + gscpi)'
+        default: 'all'
+        required: true
+      months_back:
+        description: 'night lights: months to (re)compute'
+        default: '3'
+      from:
+        description: 'patents_backfill: first grant date (YYYY-MM-DD)'
+        default: '2024-10-01'
+      to:
+        description: 'patents_backfill: last grant date (YYYY-MM-DD), blank for today'
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    if: github.event_name == 'schedule' || inputs.job == 'all' || inputs.job == 'night_lights' || inputs.job == 'gscpi'
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      NASA_EARTHDATA_TOKEN: ${{ secrets.NASA_EARTHDATA_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r workers/eyes/requirements.txt
+      - name: GSCPI
+        if: github.event_name == 'schedule' || inputs.job == 'all' || inputs.job == 'gscpi'
+        working-directory: workers/eyes
+        run: python gscpi.py
+      - name: Night lights
+        if: github.event_name == 'schedule' || inputs.job == 'all' || inputs.job == 'night_lights'
+        working-directory: workers/eyes
+        run: python night_lights.py --months-back "${{ inputs.months_back || '3' }}"
+
+  node:
+    if: github.event_name == 'workflow_dispatch' && (inputs.job == 'patents_backfill' || inputs.job == 'portwatch' || inputs.job == 'fred')
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      PATENTSVIEW_API_KEY: ${{ secrets.PATENTSVIEW_API_KEY }}
+      FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci --ignore-scripts
+      - name: Patents backfill
+        if: inputs.job == 'patents_backfill'
+        run: node scripts/ingest-eyes.mjs patents --from="${{ inputs.from }}" ${{ inputs.to && format('--to={0}', inputs.to) || '' }}
+      - name: PortWatch
+        if: inputs.job == 'portwatch'
+        run: node scripts/ingest-eyes.mjs portwatch
+      - name: FRED
+        if: inputs.job == 'fred'
+        run: node scripts/ingest-eyes.mjs fred
