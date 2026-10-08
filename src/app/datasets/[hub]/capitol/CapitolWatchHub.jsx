@@ -5,7 +5,6 @@
  * Suspense boundary with a skeleton, so one slow read never holds the page.
  */
 import { Suspense } from 'react';
-import Link from 'next/link';
 import { HubQueryProvider } from '@/components/datasets/hub/HubClient';
 import { getLinkage } from '@/lib/datasets/hub-data';
 import { getCapitolEvents } from '@/lib/datasets/capitol-hub/events';
@@ -15,8 +14,6 @@ import {
   getLobbyingRatio,
   getPortfolio,
 } from '@/lib/datasets/capitol-hub/data';
-import { summaryFor } from '../HubCards';
-import { fmt } from '../hub-format';
 import CwhProvider from './CwhProvider';
 import CwhHeader from './CwhHeader';
 import SignalCarousel from './SignalCarousel';
@@ -26,17 +23,8 @@ import { TABS } from './tabs';
 import Heatmap from './Heatmap';
 import Leaderboard from './Leaderboard';
 import Portfolio from './Portfolio';
+import DatasetTiles, { TilesSkeleton } from './DatasetTiles';
 import './capitol-hub.css';
-
-const DASH = '–';
-
-const DATASET_ICON = {
-  'Politician Tracker': 'bi-bank',
-  'Campaign Finance Records': 'bi-cash-stack',
-  'Lobbying Activity': 'bi-megaphone',
-  'Government Contracts': 'bi-briefcase',
-  'Committee Assignments': 'bi-diagram-3',
-};
 
 /* ── modules ──────────────────────────────────────────────────────────── */
 
@@ -125,57 +113,6 @@ function CardSkeleton({ label, className = '' }) {
   );
 }
 
-async function DatasetCard({ item }) {
-  const s = await summaryFor(item.label);
-  const ok = s && !s.empty && !s.error;
-  const lead = ok ? s.numbers?.[0] : null;
-  const second = ok ? s.numbers?.[1] : null;
-  return (
-    <article className="cwh-card cwh-ds" title={item.description}>
-      <h3 className="cwh-ds-title">
-        <i className={`bi ${DATASET_ICON[item.label] || 'bi-database'}`} aria-hidden="true" />
-        {item.label}
-      </h3>
-      {s?.error ? (
-        <p className="cwh-caption">Figures unavailable just now</p>
-      ) : !ok ? (
-        <p className="cwh-caption">No records yet</p>
-      ) : (
-        <>
-          <p className="cwh-ds-lead">{fmt(lead.kind, lead.value) ?? DASH}</p>
-          <p className="cwh-ds-label">{lead.label}</p>
-          {second ? (
-            <p className="cwh-ds-second">
-              {fmt(second.kind, second.value) ?? DASH} {second.label.toLowerCase()}
-            </p>
-          ) : null}
-        </>
-      )}
-      <div className="cwh-ds-foot">
-        <span className="cwh-ds-fresh">
-          {ok && s.freshest ? fmt('date', s.freshest).toUpperCase() : ''}
-        </span>
-        <Link href={item.href} className="cwh-open" aria-label={`Open ${item.label}`}>
-          Open <i className="bi bi-arrow-right" aria-hidden="true" />
-        </Link>
-      </div>
-    </article>
-  );
-}
-
-function DatasetSkeleton({ item }) {
-  return (
-    <article className="cwh-card cwh-ds" aria-busy="true">
-      <h3 className="cwh-ds-title">
-        <i className={`bi ${DATASET_ICON[item.label] || 'bi-database'}`} aria-hidden="true" />
-        {item.label}
-      </h3>
-      <span className="cwh-skel" />
-      <span className="cwh-skel cwh-skel--short" />
-    </article>
-  );
-}
-
 /* ── page ─────────────────────────────────────────────────────────────── */
 
 export default function CapitolWatchHub({ dimension }) {
@@ -240,13 +177,9 @@ export default function CapitolWatchHub({ dimension }) {
               </h2>
               <span className="cwh-caption">open any for the full table</span>
             </div>
-            <div className="cwh-ds-grid">
-              {dimension.items.map((item) => (
-                <Suspense key={item.label} fallback={<DatasetSkeleton item={item} />}>
-                  <DatasetCard item={item} />
-                </Suspense>
-              ))}
-            </div>
+            <Suspense fallback={<TilesSkeleton items={dimension.items} />}>
+              <DatasetTiles items={dimension.items} />
+            </Suspense>
           </section>
         </div>
         <footer className="cwh-tokens cwh-sources">

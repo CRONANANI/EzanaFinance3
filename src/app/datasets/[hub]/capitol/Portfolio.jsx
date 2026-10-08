@@ -55,6 +55,7 @@ function Column({ rows, max }) {
           key={r.ticker}
           type="button"
           className="cwh-port-row"
+          data-ticker={r.ticker}
           onClick={() => openCompany({ ticker: r.ticker })}
           aria-label={`${r.ticker}: ${r.members} members, estimated ${money(r.estLow)} to ${money(r.estHigh)}`}
         >

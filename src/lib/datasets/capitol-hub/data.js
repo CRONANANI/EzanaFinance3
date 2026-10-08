@@ -440,3 +440,23 @@ const cachedMember = unstable_cache(loadMemberOrThrow, ['capitol-member-v2'], CA
 
 /** The drawer's profile, { notFound } or { error }. */
 export const getMemberProfile = guard('member', (bioguide) => cachedMember(up(bioguide)));
+
+/* ── the five dataset tiles' visuals ───────────────────────────────────── */
+
+async function loadVisualsOrThrow() {
+  if (!configured()) return null;
+  const { data, error } = await timed(
+    getAdminClient().from('mv_capitol_dataset_visuals').select('built_at, payload').eq('id', 1),
+  );
+  if (error) throw new Error(error.message);
+  const row = data?.[0];
+  if (!row?.payload) throw new EmptyResult('EMPTY_RESULT');
+  return { builtAt: row.built_at, ...row.payload };
+}
+const cachedVisuals = unstable_cache(loadVisualsOrThrow, ['capitol-dataset-visuals-v1'], CACHE);
+
+/**
+ * One precomputed row for all five tiles: { builtAt, trades, contracts,
+ * lobbying, finance, committees } | { empty } | { error } | null.
+ */
+export const getDatasetVisuals = guard('dataset-visuals', () => cachedVisuals());

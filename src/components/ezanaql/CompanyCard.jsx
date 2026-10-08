@@ -78,7 +78,7 @@ function Portrait({ holder, cx, cy, r, id }) {
   );
 }
 
-function PriceChart({ ticker, candles, purchases, holders }) {
+export function PriceChart({ ticker, candles, purchases, holders }) {
   const holdersById = useMemo(
     () => Object.fromEntries((holders || []).map((h) => [h.bioguide_id, h])),
     [holders],

@@ -99,3 +99,45 @@ export function listenForMemberIntent(root, onIntent) {
     root.removeEventListener('touchstart', handler);
   };
 }
+
+/* ── Capitol Watch company card ──────────────────────────────────────── */
+
+const TICKER = /^[A-Z][A-Z0-9.-]{0,9}$/;
+
+export const companyUrl = (ticker, part, range = null) =>
+  `/api/datasets/capitol/company?ticker=${encodeURIComponent(norm(ticker))}&part=${part}${
+    range ? `&range=${range}` : ''
+  }`;
+
+/** Warm the card and the default (1Y) chart; news waits for the click. */
+export function prefetchCompany(ticker) {
+  if (!TICKER.test(norm(ticker))) return;
+  prefetchJson(companyUrl(ticker, 'card'));
+  prefetchJson(companyUrl(ticker, 'prices', '1Y'));
+}
+
+/**
+ * Like listenForMemberIntent, for elements with data-ticker="<symbol>":
+ * `onIntent(ticker)` once per ticker per 30 seconds. Returns the cleanup.
+ */
+export function listenForTickerIntent(root, onIntent) {
+  if (!root) return () => {};
+  const seen = new Map();
+  const handler = (e) => {
+    const el = e.target?.closest?.('[data-ticker]');
+    if (!el || !root.contains(el)) return;
+    const t = norm(el.getAttribute('data-ticker'));
+    if (!TICKER.test(t)) return;
+    if (Date.now() - (seen.get(t) || 0) < 30000) return;
+    seen.set(t, Date.now());
+    onIntent(t);
+  };
+  root.addEventListener('pointerover', handler, { passive: true });
+  root.addEventListener('focusin', handler);
+  root.addEventListener('touchstart', handler, { passive: true });
+  return () => {
+    root.removeEventListener('pointerover', handler);
+    root.removeEventListener('focusin', handler);
+    root.removeEventListener('touchstart', handler);
+  };
+}

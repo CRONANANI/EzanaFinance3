@@ -29,6 +29,7 @@ function RegionList({ region, rows, sides }) {
             <button
               type="button"
               className="cwh-venn-row"
+              data-ticker={r.ticker}
               onClick={() => openCompany({ ticker: r.ticker })}
               aria-label={`${r.ticker}: ${r.a} ${sides.a.short}, ${r.b} ${sides.b.short}`}
             >

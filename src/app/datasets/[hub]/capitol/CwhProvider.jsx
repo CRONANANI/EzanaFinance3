@@ -9,7 +9,8 @@
  *                   pointer over, focus or touch (one delegated listener).
  *   hub events      the carousel's events, so the drawer lists a member's
  *                   signals without another request
- *   company card    openCompany({ ticker, name })
+ *   company card    openCompany({ ticker, name }): the CompanyPanel; any
+ *                   element with data-ticker warms its card and 1Y chart
  *   EzanaQL         requestQuery(query): fills the bar and runs (Query this)
  *   account gate    gate(action): the centred account prompt
  *   My signals      the reader's saved rules and the events each matches
@@ -24,9 +25,14 @@ import {
   useState,
 } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import CompanyCard from '@/components/ezanaql/CompanyCard';
 import { GateModal, useHubQuery } from '@/components/datasets/hub/HubClient';
-import { listenForMemberIntent, prefetchMember } from '@/components/datasets/prefetch-cache';
+import {
+  listenForMemberIntent,
+  listenForTickerIntent,
+  prefetchCompany,
+  prefetchMember,
+} from '@/components/datasets/prefetch-cache';
+import CompanyPanel from './CompanyPanel';
 import MemberDrawer from './MemberDrawer';
 
 const Cwh = createContext(null);
@@ -94,6 +100,8 @@ export default function CwhProvider({ children }) {
 
   /* Warm the drawer's reads on intent, anywhere on the page. */
   useEffect(() => listenForMemberIntent(document.body, prefetchMember), []);
+  useEffect(() => listenForTickerIntent(document.body, prefetchCompany), []);
+  const companyOpener = useRef(null);
 
   const openMember = useCallback((bioguideId, hint = null) => {
     const id = String(bioguideId || '').toUpperCase();
@@ -124,11 +132,20 @@ export default function CwhProvider({ children }) {
 
   const openCompany = useCallback((c) => {
     if (!c?.ticker) return;
+    prefetchCompany(c.ticker);
+    companyOpener.current = document.activeElement;
     setCompany({
       ticker: String(c.ticker).toUpperCase(),
       name: c.name || null,
       since: c.since || null,
     });
+  }, []);
+
+  const closeCompany = useCallback(() => {
+    setCompany(null);
+    const el = companyOpener.current;
+    companyOpener.current = null;
+    window.setTimeout(() => el?.focus?.(), 0);
   }, []);
 
   /* Query this: the hub's shared channel, so row actions reach this bar. */
@@ -295,11 +312,15 @@ export default function CwhProvider({ children }) {
         />
       ) : null}
       {company ? (
-        <CompanyCard
+        <CompanyPanel
           ticker={company.ticker}
           name={company.name}
-          since={company.since}
-          onClose={() => setCompany(null)}
+          onClose={closeCompany}
+          onMember={(id, hint) => {
+            companyOpener.current = null;
+            setCompany(null);
+            openMember(id, hint);
+          }}
         />
       ) : null}
       {gateAction ? <GateModal action={gateAction} onClose={() => setGateAction(null)} /> : null}
