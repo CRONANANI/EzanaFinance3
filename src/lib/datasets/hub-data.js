@@ -40,13 +40,13 @@ const thisYear = () => new Date().getUTCFullYear();
 /* An RPC that takes longer than this is abandoned; the card shows its retry
    state and the next request tries again. */
 const RPC_TIMEOUT_MS = 9000;
-const timed = (q) => q.abortSignal(AbortSignal.timeout(RPC_TIMEOUT_MS));
+export const timed = (q) => q.abortSignal(AbortSignal.timeout(RPC_TIMEOUT_MS));
 
-function configured() {
+export function configured() {
   return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
 
-async function count(build) {
+export async function count(build) {
   const { count: n, error } = await build();
   if (error) throw new Error(error.message);
   return n || 0;
@@ -56,7 +56,7 @@ async function count(build) {
  * Every row of a query, read in parallel 1,000-row pages. `build` returns a
  * fresh, ordered query; `total` is its exact count.
  */
-async function readAll(build, total, cap = 120) {
+export async function readAll(build, total, cap = 120) {
   const pages = Math.min(Math.ceil(total / PAGE), cap);
   const out = [];
   for (let start = 0; start < pages; start += PARALLEL) {
@@ -990,6 +990,16 @@ const LINKAGES = {
           { label: 'Sector', value: sectorLabel(hit), kind: 'text' },
         ],
         committees,
+        /* Structured fields for the Capitol hub's top signals. */
+        member: {
+          bioguideId: String(t.bioguide_id || '').toUpperCase() || null,
+          name: t.member_name || t.bioguide_id,
+          party: t.party || null,
+        },
+        side: t.type,
+        date: t.transaction_date,
+        committee: shortCommitteeName(committee.name),
+        sector: sectorLabel(hit),
         query: Q.tickerHolders(ticker),
         href: `/datasets/committees?member=${encodeURIComponent(t.bioguide_id)}`,
       };
@@ -1087,6 +1097,12 @@ const LINKAGES = {
         key: r.ticker,
         ticker: r.ticker,
         title: r.label,
+        company: r.label,
+        client: r.clients[0],
+        year,
+        spend: r.spend,
+        awardsN: r.awards.n,
+        awardsV: r.awards.v,
         cells: [
           { label: 'Ticker', value: r.ticker, kind: 'ticker' },
           { label: `Lobbying, ${year}`, value: r.spend, kind: 'usd' },
@@ -1479,9 +1495,9 @@ async function loadLinkageOrThrow(id) {
   return Array.isArray(out) ? { rows: out } : { rows: out?.rows || [], extra: out?.extra || null };
 }
 
-/* v3, row shapes changed. Errors are thrown inside the cache and caught outside, so a timeout is
+/* v4, row shapes changed. Errors are thrown inside the cache and caught outside, so a timeout is
    retried on the next request instead of being served for 15 minutes. */
-const cachedLinkage = unstable_cache(loadLinkageOrThrow, ['hub-linkage-v3'], CACHE);
+const cachedLinkage = unstable_cache(loadLinkageOrThrow, ['hub-linkage-v4'], CACHE);
 
 export async function getLinkage(id) {
   try {
