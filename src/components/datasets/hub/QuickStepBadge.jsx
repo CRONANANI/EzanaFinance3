@@ -1,7 +1,8 @@
 'use client';
 
 /**
- * The Quick Step badge: earned by traders whose moves around federal contract
+ * The Quick Step badge (an ink pill with a gold bolt; locked, as the legend,
+ * it is dashed and faint with an outline bolt): earned by traders whose moves around federal contract
  * awards pay off, and by companies whose stock tends to rise after their
  * awards. Hover, focus or tap shows what it means and how a reader earns it,
  * with their own progress when they are signed in.
@@ -65,7 +66,10 @@ export default function QuickStepBadge({ kind = 'actor', earned = true, compact 
         onFocus={() => setOpen(true)}
         onBlur={(e) => !wrap.current?.contains(e.relatedTarget) && setOpen(false)}
       >
-        <i className={`bi ${earned ? 'bi-lightning-charge-fill' : 'bi-lock'}`} aria-hidden="true" />
+        <i
+          className={`bi ${earned ? 'bi-lightning-charge-fill' : 'bi-lightning-charge'}`}
+          aria-hidden="true"
+        />
         <span>Quick Step</span>
       </button>
       {open ? (

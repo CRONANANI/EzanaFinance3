@@ -43,6 +43,21 @@ WHERE bioguide_id = "${q(bioguideId)}" AND transaction_date >= LAST 12 MONTHS
 SELECT politician, receipts, congress_trades.ticker, congress_trades.transaction_type, congress_trades.transaction_date
 ORDER BY congress_trades.transaction_date DESC
 LIMIT 50;`,
+  /* The Capitol Watch hub's opening query; bioguide_id lets a row open the member drawer. */
+  capitolHubSeed: () => `FROM capitol.congress_trades
+WHERE transaction_date >= LAST 90 DAYS AND transaction_type = "purchase"
+SELECT politician, bioguide_id, party, state, ticker, transaction_type, transaction_date, amount_low, amount_high
+ORDER BY transaction_date DESC
+LIMIT 50;`,
+  /* One heatmap cell: the holdings of the tickers its holders hold. */
+  tickersHolders: (tickers) => `FROM capitol.holdings
+WHERE ticker IN [${String(tickers || '')
+    .split(',')
+    .map((t) => `"${q(t)}"`)
+    .join(', ')}]
+SELECT politician, party, chamber, ticker, est_value, last_trade
+ORDER BY est_value DESC
+LIMIT 50;`,
   whaleTicker: (ticker) => `FROM titans.whale_moves
 WHERE ticker = "${q(ticker)}"
 SELECT filer, change_type, value, whale_score, quarter
@@ -72,6 +87,8 @@ export const HUB_QUERY_DIMENSION = {
   tickerAwards: 'capitol',
   lobbyingClient: 'capitol',
   raiserTrades: 'capitol',
+  capitolHubSeed: 'capitol',
+  tickersHolders: 'capitol',
   whaleTicker: 'titans',
   activistTicker: 'titans',
   oecdSeries: 'lighthouse',

@@ -16,6 +16,9 @@ import ShareButton from '@/components/native/ShareButton';
 
 const HubQuery = createContext({ runRequest: null, requestRun: () => {} });
 
+/** The hub's "Query this" channel: { runRequest, requestRun(query) }. */
+export const useHubQuery = () => useContext(HubQuery);
+
 export function HubQueryProvider({ children }) {
   const [runRequest, setRunRequest] = useState(null);
   const seq = useRef(0);
@@ -66,7 +69,7 @@ export function HubBar({ dimension, seedQuery, examplePrompts }) {
 }
 
 /* The account prompt, centred over the page on an opaque card with a scrim. */
-function GateModal({ action, onClose }) {
+export function GateModal({ action, onClose }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);

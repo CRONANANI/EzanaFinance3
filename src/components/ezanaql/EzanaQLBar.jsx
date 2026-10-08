@@ -62,6 +62,8 @@ const GATE_WHAT = {
   watchlist: 'add these tickers to your watchlist',
   save: 'save this report to your research',
   'hub-save': 'add this data to your research profile and watchlist',
+  'signal-save': 'save this signal to My signals',
+  'signal-alert': 'get alerts when this signal matches',
 };
 
 /* Explains why an account action did not happen, in place under the bar. */
@@ -142,6 +144,13 @@ function relativeDate(iso) {
  * @param {(row: object, ctx: { window: object|null, keys: string[] }) => void} [props.onRowClick]
  *   makes result rows clickable; the page decides what a row opens
  * @param {(row: object) => boolean} [props.rowClickable]  which rows (default: those with a ticker)
+ * @param {boolean} [props.queryBlock]  show the current query as a block under the prompts,
+ *   with Edit, Run and Saved reports; the pill then carries only Generate (the page shows
+ *   exports with its own result card). onResult also receives { query }.
+ * @param {boolean} [props.autoRun]  run the seed query once on mount
+ * @param {string} [props.scopeLine]  one line under the query block naming the data in scope
+ * @param {(state: 'running' | 'error' | 'done') => void} [props.onRunState]  run progress,
+ *   for a page that renders its own result card
  */
 export default function EzanaQLBar({
   dimension,
@@ -153,6 +162,10 @@ export default function EzanaQLBar({
   layout = 'stack',
   onRowClick,
   rowClickable = (row) => row.ticker != null && row.ticker !== '',
+  queryBlock = false,
+  autoRun = false,
+  scopeLine = null,
+  onRunState,
 }) {
   const [prompt, setPrompt] = useState('');
   const [focused, setFocused] = useState(false);
@@ -289,6 +302,8 @@ export default function EzanaQLBar({
       setError(null);
       setNote(null);
       setResult(null);
+      onRunState?.('running');
+      let outcome = 'error';
       setSaveState('idle');
       setWatchState('idle');
       try {
@@ -305,17 +320,28 @@ export default function EzanaQLBar({
         /* Engine notes (a row cap hit, a JOIN that multiplied a sum) are part
            of the answer: shown with it, never swallowed. */
         if (Array.isArray(data.notes) && data.notes.length) setNote(data.notes.join(' '));
-        if (typeof onResult === 'function') onResult(data.result);
+        if (typeof onResult === 'function') onResult(data.result, { query: q });
         else setResult(data.result);
+        outcome = 'done';
       } catch {
         setError('Could not reach the query engine.');
       } finally {
         setBusy(null);
+        onRunState?.(outcome);
       }
     },
-    [code, busy, post, onResult, dimension],
+    [code, busy, post, onResult, onRunState, dimension],
   );
   const run = useCallback(() => runQuery(), [runQuery]);
+
+  /* autoRun: the seed query runs once so the page's result is never empty. */
+  const autoRan = useRef(false);
+  useEffect(() => {
+    if (!autoRun || autoRan.current || !seedQuery.trim()) return;
+    autoRan.current = true;
+    runQuery(seedQuery);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoRun, seedQuery]);
 
   /* The hub's "Query this": a new request id fills the editor and runs. */
   const lastRunRequest = useRef(null);
@@ -657,7 +683,7 @@ export default function EzanaQLBar({
   );
 
   return (
-    <div className={`eqb${split ? ' eqb--split' : ''}`}>
+    <div className={`eqb${split ? ' eqb--split' : ''}${queryBlock ? ' eqb--qblock' : ''}`}>
       <div className="eqb-main">
         <div className="eqb-pill">
           <span className="eqb-mark">
@@ -703,15 +729,17 @@ export default function EzanaQLBar({
               )}
             </span>
           </button>
-          {actionsFor('pill')}
+          {queryBlock ? null : actionsFor('pill')}
         </div>
 
         {/* Phones only (CSS): the EzanaQL label and the four actions on one
             row under the prompt. */}
-        <div className="eqb-tools">
-          <span className="eqb-code-tag">EzanaQL</span>
-          {actionsFor('row')}
-        </div>
+        {queryBlock ? null : (
+          <div className="eqb-tools">
+            <span className="eqb-code-tag">EzanaQL</span>
+            {actionsFor('row')}
+          </div>
+        )}
 
         {examplePrompts.length ? (
           <div className="eqb-chips" role="group" aria-label="Example prompts">
@@ -756,6 +784,36 @@ export default function EzanaQLBar({
             Queries can span every live {DIMENSION_LABELS[dimension] || 'hub'} dataset.
           </p>
         ) : null}
+
+        {queryBlock && !editing ? (
+          <div className="eqb-qblock">
+            <div className="eqb-qblock-acts" role="group" aria-label="Query actions">
+              <button type="button" className="eqb-qblock-act" onClick={() => setEditing(true)}>
+                <i className="bi bi-pencil" aria-hidden="true" /> Edit
+              </button>
+              <button
+                type="button"
+                className="eqb-qblock-act is-run"
+                onClick={run}
+                disabled={busy === 'run'}
+              >
+                <i className="bi bi-play-fill" aria-hidden="true" />{' '}
+                {busy === 'run' ? 'Running' : 'Run'}
+              </button>
+              <button
+                type="button"
+                className="eqb-qblock-act is-saved"
+                onClick={() => (isAuthenticated ? toggleSaved() : setGate('save'))}
+                aria-expanded={isAuthenticated ? savedOpen : undefined}
+              >
+                Saved reports
+                {saved && isAuthenticated ? ` (${saved.length})` : ''}
+                {lock}
+              </button>
+            </div>
+          </div>
+        ) : null}
+        {queryBlock && scopeLine ? <p className="eqb-scope">{scopeLine}</p> : null}
 
         {editing ? (
           <div className="eqb-edit">

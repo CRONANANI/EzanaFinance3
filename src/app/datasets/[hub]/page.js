@@ -14,6 +14,7 @@ import {
   LinkageCard,
   LinkageSkeleton,
 } from './HubCards';
+import CapitolWatchHub from './capitol/CapitolWatchHub';
 import './hub.css';
 
 /**
@@ -60,6 +61,8 @@ function sourceLine(dim) {
 export default function HubPage({ params }) {
   const dim = dimensionFor(params);
   if (!dim) notFound();
+  /* Capitol Watch has its own redesigned hub; the other six keep this template. */
+  if (dim.id === 'capitol') return <CapitolWatchHub dimension={dim} />;
   const open = dimensionHasQueryableData(dim.id);
   const linkages = HUB_LINKAGES[dim.id] || [];
   const willShow = HUB_WILL_SHOW[dim.id];
