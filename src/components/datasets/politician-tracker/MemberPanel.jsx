@@ -11,7 +11,7 @@
  * states for the contractor section (loading, empty, failed). `contractors`
  * is { state: 'loading' | 'ready' | 'failed', data }.
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Bar, BarChart, ResponsiveContainer, XAxis } from 'recharts';
 import { CHART } from '@/lib/chart-theme';
@@ -24,23 +24,35 @@ import {
 } from '@/lib/politicians/tracker-model';
 import Headshot, { AVATAR_SIZE, ChamberChip, PartyTag } from './Headshot';
 import PortfolioCharts from './PortfolioCharts';
+import {
+  getJson,
+  trackerCommitteesUrl,
+  trackerPortfolioUrl,
+} from '@/components/datasets/prefetch-cache';
 
 const TRADES_DEFAULT = 10;
 
 /* The member's committees as chips into the Committee Assignments page.
-   Hidden while loading, on failure and when the member holds no seat. */
-function CommitteeChips({ bioguideId }) {
+   Hidden while loading, on failure and when the member holds no seat. Reads
+   the lite committees body through the shared cache a hover on the card has
+   usually filled. */
+function CommitteeChips({ bioguideId, onDone }) {
   const [list, setList] = useState([]);
   useEffect(() => {
     setList([]);
-    if (!bioguideId) return undefined;
-    const ctrl = new AbortController();
-    fetch(`/api/committees/member/${encodeURIComponent(bioguideId)}`, { signal: ctrl.signal })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => setList(Array.isArray(d?.committees) ? d.committees : []))
-      .catch(() => {});
-    return () => ctrl.abort();
-  }, [bioguideId]);
+    if (!bioguideId) {
+      onDone?.();
+      return undefined;
+    }
+    let live = true;
+    getJson(trackerCommitteesUrl(bioguideId))
+      .then(({ ok, d }) => live && setList(ok && Array.isArray(d?.committees) ? d.committees : []))
+      .catch(() => {})
+      .finally(() => live && onDone?.());
+    return () => {
+      live = false;
+    };
+  }, [bioguideId, onDone]);
   if (!list.length) return null;
   return (
     <section className="dsc-p-block">
@@ -112,20 +124,24 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
       setPortfolio({ state: 'unavailable', data: null });
       return undefined;
     }
-    const ctrl = new AbortController();
+    let live = true;
     setPortfolio({ state: 'loading', data: null });
-    fetch(`/api/politicians/portfolio?bioguide=${encodeURIComponent(member.bioguideId)}`, {
-      signal: ctrl.signal,
-    })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) =>
-        setPortfolio(d?.ok ? { state: 'ready', data: d } : { state: 'failed', data: null }),
-      )
+    getJson(trackerPortfolioUrl(member.bioguideId))
+      .then(({ ok, d }) => {
+        if (live) setPortfolio(ok ? { state: 'ready', data: d } : { state: 'failed', data: null });
+      })
       .catch(() => {
-        if (!ctrl.signal.aborted) setPortfolio({ state: 'failed', data: null });
+        if (live) setPortfolio({ state: 'failed', data: null });
       });
-    return () => ctrl.abort();
+    return () => {
+      live = false;
+    };
   }, [member.bioguideId]);
+  const [chipsDone, setChipsDone] = useState(false);
+  useEffect(() => setChipsDone(false), [member.bioguideId]);
+  const onChipsDone = useCallback(() => setChipsDone(true), []);
+  /* Ready once the per-member reads are on screen (the speed check waits on this). */
+  const ready = portfolio.state !== 'loading' && chipsDone;
 
   /* Focus trap: Tab cycles inside the dialog while it is open. */
   useEffect(() => {
@@ -167,6 +183,8 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
       className="dsc-panel ptk-panel"
       role="dialog"
       aria-label={`${member.name}, trade profile`}
+      aria-busy={!ready}
+      data-ready={ready ? 'true' : 'false'}
     >
       <div className="dsc-p-head">
         <span className="dsc-p-route dsc-mn">
@@ -206,7 +224,7 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
           <Stat label="Volume, midpoints" value={usdShort(member.volume)} />
         </div>
 
-        <CommitteeChips bioguideId={member.bioguideId} />
+        <CommitteeChips bioguideId={member.bioguideId} onDone={onChipsDone} />
 
         <PortfolioCharts state={portfolio.state} data={portfolio.data} />
 

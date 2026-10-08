@@ -76,6 +76,8 @@ const DAY = 86400000;
 const num = (v) => (v == null || v === '' || !Number.isFinite(Number(v)) ? null : Number(v));
 const iso = (v) => (v ? String(v).slice(0, 10) : null);
 const daysBetween = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / DAY);
+/* 'buy' | 'sell' from a disclosure's transaction type (sale, sale_partial: sell). */
+const sideOf = (t) => (/^(s|sale|sell)/i.test(String(t || '')) ? 'sell' : 'buy');
 const up = (s) => (s == null ? null : String(s).trim().toUpperCase());
 
 /** $1.24B, $860M, $15K. For sentences; tables format their own. */
@@ -482,31 +484,184 @@ export const TRADER_TYPES = [
 
 const money = (v) => ({ value: v, label: usdShort(v) });
 
-/** The conditions a rule can carry, in the order step 2 lists them. */
+/* Award agencies, grouped for the "awarding agency" condition. */
+export const AGENCY_GROUPS = [
+  { id: 'defense', label: 'DEFENSE', test: /defense|army|navy|air force|marine/i },
+  { id: 'va', label: 'VETERANS AFFAIRS', test: /veterans/i },
+  {
+    id: 'health',
+    label: 'HEALTH',
+    test: /health and human|hhs\b|food and drug|centers for disease|national institutes of health/i,
+  },
+  { id: 'dhs', label: 'HOMELAND SECURITY', test: /homeland/i },
+  { id: 'energy', label: 'ENERGY', test: /department of energy/i },
+  { id: 'nasa', label: 'NASA', test: /aeronautics and space|\bnasa\b/i },
+  { id: 'other', label: 'OTHER', test: null },
+];
+
+/** The group id an awarding agency belongs to ('other' when none fits). */
+export function agencyGroup(agency) {
+  const name = String(agency || '');
+  return AGENCY_GROUPS.find((g) => g.test && g.test.test(name))?.id || 'other';
+}
+
+/* Who holds the account, from the disclosure's owner code. */
+export const OWNERS = [
+  { id: 'member', label: 'MEMBER' },
+  { id: 'spouse', label: 'SPOUSE' },
+  { id: 'joint', label: 'JOINT' },
+  { id: 'child', label: 'CHILD' },
+];
+
+/** 'member' | 'spouse' | 'joint' | 'child' from a disclosure owner code. */
+export function ownerOf(code) {
+  const c = String(code || '')
+    .trim()
+    .toUpperCase();
+  if (c === 'SP' || c === 'SPOUSE') return 'spouse';
+  if (c === 'JT' || c === 'JOINT') return 'joint';
+  if (c === 'DC' || c === 'CHILD' || c === 'DEPENDENT') return 'child';
+  return 'member';
+}
+
+/** Step 2's sections, in order. */
+export const CONDITION_GROUPS = [
+  { id: 'trade', label: 'The trade' },
+  { id: 'award', label: 'The award' },
+  { id: 'member', label: 'The member' },
+  { id: 'money', label: 'Money and other traders' },
+];
+
+/**
+ * The conditions a rule can carry, in the order step 2 lists them within
+ * each group. A condition shows only when every dataset in `requires` is
+ * picked. Conditions added after rules were first saved are `defaultOff`, so
+ * an older rule (which lacks them) matches exactly as before.
+ */
 export const RULE_CONDITIONS = [
+  /* The trade */
   {
     id: 'trade_within_days',
+    group: 'trade',
     label: ['Trade within', 'of an award to the same company'],
     values: [7, 14, 30, 60, 90].map((d) => ({ value: d, label: `${d} DAYS` })),
     default: 30,
     requires: ['Politician Tracker', 'Government Contracts'],
   },
   {
+    id: 'trade_timing',
+    group: 'trade',
+    label: ['Trade came', 'the award'],
+    values: [
+      { value: 'before', label: 'BEFORE' },
+      { value: 'after', label: 'AFTER' },
+    ],
+    default: 'before',
+    defaultOff: true,
+    requires: ['Politician Tracker', 'Government Contracts'],
+  },
+  {
+    id: 'trade_side',
+    group: 'trade',
+    label: ['Trade direction', ''],
+    values: [
+      { value: 'buy', label: 'BUYS' },
+      { value: 'sell', label: 'SALES' },
+    ],
+    default: 'buy',
+    defaultOff: true,
+    requires: ['Politician Tracker'],
+  },
+  {
+    id: 'amount_floor',
+    group: 'trade',
+    label: ['Trade amount at least', '(disclosed range floor)'],
+    values: [1e3, 15e3, 50e3, 100e3, 250e3, 1e6].map(money),
+    default: 15e3,
+    defaultOff: true,
+    requires: ['Politician Tracker'],
+  },
+  {
+    id: 'owner',
+    group: 'trade',
+    label: ['Account holder', ''],
+    values: OWNERS.map((o) => ({ value: o.id, label: o.label })),
+    multi: true,
+    default: OWNERS.map((o) => o.id),
+    defaultOff: true,
+    requires: ['Politician Tracker'],
+  },
+  {
+    id: 'disclosure_lag',
+    group: 'trade',
+    label: ['Disclosed at least', 'after the trade (45 is late)'],
+    values: [15, 30, 45, 60, 90].map((d) => ({ value: d, label: `${d} DAYS` })),
+    default: 45,
+    defaultOff: true,
+    requires: ['Politician Tracker'],
+  },
+  {
+    id: 'return_floor',
+    group: 'trade',
+    label: ['30-day return at least', ''],
+    values: [0, 5, 10, 20].map((v) => ({ value: v, label: `+${v}%` })),
+    default: 5,
+    defaultOff: true,
+    requires: ['Politician Tracker'],
+  },
+  /* The award */
+  {
     id: 'award_min',
+    group: 'award',
     label: ['Award of at least', ''],
-    values: [10e6, 50e6, 100e6, 500e6, 1e9].map(money),
+    values: [1e6, 10e6, 50e6, 100e6, 500e6, 1e9].map(money),
     default: 100e6,
     requires: ['Government Contracts'],
   },
   {
+    id: 'agency_group',
+    group: 'award',
+    label: ['Awarding agency', ''],
+    values: AGENCY_GROUPS.map((g) => ({ value: g.id, label: g.label })),
+    multi: true,
+    default: AGENCY_GROUPS.map((g) => g.id),
+    defaultOff: true,
+    requires: ['Government Contracts'],
+  },
+  /* The member */
+  {
     id: 'committee_oversees',
+    group: 'member',
     label: ["Member's committee oversees the company's sector", ''],
     values: [{ value: 'any', label: 'ANY' }],
     default: 'any',
     requires: ['Committee Assignments'],
   },
   {
+    id: 'party',
+    group: 'member',
+    label: ['Party', ''],
+    values: ['any', 'D', 'R', 'I'].map((p) => ({ value: p, label: p === 'any' ? 'ANY' : p })),
+    default: 'any',
+    defaultOff: true,
+    requires: ['Politician Tracker'],
+  },
+  {
+    id: 'chamber',
+    group: 'member',
+    label: ['Chamber', ''],
+    values: [
+      { value: 'house', label: 'HOUSE' },
+      { value: 'senate', label: 'SENATE' },
+    ],
+    default: 'house',
+    defaultOff: true,
+    requires: ['Politician Tracker'],
+  },
+  /* Money and other traders */
+  {
     id: 'trader_types',
+    group: 'money',
     label: ['Traders', ''],
     values: TRADER_TYPES.map((t) => ({ value: t.id, label: t.label.toUpperCase() })),
     multi: true,
@@ -514,20 +669,31 @@ export const RULE_CONDITIONS = [
     requires: [],
   },
   {
-    id: 'amount_floor',
-    label: ['Trade amount at least', '(disclosed range floor)'],
-    values: [1e3, 15e3, 50e3, 100e3].map(money),
-    default: 15e3,
+    id: 'fec_min',
+    group: 'money',
+    label: ['Member raised at least', 'this cycle'],
+    values: [250e3, 500e3, 1e6, 2e6, 5e6].map(money),
+    default: 1e6,
     defaultOff: true,
-    requires: ['Politician Tracker'],
+    requires: ['Campaign Finance Records'],
   },
   {
-    id: 'party',
-    label: ['Party', ''],
-    values: ['any', 'D', 'R', 'I'].map((p) => ({ value: p, label: p === 'any' ? 'ANY' : p })),
-    default: 'any',
+    id: 'lobbying_min',
+    group: 'money',
+    label: ['Company lobbied at least', 'this year'],
+    values: [10e3, 50e3, 100e3, 500e3, 1e6].map(money),
+    default: 100e3,
     defaultOff: true,
-    requires: ['Politician Tracker'],
+    requires: ['Lobbying Activity'],
+  },
+  {
+    id: 'insiders_min',
+    group: 'money',
+    label: ['At least', 'insider trades within 30 days'],
+    values: [1, 2, 3, 5, 10].map((v) => ({ value: v, label: String(v) })),
+    default: 2,
+    defaultOff: true,
+    requires: ['Form 4 insiders'],
   },
 ];
 
@@ -656,21 +822,48 @@ export function matchSignalRule(rule, pool = [], { today } = {}) {
   const floor = cond('amount_floor');
   const party = cond('party');
   const types = cond('trader_types');
+  const timing = cond('trade_timing');
+  const sideWant = cond('trade_side');
+  const owners = cond('owner');
+  const lag = cond('disclosure_lag');
+  const retFloor = cond('return_floor');
+  const agencies = cond('agency_group');
+  const chamber = cond('chamber');
+  const fecMin = cond('fec_min');
+  const lobbyMin = cond('lobbying_min');
+  const insidersMin = cond('insiders_min');
 
   const out = [];
   for (const c of pool) {
     if (c.level !== level) continue;
     if (!c.flaggedAt || c.flaggedAt < since || c.flaggedAt > end) continue;
-    const awards = (c.awards || []).filter(
-      (a) =>
-        (awardMin == null || (num(a.amount) ?? 0) >= awardMin) &&
-        (within == null || !c.tradeDate || Math.abs(daysBetween(c.tradeDate, a.date)) <= within),
-    );
+    const awards = (c.awards || []).filter((a) => {
+      if (awardMin != null && (num(a.amount) ?? 0) < awardMin) return false;
+      if (within != null && c.tradeDate && Math.abs(daysBetween(c.tradeDate, a.date)) > within)
+        return false;
+      /* daysBetween(trade, award) >= 0: the trade came on or before the award. */
+      if (timing != null && c.tradeDate) {
+        const d = daysBetween(c.tradeDate, a.date);
+        if (timing === 'before' ? d < 0 : d > 0) return false;
+      }
+      if (Array.isArray(agencies) && !agencies.includes(a.group || agencyGroup(a.agency)))
+        return false;
+      return true;
+    });
     const award = awards.sort((a, b) => (num(b.amount) ?? 0) - (num(a.amount) ?? 0))[0] || null;
     const has = datasetsOf(c, Boolean(award));
     if (!datasets.every((d) => has.includes(d))) continue;
     if (floor != null && (num(c.amountMin) ?? 0) < floor) continue;
     if (party != null && party !== 'any' && c.member?.party !== party) continue;
+    if (sideWant != null && c.member && sideOf(c.side) !== sideWant) continue;
+    if (Array.isArray(owners) && c.member && !owners.includes(c.owner || 'member')) continue;
+    if (lag != null && c.member && !(num(c.lagDays) != null && c.lagDays >= lag)) continue;
+    if (retFloor != null && c.member && !(num(c.ret30) != null && c.ret30 >= retFloor)) continue;
+    if (chamber != null && c.member && String(c.member.chamber || '').toLowerCase() !== chamber)
+      continue;
+    if (fecMin != null && !((num(c.fec?.receipts) ?? 0) >= fecMin)) continue;
+    if (lobbyMin != null && !((num(c.lobbying?.spend) ?? 0) >= lobbyMin)) continue;
+    if (insidersMin != null && !((c.insiders?.length || 0) >= insidersMin)) continue;
     if (Array.isArray(types) && types.length && !traderTypesOf(c).some((t) => types.includes(t)))
       continue;
     out.push({ ...c, award });
@@ -918,4 +1111,41 @@ export function congressPortfolio(rows = [], limit = 16) {
     .slice(0, limit)
     .map((r, i) => ({ rank: i + 1, ...r }));
   return { rows: out, maxMembers: out.reduce((m, r) => Math.max(m, r.members), 0) };
+}
+
+/* ── Congress's portfolio, compared ──────────────────────────────────── */
+
+const REGION_TOP = 12;
+
+/**
+ * Split hub_congress_portfolio_compare rows into the three Venn regions:
+ * held only by side A, by both, only by side B. Each region keeps its count
+ * and its most widely held tickers.
+ */
+export function compareRegions(rows) {
+  const only = (pick) =>
+    rows
+      .filter(pick)
+      .map((r) => ({
+        ticker: r.ticker,
+        sector: r.sector || null,
+        a: Number(r.a) || 0,
+        b: Number(r.b) || 0,
+        aHigh: num(r.aHigh),
+        bHigh: num(r.bHigh),
+      }))
+      .sort(
+        (x, y) =>
+          y.a + y.b - (x.a + x.b) ||
+          (y.aHigh || 0) + (y.bHigh || 0) - ((x.aHigh || 0) + (x.bHigh || 0)) ||
+          x.ticker.localeCompare(y.ticker),
+      );
+  const a = only((r) => r.a > 0 && !(r.b > 0));
+  const both = only((r) => r.a > 0 && r.b > 0);
+  const b = only((r) => r.b > 0 && !(r.a > 0));
+  return {
+    a: { count: a.length, top: a.slice(0, REGION_TOP) },
+    both: { count: both.length, top: both.slice(0, REGION_TOP) },
+    b: { count: b.length, top: b.slice(0, REGION_TOP) },
+  };
 }

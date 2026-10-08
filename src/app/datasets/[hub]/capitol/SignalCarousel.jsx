@@ -110,7 +110,10 @@ function EventCard({ e, index, total }) {
             <button
               type="button"
               className="cwh-link-btn"
-              onClick={() => openMember(member.bioguideId)}
+              data-member={member.bioguideId}
+              onClick={() =>
+                openMember(member.bioguideId, { name: member.name, party: member.party })
+              }
             >
               {member.name} <i className="bi bi-arrow-right" aria-hidden="true" />
             </button>
@@ -177,8 +180,15 @@ function EventCard({ e, index, total }) {
   );
 }
 
-export default function SignalCarousel({ events = [], days = 7, error = false }) {
-  const { rules, ruleEvents, ruleErrors } = useCwh();
+const NO_EVENTS = [];
+
+export default function SignalCarousel({ events: eventsProp, days = 7, error = false }) {
+  const events = eventsProp || NO_EVENTS;
+  const { rules, ruleEvents, ruleErrors, setHubEvents } = useCwh();
+  /* The drawer lists a member's signals from these, with no request of its own. */
+  useEffect(() => {
+    setHubEvents?.(events);
+  }, [events, setHubEvents]);
   const pendingSignal = useRef(null);
   const [filter, setFilter] = useState('all');
   const [ruleId, setRuleId] = useState(null);

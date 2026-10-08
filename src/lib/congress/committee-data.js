@@ -316,8 +316,22 @@ export async function getCommittee(admin, thomasId) {
   };
 }
 
-/** A member's committees plus their trades in sectors those committees oversee. */
-export async function getMemberCommittees(admin, bioguideId) {
+/**
+ * A member's committees plus their trades in sectors those committees oversee.
+ * `lite` skips the trades (the tracker panel only draws the committee chips);
+ * otherwise the trades read starts alongside the committee reads.
+ */
+export async function getMemberCommittees(admin, bioguideId, { lite = false } = {}) {
+  const tradesP = lite
+    ? null
+    : admin
+        .from('congress_trades')
+        .select(TRADE_COLS)
+        .eq('bioguide_id', bioguideId)
+        .gte('transaction_date', monthsAgo(24))
+        .order('transaction_date', { ascending: false })
+        .limit(2000)
+        .then((r) => r);
   const { data: seats, error } = await admin
     .from('congress_committee_members')
     .select(SEAT_COLS)
@@ -389,13 +403,11 @@ export async function getMemberCommittees(admin, bioguideId) {
     }
   }
 
-  const { data: trades } = await admin
-    .from('congress_trades')
-    .select(TRADE_COLS)
-    .eq('bioguide_id', bioguideId)
-    .gte('transaction_date', monthsAgo(24))
-    .order('transaction_date', { ascending: false })
-    .limit(2000);
+  const committees = [...parents.values()].sort((a, b) => a.name.localeCompare(b.name));
+  if (lite) {
+    return { member, committees, trades: [], counts: null, lite: true };
+  }
+  const { data: trades } = await tradesP;
   const withTicker = (trades || []).filter((t) => t.ticker);
   const { matched, unmapped, outside } = matchOverseenTrades(
     withTicker,
@@ -404,7 +416,7 @@ export async function getMemberCommittees(admin, bioguideId) {
 
   return {
     member,
-    committees: [...parents.values()].sort((a, b) => a.name.localeCompare(b.name)),
+    committees,
     trades: matched,
     counts: {
       trades: withTicker.length,

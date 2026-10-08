@@ -9,7 +9,12 @@ import Link from 'next/link';
 import { HubQueryProvider } from '@/components/datasets/hub/HubClient';
 import { getLinkage } from '@/lib/datasets/hub-data';
 import { getCapitolEvents } from '@/lib/datasets/capitol-hub/events';
-import { getHeatmap, getPortfolio } from '@/lib/datasets/capitol-hub/data';
+import {
+  getAwardReaders,
+  getHeatmap,
+  getLobbyingRatio,
+  getPortfolio,
+} from '@/lib/datasets/capitol-hub/data';
 import { summaryFor } from '../HubCards';
 import { fmt } from '../hub-format';
 import CwhProvider from './CwhProvider';
@@ -60,9 +65,18 @@ function TopSignalsSkeleton() {
   );
 }
 
+/* Tab D reads the lobbying-to-award ratio instead of its linkage loader;
+   tab B adds every trader near an award to the linkage's company list. */
 async function Panel() {
-  const loaded = await Promise.all(TABS.map((t) => getLinkage(t.id)));
-  const data = Object.fromEntries(TABS.map((t, i) => [t.key, loaded[i]]));
+  const linked = TABS.filter((t) => t.key !== 'lobbying');
+  const [loaded, readers, ratio] = await Promise.all([
+    Promise.all(linked.map((t) => getLinkage(t.id))),
+    getAwardReaders(),
+    getLobbyingRatio(1),
+  ]);
+  const data = Object.fromEntries(linked.map((t, i) => [t.key, loaded[i]]));
+  data.readers = { rows: [], extra: data.readers?.extra || null, readers };
+  data.lobbying = { rows: [], ratio };
   return <SignalsPanel data={data} />;
 }
 
@@ -81,14 +95,18 @@ function PanelSkeleton() {
   );
 }
 
+/* The House renders on the server; the Senate loads on demand in the card. */
 async function HeatmapModule() {
-  const [house, senate] = await Promise.all([getHeatmap('house'), getHeatmap('senate')]);
-  return <Heatmap house={house} senate={senate} />;
+  const house = await getHeatmap('house');
+  return <Heatmap house={house} />;
 }
 
 async function LeaderboardModule() {
-  const { rows, error } = await getLinkage('capitol-award-leaders');
-  return <Leaderboard rows={rows} error={Boolean(error)} />;
+  const [readers, leaders] = await Promise.all([
+    getAwardReaders(),
+    getLinkage('capitol-award-leaders'),
+  ]);
+  return <Leaderboard readers={readers} companies={leaders?.extra?.companies || []} />;
 }
 
 async function PortfolioModule() {

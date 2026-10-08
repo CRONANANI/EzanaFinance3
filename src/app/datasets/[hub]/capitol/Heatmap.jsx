@@ -5,31 +5,82 @@
  * members holding stocks in each sector (inferred holdings). Cells are
  * buttons; arrow keys move across them; the highest share starts selected.
  * The detail box lists the holders and hands the cell to EzanaQL.
+ *
+ * The server renders the House; the Senate loads on demand. A chamber that
+ * failed or came back empty retries twice (after 1.5 s and 4 s), then offers
+ * Try again, so one slow read under page-load contention never leaves the
+ * card stuck on its error message.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { HUB_QUERIES } from '@/lib/datasets/hub-queries';
 import { SECTOR_SHORT, heatAlpha } from '@/lib/datasets/capitol-hub/signals';
 import { useCwh } from './CwhProvider';
 import { PartyTag, SourceFoot } from './bits';
 import { DASH, monthDay, pct0 } from './cwh-format';
 
+const RETRY_MS = [1500, 4000];
+const usable = (d) => d && !d.error && !d.empty && d.grid?.length;
+
 const CHAMBERS = [
   { id: 'house', label: 'House' },
   { id: 'senate', label: 'Senate' },
 ];
 
-export default function Heatmap({ house, senate }) {
+export default function Heatmap({ house }) {
   const { openMember, requestQuery } = useCwh();
   const [chamber, setChamber] = useState('house');
-  const data = chamber === 'senate' ? senate : house;
-  const ok = data && !data.error && !data.empty && data.grid?.length;
+  /* Per chamber: { data, status: 'ready' | 'loading' | 'retrying' | 'failed', tries }. */
+  const [byChamber, setByChamber] = useState(() => ({
+    house: { data: house, status: usable(house) ? 'ready' : 'retrying', tries: 0 },
+    senate: { data: null, status: 'idle', tries: 0 },
+  }));
+  const timers = useRef([]);
+  const entry = byChamber[chamber];
+  const data = entry.data;
+  const ok = usable(data);
   const [sel, setSel] = useState(ok ? data.selected : null);
   const cells = useRef({});
 
+  const load = useCallback((ch, tries) => {
+    setByChamber((b) => ({
+      ...b,
+      [ch]: { ...b[ch], status: tries ? 'retrying' : 'loading', tries },
+    }));
+    fetch(`/api/datasets/capitol/heatmap?chamber=${ch}`)
+      .then((r) => r.json())
+      .catch(() => ({ ok: false }))
+      .then((d) => {
+        const got = d?.ok ? d : { error: true };
+        if (usable(got)) {
+          setByChamber((b) => ({ ...b, [ch]: { data: got, status: 'ready', tries } }));
+          return;
+        }
+        if (tries < RETRY_MS.length) {
+          timers.current.push(setTimeout(() => load(ch, tries + 1), RETRY_MS[tries]));
+          setByChamber((b) => ({ ...b, [ch]: { data: got, status: 'retrying', tries } }));
+        } else {
+          setByChamber((b) => ({ ...b, [ch]: { data: got, status: 'failed', tries } }));
+        }
+      });
+  }, []);
+
+  /* The server-rendered House failed or came back empty: retry it. */
   useEffect(() => {
-    const d = chamber === 'senate' ? senate : house;
-    setSel(d?.selected || null);
-  }, [chamber, house, senate]);
+    if (!usable(house)) {
+      timers.current.push(setTimeout(() => load('house', 1), RETRY_MS[0]));
+    }
+    const t = timers.current;
+    return () => t.forEach(clearTimeout);
+  }, [house, load]);
+
+  /* The Senate loads the first time it is picked. */
+  useEffect(() => {
+    if (chamber === 'senate' && byChamber.senate.status === 'idle') load('senate', 0);
+  }, [chamber, byChamber.senate.status, load]);
+
+  useEffect(() => {
+    setSel(usable(entry.data) ? entry.data.selected || null : null);
+  }, [chamber, entry.data]);
 
   const move = (e, i, j) => {
     const R = data.grid.length;
@@ -76,14 +127,31 @@ export default function Heatmap({ house, senate }) {
         </div>
       </div>
 
-      {data?.error ? (
-        <p className="cwh-empty">
-          This signal could not be loaded just now. It refreshes on its own; reload in a minute.
-        </p>
+      {entry.status === 'loading' || entry.status === 'retrying' || entry.status === 'idle' ? (
+        <div
+          aria-busy="true"
+          aria-label={`${chamber === 'senate' ? 'Senate' : 'House'} heatmap loading`}
+        >
+          {[0, 1, 2, 3, 4].map((i) => (
+            <span key={i} className="cwh-skel" />
+          ))}
+        </div>
+      ) : entry.status === 'failed' && data?.error ? (
+        <div className="cwh-empty">
+          <p>This signal could not be loaded just now.</p>
+          <button type="button" className="cwh-link-btn" onClick={() => load(chamber, 0)}>
+            Try again
+          </button>
+        </div>
       ) : !ok ? (
-        <p className="cwh-empty">
-          Fills once members of a full committee hold stocks with a mapped sector.
-        </p>
+        <div className="cwh-empty">
+          <p>Fills once members of a full committee hold stocks with a mapped sector.</p>
+          {entry.status === 'failed' ? (
+            <button type="button" className="cwh-link-btn" onClick={() => load(chamber, 0)}>
+              Try again
+            </button>
+          ) : null}
+        </div>
       ) : (
         <>
           <div className="cwh-heat-scroll">
@@ -160,7 +228,10 @@ export default function Heatmap({ house, senate }) {
                             <button
                               type="button"
                               className="cwh-who-name"
-                              onClick={() => openMember(h.bioguideId)}
+                              data-member={h.bioguideId}
+                              onClick={() =>
+                                openMember(h.bioguideId, { name: h.member, party: h.party })
+                              }
                             >
                               {h.member}
                             </button>

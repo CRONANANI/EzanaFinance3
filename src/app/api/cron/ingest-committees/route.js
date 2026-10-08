@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
+import { refreshCapitolReadModels } from '@/lib/datasets/capitol-hub/read-models';
 import { getAdminClient } from '@/lib/supabase';
 import { fetchCommitteeSources, toCommitteeRows, toMemberRows } from '@/lib/congress/committees';
 
@@ -102,6 +103,9 @@ export async function GET(request) {
     .lt('synced_at', runStart);
   const errors = [mErr, sErr, pErr].filter(Boolean).map((e) => e.message);
 
+  /* The heatmap's committee by sector model joins these seats; rebuild it. */
+  const readModels = members.length ? await refreshCapitolReadModels() : null;
+
   // The dimension hubs summarise this table.
   if (members.length) revalidateTag('hubs');
 
@@ -110,6 +114,7 @@ export async function GET(request) {
     committees: parents.length,
     subcommittees: subs.length,
     memberships: members.length,
+    readModels,
     skippedMemberships: allMembers.length - members.length,
     removed: {
       memberships: removedSeats || 0,

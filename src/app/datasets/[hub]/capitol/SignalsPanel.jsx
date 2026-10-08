@@ -11,6 +11,8 @@ import QuickStepBadge from '@/components/datasets/hub/QuickStepBadge';
 import { HUB_LINKAGES } from '@/lib/datasets/hub-config';
 import { useCwh, setParam } from './CwhProvider';
 import EventChart from './EventChart';
+import AwardReaders from './AwardReaders';
+import LobbyingRatio from './LobbyingRatio';
 import { TABS } from './tabs';
 import { PartyTag, SourceFoot, TypeTag } from './bits';
 import { DASH, count, money, monthDay, pct0, pct1, signed, side } from './cwh-format';
@@ -37,7 +39,12 @@ function Who({ r }) {
   return (
     <div className="cwh-who">
       {id ? (
-        <button type="button" className="cwh-who-name" onClick={() => openMember(id)}>
+        <button
+          type="button"
+          className="cwh-who-name"
+          data-member={id}
+          onClick={() => openMember(id, { name: r.title, party: r.party })}
+        >
           {r.title}
         </button>
       ) : r.href ? (
@@ -187,75 +194,20 @@ function TabAwards({ rows }) {
   );
 }
 
-function TabReaders({ extra }) {
-  const companies = extra?.companies || [];
+function TabReaders({ readers, extra }) {
   return (
     <>
       <div className="cwh-mod-head">
         <div>
-          <h3 className="cwh-h4">Companies whose stock moves after their awards</h3>
+          <h3 className="cwh-h4">Who reads contract awards best</h3>
           <p className="cwh-caption">
-            The traders who read awards best are ranked in the leaderboard below; these are the
-            companies.
+            Politicians, insiders, institutions and whales who traded a company within 30 days of a
+            federal award to it, how often ahead of the award, and how those trades did. Companies
+            shows whose stock moves after their awards.
           </p>
         </div>
       </div>
-      {!companies.length ? (
-        <p className="cwh-empty">
-          Fills once companies have measured award dates with price history.
-        </p>
-      ) : (
-        <div className="cwh-scroll">
-          <table className="cwh-table">
-            <thead>
-              <tr>
-                <th scope="col">TICKER</th>
-                <th scope="col" className="is-num">
-                  AWARD DATES
-                </th>
-                <th scope="col" className="is-num">
-                  AWARD VALUE
-                </th>
-                <th scope="col" className="is-num">
-                  AVG MOVE, 30D
-                </th>
-                <th scope="col" className="is-num">
-                  ROSE
-                </th>
-                <th scope="col">TOP AGENCY</th>
-              </tr>
-            </thead>
-            <tbody>
-              {companies.map((c) => (
-                <tr key={c.ticker}>
-                  <td data-label="Ticker">
-                    <TickerBtn ticker={c.ticker} />
-                    {c.badge ? <QuickStepBadge kind="company" compact /> : null}
-                  </td>
-                  <td data-label="Award dates" className="cwh-mono is-num">
-                    {count(c.awardDates)}
-                  </td>
-                  <td data-label="Award value" className="cwh-mono is-num">
-                    {money(c.awardValue)}
-                  </td>
-                  <td
-                    data-label="Avg move"
-                    className={`cwh-mono is-num${c.avgMovePct == null ? '' : c.avgMovePct >= 0 ? ' is-pos' : ' is-neg'}`}
-                  >
-                    {signed(c.avgMovePct)}
-                  </td>
-                  <td data-label="Rose" className="cwh-mono is-num">
-                    {c.hitRate == null ? DASH : pct0(c.hitRate * 100)}
-                  </td>
-                  <td data-label="Agency" className="cwh-mute">
-                    {c.agency || DASH}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <AwardReaders readers={readers} companies={extra?.companies || []} idPrefix="cwh-tab-ar" />
     </>
   );
 }
@@ -305,7 +257,13 @@ function TabCommittees({ rows }) {
                         <button
                           type="button"
                           className="cwh-who-name"
-                          onClick={() => openMember(r.member.bioguideId)}
+                          data-member={r.member.bioguideId}
+                          onClick={() =>
+                            openMember(r.member.bioguideId, {
+                              name: r.member.name,
+                              party: r.member.party,
+                            })
+                          }
                         >
                           {r.member.name}
                         </button>
@@ -344,69 +302,6 @@ function TabCommittees({ rows }) {
                   </tr>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </>
-  );
-}
-
-function TabLobbying({ rows }) {
-  return (
-    <>
-      <div className="cwh-mod-head">
-        <div>
-          <h3 className="cwh-h4">Lobbying and contracts, same company</h3>
-          <p className="cwh-caption">{CONFIG['capitol-lobbying-contracts']?.why}</p>
-        </div>
-      </div>
-      {!rows.length ? (
-        <p className="cwh-empty">{CONFIG['capitol-lobbying-contracts']?.empty}</p>
-      ) : (
-        <div className="cwh-scroll">
-          <table className="cwh-table">
-            <thead>
-              <tr>
-                <th scope="col">COMPANY</th>
-                <th scope="col">TICKER</th>
-                <th scope="col" className="is-num">
-                  LOBBYING, THIS YEAR
-                </th>
-                <th scope="col" className="is-num">
-                  AWARDS, 12M
-                </th>
-                <th scope="col" className="is-num">
-                  AWARD VALUE
-                </th>
-                <th scope="col">
-                  <span className="cwh-sr">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.key}>
-                  <td data-label="Company" className="cwh-strong">
-                    {r.title}
-                  </td>
-                  <td data-label="Ticker">
-                    <TickerBtn ticker={r.ticker} name={r.title} />
-                  </td>
-                  <td data-label="Lobbying" className="cwh-mono is-num">
-                    {money(r.spend ?? cellLike(r, /^Lobbying/)?.value)}
-                  </td>
-                  <td data-label="Awards" className="cwh-mono is-num">
-                    {count(r.awardsN ?? cell(r, 'Awards, 12 months'))}
-                  </td>
-                  <td data-label="Award value" className="cwh-mono is-num cwh-strong">
-                    {money(r.awardsV ?? cell(r, 'Award value'))}
-                  </td>
-                  <td className="cwh-td-acts">
-                    <Acts r={r} />
-                  </td>
-                </tr>
-              ))}
             </tbody>
           </table>
         </div>
@@ -476,9 +371,9 @@ function TabRaisers({ rows }) {
 
 const BODY = {
   awards: (d) => <TabAwards rows={d.rows} />,
-  readers: (d) => <TabReaders extra={d.extra} />,
+  readers: (d) => <TabReaders readers={d.readers} extra={d.extra} />,
   committees: (d) => <TabCommittees rows={d.rows} />,
-  lobbying: (d) => <TabLobbying rows={d.rows} />,
+  lobbying: (d) => <LobbyingRatio initial={d.ratio} />,
   raisers: (d) => <TabRaisers rows={d.rows} />,
 };
 
@@ -516,7 +411,9 @@ export default function SignalsPanel({ data }) {
     if (active.key === 'awards')
       return 'A sale counts as a gain when the price fell. Institutions and whales are measured from the filing date, since 13F and 13D/G filings carry no trade date.';
     if (active.key === 'readers')
-      return 'Average stock move in the 30 days after each award date, and how often it rose.';
+      return 'Insight score = average 30-day return x hit rate, scaled down for small samples, over the trades with 30 days of price history. Ahead counts trades made before the award date. Companies: average stock move in the 30 days after each award date, and how often it rose.';
+    if (active.key === 'lobbying')
+      return 'Lobbying is what each company reported on its LDA filings for the window; awards are federal contract obligations over the same span. Companies join by verified ticker or by an exact match on the normalised company name (tagged NAME MATCH). Correlation is not causation.';
     if (active.key === 'committees')
       return 'Holdings are inferred from disclosures: a purchase not followed by a full sale. Committee counts cover full committees of 10 or more members. Sector links are Ezana’s reading of each committee’s published jurisdiction.';
     return cfg.coverage || null;

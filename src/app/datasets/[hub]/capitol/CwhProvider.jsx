@@ -2,8 +2,13 @@
 
 /**
  * Capitol Watch hub: what the page's modules share on the client.
- *   member drawer   openMember(bioguideId): ?member= in the URL, one history
- *                   entry per drawer, swapping members replaces it
+ *   member drawer   openMember(bioguideId, hint): ?member= in the URL, one
+ *                   history entry per drawer, swapping members replaces it.
+ *                   `hint` ({ name, party }) paints the header at once. Any
+ *                   element with data-member warms the drawer's reads on
+ *                   pointer over, focus or touch (one delegated listener).
+ *   hub events      the carousel's events, so the drawer lists a member's
+ *                   signals without another request
  *   company card    openCompany({ ticker, name })
  *   EzanaQL         requestQuery(query): fills the bar and runs (Query this)
  *   account gate    gate(action): the centred account prompt
@@ -21,6 +26,7 @@ import {
 import { useAuth } from '@/components/AuthProvider';
 import CompanyCard from '@/components/ezanaql/CompanyCard';
 import { GateModal, useHubQuery } from '@/components/datasets/hub/HubClient';
+import { listenForMemberIntent, prefetchMember } from '@/components/datasets/prefetch-cache';
 import MemberDrawer from './MemberDrawer';
 
 const Cwh = createContext(null);
@@ -62,6 +68,8 @@ async function previewRule(rule) {
 export default function CwhProvider({ children }) {
   const { isAuthenticated, loading } = useAuth() || {};
   const [member, setMember] = useState(null);
+  const [memberHint, setMemberHint] = useState(null);
+  const [hubEvents, setHubEvents] = useState([]);
   const [company, setCompany] = useState(null);
   const [gateAction, setGateAction] = useState(null);
   const [rules, setRules] = useState(null); // null until loaded (or signed out)
@@ -84,9 +92,14 @@ export default function CwhProvider({ children }) {
     return () => window.removeEventListener('popstate', onPop);
   }, []);
 
-  const openMember = useCallback((bioguideId) => {
+  /* Warm the drawer's reads on intent, anywhere on the page. */
+  useEffect(() => listenForMemberIntent(document.body, prefetchMember), []);
+
+  const openMember = useCallback((bioguideId, hint = null) => {
     const id = String(bioguideId || '').toUpperCase();
     if (!/^[A-Z]\d{6}$/.test(id)) return;
+    prefetchMember(id);
+    setMemberHint(hint && (hint.name || hint.party) ? { id, ...hint } : null);
     const cur = memberRef.current;
     if (!cur) opener.current = document.activeElement;
     setParam('member', id, { push: !cur });
@@ -237,6 +250,8 @@ export default function CwhProvider({ children }) {
       requestQuery,
       runRequest,
       gate,
+      hubEvents,
+      setHubEvents,
       rules,
       ruleEvents,
       ruleErrors,
@@ -255,6 +270,7 @@ export default function CwhProvider({ children }) {
       requestQuery,
       runRequest,
       gate,
+      hubEvents,
       rules,
       ruleEvents,
       ruleErrors,
@@ -270,7 +286,14 @@ export default function CwhProvider({ children }) {
   return (
     <Cwh.Provider value={value}>
       {children}
-      {member ? <MemberDrawer bioguideId={member} onClose={closeMember} /> : null}
+      {member ? (
+        <MemberDrawer
+          bioguideId={member}
+          hint={memberHint?.id === member ? memberHint : null}
+          events={hubEvents}
+          onClose={closeMember}
+        />
+      ) : null}
       {company ? (
         <CompanyCard
           ticker={company.ticker}

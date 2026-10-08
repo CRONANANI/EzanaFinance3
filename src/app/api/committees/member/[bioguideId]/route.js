@@ -8,7 +8,8 @@ import { COMMITTEE_SECTOR_NOTE } from '@/lib/congress/committee-sectors';
  * GET /api/committees/member/[bioguideId]: the member's committees and
  * subcommittees, plus their disclosed trades over the last 24 months in
  * sectors those committees oversee. Tickers the sector map cannot place are
- * counted as unmapped, never guessed.
+ * counted as unmapped, never guessed. ?lite=1 returns the committees only
+ * (no trades), for the Politician Tracker panel's chips.
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -25,7 +26,8 @@ export async function GET(request, { params }) {
     return NextResponse.json({ ok: false, error: 'Unknown member.' }, { status: 400 });
   }
   try {
-    const data = await getMemberCommittees(getAdminClient(), bioguideId);
+    const lite = new URL(request.url).searchParams.get('lite') === '1';
+    const data = await getMemberCommittees(getAdminClient(), bioguideId, { lite });
     return NextResponse.json(
       { ok: true, note: COMMITTEE_SECTOR_NOTE, ...data },
       { headers: CACHE },

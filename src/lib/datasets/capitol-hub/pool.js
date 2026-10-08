@@ -12,7 +12,7 @@
 import { unstable_cache } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { configured, count, readAll, timed } from '@/lib/datasets/hub-data';
-import { RULE_CONDITIONS, RULE_WINDOWS } from './signals';
+import { RULE_CONDITIONS, RULE_WINDOWS, agencyGroup, ownerOf } from './signals';
 import {
   DAY,
   companyNames,
@@ -78,7 +78,7 @@ async function loadPoolOrThrow(window) {
               admin
                 .from('congress_trades_enriched')
                 .select(
-                  'id, bioguide_id, member_name, party, ticker, asset_name, type, transaction_date, amount_min, amount_max',
+                  'id, bioguide_id, member_name, party, chamber, ticker, asset_name, type, transaction_date, disclosure_date, amount_min, amount_max, owner',
                 )
                 .gte('transaction_date', since)
                 .not('ticker', 'is', null)
@@ -150,6 +150,7 @@ async function loadPoolOrThrow(window) {
       date: a.action_date,
       amount: num(a.award_amount),
       agency: a.awarding_agency,
+      group: agencyGroup(a.awarding_agency),
     })),
   );
   const insidersBy = byTicker(
@@ -186,8 +187,10 @@ async function loadPoolOrThrow(window) {
   ]);
 
   /* A busy contractor wins hundreds of awards a quarter. A rule asks only
-     "is there an award of at least X within N days", so each trade keeps the
-     largest award inside each N the builder offers; the answer is the same. */
+     "is there an award of at least X within N days" (optionally before or
+     after the trade, from some agency groups), so each trade keeps the
+     largest award inside each N, on each side of the trade, from each agency
+     group; every answer the builder can ask for is the same. */
   const maxBy = (list) =>
     (list || []).reduce((b, a) => (!b || (a.amount ?? 0) > (b.amount ?? 0) ? a : b), null);
   const compact = (list) => {
@@ -195,14 +198,26 @@ async function loadPoolOrThrow(window) {
     return list
       .filter(Boolean)
       .filter((a) => {
-        const k = `${a.date}|${a.amount}|${a.agency}`;
+        const k = `${a.date}|${a.amount}|${a.agency}|${a.group}`;
         if (seen.has(k)) return false;
         seen.add(k);
         return true;
       })
-      .map(({ date, amount, agency }) => ({ date, amount, agency }));
+      .map(({ date, amount, agency, group }) => ({ date, amount, agency, group }));
   };
-  const bucketMaxima = (list, date) => compact(WITHIN_DAYS.map((d) => maxBy(near(list, date, d))));
+  const bucketMaxima = (list, date) => {
+    const picks = [];
+    const groups = [...new Set((list || []).map((a) => a.group))];
+    for (const d of WITHIN_DAYS) {
+      const inReach = near(list, date, d);
+      for (const g of groups) {
+        const ofGroup = inReach.filter((a) => a.group === g);
+        picks.push(maxBy(ofGroup.filter((a) => a.date >= date)));
+        picks.push(maxBy(ofGroup.filter((a) => a.date <= date)));
+      }
+    }
+    return compact(picks);
+  };
   const near = (list, date, reach) =>
     (list || []).filter((x) => Math.abs(Date.parse(x.date) - Date.parse(date)) <= reach * DAY);
   const inWindow = (list) => (list || []).filter((x) => x.date >= since);
@@ -220,8 +235,14 @@ async function loadPoolOrThrow(window) {
         bioguideId: up(t.bioguide_id),
         name: t.member_name || t.bioguide_id,
         party: t.party,
+        chamber: t.chamber ? String(t.chamber).toLowerCase() : null,
       },
       side: t.type,
+      owner: ownerOf(t.owner),
+      lagDays:
+        t.disclosure_date && t.transaction_date
+          ? Math.round((Date.parse(t.disclosure_date) - Date.parse(t.transaction_date)) / DAY)
+          : null,
       tradeDate: t.transaction_date,
       amountMin: num(t.amount_min),
       amountMax: num(t.amount_max),
@@ -270,7 +291,7 @@ async function loadPoolOrThrow(window) {
   return [...tradeCandidates, ...companyCandidates.filter((c) => c.flaggedAt)];
 }
 
-const cachedPool = unstable_cache(loadPoolOrThrow, ['capitol-rule-pool-v2'], CACHE);
+const cachedPool = unstable_cache(loadPoolOrThrow, ['capitol-rule-pool-v3'], CACHE);
 
 /** The pool for a window, or throws (the route answers with its error state). */
 export async function getRulePool(window) {

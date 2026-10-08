@@ -75,7 +75,12 @@ function Cell({ k, row, onTicker, onMember }) {
   if (base === 'politician' && v) {
     const bio = field(row, 'bioguide_id');
     return bio ? (
-      <button type="button" className="cwh-rc-who" onClick={() => onMember(bio)}>
+      <button
+        type="button"
+        className="cwh-rc-who"
+        data-member={bio}
+        onClick={() => onMember(bio, { name: v, party: field(row, 'party') })}
+      >
         {v}
       </button>
     ) : (

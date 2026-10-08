@@ -11,6 +11,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   CAPITOL_DATASETS,
+  CONDITION_GROUPS,
   MAX_RULES,
   OUTSIDE_DATASETS,
   RULE_CONDITIONS,
@@ -270,8 +271,20 @@ export default function RuleBuilder() {
       ...r,
       datasets: r.datasets.includes(d) ? r.datasets.filter((x) => x !== d) : [...r.datasets, d],
     }));
+  /* A rule saved before a condition existed lacks it: the first change adds it. */
   const setCondition = (c) =>
-    setRule((r) => ({ ...r, conditions: r.conditions.map((x) => (x.id === c.id ? c : x)) }));
+    setRule((r) => ({
+      ...r,
+      conditions: r.conditions.some((x) => x.id === c.id)
+        ? r.conditions.map((x) => (x.id === c.id ? c : x))
+        : [...r.conditions, c],
+    }));
+  const condFor = (def) =>
+    rule.conditions.find((c) => c.id === def.id) || {
+      id: def.id,
+      value: def.default,
+      enabled: false,
+    };
 
   const openMore = async () => {
     try {
@@ -544,25 +557,36 @@ export default function RuleBuilder() {
             <span className="cwh-step-n">2</span> Set what makes it high signal
           </p>
           <div className="cwh-conds">
-            {RULE_CONDITIONS.filter((c) => visible.includes(c.id)).map((def) =>
-              def.id === 'committee_oversees' ? (
-                /* Selecting Committee Assignments already requires it: fixed, no toggle. */
-                <div key={def.id} className="cwh-cond is-fixed">
-                  <span className="cwh-cond-check-static" aria-hidden="true">
-                    <i className="bi bi-check2" />
-                  </span>
-                  <span className="cwh-cond-label">{def.label[0]}</span>
-                  <span className="cwh-cond-fixed">Required by Committee Assignments</span>
-                </div>
-              ) : (
-                <ConditionRow
-                  key={def.id}
-                  def={def}
-                  cond={rule.conditions.find((c) => c.id === def.id)}
-                  onChange={setCondition}
-                />
-              ),
-            )}
+            {CONDITION_GROUPS.map((g) => {
+              const defs = RULE_CONDITIONS.filter(
+                (c) => c.group === g.id && visible.includes(c.id),
+              );
+              if (!defs.length) return null;
+              return (
+                <fieldset key={g.id} className="cwh-cond-group">
+                  <legend className="cwh-cond-group-h">{g.label}</legend>
+                  {defs.map((def) =>
+                    def.id === 'committee_oversees' ? (
+                      /* Selecting Committee Assignments already requires it: fixed, no toggle. */
+                      <div key={def.id} className="cwh-cond is-fixed">
+                        <span className="cwh-cond-check-static" aria-hidden="true">
+                          <i className="bi bi-check2" />
+                        </span>
+                        <span className="cwh-cond-label">{def.label[0]}</span>
+                        <span className="cwh-cond-fixed">Required by Committee Assignments</span>
+                      </div>
+                    ) : (
+                      <ConditionRow
+                        key={def.id}
+                        def={def}
+                        cond={condFor(def)}
+                        onChange={setCondition}
+                      />
+                    ),
+                  )}
+                </fieldset>
+              );
+            })}
             <div className="cwh-cond">
               <span className="cwh-cond-check-static" aria-hidden="true">
                 <i className="bi bi-check2" />

@@ -48,6 +48,7 @@ import MostHeldChart from './MostHeldChart';
 import Segmented from './Segmented';
 import '@/components/datasets/disclosures/disclosures.css';
 import './politician-tracker.css';
+import { listenForMemberIntent, prefetchTrackerMember } from '@/components/datasets/prefetch-cache';
 
 const NONE = '·';
 
@@ -165,6 +166,7 @@ function Card({ m, selected, showPct, onOpen }) {
       }`}
       aria-label={`${m.name}, rank ${m.rank}, disclosed volume ${usdShort(m.volume)}`}
       aria-pressed={selected}
+      data-member={m.bioguideId || undefined}
       onClick={(e) => onOpen(m, e.currentTarget)}
     >
       <span className={`ptk-rank dsc-mn${m.rank === 1 ? ' ptk-rank--first' : ''}`}>#{m.rank}</span>
@@ -432,6 +434,10 @@ export default function PoliticianTracker({
     const built = buildMembers(extra)[0];
     return { ...m, trades: built.trades, tickers: built.tickers, tickerSet: built.tickerSet };
   }, [filtered, members, openSlug, memberTrades]);
+
+  /* Warm a member's panel reads on pointer over, focus or touch on their card
+     or row, so the click usually resolves from the shared cache. */
+  useEffect(() => listenForMemberIntent(document.body, prefetchTrackerMember), []);
 
   /* A ranked member whose trades were not in the loaded pages: fetch them
      for the panel. */
@@ -920,6 +926,7 @@ export default function PoliticianTracker({
                           ) : null}
                           <tr
                             tabIndex={0}
+                            data-member={m.bioguideId || undefined}
                             className={`ptk-row${selected ? ` ptk-row--selected ptk-row--selected-${ch}` : ''}`}
                             aria-selected={selected}
                             onClick={(e) => open(m, e.currentTarget)}

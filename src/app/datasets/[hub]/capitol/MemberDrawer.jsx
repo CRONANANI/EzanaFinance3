@@ -4,10 +4,18 @@
  * The member drawer: identity, committees, four stats and five tabs
  * (Signals, Trades, Holdings, Committees, Donors). A dialog: Escape and the
  * scrim close it and focus returns to the opener (CwhProvider does that).
+ *
+ * Speed: the header paints at once from the clicked row's name and party
+ * (`hint`). The body reads two parts in parallel through the shared prefetch
+ * cache, which a hover or focus on the name has usually filled already:
+ * `core` (identity, committees, trades, holdings) and `extra` (finance,
+ * donors, awarded holdings). Signals come from the carousel's events.
+ * `data-ready="true"` marks the moment core data is on screen.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { EVENT_KINDS } from '@/lib/datasets/capitol-hub/signals';
+import { getJson, memberCoreUrl, memberExtraUrl } from '@/components/datasets/prefetch-cache';
 import { LinkedChips, PartyTag } from './bits';
 import { DASH, count, longDate, money, monthDay, range } from './cwh-format';
 
@@ -118,6 +126,18 @@ function Body({ d, tab }) {
     );
   }
   /* Donors */
+  if (d.extraStatus === 'loading') {
+    return (
+      <div aria-busy="true" aria-label="Campaign finance loading">
+        {[0, 1, 2, 3].map((i) => (
+          <span key={i} className="cwh-skel" />
+        ))}
+      </div>
+    );
+  }
+  if (d.extraStatus === 'error') {
+    return <p className="cwh-caption">Campaign finance could not be loaded just now.</p>;
+  }
   const f = d.finance;
   return f ? (
     <>
@@ -230,8 +250,9 @@ function Bars({ rows }) {
   );
 }
 
-export default function MemberDrawer({ bioguideId, onClose }) {
+export default function MemberDrawer({ bioguideId, hint = null, events = [], onClose }) {
   const [state, setState] = useState({ status: 'loading' });
+  const [extra, setExtra] = useState({ status: 'loading', d: null });
   const [tab, setTab] = useState('Signals');
   const [mounted, setMounted] = useState(false);
   const closeRef = useRef(null);
@@ -249,16 +270,21 @@ export default function MemberDrawer({ bioguideId, onClose }) {
   useEffect(() => {
     let live = true;
     setState({ status: 'loading' });
+    setExtra({ status: 'loading', d: null });
     setTab('Signals');
-    fetch(`/api/datasets/capitol/member?bioguide=${encodeURIComponent(bioguideId)}`)
-      .then(async (r) => {
-        const d = await r.json().catch(() => ({}));
+    getJson(memberCoreUrl(bioguideId))
+      .then(({ status, ok, d }) => {
         if (!live) return;
-        if (r.status === 404) setState({ status: 'missing' });
-        else if (!r.ok || !d.ok) setState({ status: 'error' });
+        if (status === 404) setState({ status: 'missing' });
+        else if (!ok) setState({ status: 'error' });
         else setState({ status: 'ready', d });
       })
       .catch(() => live && setState({ status: 'error' }));
+    getJson(memberExtraUrl(bioguideId))
+      .then(
+        ({ ok, d }) => live && setExtra(ok ? { status: 'ready', d } : { status: 'error', d: null }),
+      )
+      .catch(() => live && setExtra({ status: 'error', d: null }));
     return () => {
       live = false;
     };
@@ -292,9 +318,26 @@ export default function MemberDrawer({ bioguideId, onClose }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [mounted, onClose]);
 
+  const signals = useMemo(
+    () => (events || []).filter((e) => e.member?.bioguideId === bioguideId).slice(0, 6),
+    [events, bioguideId],
+  );
   if (!mounted) return null;
-  const d = state.d;
+  const core = state.d;
+  const x = extra.d;
+  const d = core
+    ? {
+        ...core,
+        signals,
+        stats: { ...core.stats, raised: x?.raised ?? null },
+        awarded: x?.awarded || [],
+        finance: x?.finance || null,
+        donors: x?.donors || null,
+        extraStatus: extra.status,
+      }
+    : null;
   const m = d?.member;
+  const ready = state.status === 'ready';
 
   return createPortal(
     <div className="cwh-tokens cwh-dr-root">
@@ -310,6 +353,8 @@ export default function MemberDrawer({ bioguideId, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="cwh-dr-name"
+        aria-busy={!ready && state.status === 'loading'}
+        data-ready={ready ? 'true' : 'false'}
         ref={panelRef}
       >
         <div className="cwh-dr-top">
@@ -333,9 +378,27 @@ export default function MemberDrawer({ bioguideId, onClose }) {
         </div>
         {state.status === 'loading' ? (
           <div className="cwh-dr-body" aria-busy="true">
-            <h2 className="cwh-sr" id="cwh-dr-name">
-              Loading member
-            </h2>
+            {hint?.name ? (
+              <div className="cwh-dr-id">
+                <span className="cwh-dr-avatar" aria-hidden="true">
+                  {initials(hint.name)}
+                </span>
+                <div>
+                  <h2 className="cwh-dr-name" id="cwh-dr-name">
+                    {hint.name}
+                  </h2>
+                  {hint.party ? (
+                    <span className="cwh-dr-place">
+                      <PartyTag party={hint.party} />
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+            ) : (
+              <h2 className="cwh-sr" id="cwh-dr-name">
+                Loading member
+              </h2>
+            )}
             {[0, 1, 2, 3, 4, 5].map((i) => (
               <span key={i} className="cwh-skel" />
             ))}
@@ -384,7 +447,13 @@ export default function MemberDrawer({ bioguideId, onClose }) {
               </div>
               <div>
                 <dt className="cwh-label">Raised</dt>
-                <dd className="cwh-mono">{money(d.stats.raised)}</dd>
+                <dd className="cwh-mono">
+                  {extra.status === 'loading' ? (
+                    <span className="cwh-skel cwh-skel--short" aria-label="Loading" />
+                  ) : (
+                    money(d.stats.raised)
+                  )}
+                </dd>
               </div>
               <div>
                 <dt className="cwh-label">Median lag</dt>

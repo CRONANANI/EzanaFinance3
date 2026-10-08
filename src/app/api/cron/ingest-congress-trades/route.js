@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
+import { refreshCapitolReadModels } from '@/lib/datasets/capitol-hub/read-models';
 import { getAdminClient } from '@/lib/supabase';
 import { mirrorPhotos, runCongressIngest } from '@/lib/politicians/congress-ingest';
 import { readFeeds, readTrades } from '@/lib/politicians/congress-store';
@@ -89,6 +90,10 @@ export async function GET(request) {
     summary.snapshot = pages.length
       ? await writeTradesSnapshot({ trades: pages, feeds: await readFeeds() })
       : false;
+
+    /* The hub's positions, portfolio and heatmap read materialized models
+       built from this table; rebuild them, then let the hubs re-read. */
+    summary.readModels = await refreshCapitolReadModels();
 
     // The dimension hubs summarise this table.
     if (summary) revalidateTag('hubs');

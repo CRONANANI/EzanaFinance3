@@ -28,7 +28,23 @@ import {
   usdShort,
   validateRule,
   visibleConditions,
+  CONDITION_GROUPS,
+  RULE_CONDITIONS,
+  agencyGroup,
+  compareRegions,
+  ownerOf,
 } from '../src/lib/datasets/capitol-hub/signals.js';
+import {
+  lensArea,
+  distanceFor,
+  vennLayout,
+} from '../src/app/datasets/[hub]/capitol/venn-geometry.js';
+import {
+  lobbyingStats,
+  pearson,
+  ranks,
+  spearman,
+} from '../src/app/datasets/[hub]/capitol/stats.js';
 
 const TODAY = '2026-10-07';
 
@@ -420,4 +436,154 @@ test('the committee condition is fixed: toggling it never changes the count', ()
   /* Committee Assignments itself still decides: without it the count changes. */
   const noCommittee = { ...base, datasets: ['Politician Tracker', 'Government Contracts'] };
   assert.ok(matchSignalRule(noCommittee, POOL, { today: TODAY }).count >= a);
+});
+
+/* ── Oct 8: Compare, lobbying ratio, step 2 conditions ─────────────────── */
+
+test('venn: the lens area matches the overlap and the layout covers edge cases', () => {
+  const r1 = Math.sqrt(1013 / Math.PI);
+  const r2 = Math.sqrt(1231 / Math.PI);
+  const d = distanceFor(r1, r2, 500);
+  assert.ok(Math.abs(lensArea(r1, r2, d) - 500) < 0.5);
+  const full = vennLayout(513, 500, 731);
+  assert.ok(full.paths.a && full.paths.both && full.paths.b);
+  assert.equal(vennLayout(50, 0, 30).paths.both, null, 'disjoint sets have no lens');
+  const inside = vennLayout(0, 20, 1000);
+  assert.ok(inside.paths.both && inside.paths.b && !inside.paths.a, 'A inside B');
+  assert.equal(vennLayout(0, 0, 0), null);
+});
+
+test('compareRegions splits tickers into only A, both and only B, most held first', () => {
+  const r = compareRegions([
+    { ticker: 'AAA', a: 3, b: 0 },
+    { ticker: 'BBB', a: 2, b: 5 },
+    { ticker: 'CCC', a: 0, b: 1 },
+    { ticker: 'DDD', a: 9, b: 9 },
+  ]);
+  assert.equal(r.a.count, 1);
+  assert.equal(r.both.count, 2);
+  assert.equal(r.b.count, 1);
+  assert.equal(r.both.top[0].ticker, 'DDD');
+});
+
+test('lobbying stats: pearson, spearman with ties, and a weak reading near zero', () => {
+  assert.ok(Math.abs(pearson([1, 2, 3, 4], [2, 4, 6, 8]) - 1) < 1e-9);
+  assert.deepEqual(ranks([10, 20, 20, 5]), [2, 3.5, 3.5, 1]);
+  assert.ok(Math.abs(spearman([1, 2, 3], [3, 2, 1]) + 1) < 1e-9);
+  const rows = [
+    { lobbying: 1e5, awardValue: 5e6 },
+    { lobbying: 2e5, awardValue: 1e6 },
+    { lobbying: 3e5, awardValue: 9e6 },
+    { lobbying: 4e5, awardValue: 2e6 },
+    { lobbying: 5e5, awardValue: 6e6 },
+    { lobbying: 0, awardValue: 6e6 },
+  ];
+  const s = lobbyingStats(rows);
+  assert.equal(s.n, 5, 'rows without lobbying are left out');
+  assert.ok(s.p > 0.05 && s.p <= 1);
+  assert.ok(s.r2 >= 0 && s.r2 <= 1);
+  assert.equal(lobbyingStats([{ lobbying: 1, awardValue: 1 }]).r, null);
+});
+
+test('step 2 has 16 conditions in four groups; new ones start off', () => {
+  assert.equal(RULE_CONDITIONS.length, 16);
+  const groups = new Set(CONDITION_GROUPS.map((g) => g.id));
+  for (const c of RULE_CONDITIONS) assert.ok(groups.has(c.group), `${c.id} has a group`);
+  const old = ['trade_within_days', 'award_min', 'committee_oversees', 'trader_types'];
+  for (const c of RULE_CONDITIONS)
+    if (!old.includes(c.id)) assert.equal(c.defaultOff, true, `${c.id} starts off`);
+  const insiders = visibleConditions([...CAPITOL_DATASETS, 'Form 4 insiders']);
+  assert.equal(insiders.length, 16, 'every condition shows with all datasets picked');
+  assert.ok(!visibleConditions(['Politician Tracker']).includes('agency_group'));
+});
+
+test('owner codes and agency groups', () => {
+  assert.equal(ownerOf('SP'), 'spouse');
+  assert.equal(ownerOf('Joint'), 'joint');
+  assert.equal(ownerOf('DC'), 'child');
+  assert.equal(ownerOf(null), 'member');
+  assert.equal(agencyGroup('Department of Defense'), 'defense');
+  assert.equal(agencyGroup('Department of Veterans Affairs'), 'va');
+  assert.equal(agencyGroup('National Aeronautics and Space Administration'), 'nasa');
+  assert.equal(agencyGroup('General Services Administration'), 'other');
+});
+
+test('new conditions narrow matches; a rule saved without them is unchanged', () => {
+  const pool = [
+    {
+      id: 'p1',
+      level: 'trade',
+      ticker: 'AAA',
+      member: { bioguideId: 'X000001', name: '[Member A]', party: 'D', chamber: 'house' },
+      side: 'purchase',
+      owner: 'spouse',
+      lagDays: 50,
+      tradeDate: '2026-09-01',
+      amountMin: 15000,
+      flaggedAt: '2026-09-01',
+      awards: [
+        { date: '2026-09-10', amount: 200e6, agency: 'Department of Defense', group: 'defense' },
+      ],
+      insiders: [{ date: '2026-09-02' }],
+      ret30: 6,
+    },
+    {
+      id: 'p2',
+      level: 'trade',
+      ticker: 'BBB',
+      member: { bioguideId: 'X000002', name: '[Member B]', party: 'R', chamber: 'senate' },
+      side: 'sale',
+      owner: 'member',
+      lagDays: 10,
+      tradeDate: '2026-09-20',
+      amountMin: 1000,
+      flaggedAt: '2026-09-20',
+      awards: [
+        {
+          date: '2026-09-10',
+          amount: 200e6,
+          agency: 'Department of Veterans Affairs',
+          group: 'va',
+        },
+      ],
+      insiders: [],
+      ret30: -2,
+    },
+  ];
+  const datasets = ['Politician Tracker', 'Government Contracts'];
+  const legacy = {
+    datasets,
+    window: '90D',
+    conditions: [
+      { id: 'trade_within_days', value: 30, enabled: true },
+      { id: 'award_min', value: 100e6, enabled: true },
+    ],
+  };
+  assert.equal(matchSignalRule(legacy, pool, { today: TODAY }).count, 2);
+  const withCond = (c) => ({
+    ...legacy,
+    conditions: [...legacy.conditions, { ...c, enabled: true }],
+  });
+  const n = (c) => matchSignalRule(withCond(c), pool, { today: TODAY }).count;
+  assert.equal(n({ id: 'trade_timing', value: 'before' }), 1);
+  assert.equal(n({ id: 'trade_timing', value: 'after' }), 1);
+  assert.equal(n({ id: 'trade_side', value: 'sell' }), 1);
+  assert.equal(n({ id: 'owner', value: ['spouse', 'joint'] }), 1);
+  assert.equal(n({ id: 'disclosure_lag', value: 45 }), 1);
+  assert.equal(n({ id: 'return_floor', value: 5 }), 1);
+  assert.equal(n({ id: 'agency_group', value: ['va'] }), 1);
+  assert.equal(n({ id: 'chamber', value: 'senate' }), 1);
+  assert.equal(n({ id: 'amount_floor', value: 250e3 }), 0);
+  /* Disabled conditions do nothing. */
+  assert.equal(
+    matchSignalRule(
+      {
+        ...legacy,
+        conditions: [...legacy.conditions, { id: 'chamber', value: 'senate', enabled: false }],
+      },
+      pool,
+      { today: TODAY },
+    ).count,
+    2,
+  );
 });

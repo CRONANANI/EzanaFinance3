@@ -499,6 +499,15 @@ export async function GET(request) {
     console.warn('[ingest-lobbying] top canonical client merges:', JSON.stringify(topMerges));
   }
 
+  /* New clients may name a contractor exactly: add those name matches
+     (stored unverified, match_method 'name_exact') for the lobbying and
+     contracts tab. Existing rows are never changed. */
+  let nameMatches = null;
+  if (results.some((r) => r.delta)) {
+    const { data, error } = await admin.rpc('refresh_lobbying_name_matches');
+    nameMatches = error ? `failed: ${error.message}` : data;
+  }
+
   // The dimension hubs summarise this table.
   if (results.some((r) => r.delta)) revalidateTag('hubs');
 
@@ -508,6 +517,7 @@ export async function GET(request) {
     quarters: results,
     filingsUpserted: results.reduce((s, r) => s + (r.delta || 0), 0),
     constantsUpserted,
+    nameMatches,
     requestsUsed: budget.used,
     topMerges,
     errors: errors.slice(0, 12),
