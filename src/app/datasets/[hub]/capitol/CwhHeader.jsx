@@ -2,9 +2,10 @@
 
 /**
  * The hub header: title and the EzanaQL bar on the left, the result
- * card on the right. The bar opens with the hub's seed query already run, so
- * the card is never empty. Tickers open the company card; members open the
- * drawer. Save, CSV, JSON and Watchlist belong to an account.
+ * card on the right. The bar opens with the hub's seed query in the editor,
+ * not run: the card stays empty until the visitor runs a query. Tickers open
+ * the company card; members open the drawer. Save, CSV, JSON and Watchlist
+ * belong to an account.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import EzanaQLBar from '@/components/ezanaql/EzanaQLBar';
@@ -220,11 +221,26 @@ function ResultCard({ state, result, query, question, ms }) {
         </span>
       </div>
       <div className="cwh-rc-body" tabIndex={0} aria-label="Query results">
-        {state === 'running' || state === 'idle' ? (
+        {state === 'running' ? (
           <div className="cwh-rc-skel" aria-hidden="true">
             {Array.from({ length: 10 }, (_, i) => (
               <span key={i} className="cwh-skel" />
             ))}
+          </div>
+        ) : state === 'idle' ? (
+          <div className="cwh-rc-idle">
+            <div className="cwh-rc-idle-grid" aria-hidden="true">
+              {Array.from({ length: 8 }, (_, i) => (
+                <span key={i} />
+              ))}
+            </div>
+            <div className="cwh-rc-idle-msg">
+              <i className="bi bi-table" aria-hidden="true" />
+              <p>Run a query to see results here.</p>
+              <p className="cwh-rc-idle-sub">
+                Edit the query on the left or pick a prompt, then run it.
+              </p>
+            </div>
           </div>
         ) : state === 'error' ? (
           <p className="cwh-empty">This query could not run just now. Check it or try again.</p>
@@ -322,8 +338,8 @@ export default function CwhHeader({ intro }) {
   const { runRequest, savedVersion } = useCwh();
   const [state, setState] = useState('idle');
   const [result, setResult] = useState(null);
-  const [query, setQuery] = useState(SEED);
-  const [question, setQuestion] = useState(SEED_LABEL);
+  const [query, setQuery] = useState('');
+  const [question, setQuestion] = useState('No query run yet');
   const [ms, setMs] = useState(null);
   const started = useRef(0);
 
@@ -357,7 +373,6 @@ export default function CwhHeader({ intro }) {
             onResult={onResult}
             onRunState={onRunState}
             queryBlock
-            autoRun
             runOnGenerate
             savedVersion={savedVersion}
           />

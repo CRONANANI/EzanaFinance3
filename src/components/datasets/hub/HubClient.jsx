@@ -46,6 +46,8 @@ export function HubBar({ dimension, seedQuery, examplePrompts }) {
         seedQuery={seedQuery}
         examplePrompts={examplePrompts}
         runRequest={runRequest}
+        layout="split"
+        reserveResults
         onRowClick={
           companyRows
             ? (row, ctx) =>

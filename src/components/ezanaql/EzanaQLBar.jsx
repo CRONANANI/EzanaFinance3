@@ -141,6 +141,8 @@ function relativeDate(iso) {
  * @param {(result: object) => void} [props.onResult]  take the result instead of rendering it
  * @param {'stack'|'split'} [props.layout]     'split': once a result is in, the bar
  *   widens to its container and the query sits left, the table right
+ * @param {boolean} [props.reserveResults]  with layout 'split', keep the table
+ *   column from the start: an empty table until the first run, and again after Hide
  * @param {(row: object, ctx: { window: object|null, keys: string[] }) => void} [props.onRowClick]
  *   makes result rows clickable; the page decides what a row opens
  * @param {(row: object) => boolean} [props.rowClickable]  which rows (default: those with a ticker)
@@ -162,6 +164,7 @@ export default function EzanaQLBar({
   seedQuery = '',
   onResult,
   layout = 'stack',
+  reserveResults = false,
   onRowClick,
   rowClickable = (row) => row.ticker != null && row.ticker !== '',
   queryBlock = false,
@@ -423,7 +426,7 @@ export default function EzanaQLBar({
   const types = result?.columnTypes || keys.map(() => null);
   const aligns = keys.map((k, i) => columnAlign(types[i], rows, k));
   const shown = rows.slice(0, 50);
-  const split = layout === 'split' && !!result;
+  const split = layout === 'split' && (!!result || reserveResults);
   const clickable = typeof onRowClick === 'function';
 
   /* Unique listed tickers in the result, capped so one click never floods a list. */
@@ -653,6 +656,23 @@ export default function EzanaQLBar({
             })}
           </tbody>
         </table>
+      </div>
+    </div>
+  ) : reserveResults ? (
+    <div className="eqb-results eqb-results--idle">
+      <div className="eqb-results-head">
+        <span>Results</span>
+      </div>
+      <div className="eqb-idle" role="status" aria-live="polite">
+        <div className="eqb-idle-grid" aria-hidden="true">
+          {Array.from({ length: 6 }, (_, i) => (
+            <span key={i} />
+          ))}
+        </div>
+        <div className="eqb-idle-msg">
+          <i className="bi bi-table" aria-hidden="true" />
+          <p>{busy === 'run' ? 'Running query' : 'Run a query to see results here.'}</p>
+        </div>
       </div>
     </div>
   ) : null;

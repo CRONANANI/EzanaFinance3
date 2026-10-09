@@ -9,6 +9,10 @@
  *   - resize it from its corner (width snaps to columns, height to 10px),
  *   - remove it, and add any card back from the side drawer.
  *
+ * The canvas opens empty for every visitor: only the header, the editor and
+ * its result table. Under the empty canvas a few of the hub's cards show
+ * through a veil as a teaser, beside a call to open the drawer.
+ *
  * Signed-out visitors may keep GUEST_LIMIT (3) cards, drawn from the hub's
  * guest set; every other card is visible in the drawer behind a lock, and
  * reaching for one opens the waitlist gate. Members can place every card.
@@ -18,9 +22,10 @@
  * card loads its data changes. This component only decides which are placed,
  * in what order, at what size.
  *
- * The first render is the guest default for everyone, so the server HTML and
+ * The first render is the empty default for everyone, so the server HTML and
  * the first client render agree. The saved layout (localStorage, per hub and
- * per signed-in state) is applied once auth has settled.
+ * per signed-in state) is applied once auth has settled, and the teaser waits
+ * for that too, so a returning visitor never sees it flash.
  */
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/components/auth-context';
@@ -34,6 +39,7 @@ import {
   clearStored,
   defaultLayout,
   moveCard,
+  previewCards,
   readStored,
   removeCard,
   resizeCard,
@@ -73,6 +79,8 @@ export default function HubCanvas({ hubId, label = 'Hub cards', cards }) {
     [cards],
   );
   const nodeOf = useMemo(() => new Map(cards.map((c) => [c.id, c.node])), [cards]);
+  /* The teaser under an empty canvas: a few of this hub's cards, veiled. */
+  const preview = useMemo(() => previewCards(meta, 3), [meta]);
 
   const [layout, setLayout] = useState(() => defaultLayout(meta, 'guest'));
   const [ready, setReady] = useState(false);
@@ -443,13 +451,31 @@ export default function HubCanvas({ hubId, label = 'Hub cards', cards }) {
         })}
       </div>
 
-      {layout.length === 0 ? (
-        <div className="hcv-empty">
-          <i className="bi bi-layout-wtf" aria-hidden="true" />
-          <p>Your canvas is empty.</p>
-          <button type="button" className="hcv-empty-btn" onClick={() => setDrawerOpen(true)}>
-            Open the card drawer
-          </button>
+      {ready && layout.length === 0 ? (
+        <div className="hcv-teaser">
+          {/* A look at what the drawer holds. Inert: not clickable, not
+              focusable, hidden from assistive tech. */}
+          <div className="hcv-preview" aria-hidden="true" inert="">
+            {preview.map((c) => (
+              <div key={c.id} className="hcv-preview-item" style={{ '--hcv-span': c.w }}>
+                <div className="hcv-body">{nodeOf.get(c.id)}</div>
+              </div>
+            ))}
+          </div>
+          <div className="hcv-veil" aria-hidden="true" />
+          <div className="hcv-empty">
+            <i className="bi bi-layout-wtf hcv-empty-ic" aria-hidden="true" />
+            <p className="hcv-empty-title">Your canvas is empty.</p>
+            <p className="hcv-empty-sub">Add cards from the drawer to build this hub your way.</p>
+            <button
+              type="button"
+              className="hcv-empty-btn is-throb"
+              onClick={() => setDrawerOpen(true)}
+            >
+              <i className="bi bi-layout-sidebar-inset-reverse" aria-hidden="true" />
+              Open the card drawer
+            </button>
+          </div>
         </div>
       ) : null}
 

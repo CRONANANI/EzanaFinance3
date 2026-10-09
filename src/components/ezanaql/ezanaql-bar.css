@@ -536,6 +536,44 @@
   }
 }
 
+/* The reserved, empty table column (reserveResults) before the first run. */
+.eqb-results--idle {
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+}
+.eqb-idle {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 280px;
+}
+.eqb-idle-grid {
+  display: grid;
+  grid-auto-rows: 38px;
+}
+.eqb-idle-grid span {
+  border-bottom: 1px solid var(--eqb-rule);
+}
+.eqb-idle-msg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--eqb-muted);
+  font-size: 0.8125rem;
+  text-align: center;
+}
+.eqb-idle-msg i {
+  font-size: 1.25rem;
+  color: var(--eqb-faint);
+}
+.eqb-idle-msg p {
+  margin: 0;
+}
+
 /* numbers right-aligned; a clickable row says so on hover and focus */
 .eqb-table .eqb-num {
   text-align: right;

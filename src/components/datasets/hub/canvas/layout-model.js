@@ -24,11 +24,22 @@ export function placeableIds(cards, mode) {
   return cards.filter((c) => mode === 'member' || c.guest).map((c) => c.id);
 }
 
-/** The out-of-the-box layout for a mode. Members get every card in registry
- *  order; guests get the guest set, capped at GUEST_LIMIT. */
-export function defaultLayout(cards, mode) {
-  const list = mode === 'member' ? cards : cards.filter((c) => c.guest).slice(0, GUEST_LIMIT);
-  return list.map((c) => ({ id: c.id, w: clamp(c.w || COLS, c.minW || 4, COLS), h: null }));
+/** The out-of-the-box layout: an empty canvas for every visitor. The hub
+ *  opens with only the EzanaQL editor and its result table; cards are added
+ *  from the drawer. */
+export function defaultLayout() {
+  return [];
+}
+
+/** The cards shown faintly under the empty canvas as a teaser: the hub's
+ *  guest set first, then registry order, `n` at most. */
+export function previewCards(cards, n = 3) {
+  const guest = cards.filter((c) => c.guest);
+  const list = (guest.length >= n ? guest : [...guest, ...cards.filter((c) => !c.guest)]).slice(
+    0,
+    n,
+  );
+  return list.map((c) => ({ ...c, w: clamp(c.w || COLS, c.minW || 4, COLS) }));
 }
 
 /**

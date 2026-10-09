@@ -192,27 +192,83 @@
   }
 }
 
-/* ── empty canvas ───────────────────────────────────────────────────────── */
+/* ── empty canvas: veiled teaser + drawer CTA ───────────────────────────── */
+.hcv-teaser {
+  /* White at 35% opacity (about 65% transparent), per spec. Scoped here,
+     not a global token. */
+  --hcv-veil: color-mix(in srgb, #ffffff 35%, transparent);
+  position: relative;
+  min-height: 420px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.hcv-preview {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--hcv-gap);
+  align-items: start;
+  max-height: 560px;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  /* Fade the bottom edge so the cards read as a glimpse, not a page. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+}
+.hcv-preview-item {
+  grid-column: span var(--hcv-span, 12);
+  min-width: 0;
+}
+
+.hcv-veil {
+  position: absolute;
+  inset: 0;
+  background: var(--hcv-veil);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
 .hcv-empty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(380px, calc(100% - 32px));
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 56px 24px;
-  border: 1px dashed var(--border-hover);
+  gap: 8px;
+  padding: 1.5rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-hover);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
   color: var(--text-muted);
   text-align: center;
+  font-family: var(--font-sans);
 }
-.hcv-empty i {
+.hcv-empty-ic {
   font-size: 1.5rem;
   color: var(--emerald);
 }
-.hcv-empty p {
+.hcv-empty-title {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.hcv-empty-sub {
+  margin: 0 0 6px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
 }
 .hcv-empty-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 0.5rem 1rem;
   border: 1px solid var(--emerald-border);
   border-radius: var(--radius-md);
@@ -222,9 +278,40 @@
   font-weight: 600;
   font-size: 0.8125rem;
   cursor: pointer;
+  transition: background 0.15s ease;
 }
 .hcv-empty-btn:hover {
   background: var(--emerald-bg-hover);
+}
+.hcv-empty-btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* Throb: a gentle swell and an emerald ring that radiates out and fades.
+   No overshoot, per the branding guide. Stops once the visitor engages. */
+@keyframes hcv-throb {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--emerald) 45%, transparent);
+  }
+  45% {
+    transform: scale(1.04);
+  }
+  70% {
+    box-shadow: 0 0 0 10px color-mix(in srgb, var(--emerald) 0%, transparent);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--emerald) 0%, transparent);
+  }
+}
+.hcv-empty-btn.is-throb {
+  animation: hcv-throb 1.8s ease-in-out infinite;
+}
+.hcv-empty-btn.is-throb:hover,
+.hcv-empty-btn.is-throb:focus-visible {
+  animation: none;
 }
 
 .hcv-sr {
@@ -661,6 +748,16 @@
     bottom: 96px;
     transform: none;
   }
+  .hcv-teaser {
+    min-height: 360px;
+  }
+  .hcv-preview {
+    grid-template-columns: minmax(0, 1fr);
+    max-height: 440px;
+  }
+  .hcv-preview-item {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -680,5 +777,15 @@
   .hcv-gate,
   .hcv-gate-backdrop {
     animation: none;
+  }
+  .hcv-empty-btn.is-throb {
+    animation: none;
+    box-shadow: 0 0 0 3px var(--emerald-glow);
+  }
+  .hcv-preview *,
+  .hcv-preview *::before,
+  .hcv-preview *::after {
+    animation: none;
+    transition: none;
   }
 }

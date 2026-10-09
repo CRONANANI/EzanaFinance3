@@ -183,8 +183,8 @@ export default function HubCardDrawer({
 
         <footer className="hcv-dr-foot">
           <button type="button" className="hcv-dr-reset" onClick={onReset}>
-            <i className="bi bi-arrow-counterclockwise" aria-hidden="true" />
-            Reset layout
+            <i className="bi bi-eraser" aria-hidden="true" />
+            Clear canvas
           </button>
           <span className="hcv-dr-hint">Saved in this browser</span>
         </footer>
