@@ -574,3 +574,24 @@ test('company chart lays out markers on the nearest close and stacks collisions'
   assert.equal(rangeFor([{ date: '2024-02-13' }], now), '3Y');
   assert.equal(rangeFor([], now), '5Y');
 });
+
+test('MIN and MAX keep dates (the /datasets worked example: MAX(transaction_date))', async () => {
+  const admin = fakeAdmin(TABLES);
+  const out = await run(
+    'FROM capitol.congress_trades JOIN gov.contracts ON ticker WHERE transaction_type = "purchase" AND awarding_agency = "DoD" SELECT politician, ticker, MIN(transaction_date) AS first_buy, MAX(transaction_date) AS last_buy, SUM(contracts.award_value) AS awards GROUP BY politician, ticker;',
+    admin,
+  );
+  assert.ok(out.rows.length > 0);
+  for (const r of out.rows) {
+    assert.match(String(r.last_buy), /^\d{4}-\d{2}-\d{2}/, 'MAX of a date is a date, not null');
+    assert.ok(String(r.first_buy) <= String(r.last_buy));
+  }
+  /* Numbers still compare as numbers. */
+  const num = await run(
+    'FROM gov.contracts SELECT recipient, MAX(award_value) AS top, MIN(award_value) AS low GROUP BY recipient;',
+    admin,
+  );
+  const lmt = num.rows.find((r) => r.recipient === 'LOCKHEED');
+  assert.equal(lmt.top, 100);
+  assert.equal(lmt.low, 50);
+});

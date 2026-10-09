@@ -495,13 +495,20 @@ function aggregate(fn, allRows, ctx) {
       const n = nums(fn.args[0]);
       return n.length ? n.reduce((a, b) => a + b, 0) / n.length : null;
     }
-    case 'MIN': {
-      const n = nums(fn.args[0]);
-      return n.length ? Math.min(...n) : null;
-    }
+    case 'MIN':
     case 'MAX': {
-      const n = nums(fn.args[0]);
-      return n.length ? Math.max(...n) : null;
+      /* Numbers compare as numbers; dates (ISO strings) and text compare as
+         strings. Coercing a date with Number() gave NaN, so MAX(a date) was
+         always null. */
+      const v = vals(fn.args[0]);
+      if (!v.length) return null;
+      const isNum = (x) => typeof x === 'number' || (x !== '' && Number.isFinite(Number(x)));
+      if (v.every(isNum)) {
+        const n = v.map(Number);
+        return fn.name === 'MIN' ? Math.min(...n) : Math.max(...n);
+      }
+      const t = v.map(String).sort();
+      return fn.name === 'MIN' ? t[0] : t[t.length - 1];
     }
     case 'MEDIAN': {
       const n = nums(fn.args[0]).sort((a, b) => a - b);
