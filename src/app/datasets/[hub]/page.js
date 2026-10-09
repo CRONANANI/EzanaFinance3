@@ -15,7 +15,18 @@ import {
   LinkageSkeleton,
 } from './HubCards';
 import CapitolWatchHub from './capitol/CapitolWatchHub';
+import HubCanvas from '@/components/datasets/hub/canvas/HubCanvas';
+import { GUEST_LIMIT } from '@/components/datasets/hub/canvas/layout-model';
 import './hub.css';
+
+/* The drawer's one-line description of a linkage card: its `why`, cut at a
+   word boundary. */
+function shortBlurb(text, max = 110) {
+  const s = String(text || '').trim();
+  if (s.length <= max) return s;
+  const cut = s.slice(0, max);
+  return `${cut.slice(0, cut.lastIndexOf(' ')).replace(/[,;:]$/, '')}...`;
+}
 
 /**
  * Dimension hub: one page per dataset dimension. Summarises every dataset in
@@ -68,6 +79,77 @@ export default function HubPage({ params }) {
   const willShow = HUB_WILL_SHOW[dim.id];
   const sources = sourceLine(dim);
 
+  /* Everything below the header and the EzanaQL bar is a HubCanvas card:
+     the dataset strip, each cross-dataset linkage, and the roadmap. Guests
+     get the first three in this order; members get all of them. */
+  const cards = [
+    {
+      id: 'datasets',
+      title: 'Datasets',
+      icon: 'bi-collection',
+      blurb: `Every dataset in ${dim.label}, with its latest coverage.`,
+      w: 12,
+      minW: 6,
+      node: (
+        <section className="hub-section" aria-labelledby="hub-datasets">
+          <h2 className="hub-h2" id="hub-datasets">
+            Datasets
+          </h2>
+          <div className="hub-grid">
+            {dim.items.map((item) => (
+              <Suspense key={item.label} fallback={<CardSkeleton label={item.label} />}>
+                <DatasetCard item={item} />
+              </Suspense>
+            ))}
+          </div>
+        </section>
+      ),
+    },
+    ...linkages.map((card) => ({
+      id: `link-${card.id}`,
+      title: card.title,
+      icon: card.preview ? 'bi-hourglass-split' : 'bi-diagram-3',
+      blurb: shortBlurb(card.why),
+      w: card.wide ? 12 : 6,
+      minW: 4,
+      node: (
+        <Suspense fallback={<LinkageSkeleton card={card} />}>
+          <LinkageCard card={card} dimension={dim.id} />
+        </Suspense>
+      ),
+    })),
+    ...(willShow
+      ? [
+          {
+            id: 'will-show',
+            title: 'What this dimension will show',
+            icon: 'bi-signpost-split',
+            blurb: 'The datasets and signals on the roadmap for this dimension.',
+            w: 12,
+            minW: 6,
+            node: (
+              <article className="hub-card hub-will">
+                <div className="hub-card-head">
+                  <h2 className="hub-card-title" id="hub-will-show">
+                    What this dimension will show
+                  </h2>
+                  <span className="hub-tag hub-tag--soon">Roadmap</span>
+                </div>
+                <ul className="hub-will-list">
+                  {willShow.map((w) => (
+                    <li key={w.dataset}>
+                      <strong>{w.dataset}</strong>
+                      <span>{w.signal}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ),
+          },
+        ]
+      : []),
+  ].map((c, i) => ({ ...c, guest: i < GUEST_LIMIT }));
+
   return (
     <HubQueryProvider>
       <div className="hub-page" style={{ '--hub-accent': dim.color }}>
@@ -98,54 +180,7 @@ export default function HubPage({ params }) {
           )}
         </section>
 
-        <section className="hub-section" aria-labelledby="hub-datasets">
-          <h2 className="hub-h2" id="hub-datasets">
-            Datasets
-          </h2>
-          <div className="hub-grid">
-            {dim.items.map((item) => (
-              <Suspense key={item.label} fallback={<CardSkeleton label={item.label} />}>
-                <DatasetCard item={item} />
-              </Suspense>
-            ))}
-          </div>
-        </section>
-
-        {linkages.length ? (
-          <section className="hub-section" aria-labelledby="hub-signals">
-            <h2 className="hub-h2" id="hub-signals">
-              {linkages.every((c) => c.preview) ? 'Preview' : 'Signals across datasets'}
-            </h2>
-            <div className="hub-links">
-              {linkages.map((card) => (
-                <Suspense key={card.id} fallback={<LinkageSkeleton card={card} />}>
-                  <LinkageCard card={card} dimension={dim.id} />
-                </Suspense>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
-        {willShow ? (
-          <section className="hub-section" aria-labelledby="hub-will-show">
-            <article className="hub-card hub-will">
-              <div className="hub-card-head">
-                <h2 className="hub-card-title" id="hub-will-show">
-                  What this dimension will show
-                </h2>
-                <span className="hub-tag hub-tag--soon">Roadmap</span>
-              </div>
-              <ul className="hub-will-list">
-                {willShow.map((w) => (
-                  <li key={w.dataset}>
-                    <strong>{w.dataset}</strong>
-                    <span>{w.signal}</span>
-                  </li>
-                ))}
-              </ul>
-            </article>
-          </section>
-        ) : null}
+        <HubCanvas hubId={dim.id} label={`${dim.label} cards`} cards={cards} />
 
         {sources ? (
           <p className="hub-sources">

@@ -1918,28 +1918,34 @@
    binds every timeline class to 15s linear infinite, and it would swallow
    this 0.55s one-shot. Matching its (0,2,0) specificity and sitting later in
    the sheet is what wins, without an !important. */
+/* A settle, not a spring. The old pop overshot (scale 1.02, a -4px rebound
+   on a 1.56 back-curve) while the dossier itself was still gliding, so every
+   row bounced against a moving card. Now each row rises 8px into place on
+   the same soft ease the dossier's FLIP uses, and the rows are timed to fill
+   in as the card lands (see ROW_LEAD_S in SonarSection.jsx).
+   The end opacity is a custom property so a dry row settles at its dimmed
+   0.55 instead of being forced to 1 by the fill-mode. */
 .snr-band .snr-anim-rowpop {
-  opacity: 1;
-  transform: translateX(0) scale(1);
+  opacity: var(--snr-row-o, 1);
+  transform: none;
   animation-name: snrRowPop;
-  animation-duration: 0.55s;
-  animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation-duration: 0.5s;
+  animation-timing-function: var(--snr-flip-ease);
   animation-iteration-count: 1;
   animation-fill-mode: both;
 }
+.snr-band .snr-row--dry {
+  --snr-row-o: 0.55;
+}
 
 @keyframes snrRowPop {
-  0% {
+  from {
     opacity: 0;
-    transform: translateX(56px) scale(0.92);
+    transform: translate3d(0, 8px, 0);
   }
-  70% {
-    opacity: 1;
-    transform: translateX(-4px) scale(1.02);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0) scale(1);
+  to {
+    opacity: var(--snr-row-o, 1);
+    transform: translate3d(0, 0, 0);
   }
 }
 
@@ -2024,6 +2030,29 @@ html.snr-takeover,
 body.snr-takeover {
   --snr-takeover-bg: #032a21;
   background: var(--snr-takeover-bg) !important;
+}
+
+/* The ground cross-fades into and out of the takeover green, timed to the
+   entry glide, rather than switching on a single frame. snr-takeover-fade is
+   present for as long as the Sonar band is mounted, so the transition exists
+   on both edges of the lock. The nav ink follows on the same curve. */
+html.snr-takeover-fade,
+body.snr-takeover-fade {
+  transition: background-color 480ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+html.snr-takeover-fade body.snr-takeover-fade .navbar .nav-link,
+html.snr-takeover-fade body.snr-takeover-fade .navbar .nav-link-text,
+html.snr-takeover-fade body.snr-takeover-fade .navbar .nav-action-btn {
+  transition: color 480ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  html.snr-takeover-fade,
+  body.snr-takeover-fade,
+  html.snr-takeover-fade body.snr-takeover-fade .navbar .nav-link,
+  html.snr-takeover-fade body.snr-takeover-fade .navbar .nav-link-text,
+  html.snr-takeover-fade body.snr-takeover-fade .navbar .nav-action-btn {
+    transition: none;
+  }
 }
 
 /* The nav is glass while locked, not paint. A solid --snr-takeover-bg is the
@@ -2923,23 +2952,31 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
 }
 
 /* ── demo choreography ───────────────────────────────────────────────────
-   The pointer's demo travel is JS-driven, because its target is measured off
-   the Ping button rather than assumed. That means dropping the looping
-   keyframe animation and transitioning the transform instead. */
+   The pointer's demo travel is driven frame by frame by humanPointer()
+   (sonar-motion.js): an arced, minimum-jerk path with an overshoot and a
+   correction. It writes transform and opacity inline every frame, so there is
+   no transition here: a transform transition would chase each frame's value
+   and smear the path into a lag. Opacity starts at 0 inline and fades in. */
 .snr-cursor--demo {
-  opacity: 0.95;
+  opacity: 0;
   animation: none;
-  transition: transform 0.62s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition: none;
+  will-change: transform, opacity;
+  transform-origin: 3px 2px;
 }
 
-/* The press, held for 150ms as the fetch fires. */
+/* The press, held for 150ms as the fetch fires. It lands in the same frame
+   the pointer depresses, so the two read as one click. */
 .snr-ping-btn--pressed {
   transform: scale(0.95);
   background: color-mix(in srgb, var(--snr-emerald) 78%, #000000);
+  transition:
+    transform 90ms ease-out,
+    background 90ms ease-out;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .snr-cursor--demo {
+  .snr-ping-btn--pressed {
     transition: none;
   }
 }
@@ -4161,4 +4198,107 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
 .snr-band .snr-inner .snr-status {
   width: auto;
   min-width: 132px;
+}
+
+/* ── politician ping ──────────────────────────────────────────────────────
+   A member of Congress swaps the company stack for two cards that reuse the
+   .snr-fund / .snr-news shells (so the geometry budget, the snrCardIn entrance
+   and the orbital's last-card signal are unchanged): the member's estimated
+   portfolio value over time, and the members with the most overlapping
+   traded tickers. Party rings use the same mapping as the Capitol Watch hub
+   (--info for D, the amber-red mix for R). */
+.snr-face {
+  --snr-face-ring: color-mix(in srgb, var(--snr-mint) 45%, transparent);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--snr-mint) 12%, transparent);
+  box-shadow: 0 0 0 1.5px var(--snr-face-ring);
+}
+.snr-face--sm {
+  width: 30px;
+  height: 30px;
+}
+.snr-face--md {
+  width: 26px;
+  height: 26px;
+}
+.snr-face--d {
+  --snr-face-ring: var(--info);
+}
+.snr-face--r {
+  --snr-face-ring: color-mix(in srgb, var(--warning) 70%, var(--negative));
+}
+.snr-face--i {
+  --snr-face-ring: var(--purple);
+}
+.snr-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+}
+.snr-face-initials {
+  font-family: var(--snr-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--snr-text);
+}
+
+/* Person rows are buttons (they open the account gate, like every other
+   dossier link), laid out as face + two text lines. */
+.snr-person {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  width: calc(100% + 16px);
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.snr-person-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.snr-person-text .snr-news-title,
+.snr-person-text .snr-news-meta {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.snr-fund--pol .snr-fund-head {
+  gap: 8px;
+}
+.snr-fund--pol .snr-fund-ticker {
+  font-variant-numeric: tabular-nums;
+}
+.snr-pol-empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--snr-text-faint);
+}
+.snr-pol-note {
+  margin: 8px 0 0;
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: var(--snr-text-faint);
+}
+
+/* The news card's title is now the industry's name ("Defense Industry
+   Relevant News"), which can outrun a narrow card: one line, ellipsized. */
+.snr-news .snr-card-head .snr-panel-title {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

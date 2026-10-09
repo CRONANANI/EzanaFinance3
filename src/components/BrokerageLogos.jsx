@@ -5,12 +5,11 @@
  * under a small inline flag. Five are on screen per row; the other fifteen
  * wait in the wings.
  *
- * Flips ALTERNATE between the rows, and nothing about which tile flips is
- * random. Tick n flips group n % 2 — Canada, United States, Canada, United
- * States — and within a row the position advances round-robin, so every one of
- * the five is visited in turn before any repeats. Only the choice of which bank
- * arrives is drawn (from a seeded generator, never Math.random), out of the
- * institutions currently in the wings for that row.
+ * Flips ALTERNATE between the rows: tick n flips group n % 2, so Canada and
+ * the United States take strict turns. Within a row the POSITION is drawn from
+ * a seeded generator (never Math.random), and never repeats the position that
+ * row flipped last, so the eye cannot follow a left-to-right sweep. Which bank
+ * arrives is drawn the same way, out of the institutions in the wings.
  *
  * A flip is atomic. The `is-flipping` class sits on the wrapper around both
  * the mark and the label, and the content swap fires at the 90 degree edge, so
@@ -341,9 +340,10 @@ export function BrokerageLogos() {
      cleanup's clearTimeout kills the pending setFlipping(null), stranding a
      tile with the is-flipping class. A ref keeps the interval stable and the
      reads fresh. */
-  /* Where each row's round-robin is up to. A ref, not state: advancing it must
-     not re-render, and the interval must not be torn down when it changes. */
-  const slotCursorRef = useRef([0, 0]);
+  /* The position each row flipped last, so the next draw for that row can
+     exclude it. A ref, not state: it must not re-render, and the interval must
+     not be torn down when it changes. */
+  const lastSlotRef = useRef([-1, -1]);
   const slotsRef = useRef(slots);
   useEffect(() => {
     slotsRef.current = slots;
@@ -439,15 +439,18 @@ export function BrokerageLogos() {
       const group = c % 2;
 
       /* Nothing in the wings for this row: skip the tick rather than animate a
-         tile into the same bank it already shows, or into an initials tile. The
-         cursor is left alone on a skip, so the round-robin does not lose its
-         place to a row that happens to be fully resolved. */
+         tile into the same bank it already shows, or into an initials tile. */
       const available = resolvedPools[group].filter((i) => !slotsRef.current[group].includes(i));
       if (available.length === 0) return;
 
-      /* Round-robin within the row: every position is visited in turn. */
-      const slot = slotCursorRef.current[group];
-      slotCursorRef.current[group] = (slot + 1) % VISIBLE_SLOTS;
+      /* A scattered position within the row, never the one this row flipped
+         last. Drawing from the four remaining positions (rather than drawing
+         from five and re-rolling a repeat) keeps the cost to one hash. */
+      const width = slotsRef.current[group].length;
+      const last = lastSlotRef.current[group];
+      const choices = Array.from({ length: width }, (_, i) => i).filter((i) => i !== last);
+      const slot = choices[Math.floor(seededRand(c * 7 + 3) * choices.length)] ?? 0;
+      lastSlotRef.current[group] = slot;
 
       const swap = () =>
         setSlots((prev) => {

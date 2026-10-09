@@ -60,6 +60,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { SonarOrbital } from './SonarOrbital';
 import { SonarLoader } from '@/components/sonar/SonarLoader';
 import { geometryFor } from './sonar-geometry';
+import { animateWindowScroll, humanPointer } from './sonar-motion';
 import './sonar-band.css';
 
 /**
@@ -246,6 +247,14 @@ function usePixelBox() {
 
 const CHART_INSET = 6;
 
+/* How long the answer types on its own before the dossier starts to move. */
+const STAGE_LEAD_MS = 320;
+/* Each Sourced matches row pops this long after the previous one, starting
+   just after the dossier begins its glide, so the rows fill in as the card
+   lands rather than while it is still parked at the edge. */
+const ROW_STAGGER_S = 0.08;
+const ROW_LEAD_S = (STAGE_LEAD_MS + 120) / 1000;
+
 function AwardChart({ series }) {
   const [box, setNode] = usePixelBox();
   if (!Array.isArray(series) || series.length < 2) return null;
@@ -413,6 +422,127 @@ function Sparkline({ points }) {
   );
 }
 
+/* Initials for a face that fails to load: official portraits are addressed by
+   BioGuide id and a given id can 404. */
+function initialsOf(name) {
+  const words = String(name || '')
+    .replace(/,.*$/, '')
+    .split(/\s+/)
+    .filter((w) => w && !/^(jr|sr|ii|iii|iv)\.?$/i.test(w));
+  if (!words.length) return '';
+  const first = words[0][0];
+  const last = words.length > 1 ? words[words.length - 1][0] : '';
+  return `${first}${last}`.toUpperCase();
+}
+
+const PARTY_CLASS = { D: 'snr-face--d', R: 'snr-face--r', I: 'snr-face--i' };
+
+function Face({ name, src, party, size = 'sm' }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <span className={`snr-face snr-face--${size} ${PARTY_CLASS[party] || ''}`} aria-hidden="true">
+      {src && !failed ? (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img src={src} alt="" loading="lazy" decoding="async" onError={() => setFailed(true)} />
+      ) : (
+        <span className="snr-face-initials">{initialsOf(name)}</span>
+      )}
+    </span>
+  );
+}
+
+const seatOf = (p) => [p.party, p.state].filter(Boolean).join(' · ');
+
+/**
+ * The right-hand stack for a politician ping: estimated portfolio value over
+ * time, then the members whose traded tickers overlap most. Every figure is an
+ * estimate from disclosed ranges, and the card says so.
+ */
+function PoliticianStack({ dossier, onGate }) {
+  const s = dossier.stats || {};
+  return (
+    <div className="snr-stack">
+      <div className="snr-fund snr-fund--wide snr-fund--pol">
+        <div className="snr-fund-head">
+          <Face name={dossier.name} src={dossier.headshot} party={dossier.party} size="md" />
+          <span className="snr-fund-ticker">{seatOf(dossier)}</span>
+          {dossier.seriesLabel ? (
+            <span className="snr-range-chip">{dossier.seriesLabel}</span>
+          ) : null}
+          <span className="snr-rule-soft" />
+          <span className="snr-fund-name">Est. portfolio value</span>
+        </div>
+        <div className="snr-fund-body">
+          {dossier.series ? (
+            <Sparkline points={dossier.series} />
+          ) : (
+            <p className="snr-pol-empty">No disclosed trades to chart yet.</p>
+          )}
+          <div className="snr-fund-grid">
+            <div className="snr-stat">
+              <span className="snr-stat-label">Est. open value</span>
+              <span className="snr-stat-value">
+                {typeof s.estValue === 'number' ? compactUsd(s.estValue) : 'n/a'}
+              </span>
+            </div>
+            <div className="snr-stat">
+              <span className="snr-stat-label">Open positions</span>
+              <span className="snr-stat-value">
+                {typeof s.openPositions === 'number' ? s.openPositions : 'n/a'}
+              </span>
+            </div>
+            <div className="snr-stat">
+              <span className="snr-stat-label">Trades, 12M</span>
+              <span className="snr-stat-value">{s.trades12m ?? 'n/a'}</span>
+            </div>
+            <div className="snr-stat">
+              <span className="snr-stat-label">Top holdings</span>
+              <span className="snr-stat-value">
+                {dossier.topHoldings?.length ? dossier.topHoldings.join(' ') : 'n/a'}
+              </span>
+            </div>
+          </div>
+        </div>
+        <p className="snr-pol-note">
+          Estimated from disclosed STOCK Act ranges at their midpoints. No market prices applied.
+        </p>
+      </div>
+
+      {dossier.similar?.length ? (
+        <div className="snr-news snr-news--people">
+          <div className="snr-card-head">
+            <span className="snr-panel-title">Similar Portfolios</span>
+            <span className="snr-rule-soft" aria-hidden="true" />
+          </div>
+          <div className="snr-news-list">
+            {dossier.similar.map((p) => (
+              <button
+                key={p.bioguideId}
+                type="button"
+                className="snr-news-item snr-person"
+                onClick={onGate}
+              >
+                <Face name={p.name} src={p.headshot} party={p.party} />
+                <span className="snr-person-text">
+                  <span className="snr-news-title">{p.name}</span>
+                  <span className="snr-news-meta">
+                    {[seatOf(p), p.chamber].filter(Boolean).join(' · ')}
+                    {p.shared?.length ? ` · shares ${p.shared.slice(0, 3).join(', ')}` : ''}
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
+          <button type="button" className="snr-news-more" onClick={onGate}>
+            Compare portfolios in Capitol Watch
+            <i className="bi bi-arrow-right" aria-hidden="true" />
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function SonarSection() {
   const bandRef = useRef(null);
   const inputRef = useRef(null);
@@ -457,9 +587,20 @@ export function SonarSection() {
   /* The ping field is controlled now, because the demo types into the REAL
      input rather than an overlay: a visitor watching sees the field fill. */
   const [queryValue, setQueryValue] = useState('');
-  /* The demo pointer's target, measured off the Ping button each run so it
-     lands on the button at any width instead of a hardcoded offset. */
-  const [demoCursor, setDemoCursor] = useState(null);
+  /* True while the demo pointer is being driven by humanPointer(). Its
+     position is written straight to cursorRef by rAF, never through state, so
+     the travel costs no React renders. */
+  const [cursorLive, setCursorLive] = useState(false);
+  const cursorRef = useRef(null);
+  /* The visitor took the field: the pointer fades where it stands rather than
+     snapping back to the pristine loop's keyframe position. */
+  const hideDemoCursor = useCallback(() => {
+    const el = cursorRef.current;
+    if (el && el.style.opacity !== '') {
+      el.style.transition = 'opacity 180ms ease';
+      el.style.opacity = '0';
+    }
+  }, []);
   const [btnPressed, setBtnPressed] = useState(false);
   /* True from the first real ping of the visit onward, never reset. It is what
      freezes the demo choreography and takes the panel out of its pristine
@@ -653,6 +794,14 @@ export function SonarSection() {
     const bandTop = () => band.getBoundingClientRect().top + window.scrollY;
 
     let settleTimer = null;
+    /* Cancels the entry glide (animateWindowScroll). Replaced on each engage. */
+    let cancelGlide = () => {};
+    /* Lets the page ground cross-fade into and out of the takeover green
+       instead of switching on one frame. A separate class from snr-takeover,
+       because the transition has to be present BEFORE the colour changes in
+       both directions; on snr-takeover itself it would exist only on entry. */
+    document.documentElement.classList.add('snr-takeover-fade');
+    document.body.classList.add('snr-takeover-fade');
     /* Both elements: body carries the class the stylesheet scopes off, and
        html is what paints the canvas behind rubber-band overscroll. */
     const setLock = (on) => {
@@ -679,6 +828,7 @@ export function SonarSection() {
     const release = () => {
       /* Unfreeze first: it restores the real scroll position, and doing it
          after the class removal would paint one frame of the page at scroll 0. */
+      cancelGlide();
       unfreezeBody();
       endSettle();
       setLock(false);
@@ -688,25 +838,38 @@ export function SonarSection() {
       if (lockedRef.current || dismissedRef.current) return;
       setLock(true);
       settlingRef.current = true;
-      /* A smooth scroll that gets interrupted never reaches its target, and
-         a settling flag that never clears would leave the page green with
-         nothing actually locked. Hard deadline, so the state cannot stick. */
-      if (settleTimer) clearTimeout(settleTimer);
-      /* Deadline, in case a smooth scroll is interrupted and never lands
-         within tolerance: freeze where we are rather than leaving the page
-         green and still scrollable. */
-      settleTimer = setTimeout(() => {
-        endSettle();
-        if (lockedRef.current) freezeBody(bandTop());
-      }, 900);
       const target = bandTop();
       programmaticRef.current = true;
-      window.scrollTo({ top: target, behavior: reduced.matches ? 'auto' : 'smooth' });
       if (reduced.matches) {
         /* An instant jump emits no settling scroll event to catch. */
+        window.scrollTo({ top: target, behavior: 'instant' });
         endSettle();
         freezeBody(target);
+        return;
       }
+      /* The glide. Native smooth scroll has no fixed duration and no end
+         event, so the old lock froze the body on a 900ms deadline that could
+         land mid-glide: the visible jump at the moment of lock. This runs an
+         ease-out to an exact last frame and freezes there, continuing the
+         visitor's own downward momentum instead of stalling it. */
+      const distance = Math.abs(target - window.scrollY);
+      const duration = Math.max(420, Math.min(820, 380 + distance * 0.45));
+      cancelGlide();
+      cancelGlide = animateWindowScroll(target, {
+        duration,
+        onDone: () => {
+          endSettle();
+          if (lockedRef.current) freezeBody(target);
+        },
+      });
+      /* Backstop only: a glide cut short (tab hidden, rAF throttled) must
+         still end locked rather than green and scrollable. */
+      if (settleTimer) clearTimeout(settleTimer);
+      settleTimer = setTimeout(() => {
+        cancelGlide();
+        endSettle();
+        if (lockedRef.current) freezeBody(bandTop());
+      }, duration + 400);
     };
 
     lastYRef.current = window.scrollY;
@@ -726,6 +889,9 @@ export function SonarSection() {
            nothing left to clamp. */
         const target = bandTop();
         if (settlingRef.current && Math.abs(y - target) < 4) {
+          /* Within a frame of the end: stop the glide so it cannot issue a
+             scrollTo against the frozen body. */
+          cancelGlide();
           programmaticRef.current = false;
           endSettle();
           freezeBody(target);
@@ -744,7 +910,14 @@ export function SonarSection() {
     /* With the body frozen the page cannot move, so this is no longer about
        blocking it. It drives the band's own scroll and reads exit intent. */
     const onWheel = (e) => {
-      if (!lockedRef.current || settlingRef.current) return;
+      if (!lockedRef.current) return;
+      /* Mid-glide, a wheel tick would fight the animation frame by frame and
+         read as judder. The glide is under a second; hold input until it
+         lands. */
+      if (settlingRef.current) {
+        e.preventDefault();
+        return;
+      }
       const max = band.scrollHeight - band.clientHeight;
       if (e.deltaY > 0) {
         if (max > 0) {
@@ -774,6 +947,11 @@ export function SonarSection() {
       inDeck = Boolean(deck && e.target instanceof Node && deck.contains(e.target));
     };
     const onTouchMove = (e) => {
+      if (lockedRef.current && settlingRef.current && e.cancelable) {
+        /* Same as the wheel: a finger dragging against the glide judders. */
+        e.preventDefault();
+        return;
+      }
       if (!lockedRef.current || settlingRef.current || touchY === null) return;
       const dy = (e.touches?.[0]?.clientY ?? touchY) - touchY;
       const dx = (e.touches?.[0]?.clientX ?? touchX ?? 0) - (touchX ?? 0);
@@ -850,6 +1028,9 @@ export function SonarSection() {
 
     return () => {
       if (settleTimer) clearTimeout(settleTimer);
+      cancelGlide();
+      document.documentElement.classList.remove('snr-takeover-fade');
+      document.body.classList.remove('snr-takeover-fade');
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('touchstart', onTouchStart);
@@ -877,34 +1058,55 @@ export function SonarSection() {
     }
     setTyped(0);
     const total = text.length;
-    /* Same characters per second, half the renders, on phones.
-       12 chars every 16ms is 750 chars/s and about 62 setState calls a second.
-       The brief suggests 16 chars at 16ms, but that is 1000 chars/s: it makes
-       the type-out 33% FASTER and only cuts a quarter of the renders, which is
-       not what it asks for. 24 chars every 32ms is the same 750 chars/s, so
-       the effect lands in exactly the same time, with half the React commits
-       and half the layout passes on the device that needs the relief. */
+    /* Time-based, word-snapped reveal.
+       The old version stepped 12 characters every 16ms on a setInterval: a
+       dropped timer tick stalled the text, a catch-up tick jumped it, and a
+       word was routinely cut in half mid-frame ("Lockh"). Now progress is a
+       function of elapsed time on requestAnimationFrame, so a slow frame
+       costs nothing but that frame, and the visible text always ends on a
+       whole word.
+       The duration scales with length inside a band (about 620 chars/s) so a
+       short answer is not slow and a long one finishes while the stage 2
+       cards are still landing. A sine ease at both ends: the text eases in
+       as the loader fades out, and eases into place as the orbital arrives. */
+    const duration = Math.max(1400, Math.min(2600, (total / 620) * 1000));
+    const bounds = [];
+    for (let i = 0; i < total; i += 1) {
+      if (/\s/.test(text[i]) && !/\s/.test(text[i - 1] || ' ')) bounds.push(i);
+    }
+    bounds.push(total);
+    /* Phones repaint every other frame: the same curve, half the commits. */
     const phone =
       typeof window !== 'undefined' &&
       window.matchMedia &&
       window.matchMedia('(max-width: 1023px)').matches;
-    const step = phone ? 24 : 12;
-    const tick = phone ? 32 : 16;
-    const id = setInterval(() => {
-      setTyped((n) => {
-        if (n < 0) return n;
-        const next = n + step;
-        if (next >= total) {
-          clearInterval(id);
-          return -1;
+    let raf = 0;
+    let start = 0;
+    let frame = 0;
+    let shown = 0;
+    let b = 0;
+    const step = (now) => {
+      if (!start) start = now;
+      frame += 1;
+      const t = Math.min(1, (now - start) / duration);
+      if (t >= 1) {
+        setTyped(-1);
+        return;
+      }
+      if (!phone || frame % 2 === 0) {
+        const eased = 0.5 - Math.cos(Math.PI * t) / 2;
+        const target = eased * total;
+        while (b < bounds.length - 1 && bounds[b + 1] <= target) b += 1;
+        const next = bounds[b] <= target ? bounds[b] : shown;
+        if (next !== shown) {
+          shown = next;
+          setTyped(next);
         }
-        return next;
-      });
-      /* Roughly 750 chars a second, so three paragraphs land in about two
-         seconds. The query types slowly because watching it fill is the
-         point; the answer types fast because waiting for it is not. */
-    }, tick);
-    return () => clearInterval(id);
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   /* The auto-demo. It runs once per visit, the first time the lock engages on
@@ -924,15 +1126,32 @@ export function SonarSection() {
     let stopType = () => {};
 
     const DEMO_QUERY = 'Lockheed Martin';
-    const CHAR_MS = 70;
-    const POINTER_MS = 620;
     const PRESS_MS = 150;
+    /* How long until the entry glide has landed, plus a beat. Read once: the
+       glide duration is a function of the distance it covers, and by the time
+       this effect runs it has already started. */
+    const settleWaitMs = () => (settlingRef.current ? 720 : 140);
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const timers = [];
+    let pointer = null;
     const wait = (ms) =>
       new Promise((resolve) => {
         timers.push(setTimeout(resolve, reduce ? 0 : ms));
       });
+
+    /* Typing cadence. A fixed 70ms per key reads as a machine; a person types
+       in bursts, slows at word boundaries and on capitals. Seeded (never
+       Math.random) so every visitor sees the same take. */
+    const keyDelay = (i) => {
+      const x = Math.sin((i + 1) * 12.9898 + 78.233) * 43758.5453;
+      const jitter = x - Math.floor(x);
+      const ch = DEMO_QUERY[i] || '';
+      const next = DEMO_QUERY[i + 1] || '';
+      let ms = 52 + jitter * 46;
+      if (ch === ' ') ms += 70;
+      if (/[A-Z]/.test(next)) ms += 35;
+      return ms;
+    };
 
     /* Beat 1: the query types into the real field, one character at a time. */
     const typeQuery = async () => {
@@ -943,28 +1162,65 @@ export function SonarSection() {
       for (let i = 1; i <= DEMO_QUERY.length; i += 1) {
         if (!alive || userTookOverRef.current) return;
         setQueryValue(DEMO_QUERY.slice(0, i));
-        await wait(CHAR_MS);
+        await wait(keyDelay(i - 1));
       }
     };
 
-    /* Beat 2: the pointer travels to the Ping button and presses it. The
-       target is measured off the button relative to the form, which is the
-       cursor's positioning context, so it lands on the button at any width
-       rather than at a hardcoded offset. */
+    /* Beat 2: the pointer appears where the eye already is (just past the
+       typed text) and travels to the Ping button like a hand would: reaction
+       pause, arced path, minimum-jerk speed, a small overshoot and
+       correction, a dwell, then the press. Positions are measured off the
+       form, which is the cursor's positioning context, so it lands on the
+       button at any width. Driven by rAF on the element, not React state. */
     const movePointer = async () => {
       const btn = pingBtnRef.current;
       const form = formRef.current;
-      if (!btn || !form) return;
+      const input = inputRef.current;
+      const el = cursorRef.current;
+      if (!btn || !form || !el) return;
       const b = btn.getBoundingClientRect();
       const f = form.getBoundingClientRect();
-      setDemoCursor({
-        x: b.left - f.left + b.width * 0.45,
-        y: b.top - f.top + b.height * 0.4,
+      const to = { x: b.left - f.left + b.width * 0.46, y: b.top - f.top + b.height * 0.42 };
+      if (reduce) {
+        setCursorLive(true);
+        el.style.transform = `translate3d(${to.x}px, ${to.y}px, 0)`;
+        el.style.opacity = '0.95';
+        setBtnPressed(true);
+        timers.push(setTimeout(() => setBtnPressed(false), PRESS_MS));
+        return;
+      }
+      /* Start just past the end of the typed text: a canvas measure of the
+         input's own font, so the start point follows the copy at any width. */
+      let textEnd = 0;
+      if (input) {
+        const cs = window.getComputedStyle(input);
+        const ctx = document.createElement('canvas').getContext('2d');
+        if (ctx) {
+          ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+          textEnd = ctx.measureText(DEMO_QUERY).width;
+        }
+        const ir = input.getBoundingClientRect();
+        textEnd = Math.min(
+          ir.right - f.left - 24,
+          ir.left - f.left + parseFloat(cs.paddingLeft || '0') + textEnd + 18,
+        );
+      }
+      const from = {
+        x: Math.max(12, textEnd || to.x - 220),
+        y: b.top - f.top + b.height * 0.78,
+      };
+      setCursorLive(true);
+      pointer = humanPointer(el, from, to, {
+        isCancelled: () => !alive || userTookOverRef.current,
+        onPress: () => {
+          setBtnPressed(true);
+          timers.push(setTimeout(() => setBtnPressed(false), PRESS_MS));
+        },
       });
-      await wait(POINTER_MS);
-      if (!alive || userTookOverRef.current) return;
-      setBtnPressed(true);
-      timers.push(setTimeout(() => setBtnPressed(false), PRESS_MS));
+      await pointer.done;
+      /* A hand lets go of the mouse once the click lands; the pointer fades
+         rather than parking on the button for the rest of the visit. */
+      timers.push(setTimeout(hideDemoCursor, 700));
     };
 
     const timer = setTimeout(
@@ -984,7 +1240,7 @@ export function SonarSection() {
            a day, so a response produced before a pipeline fix keeps serving
            for up to 24h after the deploy that fixed it. Bumping this asks
            for a different URL, which is a different cache entry. */
-          const res = await fetch('/api/landing/demo-ping?v=8');
+          const res = await fetch('/api/landing/demo-ping?v=9');
           const data = await res.json().catch(() => null);
           if (!alive) return;
           if (res.ok && data?.answer) {
@@ -1018,16 +1274,18 @@ export function SonarSection() {
           if (alive) setPinging(false);
         }
       },
-      /* No delay. The entry scroll settles underneath the type-out; the two
-         are independent, and waiting for one to start the other left the band
-         looking inert for the first half second of the lock. */
-      0,
+      /* Starts as the entry glide lands, not under it. Two motions at once
+         (the page gliding and the field typing) read as a stutter; one after
+         the other reads as a single gesture. The glide is under a second, and
+         the wait is capped so the band can never look inert for long. */
+      reduce ? 0 : settleWaitMs(),
     );
 
     return () => {
       alive = false;
       clearTimeout(timer);
       timers.forEach(clearTimeout);
+      pointer?.cancel();
       stopType();
       /* A demo cancelled mid-flight by a release never reported anything, so
          it must not count as having run. Leaving demoStartedRef set meant the
@@ -1035,7 +1293,7 @@ export function SonarSection() {
          never appeared: the visitor was locked in with no way down. */
       if (!demoDoneRef.current) demoStartedRef.current = false;
     };
-  }, [lockedIn, startTypewriter]);
+  }, [lockedIn, startTypewriter, hideDemoCursor]);
 
   /* The deadline that guarantees a way down, in its own effect so it re-arms
      on every lock. It used to live inside the demo effect, where a release
@@ -1060,20 +1318,34 @@ export function SonarSection() {
        orbital still shrinks; the cards below render only where there is
        data for them. */
     const staging = Boolean(live.dossier || live.sources?.length);
-    /* FLIP, step 1 ("First"): the dossier's position as it stands NOW, while
-       it is still poking in at the edge, read before React applies
-       .snr-stage2. The layout effect below reads the "Last" rect after the
-       class lands and plays the difference back as a transform. */
-    if (staging) flipFirstRef.current = readSettledRect(dossierRef.current);
-    setStage2(staging);
-    /* The stage-2 sequence now runs 900ms, and the orbital fades in for 700ms
-       after the news card lands at 320ms — so the composition is still moving
-       until roughly 1.9s. Settle after the last card is down rather than
-       after the whole sequence: the arrow's job is to say the answer has
-       arrived, and waiting on the orbital's fade would hold it back for a
-       second after everything readable is in place. */
-    const t = setTimeout(() => setStage2Settled(true), staging ? 1300 : 0);
-    return () => clearTimeout(t);
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    /* One choreography, in order, so the eye has one thing to follow:
+         0ms       the loader fades and the first words of the answer appear
+         STAGE_LEAD the dossier glides in from the edge (FLIP, 900ms)
+         +120ms   its rows populate top to bottom, 80ms apart
+         +160ms   the chart card lands, +320ms the news card
+         last     the orbital fades in, then the arrow
+       The lead is what was missing: everything used to start on the same
+       frame as the first character, so the text, the card glide and the row
+       pops competed for attention and read as one jolt. */
+    const lead = staging && !reduced ? STAGE_LEAD_MS : 0;
+    const go = setTimeout(() => {
+      /* FLIP, step 1 ("First"): the dossier's position as it stands NOW,
+         while it is still poking in at the edge, read before React applies
+         .snr-stage2. The layout effect below reads the "Last" rect after the
+         class lands and plays the difference back as a transform. */
+      if (staging) flipFirstRef.current = readSettledRect(dossierRef.current);
+      setStage2(staging);
+    }, lead);
+    /* Settle after the last card is down rather than after the whole
+       sequence: the arrow's job is to say the answer has arrived, and waiting
+       on the orbital's fade would hold it back after everything readable is
+       in place. */
+    const t = setTimeout(() => setStage2Settled(true), staging ? lead + 1300 : 0);
+    return () => {
+      clearTimeout(go);
+      clearTimeout(t);
+    };
   }, [live]);
 
   /* The orbital arrives last, after the news card has landed.
@@ -1735,12 +2007,12 @@ export function SonarSection() {
                 value={queryValue}
                 onChange={(e) => {
                   userTookOverRef.current = true;
-                  setDemoCursor(null);
+                  hideDemoCursor();
                   setQueryValue(e.target.value);
                 }}
                 onFocus={() => {
                   userTookOverRef.current = true;
-                  setDemoCursor(null);
+                  hideDemoCursor();
                 }}
               />
               {/* Decorative demo narration for the pristine loop only. Once
@@ -1766,13 +2038,11 @@ export function SonarSection() {
                   <span className={`snr-btn-text${pinging ? '' : ' is-active'}`}>Ping</span>
                 </span>
               </button>
+              {/* Position and opacity are written by humanPointer() while
+                  cursorLive; React only owns the class. */}
               <svg
-                className={`snr-cursor ${demoCursor ? 'snr-cursor--demo' : 'snr-anim-cursor'}`}
-                style={
-                  demoCursor
-                    ? { transform: `translate(${demoCursor.x}px, ${demoCursor.y}px)` }
-                    : undefined
-                }
+                ref={cursorRef}
+                className={`snr-cursor ${cursorLive ? 'snr-cursor--demo' : 'snr-anim-cursor'}`}
                 viewBox="0 0 24 24"
                 fill="#ffffff"
                 stroke="#04261c"
@@ -1785,23 +2055,12 @@ export function SonarSection() {
             </form>
 
             <div className="snr-synth" inert={gateOpen ? '' : undefined}>
+              {/* Title only. The beacon dot, the hairline rule and the
+                  SWEEPING / READY status are gone: the loader layer below
+                  already says a sweep is running, so the header no longer
+                  narrates state. */}
               <div className="snr-panel-head">
-                <span className="snr-beacon-sm" aria-hidden="true" />
-                <span className="snr-panel-title">Live synthesis</span>
-                <span className="snr-rule-soft" aria-hidden="true" />
-                {/* Two spans in one grid cell, crossfading, so the label never
-                    hard-swaps and the row never reflows. This is NOT the old
-                    three-span version that live mode froze mid-fade: these are
-                    driven by state and opacity, not by the master timeline, so
-                    a freeze leaves exactly one of them at opacity 1. */}
-                <span className="snr-status" aria-hidden="true">
-                  <span className={`snr-status-text${pinging ? ' is-active' : ''}`}>
-                    SWEEPING 8 DATASETS
-                  </span>
-                  <span className={`snr-status-text${pinging ? '' : ' is-active'}`}>
-                    {live ? 'READY' : '8 CLAIMS CITED'}
-                  </span>
-                </span>
+                <span className="snr-panel-title">Research brief</span>
               </div>
 
               {/* 2c: the four states are stacked layers that crossfade. The card
@@ -2070,8 +2329,15 @@ export function SonarSection() {
                       const cls = `snr-row${matched ? '' : ' snr-row--dry'}${data ? ' snr-row--rich' : ''} ${
                         hasPinged || pingPulse > 0 ? 'snr-anim-rowpop' : `snr-anim-row${i}`
                       }`;
+                      /* After a ping the rows fill in as the dossier lands
+                         (ROW_LEAD_S), top to bottom. The empty-query replay
+                         keeps its immediate stagger. */
                       const style =
-                        hasPinged || pingPulse > 0 ? { animationDelay: `${i * 0.08}s` } : undefined;
+                        hasPinged || pingPulse > 0
+                          ? {
+                              animationDelay: `${(hasPinged ? ROW_LEAD_S : 0) + i * ROW_STAGGER_S}s`,
+                            }
+                          : undefined;
 
                       return (
                         <div key={d.id} className={cls} style={style}>
@@ -2292,7 +2558,16 @@ export function SonarSection() {
               The orbital stays in .snr-col-radar and is repositioned by grid
               rather than moved into this wrapper: reparenting it would remount
               the map and restart its drift mid-glide. */}
+          {/* A member of Congress: portfolio chart and similar portfolios in
+              place of the price chart and the news list. Same .snr-fund /
+              .snr-news shells, so the geometry budget, the card entrance and
+              the orbital's "last card landed" signal all hold unchanged. */}
+          {stage2 && live?.dossier?.kind === 'politician' ? (
+            <PoliticianStack dossier={live.dossier} onGate={() => openGate()} />
+          ) : null}
+
           {stage2 &&
+          live?.dossier?.kind !== 'politician' &&
           (live?.dossier?.fundamentals ||
             live?.dossier?.news?.length ||
             live?.dossier?.echo?.length) ? (
@@ -2351,7 +2626,12 @@ export function SonarSection() {
               {live.dossier.news.length || live.dossier.echo.length ? (
                 <div className="snr-news">
                   <div className="snr-card-head">
-                    <span className="snr-panel-title">Relevant news</span>
+                    {/* Named for the company's industry ("Defense Industry
+                        Relevant News"): the list carries industry stories
+                        that need not mention the company at all. */}
+                    <span className="snr-panel-title">
+                      {live.dossier.newsTitle || 'Relevant News'}
+                    </span>
                     <span className="snr-rule-soft" aria-hidden="true" />
                   </div>
                   <div className="snr-news-list">

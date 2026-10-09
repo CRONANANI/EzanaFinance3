@@ -3,9 +3,14 @@
  * hubs keep the shared template in ../page.js; this one is the approved
  * redesign (docs/design/capitol-watch-hub). Every module streams on its own
  * Suspense boundary with a skeleton, so one slow read never holds the page.
+ *
+ * Below the header (EzanaQL editor and result table, fixed), every module is
+ * a card on the HubCanvas: draggable, resizable, removable, and addable from
+ * the side drawer. Signed-out visitors keep three (the `guest` cards).
  */
 import { Suspense, cache } from 'react';
 import { HubQueryProvider } from '@/components/datasets/hub/HubClient';
+import HubCanvas from '@/components/datasets/hub/canvas/HubCanvas';
 import { getLinkage } from '@/lib/datasets/hub-data';
 import { getCapitolEvents } from '@/lib/datasets/capitol-hub/events';
 import {
@@ -139,65 +144,132 @@ export default function CapitolWatchHub({ dimension }) {
     </>
   );
 
+  /* The canvas registry, in default (member) order. `w` is the default column
+     span on 12; `guest` marks the three cards a signed-out visitor can place.
+     Each node keeps its own Suspense boundary, so loading is unchanged. */
+  const cards = [
+    {
+      id: 'top-signals',
+      title: 'Top signals this week',
+      icon: 'bi-lightning-charge',
+      blurb: 'The week’s strongest trades, awards and filings, ranked.',
+      w: 12,
+      minW: 6,
+      guest: true,
+      node: (
+        <Suspense fallback={<TopSignalsSkeleton />}>
+          <TopSignals />
+        </Suspense>
+      ),
+    },
+    {
+      id: 'rule-builder',
+      title: 'Signal rule builder',
+      icon: 'bi-sliders',
+      blurb: 'Compose your own signal from trades, committees and awards.',
+      w: 12,
+      minW: 6,
+      node: <RuleBuilder />,
+    },
+    {
+      id: 'signals',
+      title: 'Signals across datasets',
+      icon: 'bi-diagram-3',
+      blurb: 'Trades near contract awards, committee overlaps and lobbying ratios.',
+      w: 12,
+      minW: 6,
+      guest: true,
+      node: (
+        <Suspense fallback={<PanelSkeleton />}>
+          <Panel />
+        </Suspense>
+      ),
+    },
+    {
+      id: 'heatmap',
+      title: 'Where oversight and ownership overlap',
+      icon: 'bi-grid-3x3-gap',
+      blurb: 'Committee seats against the sectors their members trade.',
+      w: 7,
+      minW: 5,
+      node: (
+        <Suspense
+          fallback={
+            <CardSkeleton label="Where oversight and ownership overlap" className="cwh-heat" />
+          }
+        >
+          <HeatmapModule />
+        </Suspense>
+      ),
+    },
+    {
+      id: 'leaderboard',
+      title: 'Who reads contract awards best',
+      icon: 'bi-trophy',
+      blurb: 'Traders whose moves around federal awards paid off most often.',
+      w: 5,
+      minW: 4,
+      node: (
+        <Suspense
+          fallback={<CardSkeleton label="Who reads contract awards best" className="cwh-lead" />}
+        >
+          <LeaderboardModule />
+        </Suspense>
+      ),
+    },
+    {
+      id: 'portfolio',
+      title: 'Congress’s portfolio',
+      icon: 'bi-pie-chart',
+      blurb: 'What sitting members hold, by stock and by sector, estimated from filings.',
+      w: 12,
+      minW: 6,
+      guest: true,
+      node: (
+        <Suspense
+          fallback={<CardSkeleton label="Congress's portfolio" className="cwh-section cwh-port" />}
+        >
+          <PortfolioModule />
+        </Suspense>
+      ),
+    },
+    {
+      id: 'datasets',
+      title: 'The five datasets',
+      icon: 'bi-collection',
+      blurb: 'Open any Capitol Watch dataset for its full table.',
+      w: 12,
+      minW: 6,
+      node: (
+        <section className="cwh-section cwh-datasets" aria-labelledby="cwh-ds-h">
+          <div className="cwh-section-head">
+            <h2 className="cwh-h2" id="cwh-ds-h">
+              The five datasets
+            </h2>
+            <span className="cwh-caption">open any for the full table</span>
+          </div>
+          <div className="cwh-dst-grid">
+            {orderTiles(dimension.items).map((item, index) => (
+              <Suspense
+                key={item.label}
+                fallback={<DatasetTileSkeleton item={item} index={index} />}
+              >
+                <DatasetTileAsync item={item} index={index} />
+              </Suspense>
+            ))}
+          </div>
+        </section>
+      ),
+    },
+  ];
+
   return (
     <HubQueryProvider>
       <CwhProvider>
         <div className="cwh-tokens cwh-page">
           <CwhHeader intro={intro} />
 
-          <Suspense fallback={<TopSignalsSkeleton />}>
-            <TopSignals />
-          </Suspense>
-
-          <RuleBuilder />
-
-          <Suspense fallback={<PanelSkeleton />}>
-            <Panel />
-          </Suspense>
-
-          <div className="cwh-row">
-            <Suspense
-              fallback={
-                <CardSkeleton label="Where oversight and ownership overlap" className="cwh-heat" />
-              }
-            >
-              <HeatmapModule />
-            </Suspense>
-            <Suspense
-              fallback={
-                <CardSkeleton label="Who reads contract awards best" className="cwh-lead" />
-              }
-            >
-              <LeaderboardModule />
-            </Suspense>
-          </div>
-
-          <Suspense
-            fallback={
-              <CardSkeleton label="Congress's portfolio" className="cwh-section cwh-port" />
-            }
-          >
-            <PortfolioModule />
-          </Suspense>
-
-          <section className="cwh-section cwh-datasets" aria-labelledby="cwh-ds-h">
-            <div className="cwh-section-head">
-              <h2 className="cwh-h2" id="cwh-ds-h">
-                The five datasets
-              </h2>
-              <span className="cwh-caption">open any for the full table</span>
-            </div>
-            <div className="cwh-dst-grid">
-              {orderTiles(dimension.items).map((item, index) => (
-                <Suspense
-                  key={item.label}
-                  fallback={<DatasetTileSkeleton item={item} index={index} />}
-                >
-                  <DatasetTileAsync item={item} index={index} />
-                </Suspense>
-              ))}
-            </div>
-          </section>
+          <HubCanvas hubId="capitol" label="Capitol Watch cards" cards={cards} />
         </div>
         <footer className="cwh-tokens cwh-sources">
           <p>

@@ -9,6 +9,8 @@ import {
 import { orchestrate } from '@/lib/research-copilot/orchestrate';
 import { synthesizeWithFallback } from '@/lib/sonar/llm-providers';
 import { getFmpKey } from '@/lib/fmp/upcoming-events';
+import { industryProfile, industryNewsTitle, fetchIndustryNews } from '@/lib/sonar/industry-news';
+import { resolvePolitician, buildPoliticianDossier } from '@/lib/sonar/landing-politician';
 
 /**
  * The landing-page Sonar pipeline, shared by the two routes that run it:
@@ -516,19 +518,36 @@ async function matchContracts(admin, { name }) {
   }
 }
 
+/* public.congress_trades is the live STOCK Act table (House Clerk and Senate
+   eFD, one row per disclosed transaction). This used to read
+   public.congressional_trades, a retired table with zero rows, which is why
+   every ping's CONGRESS row rendered dry. Member names come from
+   congress_members in a second keyed read. */
+const TRADE_TYPE_LABEL = {
+  purchase: 'Purchase',
+  sale: 'Sale',
+  sale_partial: 'Partial sale',
+  exchange: 'Exchange',
+};
+
 async function matchCongress(admin, { ticker }) {
   if (!admin || !ticker) return null;
   try {
-    const { data } = await admin
-      .from('congressional_trades')
-      .select('politician_name, transaction_type, transaction_date')
-      .eq('symbol', ticker.toUpperCase())
+    const { data, error } = await admin
+      .from('congress_trades')
+      .select('bioguide_id, type, transaction_date')
+      .eq('ticker', ticker.toUpperCase())
       .order('transaction_date', { ascending: false })
       .limit(3);
-    if (!data?.length) return null;
+    if (error || !data?.length) return null;
+    const ids = [...new Set(data.map((r) => r.bioguide_id).filter(Boolean))];
+    const { data: members } = ids.length
+      ? await admin.from('congress_members').select('bioguide_id, full_name').in('bioguide_id', ids)
+      : { data: [] };
+    const nameOf = new Map((members || []).map((m) => [m.bioguide_id, m.full_name]));
     return data.map((r) => ({
-      member: String(r.politician_name || ''),
-      type: String(r.transaction_type || ''),
+      member: String(nameOf.get(r.bioguide_id) || 'Member of Congress'),
+      type: TRADE_TYPE_LABEL[r.type] || String(r.type || ''),
       date: r.transaction_date || null,
     }));
   } catch (e) {
@@ -536,6 +555,26 @@ async function matchCongress(admin, { ticker }) {
     return null;
   }
 }
+
+/* "STATE STREET CORP (STT, STT-PG)" reads as a shouted ledger line on a
+   landing page. Drop the trailing ticker list and soften all-caps names;
+   mixed-case names ("BlackRock, Inc.") are left exactly as filed. */
+function filerLabel(raw) {
+  const s = String(raw || '')
+    .replace(/\s*\([^)]*\)\s*$/, '')
+    .trim();
+  if (s !== s.toUpperCase()) return s;
+  return s
+    .toLowerCase()
+    .replace(/\b([a-z])/g, (c) => c.toUpperCase())
+    .replace(/\b(Llc|Lp|Llp|Na|Fsb|Plc|Ag|Sa)\b/g, (w) => w.toUpperCase());
+}
+
+const quarterLabel = (iso) => {
+  const d = String(iso || '');
+  const m = Number(d.slice(5, 7));
+  return m ? `Q${Math.ceil(m / 3)} ${d.slice(0, 4)}` : null;
+};
 
 async function matchSec(admin, { ticker }) {
   if (!admin || !ticker) return null;
@@ -558,22 +597,30 @@ async function matchSec(admin, { ticker }) {
   }
 }
 
+/* The largest 13F holders in the latest COMPLETE quarter, via the
+   sonar_top_13f RPC (supabase/migrations/20261009120000_sonar_top_13f.sql).
+   This used to read public.whale_moves, a few hundred scored moves with
+   nothing for most tickers. A missing RPC (migration not yet applied) leaves
+   the row dry exactly as before rather than failing the dossier. */
 async function match13f(admin, { ticker }) {
   if (!admin || !ticker) return null;
   try {
-    const { data } = await admin
-      .from('whale_moves')
-      .select('filer_name, change_type, value_usd, quarter, filed_at')
-      .eq('kind', 'institutional')
-      .eq('ticker', ticker.toUpperCase())
-      .order('filed_at', { ascending: false })
-      .limit(3);
-    if (!data?.length) return null;
-    return data.map((r) => ({
-      filer: String(r.filer_name || ''),
+    const { data, error } = await admin.rpc('sonar_top_13f', {
+      p_ticker: ticker.toUpperCase(),
+      p_limit: 3,
+    });
+    if (error) {
+      console.error('[sonar-pipeline] 13f rpc failed:', error.message);
+      return null;
+    }
+    const top = Array.isArray(data?.top) ? data.top : [];
+    if (!top.length) return null;
+    const quarter = quarterLabel(data.period);
+    return top.map((r) => ({
+      filer: filerLabel(r.filer_name),
       changeType: r.change_type || null,
       valueUsd: r.value_usd == null ? null : Number(r.value_usd),
-      quarter: r.quarter || null,
+      quarter,
     }));
   } catch (e) {
     console.error('[sonar-pipeline] 13f matches failed:', e?.message);
@@ -778,6 +825,26 @@ export async function buildDossier({ ticker, name }, admin) {
       ],
       (d) => (Array.isArray(d) && d.length ? d : null),
     ),
+    /* Profile, for the industry that titles the news card and picks the
+       industry stories ("Aerospace & Defense" for LMT). Finnhub's
+       finnhubIndustry is the fallback on the same chain. */
+    firstOf(
+      [
+        u(`${FMP_STABLE}/profile?symbol=${sym}&apikey=${k}`),
+        u(`${FMP_V3}/profile/${sym}?apikey=${k}`),
+        finnhubKey
+          ? {
+              id: 'finnhub/profile2',
+              url: `https://finnhub.io/api/v1/stock/profile2?symbol=${sym}&token=${encodeURIComponent(finnhubKey)}`,
+            }
+          : {},
+      ],
+      (d) => {
+        const r = Array.isArray(d) ? d[0] : d;
+        const industry = r?.industry || r?.finnhubIndustry || null;
+        return industry ? { industry: String(industry), sector: r?.sector || null } : null;
+      },
+    ),
   ]);
 
   let echoRes = null;
@@ -802,7 +869,14 @@ export async function buildDossier({ ticker, name }, admin) {
   const ratios = legs[1].value;
   const eod = legs[2].value;
   const news = legs[3].value;
+  const profile = legs[4].value;
   const legCodes = legs.flatMap((l) => l.codes);
+
+  /* Industry coverage that need not name the company: a ping on Lockheed
+     should still surface a Northrop munitions award or a Pentagon budget
+     story. Fail-soft to an empty list. */
+  const industry = industryProfile(profile?.industry);
+  const industryNews = industry ? await fetchIndustryNews(admin, industry, { limit: 3 }) : [];
 
   const rows = Array.isArray(eod) ? eod : [];
   /* FMP returns newest first; the chart reads left to right in time. No
@@ -845,20 +919,31 @@ export async function buildDossier({ ticker, name }, admin) {
     sparkLabel: 'YTD',
     /* Surfaced in the trace so an empty card explains itself. */
     legCodes,
-    /* Finnhub calls it headline/datetime, FMP calls it title/publishedDate. */
-    news: (Array.isArray(news) ? news : [])
-      .filter((n) => (n?.headline || n?.title) && n?.url)
-      .slice(0, 2)
-      .map((n) => ({
-        title: String(n.headline || n.title),
-        url: String(n.url),
-        source: String(n.source || n.site || 'News'),
-        publishedAt: n.datetime
-          ? new Date(n.datetime * 1000).toISOString()
-          : n.publishedDate
-            ? new Date(n.publishedDate).toISOString()
-            : null,
-      })),
+    kind: 'company',
+    industry: industry ? { label: industry.label, name: industry.name } : null,
+    newsTitle: industryNewsTitle(industry),
+    /* Industry stories first, then the company's own, newest first within
+       each, four at most. Finnhub calls it headline/datetime, FMP calls it
+       title/publishedDate. */
+    news: [
+      ...industryNews,
+      ...(Array.isArray(news) ? news : [])
+        .filter((n) => (n?.headline || n?.title) && n?.url)
+        .slice(0, 2)
+        .map((n) => ({
+          title: String(n.headline || n.title),
+          url: String(n.url),
+          source: String(n.source || n.site || 'News'),
+          publishedAt: n.datetime
+            ? new Date(n.datetime * 1000).toISOString()
+            : n.publishedDate
+              ? new Date(n.publishedDate).toISOString()
+              : null,
+          scope: 'company',
+        })),
+    ]
+      .filter((n, i, all) => all.findIndex((x) => x.url === n.url) === i)
+      .slice(0, 4),
     echo: (Array.isArray(echoRes?.data) ? echoRes.data : [])
       .filter((r) => r?.article_title && r?.article_slug)
       .map((r) => ({
@@ -899,14 +984,35 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
     }
   };
 
-  const resolved = await leg(
-    'resolve',
-    () => resolveCompany(query),
-    (v) => (v ? v.ticker : 'none'),
+  /* A member of Congress first: "Nancy Pelosi" must not resolve to whatever
+     FMP's fuzzy name search returns for it. resolvePolitician is strict (full
+     name, or a unique sitting member's last name) so a company ping never
+     lands here. When it hits, company resolution is skipped entirely. */
+  const politician = await leg(
+    'resolve-politician',
+    () => resolvePolitician(query, admin),
+    (v) => (v ? v.bioguideId : 'none'),
   );
+  const resolved = politician
+    ? null
+    : await leg(
+        'resolve',
+        () => resolveCompany(query),
+        (v) => (v ? v.ticker : 'none'),
+      );
   /* Retrieval sees the enriched string; the ledger and the UI keep the words
      the visitor actually typed. */
-  const retrievalQuery = resolved ? `${resolved.name} (${resolved.ticker})` : query;
+  const retrievalQuery = politician
+    ? politician.name
+    : resolved
+      ? `${resolved.name} (${resolved.ticker})`
+      : query;
+  /* What the synthesis is told the ping resolved to. */
+  const resolvedNote = politician
+    ? ` (resolved to ${politician.name}, ${[politician.party, politician.state].filter(Boolean).join('-')}, U.S. ${politician.chamberLabel || 'Congress'})`
+    : resolved
+      ? ` (resolved to ${resolved.name}, ${resolved.ticker})`
+      : '';
 
   const entitlements = getSonarEntitlements({ planTier: 0, version: 'regular' });
   const classification = classifyQuery(retrievalQuery);
@@ -937,9 +1043,11 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
      field: no retriever emits one, so matching on it would leave every
      haystack empty, drop every item, and send every entity ping down the
      ungrounded path. Checked against the retrievers rather than assumed. */
-  const entityTerms = resolved
-    ? [resolved.name, resolved.ticker].filter(Boolean).map((t) => t.toLowerCase())
-    : null;
+  const entityTerms = politician
+    ? [politician.name, politician.lastName].filter(Boolean).map((t) => t.toLowerCase())
+    : resolved
+      ? [resolved.name, resolved.ticker].filter(Boolean).map((t) => t.toLowerCase())
+      : null;
   const items = entityTerms
     ? retrieved.filter((it) => {
         const hay = [it.title, it.snippet, ...Object.values(it.meta || {})]
@@ -973,7 +1081,7 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
       () =>
         synthesizeWithFallback({
           system: GROUNDED_SYSTEM_PROMPT,
-          user: `Ping: ${query}\n\nSources:\n${sourcesBlock}`,
+          user: `Ping: ${query}${resolvedNote}\n\nSources:\n${sourcesBlock}`,
           /* Enough for web facts alongside snippets, capped so the panel
              stays inside the locked viewport: the card used to grow the page
              past one screen. Paired with the 50-to-80-word rule above. */
@@ -1000,7 +1108,7 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
       () =>
         synthesizeWithFallback({
           system: GENERAL_SYSTEM_PROMPT,
-          user: `Ping: ${query}${resolved ? ` (resolved to ${resolved.name}, ${resolved.ticker})` : ''}`,
+          user: `Ping: ${query}${resolvedNote}`,
           maxTokens: 480,
           model: HAIKU_MODEL,
           fallbackModel: HAIKU_MODEL,
@@ -1026,6 +1134,18 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
     .filter(Boolean);
 
   let dossier = null;
+  if (wantDossier && politician) {
+    try {
+      dossier = await leg(
+        'dossier-politician',
+        () => buildPoliticianDossier(politician, admin),
+        (v) =>
+          `series=${v.series ? v.series.length : 0} similar=${v.similar.length} trades12m=${v.stats?.trades12m ?? 0}`,
+      );
+    } catch {
+      /* Same rule as the company dossier: an enrichment, never the answer. */
+    }
+  }
   if (wantDossier && resolved) {
     try {
       dossier = await leg(
@@ -1080,6 +1200,7 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
     dossier,
     classification,
     resolved,
+    politician,
     itemCount: items.length,
     retrievedCount: retrieved.length,
     corporaSearched,
