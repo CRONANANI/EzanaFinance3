@@ -7,7 +7,7 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { isAdminUserClient } from '@/lib/admin-helpers-client';
+import { useIsAdmin } from '@/lib/admin-helpers-client';
 import { supabase } from '@/lib/supabase-browser';
 import { REPORT_REASONS } from '@/lib/moderation/core';
 import './moderation-admin.css';
@@ -30,7 +30,7 @@ async function authHeaders() {
 
 export default function ModerationAdminPage() {
   const { user, loading } = useAuth() || {};
-  const allowed = isAdminUserClient(user);
+  const { isAdmin: allowed, checking: adminChecking } = useIsAdmin(user);
   const [groups, setGroups] = useState(null);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(null);
@@ -81,7 +81,7 @@ export default function ModerationAdminPage() {
     }
   };
 
-  if (loading) return <main className="mod-page">Loading</main>;
+  if (loading || adminChecking) return <main className="mod-page">Loading</main>;
   if (!allowed) return <main className="mod-page">Admins only.</main>;
 
   return (

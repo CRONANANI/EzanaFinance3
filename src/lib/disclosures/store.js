@@ -6,14 +6,14 @@
  * representative has a state and a district. A chamber therefore resolves to
  * a set of table names and one field, and every query below is written once.
  *
- * Plain anon client, public RLS read; only the crons write. Every function
+ * Service-role reads on the server; only the crons write. Every function
  * returns an empty result rather than throwing, so a page renders its honest
  * empty or pending state instead of an error boundary.
  *
  * Amounts are brackets. amount_midpoint is read ONLY to order by size, is
  * never returned as a figure, and any response that used it says so.
  */
-import { createClient } from '@supabase/supabase-js';
+import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 
 const CHAMBERS = {
   house: {
@@ -34,14 +34,12 @@ export function chamberTables(chamber) {
   return CHAMBERS[String(chamber || '').toLowerCase()] || null;
 }
 
-let _anon = null;
+/* Server-side reads go through the service-role client: the dataset tables
+   are not readable with the public (anon) key, so they can only be reached
+   through this app's rate-limited routes and pages. */
 function client() {
-  if (_anon) return _anon;
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
-  _anon = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
-  return _anon;
+  if (!isServerSupabaseConfigured()) return null;
+  return getAdminClient();
 }
 
 const MAX_PAGE = 200;

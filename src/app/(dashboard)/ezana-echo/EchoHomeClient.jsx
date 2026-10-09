@@ -17,7 +17,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
-import { isAdminUserClient } from '@/lib/admin-helpers-client';
+import { useIsAdmin } from '@/lib/admin-helpers-client';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import EchoHome from '@/components/echo/home/EchoHome';
 import { PAGE_SIZE } from '@/lib/echo/bento-layout';
@@ -40,7 +40,7 @@ const DAY_MS = 86400000;
 
 export default function EchoHomeClient({ initialHub = null, initialFilters = null, now }) {
   const { user } = useAuth();
-  const isAdmin = isAdminUserClient(user);
+  const { isAdmin } = useIsAdmin(user);
 
   const [hub, setHub] = useState(() =>
     initialHub

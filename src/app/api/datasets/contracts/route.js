@@ -8,7 +8,7 @@ import { getContractAwardsPage, getContractCoverage } from '@/lib/usaspending-st
  *
  * Query params: fiscalYear, agency, recipient, minAmount, maxAmount,
  *   sort=amount|date|recipient, order=asc|desc, page, pageSize, coverage=1.
- * Public read (RLS-allowed). Returns { rows, total, page, pageSize, coverage? }.
+ * Public route, server-side read. Returns { rows, total, page, pageSize, coverage? }.
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';

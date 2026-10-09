@@ -8,7 +8,7 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { isAdminUserClient } from '@/lib/admin-helpers-client';
+import { useIsAdmin } from '@/lib/admin-helpers-client';
 import { supabase } from '@/lib/supabase-browser';
 import { TIERS, TIER_ORDER, tierForRole } from '@/lib/ezana-api/tiers';
 import './api-requests-admin.css';
@@ -145,7 +145,7 @@ function ApproveForm({ req, onDone }) {
 
 export default function ApiRequestsAdminPage() {
   const { user, loading } = useAuth() || {};
-  const allowed = isAdminUserClient(user);
+  const { isAdmin: allowed, checking: adminChecking } = useIsAdmin(user);
   const [tab, setTab] = useState('pending');
   const [data, setData] = useState(null);
   const [open, setOpen] = useState(null);
@@ -187,7 +187,7 @@ export default function ApiRequestsAdminPage() {
     load();
   };
 
-  if (loading) return <main className="aar-page">Loading</main>;
+  if (loading || adminChecking) return <main className="aar-page">Loading</main>;
   if (!allowed) return <main className="aar-page">Admins only.</main>;
 
   return (

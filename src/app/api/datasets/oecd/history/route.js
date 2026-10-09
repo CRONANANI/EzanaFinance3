@@ -7,9 +7,9 @@ import { OECD_CURATED_SLUGS } from '@/lib/oecd-curated';
  *
  * Full 1961–2025 series for ONE curated indicator across every area (one request
  * returns all countries, ~1,200–1,800 rows). The history chart fetches per
- * indicator and caches client-side. Public read (RLS-allowed on the observations
- * table). The slug is validated against the curated allow-list — unchecked user
- * input never reaches the store.
+ * indicator and caches client-side. Read on the server only (the observations
+ * table is not readable with the public key). The slug is validated against
+ * the curated allow-list, so unchecked user input never reaches the store.
  *
  * This data changes only when the sync cron runs, so it is safe to cache.
  */

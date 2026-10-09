@@ -2,20 +2,19 @@
  * Read layer for the House financial-disclosure index (and Phase 2 trades). The
  * Capitol Watch page reads these small Supabase tables (populated by the
  * ingest-house-disclosures / parse-house-ptrs crons) rather than hitting the Clerk
- * on every request. Plain anon client (public RLS read); only the crons write.
+ * on every request. Service-role reads on the server; only the crons write.
  * Returns [] / null on any error so the page falls through to its sample.
  */
-import { createClient } from '@supabase/supabase-js';
+import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 
-let _anon = null;
+/* Server-side reads go through the service-role client: the dataset tables
+   are not readable with the public (anon) key, so they can only be reached
+   through this app's rate-limited routes and pages. */
 function getAnonClient() {
-  if (_anon) return _anon;
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key)
-    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY');
-  _anon = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
-  return _anon;
+  if (!isServerSupabaseConfigured()) {
+    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY');
+  }
+  return getAdminClient();
 }
 
 /**

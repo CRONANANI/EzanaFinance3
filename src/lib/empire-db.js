@@ -1,117 +1,55 @@
 'use client';
 
-import { supabase } from '@/lib/supabase-browser';
-
-/**
- * Fetches all countries with their current ranking data.
- * Joined with country metadata for display (name, flag, region).
+/*
+ * Browser side of the Empire Ranking reads. The empire_* tables are not
+ * readable with the public key, so every call goes through /api/empire/data.
+ * Signatures and return shapes are unchanged; failures resolve to the empty
+ * value, as before.
  */
-export async function fetchEmpireRankings() {
-  const { data, error } = await supabase
-    .from('empire_rankings')
-    .select(
-      `
-      country_code,
-      overall_score,
-      rank,
-      trajectory,
-      as_of_year,
-      computed_at,
-      empire_countries (
-        name,
-        flag,
-        region,
-        is_eurozone
-      )
-    `,
-    )
-    .order('rank', { ascending: true });
 
-  if (error) {
-    console.error('[empire-db] fetchEmpireRankings error:', error);
-    return [];
+async function get(params, empty) {
+  try {
+    const res = await fetch(`/api/empire/data?${new URLSearchParams(params)}`);
+    if (!res.ok) {
+      console.error('[empire-db] request failed:', params.kind, res.status);
+      return empty;
+    }
+    const body = await res.json();
+    return body?.data ?? empty;
+  } catch (e) {
+    console.error('[empire-db] request failed:', params.kind, e?.message);
+    return empty;
   }
-
-  return (data || []).map((row) => ({
-    code: row.country_code,
-    name: row.empire_countries?.name || row.country_code,
-    flag: row.empire_countries?.flag || '🏳️',
-    region: row.empire_countries?.region,
-    score: Number(row.overall_score),
-    rank: row.rank,
-    trajectory: row.trajectory,
-    asOfYear: row.as_of_year,
-  }));
 }
 
-/**
- * Fetches the 18 Dalio power dimension scores for a specific country and year.
- */
-export async function fetchDimensionScores(countryCode, year) {
-  const { data, error } = await supabase
-    .from('empire_dimension_scores')
-    .select('dimension, z_score, raw_value')
-    .eq('country_code', countryCode)
-    .eq('year', year);
-
-  if (error) {
-    console.error('[empire-db] fetchDimensionScores error:', error);
-    return {};
-  }
-
-  const scores = {};
-  for (const row of data || []) {
-    scores[row.dimension] = Number(row.z_score);
-  }
-  return scores;
+/** All countries with their current ranking, joined with name, flag and region. */
+export function fetchEmpireRankings() {
+  return get({ kind: 'rankings' }, []);
 }
 
-/**
- * Fetches a time series for one country (z_score by year).
- * Note: empire_dimension_scores has multiple dimensions per year; narrow by dimension in Phase 4 if needed.
- */
-export async function fetchBigCycleHistory(countryCode, startYear = 1500, endYear = 2030) {
-  const { data, error } = await supabase
-    .from('empire_dimension_scores')
-    .select('year, z_score')
-    .eq('country_code', countryCode)
-    .gte('year', startYear)
-    .lte('year', endYear)
-    .order('year', { ascending: true });
-
-  if (error) {
-    console.error('[empire-db] fetchBigCycleHistory error:', error);
-    return [];
-  }
-
-  return (data || []).map((row) => ({
-    year: row.year,
-    value: Number(row.z_score),
-  }));
+/** The 18 power dimension z-scores for one country and year: { dimension: z }. */
+export function fetchDimensionScores(countryCode, year) {
+  return get({ kind: 'dimensions', country: countryCode, year: String(year) }, {});
 }
 
-/**
- * Raw indicator values pivoted for recharts: { year, USA: v, CHN: v, ... }.
- */
-export async function fetchIndicatorTimeSeries(indicatorCode, countryCodes, startYear, endYear) {
-  const { data, error } = await supabase
-    .from('empire_indicators')
-    .select('country_code, year, value')
-    .eq('indicator_code', indicatorCode)
-    .in('country_code', countryCodes)
-    .gte('year', startYear)
-    .lte('year', endYear)
-    .order('year', { ascending: true });
+/** z-score by year for one country: [{ year, value }]. */
+export function fetchBigCycleHistory(countryCode, startYear = 1500, endYear = 2030) {
+  return get(
+    { kind: 'history', country: countryCode, start: String(startYear), end: String(endYear) },
+    [],
+  );
+}
 
-  if (error) {
-    console.error('[empire-db] fetchIndicatorTimeSeries error:', error);
-    return [];
-  }
-
-  const pivoted = {};
-  for (const row of data || []) {
-    if (!pivoted[row.year]) pivoted[row.year] = { year: row.year };
-    pivoted[row.year][row.country_code] = Number(row.value);
-  }
-  return Object.values(pivoted);
+/** Raw indicator values pivoted for recharts: [{ year, USA: v, CHN: v, ... }]. */
+export function fetchIndicatorTimeSeries(indicatorCode, countryCodes, startYear, endYear) {
+  return get(
+    {
+      kind: 'indicators',
+      code: indicatorCode,
+      countries: (countryCodes || []).join(','),
+      start: String(startYear),
+      end: String(endYear),
+    },
+    [],
+  );
 }

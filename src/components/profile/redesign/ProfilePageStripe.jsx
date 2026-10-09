@@ -204,6 +204,9 @@ export function ProfilePageStripe({ username }) {
     setLoading(true);
     setNotFound(false);
     try {
+      // public_profiles: the public columns of profiles that are visible to
+      // this viewer (privacy on, or the viewer's own). Never the profiles table:
+      // it holds email, phone and billing fields and is readable by its owner only.
       let prof = null;
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
         username,
@@ -211,7 +214,7 @@ export function ProfilePageStripe({ username }) {
 
       if (isUUID) {
         const { data: p1, error: e1 } = await supabase
-          .from('profiles')
+          .from('public_profiles')
           .select('*')
           .eq('id', username)
           .maybeSingle();
@@ -223,7 +226,7 @@ export function ProfilePageStripe({ username }) {
         prof = p1;
       } else {
         const { data: p1, error: e1 } = await supabase
-          .from('profiles')
+          .from('public_profiles')
           .select('*')
           .eq('username', username)
           .maybeSingle();
@@ -236,7 +239,7 @@ export function ProfilePageStripe({ username }) {
           prof = p1;
         } else {
           const { data: p2 } = await supabase
-            .from('profiles')
+            .from('public_profiles')
             .select('*')
             .ilike('username', username)
             .maybeSingle();
@@ -251,11 +254,11 @@ export function ProfilePageStripe({ username }) {
       }
       setProfile(prof);
 
-      const { count } = await supabase
-        .from('user_follows')
-        .select('*', { count: 'exact', head: true })
-        .eq('following_id', prof.id);
-      setFollowerCount(count || 0);
+      // A count-only RPC: signed-out visitors see the number, never who follows whom.
+      const { data: followers } = await supabase.rpc('profile_follower_count', {
+        p_user_id: prof.id,
+      });
+      setFollowerCount(Number(followers) || 0);
 
       if (user?.id && user.id !== prof.id) {
         const { data: fo } = await supabase

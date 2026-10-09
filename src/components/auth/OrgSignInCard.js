@@ -30,17 +30,16 @@ const OrgSignInCard = ({ redirectTo = '/org-team-hub' }) => {
 
       // Match the email domain against the org's ARRAY of allowed domains.
       // Canadian schools use .ca and often student subdomains (e.g. mail.mcgill.ca),
-      // so one org has many domains. Anon read via the shared browser client —
-      // do NOT create a second client here; multiple GoTrueClient instances
-      // deadlock the auth lock and hang the sign-in.
+      // so one org has many domains. The lookup is a narrow RPC (id and name of
+      // the one active org for this domain) because the organizations table is
+      // not readable with the public key. Use the shared browser client; do NOT
+      // create a second client here: multiple GoTrueClient instances deadlock
+      // the auth lock and hang the sign-in.
       let org = null;
-      const { data: orgByDomain } = await supabase
-        .from('organizations')
-        .select('id, name, email_domains')
-        .contains('email_domains', [domain])
-        .eq('is_active', true)
-        .limit(1)
-        .maybeSingle();
+      const { data: orgRows } = await supabase.rpc('org_for_email_domain', {
+        p_domain: domain,
+      });
+      const orgByDomain = Array.isArray(orgRows) ? orgRows[0] || null : orgRows || null;
 
       org = orgByDomain;
 

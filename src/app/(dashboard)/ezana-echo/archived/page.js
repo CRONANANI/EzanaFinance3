@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
-import { isAdminUserClient } from '@/lib/admin-helpers-client';
+import { useIsAdmin } from '@/lib/admin-helpers-client';
 import { formatPublishedShort } from '@/lib/echo-format';
 import '../ezana-echo.css';
 
@@ -15,13 +15,13 @@ export default function ArchivedArticlesPage() {
   const [error, setError] = useState(null);
   const [busyId, setBusyId] = useState(null);
 
-  const isAdmin = isAdminUserClient(user);
+  const { isAdmin, checking: adminChecking } = useIsAdmin(user);
 
   useEffect(() => {
-    if (!authLoading && !isAdmin) {
+    if (!authLoading && !adminChecking && !isAdmin) {
       router.replace('/ezana-echo');
     }
-  }, [authLoading, isAdmin, router]);
+  }, [authLoading, adminChecking, isAdmin, router]);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -62,7 +62,7 @@ export default function ArchivedArticlesPage() {
     }
   }
 
-  if (authLoading) return <div className="echo-archive-loading">Loading…</div>;
+  if (authLoading || adminChecking) return <div className="echo-archive-loading">Loading…</div>;
   if (!isAdmin) return null;
 
   return (

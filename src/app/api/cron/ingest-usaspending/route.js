@@ -17,7 +17,7 @@ import {
  * recent slice fresh). Validation is unchanged; nothing is fabricated.
  *
  * Auth: CRON_SECRET bearer. USAspending is a free public API (no key). Writes use
- * the service-role admin client; public read is RLS-allowed.
+ * the service-role admin client; reads go through the server only.
  *   curl -H "Authorization: Bearer $CRON_SECRET" https://ezana.world/api/cron/ingest-usaspending
  */
 export const dynamic = 'force-dynamic';

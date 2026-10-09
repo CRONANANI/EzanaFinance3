@@ -2,12 +2,12 @@
 
 /**
  * /admin/waitlist: review the waitlist and send invites. The page is shown
- * only to NEXT_PUBLIC_ADMIN_EMAILS users, but the /api/admin/waitlist routes
+ * only to admins (asked of /api/auth/is-admin), but the /api/admin/waitlist routes
  * are the real gate (ADMIN_EMAILS, server side).
  */
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { isAdminUserClient } from '@/lib/admin-helpers-client';
+import { useIsAdmin } from '@/lib/admin-helpers-client';
 import { supabase } from '@/lib/supabase-browser';
 import { WAITLIST_HEARD_FROM, WAITLIST_ROLES } from '@/lib/waitlist/options';
 import './waitlist-admin.css';
@@ -36,7 +36,7 @@ async function authHeaders() {
 
 export default function WaitlistAdminPage() {
   const { user, loading } = useAuth() || {};
-  const allowed = isAdminUserClient(user);
+  const { isAdmin: allowed, checking: adminChecking } = useIsAdmin(user);
   const [status, setStatus] = useState('pending');
   const [rows, setRows] = useState([]);
   const [counts, setCounts] = useState({});
@@ -92,7 +92,7 @@ export default function WaitlistAdminPage() {
     }
   };
 
-  if (loading) return <main className="wla-page" aria-busy="true" />;
+  if (loading || adminChecking) return <main className="wla-page" aria-busy="true" />;
   if (!allowed) {
     return (
       <main className="wla-page">

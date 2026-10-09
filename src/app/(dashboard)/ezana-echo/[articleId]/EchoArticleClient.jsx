@@ -20,7 +20,7 @@ import {
 } from 'recharts';
 import { useAuth } from '@/components/AuthProvider';
 import { useTheme } from '@/components/ThemeProvider';
-import { isAdminUserClient } from '@/lib/admin-helpers-client';
+import { useIsAdmin } from '@/lib/admin-helpers-client';
 import { EchoSaveButton } from '@/components/echo/EchoSaveButton';
 import { EchoArticleFooter } from '@/components/echo/footer/EchoArticleFooter';
 import { EchoCtaCallout } from '@/components/echo/EchoCtaCallout';
@@ -2703,7 +2703,7 @@ export default function EchoArticleClient({
   isArchived: initialArchived = false,
 }) {
   const { user, isAuthenticated } = useAuth();
-  const isAdmin = isAdminUserClient(user);
+  const { isAdmin } = useIsAdmin(user);
   const [isArchived, setIsArchived] = useState(initialArchived);
   const [busy, setBusy] = useState(false);
   const articleBodyRef = useRef(null);

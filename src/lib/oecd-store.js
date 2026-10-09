@@ -3,14 +3,15 @@
  * shape: every function resolves to null/[] on failure — never throws — so the
  * page degrades to its static sample rather than an error boundary).
  */
-import { createClient } from '@supabase/supabase-js';
+import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 import { OECD_CURATED_SLUGS } from './oecd-curated';
 
+/* Server-side reads go through the service-role client: the dataset tables
+   are not readable with the public (anon) key, so they can only be reached
+   through this app's rate-limited routes and pages. */
 function getAnonClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
-  return createClient(url, key, { auth: { persistSession: false } });
+  if (!isServerSupabaseConfigured()) return null;
+  return getAdminClient();
 }
 
 /** Latest + prior value per (curated slug, country). null on any failure. */
