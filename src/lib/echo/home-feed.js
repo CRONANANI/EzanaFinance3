@@ -127,6 +127,10 @@ export function toStory(card) {
     image: cardImage(card),
     imageAlt: card.heroImage?.alt || '',
     imagePosition: imagePosition(card),
+    /* heroImage.display === 'inset': the Article of the Month banner shows the
+       image inside its text card instead of full-bleed behind it (for photos
+       too small or busy to carry the whole banner). */
+    imageInset: Boolean(card?.heroImage?.src) && card.heroImage.display === 'inset',
     href: `/ezana-echo/${card.id}`,
     publishedAt: card.publishedAt || null,
     geos: Array.isArray(card.geos) ? card.geos : [],

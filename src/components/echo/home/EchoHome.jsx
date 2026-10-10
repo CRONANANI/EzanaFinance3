@@ -204,6 +204,43 @@ export default function EchoHome({
 /* ---------- Hero ---------- */
 function Hero({ hero }) {
   const short = (SECTION_SHORT[hero.section] || '').toUpperCase();
+  const inset = Boolean(hero.imageInset && hero.image);
+  const text = (
+    <>
+      <span className="ech-kicker">{hero.kicker}</span>
+      <span className="ech-hero__title">{hero.title}</span>
+      {hero.dek ? <span className="ech-hero__dek">{hero.dek}</span> : null}
+      <span className="ech-hero__meta">
+        <span className="ech-mono">
+          {[short, hero.date, `${hero.mins} MIN READ`].filter(Boolean).join(' · ')}
+        </span>
+        <span className="ech-hero__go" aria-hidden="true">
+          <i className="bi bi-arrow-right" />
+        </span>
+      </span>
+    </>
+  );
+
+  /* Inset: the photo sits inside the card beside the text, on a quiet
+     emerald ground, instead of stretching across the whole banner. */
+  if (inset) {
+    return (
+      <Link className="ech-hero ech-hero--inset" href={hero.href}>
+        <span className="ech-hero__card">
+          <span className="ech-hero__body">{text}</span>
+          <Picture
+            src={hero.image}
+            className="ech-hero__inset"
+            alt={hero.imageAlt || ''}
+            position={hero.imagePosition}
+            sizes="(max-width: 640px) 100vw, 640px"
+            eager
+          />
+        </span>
+      </Link>
+    );
+  }
+
   return (
     <Link className="ech-hero" href={hero.href}>
       <Picture
@@ -214,19 +251,7 @@ function Hero({ hero }) {
         sizes="(max-width: 640px) 100vw, 1440px"
         eager
       />
-      <span className="ech-hero__card">
-        <span className="ech-kicker">{hero.kicker}</span>
-        <span className="ech-hero__title">{hero.title}</span>
-        {hero.dek ? <span className="ech-hero__dek">{hero.dek}</span> : null}
-        <span className="ech-hero__meta">
-          <span className="ech-mono">
-            {[short, hero.date, `${hero.mins} MIN READ`].filter(Boolean).join(' · ')}
-          </span>
-          <span className="ech-hero__go" aria-hidden="true">
-            <i className="bi bi-arrow-right" />
-          </span>
-        </span>
-      </span>
+      <span className="ech-hero__card">{text}</span>
     </Link>
   );
 }

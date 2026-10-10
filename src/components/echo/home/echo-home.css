@@ -169,6 +169,46 @@ body.light-mode .ech-page {
   flex-direction: column;
   gap: 12px;
 }
+/* Inset variant: the image lives inside the card (text left, photo right)
+   on a quiet emerald ground; used when heroImage.display === 'inset'. */
+.ech-hero--inset {
+  background:
+    radial-gradient(
+      120% 140% at 85% 10%,
+      color-mix(in srgb, var(--ech-emerald) 22%, var(--ech-bg)) 0%,
+      transparent 60%
+    ),
+    color-mix(in srgb, var(--ech-emerald) 8%, var(--ech-bg));
+}
+.ech-hero--inset .ech-hero__card {
+  top: 32px;
+  right: 32px;
+  bottom: 32px;
+  left: 32px;
+  width: auto;
+  max-width: none;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 32px;
+}
+.ech-hero__body {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+}
+.ech-hero__inset {
+  position: relative;
+  flex: 0 0 46%;
+  border-radius: var(--ech-r-tile);
+  overflow: hidden;
+  background: var(--ech-image-bg);
+}
+.ech-hero__inset.ech-img-fallback {
+  display: block;
+}
 .ech-hero__title {
   font-size: 36px;
   font-weight: 800;
@@ -1096,6 +1136,19 @@ body.light-mode .ech-page {
     max-width: none;
     margin: -24px 12px 0;
     padding: 20px;
+  }
+  .ech-hero--inset .ech-hero__card {
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    flex-direction: column-reverse;
+    margin: 0;
+    gap: 16px;
+  }
+  .ech-hero__inset {
+    flex: 0 0 auto;
+    height: 220px;
   }
   .ech-hero--skel {
     height: 380px;

@@ -37,7 +37,12 @@ function slim(card) {
     featured: card.featured,
     articleOfMonth: card.articleOfMonth || null,
     heroImage: heroSrc
-      ? { src: heroSrc, alt: card.heroImage?.alt || '', position: card.heroImage?.position || null }
+      ? {
+          src: heroSrc,
+          alt: card.heroImage?.alt || '',
+          position: card.heroImage?.position || null,
+          display: card.heroImage?.display === 'inset' ? 'inset' : null,
+        }
       : null,
     coverImage: keep(card.coverImage),
   };
