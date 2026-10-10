@@ -78,6 +78,7 @@ export const ARTICLE_SUBCATEGORY = {
   'central-bank-gold-cycle-2026': 'Metals',
   'datacenter-power-crunch-2026': 'Renewables',
   'sovereign-wealth-league-table-2026': 'Sovereign Funds',
+  'moderna-cancer-trial-trump-2026': 'Congress',
   // empire-rankings-1500-2026 is deliberately absent: no Global & Emerging
   // sub fits a country-power framework piece; its tile shows GLOBAL.
 };

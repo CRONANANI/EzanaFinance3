@@ -3240,6 +3240,128 @@ export const KEYWORDS = {
     courseId: 'stocks-advanced-7',
     courseTitle: 'Macroeconomics for Traders',
   },
+
+  /* ════════════════════════════════════════════════════════════════════════
+     Moderna cancer trial and disclosed trades article keywords
+     ════════════════════════════════════════════════════════════════════════ */
+
+  'recurrence-free-survival': {
+    id: 'recurrence-free-survival',
+    term: 'Recurrence-Free Survival',
+    definition:
+      'The time a patient lives after surgery without the cancer coming back or the patient dying. It is the standard primary endpoint for adjuvant trials, where the tumor has already been removed and the question is whether added treatment keeps it from returning.',
+    template: 'comparison',
+    templateData: {
+      title: 'Common cancer trial endpoints',
+      headers: ['Endpoint', 'What counts as an event', 'Why it matters'],
+      rows: [
+        {
+          label: 'Recurrence-free survival',
+          cells: ['Cancer returns anywhere, or death', 'Primary endpoint of INTerpath-001'],
+        },
+        {
+          label: 'Distant metastasis-free survival',
+          cells: [
+            'Cancer spreads to distant organs, or death',
+            'Secondary endpoint; spread is what kills',
+          ],
+        },
+        {
+          label: 'Overall survival',
+          cells: ['Death from any cause', 'The hardest endpoint; still being assessed'],
+        },
+      ],
+      footnote:
+        'Regulators weigh all three. A recurrence-free survival win with overall survival still maturing is a strong but incomplete result.',
+    },
+    realWorld:
+      'Moderna and Merck reported on 19 August 2026 that intismeran plus Keytruda improved recurrence-free survival over Keytruda alone in 1,137 melanoma patients. The size of the improvement is due at ESMO on 24 October.',
+    courseId: 'stocks-intermediate-4',
+    courseTitle: 'Catalysts and Event Risk',
+  },
+
+  neoantigen: {
+    id: 'neoantigen',
+    term: 'Neoantigen',
+    definition:
+      "A protein fragment found only on a patient's tumor cells, created by the tumor's own mutations. Because healthy cells lack it, the immune system can be trained to attack cells that display it while leaving normal tissue alone.",
+    template: 'comparison',
+    templateData: {
+      title: 'Off-the-shelf vs individualized cancer vaccines',
+      headers: ['Approach', 'What it targets', 'How it is made'],
+      rows: [
+        {
+          label: 'Shared antigen vaccine',
+          cells: ['Proteins common to many tumors', 'One product for every patient'],
+        },
+        {
+          label: 'Individualized neoantigen therapy',
+          cells: [
+            "Mutations unique to one patient's tumor",
+            'Sequenced and manufactured per patient',
+          ],
+        },
+      ],
+      footnote:
+        'Individualized therapies can be more precise, but each dose is a separate manufacturing run, which raises cost per patient.',
+    },
+    realWorld:
+      "Moderna's intismeran is designed to target up to 34 neoantigens chosen from each patient's own tumor sequence, which is why analysts flag manufacturing cost alongside efficacy.",
+    courseId: 'stocks-intermediate-4',
+    courseTitle: 'Catalysts and Event Risk',
+  },
+
+  'hazard-ratio': {
+    id: 'hazard-ratio',
+    term: 'Hazard Ratio',
+    definition:
+      'The rate at which events (such as a cancer returning) occur in the treated group divided by the rate in the control group. A hazard ratio of 0.60 means a 40% lower risk of the event at any point during follow-up; 1.00 means no difference.',
+    template: 'formula',
+    templateData: {
+      formula: 'Risk reduction = 1 - Hazard ratio',
+      example: {
+        title: 'Moderna Phase 2b melanoma, five years',
+        substitution:
+          'Reported 49% lower risk of recurrence or death · implied hazard ratio about 0.51',
+      },
+    },
+    realWorld:
+      "Moderna's management set a 20% risk reduction, a hazard ratio of 0.80, as the clinical benchmark for its Phase 3 melanoma trial. The full figure is due at ESMO on 24 October 2026.",
+    courseId: 'stocks-intermediate-4',
+    courseTitle: 'Catalysts and Event Risk',
+  },
+
+  'periodic-transaction-report': {
+    id: 'periodic-transaction-report',
+    term: 'Periodic Transaction Report',
+    definition:
+      'The form members of Congress and senior executive-branch officials, including the president, file to disclose securities trades above $1,000. Under the STOCK Act it is due within 45 days of the trade and reports the amount only as a dollar range.',
+    template: 'timeline',
+    templateData: {
+      title: 'How a disclosed trade reaches the public',
+      events: [
+        {
+          year: 'Day 0',
+          label: 'Trade executes',
+          detail: 'Exact price and size known to the account',
+        },
+        {
+          year: 'Up to day 45',
+          label: 'Report filed',
+          detail: 'Amount shown as a range, e.g. $15,001 to $50,000',
+        },
+        {
+          year: 'After filing',
+          label: 'Public sees it',
+          detail: 'Trackers and the press pick it up',
+        },
+      ],
+    },
+    realWorld:
+      "Donald Trump's account bought $15,001 to $50,000 of Moderna on 2 March 2026. The range spans a 3.3-times difference in exposure, so any estimate of his gain is a bracket, not a figure.",
+    courseId: 'policy-101-1',
+    courseTitle: 'How Regulators Decide',
+  },
 };
 
 export function getKeywordById(id) {

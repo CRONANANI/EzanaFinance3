@@ -3,12 +3,24 @@
 import { useState } from 'react';
 import { EchoFigureShell } from './EchoFigureShell';
 
+const DEFAULT_LEGEND = {
+  same: 'same: the pattern held',
+  part: 'partial: held with an asterisk',
+  none: 'none: did not hold',
+};
+
 export function EchoAdjudicationMatrix({
   figureLabel,
   kicker,
   hint,
   source,
   cols = [],
+  /* The top-left header cell. Defaults to the original wording so every
+     existing matrix renders exactly as before. */
+  cornerLabel = 'Transition \\ Dimension',
+  /* Legend wording for the three grades. Defaults keep the original meaning
+     (a pattern held or not); an article grading something else passes its own. */
+  legend = DEFAULT_LEGEND,
   rows = [],
 }) {
   const [selected, setSelected] = useState(null); // [rowIdx, colIdx]
@@ -22,7 +34,7 @@ export function EchoAdjudicationMatrix({
         <table className="echo-fig-matrix">
           <thead>
             <tr>
-              <th className="echo-fig-matrix-rowhead">Transition \ Dimension</th>
+              <th className="echo-fig-matrix-rowhead">{cornerLabel}</th>
               {cols.map((c) => (
                 <th key={c}>{c}</th>
               ))}
@@ -40,7 +52,7 @@ export function EchoAdjudicationMatrix({
                       setSelected(selected?.[0] === ri && selected?.[1] === ci ? null : [ri, ci])
                     }
                   >
-                    {cell.value === 'same' ? 'SAME' : cell.value === 'part' ? 'PART' : '—'}
+                    {cell.value === 'same' ? 'SAME' : cell.value === 'part' ? 'PART' : 'NONE'}
                   </td>
                 ))}
               </tr>
@@ -54,23 +66,22 @@ export function EchoAdjudicationMatrix({
             className="echo-fig-legend-swatch"
             style={{ background: 'var(--echo-chart-blue)' }}
           />{' '}
-          same — the pattern held
+          {legend.same}
         </span>
         <span>
-          <span className="echo-fig-legend-swatch echo-fig-cell-part" /> partial — held with an
-          asterisk
+          <span className="echo-fig-legend-swatch echo-fig-cell-part" /> {legend.part}
         </span>
         <span>
           <span className="echo-fig-legend-swatch" style={{ background: 'var(--bg-tertiary)' }} />{' '}
-          none — did not hold
+          {legend.none}
         </span>
       </div>
       {selected && rows[selected[0]]?.cells[selected[1]]?.note && (
         <div className="echo-fig-detail">
           <strong>
             {rows[selected[0]].label} × {cols[selected[1]]}
-          </strong>{' '}
-          — {rows[selected[0]].cells[selected[1]].note}
+          </strong>
+          : {rows[selected[0]].cells[selected[1]].note}
         </div>
       )}
     </EchoFigureShell>

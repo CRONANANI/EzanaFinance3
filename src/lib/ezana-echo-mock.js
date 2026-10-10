@@ -53,6 +53,7 @@ import { tariffWinnersContractLosers2026 } from './ezana-echo-article-tariff-win
 import { centralBankGoldCycle2026 } from './ezana-echo-article-central-bank-gold-cycle-2026.js';
 import { datacenterPowerCrunch2026 } from './ezana-echo-article-datacenter-power-crunch-2026.js';
 import { sovereignWealthLeagueTable2026 } from './ezana-echo-article-sovereign-wealth-league-table-2026.js';
+import { modernaCancerTrialTrump2026 } from './ezana-echo-article-moderna-cancer-trial-trump-2026.js';
 
 const ARTICLES = [
   johnnyMnemonicConsolidation2026,
@@ -85,6 +86,7 @@ const ARTICLES = [
   centralBankGoldCycle2026,
   datacenterPowerCrunch2026,
   sovereignWealthLeagueTable2026,
+  modernaCancerTrialTrump2026,
 ];
 
 export { AOTM_HISTORY } from './echo/aotm.js';

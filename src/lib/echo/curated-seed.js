@@ -39,6 +39,7 @@ import { tariffWinnersContractLosers2026 } from '@/lib/ezana-echo-article-tariff
 import { centralBankGoldCycle2026 } from '@/lib/ezana-echo-article-central-bank-gold-cycle-2026.js';
 import { datacenterPowerCrunch2026 } from '@/lib/ezana-echo-article-datacenter-power-crunch-2026.js';
 import { sovereignWealthLeagueTable2026 } from '@/lib/ezana-echo-article-sovereign-wealth-league-table-2026.js';
+import { modernaCancerTrialTrump2026 } from '@/lib/ezana-echo-article-moderna-cancer-trial-trump-2026.js';
 
 const SOURCE = [
   johnnyMnemonicConsolidation2026,
@@ -60,6 +61,7 @@ const SOURCE = [
   semiconductorArticle,
   privateCreditMaturityWallArticle2026,
   sovereignWealthLeagueTable2026,
+  modernaCancerTrialTrump2026,
   // Drafts (invisible until status flips to published + reseed):
   bitcoinInstitutionalHolders2026,
   stablecoinSettlementLayer2026,
