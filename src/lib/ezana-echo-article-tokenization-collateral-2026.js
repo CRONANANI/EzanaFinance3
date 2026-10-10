@@ -11,15 +11,15 @@ export const tokenizationCollateral2026 = {
   excerpt:
     'Farmers in Brazil borrowed nearly $20,000 against ten tokenized dairy cows registered on the B3 exchange. The mechanism they proved points at a $5.7 trillion global small-business credit gap — $8 trillion counting informal enterprises — in countries where only 6% of smallholder farmers can borrow against wealth they already own.',
   heroImage: {
-    src: '/echo/tokenizedcows.jpg',
-    alt: 'Dairy cows in a pasture — the first livestock tokenized as loan collateral on a national exchange',
+    src: '/images/ezana-echo/tokenization-collateral-2026-hero.webp',
+    alt: 'A herd of brown and white-faced cattle grazing on green pasture at sunset, with the sun low on a tree-lined horizon.',
     caption:
       'In Paraná, Brazil, ten dairy cows became the first livestock tokenized and registered on the B3 exchange as loan collateral, each wearing an AI-powered collar that streams its health and location to the lender.',
   },
   contentBlocks: [
     {
       type: 'paragraph',
-      text: 'In July 2026, farmers in Paraná, Brazil did something no one had done before: they tokenized ten dairy cows, registered the tokens on B3 — the national stock exchange — and borrowed nearly $20,000 against the herd. Each cow carries a unique digital identity tied to an AI-powered collar that streams its health, behavior, and location to the credit agreement in real time, so the lender does not need an inspector, cannot be double-pledged the same animal across two loans, and can even verify a swap if a collateralized cow dies. It is the smallest deal in this article by five orders of magnitude, and it is the most important one, because it demonstrates the part of tokenization the headlines keep missing. The story is not the asset. The story is what an asset can DO once it is tokenized — and the first thing every illiquid asset does when it becomes liquid is get borrowed against.',
+      text: 'In July 2026, farmers in Paraná, Brazil did something no one had done before: they tokenized ten dairy cows, registered the tokens on B3, the national stock exchange, and borrowed nearly $20,000 against the herd. Each cow carries a unique digital identity tied to an AI-powered collar that streams its health, behavior, and location to the credit agreement in real time, so the lender does not need an inspector, cannot be double-pledged the same animal across two loans, and can even verify a swap if a collateralized cow dies. It is the smallest deal in this article by five orders of magnitude, and it is the most important one, because it demonstrates the part of [[kw:tokenization]]tokenization[[/kw]] the headlines keep missing. The story is not the asset. The story is what an asset can DO once it is tokenized, and the first thing every illiquid asset does when it becomes liquid is get borrowed against.',
     },
     {
       type: 'stat-grid',

@@ -706,7 +706,13 @@ body.light-mode {
 /* ── Echo article minimal nav: logo left, auth actions right, no menu ── */
 .navbar--echo-article {
   position: relative;
-  padding-top: 3px; /* the logo/auth row clears the fixed-height progress bar */
+  /* The logo/auth row clears the 3px progress bar with air to spare: the
+     winged logo (54px) is taller than the 45px row, so the row is given a
+     min-height that contains it and the bar never crosses the mark. */
+  padding-top: 8px;
+}
+.navbar--echo-article .nav-container--echo-article {
+  min-height: 56px;
 }
 .navbar--echo-article .nav-container--echo-article {
   position: relative; /* anchors the absolutely-centered wordmark/title */
@@ -724,6 +730,7 @@ body.light-mode {
   left: 0;
   right: 0;
   height: 3px;
+  z-index: 2;
   background: var(--emerald-bg-subtle);
 }
 .nav-echo-progress-fill {

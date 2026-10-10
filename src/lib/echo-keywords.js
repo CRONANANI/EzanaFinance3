@@ -3331,6 +3331,30 @@ export const KEYWORDS = {
     courseTitle: 'Catalysts and Event Risk',
   },
 
+  tokenization: {
+    id: 'tokenization',
+    term: 'Tokenization',
+    definition:
+      'Recording ownership of a real-world asset, such as a bond, a building or a cow, as a digital token on a shared ledger. The token is a legal claim on the asset, so it can be transferred, verified and pledged as collateral in minutes instead of through paper registries and inspectors.',
+    template: 'comparison',
+    templateData: {
+      title: 'The same asset, two ways to borrow against it',
+      headers: ['', 'Paper collateral', 'Tokenized collateral'],
+      rows: [
+        {
+          label: 'Proof of ownership',
+          cells: ['Titles and registry filings', 'A token on a ledger'],
+        },
+        { label: 'Checking the asset', cells: ['Site inspections', 'Live data from the asset'] },
+        { label: 'Double pledging', cells: ['Hard to detect', 'Blocked by the registry'] },
+        { label: 'Time to a loan', cells: ['Weeks', 'Minutes to days'] },
+      ],
+      footnote: 'Tokenization changes how an asset is recorded and moved, not what it is worth.',
+    },
+    realWorld:
+      "In July 2026 farmers in Parana, Brazil tokenized ten dairy cows, registered the tokens on the B3 exchange and borrowed nearly $20,000 against them, with AI collars streaming each animal's health and location to the lender.",
+  },
+
   'periodic-transaction-report': {
     id: 'periodic-transaction-report',
     term: 'Periodic Transaction Report',

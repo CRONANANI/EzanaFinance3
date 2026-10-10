@@ -160,31 +160,16 @@ body.ekp-rail-dim .echo-grail::after {
   }
 }
 
-/* Stack runways exist only on the three-column layout. */
-.echo-grail-stack-gap {
-  display: none;
-}
-@media (min-width: 1280px) {
-  .echo-grail-stack-gap {
-    display: block;
-  }
-}
-
 /* ── metric placement: under the globe inline (<1280px), closing the rail on
-   the three-column layout, where the sticky block is globe-only ── */
+   the three-column layout, where the sticky block is globe + active card ── */
 .echo-grail-metric--end {
   display: none;
 }
 
-/* ── >=1280px: sticky globe + scroll-driven card stack + city news ─────────
-   The rail stretches to the grid row (align-self: stretch above), so the
-   sticky globe block travels the whole article. It sits ABOVE the cards
-   (z-index 3, opaque page ground): cards scroll up under it until they reach
-   their own sticky line, --echo-grail-card-top, written by EchoGlobeRail as
-   the sticky block's top + height + 12px. Every card is sticky at that same
-   line, so card N+1 slides up and covers card N; each carries its own
-   runway (a .echo-grail-stack-gap spacer before it) and a z-index that
-   increases down the stack. */
+/* ── >=1280px: one sticky block holding the head, the globe and the single
+   active city card. The section in view picks the city (EchoGlobeRail); the
+   card is re-keyed per city, so each change mounts a fresh card that slides
+   up into place. Only one card exists, so nothing can show underneath it. */
 @media (min-width: 1280px) {
   .echo-grail-sticky {
     z-index: 3;
@@ -196,57 +181,59 @@ body.ekp-rail-dim .echo-grail::after {
     display: block;
     margin-top: 24px;
   }
-  .echo-grail-cards {
-    z-index: 0;
-    background: transparent;
-    display: block;
+  .echo-grail-slot {
+    border-top: 1px solid var(--border-secondary);
+    padding-top: 14px;
+    overflow: hidden; /* clips the incoming card while it slides up */
   }
-  .echo-grail-card {
-    position: sticky;
-    top: var(--echo-grail-card-top, 480px);
+  .echo-grail-card--slot {
     padding: 1rem;
-    border: 1px solid var(--border-primary);
+    border: 1px solid var(--emerald);
     border-radius: var(--radius-md);
-    background: var(--echo-page-bg, var(--bg-primary));
+    background: color-mix(in srgb, var(--emerald) 8%, var(--echo-page-bg, var(--bg-primary)));
     box-shadow: var(--shadow-sm);
-    transition:
-      border-color 0.15s ease,
-      background 0.15s ease,
-      box-shadow 0.15s ease;
   }
-  /* The runway per overtake. */
-  .echo-grail-stack-gap {
-    height: 40vh;
-  }
-  .echo-grail-card-city {
+  .echo-grail-card--slot .echo-grail-card-city {
     font-size: 0.72rem;
     letter-spacing: 0.05em;
   }
-  .echo-grail-card-impact {
+  .echo-grail-card--slot .echo-grail-card-impact {
     line-height: 1.65;
+    color: var(--text-primary);
   }
-  /* The card that has completed its overtake. Opaque (mixed into the page
-     ground, not a translucent wash) so the card beneath never shows through. */
-  .echo-grail-card.is-active {
-    border-color: var(--emerald);
-    background: color-mix(in srgb, var(--emerald) 8%, var(--echo-page-bg, var(--bg-primary)));
-    box-shadow: var(--shadow-glow);
+}
+@media (min-width: 1280px) and (prefers-reduced-motion: no-preference) {
+  .echo-grail-card--slot {
+    animation: echo-grail-card-in 0.35s ease-out both;
   }
+}
+@media (min-width: 1280px) and (prefers-reduced-motion: reduce) {
+  .echo-grail-card--slot {
+    animation: echo-grail-card-fade 0.01s linear both;
+  }
+}
+@keyframes echo-grail-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes echo-grail-card-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 
-  .echo-grail-globe-row {
-    position: relative;
-  }
-  .echo-grail-globe-row--below .echo-grail-globe {
-    margin-bottom: 12px;
-  }
-  /* Beside the grid when the viewport has room (measured in EchoGlobeRail);
-     otherwise under the globe, inside the sticky block. */
-  .echo-grail-news--right {
-    position: absolute;
-    top: 0;
-    left: calc(100% + 20px);
-    width: 300px;
-  }
+/* The globe's city markers are clickable (jump to that city's section). */
+.echo-grail-globe canvas {
+  cursor: grab;
 }
 
 /* ── city news card (branding guide standard card) ── */

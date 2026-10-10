@@ -1766,6 +1766,9 @@ export function InteractiveGlobe({
       While set, auto-rotation yields and the globe eases to center the target
       (snaps under prefers-reduced-motion). Null = behavior exactly as today. */
   focusTarget = null,
+  /** Optional: called with the marker's index when a visible city marker is
+      clicked (a press that did not drag). Null = markers are not clickable. */
+  onMarkerClick = null,
 }) {
   const canvasRef = useRef(null);
   // Rotation stored in degrees [longitude, latitude] — matches reference component
@@ -1791,6 +1794,11 @@ export function InteractiveGlobe({
   markersRef.current = markers;
   const focusRef = useRef(focusTarget);
   focusRef.current = focusTarget;
+  const onMarkerClickRef = useRef(onMarkerClick);
+  onMarkerClickRef.current = onMarkerClick;
+  // Screen positions (CSS px) of the markers drawn on the last frame, front
+  // hemisphere only, for click hit-testing: [{ i, x, y }].
+  const markerHitsRef = useRef([]);
   // Read once: focus easing snaps instead of tweening under reduced motion.
   const reducedMotionRef = useRef(false);
   useEffect(() => {
@@ -2059,6 +2067,7 @@ export function InteractiveGlobe({
     // continent dots (back hemisphere hidden). Larger dot + pulse ring on the
     // front hemisphere; a mono label only when the marker faces the viewer.
     const markerList = markersRef.current;
+    markerHitsRef.current = [];
     if (markerList && markerList.length) {
       pulseRef.current = (pulseRef.current + 1) % 90;
       const pulse = pulseRef.current / 90; // 0..1 ring expansion phase
@@ -2077,6 +2086,7 @@ export function InteractiveGlobe({
         const mcos = -mz / radius;
         if (mcos <= 0.05) continue;
         const [mpx, mpy] = project(mx, my, mz, cx, cy, fov);
+        markerHitsRef.current.push({ i, x: mpx, y: mpy });
 
         // Pulse ring (fades as it expands).
         ctx.save();
@@ -2164,32 +2174,78 @@ export function InteractiveGlobe({
     e.preventDefault();
   }, []);
 
-  const onPointerMove = useCallback((e) => {
-    // Continent hover: record the pointer in canvas space; the draw loop does
-    // the actual hit-test against the frame's projected dots. Off by default.
-    if (continentHoverRef.current) {
-      const rect = e.currentTarget.getBoundingClientRect();
-      pointerRef.current = [e.clientX - rect.left, e.clientY - rect.top];
+  /* Nearest visible marker within reach of a canvas-space point, or null. */
+  const markerAt = useCallback((x, y) => {
+    const REACH = 14;
+    let best = null;
+    let bestD = REACH * REACH;
+    for (const h of markerHitsRef.current) {
+      const d = (h.x - x) ** 2 + (h.y - y) ** 2;
+      if (d <= bestD) {
+        bestD = d;
+        best = h.i;
+      }
     }
-    if (!dragRef.current.active) return;
-    const sensitivity = 0.5;
-    const dx = e.clientX - dragRef.current.startX;
-    const dy = e.clientY - dragRef.current.startY;
-
-    rotationRef.current[0] = dragRef.current.startRotation[0] + dx * sensitivity;
-    rotationRef.current[1] = Math.max(
-      -90,
-      Math.min(90, dragRef.current.startRotation[1] - dy * sensitivity),
-    );
+    return best;
   }, []);
 
-  const onPointerUp = useCallback(() => {
-    dragRef.current.active = false;
-    // Resume auto-rotation after a short delay (matches reference component)
-    resumeTimerRef.current = setTimeout(() => {
-      autoRotateRef.current = true;
-    }, 10);
-  }, []);
+  const onPointerMove = useCallback(
+    (e) => {
+      // Continent hover: record the pointer in canvas space; the draw loop does
+      // the actual hit-test against the frame's projected dots. Off by default.
+      if (continentHoverRef.current) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        pointerRef.current = [e.clientX - rect.left, e.clientY - rect.top];
+      }
+      if (!dragRef.current.active) {
+        // Clickable markers: pointer cursor while over one.
+        if (onMarkerClickRef.current) {
+          const rect = e.currentTarget.getBoundingClientRect();
+          const over = markerAt(e.clientX - rect.left, e.clientY - rect.top) != null;
+          e.currentTarget.style.cursor = over ? 'pointer' : '';
+        }
+        return;
+      }
+      const sensitivity = 0.5;
+      const dx = e.clientX - dragRef.current.startX;
+      const dy = e.clientY - dragRef.current.startY;
+
+      rotationRef.current[0] = dragRef.current.startRotation[0] + dx * sensitivity;
+      rotationRef.current[1] = Math.max(
+        -90,
+        Math.min(90, dragRef.current.startRotation[1] - dy * sensitivity),
+      );
+    },
+    [markerAt],
+  );
+
+  const onPointerUp = useCallback(
+    (e) => {
+      // A press that barely moved is a click: hit-test the city markers.
+      const d = dragRef.current;
+      if (
+        d.active &&
+        onMarkerClickRef.current &&
+        e &&
+        e.type === 'pointerup' &&
+        Math.abs(e.clientX - d.startX) < 5 &&
+        Math.abs(e.clientY - d.startY) < 5
+      ) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const hit = markerAt(e.clientX - rect.left, e.clientY - rect.top);
+        if (hit != null) {
+          rotationRef.current = [...d.startRotation];
+          onMarkerClickRef.current(hit);
+        }
+      }
+      dragRef.current.active = false;
+      // Resume auto-rotation after a short delay (matches reference component)
+      resumeTimerRef.current = setTimeout(() => {
+        autoRotateRef.current = true;
+      }, 10);
+    },
+    [markerAt],
+  );
 
   // Cleanup resume timer on unmount
   useEffect(() => {
@@ -2214,7 +2270,7 @@ export function InteractiveGlobe({
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
       onPointerLeave={(e) => {
-        if (dragRef.current.active) onPointerUp(e);
+        if (dragRef.current.active) onPointerUp();
         if (continentHoverRef.current) {
           pointerRef.current = null;
           if (lastHoverRef.current !== null) {
