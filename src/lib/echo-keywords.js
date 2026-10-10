@@ -3362,6 +3362,96 @@ export const KEYWORDS = {
     courseId: 'policy-101-1',
     courseTitle: 'How Regulators Decide',
   },
+
+  'refuse-to-file': {
+    id: 'refuse-to-file',
+    term: 'Refusal-to-File Letter',
+    definition:
+      'A letter in which the FDA declines to begin reviewing an application because it judges the submission incomplete or its evidence inadequate on its face. It is not a rejection of the product: the company can fix the problem, request a meeting and refile, and the review clock starts only once the agency accepts the filing.',
+    template: 'timeline',
+    templateData: {
+      title: 'From filing to a review clock',
+      events: [
+        {
+          year: 'Day 0',
+          label: 'Application submitted',
+          detail: 'The company files for approval',
+        },
+        {
+          year: 'Within 60 days',
+          label: 'Filing decision',
+          detail: 'The FDA accepts the file or refuses to file it',
+        },
+        {
+          year: 'After a refusal',
+          label: 'Meeting and refile',
+          detail: 'A Type A meeting can resolve the dispute quickly',
+        },
+        {
+          year: 'Once accepted',
+          label: 'Review clock runs',
+          detail: 'A PDUFA date sets the decision deadline',
+        },
+      ],
+    },
+    realWorld:
+      "On 10 February 2026 Moderna disclosed a refusal-to-file letter for its mRNA flu vaccine over the trial's comparator. Eight days later the FDA agreed to review an amended application, with a decision due 5 August; it approved the vaccine on that date.",
+    courseId: 'policy-101-1',
+    courseTitle: 'How Regulators Decide',
+  },
+
+  'relative-vaccine-efficacy': {
+    id: 'relative-vaccine-efficacy',
+    term: 'Relative Vaccine Efficacy',
+    definition:
+      'How much better a new vaccine prevents disease than an existing vaccine it is tested against, rather than against a placebo. Because the comparison group is also vaccinated, relative efficacy figures run lower than absolute efficacy figures and are not directly comparable with them.',
+    template: 'formula',
+    templateData: {
+      formula:
+        'Relative efficacy = 1 - (attack rate, new vaccine / attack rate, comparator vaccine)',
+      example: {
+        title: 'Moderna mFLUSIVA Phase 3, 40,805 adults aged 50 and older',
+        substitution:
+          'Reported relative efficacy of 26.6% against a standard-dose flu shot · about a quarter fewer confirmed cases than in the comparator group',
+      },
+    },
+    realWorld:
+      "An FDA advisory committee voted 9-0 on 18 June 2026 that the benefits of Moderna's mRNA flu vaccine outweigh its risks for adults 50 and older, on trial data showing 26.6% relative efficacy against a licensed standard-dose shot.",
+    courseId: 'stocks-intermediate-4',
+    courseTitle: 'Catalysts and Event Risk',
+  },
+
+  'accelerated-approval': {
+    id: 'accelerated-approval',
+    term: 'Accelerated Approval',
+    definition:
+      'An FDA pathway that approves a product on an earlier or indirect measure, such as an immune response, that is reasonably likely to predict real clinical benefit. The company must run a confirmatory study after approval, and the FDA can withdraw the approval if that study fails.',
+    template: 'comparison',
+    templateData: {
+      title: 'Two ways to the same label',
+      headers: ['', 'Traditional approval', 'Accelerated approval'],
+      rows: [
+        {
+          label: 'Evidence',
+          cells: ['Clinical outcome data', 'An earlier or indirect measure'],
+        },
+        {
+          label: 'After approval',
+          cells: ['Routine safety monitoring', 'A required confirmatory study'],
+        },
+        {
+          label: 'Can be pulled?',
+          cells: ['Only on new safety or efficacy findings', 'Yes, if confirmation fails'],
+        },
+      ],
+      footnote:
+        'Moderna sought traditional approval for adults 50 to 64 and accelerated approval for adults 65 and older.',
+    },
+    realWorld:
+      "Moderna's mRNA flu vaccine was approved on 5 August 2026 with traditional approval for adults 50 to 64 and accelerated approval for adults 65 and older, based on an immune-response study against a high-dose shot.",
+    courseId: 'policy-101-1',
+    courseTitle: 'How Regulators Decide',
+  },
 };
 
 export function getKeywordById(id) {

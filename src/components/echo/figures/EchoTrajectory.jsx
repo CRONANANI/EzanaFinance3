@@ -22,6 +22,7 @@ export function EchoTrajectory({
   yMax,
   xMin,
   xMax,
+  xTicks,
 }) {
   const allPts = series.flatMap((s) => s.data);
   const x0 = xMin ?? Math.min(...allPts.map((p) => p.x));
@@ -104,19 +105,23 @@ export function EchoTrajectory({
             {yLabel}
           </text>
         )}
-        {[x0, Math.round((x0 + x1) / 2), x1].map((v) => (
-          <text
-            key={v}
-            x={sx(v)}
-            y={H - PAD.b + 22}
-            textAnchor="middle"
-            className="echo-fig-mono"
-            fontSize="16"
-            fill="var(--text-muted)"
-          >
-            {v}
-          </text>
-        ))}
+        {/* Optional xTicks: [{ x, label }] for sub-year axes (month labels on a
+            decimal-year scale). Default: start, midpoint and end values. */}
+        {(xTicks ?? [x0, Math.round((x0 + x1) / 2), x1].map((v) => ({ x: v, label: v }))).map(
+          (t) => (
+            <text
+              key={t.x}
+              x={sx(t.x)}
+              y={H - PAD.b + 22}
+              textAnchor="middle"
+              className="echo-fig-mono"
+              fontSize="16"
+              fill="var(--text-muted)"
+            >
+              {t.label}
+            </text>
+          ),
+        )}
 
         {series.map((s) => {
           const d = s.data.map((p, i) => `${i ? 'L' : 'M'} ${sx(p.x)} ${sy(p.y)}`).join(' ');
