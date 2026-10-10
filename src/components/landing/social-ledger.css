@@ -28,6 +28,13 @@
    The rule system is three weights doing three jobs, and there is no fourth:
    hairline separates a label from its content, 2px opens a table, dotted
    divides rows inside one. No card borders, no shadows, no radius above 3px.
+
+   ONE APPROVED EXCEPTION (Oct 2026): the rating panel in the record zone
+   (sled-rp-, rating-panel handoff). Its gauge and tier ladder are a new
+   design, not a restyle, so the freeze above does not bind them: the current
+   and next tier rows carry an 8px radius and a 1px border, the rating figure
+   is Plus Jakarta Sans, and small emerald text uses --emerald-text for
+   contrast. Everything else in this file keeps the freeze.
    ══════════════════════════════════════════════════════════════════════ */
 
 .sled-section {
@@ -127,121 +134,309 @@
   gap: var(--sled-colgap);
   align-items: stretch;
 }
-/* space-between pins the ladder to the column's bottom so its baseline meets
-   the chart's x-axis labels. */
+/* The rating panel (SocialRatingPanel.jsx, design: rating-panel handoff,
+   B + D hybrid). The column is a size container so the panel can stack its
+   own two columns whenever the column is narrow, not only on phones: between
+   1000px and about 1180px the 5fr column is too slim for gauge + ladder. */
 .sled-ratingcol {
+  container-type: inline-size;
+  min-width: 0;
+}
+
+.sled-rp {
+  /* Panel palette, from tokens only. --emerald-text is the dark emerald in light mode,
+     which is the 4.5:1 emerald every small label here needs. */
+  --rp-ink: var(--text-primary);
+  --rp-ink-2: var(--text-secondary);
+  --rp-mute: var(--text-muted);
+  --rp-faint: var(--text-faint);
+  --rp-hair: var(--sled-rule);
+  --rp-mark: var(--emerald);
+  --rp-mark-text: var(--emerald-text);
+  --rp-deep: color-mix(in srgb, var(--emerald-text) 78%, var(--text-primary));
+  --rp-tint: color-mix(in srgb, var(--emerald) 8%, transparent);
+  --rp-tint-border: color-mix(in srgb, var(--emerald) 38%, transparent);
+  --rp-next-border: color-mix(in srgb, var(--emerald) 58%, transparent);
+  --rp-track: color-mix(in srgb, var(--emerald) 20%, transparent);
+  --rp-done-dot: color-mix(in srgb, var(--emerald) 40%, transparent);
+  --rp-lock-dot: color-mix(in srgb, var(--text-primary) 22%, transparent);
+  --rp-row: 36px;
+
+  display: flex;
+  gap: 28px;
+  height: 100%;
+  color: var(--rp-ink);
+  font-family: var(--font-sans);
+}
+.sled-rp-eyebrow {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rp-mute);
+}
+
+/* left: gauge on top, ways up pinned to the bottom */
+.sled-rp-left {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 24px;
-  min-width: 0;
+  flex: 0 0 200px;
+  width: 200px;
 }
-.sled-rating {
+.sled-rp-gaugeblock {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 4px;
 }
-/* Size only. Brought down from clamp(62px, 8.6vw, 124px), which rendered the
-   figure at 124px on a 1440 screen and dwarfed everything else in the zone.
-   The ladder is still pinned to the column's bottom by space-between, so the
-   shared baseline with the chart's x axis holds at the smaller size. */
-.sled-rating-figure {
-  font-family: var(--font-mono);
-  font-size: clamp(32px, 3.4vw, 52px);
-  font-weight: 700;
-  letter-spacing: -0.045em;
-  line-height: 0.88;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-primary);
-}
-.sled-rating-meta {
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-.sled-rating-delta {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: clamp(13px, 1.15vw, 17px);
-  font-weight: 600;
-  color: var(--emerald);
-}
-.sled-rating-delta--neg {
-  color: var(--negative);
-}
-.sled-rating-tier {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: var(--type-eyebrow-size);
-  font-weight: var(--type-eyebrow-weight);
-  letter-spacing: var(--type-eyebrow-tracking-marketing);
-  text-transform: uppercase;
-  color: var(--emerald);
-}
-
-/* ── tier ladder ──────────────────────────────────────────────────────── */
-.sled-ladder {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.sled-ladder-caption {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-.sled-ladder-track {
+.sled-rp-gauge {
   position: relative;
-  height: 12px;
+  width: 200px;
+  height: 112px;
 }
-.sled-ladder-rule {
+.sled-rp-gauge svg {
+  display: block;
+}
+.sled-rp-arc-track,
+.sled-rp-arc-fill {
+  fill: none;
+  stroke-width: 12;
+  stroke-linecap: round;
+}
+.sled-rp-arc-track {
+  stroke: var(--rp-hair);
+}
+.sled-rp-arc-fill {
+  stroke: var(--rp-mark);
+  transition: stroke-dasharray 0.3s ease-out;
+}
+.sled-rp-figure {
   position: absolute;
   left: 0;
   right: 0;
-  top: 50%;
-  height: 1px;
-  background: var(--sled-rule);
-}
-.sled-ladder-tick {
-  position: absolute;
-  top: 2px;
-  width: 1px;
-  height: 8px;
-  background: var(--sled-dot);
-}
-.sled-ladder-marker {
-  position: absolute;
-  top: 0;
-  width: 2px;
-  height: 12px;
-  margin-left: -1px;
-  background: var(--emerald);
-  transition: left 120ms linear;
-}
-/* Six labels, each centred in its own segment. */
-.sled-ladder-labels {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-}
-.sled-ladder-label {
+  bottom: 0;
   text-align: center;
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--rp-ink);
+}
+.sled-rp-range {
+  display: flex;
+  justify-content: space-between;
+  width: 176px;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-faint);
+  font-size: 10px;
+  color: var(--rp-faint);
+}
+.sled-rp-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-top: 4px;
+}
+.sled-rp-delta {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--rp-mark-text);
+}
+.sled-rp-delta--neg {
+  color: var(--negative);
+}
+.sled-rp-tiername {
+  color: var(--rp-mark-text);
+}
+
+.sled-rp-ways {
+  display: flex;
+  flex-direction: column;
+}
+.sled-rp-ways > .sled-rp-eyebrow {
+  padding-bottom: 8px;
+}
+.sled-rp-waylist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-bottom: 1px solid var(--rp-hair);
+}
+.sled-rp-way {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid var(--rp-hair);
+}
+.sled-rp-wayicon {
+  flex: none;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--rp-mark-text);
+}
+.sled-rp-waylabel {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--rp-ink-2);
+}
+.sled-rp-waypts {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rp-mark-text);
+}
+
+/* right: the ladder */
+.sled-rp-right {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.sled-rp-ladderhead {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 12px 6px;
+}
+.sled-rp-ladder {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sled-rp-tier {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+  min-height: var(--rp-row);
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--rp-faint);
+}
+.sled-rp-tierrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.sled-rp-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--rp-lock-dot);
+}
+.sled-rp-tiername-l {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.sled-rp-tag {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   white-space: nowrap;
+  color: var(--rp-mark-text);
+}
+.sled-rp-min {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+.sled-rp-tier--completed {
+  color: var(--rp-mute);
+}
+.sled-rp-tier--completed .sled-rp-dot {
+  border-color: transparent;
+  background: var(--rp-done-dot);
+}
+.sled-rp-tier--next {
+  color: var(--rp-ink-2);
+  border: 1px dashed var(--rp-next-border);
+}
+.sled-rp-tier--next .sled-rp-dot {
+  border-color: var(--rp-mark);
+}
+.sled-rp-tier--next .sled-rp-tiername-l {
+  font-weight: 600;
+}
+.sled-rp-tier--current {
+  min-height: calc(var(--rp-row) + 16px);
+  color: var(--rp-deep);
+  border-color: var(--rp-tint-border);
+  background: var(--rp-tint);
+}
+.sled-rp-tier--current .sled-rp-dot {
+  border-color: transparent;
+  background: var(--rp-mark);
+}
+.sled-rp-tier--current .sled-rp-tiername-l {
+  font-weight: 700;
+}
+.sled-rp-progress {
+  display: block;
+  height: 4px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--rp-track);
+}
+.sled-rp-progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--rp-mark);
+  transition: width 0.3s ease-out;
+}
+
+/* A slim column (about 1040px to 1180px viewports): keep two columns, tighten
+   the gap, and drop the next tier's "to go" tag onto its own line so the
+   ladder fits beside the gauge. */
+@container (max-width: 479px) {
+  .sled-rp {
+    gap: 20px;
+  }
+  .sled-rp-tier--next {
+    padding-block: 6px;
+  }
+  .sled-rp-tier--next .sled-rp-tierrow {
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+  .sled-rp-tier--next .sled-rp-tag {
+    order: 3;
+    flex-basis: 100%;
+    padding-left: 18px;
+  }
+}
+
+/* Too narrow for two columns: gauge and ways up first, then the ladder. */
+@container (max-width: 389px) {
+  .sled-rp {
+    flex-direction: column;
+    gap: 24px;
+    height: auto;
+  }
+  .sled-rp-left {
+    flex: none;
+    width: 100%;
+  }
 }
 
 /* ── the chart cell: container only, the chart itself is untouched ─────── */
@@ -659,7 +854,8 @@
   .sled-track {
     will-change: auto;
   }
-  .sled-ladder-marker,
+  .sled-rp-arc-fill,
+  .sled-rp-progress-fill,
   .sled-bar-fill {
     transition: none;
   }
@@ -684,9 +880,6 @@
     flex: 0 0 auto;
     height: calc(var(--sled-row) * 7);
   }
-  .sled-ratingcol {
-    gap: 20px;
-  }
 }
 @media (max-width: 560px) {
   /* `1462 · 1474` cannot survive a phone column, and truncating it would be
@@ -696,9 +889,5 @@
   }
   .sled-tr--ledger {
     grid-template-columns: 42px minmax(0, 1fr) 40px;
-  }
-  .sled-ladder-label {
-    font-size: 9px;
-    letter-spacing: 0.04em;
   }
 }

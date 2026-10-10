@@ -46,6 +46,7 @@ import {
   Customized,
 } from 'recharts';
 import { CHART } from '@/lib/chart-theme';
+import SocialRatingPanel from './SocialRatingPanel';
 import './social-ledger.css';
 
 /* ────────────────────────── fixture ────────────────────────── */
@@ -133,33 +134,26 @@ const STANDINGS = [
   { rank: '06', name: 'Sam O.', rating: 1396, week: '-2', tier: 'Apprentice' },
 ];
 
-const TIERS = [
-  { name: 'Novice', floor: 0 },
-  { name: 'Apprentice', floor: 1000 },
-  { name: 'Strategist', floor: 2500 },
-  { name: 'Tactician', floor: 5000 },
-  { name: 'Master', floor: 7000 },
-  { name: 'Grandmaster', floor: 8500 },
+/* The rating panel's "fastest ways up": each one IS a ledger event, so its
+   points are read from the pool rather than typed twice. The tier bands live
+   in social-rating.js (the platform's real ELO tiers). */
+const WAY_UP_SPECS = [
+  { id: 'sprint', label: 'Win a sprint', icon: 'bi-trophy', event: "Won 'Q3 Momentum Sprint'" },
+  {
+    id: 'research',
+    label: 'Research upvoted',
+    icon: 'bi-hand-thumbs-up',
+    event: 'Research post upvoted, consensus signal',
+  },
+  { id: 'streak', label: 'Keep a 7-day streak', icon: 'bi-fire', event: '7-day login streak' },
 ];
-const TIER_CAP = 10000;
+const WAYS_UP = WAY_UP_SPECS.map((w) => ({
+  ...w,
+  points: LEDGER_EVENTS.find((e) => e.event === w.event)?.d ?? null,
+})).filter((w) => Number.isFinite(w.points) && w.points > 0);
 
-function ladderFor(rating) {
-  let i = 0;
-  for (let k = TIERS.length - 1; k >= 0; k -= 1) {
-    if (rating >= TIERS[k].floor) {
-      i = k;
-      break;
-    }
-  }
-  const floor = TIERS[i].floor;
-  const next = i + 1 < TIERS.length ? TIERS[i + 1].floor : TIER_CAP;
-  const within = next > floor ? (rating - floor) / (next - floor) : 0;
-  return {
-    tier: TIERS[i].name,
-    markerPct: ((i + within) / TIERS.length) * 100,
-    toNext: Math.max(0, next - rating),
-    nextName: i + 1 < TIERS.length ? TIERS[i + 1].name : null,
-  };
+if (process.env.NODE_ENV !== 'production' && WAYS_UP.length !== WAY_UP_SPECS.length) {
+  console.warn('[sled] a "fastest way up" no longer matches a ledger event');
 }
 
 const BAR_MIN = 1390;
@@ -200,7 +194,6 @@ function frameAt(c, t, visible) {
   const counted = ratingP > 0;
   const rating = lerpInt(ev.from, ev.to, ratingP);
   const standRating = lerpInt(ev.from, ev.to, standP);
-  const l = ladderFor(rating);
   return {
     c,
     head: c + (shiftP >= 1 ? 1 : 0),
@@ -209,10 +202,6 @@ function frameAt(c, t, visible) {
     rating,
     lastDelta: counted ? ev.d : prev.d,
     net: counted ? netOf(seq, visible) : netOf(seq - 1, visible),
-    markerPct: l.markerPct,
-    toNext: l.toNext,
-    tier: l.tier,
-    nextName: l.nextName,
     standRating,
     standWeek: signed(standP > 0.5 ? ev.d : prev.d),
     gap: LEADER - standRating,
@@ -514,52 +503,7 @@ export function SocialLedgerSection() {
         {/* ── zone B, the record: 5fr rating | 7fr chart ── */}
         <div className="sled-record">
           <div className="sled-ratingcol">
-            <div className="sled-rating">
-              <div className="sled-rating-figure" aria-label={`Rating ${frame.rating}`}>
-                {frame.rating}
-              </div>
-              <div className="sled-rating-meta">
-                <span
-                  className={`sled-rating-delta${frame.lastDelta < 0 ? ' sled-rating-delta--neg' : ''}`}
-                >
-                  {signed(frame.lastDelta)} latest
-                </span>
-                <span className="sled-rating-tier">{frame.tier}</span>
-              </div>
-            </div>
-
-            <div className="sled-ladder">
-              <div className="sled-ladder-caption">
-                <span>Tier</span>
-                <span className="sled-ladder-next">
-                  {frame.toNext} to {frame.nextName || 'cap'}
-                </span>
-              </div>
-              <div className="sled-ladder-track">
-                <span className="sled-ladder-rule" aria-hidden="true" />
-                {TIERS.map((t, i) => (
-                  <span
-                    key={t.name}
-                    className="sled-ladder-tick"
-                    style={{ left: `${(i / TIERS.length) * 100}%` }}
-                    aria-hidden="true"
-                  />
-                ))}
-                <span className="sled-ladder-tick" style={{ left: '100%' }} aria-hidden="true" />
-                <span
-                  className="sled-ladder-marker"
-                  style={{ left: `${frame.markerPct}%` }}
-                  aria-hidden="true"
-                />
-              </div>
-              <div className="sled-ladder-labels" aria-hidden="true">
-                {TIERS.map((t) => (
-                  <span key={t.name} className="sled-ladder-label">
-                    {t.name}
-                  </span>
-                ))}
-              </div>
-            </div>
+            <SocialRatingPanel rating={frame.rating} delta={frame.lastDelta} waysUp={WAYS_UP} />
           </div>
 
           <div className="sled-chartcol">
