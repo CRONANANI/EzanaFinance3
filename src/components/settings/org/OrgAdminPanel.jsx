@@ -25,15 +25,20 @@ const SECTIONS = [
 ];
 
 export function OrgAdminPanel() {
-  const { isExecutive } = useOrg();
+  const { isExecutive, canInvite } = useOrg();
   const [section, setSection] = useState('members');
+
+  // Members granted invite rights see the invite tools only.
+  if (!isExecutive && canInvite) return <InviteOnboarding />;
 
   if (!isExecutive) {
     return (
       <div className="settings-panel">
         <div className="settings-panel-header">
           <h2 className="settings-panel-title">Organization</h2>
-          <p className="settings-panel-desc">Executive access is required to manage the organization.</p>
+          <p className="settings-panel-desc">
+            Executive access is required to manage the organization.
+          </p>
         </div>
       </div>
     );
@@ -70,7 +75,9 @@ export function OrgAdminPanel() {
                 fontWeight: 600,
                 padding: '7px 13px',
                 borderRadius: 8,
-                border: active ? '1px solid rgba(99,102,241,0.45)' : '1px solid rgba(255,255,255,0.08)',
+                border: active
+                  ? '1px solid rgba(99,102,241,0.45)'
+                  : '1px solid rgba(255,255,255,0.08)',
                 background: active ? 'rgba(99,102,241,0.12)' : 'transparent',
                 color: active ? '#c7d2fe' : '#9ca3af',
                 transition: 'all 0.12s ease',

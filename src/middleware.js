@@ -355,10 +355,11 @@ export async function middleware(request) {
     const isPublicRoute =
       pathname === '/' || pathname === '/waitlist' || pathname.startsWith('/select-plan');
 
-    // Org (university) members use their own flow and never take the consumer
-    // investor questionnaire — exempt org routes from the onboarding gate.
+    // Org (university) routes are gated too: /onboarding detects org
+    // membership and shows the role questionnaire (OrgQuestionnaire), not the
+    // consumer one. Before, org routes were exempt, so members who signed in
+    // through the org login (which lands on /org-team-hub) never saw it.
     // Reuses the `profile` already fetched above (no second query).
-    const isOrgRoute = pathname.startsWith('/org-team-hub') || pathname.startsWith('/org-trading');
 
     if (
       user &&
@@ -366,7 +367,6 @@ export async function middleware(request) {
       !isAuthPage &&
       !isApiRoute &&
       !isPublicRoute &&
-      !isOrgRoute &&
       !pathname.startsWith('/settings') &&
       profile &&
       profile.investor_questionnaire_completed !== true

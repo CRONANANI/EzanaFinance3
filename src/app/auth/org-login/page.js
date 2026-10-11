@@ -1,4 +1,5 @@
 import OrgSignInCard from '@/components/auth/OrgSignInCard';
+import OrgInviteAccept from '@/components/auth/OrgInviteAccept';
 import { safeInternalPath } from '@/lib/sanitize';
 
 export const metadata = {
@@ -11,6 +12,9 @@ export default function OrgLoginPage({ searchParams }) {
     safeInternalPath(searchParams?.redirect, '') !== ''
       ? safeInternalPath(searchParams?.redirect)
       : '/org-team-hub';
+  // Invite links (copied from Settings > Organization > Invite & Onboarding)
+  // land here as ?invite=TOKEN and get the accept screen instead of sign-in.
+  const invite = typeof searchParams?.invite === 'string' ? searchParams.invite : '';
 
   return (
     <div className="signin-dark-lock flex min-h-screen w-full items-center justify-center bg-[#f8fafb]">
@@ -18,7 +22,7 @@ export default function OrgLoginPage({ searchParams }) {
         <div className="absolute left-1/4 top-0 h-96 w-96 rounded-full bg-indigo-500/15 blur-3xl" />
         <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-violet-500/10 blur-3xl" />
       </div>
-      <OrgSignInCard redirectTo={redirectTo} />
+      {invite ? <OrgInviteAccept token={invite} /> : <OrgSignInCard redirectTo={redirectTo} />}
     </div>
   );
 }

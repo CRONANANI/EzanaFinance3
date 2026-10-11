@@ -165,7 +165,9 @@ export default function OnboardingPage() {
     }
 
     if (ok) {
-      router.replace(isPartner ? '/partner-home' : '/home');
+      // Org members go back to their Team Hub (now that org routes send them
+      // here first); partners to the partner app; everyone else home.
+      router.replace(isPartner ? '/partner-home' : orgRole ? '/org-team-hub' : '/home');
     } else {
       setCompleteError(
         'We could not save your completion. Check your connection and press Continue again; if it keeps failing, contact support@ezana.world.',

@@ -141,6 +141,8 @@ export function OrgProvider({ children }) {
     orgData,
     isLoading,
     isExecutive: orgRole === 'executive',
+    // Executives always; other members when their invite granted it.
+    canInvite: orgRole === 'executive' || orgData?.member?.can_invite === true,
     isPortfolioManager: orgRole === 'portfolio_manager',
     isAnalyst: orgRole === 'analyst',
     // Per-university roles + display title. Existing keys stay for compatibility;

@@ -5,11 +5,54 @@ import { getUserClient, getAdminClient, isServerSupabaseConfigured } from '@/lib
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { logOrgAction } from '@/lib/org-audit';
 import { MANAGER_ROLES } from '../../ats-helpers';
+import { resend } from '@/lib/services/resend';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const PROVISION_ROLES = ['executive', 'portfolio_manager', 'analyst'];
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ezana.world';
+
+const escapeHtml = (v) =>
+  String(v ?? '').replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
+  );
+
+/* Welcome email with a set-password link. Provisioned accounts are created
+   without a password, so without this the member's only way in was "Forgot
+   password?". Best effort: a failure is reported, never fatal. The link
+   uses Supabase's recovery token, so it expires on the project's email OTP
+   expiry (Auth settings); after that, "Forgot password?" on the org login
+   sends a fresh one. */
+async function sendWelcomeEmail(service, { email, fullName, orgName }) {
+  try {
+    const { data, error } = await service.auth.admin.generateLink({ type: 'recovery', email });
+    const hashed = data?.properties?.hashed_token;
+    if (error || !hashed) return { sent: false, reason: 'link' };
+    const link = `${SITE_URL}/auth/reset-password?token_hash=${encodeURIComponent(
+      hashed,
+    )}&type=recovery`;
+    const from = process.env.RESEND_FROM_EMAIL || 'Ezana Finance <noreply@ezana.world>';
+    const first = escapeHtml(String(fullName || '').split(' ')[0] || 'there');
+    const org = escapeHtml(orgName || 'your investment council');
+    const { error: sendErr } = await resend.emails.send({
+      from,
+      to: email,
+      subject: `Welcome to ${orgName || 'your council'} on Ezana: set your password`,
+      html: `<div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; color: #0f172a;">
+  <p>Hi ${first},</p>
+  <p>You've been accepted to ${org} on Ezana Finance. Set a password to activate your account.</p>
+  <p style="margin: 28px 0;"><a href="${link}" style="background: #10b981; color: #ffffff; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">Set your password</a></p>
+  <p>Then sign in at <a href="${SITE_URL}/auth/org-login">${SITE_URL.replace(/^https?:\/\//, '')}/auth/org-login</a>.</p>
+  <p style="color: #64748b; font-size: 13px;">If the button has expired, use "Forgot password?" on that page to get a new link.</p>
+</div>`,
+    });
+    return sendErr ? { sent: false, reason: 'send' } : { sent: true };
+  } catch {
+    return { sent: false, reason: 'error' };
+  }
+}
 
 async function resolveParams(context) {
   return (await context?.params) || {};
@@ -110,7 +153,10 @@ export const POST = withApiGuard(
     // ── 1) Create the account (unconfirmed — the person claims it later). ─────
     const { data: created, error: createErr } = await service.auth.admin.createUser({
       email: applicant.email,
-      email_confirm: false,
+      // Confirmed for Supabase so the set-password link and password sign-in
+      // work; Ezana's own 6-digit check (profiles.email_verified) still runs
+      // at first sign-in.
+      email_confirm: true,
       user_metadata: { full_name: applicant.full_name, provisioned_org: member.org_id },
     });
     if (createErr || !created?.user?.id) {
@@ -174,7 +220,18 @@ export const POST = withApiGuard(
       detail: { member_id: newMember.id, cohort_id: applicant.cohort_id, role },
     });
 
-    return NextResponse.json({ member: newMember, applicant: updatedApplicant });
+    const { data: org } = await service
+      .from('organizations')
+      .select('name, university_name')
+      .eq('id', member.org_id)
+      .maybeSingle();
+    const welcomeEmail = await sendWelcomeEmail(service, {
+      email: applicant.email,
+      fullName: applicant.full_name,
+      orgName: org?.university_name || org?.name,
+    });
+
+    return NextResponse.json({ member: newMember, applicant: updatedApplicant, welcomeEmail });
   },
   { requireAuth: true },
 );

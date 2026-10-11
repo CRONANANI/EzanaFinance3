@@ -1,0 +1,119 @@
+/* org-invite-accept.css: scoped .oia- only, theme tokens. */
+.oia-card {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  box-sizing: border-box;
+  padding: 2rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl, 16px);
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-lg, var(--shadow-sm));
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  color: var(--text-primary);
+}
+.oia-eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--emerald-text, var(--emerald));
+}
+.oia-title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.oia-muted {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.oia-facts {
+  margin: 0;
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md, 8px);
+}
+.oia-facts div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.85rem;
+}
+.oia-facts dt {
+  color: var(--text-muted);
+}
+.oia-facts dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.oia-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.oia-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-top: 0.3rem;
+}
+.oia-input {
+  height: 2.6rem;
+  padding: 0 0.85rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+.oia-input:focus {
+  outline: 2px solid var(--emerald);
+  outline-offset: 1px;
+}
+.oia-hint {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.oia-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0.3rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+.oia-btn {
+  height: 2.75rem;
+  border: 0;
+  border-radius: var(--radius-md, 8px);
+  background: var(--emerald);
+  color: var(--bg-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+  cursor: pointer;
+  margin-top: 0.4rem;
+}
+.oia-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+.oia-error {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--negative);
+}

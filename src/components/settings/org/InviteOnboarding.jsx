@@ -14,7 +14,18 @@ export function InviteOnboarding() {
   const [cohorts, setCohorts] = useState([]);
   const [emailDomain, setEmailDomain] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ email: '', role: 'analyst', sub_role: '', team_id: '', cohort_id: '' });
+  const EMPTY = {
+    email: '',
+    role: 'analyst',
+    sub_role: '',
+    team_id: '',
+    cohort_id: '',
+    can_invite: false,
+  };
+  const [form, setForm] = useState(EMPTY);
+  // Executives can create links whose acceptor may invite others; delegated
+  // inviters cannot pass that on, nor invite executives.
+  const [canGrantInvite, setCanGrantInvite] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState(null);
   const [copied, setCopied] = useState(null);
@@ -32,6 +43,7 @@ export function InviteOnboarding() {
       const cData = await cRes.json().catch(() => ({}));
       setInvites(iData.invites || []);
       setEmailDomain(iData.emailDomain || null);
+      setCanGrantInvite(iData.canGrantInvite === true);
       setTeams(mData.teams || []);
       setCohorts((cData.cohorts || []).filter((c) => !c.archived));
     } catch (e) {
@@ -59,13 +71,14 @@ export function InviteOnboarding() {
           sub_role: form.sub_role || null,
           team_id: form.team_id || null,
           cohort_id: form.cohort_id || null,
+          can_invite: canGrantInvite && form.can_invite,
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || 'Invite failed');
       setInvites((prev) => [data.invite, ...prev]);
-      setForm({ email: '', role: 'analyst', sub_role: '', team_id: '', cohort_id: '' });
-      setMsg({ ok: 'Invite created' });
+      setForm(EMPTY);
+      setMsg({ ok: 'Invite created. Copy the link below and share it.' });
     } catch (err) {
       setMsg({ err: err.message });
     } finally {
@@ -133,7 +146,7 @@ export function InviteOnboarding() {
                 value={form.role}
                 onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
               >
-                {ROLES.map((r) => (
+                {ROLES.filter((r) => canGrantInvite || r.v !== 'executive').map((r) => (
                   <option key={r.v} value={r.v}>
                     {r.l}
                   </option>
@@ -182,6 +195,29 @@ export function InviteOnboarding() {
               </select>
             </div>
           </div>
+          {canGrantInvite ? (
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 8,
+                margin: '4px 0 12px',
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={form.can_invite}
+                onChange={(e) => setForm((f) => ({ ...f, can_invite: e.target.checked }))}
+                style={{ marginTop: 2 }}
+              />
+              <span>
+                <strong>Can invite other members.</strong> Whoever accepts this link can create
+                their own invite links (not for executives, and they cannot pass this right on).
+              </span>
+            </label>
+          ) : null}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4 }}>
             <button
               type="submit"
@@ -219,10 +255,15 @@ export function InviteOnboarding() {
                 }}
               >
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ color: '#f0f6fc', fontWeight: 600, fontSize: '0.85rem' }}>{i.email}</div>
-                  <div style={{ color: '#6b7280', fontSize: '0.7rem', textTransform: 'capitalize' }}>
+                  <div style={{ color: '#f0f6fc', fontWeight: 600, fontSize: '0.85rem' }}>
+                    {i.email}
+                  </div>
+                  <div
+                    style={{ color: '#6b7280', fontSize: '0.7rem', textTransform: 'capitalize' }}
+                  >
                     {i.role.replace('_', ' ')}
                     {i.sub_role ? ` · ${i.sub_role}` : ''}
+                    {i.can_invite ? ' · can invite others' : ''}
                   </div>
                 </div>
                 <button
