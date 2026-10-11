@@ -19,6 +19,8 @@ export function SonarHero({
   onPick,
   quota,
   version,
+  minimal = false,
+  children = null,
 }) {
   const [showAll, setShowAll] = useState(false);
   const visibleRecent = showAll ? recent : recent?.slice(0, 3);
@@ -45,7 +47,9 @@ export function SonarHero({
         autoFocus
       />
 
-      {examples?.length > 0 && (
+      {children}
+
+      {!minimal && examples?.length > 0 && (
         <div className="sonar-examples">
           {examples.map((ex) => (
             <button key={ex} type="button" className="sonar-ex-pill" onClick={() => onPick(ex)}>
@@ -55,7 +59,7 @@ export function SonarHero({
         </div>
       )}
 
-      {recent?.length > 0 && (
+      {!minimal && recent?.length > 0 && (
         <div className="sonar-recent">
           <div className="sonar-recent-head">
             <span className="sonar-recent-title">Recent pings</span>

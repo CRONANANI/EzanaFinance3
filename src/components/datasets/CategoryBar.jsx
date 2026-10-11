@@ -340,7 +340,8 @@ export default function CategoryBar({ active, activeItem }) {
                  inline style would have beaten the stylesheet's translucent
                  white pill. The dimension icon leads the label; on hover the
                  label and icon take the dimension colour on a page-ground pill
-                 (category-bar.css), which keeps them legible on the gradient. */
+                 (category-bar.css), which keeps them legible on the gradient.
+                 Oct 11: restyled as the landing nav's text links (no pill). */
               ref={(el) => {
                 triggerRefs.current[cat.id] = el;
                 if (cat.id === active) activeRef.current = el;
@@ -350,8 +351,9 @@ export default function CategoryBar({ active, activeItem }) {
               onClick={() => toggle(cat.id)}
               onKeyDown={(e) => onTriggerKeyDown(e, cat.id)}
             >
-              <i className={`bi ${cat.biIcon} dscat-icon`} aria-hidden="true" />
-              {cat.label} <i className="bi bi-chevron-down dscat-caret" aria-hidden="true" />
+              {/* Plain text, like the landing nav's links: no icon, no caret.
+                  The icon still leads each dimension's dropdown heading. */}
+              {cat.label}
             </button>
           </div>
         ))}

@@ -465,3 +465,59 @@
   border-radius: var(--radius-pill, 9999px);
   padding: 1px 6px;
 }
+
+/* ── Oct 11: landing-nav text styling ──────────────────────────────────
+   The dimension triggers read like the landing nav's links (.navbar
+   .nav-link): plain 15px / 500 text with tight tracking, no icon, no caret
+   and no pill. On the green bar the ink is translucent white, brightening to
+   white on hover; the current dimension is mint, as the landing nav marks its
+   current link in emerald. The dropdowns open the way the landing Datasets
+   menu does: a 0.16s fade with a 6px drop. */
+.dscat-bar .dscat-trigger {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  padding: 8px 10px;
+  color: color-mix(in srgb, white 72%, transparent);
+  background: none;
+  border-radius: 0;
+}
+.dscat-bar .dscat-trigger:hover,
+.dscat-bar .dscat-trigger[aria-expanded='true'] {
+  color: white;
+  background: none;
+}
+.dscat-bar .dscat-trigger.is-active {
+  color: var(--brand-band-mint);
+  background: none;
+}
+.dscat-bar[data-density='2'] .dscat-trigger {
+  font-size: 14px;
+  padding: 8px 8px;
+}
+.dscat-bar[data-density='3'] .dscat-trigger {
+  font-size: 13.5px;
+  padding: 8px 6px;
+}
+.dscat-bar[data-density='4'] .dscat-trigger {
+  font-size: 13px;
+  padding: 8px 5px;
+}
+.dscat-panel {
+  animation: dscat-panel-in 0.16s ease both;
+}
+@keyframes dscat-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dscat-panel {
+    animation: none;
+  }
+}

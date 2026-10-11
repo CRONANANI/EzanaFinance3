@@ -7,10 +7,10 @@
  *
  * Every mark still encodes something true:
  *   axis + label   a dimension, in taxonomy order, with its live state
- *   vertex         live dimensions sit out by how many datasets are live and
- *                  drift slowly; roadmap dimensions sit near the hub, still
+ *   vertex         live dimensions sit out by how many datasets are live;
+ *                  roadmap dimensions sit near the hub; every vertex drifts
  *   halo ping      a live dimension (its datasets are receiving records)
- *   dashed vertex  a roadmap dimension: no ping, no drift, no count
+ *   dashed vertex  a roadmap dimension: no ping, no count, a smaller drift
  *   sweep          the sonar sweeping the map from the Ezana Sonar hub
  *
  * The SVG is decorative to assistive tech (aria-hidden). The real controls
@@ -30,7 +30,7 @@ const CX = 620;
 const CY = 380;
 const RMAX = 280;
 const RINGS = [0.36, 0.68, 1];
-const ROAD_W = 0.24;
+const ROAD_W = 0.32;
 const SWEEP_DEG = 58;
 
 const r2 = (n) => Math.round(n * 10) / 10;
@@ -72,10 +72,11 @@ function driftParams(i) {
     p2: 6.283 * g(11),
   };
 }
-function weightAt(base, s, t) {
+function weightAt(base, s, t, scale = 1) {
   const w =
-    base + s.a1 * Math.sin(6.283 * s.f1 * t + s.p1) + s.a2 * Math.sin(6.283 * s.f2 * t + s.p2);
-  return Math.max(0.16, Math.min(0.98, w));
+    base +
+    scale * (s.a1 * Math.sin(6.283 * s.f1 * t + s.p1) + s.a2 * Math.sin(6.283 * s.f2 * t + s.p2));
+  return Math.max(0.22, Math.min(0.98, w));
 }
 
 function useMotionAllowed() {
@@ -124,7 +125,7 @@ export default function OrbitalMap({ blips, pinging, silent }) {
       if (now - last < 33) return; // ~30fps is plenty for a slow drift
       last = now;
       const t = (now - start) / 1000;
-      setWeights(blips.map((b, i) => (b.live ? weightAt(baseWeight(b), params[i], t) : ROAD_W)));
+      setWeights(blips.map((b, i) => weightAt(baseWeight(b), params[i], t, b.live ? 1 : 0.7)));
     };
     raf.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf.current);

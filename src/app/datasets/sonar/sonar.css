@@ -1635,3 +1635,159 @@ li:last-child > .dso-arr {
     animation: none;
   }
 }
+
+/* ── the datasets search page (Oct 11 redesign) ─────────────────────────
+   The whole page wears the landing Sonar band's green ground. The Sonar
+   search hero sits on it with light ink; the orbital map card sits under
+   the search bar; results render on a light panel. .dso-ground-bg is the
+   layer the page background effect mounts into. */
+.dso-ground {
+  /* The globe background sits outside .dso-page, so the one --dso-radar-*
+     token its depth gradient needs is defined here too (same value). */
+  --dso-radar-core: color-mix(in srgb, var(--brand-band-mint) 12%, black);
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100vh - 60px);
+  background: var(--brand-band-green);
+  overflow-x: clip;
+}
+.dso-ground-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.dso-page.dso-page--search {
+  max-width: 1080px;
+  padding: 44px 24px 72px;
+  background: transparent;
+  color: var(--dso-radar-ink);
+}
+.dso-page--search .sonar-root--datasets {
+  background: transparent;
+}
+.dso-page--search .sonar-page {
+  max-width: none;
+  padding: 0;
+}
+.dso-page--search .sonar-hero {
+  padding-top: 0;
+}
+.dso-page--search .sonar-eyebrow {
+  color: var(--dso-radar-green);
+}
+.dso-page--search .sonar-h1,
+html.light-mode .dso-page--search .sonar-h1,
+body.light-mode .dso-page--search .sonar-h1 {
+  color: var(--dso-radar-ink);
+}
+.dso-page--search .sonar-sub,
+.dso-page--search .sonar-quota {
+  color: color-mix(in srgb, var(--dso-radar-ink) 72%, transparent);
+}
+.dso-page--search .dso-sonar--solo {
+  width: 100%;
+  margin-top: 28px;
+  text-align: left;
+}
+.dso-page--search .sonar-sticky {
+  border-radius: var(--radius-xl);
+}
+.dso-page--search .sonar-body {
+  margin-top: 16px;
+  padding: 20px;
+  border-radius: var(--radius-xl);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+.dso-page--search .sonar-body:empty {
+  display: none;
+}
+.sonar-ds-loader {
+  display: flex;
+  justify-content: center;
+  padding: 56px 0 40px;
+}
+.sonar-ds-loader .snrl-wrap {
+  /* Mixed against the page's solid deep green: --brand-band-green is a
+     gradient, which color-mix() cannot take. */
+  --snrl-deep: color-mix(in srgb, var(--emerald) 55%, var(--dso-radar-core));
+  --snrl-mid: color-mix(in srgb, var(--emerald) 40%, var(--dso-radar-core));
+  --snrl-top: color-mix(in srgb, var(--emerald) 72%, var(--dso-radar-core));
+  --snrl-bright: var(--brand-band-mint);
+}
+@media (max-width: 720px) {
+  .dso-page.dso-page--search {
+    padding: 28px 14px 56px;
+  }
+  .dso-page--search .sonar-body {
+    padding: 14px;
+  }
+}
+.dso-page--search .sonar-hero {
+  max-width: none;
+}
+.dso-page--search .sonar-hero > :not(.dso-sonar) {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.dso-page--search .sonar-body:has(> .sonar-ds-loader:only-child) {
+  padding: 0;
+  background: transparent;
+}
+/* The category chrome keeps a 20px gap below it; the green ground closes it. */
+.dscat-chrome + .dso-ground,
+.dscat-chrome ~ .dso-ground {
+  margin-top: -20px;
+}
+.sonar-ds-loader .snrl-caption {
+  color: color-mix(in srgb, var(--dso-radar-ink) 75%, transparent);
+}
+
+/* ── globe background ───────────────────────────────────────────────────
+   Greyscale video, recoloured green by a mix-blend-mode: color layer, then a
+   depth gradient (deep green at the top and bottom) for legibility. */
+.dso-globe {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--brand-band-green);
+}
+.dso-globe-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.7;
+  filter: grayscale(1) contrast(1.15) brightness(1.1);
+}
+.dso-globe-tint {
+  position: absolute;
+  inset: 0;
+  background: var(--brand-band-green);
+  mix-blend-mode: color;
+}
+.dso-globe-depth {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--dso-radar-core) 62%, transparent) 0%,
+    color-mix(in srgb, var(--dso-radar-core) 20%, transparent) 45%,
+    color-mix(in srgb, var(--dso-radar-core) 80%, transparent) 100%
+  );
+}
+.dso-ground {
+  background: var(--brand-band-green);
+}
+.dso-page--search .dso-sonar--solo {
+  background:
+    linear-gradient(
+      color-mix(in srgb, black 55%, transparent),
+      color-mix(in srgb, black 55%, transparent)
+    ),
+    color-mix(in srgb, var(--dso-radar-core) 70%, transparent);
+  backdrop-filter: blur(6px);
+}
