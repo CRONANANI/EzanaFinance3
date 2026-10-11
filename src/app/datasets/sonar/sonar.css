@@ -1791,3 +1791,124 @@ body.light-mode .dso-page--search .sonar-h1 {
     color-mix(in srgb, var(--dso-radar-core) 70%, transparent);
   backdrop-filter: blur(6px);
 }
+
+/* ── Oct 11 polish ─────────────────────────────────────────────────────
+   1. The orbital card wears the page's own background: no fill, no border,
+      no blur, so the globe runs straight through it.
+   2. Dimension names use the top navigation bar's type (15px / 500, tight
+      tracking, Plus Jakarta Sans) as HTML labels; the state line stays mono.
+   3. The search pill is a ghost: transparent with a slightly darker fill, no
+      outline, no icon, and a blinking | where typing starts. */
+.dso-page--search .dso-sonar--solo {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.dso-orb-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: auto;
+  height: auto;
+  padding: 4px 8px;
+  white-space: nowrap;
+  color: color-mix(in srgb, white 72%, transparent);
+  text-align: left;
+  transform: translate(-50%, 0);
+  align-items: center;
+}
+.dso-orb-btn.is-start {
+  transform: translate(-8px, 0);
+  align-items: flex-start;
+}
+.dso-orb-btn.is-end {
+  transform: translate(calc(-100% + 8px), 0);
+  align-items: flex-end;
+}
+.dso-orb-btn:hover {
+  color: white;
+  background: none;
+}
+.dso-orb-btn[aria-pressed='true'] {
+  color: var(--brand-band-mint);
+}
+.dso-orb-btn .dso-orb-name {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: inherit;
+  text-decoration: none;
+}
+.dso-orb-btn .dso-orb-sub {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  color: var(--dso-radar-green);
+}
+.dso-orb-btn.is-road .dso-orb-sub {
+  color: color-mix(in srgb, var(--dso-radar-ink) 45%, transparent);
+}
+@media (max-width: 720px) {
+  .dso-orb-btn {
+    width: auto;
+    height: auto;
+    padding: 2px 4px;
+  }
+  .dso-orb-btn .dso-orb-name {
+    font-size: 11px;
+  }
+  .dso-orb-btn .dso-orb-sub {
+    font-size: 7.5px;
+  }
+}
+
+.dso-page--search .sonar-qbar--ghost,
+.dso-page--search .sonar-qbar--ghost:focus-within {
+  border: 0;
+  box-shadow: none;
+  outline: none;
+  background: color-mix(in srgb, black 22%, transparent);
+}
+.dso-page--search .sonar-qbar--ghost .sonar-qbar-input {
+  color: var(--dso-radar-ink);
+}
+.dso-page--search .sonar-qbar--ghost .sonar-qbar-input:focus,
+.dso-page--search .sonar-qbar--ghost .sonar-qbar-input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+.dso-page--search .sonar-qbar--ghost .sonar-qbar-input::placeholder {
+  color: color-mix(in srgb, var(--dso-radar-ink) 45%, transparent);
+}
+/* While empty, the drawn | is the caret, so the native one is hidden. */
+.dso-page--search .sonar-qbar--ghost.is-empty .sonar-qbar-input {
+  caret-color: transparent;
+}
+.sonar-qbar-caret {
+  flex-shrink: 0;
+  margin-right: -10px;
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--brand-band-mint);
+  animation: sonar-caret-blink 1.06s steps(1, end) infinite;
+}
+.sonar-qbar--ghost:not(.is-empty) .sonar-qbar-caret {
+  visibility: hidden;
+  width: 0;
+  margin-right: -12px;
+}
+@keyframes sonar-caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sonar-qbar-caret {
+    animation: none;
+  }
+}

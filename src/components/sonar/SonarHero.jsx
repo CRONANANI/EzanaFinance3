@@ -20,6 +20,7 @@ export function SonarHero({
   quota,
   version,
   minimal = false,
+  ghostBar = false,
   children = null,
 }) {
   const [showAll, setShowAll] = useState(false);
@@ -45,6 +46,7 @@ export function SonarHero({
         loading={loading}
         disabled={quotaReached}
         autoFocus
+        ghost={ghostBar}
       />
 
       {children}

@@ -3,7 +3,10 @@
 import { Search, Radar, Paperclip } from 'lucide-react';
 
 /**
- * SonarQueryBar — the Ping input pill. Search icon + text input + emerald Ping
+ * SonarQueryBar, the Ping input pill. `ghost` (Datasets page): transparent,
+ * slightly darker fill, no outline, no search icon or paperclip, a blinking
+ * caret at the start.
+ * Search icon + text input + emerald Ping
  * button. Used in the hero and, compact, in the sticky results bar. Controlled by
  * the page (the page owns query state + the backend call). The paperclip is a
  * DECORATIVE affordance (aria-hidden, non-focusable) to match the design — Sonar
@@ -17,16 +20,26 @@ export function SonarQueryBar({
   disabled = false,
   autoFocus = false,
   compact = false,
+  ghost = false,
 }) {
+  const empty = !value;
   return (
     <form
-      className="sonar-qbar"
+      className={`sonar-qbar${ghost ? ' sonar-qbar--ghost' : ''}${ghost && empty ? ' is-empty' : ''}`}
       onSubmit={(e) => {
         e.preventDefault();
         if (!loading && !disabled && value.trim()) onSubmit(value);
       }}
     >
-      <Search className="sonar-qbar-icon" size={18} aria-hidden />
+      {ghost ? (
+        /* Ghost bar (Datasets): no search icon; a blinking | sits where typing
+           starts until the visitor types (the native caret takes over then). */
+        <span className="sonar-qbar-caret" aria-hidden>
+          |
+        </span>
+      ) : (
+        <Search className="sonar-qbar-icon" size={18} aria-hidden />
+      )}
       {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
       <input
         className="sonar-qbar-input"
@@ -39,7 +52,7 @@ export function SonarQueryBar({
         autoFocus={autoFocus}
         disabled={disabled}
       />
-      {!compact && (
+      {!compact && !ghost && (
         <span className="sonar-qbar-attach" aria-hidden>
           <Paperclip size={17} />
         </span>

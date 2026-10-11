@@ -271,6 +271,7 @@ export function SonarExperience({ variant = 'app', heroAddon = null }) {
             quota={quota}
             version={entitlements?.version}
             minimal={onDatasets}
+            ghostBar={onDatasets}
           >
             {heroAddon}
           </SonarHero>
@@ -285,6 +286,7 @@ export function SonarExperience({ variant = 'app', heroAddon = null }) {
                 onSubmit={runQuery}
                 loading={loading}
                 compact
+                ghost={onDatasets}
               />
             </div>
 

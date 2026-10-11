@@ -185,10 +185,9 @@ export default function OrbitalMap({ blips, pinging, silent }) {
             SONAR
           </text>
 
-          {/* vertices and labels */}
+          {/* vertices (the labels are HTML buttons, below) */}
           {blips.map((b, i) => {
             const p = pts[i];
-            const lab = labelAt(i, n);
             const isSel = b.id === selected;
             return (
               <g
@@ -199,35 +198,32 @@ export default function OrbitalMap({ blips, pinging, silent }) {
                 {b.live ? <circle className="dso-orb-halo" cx={p.x} cy={p.y} r="16" /> : null}
                 {isSel ? <circle className="dso-orb-sel" cx={p.x} cy={p.y} r="12" /> : null}
                 <circle className="dso-orb-dot" cx={p.x} cy={p.y} r={b.live ? 6.5 : 5.5} />
-                <text className="dso-orb-name" x={lab.x} y={lab.y} textAnchor={lab.anchor}>
-                  {b.label}
-                </text>
-                <text
-                  className={`dso-orb-sub${b.live ? '' : ' is-road'}`}
-                  x={lab.x}
-                  y={lab.y + 24}
-                  textAnchor={lab.anchor}
-                >
-                  {b.live ? `${b.liveCount} LIVE · PINGING` : 'ROADMAP · SILENT'}
-                </text>
               </g>
             );
           })}
         </svg>
 
-        {/* the real controls, over each label (labels never move) */}
+        {/* The labels are HTML, not SVG text, so the dimension names render in
+            the top navigation bar's type at its real size (15px / 500) at every
+            width. Each label is the real control; labels never move, so the
+            hit targets never chase a drifting dot. */}
         {blips.map((b, i) => {
           const lab = labelAt(i, n);
           return (
             <button
               key={b.id}
               type="button"
-              className={`dso-orb-btn is-${lab.anchor}`}
-              style={{ left: `${r2((lab.x / W) * 100)}%`, top: `${r2(((lab.y + 6) / H) * 100)}%` }}
+              className={`dso-orb-btn is-${lab.anchor}${b.live ? '' : ' is-road'}`}
+              style={{ left: `${r2((lab.x / W) * 100)}%`, top: `${r2(((lab.y - 18) / H) * 100)}%` }}
               aria-pressed={b.id === selected}
               aria-label={`${b.label}, ${b.live ? `${b.liveCount} live datasets` : 'on the roadmap'}, select`}
               onClick={() => select(b.id, 'radar')}
-            />
+            >
+              <span className="dso-orb-name">{b.label}</span>
+              <span className="dso-orb-sub" aria-hidden="true">
+                {b.live ? `${b.liveCount} LIVE · PINGING` : 'ROADMAP · SILENT'}
+              </span>
+            </button>
           );
         })}
       </div>
