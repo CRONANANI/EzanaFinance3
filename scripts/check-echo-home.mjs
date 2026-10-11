@@ -24,7 +24,7 @@ import {
   chartFromFigure,
 } from '../src/lib/echo/chart-of-the-week.js';
 
-// ── packing (the handoff's tests, unchanged) ───────────────────────────────
+// ── packing (front-page pattern, echo-home-redesign handoff) ─────────────
 const story = (id, extra = {}) => ({
   id,
   title: `Story ${id}`,
@@ -35,46 +35,55 @@ const story = (id, extra = {}) => ({
   dek: `Dek ${id}`,
   ...extra,
 });
-const ten = () => Array.from({ length: 10 }, (_, i) => story(i + 1));
+const nine = () => Array.from({ length: 9 }, (_, i) => story(i + 1));
 const chart = { takeaway: 'x', sourceTitle: 'y', href: '#', series: [] };
 
-test('page 1 with a chart yields 11 tiles in pattern order', () => {
-  const tiles = packPage(ten(), { page: 1, chart });
-  assert.equal(tiles.length, 11);
+test('pages hold 9 stories', () => {
+  assert.equal(PAGE_SIZE, 9);
+});
+
+test('page 1 with a chart yields 10 tiles in slot order', () => {
+  const tiles = packPage(nine(), { page: 1, chart });
+  assert.equal(tiles.length, 10);
   assert.deepEqual(
     tiles.map((t) => t.kind),
     [
-      'feature',
-      'image',
-      'text',
+      'lead',
       'chart',
-      'image',
-      'image',
-      'image',
-      'text',
+      'standard',
+      'standard',
+      'standard',
+      'standard',
       'dark',
-      'image',
-      'image',
+      'standard',
+      'text',
+      'standard',
     ],
   );
+  assert.equal(tiles[0].wide, undefined);
+  assert.equal(tiles.find((t) => t.kind === 'text').tone, 'neutral');
 });
 
-test('without a chart the chart slot is dropped', () => {
-  const tiles = packPage(ten(), { page: 1, chart: null });
-  assert.equal(tiles.length, 10);
+test('without a chart the chart slot is dropped and the lead is wide', () => {
+  const tiles = packPage(nine(), { page: 1, chart: null });
+  assert.equal(tiles.length, 9);
   assert.ok(!tiles.some((t) => t.kind === 'chart'));
+  assert.equal(tiles[0].kind, 'lead');
+  assert.equal(tiles[0].wide, true);
 });
 
-test('pages after the first never carry a chart', () => {
-  assert.ok(!packPage(ten(), { page: 2, chart }).some((t) => t.kind === 'chart'));
+test('pages after the first never carry a chart, and their lead is wide', () => {
+  const tiles = packPage(nine(), { page: 2, chart });
+  assert.ok(!tiles.some((t) => t.kind === 'chart'));
+  assert.equal(tiles[0].wide, true);
 });
 
-test('feature takes the first story with an image and keeps the rest in order', () => {
-  const s = ten();
+test('lead takes the first story with an image and keeps the rest in order', () => {
+  const s = nine();
   s[0].image = null;
   s[1].image = null;
   const tiles = packPage(s, { page: 1 });
-  assert.equal(tiles[0].kind, 'feature');
+  assert.equal(tiles[0].kind, 'lead');
   assert.equal(tiles[0].story.id, 3);
   assert.deepEqual(
     tiles.slice(1, 3).map((t) => t.story.id),
@@ -82,50 +91,56 @@ test('feature takes the first story with an image and keeps the rest in order', 
   );
 });
 
-test('an image slot without an image becomes a neutral text tile', () => {
-  const s = ten();
+test('a standard slot without an image is flagged noImage', () => {
+  const s = nine();
   s[1].image = null;
-  const tiles = packPage(s, { page: 1 });
-  assert.equal(tiles[1].kind, 'text');
-  assert.equal(tiles[1].tone, 'neutral');
+  const tiles = packPage(s, { page: 1, chart });
+  const t = tiles.find((x) => x.story && x.story.id === 2);
+  assert.equal(t.kind, 'standard');
+  assert.equal(t.noImage, true);
+  assert.ok(
+    tiles.filter((x) => x.kind === 'standard' && x.story.id !== 2).every((x) => !x.noImage),
+  );
 });
 
 test('dark slot prefers a story with a dek', () => {
-  const s = ten().map((x) => ({ ...x, dek: '' }));
-  s[9].dek = 'Has a dek';
-  assert.equal(packPage(s, { page: 1 }).find((t) => t.kind === 'dark').story.id, 10);
+  const s = nine().map((x) => ({ ...x, dek: '' }));
+  s[8].dek = 'Has a dek';
+  assert.equal(packPage(s, { page: 1 }).find((t) => t.kind === 'dark').story.id, 9);
 });
 
 test('fewer stories than slots renders only what exists', () => {
-  const tiles = packPage(ten().slice(0, 3), { page: 1, chart });
+  const tiles = packPage(nine().slice(0, 3), { page: 1, chart });
   assert.equal(tiles.filter((t) => t.story).length, 3);
   assert.ok(tiles.every((t) => t.story || t.kind === 'chart'));
 });
 
-test('feature with no image anywhere falls back to a text tile', () => {
-  const s = ten().map((x) => ({ ...x, image: null }));
+test('lead with no image anywhere falls back to a text lead', () => {
+  const s = nine().map((x) => ({ ...x, image: null }));
   const lead = packPage(s, { page: 1 })[0];
-  assert.equal(lead.kind, 'text');
+  assert.equal(lead.kind, 'lead');
+  assert.equal(lead.noImage, true);
   assert.equal(lead.tone, 'lead');
-  assert.deepEqual([lead.cols, lead.rows], [2, 3]);
 });
 
-test('packTiles splits into pages and keys are unique', () => {
+test('packTiles splits into pages of 9 and keys are unique', () => {
   const all = Array.from({ length: 25 }, (_, i) => story(i + 1));
   const tiles = packTiles(all, { chart });
   assert.equal(tiles.filter((t) => t.story).length, 25);
   assert.equal(new Set(tiles.map((t) => t.key)).size, tiles.length);
   assert.equal(Math.max(...tiles.map((t) => t.page)), Math.ceil(25 / PAGE_SIZE));
+  assert.equal(tiles.filter((t) => t.page === 1 && t.story).length, 9);
 });
 
 test('exactly one dark tile per full page, at most one chart overall', () => {
   const tiles = packTiles(
-    Array.from({ length: 20 }, (_, i) => story(i + 1)),
+    Array.from({ length: 18 }, (_, i) => story(i + 1)),
     { chart },
   );
   assert.equal(tiles.filter((t) => t.kind === 'dark' && t.page === 1).length, 1);
   assert.equal(tiles.filter((t) => t.kind === 'dark' && t.page === 2).length, 1);
   assert.equal(tiles.filter((t) => t.kind === 'chart').length, 1);
+  assert.equal(tiles.find((t) => t.kind === 'chart').page, 1);
 });
 
 // ── feed model ────────────────────────────────────────────────────────────

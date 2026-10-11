@@ -1,6 +1,6 @@
 /* ══════════════════════════════════════════════════════════════
    EZANA ECHO homepage shell: the canvas paint, the Echo masthead
-   (this route's top bar) and the admin "View archived" pill. The
+   (this route's top bar), the dateline strip and the admin "Archived" pill. The
    page body (hero, Most read, bento, Evening Brief) is styled in
    src/components/echo/home/echo-home.css under the ech- prefix.
    ══════════════════════════════════════════════════════════════ */
@@ -41,7 +41,7 @@ html body:has(.ech-page) .dashboard-main.dashboard-main-content {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  height: 36px;
+  height: 44px;
   padding: 0 14px;
   border-radius: var(--radius-pill, 9999px);
   border: 1px solid var(--border-input);
@@ -90,11 +90,33 @@ html body:has(.ech-page) .dashboard-main.dashboard-main-content {
   transform: translateX(-50%);
   /* Page-scoped size bump: the shared .nav-echo-wordmark stays 1.05rem for
      the article nav crossfade; the Echo hub masthead alone runs 50% larger. */
-  font-size: 1.6rem;
+  font-family: var(--font-sans);
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+/* Display-size emerald: the darker emerald on light grounds clears 3:1. */
+body.light-mode .eth-nav-center span {
+  color: var(--emerald-text);
+}
+
+/* Dateline under the masthead row. */
+.eth-dateline {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
 }
 @media (max-width: 640px) {
   .eth-nav-center {
-    display: none;
+    font-size: 27px;
   }
 }
 .eth-masthead-brand {
@@ -154,6 +176,7 @@ html body:has(.ech-page) .dashboard-main.dashboard-main-content {
    44px touch target unconditionally. */
 .eth-partner-note {
   display: inline-flex;
+  gap: 5px;
   align-items: flex-start;
   justify-content: flex-end;
   min-height: 44px;
@@ -180,8 +203,8 @@ html body:has(.ech-page) .dashboard-main.dashboard-main-content {
 
 /* Search Echo: opens the search field in the Latest row. */
 .eth-search-btn {
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--text-primary) 14%, transparent);
   background: transparent;
@@ -204,15 +227,6 @@ html body:has(.ech-page) .dashboard-main.dashboard-main-content {
   outline: 2px solid var(--emerald);
   outline-offset: 3px;
 }
-/* 44px hit area without changing the 34px circle. */
-.eth-search-btn {
-  position: relative;
-}
-.eth-search-btn::after {
-  content: '';
-  position: absolute;
-  inset: -5px;
-}
 
 @media (max-width: 720px) {
   .eth-masthead {
@@ -220,5 +234,57 @@ html body:has(.ech-page) .dashboard-main.dashboard-main-content {
   }
   .eth-masthead-auth {
     gap: 12px;
+  }
+}
+
+/* Phone masthead: logo, wordmark and search on the first row; "Publish to
+   the Echo" left with Login and Become a Partner right on the second. The
+   auth cluster and partner stack dissolve (display: contents) so their
+   children can be ordered into the two rows. */
+@media (max-width: 640px) {
+  .eth-masthead {
+    height: auto;
+    flex-wrap: wrap;
+    row-gap: 6px;
+    column-gap: 10px;
+    padding: 10px 0 8px;
+  }
+  .eth-masthead::after {
+    content: '';
+    order: 4;
+    flex-basis: 100%;
+  }
+  .eth-masthead-brand {
+    order: 1;
+  }
+  .eth-nav-center {
+    order: 2;
+    position: static;
+    transform: none;
+    flex: 1;
+    text-align: center;
+  }
+  .eth-masthead-auth,
+  .eth-partner-stack {
+    display: contents;
+  }
+  .eth-search-btn {
+    order: 3;
+  }
+  .eth-partner-note {
+    order: 5;
+    position: static;
+    margin: 0 auto 0 0;
+    padding-top: 0;
+    align-items: center;
+  }
+  .eth-archived-btn {
+    order: 6;
+  }
+  .eth-login {
+    order: 7;
+  }
+  .eth-partner-btn {
+    order: 8;
   }
 }

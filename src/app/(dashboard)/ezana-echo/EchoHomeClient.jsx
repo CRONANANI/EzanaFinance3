@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Ezana Echo home (option B, Magazine bento), the client half.
+ * Ezana Echo home (newspaper-style front page), the client half.
  *
  * page.js renders this on the server with the hub (published, non-archived
  * cards and the Chart of the Week, from the data cache) and the URL filters,
@@ -52,6 +52,8 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
   const [filters, setFilters] = useState(() => initialFilters || DEFAULT_FILTERS);
   const [pages, setPages] = useState(1);
   const [searchOpen, setSearchOpen] = useState(() => !!initialFilters?.q);
+  // Past picks: the earlier Article of the Month on show (null = current).
+  const [aotmMonth, setAotmMonth] = useState(null);
 
   // Paint the Echo canvas on the dashboard shell (ezana-echo-home.css).
   useEffect(() => {
@@ -163,6 +165,19 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
     return { ...stories[0], kicker: 'LATEST STORY' };
   }, [stories, cards, nowMs]);
 
+  // Earlier AOTM_HISTORY entries that resolve to a story, newest first. The
+  // current pick (the first resolving entry) is not one of them.
+  const aotmOptions = useMemo(() => {
+    const resolved = AOTM_HISTORY.map((h) => ({
+      month: h.month,
+      story: stories.find((s) => s.id === h.articleId),
+    })).filter((o) => o.story);
+    return resolved.slice(1);
+  }, [stories]);
+  const pastPick = aotmMonth ? aotmOptions.find((o) => o.month === aotmMonth) : null;
+  // Swapping the card never changes the grid or Most read: they key off `hero`.
+  const shownHero = pastPick ? { ...pastPick.story, kicker: monthKicker(pastPick.month) } : hero;
+
   const mostRead = useMemo(() => rankMostRead(stories, 5), [stories]);
 
   // The bento: everything except the hero, newest first (the hub's order).
@@ -207,6 +222,17 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
     else onFiltersChange({ q: '' });
   };
 
+  // Dateline from the server clock so server and client render the same day.
+  const dateline = new Date(nowMs)
+    .toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+      timeZone: 'America/Toronto',
+    })
+    .toUpperCase();
+
   return (
     <>
       {/* The Echo masthead is this route's top bar (the marketing nav is
@@ -223,7 +249,8 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
         <div className="eth-masthead-auth">
           {isAdmin && (
             <Link href="/ezana-echo/archived" className="eth-archived-btn">
-              View archived
+              <i className="bi bi-archive" aria-hidden="true" />
+              Archived
               <span className="eth-archived-count">{archivedSet.size}</span>
             </Link>
           )}
@@ -245,14 +272,21 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
               Become a Partner
             </a>
             <a href="/auth/partner/apply" className="eth-partner-note">
-              Publish to the Echo →
+              Publish to the Echo <i className="bi bi-arrow-right" aria-hidden="true" />
             </a>
           </div>
         </div>
       </header>
+      <div className="eth-dateline">
+        <span>{dateline}</span>
+        <span>MARKETS · POLICY · GEOPOLITICS</span>
+      </div>
 
       <EchoHome
-        hero={status === 'loading' ? null : hero}
+        hero={status === 'loading' ? null : shownHero}
+        aotmOptions={aotmOptions}
+        aotmMonth={pastPick ? aotmMonth : null}
+        onAotmChange={setAotmMonth}
         mostRead={status === 'loading' ? [] : mostRead}
         stories={visible}
         chart={chart}

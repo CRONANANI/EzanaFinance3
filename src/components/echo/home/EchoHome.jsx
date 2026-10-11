@@ -1,14 +1,21 @@
 'use client';
 
 /**
- * Ezana Echo home, option B (Magazine bento). Presentational: the route
- * (src/app/(dashboard)/ezana-echo/page.js) owns data, URL filters, paging and
- * admin actions and passes them in. Tiles come only from packTiles().
+ * Ezana Echo home: a newspaper-style front page (echo-home-redesign handoff,
+ * Oct 2026). Presentational: the route (src/app/(dashboard)/ezana-echo/page.js
+ * and EchoHomeClient) owns data, URL filters, paging, the Article of the Month
+ * pick and admin actions, and passes them in. Grid tiles come only from
+ * packTiles().
  *
- * Order: hero, Most read strip, Latest row + section tabs, bento, Load more,
- * The Evening Brief, footer. The Echo masthead stays in the route.
+ * Order: Article of the Month, Most read, Latest header and controls, story
+ * grid, Load more, The Evening Brief, footer. The masthead stays in the route.
+ *
+ * Image rule this layout exists for: no photo renders wider than 640px. Every
+ * image box has a fixed aspect ratio, a max-width cap in echo-home.css and a
+ * `sizes` string that matches the cap, so next/image never fetches or
+ * upscales past it.
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { packTiles } from '@/lib/echo/bento-layout';
@@ -20,12 +27,22 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SECTION_SHORT = Object.fromEntries(SECTIONS.map((s) => [s.id, s.short]));
 const fmtReads = (n) => `${Number(n || 0).toLocaleString('en-US')} READS`;
 
+/* `sizes` per image box; keep in step with the max-width caps in the CSS. */
+const SIZES = {
+  aotm: '(max-width: 640px) calc(100vw - 32px), (max-width: 1023px) 640px, 560px',
+  lead: '(max-width: 640px) calc(100vw - 32px), (max-width: 1023px) 320px, 384px',
+  standard: '(max-width: 640px) 96px, (max-width: 1023px) 240px, 300px',
+};
+
 /**
  * @param {object}   props
  * @param {object}   [props.hero]          { id, title, dek, kicker, section, date, mins, image, imageAlt, href }
+ * @param {Array}    [props.aotmOptions]   earlier Articles of the Month: [{ month, story }]
+ * @param {string}   [props.aotmMonth]     the past month on show, null = current
+ * @param {Function} [props.onAotmChange]  (month | null) => void
  * @param {Array}    props.mostRead        stories, up to 5, with `views`
  * @param {Array}    props.stories         the visible (filtered, paged) stories, in order
- * @param {object}   [props.chart]         Chart of the Week (page 1 only)
+ * @param {object}   [props.chart]         Chart of the Week (page 1, default filters only)
  * @param {object}   props.filters         { section, region, range, q }
  * @param {Function} props.onFiltersChange (patch) => void
  * @param {boolean}  props.hasMore
@@ -41,6 +58,9 @@ const fmtReads = (n) => `${Number(n || 0).toLocaleString('en-US')} READS`;
  */
 export default function EchoHome({
   hero,
+  aotmOptions = [],
+  aotmMonth = null,
+  onAotmChange,
   mostRead = [],
   stories = [],
   chart = null,
@@ -59,10 +79,11 @@ export default function EchoHome({
 }) {
   const tiles = useMemo(() => packTiles(stories, { chart }), [stories, chart]);
 
-  // Load more: focus moves to the first new tile's link.
+  // Load more: focus moves to the first new card's primary link.
   const gridRef = useRef(null);
   const prevCount = useRef(0);
   const pendingFocus = useRef(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   useEffect(() => {
     if (pendingFocus.current && tiles.length > prevCount.current && gridRef.current) {
       const links = gridRef.current.querySelectorAll('.ech-tile__link');
@@ -70,10 +91,12 @@ export default function EchoHome({
     }
     pendingFocus.current = false;
     prevCount.current = tiles.length;
+    setLoadingMore(false);
   }, [tiles.length]);
 
   const loadMore = () => {
     pendingFocus.current = true;
+    setLoadingMore(true);
     onLoadMore?.();
   };
 
@@ -82,20 +105,54 @@ export default function EchoHome({
     if (searchOpen) searchRef.current?.focus();
   }, [searchOpen]);
   const showSearch = searchOpen || Boolean(filters.q);
+  const closeSearch = () => {
+    onFiltersChange?.({ q: '' });
+    onSearchOpenChange?.(false);
+  };
 
   return (
     <main className="ech-page">
-      {hero ? <Hero hero={hero} /> : status === 'loading' ? <HeroSkeleton /> : null}
+      {hero ? (
+        <Hero hero={hero} options={aotmOptions} month={aotmMonth} onChange={onAotmChange} />
+      ) : status === 'loading' ? (
+        <HeroSkeleton />
+      ) : null}
 
       {status === 'loading' ? <MostReadSkeleton /> : <MostRead items={mostRead} />}
 
       <section className="ech-latest" id="latest" aria-labelledby="ech-latest-h">
-        <div className="ech-latest__row">
-          <h2 id="ech-latest-h" className="ech-latest__title">
+        <div className="ech-sechead">
+          <h2 id="ech-latest-h" className="ech-sechead__title ech-sechead__title--lg">
             Latest
           </h2>
-          <div className="ech-latest__controls">
-            {showSearch && (
+          <span className="ech-mono ech-sechead__note">NEWEST FIRST</span>
+        </div>
+        <Segmented
+          className="ech-tabs"
+          label="Section"
+          options={[
+            { value: '', label: 'All' },
+            ...SECTIONS.map((s) => ({ value: s.id, label: s.label })),
+          ]}
+          value={filters.section}
+          onChange={(section) => onFiltersChange?.({ section })}
+        />
+        <div className="ech-controls">
+          <div className="ech-controls__left">
+            <RegionMenu
+              value={filters.region}
+              onChange={(region) => onFiltersChange?.({ region })}
+            />
+            <Segmented
+              label="Time range"
+              mono
+              options={RANGES.map((r) => ({ value: r.id, label: r.label }))}
+              value={filters.range}
+              onChange={(range) => onFiltersChange?.({ range })}
+            />
+          </div>
+          {showSearch && (
+            <div className="ech-controls__right">
               <div className="ech-search">
                 <label htmlFor="ech-search" className="ech-sr">
                   Search Echo
@@ -110,51 +167,42 @@ export default function EchoHome({
                   maxLength={80}
                   onChange={(e) => onFiltersChange?.({ q: e.target.value })}
                   onKeyDown={(e) => {
-                    if (e.key === 'Escape') {
-                      onFiltersChange?.({ q: '' });
-                      onSearchOpenChange?.(false);
-                    }
+                    if (e.key === 'Escape') closeSearch();
                   }}
                 />
               </div>
-            )}
-            <RegionMenu
-              value={filters.region}
-              onChange={(region) => onFiltersChange?.({ region })}
-            />
-            <Segmented
-              label="Time range"
-              mono
-              options={RANGES.map((r) => ({ value: r.id, label: r.label }))}
-              value={filters.range}
-              onChange={(range) => onFiltersChange?.({ range })}
-            />
-          </div>
+              <button
+                type="button"
+                className="ech-iconbtn"
+                aria-label="Close search"
+                onClick={closeSearch}
+              >
+                <i className="bi bi-x-lg" aria-hidden="true" />
+              </button>
+            </div>
+          )}
         </div>
-        <Segmented
-          className="ech-tabs"
-          label="Section"
-          options={[
-            { value: '', label: 'All' },
-            ...SECTIONS.map((s) => ({ value: s.id, label: s.label })),
-          ]}
-          value={filters.section}
-          onChange={(section) => onFiltersChange?.({ section })}
-        />
       </section>
 
-      {status === 'loading' && <BentoSkeleton />}
+      {status === 'loading' && <GridSkeleton />}
       {status === 'error' && (
-        <div className="ech-state" role="alert">
-          <p>Stories didn&rsquo;t load. Try again.</p>
-          <button type="button" className="ech-btn ech-btn--outline" onClick={onRetry}>
-            Retry
+        <div className="ech-state ech-state--error" role="alert">
+          <span className="ech-state__icon" aria-hidden="true">
+            <i className="bi bi-exclamation-circle" />
+          </span>
+          <p className="ech-state__title">We couldn&rsquo;t load the latest stories</p>
+          <p className="ech-state__body">Check your connection and try again.</p>
+          <button type="button" className="ech-btn ech-btn--primary" onClick={onRetry}>
+            <i className="bi bi-arrow-clockwise" aria-hidden="true" /> Retry
           </button>
         </div>
       )}
       {status === 'ready' && tiles.length === 0 && (
         <div className="ech-state" role="status">
-          <p>{emptyMessage(filters)}</p>
+          <span className="ech-state__icon" aria-hidden="true">
+            <i className="bi bi-globe2" />
+          </span>
+          <p className="ech-state__title">{emptyMessage(filters)}</p>
           <button
             type="button"
             className="ech-btn ech-btn--outline"
@@ -165,14 +213,14 @@ export default function EchoHome({
         </div>
       )}
       {status === 'ready' && tiles.length > 0 && (
-        <div className="ech-bento" ref={gridRef}>
+        <div className="ech-grid" ref={gridRef}>
           {tiles.map((t) => (
-            <Tile
+            <Card
               key={t.key}
               tile={t}
               isAdmin={isAdmin}
               onArchive={onArchive}
-              archiving={t.story && archivingId === t.story.id}
+              archiving={Boolean(t.story && archivingId === t.story.id)}
             />
           ))}
         </div>
@@ -180,8 +228,22 @@ export default function EchoHome({
 
       {status === 'ready' && hasMore && (
         <div className="ech-more">
-          <button type="button" className="ech-btn ech-btn--outline" onClick={loadMore}>
-            Load more stories <i className="bi bi-chevron-down" aria-hidden="true" />
+          <button
+            type="button"
+            className="ech-btn ech-btn--outline ech-btn--more"
+            onClick={loadMore}
+            disabled={loadingMore}
+            aria-busy={loadingMore}
+          >
+            {loadingMore ? (
+              <>
+                <span className="ech-spinner" aria-hidden="true" /> Loading more stories
+              </>
+            ) : (
+              <>
+                Load more stories <i className="bi bi-chevron-down" aria-hidden="true" />
+              </>
+            )}
           </button>
         </div>
       )}
@@ -189,83 +251,126 @@ export default function EchoHome({
       <EveningBrief onSubscribe={onSubscribe} />
 
       <footer className="ech-footer">
-        <span>Ezana Echo is published by Ezana Finance. Nothing here is investment advice.</span>
-        <nav aria-label="Ezana Echo">
-          <Link href="/ezana-echo#latest" onClick={() => onFiltersChange?.({ ...DEFAULT_FILTERS })}>
-            All stories
-          </Link>
-          <a href="/auth/partner/apply">Write for Echo</a>
-        </nav>
+        <div className="ech-footer__top">
+          <span className="ech-footer__mark">
+            Ezana <span>Echo</span>
+          </span>
+          <nav aria-label="Ezana Echo" className="ech-footer__nav">
+            <Link
+              href="/ezana-echo#latest"
+              onClick={() => onFiltersChange?.({ ...DEFAULT_FILTERS })}
+            >
+              All stories
+            </Link>
+            <a href="/auth/partner/apply">Write for Echo</a>
+          </nav>
+        </div>
+        <p className="ech-mono ech-footer__legal">
+          Ezana Echo is published by Ezana Finance. Nothing here is investment advice.
+        </p>
       </footer>
     </main>
   );
 }
 
-/* ---------- Hero ---------- */
-function Hero({ hero }) {
+/* ---------- Article of the Month ---------- */
+function Hero({ hero, options, month, onChange }) {
   const short = (SECTION_SHORT[hero.section] || '').toUpperCase();
-  const inset = Boolean(hero.imageInset && hero.image);
-  const text = (
-    <>
-      <span className="ech-kicker">{hero.kicker}</span>
-      <span className="ech-hero__title">{hero.title}</span>
-      {hero.dek ? <span className="ech-hero__dek">{hero.dek}</span> : null}
-      <span className="ech-hero__meta">
-        <span className="ech-mono">
-          {[short, hero.date, `${hero.mins} MIN READ`].filter(Boolean).join(' · ')}
-        </span>
-        <span className="ech-hero__go" aria-hidden="true">
-          <i className="bi bi-arrow-right" />
-        </span>
-      </span>
-    </>
-  );
-
-  /* Inset: the photo sits inside the card beside the text, on a quiet
-     emerald ground, instead of stretching across the whole banner. */
-  if (inset) {
-    return (
-      <Link className="ech-hero ech-hero--inset" href={hero.href}>
-        <span className="ech-hero__card">
-          <span className="ech-hero__body">{text}</span>
-          <Picture
-            src={hero.image}
-            className="ech-hero__inset"
-            alt={hero.imageAlt || ''}
-            position={hero.imagePosition}
-            sizes="(max-width: 640px) 100vw, 640px"
-            eager
-          />
-        </span>
-      </Link>
-    );
-  }
-
+  const image = Boolean(hero.image);
   return (
-    <Link className="ech-hero" href={hero.href}>
-      <Picture
-        src={hero.image}
-        className="ech-hero__img"
-        alt={hero.imageAlt || ''}
-        position={hero.imagePosition}
-        sizes="(max-width: 640px) 100vw, 1440px"
-        eager
-      />
-      <span className="ech-hero__card">{text}</span>
-    </Link>
+    <section className={`ech-aotm${image ? '' : ' is-noimg'}`} aria-labelledby="ech-aotm-title">
+      <div className="ech-aotm__text">
+        <div className="ech-aotm__top">
+          <span className="ech-kicker">{hero.kicker}</span>
+          {options.length >= 1 && onChange ? (
+            <PastPicks options={options} month={month} onChange={onChange} />
+          ) : null}
+        </div>
+        <h1 id="ech-aotm-title" className="ech-aotm__title">
+          <Link href={hero.href}>{hero.title}</Link>
+        </h1>
+        {hero.dek ? <p className="ech-aotm__dek">{hero.dek}</p> : null}
+        <div className="ech-aotm__meta">
+          <span className="ech-mono">
+            {[short, hero.date, `${hero.mins} MIN READ`].filter(Boolean).join(' · ')}
+          </span>
+          <Link
+            href={hero.href}
+            className="ech-aotm__go"
+            aria-label="Read the Article of the Month"
+          >
+            <i className="bi bi-arrow-right" aria-hidden="true" />
+          </Link>
+        </div>
+      </div>
+      {image ? (
+        <Picture
+          src={hero.image}
+          className="ech-aotm__img"
+          alt={hero.imageAlt || ''}
+          position={hero.imagePosition}
+          sizes={SIZES.aotm}
+          eager
+        />
+      ) : null}
+    </section>
   );
 }
 
 function HeroSkeleton() {
   return (
-    <div className="ech-hero ech-hero--skel" aria-hidden="true">
-      <span className="ech-hero__card">
-        <span className="ech-skel ech-skel--line" style={{ width: '40%' }} />
+    <div className="ech-aotm ech-aotm--skel" aria-hidden="true">
+      <div className="ech-aotm__text">
+        <span className="ech-skel ech-skel--line" style={{ width: '42%' }} />
         <span className="ech-skel ech-skel--head" />
-        <span className="ech-skel ech-skel--head" style={{ width: '70%' }} />
-        <span className="ech-skel ech-skel--line" style={{ width: '85%' }} />
-      </span>
+        <span className="ech-skel ech-skel--head" style={{ width: '72%' }} />
+        <span className="ech-skel ech-skel--line" style={{ width: '90%' }} />
+        <span className="ech-skel ech-skel--line" style={{ width: '80%' }} />
+        <div className="ech-aotm__meta">
+          <span className="ech-skel ech-skel--line" style={{ width: 180 }} />
+          <span className="ech-skel ech-skel--dot" />
+        </div>
+      </div>
+      <span className="ech-aotm__img ech-skel" />
     </div>
+  );
+}
+
+/* Earlier months' picks. Listed newest first; picking one swaps the card.
+   While a past month is on show, "Back to current" leads the list. */
+function PastPicks({ options, month, onChange }) {
+  const items = [
+    ...(month ? [{ key: '__current', value: null, label: 'Back to current' }] : []),
+    ...options
+      .filter((o) => o.month !== month)
+      .map((o) => ({
+        key: o.month,
+        value: o.month,
+        label: `${o.month}: ${o.story.title}`,
+        content: (
+          <>
+            <span className="ech-mono ech-picks__month">{o.month.toUpperCase()}</span>
+            <span className="ech-picks__title">{o.story.title}</span>
+          </>
+        ),
+      })),
+  ];
+  return (
+    <ListMenu
+      className="ech-picks"
+      listLabel="Past Articles of the Month"
+      buttonLabel="Past picks"
+      button={
+        <>
+          <i className="bi bi-clock-history" aria-hidden="true" /> Past picks{' '}
+          <i className="bi bi-chevron-down" aria-hidden="true" />
+        </>
+      }
+      items={items}
+      selected={month || '__current'}
+      onChoose={(v) => onChange(v)}
+      align="right"
+    />
   );
 }
 
@@ -274,9 +379,11 @@ function MostRead({ items }) {
   if (!items.length) return null;
   return (
     <section className="ech-most" aria-labelledby="ech-most-h">
-      <h2 id="ech-most-h" className="ech-most__title">
-        <i className="bi bi-graph-up-arrow" aria-hidden="true" /> Most read
-      </h2>
+      <div className="ech-sechead">
+        <h2 id="ech-most-h" className="ech-sechead__title">
+          <i className="bi bi-graph-up-arrow" aria-hidden="true" /> Most read
+        </h2>
+      </div>
       <ol className="ech-most__strip">
         {items.slice(0, 5).map((m, i) => (
           <li key={m.id} className="ech-most__cell">
@@ -304,7 +411,9 @@ function MostRead({ items }) {
 function MostReadSkeleton() {
   return (
     <div className="ech-most" aria-hidden="true">
-      <span className="ech-skel ech-skel--line" style={{ width: 180 }} />
+      <div className="ech-sechead">
+        <span className="ech-skel ech-skel--line" style={{ width: 140 }} />
+      </div>
       <div className="ech-most__strip">
         {[0, 1, 2, 3, 4].map((i) => (
           <div key={i} className="ech-most__cell ech-most__cell--skel">
@@ -362,28 +471,43 @@ function Segmented({ options, value, onChange, label, mono = false, className = 
   );
 }
 
-function RegionMenu({ value, onChange }) {
+/*
+ * Menu button + listbox shared by the region filter and Past picks:
+ * aria-haspopup, arrow keys, Home/End, Enter/Space to choose, Esc and outside
+ * click close, focus returns to the button.
+ * items: [{ key, value, label, content? }]; `selected` matches an item's key
+ * or value.
+ */
+function ListMenu({
+  className = '',
+  listLabel,
+  buttonLabel,
+  button,
+  items,
+  selected,
+  onChoose,
+  align = 'left',
+}) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const wrap = useRef(null);
   const btn = useRef(null);
   const opts = useRef([]);
-  const current = REGIONS.find((r) => r.slug === value) || REGIONS[0];
 
+  const isSel = useCallback(
+    (it) => it.key === selected || (it.value != null && it.value === selected),
+    [selected],
+  );
   const openMenu = () => {
-    const i = Math.max(
-      0,
-      REGIONS.findIndex((r) => r.slug === value),
-    );
-    setActive(i);
+    setActive(Math.max(0, items.findIndex(isSel)));
     setOpen(true);
   };
-  const close = (refocus = true) => {
+  const close = useCallback((refocus = true) => {
     setOpen(false);
     if (refocus) btn.current?.focus();
-  };
-  const choose = (slug) => {
-    onChange(slug);
+  }, []);
+  const choose = (it) => {
+    onChoose(it.value);
     close();
   };
 
@@ -398,38 +522,39 @@ function RegionMenu({ value, onChange }) {
     };
     document.addEventListener('mousedown', onDown);
     return () => document.removeEventListener('mousedown', onDown);
-  }, [open]);
+  }, [open, close]);
 
   const onListKey = (e) => {
+    const n = items.length;
     if (e.key === 'Escape') {
       e.preventDefault();
       close();
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setActive((a) => (a + 1) % REGIONS.length);
+      setActive((a) => (a + 1) % n);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setActive((a) => (a - 1 + REGIONS.length) % REGIONS.length);
+      setActive((a) => (a - 1 + n) % n);
     } else if (e.key === 'Home') {
       e.preventDefault();
       setActive(0);
     } else if (e.key === 'End') {
       e.preventDefault();
-      setActive(REGIONS.length - 1);
+      setActive(n - 1);
     } else if (e.key === 'Tab') {
       close(false);
     }
   };
 
   return (
-    <div className="ech-menu" ref={wrap}>
+    <div className={`ech-menu ${className}`} ref={wrap}>
       <button
         ref={btn}
         type="button"
         className="ech-menu__btn"
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label={`Region: ${current.label}`}
+        aria-label={buttonLabel}
         onClick={() => (open ? close() : openMenu())}
         onKeyDown={(e) => {
           if (!open && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
@@ -438,30 +563,35 @@ function RegionMenu({ value, onChange }) {
           }
         }}
       >
-        <i className="bi bi-globe2" aria-hidden="true" /> {current.label}{' '}
-        <i className="bi bi-chevron-down" aria-hidden="true" />
+        {button}
       </button>
       {open && (
-        <ul className="ech-menu__list" role="listbox" aria-label="Region" onKeyDown={onListKey}>
-          {REGIONS.map((r, i) => (
+        <ul
+          className={`ech-menu__list${align === 'right' ? ' is-right' : ''}`}
+          role="listbox"
+          aria-label={listLabel}
+          onKeyDown={onListKey}
+        >
+          {items.map((it, i) => (
             <li
-              key={r.slug || 'all'}
+              key={it.key}
               ref={(el) => {
                 opts.current[i] = el;
               }}
               role="option"
               tabIndex={i === active ? 0 : -1}
-              aria-selected={r.slug === value}
+              aria-selected={isSel(it)}
+              aria-label={it.content ? it.label : undefined}
               className="ech-menu__opt"
-              onClick={() => choose(r.slug)}
+              onClick={() => choose(it)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  choose(r.slug);
+                  choose(it);
                 }
               }}
             >
-              {r.label}
+              {it.content || it.label}
             </li>
           ))}
         </ul>
@@ -470,89 +600,136 @@ function RegionMenu({ value, onChange }) {
   );
 }
 
-/* ---------- Bento tiles ---------- */
-function Meta({ story, dark = false }) {
-  const tag = (story.tag || SECTION_SHORT[story.section] || '').toUpperCase();
+function RegionMenu({ value, onChange }) {
+  const current = REGIONS.find((r) => r.slug === value) || REGIONS[0];
   return (
-    <span className={`ech-meta${dark ? ' ech-meta--dark' : ''}`}>
-      {tag ? <span className="ech-meta__tag">{tag}</span> : null}
-      {story.date ? <span>{story.date}</span> : null}
-      <span aria-hidden="true">&middot;</span>
-      <span>{story.mins} MIN</span>
+    <ListMenu
+      listLabel="Region"
+      buttonLabel={`Region: ${current.label}`}
+      button={
+        <>
+          <i className="bi bi-globe2" aria-hidden="true" /> {current.label}{' '}
+          <i className="bi bi-chevron-down" aria-hidden="true" />
+        </>
+      }
+      items={REGIONS.map((r) => ({ key: r.slug || 'all', value: r.slug, label: r.label }))}
+      selected={value}
+      onChoose={onChange}
+    />
+  );
+}
+
+/* ---------- Story grid ---------- */
+function tagOf(story) {
+  return (story.tag || SECTION_SHORT[story.section] || '').toUpperCase();
+}
+
+function Meta({ story }) {
+  const short = (SECTION_SHORT[story.section] || '').toUpperCase();
+  return (
+    <span className="ech-mono ech-meta">
+      {[short, story.date, `${story.mins} MIN READ`].filter(Boolean).join(' · ')}
     </span>
   );
 }
 
-function Tile({ tile, isAdmin, onArchive, archiving }) {
-  const cls = `ech-tile ech-tile--${tile.kind}${tile.tone ? ` ech-tile--${tile.tone}` : ''}`;
+function ArchiveButton({ story, onArchive, archiving }) {
+  return (
+    <button
+      type="button"
+      className="ech-card__archive"
+      onClick={(e) => onArchive(story.id, e)}
+      disabled={archiving}
+      aria-label={`Archive ${story.title}`}
+      title="Archive"
+    >
+      <i className={`bi ${archiving ? 'bi-hourglass-split' : 'bi-archive'}`} aria-hidden="true" />
+    </button>
+  );
+}
 
+function Card({ tile, isAdmin, onArchive, archiving }) {
+  const admin = isAdmin && onArchive;
   if (tile.kind === 'chart') {
     const c = tile.chart;
     return (
-      <div className={cls}>
-        <Link className="ech-tile__link" href={c.href}>
-          <span className="ech-chart__text">
-            <span className="ech-kicker ech-kicker--sm">CHART OF THE WEEK</span>
-            <span className="ech-chart__takeaway">{c.takeaway}</span>
-            <span className="ech-mono ech-chart__src">FROM: {c.sourceTitle.toUpperCase()}</span>
-          </span>
-          <MiniChart series={c.series} independent={c.independent} label={c.takeaway} />
-        </Link>
-      </div>
+      <article className="ech-card ech-card--chart">
+        <div className="ech-chart">
+          <span className="ech-kicker">CHART OF THE WEEK</span>
+          <Link className="ech-tile__link ech-chart__takeaway" href={c.href}>
+            {c.takeaway}
+          </Link>
+          <ChartSvg series={c.series} independent={c.independent} label={c.takeaway} />
+          <ChartLegend series={c.series} />
+          <Link className="ech-mono ech-chart__src" href={c.href}>
+            FROM: {String(c.sourceTitle || '').toUpperCase()}
+          </Link>
+        </div>
+      </article>
     );
   }
 
   const s = tile.story;
-  const dark = tile.kind === 'dark';
-  const pictured = tile.kind === 'feature' || tile.kind === 'image';
+  const kind = tile.kind;
+  const pictured = !tile.noImage && Boolean(s.image) && (kind === 'lead' || kind === 'standard');
+  const cls = [
+    'ech-card',
+    `ech-card--${kind}`,
+    tile.wide ? 'is-wide' : '',
+    pictured ? 'has-img' : 'is-noimg',
+    tile.tone ? `ech-card--${tile.tone}` : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <div className={cls}>
-      <Link className="ech-tile__link" href={s.href}>
+    <article className={cls}>
+      <Link className="ech-tile__link ech-card__link" href={s.href}>
         {pictured ? (
           <Picture
             src={s.image}
-            className="ech-tile__img"
+            className="ech-card__img"
             alt={s.imageAlt || ''}
             position={s.imagePosition}
-            sizes={
-              tile.kind === 'feature'
-                ? '(max-width: 640px) 100vw, (max-width: 1000px) 50vw, 720px'
-                : '(max-width: 640px) 100vw, (max-width: 1000px) 50vw, 360px'
-            }
+            sizes={kind === 'lead' ? SIZES.lead : SIZES.standard}
           />
         ) : null}
-        <Meta story={s} dark={dark} />
-        <span className="ech-tile__title">{s.title}</span>
-        {!pictured && s.dek ? <span className="ech-tile__dek">{s.dek}</span> : null}
-        {!pictured ? (
-          <span className="ech-tile__read">
-            Read <i className="bi bi-arrow-right" aria-hidden="true" />
-          </span>
-        ) : null}
+        <span className="ech-card__body">
+          {tagOf(s) ? <span className="ech-card__tag">{tagOf(s)}</span> : null}
+          <h3 className="ech-card__title">{s.title}</h3>
+          {s.dek && (kind !== 'standard' || !pictured) ? (
+            <span className="ech-card__dek">{s.dek}</span>
+          ) : null}
+          {kind === 'text' || kind === 'dark' ? (
+            <span className="ech-card__read">
+              Read <i className="bi bi-arrow-right" aria-hidden="true" />
+            </span>
+          ) : (
+            <Meta story={s} />
+          )}
+        </span>
       </Link>
-      {isAdmin && onArchive ? (
-        <button
-          type="button"
-          className="ech-tile__archive"
-          onClick={(e) => onArchive(s.id, e)}
-          disabled={archiving}
-          aria-label={`Archive ${s.title}`}
-          title="Archive"
-        >
-          <i
-            className={`bi ${archiving ? 'bi-hourglass-split' : 'bi-archive'}`}
-            aria-hidden="true"
-          />
-        </button>
-      ) : null}
-    </div>
+      {admin ? <ArchiveButton story={s} onArchive={onArchive} archiving={archiving} /> : null}
+    </article>
   );
 }
 
-function MiniChart({ series = [], independent = false, label }) {
-  const W = 220;
-  const H = 110;
-  const pad = 6;
+/* Chart of the Week: main series emerald and solid; compare series differ in
+   lightness and dash (not hue alone). `independent` scales each series on
+   its own range, so the value axis is only labelled for a shared scale. */
+function seriesClass(series, s) {
+  if (s.kind === 'main') return 'ech-chart__main';
+  const cmpIndex = series.filter((x) => x.kind !== 'main').indexOf(s);
+  return cmpIndex <= 0 ? 'ech-chart__cmp1' : 'ech-chart__cmp2';
+}
+
+function ChartSvg({ series = [], independent = false, label }) {
+  const W = 340;
+  const H = 150;
+  const padL = independent ? 6 : 30;
+  const padR = 6;
+  const padT = 8;
+  const padB = 8;
   const all = series.flatMap((s) => s.points);
   if (!all.length) return null;
   const range = (pts) => {
@@ -565,31 +742,62 @@ function MiniChart({ series = [], independent = false, label }) {
     const [min, span] = independent ? range(pts) : shared;
     return pts
       .map((v, i) => {
-        const x = pad + (i * (W - pad * 2)) / Math.max(1, pts.length - 1);
-        const y = H - pad - ((v - min) / span) * (H - pad * 2);
+        const x = padL + (i * (W - padL - padR)) / Math.max(1, pts.length - 1);
+        const y = H - padB - ((v - min) / span) * (H - padT - padB);
         return `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`;
       })
       .join(' ');
   };
+  const [gMin, gSpan] = shared;
+  const ticks = [0, 1, 2, 3].map((k) => ({
+    v: gMin + (gSpan * k) / 3,
+    y: H - padB - (k / 3) * (H - padT - padB),
+  }));
+  const fmt = (v) => {
+    if (Math.abs(v) >= 1000) return `${Math.round(v / 100) / 10}k`;
+    if (Math.abs(v) >= 10) return String(Math.round(v));
+    return String(Math.round(v * 10) / 10);
+  };
   return (
     <svg className="ech-chart__svg" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label}>
-      <path d={`M0 ${H - 0.5}H${W}`} className="ech-chart__base" />
+      {ticks.map((t) => (
+        <g key={t.y}>
+          <path d={`M${padL} ${t.y.toFixed(1)}H${W - padR}`} className="ech-chart__grid" />
+          {independent ? null : (
+            <text x={padL - 6} y={t.y + 3} className="ech-chart__axis" textAnchor="end">
+              {fmt(t.v)}
+            </text>
+          )}
+        </g>
+      ))}
       {series.map((s) => (
-        <path
-          key={`${s.kind}-${s.label}`}
-          d={path(s.points)}
-          className={s.kind === 'main' ? 'ech-chart__main' : 'ech-chart__cmp'}
-        />
+        <path key={`${s.kind}-${s.label}`} d={path(s.points)} className={seriesClass(series, s)} />
       ))}
     </svg>
   );
 }
 
+function ChartLegend({ series = [] }) {
+  const named = series.filter((s) => s.label);
+  if (named.length < 2) return null;
+  return (
+    <ul className="ech-chart__legend">
+      {named.map((s) => (
+        <li key={`${s.kind}-${s.label}`}>
+          <svg width="22" height="8" aria-hidden="true">
+            <path d="M1 4H21" className={seriesClass(series, s)} />
+          </svg>
+          {s.label}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /* Article images go through next/image, so the optimiser serves AVIF/WebP at
-   the rendered size instead of the original multi-megabyte files. The wrapper
-   span keeps the old box rules; the image fills it, object-fit cover. Remote
-   images (none today) skip the optimiser so an unlisted host cannot break
-   the page. */
+   the rendered size. The wrapper span carries the box (aspect ratio and
+   max-width cap); the image fills it, object-fit cover. Remote images skip
+   the optimiser so an unlisted host cannot break the page. */
 function Picture({ src, className, alt, eager = false, sizes, position = null }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [src]);
@@ -603,7 +811,7 @@ function Picture({ src, className, alt, eager = false, sizes, position = null })
         fill
         sizes={sizes}
         priority={eager}
-        quality={70}
+        quality={75}
         style={position ? { objectPosition: position } : undefined}
         unoptimized={/^https?:/.test(src)}
         onError={() => setFailed(true)}
@@ -612,24 +820,19 @@ function Picture({ src, className, alt, eager = false, sizes, position = null })
   );
 }
 
-function BentoSkeleton() {
-  const kinds = [
-    'feature',
-    'image',
-    'text',
-    'chart',
-    'image',
-    'image',
-    'image',
-    'text',
-    'dark',
-    'image',
-    'image',
-  ];
+function GridSkeleton() {
+  const kinds = ['lead', 'chart', 'standard', 'standard', 'standard', 'standard'];
   return (
-    <div className="ech-bento" aria-hidden="true">
+    <div className="ech-grid" aria-hidden="true">
       {kinds.map((k, i) => (
-        <span key={i} className={`ech-tile ech-tile--${k} ech-skel`} />
+        <div key={i} className={`ech-card ech-card--${k} has-img ech-card--skel`}>
+          {k !== 'chart' ? <span className="ech-card__img ech-skel" /> : null}
+          <span className="ech-card__body">
+            <span className="ech-skel ech-skel--line" style={{ width: 70 }} />
+            <span className="ech-skel ech-skel--line" />
+            <span className="ech-skel ech-skel--line" style={{ width: '75%' }} />
+          </span>
+        </div>
       ))}
     </div>
   );
@@ -665,25 +868,29 @@ function EveningBrief({ onSubscribe }) {
   return (
     <section className="ech-brief" aria-labelledby="ech-brief-h">
       <div className="ech-brief__copy">
-        <span className="ech-kicker ech-kicker--deep">THE EVENING BRIEF</span>
+        <span className="ech-kicker ech-brief__kicker">NEWSLETTER · WEEKDAYS, 6 PM ET</span>
         <h2 id="ech-brief-h" className="ech-brief__title">
-          Wall Street intelligence, in your inbox by 6pm.
+          The Evening Brief
         </h2>
         <p className="ech-brief__body">
-          One email a day: the signals that moved markets, the disclosures that didn&rsquo;t make
-          the wire, and the one chart worth your morning.
+          The stories that moved markets, policy and capital today, and what to watch before
+          tomorrow&rsquo;s open. One email, five minutes.
         </p>
       </div>
       {state === 'success' ? (
         <p className="ech-brief__done" role="status">
-          Almost there. Check your inbox and confirm your address to start the Evening Brief.
+          <i className="bi bi-check-circle" aria-hidden="true" />
+          <span>
+            <strong>Almost there.</strong> Check your inbox and confirm your address to start the
+            Evening Brief.
+          </span>
         </p>
       ) : (
         <form className="ech-brief__form" onSubmit={submit} noValidate>
+          <label htmlFor="ech-brief-email" className="ech-brief__label">
+            Email address
+          </label>
           <div className="ech-brief__row">
-            <label htmlFor="ech-brief-email" className="ech-sr">
-              Email address
-            </label>
             <input
               id="ech-brief-email"
               type="email"
@@ -699,7 +906,7 @@ function EveningBrief({ onSubscribe }) {
             />
             <button
               type="submit"
-              className="ech-btn ech-btn--primary"
+              className="ech-btn ech-btn--primary ech-brief__submit"
               disabled={state === 'submitting'}
               aria-busy={state === 'submitting'}
             >

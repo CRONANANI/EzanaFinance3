@@ -1,40 +1,44 @@
 /**
- * Ezana Echo home: bento packing. Pure: stories in, tiles out. No React, no DOM,
- * no `@/` imports (tested by scripts/check-echo-home.mjs under plain Node).
- * Ported unchanged in behaviour from the design handoff (option B, Magazine
- * bento). The CSS sets spans per breakpoint from the tile kind; this module
- * never knows the viewport.
+ * Ezana Echo home: front-page packing. Pure: stories in, tiles out. No React,
+ * no DOM, no `@/` imports (tested by scripts/check-echo-home.mjs under plain
+ * Node). The CSS sets column spans per breakpoint from the tile kind (and the
+ * lead's `wide` flag); this module never knows the viewport.
+ *
+ * Newspaper-style front page (echo-home-redesign handoff, Oct 2026): a 12-col
+ * grid at desktop where no photo renders wider than 640px.
  *
  * A story: { id, title, dek?, tag?, section, date, mins, image?, href }
  * A chart: { takeaway, sourceTitle, href, series: [{ points: number[], kind: 'main' | 'compare' }] }
- * A tile:  { key, kind, tone?, cols, rows, slot, page, story?, chart? }
+ * A tile:  { key, kind, tone?, wide?, noImage?, slot, page, story?, chart? }
+ *   kind: 'lead' | 'chart' | 'standard' | 'dark' | 'text'
  *
  * Rules:
  *  - Stories keep their order; the pattern decides size, not order.
- *  - The feature slot takes the first story that has an image; skipped
- *    stories keep their relative order after it. With no image on the page
- *    it becomes a text tile, tone 'lead', at the feature's full size.
- *  - An image slot given a story with no image becomes a neutral text tile.
- *  - Text slots take the story as text.
+ *  - The lead takes the first story that has an image; skipped stories keep
+ *    their relative order after it. With no image on the page it is a text
+ *    lead (noImage, tone 'lead'). The lead is `wide` (full row) when the page
+ *    has no chart beside it.
+ *  - A standard slot given a story with no image is flagged `noImage`; the UI
+ *    draws the tinted no-image card, never an empty picture box.
  *  - The dark slot takes the next story with a dek, else the next story.
+ *  - The text slot takes the next story as text, tone 'neutral'.
  *  - The chart slot exists only on page 1 and only when a chart is supplied.
  *  - Fewer stories than slots: render what exists, never empty tiles.
  */
 
-export const PAGE_SIZE = 10;
+export const PAGE_SIZE = 9;
 
 export const PATTERN = [
-  { slot: 1, kind: 'feature', cols: 2, rows: 3 },
-  { slot: 2, kind: 'image', cols: 1, rows: 2 },
-  { slot: 3, kind: 'text', tone: 'tint', cols: 1, rows: 2 },
-  { slot: 4, kind: 'chart', cols: 2, rows: 1 },
-  { slot: 5, kind: 'image', cols: 1, rows: 2 },
-  { slot: 6, kind: 'image', cols: 1, rows: 2 },
-  { slot: 7, kind: 'image', cols: 1, rows: 2 },
-  { slot: 8, kind: 'text', tone: 'neutral', cols: 1, rows: 2 },
-  { slot: 9, kind: 'dark', cols: 2, rows: 2 },
-  { slot: 10, kind: 'image', cols: 1, rows: 2 },
-  { slot: 11, kind: 'image', cols: 1, rows: 2 },
+  { slot: 1, kind: 'lead' },
+  { slot: 2, kind: 'chart' },
+  { slot: 3, kind: 'standard' },
+  { slot: 4, kind: 'standard' },
+  { slot: 5, kind: 'standard' },
+  { slot: 6, kind: 'standard' },
+  { slot: 7, kind: 'dark' },
+  { slot: 8, kind: 'standard' },
+  { slot: 9, kind: 'text', tone: 'neutral' },
+  { slot: 10, kind: 'standard' },
 ];
 
 const hasImage = (s) => Boolean(s && s.image);
@@ -54,60 +58,40 @@ function takeFirst(queue, predicate) {
  */
 export function packPage(stories, { page = 1, chart = null } = {}) {
   const queue = Array.isArray(stories) ? stories.slice() : [];
-  const slots = PATTERN.filter((s) => s.kind !== 'chart' || (page === 1 && chart));
+  const withChart = page === 1 && Boolean(chart);
+  const slots = PATTERN.filter((s) => s.kind !== 'chart' || withChart);
   const tiles = [];
 
   for (const slot of slots) {
     if (slot.kind === 'chart') {
-      tiles.push({
-        key: `p${page}-chart`,
-        kind: 'chart',
-        cols: slot.cols,
-        rows: slot.rows,
-        slot: slot.slot,
-        page,
-        chart,
-      });
+      tiles.push({ key: `p${page}-chart`, kind: 'chart', slot: slot.slot, page, chart });
       continue;
     }
     if (queue.length === 0) break;
 
-    let story;
-    let kind = slot.kind;
-    let tone = slot.tone;
+    const tile = { kind: slot.kind, slot: slot.slot, page };
+    if (slot.tone) tile.tone = slot.tone;
 
-    if (slot.kind === 'feature') {
-      story = takeFirst(queue, hasImage);
+    if (slot.kind === 'lead') {
+      let story = takeFirst(queue, hasImage);
       if (!story) {
-        // No story on this page has an image: the slot keeps its 2 x 3 size
-        // as a large text "lead" tile. A 1 x 2 fallback here would leave
-        // holes the rest of the pattern cannot fill.
         story = queue.shift();
-        kind = 'text';
-        tone = 'lead';
+        tile.noImage = true;
+        tile.tone = 'lead';
       }
+      tile.story = story;
+      if (!withChart) tile.wide = true;
     } else if (slot.kind === 'dark') {
-      story = takeFirst(queue, hasDek) || queue.shift();
-    } else if (slot.kind === 'image') {
-      story = queue.shift();
-      if (!hasImage(story)) {
-        kind = 'text';
-        tone = 'neutral';
-      }
+      tile.story = takeFirst(queue, hasDek) || queue.shift();
+    } else if (slot.kind === 'standard') {
+      tile.story = queue.shift();
+      if (!hasImage(tile.story)) tile.noImage = true;
     } else {
-      story = queue.shift();
+      tile.story = queue.shift();
     }
 
-    tiles.push({
-      key: `p${page}-${story.id}`,
-      kind,
-      tone,
-      cols: slot.cols,
-      rows: slot.rows,
-      slot: slot.slot,
-      page,
-      story,
-    });
+    tile.key = `p${page}-${tile.story.id}`;
+    tiles.push(tile);
   }
   return tiles;
 }
