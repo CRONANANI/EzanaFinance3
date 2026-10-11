@@ -35,23 +35,11 @@ export default function DatasetsIndexPage({ searchParams }) {
           <span className="dso-sonar-live">
             <span className="dso-live-dot" aria-hidden="true" /> LIVE SWEEP
           </span>
-          <span>
-            {COUNTS.live} DATASETS PINGING · {COUNTS.roadmap} SILENT UNTIL LIVE
-          </span>
         </p>
         <h2 className="dso-sonar-title" id="dso-sonar-h">
           Everything below feeds Ezana Sonar
         </h2>
         <OrbitalMap blips={blips} pinging={COUNTS.live} silent={COUNTS.roadmap} />
-        <p className="dso-legend dso-mono">
-          <span>
-            <i className="dso-legend-ping" aria-hidden="true" /> PING = NEW RECORDS ARRIVING
-          </span>
-          <span>
-            <i className="dso-legend-dash" aria-hidden="true" /> DASHED = ROADMAP, NEVER FAKED
-          </span>
-          <span className="dso-legend-motion">SWEEP PAUSES UNDER REDUCED MOTION</span>
-        </p>
       </section>
     </SonarSelectionProvider>
   );
