@@ -13,7 +13,7 @@ import {
 import { figuresFor, workedExample } from './sonar/data';
 import { WORKED_EXAMPLE, TRY_CHIPS } from './sonar/worked-example';
 import { SonarSelectionProvider, DimensionSlot } from './sonar/SonarSelection';
-import Radar from './sonar/Radar';
+import OrbitalMap from './sonar/OrbitalMap';
 import QueryConsole from './sonar/QueryConsole';
 import OtherSix from './sonar/OtherSix';
 import Arrivals from './sonar/Arrivals';
@@ -104,7 +104,7 @@ export default function DatasetsIndexPage({ searchParams }) {
             <h2 className="dso-sonar-title" id="dso-sonar-h">
               Everything below feeds Ezana Sonar
             </h2>
-            <Radar blips={blips} pinging={COUNTS.live} silent={COUNTS.roadmap} />
+            <OrbitalMap blips={blips} pinging={COUNTS.live} silent={COUNTS.roadmap} />
             <p className="dso-legend dso-mono">
               <span>
                 <i className="dso-legend-ping" aria-hidden="true" /> PING = NEW RECORDS ARRIVING

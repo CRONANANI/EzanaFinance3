@@ -1454,3 +1454,184 @@ li:last-child > .dso-arr {
     opacity: 0.6;
   }
 }
+
+/* ── the orbital map (replaces the circular radar drawing) ──────────────
+   The landing page's 7-dimension orbital card, on the sonar card's dark
+   ground: rings, seven spokes, a drifting polygon with ping halos on live
+   dimensions, a sweep from the Ezana Sonar hub, and full dimension names
+   with their live state. Tokens are the sonar card's own (--dso-radar-*). */
+.dso-orb {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  margin: 6px 0 10px;
+}
+.dso-orb-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1240 / 760;
+}
+.dso-orb-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.dso-orb-ring {
+  fill: none;
+  stroke: var(--dso-radar-grid-strong);
+  stroke-width: 1.2;
+}
+.dso-orb-axis {
+  stroke: var(--dso-radar-grid);
+  stroke-width: 1;
+}
+.dso-orb-axis.is-selected {
+  stroke: color-mix(in srgb, var(--dso-radar-green) 55%, transparent);
+}
+.dso-orb-stop-in {
+  stop-color: color-mix(in srgb, var(--dso-radar-green) 34%, transparent);
+}
+.dso-orb-stop-out {
+  stop-color: color-mix(in srgb, var(--dso-radar-green) 14%, transparent);
+}
+.dso-orb-stop-clear {
+  stop-color: transparent;
+}
+.dso-orb-stop-sweep {
+  stop-color: color-mix(in srgb, var(--dso-radar-green) 26%, transparent);
+}
+.dso-orb-shape {
+  stroke: color-mix(in srgb, var(--dso-radar-green) 70%, transparent);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+.dso-orb-sweep {
+  transform-origin: 620px 380px;
+  transform-box: view-box;
+  animation: dso-orb-sweep var(--dso-sweep-period, 8s) linear infinite;
+}
+@keyframes dso-orb-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.dso-orb-hub-ring {
+  fill: none;
+  stroke: color-mix(in srgb, var(--dso-radar-green) 25%, transparent);
+  stroke-width: 1;
+}
+.dso-orb-hub {
+  fill: var(--dso-radar-core);
+  stroke: color-mix(in srgb, var(--dso-radar-green) 80%, transparent);
+  stroke-width: 1.5;
+}
+.dso-orb-hub-t1 {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 700;
+  fill: var(--dso-radar-ink);
+}
+.dso-orb-hub-t2 {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  fill: var(--dso-radar-green);
+}
+.dso-orb-dot {
+  fill: var(--dso-radar-green);
+  stroke: var(--dso-radar-core);
+  stroke-width: 2;
+}
+.dso-orb-dim.is-road .dso-orb-dot {
+  fill: var(--dso-radar-core);
+  stroke: color-mix(in srgb, var(--dso-radar-ink) 55%, transparent);
+  stroke-width: 1.4;
+  stroke-dasharray: 2.5 2.5;
+}
+.dso-orb-halo {
+  fill: none;
+  stroke: color-mix(in srgb, var(--dso-radar-green) 60%, transparent);
+  stroke-width: 1.4;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: dso-orb-ping 2.6s ease-out infinite;
+  animation-delay: calc(var(--dso-i, 0) * -0.37s);
+}
+@keyframes dso-orb-ping {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.55);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+.dso-orb-sel {
+  fill: none;
+  stroke: var(--dso-radar-ink);
+  stroke-width: 1.5;
+}
+.dso-orb-name {
+  font-family: var(--font-sans);
+  font-size: 25px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  fill: var(--dso-radar-ink);
+}
+.dso-orb-sub {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  letter-spacing: 0.1em;
+  fill: var(--dso-radar-green);
+}
+.dso-orb-sub.is-road {
+  fill: color-mix(in srgb, var(--dso-radar-ink) 45%, transparent);
+}
+.dso-orb-dim.is-selected .dso-orb-name {
+  fill: var(--dso-radar-green);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+/* label hit targets: 170 x 48, aligned to the label's anchor */
+.dso-orb-btn {
+  position: absolute;
+  width: 170px;
+  height: 48px;
+  margin: 0;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  border: 0;
+  border-radius: var(--radius-md, 8px);
+  background: transparent;
+  cursor: pointer;
+}
+.dso-orb-btn.is-start {
+  transform: translate(-8px, -50%);
+}
+.dso-orb-btn.is-end {
+  transform: translate(calc(-100% + 8px), -50%);
+}
+.dso-orb-btn:hover {
+  background: color-mix(in srgb, var(--dso-radar-green) 10%, transparent);
+}
+.dso-page .dso-orb-btn:focus-visible {
+  outline: 2px solid var(--dso-radar-green);
+  outline-offset: 0;
+}
+@media (max-width: 720px) {
+  .dso-orb-btn {
+    width: 120px;
+    height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dso-orb-sweep,
+  .dso-orb-halo {
+    animation: none;
+  }
+}
