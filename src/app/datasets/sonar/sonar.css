@@ -1958,3 +1958,39 @@ body.light-mode .dso-page--search .dso-sonar-title {
   opacity: 1;
   background: color-mix(in srgb, var(--emerald) 75%, black);
 }
+
+/* ── Oct 11: ghost Ping button ─────────────────────────────────────────
+   Fully transparent: no fill, border, outline or shadow. The label and the
+   radar icon are white with a soft mint glow, brighter on hover; disabled
+   (nothing typed yet) keeps the same contrast with a quieter glow. */
+.dso-page--search .sonar-qbar--ghost .sonar-ping-btn,
+.dso-page--search .sonar-qbar--ghost .sonar-ping-btn:disabled,
+.dso-page--search .sonar-qbar--ghost .sonar-ping-btn:hover,
+.dso-page--search .sonar-qbar--ghost .sonar-ping-btn:focus {
+  background: none;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  opacity: 1;
+  color: white;
+  text-shadow:
+    0 0 6px color-mix(in srgb, var(--brand-band-mint) 85%, transparent),
+    0 0 16px color-mix(in srgb, var(--brand-band-mint) 45%, transparent);
+  transition: text-shadow 0.2s ease;
+}
+.dso-page--search .sonar-qbar--ghost .sonar-ping-btn svg {
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--brand-band-mint) 85%, transparent));
+}
+.dso-page--search .sonar-qbar--ghost .sonar-ping-btn:hover:not(:disabled) {
+  text-shadow:
+    0 0 8px var(--brand-band-mint),
+    0 0 22px color-mix(in srgb, var(--brand-band-mint) 65%, transparent);
+}
+.dso-page--search .sonar-qbar--ghost .sonar-ping-btn:disabled {
+  text-shadow: 0 0 8px color-mix(in srgb, var(--brand-band-mint) 45%, transparent);
+}
+.dso-page--search .sonar-qbar--ghost .sonar-ping-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand-band-mint) 70%, transparent);
+  outline-offset: 2px;
+  border-radius: 9999px;
+}
