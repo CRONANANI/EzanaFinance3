@@ -108,7 +108,6 @@ body.light-mode .eth-nav-center span {
   flex-wrap: wrap;
   gap: 8px;
   padding: 10px 0;
-  border-top: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent);
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.12em;

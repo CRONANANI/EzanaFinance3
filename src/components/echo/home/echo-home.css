@@ -168,6 +168,11 @@ body.light-mode .ech-page {
   padding-top: 12px;
   border-top: 2px solid var(--ech-ink);
 }
+/* Latest runs without the ink rule; the filter rows carry the section break. */
+.ech-latest .ech-sechead {
+  border-top: 0;
+  padding-top: 0;
+}
 .ech-sechead__title {
   margin: 0;
   display: inline-flex;
@@ -199,7 +204,6 @@ body.light-mode .ech-page {
   gap: 48px;
   align-items: center;
   padding: 32px;
-  border: 1px solid var(--ech-hair);
   border-radius: var(--radius-xl);
   background: var(--ech-bg);
   box-shadow: var(--ech-card-shadow);
@@ -395,6 +399,10 @@ body.light-mode .ech-page {
   flex-wrap: wrap;
   gap: 6px;
 }
+.ech-latest > .ech-tabs {
+  justify-content: center;
+  align-self: stretch;
+}
 .ech-seg__opt {
   font: inherit;
   cursor: pointer;
@@ -422,9 +430,12 @@ body.light-mode .ech-page {
 .ech-controls {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+.ech-controls__left {
+  justify-content: center;
 }
 .ech-controls__left,
 .ech-controls__right {
@@ -572,14 +583,9 @@ body.light-mode .ech-page {
   min-width: 0;
   grid-column: span 3;
   display: flex;
-  border: 1px solid var(--ech-hair);
   border-radius: var(--radius-lg);
   background: var(--ech-bg);
   overflow: hidden;
-  transition: border-color 0.15s ease;
-}
-.ech-card:hover {
-  border-color: var(--ech-hair-hover);
 }
 .ech-card__link {
   display: flex;
@@ -730,7 +736,6 @@ body.light-mode .ech-page {
 }
 .ech-card--dark {
   background: var(--ech-deep);
-  border-color: var(--ech-deep-border);
 }
 .ech-card--dark .ech-card__title {
   color: var(--ech-deep-fg);
@@ -1003,7 +1008,6 @@ body.light-mode .ech-page {
   gap: 48px;
   align-items: center;
   border-radius: var(--radius-xl);
-  border: 1px solid var(--ech-brief-border);
   background: var(--ech-brief-bg);
   color: var(--ech-brief-fg);
 }
@@ -1234,8 +1238,9 @@ body.light-mode .ech-page {
     flex-basis: 220px;
     margin-right: 10px;
     padding: 14px;
-    border: 1px solid var(--ech-hair);
+    border: 0;
     border-radius: var(--radius-lg);
+    background: var(--ech-neutral);
   }
   .ech-sechead__title--lg {
     font-size: 26px;

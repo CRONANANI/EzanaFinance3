@@ -279,7 +279,6 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
       </header>
       <div className="eth-dateline">
         <span>{dateline}</span>
-        <span>MARKETS · POLICY · GEOPOLITICS</span>
       </div>
 
       <EchoHome
