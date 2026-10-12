@@ -145,7 +145,7 @@ const WAY_UP_SPECS = [
     icon: 'bi-hand-thumbs-up',
     event: 'Research post upvoted, consensus signal',
   },
-  { id: 'streak', label: 'Keep a 7-day streak', icon: 'bi-fire', event: '7-day login streak' },
+  { id: 'streak', label: 'Keep a 7 day streak', icon: 'bi-fire', event: '7-day login streak' },
 ];
 const WAYS_UP = WAY_UP_SPECS.map((w) => ({
   ...w,
@@ -641,7 +641,6 @@ export function SocialLedgerSection() {
             Ratings and standings shown here are illustrative sample data, not a live leaderboard
             and not investment advice.
           </p>
-          <span className="sled-foot-cta">Start your ledger</span>
         </div>
       </div>
     </section>

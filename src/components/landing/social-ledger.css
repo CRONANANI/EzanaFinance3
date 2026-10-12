@@ -825,18 +825,20 @@
   gap: 24px;
   flex-wrap: wrap;
 }
+/* The compliance note is one line on desktop (the foot spans the section,
+   which is wider than the note at 12px); it wraps again on narrow phones,
+   where one line is impossible, rather than overflow. */
 .sled-foot-note {
   margin: 0;
-  max-width: 64ch;
   font-size: 12px;
   line-height: 1.5;
+  white-space: nowrap;
   color: var(--text-faint);
 }
-.sled-foot-cta {
-  flex: none;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--emerald);
+@media (max-width: 760px) {
+  .sled-foot-note {
+    white-space: normal;
+  }
 }
 
 /* The grey line under the compliance note is not this section's. Nothing
