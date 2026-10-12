@@ -1329,3 +1329,62 @@
 .ea-ep-framing {
   font-size: 0.875rem;
 }
+
+/* ── Oct 12: no outlines ──────────────────────────────────────────────
+   Every visible border, divider and resting outline on this page is gone:
+   the page's one border token resolves to transparent (widths stay, so
+   nothing shifts), and the tinted borders that did not use it are cleared
+   below. Chips keep their tinted fills, the legend's current entry keeps
+   its colour and weight, and inputs sit on the page's code tint so they
+   are still findable at rest. Keyboard focus keeps a ring, via
+   :focus-visible only. Page-scoped: everything lives under .ea-page. */
+.ea-page {
+  --ea-border: transparent;
+}
+.ea-page .ea-btn--ghost,
+.ea-page .ea-btn--ghost:hover,
+.ea-page .ea-eyebrow,
+.ea-page .ea-tier--hl,
+.ea-page .ea-soon,
+.ea-page .ea-live,
+.ea-page .ea-qs-num,
+.ea-page .ea-cta,
+.ea-page .ea-flow-node,
+.ea-page .ea-legend li a.is-active,
+.ea-page .ea-modal,
+.ea-page .ea-modal-head {
+  border-color: transparent;
+}
+.ea-page .ea-tier--hl {
+  box-shadow: none;
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+}
+.ea-page .ea-btn--ghost {
+  background: var(--ea-code-tint);
+}
+.ea-page .ea-field input,
+.ea-page .ea-field select,
+.ea-page .ea-field textarea {
+  border-color: transparent;
+  background: var(--ea-code-tint);
+}
+.ea-page .ea-field input:focus,
+.ea-page .ea-field select:focus,
+.ea-page .ea-field textarea:focus {
+  border-color: transparent;
+  box-shadow: none;
+}
+.ea-page .ea-field input:focus-visible,
+.ea-page .ea-field select:focus-visible,
+.ea-page .ea-field textarea:focus-visible,
+.ea-page a:focus-visible,
+.ea-page button:focus-visible {
+  outline: 2px solid var(--ea-emerald);
+  outline-offset: 2px;
+}
+@media (max-width: 1000px) {
+  .ea-page .ea-legend li a,
+  .ea-page .ea-legend li a.is-active {
+    border-color: transparent;
+  }
+}
