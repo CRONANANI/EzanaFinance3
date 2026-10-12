@@ -2077,3 +2077,36 @@ body.light-mode .dso-page--search .dso-sonar-title {
 .ds-shell--search .dso-ground {
   background: transparent;
 }
+
+/* ── Oct 12: orbital line work in the hero white ──────────────────────
+   On the overview every line of the map (the three orbit rings, the seven
+   spokes, the hub's ring and its edge) is the landing hero's background
+   token, --bg-primary (white on this light-locked route), at a translucent
+   strength so the globe still shows through. The dots, their ping halos,
+   the drifting shape and the rotating sweep keep their green and their
+   animation. The selected dimension's label reads in the same white. */
+.dso-page--search .dso-orb-ring {
+  stroke: color-mix(in srgb, var(--bg-primary) 42%, transparent);
+}
+.dso-page--search .dso-orb-axis {
+  stroke: color-mix(in srgb, var(--bg-primary) 26%, transparent);
+}
+.dso-page--search .dso-orb-axis.is-selected {
+  stroke: color-mix(in srgb, var(--bg-primary) 60%, transparent);
+}
+.dso-page--search .dso-orb-hub-ring {
+  stroke: color-mix(in srgb, var(--bg-primary) 45%, transparent);
+}
+.dso-page--search .dso-orb-hub {
+  stroke: color-mix(in srgb, var(--bg-primary) 85%, transparent);
+}
+.dso-page--search .dso-orb-sel {
+  stroke: var(--bg-primary);
+}
+.dso-page--search .dso-orb-btn[aria-pressed='true'] {
+  color: var(--bg-primary);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+  text-decoration-color: color-mix(in srgb, var(--bg-primary) 70%, transparent);
+}
