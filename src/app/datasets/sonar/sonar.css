@@ -2055,3 +2055,25 @@ body.light-mode .dso-page--search .dso-sonar-title {
     0 0 6px color-mix(in srgb, var(--brand-band-mint) 85%, transparent),
     0 0 16px color-mix(in srgb, var(--brand-band-mint) 45%, transparent);
 }
+
+/* ── Oct 12: the overview's nav and page are one surface ─────────────
+   On /datasets the datasets layout adds ds-shell--search to its wrapper.
+   The wrapper paints the page background token once, and both the nav
+   chrome and the page ground above the globe go transparent, so the nav
+   has exactly the page's background: one gradient, no seam, no border,
+   no shadow and no backdrop tint. The bar is not sticky; if it ever is,
+   the solid shell behind it keeps the same surface. */
+.ds-shell--search {
+  background: var(--brand-band-green);
+}
+.ds-shell--search .dscat-chrome,
+.ds-shell--search .dscat-bar,
+.ds-shell--search .dscat-chrome .dscat-bar {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.ds-shell--search .dso-ground {
+  background: transparent;
+}
