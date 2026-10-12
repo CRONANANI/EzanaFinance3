@@ -1549,3 +1549,10 @@
   outline: 2px solid var(--emerald);
   outline-offset: 2px;
 }
+
+/* ── Oct 12: initials under the loading portrait ──────────────────────
+   The initials and the portrait share the ring's one cell, so the initials
+   stay put while the portrait decodes and the image paints over them. */
+.ptk-shot > * {
+  grid-area: 1 / 1;
+}

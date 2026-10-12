@@ -16,11 +16,14 @@ import { resolveHeadshot } from '@/lib/politicians/headshots';
  * Sizes per the brief: 40 in table rows, 64 on the Top-eight cards, 120 in
  * the member profile. `priority` on the Top eight only; lazy elsewhere.
  *
- * Avatars are `unoptimized`: every source is already a small JPEG, and
- * /_next/image did a cold AVIF encode per portrait on first view.
+ * Avatars go through the image optimiser: each portrait is served as AVIF
+ * or WebP at the rendered size (40, 64 or 120px, 2x for dense screens) and
+ * the encodes are kept for 30 days (images.minimumCacheTTL in next.config),
+ * so the one cold encode per portrait is shared by every later visitor.
  * theunitedstates.io URLs are rewritten to unitedstates.github.io (where
  * they redirect). A portrait that has painted is kept when a later photoUrl
- * arrives, so a face on screen never reloads.
+ * arrives, so a face on screen never reloads. Initials fill the ring until
+ * a portrait paints, so nothing shifts.
  */
 export const AVATAR_SIZE = { row: 40, card: 64, profile: 120 };
 
@@ -100,7 +103,8 @@ export default function MemberAvatar({
           alt={name || ''}
           width={inner}
           height={inner}
-          unoptimized
+          sizes={`${inner}px`}
+          quality={70}
           priority={priority}
           loading={priority ? undefined : 'lazy'}
           onLoad={() => {
@@ -113,9 +117,8 @@ export default function MemberAvatar({
             setIdx((i) => i + 1);
           }}
         />
-      ) : (
-        <span aria-hidden="true">{initials(name)}</span>
-      )}
+      ) : null}
+      {!src || !loaded ? <span aria-hidden="true">{initials(name)}</span> : null}
     </span>
   );
 }

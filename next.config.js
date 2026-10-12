@@ -124,6 +124,10 @@ const nextConfig = {
   },
   images: {
     formats: ['image/avif', 'image/webp'],
+    /* Politician portraits and other remote images change rarely; keeping
+       the optimised encodes for 30 days means one cold encode per image, not
+       one per minute of traffic (the default TTL is 60 seconds). */
+    minimumCacheTTL: 60 * 60 * 24 * 30,
     dangerouslyAllowSVG: false,
     remotePatterns: [
       { protocol: 'https', hostname: '*.supabase.co', pathname: '/**' },
