@@ -1523,3 +1523,29 @@
 .ptk-cmte-title {
   color: var(--text-faint);
 }
+
+/* ── Oct 12: windowed list ─────────────────────────────────────────────
+   The sentinel row under the first 50 rows mounts the next window as it
+   scrolls into view; its button does the same for readers without
+   IntersectionObserver or who prefer to click. */
+.ptk-row-more td {
+  padding: 10px 0 4px;
+  text-align: center;
+}
+.ptk-more-btn {
+  padding: 8px 14px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+  color: var(--text-muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+.ptk-more-btn:hover {
+  color: var(--text-primary);
+}
+.ptk-more-btn:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}

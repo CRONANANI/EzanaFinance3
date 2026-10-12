@@ -18,6 +18,7 @@
  * page publishes ticker items through usePublishTicker and nothing else.
  */
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { CHART } from '@/lib/chart-theme';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
@@ -43,7 +44,9 @@ import {
 import { buildFixtureTrades } from '@/lib/politicians/tracker-fixture';
 import { POSITION_BASIS_NOTE } from '@/lib/politicians/position-status';
 import Headshot, { AVATAR_SIZE, ChamberChip, PartyTag } from './Headshot';
-import MemberPanel from './MemberPanel';
+/* The member panel (its charts included) loads only when a member is
+   opened, so the page's first paint does not carry it. */
+const MemberPanel = dynamic(() => import('./MemberPanel'), { ssr: false });
 import MostHeldChart from './MostHeldChart';
 import Segmented from './Segmented';
 import '@/components/datasets/disclosures/disclosures.css';
@@ -51,6 +54,11 @@ import './politician-tracker.css';
 import { listenForMemberIntent, prefetchTrackerMember } from '@/components/datasets/prefetch-cache';
 
 const NONE = '·';
+
+/* One key per filter set; the server seed and the client fetch share it. */
+function summaryKeyFor({ chamber, party, query, sort, days, reload }) {
+  return `${chamber || ''}|${party || ''}|${String(query || '').trim()}|${sort}|${days}|${reload}`;
+}
 
 /** '29 Sep 2026, 14:05' in the reader's locale; the raw string if unparseable. */
 function formatUpdated(iso) {
@@ -66,6 +74,10 @@ function formatUpdated(iso) {
 }
 const PAGES = [0, 1, 2];
 const GALLERY = 8;
+/* The list renders this many rows first; the rest mount as the reader
+   scrolls (an observed sentinel row), so a 500-member ranking is not 500
+   rows and portraits on the first paint. */
+const ROW_WINDOW = 50;
 /* Skeleton rows while the ranking loads. The list itself shows every member. */
 const LIST_SKELETON = 8;
 
@@ -242,6 +254,7 @@ export default function PoliticianTracker({
   initialSort = 'volume',
   initialPeriod = DEFAULT_PERIOD,
   initialQuery = '',
+  initialSummary = null,
 }) {
   const [trades, setTrades] = useState([]);
   const [status, setStatus] = useState('loading'); // loading | ready | empty | sample
@@ -263,7 +276,21 @@ export default function PoliticianTracker({
 
   /* SQL aggregates for the current filters ({ key, data }), and trades
      fetched for a member whose rows were not in the loaded pages. */
-  const [summary, setSummary] = useState(null);
+  const [summary, setSummary] = useState(() =>
+    initialSummary?.rankings?.length
+      ? {
+          key: summaryKeyFor({
+            chamber: initialChamber,
+            party: initialParty,
+            query: initialQuery,
+            sort: initialSort,
+            days: periodMeta(initialPeriod).days,
+            reload: 0,
+          }),
+          data: initialSummary,
+        }
+      : null,
+  );
   const [memberTrades, setMemberTrades] = useState({});
 
   const [openSlug, setOpenSlug] = useState(initialMember);
@@ -336,8 +363,12 @@ export default function PoliticianTracker({
 
   /* ── server aggregates: rankings, monthly and tickers over the whole
         window, filtered in SQL. Unavailable (503) → the local model. ── */
-  const summaryKey = `${chamber || ''}|${party || ''}|${query.trim()}|${sort}|${pMeta.days}|${reload}`;
+  const summaryKey = summaryKeyFor({ chamber, party, query, sort, days: pMeta.days, reload });
+  const seededKey = useRef(summary?.key || null);
   useEffect(() => {
+    /* The server already rendered this key's summary: no round trip. */
+    if (seededKey.current === summaryKey) return undefined;
+    seededKey.current = null;
     const ctrl = new AbortController();
     const qs = new URLSearchParams({ sort, days: String(pMeta.days) });
     if (chamber) qs.set('chamber', chamber.toLowerCase());
@@ -398,6 +429,27 @@ export default function PoliticianTracker({
   const rest = ranked.filter((m) => !galleryKeys.has(m.key));
   const firstQuiet = rest.findIndex((m) => !(m.count > 0));
   const first = ranked[0] || null;
+
+  /* Rows mount in windows of ROW_WINDOW as the sentinel under the table
+     scrolls into view; a filter change starts over at the first window. */
+  const [rowLimit, setRowLimit] = useState(ROW_WINDOW);
+  const sentinelRef = useRef(null);
+  useEffect(() => {
+    setRowLimit(ROW_WINDOW);
+  }, [chamber, party, query, sort, pMeta.days]);
+  const moreRows = rest.length > rowLimit;
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !moreRows || typeof IntersectionObserver === 'undefined') return undefined;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) setRowLimit((n) => n + ROW_WINDOW);
+      },
+      { rootMargin: '600px 0px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [moreRows, rowLimit]);
 
   const filteredTrades = useMemo(() => tradesOf(filtered), [filtered]);
   const stats = useMemo(() => chamberStats(filtered), [filtered]);
@@ -910,7 +962,7 @@ export default function PoliticianTracker({
                         </td>
                       </tr>
                     ))
-                  : rest.map((m, i) => {
+                  : rest.slice(0, rowLimit).map((m, i) => {
                       const selected = openMember?.key === m.key;
                       const ch = String(m.chamber || '').toLowerCase();
                       const quiet = !(m.count > 0);
@@ -998,6 +1050,19 @@ export default function PoliticianTracker({
                         </Fragment>
                       );
                     })}
+                {rankingReady && moreRows ? (
+                  <tr ref={sentinelRef} className="ptk-row-more">
+                    <td colSpan={8}>
+                      <button
+                        type="button"
+                        className="ptk-more-btn dsc-mn"
+                        onClick={() => setRowLimit((n) => n + ROW_WINDOW)}
+                      >
+                        SHOW MORE · {rest.length - rowLimit} REMAINING
+                      </button>
+                    </td>
+                  </tr>
+                ) : null}
               </tbody>
             </table>
           </div>
