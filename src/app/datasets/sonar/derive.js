@@ -29,16 +29,12 @@ export function plain(text) {
  * Taxonomy blurbs that say "today" about something that is roadmap. The audit
  * found three; taxonomy.js is read-only, so the page carries an honest version
  * and the test fails the moment a dimension's live state changes, so the
- * override is removed rather than left to drift.
- *   hive        Prediction Markets is live:false, yet the blurb says "odds today".
+ * override is removed rather than left to drift. (The Hive's was removed when
+ * Prediction Markets and Crowdsourced Intelligence went live.)
  *   regulatory  New Laws & Legislation is live:false, yet "legislation tracking today".
  *   lighthouse  only OECD Macro is live, yet "global indicators and wealth today".
  */
 export const HONEST_BLURBS = {
-  hive: {
-    whenLive: 0,
-    text: 'Crowd and market-consensus signals: prediction-market odds, community and retail sentiment. On the roadmap.',
-  },
   regulatory: {
     whenLive: 0,
     text: 'Legal and policy catalysts: legislation, litigation, enforcement and agency rulings. On the roadmap.',

@@ -275,13 +275,13 @@ export const DATASET_TAXONOMY = [
     corner: 'THE HIVE',
     tagline: 'Tap into the collective wisdom',
     blurb:
-      'Crowd and market-consensus signals — prediction-market odds today, with community and retail sentiment on the roadmap.',
+      'Crowd and market-consensus signals: prediction-market odds and crowd forecasts today, with community and retail sentiment on the roadmap.',
     items: [
       {
         label: 'Prediction Markets', // = orbital "Prediction Market Odds"; old nav "Prediction Markets"
-        description: 'Real-money market consensus and event odds (Polymarket)',
+        description: 'Real-money market consensus and event odds (Polymarket, Kalshi)',
         href: '/datasets/prediction-markets',
-        live: false,
+        live: true,
         source: 'Polymarket · Kalshi',
         sourceType: 'public',
       },
@@ -303,11 +303,11 @@ export const DATASET_TAXONOMY = [
       },
       {
         label: 'Crowdsourced Intelligence',
-        description: 'Aggregate positioning and conviction levels',
-        href: '/datasets',
-        live: false,
-        source: 'Ezana first-party · Reddit',
-        sourceType: 'none',
+        description: 'Crowd forecasts on politics, markets and world events (Manifold, play money)',
+        href: '/datasets/the-hive',
+        live: true,
+        source: 'Manifold',
+        sourceType: 'public',
       },
     ],
   },

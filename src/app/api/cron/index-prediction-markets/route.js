@@ -4,22 +4,26 @@ import { getAdminClient } from '@/lib/supabase';
 import { embedViaSupabase, supaEmbedConfigured } from '@/lib/embeddings-gte';
 
 /**
- * Populate prediction_market_index for the semantic matcher. Pulls active
- * Polymarket markets (Gamma), embeds each market's `question` via the Supabase
- * gte-small edge function (384-dim), and upserts idempotently on market_id.
- *
- * Structured so a Kalshi loader can be added later behind the same MappedMarket
- * shape (platform column) without touching the matcher. Budget-capped per run
- * (bounds embed-function calls); CRON_SECRET bearer (or ?key= fallback).
- *   GET /api/cron/index-prediction-markets?maxMarkets=400&pageSize=100
+ * Populate prediction_market_index (Polymarket rows) for the semantic matcher
+ * and The Hive. Pulls open Polymarket markets from Gamma, highest dollar volume
+ * first, embeds new or changed questions with the Supabase gte-small edge
+ * function (384-dim), reuses stored vectors for unchanged questions, and
+ * upserts on market_id. Kalshi has its own loader (index-kalshi) on the same
+ * table. Markets past their end date are closed; markets not refreshed in
+ * STALE_DAYS are marked stale so old odds are never shown as current.
+ *   GET /api/cron/index-prediction-markets?maxMarkets=2000&pageSize=100
+ * Auth: CRON_SECRET as a Bearer header or ?key=.
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+export const maxDuration = 300;
 
 const GAMMA_BASE = 'https://gamma-api.polymarket.com';
-const DEFAULT_MAX = 400; // markets per run (bounds edge-embed calls)
+const DEFAULT_MAX = 400; // markets per run
 const EMBED_CONCURRENCY = 5; // parallel embed requests
 const UPSERT_CHUNK = 100;
+const LOOKUP_CHUNK = 200; // ids per existing-embedding lookup
+const STALE_DAYS = 3;
 
 function isAuthorized(request) {
   const secret = process.env.CRON_SECRET;
@@ -32,7 +36,7 @@ function isAuthorized(request) {
   }
 }
 
-/** first outcome price → implied YES probability (0..1) or null. */
+/** First outcome price as implied YES probability (0..1), or null. */
 function yesProbability(m) {
   const raw = m?.outcomePrices ?? m?.lastTradePrice;
   if (typeof raw === 'number' && raw > 0 && raw < 1) return raw;
@@ -52,11 +56,9 @@ function yesProbability(m) {
 }
 
 /**
- * Event-level deep link — STRICT. Polymarket's page is the EVENT, and the real
- * event slug lives on events[0].slug (top-level eventSlug/groupSlug are usually
- * empty). A market-level slug placed in an /event/ URL 404s, so we NEVER fall
- * back to it — return null when there's no verified event slug and let the row
- * carry a null link (dropped downstream instead of linking to a dead page).
+ * Event-level deep link, strict. Polymarket's page is the EVENT, and the real
+ * event slug lives on events[0].slug. A market-level slug in an /event/ URL
+ * 404s, so we never fall back to it; no verified slug means a null link.
  */
 function marketLink(m) {
   const ev = Array.isArray(m?.events) && m.events.length ? m.events[0] : null;
@@ -65,7 +67,7 @@ function marketLink(m) {
   return null;
 }
 
-/** Gamma market → { question, row } (MappedMarket shape, platform=polymarket). */
+/** Gamma market to { question, row } (MappedMarket shape, platform=polymarket). */
 function toRow(m) {
   const question = String(m?.question ?? m?.title ?? '').trim();
   const marketId = String(m?.id ?? m?.conditionId ?? '');
@@ -79,8 +81,10 @@ function toRow(m) {
       question,
       description: typeof m?.description === 'string' ? m.description : null,
       probability: yesProbability(m),
-      volume: Number(m?.volume ?? m?.volumeNum ?? 0) || 0,
-      liquidity: Number(m?.liquidity ?? 0) || 0,
+      // volumeNum is the numeric field; volume is the same figure as a string.
+      volume: Number(m?.volumeNum ?? m?.volume ?? 0) || 0,
+      volume_unit: 'usd',
+      liquidity: Number(m?.liquidityNum ?? m?.liquidity ?? 0) || 0,
       end_date: m?.endDate || m?.end_date_iso || null,
       status: 'active',
       link: marketLink(m),
@@ -95,13 +99,15 @@ async function fetchGammaPage(offset, pageSize) {
     active: 'true',
     limit: String(pageSize),
     offset: String(offset),
-    order: 'volume',
+    // volumeNum, not volume: volume is a string and sorts as text.
+    order: 'volumeNum',
     ascending: 'false',
   });
   try {
     const res = await fetch(`${GAMMA_BASE}/markets?${params}`, {
       headers: { Accept: 'application/json' },
       cache: 'no-store',
+      signal: AbortSignal.timeout(15_000),
     });
     if (!res.ok) return [];
     const payload = await res.json();
@@ -112,7 +118,7 @@ async function fetchGammaPage(offset, pageSize) {
   }
 }
 
-/** Embed `items[].question` with bounded concurrency → attaches .embedding. */
+/** Embed items[].question with bounded concurrency; attaches .embedding. */
 async function embedAll(items) {
   let cursor = 0;
   async function worker() {
@@ -125,6 +131,36 @@ async function embedAll(items) {
   }
   await Promise.all(Array.from({ length: Math.min(EMBED_CONCURRENCY, items.length) }, worker));
   return items;
+}
+
+/** market_id -> stored question, for rows that already carry an embedding. */
+async function embeddedQuestions(admin, ids) {
+  const known = new Map();
+  for (let i = 0; i < ids.length; i += LOOKUP_CHUNK) {
+    // eslint-disable-next-line no-await-in-loop
+    const { data, error } = await admin
+      .from('prediction_market_index')
+      .select('market_id, question')
+      .in('market_id', ids.slice(i, i + LOOKUP_CHUNK))
+      .not('embedding', 'is', null);
+    if (error) throw new Error(error.message);
+    for (const r of data || []) known.set(r.market_id, r.question);
+  }
+  return known;
+}
+
+async function upsertChunks(admin, rows, errors, label) {
+  let n = 0;
+  for (let i = 0; i < rows.length; i += UPSERT_CHUNK) {
+    const chunk = rows.slice(i, i + UPSERT_CHUNK);
+    // eslint-disable-next-line no-await-in-loop
+    const { error } = await admin
+      .from('prediction_market_index')
+      .upsert(chunk, { onConflict: 'market_id' });
+    if (error) errors.push(`${label} upsert @${i}: ${error.message}`);
+    else n += chunk.length;
+  }
+  return n;
 }
 
 export async function GET(request) {
@@ -145,9 +181,10 @@ export async function GET(request) {
   const admin = getAdminClient();
   const errors = [];
 
-  // 1) paginate Gamma → dedup
+  // 1) paginate Gamma, highest dollar volume first, dedupe
   const byId = new Map();
   for (let offset = 0; byId.size < maxMarkets; offset += pageSize) {
+    // eslint-disable-next-line no-await-in-loop
     const page = await fetchGammaPage(offset, pageSize);
     if (!page.length) break;
     for (const m of page) {
@@ -159,62 +196,93 @@ export async function GET(request) {
   }
   const items = [...byId.values()];
   if (!items.length) {
-    return NextResponse.json({ ok: true, fetched: 0, embedded: 0, upserted: 0, errors });
+    return NextResponse.json({ ok: true, fetched: 0, embedded: 0, reused: 0, upserted: 0, errors });
   }
 
-  // 2) embed questions (bounded concurrency)
-  await embedAll(items);
+  // 2) embed only new or changed questions; reuse the stored vector otherwise
+  let known = new Map();
+  try {
+    known = await embeddedQuestions(
+      admin,
+      items.map((it) => it.row.market_id),
+    );
+  } catch (e) {
+    errors.push(`lookup: ${e?.message || e}`);
+  }
+  const reuse = items.filter((it) => known.get(it.row.market_id) === it.question);
+  const fresh = items.filter((it) => known.get(it.row.market_id) !== it.question);
+  await embedAll(fresh);
+
   const stamp = new Date().toISOString();
-  const rows = items
+  const freshRows = fresh
     .filter((it) => Array.isArray(it.embedding) && it.embedding.length === 384)
     .map((it) => ({
       ...it.row,
       embedding: JSON.stringify(it.embedding), // pgvector text form
       indexed_at: stamp,
     }));
-  const embedded = rows.length;
-  if (!embedded) {
+  // No embedding key at all, so the upsert leaves the stored vector untouched.
+  const reuseRows = reuse.map((it) => ({ ...it.row, indexed_at: stamp }));
+
+  if (!freshRows.length && !reuseRows.length) {
     return NextResponse.json({
       ok: false,
       fetched: items.length,
       embedded: 0,
+      reused: 0,
       upserted: 0,
       errors: ['embed produced no vectors (edge fn unreachable or gte-small disabled)'],
     });
   }
 
-  // 3) upsert in chunks
-  let upserted = 0;
-  for (let i = 0; i < rows.length; i += UPSERT_CHUNK) {
-    const chunk = rows.slice(i, i + UPSERT_CHUNK);
-    const { error } = await admin
-      .from('prediction_market_index')
-      .upsert(chunk, { onConflict: 'market_id' });
-    if (error) errors.push(`upsert @${i}: ${error.message}`);
-    else upserted += chunk.length;
-  }
+  // 3) upsert: two homogeneous batches so no row overwrites a vector with null
+  const upserted =
+    (await upsertChunks(admin, freshRows, errors, 'fresh')) +
+    (await upsertChunks(admin, reuseRows, errors, 'reuse'));
 
-  // 4) prune long-resolved rows so the index stays bounded
+  // 4) close ended markets, mark unrefreshed ones stale, prune long-resolved rows
+  const nowIso = new Date().toISOString();
+  const staleCutoff = new Date(Date.now() - STALE_DAYS * 86400000).toISOString();
+  let closed = 0;
+  let stale = 0;
   let pruned = 0;
   try {
+    const r1 = await admin
+      .from('prediction_market_index')
+      .update({ status: 'closed' }, { count: 'exact' })
+      .eq('platform', 'polymarket')
+      .eq('status', 'active')
+      .lt('end_date', nowIso);
+    closed = r1.count || 0;
+    const r2 = await admin
+      .from('prediction_market_index')
+      .update({ status: 'stale' }, { count: 'exact' })
+      .eq('platform', 'polymarket')
+      .eq('status', 'active')
+      .lt('indexed_at', staleCutoff);
+    stale = r2.count || 0;
     const cutoff = new Date(Date.now() - 30 * 86400000).toISOString();
-    const { count } = await admin
+    const r3 = await admin
       .from('prediction_market_index')
       .delete({ count: 'exact' })
+      .eq('platform', 'polymarket')
       .lt('end_date', cutoff);
-    pruned = count || 0;
-  } catch {
-    /* best-effort */
+    pruned = r3.count || 0;
+  } catch (e) {
+    errors.push(`cleanup: ${e?.message || e}`);
   }
 
   // The dimension hubs summarise this table.
-  if (upserted || pruned) revalidateTag('hubs');
+  if (upserted || closed || stale || pruned) revalidateTag('hubs');
 
   return NextResponse.json({
     ok: true,
     fetched: items.length,
-    embedded,
+    embedded: freshRows.length,
+    reused: reuseRows.length,
     upserted,
+    closed,
+    stale,
     pruned,
     errors: errors.slice(0, 10),
   });

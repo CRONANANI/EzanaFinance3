@@ -34,6 +34,9 @@ const PARALLEL = 8;
 
 const num = (v) => (v == null || v === '' || !Number.isFinite(Number(v)) ? null : Number(v));
 const day = (v) => (v ? String(v).slice(0, 10) : null);
+/* A prediction market or forecast that is still open right now. */
+const openNow = (q, statusValue = 'active', dateCol = 'end_date') =>
+  q.eq('status', statusValue).or(`${dateCol}.is.null,${dateCol}.gt."${new Date().toISOString()}"`);
 const isoDaysAgo = (n) => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
 const thisYear = () => new Date().getUTCFullYear();
 
@@ -601,28 +604,29 @@ const SUMMARIES = {
   },
 
   async 'Prediction Markets'(admin) {
-    const open = await count(() =>
-      admin
-        .from('prediction_market_index')
-        .select('market_id', { count: 'exact', head: true })
-        .eq('status', 'active'),
-    );
+    const base = () =>
+      openNow(
+        admin.from('prediction_market_index').select('market_id', { count: 'exact', head: true }),
+      );
+    const [open, poly, kalshi] = await Promise.all([
+      count(base),
+      count(() => base().eq('platform', 'polymarket')),
+      count(() => base().eq('platform', 'kalshi')),
+    ]);
     if (!open) return { empty: true, records: 0 };
-    const [rows, top, latest] = await Promise.all([
-      readAll(
-        () =>
-          admin
-            .from('prediction_market_index')
-            .select('market_id, volume')
-            .eq('status', 'active')
-            .order('market_id'),
-        open,
-        30,
-      ),
-      admin
-        .from('prediction_market_index')
-        .select('question, volume')
-        .eq('status', 'active')
+    const [polyRows, top, latest] = await Promise.all([
+      poly
+        ? readAll(
+            () =>
+              openNow(admin.from('prediction_market_index').select('market_id, volume'))
+                .eq('platform', 'polymarket')
+                .order('market_id'),
+            poly,
+            30,
+          )
+        : Promise.resolve([]),
+      openNow(admin.from('prediction_market_index').select('question, volume'))
+        .eq('platform', 'polymarket')
         .order('volume', { ascending: false, nullsFirst: false })
         .limit(1),
       admin
@@ -631,14 +635,45 @@ const SUMMARIES = {
         .order('indexed_at', { ascending: false })
         .limit(1),
     ]);
-    const volume = rows.reduce((s, r) => s + (num(r.volume) || 0), 0);
+    const volume = polyRows.reduce((s, r) => s + (num(r.volume) || 0), 0);
     return {
       records: open,
       freshest: day(latest.data?.[0]?.indexed_at),
       numbers: [
         n('Open markets', open),
-        n('Total volume', volume, 'usd'),
+        n('On Kalshi', kalshi),
+        n('Polymarket volume', volume, 'usd'),
         n('Largest by volume', top.data?.[0]?.question || null, 'text'),
+      ],
+    };
+  },
+
+  async 'Crowdsourced Intelligence'(admin) {
+    const open = await count(() =>
+      openNow(
+        admin.from('crowd_forecasts').select('forecast_id', { count: 'exact', head: true }),
+        'open',
+        'close_date',
+      ),
+    );
+    if (!open) return { empty: true, records: 0 };
+    const [top, latest] = await Promise.all([
+      openNow(admin.from('crowd_forecasts').select('question, forecasters'), 'open', 'close_date')
+        .order('forecasters', { ascending: false, nullsFirst: false })
+        .limit(1),
+      admin
+        .from('crowd_forecasts')
+        .select('indexed_at')
+        .order('indexed_at', { ascending: false })
+        .limit(1),
+    ]);
+    return {
+      records: open,
+      freshest: day(latest.data?.[0]?.indexed_at),
+      numbers: [
+        n('Open questions', open),
+        n('Most forecast', top.data?.[0]?.question || null, 'text'),
+        n('Forecasters on it', top.data?.[0]?.forecasters ?? null),
       ],
     };
   },
@@ -1576,12 +1611,14 @@ const LINKAGES = {
       });
   },
 
-  /* Hive 1: biggest open markets. */
+  /* Hive 1: biggest open Polymarket markets, by dollars traded. */
   async 'hive-biggest'(admin) {
-    const { data, error } = await admin
-      .from('prediction_market_index')
-      .select('market_id, question, probability, volume, end_date, link')
-      .eq('status', 'active')
+    const { data, error } = await openNow(
+      admin
+        .from('prediction_market_index')
+        .select('market_id, question, probability, volume, end_date, link'),
+    )
+      .eq('platform', 'polymarket')
       .order('volume', { ascending: false, nullsFirst: false })
       .limit(10);
     if (error) throw new Error(error.message);
@@ -1603,13 +1640,44 @@ const LINKAGES = {
     }));
   },
 
-  /* Hive 2: markets tied to tickers. */
+  /* Hive 2: most traded open Kalshi markets, by contracts. */
+  async 'hive-kalshi'(admin) {
+    const { data, error } = await openNow(
+      admin
+        .from('prediction_market_index')
+        .select('market_id, question, probability, volume, end_date, link'),
+    )
+      .eq('platform', 'kalshi')
+      .order('volume', { ascending: false, nullsFirst: false })
+      .limit(10);
+    if (error) throw new Error(error.message);
+    return (data || []).map((m) => ({
+      key: m.market_id,
+      title: m.question,
+      cells: [
+        {
+          label: 'Probability',
+          value: num(m.probability) != null ? num(m.probability) * 100 : null,
+          kind: 'pct',
+        },
+        { label: 'Contracts traded', value: num(m.volume), kind: 'int' },
+        { label: 'Closes', value: m.end_date, kind: 'date' },
+      ],
+      query: Q.market(m.market_id),
+      href: m.link || '/datasets/prediction-markets',
+      external: !!m.link,
+    }));
+  },
+
+  /* Hive 3: markets tied to tickers (Polymarket, dollar volume). */
   async 'hive-tickers'(admin) {
-    const { data, error } = await admin
-      .from('prediction_market_index')
-      .select('market_id, question, adj_ticker, probability, volume')
+    const { data, error } = await openNow(
+      admin
+        .from('prediction_market_index')
+        .select('market_id, question, adj_ticker, probability, volume'),
+    )
+      .eq('platform', 'polymarket')
       .not('adj_ticker', 'is', null)
-      .eq('status', 'active')
       .order('volume', { ascending: false, nullsFirst: false })
       .limit(10);
     if (error) throw new Error(error.message);
@@ -1628,6 +1696,35 @@ const LINKAGES = {
       ],
       query: Q.market(m.market_id),
       href: '/datasets/prediction-markets',
+    }));
+  },
+
+  /* Hive 4: questions the crowd is forecasting (Manifold, play money). */
+  async 'hive-crowd'(admin) {
+    const { data, error } = await openNow(
+      admin
+        .from('crowd_forecasts')
+        .select('forecast_id, question, probability, forecasters, close_date, link'),
+      'open',
+      'close_date',
+    )
+      .order('forecasters', { ascending: false, nullsFirst: false })
+      .limit(10);
+    if (error) throw new Error(error.message);
+    return (data || []).map((f) => ({
+      key: f.forecast_id,
+      title: f.question,
+      cells: [
+        {
+          label: 'Crowd probability',
+          value: num(f.probability) != null ? num(f.probability) * 100 : null,
+          kind: 'pct',
+        },
+        { label: 'Forecasters', value: num(f.forecasters), kind: 'int' },
+        { label: 'Closes', value: f.close_date, kind: 'date' },
+      ],
+      href: f.link || null,
+      external: !!f.link,
     }));
   },
 

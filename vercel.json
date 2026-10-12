@@ -202,8 +202,16 @@
       "schedule": "0 */2 * * *"
     },
     {
-      "path": "/api/cron/index-prediction-markets?maxMarkets=400",
+      "path": "/api/cron/index-prediction-markets?maxMarkets=2000",
       "schedule": "30 */2 * * *"
+    },
+    {
+      "path": "/api/cron/index-kalshi?maxMarkets=600",
+      "schedule": "45 */2 * * *"
+    },
+    {
+      "path": "/api/cron/index-manifold?max=500",
+      "schedule": "15 */6 * * *"
     },
     {
       "path": "/api/cron/org-flag-outcomes",

@@ -178,11 +178,19 @@ export const HUB_LINKAGES = {
   hive: [
     {
       id: 'hive-biggest',
-      title: 'Biggest markets now',
-      why: 'Open prediction markets ranked by money traded.',
+      title: 'Biggest Polymarket markets now',
+      why: 'Open Polymarket markets ranked by dollars traded.',
       window: 'Open markets',
       sources: 'Polymarket',
       empty: 'Appears as open markets are indexed.',
+    },
+    {
+      id: 'hive-kalshi',
+      title: 'Most traded on Kalshi',
+      why: 'Open Kalshi markets ranked by contracts traded. Each contract pays $1 if the market resolves yes.',
+      window: 'Open markets',
+      sources: 'Kalshi',
+      empty: 'Appears as open Kalshi markets are indexed.',
     },
     {
       id: 'hive-tickers',
@@ -192,6 +200,14 @@ export const HUB_LINKAGES = {
       sources: 'Polymarket',
       empty:
         'Appears when a market is matched to a listed company. None are matched in the index yet.',
+    },
+    {
+      id: 'hive-crowd',
+      title: 'Questions the crowd is forecasting',
+      why: 'Open Manifold questions ranked by how many people have forecast them. Manifold uses play money, so these show belief rather than money at stake.',
+      window: 'Open questions with at least 10 forecasters',
+      sources: 'Manifold',
+      empty: 'Appears as open Manifold questions are indexed.',
     },
   ],
   regulatory: [
