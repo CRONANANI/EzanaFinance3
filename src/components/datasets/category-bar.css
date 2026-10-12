@@ -573,3 +573,46 @@
     display: none;
   }
 }
+
+/* ── Oct 12: nav ink on dataset routes ────────────────────────────────
+   Scoped by the data-nav-theme attribute the datasets layout sets, so only
+   /datasets pages are affected. Every label in the bar (Home, the seven
+   dimensions, Log in, Join the waitlist) is painted in the landing hero's
+   own background token, --bg-primary: these routes are locked to the light
+   theme, where that token is the hero's white. No new white is declared.
+   Hover and the current dimension stay white and differ by opacity only. */
+[data-nav-theme='datasets'] .dscat-bar .dscat-home,
+[data-nav-theme='datasets'] .dscat-bar .dscat-btn--text,
+[data-nav-theme='datasets'] .dscat-bar .dscat-trigger,
+[data-nav-theme='datasets'] .dscat-bar .dscat-trigger.is-active,
+[data-nav-theme='datasets'] .dscat-bar .dscat-trigger[aria-expanded='true'] {
+  color: var(--bg-primary);
+  opacity: 0.72;
+  transition:
+    opacity 0.15s ease,
+    background 0.15s ease;
+}
+[data-nav-theme='datasets'] .dscat-bar .dscat-home:hover,
+[data-nav-theme='datasets'] .dscat-bar .dscat-btn--text:hover,
+[data-nav-theme='datasets'] .dscat-bar .dscat-trigger:hover,
+[data-nav-theme='datasets'] .dscat-bar .dscat-trigger[aria-expanded='true'] {
+  opacity: 0.9;
+}
+[data-nav-theme='datasets'] .dscat-bar .dscat-trigger.is-active,
+[data-nav-theme='datasets'] .dscat-bar .dscat-trigger.is-active:hover {
+  opacity: 1;
+}
+[data-nav-theme='datasets'] .dscat-bar .dscat-trigger:focus-visible,
+[data-nav-theme='datasets'] .dscat-bar .dscat-home:focus-visible,
+[data-nav-theme='datasets'] .dscat-bar .dscat-btn--text:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--bg-primary);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-nav-theme='datasets'] .dscat-bar .dscat-home,
+  [data-nav-theme='datasets'] .dscat-bar .dscat-btn--text,
+  [data-nav-theme='datasets'] .dscat-bar .dscat-trigger {
+    transition: none;
+  }
+}

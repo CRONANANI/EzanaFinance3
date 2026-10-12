@@ -60,6 +60,22 @@ const STANDALONE_ROUTES = new Set([
   ...Object.values(HUB_SLUGS).map((slug) => `/datasets/${slug}`),
 ]);
 
+/* Every /datasets route renders inside one wrapper that carries the nav
+   theme for the dataset chrome (category-bar.css reads the attribute), so
+   the white nav ink is scoped to dataset pages and nothing else. The
+   overview adds ds-shell--search, which hands the page's green ground to the
+   wrapper so the nav and the page share one surface (sonar.css). */
+function Shell({ pathname, children }) {
+  return (
+    <div
+      className={`ds-shell${pathname === '/datasets' ? ' ds-shell--search' : ''}`}
+      data-nav-theme="datasets"
+    >
+      {children}
+    </div>
+  );
+}
+
 export default function DatasetsLayout({ children }) {
   const pathname = usePathname();
 
@@ -67,9 +83,11 @@ export default function DatasetsLayout({ children }) {
   // routes (several are in STANDALONE_ROUTES) would still render their page.
   if (COMING_SOON_ROUTES.has(pathname)) {
     return (
-      <MarketingPageShell>
-        <DatasetComingSoon pathname={pathname} />
-      </MarketingPageShell>
+      <Shell pathname={pathname}>
+        <MarketingPageShell>
+          <DatasetComingSoon pathname={pathname} />
+        </MarketingPageShell>
+      </Shell>
     );
   }
 
@@ -80,17 +98,21 @@ export default function DatasetsLayout({ children }) {
      through TickerSlotProvider instead of rendering the strip themselves. */
   if (STANDALONE_ROUTES.has(pathname)) {
     return (
-      <TickerSlotProvider>
-        <DatasetChrome />
-        {children}
-      </TickerSlotProvider>
+      <Shell pathname={pathname}>
+        <TickerSlotProvider>
+          <DatasetChrome />
+          {children}
+        </TickerSlotProvider>
+      </Shell>
     );
   }
 
   return (
-    <MarketingPageShell>
-      <DatasetsSubnav />
-      {children}
-    </MarketingPageShell>
+    <Shell pathname={pathname}>
+      <MarketingPageShell>
+        <DatasetsSubnav />
+        {children}
+      </MarketingPageShell>
+    </Shell>
   );
 }
