@@ -1,0 +1,28 @@
+name: Lighthouse worker
+
+# Weekly: the Caldara and Iacoviello GPR index (Python; the files are .xls).
+# Tuesday, after the Monday daily-file update. Manual runs any time.
+on:
+  schedule:
+    - cron: '23 7 * * 2'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gpr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r workers/lighthouse/requirements.txt
+      - name: GPR
+        working-directory: workers/lighthouse
+        run: python gpr.py

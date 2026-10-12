@@ -30,18 +30,14 @@ export function plain(text) {
  * found three; taxonomy.js is read-only, so the page carries an honest version
  * and the test fails the moment a dimension's live state changes, so the
  * override is removed rather than left to drift. (The Hive's was removed when
- * Prediction Markets and Crowdsourced Intelligence went live.)
+ * Prediction Markets and Crowdsourced Intelligence went live, the Lighthouse's
+ * when World Bank, GPR and OFAC did.)
  *   regulatory  New Laws & Legislation is live:false, yet "legislation tracking today".
- *   lighthouse  only OECD Macro is live, yet "global indicators and wealth today".
  */
 export const HONEST_BLURBS = {
   regulatory: {
     whenLive: 0,
     text: 'Legal and policy catalysts: legislation, litigation, enforcement and agency rulings. On the roadmap.',
-  },
-  lighthouse: {
-    whenLive: 1,
-    text: 'Macro and geopolitical context: OECD macro indicators today, with world indicators, risk indices, sanctions and GDELT events on the roadmap.',
   },
 };
 

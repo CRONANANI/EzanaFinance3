@@ -27,6 +27,7 @@ import {
 } from '@/lib/oecd-curated';
 import { getInstitutionalOverview } from '@/lib/titans/store';
 import { HUB_QUERIES as Q } from './hub-queries';
+import { WB_BY_ID, WB_MOVE_IDS } from '@/lib/lighthouse/indicators';
 
 const CACHE = { revalidate: 900, tags: ['hubs'] };
 const PAGE = 1000;
@@ -603,6 +604,112 @@ const SUMMARIES = {
     };
   },
 
+  async 'World Bank Economic Indicators'(admin) {
+    const records = await count(() =>
+      admin
+        .from('lighthouse_observations')
+        .select('indicator', { count: 'exact', head: true })
+        .eq('source', 'worldbank'),
+    );
+    if (!records) return { empty: true, records: 0 };
+    const [latest, synced] = await Promise.all([
+      lighthouseLatest(admin, 'worldbank'),
+      admin
+        .from('lighthouse_observations')
+        .select('synced_at')
+        .eq('source', 'worldbank')
+        .order('synced_at', { ascending: false })
+        .limit(1),
+    ]);
+    const countries = new Set(latest.map((o) => o.ref_area)).size;
+    const indicators = new Set(latest.map((o) => o.indicator)).size;
+    const growth = latest.filter((o) => o.indicator === 'NY.GDP.MKTP.KD.ZG');
+    const latestYear = growth.reduce(
+      (mx, o) => Math.max(mx, Number(String(o.latest_period).slice(0, 4)) || 0),
+      0,
+    );
+    return {
+      records,
+      freshest: day(synced.data?.[0]?.synced_at),
+      numbers: [
+        n('Countries', countries),
+        n('Indicators', indicators),
+        n('Latest GDP year', latestYear ? String(latestYear) : null, 'text'),
+      ],
+    };
+  },
+
+  async 'Geopolitical Risk Indices'(admin) {
+    const records = await count(() =>
+      admin
+        .from('lighthouse_observations')
+        .select('indicator', { count: 'exact', head: true })
+        .eq('source', 'gpr'),
+    );
+    if (!records) return { empty: true, records: 0 };
+    const [latest, synced] = await Promise.all([
+      lighthouseLatest(admin, 'gpr', ['GPR', 'GPRC']),
+      admin
+        .from('lighthouse_observations')
+        .select('synced_at')
+        .eq('source', 'gpr')
+        .order('synced_at', { ascending: false })
+        .limit(1),
+    ]);
+    const global = latest.find((o) => o.indicator === 'GPR' && o.ref_area === 'WLD');
+    const countries = latest.filter((o) => o.indicator === 'GPRC').length;
+    return {
+      records,
+      freshest: day(synced.data?.[0]?.synced_at),
+      numbers: [
+        n('Global index', global ? num(global.latest_value) : null, 'num'),
+        n('Month', global ? monthLabel(global.latest_period) : null, 'text'),
+        n('Countries', countries),
+      ],
+    };
+  },
+
+  async 'Sanctions & Trade Policy Tracking'(admin) {
+    const listed = await count(() =>
+      admin
+        .from('sanctions_entries')
+        .select('ent_num', { count: 'exact', head: true })
+        .is('removed_on', null),
+    );
+    if (!listed) return { empty: true, records: 0 };
+    const baseline = await sanctionsBaseline(admin);
+    const since = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+    const [added, removed, synced] = await Promise.all([
+      count(() =>
+        admin
+          .from('sanctions_entries')
+          .select('ent_num', { count: 'exact', head: true })
+          .gt('first_seen', baseline)
+          .gte('first_seen', since),
+      ),
+      count(() =>
+        admin
+          .from('sanctions_entries')
+          .select('ent_num', { count: 'exact', head: true })
+          .gte('removed_on', since),
+      ),
+      admin
+        .from('sanctions_entries')
+        .select('synced_at')
+        .order('synced_at', { ascending: false })
+        .limit(1),
+    ]);
+    return {
+      records: listed,
+      freshest: day(synced.data?.[0]?.synced_at),
+      numbers: [
+        n('Listed entries', listed),
+        n('Added, last 30 days', added),
+        n('Removed, last 30 days', removed),
+      ],
+    };
+  },
+
   async 'Prediction Markets'(admin) {
     const base = () =>
       openNow(
@@ -838,6 +945,29 @@ async function oecdLatest(admin) {
   });
   if (error) throw new Error(error.message);
   return data || [];
+}
+
+/* Latest and prior observation per (indicator, area) for one Lighthouse source. */
+async function lighthouseLatest(admin, source, indicators = null) {
+  const { data, error } = await admin.rpc('lighthouse_latest', {
+    p_source: source,
+    p_indicators: indicators,
+  });
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+/* monthLabel ("Sep 2026") is the shared helper declared with the Eyes Above code below. */
+
+/* First day the sanctions table was loaded: additions are counted after it. */
+async function sanctionsBaseline(admin) {
+  const { data, error } = await admin
+    .from('sanctions_entries')
+    .select('first_seen')
+    .order('first_seen', { ascending: true })
+    .limit(1);
+  if (error) throw new Error(error.message);
+  return data?.[0]?.first_seen || null;
 }
 
 /* ── Eyes Above helpers ─────────────────────────────────────────────── */
@@ -1609,6 +1739,96 @@ const LINKAGES = {
           href: `/datasets/oecd-macro?ind=${encodeURIComponent(o.ezana_slug)}`,
         };
       });
+  },
+
+  /* Lighthouse: the biggest year-over-year moves in growth, inflation and unemployment. */
+  async 'lighthouse-wb-moves'(admin) {
+    const obs = await lighthouseLatest(admin, 'worldbank', WB_MOVE_IDS);
+    return obs
+      .filter((o) => {
+        if (o.latest_value == null || o.prior_value == null || !o.prior_period) return false;
+        const y1 = Number(String(o.latest_period).slice(0, 4));
+        const y0 = Number(String(o.prior_period).slice(0, 4));
+        return y1 - y0 === 1;
+      })
+      .map((o) => ({ ...o, change: Number(o.latest_value) - Number(o.prior_value) }))
+      .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
+      .slice(0, 10)
+      .map((o) => {
+        const ind = WB_BY_ID[o.indicator];
+        return {
+          key: `${o.indicator}-${o.ref_area}`,
+          title: `${o.ref_area_name || o.ref_area}: ${ind?.label || o.indicator}`,
+          cells: [
+            {
+              label: 'Years',
+              value: `${String(o.prior_period).slice(0, 4)} to ${String(o.latest_period).slice(0, 4)}`,
+              kind: 'text',
+            },
+            { label: 'From', value: Number(o.prior_value), kind: 'num' },
+            { label: 'To', value: Number(o.latest_value), kind: 'num' },
+            { label: 'Change', value: o.change, kind: 'signed' },
+            { label: 'Unit', value: ind?.unit || o.unit || null, kind: 'text' },
+          ],
+        };
+      });
+  },
+
+  /* Lighthouse: countries with the highest geopolitical risk this month. */
+  async 'lighthouse-gpr-countries'(admin) {
+    const obs = await lighthouseLatest(admin, 'gpr', ['GPRC']);
+    return obs
+      .filter((o) => o.latest_value != null)
+      .sort((a, b) => Number(b.latest_value) - Number(a.latest_value))
+      .slice(0, 10)
+      .map((o) => ({
+        key: `gpr-${o.ref_area}`,
+        title: o.ref_area_name || o.ref_area,
+        cells: [
+          { label: 'Index', value: Number(o.latest_value), kind: 'num' },
+          {
+            label: 'Prior month',
+            value: o.prior_value != null ? Number(o.prior_value) : null,
+            kind: 'num',
+          },
+          {
+            label: 'Change',
+            value: o.prior_value != null ? Number(o.latest_value) - Number(o.prior_value) : null,
+            kind: 'signed',
+          },
+          { label: 'Month', value: monthLabel(o.latest_period), kind: 'text' },
+        ],
+      }));
+  },
+
+  /* Lighthouse: entries added to the OFAC SDN list since the first load. */
+  async 'lighthouse-sanctions-new'(admin) {
+    const baseline = await sanctionsBaseline(admin);
+    if (!baseline) return [];
+    const { data, error } = await admin
+      .from('sanctions_entries')
+      .select('ent_num, name, entry_type, programs, countries, first_seen')
+      .gt('first_seen', baseline)
+      .order('first_seen', { ascending: false })
+      .order('ent_num', { ascending: false })
+      .limit(10);
+    if (error) throw new Error(error.message);
+    return (data || []).map((e) => ({
+      key: `sdn-${e.ent_num}`,
+      title: e.name,
+      cells: [
+        { label: 'Type', value: e.entry_type || null, kind: 'text' },
+        { label: 'Programs', value: (e.programs || []).join(', ') || null, kind: 'text' },
+        {
+          label: 'Country',
+          value: (e.countries || []).slice(0, 2).join(', ') || null,
+          kind: 'text',
+        },
+        { label: 'Added', value: e.first_seen, kind: 'date' },
+      ],
+      href: 'https://sanctionssearch.ofac.treas.gov/',
+      external: true,
+    }));
   },
 
   /* Hive 1: biggest open Polymarket markets, by dollars traded. */

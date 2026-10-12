@@ -319,12 +319,12 @@ export const DATASET_TAXONOMY = [
     corner: 'GLOBAL EMPIRE LIGHTHOUSE',
     tagline: 'Track shifts in global power and trade',
     blurb:
-      'Macro and geopolitical context — global indicators and wealth today, with risk indices, sanctions, and GDELT events ahead.',
+      'Macro and geopolitical context: global indicators, geopolitical risk and sanctions today, with GDELT events ahead.',
     items: [
       {
         label: 'OECD Macro Data',
         description:
-          'OECD member-country macro indicators — composite leading indicators, GDP growth, CPI, unemployment, and policy rates',
+          'OECD member-country macro indicators: composite leading indicators, GDP growth, CPI, unemployment and policy rates',
         href: '/datasets/oecd-macro',
         live: true,
         source: 'OECD SDMX API (CC BY 4.0)',
@@ -340,26 +340,28 @@ export const DATASET_TAXONOMY = [
       },
       {
         label: 'World Bank Economic Indicators',
-        description: 'Global GDP, growth rates, and economic-health metrics',
-        href: '/datasets/global',
-        live: false,
-        source: 'World Bank API',
+        description:
+          'GDP growth, inflation, unemployment, debt, trade and reserves for every country, from 2000',
+        href: '/datasets/global-empire-lighthouse',
+        live: true,
+        source: 'World Bank Indicators API (CC BY 4.0)',
         sourceType: 'gov',
       },
       {
         label: 'Geopolitical Risk Indices',
-        description: 'Geopolitical-tension tracking and political-stability data',
-        href: '/datasets/global',
-        live: false,
-        source: 'GDELT',
+        description:
+          'Newspaper-based geopolitical risk index, global and for 44 countries, monthly and daily',
+        href: '/datasets/global-empire-lighthouse',
+        live: true,
+        source: 'Caldara and Iacoviello GPR index (CC BY)',
         sourceType: 'public',
       },
       {
         label: 'Sanctions & Trade Policy Tracking',
-        description: 'Policy changes and international trade restrictions',
-        href: '/datasets/global',
-        live: false,
-        source: 'Treasury OFAC · Census trade',
+        description: 'Additions to and removals from the US Treasury OFAC sanctions list',
+        href: '/datasets/global-empire-lighthouse',
+        live: true,
+        source: 'US Treasury OFAC',
         sourceType: 'gov',
       },
       {

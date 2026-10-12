@@ -174,6 +174,33 @@ export const HUB_LINKAGES = {
       sources: 'OECD Economic Outlook (CC BY 4.0)',
       empty: 'Appears once two annual observations are loaded for a series.',
     },
+    {
+      id: 'lighthouse-wb-moves',
+      title: 'Biggest moves in the World Bank data',
+      why: 'The largest year-over-year changes in real GDP growth, inflation and unemployment, by country.',
+      window: "Each country's latest two consecutive years",
+      sources: 'World Bank Indicators API (CC BY 4.0)',
+      empty: 'Appears once two consecutive annual observations are loaded for a country.',
+    },
+    {
+      id: 'lighthouse-gpr-countries',
+      title: 'Highest geopolitical risk by country',
+      why: 'Countries ranked by their geopolitical risk index in the latest month, with the change from the month before.',
+      window: 'Latest month',
+      sources: 'Caldara and Iacoviello GPR index (CC BY)',
+      coverage:
+        'Measured from the share of newspaper articles about geopolitical tensions. Caldara and Iacoviello (2022), American Economic Review.',
+      empty: 'Appears once the monthly country indexes are loaded.',
+    },
+    {
+      id: 'lighthouse-sanctions-new',
+      title: 'New on the US sanctions list',
+      why: 'Individuals, companies, vessels and aircraft added to the OFAC Specially Designated Nationals list, newest first.',
+      window: 'Since the list was first loaded',
+      sources: 'US Treasury OFAC',
+      empty:
+        'Appears when OFAC adds entries to the list. Additions are counted from the first daily load.',
+    },
   ],
   hive: [
     {

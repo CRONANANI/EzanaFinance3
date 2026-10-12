@@ -214,6 +214,14 @@
       "schedule": "15 */6 * * *"
     },
     {
+      "path": "/api/cron/ingest-worldbank",
+      "schedule": "10 6 * * 1"
+    },
+    {
+      "path": "/api/cron/ingest-ofac",
+      "schedule": "40 5 * * *"
+    },
+    {
       "path": "/api/cron/org-flag-outcomes",
       "schedule": "0 6 * * *"
     },
