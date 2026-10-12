@@ -214,15 +214,12 @@ export default function OrbitalMap({ blips, pinging, silent }) {
               key={b.id}
               type="button"
               className={`dso-orb-btn is-${lab.anchor}${b.live ? '' : ' is-road'}`}
-              style={{ left: `${r2((lab.x / W) * 100)}%`, top: `${r2(((lab.y - 18) / H) * 100)}%` }}
+              style={{ left: `${r2((lab.x / W) * 100)}%`, top: `${r2(((lab.y - 12) / H) * 100)}%` }}
               aria-pressed={b.id === selected}
               aria-label={`${b.label}, ${b.live ? `${b.liveCount} live datasets` : 'on the roadmap'}, select`}
               onClick={() => select(b.id, 'radar')}
             >
               <span className="dso-orb-name">{b.label}</span>
-              <span className="dso-orb-sub" aria-hidden="true">
-                {b.live ? `${b.liveCount} LIVE · PINGING` : 'ROADMAP · SILENT'}
-              </span>
             </button>
           );
         })}

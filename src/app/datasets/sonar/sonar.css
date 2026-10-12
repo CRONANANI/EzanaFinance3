@@ -1994,3 +1994,64 @@ body.light-mode .dso-page--search .dso-sonar-title {
   outline-offset: 2px;
   border-radius: 9999px;
 }
+
+/* ── Oct 12: one-line hero ─────────────────────────────────────────── */
+.dso-page--search .sonar-h1 br {
+  display: none;
+}
+@media (min-width: 1180px) {
+  .dso-page--search .sonar-hero > .sonar-h1,
+  .dso-page--search .sonar-hero > .sonar-sub {
+    max-width: none;
+    white-space: nowrap;
+  }
+}
+
+/* ── Oct 12: search results as the landing Sonar band ─────────────────
+   After a search the page renders the landing band (variant 'page'): the
+   same research brief, orbital and dossier, with no header, no takeover and
+   no grid wash, on the page's own green and globe. Its ping bar wears the
+   ghost pill from the search above: darker fill, no outline, no icon, and a
+   transparent glowing Ping. */
+.dso-page--search .snr-band--page {
+  --snr-band-bg: transparent;
+  --snr-nav: 0px;
+  background: transparent;
+  padding-left: 0;
+}
+.dso-page--search .snr-band.snr-band--page .snr-head,
+.dso-page--search .snr-band.snr-band--page .snr-grid-layer,
+.dso-page--search .snr-band.snr-band--page .snr-continue-bar {
+  display: none !important;
+}
+/* With results showing, the page's 1080px column gives way to the band's
+   own full-width geometry. */
+.dso-page.dso-page--search:has(.sonar-root--band) {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+.dso-page--search .snr-band--page .snr-pingbar {
+  background: color-mix(in srgb, black 22%, transparent);
+  box-shadow: none;
+  border: 0;
+  padding-left: 22px;
+}
+.dso-page--search .snr-band--page .snr-pingbar-icon {
+  display: none;
+}
+.dso-page--search .snr-band--page .snr-input {
+  font-family: var(--font-sans);
+  color: white;
+}
+.dso-page--search .snr-band--page .snr-ping-btn,
+.dso-page--search .snr-band--page .snr-ping-btn[disabled] {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  opacity: 1;
+  color: white;
+  text-shadow:
+    0 0 6px color-mix(in srgb, var(--brand-band-mint) 85%, transparent),
+    0 0 16px color-mix(in srgb, var(--brand-band-mint) 45%, transparent);
+}

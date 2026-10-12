@@ -180,9 +180,15 @@ export function LandingHero() {
               type="button"
               className="lp-btn-ghost"
               onClick={() => {
-                if (typeof window !== 'undefined') {
-                  window.dispatchEvent(new CustomEvent('ezana:open-datasets-menu'));
+                if (typeof window === 'undefined') return;
+                /* Below 1024 the nav has no Datasets mega-menu to open (it is
+                   behind the hamburger), so the button goes straight to the
+                   all-datasets page instead of doing nothing. */
+                if (window.matchMedia('(max-width: 1023px)').matches) {
+                  window.location.assign('/datasets');
+                  return;
                 }
+                window.dispatchEvent(new CustomEvent('ezana:open-datasets-menu'));
               }}
             >
               View datasets

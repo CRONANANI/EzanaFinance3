@@ -543,7 +543,11 @@ function PoliticianStack({ dossier, onGate }) {
   );
 }
 
-export function SonarSection() {
+export function SonarSection({ variant = 'band', query = null } = {}) {
+  /* 'page': the same band embedded on the Datasets search page. No takeover,
+     no demo, no header (the page has its own), and it pings `query` as soon
+     as it mounts or the query changes. */
+  const isPage = variant === 'page';
   const bandRef = useRef(null);
   const inputRef = useRef(null);
   const formRef = useRef(null);
@@ -788,7 +792,7 @@ export function SonarSection() {
      class drives the page and navbar recolour over in sonar-band.css. */
   useEffect(() => {
     const band = bandRef.current;
-    if (!band) return undefined;
+    if (!band || isPage) return undefined;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     const bandTop = () => band.getBoundingClientRect().top + window.scrollY;
@@ -1019,7 +1023,27 @@ export function SonarSection() {
       release();
     };
 
+    /* A click on an in-page anchor (the nav's FAQ link, say) is a request to
+       go past the band. Release and stand the lock down BEFORE the browser
+       starts scrolling, in the capture phase: waiting for hashchange was too
+       late (the glide had already engaged the lock on the way down), and a
+       link to a hash the URL already has fires no hashchange at all. */
+    const onAnchorClick = (e) => {
+      const a = e.target instanceof Element ? e.target.closest('a[href*="#"]') : null;
+      if (!a) return;
+      let url;
+      try {
+        url = new URL(a.getAttribute('href'), window.location.href);
+      } catch {
+        return;
+      }
+      if (url.pathname !== window.location.pathname || !url.hash || url.hash === '#') return;
+      dismissedRef.current = true;
+      release();
+    };
+
     window.addEventListener('scroll', onScroll, { passive: true });
+    document.addEventListener('click', onAnchorClick, true);
     window.addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('touchstart', onTouchStart, { passive: true });
     window.addEventListener('touchmove', onTouchMove, { passive: false });
@@ -1032,6 +1056,7 @@ export function SonarSection() {
       document.documentElement.classList.remove('snr-takeover-fade');
       document.body.classList.remove('snr-takeover-fade');
       window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('click', onAnchorClick, true);
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
@@ -1043,7 +1068,7 @@ export function SonarSection() {
          leave a fixed body behind, which would look like a dead page. */
       unfreezeBody();
     };
-  }, [freezeBody, unfreezeBody]);
+  }, [freezeBody, unfreezeBody, isPage]);
 
   /* Reveal an answer one character at a time. Sequential across the three
      paragraphs falls out of revealing the joined string: each paragraph slices
@@ -1525,7 +1550,12 @@ export function SonarSection() {
       const clampedBanner = Math.min(Math.max(0, rawBanner), window.innerHeight * 0.25);
       const bannerPx = 0; /* see above; clampedBanner is the documented alternative */
       const budgetH = Math.max(MIN_BUDGET_PX, window.innerHeight - bannerPx);
-      const g = geometryFor(window.innerWidth, budgetH, navPx);
+      const base = geometryFor(window.innerWidth, budgetH, navPx);
+      /* On the Datasets page the band has no header or exit arrow, so their
+         tracks collapse and the cards start at the top. */
+      const g = isPage
+        ? { ...base, nav: 0, eyebrow: 0, g1: 0, head: 0, g2: 0, sub: 0, g3: 0, arrow: 0, padTop: 8 }
+        : base;
 
       if (process.env.NODE_ENV !== 'production' && g.work < 120) {
         console.warn('[sonar] budget collapsed', {
@@ -1612,7 +1642,7 @@ export function SonarSection() {
       if (raf) window.cancelAnimationFrame(raf);
       bannerWatch.disconnect();
     };
-  }, []);
+  }, [isPage]);
 
   /* Stage 2 pins the orbital top-right with its top edge on the headline, and
      drops the stack below it by exactly the orbital's reach.
@@ -1787,6 +1817,10 @@ export function SonarSection() {
       setPingPulse((n) => n + 1);
       return;
     }
+    await runPing(q);
+  }
+
+  async function runPing(q) {
     if (pinging) return;
     hasPingedRef.current = true;
     setHasPinged(true);
@@ -1859,10 +1893,22 @@ export function SonarSection() {
      the geometry and stays on for the rest of the visit once the band has
      composed; snr-frozen carries only the body freeze and comes off on release.
      Scrolling up now moves the page and nothing else. */
-  const [composed, setComposed] = useState(false);
+  const [composed, setComposed] = useState(isPage);
   useEffect(() => {
     if (lockedIn) setComposed(true);
   }, [lockedIn]);
+
+  /* Page variant: ping the query handed in by the page. Keyed on the query
+     so a StrictMode double effect, or a re-render, never pings twice. */
+  const autoPingedRef = useRef(null);
+  useEffect(() => {
+    if (!isPage || !query || autoPingedRef.current === query) return;
+    autoPingedRef.current = query;
+    userTookOverRef.current = true;
+    setQueryValue(query);
+    runPing(query);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPage, query]);
 
   /* A3: the deck's two one-shot tugs. Phone only, each fires once, and any
      scroll on the deck cancels a pending one: if the visitor has already found
@@ -1946,7 +1992,7 @@ export function SonarSection() {
   return (
     <section
       ref={bandRef}
-      className={`snr-band${inView ? '' : ' snr-paused'}${composed ? ' snr-composed' : ''}${
+      className={`snr-band${isPage ? ' snr-band--page' : ''}${inView ? '' : ' snr-paused'}${composed ? ' snr-composed' : ''}${
         lockedIn ? ' snr-frozen' : ''
       }${hasPinged ? ' snr-live' : ''}${stage2 ? ' snr-stage2' : ''}${
         live?.dossier?.fundamentals ? ' snr-has-fund' : ''
@@ -1957,18 +2003,16 @@ export function SonarSection() {
       <div ref={innerRef} className="snr-inner">
         <div className="snr-head">
           <div ref={eyebrowRef} className="snr-eyebrow-row">
-            <span className="snr-beacon" aria-hidden="true" />
             <span className="snr-eyebrow">Sonar</span>
-            <span className="snr-rule" aria-hidden="true" />
-            <span className="snr-kicker">RESEARCH SURFACE, NOT A CHATBOT</span>
           </div>
           <h2 ref={headlineRef} className="snr-headline">
-            Ping anything. Sonar sweeps everything.
+            Ask about any company, politician or bill.
           </h2>
           <p className="snr-subhead">
-            One query, swept across congressional trades, government contracts, SEC filings,
-            prediction markets, lobbying disclosures, Echo editorial, and the live web. Every claim
-            cited. Findings only, never advice.
+            Sonar reads congressional trades, federal contracts, SEC filings, lobbying, prediction
+            markets, Echo analysis and the open web in one pass, then hands back a short briefing
+            with a source behind every line. It reports what the records show; it never tells you
+            what to buy.
           </p>
         </div>
 

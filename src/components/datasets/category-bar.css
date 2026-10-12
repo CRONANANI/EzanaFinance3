@@ -521,3 +521,55 @@
     animation: none;
   }
 }
+
+/* ── Oct 12: nav layout and colour ────────────────────────────────────
+   Solid Ezana green, edge to edge (no gradient), on the bar and the ticker
+   block alike. Home sits at the far left, outside the page's content margin;
+   the seven dimensions are centred on the page; Log in and Join the waitlist
+   are plain text. Every label uses the landing nav's type (15px / 500, tight
+   tracking). The two 1fr side tracks are equal, so the centre column is
+   centred on the page rather than on what the sides leave over. */
+.dscat-chrome,
+.dscat-bar,
+.dscat-chrome .dscat-bar {
+  background: color-mix(in srgb, var(--emerald-dark) 66%, black);
+}
+.dscat-chrome .dscat-bar {
+  background: transparent;
+}
+.dscat-bar,
+.dscat-bar[data-density] {
+  grid-template-columns: minmax(max-content, 1fr) minmax(0, max-content) minmax(max-content, 1fr);
+  padding: 8px 24px;
+}
+.dscat-side--start {
+  justify-content: flex-start;
+}
+.dscat-bar .dscat-home,
+.dscat-bar .dscat-btn--text {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: color-mix(in srgb, white 72%, transparent);
+}
+.dscat-bar .dscat-home:hover,
+.dscat-bar .dscat-btn--text:hover {
+  color: white;
+  background: none;
+}
+@media (max-width: 900px) {
+  .dscat-bar,
+  .dscat-bar[data-density] {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding: 8px 12px;
+  }
+  /* One auth link on phones: Join the waitlist stays. */
+  .dscat-bar .dscat-btn--text[href^='/auth/signin'] {
+    display: none;
+  }
+}

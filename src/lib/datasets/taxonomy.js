@@ -304,7 +304,7 @@ export const DATASET_TAXONOMY = [
       {
         label: 'Crowdsourced Intelligence',
         description: 'Crowd forecasts on politics, markets and world events (Manifold, play money)',
-        href: '/datasets/the-hive',
+        href: '/datasets/crowd-forecasts',
         live: true,
         source: 'Manifold',
         sourceType: 'public',
@@ -342,7 +342,7 @@ export const DATASET_TAXONOMY = [
         label: 'World Bank Economic Indicators',
         description:
           'GDP growth, inflation, unemployment, debt, trade and reserves for every country, from 2000',
-        href: '/datasets/global-empire-lighthouse',
+        href: '/datasets/world-bank',
         live: true,
         source: 'World Bank Indicators API (CC BY 4.0)',
         sourceType: 'gov',
@@ -351,7 +351,7 @@ export const DATASET_TAXONOMY = [
         label: 'Geopolitical Risk Indices',
         description:
           'Newspaper-based geopolitical risk index, global and for 44 countries, monthly and daily',
-        href: '/datasets/global-empire-lighthouse',
+        href: '/datasets/geopolitical-risk',
         live: true,
         source: 'Caldara and Iacoviello GPR index (CC BY)',
         sourceType: 'public',
@@ -359,7 +359,7 @@ export const DATASET_TAXONOMY = [
       {
         label: 'Sanctions & Trade Policy Tracking',
         description: 'Additions to and removals from the US Treasury OFAC sanctions list',
-        href: '/datasets/global-empire-lighthouse',
+        href: '/datasets/sanctions',
         live: true,
         source: 'US Treasury OFAC',
         sourceType: 'gov',

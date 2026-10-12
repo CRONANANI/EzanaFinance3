@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { SonarHero } from '@/components/sonar/SonarHero';
 import { SonarQueryBar } from '@/components/sonar/SonarQueryBar';
 import { SonarLiveAnswer } from '@/components/sonar/SonarLiveAnswer';
@@ -21,6 +22,20 @@ import { supabase } from '@/lib/supabase-browser';
 
 import '@/app/(dashboard)/sonar/sonar.css';
 import { SonarLoader } from '@/components/sonar/SonarLoader';
+
+/* The landing Sonar band, loaded only once a Datasets search is sent. */
+const SonarBand = dynamic(
+  () => import('@/components/landing/SonarSection').then((m) => ({ default: m.SonarSection })),
+  { ssr: false, loading: () => <SonarBandLoading /> },
+);
+
+function SonarBandLoading() {
+  return (
+    <div className="sonar-ds-loader" role="status" aria-live="polite">
+      <SonarLoader caption="Sweeping the datasets..." />
+    </div>
+  );
+}
 
 /** Current Supabase session access token (JWT), or null when signed out. Sent as a
     Bearer header (with credentials) on the authed Sonar fetches, matching the app's
@@ -79,6 +94,9 @@ function relTime(ts) {
  */
 export function SonarExperience({ variant = 'app', heroAddon = null }) {
   const onDatasets = variant === 'datasets';
+  /* Datasets: once a search is sent, the page shows the landing Sonar band
+     (same format, same guest pipeline, follow-up pings in its own bar). */
+  const [bandQuery, setBandQuery] = useState(null);
   const [entitlements, setEntitlements] = useState(null);
   const [queryText, setQueryText] = useState('');
   const [phase, setPhase] = useState('idle'); // idle | searching | streaming | complete | error
@@ -140,6 +158,11 @@ export function SonarExperience({ variant = 'app', heroAddon = null }) {
   async function runQuery(raw, priorEntity) {
     const query = String(raw || '').trim();
     if (!query || phase === 'searching' || phase === 'streaming') return;
+    if (onDatasets) {
+      setQueryText(query);
+      setBandQuery(query);
+      return;
+    }
     setQueryText(query);
     setError(null);
     setResult(null);
@@ -244,6 +267,14 @@ export function SonarExperience({ variant = 'app', heroAddon = null }) {
   const primaryTicker = tickers[0] || null;
   const trades = useCongressTrades(dossierReady ? primaryTicker : null);
   const lobbying = useLobbying(dossierReady ? primaryTicker : null);
+
+  if (onDatasets && bandQuery) {
+    return (
+      <div className="sonar-root sonar-root--datasets sonar-root--band">
+        <SonarBand variant="page" query={bandQuery} />
+      </div>
+    );
+  }
 
   return (
     <div className={`sonar-root${onDatasets ? ' sonar-root--datasets' : ''}`}>

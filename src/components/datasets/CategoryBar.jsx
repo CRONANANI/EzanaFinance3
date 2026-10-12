@@ -361,15 +361,15 @@ export default function CategoryBar({ active, activeItem }) {
 
       <div className="dscat-side dscat-side--end">
         {isAuthenticated ? (
-          <Link href="/home" className="dscat-btn dscat-btn--solid">
+          <Link href="/home" className="dscat-btn dscat-btn--text">
             Dashboard
           </Link>
         ) : (
           <>
-            <Link href={signInHref} className="dscat-btn dscat-btn--ghost">
+            <Link href={signInHref} className="dscat-btn dscat-btn--text">
               Log in
             </Link>
-            <Link href="/auth/signup" className="dscat-btn dscat-btn--solid">
+            <Link href="/auth/signup" className="dscat-btn dscat-btn--text">
               Join the waitlist
             </Link>
           </>

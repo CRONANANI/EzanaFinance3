@@ -30,15 +30,10 @@ export default function DatasetsIndexPage({ searchParams }) {
 
   const map = (
     <SonarSelectionProvider initial={selected} ids={DIM_IDS}>
-      <section className="dso-sonar dso-sonar--solo" aria-labelledby="dso-sonar-h">
-        <p className="dso-sonar-head dso-mono">
-          <span className="dso-sonar-live">
-            <span className="dso-live-dot" aria-hidden="true" /> LIVE SWEEP
-          </span>
-        </p>
-        <h2 className="dso-sonar-title" id="dso-sonar-h">
-          Everything below feeds Ezana Sonar
-        </h2>
+      <section
+        className="dso-sonar dso-sonar--solo"
+        aria-label="The seven dataset dimensions that feed Ezana Sonar"
+      >
         <OrbitalMap blips={blips} pinging={COUNTS.live} silent={COUNTS.roadmap} />
       </section>
     </SonarSelectionProvider>

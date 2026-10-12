@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { createPortal } from 'react-dom';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
@@ -16,6 +17,7 @@ import { isBetaLockedRoute, hasBetaFullAccess } from '@/lib/beta-locked-routes';
 import { DATASET_TAXONOMY, isNavigable, isPreview } from '@/lib/datasets/taxonomy';
 import '@/components/ui/animated-nav.css';
 import './nav-datasets-light.css';
+import './mobile-nav-sheet.css';
 import { hubHref } from '@/lib/datasets/hubs';
 import HubLink from '@/components/datasets/HubLink';
 
@@ -485,6 +487,23 @@ export function Navbar() {
     setMobileDatasetsOpen(false);
   }, [pathname]);
 
+  // While the mobile sheet is open the page behind it does not scroll, and
+  // Escape closes it.
+  useEffect(() => {
+    if (!mobileMenuOpen) return undefined;
+    const root = document.documentElement;
+    const prev = root.style.overflow;
+    root.style.overflow = 'hidden';
+    const onKey = (e) => {
+      if (e.key === 'Escape') setMobileMenuOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      root.style.overflow = prev;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [mobileMenuOpen]);
+
   // Let other surfaces (e.g. the landing hero's "View datasets" button) open
   // the Datasets mega-menu instead of navigating away.
   useEffect(() => {
@@ -792,174 +811,159 @@ export function Navbar() {
             </a>
           </div>
 
-          {/* ═══ MOBILE MENU — completely separate element, only rendered on mobile ═══ */}
-          {mobileMenuOpen && (
-            <div className="mobile-nav-overlay" onClick={() => setMobileMenuOpen(false)}>
-              <div className="mobile-nav-menu" onClick={(e) => e.stopPropagation()}>
-                {/* Auth buttons at top */}
-                <div className="mobile-nav-auth">
-                  <a
-                    href="/auth/continue"
-                    className="mobile-nav-auth-btn mobile-nav-login"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <i className="bi bi-person" />
-                    <span>Login</span>
-                  </a>
-                  <a
-                    href="/auth/partner/apply"
-                    className="mobile-nav-auth-btn mobile-nav-partner"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <i className="bi bi-briefcase" />
-                    <span>Become a Partner</span>
-                  </a>
-                </div>
+          {/* Mobile menu: a full-screen sheet portalled to <body> (so no
+              ancestor transform or overflow can clip it), with its own header
+              (logo and close), large plain links in the landing nav's type, a
+              Datasets group whose seven dimensions expand one at a time, and
+              the auth actions pinned to the bottom. */}
+          {mobileMenuOpen && typeof document !== 'undefined'
+            ? createPortal(
+                <div className="mnav" role="dialog" aria-modal="true" aria-label="Menu">
+                  <div className="mnav-top">
+                    <a href="/" className="mnav-logo" onClick={() => setMobileMenuOpen(false)}>
+                      <EzanaNavLogo />
+                    </a>
+                    <button
+                      type="button"
+                      className="mnav-close"
+                      aria-label="Close menu"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <i className="bi bi-x-lg" aria-hidden="true" />
+                    </button>
+                  </div>
 
-                <div className="mobile-nav-divider" />
-
-                {/* Navigation links */}
-                <div className="mobile-nav-links">
-                  <a
-                    href="/#features"
-                    className="mobile-nav-link"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <i className="bi bi-grid" />
-                    <span>Features</span>
-                    <i className="bi bi-chevron-right mobile-nav-chevron" />
-                  </a>
-                  <a
-                    href="/pricing"
-                    className="mobile-nav-link"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <i className="bi bi-tag" />
-                    <span>Pricing</span>
-                    <i className="bi bi-chevron-right mobile-nav-chevron" />
-                  </a>
-                  {/* Datasets is a dropdown on desktop, so it is an expandable
-                      group here rather than a single link: every dimension and
-                      every dataset inside it stays reachable on a phone. */}
-                  <button
-                    type="button"
-                    className="mobile-nav-link mobile-nav-group-trigger"
-                    aria-expanded={mobileDatasetsOpen}
-                    onClick={() => setMobileDatasetsOpen((open) => !open)}
-                  >
-                    <i className="bi bi-stack" />
-                    <span>Datasets</span>
-                    <i
-                      className={`bi bi-chevron-down mobile-nav-chevron${
-                        mobileDatasetsOpen ? ' is-open' : ''
-                      }`}
-                    />
-                  </button>
-                  {mobileDatasetsOpen && (
-                    <div className="mobile-nav-group">
-                      {DATASET_MENU.map((col) => (
-                        <div
-                          key={col.id}
-                          className="mobile-nav-group-col"
-                          style={{ '--nav-dim-color': col.color }}
+                  <nav className="mnav-body" aria-label="Main">
+                    <a
+                      href="/#features"
+                      className="mnav-link"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Features
+                    </a>
+                    <a
+                      href="/pricing"
+                      className="mnav-link"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Pricing
+                    </a>
+                    <button
+                      type="button"
+                      className="mnav-link mnav-link--group"
+                      aria-expanded={mobileDatasetsOpen}
+                      onClick={() => setMobileDatasetsOpen((open) => !open)}
+                    >
+                      Datasets
+                      <i
+                        className={`bi bi-plus-lg mnav-plus${mobileDatasetsOpen ? ' is-open' : ''}`}
+                        aria-hidden="true"
+                      />
+                    </button>
+                    {mobileDatasetsOpen ? (
+                      <div className="mnav-group">
+                        <a
+                          href="/datasets"
+                          className="mnav-all"
+                          onClick={() => setMobileMenuOpen(false)}
                         >
-                          <p className="mobile-nav-group-head">
-                            <i className={`bi ${col.biIcon}`} aria-hidden="true" />
-                            <span>{col.heading}</span>
-                            <HubLink
-                              dimensionId={col.id}
-                              dimensionLabel={col.heading}
-                              color={col.color}
-                              active={pathname === hubHref(col.id)}
-                              onNavigate={() => setMobileMenuOpen(false)}
-                            />
-                          </p>
-                          {col.items.map((item) =>
-                            isNavigable(item) ? (
+                          View all datasets
+                          <i className="bi bi-arrow-right" aria-hidden="true" />
+                        </a>
+                        {DATASET_MENU.map((col) => (
+                          <details
+                            key={col.id}
+                            className="mnav-dim"
+                            style={{ '--nav-dim-color': col.color }}
+                          >
+                            <summary className="mnav-dim-head">
+                              <i className={`bi ${col.biIcon} mnav-dim-icon`} aria-hidden="true" />
+                              <span>{col.heading}</span>
+                              <i className="bi bi-chevron-down mnav-dim-caret" aria-hidden="true" />
+                            </summary>
+                            <div className="mnav-dim-items">
                               <a
-                                key={item.label}
-                                href={item.href}
-                                className="mobile-nav-sublink"
+                                href={hubHref(col.id)}
+                                className="mnav-sub mnav-sub--hub"
                                 onClick={() => setMobileMenuOpen(false)}
                               >
-                                {item.label}
-                                {isPreview(item) ? (
-                                  <em className="mobile-nav-sample">Sample</em>
-                                ) : null}
+                                {col.heading} hub
                               </a>
-                            ) : (
-                              <span
-                                key={item.label}
-                                className="mobile-nav-sublink mobile-nav-sublink--soon"
-                                aria-disabled="true"
-                              >
-                                {item.label}
-                                <em className="mobile-nav-soon">Soon</em>
-                              </span>
-                            ),
-                          )}
-                        </div>
-                      ))}
-                      <a
-                        href="/datasets"
-                        className="mobile-nav-sublink mobile-nav-sublink--all"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        View all datasets
-                        <i className="bi bi-arrow-right" />
-                      </a>
-                    </div>
-                  )}
-                  <a
-                    href="/ezana-api"
-                    className="mobile-nav-link"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <i className="bi bi-code-slash" />
-                    <span>Ezana API</span>
-                    <i className="bi bi-chevron-right mobile-nav-chevron" />
-                  </a>
-                  <a
-                    href="/ezana-echo"
-                    className="mobile-nav-link"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <i className="bi bi-newspaper" />
-                    <span>
-                      Ezana <span style={{ color: 'var(--emerald)' }}>Echo</span>
-                    </span>
-                    <i className="bi bi-chevron-right mobile-nav-chevron" />
-                  </a>
-                  <a
-                    href="/#faq"
-                    className="mobile-nav-link"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <i className="bi bi-question-circle" />
-                    <span>FAQ</span>
-                    <i className="bi bi-chevron-right mobile-nav-chevron" />
-                  </a>
-                  <a
-                    href="/help-center"
-                    className="mobile-nav-link"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <i className="bi bi-life-preserver" />
-                    <span>Help Center</span>
-                    <i className="bi bi-chevron-right mobile-nav-chevron" />
-                  </a>
-                </div>
+                              {col.items.map((item) =>
+                                isNavigable(item) ? (
+                                  <a
+                                    key={item.label}
+                                    href={item.href}
+                                    className="mnav-sub"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                  >
+                                    {item.label}
+                                    {isPreview(item) ? <em className="mnav-tag">Sample</em> : null}
+                                  </a>
+                                ) : (
+                                  <span
+                                    key={item.label}
+                                    className="mnav-sub mnav-sub--soon"
+                                    aria-disabled="true"
+                                  >
+                                    {item.label}
+                                    <em className="mnav-tag">Soon</em>
+                                  </span>
+                                ),
+                              )}
+                            </div>
+                          </details>
+                        ))}
+                      </div>
+                    ) : null}
+                    <a
+                      href="/ezana-api"
+                      className="mnav-link"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Ezana API
+                    </a>
+                    <a
+                      href="/ezana-echo"
+                      className="mnav-link"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <span>
+                        Ezana <span className="mnav-echo">Echo</span>
+                      </span>
+                    </a>
+                    <a href="/#faq" className="mnav-link" onClick={() => setMobileMenuOpen(false)}>
+                      FAQ
+                    </a>
+                    <a
+                      href="/help-center"
+                      className="mnav-link"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Help Center
+                    </a>
+                  </nav>
 
-                <div className="mobile-nav-divider" />
-
-                {/* Footer branding */}
-                <div className="mobile-nav-footer">
-                  <span className="mobile-nav-brand">Ezana Finance</span>
-                  <span className="mobile-nav-tagline">Follow the moves that matter</span>
-                </div>
-              </div>
-            </div>
-          )}
+                  <div className="mnav-foot">
+                    <a
+                      href="/auth/partner/apply"
+                      className="mnav-btn mnav-btn--ghost"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Become a Partner
+                    </a>
+                    <a
+                      href="/auth/continue"
+                      className="mnav-btn mnav-btn--solid"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Log in
+                    </a>
+                  </div>
+                </div>,
+                document.body,
+              )
+            : null}
         </div>
       </nav>
     );

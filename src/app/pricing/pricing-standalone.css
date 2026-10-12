@@ -1001,3 +1001,55 @@ body:not(.light-mode) .pricing-page--standalone .pricing-h1 {
     text-align: center;
   }
 }
+
+/* ── Oct 12: aligned plan cards ───────────────────────────────────────
+   Each card spans the same nine row tracks of the grid (subgrid), so every
+   row, including "What's included", sits at the same height on all five
+   cards. The trial and renewal terms move to the foot of the card as fine
+   print. Applied where the five cards sit side by side. */
+@media (min-width: 1201px) {
+  .pricing-cards-grid--five {
+    grid-template-rows: repeat(9, auto);
+    row-gap: 0;
+  }
+  .pricing-cards-grid--five > .plan-card {
+    display: grid;
+    grid-row: span 9;
+    grid-template-rows: subgrid;
+    row-gap: 0;
+  }
+}
+.plan-features-head .plan-features-divider {
+  margin-top: 1.25rem;
+}
+.plan-sub-slot:empty,
+.plan-terms-slot:empty {
+  min-height: 0;
+}
+.plan-terms-slot {
+  align-self: end;
+}
+.pricing-cards-section .plan-terms-slot .renewal-terms.plan-renewal {
+  margin: 1.1rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 7%, transparent);
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  color: var(--text-faint);
+  text-align: left;
+}
+
+/* The closing call to action sits on the page without a container outline. */
+.pricing-bottom-cta-card,
+body:not(.light-mode) .pricing-page--standalone .pricing-bottom-cta-card {
+  border: 0;
+  box-shadow: none;
+  background: none;
+}
+/* The highlighted card no longer lifts, so its rows line up with the others. */
+@media (min-width: 1201px) {
+  .pricing-cards-grid--five > .plan-card--highlight,
+  .pricing-cards-grid--five > .plan-card--highlight:hover {
+    transform: none;
+  }
+}

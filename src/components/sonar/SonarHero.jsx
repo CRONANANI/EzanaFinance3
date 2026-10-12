@@ -30,8 +30,7 @@ export function SonarHero({
     <div className="sonar-hero">
       <div className="sonar-eyebrow">Ezana Sonar</div>
       <h1 className="sonar-h1">
-        Ping anything.
-        <br />
+        Ping anything. <br />
         Get the whole field back.
       </h1>
       <p className="sonar-sub">

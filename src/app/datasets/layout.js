@@ -46,6 +46,11 @@ const STANDALONE_ROUTES = new Set([
   '/datasets/oecd-macro',
   '/datasets/markets',
   '/datasets/prediction-markets',
+  // Dataset pages of their own (they used to point at their hubs).
+  '/datasets/crowd-forecasts',
+  '/datasets/world-bank',
+  '/datasets/geopolitical-risk',
+  '/datasets/sanctions',
   // Eyes Above: the four open-data datasets.
   '/datasets/supply-chain',
   '/datasets/commercial-real-estate',

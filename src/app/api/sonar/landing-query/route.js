@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { withApiGuard, safeErrorResponse } from '@/lib/api-guard';
-import { getAdminClient } from '@/lib/supabase';
+import { getAdminClient, getAuthUser } from '@/lib/supabase';
 import { runLandingPipeline, hashIp, DISCLAIMER } from '@/lib/sonar/landing-pipeline';
 
 /**
@@ -90,8 +90,27 @@ export const POST = withApiGuard(
       return NextResponse.json({ error: 'Keep pings under 300 characters.' }, { status: 400 });
     }
 
+    /* A signed-in visitor (the Datasets search page reuses this pipeline) is
+       not a guest: no 5-ping cookie cap and no sign-up gate. Their pings are
+       capped per account per day instead, counted from the ledger. */
+    const member = await getAuthUser(request).catch(() => null);
+    if (member) {
+      const memberCap = Math.max(1, Number(process.env.SONAR_MEMBER_DAILY_CAP) || 25);
+      const { count: mine } = await getAdminClient()
+        .from('sonar_queries')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', member.id)
+        .gte('created_at', startOfUtcDayISO());
+      if ((mine || 0) >= memberCap) {
+        return NextResponse.json(
+          { error: 'You have used today\u2019s pings. They reset at midnight UTC.' },
+          { status: 429 },
+        );
+      }
+    }
+
     // Guest quota gate, before any retrieval or model spend.
-    const used = readGuestCount(request);
+    const used = member ? 0 : readGuestCount(request);
     if (used >= GUEST_LIMIT) {
       return NextResponse.json({
         gate: true,
@@ -160,12 +179,12 @@ export const POST = withApiGuard(
       'unknown';
     try {
       const { error: ledgerError } = await admin.from('sonar_queries').insert({
-        user_id: null,
-        is_guest: true,
+        user_id: member?.id || null,
+        is_guest: !member,
         ip_hash: hashIp(ip, guestSecret()),
         query_text: query,
         classification: result.classification,
-        version: 'guest',
+        version: member ? 'member' : 'guest',
         plan_tier: 0,
         datasets_searched: result.sources.map((s) => s.id),
         grounded: result.grounded,
@@ -191,10 +210,10 @@ export const POST = withApiGuard(
       sources: result.sources,
       relevance: result.relevance,
       dossier: result.dossier,
-      remaining: Math.max(0, GUEST_LIMIT - nextUsed),
+      remaining: member ? null : Math.max(0, GUEST_LIMIT - nextUsed),
       disclaimer: DISCLAIMER,
     });
-    setGuestCount(res, nextUsed);
+    if (!member) setGuestCount(res, nextUsed);
     return res;
   },
   { requireAuth: false, strict: true },

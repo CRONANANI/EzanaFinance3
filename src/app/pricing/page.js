@@ -631,13 +631,19 @@ export default function PricingPage() {
                   <span>{ctaLabel}</span>
                   {!isPending ? <ArrowRight size={16} aria-hidden /> : null}
                 </button>
-                {isContact ? <p className="plan-finesub">We reply within 1 business day</p> : null}
-                {!plan.isFree && !isContact ? (
-                  <RenewalTerms plan={catalogPlan(plan, billing)} className="plan-renewal" />
-                ) : null}
+                {/* Every card renders the same nine rows (an empty slot where a
+                    plan has nothing to say), so the subgrid can line the
+                    "What's included" headings up across all five cards. */}
+                <div className="plan-sub-slot">
+                  {isContact ? (
+                    <p className="plan-finesub">We reply within 1 business day</p>
+                  ) : null}
+                </div>
 
-                <div className="plan-features-divider" />
-                <div className="plan-features-label">What&apos;s included</div>
+                <div className="plan-features-head">
+                  <div className="plan-features-divider" />
+                  <div className="plan-features-label">What&apos;s included</div>
+                </div>
                 <ul className="plan-features">
                   {plan.features.map((f) => (
                     <li key={f}>
@@ -646,6 +652,13 @@ export default function PricingPage() {
                     </li>
                   ))}
                 </ul>
+
+                {/* Trial and renewal terms: fine print at the foot of the card. */}
+                <div className="plan-terms-slot">
+                  {!plan.isFree && !isContact ? (
+                    <RenewalTerms plan={catalogPlan(plan, billing)} className="plan-renewal" />
+                  ) : null}
+                </div>
               </div>
             );
           })}

@@ -134,3 +134,31 @@
     min-width: 0;
   }
 }
+
+/* ── Oct 12: every column fits inside the panel ───────────────────────
+   The nowrap headings ("GLOBAL EMPIRE LIGHTHOUSE" plus its Hub link) made the
+   seven min-content columns wider than the panel at 1440, pushing Regulatory
+   Winds' Hub link and Soon tags outside it. Columns now share the width
+   equally; a long heading wraps under its icon, the Hub link stays whole, and
+   item labels shrink beside their Soon tags. */
+.navbar .nav-datasets-cols {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.navbar .nav-datasets-col {
+  min-width: 0;
+}
+.navbar .nav-datasets-col-head {
+  flex-wrap: wrap;
+  white-space: normal;
+  row-gap: 0.15rem;
+  line-height: 1.25;
+}
+.navbar .nav-datasets-col-head .nav-datasets-col-label {
+  min-width: 0;
+}
+.navbar .nav-datasets-col-head .dshub-link {
+  white-space: nowrap;
+}
+.navbar .nav-datasets-item-label {
+  min-width: 0;
+}
