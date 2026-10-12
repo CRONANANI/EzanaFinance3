@@ -5,9 +5,10 @@
  * two states (home, answered). Built to docs/design/support-handoff/.
  *
  * Home: the Ask AI pill with quick-ask cards directly under the top nav, at the
- * top of the middle column and level with the category rail, then Start
- * here + FAQs + Recently updated + help card, across the full width beside
- * the rail (Trending appears only in the answered view). There is no visible
+ * top of the middle column and level with the category rail, then the Start
+ * here milestone path (StartHerePath) + Recently updated + help card, across
+ * the full width beside the rail (Trending appears only in the answered
+ * view). There is no visible
  * crumb, eyebrow, title or subline; the page title is a screen-reader-only
  * h1.
  *
@@ -34,11 +35,12 @@ import {
   recentlyUpdated,
   relatedArticles,
   relativeDate,
-  startHere,
+  startHereMilestones,
   stillTrending,
   trendingFallback,
 } from '@/lib/help-center/support-model';
 import CategoryRail from './CategoryRail';
+import StartHerePath from './StartHerePath';
 import PlatformChangelog from './PlatformChangelog';
 import './support-center.css';
 
@@ -147,7 +149,7 @@ function TrendingList({ items, base, label, icon, more, rows, cls = '' }) {
 export default function SupportCenter({ audience = 'user', initialQuestion = '' }) {
   const cfg = audienceConfig(audience);
   const categories = useMemo(() => categoriesFor(audience), [audience]);
-  const start = useMemo(() => startHere(audience), [audience]);
+  const milestones = useMemo(() => startHereMilestones(audience), [audience]);
   const updated = useMemo(() => recentlyUpdated(audience), [audience]);
 
   const [value, setValue] = useState(initialQuestion);
@@ -457,49 +459,7 @@ export default function SupportCenter({ audience = 'user', initialQuestion = '' 
           <CategoryRail categories={categories} mode="resting" />
 
           <div className="hcs-main">
-            <section aria-labelledby="hcs-start-title">
-              <div className="hcs-sec-head">
-                <h2 id="hcs-start-title" className="hcs-h2">
-                  Start here
-                </h2>
-                <span className="hcs-cap">the three most-opened categories</span>
-              </div>
-              <div className="hcs-start">
-                {start.map((c) => (
-                  <Link key={c.id} href={c.url} className="hcs-start-card">
-                    <span className="hcs-tile hcs-tile--36" aria-hidden="true">
-                      <i className={`bi ${c.icon}`} />
-                    </span>
-                    <span className="hcs-start-name">{c.title}</span>
-                    <span className="hcs-start-desc">{c.description}</span>
-                    <span className="hcs-link hcs-start-cta">
-                      View articles <i className="bi bi-chevron-right" aria-hidden="true" />
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            </section>
-
-            <section aria-labelledby="hcs-faq-title">
-              <div className="hcs-sec-head">
-                <h2 id="hcs-faq-title" className="hcs-h2">
-                  Frequently asked questions
-                </h2>
-              </div>
-              <div className="hcs-faqs">
-                {cfg.faqs.map((q) => (
-                  <button
-                    key={q}
-                    type="button"
-                    className="hcs-faq"
-                    onClick={() => ask(q, { source: 'faq' })}
-                  >
-                    <span>{q}</span>
-                    <i className="bi bi-chevron-right hcs-chev" aria-hidden="true" />
-                  </button>
-                ))}
-              </div>
-            </section>
+            <StartHerePath milestones={milestones} />
 
             {updated.length ? (
               <section aria-labelledby="hcs-upd-title">

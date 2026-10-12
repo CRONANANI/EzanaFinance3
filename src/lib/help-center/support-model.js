@@ -228,6 +228,27 @@ export function categoriesFor(audience) {
   }));
 }
 
+/**
+ * The Start here milestones: the first two articles of each Start here
+ * category, in category order, so a new member reads them as one path.
+ * Each carries the article's url and its category's title as the blurb.
+ */
+export function startHereMilestones(audience, perCategory = 2) {
+  const cfg = audienceConfig(audience);
+  const { arts } = CATALOG[audience] || CATALOG.user;
+  return startHere(audience).flatMap((c) =>
+    c.slugs
+      .filter((slug) => arts[slug])
+      .slice(0, perCategory)
+      .map((slug) => ({
+        slug,
+        title: arts[slug].title,
+        blurb: c.title,
+        url: `${cfg.base}/article/${slug}`,
+      })),
+  );
+}
+
 /** The three configured "most-opened" categories, in configured order. */
 export function startHere(audience) {
   const cats = categoriesFor(audience);

@@ -1361,3 +1361,129 @@
     background: var(--hcs-skel-base);
   }
 }
+
+/* ── Start here: the milestone path ──────────────────────────────────
+   A zig-zag curve with one node per Start here article. Read nodes fill
+   emerald, the next unread node wears an emerald ring and an Up next tag;
+   the rest are quiet. Under 700px the curve is replaced by a dashed
+   vertical timeline. */
+.hcs-path-progress {
+  color: var(--hcs-positive);
+  font-variant-numeric: tabular-nums;
+}
+.hcs-path-hint .hcs-link {
+  font-size: inherit;
+}
+.hcs-path-box {
+  position: relative;
+  /* The drawing scales with its width; capped so six nodes stay a short
+     scroll rather than a column taller than the viewport. */
+  max-width: 640px;
+}
+.hcs-path-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.hcs-path-track {
+  fill: none;
+  stroke: var(--hcs-dotted);
+  stroke-width: 3;
+  stroke-dasharray: 6 8;
+}
+.hcs-path-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.hcs-path-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: min(46%, 280px);
+}
+.hcs-path-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--hcs-ink);
+  text-decoration: none;
+}
+.hcs-path-dot {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--hcs-bg);
+  box-shadow: inset 0 0 0 1.5px var(--hcs-dotted);
+  color: var(--hcs-mute);
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.hcs-path-node[data-state='read'] .hcs-path-dot {
+  background: var(--hcs-emerald);
+  box-shadow: none;
+  color: var(--color-on-primary);
+}
+.hcs-path-node[data-state='next'] .hcs-path-dot {
+  box-shadow: 0 0 0 3px var(--hcs-emerald);
+  color: var(--hcs-positive);
+}
+.hcs-path-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.hcs-path-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  transition: color 0.15s ease;
+}
+.hcs-path-link:hover .hcs-path-title {
+  color: var(--hcs-positive);
+}
+.hcs-path-link:focus-visible {
+  outline: 2px solid var(--hcs-emerald);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+.hcs-path-blurb {
+  font-size: 12px;
+  color: var(--hcs-mute);
+}
+.hcs-path-upnext {
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hcs-positive);
+}
+@media (max-width: 700px) {
+  .hcs-path-svg {
+    display: none;
+  }
+  .hcs-path-list {
+    display: grid;
+    gap: 24px;
+    padding-left: 20px;
+    border-left: 2px dashed var(--hcs-dotted);
+  }
+  .hcs-path-node {
+    position: static;
+    transform: none;
+    width: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hcs-path-dot,
+  .hcs-path-title {
+    transition: none;
+  }
+}
