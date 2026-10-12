@@ -798,27 +798,6 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* ── Final CTA ───────────────────────────────────────────────── */}
-      <section className="pricing-bottom-cta" aria-label="Get started">
-        <div className="pricing-bottom-cta-card">
-          <h2>Start investing smarter today</h2>
-          <p>
-            Try any paid plan free for 14 days. No charge until the trial ends, cancel whenever.
-          </p>
-          <button
-            type="button"
-            className="pricing-bottom-btn"
-            onClick={() => startCheckout(PLANS.find((p) => p.highlight) || PLANS[1])}
-          >
-            Start 14-day free trial <ArrowRight size={18} aria-hidden />
-          </button>
-          <RenewalTerms
-            plan={catalogPlan(PLANS.find((p) => p.highlight) || PLANS[1], billing)}
-            className="pricing-bottom-renewal"
-          />
-        </div>
-      </section>
-
       {/* ── Footer ──────────────────────────────────────────────────── */}
       <footer className="pricing-footer">
         <p>© {new Date().getFullYear()} Ezana Finance. All rights reserved.</p>

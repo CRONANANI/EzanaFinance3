@@ -579,7 +579,9 @@
 .pricing-faq-section {
   max-width: 760px;
   margin: 0 auto;
-  padding: 2rem 2rem 3rem;
+  /* Last section before the footer now (the closing call to action below it
+     was removed), so it carries the bottom breathing room that band gave. */
+  padding: 2rem 2rem 4.5rem;
 }
 .pricing-faq-section h2 {
   margin: 0 0 1rem;
@@ -663,71 +665,6 @@
   font-size: 0.95rem;
   line-height: 1.65;
   color: var(--text-muted);
-  text-align: center;
-}
-
-/* ── Final CTA ─────────────────────────────────────────────────────────── */
-.pricing-bottom-cta {
-  padding: 2.5rem 2rem 3.5rem;
-}
-.pricing-bottom-cta-card {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 3rem 2rem;
-  text-align: center;
-  border-radius: 20px;
-  background:
-    radial-gradient(ellipse at top, var(--emerald-bg), transparent 60%), var(--surface-card);
-  border: none; /* outline removed per handoff */
-  box-shadow:
-    0 20px 60px color-mix(in srgb, var(--emerald) 10%, transparent),
-    var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.06));
-}
-.pricing-bottom-cta-card h2 {
-  margin: 0 0 0.75rem;
-  font-size: clamp(1.75rem, 3vw, 2.25rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
-}
-.pricing-bottom-cta-card p {
-  margin: 0 auto 1.5rem;
-  max-width: 42rem;
-  font-size: 1rem;
-  line-height: 1.55;
-  color: var(--text-muted);
-}
-.pricing-bottom-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.85rem 1.75rem;
-  border: none;
-  border-radius: var(--radius-lg);
-  background: var(--emerald-text, var(--emerald-hover));
-  color: #ffffff;
-  font-size: 1rem;
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(5, 150, 105, 0.28);
-  transition:
-    background 0.18s ease,
-    transform 0.15s ease;
-}
-.pricing-bottom-btn:hover {
-  background: var(--emerald-dark);
-  transform: translateY(-1px);
-}
-.pricing-bottom-finesub {
-  margin-top: 0.75rem;
-  font-size: 0.75rem;
-  color: var(--text-faint);
-}
-.pricing-bottom-cta-card .renewal-terms.pricing-bottom-renewal {
-  max-width: 34rem;
-  margin: 0.9rem auto 0;
-  font-size: 0.8125rem;
   text-align: center;
 }
 
@@ -910,8 +847,7 @@ body:not(.light-mode) .pricing-page--standalone {
 }
 body:not(.light-mode) .pricing-page--standalone .plan-card,
 body:not(.light-mode) .pricing-page--standalone .comparison-table-wrap,
-body:not(.light-mode) .pricing-page--standalone .pricing-partner-rate,
-body:not(.light-mode) .pricing-page--standalone .pricing-bottom-cta-card {
+body:not(.light-mode) .pricing-page--standalone .pricing-partner-rate {
   background: var(--surface-card);
   border-color: rgba(255, 255, 255, 0.08);
 }
@@ -932,7 +868,6 @@ body:not(.light-mode) .pricing-page--standalone .comparison-table th,
 body:not(.light-mode) .pricing-page--standalone .comp-feature-name,
 body:not(.light-mode) .pricing-page--standalone .comparison-table td,
 body:not(.light-mode) .pricing-page--standalone .pricing-faq-item summary,
-body:not(.light-mode) .pricing-page--standalone .pricing-bottom-cta-card h2,
 body:not(.light-mode) .pricing-page--standalone .pricing-partner-name,
 body:not(.light-mode) .pricing-page--standalone .pricing-partner-rate-value,
 body:not(.light-mode) .pricing-page--standalone .pricing-h1 {
@@ -1039,13 +974,6 @@ body:not(.light-mode) .pricing-page--standalone .pricing-h1 {
   text-align: left;
 }
 
-/* The closing call to action sits on the page without a container outline. */
-.pricing-bottom-cta-card,
-body:not(.light-mode) .pricing-page--standalone .pricing-bottom-cta-card {
-  border: 0;
-  box-shadow: none;
-  background: none;
-}
 /* The highlighted card no longer lifts, so its rows line up with the others. */
 @media (min-width: 1201px) {
   .pricing-cards-grid--five > .plan-card--highlight,
