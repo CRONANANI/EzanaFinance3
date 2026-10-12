@@ -281,13 +281,17 @@
 }
 /* Quick-ask cards: the common questions as one tap each, full width under
    the pill. Same tile, hairline and hover language as the rail rows. */
+/* The eight document cards: a 4 x 2 grid with no gap, so neighbouring cards
+   share their edges. Cards carry no outline; on desktop hover (a fine
+   pointer) the hovered card draws a line only on the edges it shares with a
+   neighbour, never on the grid's outer perimeter. */
 .hcs-quick {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: 0;
 }
 .hcs-quick-card {
   display: flex;
@@ -296,8 +300,8 @@
   width: 100%;
   height: 100%;
   padding: 12px 14px;
-  border: 1px solid var(--hcs-hair-strong);
-  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  border-radius: 0;
   background: var(--hcs-bg);
   color: inherit;
   font: inherit;
@@ -308,8 +312,25 @@
     background 0.15s ease;
 }
 .hcs-quick-card:hover {
-  border-color: var(--hcs-active-border);
   background: var(--hcs-tint);
+}
+@media (hover: hover) and (pointer: fine) and (min-width: 1001px) {
+  /* right edge: every card except the last in each row of four */
+  .hcs-quick > li:not(:nth-child(4n)) .hcs-quick-card:hover {
+    border-right-color: var(--hcs-hair-strong);
+  }
+  /* left edge: every card except the first in each row */
+  .hcs-quick > li:not(:nth-child(4n + 1)) .hcs-quick-card:hover {
+    border-left-color: var(--hcs-hair-strong);
+  }
+  /* bottom edge: the first row only */
+  .hcs-quick > li:nth-child(-n + 4) .hcs-quick-card:hover {
+    border-bottom-color: var(--hcs-hair-strong);
+  }
+  /* top edge: the second row only */
+  .hcs-quick > li:nth-child(n + 5) .hcs-quick-card:hover {
+    border-top-color: var(--hcs-hair-strong);
+  }
 }
 .hcs-quick-card:focus-visible {
   outline: 2px solid var(--hcs-emerald);
@@ -340,6 +361,10 @@
 @media (max-width: 1000px) {
   .hcs-quick {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .hcs-quick-card {
+    border-radius: var(--radius-md);
   }
 }
 @media (max-width: 420px) {
