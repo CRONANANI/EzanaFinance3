@@ -173,18 +173,43 @@
   padding: 18px 16px;
 }
 .wl-submit {
-  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 4px;
+  padding: 12px 20px;
   border: 0;
   border-radius: var(--radius-md);
   background: var(--wl-accent);
   color: var(--color-on-primary);
   font: inherit;
+  font-family: var(--font-sans);
   font-size: 15px;
   font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  text-align: center;
+  white-space: nowrap;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
   cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 .wl-submit:hover:not(:disabled) {
   background: color-mix(in srgb, var(--wl-accent) 88%, black);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--wl-accent) 28%, transparent);
+}
+.wl-submit:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
 }
 .wl-submit:focus-visible {
   outline: 2px solid var(--emerald);
@@ -263,6 +288,12 @@
   .wl-skel-line {
     animation: none;
   }
+  .wl-submit {
+    transition: none;
+  }
+  .wl-submit:hover:not(:disabled) {
+    transform: none;
+  }
 }
 @media (max-width: 480px) {
   .wl-card {
@@ -270,5 +301,9 @@
   }
   .wl-row {
     grid-template-columns: 1fr;
+  }
+  .wl-submit {
+    min-height: 50px;
+    font-size: 16px;
   }
 }
