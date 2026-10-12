@@ -772,7 +772,7 @@ export function Navbar() {
                     <i className="bi bi-arrow-right" aria-hidden="true" />
                   </a>
                   <div className="nav-datasets-divider" />
-                  <a
+                  <Link
                     href="/datasets"
                     className="nav-datasets-foot"
                     role="menuitem"
@@ -780,7 +780,7 @@ export function Navbar() {
                   >
                     View all datasets
                     <i className="bi bi-arrow-right" aria-hidden="true" />
-                  </a>
+                  </Link>
                 </div>
               </div>
             </li>
@@ -862,14 +862,14 @@ export function Navbar() {
                     </button>
                     {mobileDatasetsOpen ? (
                       <div className="mnav-group">
-                        <a
+                        <Link
                           href="/datasets"
                           className="mnav-all"
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           View all datasets
                           <i className="bi bi-arrow-right" aria-hidden="true" />
-                        </a>
+                        </Link>
                         {DATASET_MENU.map((col) => (
                           <details
                             key={col.id}

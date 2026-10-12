@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import { Fragment, useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { HeroDottedMap } from './HeroDottedMap';
@@ -176,23 +178,11 @@ export function LandingHero() {
               Get started
               <ArrowRight size={16} aria-hidden />
             </a>
-            <button
-              type="button"
-              className="lp-btn-ghost"
-              onClick={() => {
-                if (typeof window === 'undefined') return;
-                /* Below 1024 the nav has no Datasets mega-menu to open (it is
-                   behind the hamburger), so the button goes straight to the
-                   all-datasets page instead of doing nothing. */
-                if (window.matchMedia('(max-width: 1023px)').matches) {
-                  window.location.assign('/datasets');
-                  return;
-                }
-                window.dispatchEvent(new CustomEvent('ezana:open-datasets-menu'));
-              }}
-            >
+            {/* Straight to the all-datasets page at every width (it used to
+                open the nav's Datasets menu on desktop). */}
+            <Link href="/datasets" className="lp-btn-ghost">
               View datasets
-            </button>
+            </Link>
           </div>
 
           <p className="lp-note">Free to start · No brokerage required · Real-time disclosures</p>
