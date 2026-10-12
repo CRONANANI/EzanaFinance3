@@ -2110,3 +2110,125 @@ body.light-mode .dso-page--search .dso-sonar-title {
   text-underline-offset: 5px;
   text-decoration-color: color-mix(in srgb, var(--bg-primary) 70%, transparent);
 }
+
+/* ── Oct 12: floating news cards around the orbital map ───────────────
+   Three slots a side. The rails sit outside the 1080px page column: the
+   grid is as wide as the viewport allows (up to 1480px) and centred on the
+   column with a symmetric negative margin, so the map keeps its width and
+   the cards float on the globe beside it. Below 900px the rails are gone. */
+/* The page column clips its overflow; the rails live outside it, so the
+   column lets them through (the ground still clips at the viewport). The
+   hero caps its children at 720px: the wrap opts out and keeps the map at
+   that width in its centre column instead. */
+.dso-page.dso-page--search {
+  overflow-x: visible;
+}
+.dso-page--search .sonar-hero > .dso-news,
+.dso-news {
+  --dso-news-w: min(100vw - 48px, 1320px);
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(0, 720px) minmax(180px, 1fr);
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  width: var(--dso-news-w);
+  max-width: none;
+  margin-inline: calc((100% - var(--dso-news-w)) / 2);
+}
+.dso-news-center {
+  min-width: 0;
+}
+.dso-news-side {
+  display: grid;
+  grid-template-rows: repeat(3, minmax(76px, auto));
+  gap: 16px;
+  width: 100%;
+  max-width: 260px;
+  justify-self: center;
+  align-self: stretch;
+  align-content: center;
+}
+.dso-news-card {
+  padding: 10px 12px;
+  text-align: left;
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-lg);
+  animation: dso-news-pop 4.2s ease forwards;
+}
+.dso-news-dim {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--dso-news-color, var(--emerald-text));
+}
+.dso-news-dim .bi {
+  font-size: 12px;
+  line-height: 1;
+}
+.dso-news-headline {
+  margin: 4px 0 0;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+.dso-news-meta {
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+@keyframes dso-news-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  10% {
+    opacity: 1;
+    transform: none;
+  }
+  85% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+}
+@keyframes dso-news-fade {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  10%,
+  85% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dso-news-card {
+    animation: dso-news-fade 4.2s linear forwards;
+  }
+}
+@media (max-width: 900px) {
+  .dso-page--search .sonar-hero > .dso-news,
+  .dso-news {
+    --dso-news-w: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    max-width: 720px;
+  }
+  .dso-news-side {
+    display: none;
+  }
+}
