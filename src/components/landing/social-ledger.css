@@ -294,7 +294,10 @@
   color: var(--rp-mark-text);
 }
 
-/* right: the ladder */
+/* right: the ladder. The row stretches both columns to the same height
+   (.sled-rp is a flex row with the default align-items: stretch), and the
+   ladder fills its column and spreads its tiers, so its last tier ends on
+   the gauge column's bottom edge (Keep a 7 day streak) with no offsets. */
 .sled-rp-right {
   display: flex;
   flex-direction: column;
@@ -310,7 +313,9 @@
 .sled-rp-ladder {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 6px;
+  flex: 1 1 auto;
   margin: 0;
   padding: 0;
   list-style: none;
