@@ -4,7 +4,7 @@
  * Floating notification cards either side of the orbital map. Each card is
  * born at the map's Sonar hub as a speck, flies outward while it grows, and
  * lands full size in a free slot beside the map; it holds, then fades. The
- * cards are one line each (icon, dimension, headline, SAMPLE) on a
+ * cards are one line each (icon, dimension, headline) on a
  * transparent ground. Copy is illustrative (news-samples.js); names, icons
  * and colours come from the taxonomy. The rails are decorative: aria-hidden,
  * and hidden below 900px so the map keeps its width. Slots are chosen
@@ -15,7 +15,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 const SLOTS_PER_SIDE = 3;
 const SHOW_MS = 4600;
-const SPAWN_MS = 1500;
+/* A new card every three seconds (was 1.5s). */
+const NOTIFICATION_INTERVAL_MS = 3000;
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -64,7 +65,6 @@ function NewsCard({ card, originRef }) {
         {card.dimension}
       </span>
       <span className="dso-news-headline">{card.headline}</span>
-      {card.meta ? <span className="dso-news-meta dso-mono">{card.meta}</span> : null}
     </div>
   );
 }
@@ -96,7 +96,7 @@ export default function OrbitalNewsTicker({ items, children }) {
       cursor.current += 1;
     };
     spawn();
-    const t = setInterval(spawn, reduced ? SPAWN_MS * 2 : SPAWN_MS);
+    const t = setInterval(spawn, reduced ? NOTIFICATION_INTERVAL_MS * 2 : NOTIFICATION_INTERVAL_MS);
     return () => clearInterval(t);
   }, [items, reduced]);
 
