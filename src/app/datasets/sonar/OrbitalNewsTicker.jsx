@@ -1,21 +1,21 @@
 'use client';
 
 /**
- * Floating notification cards either side of the orbital map. Cards pop in,
- * hold, and fade out, cycling through illustrative items from all seven
- * dataset dimensions (news-samples.js; names, icons and colours come from
- * the taxonomy). The rails are decorative: aria-hidden, and hidden entirely
- * below 900px so the map keeps its width. Slots are chosen deterministically
- * (no Math.random): each new card takes the free slot indexed by its own
- * sequence number, so the rotation is even and the markup is reproducible.
- * Under prefers-reduced-motion the cards cross-fade without moving and spawn
- * half as often.
+ * Floating notification cards either side of the orbital map. Each card is
+ * born at the map's Sonar hub as a speck, flies outward while it grows, and
+ * lands full size in a free slot beside the map; it holds, then fades. The
+ * cards are one line each (icon, dimension, headline, SAMPLE) on a
+ * transparent ground. Copy is illustrative (news-samples.js); names, icons
+ * and colours come from the taxonomy. The rails are decorative: aria-hidden,
+ * and hidden below 900px so the map keeps its width. Slots are chosen
+ * deterministically (no Math.random). Under prefers-reduced-motion the cards
+ * fade in place and spawn half as often.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 const SLOTS_PER_SIDE = 3;
-const SHOW_MS = 4200;
-const SPAWN_MS = 1400;
+const SHOW_MS = 4600;
+const SPAWN_MS = 1500;
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -29,10 +29,51 @@ function useReducedMotion() {
   return reduced;
 }
 
+/* One card. Measures where it will land, then starts its flight from the
+   hub: the offset from its landing spot back to the hub is handed to the
+   keyframes as --from-x / --from-y, so the card travels outward from the
+   map to where it sits. */
+function NewsCard({ card, originRef }) {
+  const ref = useRef(null);
+  const [ready, setReady] = useState(false);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    const origin = originRef.current;
+    if (el && origin) {
+      const hub = origin.querySelector('.dso-sc-hub');
+      const o = (hub || origin).getBoundingClientRect();
+      /* The hub label sits 14px under the hub point it marks. */
+      const ox = o.left + o.width / 2;
+      const oy = hub ? o.top - 14 : o.top + o.height / 2;
+      const r = el.getBoundingClientRect();
+      el.style.setProperty('--from-x', `${Math.round(ox - (r.left + r.width / 2))}px`);
+      el.style.setProperty('--from-y', `${Math.round(oy - (r.top + r.height / 2))}px`);
+    }
+    setReady(true);
+  }, [originRef]);
+
+  return (
+    <div
+      ref={ref}
+      className={`dso-news-card${ready ? ' is-flying' : ''}`}
+      style={{ gridRow: card.slot + 1, '--dso-news-color': card.color }}
+    >
+      <span className="dso-news-dim">
+        <i className={`bi ${card.icon}`} aria-hidden="true" />
+        {card.dimension}
+      </span>
+      <span className="dso-news-headline">{card.headline}</span>
+      {card.meta ? <span className="dso-news-meta dso-mono">{card.meta}</span> : null}
+    </div>
+  );
+}
+
 export default function OrbitalNewsTicker({ items, children }) {
   const [cards, setCards] = useState([]);
   const seq = useRef(0);
   const cursor = useRef(0);
+  const centerRef = useRef(null);
   const reduced = useReducedMotion();
 
   useEffect(() => {
@@ -64,18 +105,7 @@ export default function OrbitalNewsTicker({ items, children }) {
       {cards
         .filter((c) => c.side === which)
         .map((c) => (
-          <div
-            key={c.id}
-            className="dso-news-card"
-            style={{ gridRow: c.slot + 1, '--dso-news-color': c.color }}
-          >
-            <span className="dso-news-dim">
-              <i className={`bi ${c.icon}`} aria-hidden="true" />
-              {c.dimension}
-            </span>
-            <p className="dso-news-headline">{c.headline}</p>
-            {c.meta ? <span className="dso-news-meta dso-mono">{c.meta}</span> : null}
-          </div>
+          <NewsCard key={c.id} card={c} originRef={centerRef} />
         ))}
     </div>
   );
@@ -83,7 +113,9 @@ export default function OrbitalNewsTicker({ items, children }) {
   return (
     <div className="dso-news">
       {side('left')}
-      <div className="dso-news-center">{children}</div>
+      <div className="dso-news-center" ref={centerRef}>
+        {children}
+      </div>
       {side('right')}
     </div>
   );

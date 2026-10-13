@@ -88,6 +88,34 @@
     color: var(--text-primary);
   }
 
+  /* Black variant (the all-datasets page): black bar, white text, a white
+     button with black type. */
+  .pcta-bar--dark {
+    background: color-mix(in srgb, white 2%, black);
+    border-top-color: color-mix(in srgb, white 10%, transparent);
+    box-shadow: none;
+  }
+  .pcta-bar--dark .pcta-copy {
+    color: white;
+  }
+  .pcta-bar--dark .pcta-btn,
+  .pcta-bar--dark .pcta-btn:hover,
+  .pcta-bar--dark .pcta-btn:active {
+    background: white;
+    color: black;
+  }
+  .pcta-bar--dark .pcta-close {
+    color: color-mix(in srgb, white 70%, transparent);
+  }
+  .pcta-bar--dark .pcta-close:hover,
+  .pcta-bar--dark .pcta-close:active {
+    color: white;
+  }
+  .pcta-bar--dark .pcta-btn:focus-visible,
+  .pcta-bar--dark .pcta-close:focus-visible {
+    outline-color: white;
+  }
+
   /* Reserve the bar's height so the last row of content and the footer stay
      reachable above it. Set by PublicMobileCta.jsx while the bar is mounted. */
   body.pcta-open {

@@ -1,5 +1,5 @@
 import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
-import { radarLayout, resolveDimension, taxonomyCounts } from './sonar/derive';
+import { resolveDimension, taxonomyCounts } from './sonar/derive';
 import { SonarSelectionProvider } from './sonar/SonarSelection';
 import OrbitalMap from './sonar/OrbitalMap';
 import OrbitalNewsTicker from './sonar/OrbitalNewsTicker';
@@ -25,11 +25,21 @@ export const metadata = {
 
 const COUNTS = taxonomyCounts(DATASET_TAXONOMY);
 const DIM_IDS = DATASET_TAXONOMY.map((d) => d.id);
+/* What the scene draws: each dimension, its live count and its datasets. */
+const ORBIT_DIMS = DATASET_TAXONOMY.map((d) => {
+  const liveCount = d.items.filter((it) => it.live).length;
+  return {
+    id: d.id,
+    label: d.label,
+    live: liveCount > 0,
+    liveCount,
+    items: d.items.map((it) => ({ label: it.label, href: it.href, live: Boolean(it.live) })),
+  };
+});
 const NEWS_ITEMS = buildNewsItems(DATASET_TAXONOMY);
 
 export default function DatasetsIndexPage({ searchParams }) {
   const selected = resolveDimension(DATASET_TAXONOMY, searchParams?.dimension);
-  const blips = radarLayout(DATASET_TAXONOMY, selected);
 
   const map = (
     <SonarSelectionProvider initial={selected} ids={DIM_IDS}>
@@ -38,7 +48,7 @@ export default function DatasetsIndexPage({ searchParams }) {
           className="dso-sonar dso-sonar--solo"
           aria-label="The seven dataset dimensions that feed Ezana Sonar"
         >
-          <OrbitalMap blips={blips} pinging={COUNTS.live} silent={COUNTS.roadmap} />
+          <OrbitalMap dims={ORBIT_DIMS} pinging={COUNTS.live} silent={COUNTS.roadmap} />
         </section>
       </OrbitalNewsTicker>
     </SonarSelectionProvider>

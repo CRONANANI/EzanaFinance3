@@ -2232,3 +2232,142 @@ body.light-mode .dso-page--search .dso-sonar-title {
     display: none;
   }
 }
+
+/* ── Oct 13: a black page ──────────────────────────────────────────────
+   The whole overview (the category bar, the hero, the map and the cards
+   beside it) sits on the orbital scene's own black, so the scene's edge
+   disappears into the page. The globe keeps its flickering lights, drawn
+   in greyscale instead of green. The search pill becomes a faint lift of
+   white so it still reads on black. */
+.ds-shell--search {
+  --dso-black: color-mix(in srgb, white 2%, black);
+  background: var(--dso-black);
+}
+.ds-shell--search .dso-globe {
+  background: var(--dso-black);
+}
+/* The video is already drawn in greyscale; with no green to add, the tint
+   layer goes. */
+.ds-shell--search .dso-globe-tint {
+  display: none;
+}
+.ds-shell--search .dso-globe-depth {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--dso-black) 70%, transparent) 0%,
+    color-mix(in srgb, var(--dso-black) 30%, transparent) 45%,
+    color-mix(in srgb, var(--dso-black) 85%, transparent) 100%
+  );
+}
+.ds-shell--search .dso-page--search .dso-sonar--solo {
+  background: none;
+  backdrop-filter: none;
+}
+.ds-shell--search .dso-page--search .sonar-qbar--ghost,
+.ds-shell--search .dso-page--search .sonar-qbar--ghost:focus-within {
+  background: color-mix(in srgb, white 7%, transparent);
+}
+
+/* ── Oct 13: notification cards, one line, no ground ──────────────────
+   The rails widen to the page edge so a one-line card fits beside the map;
+   each card hugs the map side of its rail. If a rail is ever narrower than
+   its card, the headline ends in an ellipsis rather than wrapping. */
+@media (min-width: 1240px) {
+  .dso-page--search .sonar-hero > .dso-news,
+  .dso-news {
+    --dso-news-w: min(100vw - 32px, 1600px);
+    /* A rail never drops below the widest one-line card. */
+    grid-template-columns: minmax(352px, 1fr) minmax(0, 660px) minmax(352px, 1fr);
+    gap: 20px;
+  }
+}
+/* Below 1240px there is no room for one-line cards beside the map, so the
+   rails go and the map takes the column (as below 900px before). */
+@media (max-width: 1239px) {
+  .dso-page--search .sonar-hero > .dso-news,
+  .dso-news {
+    --dso-news-w: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    max-width: 720px;
+  }
+  .dso-news-side {
+    display: none;
+  }
+}
+.dso-news-side {
+  position: relative;
+  z-index: 4;
+  /* One column the width of the rail, so a card never sizes the rail. */
+  grid-template-columns: minmax(0, 1fr);
+  max-width: none;
+  justify-items: end;
+}
+.dso-news-side[data-side='right'] {
+  justify-items: start;
+}
+.dso-news-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  padding: 6px 2px;
+  white-space: nowrap;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  opacity: 0;
+  animation: none;
+}
+.dso-news-card.is-flying {
+  animation: dso-news-fly 4.6s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+.dso-news-dim {
+  flex: none;
+  font-size: 11px;
+  color: color-mix(in srgb, var(--dso-news-color, var(--emerald)) 75%, white);
+}
+.dso-news-headline {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  line-height: 1.3;
+  color: color-mix(in srgb, white 92%, transparent);
+}
+.dso-news-meta {
+  flex: none;
+  margin: 0;
+  font-size: 9.5px;
+  color: color-mix(in srgb, white 50%, transparent);
+}
+/* Born at the hub as a speck, flies out growing, lands full size, holds,
+   then fades where it landed. */
+@keyframes dso-news-fly {
+  0% {
+    opacity: 0;
+    transform: translate(var(--from-x, 0px), var(--from-y, 0px)) scale(0.04);
+  }
+  6% {
+    opacity: 1;
+  }
+  24% {
+    opacity: 1;
+    transform: none;
+  }
+  86% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dso-news-card.is-flying {
+    animation: dso-news-fade 4.6s linear forwards;
+  }
+}

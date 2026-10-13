@@ -9,42 +9,54 @@
  */
 import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 
+/* One line per card, so every headline stays short (30 characters or so). */
 const SAMPLE_COPY = {
   capitol: [
-    { headline: 'A House member discloses a purchase in a defence contractor', meta: 'sample' },
-    { headline: 'Three senators file trades in the same chip maker this week', meta: 'sample' },
-    { headline: 'A committee chair reports a sale ahead of a hearing', meta: 'sample' },
+    { headline: 'A member buys defence stock', meta: 'sample' },
+    { headline: 'Three senators buy a chipmaker', meta: 'sample' },
+    { headline: 'A chair sells before a hearing', meta: 'sample' },
   ],
   titans: [
-    { headline: 'A hedge fund opens a new position above 5% in a regional bank', meta: 'sample' },
-    { headline: 'An activist files a 13D and asks for two board seats', meta: 'sample' },
-    { headline: 'Insider buying clusters at a mid cap after earnings', meta: 'sample' },
+    { headline: 'A fund crosses 5% in a bank', meta: 'sample' },
+    { headline: 'An activist asks for two seats', meta: 'sample' },
+    { headline: 'Insiders buy after earnings', meta: 'sample' },
   ],
   eyes: [
-    { headline: 'Night lights brighten around a new industrial park', meta: 'sample' },
-    { headline: 'Port congestion eases at a major container terminal', meta: 'sample' },
-    { headline: 'A patent family grows in solid state battery chemistry', meta: 'sample' },
+    { headline: 'An industrial park lights up', meta: 'sample' },
+    { headline: 'Port congestion eases', meta: 'sample' },
+    { headline: 'Battery patents pile up', meta: 'sample' },
   ],
-  consumer: [
-    { headline: 'App downloads for a delivery service jump week on week', meta: 'sample' },
-    { headline: 'Job postings at a retailer tilt toward logistics roles', meta: 'sample' },
-    { headline: 'Review sentiment turns on a consumer hardware launch', meta: 'sample' },
+  whispers: [
+    { headline: 'Delivery app downloads jump', meta: 'sample' },
+    { headline: 'A retailer hires for logistics', meta: 'sample' },
+    { headline: 'Reviews sour on a new device', meta: 'sample' },
   ],
   hive: [
-    { headline: 'A prediction market moves twelve points on a rate decision', meta: 'sample' },
-    { headline: 'Crowd forecasters raise the odds of a shutdown by October', meta: 'sample' },
-    { headline: 'Volume spikes on a market about a merger closing', meta: 'sample' },
+    { headline: 'Odds move 12 points on rates', meta: 'sample' },
+    { headline: 'Shutdown odds rise for October', meta: 'sample' },
+    { headline: 'A merger market sees a spike', meta: 'sample' },
   ],
   lighthouse: [
-    { headline: 'A central bank cuts while its neighbours hold', meta: 'sample' },
-    { headline: 'A new designation lands on a sanctions list', meta: 'sample' },
-    { headline: 'Geopolitical risk ticks up across three economies', meta: 'sample' },
+    { headline: 'A central bank cuts alone', meta: 'sample' },
+    { headline: 'A new sanctions designation', meta: 'sample' },
+    { headline: 'Risk rises in three economies', meta: 'sample' },
   ],
   regulatory: [
-    { headline: 'A proposed rule opens for comment on stablecoin reserves', meta: 'sample' },
-    { headline: 'A regulator settles with a broker over disclosures', meta: 'sample' },
-    { headline: 'A bill picks up a fourth cosponsor in committee', meta: 'sample' },
+    { headline: 'Stablecoin rule up for comment', meta: 'sample' },
+    { headline: 'Broker settles over disclosures', meta: 'sample' },
+    { headline: 'A bill gains a fourth cosponsor', meta: 'sample' },
   ],
+};
+
+/* The dimension's name as the one-line cards show it. */
+const SHORT_NAME = {
+  capitol: 'Capitol',
+  titans: 'Titans',
+  eyes: 'Eyes Above',
+  whispers: 'Whispers',
+  hive: 'The Hive',
+  lighthouse: 'Lighthouse',
+  regulatory: 'Regulatory',
 };
 
 /**
@@ -57,7 +69,7 @@ export function buildNewsItems(taxonomy = DATASET_TAXONOMY) {
     const lines = SAMPLE_COPY[d.id] || [];
     return lines.map((l) => ({
       dimensionId: d.id,
-      dimension: d.label,
+      dimension: SHORT_NAME[d.id] || d.label,
       icon: d.biIcon,
       color: d.color,
       headline: l.headline,

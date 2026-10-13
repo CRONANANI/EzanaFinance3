@@ -1,0 +1,481 @@
+/* The Sonar device scene on /datasets (prefix dso-sc). The handoff's palette
+   (Part A1) mapped to theme tokens: emerald, its highlight and hot core as
+   mixes of --emerald and white; charcoals as mixes of black and white; the
+   mint accent from --brand-band-mint. No hex. */
+.dso-sc {
+  --sc-em: var(--emerald);
+  --sc-hi: color-mix(in srgb, var(--emerald) 72%, white);
+  --sc-mint: var(--brand-band-mint);
+  --sc-mint-pale: color-mix(in srgb, var(--brand-band-mint) 60%, white);
+  --sc-core: color-mix(in srgb, var(--emerald) 18%, white);
+  --sc-core-hot: color-mix(in srgb, var(--emerald) 8%, white);
+  --sc-face-t: var(--sc-hi);
+  --sc-face-r: color-mix(in srgb, var(--emerald) 84%, black);
+  --sc-face-l: color-mix(in srgb, var(--emerald) 70%, black);
+  --sc-bg-a: color-mix(in srgb, white 5%, black);
+  --sc-bg-b: color-mix(in srgb, white 2%, black);
+  --sc-slab-a: color-mix(in srgb, white 14%, black);
+  --sc-slab-b: color-mix(in srgb, white 9%, black);
+  --sc-bezel: color-mix(in srgb, white 18%, black);
+  --sc-side: color-mix(in srgb, white 7%, black);
+  --sc-rec-a: color-mix(in srgb, white 5%, black);
+  --sc-rec-b: color-mix(in srgb, white 7%, black);
+  --sc-ink-shadow: color-mix(in srgb, white 3%, black);
+  --sc-field-dot: color-mix(in srgb, white 16%, black);
+  --sc-map-dot: color-mix(in srgb, white 28%, black);
+  --sc-fog: color-mix(in srgb, white 62%, black);
+  --sc-text: var(--sc-mint);
+  position: relative;
+  width: 100%;
+  font-family: var(--font-sans);
+  color: color-mix(in srgb, white 92%, transparent);
+}
+.dso-sc-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--sc-ar, 1140 / 700);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+.dso-sc-scene {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── gradient stops and fills (SVG attributes can't take color-mix) ──── */
+.dso-sc-vig-a {
+  stop-color: var(--sc-bg-a);
+}
+.dso-sc-vig-b {
+  stop-color: var(--sc-bg-b);
+}
+.dso-sc-em {
+  stop-color: var(--sc-em);
+}
+.dso-sc-hi {
+  stop-color: var(--sc-hi);
+}
+.dso-sc-white {
+  stop-color: white;
+}
+.dso-sc-slab-a {
+  stop-color: var(--sc-slab-a);
+}
+.dso-sc-slab-b {
+  stop-color: var(--sc-slab-b);
+}
+.dso-sc-rec-a {
+  stop-color: var(--sc-rec-a);
+}
+.dso-sc-rec-b {
+  stop-color: var(--sc-rec-b);
+}
+.dso-sc-dot {
+  fill: var(--sc-field-dot);
+}
+.dso-sc-dot-map {
+  fill: var(--sc-map-dot);
+}
+
+.dso-sc-base-ext {
+  fill: color-mix(in srgb, white 3%, black);
+}
+.dso-sc-base {
+  fill: color-mix(in srgb, white 5%, black);
+  stroke: color-mix(in srgb, white 7%, transparent);
+  stroke-width: 1;
+}
+.dso-sc-mintline {
+  fill: none;
+  stroke: var(--sc-mint-pale);
+  stroke-opacity: 0.75;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+.dso-sc-slab-ext {
+  fill: var(--sc-side);
+}
+.dso-sc-slab-rail {
+  fill: none;
+  stroke: color-mix(in srgb, white 6%, transparent);
+  stroke-width: 1;
+}
+.dso-sc-slab-top {
+  stroke: var(--sc-bezel);
+  stroke-width: 1;
+}
+.dso-sc-recess {
+  stroke: var(--sc-ink-shadow);
+  stroke-width: 3;
+}
+.dso-sc-recess-edge {
+  fill: none;
+  stroke: color-mix(in srgb, white 5%, transparent);
+  stroke-width: 1;
+}
+.dso-sc-grid {
+  fill: none;
+  stroke: color-mix(in srgb, white 3.5%, transparent);
+  stroke-width: 1;
+}
+
+.dso-sc-sweep {
+  transform-origin: 0 0;
+}
+.dso-sc.is-sweeping .dso-sc-sweep {
+  animation: dso-sc-sweep 9s linear infinite;
+}
+@keyframes dso-sc-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.dso-sc-sweep-edge {
+  stroke: var(--sc-mint-pale);
+  stroke-opacity: 0.95;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.dso-sc-ring {
+  fill: none;
+  stroke: var(--sc-em);
+}
+.dso-sc-ring--3 {
+  stroke-opacity: 0.85;
+  stroke-width: 1.4;
+}
+.dso-sc-ring--tick {
+  stroke-opacity: 0.55;
+  stroke-width: 6;
+  stroke-dasharray: 1.2 10.6;
+}
+.dso-sc-ring--2 {
+  stroke-opacity: 0.55;
+  stroke-width: 1.1;
+}
+.dso-sc-ring--1 {
+  stroke-opacity: 0.45;
+  stroke-width: 1;
+}
+.dso-sc-centre {
+  fill: var(--sc-core);
+}
+
+.dso-sc-link {
+  fill: none;
+  stroke: color-mix(in srgb, white 42%, transparent);
+  stroke-width: 1;
+  stroke-linecap: round;
+  transition:
+    stroke 160ms ease-out,
+    opacity 160ms ease-out;
+}
+.dso-sc-link.is-on {
+  stroke: color-mix(in srgb, var(--sc-em) 95%, transparent);
+  stroke-width: 1.4;
+}
+.dso-sc-link.is-quiet {
+  opacity: 0.28;
+}
+.dso-sc-node {
+  transition: opacity 160ms ease-out;
+}
+.dso-sc-node.is-quiet {
+  opacity: 0.28;
+}
+.dso-sc-marker {
+  fill: color-mix(in srgb, white 5%, black);
+  stroke: color-mix(in srgb, white 90%, transparent);
+  stroke-width: 1.2;
+}
+.dso-sc-sat.is-live circle {
+  fill: var(--sc-hi);
+}
+.dso-sc-sat.is-road circle {
+  fill: color-mix(in srgb, white 5%, black);
+  stroke: var(--sc-mint);
+  stroke-opacity: 0.6;
+  stroke-width: 1;
+}
+.dso-sc-cube-l {
+  fill: var(--sc-face-l);
+}
+.dso-sc-cube-r {
+  fill: var(--sc-face-r);
+}
+.dso-sc-cube-t {
+  fill: var(--sc-face-t);
+}
+.dso-sc-cube {
+  filter: url(#dso-sc-glow);
+}
+.dso-sc-node.is-on .dso-sc-cube-t {
+  fill: var(--sc-core);
+}
+.dso-sc-hot {
+  fill: var(--sc-core-hot);
+}
+.dso-sc-hot-halo {
+  fill: var(--sc-core-hot);
+  fill-opacity: 0.35;
+}
+.dso-sc-fog {
+  fill: var(--sc-fog);
+}
+.dso-sc-bar-channel {
+  fill: none;
+  stroke: var(--sc-ink-shadow);
+  stroke-width: 16;
+}
+.dso-sc-bar {
+  fill: none;
+  stroke-width: 6;
+}
+
+.dso-sc-plaque-shadow {
+  fill: color-mix(in srgb, white 4%, black);
+}
+.dso-sc-plaque {
+  fill: color-mix(in srgb, white 12%, black);
+  stroke: color-mix(in srgb, white 20%, black);
+  stroke-width: 1;
+}
+.dso-sc-plaque-face {
+  fill: color-mix(in srgb, var(--sc-em) 10%, transparent);
+  stroke: var(--sc-em);
+  stroke-opacity: 0.75;
+  stroke-width: 1.2;
+}
+.dso-sc-plaque-text {
+  fill: var(--sc-hi);
+  font-family: var(--font-sans);
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.dso-sc-key-l {
+  fill: color-mix(in srgb, white 8%, black);
+}
+.dso-sc-key-r {
+  fill: color-mix(in srgb, white 11%, black);
+}
+.dso-sc-key-t {
+  fill: color-mix(in srgb, white 16%, black);
+  stroke: color-mix(in srgb, white 24%, black);
+  stroke-width: 1;
+}
+.dso-sc-port {
+  fill: color-mix(in srgb, white 5%, black);
+  stroke: color-mix(in srgb, white 13%, black);
+}
+.dso-sc-port-light {
+  fill: var(--sc-hi);
+}
+
+.dso-sc-glass {
+  stroke: color-mix(in srgb, white 28%, transparent);
+  stroke-width: 1;
+}
+.dso-sc-glass-edge {
+  fill: color-mix(in srgb, white 25%, transparent);
+}
+.dso-sc-blob {
+  fill: var(--sc-em);
+}
+.dso-sc-text {
+  font-family: var(--font-mono);
+  fill: var(--sc-text);
+  fill-opacity: 0.9;
+  font-variant-numeric: tabular-nums;
+  white-space: pre;
+  display: none;
+}
+.dso-sc.has-text .dso-sc-text {
+  display: block;
+}
+.dso-sc-pool {
+  fill: var(--sc-em);
+}
+
+/* ── upright layer ───────────────────────────────────────────────────── */
+.dso-sc-label {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 3px 7px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, black 45%, transparent);
+  color: color-mix(in srgb, white 92%, transparent);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    opacity 160ms ease-out,
+    color 160ms ease-out;
+}
+.dso-sc-label.is-above {
+  transform: translate(-50%, calc(-100% - 10px));
+}
+.dso-sc-label.is-below {
+  transform: translate(-50%, 14px);
+}
+.dso-sc-label.is-left {
+  transform: translate(calc(-100% - 12px), -50%);
+  align-items: flex-end;
+  text-align: right;
+}
+.dso-sc-label.is-right {
+  transform: translate(12px, -50%);
+  align-items: flex-start;
+  text-align: left;
+}
+.dso-sc-label-name {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.dso-sc-label-sub {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--sc-mint);
+}
+.dso-sc-label.is-road .dso-sc-label-sub {
+  color: color-mix(in srgb, white 55%, transparent);
+}
+.dso-sc-label:hover,
+.dso-sc-label.is-on {
+  color: var(--sc-mint);
+}
+.dso-sc-label.is-quiet {
+  opacity: 0.4;
+}
+.dso-sc-label:focus-visible,
+.dso-sc-hub:focus-visible {
+  outline: 2px solid var(--sc-em);
+  outline-offset: 2px;
+}
+.dso-sc-hub {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(-50%, 14px);
+  padding: 2px 6px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, black 45%, transparent);
+  color: color-mix(in srgb, white 92%, transparent);
+  cursor: pointer;
+}
+.dso-sc-hub-name {
+  font-size: 13px;
+  font-weight: 700;
+}
+.dso-sc-hub-sub {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.26em;
+  color: var(--sc-mint);
+}
+.dso-sc-sathit {
+  position: absolute;
+  z-index: 2;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+}
+.dso-sc-sathit a,
+.dso-sc-sathit i {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+.dso-sc-sathit a:focus-visible {
+  outline: 2px solid var(--sc-em);
+}
+.dso-sc-tip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 150px;
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, var(--sc-em) 20%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, black 82%, transparent);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.dso-sc-tip small {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--sc-mint);
+}
+.dso-sc-tip b {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.dso-sc-tip em {
+  font-size: 11px;
+  font-style: normal;
+  color: color-mix(in srgb, white 60%, transparent);
+}
+
+/* ── responsive (Part A6) ────────────────────────────────────────────── */
+.dso-sc.is-compact .dso-sc-label-name {
+  font-size: 11.5px;
+}
+.dso-sc.is-compact .dso-sc-label-sub {
+  font-size: 8px;
+}
+.dso-sc.is-compact .dso-sc-label {
+  padding: 2px 5px;
+}
+.dso-sc.is-narrow .dso-sc-panel--b,
+.dso-sc.is-narrow .dso-sc-panel--d {
+  display: none;
+}
+.dso-sc.is-narrow .dso-sc-ring--3,
+.dso-sc.is-narrow .dso-sc-ring--tick {
+  display: none;
+}
+.dso-sc.is-narrow .dso-sc-label-name {
+  font-size: 10px;
+}
+.dso-sc.is-narrow .dso-sc-label {
+  padding: 2px 5px;
+}
+.dso-sc.is-narrow .dso-sc-label.is-left {
+  transform: translate(calc(-100% - 6px), -50%);
+}
+.dso-sc.is-narrow .dso-sc-label.is-right {
+  transform: translate(6px, -50%);
+}
+.dso-sc.is-narrow .dso-sc-label-sub {
+  display: none;
+}
+.dso-sc.is-narrow .dso-sc-hub-name {
+  font-size: 11px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dso-sc-sweep {
+    animation: none !important;
+  }
+  .dso-sc-link,
+  .dso-sc-node,
+  .dso-sc-label {
+    transition: none;
+  }
+}

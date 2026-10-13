@@ -116,8 +116,15 @@ export function PublicMobileCta() {
 
   if (!visible) return null;
 
+  /* The all-datasets page is black, so the bar goes black there too. */
+  const dark = pathname === '/datasets';
+
   return (
-    <div className="pcta-bar" role="complementary" aria-label="Join the waitlist">
+    <div
+      className={`pcta-bar${dark ? ' pcta-bar--dark' : ''}`}
+      role="complementary"
+      aria-label="Join the waitlist"
+    >
       <p className="pcta-copy">Your edge is waiting.</p>
       <a className="pcta-btn" href="/auth/signup">
         Join the waitlist
