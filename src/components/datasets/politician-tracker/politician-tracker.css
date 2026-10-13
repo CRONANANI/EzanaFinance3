@@ -378,12 +378,15 @@
   grid-template-columns: minmax(0, 1fr) 380px;
   /* The right column is one cell spanning both rows: Trades by state on
      top, Most held companies, then the rail (Rank by, House vs Senate). */
+  /* Left column: controls, the Top eight, then the full list directly under
+     them. Right column: Trades by state, Most held companies, Rank by and
+     House vs Senate, spanning every row. The list row takes the spare
+     height, so the cards never float away from the list. */
   grid-template-areas:
     'controls right'
-    'cards right';
-  /* The spanning right column's extra height goes to the cards row, so
-     the gallery starts right under its heading. */
-  grid-template-rows: auto 1fr;
+    'cards right'
+    'list right';
+  grid-template-rows: auto auto 1fr;
   column-gap: 28px;
   row-gap: 12px;
   align-items: start;
@@ -826,13 +829,24 @@
 
 /* ── dense list ──────────────────────────────────────────────────────── */
 .ptk-list {
+  grid-area: list;
+  min-width: 0;
   border-top: 2px solid var(--ptk-ink);
 }
 /* Every member is listed (500+ rows), so the list scrolls inside itself
-   with the column headings pinned. */
+   with the column headings pinned; compressed beside the right column. */
 .ptk-list-scroll {
   overflow: auto;
-  max-height: min(78vh, 900px);
+  max-height: min(64vh, 720px);
+}
+.ptk-list .ptk-table {
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+.ptk-list .ptk-table td,
+.ptk-list .ptk-table th {
+  padding-top: 6px;
+  padding-bottom: 6px;
 }
 .ptk-table thead th {
   position: sticky;
@@ -1143,6 +1157,7 @@
     grid-template-areas:
       'controls'
       'cards'
+      'list'
       'right';
     row-gap: 24px;
   }

@@ -882,149 +882,150 @@ export default function PoliticianTracker({
               </p>
             </aside>
           </div>
-        </div>
 
-        {/* ── dense list, rank 9 on ── */}
-        <section className="ptk-list" aria-label="Every member, ranked">
-          <div className="ptk-list-scroll">
-            <table className="ptk-table">
-              <thead>
-                <tr>
-                  <th className="dsc-mn">#</th>
-                  <th className="dsc-mn">POLITICIAN</th>
-                  <th className="dsc-mn ptk-col-chamber">CHAMBER</th>
-                  <th className="dsc-mn">DISCLOSED VOLUME</th>
-                  <th className="dsc-mn ptk-th--c">TRADES</th>
-                  <th className="dsc-mn ptk-th--c ptk-col-bs">BUYS / SELLS</th>
-                  <th className="dsc-mn ptk-th--c ptk-col-last">LAST TRADE</th>
-                  <th className="dsc-mn ptk-th--c ptk-col-tks">TOP TICKERS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {!rankingReady
-                  ? Array.from({ length: LIST_SKELETON }, (_, i) => (
-                      <tr key={i} className="ptk-row ptk-row--skel" aria-hidden="true">
-                        <td colSpan={8}>
-                          <Skel className="ptk-skel--line ptk-skel--row" />
-                        </td>
-                      </tr>
-                    ))
-                  : rest.slice(0, rowLimit).map((m, i) => {
-                      const selected = openMember?.key === m.key;
-                      const ch = String(m.chamber || '').toLowerCase();
-                      const quiet = !(m.count > 0);
-                      return (
-                        <Fragment key={m.key}>
-                          {i === firstQuiet ? (
-                            <tr className="ptk-row-sep" aria-hidden="true">
-                              <td colSpan={8} className="dsc-mn">
-                                NO DISCLOSED TRADES, {pMeta.heading} · {rest.length - firstQuiet}{' '}
-                                MEMBERS
+          {/* ── dense list, rank 9 on: directly under the cards, in the left column ── */}
+          <section className="ptk-list" aria-label="Every member, ranked">
+            <div className="ptk-list-scroll">
+              <table className="ptk-table">
+                <thead>
+                  <tr>
+                    <th className="dsc-mn">#</th>
+                    <th className="dsc-mn">POLITICIAN</th>
+                    <th className="dsc-mn ptk-col-chamber">CHAMBER</th>
+                    <th className="dsc-mn">DISCLOSED VOLUME</th>
+                    <th className="dsc-mn ptk-th--c">TRADES</th>
+                    <th className="dsc-mn ptk-th--c ptk-col-bs">BUYS / SELLS</th>
+                    <th className="dsc-mn ptk-th--c ptk-col-last">LAST TRADE</th>
+                    <th className="dsc-mn ptk-th--c ptk-col-tks">TOP TICKERS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {!rankingReady
+                    ? Array.from({ length: LIST_SKELETON }, (_, i) => (
+                        <tr key={i} className="ptk-row ptk-row--skel" aria-hidden="true">
+                          <td colSpan={8}>
+                            <Skel className="ptk-skel--line ptk-skel--row" />
+                          </td>
+                        </tr>
+                      ))
+                    : rest.slice(0, rowLimit).map((m, i) => {
+                        const selected = openMember?.key === m.key;
+                        const ch = String(m.chamber || '').toLowerCase();
+                        const quiet = !(m.count > 0);
+                        return (
+                          <Fragment key={m.key}>
+                            {i === firstQuiet ? (
+                              <tr className="ptk-row-sep" aria-hidden="true">
+                                <td colSpan={8} className="dsc-mn">
+                                  NO DISCLOSED TRADES, {pMeta.heading} · {rest.length - firstQuiet}{' '}
+                                  MEMBERS
+                                </td>
+                              </tr>
+                            ) : null}
+                            <tr
+                              tabIndex={0}
+                              data-member={m.bioguideId || undefined}
+                              className={`ptk-row${selected ? ` ptk-row--selected ptk-row--selected-${ch}` : ''}`}
+                              aria-selected={selected}
+                              onClick={(e) => open(m, e.currentTarget)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  open(m, e.currentTarget);
+                                }
+                              }}
+                            >
+                              <td className="dsc-mn ptk-td-rank">
+                                {m.rank ? String(m.rank).padStart(2, '0') : NONE}
                               </td>
-                            </tr>
-                          ) : null}
-                          <tr
-                            tabIndex={0}
-                            data-member={m.bioguideId || undefined}
-                            className={`ptk-row${selected ? ` ptk-row--selected ptk-row--selected-${ch}` : ''}`}
-                            aria-selected={selected}
-                            onClick={(e) => open(m, e.currentTarget)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                open(m, e.currentTarget);
-                              }
-                            }}
-                          >
-                            <td className="dsc-mn ptk-td-rank">
-                              {m.rank ? String(m.rank).padStart(2, '0') : NONE}
-                            </td>
-                            <td>
-                              <span className="ptk-who">
-                                <Headshot
-                                  name={m.name}
-                                  bioguideId={m.bioguideId}
-                                  chamber={m.chamber}
-                                  photoUrl={m.photoUrl}
-                                  size={AVATAR_SIZE.row}
-                                  ring={2}
-                                />
-                                <span className="ptk-who-text">
-                                  <span className="ptk-name">{m.name}</span>
-                                  <span className="ptk-seat">
-                                    <PartyTag party={m.party} />
-                                    <span className="dsc-mn">{seatLabel(m) || NONE}</span>
+                              <td>
+                                <span className="ptk-who">
+                                  <Headshot
+                                    name={m.name}
+                                    bioguideId={m.bioguideId}
+                                    chamber={m.chamber}
+                                    photoUrl={m.photoUrl}
+                                    size={AVATAR_SIZE.row}
+                                    ring={2}
+                                  />
+                                  <span className="ptk-who-text">
+                                    <span className="ptk-name">{m.name}</span>
+                                    <span className="ptk-seat">
+                                      <PartyTag party={m.party} />
+                                      <span className="dsc-mn">{seatLabel(m) || NONE}</span>
+                                    </span>
                                   </span>
                                 </span>
-                              </span>
-                            </td>
-                            <td className="ptk-col-chamber">
-                              <ChamberChip chamber={m.chamber} />
-                            </td>
-                            <td>
-                              <span className="ptk-vol">
-                                <span className="dsc-mn ptk-vol-fig">{usdShort(m.volume)}</span>
-                                {m.volume > 0 && first?.volume > 0 ? (
-                                  <span className="ptk-track ptk-col-volbar" aria-hidden="true">
-                                    <i
-                                      style={{
-                                        width: `${Math.min(100, (m.volume / first.volume) * 100)}%`,
-                                      }}
-                                    />
-                                  </span>
-                                ) : null}
-                              </span>
-                            </td>
-                            <td className="dsc-mn ptk-td--c">{quiet ? NONE : m.count}</td>
-                            <td className="dsc-mn ptk-td--c ptk-col-bs">
-                              {quiet ? (
-                                NONE
-                              ) : (
-                                <>
-                                  <b className="ptk-buy-n">{m.buys}</b>
-                                  <span className="ptk-slash"> / </span>
-                                  <b>{m.sells}</b>
-                                </>
-                              )}
-                            </td>
-                            <td className="dsc-mn ptk-td--c ptk-td-mute ptk-col-last">
-                              {m.lastTraded || NONE}
-                            </td>
-                            <td className="ptk-td--c ptk-col-tks">
-                              <Tickers tickers={m.tickers} cls="ptk-tks--sm ptk-tks--center" />
-                            </td>
-                          </tr>
-                        </Fragment>
-                      );
-                    })}
-                {rankingReady && moreRows ? (
-                  <tr ref={sentinelRef} className="ptk-row-more">
-                    <td colSpan={8}>
-                      <button
-                        type="button"
-                        className="ptk-more-btn dsc-mn"
-                        onClick={() => setRowLimit((n) => n + ROW_WINDOW)}
-                      >
-                        SHOW MORE · {rest.length - rowLimit} REMAINING
-                      </button>
-                    </td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </div>
-          <div className="ptk-list-foot">
-            <p>
-              Every sitting member, same order as the cards: members who traded in the period first,
-              then those with no disclosed trades. Select a row or a card for the full profile.
-            </p>
-            <span className="dsc-mn ptk-list-count">
-              {!rankingReady
-                ? NONE
-                : `${ranked.length} MEMBERS · ${traders.length} WITH DISCLOSED TRADES`}
-            </span>
-          </div>
-        </section>
+                              </td>
+                              <td className="ptk-col-chamber">
+                                <ChamberChip chamber={m.chamber} />
+                              </td>
+                              <td>
+                                <span className="ptk-vol">
+                                  <span className="dsc-mn ptk-vol-fig">{usdShort(m.volume)}</span>
+                                  {m.volume > 0 && first?.volume > 0 ? (
+                                    <span className="ptk-track ptk-col-volbar" aria-hidden="true">
+                                      <i
+                                        style={{
+                                          width: `${Math.min(100, (m.volume / first.volume) * 100)}%`,
+                                        }}
+                                      />
+                                    </span>
+                                  ) : null}
+                                </span>
+                              </td>
+                              <td className="dsc-mn ptk-td--c">{quiet ? NONE : m.count}</td>
+                              <td className="dsc-mn ptk-td--c ptk-col-bs">
+                                {quiet ? (
+                                  NONE
+                                ) : (
+                                  <>
+                                    <b className="ptk-buy-n">{m.buys}</b>
+                                    <span className="ptk-slash"> / </span>
+                                    <b>{m.sells}</b>
+                                  </>
+                                )}
+                              </td>
+                              <td className="dsc-mn ptk-td--c ptk-td-mute ptk-col-last">
+                                {m.lastTraded || NONE}
+                              </td>
+                              <td className="ptk-td--c ptk-col-tks">
+                                <Tickers tickers={m.tickers} cls="ptk-tks--sm ptk-tks--center" />
+                              </td>
+                            </tr>
+                          </Fragment>
+                        );
+                      })}
+                  {rankingReady && moreRows ? (
+                    <tr ref={sentinelRef} className="ptk-row-more">
+                      <td colSpan={8}>
+                        <button
+                          type="button"
+                          className="ptk-more-btn dsc-mn"
+                          onClick={() => setRowLimit((n) => n + ROW_WINDOW)}
+                        >
+                          SHOW MORE · {rest.length - rowLimit} REMAINING
+                        </button>
+                      </td>
+                    </tr>
+                  ) : null}
+                </tbody>
+              </table>
+            </div>
+            <div className="ptk-list-foot">
+              <p>
+                Every sitting member, same order as the cards: members who traded in the period
+                first, then those with no disclosed trades. Select a row or a card for the full
+                profile.
+              </p>
+              <span className="dsc-mn ptk-list-count">
+                {!rankingReady
+                  ? NONE
+                  : `${ranked.length} MEMBERS · ${traders.length} WITH DISCLOSED TRADES`}
+              </span>
+            </div>
+          </section>
+        </div>
 
         <p className="dsc-compliance">
           Disclosures are public records filed under the STOCK Act. Amounts are the ranges members
