@@ -20,6 +20,7 @@ import {
   getPortfolio,
 } from '@/lib/datasets/capitol-hub/data';
 import { getDatasetVisuals } from '@/lib/datasets/capitol-hub/dataset-visuals';
+import { getStateTrades } from '@/lib/datasets/capitol-hub/state-trades';
 import { summaryFor } from '../HubCards';
 import { DatasetTile, DatasetTileSkeleton, orderTiles } from './DatasetTiles';
 import CwhProvider from './CwhProvider';
@@ -31,6 +32,7 @@ import { TABS } from './tabs';
 import Heatmap from './Heatmap';
 import Leaderboard from './Leaderboard';
 import Portfolio from './Portfolio';
+import StateMap from './StateMap';
 import './capitol-hub.css';
 
 /* ── modules ──────────────────────────────────────────────────────────── */
@@ -102,6 +104,11 @@ async function LeaderboardModule() {
     getLinkage('capitol-award-leaders'),
   ]);
   return <Leaderboard readers={readers} companies={leaders?.extra?.companies || []} />;
+}
+
+async function StateMapModule() {
+  const data = await getStateTrades();
+  return <StateMap data={data} />;
 }
 
 async function PortfolioModule() {
@@ -214,6 +221,20 @@ export default function CapitolWatchHub({ dimension }) {
           fallback={<CardSkeleton label="Who reads contract awards best" className="cwh-lead" />}
         >
           <LeaderboardModule />
+        </Suspense>
+      ),
+    },
+    {
+      id: 'state-map',
+      title: 'Trades by state',
+      icon: 'bi-geo-alt',
+      blurb: 'Where disclosed trades come from, and who is trading in each state.',
+      w: 12,
+      minW: 6,
+      guest: true,
+      node: (
+        <Suspense fallback={<CardSkeleton label="Trades by state" className="cwh-sm" />}>
+          <StateMapModule />
         </Suspense>
       ),
     },
