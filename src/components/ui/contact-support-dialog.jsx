@@ -19,7 +19,7 @@
  *                       var(--emerald-bg-subtle)  (focus ring halo)
  *  Text tiers:          --text-primary / --text-muted / --text-faint
  *  Destructive:         #ef4444 (landing-consistent, matches tailwind.config destructive)
- *  Typography:          Plus Jakarta Sans (tailwind.config.js fontFamily.sans)
+ *  Typography:          Space Grotesk (tailwind.config.js fontFamily.sans)
  *  Border radius:       16px (matches feature cards / pricing cards rounded-2xl)
  *  Spacing rhythm:      1.5rem section padding, 1.25rem field gap
  *  Button CTA style:    emerald fill + white text + emerald/25 glow on hover
