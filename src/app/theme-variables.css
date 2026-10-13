@@ -13,7 +13,9 @@
    ═══════════════════════════════════════════════════════════ */
 
 :root {
-  --font-display: 'Nunito', system-ui, sans-serif;
+  /* Display face. Nunito retired in the Space Grotesk migration: its one
+     consumer (the OECD explorer title) now reads the UI family. */
+  --font-display: var(--font-sans);
 
   /* ── Shared layout envelope ──────────────────────────────────────────
      The nav container and every page container consume these, so the left
@@ -182,11 +184,27 @@
   --badge-bg: #ef4444;
   --badge-ring: #0f1419;
 
-  /* ── Typography (Dashboard + app-wide) ── */
+  /* ── Typography (Dashboard + app-wide) ───────────────────────────────────
+     The three families. Every component reads these tokens; no component
+     names a family directly (scripts/check-branding.mjs enforces it).
+       --font-sans   Space Grotesk. All interface text: titles, nav, buttons,
+                     tabs, labels, forms, body copy, company and entity names.
+       --font-mono   IBM Plex Mono. Tickers, prices, percentages, metrics,
+                     timestamps, chart axes, identifiers, coordinates, and the
+                     uppercase eyebrow/kicker labels of the type ramp below.
+                     Never for paragraphs or navigation.
+       --font-serif  Newsreader. Editorial only: Ezana Echo headlines, pull
+                     quotes and figure titles. Echo body copy keeps its own
+                     serif stacks (--echo-font-serif, and the Charter stack on
+                     .echo-article-body); both are editorial exceptions.
+     Space Grotesk tops out at 700; a declared 800 renders at 700.
+     Fallbacks are system faces with similar proportions, so a failed font
+     request leaves readable text. */
   --font-sans:
-    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
   --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   /* ── Broadsheet type kit ──────────────────────────────────────────────────
      The home page's editorial ("broadsheet") type treatment, promoted here for

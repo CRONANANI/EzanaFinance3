@@ -610,7 +610,7 @@
  *  Token-driven so it reads correctly in BOTH light and dark; the light
  *  "Stripe × Bloomberg" surfaces come from body.light-mode flipping the tokens.
  *  Recreates the Ezana card pattern (surface + hairline border + soft shadow),
- *  JetBrains Mono tabular numerics on every figure. Scoped .ctd-* so it never
+ *  IBM Plex Mono tabular numerics on every figure. Scoped .ctd-* so it never
  *  collides with the legacy .ot-* styles above.
  * ==========================================================================*/
 .ctd-root {
@@ -1124,7 +1124,7 @@ html.light-mode .ctd-kpi {
 
 /* ═══════════════════════════════════════════════════════════════════
    Flag Position — "1b" two-column dossier composer + resolution loop.
-   Tokens with module-matched fallbacks; JetBrains Mono tabular-nums on
+   Tokens with module-matched fallbacks; IBM Plex Mono tabular-nums on
    every figure via .ot-num. Dark modal floats on the Council desk.
    ═══════════════════════════════════════════════════════════════════ */
 .ot-num {

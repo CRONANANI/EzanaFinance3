@@ -96,28 +96,28 @@ export const GET = withApiGuard(
 <style>
   /* Self-hosted fonts (public/fonts/site), so opening a report sends nothing
      to a third-party font host. */
-  @font-face { font-family:'Plus Jakarta Sans'; font-style:normal; font-weight:200 800; font-display:swap; src:url('${origin}/fonts/site/plus-jakarta-sans-latin-wght-normal.woff2') format('woff2-variations'); }
-  @font-face { font-family:'Plus Jakarta Sans'; font-style:normal; font-weight:200 800; font-display:swap; src:url('${origin}/fonts/site/plus-jakarta-sans-latin-ext-wght-normal.woff2') format('woff2-variations'); unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
-  @font-face { font-family:'JetBrains Mono'; font-style:normal; font-weight:500; font-display:swap; src:url('${origin}/fonts/site/jetbrains-mono-latin-500-normal.woff2') format('woff2'); }
-  @font-face { font-family:'JetBrains Mono'; font-style:normal; font-weight:700; font-display:swap; src:url('${origin}/fonts/site/jetbrains-mono-latin-700-normal.woff2') format('woff2'); }
+  @font-face { font-family:'Space Grotesk'; font-style:normal; font-weight:300 700; font-display:swap; src:url('${origin}/fonts/site/space-grotesk-latin-wght-normal.woff2') format('woff2-variations'); }
+  @font-face { font-family:'Space Grotesk'; font-style:normal; font-weight:300 700; font-display:swap; src:url('${origin}/fonts/site/space-grotesk-latin-ext-wght-normal.woff2') format('woff2-variations'); unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+  @font-face { font-family:'IBM Plex Mono'; font-style:normal; font-weight:500; font-display:swap; src:url('${origin}/fonts/site/ibm-plex-mono-latin-500-normal.woff2') format('woff2'); }
+  @font-face { font-family:'IBM Plex Mono'; font-style:normal; font-weight:700; font-display:swap; src:url('${origin}/fonts/site/ibm-plex-mono-latin-700-normal.woff2') format('woff2'); }
   :root { --em:#10b981; --gold:#d4a853; --ink:#0f172a; --muted:#64748b; --line:#e5e7eb; }
   * { box-sizing:border-box; }
-  body { margin:0; font-family:'Plus Jakarta Sans',-apple-system,sans-serif; color:var(--ink); background:#fff; }
+  body { margin:0; font-family:'Space Grotesk',-apple-system,'Segoe UI',sans-serif; color:var(--ink); background:#fff; }
   .page { max-width:820px; margin:0 auto; padding:40px 48px 64px; }
-  .mono { font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums; }
+  .mono { font-family:'IBM Plex Mono',ui-monospace,monospace; font-variant-numeric:tabular-nums; }
   .r { text-align:right; }
   .pos { color:#059669; } .neg { color:#dc2626; }
   .cover { display:flex; align-items:center; justify-content:space-between; gap:16px; }
   .cover img { height:42px; width:auto; }
-  .conf { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); font-weight:700; }
-  h1 { font-size:26px; font-weight:800; letter-spacing:-.02em; margin:18px 0 2px; }
+  .conf { font-family:'IBM Plex Mono',ui-monospace,monospace; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); font-weight:700; }
+  h1 { font-size:26px; font-weight:700; letter-spacing:-.02em; margin:18px 0 2px; }
   .period { color:var(--muted); font-size:13px; }
   .rule { height:3px; background:linear-gradient(90deg,var(--em),var(--gold)); border-radius:3px; margin:14px 0 26px; }
-  h2 { font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--em); margin:28px 0 10px; }
+  h2 { font-size:13px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--em); margin:28px 0 10px; }
   .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
   .stat { border:1px solid var(--line); border-radius:12px; padding:14px; }
   .stat .lbl { font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
-  .stat .val { font-family:'JetBrains Mono',monospace; font-weight:700; font-size:20px; margin-top:4px; }
+  .stat .val { font-family:'IBM Plex Mono',ui-monospace,monospace; font-weight:700; font-size:20px; margin-top:4px; }
   table { width:100%; border-collapse:collapse; font-size:12.5px; }
   th { text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); padding:7px 8px; border-bottom:2px solid var(--line); }
   td { padding:7px 8px; border-bottom:1px solid var(--line); }

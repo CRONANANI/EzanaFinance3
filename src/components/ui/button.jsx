@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
  * It references the --btn-* tokens DIRECTLY (see theme-variables.css) rather
  * than the shared Tailwind color keys, so every variant is correct in BOTH light
  * and dark without changing any existing bg-background / bg-card / border-input
- * consumer. Plus Jakarta Sans inherits via font-sans; numeric labels should add
+ * consumer. Space Grotesk inherits via font-sans; numeric labels should add
  * `font-mono tabular-nums` at the call site. House radius = 10px (matches the
  * Council desk buttons). Lucide only.
  */

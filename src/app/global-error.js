@@ -32,7 +32,9 @@ export default function GlobalError({ error, reset }) {
           justifyContent: 'center',
           backgroundColor: '#0f1419',
           color: '#ffffff',
-          fontFamily: "'Plus Jakarta Sans', -apple-system, sans-serif",
+          // The root layout (and with it fonts.css and the --font-* tokens)
+          // failed to render, so this names the family and system fallbacks.
+          fontFamily: "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         }}
       >
         <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>
@@ -48,7 +50,7 @@ export default function GlobalError({ error, reset }) {
             style={{
               fontSize: 12,
               color: '#6b7280',
-              fontFamily: 'monospace',
+              fontFamily: "'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace",
               marginTop: '-1rem',
               marginBottom: '1.5rem',
             }}

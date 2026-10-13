@@ -6,7 +6,7 @@
   min-height: 100vh;
   background-color: var(--app-bg);
   color: #f0f6fc;
-  font-family: var(--font-geist-sans, system-ui, -apple-system, sans-serif);
+  font-family: var(--font-sans);
 }
 
 .acl-container {

@@ -637,7 +637,7 @@
 .ma-panel-item-name {
   font-size: 0.6875rem;
   font-weight: 700;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   color: #f0f6fc;
   display: block;
@@ -694,7 +694,7 @@
 .ma-panel-item-detail p {
   font-size: 0.625rem;
   color: #8b949e;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   line-height: 1.6;
   margin: 0;
@@ -1083,7 +1083,7 @@ body.light-mode .ma-ticker-sep {
 .ma-chain-title {
   font-size: 0.6875rem;
   font-weight: 700;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   color: #f0f6fc;
   padding: 0.15rem 0.5rem;
@@ -1142,7 +1142,7 @@ body.light-mode .ma-ticker-sep {
 
 .ma-chain-body {
   font-size: 0.6875rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   color: #8b949e;
   line-height: 1.7;
@@ -1187,7 +1187,7 @@ body.light-mode .ma-ticker-sep {
 .ma-city-panel-name {
   font-size: 1rem;
   font-weight: 700;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   color: #f0f6fc;
   margin: 0 0 0.25rem;
@@ -1504,7 +1504,7 @@ body.light-mode .ma-ticker-sep {
 .ma-city-news-title {
   font-size: 0.6875rem;
   font-weight: 700;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   color: #e2e8f0;
   line-height: 1.5;

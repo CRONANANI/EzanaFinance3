@@ -24,7 +24,7 @@ export default function Error({ error, reset }) {
         padding: '2rem',
         backgroundColor: '#0f1419',
         color: '#ffffff',
-        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        fontFamily: 'var(--font-sans)',
       }}
     >
       <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>
@@ -37,7 +37,7 @@ export default function Error({ error, reset }) {
         <p
           style={{
             color: '#6b7280',
-            fontFamily: "'JetBrains Mono', monospace",
+            fontFamily: 'var(--font-mono)',
             fontSize: '0.75rem',
             marginBottom: '1.5rem',
           }}

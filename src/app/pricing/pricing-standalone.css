@@ -9,7 +9,7 @@
   min-height: 100vh;
   background: var(--bg-primary);
   color: var(--text-primary);
-  /* Match the rest of the app: Plus Jakarta Sans for text (was 'Inter'). */
+  /* Match the rest of the app: Space Grotesk for text (was 'Inter'). */
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -285,7 +285,7 @@
   color: #4338ca;
 }
 
-/* Numbers use the app's monospace number font (JetBrains Mono), the same
+/* Numbers use the app's monospace number font (IBM Plex Mono), the same
    family used for figures across the dashboard. The $ sits in its own span,
    smaller than the figure, so it shares a clean baseline with both the amount
    and the "/mo billed annually" interval (all three baseline-align via the

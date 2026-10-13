@@ -8,9 +8,8 @@
    AND when .light-mode IS set since that's the codebase's existing light marker). */
 .settings-ledger,
 html.light-mode .settings-ledger {
-  --sans:
-    var(--font-sans, 'Plus Jakarta Sans'), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --mono: var(--font-mono, 'JetBrains Mono'), ui-monospace, monospace;
+  --sans: var(--font-sans);
+  --mono: var(--font-mono);
 
   --page: var(--app-bg);
   --panel: #ffffff;

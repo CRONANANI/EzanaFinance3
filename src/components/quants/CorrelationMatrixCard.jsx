@@ -84,7 +84,7 @@ export function CorrelationMatrixCard() {
                           style={{
                             padding: '4px 6px',
                             textAlign: 'center',
-                            fontFamily: 'monospace',
+                            fontFamily: 'var(--font-mono)',
                             fontWeight: 600,
                             background: corrColor(v),
                             color: '#f0f6fc',

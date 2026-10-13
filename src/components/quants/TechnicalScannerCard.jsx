@@ -100,7 +100,7 @@ export function TechnicalScannerCard() {
                         style={{
                           fontSize: '0.875rem',
                           fontWeight: 700,
-                          fontFamily: 'monospace',
+                          fontFamily: 'var(--font-mono)',
                           color: '#d1d5db',
                         }}
                       >

@@ -108,8 +108,8 @@
   --snr-r-pill: 9999px;
 
   /* ---- type ---- */
-  --snr-font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --snr-font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --snr-font-sans: var(--font-sans);
+  --snr-font-mono: var(--font-mono);
   --snr-track-eyebrow: 0.36em;
   --snr-track-label: 0.16em;
   --snr-track-head: -0.032em;
@@ -4073,10 +4073,10 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
 
 /* ═══════════════════════════════════════════════════════════════════════════
    TYPE ROLES (Sept 2026). The band now speaks the datasets pages' type
-   system: Plus Jakarta Sans (--font-sans) for every word, the same face the
-   datasets CategoryBar and the ticker band below it use, and JetBrains Mono
+   system: Space Grotesk (--font-sans) for every word, the same face the
+   datasets CategoryBar and the ticker band below it use, and IBM Plex Mono
    (--font-mono, tabular) for figures, tickers and dates only, per the
-   branding guide ("Plus Jakarta Sans for text, JetBrains Mono for numbers").
+   branding guide ("Space Grotesk for text, IBM Plex Mono for numbers").
 
    Three roles and no fourth:
      heading     the card titles (Live synthesis, Sourced matches, Relevant

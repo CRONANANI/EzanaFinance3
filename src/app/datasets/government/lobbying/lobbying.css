@@ -1,6 +1,6 @@
 /* Lobbying Activity — "Influence Ledger" (2a). Page-scoped `lbx-` classes;
-   family standard: 1440px / 32px page, filter rail + main, Plus Jakarta Sans UI,
-   JetBrains Mono tabular numerics, Lucide icons, light mode. The issue/entity
+   family standard: 1440px / 32px page, filter rail + main, Space Grotesk UI,
+   IBM Plex Mono tabular numerics, Lucide icons, light mode. The issue/entity
    palette lives here as page-scoped CSS variables (tokenized, never hardcoded in
    JS). Bar length encodes disclosed dollars; segments encode targeting ACTIVITY. */
 

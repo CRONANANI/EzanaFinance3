@@ -4,7 +4,7 @@
  * DatasetTable — one accessible, branded table shared by every public
  * /datasets dimension page. Columns describe the shape; optional per-column
  * `render(value, row)` hooks return badge / mono cells. Numeric, ticker and
- * date cells should be flagged `mono` so they pick up JetBrains Mono +
+ * date cells should be flagged `mono` so they pick up IBM Plex Mono +
  * tabular-nums per the branding guide.
  *
  * Props:

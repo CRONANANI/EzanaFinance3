@@ -6,8 +6,8 @@
  *  Endpoint groups, Live and Roadmap badges, tier cards and rate limits all
  *  render from src/lib/ezana-api/registry.js and tiers.js, the same source the
  *  /v1 router and the OpenAPI spec use, so the docs cannot drift from what the
- *  API serves. All-white surfaces, a sticky legend with scroll-spy, Plus
- *  Jakarta Sans for text and JetBrains Mono for paths, numbers and code.
+ *  API serves. All-white surfaces, a sticky legend with scroll-spy,
+ *  Space Grotesk for text and IBM Plex Mono for paths, numbers and code.
  *  Visuals render static under prefers-reduced-motion.
  * ==========================================================================*/
 

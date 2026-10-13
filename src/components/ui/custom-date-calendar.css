@@ -1,7 +1,7 @@
 /* ══════════════════════════════════════════════════════════════
    CustomDateCalendar (ezdp = Ezana date picker) — the unified calendar used by
-   DateSelector for range and single-date selection. Ezana-branded: Plus Jakarta
-   Sans for labels/nav, JetBrains Mono for day numbers (tabular figures), emerald
+   DateSelector for range and single-date selection. Ezana-branded:
+   Space Grotesk for labels/nav, IBM Plex Mono for day numbers (tabular figures), emerald
    (default/org) or gold (partner) selection via the --brand custom property set on
    the panel. Theme tokens for every surface/border; no hardcoded neutral hex.
    ══════════════════════════════════════════════════════════════ */

@@ -3,7 +3,7 @@
  *
  * Visual direction: "Sweet Spot" — sleek fintech between Stripe's whitespace-led
  * calm and Bloomberg's data-density. Cool neutral surfaces, Inter for UI,
- * JetBrains Mono for numbers, single hairline shadow, 1px borders only.
+ * IBM Plex Mono for numbers, single hairline shadow, 1px borders only.
  *
  * Tier palette imports from the canonical `elo-tier-colors.js` — DO NOT
  * duplicate tier colors here. The tier palette is identical between v1 and v2.
@@ -133,8 +133,8 @@ export const categoryAccents = ELO_LIGHT.categoryAccents;
 export const zones = ELO_LIGHT.zones;
 
 export const type = {
-  sans: 'var(--font-sans, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif)',
-  mono: 'var(--font-mono, "JetBrains Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace)',
+  sans: 'var(--font-sans)',
+  mono: 'var(--font-mono)',
   weights: {
     regular: 400,
     medium: 500,

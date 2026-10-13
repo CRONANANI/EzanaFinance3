@@ -1796,7 +1796,7 @@ body.light-mode .dso-page--search .sonar-h1 {
    1. The orbital card wears the page's own background: no fill, no border,
       no blur, so the globe runs straight through it.
    2. Dimension names use the top navigation bar's type (15px / 500, tight
-      tracking, Plus Jakarta Sans) as HTML labels; the state line stays mono.
+      tracking, Space Grotesk) as HTML labels; the state line stays mono.
    3. The search pill is a ghost: transparent with a slightly darker fill, no
       outline, no icon, and a blinking | where typing starts. */
 .dso-page--search .dso-sonar--solo {

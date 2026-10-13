@@ -352,7 +352,7 @@ export function TutorialWalkthrough() {
             style={{
               fontSize: '0.65rem',
               color: '#6b7280',
-              fontFamily: 'monospace',
+              fontFamily: 'var(--font-mono)',
               fontWeight: 700,
             }}
           >

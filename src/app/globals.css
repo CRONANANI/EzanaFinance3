@@ -2845,13 +2845,13 @@ body:has(.signin-dark-lock) {
    Typography lock — marketing landing + auth/onboarding flows
    ════════════════════════════════════════════════════════════════════════════
    The dashboard and home pages render every heading / label / paragraph in
-   Plus Jakarta Sans (via `body { font-family: var(--font-sans) !important }`
+   --font-sans, Space Grotesk (via `body { font-family: var(--font-sans) !important }`
    in @layer base). Tailwind preflight and various component libraries can
    re-declare `font-family` on certain elements (anchors, buttons, native
    form controls), so to guarantee that the landing page, login chooser,
    each individual login route, sign-up, "Become a Partner" landing, and
    every step of the partner application all render text in the same
-   Plus Jakarta Sans the dashboard uses, we explicitly set the sans stack
+   --font-sans the dashboard uses, we explicitly set the sans stack
    on every common text element inside those page wrappers.
 
    We do NOT use !important here so that elements which are intentionally

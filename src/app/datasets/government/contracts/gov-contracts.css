@@ -326,7 +326,7 @@
   transform: translateY(-50%) rotate(180deg);
 }
 
-/* Brand rule: JetBrains Mono, tabular figures, for every numeric value. */
+/* Brand rule: IBM Plex Mono, tabular figures, for every numeric value. */
 .gcx-num {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;

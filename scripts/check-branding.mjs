@@ -8,8 +8,10 @@
  *   1. Raw brand hex in CSS outside the sanctioned exclusion list.
  *   2. References to tokens that do not exist: --border-color, --text-tertiary,
  *      --mono, --sans.
- *   3. Raw font-family stacks naming JetBrains or Jakarta (the tokens are
- *      --font-mono / --font-sans, defined in :root).
+ *   3. Raw font stacks naming a brand or retired family (Space Grotesk, IBM
+ *      Plex, Newsreader, or the retired JetBrains, Jakarta, Inter, Nunito) in
+ *      CSS `font-family` or a JSX `fontFamily` prop/style. The tokens are
+ *      --font-sans / --font-mono / --font-serif, defined in :root.
  *   4. A recharts `tick` prop whose fontSize is anything but 11.
  *   5. Raw border-radius px values outside the token scale.
  *   6. A second declaration of the --radius-sm/md/lg/xl scale anywhere in
@@ -64,6 +66,9 @@ const EXEMPT = [
   // documents, so a literal stack is the only thing that works there.
   /[\\/]social2[\\/]ResearchLibrary\.jsx$/,
   /[\\/]api[\\/]org[\\/]reports[\\/].*[\\/]pdf[\\/]route\.js$/,
+  // Renders when the root layout itself throws, so fonts.css and the --font-*
+  // tokens are absent; it names the family with system fallbacks.
+  /[\\/]app[\\/]global-error\.js$/,
 ];
 
 // ── Pending hand review (brand-hex only) ─────────────────────────────────
@@ -83,7 +88,19 @@ const PENDING_BRAND_HEX = ['src/app/landing-light-mode.css'].map((p) =>
 
 const BRAND_HEX = /#(?:10b981|059669|047857|34d399|ef4444|d4a853|d4af37|f59e0b|fbbf24|3b82f6)\b/gi;
 const DEAD_TOKENS = /var\(\s*--(?:border-color|text-tertiary|mono|sans)\s*\)/g;
-const RAW_STACK = /font-family:[^;}]*(?:JetBrains|Jakarta)/gi;
+const FAMILY_NAMES = String.raw`(?:JetBrains|Jakarta|Space Grotesk|IBM Plex|Newsreader|Nunito|['"]Inter['"])`;
+// Also catches a local custom property that re-declares a family
+// (`--font-sans: 'Plus Jakarta Sans'`), which silently forks a whole scope.
+const RAW_STACK = new RegExp(
+  String.raw`(?:font-family|--[\w-]*(?:font|sans|mono)[\w-]*)\s*:[^;}]*` + FAMILY_NAMES,
+  'gi',
+);
+// Same line only: the family names sit inside the quoted value, so the match
+// runs from the opening quote to the end of the line, never past it.
+const RAW_STACK_JSX = new RegExp(
+  String.raw`fontFamily\s*[=:]\s*\{?\s*["'\`][^\n]*?` + FAMILY_NAMES,
+  'gi',
+);
 const TICK_FONTSIZE = /tick=\{\{[^{}]*fontSize:\s*(\d+)/g;
 // 50%, 999px and 9999px are pill/circle idioms and stay.
 const RAW_RADIUS = /border-radius:\s*([^;}]+)/g;
@@ -197,9 +214,17 @@ for (const f of files) {
     add(f, lineOf(src, m.index), 'dead-token', `${m[0]} — this token does not exist`);
   }
   for (const m of src.matchAll(RAW_STACK)) {
-    add(f, lineOf(src, m.index), 'raw-font-stack', 'use var(--font-mono) / var(--font-sans)');
+    add(f, lineOf(src, m.index), 'raw-font-stack', 'use var(--font-sans) / var(--font-mono)');
   }
   if (!isCss) {
+    for (const m of src.matchAll(RAW_STACK_JSX)) {
+      add(
+        f,
+        lineOf(src, m.index),
+        'raw-font-stack',
+        "fontFamily: 'var(--font-sans)' / 'var(--font-mono)' (canvas: fontStack() from @/lib/font-stack)",
+      );
+    }
     for (const m of src.matchAll(TICK_FONTSIZE)) {
       if (m[1] !== '11') {
         add(

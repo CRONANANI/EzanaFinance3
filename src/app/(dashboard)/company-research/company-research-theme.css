@@ -237,7 +237,7 @@ body:not(.light-mode) .cr-model-premium-star {
 .cr-news-chain-title {
   font-size: 0.6875rem;
   font-weight: 700;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   color: #f0f6fc;
   padding: 0.15rem 0.5rem;
@@ -308,7 +308,7 @@ body:not(.light-mode) .cr-model-premium-star {
 
 .cr-news-chain-body {
   font-size: 0.6875rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   color: #8b949e;
   line-height: 1.7;

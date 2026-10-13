@@ -424,7 +424,7 @@ body.sidebar-open .ma-fullscreen {
 .ma-panel-item-name {
   font-size: 0.6875rem;
   font-weight: 700;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   color: #f0f6fc;
   display: block;
@@ -486,7 +486,7 @@ body.sidebar-open .ma-fullscreen {
 .ma-panel-item-detail p {
   font-size: 0.625rem;
   color: #8b949e;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   line-height: 1.6;
   margin: 0;
@@ -851,7 +851,7 @@ body.sidebar-open .ma-fullscreen {
 .ma-chain-title {
   font-size: 0.6875rem;
   font-weight: 700;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   color: #f0f6fc;
   padding: 0.15rem 0.5rem;
@@ -912,7 +912,7 @@ body.sidebar-open .ma-fullscreen {
 
 .ma-chain-body {
   font-size: 0.6875rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   color: #8b949e;
   line-height: 1.7;
@@ -938,7 +938,7 @@ body.sidebar-open .ma-fullscreen {
 .ma-map-panel .news-article-title {
   flex: 1 1 100%;
   font-size: 0.625rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   color: #e5e7eb;
 }

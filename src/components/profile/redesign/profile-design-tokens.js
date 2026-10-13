@@ -55,8 +55,8 @@ export const achievementCategoryAccents = {
 };
 
 export const type = {
-  sans: 'var(--font-sans, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif)',
-  mono: 'var(--font-mono, "JetBrains Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace)',
+  sans: 'var(--font-sans)',
+  mono: 'var(--font-mono)',
   weights: { regular: 400, medium: 500, semibold: 600, bold: 700 },
   numericFeatures: 'tabular-nums',
   useMonoForNumbers: false,

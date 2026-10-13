@@ -1,7 +1,7 @@
 /* ===========================================================================
    Assignments (direction 2a) — calendar + tabbed list. Page-scoped styles.
    Theme tokens only (no hardcoded hex); light + dark via token flips.
-   Text: Plus Jakarta Sans. Numbers: JetBrains Mono + tabular-nums (.asg2-num).
+   Text: Space Grotesk. Numbers: IBM Plex Mono + tabular-nums (.asg2-num).
    Type/status tints use color-mix so every accent stays a single token.
    =========================================================================== */
 
