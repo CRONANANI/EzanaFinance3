@@ -19,8 +19,6 @@
  */
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { CHART } from '@/lib/chart-theme';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
 import HubQueryLink from '@/components/datasets/HubQueryLink';
 import {
@@ -33,7 +31,6 @@ import {
   DEFAULT_PERIOD,
   PERIODS,
   periodMeta,
-  monthlyByChamber,
   rankMembers,
   seatLabel,
   serverWindow,
@@ -48,6 +45,7 @@ import Headshot, { AVATAR_SIZE, ChamberChip, PartyTag } from './Headshot';
    opened, so the page's first paint does not carry it. */
 const MemberPanel = dynamic(() => import('./MemberPanel'), { ssr: false });
 import MostHeldChart from './MostHeldChart';
+import StateMap from '@/components/datasets/hub/StateMap';
 import Segmented from './Segmented';
 import '@/components/datasets/disclosures/disclosures.css';
 import './politician-tracker.css';
@@ -255,6 +253,7 @@ export default function PoliticianTracker({
   initialPeriod = DEFAULT_PERIOD,
   initialQuery = '',
   initialSummary = null,
+  stateTrades = null,
 }) {
   const [trades, setTrades] = useState([]);
   const [status, setStatus] = useState('loading'); // loading | ready | empty | sample
@@ -453,11 +452,6 @@ export default function PoliticianTracker({
 
   const filteredTrades = useMemo(() => tradesOf(filtered), [filtered]);
   const stats = useMemo(() => chamberStats(filtered), [filtered]);
-  const monthly = useMemo(
-    () =>
-      server ? server.monthly.slice(-pMeta.months) : monthlyByChamber(filteredTrades, pMeta.months),
-    [server, filteredTrades, pMeta.months],
-  );
   /* Most HELD, not most traded: members whose disclosures show a position
      still open (inferred, see POSITION_BASIS_NOTE). Server-wide when the
      RPC is live, else inferred from the loaded trades. */
@@ -741,17 +735,6 @@ export default function PoliticianTracker({
             </div>
           </div>
 
-          <section className="ptk-held" aria-labelledby="ptk-held-title">
-            <div className="ptk-rail-block-head">
-              <h2 className="ptk-eyebrow dsc-mn ptk-held-title" id="ptk-held-title">
-                MOST HELD COMPANIES
-              </h2>
-              <span className="ptk-cap">top 10 · members holding</span>
-            </div>
-            <MostHeldChart items={held} loading={status === 'loading' && !server?.held} />
-            <p className="ptk-note">{POSITION_BASIS_NOTE}</p>
-          </section>
-
           <section className="ptk-gallery" aria-labelledby="ptk-gallery-title">
             {!rankingReady ? (
               <div className="ptk-cards" aria-busy="true">
@@ -789,152 +772,116 @@ export default function PoliticianTracker({
             )}
           </section>
 
-          <aside
-            className="ptk-rail"
-            aria-label={`Ranking and House versus Senate, ${pMeta.heading.toLowerCase()}`}
-          >
-            <div className="ptk-rankby">
-              <span className="ptk-rankby-label dsc-mn">RANK BY</span>
-              <Segmented
-                label="Rank by"
-                value={sort}
-                options={SORTS}
-                onChange={(v) => setSort(v)}
-              />
-            </div>
+          <div className="ptk-right">
+            {/* Trades by state, compact, opening this page's member panel. */}
+            <StateMap
+              data={stateTrades}
+              compact
+              topStates={5}
+              onMember={(m) => open({ slug: m.id })}
+            />
 
-            <div className="ptk-rail-head">
-              <span className="ptk-eyebrow dsc-mn">
-                HOUSE VS SENATE,{' '}
-                {anyFilter
-                  ? `${pMeta.heading}, FILTERED`
-                  : server
-                    ? pMeta.heading
-                    : 'LOADED WINDOW'}
-                {feeds?.house === 'down' ? (
-                  <span className="ptk-feed-chip dsc-mn">HOUSE FEED UNAVAILABLE</span>
-                ) : null}
-                {feeds?.senate === 'down' ? (
-                  <span className="ptk-feed-chip dsc-mn">SENATE FEED UNAVAILABLE</span>
-                ) : null}
-              </span>
-              <span className="ptk-window dsc-mn">
-                {status === 'loading' ? (
-                  <Skel className="ptk-skel--line ptk-skel--w80" />
-                ) : windowInfo ? (
-                  `${windowInfo.from} TO ${windowInfo.to} · ${windowInfo.count} DISCLOSURES`
-                ) : (
-                  NONE
-                )}
-              </span>
-            </div>
-
-            <div className="ptk-chamber-cards">
-              {[
-                ['house', 'HOUSE', H],
-                ['senate', 'SENATE', S],
-              ].map(([id, label, s]) => (
-                <div key={id} className={`ptk-chamber-card ptk-chamber-card--${id}`}>
-                  <span className="ptk-chamber-card-label dsc-mn">
-                    <i className={`ptk-dot ptk-dot--${id}`} aria-hidden="true" />
-                    {label}
-                  </span>
-                  <span className="ptk-chamber-card-fig dsc-mn">
-                    {status === 'loading' ? (
-                      <Skel className="ptk-skel--big" />
-                    ) : (
-                      fig(s?.volume, usdShort)
-                    )}
-                  </span>
-                  <span className="ptk-chamber-card-sub">
-                    {fig(s?.members)} members · {fig(s?.trades)} trades
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="ptk-versus">
-              {[
-                ['Active members', H?.members, S?.members, (v) => v],
-                ['Disclosed trades', H?.trades, S?.trades, (v) => v],
-                ['Trades per member', H?.perMember, S?.perMember, (v) => v.toFixed(1)],
-                ['Disclosed volume', H?.volume, S?.volume, usdShort],
-              ].map(([label, h, s, f]) => (
-                <div className="ptk-vs-row" key={label}>
-                  <span className="ptk-vs-label">{label}</span>
-                  <span className="ptk-vs-fig dsc-mn">{fig(h, f)}</span>
-                  <SplitBar
-                    left={h}
-                    right={s}
-                    leftCls="ptk-split--house"
-                    rightCls="ptk-split--senate"
-                  />
-                  <span className="ptk-vs-fig dsc-mn">{fig(s, f)}</span>
-                </div>
-              ))}
-            </div>
-            <p className="ptk-note">
-              {moreActive ? `${moreActive} trades more per member in this window. ` : ''}
-              Volume is the sum of the midpoints of disclosed ranges.
-            </p>
-
-            <div className="ptk-rail-block">
+            <section className="ptk-held" aria-labelledby="ptk-held-title">
               <div className="ptk-rail-block-head">
-                <span className="ptk-eyebrow dsc-mn">TRADES BY MONTH</span>
-                <span className="ptk-cap">counts, not dollars</span>
+                <h2 className="ptk-eyebrow dsc-mn ptk-held-title" id="ptk-held-title">
+                  MOST HELD COMPANIES
+                </h2>
+                <span className="ptk-cap">top 10 · members holding</span>
               </div>
-              <div
-                className="ptk-chart"
-                role="img"
-                aria-label={`Monthly trade counts, House and Senate, ${pMeta.heading.toLowerCase()}`}
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={monthly}
-                    barGap={2}
-                    margin={{ top: 4, right: 0, left: 0, bottom: 0 }}
-                  >
-                    <CartesianGrid
-                      vertical={false}
-                      strokeDasharray={CHART.gridDash}
-                      stroke={CHART.gridStroke}
-                    />
-                    <XAxis
-                      dataKey="month"
-                      tick={CHART.tick}
-                      axisLine={CHART.xAxisLine}
-                      tickLine={false}
-                      tickFormatter={(m) => m.slice(5)}
-                    />
-                    <YAxis hide allowDecimals={false} />
-                    <Tooltip cursor={{ fill: 'var(--emerald-bg-subtle)' }} />
-                    <Bar dataKey="House" fill="var(--ptk-house)" radius={[2, 2, 0, 0]} />
-                    <Bar dataKey="Senate" fill="var(--ptk-senate)" radius={[2, 2, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+              <MostHeldChart items={held} loading={status === 'loading' && !server?.held} />
+              <p className="ptk-note">{POSITION_BASIS_NOTE}</p>
+            </section>
+
+            <aside
+              className="ptk-rail"
+              aria-label={`Ranking and House versus Senate, ${pMeta.heading.toLowerCase()}`}
+            >
+              <div className="ptk-rankby">
+                <span className="ptk-rankby-label dsc-mn">RANK BY</span>
+                <Segmented
+                  label="Rank by"
+                  value={sort}
+                  options={SORTS}
+                  onChange={(v) => setSort(v)}
+                />
               </div>
-              {/* The same numbers for keyboard and screen-reader users. */}
-              <table className="ptk-sr">
-                <caption>Monthly trade counts by chamber</caption>
-                <thead>
-                  <tr>
-                    <th scope="col">Month</th>
-                    <th scope="col">House</th>
-                    <th scope="col">Senate</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {monthly.map((r) => (
-                    <tr key={r.month}>
-                      <td>{r.month}</td>
-                      <td>{r.House}</td>
-                      <td>{r.Senate}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </aside>
+
+              <div className="ptk-rail-head">
+                <span className="ptk-eyebrow dsc-mn">
+                  HOUSE VS SENATE,{' '}
+                  {anyFilter
+                    ? `${pMeta.heading}, FILTERED`
+                    : server
+                      ? pMeta.heading
+                      : 'LOADED WINDOW'}
+                  {feeds?.house === 'down' ? (
+                    <span className="ptk-feed-chip dsc-mn">HOUSE FEED UNAVAILABLE</span>
+                  ) : null}
+                  {feeds?.senate === 'down' ? (
+                    <span className="ptk-feed-chip dsc-mn">SENATE FEED UNAVAILABLE</span>
+                  ) : null}
+                </span>
+                <span className="ptk-window dsc-mn">
+                  {status === 'loading' ? (
+                    <Skel className="ptk-skel--line ptk-skel--w80" />
+                  ) : windowInfo ? (
+                    `${windowInfo.from} TO ${windowInfo.to} · ${windowInfo.count} DISCLOSURES`
+                  ) : (
+                    NONE
+                  )}
+                </span>
+              </div>
+
+              <div className="ptk-chamber-cards">
+                {[
+                  ['house', 'HOUSE', H],
+                  ['senate', 'SENATE', S],
+                ].map(([id, label, s]) => (
+                  <div key={id} className={`ptk-chamber-card ptk-chamber-card--${id}`}>
+                    <span className="ptk-chamber-card-label dsc-mn">
+                      <i className={`ptk-dot ptk-dot--${id}`} aria-hidden="true" />
+                      {label}
+                    </span>
+                    <span className="ptk-chamber-card-fig dsc-mn">
+                      {status === 'loading' ? (
+                        <Skel className="ptk-skel--big" />
+                      ) : (
+                        fig(s?.volume, usdShort)
+                      )}
+                    </span>
+                    <span className="ptk-chamber-card-sub">
+                      {fig(s?.members)} members · {fig(s?.trades)} trades
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="ptk-versus">
+                {[
+                  ['Active members', H?.members, S?.members, (v) => v],
+                  ['Disclosed trades', H?.trades, S?.trades, (v) => v],
+                  ['Trades per member', H?.perMember, S?.perMember, (v) => v.toFixed(1)],
+                  ['Disclosed volume', H?.volume, S?.volume, usdShort],
+                ].map(([label, h, s, f]) => (
+                  <div className="ptk-vs-row" key={label}>
+                    <span className="ptk-vs-label">{label}</span>
+                    <span className="ptk-vs-fig dsc-mn">{fig(h, f)}</span>
+                    <SplitBar
+                      left={h}
+                      right={s}
+                      leftCls="ptk-split--house"
+                      rightCls="ptk-split--senate"
+                    />
+                    <span className="ptk-vs-fig dsc-mn">{fig(s, f)}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="ptk-note">
+                {moreActive ? `${moreActive} trades more per member in this window. ` : ''}
+                Volume is the sum of the midpoints of disclosed ranges.
+              </p>
+            </aside>
+          </div>
         </div>
 
         {/* ── dense list, rank 9 on ── */}

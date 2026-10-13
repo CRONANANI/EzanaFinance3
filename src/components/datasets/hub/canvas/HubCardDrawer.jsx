@@ -143,6 +143,7 @@ export default function HubCardDrawer({
                 </span>
                 <span className="hcv-dr-text">
                   <span className="hcv-dr-name">{c.title}</span>
+                  {c.tag ? <span className="hcv-dr-tag">{c.tag}</span> : null}
                   {c.blurb ? <span className="hcv-dr-blurb">{c.blurb}</span> : null}
                 </span>
                 {isPlaced ? (

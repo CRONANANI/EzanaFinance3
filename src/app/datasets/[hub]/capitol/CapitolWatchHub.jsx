@@ -11,6 +11,7 @@
 import { Suspense, cache } from 'react';
 import { HubQueryProvider } from '@/components/datasets/hub/HubClient';
 import HubCanvas from '@/components/datasets/hub/canvas/HubCanvas';
+import { datasetCardsFor } from '@/components/datasets/hub/dataset-cards/cards';
 import { getLinkage } from '@/lib/datasets/hub-data';
 import { getCapitolEvents } from '@/lib/datasets/capitol-hub/events';
 import {
@@ -282,6 +283,8 @@ export default function CapitolWatchHub({ dimension }) {
         </section>
       ),
     },
+    /* Component cards from the Capitol Watch dataset pages. */
+    ...datasetCardsFor('capitol'),
   ];
 
   return (

@@ -1,6 +1,7 @@
 import ReactDOM from 'react-dom';
 import { unstable_cache } from 'next/cache';
 import PoliticianTracker from '@/components/datasets/politician-tracker/PoliticianTracker';
+import { getStateTrades } from '@/lib/datasets/capitol-hub/state-trades';
 import {
   chamberParam,
   partyParam,
@@ -87,12 +88,17 @@ export default async function Page({ searchParams }) {
     initialPeriod: PERIOD_KEYS.includes(period) ? period : '1y',
     initialQuery: str(searchParams?.q) || '',
   };
-  const initialSummary = await initialSummaryFor({
-    chamber: initial.initialChamber,
-    party: initial.initialParty,
-    q: initial.initialQuery,
-    sort: initial.initialSort,
-    period: initial.initialPeriod,
-  });
-  return <PoliticianTracker {...initial} initialSummary={initialSummary} />;
+  const [initialSummary, stateTrades] = await Promise.all([
+    initialSummaryFor({
+      chamber: initial.initialChamber,
+      party: initial.initialParty,
+      q: initial.initialQuery,
+      sort: initial.initialSort,
+      period: initial.initialPeriod,
+    }),
+    getStateTrades(),
+  ]);
+  return (
+    <PoliticianTracker {...initial} initialSummary={initialSummary} stateTrades={stateTrades} />
+  );
 }

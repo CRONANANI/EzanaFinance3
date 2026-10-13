@@ -16,6 +16,7 @@ import {
 } from './HubCards';
 import CapitolWatchHub from './capitol/CapitolWatchHub';
 import HubCanvas from '@/components/datasets/hub/canvas/HubCanvas';
+import { datasetCardsFor } from '@/components/datasets/hub/dataset-cards/cards';
 import { GUEST_LIMIT } from '@/components/datasets/hub/canvas/layout-model';
 import './hub.css';
 
@@ -118,6 +119,8 @@ export default function HubPage({ params }) {
         </Suspense>
       ),
     })),
+    /* Component cards from the dimension's own dataset pages. */
+    ...datasetCardsFor(dim.id),
     ...(willShow
       ? [
           {

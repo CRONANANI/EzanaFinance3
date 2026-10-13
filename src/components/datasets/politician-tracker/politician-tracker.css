@@ -376,12 +376,24 @@
 .ptk-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 380px;
+  /* The right column is one cell spanning both rows: Trades by state on
+     top, Most held companies, then the rail (Rank by, House vs Senate). */
   grid-template-areas:
-    'controls held'
-    'cards rail';
+    'controls right'
+    'cards right';
+  /* The spanning right column's extra height goes to the cards row, so
+     the gallery starts right under its heading. */
+  grid-template-rows: auto 1fr;
   column-gap: 28px;
   row-gap: 12px;
   align-items: start;
+}
+.ptk-right {
+  grid-area: right;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
 }
 /* EzanaQL, the toolbar, any status note and the gallery heading, stacked in
    the card column so each is exactly the cards' width. */
@@ -440,14 +452,11 @@
    first row of cards; the plot takes whatever height is left. Shares the
    rail's left rule so the right column reads as one. */
 .ptk-held {
-  grid-area: held;
-  align-self: stretch;
   display: flex;
   flex-direction: column;
   gap: 8px;
   min-width: 0;
-  padding: 0 0 14px 28px;
-  border-left: 1px solid var(--ptk-hair);
+  padding: 0 0 14px;
   border-bottom: 1px solid var(--ptk-hair);
 }
 .ptk-held-title {
@@ -668,12 +677,11 @@
 
 /* ── rail ────────────────────────────────────────────────────────────── */
 .ptk-rail {
-  grid-area: rail;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 0 0 0 28px;
-  border-left: 1px solid var(--ptk-hair);
+  padding: 18px 0 0;
+  border-top: 1px solid var(--ptk-hair);
   min-width: 0;
 }
 .ptk-rail-head {
@@ -1135,8 +1143,7 @@
     grid-template-areas:
       'controls'
       'cards'
-      'held'
-      'rail';
+      'right';
     row-gap: 24px;
   }
   .ptk-held {

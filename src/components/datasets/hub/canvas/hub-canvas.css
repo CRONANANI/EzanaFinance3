@@ -789,3 +789,14 @@
     transition: none;
   }
 }
+
+/* Which dataset page a component card comes from. */
+.hcv-dr-tag {
+  display: block;
+  margin: 1px 0 2px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--emerald-text);
+}

@@ -67,11 +67,12 @@ export default function HubCanvas({ hubId, label = 'Hub cards', cards }) {
   /* Card metadata without the nodes, for the model functions. */
   const meta = useMemo(
     () =>
-      cards.map(({ id, title, icon, blurb, w, minW, guest }) => ({
+      cards.map(({ id, title, icon, blurb, tag, w, minW, guest }) => ({
         id,
         title,
         icon,
         blurb,
+        tag: tag || null,
         w,
         minW,
         guest: Boolean(guest),
