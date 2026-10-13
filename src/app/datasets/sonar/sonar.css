@@ -2371,3 +2371,22 @@ body.light-mode .dso-page--search .dso-sonar-title {
     animation: dso-news-fade 4.6s linear forwards;
   }
 }
+
+/* ── Oct 13: the overview's nav in the Ezana Sonar green ──────────────
+   On /datasets the bar's labels (Home, the seven dimensions, Log in, Join
+   the waitlist) take the same token the Ezana Sonar eyebrow uses on this
+   page, --brand-band-mint. The states keep differing by opacity only, so no
+   second green is introduced. The route is light-locked, so both themes
+   paint the same. */
+.ds-shell--search[data-nav-theme='datasets'] .dscat-bar .dscat-home,
+.ds-shell--search[data-nav-theme='datasets'] .dscat-bar .dscat-btn--text,
+.ds-shell--search[data-nav-theme='datasets'] .dscat-bar .dscat-trigger,
+.ds-shell--search[data-nav-theme='datasets'] .dscat-bar .dscat-trigger.is-active,
+.ds-shell--search[data-nav-theme='datasets'] .dscat-bar .dscat-trigger[aria-expanded='true'] {
+  color: var(--brand-band-mint);
+}
+.ds-shell--search[data-nav-theme='datasets'] .dscat-bar .dscat-trigger:focus-visible,
+.ds-shell--search[data-nav-theme='datasets'] .dscat-bar .dscat-home:focus-visible,
+.ds-shell--search[data-nav-theme='datasets'] .dscat-bar .dscat-btn--text:focus-visible {
+  outline-color: var(--brand-band-mint);
+}
