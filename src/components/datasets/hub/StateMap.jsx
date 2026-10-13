@@ -284,8 +284,10 @@ export default function StateMap({ data, onMember, compact = false, topStates = 
                   type="button"
                   className="cwh-pill cwh-sm-clear"
                   onClick={() => setSelected(null)}
+                  aria-label={`Clear ${US_STATES[current.id]?.name || current.id}, show all states`}
                 >
-                  All states
+                  <i className="bi bi-x-lg" aria-hidden="true" />
+                  Clear
                 </button>
               </div>
               <dl className="cwh-sm-stats">
