@@ -4,6 +4,11 @@
  * own loader (already cached), so a card shows the same figures as the page
  * it comes from. Register new ones in DATASET_CARDS below.
  *
+ * Each card's reading and row shaping is a load() function that returns the
+ * ListCard props; the component here renders it on a hub, and
+ * /api/datasets/cards calls the same function (CARD_LOADERS) for the
+ * datasets search, so a card shows the same rows in both places.
+ *
  * Keep each card to one list of up to eight rows: the hubs are canvases of
  * many cards, not a second copy of the dataset page. A dataset card is only
  * registered when the hub has no linkage card showing the same thing (the
@@ -15,14 +20,15 @@ import ListCard from './ListCard';
 import { readSummary } from '@/lib/politicians/congress-store';
 import { getInstitutionalOverview } from '@/lib/titans/store';
 import { getInsiderOverview } from '@/lib/titans/insider-store';
-import { lighthouseLatest } from '@/lib/lighthouse/store';
+import { lighthouseLatest, sanctionsEntries, openCrowdForecasts } from '@/lib/lighthouse/store';
+import { getOpenMarkets } from '@/lib/hive/store';
 import { usd, shortDate } from '@/lib/titans/format';
 
 const n = (v) => (v == null ? null : Number(v).toLocaleString('en-US'));
 
 /* ── Capitol Watch ──────────────────────────────────────────────────── */
 
-async function MostHeld() {
+export async function loadMostHeld() {
   const s = await readSummary({ tickerLimit: 10 }).catch(() => ({ error: 'read' }));
   const rows = (s?.held || []).slice(0, 8).map((h) => ({
     key: h.ticker,
@@ -31,22 +37,23 @@ async function MostHeld() {
     value: `${n(h.holders)} holding`,
     href: `/datasets/politician-tracker`,
   }));
-  return (
-    <ListCard
-      id="most-held"
-      title="Most held companies"
-      dataset="Politician Tracker"
-      href="/datasets/politician-tracker"
-      desc="The companies the most members of Congress still hold, inferred from disclosures."
-      rows={rows}
-      error={Boolean(s?.error)}
-      empty="Appears once holdings are inferred from disclosures."
-      foot="Holding means a disclosed purchase not followed by a full sale. House Clerk and Senate eFD."
-    />
-  );
+  return {
+    id: 'most-held',
+    title: 'Most held companies',
+    dataset: 'Politician Tracker',
+    href: '/datasets/politician-tracker',
+    desc: 'The companies the most members of Congress still hold, inferred from disclosures.',
+    rows,
+    error: Boolean(s?.error),
+    empty: 'Appears once holdings are inferred from disclosures.',
+    foot: 'Holding means a disclosed purchase not followed by a full sale. House Clerk and Senate eFD.',
+  };
+}
+async function MostHeld() {
+  return <ListCard {...await loadMostHeld()} />;
 }
 
-async function HouseVsSenate() {
+export async function loadHouseVsSenate() {
   const s = await readSummary({}).catch(() => ({ error: 'read' }));
   const by = {
     House: { members: 0, trades: 0, volume: 0 },
@@ -68,24 +75,25 @@ async function HouseVsSenate() {
       value: `${n(by[c].trades)} trades · ${usd(by[c].volume) || '$0'}`,
       href: `/datasets/politician-tracker?chamber=${c.toLowerCase()}`,
     }));
-  return (
-    <ListCard
-      id="house-senate"
-      title="House vs Senate, trailing 12 months"
-      dataset="Politician Tracker"
-      href="/datasets/politician-tracker"
-      desc="Members trading, disclosed trades and disclosed volume by chamber."
-      rows={rows}
-      error={Boolean(s?.error)}
-      empty="Appears once disclosures are loaded."
-      foot="Volume is the sum of the midpoints of disclosed ranges."
-    />
-  );
+  return {
+    id: 'house-senate',
+    title: 'House vs Senate, trailing 12 months',
+    dataset: 'Politician Tracker',
+    href: '/datasets/politician-tracker',
+    desc: 'Members trading, disclosed trades and disclosed volume by chamber.',
+    rows,
+    error: Boolean(s?.error),
+    empty: 'Appears once disclosures are loaded.',
+    foot: 'Volume is the sum of the midpoints of disclosed ranges.',
+  };
+}
+async function HouseVsSenate() {
+  return <ListCard {...await loadHouseVsSenate()} />;
 }
 
 /* ── Titans Shadow ──────────────────────────────────────────────────── */
 
-async function WidelyHeld() {
+export async function loadWidelyHeld() {
   const o = await getInstitutionalOverview().catch(() => null);
   const rows = (o?.widelyHeld || []).slice(0, 8).map((r) => ({
     key: r.cusip || r.ticker || r.issuer,
@@ -94,26 +102,25 @@ async function WidelyHeld() {
     value: `${n(r.holders)} funds`,
     href: '/datasets/institutional',
   }));
-  return (
-    <ListCard
-      id="widely-held"
-      title={
-        o?.quarterLabel
-          ? `Most widely held by funds, ${o.quarterLabel}`
-          : 'Most widely held by funds'
-      }
-      dataset="Institutional"
-      href="/datasets/institutional"
-      desc="Securities held by the most 13F filers in the latest complete quarter."
-      rows={rows}
-      error={o === null}
-      empty="Appears once a complete 13F quarter is indexed."
-      foot="SEC EDGAR Form 13F."
-    />
-  );
+  return {
+    id: 'widely-held',
+    title: o?.quarterLabel
+      ? `Most widely held by funds, ${o.quarterLabel}`
+      : 'Most widely held by funds',
+    dataset: 'Institutional',
+    href: '/datasets/institutional',
+    desc: 'Securities held by the most 13F filers in the latest complete quarter.',
+    rows,
+    error: o === null,
+    empty: 'Appears once a complete 13F quarter is indexed.',
+    foot: 'SEC EDGAR Form 13F.',
+  };
+}
+async function WidelyHeld() {
+  return <ListCard {...await loadWidelyHeld()} />;
 }
 
-async function InsiderBuys() {
+export async function loadInsiderBuys() {
   const o = await getInsiderOverview().catch(() => null);
   const rows = (o?.topBuys || []).slice(0, 8).map((r) => ({
     key: `${r.ticker}-${r.insider}-${r.date}`,
@@ -122,24 +129,25 @@ async function InsiderBuys() {
     value: usd(r.value),
     href: '/datasets/insider',
   }));
-  return (
-    <ListCard
-      id="insider-buys"
-      title="Largest insider buys, last 30 days"
-      dataset="Insider Trading"
-      href="/datasets/insider"
-      desc="Open-market purchases by officers, directors and large holders, by value."
-      rows={rows}
-      error={o === null}
-      empty="Appears as Form 4 filings are indexed."
-      foot="SEC EDGAR Form 4, transaction code P."
-    />
-  );
+  return {
+    id: 'insider-buys',
+    title: 'Largest insider buys, last 30 days',
+    dataset: 'Insider Trading',
+    href: '/datasets/insider',
+    desc: 'Open-market purchases by officers, directors and large holders, by value.',
+    rows,
+    error: o === null,
+    empty: 'Appears as Form 4 filings are indexed.',
+    foot: 'SEC EDGAR Form 4, transaction code P.',
+  };
+}
+async function InsiderBuys() {
+  return <ListCard {...await loadInsiderBuys()} />;
 }
 
 /* ── Global Empire Lighthouse ───────────────────────────────────────── */
 
-async function FastestGrowth() {
+export async function loadFastestGrowth() {
   const obs = await lighthouseLatest('worldbank', ['NY.GDP.MKTP.KD.ZG']).catch(() => null);
   const rows = (obs || [])
     .filter((o) => o.latest_value != null)
@@ -152,20 +160,108 @@ async function FastestGrowth() {
       value: `${Number(o.latest_value).toFixed(1)}%`,
       href: '/datasets/world-bank',
     }));
-  return (
-    <ListCard
-      id="fastest-growth"
-      title="Fastest-growing economies"
-      dataset="World Bank Economic Indicators"
-      href="/datasets/world-bank"
-      desc="Countries with the highest real GDP growth in their latest reported year."
-      rows={rows}
-      error={obs === null}
-      empty="Appears once the World Bank data is loaded."
-      foot="World Bank Indicators API (CC BY 4.0)."
-    />
-  );
+  return {
+    id: 'fastest-growth',
+    title: 'Fastest-growing economies',
+    dataset: 'World Bank Economic Indicators',
+    href: '/datasets/world-bank',
+    desc: 'Countries with the highest real GDP growth in their latest reported year.',
+    rows,
+    error: obs === null,
+    empty: 'Appears once the World Bank data is loaded.',
+    foot: 'World Bank Indicators API (CC BY 4.0).',
+  };
 }
+async function FastestGrowth() {
+  return <ListCard {...await loadFastestGrowth()} />;
+}
+
+/* ── Search-only cards (the hubs already show these as linkages) ─────── */
+
+const pct = (p) => (p == null ? null : `${Math.round(Number(p) * 100)}%`);
+
+export async function loadBiggestMarkets() {
+  const rows0 = await getOpenMarkets({ polymarket: 8, kalshi: 8 }).catch(() => null);
+  const rows = (rows0 || [])
+    .filter((m) => m.platform === 'polymarket')
+    .slice(0, 8)
+    .map((m) => ({
+      key: m.market_id,
+      name: m.question,
+      meta: `${m.platform === 'kalshi' ? 'Kalshi' : 'Polymarket'}${m.end_date ? ` · closes ${shortDate(m.end_date)}` : ''}`,
+      value: pct(m.probability),
+      href: m.link || '/datasets/prediction-markets',
+      external: Boolean(m.link),
+    }));
+  return {
+    id: 'biggest-markets',
+    title: 'Biggest open prediction markets',
+    dataset: 'Prediction Markets',
+    href: '/datasets/prediction-markets',
+    desc: 'Open markets by dollars traded, with the crowd probability of yes.',
+    rows,
+    error: rows0 === null,
+    empty: 'Appears once the market index is built.',
+    foot: 'Polymarket. Probabilities are the market price of yes, not advice.',
+  };
+}
+
+export async function loadCrowdForecasts() {
+  const rows0 = await openCrowdForecasts(8).catch(() => null);
+  const rows = (rows0 || []).slice(0, 8).map((f) => ({
+    key: f.forecast_id,
+    name: f.question,
+    meta: `${n(f.forecasters)} forecasters${f.close_date ? ` · closes ${shortDate(f.close_date)}` : ''}`,
+    value: pct(f.probability),
+    href: f.link || '/datasets/crowd-forecasts',
+    external: Boolean(f.link),
+  }));
+  return {
+    id: 'crowd-forecasts',
+    title: 'Most followed crowd forecasts',
+    dataset: 'Crowdsourced Intelligence',
+    href: '/datasets/crowd-forecasts',
+    desc: 'Open questions with the most forecasters, and where the crowd sits.',
+    rows,
+    error: rows0 === null,
+    empty: 'Appears once crowd forecasts are indexed.',
+    foot: 'Manifold. Probabilities are the crowd estimate, not advice.',
+  };
+}
+
+export async function loadSanctions() {
+  const rows0 = await sanctionsEntries(8).catch(() => null);
+  const rows = (rows0 || []).slice(0, 8).map((e) => ({
+    key: String(e.ent_num),
+    name: e.name,
+    meta: [e.entry_type, (e.programs || []).slice(0, 2).join(', ')].filter(Boolean).join(' · '),
+    value: e.first_seen ? shortDate(e.first_seen) : null,
+    href: '/datasets/sanctions',
+  }));
+  return {
+    id: 'sanctions',
+    title: 'Newest sanctions designations',
+    dataset: 'Sanctions',
+    href: '/datasets/sanctions',
+    desc: 'The latest names added to the sanctions list, with their programs.',
+    rows,
+    error: rows0 === null,
+    empty: 'Appears once the sanctions list is synced.',
+    foot: 'OFAC Specially Designated Nationals list.',
+  };
+}
+
+/** Loaders by registry id (src/lib/datasets/card-registry.js). */
+export const CARD_LOADERS = {
+  'most-held': loadMostHeld,
+  'house-senate': loadHouseVsSenate,
+  'widely-held': loadWidelyHeld,
+  'insider-buys': loadInsiderBuys,
+  'fastest-growth': loadFastestGrowth,
+  'biggest-markets': loadBiggestMarkets,
+  'crowd-forecasts': loadCrowdForecasts,
+  sanctions: loadSanctions,
+};
 
 /* ── registry ───────────────────────────────────────────────────────── */
 

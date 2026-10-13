@@ -1,0 +1,83 @@
+/* Matching dataset cards above the datasets search results (prefix dcm-).
+   The cards are the hubs' own ListCard in the hub card chrome; the accent
+   the chrome mixes comes from the emerald token here. Tokens only. */
+.dcm {
+  --hub-accent: var(--emerald);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 1080px;
+  margin: 0 auto 28px;
+  padding: 0 24px;
+}
+.dcm-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.dcm-title {
+  font-family: var(--font-sans);
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  /* The results stage is dark whatever the theme: ink and rule in white mixes. */
+  color: color-mix(in srgb, white 92%, transparent);
+  white-space: nowrap;
+}
+.dcm-rule {
+  flex: 1 1 auto;
+  height: 1px;
+  background: color-mix(in srgb, white 14%, transparent);
+}
+.dcm-meta {
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, white 55%, transparent);
+  white-space: nowrap;
+}
+.dcm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.dcm-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.dcm-from {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 0 2px;
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.dcm-from-label {
+  color: color-mix(in srgb, white 55%, transparent);
+}
+.dcm-from-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--brand-band-mint);
+  text-decoration: none;
+}
+.dcm-from-link:hover {
+  text-decoration: underline;
+}
+.dcm-from-link:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+@media (max-width: 900px) {
+  .dcm-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

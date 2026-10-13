@@ -24,6 +24,8 @@ import '@/app/(dashboard)/sonar/sonar.css';
 import { SonarLoader } from '@/components/sonar/SonarLoader';
 
 /* The landing Sonar band, loaded only once a Datasets search is sent. */
+import DatasetCardMatches from './DatasetCardMatches';
+
 const SonarBand = dynamic(
   () => import('@/components/landing/SonarSection').then((m) => ({ default: m.SonarSection })),
   { ssr: false, loading: () => <SonarBandLoading /> },
@@ -271,6 +273,9 @@ export function SonarExperience({ variant = 'app', heroAddon = null }) {
   if (onDatasets && bandQuery) {
     return (
       <div className="sonar-root sonar-root--datasets sonar-root--band">
+        {/* The dataset component cards that match the query, loaded through
+            their own loaders, above the Sonar results. Nothing when none match. */}
+        <DatasetCardMatches query={bandQuery} />
         <SonarBand variant="page" query={bandQuery} />
       </div>
     );
