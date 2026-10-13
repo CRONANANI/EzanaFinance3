@@ -163,7 +163,7 @@ export function DateSelector({
         alignItems: 'center',
         gap: '0.20rem',
         flexWrap: 'wrap',
-        fontFamily: 'var(--font-sans)',
+        fontFamily: 'var(--font-sans, "Plus Jakarta Sans", system-ui)',
         ...style,
       }}
     >
@@ -180,7 +180,7 @@ export function DateSelector({
             fontSize: sizes.fontSize,
             fontWeight: 700,
             cursor: 'pointer',
-            fontFamily: 'var(--font-sans)',
+            fontFamily: 'var(--font-sans, "Plus Jakarta Sans", system-ui)',
             background: value === r ? accentColor : 'rgba(107, 114, 128, 0.1)',
             color: value === r ? '#fff' : inactiveColor,
             transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -204,7 +204,7 @@ export function DateSelector({
             fontSize: sizes.fontSize,
             fontWeight: 700,
             cursor: 'pointer',
-            fontFamily: 'var(--font-sans)',
+            fontFamily: 'var(--font-sans, "Plus Jakarta Sans", system-ui)',
             background: isCustomActive ? accentColor : 'transparent',
             color: isCustomActive ? '#fff' : accentColor,
             transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',

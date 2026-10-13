@@ -33,7 +33,7 @@ function formatNumber(value, { format, decimals, prefix, suffix, sign }) {
 }
 
 /**
- * The one numeric primitive. Always renders in --font-mono (IBM Plex Mono) with
+ * The one numeric primitive. Always renders in JetBrains Mono with
  * tabular-nums (so columns of figures align). Optionally formats as a
  * percent/price/compact figure, prepends a sign, and colorizes by direction.
  *

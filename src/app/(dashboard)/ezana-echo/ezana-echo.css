@@ -1343,12 +1343,12 @@ body.light-mode .echo-article-page .echo-article-body > p:first-child::first-let
 
 /* Section headings â€” visual weight inside reading column */
 .echo-article-page .echo-article-body .echo-article-h2 {
-  /* UI sans for in-article section heads (was a stray 'Inter' stack). The
-     Newsreader headline and the serif body copy are the editorial voice;
-     these heads are wayfinding. Space Grotesk tops out at 700. */
-  font-family: var(--font-sans);
+  font-family:
+    'Inter',
+    -apple-system,
+    sans-serif;
   font-size: 1.625rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
   margin: 3rem 0 1.25rem;
   letter-spacing: -0.015em;
@@ -1365,7 +1365,10 @@ body.light-mode .echo-article-page .echo-article-body .echo-article-h2 {
 }
 
 .echo-article-page .echo-article-body .echo-article-h3 {
-  font-family: var(--font-sans);
+  font-family:
+    'Inter',
+    -apple-system,
+    sans-serif;
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--text-primary);

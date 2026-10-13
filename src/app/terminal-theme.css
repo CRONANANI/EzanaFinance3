@@ -4,7 +4,7 @@
    Applied to ALL pages (except landing hero)
    ═══════════════════════════════════════ */
 
-/* Base typography — --font-sans (matches terminal) */
+/* Base typography — Plus Jakarta Sans (matches terminal) */
 body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;

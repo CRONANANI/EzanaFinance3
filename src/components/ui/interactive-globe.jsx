@@ -1,7 +1,6 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { fontStack } from '@/lib/font-stack';
 import { useRef, useEffect, useCallback, useState } from 'react';
 
 // ── GeoJSON point-in-polygon (no d3 dependency needed) ──
@@ -2113,7 +2112,7 @@ export function InteractiveGlobe({
           ctx.save();
           ctx.globalAlpha = Math.min(1, (mcos - 0.66) / 0.34);
           ctx.fillStyle = mColor;
-          ctx.font = `600 9px ${fontStack('--font-mono')}`;
+          ctx.font = '600 9px ui-monospace, "JetBrains Mono", monospace';
           ctx.textAlign = 'center';
           ctx.fillText(String(m.name).toUpperCase(), mpx, mpy - 8);
           ctx.restore();

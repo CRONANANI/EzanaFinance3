@@ -1,7 +1,7 @@
 /**
  * Text fitting for the Echo SVG figures. SVG text neither wraps nor clips,
  * so every label that can be long or can land near an edge goes through
- * here. Widths are estimates (there is no DOM at render time): IBM Plex
+ * here. Widths are estimates (there is no DOM at render time): JetBrains
  * Mono runs ~0.6em per glyph, the serif/sans faces ~0.52em. The audit script
  * (scripts/check-echo-figures.mjs) measures the real boxes in Chromium, so an
  * estimate that is off shows up there, not on the page.

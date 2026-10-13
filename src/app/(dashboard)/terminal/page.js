@@ -108,7 +108,7 @@ function DonutChart({ data }) {
         fill="#f0f6fc"
         fontSize="14"
         fontWeight="700"
-        fontFamily="var(--font-sans)"
+        fontFamily="Plus Jakarta Sans, sans-serif"
       >
         {total > 0 ? ((topLabel.value / total) * 100).toFixed(0) : 0}%
       </text>
@@ -118,7 +118,7 @@ function DonutChart({ data }) {
         textAnchor="middle"
         fill="#8b949e"
         fontSize="8"
-        fontFamily="var(--font-sans)"
+        fontFamily="Plus Jakarta Sans, sans-serif"
       >
         {topLabel.label?.toUpperCase() || ''}
       </text>

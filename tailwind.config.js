@@ -72,13 +72,15 @@ module.exports = {
         popover: 'rgba(26, 35, 50, 0.98)',
         'popover-foreground': '#ffffff',
       },
-      // Families come from the --font-* tokens in src/app/theme-variables.css,
-      // so `font-sans` / `font-mono` / `font-serif` utilities can never drift
-      // from the CSS.
       fontFamily: {
-        sans: ['var(--font-sans)'],
-        mono: ['var(--font-mono)'],
-        serif: ['var(--font-serif)'],
+        sans: [
+          'Plus Jakarta Sans',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'Roboto',
+          'sans-serif',
+        ],
       },
       borderRadius: {
         sm: '0.5rem',

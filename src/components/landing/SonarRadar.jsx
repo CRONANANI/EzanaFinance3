@@ -159,7 +159,7 @@ export function SonarRadar() {
         {/* The eight dataset nodes. Each latches lit as the wedge passes it. */}
         <g
           style={{
-            fontFamily: 'var(--font-mono)',
+            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
             fontSize: '12px',
             letterSpacing: '0.16em',
           }}
@@ -202,7 +202,7 @@ export function SonarRadar() {
           textAnchor="middle"
           fill="#a7f3d0"
           style={{
-            fontFamily: 'var(--font-mono)',
+            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
             fontSize: '11px',
             letterSpacing: '0.2em',
           }}

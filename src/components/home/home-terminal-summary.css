@@ -1230,7 +1230,7 @@ body.light-mode .hts-week-standing-row {
 .hts-chain-title {
   font-size: 0.6875rem;
   font-weight: 700;
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--home-heading);
   padding: 0.1rem 0.4rem;
@@ -1277,7 +1277,7 @@ body.light-mode .hts-week-standing-row {
 }
 .hts-chain-body {
   font-size: 0.6875rem;
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--home-muted-soft);
   line-height: 1.6;

@@ -12,7 +12,7 @@ export default function NotFound() {
         padding: '2rem',
         backgroundColor: '#0f1419',
         color: '#ffffff',
-        fontFamily: 'var(--font-sans)',
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
       }}
     >
       <h1 style={{ fontSize: '4rem', fontWeight: 700, margin: 0, color: '#10b981' }}>404</h1>

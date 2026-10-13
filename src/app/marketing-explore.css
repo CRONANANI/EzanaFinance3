@@ -770,7 +770,7 @@ body.light-mode .mkt-ds-table-wrap {
 /* ═══════════════════════════════════════════════════════════════════════
    CLICKABLE CONTRACT ROWS + AWARD DETAIL MODAL (USAspending)
    Tokens only — resolves on the light marketing theme. Amounts / dates /
-   codes use .mkt-ds-mono (IBM Plex Mono) per the branding guide.
+   codes use .mkt-ds-mono (JetBrains Mono) per the branding guide.
    ═══════════════════════════════════════════════════════════════════════ */
 .mkt-ds-row-clickable {
   cursor: pointer;

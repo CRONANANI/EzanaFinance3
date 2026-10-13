@@ -207,7 +207,7 @@ function docHtml(note) {
   // so the letterhead uses the Ezana brand emerald directly.
   return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(stripDemoLabel(note.title))}</title>
 <style>
-  body{font-family:'Space Grotesk',system-ui,sans-serif;color:#1a1a1a;max-width:760px;margin:40px auto;padding:0 24px;line-height:1.6}
+  body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#1a1a1a;max-width:760px;margin:40px auto;padding:0 24px;line-height:1.6}
   .lh{border-bottom:3px solid #10b981;padding-bottom:12px;margin-bottom:20px}
   .eyebrow{color:#10b981;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px}
   h1{font-size:24px;margin:6px 0}
@@ -215,7 +215,7 @@ function docHtml(note) {
   .abstract{background:#f0fdf9;border-left:3px solid #10b981;padding:12px 16px;margin:18px 0;border-radius:4px}
   .body{white-space:pre-wrap;font-size:15px}
   .foot{margin-top:32px;border-top:1px solid #ddd;padding-top:10px;color:#999;font-size:11px}
-  code,.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+  code,.mono{font-family:'JetBrains Mono',monospace}
 </style></head><body>
   <div class="lh"><div class="eyebrow">Ezana Finance · Research Library</div>
   <h1>${esc(stripDemoLabel(note.title))}</h1>

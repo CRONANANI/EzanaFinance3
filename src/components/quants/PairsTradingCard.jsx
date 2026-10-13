@@ -127,7 +127,7 @@ export function PairsTradingCard() {
                     style={{
                       fontSize: '1rem',
                       fontWeight: 800,
-                      fontFamily: 'var(--font-mono)',
+                      fontFamily: 'monospace',
                       color: m.color,
                     }}
                   >

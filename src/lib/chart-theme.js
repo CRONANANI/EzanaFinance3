@@ -5,10 +5,7 @@
  * dark mode keep working.
  */
 export const CHART = {
-  // Axis ticks are numbers, dates and tickers: IBM Plex Mono via the token.
-  // Category axes that carry words (sector names, company names) should pass
-  // { ...CHART.tick, fontFamily: 'var(--font-sans)' }.
-  tick: { fill: 'var(--text-muted)', fontSize: 11, fontFamily: 'var(--font-mono)' },
+  tick: { fill: 'var(--text-muted)', fontSize: 11 },
   gridDash: '3 3',
   gridStroke: 'var(--border-secondary)',
   xAxisLine: { stroke: 'var(--border-primary)' },

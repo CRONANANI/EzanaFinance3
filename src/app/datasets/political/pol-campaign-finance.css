@@ -1,7 +1,7 @@
 /* Campaign Finance section (FEC / OpenFEC) on the Political Trade Tracker.
    Page-scoped `pcf-` classes; tokens only (no new globals). Mirrors the ptx-*
-   card family: --surface-card fill, --border-primary borders, Space Grotesk
-   headers, IBM Plex Mono (600, tabular-nums) for every numeric/currency value.
+   card family: --surface-card fill, --border-primary borders, Plus Jakarta Sans
+   headers, JetBrains Mono (600, tabular-nums) for every numeric/currency value.
    Radius 0.75–1rem. Light + dark both resolve from tokens. */
 
 .pcf-section {

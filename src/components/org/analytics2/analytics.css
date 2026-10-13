@@ -1,6 +1,6 @@
 /* ===========================================================================
    Org Analytics & Reporting (Phase 4) — page-scoped, theme tokens only.
-   Text: Space Grotesk. Numbers: IBM Plex Mono + tabular-nums.
+   Text: Plus Jakarta Sans. Numbers: JetBrains Mono + tabular-nums.
    =========================================================================== */
 
 .an4-root {
@@ -273,7 +273,7 @@
 /* ===========================================================================
    Fund Analytics — redesign `1b` (Executive cockpit). `.fa-*` scoped so it
    never collides with the original `.an4-*` panels. Theme tokens only; Lucide
-   icons; IBM Plex Mono `tabular-nums` on every number (via .an4-num).
+   icons; JetBrains Mono `tabular-nums` on every number (via .an4-num).
    =========================================================================== */
 
 /* ── Header row: period selector + export ── */

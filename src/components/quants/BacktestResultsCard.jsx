@@ -198,7 +198,7 @@ export function BacktestResultsCard() {
                 style={{
                   fontSize: '0.85rem',
                   fontWeight: 800,
-                  fontFamily: 'var(--font-mono)',
+                  fontFamily: 'monospace',
                   color:
                     m.tone === 'positive'
                       ? 'var(--emerald)'

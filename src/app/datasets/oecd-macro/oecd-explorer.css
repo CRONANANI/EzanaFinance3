@@ -64,7 +64,7 @@
   gap: 6px 14px;
 }
 .oecd-title {
-  font-family: var(--font-sans);
+  font-family: var(--font-display), var(--font-sans);
   font-size: var(--ds-type-headline-size);
   font-weight: 700;
   line-height: 1.1;

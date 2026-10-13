@@ -1,8 +1,8 @@
 /* ══════════════════════════════════════════════════════════════
    Ezana Sonar — redesigned intelligence surface (Claude Design handoff).
    Two states: a glow-lit hero (pre-search) and a results state with a
-   sticky query bar + a streaming, cited "Live Briefing". Space Grotesk UI,
-   IBM Plex Mono for all numerals/eyebrows, Newsreader serif for Echo headlines.
+   sticky query bar + a streaming, cited "Live Briefing". Plus Jakarta Sans UI,
+   JetBrains Mono for all numerals/eyebrows, Newsreader serif for Echo headlines.
    Theme tokens throughout; translucent panels so the glow reads through. Reduced-
    motion aware.
    ══════════════════════════════════════════════════════════════ */

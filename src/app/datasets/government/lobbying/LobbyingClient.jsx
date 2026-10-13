@@ -12,7 +12,7 @@
  * of filings), never dollars-per-target. The ⓘ notices state this — keep them.
  *
  * Family standards: shared CategoryBar (Capitol Watch active), 1440/32 page,
- * page-scoped `lbx-` classes, Space Grotesk UI + IBM Plex Mono numerics, Lucide.
+ * page-scoped `lbx-` classes, Plus Jakarta UI + JetBrains Mono numerics, Lucide.
  */
 import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { X, ArrowUpRight, ExternalLink, Info, Download, RefreshCw } from 'lucide-react';

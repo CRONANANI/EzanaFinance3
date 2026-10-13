@@ -1,4 +1,4 @@
-// Shared number formatters for the Fund Analytics `1b` cockpit. IBM Plex Mono
+// Shared number formatters for the Fund Analytics `1b` cockpit. JetBrains Mono
 // tabular-nums is applied via the `an4-num` class; these only format the value.
 
 export const money = (n) =>

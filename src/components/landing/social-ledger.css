@@ -33,7 +33,7 @@
    (sled-rp-, rating-panel handoff). Its gauge and tier ladder are a new
    design, not a restyle, so the freeze above does not bind them: the current
    and next tier rows carry an 8px radius and a 1px border, the rating figure
-   is Space Grotesk, and small emerald text uses --emerald-text for
+   is Plus Jakarta Sans, and small emerald text uses --emerald-text for
    contrast. Everything else in this file keeps the freeze.
    ══════════════════════════════════════════════════════════════════════ */
 

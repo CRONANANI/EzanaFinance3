@@ -6,8 +6,8 @@
    hex. Dark mode is the default; tokens flip under body.light-mode so
    these components stay legible in both.
 
-   Typography: --font-sans (Space Grotesk) for text,
-   --font-mono (IBM Plex Mono) + tabular-nums for all numerics.
+   Typography: --font-sans (Plus Jakarta Sans) for text,
+   --font-mono (JetBrains Mono) + tabular-nums for all numerics.
    Icons: Bootstrap Icons only.
 
    The single literal color used is `white`, for foreground text on the

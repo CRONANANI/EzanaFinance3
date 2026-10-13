@@ -83,20 +83,9 @@
   (`borderRadius` in `tailwind.config.js`, 8/16/24/32px) and deliberately do
   not track the tokens — `rounded-lg` is not `var(--radius-lg)`.
   Charts read their presentation props from `CHART` in `src/lib/chart-theme.js`.
-- Font families (Oct 2026): `--font-sans` is **Space Grotesk** (all interface
-  text), `--font-mono` is **IBM Plex Mono** (tickers, prices, percentages,
-  timestamps, axes, identifiers, eyebrow labels; never paragraphs or nav
-  links), `--font-serif` is **Newsreader** (Echo editorial headlines only).
-  Inter, Plus Jakarta Sans, JetBrains Mono and Nunito are retired. Fonts are
-  self-hosted: add or change a family in `scripts/build-fonts.mjs`, run
-  `npm run fonts:build`, never hand-edit `src/app/fonts.css`. Canvas text
-  cannot read `var()`; use `fontStack('--font-mono')` from `@/lib/font-stack`.
-  Sanctioned family exceptions: Cinzel (Centaur Intelligence wordmark), Echo's
-  `--echo-font-serif` body copy, third-party logo marks in SVG.
 - `npm run lint:branding` (`scripts/check-branding.mjs`, wired into CI) enforces
   it: no raw brand hex in CSS, no `var(--border-color|--text-tertiary|--mono|--sans)`
-  (none of those tokens exist), no raw font-family stacks in CSS, custom
-  properties or JSX `fontFamily` (use the `--font-*` tokens), recharts
+  (none of those tokens exist), no raw JetBrains/Jakarta font stacks, recharts
   axis ticks pinned at 11px, `border-radius` in the 2 to 18px band on the
   token scale (the guard reads that scale out of `theme-variables.css` rather
   than hardcoding it, so it can only ever enforce what the app paints), and a

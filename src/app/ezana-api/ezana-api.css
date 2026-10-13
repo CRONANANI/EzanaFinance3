@@ -2,7 +2,7 @@
  *  EZANA API docs page — scoped styles (companion to page.js)
  *  All-white surfaces (separation via hairline borders only), a sticky legend
  *  with scroll-spy (a sticky pill bar on mobile), and light code blocks.
- *  Space Grotesk for text; IBM Plex Mono + tabular-nums for every number,
+ *  Plus Jakarta Sans for text; JetBrains Mono + tabular-nums for every number,
  *  path, method, and code block. Self-animating SVG visuals go static under
  *  prefers-reduced-motion. Token-first; literals only where no token maps.
  * ==========================================================================*/

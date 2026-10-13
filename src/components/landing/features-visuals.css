@@ -34,7 +34,7 @@
   align-items: flex-end;
   justify-content: center;
 }
-/* HTML caption — native-pixel IBM Plex Mono under every visual. Replaces the
+/* HTML caption — native-pixel JetBrains Mono under every visual. Replaces the
    old 6.5px in-SVG captions (which rendered ~8 blurry device px at fractional
    scale). Identical on all six cards; token-driven so it adapts to light/dark. */
 .feature-viz-caption {
@@ -55,7 +55,7 @@
   overflow: visible;
 }
 
-/* All viz labels/numbers in IBM Plex Mono via the app token (never hardcoded). */
+/* All viz labels/numbers in JetBrains Mono via the app token (never hardcoded). */
 .feature-viz text {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;

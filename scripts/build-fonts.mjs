@@ -4,14 +4,13 @@
  *
  * Copies the woff2 files the site uses from the Fontsource packages into
  * public/fonts/site/ and writes src/app/fonts.css with @font-face rules under
- * the family names the tokens in theme-variables.css use ("Space Grotesk", not
- * Fontsource's "Space Grotesk Variable"). Families and ranges:
- *   Space Grotesk   variable 300 to 700, normal only (--font-sans, UI text).
- *                   The family ships no italic; browsers synthesize an oblique.
- *   IBM Plex Mono   400, 500, 600, 700 (--font-mono, tickers and numerals)
- *   Newsreader      variable (covers 400 to 600), normal and italic
- *                   (--font-serif, Echo editorial headlines)
- *   Cinzel          700 (Centaur Intelligence wordmark only)
+ * the family names the CSS already uses ("Plus Jakarta Sans", not Fontsource's
+ * "Plus Jakarta Sans Variable"). Same ranges the site loaded from Google Fonts:
+ *   Plus Jakarta Sans  variable 200 to 800, normal and italic
+ *   JetBrains Mono     400, 500, 600, 700
+ *   Newsreader         variable (covers 400 to 600), normal and italic
+ *   Nunito             variable (covers 400 to 900)
+ *   Cinzel             700
  * Every subset Fontsource ships keeps its unicode-range, so a browser only
  * downloads the scripts a page actually uses, as it did from Google.
  */
@@ -24,9 +23,10 @@ const OUT_DIR = join(ROOT, 'public/fonts/site');
 const OUT_CSS = join(ROOT, 'src/app/fonts.css');
 
 const SOURCES = [
-  ['@fontsource-variable/space-grotesk', ['wght.css'], 'Space Grotesk'],
-  ['@fontsource/ibm-plex-mono', ['400.css', '500.css', '600.css', '700.css'], 'IBM Plex Mono'],
+  ['@fontsource-variable/plus-jakarta-sans', ['wght.css', 'wght-italic.css'], 'Plus Jakarta Sans'],
+  ['@fontsource/jetbrains-mono', ['400.css', '500.css', '600.css', '700.css'], 'JetBrains Mono'],
   ['@fontsource-variable/newsreader', ['wght.css', 'wght-italic.css'], 'Newsreader'],
+  ['@fontsource-variable/nunito', ['wght.css'], 'Nunito'],
   ['@fontsource/cinzel', ['700.css'], 'Cinzel'],
 ];
 

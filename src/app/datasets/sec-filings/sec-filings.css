@@ -54,7 +54,7 @@
   white-space: nowrap;
 }
 .secf-mono {
-  /* Branding guide: IBM Plex Mono for ALL numerals — the class previously
+  /* Branding guide: JetBrains Mono for ALL numerals — the class previously
      only set tabular figures, leaving values/dates in the sans face. */
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;

@@ -7,7 +7,7 @@
    `hcs-` prefix keeps clear of the `hc-` classes the article and category
    pages share (help-center.css).
 
-   Space Grotesk for words; IBM Plex Mono for counts, read times, dates
+   Plus Jakarta Sans for words; JetBrains Mono for counts, read times, dates
    and mono-caps labels. Emerald is the only accent. */
 
 .hcs {
