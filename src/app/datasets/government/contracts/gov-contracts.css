@@ -1308,74 +1308,125 @@
 /* The explorer keeps .gcx-card for its padding and internal spacing but drops
    the card's frame: the table sits directly on the page background, so its own
    row dividers do the separating instead of a box around a box. */
+/* ── Explore all awards (Oct 13 redesign) ─────────────────────────────
+   A dark emerald card in the Sonar band's language: the brand band green
+   as the surface, white ink mixes, emerald accents, a single-row filter
+   bar on desktop, mono tabular numbers, and rows that lift on hover. All
+   values are tokens or mixes of tokens. */
 .gcx-exp {
+  --gx-ink: color-mix(in srgb, white 92%, transparent);
+  --gx-ink-2: color-mix(in srgb, white 72%, transparent);
+  --gx-ink-3: color-mix(in srgb, white 52%, transparent);
+  --gx-hair: color-mix(in srgb, white 10%, transparent);
+  --gx-hair-strong: color-mix(in srgb, white 18%, transparent);
+  --gx-well: color-mix(in srgb, black 24%, transparent);
+  --gx-well-hover: color-mix(in srgb, white 6%, transparent);
+  --gx-accent: var(--brand-band-mint);
   margin-top: 18px;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
+  padding: 22px 22px 18px;
+  background: var(--brand-band-green);
+  border: 1px solid var(--gx-hair);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  color: var(--gx-ink);
 }
 .gcx-exp-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
+.gcx-exp .gcx-hero-title {
+  font-family: var(--font-sans);
+  color: var(--gx-ink);
+}
+.gcx-exp .gcx-list-count {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--gx-accent);
+}
+/* The filter bar: recipient, agency, fiscal year and sort in one row. */
 .gcx-exp-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.4fr) minmax(150px, 0.7fr) minmax(190px, 0.9fr);
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 10px;
+  background: var(--gx-well);
+  border: 1px solid var(--gx-hair);
+  border-radius: var(--radius-lg);
 }
 .gcx-exp-field {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: var(--ds-type-disclaimer-size);
-  color: var(--text-faint);
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: var(--ds-type-eyebrow-size);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--gx-ink-3);
 }
 .gcx-exp-grow {
-  flex: 1 1 200px;
+  min-width: 0;
 }
 .gcx-exp-select,
 .gcx-exp-search {
-  min-height: 44px;
-  border: 1px solid var(--border-input);
-  background: var(--surface-input);
-  border-radius: var(--radius-lg);
-  color: var(--text-primary);
-  font-size: 1rem;
+  min-height: 42px;
+  border: 1px solid var(--gx-hair-strong);
+  background: color-mix(in srgb, black 18%, transparent);
+  border-radius: var(--radius-md);
+  color: var(--gx-ink);
+  font-family: var(--font-sans);
+  font-size: var(--ds-type-body-size);
+  letter-spacing: 0;
+  text-transform: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 .gcx-exp-select {
   padding: 0 12px;
+  color-scheme: dark;
 }
 .gcx-exp-search {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 0 12px;
-  color: var(--text-faint);
+  color: var(--gx-ink-3);
 }
 .gcx-exp-input {
   flex: 1;
+  min-width: 0;
   align-self: stretch;
   border: none;
   background: transparent;
-  color: var(--text-primary);
-  font-size: 1rem;
+  color: var(--gx-ink);
+  font-family: var(--font-sans);
+  font-size: var(--ds-type-body-size);
   outline: none;
 }
-.gcx-exp-select:focus,
+.gcx-exp-input::placeholder {
+  color: var(--gx-ink-3);
+}
+.gcx-exp-select:hover,
+.gcx-exp-search:hover {
+  background: var(--gx-well-hover);
+}
+.gcx-exp-select:focus-visible,
 .gcx-exp-search:focus-within {
-  border-color: var(--emerald);
+  border-color: var(--gx-accent);
+  outline: none;
 }
 .gcx-exp-tablewrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   max-width: 100%;
-  border: 1px solid var(--border-primary);
+  border: 1px solid var(--gx-hair);
   border-radius: var(--radius-lg);
+  background: var(--gx-well);
 }
 .gcx-exp-table {
   width: 100%;
@@ -1385,33 +1436,59 @@
 .gcx-exp-table th,
 .gcx-exp-table td {
   text-align: left;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border-primary);
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--gx-hair);
   white-space: nowrap;
 }
 .gcx-exp-table th {
-  color: var(--text-faint);
+  color: var(--gx-ink-3);
   font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
+  background: color-mix(in srgb, black 14%, transparent);
 }
 .gcx-exp-table tbody tr:last-child td {
   border-bottom: none;
 }
-.gcx-exp-table tbody tr:hover {
-  background: var(--surface-card-hover);
+.gcx-exp-row {
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+.gcx-exp-row:hover,
+.gcx-exp-row:focus-visible {
+  background: var(--gx-well-hover);
+  box-shadow: inset 2px 0 0 var(--gx-accent);
+  outline: none;
+}
+.gcx-exp-row:hover td {
+  transform: translateY(-1px);
+}
+.gcx-exp-table td {
+  color: var(--gx-ink-2);
 }
 .gcx-exp-recipient {
   max-width: 320px;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--text-primary);
+  font-weight: 600;
+  color: var(--gx-ink);
+}
+.gcx-exp-table .gcx-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 .gcx-exp-num {
   text-align: right;
+}
+.gcx-exp-table td.gcx-exp-num {
+  color: var(--gx-accent);
+  font-weight: 600;
 }
 .gcx-exp-sort {
   background: none;
@@ -1423,12 +1500,14 @@
   cursor: pointer;
   padding: 0;
 }
-.gcx-exp-sort:hover {
-  color: var(--text-primary);
+.gcx-exp-sort:hover,
+.gcx-exp-sort:focus-visible {
+  color: var(--gx-ink);
+  outline: none;
 }
 .gcx-exp-state {
   text-align: center;
-  color: var(--text-faint);
+  color: var(--gx-ink-3);
   padding: 28px 12px;
 }
 .gcx-exp-spin {
@@ -1447,10 +1526,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 12px;
+  margin-top: 14px;
+  font-family: var(--font-mono);
   font-size: var(--ds-type-fine-size);
   font-variant-numeric: tabular-nums;
-  color: var(--text-secondary);
+  color: var(--gx-ink-2);
 }
 .gcx-exp-pagebtns {
   display: flex;
@@ -1463,22 +1543,48 @@
   justify-content: center;
   height: 32px;
   width: 32px;
-  border: 1px solid var(--border-primary);
-  background: var(--surface-card);
+  border: 1px solid var(--gx-hair-strong);
+  background: color-mix(in srgb, black 18%, transparent);
   border-radius: var(--radius-md);
-  color: var(--text-primary);
+  color: var(--gx-ink);
   cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 .gcx-exp-pagebtn:disabled {
   opacity: 0.45;
   cursor: default;
 }
 .gcx-exp-pagebtn:not(:disabled):hover {
-  border-color: var(--border-hover);
+  border-color: var(--gx-accent);
+  background: var(--gx-well-hover);
+}
+.gcx-exp-pagebtn:focus-visible {
+  outline: 2px solid var(--gx-accent);
+  outline-offset: 2px;
+}
+@media (max-width: 1100px) {
+  .gcx-exp-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 @media (max-width: 640px) {
-  .gcx-exp-field {
-    flex: 1 1 100%;
+  .gcx-exp {
+    padding: 16px 14px 14px;
+  }
+  .gcx-exp-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gcx-exp-row,
+  .gcx-exp-row:hover td,
+  .gcx-exp-select,
+  .gcx-exp-search,
+  .gcx-exp-pagebtn {
+    transition: none;
+    transform: none;
   }
 }
 

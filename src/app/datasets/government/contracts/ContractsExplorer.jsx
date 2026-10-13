@@ -119,24 +119,7 @@ export default function ContractsExplorer({ coverage = null, onOpenQuickView }) 
         </span>
       </div>
 
-      <div className="gcx-exp-filters">
-        <label className="gcx-exp-field">
-          <span>Fiscal year</span>
-          <select
-            value={fiscalYear}
-            onChange={(e) => setFiscalYear(e.target.value)}
-            className="gcx-exp-select"
-          >
-            <option value="all">All years</option>
-            {fyList.map((y) => (
-              <option key={y} value={y}>
-                FY{y}
-                {coverage?.counts?.[y] ? ` (${coverage.counts[y].toLocaleString()})` : ''}
-              </option>
-            ))}
-          </select>
-        </label>
-
+      <div className="gcx-exp-filters" role="search" aria-label="Filter and sort awards">
         <label className="gcx-exp-field gcx-exp-grow">
           <span>Recipient</span>
           <span className="gcx-exp-search">
@@ -163,6 +146,43 @@ export default function ContractsExplorer({ coverage = null, onOpenQuickView }) 
               className="gcx-exp-input"
             />
           </span>
+        </label>
+
+        <label className="gcx-exp-field">
+          <span>Fiscal year</span>
+          <select
+            value={fiscalYear}
+            onChange={(e) => setFiscalYear(e.target.value)}
+            className="gcx-exp-select"
+          >
+            <option value="all">All years</option>
+            {fyList.map((y) => (
+              <option key={y} value={y}>
+                FY{y}
+                {coverage?.counts?.[y] ? ` (${coverage.counts[y].toLocaleString()})` : ''}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="gcx-exp-field">
+          <span>Sort</span>
+          <select
+            value={`${sort}:${order}`}
+            onChange={(e) => {
+              const [k, o] = e.target.value.split(':');
+              setSort(k);
+              setOrder(o);
+            }}
+            className="gcx-exp-select"
+          >
+            <option value="amount:desc">Amount, high to low</option>
+            <option value="amount:asc">Amount, low to high</option>
+            <option value="date:desc">Newest first</option>
+            <option value="date:asc">Oldest first</option>
+            <option value="recipient:asc">Recipient, A to Z</option>
+            <option value="recipient:desc">Recipient, Z to A</option>
+          </select>
         </label>
       </div>
 
