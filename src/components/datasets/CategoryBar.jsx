@@ -141,7 +141,7 @@ function useHoverIntentMenu() {
   return { openId, open, scheduleClose, close, toggle, pin };
 }
 
-export default function CategoryBar({ active, activeItem }) {
+export default function CategoryBar({ active, activeItem, showDimensions = true }) {
   const barRef = useRef(null);
   const panelRef = useRef(null);
   const activeRef = useRef(null);
@@ -288,7 +288,7 @@ export default function CategoryBar({ active, activeItem }) {
       ro.disconnect();
       cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [showDimensions]);
 
   /* Below 1024 the seven dimensions scroll as one line rather than wrapping, so
      the current one has to be brought into view or it can sit off-screen. */
@@ -322,19 +322,22 @@ export default function CategoryBar({ active, activeItem }) {
         </Link>
       </div>
 
+      {/* The overview (/datasets) keeps only Home and the auth actions. The
+          empty centre column stays so the two sides keep their places. */}
       <div className="dscat-center">
-        {DATASET_TAXONOMY.map((cat) => (
-          <div
-            className="dscat"
-            key={cat.id}
-            style={{ '--dscat-dim-color': cat.color }}
-            onMouseEnter={() => open(cat.id)}
-            onMouseLeave={scheduleClose}
-          >
-            <button
-              type="button"
-              className={`dscat-trigger ${cat.id === active ? 'is-active' : ''}`}
-              /* No inline style for the active trigger any more. It used to
+        {showDimensions &&
+          DATASET_TAXONOMY.map((cat) => (
+            <div
+              className="dscat"
+              key={cat.id}
+              style={{ '--dscat-dim-color': cat.color }}
+              onMouseEnter={() => open(cat.id)}
+              onMouseLeave={scheduleClose}
+            >
+              <button
+                type="button"
+                className={`dscat-trigger ${cat.id === active ? 'is-active' : ''}`}
+                /* No inline style for the active trigger any more. It used to
                  paint the dimension's own colour as ink and an underline, which
                  is unreadable on the green gradient the bar now wears — and an
                  inline style would have beaten the stylesheet's translucent
@@ -342,21 +345,21 @@ export default function CategoryBar({ active, activeItem }) {
                  label and icon take the dimension colour on a page-ground pill
                  (category-bar.css), which keeps them legible on the gradient.
                  Oct 11: restyled as the landing nav's text links (no pill). */
-              ref={(el) => {
-                triggerRefs.current[cat.id] = el;
-                if (cat.id === active) activeRef.current = el;
-              }}
-              aria-haspopup="true"
-              aria-expanded={openId === cat.id}
-              onClick={() => toggle(cat.id)}
-              onKeyDown={(e) => onTriggerKeyDown(e, cat.id)}
-            >
-              {/* Plain text, like the landing nav's links: no icon, no caret.
+                ref={(el) => {
+                  triggerRefs.current[cat.id] = el;
+                  if (cat.id === active) activeRef.current = el;
+                }}
+                aria-haspopup="true"
+                aria-expanded={openId === cat.id}
+                onClick={() => toggle(cat.id)}
+                onKeyDown={(e) => onTriggerKeyDown(e, cat.id)}
+              >
+                {/* Plain text, like the landing nav's links: no icon, no caret.
                   The icon still leads each dimension's dropdown heading. */}
-              {cat.label}
-            </button>
-          </div>
-        ))}
+                {cat.label}
+              </button>
+            </div>
+          ))}
       </div>
 
       <div className="dscat-side dscat-side--end">

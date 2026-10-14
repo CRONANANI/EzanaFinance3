@@ -4,9 +4,10 @@
  * Floating notification cards either side of the orbital map. Each card is
  * born at the map's Sonar hub as a speck, flies outward while it grows, and
  * lands full size in a free slot beside the map; it holds, then fades. The
- * cards are one line each (icon, dimension, headline) on a
- * transparent ground. Copy is illustrative (news-samples.js); names, icons
- * and colours come from the taxonomy. The rails are decorative: aria-hidden,
+ * cards are one line each (icon, source, headline, meta) on a
+ * transparent ground. Every card is a real row (news-feed.js maps the
+ * Politician Tracker and Government Contracts feeds); colours come from the
+ * taxonomy. With no rows the rails stay empty. The rails are decorative: aria-hidden,
  * and hidden below 900px so the map keeps its width. Slots are chosen
  * deterministically (no Math.random). Under prefers-reduced-motion the cards
  * fade in place and spawn half as often.
@@ -65,6 +66,7 @@ function NewsCard({ card, originRef }) {
         {card.dimension}
       </span>
       <span className="dso-news-headline">{card.headline}</span>
+      {card.meta ? <span className="dso-news-meta">{card.meta}</span> : null}
     </div>
   );
 }

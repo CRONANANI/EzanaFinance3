@@ -3,7 +3,8 @@ import { resolveDimension, taxonomyCounts } from './sonar/derive';
 import { SonarSelectionProvider } from './sonar/SonarSelection';
 import OrbitalMap from './sonar/OrbitalMap';
 import OrbitalNewsTicker from './sonar/OrbitalNewsTicker';
-import { buildNewsItems } from './sonar/news-samples';
+import { buildNewsItems } from './sonar/news-feed';
+import { readOrbitalFeed } from '@/lib/datasets/orbital-feed';
 import GlobeBackground from './sonar/GlobeBackground';
 import { SonarExperience } from '@/components/sonar/SonarExperience';
 import './sonar/sonar.css';
@@ -13,7 +14,9 @@ import './sonar/sonar.css';
  * over a green-tinted globe of flickering city lights.
  * The orbital map card ("Everything below feeds Ezana Sonar") sits under the
  * search bar; sending a ping hides it, shows the stacked-block loader, then
- * the results. Every mark on the map is derived from taxonomy.js.
+ * the results. Every mark on the map is derived from taxonomy.js; the
+ * notification cards around it are real rows from the Politician Tracker and
+ * Government Contracts feeds (readOrbitalFeed).
  */
 export const dynamic = 'force-dynamic';
 
@@ -36,14 +39,20 @@ const ORBIT_DIMS = DATASET_TAXONOMY.map((d) => {
     items: d.items.map((it) => ({ label: it.label, href: it.href, live: Boolean(it.live) })),
   };
 });
-const NEWS_ITEMS = buildNewsItems(DATASET_TAXONOMY);
 
-export default function DatasetsIndexPage({ searchParams }) {
+export default async function DatasetsIndexPage({ searchParams }) {
+  let feed = { trades: [], awards: [] };
+  try {
+    feed = await readOrbitalFeed();
+  } catch {
+    /* No feed, no cards: the map still renders. */
+  }
+  const newsItems = buildNewsItems(feed, DATASET_TAXONOMY);
   const selected = resolveDimension(DATASET_TAXONOMY, searchParams?.dimension);
 
   const map = (
     <SonarSelectionProvider initial={selected} ids={DIM_IDS}>
-      <OrbitalNewsTicker items={NEWS_ITEMS}>
+      <OrbitalNewsTicker items={newsItems}>
         <section
           className="dso-sonar dso-sonar--solo"
           aria-label="The seven dataset dimensions that feed Ezana Sonar"

@@ -65,7 +65,11 @@ export default function DatasetChrome() {
      that publishes no ticker gets the bar alone, still rounded. */
   return (
     <div className="dscat-chrome">
-      <CategoryBar active={hit?.active ?? null} activeItem={hit?.activeItem ?? null} />
+      <CategoryBar
+        active={hit?.active ?? null}
+        activeItem={hit?.activeItem ?? null}
+        showDimensions={pathname !== '/datasets'}
+      />
       {ticker ? (
         <DatasetTicker
           items={ticker.items}

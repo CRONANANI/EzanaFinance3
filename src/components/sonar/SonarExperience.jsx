@@ -308,6 +308,7 @@ export function SonarExperience({ variant = 'app', heroAddon = null }) {
             version={entitlements?.version}
             minimal={onDatasets}
             ghostBar={onDatasets}
+            bare={onDatasets}
           >
             {heroAddon}
           </SonarHero>

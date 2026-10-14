@@ -1673,6 +1673,22 @@ li:last-child > .dso-arr {
 .dso-page--search .sonar-hero {
   padding-top: 0;
 }
+/* Oct 14: no eyebrow, h1 or sub on the overview. The pill sits about halfway
+   between where it used to be and the nav: tune this one value to move it. */
+.dso-page--search .sonar-hero.sonar-hero--bare {
+  padding-top: 18px;
+}
+.dso-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 .dso-page--search .sonar-eyebrow {
   color: var(--dso-radar-green);
 }

@@ -21,22 +21,31 @@ export function SonarHero({
   version,
   minimal = false,
   ghostBar = false,
+  bare = false,
   children = null,
 }) {
   const [showAll, setShowAll] = useState(false);
   const visibleRecent = showAll ? recent : recent?.slice(0, 3);
   const quotaReached = Boolean(quota && quota.remaining <= 0);
   return (
-    <div className="sonar-hero">
-      <div className="sonar-eyebrow">Ezana Sonar</div>
-      <h1 className="sonar-h1">
-        Ping anything. <br />
-        Get the whole field back.
-      </h1>
-      <p className="sonar-sub">
-        Type a name, a ticker, a policy, or a bill. Sonar sweeps every dataset we have, checks the
-        open web, and comes back with a cited briefing.
-      </p>
+    <div className={`sonar-hero${bare ? ' sonar-hero--bare' : ''}`}>
+      {bare ? (
+        /* The datasets overview drops the visible header; the page keeps one
+           h1 for screen readers and search. */
+        <h1 className="dso-sr-only">Ezana datasets</h1>
+      ) : (
+        <>
+          <div className="sonar-eyebrow">Ezana Sonar</div>
+          <h1 className="sonar-h1">
+            Ping anything. <br />
+            Get the whole field back.
+          </h1>
+          <p className="sonar-sub">
+            Type a name, a ticker, a policy, or a bill. Sonar sweeps every dataset we have, checks
+            the open web, and comes back with a cited briefing.
+          </p>
+        </>
+      )}
 
       <SonarQueryBar
         value={value}
