@@ -26,7 +26,15 @@
 
 import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Check, Minus, ArrowRight, Sparkles, ShieldCheck, Loader2 } from 'lucide-react';
+import {
+  Check,
+  Minus,
+  ArrowRight,
+  Sparkles,
+  ShieldCheck,
+  Loader2,
+  ChevronDown,
+} from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
 import RenewalTerms from '@/components/billing/RenewalTerms';
 import { PLANS as CATALOG } from '@/config/pricing';
@@ -338,6 +346,47 @@ const COMPARISON_FEATURES = [
 const catalogPlan = (plan, billing) =>
   CATALOG[plan.stripeKey?.[billing === 'yearly' ? 'year' : 'month']] || null;
 
+/**
+ * Pure: everything a plan shows about its price for one billing interval.
+ * Shared by the desktop cards and the mobile price list so the two can never
+ * disagree. Annual: per-month equivalent up front, the yearly total and the
+ * saving underneath, and the monthly price struck through.
+ */
+function planPricing(plan, billing) {
+  if (plan.contactSales) {
+    return { kind: 'custom', main: 'Custom', unit: '', note: 'Talk to sales', was: null };
+  }
+  if (plan.isFree) {
+    return { kind: 'free', main: '$0', unit: '', note: 'No card needed', was: null };
+  }
+  if (billing === 'yearly') {
+    const total = plan.yearlyPrice * 12;
+    const saved = plan.monthlyPrice * 12 - total;
+    return {
+      kind: 'paid',
+      main: `$${plan.yearlyPrice}`,
+      unit: '/mo',
+      note: saved > 0 ? `$${total}/yr · save $${saved}` : `$${total} billed yearly`,
+      was: plan.monthlyPrice > plan.yearlyPrice ? `$${plan.monthlyPrice}` : null,
+      total,
+    };
+  }
+  return {
+    kind: 'paid',
+    main: `$${plan.monthlyPrice}`,
+    unit: '/mo',
+    note: 'Billed monthly',
+    was: null,
+    total: plan.monthlyPrice,
+  };
+}
+
+function ctaLabelFor(plan, isPending) {
+  if (plan.isFree) return isPending ? 'Activating…' : 'Get Started Free';
+  if (plan.contactSales) return 'Contact Sales';
+  return isPending ? 'Starting checkout…' : 'Start 14-day free trial';
+}
+
 const FAQ_ITEMS = [
   {
     q: 'How does automatic renewal work?',
@@ -392,10 +441,140 @@ function CellValue({ value }) {
   return <div className="comp-cell">{content}</div>;
 }
 
+/**
+ * Mobile price list (≤768px): every plan's price in one compact row so the
+ * whole lineup is visible on load, and the Monthly/Annual toggle visibly
+ * changes every number. A row expands (one at a time) into the plan's
+ * tagline, CTA, features and renewal terms. The desktop cards are unchanged.
+ */
+function PlanList({ billing, openPlan, setOpenPlan, pendingPlan, onSelect }) {
+  return (
+    <ul className="plan-list" aria-label="Plans">
+      {PLANS.map((plan) => {
+        const p = planPricing(plan, billing);
+        const open = openPlan === plan.id;
+        const isPending = pendingPlan === plan.id;
+        const rowId = `plan-row-${plan.id}`;
+        const panelId = `plan-panel-${plan.id}`;
+        const chip = plan.isFree
+          ? 'Free forever'
+          : plan.contactSales
+            ? 'Custom pricing'
+            : '14-day free trial';
+        return (
+          <li
+            key={plan.id}
+            className={['plan-row', plan.highlight && 'plan-row--highlight', open && 'is-open']
+              .filter(Boolean)
+              .join(' ')}
+          >
+            <h3 className="plan-row-h">
+              <button
+                type="button"
+                id={rowId}
+                className="plan-row-btn"
+                aria-expanded={open}
+                aria-controls={panelId}
+                onClick={() => setOpenPlan(open ? null : plan.id)}
+              >
+                <span className="plan-row-id">
+                  <span className="plan-row-name">
+                    {plan.name}
+                    {plan.badge ? <span className="plan-row-badge">{plan.badge}</span> : null}
+                  </span>
+                  <span
+                    className={`plan-row-chip${plan.isFree || plan.contactSales ? ' is-neutral' : ''}`}
+                  >
+                    {chip}
+                  </span>
+                </span>
+                <span className="plan-row-price">
+                  {/* Keyed on billing so the figure re-animates on every toggle. */}
+                  <span key={`${plan.id}-${billing}`} className="plan-row-figure">
+                    {p.was ? (
+                      <s className="plan-row-was">
+                        <span className="plan-row-sr">was </span>
+                        {p.was}
+                      </s>
+                    ) : null}
+                    <span className="plan-row-amount">{p.main}</span>
+                    {p.unit ? <span className="plan-row-unit">{p.unit}</span> : null}
+                  </span>
+                  <span key={`${plan.id}-${billing}-note`} className="plan-row-note">
+                    {p.note}
+                  </span>
+                </span>
+                <ChevronDown size={18} className="plan-row-chev" aria-hidden />
+              </button>
+            </h3>
+            <div
+              id={panelId}
+              role="region"
+              aria-labelledby={rowId}
+              className="plan-row-panel"
+              hidden={!open}
+            >
+              <p className="plan-row-tagline">{plan.tagline}</p>
+              <button
+                type="button"
+                onClick={() => onSelect(plan)}
+                disabled={isPending}
+                className={`plan-cta ${plan.highlight ? 'plan-cta--primary' : ''}`}
+                aria-busy={isPending}
+              >
+                {isPending ? <Loader2 size={16} className="plan-cta-spin" aria-hidden /> : null}
+                <span>{ctaLabelFor(plan, isPending)}</span>
+                {!isPending ? <ArrowRight size={16} aria-hidden /> : null}
+              </button>
+              {plan.contactSales ? (
+                <p className="plan-finesub">We reply within 1 business day</p>
+              ) : null}
+              <div className="plan-features-label">What&apos;s included</div>
+              <ul className="plan-features">
+                {plan.features.map((f) => (
+                  <li key={f}>
+                    <Check size={15} className="plan-feature-check" aria-hidden />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              {!plan.isFree && !plan.contactSales ? (
+                <RenewalTerms plan={catalogPlan(plan, billing)} className="plan-renewal" />
+              ) : null}
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/* The sticky marketing navbar changes height on scroll; the mobile comparison
+   header sticks just under it, so the page keeps its live height in a var. */
+function useNavHeight(rootRef) {
+  useEffect(() => {
+    const root = rootRef.current;
+    const nav = document.querySelector('.navbar-sticky') || document.querySelector('.navbar');
+    if (!root || !nav) return undefined;
+    const write = () =>
+      root.style.setProperty(
+        '--pricing-nav-h',
+        `${Math.round(nav.getBoundingClientRect().height)}px`,
+      );
+    write();
+    const ro = new ResizeObserver(write);
+    ro.observe(nav);
+    return () => ro.disconnect();
+  }, [rootRef]);
+}
+
 export default function PricingPage() {
   const [billing, setBilling] = useState('yearly'); // Annual default for higher conversion
   const [pendingPlan, setPendingPlan] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [openPlan, setOpenPlan] = useState(null); // mobile price list: one row open at a time
+  const rootRef = useRef(null);
+  useNavHeight(rootRef);
 
   /* Auto-dismiss a transient error banner so it doesn't linger. */
   useEffect(() => {
@@ -511,7 +690,7 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="pricing-page--standalone">
+    <div className="pricing-page--standalone" ref={rootRef}>
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <header className="pricing-hero">
         <div className="pricing-trial-pill" role="note">
@@ -522,8 +701,13 @@ export default function PricingPage() {
           Simple pricing. <span className="pricing-h1-accent">Serious investing.</span>
         </h1>
         <p className="pricing-subtitle">
-          Start with the plan that fits where you are. Every paid plan includes a full 14-day free
-          trial — cancel anytime, no charge until the trial ends.
+          <span className="pricing-subtitle-long">
+            Start with the plan that fits where you are. Every paid plan includes a full 14-day free
+            trial — cancel anytime, no charge until the trial ends.
+          </span>
+          <span className="pricing-subtitle-short">
+            No charge until your trial ends. Cancel anytime.
+          </span>
         </p>
 
         <div className="billing-toggle-wrap" role="tablist" aria-label="Billing interval">
@@ -556,6 +740,13 @@ export default function PricingPage() {
 
       {/* ── Plan Cards ──────────────────────────────────────────────── */}
       <section className="pricing-cards-section" aria-label="Plans">
+        <PlanList
+          billing={billing}
+          openPlan={openPlan}
+          setOpenPlan={setOpenPlan}
+          pendingPlan={pendingPlan}
+          onSelect={(plan) => (plan.isFree ? activateFreePlan() : startCheckout(plan))}
+        />
         <div className="pricing-cards-grid pricing-cards-grid--five">
           {PLANS.map((plan) => {
             // annual shows the true yearly total (per-month-equivalent × 12)
@@ -567,15 +758,7 @@ export default function PricingPage() {
                 : plan.monthlyPrice;
             const isContact = plan.contactSales;
             const isPending = pendingPlan === plan.id;
-            const ctaLabel = plan.isFree
-              ? isPending
-                ? 'Activating…'
-                : 'Get Started Free'
-              : isContact
-                ? 'Contact Sales'
-                : isPending
-                  ? 'Starting checkout…'
-                  : 'Start 14-day free trial';
+            const ctaLabel = ctaLabelFor(plan, isPending);
 
             return (
               <div

@@ -981,3 +981,382 @@ body:not(.light-mode) .pricing-page--standalone .pricing-h1 {
     transform: none;
   }
 }
+
+/* ── Oct 14: mobile pricing ───────────────────────────────────────────
+   ≤768px: the five tall cards give way to a compact price list, so every
+   plan's price is on screen at load and the Monthly/Annual toggle visibly
+   changes each figure. A row expands (one at a time) into the plan's
+   tagline, CTA, features and renewal terms. The comparison table becomes
+   stacked rows under a sticky plan header: feature name on its own line,
+   the five plan values in five even columns beneath, no sideways scroll,
+   down to 320px. Desktop and tablet are unchanged. */
+.plan-list {
+  display: none;
+}
+.plan-row-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  /* Hero: tighter, so the toggle and the whole price list sit near the fold. */
+  .pricing-hero {
+    padding: 1.75rem 1rem 1.25rem;
+  }
+  .pricing-trial-pill {
+    margin-bottom: 0.85rem;
+  }
+  .pricing-h1 {
+    margin-bottom: 0.6rem;
+  }
+  .pricing-subtitle {
+    margin-bottom: 1.1rem;
+    padding: 0;
+    font-size: 0.875rem;
+    line-height: 1.45;
+  }
+  .billing-toggle-wrap {
+    width: 100%;
+    max-width: 22rem;
+  }
+  .billing-btn {
+    flex: 1;
+    justify-content: center;
+    padding-inline: 0.75rem;
+  }
+
+  .pricing-cards-section {
+    padding: 0 1rem 2rem;
+  }
+  .pricing-cards-grid--five {
+    display: none;
+  }
+  .plan-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-width: 30rem;
+    margin: 0 auto 1.75rem;
+    padding: 0;
+    list-style: none;
+  }
+  .plan-row {
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    background: var(--surface-card);
+    transition: border-color 0.18s ease;
+  }
+  .plan-row--highlight {
+    border-color: color-mix(in srgb, var(--emerald) 55%, transparent);
+    background:
+      linear-gradient(
+        color-mix(in srgb, var(--emerald) 6%, transparent),
+        color-mix(in srgb, var(--emerald) 6%, transparent)
+      ),
+      var(--surface-card);
+  }
+  .plan-row.is-open {
+    border-color: color-mix(in srgb, var(--emerald) 40%, transparent);
+  }
+  .plan-row-h {
+    margin: 0;
+    font: inherit;
+  }
+  .plan-row-btn {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto 18px;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    min-height: 64px;
+    padding: 0.7rem 0.85rem 0.7rem 1rem;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    border-radius: var(--radius-lg);
+  }
+  .plan-row-btn:focus-visible {
+    outline: 2px solid var(--emerald);
+    outline-offset: 2px;
+  }
+  .plan-row-id {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+    min-width: 0;
+  }
+  .plan-row-name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .plan-row-badge {
+    padding: 0.1rem 0.45rem;
+    border-radius: 9999px;
+    background: var(--emerald);
+    color: var(--bg-primary);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .plan-row-chip {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--emerald-text, var(--emerald));
+  }
+  .plan-row-chip.is-neutral {
+    color: var(--text-muted);
+  }
+  .plan-row-price {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+    text-align: right;
+  }
+  .plan-row-figure {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.25rem;
+    font-variant-numeric: tabular-nums;
+    animation: plan-row-in 0.28s ease-out;
+  }
+  .plan-row-was {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-faint);
+  }
+  .plan-row-amount {
+    font-family: var(--font-mono);
+    font-size: 1.375rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--text-primary);
+  }
+  .plan-row-unit {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  .plan-row-note {
+    max-width: 11.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    line-height: 1.35;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    animation: plan-row-in 0.28s ease-out;
+  }
+  .plan-row-chev {
+    color: var(--text-faint);
+    transition: transform 0.2s ease;
+  }
+  .plan-row.is-open .plan-row-chev {
+    transform: rotate(180deg);
+    color: var(--emerald);
+  }
+  .plan-row-panel {
+    padding: 0 1rem 1rem;
+  }
+  .plan-row-panel[hidden] {
+    display: none;
+  }
+  .plan-row-tagline {
+    margin: 0 0 0.85rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--border-primary);
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: var(--text-muted);
+  }
+  .plan-row-panel .plan-cta {
+    width: 100%;
+  }
+  .plan-row-panel .plan-finesub {
+    margin: 0.5rem 0 0;
+    text-align: center;
+  }
+  .plan-row-panel .plan-features-label {
+    margin: 1rem 0 0.5rem;
+  }
+  .plan-row-panel .plan-features {
+    margin: 0;
+  }
+  .plan-row-panel .renewal-terms.plan-renewal {
+    margin: 0.85rem 0 0;
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--border-primary);
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    color: var(--text-faint);
+    text-align: left;
+  }
+
+  /* Comparison: stacked rows, sticky plan header, no horizontal scroll. */
+  .pricing-comparison-section {
+    padding: 1.5rem 1rem 2.5rem;
+  }
+  .comparison-table-wrap {
+    overflow: visible;
+    background: var(--surface-card);
+  }
+  .comparison-table,
+  .comparison-table thead,
+  .comparison-table tbody {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+  .comparison-table colgroup {
+    display: none;
+  }
+  .comparison-table thead {
+    position: sticky;
+    top: var(--pricing-nav-h, 56px);
+    z-index: 2;
+  }
+  .comparison-table thead tr,
+  .comparison-table tbody tr {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .comparison-table thead tr {
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    background: var(--bg-primary);
+    box-shadow: 0 1px 0 var(--border-primary);
+  }
+  .comparison-table th {
+    padding: 0.6rem 0.15rem;
+    background: none;
+    border-bottom: 0;
+  }
+  .comparison-table th.comp-feature-col {
+    display: none;
+  }
+  .comp-plan-name {
+    font-size: 0.75rem;
+  }
+  .comp-plan-sub {
+    font-size: 0.625rem;
+  }
+  .comparison-table td {
+    padding: 0.3rem 0.15rem 0.7rem;
+    border-top: 0;
+  }
+  .comparison-table td.comp-feature-name {
+    grid-column: 1 / -1;
+    padding: 0.7rem 0.85rem 0.25rem;
+    border-top: 1px solid var(--border-primary);
+    font-size: 0.8125rem;
+  }
+  .comp-category-row td {
+    grid-column: 1 / -1;
+    padding: 0.6rem 0.85rem;
+  }
+  .comp-category-row + tr td.comp-feature-name {
+    border-top: 0;
+  }
+  .cell-text {
+    display: block;
+    font-size: 0.6875rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
+  .cell-check,
+  .cell-x {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+@media (max-width: 360px) {
+  .plan-row-btn {
+    gap: 0.5rem;
+    padding-inline: 0.75rem 0.6rem;
+  }
+  .plan-row-amount {
+    font-size: 1.2rem;
+  }
+  .plan-row-note {
+    max-width: 9rem;
+  }
+  .comp-plan-name {
+    font-size: 0.6875rem;
+  }
+  .cell-text {
+    font-size: 0.625rem;
+  }
+}
+
+@keyframes plan-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .plan-row-figure,
+  .plan-row-note {
+    animation: none;
+  }
+  .plan-row-chev {
+    transition: none;
+  }
+}
+
+/* Oct 14 refinements: one-line subtitle on phones, the "Most popular" badge
+   rides the card edge (no extra row height), and the footer links wrap
+   instead of pushing the page wider than a 320px screen. */
+.pricing-subtitle-short {
+  display: none;
+}
+.pricing-footer-links {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+@media (max-width: 768px) {
+  .pricing-subtitle-long {
+    display: none;
+  }
+  .pricing-subtitle-short {
+    display: inline;
+  }
+  .plan-row--highlight {
+    position: relative;
+    margin-top: 0.45rem;
+  }
+  .save-pill {
+    white-space: nowrap;
+  }
+  .pricing-footer-links {
+    gap: 0.6rem 1.25rem;
+  }
+  .plan-row--highlight .plan-row-badge {
+    position: absolute;
+    top: 0;
+    left: 0.85rem;
+    transform: translateY(-50%);
+    white-space: nowrap;
+  }
+}
