@@ -406,7 +406,7 @@ function ArticleBlock({ block }) {
 
     case 'image':
       return (
-        <figure className="echo-inline-image">
+        <figure className={`echo-inline-image${block.plate ? ' echo-inline-image--plate' : ''}`}>
           <img
             src={block.src}
             alt={block.alt || ''}

@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" width="1200" height="760" font-family="'Plus Jakarta Sans', 'Inter', system-ui, sans-serif">
+  <defs>
+    <style>
+      .mono { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
+      .label { fill: #1a1f25; font-weight: 700; }
+      .sub { fill: #64748b; font-weight: 500; }
+      .meta { fill: #94a3b8; font-weight: 500; }
+      .bar { fill: #10b981; }
+      .bar-dim { fill: #a7f3d0; }
+      .slide { fill: none; stroke: #d4a853; stroke-width: 2; stroke-dasharray: 6 5; }
+      .tick { fill: #1a1f25; font-weight: 600; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="760" fill="#f5f3ef"/>
+
+  <!-- Header -->
+  <text x="48" y="54" class="meta" font-size="13" letter-spacing="2.5">EZANA ECHO · VALUATION CORNER</text>
+  <text x="48" y="94" class="label" font-size="30">The AI stack, re-weighed</text>
+  <text x="48" y="122" class="sub" font-size="15">Market value by layer, verified against public market caps and last primary private rounds · October 13, 2026</text>
+
+  <!-- Legend -->
+  <rect x="48" y="146" width="14" height="14" rx="3" class="bar"/>
+  <text x="70" y="158" class="sub" font-size="13">Verified value (public mkt cap + last private mark)</text>
+  <rect x="392" y="146" width="14" height="14" rx="3" class="slide"/>
+  <text x="414" y="158" class="sub" font-size="13">Figure shown on the "AI Stack" slide</text>
+
+  <!-- Scale: 1T = 56px, bars start at x=330 -->
+  <!-- Axis gridlines at 0, 2, 4 ... 14 T -->
+  <g stroke="#e5e1da" stroke-width="1">
+<line x1="430" y1="190" x2="430" y2="630"/>
+<line x1="526" y1="190" x2="526" y2="630"/>
+<line x1="622" y1="190" x2="622" y2="630"/>
+<line x1="718" y1="190" x2="718" y2="630"/>
+<line x1="814" y1="190" x2="814" y2="630"/>
+<line x1="910" y1="190" x2="910" y2="630"/>
+<line x1="1006" y1="190" x2="1006" y2="630"/>
+<line x1="1102" y1="190" x2="1102" y2="630"/>
+</g>
+  <g class="meta mono" font-size="11" text-anchor="middle">
+<text x="430" y="648">$0</text>
+<text x="526" y="648">$2T</text>
+<text x="622" y="648">$4T</text>
+<text x="718" y="648">$6T</text>
+<text x="814" y="648">$8T</text>
+<text x="910" y="648">$10T</text>
+<text x="1006" y="648">$12T</text>
+<text x="1102" y="648">$14T</text>
+</g>
+
+  <!-- Row 1: Application layer -->
+  <g transform="translate(0,200)">
+    <text x="48" y="28" class="label" font-size="17">Application layer</text>
+    <text x="48" y="48" class="meta" font-size="12">Cursor · Cognition · Perplexity · Sierra · Harvey · ElevenLabs</text>
+    <rect x="430" y="14" width="19" height="40" rx="4" class="bar"/>
+    <rect x="430" y="10" width="48" height="48" rx="6" class="slide"/>
+    <text x="490" y="40" class="tick mono" font-size="14">~$0.4T</text>
+    <text x="570" y="40" class="meta mono" font-size="12">slide: ~$1T</text>
+  </g>
+
+  <!-- Row 2: LLMs -->
+  <g transform="translate(0,288)">
+    <text x="48" y="28" class="label" font-size="17">Frontier models</text>
+    <text x="48" y="48" class="meta" font-size="12">Anthropic $965B · OpenAI $852B · xAI · DeepSeek · Mistral</text>
+    <rect x="430" y="14" width="106" height="40" rx="4" class="bar"/>
+    <rect x="430" y="10" width="240" height="48" rx="6" class="slide"/>
+    <text x="682" y="40" class="tick mono" font-size="14">~$2.2T</text>
+    <text x="762" y="40" class="meta mono" font-size="12">slide: ~$5T</text>
+  </g>
+
+  <!-- Row 3: Cloud -->
+  <g transform="translate(0,376)">
+    <text x="48" y="28" class="label" font-size="17">Hyperscale cloud</text>
+    <text x="48" y="48" class="meta" font-size="12">Alphabet $4.3T · Microsoft $4.0T · Amazon $2.8T · Oracle</text>
+    <rect x="430" y="14" width="552" height="40" rx="4" class="bar"/>
+    <rect x="430" y="10" width="480" height="48" rx="6" class="slide"/>
+    <text x="994" y="40" class="tick mono" font-size="14">~$11.5T</text>
+    <text x="1074" y="40" class="meta mono" font-size="12">slide: ~$10T</text>
+  </g>
+
+  <!-- Row 4: Chips -->
+  <g transform="translate(0,464)">
+    <text x="48" y="28" class="label" font-size="17">Silicon</text>
+    <text x="48" y="48" class="meta" font-size="12">Nvidia $5.5T · TSMC $2.3T · Broadcom $1.7T · Micron · AMD</text>
+    <rect x="430" y="14" width="600" height="40" rx="4" class="bar"/>
+    <rect x="430" y="10" width="480" height="48" rx="6" class="slide"/>
+    <text x="1042" y="40" class="tick mono" font-size="14">~$12.5T</text>
+    <text x="1122" y="40" class="meta mono" font-size="12">slide: ~$10T</text>
+  </g>
+
+  <!-- Row 5: Power -->
+  <g transform="translate(0,552)">
+    <text x="48" y="28" class="label" font-size="17">Power (named IPPs)</text>
+    <text x="48" y="48" class="meta" font-size="12">Constellation ~$100B · Vistra $54B · PSEG $40B · Talen</text>
+    <rect x="430" y="14" width="10" height="40" rx="4" class="bar"/>
+    <rect x="430" y="10" width="96" height="48" rx="6" class="slide"/>
+    <text x="538" y="40" class="tick mono" font-size="14">~$0.2T</text>
+    <text x="618" y="40" class="meta mono" font-size="12">slide: ~$2T (whole utility sector)</text>
+  </g>
+
+  <!-- Footer -->
+  <line x1="48" y1="676" x2="1152" y2="676" stroke="#e5e1da"/>
+  <text x="48" y="700" class="meta" font-size="12">Cloud and silicon bars are total market cap, not AI-attributable revenue. Private marks are last primary round, not secondary trades. Findings only, not advice.</text>
+  <text x="48" y="720" class="meta" font-size="12">Sources: companiesmarketcap, stockanalysis, Yahoo Finance, CNBC, TechCrunch, Tracxn · Compiled by Ezana Finance Editorial</text>
+  <text x="1152" y="720" class="meta" font-size="12" text-anchor="end" fill="#10b981" font-weight="700">ezana.world/ezana-echo</text>
+</svg>

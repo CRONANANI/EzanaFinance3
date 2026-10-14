@@ -79,6 +79,7 @@ export const ARTICLE_SUBCATEGORY = {
   'datacenter-power-crunch-2026': 'Renewables',
   'sovereign-wealth-league-table-2026': 'Sovereign Funds',
   'moderna-cancer-trial-trump-2026': 'Congress',
+  'the-ai-stack-is-upside-down-what-market-caps-say': 'AI',
   // empire-rankings-1500-2026 is deliberately absent: no Global & Emerging
   // sub fits a country-power framework piece; its tile shows GLOBAL.
 };

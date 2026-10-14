@@ -2838,6 +2838,19 @@ body.light-mode .echo-inline-image-caption {
   color: #64748b;
 }
 
+/* A plate image: an illustration with its own light ground baked in (the AI
+   stack chart). Shown whole, never cropped, and on the dark theme it sits on
+   a padded card so the ivory does not glare against the page. */
+.echo-inline-image--plate .echo-inline-image-img {
+  max-height: none;
+  object-fit: contain;
+}
+body:not(.light-mode) .echo-inline-image--plate {
+  padding: 8px;
+  border-radius: var(--radius-lg);
+  background: var(--echo-surface-3);
+}
+
 @media (max-width: 768px) {
   .echo-hero-image-img {
     max-height: 280px;

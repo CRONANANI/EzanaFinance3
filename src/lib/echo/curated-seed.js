@@ -40,8 +40,10 @@ import { centralBankGoldCycle2026 } from '@/lib/ezana-echo-article-central-bank-
 import { datacenterPowerCrunch2026 } from '@/lib/ezana-echo-article-datacenter-power-crunch-2026.js';
 import { sovereignWealthLeagueTable2026 } from '@/lib/ezana-echo-article-sovereign-wealth-league-table-2026.js';
 import { modernaCancerTrialTrump2026 } from '@/lib/ezana-echo-article-moderna-cancer-trial-trump-2026.js';
+import { aiStackUpsideDown2026 } from '@/lib/ezana-echo-article-ai-stack-upside-down-2026.js';
 
 const SOURCE = [
+  aiStackUpsideDown2026,
   johnnyMnemonicConsolidation2026,
   tokenizationCollateral2026,
   empireRankings2026,
