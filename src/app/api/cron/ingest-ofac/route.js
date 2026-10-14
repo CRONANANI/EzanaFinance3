@@ -165,7 +165,10 @@ export async function GET(request) {
     else removed = count || 0;
   }
 
-  if (upserted || removed) revalidateTag('hubs');
+  if (upserted || removed) {
+    revalidateTag('hubs');
+    revalidateTag('sanctions');
+  }
   return NextResponse.json({
     ok: upserted === rows.length,
     parsed: rows.length,

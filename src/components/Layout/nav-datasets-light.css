@@ -162,3 +162,120 @@
 .navbar .nav-datasets-item-label {
   min-width: 0;
 }
+
+/* ── Oct 14: seven dimensions, one row, one line ─────────────────────
+   All seven dimensions sit side by side in a single row, and every title
+   and dataset row stays on one line. The Oct 12 equal-width columns forced
+   long labels ("Regulatory Investigations & Enforcement") onto two lines;
+   columns now size to their content instead. Seven columns at the full 13px
+   type need a 1,810px panel, so the menu uses compact type (--ndm-*) on
+   laptop widths, sized so all seven fit a 1,440px screen, and the full type
+   from 1,900px. Below 1,440px the single row scrolls sideways inside the
+   panel; it never wraps or drops to a second row. Icons and Hub links take
+   the Ezana emerald (Navbar.js passes var(--emerald) as the column colour). */
+.navbar .nav-datasets-mega {
+  /* Under 1,440px: smallest compact type; all seven fit from 1,366px. Below
+     that the row scrolls sideways inside the panel rather than wrapping. */
+  --ndm-label: 0.6875rem;
+  --ndm-head: 0.5625rem;
+  --ndm-track: 0.02em;
+  --ndm-icon: 0.75rem;
+  --ndm-pill: 7.5px;
+  --ndm-pill-pad: 0 3px;
+  --ndm-item-gap: 0.25rem;
+  --ndm-gap: 0.35rem;
+  --ndm-row-pad: 0.3rem 0.2rem;
+  --ndm-panel-pad: 0.6rem;
+  width: min(1840px, calc(100vw - 24px));
+}
+/* 1,440px laptops: all seven fit without scrolling (measured). */
+@media (min-width: 1440px) {
+  .navbar .nav-datasets-mega {
+    --ndm-label: 0.71875rem;
+    --ndm-head: 0.59375rem;
+    --ndm-icon: 0.8125rem;
+    --ndm-pill: 8px;
+    --ndm-pill-pad: 0 4px;
+    --ndm-gap: 0.4rem;
+  }
+}
+@media (min-width: 1680px) {
+  .navbar .nav-datasets-mega {
+    --ndm-label: 0.78125rem;
+    --ndm-head: 0.65625rem;
+    --ndm-track: 0.04em;
+    --ndm-icon: 0.9375rem;
+    --ndm-pill: 9px;
+    --ndm-pill-pad: 0 5px;
+    --ndm-item-gap: 0.45rem;
+    --ndm-gap: 0.9rem;
+    --ndm-row-pad: 0.36rem 0.4rem;
+    --ndm-panel-pad: 1rem;
+  }
+}
+@media (min-width: 1900px) {
+  .navbar .nav-datasets-mega {
+    --ndm-label: 0.8125rem;
+    --ndm-head: 0.6875rem;
+    --ndm-track: 0.06em;
+    --ndm-icon: 1rem;
+    --ndm-pill: var(--type-eyebrow-size);
+    --ndm-pill-pad: 1px 6px;
+    --ndm-item-gap: 0.6rem;
+    --ndm-gap: 1.25rem;
+    --ndm-row-pad: 0.4rem 0.5rem;
+    --ndm-panel-pad: 1.25rem;
+  }
+}
+.navbar .nav-datasets-mega .nav-datasets-panel {
+  padding-left: var(--ndm-panel-pad);
+  padding-right: var(--ndm-panel-pad);
+}
+.navbar .nav-datasets-mega .nav-datasets-cols {
+  display: grid;
+  grid-template-columns: repeat(7, max-content);
+  justify-content: space-between;
+  align-items: start;
+  column-gap: var(--ndm-gap);
+  row-gap: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+.navbar .nav-datasets-mega .nav-datasets-col {
+  flex: none;
+  min-width: 0;
+}
+.navbar .nav-datasets-mega .nav-datasets-col-head,
+.navbar .nav-datasets-mega .nav-datasets-col:hover .nav-datasets-col-head {
+  flex-wrap: nowrap;
+  gap: 0.3rem;
+  padding-left: 0.3rem;
+  white-space: nowrap;
+  font-size: var(--ndm-head);
+  letter-spacing: var(--ndm-track);
+}
+.navbar .nav-datasets-mega .nav-datasets-col-icon {
+  font-size: var(--ndm-icon);
+  color: var(--emerald);
+}
+.navbar .nav-datasets-mega .nav-datasets-col-head .dshub-link {
+  margin-left: 0.15rem;
+  font-size: var(--ndm-head);
+}
+.navbar .nav-datasets-mega .nav-datasets-item {
+  align-items: center;
+  gap: var(--ndm-item-gap);
+  padding: var(--ndm-row-pad);
+}
+.navbar .nav-datasets-mega .nav-datasets-item-label,
+.navbar .nav-datasets-mega a.nav-datasets-item .nav-datasets-item-label {
+  white-space: nowrap;
+  font-size: var(--ndm-label);
+}
+.navbar .nav-datasets-mega .nav-datasets-soon,
+.navbar .nav-datasets-mega .nav-datasets-sample {
+  font-size: var(--ndm-pill);
+  padding: var(--ndm-pill-pad);
+}

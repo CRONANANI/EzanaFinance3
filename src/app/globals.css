@@ -2342,17 +2342,22 @@ html:has(.landing-page) .navbar .logo,
 /* Trigger reads like a sibling .nav-link but is a real <button> so it
    supports keyboard activation and aria-expanded. It inherits the
    navbar .nav-link color rules (incl. the emerald hover) above. */
+/* Only the <button> defaults are reset here. Size, weight, tracking, padding
+   and display come from the same .nav-link rules as the sibling <a> links
+   (including the compact 1024-1440px sizes), so "Datasets" shares their
+   text box and baseline. A `font: inherit` / `padding: 0` reset here used to
+   render it at 16px with no padding beside 15px links, a pixel high. */
 .navbar .nav-datasets-trigger {
-  display: inline-flex;
   align-items: center;
   gap: 0.3rem;
   background: none;
   border: none;
-  padding: 0;
   margin: 0;
-  font: inherit;
-  line-height: inherit;
+  font-family: inherit;
   cursor: pointer;
+}
+.navbar .nav-datasets-caret {
+  line-height: 1;
 }
 
 .nav-datasets-caret {

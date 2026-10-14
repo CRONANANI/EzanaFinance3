@@ -25,10 +25,13 @@ import HubLink from '@/components/datasets/HubLink';
    the in-page CategoryBar, and the signal map, built from the shared
    DATASET_TAXONOMY (label, colour token, Bootstrap icon) so the nav can never
    drift. Roadmap (live:false) items render a muted "Soon" tag. */
+/* One brand colour for every dimension in the nav menus (icons and Hub
+   links). The per-dimension colours in the taxonomy stay for charts and the
+   in-page CategoryBar; the nav reads as one Ezana-green menu. */
 const DATASET_MENU = DATASET_TAXONOMY.map((d) => ({
   id: d.id,
   heading: d.label,
-  color: d.color,
+  color: 'var(--emerald)',
   biIcon: d.biIcon,
   items: d.items.map((it) => ({ label: it.label, href: it.href, live: it.live })),
 }));
