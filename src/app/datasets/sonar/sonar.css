@@ -2390,3 +2390,37 @@ body.light-mode .dso-page--search .dso-sonar-title {
 .ds-shell--search[data-nav-theme='datasets'] .dscat-bar .dscat-btn--text:focus-visible {
   outline-color: var(--brand-band-mint);
 }
+
+/* ── Oct 14: Claude Design parity ──────────────────────────────────────
+   1. The orbital card has no chrome at all: no border, outline, shadow,
+      fill, blur or padding, in any shell or breakpoint. The device scene
+      floats on the page's ground exactly as it does on the canvas.
+   2. The Datasets search pill (hero and sticky bar) is fully transparent:
+      no fill, border, outline, shadow or backdrop blur, in every state. The
+      blinking caret and the Ping button's glow stay as the affordances. */
+.dso-sonar.dso-sonar--solo,
+.dso-page--search .dso-sonar--solo,
+.ds-shell--search .dso-page--search .dso-sonar--solo,
+.dso-page--search .dso-news-center {
+  padding: 0;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.dso-page--search .sonar-qbar--ghost,
+.dso-page--search .sonar-qbar--ghost:hover,
+.dso-page--search .sonar-qbar--ghost:focus-within,
+.ds-shell--search .dso-page--search .sonar-qbar--ghost,
+.ds-shell--search .dso-page--search .sonar-qbar--ghost:hover,
+.ds-shell--search .dso-page--search .sonar-qbar--ghost:focus-within,
+.dso-page--search .sonar-sticky .sonar-qbar--ghost {
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}

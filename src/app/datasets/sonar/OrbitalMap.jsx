@@ -1,35 +1,39 @@
 'use client';
 
 /**
- * The Ezana Sonar orbital map on /datasets: the approved isometric device
- * scene (docs: ezana-sonar-orbital-map-handoff.md, Part C), ported 1:1 and
- * bound to the data this page has: the seven dimensions and their datasets.
+ * The Ezana Sonar device scene on /datasets: the Claude Design "SIGNAL FOUND"
+ * scene (docs/design/ezana-sonar-orbital-map-handoff.md, Part C), drawn 1:1
+ * on the handoff's full 1440 x 810 stage and bound to this page's data: the
+ * seven dataset dimensions and their datasets.
  *
- * Geometry is the handoff's: a 1440 x 810 stage, true 2:1 isometric, ground
- * point (u, v) -> screen via matrix(0.866 0.5 -0.866 0.5 720 364), height
- * subtracts from y. Layer order follows Part A3.
+ * Fidelity rules (Oct 14 rebuild):
+ *   - The scene is the design's own composition. Every node sits on one of
+ *     the design's node positions (SLOTS), every link follows the design's
+ *     paths, and every panel uses the design's line grid. Data decides what
+ *     each slot shows, never where the slots are.
+ *   - No upright HTML labels over the plane. Dimension names live in the
+ *     glass panels, the hover/focus tooltip and the screen-reader list.
+ *   - No card chrome: no background rect, no border, no rounded clip. The
+ *     device floats on the page's own ground, as it does on the canvas.
+ *   - Panel readouts always render (the design shows them at every size);
+ *     they are aria-hidden texture, the accessible copy is the list below.
+ *   - The sweep wedge holds still at 12 to 3 o'clock, as drawn.
  *
- * What is real on the plane (nothing is estimated or invented):
- *   ring        how much of a dimension is live: middle ring (r141) 5 or
- *               more live datasets, outer ring (r212) 1 to 4, past the tick
- *               ring (r246) none yet
- *   cube        a live dimension, sized by its live count; hollow marker when
- *               it is still on the roadmap
- *   dot         one per dataset beside its dimension: filled live, hollow soon
- *   link        hub to dimension; the selected one brightens, the rest dim
- *   plaque      SIGNAL FOUND with a dimension selected, SWEEPING without
- *   panels      A: the selected dimension's datasets. B: live coverage per
- *               dimension. C: the dimensions by ring. D: sweep totals.
- *
- * Panel text is skewed SVG at the handoff's size, so it is hidden when it
- * would render under 9px (Part A6). Nothing renders under the scene: it
- * stands on its own, and selecting a dimension lights it on the plane.
- * Dimension names are upright HTML buttons placed at
- * the projected node positions, so they stay legible and keyboard reachable.
- * The sweep rotates only while nothing is selected; never under reduced
- * motion.
+ * What is real (nothing is estimated or invented):
+ *   cube        a live dimension; the slot's size follows its rank by live
+ *               dataset count
+ *   glow dot    a live dimension past the four cube slots (emerald), or a
+ *               roadmap dimension (mint)
+ *   link        hub to dimension, on the design's path; selected brightens,
+ *               the rest dim
+ *   plaque      SIGNAL FOUND while any dataset is live, NO SIGNAL otherwise
+ *   panels      A: selected dimension's datasets, else the dimensions.
+ *               B: live coverage per dimension. C: live and roadmap lists.
+ *               D: sweep totals.
+ * Purely decorative marks (aria-hidden, no data): the two ring waypoints,
+ * the small blip beside panel A, the contact dot when nothing is selected.
  */
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useSonarSelection } from './SonarSelection';
 import './orbital-map.css';
 
@@ -38,60 +42,85 @@ const SH = 810;
 const HX = 720;
 const HY = 364;
 const ISO = 'matrix(0.866 0.5 -0.866 0.5 720 364)';
-/* The handoff's three rings (70 / 141 / 212) stay drawn; the seven
-   dimensions sit on the middle and outer rings and, for roadmap, on the
-   dotted field just past the tick ring, so their labels never collide. */
-const RINGS = [
-  { key: 'deep', r: 141, label: 'DEEP', test: (d) => d.liveCount >= 5 },
-  { key: 'live', r: 212, label: 'LIVE', test: (d) => d.liveCount >= 1 },
-  { key: 'road', r: 246, label: 'ROAD', test: () => true },
-];
-const r1 = (n) => Math.round(n * 10) / 10;
-const rad = (deg) => (deg * Math.PI) / 180;
-/** Ground (u, v) at height z -> screen. */
-const iso = (u, v, z = 0) => ({
-  x: r1(HX + 0.866 * u - 0.866 * v),
-  y: r1(HY + 0.5 * u + 0.5 * v - z),
-});
 
-/** Pure: every dimension and dataset on the plane. */
+/* The design's node positions (Part C, "links + nodes on the surface").
+   Cubes first, largest first; then the glow-dot positions. `via` is the
+   design's ring waypoint the link bends through; `linked: false` means the
+   design draws no link there until that node is selected. */
+const CUBE_SLOTS = [
+  { x: 1125, y: 414, s: 18, via: { x: 1045, y: 405 } },
+  { x: 650, y: 352, s: 13 },
+  { x: 880, y: 338, s: 11, linked: false },
+  { x: 720, y: 540, s: 8 },
+];
+const DOT_SLOTS = [
+  { x: 545, y: 520, r: 4, ring: 9 },
+  { x: 975, y: 262, r: 3, via: { x: 960, y: 300 } },
+  { x: 1060, y: 470, r: 2.5, linked: false },
+  { x: 1000, y: 283, r: 2.5, linked: false },
+];
+const WAYPOINTS = [
+  { x: 1045, y: 405 },
+  { x: 960, y: 300 },
+];
+const CONTACT = { x: 790, y: 340 };
+
+/* Visible crop of the stage. Wide is the whole canvas, exactly as designed;
+   phones zoom onto the slab and drop panels B and D (Part A6). */
+const CROPS = {
+  wide: { x: 0, y: 0, w: SW, h: SH },
+  narrow: { x: 170, y: 40, w: 1100, h: 720 },
+};
+
+const r1 = (n) => Math.round(n * 10) / 10;
+const pctIn = (vb) => (x, y) => ({
+  left: `${r1(((x - vb.x) / vb.w) * 100)}%`,
+  top: `${r1(((y - vb.y) / vb.h) * 100)}%`,
+});
+const up = (s) => String(s || '').toUpperCase();
+const clip = (s, n) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
+const short = (label, n = 13) => up(label).replace(/ &.*$/, '').slice(0, n).padEnd(n, ' ');
+
+/**
+ * Pure: put each dimension on a design slot. Live dimensions take the cube
+ * slots by live count (ties keep taxonomy order), overflow live and then
+ * roadmap dimensions take the dot slots. Dimensions past the last slot are
+ * left off the plane (they still appear in the panels and the list).
+ */
 export function sceneLayout(dims) {
-  const n = dims.length;
-  return dims.map((d, i) => {
-    const ring = RINGS.find((o) => o.test(d)) || RINGS[2];
-    const deg = -90 + (i * 360) / n;
-    const u = ring.r * Math.cos(rad(deg));
-    const v = ring.r * Math.sin(rad(deg));
-    const items = d.items || [];
-    const sats = items.map((it, j) => {
-      const sdeg = deg + (j - (items.length - 1) / 2) * 5;
-      const sr = ring.r + (j % 2 ? 18 : -18);
-      return {
-        id: `${d.id}-${j}`,
-        label: it.label,
-        href: it.live ? it.href : null,
-        live: Boolean(it.live),
-        ...iso(sr * Math.cos(rad(sdeg)), sr * Math.sin(rad(sdeg))),
-      };
-    });
-    return {
-      ...d,
-      ring: ring.key,
-      ringLabel: ring.label,
-      deg,
-      ...iso(u, v),
-      size: Math.min(18, 8 + d.liveCount),
-      sats,
-    };
+  const live = dims.filter((d) => d.live).sort((a, b) => b.liveCount - a.liveCount);
+  const road = dims.filter((d) => !d.live);
+  const out = [];
+  live.forEach((d, i) => {
+    if (i < CUBE_SLOTS.length) out.push({ ...d, kind: 'cube', ...CUBE_SLOTS[i] });
+    else out.push({ ...d, kind: 'dot', tone: 'em' });
   });
+  road.forEach((d) => out.push({ ...d, kind: 'dot', tone: 'mint' }));
+  let dot = 0;
+  return out
+    .map((d) => {
+      if (d.kind === 'cube') return { ...d, linked: d.linked !== false };
+      const slot = DOT_SLOTS[dot++];
+      return slot ? { ...d, ...slot, linked: slot.linked !== false } : null;
+    })
+    .filter(Boolean)
+    .map((d) => ({
+      ...d,
+      /* Where the hot contact dot and the tooltip anchor: a cube's top face. */
+      top: { x: d.x, y: d.kind === 'cube' ? d.y - d.s : d.y },
+      path: d.via
+        ? `M${HX} ${HY}L${d.via.x} ${d.via.y}L${d.x} ${d.y}`
+        : `M${HX} ${HY}L${d.x} ${d.y}`,
+    }));
 }
 
-/* Isometric cube centred on (x, y) with half-width s: left and right faces, then the top. */
-function Cube({ x, y, s, className }) {
+/* Isometric cube, design construction: centre (x, y) is the top face's
+   front vertex; left and right faces, then the top. */
+function Cube({ x, y, s }) {
   const dx = r1(s * 0.866);
   const dy = r1(s * 0.5);
   return (
-    <g className={className}>
+    <g className="dso-sc-cube">
       <polygon
         className="dso-sc-cube-l"
         points={`${x - dx},${y - dy} ${x},${y} ${x},${y + s} ${x - dx},${y + s - dy}`}
@@ -108,9 +137,9 @@ function Cube({ x, y, s, className }) {
   );
 }
 
-function useStage() {
+function useStageWidth() {
   const ref = useRef(null);
-  const [width, setWidth] = useState(1440);
+  const [width, setWidth] = useState(SW);
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return undefined;
@@ -122,82 +151,136 @@ function useStage() {
   return [ref, width];
 }
 
-function useReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const on = () => setReduced(mq.matches);
-    on();
-    mq.addEventListener?.('change', on);
-    return () => mq.removeEventListener?.('change', on);
-  }, []);
-  return reduced;
+/* Panel text: one <text> per line, at the design's coordinates. */
+function Lines({ rows }) {
+  return rows.map(([t, y, o, x], i) => (
+    <text key={i} x={x ?? 10} y={y} fillOpacity={o ?? undefined} xmlSpace="preserve">
+      {t}
+    </text>
+  ));
 }
-
-/* The visible crop of the 1440 x 810 stage: tight on desktop, with room for
-   the side labels on phones. */
-const CROPS = {
-  wide: { x: 150, y: 40, w: 1140, h: 700 },
-  narrow: { x: 40, y: 20, w: 1360, h: 740 },
-};
-const pctIn = (vb) => (x, y) => ({
-  left: `${r1(((x - vb.x) / vb.w) * 100)}%`,
-  top: `${r1(((y - vb.y) / vb.h) * 100)}%`,
-});
-const short = (label) => label.replace(/ &.*$/, '').toUpperCase().slice(0, 13).padEnd(13, ' ');
 
 export default function OrbitalMap({ dims, pinging, silent }) {
   const { selected, select } = useSonarSelection();
-  const reduced = useReducedMotion();
-  const [stageRef, width] = useStage();
+  const [stageRef, width] = useStageWidth();
   const nodes = useMemo(() => sceneLayout(dims), [dims]);
   const [hover, setHover] = useState(null);
-  const current = selected ? nodes.find((d) => d.id === selected) : null;
-  /* Phones only: below this the on-plane names give way (Part A6). Between
-     it and 720px the names shrink instead (compact). */
+
   const narrow = width < 560;
-  const compact = !narrow && width < 720;
   const vb = narrow ? CROPS.narrow : CROPS.wide;
   const pct = pctIn(vb);
-  const textOn =
-    (width / SW) * 7.5 >= 9; /* Part A6: panel text only when it renders at 9px or more */
-  const sweeping = !selected && !reduced;
-  const quiet = (id) => selected && selected !== id;
-  const toggle = (id) => select(selected === id ? null : id, 'radar');
-  const totalDatasets = dims.reduce((n, d) => n + (d.items?.length || 0), 0);
 
-  const panelA = current
-    ? [
-        ['SONAR SWEEP · ' + current.label.toUpperCase(), 1],
-        [
-          `${current.live ? 'DIMENSION LOCKED' : 'ON THE ROADMAP'} · ${current.items.length} DATASETS`,
-          0.6,
-        ],
-        ...current.items.slice(0, 6).flatMap((it) => [
-          ['▸ ' + it.label.toUpperCase(), 1],
-          ['   ' + (it.live ? 'LIVE · CITED' : 'ROADMAP · SOON'), 0.6],
-        ]),
-      ]
-    : [
-        ['SONAR SWEEP · ALL DIMENSIONS', 1],
-        ['SELECT A DIMENSION TO LOCK', 0.6],
-        ...nodes.slice(0, 6).flatMap((d) => [
-          ['▸ ' + d.label.toUpperCase(), 1],
-          ['   ' + (d.live ? `${d.liveCount} LIVE` : 'ROADMAP'), 0.6],
-        ]),
-      ];
+  const current = selected ? dims.find((d) => d.id === selected) : null;
+  const currentNode = selected ? nodes.find((d) => d.id === selected) : null;
+  const tipNode = hover ? nodes.find((d) => d.id === hover) : null;
+  const quiet = (id) => Boolean(selected) && selected !== id;
+  const toggle = useCallback(
+    (id) => select(selected === id ? null : id, 'radar'),
+    [select, selected],
+  );
+
+  /* Esc clears the lock from anywhere inside the scene (Part A5). */
+  const onKeyDown = (e) => {
+    if (e.key === 'Escape' && selected) {
+      e.stopPropagation();
+      select(null, 'radar');
+    }
+  };
+  useEffect(() => {
+    if (!selected) return;
+    setHover(null);
+  }, [selected]);
+
+  const totalDatasets = dims.reduce((n, d) => n + (d.items?.length || 0), 0);
+  const byLive = [...dims].sort((a, b) => b.liveCount - a.liveCount);
+  const liveDims = byLive.filter((d) => d.live);
+  const roadDims = dims.filter((d) => !d.live);
+  const anyLive = liveDims.length > 0;
+  const contact = currentNode ? currentNode.top : anyLive ? CONTACT : null;
+
+  /* Panel A (design: SONAR SWEEP · NVDA). Title, sub, then five entries on
+     the design's 26px rhythm, each a bright line and a dim sub-line. */
+  const aEntries = current
+    ? current.items
+        .slice(0, 5)
+        .map((it) => [
+          `▸ ${clip(up(it.label), 26)}`,
+          `   ${it.live ? 'LIVE · CITED' : 'ROADMAP · SOON'}`,
+        ])
+    : byLive
+        .slice(0, 5)
+        .map((d) => [
+          `▸ ${clip(up(d.label), 26)}`,
+          `   ${d.live ? `${d.liveCount} LIVE · ${d.items.length} DATASETS` : 'ON THE ROADMAP'}`,
+        ]);
+  const panelA = [
+    [`SONAR SWEEP · ${clip(up(current ? current.label : 'All dimensions'), 22)}`, 22, null, 12],
+    [
+      current
+        ? `${current.live ? 'DIMENSION LOCKED' : 'ON THE ROADMAP'} · ${current.items.length} SRC`
+        : `SUBJECT OPEN · ${totalDatasets} SRC`,
+      34,
+      0.6,
+      12,
+    ],
+    ...aEntries.flatMap(([a, b], i) => [
+      [a, 52 + i * 26, null, 12],
+      [b, 63 + i * 26, 0.6, 12],
+    ]),
+    ['01', 22, 0.5, 150],
+  ];
+
+  /* Panel B (design: THEMES · MACRO). One row per dimension, then a footer. */
+  const bRows = dims.slice(0, 7);
+  const bFoot = 32 + bRows.length * 10 + 8;
+  const panelB = [
+    ['COVERAGE · LIVE', 18],
+    ...bRows.map((d, i) => [
+      `${short(d.label, 14)} ${String(d.liveCount).padStart(2, ' ')}/${d.items.length}`,
+      32 + i * 10,
+      0.65,
+    ]),
+    [`PINGING ${pinging} · SILENT ${silent}`, bFoot],
+    ['TAXONOMY · CITED', bFoot + 12, 0.65],
+  ];
+
+  /* Panel C (design: DIRECT · 01 / CAPITOL · 02). */
+  const cLive = liveDims.slice(0, 5);
+  const cRoadAt = 32 + cLive.length * 10 + 8;
+  const panelC = [
+    ['LIVE · 01', 18],
+    ...cLive.map((d, i) => [
+      `${short(d.label)} ${String(d.liveCount).padStart(2, ' ')} LIVE`,
+      32 + i * 10,
+      0.65,
+    ]),
+    ['ROADMAP · 02', cRoadAt],
+    ...roadDims.slice(0, 3).map((d, i) => [`${short(d.label)} SOON`, cRoadAt + 14 + i * 10, 0.65]),
+  ];
+
+  /* Panel D (design: BRIEFING · CITED). */
+  const panelD = [
+    ['BRIEFING · CITED', 18],
+    ['FINDINGS ONLY · NEVER ADVICE', 32, 0.65],
+    [`DIMENSIONS ${dims.length} · SRC ${totalDatasets}`, 48, 0.65],
+    [`LIVE ${pinging} · ROADMAP ${silent}`, 58, 0.65],
+    [current ? `LOCKED · ${clip(up(current.label), 18)}` : 'NO LOCK · SELECT A NODE', 68, 0.65],
+    ...byLive
+      .slice(0, 3)
+      .map((d, i) => [`00${i + 1} ${d.liveCount}/${d.items.length}`, 86 + i * 10, 0.5, 100]),
+  ];
 
   return (
     <div
-      style={{ '--sc-ar': `${vb.w} / ${vb.h}` }}
-      className={`dso-sc${selected ? ' has-selection' : ''}${sweeping ? ' is-sweeping' : ''}${narrow ? ' is-narrow' : ''}${compact ? ' is-compact' : ''}${textOn ? ' has-text' : ''}`}
+      className={`dso-sc${selected ? ' has-selection' : ''}${narrow ? ' is-narrow' : ''}`}
+      onKeyDown={onKeyDown}
     >
-      <div className="dso-sc-stage" ref={stageRef}>
+      <div className="dso-sc-stage" ref={stageRef} style={{ aspectRatio: `${vb.w} / ${vb.h}` }}>
         <svg
           className="dso-sc-scene"
           viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
-          role="img"
-          aria-label="Isometric Sonar device: the seven dataset dimensions on emerald radar rings, with readout panels"
+          role="group"
+          aria-label="Ezana Sonar device: the dataset dimensions on emerald radar rings. Select a node to lock it."
         >
           <defs>
             <filter id="dso-sc-glow" x="-60%" y="-60%" width="220%" height="220%">
@@ -227,10 +310,6 @@ export default function OrbitalMap({ dims, pinging, silent }) {
             <pattern id="dso-sc-dotsMap" width="7" height="7" patternUnits="userSpaceOnUse">
               <circle className="dso-sc-dot-map" cx="3.5" cy="3.5" r="1.1" />
             </pattern>
-            <radialGradient id="dso-sc-vignette" cx="50%" cy="45%" r="65%">
-              <stop offset="0%" className="dso-sc-vig-a" />
-              <stop offset="100%" className="dso-sc-vig-b" />
-            </radialGradient>
             <radialGradient id="dso-sc-core" cx="50%" cy="50%" r="50%">
               <stop offset="0%" className="dso-sc-em" stopOpacity="0.38" />
               <stop offset="60%" className="dso-sc-em" stopOpacity="0.08" />
@@ -289,11 +368,11 @@ export default function OrbitalMap({ dims, pinging, silent }) {
             </clipPath>
           </defs>
 
-          {/* 1 background */}
-          <rect width={SW} height={SH} fill="url(#dso-sc-vignette)" />
+          {/* 1 background: none. The device stands on the page's own ground,
+              so there is no rectangle (and no edge) around it. */}
 
-          {/* 2 base plate + mint lines */}
-          <g>
+          {/* 2 glass base plate + mint accent lines */}
+          <g aria-hidden="true">
             {[8, 6, 4, 2].map((y) => (
               <use key={y} href="#dso-sc-baseTop" y={y} className="dso-sc-base-ext" />
             ))}
@@ -302,17 +381,22 @@ export default function OrbitalMap({ dims, pinging, silent }) {
             <path className="dso-sc-mintline" d="M900 646L1200 473" filter="url(#dso-sc-glow)" />
           </g>
 
-          {/* 3 slab extrusion, 4 top + bezel */}
-          <g className="dso-sc-slab-ext">
+          {/* 3 slab body (extruded) + bottom rail edge, 4 top face + bezel */}
+          <g className="dso-sc-slab-ext" aria-hidden="true">
             {Array.from({ length: 18 }, (_, i) => (
               <use key={i} href="#dso-sc-slabTop" y={36 - i * 2} />
             ))}
           </g>
-          <use href="#dso-sc-slabTop" y="36" className="dso-sc-slab-rail" />
-          <use href="#dso-sc-slabTop" className="dso-sc-slab-top" fill="url(#dso-sc-slabTopG)" />
+          <use href="#dso-sc-slabTop" y="36" className="dso-sc-slab-rail" aria-hidden="true" />
+          <use
+            href="#dso-sc-slabTop"
+            className="dso-sc-slab-top"
+            fill="url(#dso-sc-slabTopG)"
+            aria-hidden="true"
+          />
 
-          {/* 5 recess */}
-          <g transform={ISO}>
+          {/* 5 recessed screen */}
+          <g transform={ISO} aria-hidden="true">
             <rect
               x="-252"
               y="-252"
@@ -332,8 +416,8 @@ export default function OrbitalMap({ dims, pinging, silent }) {
             />
           </g>
 
-          {/* 6 dotted field, world map, grid */}
-          <g clipPath="url(#dso-sc-recessClip)">
+          {/* 6 dotted field + world map + grid, clipped to the recess */}
+          <g clipPath="url(#dso-sc-recessClip)" aria-hidden="true">
             <rect x="200" y="64" width="1040" height="600" fill="url(#dso-sc-dots)" />
             <g transform={ISO} fill="url(#dso-sc-dotsMap)">
               <path d="M-210 -160c40 -34 112 -34 146 -4c22 30 -8 64 -40 86c-30 22 -64 12 -76 -8c-22 -12 -52 -34 -30 -74z" />
@@ -347,13 +431,11 @@ export default function OrbitalMap({ dims, pinging, silent }) {
             </g>
           </g>
 
-          {/* 7 radar */}
-          <g transform={ISO}>
+          {/* 7 radar: core glow, sweep wedge (still, as drawn), rings, centre */}
+          <g transform={ISO} aria-hidden="true">
             <circle cx="0" cy="0" r="150" fill="url(#dso-sc-core)" />
-            <g className="dso-sc-sweep">
-              <path d="M0 0L-150 -150A212 212 0 0 1 150 -150Z" fill="url(#dso-sc-sweep)" />
-              <path className="dso-sc-sweep-edge" d="M0 0L150 -150" filter="url(#dso-sc-glow)" />
-            </g>
+            <path d="M0 0L-150 -150A212 212 0 0 1 150 -150Z" fill="url(#dso-sc-sweep)" />
+            <path className="dso-sc-sweep-edge" d="M0 0L150 -150" filter="url(#dso-sc-glow)" />
             <circle
               className="dso-sc-ring dso-sc-ring--3"
               cx="0"
@@ -367,73 +449,123 @@ export default function OrbitalMap({ dims, pinging, silent }) {
             <circle className="dso-sc-centre" cx="0" cy="0" r="4" filter="url(#dso-sc-glowL)" />
           </g>
 
-          {/* 8 links */}
-          <g className="dso-sc-links">
-            {nodes.map((d) => (
-              <path
-                key={d.id}
-                className={`dso-sc-link${selected === d.id ? ' is-on' : ''}${quiet(d.id) ? ' is-quiet' : ''}`}
-                d={`M${HX} ${HY}L${d.x} ${d.y}`}
-              />
-            ))}
+          {/* 8 links, on the design's paths */}
+          <g className="dso-sc-links" aria-hidden="true">
+            {nodes.map((d) =>
+              d.linked || selected === d.id ? (
+                <path
+                  key={d.id}
+                  className={`dso-sc-link${selected === d.id ? ' is-on' : ''}${quiet(d.id) ? ' is-quiet' : ''}`}
+                  d={d.path}
+                />
+              ) : null,
+            )}
           </g>
 
-          {/* 9 markers, dataset dots, cubes */}
-          {nodes.map((d) => (
-            <g
-              key={d.id}
-              className={`dso-sc-node${quiet(d.id) ? ' is-quiet' : ''}${selected === d.id ? ' is-on' : ''}`}
-            >
-              {d.sats.map((s) => (
-                <g
-                  key={s.id}
-                  className={`dso-sc-sat${s.live ? ' is-live' : ' is-road'}${hover === s.id ? ' is-hover' : ''}`}
-                >
+          {/* 9a decorative waypoints, blip and contact (no data) */}
+          <g aria-hidden="true">
+            {WAYPOINTS.map((w) => (
+              <ellipse
+                key={`${w.x}-${w.y}`}
+                className="dso-sc-marker"
+                cx={w.x}
+                cy={w.y}
+                rx="7"
+                ry="4.5"
+              />
+            ))}
+            {contact ? (
+              <>
+                <circle
+                  className="dso-sc-hot"
+                  cx={contact.x}
+                  cy={contact.y}
+                  r="5"
+                  filter="url(#dso-sc-glow)"
+                />
+                <circle
+                  className="dso-sc-hot-halo"
+                  cx={contact.x}
+                  cy={contact.y}
+                  r="14"
+                  filter="url(#dso-sc-soft)"
+                />
+              </>
+            ) : null}
+          </g>
+
+          {/* 9b dimension nodes: the real controls */}
+          {nodes.map((d) => {
+            const on = selected === d.id;
+            const label = `${d.label}, ${d.live ? `${d.liveCount} live datasets` : 'on the roadmap'}`;
+            return (
+              <g
+                key={d.id}
+                className={`dso-sc-node dso-sc-node--${d.kind}${d.tone ? ` is-${d.tone}` : ''}${on ? ' is-on' : ''}${quiet(d.id) ? ' is-quiet' : ''}`}
+                role="button"
+                tabIndex={0}
+                aria-pressed={on}
+                aria-label={
+                  on ? `${label}, selected. Select again to clear.` : `${label}. Select to lock.`
+                }
+                onClick={() => toggle(d.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggle(d.id);
+                  }
+                }}
+                onMouseEnter={() => setHover(d.id)}
+                onMouseLeave={() => setHover((h) => (h === d.id ? null : h))}
+                onFocus={() => setHover(d.id)}
+                onBlur={() => setHover((h) => (h === d.id ? null : h))}
+              >
+                {/* 44px-plus touch target at every size (invisible). */}
+                <circle className="dso-sc-hit" cx={d.top.x} cy={d.top.y} r={narrow ? 34 : 24} />
+                <circle
+                  className="dso-sc-focus"
+                  cx={d.top.x}
+                  cy={d.top.y}
+                  r={d.kind === 'cube' ? d.s + 8 : 11}
+                />
+                {d.kind === 'cube' ? (
+                  <Cube x={d.x} y={d.y} s={d.s} />
+                ) : (
+                  <>
+                    <circle
+                      className="dso-sc-blip"
+                      cx={d.x}
+                      cy={d.y}
+                      r={d.r}
+                      filter="url(#dso-sc-glow)"
+                    />
+                    {d.ring ? (
+                      <circle className="dso-sc-blip-ring" cx={d.x} cy={d.y} r={d.ring} />
+                    ) : null}
+                  </>
+                )}
+                {on ? (
                   <circle
-                    cx={s.x}
-                    cy={s.y}
-                    r={hover === s.id ? 4.5 : 2.5}
-                    filter={s.live ? 'url(#dso-sc-glow)' : undefined}
+                    className="dso-sc-sel"
+                    cx={d.top.x}
+                    cy={d.top.y}
+                    r={d.kind === 'cube' ? d.s + 6 : 9}
                   />
-                  <title>{`${s.label}: ${s.live ? 'live' : 'on the roadmap'}`}</title>
-                </g>
-              ))}
-              {d.live ? (
-                <Cube x={d.x} y={d.y} s={d.size} className="dso-sc-cube" />
-              ) : (
-                <ellipse className="dso-sc-marker" cx={d.x} cy={d.y} rx="7" ry="4.5" />
-              )}
-              {selected === d.id ? (
-                <>
-                  <circle
-                    className="dso-sc-hot-halo"
-                    cx={d.x}
-                    cy={d.y - d.size}
-                    r="14"
-                    filter="url(#dso-sc-soft)"
-                  />
-                  <circle
-                    className="dso-sc-hot"
-                    cx={d.x}
-                    cy={d.y - d.size}
-                    r="5"
-                    filter="url(#dso-sc-glow)"
-                  />
-                </>
-              ) : null}
-            </g>
-          ))}
+                ) : null}
+              </g>
+            );
+          })}
 
           {/* 10 fog */}
-          <g filter="url(#dso-sc-fog)" className="dso-sc-fog">
+          <g filter="url(#dso-sc-fog)" className="dso-sc-fog" aria-hidden="true">
             <ellipse cx="830" cy="300" rx="130" ry="46" fillOpacity="0.09" />
             <ellipse cx="1000" cy="430" rx="150" ry="52" fillOpacity="0.08" />
             <ellipse cx="560" cy="430" rx="120" ry="44" fillOpacity="0.06" />
             <ellipse cx="740" cy="560" rx="110" ry="36" fillOpacity="0.05" />
           </g>
 
-          {/* 11 light bars */}
-          <g strokeLinecap="round">
+          {/* 11 front light bars */}
+          <g strokeLinecap="round" aria-hidden="true">
             <path className="dso-sc-bar-channel" d="M300 440L640 636" />
             <path
               className="dso-sc-bar"
@@ -450,8 +582,8 @@ export default function OrbitalMap({ dims, pinging, silent }) {
             />
           </g>
 
-          {/* 12 plaque + keys */}
-          <g>
+          {/* 12 SIGNAL FOUND plaque, keycap, dark button, port light */}
+          <g aria-hidden="true">
             <polygon className="dso-sc-plaque-shadow" points="466,244 606,163 606,209 466,290" />
             <polygon className="dso-sc-plaque" points="470,236 610,155 610,201 470,282" />
             <polygon className="dso-sc-plaque-face" points="478,236 602,164 602,196 478,268" />
@@ -462,7 +594,7 @@ export default function OrbitalMap({ dims, pinging, silent }) {
               y="0"
               filter="url(#dso-sc-glow)"
             >
-              {selected ? 'SIGNAL FOUND' : 'SWEEPING'}
+              {anyLive ? 'SIGNAL FOUND' : 'NO SIGNAL'}
             </text>
             <polygon className="dso-sc-cube-l" points="641,158 669,174 669,182 641,166" />
             <polygon className="dso-sc-cube-r" points="669,174 683,166 683,174 669,182" />
@@ -485,8 +617,8 @@ export default function OrbitalMap({ dims, pinging, silent }) {
             />
           </g>
 
-          {/* 13 glass panels */}
-          <g className="dso-sc-panel dso-sc-panel--a">
+          {/* 13 floating glass panels: the design's shapes, blobs and text grid */}
+          <g className="dso-sc-panel dso-sc-panel--a" aria-hidden="true">
             <polygon
               className="dso-sc-glass"
               points="775,320 945,222 945,32 775,130"
@@ -512,17 +644,10 @@ export default function OrbitalMap({ dims, pinging, silent }) {
               filter="url(#dso-sc-soft)"
             />
             <g className="dso-sc-text" transform="matrix(0.866 -0.5 0 1 775 130)" fontSize="7.5">
-              {panelA.map(([t, o], i) => (
-                <text key={i} x="12" y={22 + i * 11.5} fillOpacity={o}>
-                  {t}
-                </text>
-              ))}
-              <text x="150" y="22" fillOpacity="0.5">
-                01
-              </text>
+              <Lines rows={panelA} />
             </g>
           </g>
-          <g className="dso-sc-panel dso-sc-panel--b">
+          <g className="dso-sc-panel dso-sc-panel--b" aria-hidden="true">
             <polygon
               className="dso-sc-glass"
               points="1050,320 1170,389 1170,259 1050,190"
@@ -539,20 +664,10 @@ export default function OrbitalMap({ dims, pinging, silent }) {
               filter="url(#dso-sc-soft)"
             />
             <g className="dso-sc-text" transform="matrix(0.866 0.5 0 1 1050 190)" fontSize="7">
-              <text x="10" y="18">
-                COVERAGE · LIVE
-              </text>
-              {nodes.map((d, i) => (
-                <text
-                  key={d.id}
-                  x="10"
-                  y={32 + i * 10}
-                  fillOpacity="0.65"
-                >{`${short(d.label)} ${d.liveCount}/${d.items.length}`}</text>
-              ))}
+              <Lines rows={panelB} />
             </g>
           </g>
-          <g className="dso-sc-panel dso-sc-panel--c">
+          <g className="dso-sc-panel dso-sc-panel--c" aria-hidden="true">
             <polygon
               className="dso-sc-glass"
               points="335,414 445,350 445,190 335,254"
@@ -568,25 +683,19 @@ export default function OrbitalMap({ dims, pinging, silent }) {
               fillOpacity="0.16"
               filter="url(#dso-sc-soft)"
             />
+            <circle
+              className="dso-sc-blob-warm"
+              cx="400"
+              cy="292"
+              r="4"
+              fillOpacity="0.6"
+              filter="url(#dso-sc-soft)"
+            />
             <g className="dso-sc-text" transform="matrix(0.866 -0.5 0 1 335 254)" fontSize="7">
-              <text x="10" y="18">
-                RINGS · 03
-              </text>
-              {nodes.map((d, i) => (
-                <text
-                  key={d.id}
-                  x="10"
-                  y={32 + i * 10}
-                  fillOpacity="0.65"
-                >{`${short(d.label)} ${d.ringLabel}`}</text>
-              ))}
-              <text
-                x="10"
-                y={32 + nodes.length * 10 + 8}
-              >{`LIVE ${pinging} · SOON ${silent}`}</text>
+              <Lines rows={panelC} />
             </g>
           </g>
-          <g className="dso-sc-panel dso-sc-panel--d">
+          <g className="dso-sc-panel dso-sc-panel--d" aria-hidden="true">
             <polygon
               className="dso-sc-glass"
               points="585,560 730,644 730,529 585,445"
@@ -603,27 +712,11 @@ export default function OrbitalMap({ dims, pinging, silent }) {
               filter="url(#dso-sc-soft)"
             />
             <g className="dso-sc-text" transform="matrix(0.866 0.5 0 1 585 445)" fontSize="7">
-              <text x="10" y="18">
-                SWEEP · DATASETS
-              </text>
-              <text x="10" y="32" fillOpacity="0.65">
-                FINDINGS ONLY · NEVER ADVICE
-              </text>
-              <text
-                x="10"
-                y="48"
-                fillOpacity="0.65"
-              >{`DIMENSIONS ${dims.length} · DATASETS ${totalDatasets}`}</text>
-              <text x="10" y="58" fillOpacity="0.65">{`LIVE ${pinging} · ROADMAP ${silent}`}</text>
-              <text x="10" y="68" fillOpacity="0.65">
-                {selected
-                  ? `LOCKED · ${current.label.toUpperCase()}`
-                  : 'NO LOCK · SELECT A DIMENSION'}
-              </text>
+              <Lines rows={panelD} />
             </g>
           </g>
 
-          {/* 14 ambient pool */}
+          {/* 14 ambient pool under the slab */}
           <ellipse
             className="dso-sc-pool"
             cx="720"
@@ -632,69 +725,35 @@ export default function OrbitalMap({ dims, pinging, silent }) {
             ry="40"
             fillOpacity="0.07"
             filter="url(#dso-sc-fog)"
+            aria-hidden="true"
           />
         </svg>
 
-        {/* upright layer: dimension names (the real controls) and dataset hit targets */}
-        {!narrow &&
-          nodes.map((d) => (
-            <button
-              key={d.id}
-              type="button"
-              className={`dso-sc-label${d.x < HX - 40 ? ' is-left' : d.x > HX + 40 ? ' is-right' : d.y < HY ? ' is-above' : ' is-below'}${selected === d.id ? ' is-on' : ''}${quiet(d.id) ? ' is-quiet' : ''}${d.live ? '' : ' is-road'}`}
-              style={pct(d.x, d.y - (d.live ? d.size : 0))}
-              aria-pressed={selected === d.id}
-              aria-label={`${d.label}, ${d.live ? `${d.liveCount} live datasets` : 'on the roadmap'}, select`}
-              onClick={() => toggle(d.id)}
-            >
-              <span className="dso-sc-label-name">{d.label}</span>
-              <span className="dso-sc-label-sub">{d.live ? `${d.liveCount} LIVE` : 'ROADMAP'}</span>
-            </button>
-          ))}
+        {/* Hub: an invisible clear-selection target on the radar centre. The
+            news ticker also measures card flights from this element. */}
         <button
           type="button"
           className="dso-sc-hub"
           style={pct(HX, HY)}
           onClick={() => select(null, 'radar')}
           aria-label="Ezana Sonar, clear the selection"
-        >
-          <span className="dso-sc-hub-name">Ezana</span>
-          <span className="dso-sc-hub-sub">SONAR</span>
-        </button>
-        {!narrow &&
-          nodes.map((d) =>
-            d.sats.map((s) => (
-              <span
-                key={s.id}
-                className="dso-sc-sathit"
-                style={pct(s.x, s.y)}
-                onMouseEnter={() => setHover(s.id)}
-                onMouseLeave={() => setHover(null)}
-              >
-                {s.href ? (
-                  <a
-                    href={s.href}
-                    aria-label={`${s.label}, open dataset`}
-                    onFocus={() => setHover(s.id)}
-                    onBlur={() => setHover(null)}
-                  />
-                ) : (
-                  <i aria-hidden="true" />
-                )}
-                {hover === s.id ? (
-                  <span className="dso-sc-tip" role="tooltip">
-                    <small>{d.label.toUpperCase()}</small>
-                    <b>{s.label}</b>
-                    <em>{s.live ? 'Live · open dataset' : 'On the roadmap'}</em>
-                  </span>
-                ) : null}
-              </span>
-            )),
-          )}
+        />
+
+        {tipNode ? (
+          <span className="dso-sc-tip" role="tooltip" style={pct(tipNode.top.x, tipNode.top.y)}>
+            <small>
+              {tipNode.live
+                ? `${tipNode.liveCount} LIVE · ${tipNode.items.length} DATASETS`
+                : 'ROADMAP'}
+            </small>
+            <b>{tipNode.label}</b>
+            <em>{selected === tipNode.id ? 'Locked · select to clear' : 'Select to lock'}</em>
+          </span>
+        ) : null}
       </div>
 
       <ul className="dso-sr">
-        {nodes.map((d) => (
+        {dims.map((d) => (
           <li key={d.id}>
             {d.label}: {d.live ? `${d.liveCount} live datasets` : 'on the roadmap'}
             {d.id === selected ? ' (selected)' : ''}

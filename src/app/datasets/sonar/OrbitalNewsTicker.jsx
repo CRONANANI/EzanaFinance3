@@ -44,9 +44,9 @@ function NewsCard({ card, originRef }) {
     if (el && origin) {
       const hub = origin.querySelector('.dso-sc-hub');
       const o = (hub || origin).getBoundingClientRect();
-      /* The hub label sits 14px under the hub point it marks. */
+      /* The hub target is centred on the radar point it marks. */
       const ox = o.left + o.width / 2;
-      const oy = hub ? o.top - 14 : o.top + o.height / 2;
+      const oy = o.top + o.height / 2;
       const r = el.getBoundingClientRect();
       el.style.setProperty('--from-x', `${Math.round(ox - (r.left + r.width / 2))}px`);
       el.style.setProperty('--from-y', `${Math.round(oy - (r.top + r.height / 2))}px`);
