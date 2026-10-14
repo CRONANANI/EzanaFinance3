@@ -222,6 +222,18 @@
       "schedule": "40 5 * * *"
     },
     {
+      "path": "/api/cron/ingest-ofac-dates",
+      "schedule": "10 6 * * *"
+    },
+    {
+      "path": "/api/cron/ingest-fx-monthly",
+      "schedule": "25 6 * * *"
+    },
+    {
+      "path": "/api/cron/ingest-sanctions-news",
+      "schedule": "35 */6 * * *"
+    },
+    {
       "path": "/api/cron/org-flag-outcomes",
       "schedule": "0 6 * * *"
     },

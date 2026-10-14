@@ -4302,3 +4302,159 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ── Oct 14: the ping bar is a ghost, as on /datasets ─────────────────
+   Landing and the /datasets results band alike: the pill is transparent to
+   the section behind it (no fill, border, outline, shadow or glow) and the
+   search icon is gone, so the blinking | caret is what marks the field. The
+   Ping button matches the /datasets one: no fill, border or ring, white
+   label with a soft mint glow. Its demo press keeps the scale and swaps the
+   ring for a brighter glow, so nothing outlines the button mid-loop. */
+.snr-band .snr-pingbar,
+.snr-band .snr-pingbar:focus-within,
+.dso-page--search .snr-band--page .snr-pingbar {
+  background: transparent;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  padding-left: 4px;
+}
+.snr-band .snr-pingbar-icon {
+  display: none;
+}
+/* Focus shows as the field's own blinking caret, as on /datasets, so the
+   transparent pill never draws a ring. */
+.snr-band .snr-input:focus,
+.snr-band .snr-input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+.snr-band .snr-demo {
+  left: 4px;
+}
+.snr-band .snr-ping-btn,
+.snr-band .snr-ping-btn[disabled],
+.snr-band .snr-ping-btn:hover,
+.snr-band .snr-ping-btn--pressed {
+  background: none;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  opacity: 1;
+  color: white;
+  text-shadow:
+    0 0 6px color-mix(in srgb, var(--snr-mint) 85%, transparent),
+    0 0 16px color-mix(in srgb, var(--snr-mint) 45%, transparent);
+}
+.snr-band .snr-ping-btn:hover:not([disabled]) {
+  text-shadow:
+    0 0 8px var(--snr-mint),
+    0 0 22px color-mix(in srgb, var(--snr-mint) 65%, transparent);
+}
+.snr-band .snr-ping-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--snr-mint) 70%, transparent);
+  outline-offset: 2px;
+}
+.snr-band .snr-ping-btn.snr-anim-press {
+  animation-name: snrPressGhost;
+}
+@keyframes snrPressGhost {
+  0%,
+  20%,
+  24%,
+  100% {
+    transform: scale(1);
+  }
+  21% {
+    transform: scale(0.93);
+    text-shadow:
+      0 0 10px var(--snr-mint),
+      0 0 26px color-mix(in srgb, var(--snr-mint) 75%, transparent);
+  }
+}
+@media (max-width: 420px) {
+  .snr-band .snr-pingbar {
+    padding-left: 4px;
+  }
+  .snr-band .snr-demo {
+    left: 4px;
+  }
+}
+
+/* ── Oct 14: results without outlines ─────────────────────────────────
+   Inside the results (research brief, sourced matches, the right-hand
+   stack) nothing is boxed: no panel fill, shadow, border, row fill or
+   hairline. Only text, icons and the shapes that carry data (the dossier's
+   accent bar, sparklines, party rings on faces) remain, sitting straight on
+   the band's green. Spacing stays, so the columns still read as columns. */
+.snr-band .snr-synth,
+.snr-band .snr-col-dossier,
+.snr-band.snr-stage2 .snr-col-dossier,
+.snr-band.snr-composed .snr-col-dossier,
+.snr-band .snr-fund,
+.snr-band .snr-news,
+.snr-band .snr-stack {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.snr-band .snr-row,
+.snr-band .snr-rows > .snr-row:last-child {
+  background: transparent;
+  border: 0;
+}
+.snr-band .snr-news-item:hover {
+  background: color-mix(in srgb, var(--snr-mint) 6%, transparent);
+}
+.snr-band .snr-rule-soft {
+  background: transparent;
+}
+.snr-band .snr-range-chip,
+.snr-band .snr-chip-general {
+  border: 0;
+  padding-inline: 0;
+  color: var(--snr-mint);
+}
+.snr-band .snr-news-more {
+  border-top: 0;
+}
+.snr-band .snr-row-link {
+  border-bottom: 0;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--snr-mint) 40%, transparent);
+  text-underline-offset: 3px;
+}
+
+/* A member's portrait in the portfolio card is large enough to recognise;
+   the similar-portfolio faces grow a little too. */
+.snr-band .snr-fund--pol .snr-face--md {
+  width: 56px;
+  height: 56px;
+}
+.snr-band .snr-fund--pol .snr-face--md .snr-face-initials {
+  font-size: 15px;
+}
+.snr-band .snr-news--people .snr-face--sm {
+  width: 38px;
+  height: 38px;
+}
+.snr-band .snr-fund--pol .snr-fund-head {
+  align-items: center;
+}
+.snr-fund-who {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.snr-fund-who-name {
+  font-family: var(--snr-font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--snr-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

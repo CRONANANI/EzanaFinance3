@@ -63,7 +63,7 @@ function NewsCard({ card, originRef }) {
     >
       <span className="dso-news-dim">
         <i className={`bi ${card.icon}`} aria-hidden="true" />
-        {card.dimension}
+        <span className="dso-news-dim-sr">{card.dimension}</span>
       </span>
       <span className="dso-news-headline">{card.headline}</span>
       {card.meta ? <span className="dso-news-meta">{card.meta}</span> : null}

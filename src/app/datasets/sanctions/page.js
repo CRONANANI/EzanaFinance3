@@ -1,5 +1,11 @@
 import { shortDate } from '@/lib/titans/format';
-import { getNewestAdditions, getSanctionsPage, getSanctionsSummary } from '@/lib/sanctions/summary';
+import {
+  getNewestAdditions,
+  getSanctionsNewsPulses,
+  getSanctionsPage,
+  getSanctionsSummary,
+  getSanctionsTrends,
+} from '@/lib/sanctions/summary';
 import { worldCountries } from '@/lib/sanctions/world-map';
 import SanctionsClient from './SanctionsClient';
 
@@ -15,9 +21,11 @@ export const dynamic = 'force-dynamic';
 
 export default async function SanctionsPage() {
   const summary = await getSanctionsSummary();
-  const [firstPage, newest] = await Promise.all([
+  const [firstPage, newest, trends, pulses] = await Promise.all([
     getSanctionsPage({ page: 1 }),
     getNewestAdditions(summary.baseline, 30),
+    getSanctionsTrends(),
+    getSanctionsNewsPulses(),
   ]);
   const map = worldCountries();
   return (
@@ -26,6 +34,8 @@ export default async function SanctionsPage() {
       firstPage={firstPage}
       newest={newest}
       map={map}
+      trends={trends}
+      pulses={pulses}
       baselineLabel={shortDate(summary.baseline)}
       syncedLabel={shortDate(summary.synced)}
     />

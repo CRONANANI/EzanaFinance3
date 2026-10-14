@@ -11,6 +11,13 @@ import { synthesizeWithFallback } from '@/lib/sonar/llm-providers';
 import { getFmpKey } from '@/lib/fmp/upcoming-events';
 import { industryProfile, industryNewsTitle, fetchIndustryNews } from '@/lib/sonar/industry-news';
 import { resolvePolitician, buildPoliticianDossier } from '@/lib/sonar/landing-politician';
+import {
+  detectIntent,
+  sanctionsContext,
+  splitExposed,
+  columnSpecs,
+  buildNewsColumns,
+} from '@/lib/sonar/landing-research';
 
 /**
  * The landing-page Sonar pipeline, shared by the two routes that run it:
@@ -33,36 +40,42 @@ const FMP_STABLE = 'https://financialmodelingprep.com/stable';
    whole card. */
 const FMP_V3 = 'https://financialmodelingprep.com/api/v3';
 const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
+/* The research brief runs on a stronger model than the old 480-token Haiku
+   summary: it reads more snippets, searches the web more and writes a longer,
+   denser brief. SONAR_LANDING_MODEL overrides it; a model the key cannot use
+   400s and anthropicSynthesize retries once on Haiku. */
+const BRIEF_MODEL = process.env.SONAR_LANDING_MODEL || 'claude-sonnet-4-5';
+const BRIEF_TOKENS = 1100;
+const BRIEF_WEB_USES = 5;
 
 export const DISCLAIMER =
   'Sonar synthesizes sourced research from Ezana datasets. Findings only, never financial advice.';
 
-const GROUNDED_SYSTEM_PROMPT = `You are Ezana Sonar, a research surface answering a ping on the public landing page. You have two kinds of evidence: numbered dataset snippets from Ezana's proprietary datasets (congressional trades, government contracts, SEC filings, prediction markets, Echo editorial), and live web search.
+const GROUNDED_SYSTEM_PROMPT = `You are Ezana Sonar, a research analyst answering a ping. You have two kinds of evidence: numbered dataset snippets from Ezana's proprietary datasets (congressional trades, government contracts, SEC and 13F filings, lobbying, the OFAC sanctions list, prediction markets, Echo editorial), and live web search.
 Rules:
-- Answer the question the visitor actually asked, about the entity they asked about. Lead with what is true and current, using web search for facts the snippets do not cover.
-- Wherever a dataset snippet covers the subject, weave it in and cite its marker inline, e.g. [S1]. Dataset corroboration is the product being demonstrated; use every snippet that is genuinely about the subject, and none that is not.
-- If the datasets have little or nothing on the subject, say so in ONE clause at most, inside a sentence that still delivers substance from the web. Never make dataset absence the headline or the topic of a paragraph.
-- Never present another company's data as context filler. If a snippet is about a different entity, ignore it.
-- Findings only. No financial or investment advice, price targets, or buy/sell/hold language. No fabricated figures: numbers come from a snippet or from a web result.
-- EXACTLY three short paragraphs separated by blank lines: (1) direct answer to the ping, (2) the strongest specifics, dataset-cited where possible, (3) cross-signals or what to watch. Each paragraph is 50 to 80 words. No headers, no lists, no em dashes.`;
+- Ezana's datasets come first. Build the brief around every snippet that is genuinely about the subject and cite its marker inline, e.g. [S1]. Never cite a snippet about a different entity.
+- Then go beyond the datasets: search the web for current facts, recent events, figures and context the snippets do not cover, and weave them in. Name the outlet or source for web facts in passing ("per Reuters").
+- Answer the question the visitor actually asked. Lead with the direct answer, then the evidence, then what it means.
+- Findings only. No financial or investment advice, price targets, or buy/sell/hold language. No fabricated figures: a number comes from a snippet or a web result, or it does not appear.
+- Four short paragraphs separated by blank lines: (1) direct answer, (2) what Ezana's datasets show, cited, (3) what the web adds: recent events and figures, (4) cross-signals and what to watch. Each paragraph 50 to 90 words. No headers, no lists, no em dashes.`;
 
-/* The ungrounded variant. A ping that retrieves nothing used to dead-end on an
-   apology; this answers from general knowledge instead and says so, which is
-   the only honest way to do it. No citation markers, because there are no
-   sources to cite and inventing [S1] would be a lie the UI cannot detect. */
-/* The no-snippet path. It used to apologise, because it had nothing but its
-   own training data to work from. With search available it can answer
-   properly, so it now leads with substance and keeps the honest framing to a
-   single clause. The no-fabrication rules are unchanged: with the tool off it
-   still has to say the answer is general background. */
-const GENERAL_SYSTEM_PROMPT = `You are Ezana Sonar, a research surface answering a ping on the public landing page. Ezana's proprietary datasets returned no match for this subject, so your evidence is live web search and general knowledge.
+/* The no-snippet path: the datasets returned nothing about the subject, so
+   the brief is web research. It says so in one clause, never invents a
+   dataset citation, and still has to be substantive. */
+const GENERAL_SYSTEM_PROMPT = `You are Ezana Sonar, a research analyst answering a ping. Ezana's proprietary datasets returned no match for this subject, so your evidence is live web search.
 Rules:
-- Answer the question the visitor actually asked, leading with what is true and current from web search. Give real substance.
-- Note in ONE clause, not a sentence of its own, that Ezana's datasets do not cover this subject yet. Never make that the headline or the topic of a paragraph.
-- Never invent dataset citations. Do not use [S1] style markers at all: there are no snippets to cite. If web search did not run, say plainly that this is general background rather than sourced research.
+- Search the web thoroughly and answer the question the visitor actually asked, leading with what is true and current. Give real substance: names, dates, figures, outlets.
+- Note in ONE clause, not a sentence of its own, that Ezana's datasets do not cover this subject yet.
+- Never invent dataset citations. Do not use [S1] style markers: there are no snippets to cite. If web search did not run, say plainly that this is general background rather than sourced research.
 - No fabricated figures, dates or names. A number either comes from a web result or does not appear.
 - Findings only. No financial or investment advice, price targets, or buy/sell/hold language.
-- EXACTLY three short paragraphs separated by blank lines: (1) direct answer to the ping, (2) the strongest specifics, (3) what to watch, or a better ping for sourced results. Each paragraph is 50 to 80 words. No headers, no lists, no em dashes.`;
+- Four short paragraphs separated by blank lines: (1) direct answer, (2) the strongest specifics, (3) recent developments, (4) what to watch, or a better ping for sourced results. Each paragraph 50 to 90 words. No headers, no lists, no em dashes.`;
+
+/* Appended for a sanctions ping. The JSON is stripped from the brief and
+   drawn as the exposure table; splitExposed drops malformed rows. */
+const SANCTIONS_ADDENDUM = `
+This ping is about sanctions. The [S#] snippets marked (sanctions) are Ezana's copy of the US Treasury OFAC SDN list; use them for which jurisdictions and programs carry the most listings. Use web search for which companies are exposed (revenue, operations or supply chains in sanctioned jurisdictions, or named in enforcement).
+After the four paragraphs, append on its own line a JSON array inside <exposed></exposed> tags, up to 8 companies a web result names as exposed, most exposed first: [{"company":"Name","ticker":"TICK or null","exposure":"high|medium|low","why":"one clause, under 20 words"}]. Only companies a search result supports. If none, write <exposed>[]</exposed>.`;
 
 /* Dataset to taxonomy dimension. SONAR_DATASETS entries carry {id,label,source}
    and no dimension, so the mapping is stated here against DATASET_TAXONOMY's
@@ -320,7 +333,9 @@ function relevanceFrom(items, corporaSearched) {
   const byDimension = {};
   for (const item of items) {
     const dataset = CORPUS_TO_DATASET[item.corpus];
-    const dim = DATASET_DIMENSION[dataset];
+    /* The OFAC aggregates are attached by intent, not retrieved, so they
+       have no SONAR_DATASETS entry; they light Global Lighthouse. */
+    const dim = item.corpus === 'sanctions' ? 'lighthouse' : DATASET_DIMENSION[dataset];
     if (!dim) continue;
     byDimension[dim] = (byDimension[dim] || 0) + 1;
   }
@@ -954,6 +969,52 @@ export async function buildDossier({ ticker, name }, admin) {
   };
 }
 
+/* The dossier for whatever the ping resolved to: a member of Congress, a
+   company, or nothing. An enrichment throughout: a failed leg yields null,
+   never a lost answer. */
+async function buildDossierFor({ politician, resolved, admin, leg }) {
+  if (politician) {
+    try {
+      return await leg(
+        'dossier-politician',
+        () => buildPoliticianDossier(politician, admin),
+        (v) =>
+          `series=${v.series ? v.series.length : 0} similar=${v.similar.length} trades12m=${v.stats?.trades12m ?? 0}`,
+      );
+    } catch {
+      return null;
+    }
+  }
+  if (!resolved) return null;
+  let dossier = null;
+  try {
+    dossier = await leg(
+      'dossier',
+      () => buildDossier(resolved, admin),
+      (v) =>
+        `fund=${Boolean(v.fundamentals)} spark=${v.spark ? v.spark.length : 0} news=${v.news.length} echo=${v.echo.length} [${(v.legCodes || []).join(' ')}]`,
+    );
+  } catch {
+    return null;
+  }
+  /* What each dataset found, for the Sourced matches previews. Its own leg so
+     a slow rollup scan cannot cost the dossier; a null leg renders its
+     dataset as a dry row. */
+  if (dossier) {
+    try {
+      dossier.matches = await leg(
+        'matches',
+        () => buildMatches(resolved, admin),
+        (m) =>
+          `echo=${m.echo?.length || 0} contracts=${m.contracts ? 'y' : 'n'} congress=${m.congress?.length || 0} sec=${m.sec?.length || 0} 13f=${m.thirteenF?.length || 0} lobbying=${m.lobbying ? 'y' : 'n'} markets=${m.markets?.length || 0}`,
+      );
+    } catch {
+      dossier.matches = null;
+    }
+  }
+  return dossier;
+}
+
 /**
  * One ping, end to end. `admin` is the service-role client; the caller owns it
  * so the demo route and the guest route share one connection policy.
@@ -1017,7 +1078,10 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
   const entitlements = getSonarEntitlements({ planTier: 0, version: 'regular' });
   const classification = classifyQuery(retrievalQuery);
   const allowCorpora = corporaForDatasets(entitlements.datasets);
-  const budget = depthBudget('summary');
+  /* Wider than the old 'summary' budget: more snippets per corpus and more
+     characters for the brief to read. */
+  const budget = depthBudget('standard');
+  const intent = detectIntent(query);
 
   const out = await leg(
     'retrieve',
@@ -1058,9 +1122,39 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
       })
     : retrieved;
 
+  /* A sanctions ping reads the OFAC aggregates as dataset evidence too. */
+  const sanctions = intent === 'sanctions' ? await sanctionsContext() : null;
+  if (sanctions) items.push(...sanctions.evidence);
+
   /* Recomputed from the survivors: a corpus that only contributed off-entity
      noise must not be shown as a match. */
   const corporaUsed = [...new Set(items.map((i) => i.corpus))];
+
+  /* The dossier and the news columns do not depend on the brief, so they run
+     beside it instead of after it. */
+  const dossierP = wantDossier ? buildDossierFor({ politician, resolved, admin, leg }) : null;
+  const columnsP = wantDossier
+    ? (async () => {
+        const dossierNow = await dossierP;
+        const specs = await columnSpecs({
+          query,
+          politician,
+          resolved,
+          dossier: dossierNow,
+          intent,
+          admin,
+        });
+        return leg(
+          'news-columns',
+          () =>
+            buildNewsColumns({
+              subject: politician ? politician.name : resolved ? resolved.name : query,
+              specs,
+            }),
+          (cols) => cols.map((c) => `${c.id}=${c.items.length}`).join(' '),
+        );
+      })().catch(() => null)
+    : null;
 
   let answer = null;
   let grounded = false;
@@ -1080,17 +1174,16 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
       'synthesize',
       () =>
         synthesizeWithFallback({
-          system: GROUNDED_SYSTEM_PROMPT,
+          system: sanctions ? GROUNDED_SYSTEM_PROMPT + SANCTIONS_ADDENDUM : GROUNDED_SYSTEM_PROMPT,
           user: `Ping: ${query}${resolvedNote}\n\nSources:\n${sourcesBlock}`,
-          /* Enough for web facts alongside snippets, capped so the panel
-             stays inside the locked viewport: the card used to grow the page
-             past one screen. Paired with the 50-to-80-word rule above. */
-          maxTokens: 480,
-          model: HAIKU_MODEL,
+          /* Room for four paragraphs of dataset and web findings; the brief
+             panel scrolls inside the locked viewport. */
+          maxTokens: sanctions ? BRIEF_TOKENS + 400 : BRIEF_TOKENS,
+          model: BRIEF_MODEL,
           fallbackModel: HAIKU_MODEL,
           /* Inert until SONAR_WEB_SEARCH=true is set: anthropicSynthesize
              gates the tool on that env var as well as this flag. */
-          webSearch: { enabled: true, maxUses: 2 },
+          webSearch: { enabled: true, maxUses: BRIEF_WEB_USES },
         }),
       (v) => (v.answer ? `answered${v.webUsed ? ' +web' : ''}` : v.degraded || 'no answer'),
       (v) => Boolean(v.answer),
@@ -1098,7 +1191,7 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
     answer = synth.answer || null;
     grounded = Boolean(answer);
     webUsed = Boolean(synth.webUsed);
-    webSources = (synth.webSources || []).slice(0, 4);
+    webSources = (synth.webSources || []).slice(0, 6);
     providerErrors = synth.providerErrors || [];
   }
 
@@ -1109,10 +1202,10 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
         synthesizeWithFallback({
           system: GENERAL_SYSTEM_PROMPT,
           user: `Ping: ${query}${resolvedNote}`,
-          maxTokens: 480,
-          model: HAIKU_MODEL,
+          maxTokens: BRIEF_TOKENS,
+          model: BRIEF_MODEL,
           fallbackModel: HAIKU_MODEL,
-          webSearch: { enabled: true, maxUses: 2 },
+          webSearch: { enabled: true, maxUses: BRIEF_WEB_USES },
         }),
       (v) => (v.answer ? `answered${v.webUsed ? ' +web' : ''}` : v.degraded || 'no answer'),
       (v) => Boolean(v.answer),
@@ -1120,7 +1213,7 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
     answer = synth.answer || null;
     grounded = false;
     webUsed = Boolean(synth.webUsed);
-    webSources = (synth.webSources || []).slice(0, 4);
+    webSources = (synth.webSources || []).slice(0, 6);
     providerErrors = [...providerErrors, ...(synth.providerErrors || [])];
   }
 
@@ -1133,46 +1226,14 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
     })
     .filter(Boolean);
 
-  let dossier = null;
-  if (wantDossier && politician) {
-    try {
-      dossier = await leg(
-        'dossier-politician',
-        () => buildPoliticianDossier(politician, admin),
-        (v) =>
-          `series=${v.series ? v.series.length : 0} similar=${v.similar.length} trades12m=${v.stats?.trades12m ?? 0}`,
-      );
-    } catch {
-      /* Same rule as the company dossier: an enrichment, never the answer. */
-    }
-  }
-  if (wantDossier && resolved) {
-    try {
-      dossier = await leg(
-        'dossier',
-        () => buildDossier(resolved, admin),
-        (v) =>
-          `fund=${Boolean(v.fundamentals)} spark=${v.spark ? v.spark.length : 0} news=${v.news.length} echo=${v.echo.length} [${(v.legCodes || []).join(' ')}]`,
-      );
-      /* What each dataset found, for the Sourced matches previews. Its own
-         leg so a slow rollup scan cannot cost the dossier, and fail-soft
-         throughout: a null leg renders its dataset as a dry row. */
-      if (dossier) {
-        try {
-          dossier.matches = await leg(
-            'matches',
-            () => buildMatches(resolved, admin),
-            (m) =>
-              `echo=${m.echo?.length || 0} contracts=${m.contracts ? 'y' : 'n'} congress=${m.congress?.length || 0} sec=${m.sec?.length || 0} 13f=${m.thirteenF?.length || 0} lobbying=${m.lobbying ? 'y' : 'n'} markets=${m.markets?.length || 0}`,
-          );
-        } catch {
-          dossier.matches = null;
-        }
-      }
-    } catch {
-      /* The dossier is an enrichment. Losing it degrades the stage; it must
-         not lose an answer that has already been paid for. */
-    }
+  const dossier = dossierP ? await dossierP : null;
+  const newsColumns = columnsP ? await columnsP : null;
+  if (dossier) dossier.newsColumns = newsColumns;
+
+  /* A sanctions brief carries its exposure table as a JSON block. */
+  let exposed = [];
+  if (answer && sanctions) {
+    ({ answer, exposed } = splitExposed(answer));
   }
 
   /* One line, and it names the leg. A run with no answer logs at error level
@@ -1198,6 +1259,9 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
     webUsed,
     webSources,
     dossier,
+    newsColumns,
+    intent,
+    sanctions: sanctions ? { ...sanctions.panel, exposed } : null,
     classification,
     resolved,
     politician,

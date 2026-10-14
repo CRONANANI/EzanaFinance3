@@ -387,3 +387,25 @@
     transition: none;
   }
 }
+
+/* ── Oct 14: panel A's parser log ──────────────────────────────────────
+   The log drawn under panel A's sub-line scrolls down through the glass at
+   about a line a second. Two copies sit one block apart, so moving by one
+   block height loops without a seam. The mask fades it in and out at the
+   window's top and bottom edges. Reduced motion holds it still. */
+.dso-sc-code {
+  animation: dso-sc-code-scroll calc(var(--dso-sc-code-n, 12) * 1.1s) linear infinite;
+}
+@keyframes dso-sc-code-scroll {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(var(--dso-sc-code-h, 132px));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dso-sc-code {
+    animation: none;
+  }
+}

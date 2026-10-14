@@ -14,6 +14,7 @@
 import { unstable_cache } from 'next/cache';
 import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 import { programMeta } from './programs';
+import { currencyFor } from './fx';
 
 const CHUNK = 1000;
 const TYPES = ['entity', 'individual', 'vessel', 'aircraft'];
@@ -28,6 +29,7 @@ const EMPTY_SUMMARY = {
   programs: [],
   targets: [],
   themes: [],
+  programCountries: {},
 };
 
 async function fetchAllActive(admin) {
@@ -76,6 +78,8 @@ function summarize(rows) {
   const programs = new Map();
   const targets = new Map();
   const themes = new Map();
+  /* Program -> address country -> listings, for the map's program view. */
+  const programCountries = {};
   let baseline = null;
   let synced = null;
   let noCountry = 0;
@@ -100,6 +104,10 @@ function summarize(rows) {
     const seenTheme = new Set();
     for (const p of new Set(ps)) {
       bump(programs, p, type);
+      if (cs.length) {
+        const pc = programCountries[p] || (programCountries[p] = {});
+        for (const c of new Set(cs)) pc[c] = (pc[c] || 0) + 1;
+      }
       const meta = programMeta(p);
       if (meta.target && !seenTarget.has(meta.target)) {
         seenTarget.add(meta.target);
@@ -136,6 +144,7 @@ function summarize(rows) {
       basedThere: basedIn.get(ALIAS[t.name] || t.name) || 0,
     })),
     themes: [...themes.values()].sort(byTotal).map((t) => ({ ...t, key: t.name })),
+    programCountries,
   };
 }
 
@@ -151,7 +160,7 @@ async function loadSummary() {
 
 /* The aggregate is ~30KB; the raw rows are never cached (they would exceed
    the data-cache entry limit). The ingest revalidates the 'sanctions' tag. */
-export const getSanctionsSummary = unstable_cache(loadSummary, ['sanctions-summary-v1'], {
+export const getSanctionsSummary = unstable_cache(loadSummary, ['sanctions-summary-v2'], {
   revalidate: 21600,
   tags: ['sanctions'],
 });
@@ -247,3 +256,164 @@ export async function getNewestAdditions(baseline, limit = 30) {
     return [];
   }
 }
+
+/* ── trend vs currency ─────────────────────────────────────────────────── */
+
+const monthKey = (d) => `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-01`;
+function lastMonths(n, now = new Date()) {
+  const out = [];
+  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  for (let i = n - 1; i >= 0; i -= 1) {
+    out.push(monthKey(new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - i, 1))));
+  }
+  return out;
+}
+
+/**
+ * Pure: the countries being sanctioned hardest lately, each beside its
+ * currency against the dollar.
+ *   trend  rows { country, month: 'YYYY-MM-01', added } (sanctions_country_trend)
+ *   fx     rows { currency, month, usd_rate } (fx_monthly)
+ * Steepness compares the last 12 months' new listings with the 12 before.
+ * A country needs MIN_RECENT recent listings to rank, so one designation in a
+ * quiet year does not read as a surge. FX is the currency's value in dollars
+ * indexed to 100 at the window's first month: below 100 means it weakened.
+ */
+const MIN_RECENT = 10;
+export function computeTrends(trend, fx, { now = new Date(), limit = 6 } = {}) {
+  const months = lastMonths(24, now);
+  const byCountry = new Map();
+  for (const r of trend || []) {
+    const m = String(r.month).slice(0, 10);
+    if (!months.includes(m)) continue;
+    const rec = byCountry.get(r.country) || new Map();
+    rec.set(m, (rec.get(m) || 0) + Number(r.added || 0));
+    byCountry.set(r.country, rec);
+  }
+  const fxBy = new Map();
+  for (const r of fx || []) {
+    const m = String(r.month).slice(0, 10);
+    const rec = fxBy.get(r.currency) || new Map();
+    rec.set(m, Number(r.usd_rate));
+    fxBy.set(r.currency, rec);
+  }
+  const rows = [];
+  for (const [country, rec] of byCountry) {
+    const series = months.map((m) => rec.get(m) || 0);
+    const recent = series.slice(12).reduce((a, b) => a + b, 0);
+    const prior = series.slice(0, 12).reduce((a, b) => a + b, 0);
+    if (recent < MIN_RECENT) continue;
+    const cur = currencyFor(country);
+    let fxIndex = null;
+    let fxChange = null;
+    if (cur?.regime === 'float' && fxBy.has(cur.ccy)) {
+      const rates = fxBy.get(cur.ccy);
+      const vals = months.map((m) => (rates.get(m) > 0 ? 1 / rates.get(m) : null));
+      const first = vals.find((v) => v != null);
+      if (first) {
+        fxIndex = vals.map((v) => (v == null ? null : Math.round((v / first) * 1000) / 10));
+        const a = vals[11];
+        const b = vals[23] ?? [...vals].reverse().find((v) => v != null);
+        if (a && b) fxChange = Math.round((b / a - 1) * 1000) / 10;
+      }
+    }
+    rows.push({
+      country,
+      currency: cur?.ccy || null,
+      regime: cur?.regime || null,
+      months,
+      added: series,
+      recent,
+      prior,
+      /* +100% when listings doubled; a country new to the list counts as
+         the size of its recent wave. */
+      change: prior ? Math.round(((recent - prior) / prior) * 100) : null,
+      fxIndex,
+      fxChange,
+    });
+  }
+  /* Steepest first: the biggest rise in new listings, then the biggest wave. */
+  rows.sort((a, b) => b.recent - b.prior - (a.recent - a.prior) || b.recent - a.recent);
+  return rows.slice(0, limit);
+}
+
+async function loadTrends() {
+  if (!isServerSupabaseConfigured()) return { rows: [], ready: false };
+  try {
+    const admin = getAdminClient();
+    const since = new Date();
+    since.setUTCMonth(since.getUTCMonth() - 25, 1);
+    const [trend, fx] = await Promise.all([
+      admin.rpc('sanctions_country_trend', { p_months: 24 }),
+      admin
+        .from('fx_monthly')
+        .select('currency, month, usd_rate')
+        .gte('month', since.toISOString().slice(0, 10))
+        .limit(5000),
+    ]);
+    if (trend.error) throw new Error(trend.error.message);
+    const rows = computeTrends(trend.data || [], fx.error ? [] : fx.data || []);
+    return {
+      rows,
+      ready: (trend.data || []).length > 0,
+      fx: !fx.error && (fx.data || []).length > 0,
+    };
+  } catch (e) {
+    console.error('[sanctions] trends:', e?.message || e);
+    return { rows: [], ready: false };
+  }
+}
+
+export const getSanctionsTrends = unstable_cache(loadTrends, ['sanctions-trends-v1'], {
+  revalidate: 21600,
+  tags: ['sanctions'],
+});
+
+/* ── news pulses ───────────────────────────────────────────────────────── */
+
+/**
+ * Countries where sanctions news broke in the past 30 days, from
+ * sanctions_news: the story count and the newest headline per country. A
+ * country pulses with two or more stories; when fewer than three countries
+ * clear that bar, single-story countries pulse too, so a quiet month still
+ * shows where the news is.
+ */
+async function loadNewsPulses() {
+  if (!isServerSupabaseConfigured()) return [];
+  try {
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const { data, error } = await getAdminClient()
+      .from('sanctions_news')
+      .select('title, url, source, published_at, countries')
+      .gte('published_at', since)
+      .order('published_at', { ascending: false })
+      .limit(400);
+    if (error) throw new Error(error.message);
+    const by = new Map();
+    for (const r of data || []) {
+      for (const c of r.countries || []) {
+        const rec = by.get(c) || {
+          country: c,
+          count: 0,
+          title: r.title,
+          url: r.url,
+          source: r.source,
+          publishedAt: r.published_at,
+        };
+        rec.count += 1;
+        by.set(c, rec);
+      }
+    }
+    const all = [...by.values()].sort((a, b) => b.count - a.count);
+    const major = all.filter((r) => r.count >= 2);
+    return (major.length >= 3 ? major : all).slice(0, 24);
+  } catch (e) {
+    console.error('[sanctions] news pulses:', e?.message || e);
+    return [];
+  }
+}
+
+export const getSanctionsNewsPulses = unstable_cache(loadNewsPulses, ['sanctions-news-v1'], {
+  revalidate: 3600,
+  tags: ['sanctions'],
+});

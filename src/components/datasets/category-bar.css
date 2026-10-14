@@ -616,3 +616,23 @@
     transition: none;
   }
 }
+
+/* ── Oct 14: the overview's Home sits where the landing logo sits ──────
+   On /datasets the bar carries only Home and the auth actions
+   (.dscat-bar--bare). Its sides take the landing navbar's own envelope
+   (.nav-container-centered: --marketing-shell-max centred, with
+   --app-shell-pad inside), so the Home arrow lands on the landing logo's
+   left edge and the auth actions on the sign-in cluster's right edge. The
+   links lose their own side padding so their visible edge is that line. */
+@media (min-width: 901px) {
+  .dscat-bar.dscat-bar--bare,
+  .dscat-bar.dscat-bar--bare[data-density] {
+    padding-inline: calc(max(0px, (100% - var(--marketing-shell-max)) / 2) + var(--app-shell-pad));
+  }
+  .dscat-bar.dscat-bar--bare .dscat-home {
+    padding-left: 0;
+  }
+  .dscat-bar.dscat-bar--bare .dscat-side--end > :last-child {
+    padding-right: 0;
+  }
+}

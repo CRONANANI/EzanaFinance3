@@ -155,6 +155,11 @@ export function parseAnthropicContent(content) {
   let text = '';
   let webUsed = false;
   const webSources = [];
+  /* Every result the search tool returned, uncapped up to 40: callers that
+     ask the model for links (Sonar's news columns) keep only links found
+     here, so a URL the model made up can never reach the page. */
+  const webResults = [];
+  const seenResult = new Set();
   const seen = new Set();
   const addSource = (url, title) => {
     if (!url || seen.has(url) || webSources.length >= 8) return;
@@ -171,10 +176,16 @@ export function parseAnthropicContent(content) {
     } else if (b.type === 'web_search_tool_result') {
       webUsed = true;
       const results = Array.isArray(b.content) ? b.content : [];
-      for (const r of results) addSource(r?.url, r?.title);
+      for (const r of results) {
+        addSource(r?.url, r?.title);
+        if (r?.url && !seenResult.has(r.url) && webResults.length < 40) {
+          seenResult.add(r.url);
+          webResults.push({ url: r.url, title: r.title || '', pageAge: r.page_age || null });
+        }
+      }
     }
   }
-  return { answer: text.trim(), webUsed, webSources };
+  return { answer: text.trim(), webUsed, webSources, webResults };
 }
 
 /**

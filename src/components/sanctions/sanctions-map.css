@@ -1,0 +1,168 @@
+/* The OFAC choropleth (SanctionsWorldMap), shared by the Sanctions page and
+   Sonar's sanctions results. Tokens only. */
+.snx-map {
+  /* Hosts on a coloured ground (Sonar's green band) override the ink and
+     the empty fill. */
+  --snx-map-ink: var(--emerald);
+  --snx-map-line: var(--bg-primary);
+  --snx-map-empty: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  --snx-map-muted: color-mix(in srgb, var(--text-primary) 5%, transparent);
+  position: relative;
+}
+.snx-map-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.snx-map.is-compact .snx-map-svg {
+  max-height: 320px;
+}
+.snx-map-country {
+  fill: var(--snx-map-empty);
+  stroke: var(--snx-map-line);
+  stroke-width: 0.25;
+  transition:
+    opacity 0.15s ease,
+    fill 0.25s ease;
+}
+.snx-map-country.is-muted {
+  fill: var(--snx-map-muted);
+}
+.snx-map-country.is-clickable,
+.snx-map-dot.is-clickable {
+  cursor: pointer;
+}
+.snx-map-country.has-data:hover,
+.snx-map-dot:hover {
+  opacity: 0.8;
+}
+.snx-map-country.is-on {
+  stroke: var(--text-primary);
+  stroke-width: 0.6;
+}
+.snx-map-dot {
+  stroke: var(--snx-map-line);
+  stroke-width: 0.35;
+}
+.snx-map-dot.is-on {
+  stroke: var(--text-primary);
+  stroke-width: 0.6;
+}
+
+/* News pulses: a solid core and a ring that swells and fades. */
+.snx-map-pulse {
+  cursor: default;
+}
+.snx-map-pulse-core {
+  fill: var(--warning);
+  stroke: var(--snx-map-line);
+  stroke-width: 0.3;
+}
+.snx-map-pulse-ring {
+  fill: none;
+  stroke: var(--warning);
+  stroke-width: 0.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: snx-map-pulse 1.8s ease-out infinite;
+}
+@keyframes snx-map-pulse {
+  from {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.snx-map-tip {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-width: 280px;
+  padding: 6px 9px;
+  transform: translate(-50%, calc(-100% - 12px));
+  white-space: nowrap;
+  pointer-events: none;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-hover);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+.snx-map-tip.is-news {
+  white-space: normal;
+  width: max-content;
+}
+.snx-map-tip b {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.snx-map-tip span {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+.snx-map-tip.is-news span {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.35;
+}
+.snx-map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+.snx-map-legend-label {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+}
+.snx-map-legend-bin {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.snx-map-legend-bin i {
+  width: 14px;
+  height: 8px;
+  border-radius: var(--radius-sm);
+}
+.snx-map-legend-bin i.snx-map-legend-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--warning);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--warning) 30%, transparent);
+}
+.snx-map-news-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .snx-map-country {
+    transition: none;
+  }
+  .snx-map-pulse-ring {
+    animation: none;
+    opacity: 0.6;
+  }
+}

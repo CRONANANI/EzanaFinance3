@@ -2440,3 +2440,39 @@ body.light-mode .dso-page--search .dso-sonar-title {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
+
+/* ── Oct 14: overview spacing and placeholder ─────────────────────────
+   The orbital card sits further below the search pill so the two read as
+   separate pieces, and the pill's placeholder is Ezana green. The gap goes on the ticker wrapper, not the card, so the notification
+   rails move down with the map and stay centred on it. */
+.dso-page--search .sonar-hero > .dso-news {
+  margin-top: 56px;
+}
+@media (max-width: 720px) {
+  .dso-page--search .sonar-hero > .dso-news {
+    margin-top: 32px;
+  }
+}
+.dso-page--search .sonar-qbar--ghost .sonar-qbar-input::placeholder {
+  color: var(--emerald);
+  opacity: 1;
+}
+/* A notification card shows its dimension's icon only; the name stays in
+   the markup for screen readers. */
+.dso-news-dim {
+  gap: 0;
+}
+.dso-news-dim .bi {
+  font-size: 14px;
+}
+.dso-news-dim-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

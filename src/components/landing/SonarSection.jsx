@@ -62,6 +62,7 @@ import { SonarLoader } from '@/components/sonar/SonarLoader';
 import { geometryFor } from './sonar-geometry';
 import { animateWindowScroll, humanPointer } from './sonar-motion';
 import './sonar-band.css';
+import SonarResearchDeck from './SonarResearchDeck';
 
 /**
  * An element's resting rect, with the mount entrance taken off it first.
@@ -437,13 +438,25 @@ function initialsOf(name) {
 
 const PARTY_CLASS = { D: 'snr-face--d', R: 'snr-face--r', I: 'snr-face--i' };
 
-function Face({ name, src, party, size = 'sm' }) {
-  const [failed, setFailed] = useState(false);
+/* A portrait with fallbacks: `srcs` is tried in order (the mirrored copy,
+   then the public-domain sources), and initials show once every one fails. */
+function Face({ name, src, srcs, party, size = 'sm' }) {
+  const list = srcs?.length ? srcs : src ? [src] : [];
+  const [at, setAt] = useState(0);
+  const current = list[at];
   return (
     <span className={`snr-face snr-face--${size} ${PARTY_CLASS[party] || ''}`} aria-hidden="true">
-      {src && !failed ? (
+      {current ? (
         /* eslint-disable-next-line @next/next/no-img-element */
-        <img src={src} alt="" loading="lazy" decoding="async" onError={() => setFailed(true)} />
+        <img
+          key={current}
+          src={current}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
+          onError={() => setAt((i) => i + 1)}
+        />
       ) : (
         <span className="snr-face-initials">{initialsOf(name)}</span>
       )}
@@ -464,8 +477,17 @@ function PoliticianStack({ dossier, onGate }) {
     <div className="snr-stack">
       <div className="snr-fund snr-fund--wide snr-fund--pol">
         <div className="snr-fund-head">
-          <Face name={dossier.name} src={dossier.headshot} party={dossier.party} size="md" />
-          <span className="snr-fund-ticker">{seatOf(dossier)}</span>
+          <Face
+            name={dossier.name}
+            src={dossier.headshot}
+            srcs={dossier.headshots}
+            party={dossier.party}
+            size="md"
+          />
+          <span className="snr-fund-who">
+            <span className="snr-fund-who-name">{dossier.name}</span>
+            <span className="snr-fund-ticker">{seatOf(dossier)}</span>
+          </span>
           {dossier.seriesLabel ? (
             <span className="snr-range-chip">{dossier.seriesLabel}</span>
           ) : null}
@@ -522,7 +544,7 @@ function PoliticianStack({ dossier, onGate }) {
                 className="snr-news-item snr-person"
                 onClick={onGate}
               >
-                <Face name={p.name} src={p.headshot} party={p.party} />
+                <Face name={p.name} src={p.headshot} srcs={p.headshots} party={p.party} />
                 <span className="snr-person-text">
                   <span className="snr-news-title">{p.name}</span>
                   <span className="snr-news-meta">
@@ -1849,6 +1871,10 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
           grounded: data.grounded !== false,
           webUsed: Boolean(data.webUsed),
           webSources: data.webSources || [],
+          newsColumns: data.newsColumns || null,
+          sanctions: data.sanctions || null,
+          intent: data.intent || null,
+          query: q,
           remaining: data.remaining,
         });
         startTypewriter(data.answer);
@@ -1990,266 +2016,272 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
     (stage2Settled && typed === -1) || Boolean(pingError) || demoFailed || deadlinePassed;
 
   return (
-    <section
-      ref={bandRef}
-      className={`snr-band${isPage ? ' snr-band--page' : ''}${inView ? '' : ' snr-paused'}${composed ? ' snr-composed' : ''}${
-        lockedIn ? ' snr-frozen' : ''
-      }${hasPinged ? ' snr-live' : ''}${stage2 ? ' snr-stage2' : ''}${
-        live?.dossier?.fundamentals ? ' snr-has-fund' : ''
-      }`}
-    >
-      <div className="snr-grid-layer" aria-hidden="true" />
+    <>
+      <section
+        ref={bandRef}
+        className={`snr-band${isPage ? ' snr-band--page' : ''}${inView ? '' : ' snr-paused'}${composed ? ' snr-composed' : ''}${
+          lockedIn ? ' snr-frozen' : ''
+        }${hasPinged ? ' snr-live' : ''}${stage2 ? ' snr-stage2' : ''}${
+          live?.dossier?.fundamentals ? ' snr-has-fund' : ''
+        }`}
+      >
+        <div className="snr-grid-layer" aria-hidden="true" />
 
-      <div ref={innerRef} className="snr-inner">
-        <div className="snr-head">
-          <div ref={eyebrowRef} className="snr-eyebrow-row">
-            <span className="snr-eyebrow">Sonar</span>
+        <div ref={innerRef} className="snr-inner">
+          <div className="snr-head">
+            <div ref={eyebrowRef} className="snr-eyebrow-row">
+              <span className="snr-eyebrow">Sonar</span>
+            </div>
+            <h2 ref={headlineRef} className="snr-headline">
+              Ask about any company, politician or bill.
+            </h2>
+            <p className="snr-subhead">
+              Sonar reads congressional trades, federal contracts, SEC filings, lobbying, prediction
+              markets, Echo analysis and the open web in one pass, then hands back a short briefing
+              with a source behind every line. It reports what the records show; it never tells you
+              what to buy.
+            </p>
           </div>
-          <h2 ref={headlineRef} className="snr-headline">
-            Ask about any company, politician or bill.
-          </h2>
-          <p className="snr-subhead">
-            Sonar reads congressional trades, federal contracts, SEC filings, lobbying, prediction
-            markets, Echo analysis and the open web in one pass, then hands back a short briefing
-            with a source behind every line. It reports what the records show; it never tells you
-            what to buy.
-          </p>
-        </div>
 
-        <div
-          ref={colsRef}
-          className={`snr-cols${tug ? ' snr-anim-tug' : ''}`}
-          onAnimationEnd={() => setTug(false)}
-        >
-          <div className="snr-col-left">
-            {/* Both shaded regions go inert while the gate is up, so the
+          <div
+            ref={colsRef}
+            className={`snr-cols${tug ? ' snr-anim-tug' : ''}`}
+            onAnimationEnd={() => setTug(false)}
+          >
+            <div className="snr-col-left">
+              {/* Both shaded regions go inert while the gate is up, so the
                 content the visitor cannot read is also content they cannot
                 tab into or hear read out. React 18 does not know `inert` as a
                 boolean prop, so it is passed as the empty string, which is
                 the attribute's own HTML form. */}
-            <form
-              ref={formRef}
-              className="snr-pingbar"
-              action="/sonar"
-              method="get"
-              role="search"
-              onSubmit={onPingSubmit}
-              inert={gateOpen ? '' : undefined}
-            >
-              <i className="bi bi-search snr-pingbar-icon" aria-hidden="true" />
-              <label className="snr-label-sr" htmlFor="snr-ping-input">
-                Ping a company, ticker, politician or bill
-              </label>
-              <input
-                ref={inputRef}
-                id="snr-ping-input"
-                className="snr-input"
-                type="search"
-                name="q"
-                placeholder=" "
-                autoComplete="off"
-                value={queryValue}
-                onChange={(e) => {
-                  userTookOverRef.current = true;
-                  hideDemoCursor();
-                  setQueryValue(e.target.value);
-                }}
-                onFocus={() => {
-                  userTookOverRef.current = true;
-                  hideDemoCursor();
-                }}
-              />
-              {/* Decorative demo narration for the pristine loop only. Once
+              <form
+                ref={formRef}
+                className="snr-pingbar"
+                action="/sonar"
+                method="get"
+                role="search"
+                onSubmit={onPingSubmit}
+                inert={gateOpen ? '' : undefined}
+              >
+                <i className="bi bi-search snr-pingbar-icon" aria-hidden="true" />
+                <label className="snr-label-sr" htmlFor="snr-ping-input">
+                  Ping a company, ticker, politician or bill
+                </label>
+                <input
+                  ref={inputRef}
+                  id="snr-ping-input"
+                  className="snr-input"
+                  type="search"
+                  name="q"
+                  placeholder=" "
+                  autoComplete="off"
+                  value={queryValue}
+                  onChange={(e) => {
+                    userTookOverRef.current = true;
+                    hideDemoCursor();
+                    setQueryValue(e.target.value);
+                  }}
+                  onFocus={() => {
+                    userTookOverRef.current = true;
+                    hideDemoCursor();
+                  }}
+                />
+                {/* Decorative demo narration for the pristine loop only. Once
                   the real field has content, whether the demo typed it or the
                   visitor did, the overlay would double it. */}
-              {queryValue ? null : (
-                <span className="snr-demo" aria-hidden="true">
-                  <span className="snr-query snr-anim-query">Lockheed Martin</span>
-                  <span className="snr-caret snr-anim-caret" />
-                </span>
-              )}
-              <button
-                ref={pingBtnRef}
-                type="submit"
-                className={`snr-ping-btn snr-anim-press${btnPressed ? ' snr-ping-btn--pressed' : ''}`}
-                disabled={pinging}
-              >
-                <span className="snr-btn-label">
-                  <span className={`snr-btn-text${pinging ? ' is-active' : ''}`}>
-                    <span className="snr-beacon-sm snr-ping-dot" aria-hidden="true" />
-                    Pinging
+                {queryValue ? null : (
+                  <span className="snr-demo" aria-hidden="true">
+                    <span className="snr-query snr-anim-query">Lockheed Martin</span>
+                    <span className="snr-caret snr-anim-caret" />
                   </span>
-                  <span className={`snr-btn-text${pinging ? '' : ' is-active'}`}>Ping</span>
-                </span>
-              </button>
-              {/* Position and opacity are written by humanPointer() while
+                )}
+                <button
+                  ref={pingBtnRef}
+                  type="submit"
+                  className={`snr-ping-btn snr-anim-press${btnPressed ? ' snr-ping-btn--pressed' : ''}`}
+                  disabled={pinging}
+                >
+                  <span className="snr-btn-label">
+                    <span className={`snr-btn-text${pinging ? ' is-active' : ''}`}>
+                      <span className="snr-beacon-sm snr-ping-dot" aria-hidden="true" />
+                      Pinging
+                    </span>
+                    <span className={`snr-btn-text${pinging ? '' : ' is-active'}`}>Ping</span>
+                  </span>
+                </button>
+                {/* Position and opacity are written by humanPointer() while
                   cursorLive; React only owns the class. */}
-              <svg
-                ref={cursorRef}
-                className={`snr-cursor ${cursorLive ? 'snr-cursor--demo' : 'snr-anim-cursor'}`}
-                viewBox="0 0 24 24"
-                fill="#ffffff"
-                stroke="#04261c"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M5 3l14 8.5-6.2 1.4L9.7 19z" />
-              </svg>
-            </form>
+                <svg
+                  ref={cursorRef}
+                  className={`snr-cursor ${cursorLive ? 'snr-cursor--demo' : 'snr-anim-cursor'}`}
+                  viewBox="0 0 24 24"
+                  fill="#ffffff"
+                  stroke="#04261c"
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 3l14 8.5-6.2 1.4L9.7 19z" />
+                </svg>
+              </form>
 
-            <div className="snr-synth" inert={gateOpen ? '' : undefined}>
-              {/* Title only. The beacon dot, the hairline rule and the
+              <div className="snr-synth" inert={gateOpen ? '' : undefined}>
+                {/* Title only. The beacon dot, the hairline rule and the
                   SWEEPING / READY status are gone: the loader layer below
                   already says a sweep is running, so the header no longer
                   narrates state. */}
-              <div className="snr-panel-head">
-                <span className="snr-panel-title">Research brief</span>
-              </div>
+                <div className="snr-panel-head">
+                  <span className="snr-panel-title">Research brief</span>
+                </div>
 
-              {/* 2c: the four states are stacked layers that crossfade. The card
+                {/* 2c: the four states are stacked layers that crossfade. The card
                   height is set by its flex parent, so swapping the ACTIVE layer
                   never changes a box: this is transform and opacity only, and
                   no FLIP is needed. Only the active layer scrolls and only it
                   is in the accessibility tree. */}
-              <div className="snr-synth-body">
-                <p className="snr-empty snr-anim-idle" aria-hidden="true">
-                  Awaiting ping. Nothing is synthesized until you ask.
-                </p>
+                <div className="snr-synth-body">
+                  <p className="snr-empty snr-anim-idle" aria-hidden="true">
+                    Awaiting ping. Nothing is synthesized until you ask.
+                  </p>
 
-                <div
-                  className={`snr-synth-layer snr-synth-layer--base${
-                    !hasPinged ? ' is-active' : ''
-                  }`}
-                  inert={hasPinged ? '' : undefined}
-                >
-                  {SYNTHESIS.map((p) => (
-                    <p key={p.cls} className={`snr-para${p.lead ? ' snr-line-lead' : ''} ${p.cls}`}>
-                      {p.segments.map((seg, i) =>
-                        seg.link ? (
-                          <button
-                            key={`${p.cls}-${i}`}
-                            type="button"
-                            className="snr-link"
-                            onClick={() => openGate()}
-                          >
-                            {seg.t}
-                          </button>
-                        ) : (
-                          <span key={`${p.cls}-${i}`}>{seg.t}</span>
-                        ),
-                      )}
-                      {p.cite ? <span className="snr-cite"> {p.cite}</span> : null}
-                    </p>
-                  ))}
-                </div>
+                  <div
+                    className={`snr-synth-layer snr-synth-layer--base${
+                      !hasPinged ? ' is-active' : ''
+                    }`}
+                    inert={hasPinged ? '' : undefined}
+                  >
+                    {SYNTHESIS.map((p) => (
+                      <p
+                        key={p.cls}
+                        className={`snr-para${p.lead ? ' snr-line-lead' : ''} ${p.cls}`}
+                      >
+                        {p.segments.map((seg, i) =>
+                          seg.link ? (
+                            <button
+                              key={`${p.cls}-${i}`}
+                              type="button"
+                              className="snr-link"
+                              onClick={() => openGate()}
+                            >
+                              {seg.t}
+                            </button>
+                          ) : (
+                            <span key={`${p.cls}-${i}`}>{seg.t}</span>
+                          ),
+                        )}
+                        {p.cite ? <span className="snr-cite"> {p.cite}</span> : null}
+                      </p>
+                    ))}
+                  </div>
 
-                {/* Mounted while pinging and for one fast duration after, so it
+                  {/* Mounted while pinging and for one fast duration after, so it
                     fades out OVER the answer's first characters instead of
                     leaving a blank frame between them. */}
-                {loaderMounted ? (
-                  <div
-                    className={`snr-synth-layer${pinging ? ' is-active' : ''}`}
-                    inert={pinging ? undefined : ''}
-                  >
-                    <SonarLoader caption={`Sweeping 8 datasets for “${lastQuery}”...`} />
-                  </div>
-                ) : null}
+                  {loaderMounted ? (
+                    <div
+                      className={`snr-synth-layer${pinging ? ' is-active' : ''}`}
+                      inert={pinging ? undefined : ''}
+                    >
+                      <SonarLoader caption={`Sweeping 8 datasets for “${lastQuery}”...`} />
+                    </div>
+                  ) : null}
 
-                <div
-                  className={`snr-synth-layer${answerReady ? ' is-active' : ''}`}
-                  inert={answerReady ? undefined : ''}
-                >
-                  {live ? (
-                    <>
-                      {live.grounded === false ? (
-                        /* Two different honesties: with the tool on the answer
+                  <div
+                    className={`snr-synth-layer${answerReady ? ' is-active' : ''}`}
+                    inert={answerReady ? undefined : ''}
+                  >
+                    {live ? (
+                      <>
+                        {live.grounded === false ? (
+                          /* Two different honesties: with the tool on the answer
                          is current web research; with it off it is the
                          model's own background. The chip has to say which. */
-                        <span className="snr-chip-general">
-                          {live.webUsed ? 'Web briefing' : 'General briefing'}
-                        </span>
-                      ) : null}
-                      {(() => {
-                        /* One reveal counter across the joined answer, so the
+                          <span className="snr-chip-general">
+                            {live.webUsed ? 'Web briefing' : 'General briefing'}
+                          </span>
+                        ) : null}
+                        {(() => {
+                          /* One reveal counter across the joined answer, so the
                          paragraphs type in sequence without any per-paragraph
                          bookkeeping. typed === -1 means show all of it. */
-                        const paras = live.answer.split(/\n\s*\n/).slice(0, 3);
-                        let consumed = 0;
-                        return paras.map((para, i) => {
-                          const start = consumed;
-                          consumed += para.length + 2;
-                          const shown =
-                            typed < 0 ? para : para.slice(0, Math.max(0, typed - start));
-                          if (typed >= 0 && !shown) return null;
-                          return (
-                            <p
-                              key={`live-${i}`}
-                              className={`snr-para${i === 0 ? ' snr-line-lead' : ''}`}
-                            >
-                              {shown}
-                            </p>
-                          );
-                        });
-                      })()}
-                      {typed < 0 ? (
-                        <p className="snr-para">
-                          <button type="button" className="snr-link" onClick={() => openGate()}>
-                            Open the full dossier in Sonar
-                          </button>
-                          {typeof live.remaining === 'number' ? (
-                            <span className="snr-cite"> {live.remaining} free pings left</span>
-                          ) : null}
-                        </p>
-                      ) : null}
-                    </>
-                  ) : null}
+                          const paras = live.answer.split(/\n\s*\n/).slice(0, 4);
+                          let consumed = 0;
+                          return paras.map((para, i) => {
+                            const start = consumed;
+                            consumed += para.length + 2;
+                            const shown =
+                              typed < 0 ? para : para.slice(0, Math.max(0, typed - start));
+                            if (typed >= 0 && !shown) return null;
+                            return (
+                              <p
+                                key={`live-${i}`}
+                                className={`snr-para${i === 0 ? ' snr-line-lead' : ''}`}
+                              >
+                                {shown}
+                              </p>
+                            );
+                          });
+                        })()}
+                        {typed < 0 ? (
+                          <p className="snr-para">
+                            <button type="button" className="snr-link" onClick={() => openGate()}>
+                              Open the full dossier in Sonar
+                            </button>
+                            {typeof live.remaining === 'number' ? (
+                              <span className="snr-cite"> {live.remaining} free pings left</span>
+                            ) : null}
+                          </p>
+                        ) : null}
+                      </>
+                    ) : null}
+                  </div>
+
+                  <div
+                    className={`snr-synth-layer${answerFailed ? ' is-active' : ''}`}
+                    inert={answerFailed ? undefined : ''}
+                  >
+                    <p className="snr-para snr-line-lead">
+                      {pingError || 'That ping did not land.'}
+                    </p>
+                    <p className="snr-para">
+                      <button
+                        type="button"
+                        className="snr-link"
+                        onClick={() => {
+                          setPingPulse((n) => n + 1);
+                          inputRef.current?.focus();
+                        }}
+                      >
+                        Try another ping
+                      </button>
+                    </p>
+                  </div>
                 </div>
 
-                <div
-                  className={`snr-synth-layer${answerFailed ? ' is-active' : ''}`}
-                  inert={answerFailed ? undefined : ''}
-                >
-                  <p className="snr-para snr-line-lead">{pingError || 'That ping did not land.'}</p>
-                  <p className="snr-para">
-                    <button
-                      type="button"
-                      className="snr-link"
-                      onClick={() => {
-                        setPingPulse((n) => n + 1);
-                        inputRef.current?.focus();
-                      }}
-                    >
-                      Try another ping
-                    </button>
+                <div className="snr-divider-line" aria-hidden="true" />
+
+                <div className="snr-foot">
+                  <p className="snr-footnote">
+                    Findings only, never financial advice. Every claim carries its source.
                   </p>
+                  <a className="snr-cta" href="/sonar">
+                    Run your first ping
+                    <i className="bi bi-arrow-right" aria-hidden="true" />
+                  </a>
                 </div>
               </div>
 
-              <div className="snr-divider-line" aria-hidden="true" />
-
-              <div className="snr-foot">
-                <p className="snr-footnote">
-                  Findings only, never financial advice. Every claim carries its source.
-                </p>
-                <a className="snr-cta" href="/sonar">
-                  Run your first ping
-                  <i className="bi bi-arrow-right" aria-hidden="true" />
-                </a>
-              </div>
-            </div>
-
-            {/* The gate is a sibling of the panel rather than a child of it,
+              {/* The gate is a sibling of the panel rather than a child of it,
                 which is the whole point: inset 0 on the column covers the ping
                 bar and the synthesis card together. Pinned to the bottom of
                 the panel it left the input readable and usable underneath. */}
-            {gateOpen ? (
-              <div
-                ref={gateRef}
-                tabIndex={-1}
-                className="snr-gate snr-gate--cover"
-                role="dialog"
-                /* role="dialog" without aria-modal on purpose. aria-modal
+              {gateOpen ? (
+                <div
+                  ref={gateRef}
+                  tabIndex={-1}
+                  className="snr-gate snr-gate--cover"
+                  role="dialog"
+                  /* role="dialog" without aria-modal on purpose. aria-modal
                    tells assistive tech that everything outside the dialog is
                    inert, and here it is not: the gate covers one column, and
                    the dossier, the orbital and the news list stay visible and
@@ -2257,39 +2289,39 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
                    would hide the rest of the band from screen reader users
                    alone, for a dismissible upsell. What the gate does cover is
                    genuinely unreachable, via inert on the two regions. */
-                aria-label={gateTitle}
-              >
-                <button
-                  type="button"
-                  className="snr-gate-close"
-                  aria-label="Close"
-                  onClick={() => setGateOpen(false)}
+                  aria-label={gateTitle}
                 >
-                  <i className="bi bi-x-lg" aria-hidden="true" />
-                </button>
-                <div className="snr-gate-inner">
-                  <p className="snr-gate-title">{gateTitle}</p>
-                  <p className="snr-gate-sub">{gateSub}</p>
-                  <div className="snr-gate-actions">
-                    <a
-                      className="snr-gate-btn snr-gate-btn-ghost"
-                      href="/auth/continue?next=/sonar"
-                    >
-                      Log in
-                    </a>
-                    <a
-                      className="snr-gate-btn snr-gate-btn-solid"
-                      href="/auth/continue?intent=signup&next=/sonar"
-                    >
-                      Sign up free
-                    </a>
+                  <button
+                    type="button"
+                    className="snr-gate-close"
+                    aria-label="Close"
+                    onClick={() => setGateOpen(false)}
+                  >
+                    <i className="bi bi-x-lg" aria-hidden="true" />
+                  </button>
+                  <div className="snr-gate-inner">
+                    <p className="snr-gate-title">{gateTitle}</p>
+                    <p className="snr-gate-sub">{gateSub}</p>
+                    <div className="snr-gate-actions">
+                      <a
+                        className="snr-gate-btn snr-gate-btn-ghost"
+                        href="/auth/continue?next=/sonar"
+                      >
+                        Log in
+                      </a>
+                      <a
+                        className="snr-gate-btn snr-gate-btn-solid"
+                        href="/auth/continue?intent=signup&next=/sonar"
+                      >
+                        Sign up free
+                      </a>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : null}
-          </div>
+              ) : null}
+            </div>
 
-          {/* The orbital exists only once the whole stage-2 sequence has
+            {/* The orbital exists only once the whole stage-2 sequence has
               landed. Pre-ping there is no map at all: the composition is the
               left column with the ping bar and the synthesis, and the centre
               is theirs. Unmounted rather than hidden so the drift loop is not
@@ -2297,452 +2329,465 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
 
               It is always `compact` now, because the only state it is ever
               rendered in is the mini pin. */}
-          {orbitalUp ? (
-            <div ref={radarRef} className="snr-col-radar snr-col-radar--in">
-              <SonarOrbital
-                relevance={live?.relevance ?? null}
-                hubLabel={live ? lastQuery : null}
-                hubTicker={live?.dossier?.ticker ?? null}
-                compact
-              />
-            </div>
-          ) : null}
+            {orbitalUp ? (
+              <div ref={radarRef} className="snr-col-radar snr-col-radar--in">
+                <SonarOrbital
+                  relevance={live?.relevance ?? null}
+                  hubLabel={live ? lastQuery : null}
+                  hubTicker={live?.dossier?.ticker ?? null}
+                  compact
+                />
+              </div>
+            ) : null}
 
-          {/* The dossier mounts only once an answer has landed: not before a
+            {/* The dossier mounts only once an answer has landed: not before a
               ping, and not while the demo or a visitor's ping is still typing
               or loading. It used to render as an empty "Sourced matches" card
               poking in from the right with two dim rows, which promised a
               result the visitor had not been given yet. Until then the
               composition is the left column and Live Synthesis. */}
-          {hasPinged && live ? (
-            <div ref={dossierRef} className="snr-col-dossier">
-              <div className="snr-dossier-head">
-                <span className="snr-dossier-title">Sourced matches</span>
-                <span className="snr-rule" />
-                {/* The pinged term in full, or its ticker when the full name
+            {hasPinged && live ? (
+              <div ref={dossierRef} className="snr-col-dossier">
+                <div className="snr-dossier-head">
+                  <span className="snr-dossier-title">Sourced matches</span>
+                  <span className="snr-rule" />
+                  {/* The pinged term in full, or its ticker when the full name
                   will not fit. It used to be `slice(0, 14)`, which rendered
                   "LOCKHEED MARTIN" as "LOCKHEED MARTI": a truncation that
                   reads as a different company. A ticker is short and true,
                   where half a name is neither. */}
-                <span className="snr-meta snr-term">
-                  {lastQuery.length > 16 && live?.dossier?.ticker
-                    ? live.dossier.ticker.toUpperCase()
-                    : lastQuery.toUpperCase()}
-                </span>
-              </div>
+                  <span className="snr-meta snr-term">
+                    {lastQuery.length > 16 && live?.dossier?.ticker
+                      ? live.dossier.ticker.toUpperCase()
+                      : lastQuery.toUpperCase()}
+                  </span>
+                </div>
 
-              <div className="snr-dossier-body">
-                <div className="snr-rows" key={pingPulse}>
-                  {(() => {
-                    const m = live?.dossier?.matches || null;
-                    /* A dataset is matched only when its leg actually returned
+                <div className="snr-dossier-body">
+                  <div className="snr-rows" key={pingPulse}>
+                    {(() => {
+                      const m = live?.dossier?.matches || null;
+                      /* A dataset is matched only when its leg actually returned
                      something. The honesty rule: no rich row is rendered from
                      an empty leg, and a null leg falls through to the dry row
                      rather than drawing an empty frame. */
-                    const rich = {
-                      'gov-contracts': m?.contracts || null,
-                      echo: m?.echo?.length ? m.echo : null,
-                      congress: m?.congress?.length ? m.congress : null,
-                      'sec-filings': m?.sec?.length ? m.sec : null,
-                      '13f': m?.thirteenF?.length ? m.thirteenF : null,
-                      lobbying: m?.lobbying || null,
-                      'prediction-markets': m?.markets?.length ? m.markets : null,
-                    };
-                    /* Matched rich rows first, in the brief's order, then
+                      const rich = {
+                        'gov-contracts': m?.contracts || null,
+                        echo: m?.echo?.length ? m.echo : null,
+                        congress: m?.congress?.length ? m.congress : null,
+                        'sec-filings': m?.sec?.length ? m.sec : null,
+                        '13f': m?.thirteenF?.length ? m.thirteenF : null,
+                        lobbying: m?.lobbying || null,
+                        'prediction-markets': m?.markets?.length ? m.markets : null,
+                      };
+                      /* Matched rich rows first, in the brief's order, then
                      everything else dimmed. */
-                    const order = [
-                      'gov-contracts',
-                      'echo',
-                      'congress',
-                      'sec-filings',
-                      '13f',
-                      'lobbying',
-                      'prediction-markets',
-                    ];
-                    const sorted = [...SWEPT].sort((a, b) => {
-                      const ra = rich[a.id] ? order.indexOf(a.id) : 99;
-                      const rb = rich[b.id] ? order.indexOf(b.id) : 99;
-                      if (ra !== rb) return ra - rb;
-                      return SWEPT.indexOf(a) - SWEPT.indexOf(b);
-                    });
+                      const order = [
+                        'gov-contracts',
+                        'echo',
+                        'congress',
+                        'sec-filings',
+                        '13f',
+                        'lobbying',
+                        'prediction-markets',
+                      ];
+                      const sorted = [...SWEPT].sort((a, b) => {
+                        const ra = rich[a.id] ? order.indexOf(a.id) : 99;
+                        const rb = rich[b.id] ? order.indexOf(b.id) : 99;
+                        if (ra !== rb) return ra - rb;
+                        return SWEPT.indexOf(a) - SWEPT.indexOf(b);
+                      });
 
-                    return sorted.map((d, i) => {
-                      const data = live ? rich[d.id] : null;
-                      const hit = live?.sources?.find((sc) => sc.id === d.id);
-                      const matched = Boolean(data) || Boolean(hit?.used);
-                      const cls = `snr-row${matched ? '' : ' snr-row--dry'}${data ? ' snr-row--rich' : ''} ${
-                        hasPinged || pingPulse > 0 ? 'snr-anim-rowpop' : `snr-anim-row${i}`
-                      }`;
-                      /* After a ping the rows fill in as the dossier lands
+                      return sorted.map((d, i) => {
+                        const data = live ? rich[d.id] : null;
+                        const hit = live?.sources?.find((sc) => sc.id === d.id);
+                        const matched = Boolean(data) || Boolean(hit?.used);
+                        const cls = `snr-row${matched ? '' : ' snr-row--dry'}${data ? ' snr-row--rich' : ''} ${
+                          hasPinged || pingPulse > 0 ? 'snr-anim-rowpop' : `snr-anim-row${i}`
+                        }`;
+                        /* After a ping the rows fill in as the dossier lands
                          (ROW_LEAD_S), top to bottom. The empty-query replay
                          keeps its immediate stagger. */
-                      const style =
-                        hasPinged || pingPulse > 0
-                          ? {
-                              animationDelay: `${(hasPinged ? ROW_LEAD_S : 0) + i * ROW_STAGGER_S}s`,
-                            }
-                          : undefined;
+                        const style =
+                          hasPinged || pingPulse > 0
+                            ? {
+                                animationDelay: `${(hasPinged ? ROW_LEAD_S : 0) + i * ROW_STAGGER_S}s`,
+                              }
+                            : undefined;
 
-                      return (
-                        <div key={d.id} className={cls} style={style}>
-                          <div className="snr-row-top">
-                            <span className="snr-tag">{d.chip}</span>
-                            <span className="snr-rule" />
-                            <span className="snr-src">{matched ? 'matched' : 'searched'}</span>
-                          </div>
+                        return (
+                          <div key={d.id} className={cls} style={style}>
+                            <div className="snr-row-top">
+                              <span className="snr-tag">{d.chip}</span>
+                              <span className="snr-rule" />
+                              <span className="snr-src">{matched ? 'matched' : 'searched'}</span>
+                            </div>
 
-                          {d.id === 'gov-contracts' && data ? (
-                            <div className="snr-rich">
-                              <span className="snr-rich-name">{data.recipient}</span>
-                              <div className="snr-stat-strip">
-                                <div className="snr-stat">
-                                  <span className="snr-stat-label">TOTAL AWARDED</span>
-                                  <span className="snr-stat-value">{usdShort(data.total)}</span>
-                                  <span className="snr-stat-cap">
-                                    {fyLabel(data.coverage.fromFy)} to {fyLabel(data.coverage.toFy)}
-                                  </span>
-                                </div>
-                                <div className="snr-stat">
-                                  <span className="snr-stat-label">AWARDS</span>
-                                  <span className="snr-stat-value">{countShort(data.awards)}</span>
-                                  <span className="snr-stat-cap">contracts</span>
-                                </div>
-                                <div className="snr-stat">
-                                  <span className="snr-stat-label">AVG CONTRACT</span>
-                                  <span className="snr-stat-value">{usdShort(data.avg)}</span>
-                                  <span className="snr-stat-cap">per award</span>
-                                </div>
-                                <div className="snr-stat">
-                                  <span className="snr-stat-label">YOY</span>
-                                  {data.yoy ? (
-                                    <>
-                                      <span
-                                        className={`snr-stat-value ${
-                                          data.yoy.value >= 0 ? 'snr-up' : 'snr-down'
-                                        }`}
-                                      >
-                                        {data.yoy.value >= 0 ? '+' : ''}
-                                        {(data.yoy.value * 100).toFixed(1)}%
-                                      </span>
-                                      {/* The fiscal years are named because the
+                            {d.id === 'gov-contracts' && data ? (
+                              <div className="snr-rich">
+                                <span className="snr-rich-name">{data.recipient}</span>
+                                <div className="snr-stat-strip">
+                                  <div className="snr-stat">
+                                    <span className="snr-stat-label">TOTAL AWARDED</span>
+                                    <span className="snr-stat-value">{usdShort(data.total)}</span>
+                                    <span className="snr-stat-cap">
+                                      {fyLabel(data.coverage.fromFy)} to{' '}
+                                      {fyLabel(data.coverage.toFy)}
+                                    </span>
+                                  </div>
+                                  <div className="snr-stat">
+                                    <span className="snr-stat-label">AWARDS</span>
+                                    <span className="snr-stat-value">
+                                      {countShort(data.awards)}
+                                    </span>
+                                    <span className="snr-stat-cap">contracts</span>
+                                  </div>
+                                  <div className="snr-stat">
+                                    <span className="snr-stat-label">AVG CONTRACT</span>
+                                    <span className="snr-stat-value">{usdShort(data.avg)}</span>
+                                    <span className="snr-stat-cap">per award</span>
+                                  </div>
+                                  <div className="snr-stat">
+                                    <span className="snr-stat-label">YOY</span>
+                                    {data.yoy ? (
+                                      <>
+                                        <span
+                                          className={`snr-stat-value ${
+                                            data.yoy.value >= 0 ? 'snr-up' : 'snr-down'
+                                          }`}
+                                        >
+                                          {data.yoy.value >= 0 ? '+' : ''}
+                                          {(data.yoy.value * 100).toFixed(1)}%
+                                        </span>
+                                        {/* The fiscal years are named because the
                                         figure is meaningless without them, and
                                         because they are complete years: a
                                         partial current year compared against a
                                         whole one is how a quick view reports a
                                         collapse that never happened. */}
-                                      <span className="snr-stat-cap">
-                                        {fyLabel(data.yoy.from)} to {fyLabel(data.yoy.to)}
-                                      </span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <span className="snr-stat-value">n/a</span>
-                                      <span className="snr-stat-cap">needs two full years</span>
-                                    </>
-                                  )}
+                                        <span className="snr-stat-cap">
+                                          {fyLabel(data.yoy.from)} to {fyLabel(data.yoy.to)}
+                                        </span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <span className="snr-stat-value">n/a</span>
+                                        <span className="snr-stat-cap">needs two full years</span>
+                                      </>
+                                    )}
+                                  </div>
                                 </div>
+                                <AwardChart series={data.series} />
+                                <AgencyBar agencies={data.agencies} />
+                                <button
+                                  type="button"
+                                  className="snr-rich-link"
+                                  onClick={() => openGate()}
+                                >
+                                  Full dossier
+                                  <i className="bi bi-arrow-up-right" aria-hidden="true" />
+                                </button>
                               </div>
-                              <AwardChart series={data.series} />
-                              <AgencyBar agencies={data.agencies} />
-                              <button
-                                type="button"
-                                className="snr-rich-link"
-                                onClick={() => openGate()}
-                              >
-                                Full dossier
-                                <i className="bi bi-arrow-up-right" aria-hidden="true" />
-                              </button>
-                            </div>
-                          ) : null}
+                            ) : null}
 
-                          {d.id === 'echo' && data ? (
-                            <div className="snr-rich snr-rich--echo">
-                              {data.map((a) => (
-                                <a key={a.slug} className="snr-echo-row" href={`/echo/${a.slug}`}>
-                                  <span className="snr-echo-title">{a.title}</span>
-                                  {a.excerpt ? (
-                                    <span className="snr-echo-excerpt">{a.excerpt}</span>
-                                  ) : null}
-                                  <span className="snr-echo-date">
-                                    {relativeDay(a.publishedAt)}
-                                  </span>
-                                </a>
-                              ))}
-                            </div>
-                          ) : null}
+                            {d.id === 'echo' && data ? (
+                              <div className="snr-rich snr-rich--echo">
+                                {data.map((a) => (
+                                  <a key={a.slug} className="snr-echo-row" href={`/echo/${a.slug}`}>
+                                    <span className="snr-echo-title">{a.title}</span>
+                                    {a.excerpt ? (
+                                      <span className="snr-echo-excerpt">{a.excerpt}</span>
+                                    ) : null}
+                                    <span className="snr-echo-date">
+                                      {relativeDay(a.publishedAt)}
+                                    </span>
+                                  </a>
+                                ))}
+                              </div>
+                            ) : null}
 
-                          {d.id === 'congress' && data ? (
-                            <div className="snr-rich">
-                              {data.map((t, k) => (
-                                <span key={`${t.member}-${k}`} className="snr-trade">
-                                  <span className="snr-trade-member">{t.member}</span>
-                                  <span
-                                    className={`snr-trade-type ${
-                                      /sale|sell/i.test(t.type) ? 'snr-down' : 'snr-up'
-                                    }`}
-                                  >
-                                    {t.type}
-                                  </span>
-                                  <span className="snr-trade-date">{relativeDay(t.date)}</span>
-                                </span>
-                              ))}
-                            </div>
-                          ) : null}
-
-                          {d.id === 'sec-filings' && data ? (
-                            <div className="snr-rich">
-                              {data.map((f, k) => (
-                                <span key={`${f.form}-${k}`} className="snr-trade">
-                                  <span className="snr-trade-type">{f.form}</span>
-                                  <span className="snr-trade-member">{f.filer}</span>
-                                  <span className="snr-trade-date">{relativeDay(f.filedAt)}</span>
-                                </span>
-                              ))}
-                            </div>
-                          ) : null}
-
-                          {d.id === '13f' && data ? (
-                            <div className="snr-rich">
-                              {data.map((h, k) => (
-                                <span key={`${h.filer}-${k}`} className="snr-trade">
-                                  <span className="snr-trade-member">{h.filer}</span>
-                                  {h.changeType ? (
+                            {d.id === 'congress' && data ? (
+                              <div className="snr-rich">
+                                {data.map((t, k) => (
+                                  <span key={`${t.member}-${k}`} className="snr-trade">
+                                    <span className="snr-trade-member">{t.member}</span>
                                     <span
                                       className={`snr-trade-type ${
-                                        /trim|exit/i.test(h.changeType) ? 'snr-down' : 'snr-up'
+                                        /sale|sell/i.test(t.type) ? 'snr-down' : 'snr-up'
                                       }`}
                                     >
-                                      {h.changeType}
+                                      {t.type}
                                     </span>
-                                  ) : null}
-                                  <span className="snr-trade-date">
-                                    {[usdShort(h.valueUsd), h.quarter].filter(Boolean).join(' · ')}
+                                    <span className="snr-trade-date">{relativeDay(t.date)}</span>
                                   </span>
-                                </span>
-                              ))}
-                            </div>
-                          ) : null}
-
-                          {d.id === 'lobbying' && data ? (
-                            <div className="snr-rich">
-                              <span className="snr-rich-name">{data.client}</span>
-                              <div className="snr-stat-strip snr-stat-strip--3">
-                                <div className="snr-stat">
-                                  <span className="snr-stat-label">FILINGS</span>
-                                  <span className="snr-stat-value">{countShort(data.filings)}</span>
-                                  <span className="snr-stat-cap">
-                                    {data.fromYear} to {data.toYear}
-                                  </span>
-                                </div>
-                                <div className="snr-stat">
-                                  <span className="snr-stat-label">FIRMS</span>
-                                  <span className="snr-stat-value">
-                                    {countShort(data.registrantCount)}
-                                  </span>
-                                  <span className="snr-stat-cap">registrants</span>
-                                </div>
-                                <div className="snr-stat">
-                                  <span className="snr-stat-label">IN-HOUSE</span>
-                                  <span className="snr-stat-value">
-                                    {data.inHouse ? usdShort(data.inHouse.spend) : 'n/a'}
-                                  </span>
-                                  <span className="snr-stat-cap">
-                                    {data.inHouse
-                                      ? `${data.inHouse.year} self-reported`
-                                      : 'no self-filing'}
-                                  </span>
-                                </div>
+                                ))}
                               </div>
-                              {data.registrants.map((r) => (
-                                <span key={r} className="snr-trade">
-                                  <span className="snr-trade-member">{r}</span>
-                                </span>
-                              ))}
-                            </div>
-                          ) : null}
+                            ) : null}
 
-                          {d.id === 'prediction-markets' && data ? (
-                            <div className="snr-rich">
-                              {data.map((mk, k) => (
-                                <span key={`${mk.question}-${k}`} className="snr-trade">
-                                  <span className="snr-trade-member">{mk.question}</span>
-                                  {typeof mk.probability === 'number' ? (
-                                    <span className="snr-trade-type snr-up">
-                                      {Math.round(mk.probability * 100)}% YES
-                                    </span>
-                                  ) : null}
-                                  <span className="snr-trade-date">
-                                    {mk.related ? 'related' : mk.platform}
+                            {d.id === 'sec-filings' && data ? (
+                              <div className="snr-rich">
+                                {data.map((f, k) => (
+                                  <span key={`${f.form}-${k}`} className="snr-trade">
+                                    <span className="snr-trade-type">{f.form}</span>
+                                    <span className="snr-trade-member">{f.filer}</span>
+                                    <span className="snr-trade-date">{relativeDay(f.filedAt)}</span>
                                   </span>
-                                </span>
-                              ))}
-                            </div>
-                          ) : null}
+                                ))}
+                              </div>
+                            ) : null}
 
-                          {!data ? (
-                            <span className="snr-row-line">
-                              {matched ? d.name : 'No matches for this ping'}
-                            </span>
-                          ) : null}
-                        </div>
-                      );
-                    });
-                  })()}
+                            {d.id === '13f' && data ? (
+                              <div className="snr-rich">
+                                {data.map((h, k) => (
+                                  <span key={`${h.filer}-${k}`} className="snr-trade">
+                                    <span className="snr-trade-member">{h.filer}</span>
+                                    {h.changeType ? (
+                                      <span
+                                        className={`snr-trade-type ${
+                                          /trim|exit/i.test(h.changeType) ? 'snr-down' : 'snr-up'
+                                        }`}
+                                      >
+                                        {h.changeType}
+                                      </span>
+                                    ) : null}
+                                    <span className="snr-trade-date">
+                                      {[usdShort(h.valueUsd), h.quarter]
+                                        .filter(Boolean)
+                                        .join(' · ')}
+                                    </span>
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
+
+                            {d.id === 'lobbying' && data ? (
+                              <div className="snr-rich">
+                                <span className="snr-rich-name">{data.client}</span>
+                                <div className="snr-stat-strip snr-stat-strip--3">
+                                  <div className="snr-stat">
+                                    <span className="snr-stat-label">FILINGS</span>
+                                    <span className="snr-stat-value">
+                                      {countShort(data.filings)}
+                                    </span>
+                                    <span className="snr-stat-cap">
+                                      {data.fromYear} to {data.toYear}
+                                    </span>
+                                  </div>
+                                  <div className="snr-stat">
+                                    <span className="snr-stat-label">FIRMS</span>
+                                    <span className="snr-stat-value">
+                                      {countShort(data.registrantCount)}
+                                    </span>
+                                    <span className="snr-stat-cap">registrants</span>
+                                  </div>
+                                  <div className="snr-stat">
+                                    <span className="snr-stat-label">IN-HOUSE</span>
+                                    <span className="snr-stat-value">
+                                      {data.inHouse ? usdShort(data.inHouse.spend) : 'n/a'}
+                                    </span>
+                                    <span className="snr-stat-cap">
+                                      {data.inHouse
+                                        ? `${data.inHouse.year} self-reported`
+                                        : 'no self-filing'}
+                                    </span>
+                                  </div>
+                                </div>
+                                {data.registrants.map((r) => (
+                                  <span key={r} className="snr-trade">
+                                    <span className="snr-trade-member">{r}</span>
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
+
+                            {d.id === 'prediction-markets' && data ? (
+                              <div className="snr-rich">
+                                {data.map((mk, k) => (
+                                  <span key={`${mk.question}-${k}`} className="snr-trade">
+                                    <span className="snr-trade-member">{mk.question}</span>
+                                    {typeof mk.probability === 'number' ? (
+                                      <span className="snr-trade-type snr-up">
+                                        {Math.round(mk.probability * 100)}% YES
+                                      </span>
+                                    ) : null}
+                                    <span className="snr-trade-date">
+                                      {mk.related ? 'related' : mk.platform}
+                                    </span>
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
+
+                            {!data ? (
+                              <span className="snr-row-line">
+                                {matched ? d.name : 'No matches for this ping'}
+                              </span>
+                            ) : null}
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
                 </div>
-              </div>
 
-              {/* The "13F, LOBBYING, WEB / 3 MORE" footer is gone. It existed
+                {/* The "13F, LOBBYING, WEB / 3 MORE" footer is gone. It existed
                 to admit that three of the eight datasets were not on screen,
                 which stopped being true once all eight render. */}
-            </div>
-          ) : null}
+              </div>
+            ) : null}
 
-          {/* Stage 2's right-hand stack. In the DOM only once a ping has
+            {/* Stage 2's right-hand stack. In the DOM only once a ping has
               actually returned a dossier, so nothing empty is ever laid out.
               The orbital stays in .snr-col-radar and is repositioned by grid
               rather than moved into this wrapper: reparenting it would remount
               the map and restart its drift mid-glide. */}
-          {/* A member of Congress: portfolio chart and similar portfolios in
+            {/* A member of Congress: portfolio chart and similar portfolios in
               place of the price chart and the news list. Same .snr-fund /
               .snr-news shells, so the geometry budget, the card entrance and
               the orbital's "last card landed" signal all hold unchanged. */}
-          {stage2 && live?.dossier?.kind === 'politician' ? (
-            <PoliticianStack dossier={live.dossier} onGate={() => openGate()} />
-          ) : null}
+            {stage2 && live?.dossier?.kind === 'politician' ? (
+              <PoliticianStack dossier={live.dossier} onGate={() => openGate()} />
+            ) : null}
 
-          {stage2 &&
-          live?.dossier?.kind !== 'politician' &&
-          (live?.dossier?.fundamentals ||
-            live?.dossier?.news?.length ||
-            live?.dossier?.echo?.length) ? (
-            <div className="snr-stack">
-              {live.dossier.fundamentals ? (
-                <div className="snr-fund snr-fund--wide">
-                  <div className="snr-fund-head">
-                    <span className="snr-fund-ticker">{live.dossier.ticker}</span>
-                    {live.dossier.sparkLabel ? (
-                      <span className="snr-range-chip">{live.dossier.sparkLabel}</span>
-                    ) : null}
-                    <span className="snr-rule-soft" />
-                    <span className="snr-fund-name">{live.dossier.name}</span>
-                  </div>
-                  <div className="snr-fund-body">
-                    <Sparkline points={live.dossier.spark} />
-                    <div className="snr-fund-grid">
-                      <div className="snr-stat">
-                        <span className="snr-stat-label">P/E TTM</span>
-                        <span className="snr-stat-value">
-                          {typeof live.dossier.fundamentals.peTtm === 'number'
-                            ? live.dossier.fundamentals.peTtm.toFixed(2)
-                            : 'n/a'}
-                        </span>
-                      </div>
-                      <div className="snr-stat">
-                        <span className="snr-stat-label">EV/EBITDA TTM</span>
-                        <span className="snr-stat-value">
-                          {typeof live.dossier.fundamentals.evToEbitdaTtm === 'number'
-                            ? live.dossier.fundamentals.evToEbitdaTtm.toFixed(2)
-                            : 'n/a'}
-                        </span>
-                      </div>
-                      <div className="snr-stat">
-                        <span className="snr-stat-label">Market cap</span>
-                        <span className="snr-stat-value">
-                          {compactUsd(live.dossier.fundamentals.marketCap) || 'n/a'}
-                        </span>
-                      </div>
-                      <div className="snr-stat">
-                        <span className="snr-stat-label">
-                          {live.dossier.fundamentals.fourth?.label || 'Price'}
-                        </span>
-                        <span className="snr-stat-value">
-                          {statValue(live.dossier.fundamentals.fourth) ||
-                            (typeof live.dossier.fundamentals.price === 'number'
-                              ? `$${live.dossier.fundamentals.price.toFixed(2)}`
-                              : 'n/a')}
-                        </span>
+            {stage2 &&
+            live?.dossier?.kind !== 'politician' &&
+            (live?.dossier?.fundamentals ||
+              live?.dossier?.news?.length ||
+              live?.dossier?.echo?.length) ? (
+              <div className="snr-stack">
+                {live.dossier.fundamentals ? (
+                  <div className="snr-fund snr-fund--wide">
+                    <div className="snr-fund-head">
+                      <span className="snr-fund-ticker">{live.dossier.ticker}</span>
+                      {live.dossier.sparkLabel ? (
+                        <span className="snr-range-chip">{live.dossier.sparkLabel}</span>
+                      ) : null}
+                      <span className="snr-rule-soft" />
+                      <span className="snr-fund-name">{live.dossier.name}</span>
+                    </div>
+                    <div className="snr-fund-body">
+                      <Sparkline points={live.dossier.spark} />
+                      <div className="snr-fund-grid">
+                        <div className="snr-stat">
+                          <span className="snr-stat-label">P/E TTM</span>
+                          <span className="snr-stat-value">
+                            {typeof live.dossier.fundamentals.peTtm === 'number'
+                              ? live.dossier.fundamentals.peTtm.toFixed(2)
+                              : 'n/a'}
+                          </span>
+                        </div>
+                        <div className="snr-stat">
+                          <span className="snr-stat-label">EV/EBITDA TTM</span>
+                          <span className="snr-stat-value">
+                            {typeof live.dossier.fundamentals.evToEbitdaTtm === 'number'
+                              ? live.dossier.fundamentals.evToEbitdaTtm.toFixed(2)
+                              : 'n/a'}
+                          </span>
+                        </div>
+                        <div className="snr-stat">
+                          <span className="snr-stat-label">Market cap</span>
+                          <span className="snr-stat-value">
+                            {compactUsd(live.dossier.fundamentals.marketCap) || 'n/a'}
+                          </span>
+                        </div>
+                        <div className="snr-stat">
+                          <span className="snr-stat-label">
+                            {live.dossier.fundamentals.fourth?.label || 'Price'}
+                          </span>
+                          <span className="snr-stat-value">
+                            {statValue(live.dossier.fundamentals.fourth) ||
+                              (typeof live.dossier.fundamentals.price === 'number'
+                                ? `$${live.dossier.fundamentals.price.toFixed(2)}`
+                                : 'n/a')}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ) : null}
+                ) : null}
 
-              {live.dossier.news.length || live.dossier.echo.length ? (
-                <div className="snr-news">
-                  <div className="snr-card-head">
-                    {/* Named for the company's industry ("Defense Industry
+                {live.dossier.news.length || live.dossier.echo.length ? (
+                  <div className="snr-news">
+                    <div className="snr-card-head">
+                      {/* Named for the company's industry ("Defense Industry
                         Relevant News"): the list carries industry stories
                         that need not mention the company at all. */}
-                    <span className="snr-panel-title">
-                      {live.dossier.newsTitle || 'Relevant News'}
-                    </span>
-                    <span className="snr-rule-soft" aria-hidden="true" />
-                  </div>
-                  <div className="snr-news-list">
-                    {live.dossier.news.map((n) => (
-                      <a
-                        key={n.url}
-                        className="snr-news-item"
-                        href={n.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <span className="snr-news-title">{n.title}</span>
-                        <span className="snr-news-meta">
-                          {n.source}
-                          {relativeDay(n.publishedAt) ? ` · ${relativeDay(n.publishedAt)}` : ''}
-                        </span>
-                      </a>
-                    ))}
-                    {live.dossier.echo.map((e) => (
-                      <a key={e.slug} className="snr-news-item" href={`/echo/${e.slug}`}>
-                        <span className="snr-news-title">
-                          <span className="snr-echo-chip">
-                            <i className="bi bi-broadcast-pin" aria-hidden="true" />
-                            ECHO
+                      <span className="snr-panel-title">
+                        {live.dossier.newsTitle || 'Relevant News'}
+                      </span>
+                      <span className="snr-rule-soft" aria-hidden="true" />
+                    </div>
+                    <div className="snr-news-list">
+                      {live.dossier.news.map((n) => (
+                        <a
+                          key={n.url}
+                          className="snr-news-item"
+                          href={n.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <span className="snr-news-title">{n.title}</span>
+                          <span className="snr-news-meta">
+                            {n.source}
+                            {relativeDay(n.publishedAt) ? ` · ${relativeDay(n.publishedAt)}` : ''}
                           </span>
-                          {e.title}
-                        </span>
-                        <span className="snr-news-meta">
-                          Ezana Echo
-                          {relativeDay(e.publishedAt) ? ` · ${relativeDay(e.publishedAt)}` : ''}
-                        </span>
-                      </a>
-                    ))}
-                  </div>
-                  {/* Pinned to the card bottom. It anchors the bottom edge
+                        </a>
+                      ))}
+                      {live.dossier.echo.map((e) => (
+                        <a key={e.slug} className="snr-news-item" href={`/echo/${e.slug}`}>
+                          <span className="snr-news-title">
+                            <span className="snr-echo-chip">
+                              <i className="bi bi-broadcast-pin" aria-hidden="true" />
+                              ECHO
+                            </span>
+                            {e.title}
+                          </span>
+                          <span className="snr-news-meta">
+                            Ezana Echo
+                            {relativeDay(e.publishedAt) ? ` · ${relativeDay(e.publishedAt)}` : ''}
+                          </span>
+                        </a>
+                      ))}
+                    </div>
+                    {/* Pinned to the card bottom. It anchors the bottom edge
                       visually when only two items come back, which is what
                       left 123px of the card empty before. Gated like the other
                       dossier links: this one opens the app, it does not
                       navigate a signed-out visitor into a wall. */}
-                  <button type="button" className="snr-news-more" onClick={() => openGate()}>
-                    More coverage in Sonar
-                    <i className="bi bi-arrow-right" aria-hidden="true" />
-                  </button>
-                </div>
-              ) : null}
-            </div>
-          ) : null}
+                    <button type="button" className="snr-news-more" onClick={() => openGate()}>
+                      More coverage in Sonar
+                      <i className="bi bi-arrow-right" aria-hidden="true" />
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
         </div>
-      </div>
 
-      {/* One continue control: a translucent white bar flush with the band's
+        {/* One continue control: a translucent white bar flush with the band's
           bottom edge, fading up into the green. It replaces the two bouncing
           arrows that used to sit at the content box's edges. The bar leaves the
           flow, so the 56px it occupies is reserved by .snr-inner's bottom
           padding rather than by a flex row; the vertical budget still carries
           the zone (sonar-geometry.js `arrow`). */}
-      {lockedIn && arrowReady ? (
-        <button
-          type="button"
-          className="snr-continue-bar"
-          aria-label="Continue to the rest of the page"
-          onClick={onContinue}
-        >
-          <i className="bi bi-chevron-down" aria-hidden="true" />
-        </button>
-      ) : null}
-    </section>
+        {lockedIn && arrowReady ? (
+          <button
+            type="button"
+            className="snr-continue-bar"
+            aria-label="Continue to the rest of the page"
+            onClick={onContinue}
+          >
+            <i className="bi bi-chevron-down" aria-hidden="true" />
+          </button>
+        ) : null}
+      </section>
+      {/* Below the band, once a real ping has answered: the sanctions panel when
+        the ping was about sanctions, three columns of news, and the web
+        sources the brief read. Outside the band so the locked one-screen
+        composition above keeps its geometry. */}
+      {answerReady ? <SonarResearchDeck live={live} /> : null}
+    </>
   );
 }
 

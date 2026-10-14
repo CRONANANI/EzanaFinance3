@@ -6,7 +6,6 @@
 .snx-page {
   --snx-hair: var(--border-primary);
   --snx-soft: color-mix(in srgb, var(--text-primary) 4%, transparent);
-  --snx-map-empty: color-mix(in srgb, var(--text-primary) 8%, transparent);
   max-width: var(--marketing-shell-max);
   margin: 0 auto;
   padding: 0 32px 64px;
@@ -271,91 +270,7 @@
   outline-offset: 2px;
 }
 
-/* ── map ────────────────────────────────────────────────────────────── */
-.snx-map {
-  position: relative;
-}
-.snx-map-svg {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-.snx-map-country {
-  stroke: var(--bg-primary);
-  stroke-width: 0.25;
-  transition: opacity 0.15s ease;
-}
-.snx-map-country.has-data,
-.snx-map-dot {
-  cursor: pointer;
-}
-.snx-map-country.has-data:hover,
-.snx-map-dot:hover {
-  opacity: 0.8;
-}
-.snx-map-country.is-on {
-  stroke: var(--text-primary);
-  stroke-width: 0.6;
-}
-.snx-map-dot {
-  stroke: var(--bg-primary);
-  stroke-width: 0.35;
-}
-.snx-map-dot.is-on {
-  stroke: var(--text-primary);
-  stroke-width: 0.6;
-}
-.snx-map-tip {
-  position: absolute;
-  z-index: 3;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  padding: 6px 9px;
-  transform: translate(-50%, calc(-100% - 12px));
-  white-space: nowrap;
-  pointer-events: none;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-hover);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-}
-.snx-map-tip b {
-  font-size: 0.8125rem;
-  font-weight: 600;
-}
-.snx-map-tip span {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-muted);
-}
-.snx-map-legend {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 12px;
-  margin-top: 8px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-muted);
-}
-.snx-map-legend-label {
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-faint);
-}
-.snx-map-legend-bin {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-.snx-map-legend-bin i {
-  width: 14px;
-  height: 8px;
-  border-radius: var(--radius-sm);
-}
+/* The map itself lives in src/components/sanctions/sanctions-map.css. */
 
 /* ranked bars */
 .snx-ranked {
@@ -1181,8 +1096,204 @@
 
 @media (prefers-reduced-motion: reduce) {
   .snx-table-wrap,
-  .snx-tile,
-  .snx-map-country {
+  .snx-tile {
     transition: none;
+  }
+}
+
+/* ── Oct 14: map beside the treemap, momentum card ────────────────────
+   The map no longer spans the main column: it shares a row with Programs
+   by size, at its own aspect ratio, so it reads compressed rather than
+   stretched. A program picked in the treemap (or a chip) re-shades the
+   map; the focus line says what is shown and clears it. */
+.snx-pair--map {
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  align-items: start;
+}
+.snx-pair--map .snx-tree {
+  aspect-ratio: 4 / 3;
+}
+.snx-focus {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  margin: 10px 0 0;
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+.snx-focus b {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+.snx-focus-clear {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--emerald-text);
+  cursor: pointer;
+}
+.snx-focus-clear:hover {
+  text-decoration: underline;
+}
+
+/* The newest headlines behind the map's pulses. */
+.snx-pulse-news {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8125rem;
+}
+.snx-pulse-news li {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 8px;
+}
+.snx-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--warning);
+  align-self: center;
+}
+.snx-pulse-country {
+  font-weight: 600;
+  white-space: nowrap;
+}
+.snx-pulse-news a {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.snx-pulse-news a:hover {
+  text-decoration: underline;
+}
+.snx-pulse-news .snx-muted {
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
+/* Momentum: a row per country, monthly bars with the currency line over. */
+.snx-mo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.snx-mo-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 8px 6px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.snx-mo-row:hover {
+  background: var(--snx-soft);
+}
+.snx-mo-row:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.snx-mo-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.snx-mo-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+.snx-mo-stat {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.snx-mo-stat em {
+  margin-left: 6px;
+  font-style: normal;
+}
+/* More listings is a warning; a weaker currency reads negative. */
+.snx-mo-stat em.is-up {
+  color: var(--warning);
+}
+.snx-mo-stat em.is-down {
+  color: var(--text-muted);
+}
+.snx-mo-fxnote.is-up {
+  color: var(--positive);
+}
+.snx-mo-fxnote.is-down {
+  color: var(--negative);
+}
+.snx-mo-chart {
+  display: block;
+  width: 100%;
+  height: 54px;
+}
+.snx-mo-bar {
+  fill: color-mix(in srgb, var(--warning) 30%, transparent);
+}
+.snx-mo-bar.is-recent {
+  fill: var(--warning);
+}
+.snx-mo-fx {
+  fill: none;
+  stroke: var(--info);
+  stroke-width: 1.6;
+  vector-effect: non-scaling-stroke;
+}
+.snx-mo-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+}
+.snx-mo-fxnote {
+  color: var(--text-muted);
+}
+.snx-mo-key-bar,
+.snx-mo-key-line {
+  display: inline-block;
+  width: 12px;
+  height: 8px;
+  margin-right: 4px;
+  border-radius: var(--radius-sm);
+  background: var(--warning);
+}
+.snx-mo-key-line {
+  height: 2px;
+  background: var(--info);
+}
+@media (max-width: 1100px) {
+  .snx-pair--map {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .snx-pulse-news li {
+    grid-template-columns: auto auto minmax(0, 1fr);
+  }
+  .snx-pulse-news .snx-muted {
+    display: none;
   }
 }

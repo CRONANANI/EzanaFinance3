@@ -33,7 +33,7 @@ function errorCode(json, status) {
  * @param {{countries?:string, search?:string, limit?:number}} opts
  * @returns {Promise<{articles:Array, error?:string, status?:number}>}
  */
-export async function fetchCityNews({ countries, search, limit = 25 } = {}) {
+export async function fetchCityNews({ countries, search, limit = 25, publishedAfter } = {}) {
   const token = getMarketauxToken();
   if (!token) return { articles: [], error: 'invalid_api_token' };
 
@@ -48,6 +48,11 @@ export async function fetchCityNews({ countries, search, limit = 25 } = {}) {
   });
   if (countries) params.set('countries', countries);
   if (search) params.set('search', search);
+  /* Marketaux takes Y-m-d or Y-m-dTH:i; anything else is dropped rather
+     than sent and rejected. */
+  if (publishedAfter && /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/.test(publishedAfter)) {
+    params.set('published_after', publishedAfter);
+  }
 
   try {
     const res = await fetch(`${BASE}/news/all?${params.toString()}`, {

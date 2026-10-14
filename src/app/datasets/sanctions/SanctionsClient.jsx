@@ -20,7 +20,8 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import HubQueryLink from '@/components/datasets/HubQueryLink';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
-import { THEMES, atlasName, programMeta, themeOf } from '@/lib/sanctions/programs';
+import { THEMES, programMeta, themeOf } from '@/lib/sanctions/programs';
+import SanctionsWorldMap from '@/components/sanctions/SanctionsWorldMap';
 import './sanctions.css';
 
 /* ── formatting ─────────────────────────────────────────────────────── */
@@ -138,118 +139,128 @@ function TypeTag({ type }) {
   );
 }
 
-/* ── map ────────────────────────────────────────────────────────────── */
+/* ── momentum: new listings beside the currency ─────────────────────── */
 
-const BINS = [
-  { min: 1000, mix: 92, label: '1,000+' },
-  { min: 250, mix: 72, label: '250–999' },
-  { min: 50, mix: 52, label: '50–249' },
-  { min: 10, mix: 34, label: '10–49' },
-  { min: 1, mix: 18, label: '1–9' },
-];
-const binOf = (n) => BINS.find((b) => n >= b.min) || null;
-const fillFor = (n) => {
-  const b = binOf(n);
-  return b
-    ? `color-mix(in srgb, var(--emerald) ${b.mix}%, var(--snx-map-empty))`
-    : 'var(--snx-map-empty)';
-};
+const MONTH_SHORT = (m) =>
+  new Date(`${m}T00:00:00Z`).toLocaleDateString('en-US', {
+    month: 'short',
+    year: '2-digit',
+    timeZone: 'UTC',
+  });
 
-function WorldMap({ map, countries, selected, onPick }) {
-  const wrapRef = useRef(null);
-  const [tip, setTip] = useState(null);
-  const atlasSet = useMemo(() => new Set(map.countries.map((c) => c.name)), [map]);
-  /* Several OFAC names can fold into one outline (Gaza, West Bank and
-     Palestinian all draw as Palestine): sum them and remember the largest,
-     which is what a click filters on. */
-  const byAtlas = useMemo(() => {
-    const m = new Map();
-    let unmapped = 0;
-    for (const c of countries) {
-      const a = atlasName(c.name, atlasSet);
-      if (!a) {
-        unmapped += c.total;
-        continue;
-      }
-      const rec = m.get(a) || { total: 0, names: [], lead: c.name };
-      rec.total += c.total;
-      rec.names.push(c.name);
-      m.set(a, rec);
-    }
-    return { m, unmapped };
-  }, [countries, atlasSet]);
-
-  const move = (e, name) => {
-    const rec = byAtlas.m.get(name);
-    const box = wrapRef.current?.getBoundingClientRect();
-    if (!box) return;
-    setTip({
-      x: e.clientX - box.left,
-      y: e.clientY - box.top,
-      name: rec?.names.length === 1 ? rec.names[0] : name,
-      total: rec?.total || 0,
-    });
-  };
-  const pick = (name) => {
-    const rec = byAtlas.m.get(name);
-    if (rec) onPick(rec.lead);
-  };
-  const selectedAtlas = selected ? atlasName(selected, atlasSet) : null;
-
+/* One country: 24 monthly bars of new listings with the currency's value in
+   dollars drawn over them (indexed to 100 at the first month). Bars and line
+   have their own scales; the line's is printed at its ends. */
+function MomentumRow({ row, onPick }) {
+  const W = 240;
+  const H = 54;
+  const maxBar = Math.max(1, ...row.added);
+  const bw = W / row.added.length;
+  const fxVals = (row.fxIndex || []).filter((v) => v != null);
+  const lo = fxVals.length ? Math.min(...fxVals) : 0;
+  const hi = fxVals.length ? Math.max(...fxVals) : 1;
+  const span = hi - lo || 1;
+  const pts = (row.fxIndex || [])
+    .map((v, i) =>
+      v == null ? null : `${(i + 0.5) * bw},${(4 + (1 - (v - lo) / span) * (H - 8)).toFixed(1)}`,
+    )
+    .filter(Boolean);
+  const fxNote =
+    row.regime === 'peg'
+      ? `${row.currency} pegged to USD`
+      : row.regime === 'none'
+        ? `${row.currency || 'Currency'}: no market rate`
+        : row.fxChange == null
+          ? `${row.currency || 'Currency'}: no FX data yet`
+          : `${row.currency} ${row.fxChange > 0 ? '+' : ''}${row.fxChange}% vs USD, 12 mo`;
+  const label = `${row.country}: ${fmt(row.recent)} new listings in the last 12 months against ${fmt(
+    row.prior,
+  )} in the 12 before. ${fxNote}.`;
   return (
-    <div className="snx-map" ref={wrapRef} onMouseLeave={() => setTip(null)}>
-      <svg
-        className="snx-map-svg"
-        viewBox={`0 0 ${map.w} ${map.h}`}
-        role="img"
-        aria-label="World map shaded by the number of OFAC listings with an address in each country. The ranked view lists the same figures."
+    <li>
+      <button
+        type="button"
+        className="snx-mo-row"
+        onClick={() => onPick(row.country)}
+        aria-label={label}
       >
-        {map.countries.map((c) => {
-          const rec = byAtlas.m.get(c.name);
-          return (
-            <path
-              key={c.name}
-              d={c.d}
-              className={`snx-map-country${rec ? ' has-data' : ''}${selectedAtlas === c.name ? ' is-on' : ''}`}
-              style={{ fill: fillFor(rec?.total || 0) }}
-              onMouseMove={rec ? (e) => move(e, c.name) : undefined}
-              onClick={rec ? () => pick(c.name) : undefined}
-            />
-          );
-        })}
-        {map.points.map((p) => {
-          const rec = byAtlas.m.get(p.name);
-          if (!rec) return null;
-          return (
-            <circle
-              key={p.name}
-              cx={p.x}
-              cy={p.y}
-              r="1.7"
-              className={`snx-map-dot${selectedAtlas === p.name ? ' is-on' : ''}`}
-              style={{ fill: fillFor(rec.total) }}
-              onMouseMove={(e) => move(e, p.name)}
-              onClick={() => pick(p.name)}
-            />
-          );
-        })}
-      </svg>
-      {tip ? (
-        <span className="snx-map-tip" role="tooltip" style={{ left: tip.x, top: tip.y }}>
-          <b>{tip.name}</b>
-          <span>{fmt(tip.total)} listings · click to filter</span>
-        </span>
-      ) : null}
-      <div className="snx-map-legend" aria-hidden="true">
-        <span className="snx-map-legend-label">Listings based there</span>
-        {[...BINS].reverse().map((b) => (
-          <span key={b.label} className="snx-map-legend-bin">
-            <i style={{ background: fillFor(b.min) }} />
-            {b.label}
+        <span className="snx-mo-head">
+          <span className="snx-mo-name">{row.country}</span>
+          <span className="snx-mo-stat snx-mono">
+            +{fmt(row.recent)}
+            {row.change != null ? (
+              <em className={row.change >= 0 ? 'is-up' : 'is-down'}>
+                {row.change >= 0 ? '+' : ''}
+                {fmt(row.change)}%
+              </em>
+            ) : (
+              <em className="is-up">new</em>
+            )}
           </span>
+        </span>
+        <svg
+          className="snx-mo-chart"
+          viewBox={`0 0 ${W} ${H}`}
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          {row.added.map((n, i) => (
+            <rect
+              key={row.months[i]}
+              className={`snx-mo-bar${i >= 12 ? ' is-recent' : ''}`}
+              x={i * bw + 1}
+              width={Math.max(1, bw - 2)}
+              y={H - (n / maxBar) * (H - 4)}
+              height={(n / maxBar) * (H - 4)}
+            />
+          ))}
+          {pts.length > 1 ? <polyline className="snx-mo-fx" points={pts.join(' ')} /> : null}
+        </svg>
+        <span className="snx-mo-foot">
+          <span>{MONTH_SHORT(row.months[0])}</span>
+          <span
+            className={`snx-mo-fxnote${
+              row.fxChange != null ? (row.fxChange < 0 ? ' is-down' : ' is-up') : ''
+            }`}
+          >
+            {fxNote}
+          </span>
+          <span>{MONTH_SHORT(row.months[row.months.length - 1])}</span>
+        </span>
+      </button>
+    </li>
+  );
+}
+
+function SanctionsMomentum({ trends, onPick }) {
+  const rows = trends?.rows || [];
+  if (!rows.length) {
+    return (
+      <p className="snx-rail-note">
+        {trends?.ready
+          ? 'No country has added ten or more listings in the past year.'
+          : 'Listing history is loading from OFAC. The chart fills in after the next daily refresh.'}
+      </p>
+    );
+  }
+  return (
+    <>
+      <ol className="snx-mo">
+        {rows.map((r) => (
+          <MomentumRow key={r.country} row={r} onPick={onPick} />
         ))}
-      </div>
-    </div>
+      </ol>
+      <span className="snx-strip-legend">
+        <span>
+          <i className="snx-mo-key-bar" aria-hidden="true" />
+          New listings a month (last 12 bright)
+        </span>
+        <span>
+          <i className="snx-mo-key-line" aria-hidden="true" />
+          Currency in USD, indexed
+        </span>
+      </span>
+    </>
   );
 }
 
@@ -645,6 +656,8 @@ export default function SanctionsClient({
   firstPage,
   newest = [],
   map,
+  trends = null,
+  pulses = [],
   baselineLabel,
   syncedLabel,
 }) {
@@ -734,6 +747,17 @@ export default function SanctionsClient({
     },
     [toTable],
   );
+  /* The treemap's own pick stays put, so the map beside it can be seen
+     re-shading to the program. */
+  const focusProgram = useCallback((p) => {
+    setFilterState((f) => ({ ...f, program: f.program === p ? '' : p, page: 1 }));
+  }, []);
+  const mapFocus = useMemo(() => {
+    if (!filter.program) return null;
+    const counts = summary.programCountries?.[filter.program];
+    return counts ? { label: filter.program, counts } : { label: filter.program, counts: {} };
+  }, [filter.program, summary.programCountries]);
+  const focusMeta = filter.program ? programMeta(filter.program) : null;
 
   /* Ticker: the newest additions. */
   const tickerItems = useMemo(
@@ -916,62 +940,128 @@ export default function SanctionsClient({
             </aside>
 
             <div className="snx-main">
-              <section className="snx-card snx-hero" aria-labelledby="snx-where">
-                <div className="snx-card-head">
-                  <div>
-                    <h2 id="snx-where" className="snx-card-title">
-                      Where listed parties are based
-                    </h2>
-                    <p className="snx-card-sub">
-                      Address countries OFAC publishes with each listing. Select a country to filter
-                      the list.
-                    </p>
+              <div className="snx-pair snx-pair--map">
+                <section className="snx-card snx-hero snx-hero--map" aria-labelledby="snx-where">
+                  <div className="snx-card-head">
+                    <div>
+                      <h2 id="snx-where" className="snx-card-title">
+                        Where listed parties are based
+                      </h2>
+                      <p className="snx-card-sub">
+                        Address countries OFAC publishes with each listing. Select a country to
+                        filter the list, or a program in Programs by size to shade by it.
+                      </p>
+                    </div>
+                    <div className="snx-seg" role="group" aria-label="View">
+                      <button
+                        type="button"
+                        className={`snx-seg-btn${mapView === 'map' ? ' is-on' : ''}`}
+                        aria-pressed={mapView === 'map'}
+                        onClick={() => setMapView('map')}
+                      >
+                        <i className="bi bi-globe2" aria-hidden="true" /> Map
+                      </button>
+                      <button
+                        type="button"
+                        className={`snx-seg-btn${mapView === 'ranked' ? ' is-on' : ''}`}
+                        aria-pressed={mapView === 'ranked'}
+                        onClick={() => setMapView('ranked')}
+                      >
+                        <i className="bi bi-bar-chart-steps" aria-hidden="true" /> Ranked
+                      </button>
+                    </div>
                   </div>
-                  <div className="snx-seg" role="group" aria-label="View">
-                    <button
-                      type="button"
-                      className={`snx-seg-btn${mapView === 'map' ? ' is-on' : ''}`}
-                      aria-pressed={mapView === 'map'}
-                      onClick={() => setMapView('map')}
-                    >
-                      <i className="bi bi-globe2" aria-hidden="true" /> Map
-                    </button>
-                    <button
-                      type="button"
-                      className={`snx-seg-btn${mapView === 'ranked' ? ' is-on' : ''}`}
-                      aria-pressed={mapView === 'ranked'}
-                      onClick={() => setMapView('ranked')}
-                    >
-                      <i className="bi bi-bar-chart-steps" aria-hidden="true" /> Ranked
-                    </button>
-                  </div>
-                </div>
-                {mapView === 'map' ? (
-                  <WorldMap
-                    map={map}
-                    countries={summary.countries}
-                    selected={filter.country}
-                    onPick={pickCountry}
-                  />
-                ) : (
-                  <>
-                    <RankedCountries
+                  {mapView === 'map' ? (
+                    <SanctionsWorldMap
+                      map={map}
                       countries={summary.countries}
+                      focus={mapFocus}
+                      pulses={pulses}
                       selected={filter.country}
                       onPick={pickCountry}
+                      compact
                     />
-                    <span className="snx-strip-legend snx-ranked-legend">
-                      {TYPES.map((t) => (
-                        <span key={t.key}>
-                          <i style={{ background: t.color }} aria-hidden="true" />
-                          {t.label}
-                        </span>
+                  ) : (
+                    <>
+                      <RankedCountries
+                        countries={summary.countries}
+                        selected={filter.country}
+                        onPick={pickCountry}
+                      />
+                      <span className="snx-strip-legend snx-ranked-legend">
+                        {TYPES.map((t) => (
+                          <span key={t.key}>
+                            <i style={{ background: t.color }} aria-hidden="true" />
+                            {t.label}
+                          </span>
+                        ))}
+                      </span>
+                    </>
+                  )}
+                  {focusMeta && mapView === 'map' ? (
+                    <p className="snx-focus">
+                      <span>
+                        Shaded by <b>{filter.program}</b> · {focusMeta.label}. Other countries are
+                        grey.
+                      </span>
+                      <button
+                        type="button"
+                        className="snx-focus-clear"
+                        onClick={() => setFilterState((f) => ({ ...f, program: '', page: 1 }))}
+                      >
+                        Show every program
+                      </button>
+                    </p>
+                  ) : null}
+                  {pulses.length && mapView === 'map' ? (
+                    <ul className="snx-pulse-news" aria-label="Sanctions news in the past 30 days">
+                      {pulses.slice(0, 3).map((p) => (
+                        <li key={p.country}>
+                          <span className="snx-pulse-dot" aria-hidden="true" />
+                          <span className="snx-pulse-country">{p.country}</span>
+                          <a href={p.url} target="_blank" rel="noopener noreferrer">
+                            {p.title}
+                          </a>
+                          <span className="snx-mono snx-muted">
+                            {p.source ? `${p.source} · ` : ''}
+                            {shortDate(p.publishedAt)}
+                          </span>
+                        </li>
                       ))}
-                    </span>
-                  </>
-                )}
-                {mappedNote ? <p className="snx-fine">{mappedNote}</p> : null}
-              </section>
+                    </ul>
+                  ) : null}
+                  {mappedNote ? <p className="snx-fine">{mappedNote}</p> : null}
+                </section>
+                <section className="snx-card" aria-labelledby="snx-programs">
+                  <div className="snx-card-head">
+                    <div>
+                      <h2 id="snx-programs" className="snx-card-title">
+                        Programs by size
+                      </h2>
+                      <p className="snx-card-sub">
+                        Listings per program, coloured by theme. Select one to shade the map.
+                      </p>
+                    </div>
+                  </div>
+                  <ProgramTreemap
+                    programs={summary.programs}
+                    selected={filter.program}
+                    onPick={focusProgram}
+                  />
+                  <ul className="snx-themes">
+                    {summary.themes.map((t) => (
+                      <li key={t.key}>
+                        <i
+                          style={{ background: (THEMES[t.key] || THEMES.other).color }}
+                          aria-hidden="true"
+                        />
+                        <span>{(THEMES[t.key] || THEMES.other).label}</span>
+                        <span className="snx-mono">{fmt(t.total)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              </div>
 
               <section className="snx-card" aria-labelledby="snx-targets">
                 <div className="snx-card-head">
@@ -1070,34 +1160,20 @@ export default function SanctionsClient({
               </section>
 
               <div className="snx-pair">
-                <section className="snx-card" aria-labelledby="snx-programs">
+                <section className="snx-card" aria-labelledby="snx-momentum">
                   <div className="snx-card-head">
                     <div>
-                      <h2 id="snx-programs" className="snx-card-title">
-                        Programs by size
+                      <h2 id="snx-momentum" className="snx-card-title">
+                        Sanctions momentum vs currency
                       </h2>
-                      <p className="snx-card-sub">Listings per program, coloured by theme.</p>
+                      <p className="snx-card-sub">
+                        Countries adding OFAC listings fastest (last 12 months against the 12
+                        before), beside their currency&apos;s value in US dollars.
+                      </p>
                     </div>
                   </div>
-                  <ProgramTreemap
-                    programs={summary.programs}
-                    selected={filter.program}
-                    onPick={pickProgram}
-                  />
-                  <ul className="snx-themes">
-                    {summary.themes.map((t) => (
-                      <li key={t.key}>
-                        <i
-                          style={{ background: (THEMES[t.key] || THEMES.other).color }}
-                          aria-hidden="true"
-                        />
-                        <span>{(THEMES[t.key] || THEMES.other).label}</span>
-                        <span className="snx-mono">{fmt(t.total)}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <SanctionsMomentum trends={trends} onPick={pickCountry} />
                 </section>
-
                 <section className="snx-card" aria-labelledby="snx-new">
                   <div className="snx-card-head">
                     <div>

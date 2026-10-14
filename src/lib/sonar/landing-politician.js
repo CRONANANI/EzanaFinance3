@@ -15,7 +15,7 @@
  * sale closes the position. The month-end total of open positions is the
  * point. No market prices are applied, and the card says so.
  */
-import { resolveHeadshot } from '@/lib/politicians/headshots';
+import { headshotCandidates } from '@/lib/politicians/headshots';
 
 const CHAMBER_LABEL = { house: 'House', senate: 'Senate' };
 
@@ -197,7 +197,11 @@ export async function buildPoliticianDossier(member, admin) {
     party: member.party,
     chamber: member.chamberLabel,
     state: member.state,
-    headshot: resolveHeadshot({ name: member.name, bioguideId: member.bioguideId })?.src || null,
+    /* Filled below from congress_members.photo_url (the mirrored copy)
+       with the public-domain sources after it; the card steps through them. */
+    headshot: null,
+    headshots: headshotCandidates({ name: member.name, bioguideId: member.bioguideId }),
+    holdings: [],
     series: null,
     seriesLabel: null,
     stats: null,
@@ -224,7 +228,7 @@ export async function buildPoliticianDossier(member, admin) {
         (r) => r,
         () => ({ data: null }),
       ),
-    admin.rpc('politician_portfolio', { p_bioguide: member.bioguideId, p_limit: 3 }).then(
+    admin.rpc('politician_portfolio', { p_bioguide: member.bioguideId, p_limit: 5 }).then(
       (r) => r,
       () => ({ data: null }),
     ),
@@ -258,9 +262,18 @@ export async function buildPoliticianDossier(member, admin) {
     trades12m: recent.length,
     lastTrade,
   };
-  out.topHoldings = Array.isArray(portfolio?.holdings)
-    ? portfolio.holdings.slice(0, 3).map((h) => h.ticker)
+  out.holdings = Array.isArray(portfolio?.holdings)
+    ? portfolio.holdings
+        .filter((h) => h?.ticker)
+        .slice(0, 5)
+        .map((h) => ({
+          ticker: String(h.ticker),
+          company: h.company ? String(h.company).replace(/\s+-\s+.*$/, '') : null,
+          sector: h.sector || null,
+          share: Number(h.share) || null,
+        }))
     : [];
+  out.topHoldings = out.holdings.slice(0, 3).map((h) => h.ticker);
 
   out.similar = (Array.isArray(similarRes?.data) ? similarRes.data : []).map((s) => ({
     bioguideId: s.bioguideId,
@@ -270,8 +283,31 @@ export async function buildPoliticianDossier(member, admin) {
     state: s.state || null,
     shared: Array.isArray(s.shared) ? s.shared : [],
     sharedCount: Number(s.shared_count) || 0,
-    headshot: resolveHeadshot({ name: s.name, bioguideId: s.bioguideId })?.src || null,
+    headshot: null,
+    headshots: headshotCandidates({ name: s.name, bioguideId: s.bioguideId }),
   }));
+
+  /* The stored portraits, for the member and the similar members in one
+     read. A mirrored photo_url goes to the front of each list. */
+  const ids = [member.bioguideId, ...out.similar.map((p) => p.bioguideId)].filter(Boolean);
+  const photos = await admin
+    .from('congress_members')
+    .select('bioguide_id, photo_url')
+    .in('bioguide_id', ids)
+    .then(
+      (r) => new Map((r?.data || []).map((m) => [m.bioguide_id, m.photo_url])),
+      () => new Map(),
+    );
+  const withPhoto = (p) => {
+    p.headshots = headshotCandidates({
+      name: p.name,
+      bioguideId: p.bioguideId,
+      photoUrl: photos.get(p.bioguideId) || null,
+    });
+    p.headshot = p.headshots[0] || null;
+  };
+  withPhoto(out);
+  out.similar.forEach(withPhoto);
 
   /* The Sourced matches card: this member's latest disclosed trades in the
      CONGRESS row. The other rows render dry, which is the truth. */

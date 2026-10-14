@@ -19,6 +19,40 @@ const project = (lon, lat) => ({
 
 let cached = null;
 
+/* Area-weighted centroid of a ring (shoelace), with its area, so a
+   country's marker sits inside its largest landmass: metropolitan France,
+   not French Guiana; mainland US, not Alaska. Longitudes are unwrapped
+   across the antimeridian first (Russia's and Fiji's rings cross it), and
+   the result is wrapped back onto the map. */
+function ringCentroid(ring) {
+  let offset = 0;
+  let prev = null;
+  const pts = ring.map(([lon, lat]) => {
+    let u = lon + offset;
+    if (prev != null && u - prev > 180) {
+      offset -= 360;
+      u -= 360;
+    } else if (prev != null && u - prev < -180) {
+      offset += 360;
+      u += 360;
+    }
+    prev = u;
+    return { x: u + 180, y: project(0, lat).y };
+  });
+  let a = 0;
+  let cx = 0;
+  let cy = 0;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i, i += 1) {
+    const f = pts[j].x * pts[i].y - pts[i].x * pts[j].y;
+    a += f;
+    cx += (pts[j].x + pts[i].x) * f;
+    cy += (pts[j].y + pts[i].y) * f;
+  }
+  if (!a) return null;
+  const x = (((cx / (3 * a)) % 360) + 360) % 360;
+  return { area: Math.abs(a / 2), x, y: cy / (3 * a) };
+}
+
 export function worldCountries() {
   if (cached) return cached;
   const geo = feature(world, world.objects.countries);
@@ -31,7 +65,10 @@ export function worldCountries() {
     const polys =
       g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : [];
     let d = '';
+    let best = null;
     for (const poly of polys) {
+      const c = poly[0] ? ringCentroid(poly[0]) : null;
+      if (c && (!best || c.area > best.area)) best = c;
       for (const ring of poly) {
         let prev = null;
         let last = '';
@@ -48,7 +85,14 @@ export function worldCountries() {
         d += 'Z';
       }
     }
-    if (d) countries.push({ name, d });
+    if (d) {
+      countries.push({
+        name,
+        d,
+        cx: best ? r1(best.x) : null,
+        cy: best ? r1(best.y) : null,
+      });
+    }
   }
   const points = Object.entries(SMALL_JURISDICTIONS).map(([name, [lon, lat]]) => ({
     name,

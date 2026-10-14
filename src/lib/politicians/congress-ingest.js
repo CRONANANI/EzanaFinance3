@@ -777,9 +777,22 @@ export async function mirrorPhotos({ db, fetchImpl = fetch, max = 80, log = cons
   if (error) throw new Error(`congress_members read: ${error.message}`);
   const todo = (rows || []).filter((r) => !String(r.photo_url || '').includes(`/${PHOTO_BUCKET}/`));
   const out = { pending: todo.length, mirrored: 0, missing: 0, errors: 0 };
+  /* Shuffled: in id order, the first `max` members whose upstream image is
+     missing were retried every run and the rest of the list never got a
+     turn (183 of 539 sitting members were stuck unmirrored this way). */
+  for (let i = todo.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [todo[i], todo[j]] = [todo[j], todo[i]];
+  }
   for (const r of todo.slice(0, max)) {
     let buf = null;
-    for (const src of [photoUrlFor(r.bioguide_id), `${BIOGUIDE_PHOTO_BASE}/${r.bioguide_id}.jpg`]) {
+    for (const src of [
+      photoUrlFor(r.bioguide_id),
+      `${BIOGUIDE_PHOTO_BASE}/${r.bioguide_id}.jpg`,
+      /* congress.gov's member image: public domain, and present for members
+         the other two sets lack. */
+      `https://www.congress.gov/img/member/${String(r.bioguide_id).toLowerCase()}_200.jpg`,
+    ]) {
       try {
         const res = await fetchImpl(src, { cache: 'no-store' });
         const type = res.headers.get('content-type') || '';

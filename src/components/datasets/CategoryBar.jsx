@@ -314,7 +314,7 @@ export default function CategoryBar({ active, activeItem, showDimensions = true 
   const openCat = openId ? DATASET_TAXONOMY.find((c) => c.id === openId) : null;
 
   return (
-    <nav className="dscat-bar" ref={barRef}>
+    <nav className={`dscat-bar${showDimensions ? '' : ' dscat-bar--bare'}`} ref={barRef}>
       <div className="dscat-side dscat-side--start">
         <Link href="/" className="dscat-home">
           <i className="bi bi-arrow-left" aria-hidden="true" />

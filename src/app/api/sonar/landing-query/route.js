@@ -30,7 +30,9 @@ import { runLandingPipeline, hashIp, DISCLAIMER } from '@/lib/sonar/landing-pipe
  */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 30;
+/* The brief (up to five web searches) and the news columns (up to four) run
+   side by side; 60s covers both with the chain's own 50s deadline inside. */
+export const maxDuration = 60;
 
 const GUEST_LIMIT = 5;
 const COOKIE = 'snr_guest';
@@ -210,6 +212,11 @@ export const POST = withApiGuard(
       sources: result.sources,
       relevance: result.relevance,
       dossier: result.dossier,
+      webUsed: result.webUsed,
+      webSources: result.webSources,
+      newsColumns: result.newsColumns,
+      intent: result.intent,
+      sanctions: result.sanctions,
       remaining: member ? null : Math.max(0, GUEST_LIMIT - nextUsed),
       disclaimer: DISCLAIMER,
     });

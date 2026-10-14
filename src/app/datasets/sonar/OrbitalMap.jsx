@@ -198,21 +198,36 @@ export default function OrbitalMap({ dims, pinging, silent }) {
   const anyLive = liveDims.length > 0;
   const contact = currentNode ? currentNode.top : anyLive ? CONTACT : null;
 
-  /* Panel A (design: SONAR SWEEP · NVDA). Title, sub, then five entries on
-     the design's 26px rhythm, each a bright line and a dim sub-line. */
-  const aEntries = current
-    ? current.items
-        .slice(0, 5)
-        .map((it) => [
-          `▸ ${clip(up(it.label), 26)}`,
-          `   ${it.live ? 'LIVE · CITED' : 'ROADMAP · SOON'}`,
-        ])
-    : byLive
-        .slice(0, 5)
-        .map((d) => [
-          `▸ ${clip(up(d.label), 26)}`,
-          `   ${d.live ? `${d.liveCount} LIVE · ${d.items.length} DATASETS` : 'ON THE ROADMAP'}`,
-        ]);
+  /* Panel A (design: SONAR SWEEP · NVDA). Title and sub stay fixed; below
+     them the parser's log scrolls down through the glass: one short block
+     per dataset (the selected dimension's, else the busiest dimensions'),
+     each a read, a parse and a result taken from the taxonomy. The block is
+     drawn twice, one height apart, so the scroll loops without a seam. */
+  const slug = (it) =>
+    clip(
+      String(it.href || it.label || '')
+        .replace(/^.*\//, '')
+        .toLowerCase(),
+      20,
+    );
+  const sources = current
+    ? current.items.slice(0, 6).map((it) => ({ name: slug(it), live: it.live, dim: current.id }))
+    : byLive.slice(0, 6).map((d) => ({
+        name: clip(d.id, 20),
+        live: d.live,
+        dim: d.id,
+        n: d.items.length,
+      }));
+  const codeLines = sources.flatMap((src) => [
+    [`> read  ${src.dim}/${src.name}`, null],
+    [`  parse(doc) → entities`, 0.6],
+    [
+      src.live ? `  ✓ ${src.n ? `${src.n} sets` : 'rows'} · cited` : '  … queued · roadmap',
+      src.live ? null : 0.5,
+    ],
+  ]);
+  const CODE_LH = 11;
+  const CODE_H = Math.max(codeLines.length, 1) * CODE_LH;
   const panelA = [
     [`SONAR SWEEP · ${clip(up(current ? current.label : 'All dimensions'), 22)}`, 22, null, 12],
     [
@@ -223,12 +238,11 @@ export default function OrbitalMap({ dims, pinging, silent }) {
       0.6,
       12,
     ],
-    ...aEntries.flatMap(([a, b], i) => [
-      [a, 52 + i * 26, null, 12],
-      [b, 63 + i * 26, 0.6, 12],
-    ]),
     ['01', 22, 0.5, 150],
   ];
+  const codeRows = [0, 1].flatMap((copy) =>
+    codeLines.map(([t, o], i) => [t, 56 + i * CODE_LH - copy * CODE_H, o, 12]),
+  );
 
   /* Panel B (design: THEMES · MACRO). One row per dimension, then a footer. */
   const bRows = dims.slice(0, 7);
@@ -283,6 +297,22 @@ export default function OrbitalMap({ dims, pinging, silent }) {
           aria-label="Ezana Sonar device: the dataset dimensions on emerald radar rings. Select a node to lock it."
         >
           <defs>
+            <linearGradient id="dso-sc-codeFade" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="white" stopOpacity="0" />
+              <stop offset="0.16" stopColor="white" stopOpacity="1" />
+              <stop offset="0.84" stopColor="white" stopOpacity="1" />
+              <stop offset="1" stopColor="white" stopOpacity="0" />
+            </linearGradient>
+            <mask
+              id="dso-sc-codeMask"
+              maskUnits="userSpaceOnUse"
+              x="0"
+              y="42"
+              width="196"
+              height="144"
+            >
+              <rect x="0" y="42" width="196" height="144" fill="url(#dso-sc-codeFade)" />
+            </mask>
             <filter id="dso-sc-glow" x="-60%" y="-60%" width="220%" height="220%">
               <feGaussianBlur stdDeviation="3" result="b" />
               <feMerge>
@@ -618,17 +648,19 @@ export default function OrbitalMap({ dims, pinging, silent }) {
           </g>
 
           {/* 13 floating glass panels: the design's shapes, blobs and text grid */}
+          {/* Panel A faces west, parallel to the right-hand walls (same
+              plane as panel B), over the same footprint it had facing south. */}
           <g className="dso-sc-panel dso-sc-panel--a" aria-hidden="true">
             <polygon
               className="dso-sc-glass"
-              points="775,320 945,222 945,32 775,130"
+              points="775,32 945,130 945,320 775,222"
               fill="url(#dso-sc-glassG)"
             />
-            <polygon className="dso-sc-glass-edge" points="775,130 945,32 945,36 775,134" />
+            <polygon className="dso-sc-glass-edge" points="775,32 945,130 945,134 775,36" />
             <ellipse
               className="dso-sc-blob"
               cx="900"
-              cy="70"
+              cy="116"
               rx="40"
               ry="26"
               fillOpacity="0.22"
@@ -637,14 +669,22 @@ export default function OrbitalMap({ dims, pinging, silent }) {
             <ellipse
               className="dso-sc-blob"
               cx="830"
-              cy="250"
+              cy="215"
               rx="34"
               ry="22"
               fillOpacity="0.12"
               filter="url(#dso-sc-soft)"
             />
-            <g className="dso-sc-text" transform="matrix(0.866 -0.5 0 1 775 130)" fontSize="7.5">
+            <g className="dso-sc-text" transform="matrix(0.866 0.5 0 1 775 32)" fontSize="7.5">
               <Lines rows={panelA} />
+              <g mask="url(#dso-sc-codeMask)">
+                <g
+                  className="dso-sc-code"
+                  style={{ '--dso-sc-code-h': `${CODE_H}px`, '--dso-sc-code-n': codeLines.length }}
+                >
+                  <Lines rows={codeRows} />
+                </g>
+              </g>
             </g>
           </g>
           <g className="dso-sc-panel dso-sc-panel--b" aria-hidden="true">

@@ -99,8 +99,6 @@ function tradeCards(trades, base) {
     out.push({
       ...base,
       key: `t:${t.id}`,
-      dimension: 'Politician Tracker',
-      icon: 'bi-person-badge',
       headline: `${who} ${verb} ${t.ticker}`,
       meta: bandShort(t.amountBand) || shortDate(t.filedAt || t.tradedAt),
     });
@@ -118,8 +116,6 @@ function awardCards(awards, base) {
     out.push({
       ...base,
       key: `c:${a.id}`,
-      dimension: 'Gov Contracts',
-      icon: 'bi-file-earmark-text',
       headline: `${who} wins ${amt}`,
       meta: agency || shortDate(a.date),
     });
@@ -134,7 +130,14 @@ function awardCards(awards, base) {
  */
 export function buildNewsItems(feed = {}, taxonomy = DATASET_TAXONOMY) {
   const capitol = taxonomy.find((d) => d.id === 'capitol');
-  const base = { dimensionId: 'capitol', color: capitol?.color || 'var(--emerald)' };
+  /* A card shows its dimension's icon only; the name is kept for screen
+     readers. Both feeds today belong to Capitol Watch. */
+  const base = {
+    dimensionId: 'capitol',
+    dimension: capitol?.label || 'Capitol Watch',
+    icon: capitol?.biIcon || 'bi-bank',
+    color: capitol?.color || 'var(--emerald)',
+  };
   const a = tradeCards(feed.trades, base);
   const b = awardCards(feed.awards, base);
   const out = [];

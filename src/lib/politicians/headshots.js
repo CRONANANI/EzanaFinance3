@@ -67,3 +67,30 @@ export function resolveHeadshot({ name, bioguideId } = {}) {
 
 /** Host of the official-portrait source (for next.config images.remotePatterns). */
 export const OFFICIAL_PORTRAIT_HOST = 'unitedstates.github.io';
+
+/**
+ * Every portrait source worth trying for a member, best first, for an <img>
+ * that steps to the next on error:
+ *   1. the stored photo_url (congress_members, mirrored into Ezana's
+ *      congress-photos bucket by the ingest cron when the upstream had one)
+ *   2. a licensed local override
+ *   3. the unitedstates project portrait (public domain)
+ *   4. congress.gov's member image (public domain, US government work)
+ *   5. bioguide.congress.gov's portrait
+ * An empty list means initials. Duplicates are dropped.
+ */
+export function headshotCandidates({ name, bioguideId, photoUrl } = {}) {
+  const out = [];
+  const add = (u) => {
+    if (u && /^(https:\/\/|\/)/.test(u) && !out.includes(u)) out.push(u);
+  };
+  add(photoUrl);
+  const key = normalizeName(name);
+  if (key && HEADSHOT_OVERRIDES[key]) add(HEADSHOT_OVERRIDES[key]);
+  if (bioguideId && /^[A-Z]\d{6}$/.test(bioguideId)) {
+    add(`https://unitedstates.github.io/images/congress/450x550/${bioguideId}.jpg`);
+    add(`https://www.congress.gov/img/member/${bioguideId.toLowerCase()}_200.jpg`);
+    add(`https://bioguide.congress.gov/photo/${bioguideId}.jpg`);
+  }
+  return out;
+}
