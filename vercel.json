@@ -234,6 +234,14 @@
       "schedule": "35 */6 * * *"
     },
     {
+      "path": "/api/cron/ingest-ofac-details",
+      "schedule": "40 6 * * *"
+    },
+    {
+      "path": "/api/cron/ingest-ofac-actions",
+      "schedule": "50 */6 * * *"
+    },
+    {
       "path": "/api/cron/org-flag-outcomes",
       "schedule": "0 6 * * *"
     },

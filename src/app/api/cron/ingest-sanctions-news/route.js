@@ -4,6 +4,7 @@ import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { fetchCityNews } from '@/lib/marketaux/client';
 import { countriesInText } from '@/lib/sanctions/fx';
+import { withIngestRun } from '@/lib/ingest-runs';
 
 /**
  * Recent sanctions news, by the countries each story names, into
@@ -36,7 +37,7 @@ function isAuthorized(request) {
   }
 }
 
-export async function GET(request) {
+async function handler(request) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
@@ -87,3 +88,6 @@ export async function GET(request) {
   revalidateTag('sanctions');
   return NextResponse.json({ ok: true, stored: list.length, errors });
 }
+
+/* Every run is logged to ingest_runs from this route's own JSON body. */
+export const GET = withIngestRun('sanctions-news', handler);

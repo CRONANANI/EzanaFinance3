@@ -40,6 +40,12 @@ const PROGRAMS = {
   'CAATSA - RUSSIA': P('CAATSA, Russia', 'russia', 'Russia'),
   'PEESA-EO14039': P("Europe's energy security, Nord Stream 2 (PEESA)", 'russia', 'Russia'),
   MAGNIT: P('Sergei Magnitsky Act', 'rights', 'Russia'),
+  /* OFAC program tag definitions (ofac.treasury.gov, "Program Tag
+     Definitions for OFAC Sanctions Lists"): "Support for the Sovereignty,
+     Integrity, Democracy, and Economic Stability of Ukraine Act of 2014",
+     program "Ukraine-/Russia-related Sanctions". OFAC names no single
+     target jurisdiction for the act, so none is set (not guessed). */
+  SSIDES: P('Ukraine sovereignty and stability act (SSIDES, 2014)', 'russia'),
   BELARUS: P('Belarus', 'country', 'Belarus'),
   'BELARUS-EO14038': P('Belarus (EO 14038)', 'country', 'Belarus'),
 
@@ -73,6 +79,14 @@ const PROGRAMS = {
   CYBER3: P('Malicious cyber activity', 'cyber'),
   CYBER4: P('Malicious cyber activity', 'cyber'),
   'ELECTION-EO13848': P('Foreign interference in US elections', 'cyber'),
+  /* OFAC: "Protecting American Intellectual Property Act of 2022 (PAIPA),
+     Public Law 117-336", program "Cyber-Related Sanctions". Global. */
+  PAIPA: P('Protecting American Intellectual Property Act (PAIPA)', 'cyber'),
+  /* OFAC: "Non-SDN, Palestinian Legislative Council List, General License 4,
+     issued pursuant to the Global Terrorism Sanctions Regulations (31 C.F.R.
+     Part 594)", program "Counter Terrorism Sanctions". A non-SDN list tag:
+     OFAC names no target jurisdiction, so none is set. */
+  'NS-PLC': P('Palestinian Legislative Council list, non-SDN (GL 4)', 'terror'),
   'ICC-EO14203': P('International Criminal Court (EO 14203)', 'other'),
 
   // Country programs
@@ -111,6 +125,11 @@ const PROGRAMS = {
   YEMEN: P('Yemen', 'country', 'Yemen'),
   'MALI-EO13882': P('Mali (EO 13882)', 'country', 'Mali'),
 };
+
+/** True when the tag has curated metadata (for the coverage meter). */
+export function hasProgramMeta(code) {
+  return Object.prototype.hasOwnProperty.call(PROGRAMS, code);
+}
 
 /** Metadata for one tag; unknown tags keep their code and fall under Other. */
 export function programMeta(code) {

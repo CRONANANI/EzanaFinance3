@@ -6,38 +6,96 @@ import {
   getSanctionsSummary,
   getSanctionsTrends,
 } from '@/lib/sanctions/summary';
+import {
+  getIngestStatus,
+  getOfacActions,
+  getSanctionsActivity,
+  getSanctionsCoverage,
+  getSanctionsKpis,
+  getSanctionsNewsFeed,
+  getTargetActivity,
+  searchSanctions,
+} from '@/lib/sanctions/research';
 import { worldCountries } from '@/lib/sanctions/world-map';
 import SanctionsClient from './SanctionsClient';
 
 /**
- * Sanctions & Trade Policy Tracking. The whole OFAC Specially Designated
- * Nationals list (US Treasury, loaded daily into sanctions_entries; the first
- * load is the baseline): who is listed, where they are based, which programs
- * and jurisdictions the listings fall under, and what was added since
- * tracking began. Aggregates are cached (6h, revalidated by the ingest); the
- * listings table pages through /api/datasets/sanctions.
+ * Sanctions & Trade Policy Tracking: a sanctions intelligence page over the
+ * whole OFAC Specially Designated Nationals list (US Treasury). Aggregates
+ * are computed on the server and cached (revalidated by the ingest jobs via
+ * the 'sanctions' tag); the listings explorer pages through
+ * /api/datasets/sanctions. Every read degrades to an explicit unavailable
+ * state, never a guessed number.
  */
 export const dynamic = 'force-dynamic';
 
+const NO_SEARCH = {
+  type: '',
+  country: '',
+  program: '',
+  q: '',
+  ident: '',
+  from: '',
+  to: '',
+  risk: false,
+  linked: false,
+  linkedTo: '',
+  page: 1,
+};
+
 export default async function SanctionsPage() {
   const summary = await getSanctionsSummary();
-  const [firstPage, newest, trends, pulses] = await Promise.all([
-    getSanctionsPage({ page: 1 }),
+  const targetMap = Object.fromEntries(summary.targets.map((t) => [t.name, t.codes]));
+  const [
+    search,
+    newest,
+    trends,
+    pulses,
+    kpis,
+    activity,
+    targetActivity,
+    actions,
+    news,
+    coverage,
+    status,
+  ] = await Promise.all([
+    searchSanctions(NO_SEARCH),
     getNewestAdditions(summary.baseline, 30),
     getSanctionsTrends(),
     getSanctionsNewsPulses(),
+    getSanctionsKpis(),
+    getSanctionsActivity(24, null, null, null),
+    getTargetActivity(targetMap, 365),
+    getOfacActions(30),
+    getSanctionsNewsFeed(30),
+    getSanctionsCoverage(),
+    getIngestStatus(),
   ]);
-  const map = worldCountries();
+  /* Before the research functions are installed, the first page comes from
+     the original listing query. */
+  const firstPage =
+    search.research === false
+      ? { ...(await getSanctionsPage({ page: 1 })), research: false }
+      : search;
+  const hasDates = Boolean(kpis && kpis.active_dated > 0);
+
   return (
     <SanctionsClient
       summary={summary}
       firstPage={firstPage}
       newest={newest}
-      map={map}
+      map={worldCountries()}
       trends={trends}
       pulses={pulses}
+      kpis={kpis}
+      activity={activity}
+      targetActivity={hasDates ? targetActivity : null}
+      actions={actions}
+      news={news}
+      coverage={coverage}
+      status={status}
+      nowIso={new Date().toISOString()}
       baselineLabel={shortDate(summary.baseline)}
-      syncedLabel={shortDate(summary.synced)}
     />
   );
 }

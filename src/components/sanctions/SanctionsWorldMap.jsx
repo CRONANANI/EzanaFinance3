@@ -12,6 +12,9 @@
  *           a pulsing dot on each country where major sanctions news broke
  *           in the past month, with the headline in its tooltip.
  *   onPick  optional; without it the map is read-only (Sonar).
+ *   metric  'count' (default) or 'share': share expresses each country as a
+ *           percentage of shareBase (listings that name any country). The
+ *           shading is the same either way; only the units change.
  *
  * Several OFAC names fold into one outline (Gaza, West Bank and Palestinian
  * all draw as Palestine): their counts are summed, and a click picks the
@@ -25,19 +28,19 @@ const fmt = (n) => Number(n || 0).toLocaleString('en-US');
 
 const MAP_BINS = [
   { min: 1000, mix: 92, label: '1,000+' },
-  { min: 250, mix: 72, label: '250–999' },
-  { min: 50, mix: 52, label: '50–249' },
-  { min: 10, mix: 34, label: '10–49' },
-  { min: 1, mix: 18, label: '1–9' },
+  { min: 250, mix: 72, label: '250 to 999' },
+  { min: 50, mix: 52, label: '50 to 249' },
+  { min: 10, mix: 34, label: '10 to 49' },
+  { min: 1, mix: 18, label: '1 to 9' },
 ];
 /* A program's counts are far smaller than the whole list's, so the focus
    view uses its own, lower bins. */
 const FOCUS_BINS = [
   { min: 250, mix: 92, label: '250+' },
-  { min: 50, mix: 72, label: '50–249' },
-  { min: 10, mix: 52, label: '10–49' },
-  { min: 3, mix: 34, label: '3–9' },
-  { min: 1, mix: 18, label: '1–2' },
+  { min: 50, mix: 72, label: '50 to 249' },
+  { min: 10, mix: 52, label: '10 to 49' },
+  { min: 3, mix: 34, label: '3 to 9' },
+  { min: 1, mix: 18, label: '1 to 2' },
 ];
 const fillFor = (n, bins) => {
   const b = bins.find((x) => n >= x.min);
@@ -81,6 +84,8 @@ export default function SanctionsWorldMap({
   selected = '',
   onPick,
   compact = false,
+  metric = 'count',
+  shareBase = null,
   label = 'World map shaded by the number of OFAC listings with an address in each country.',
 }) {
   const wrapRef = useRef(null);
@@ -131,7 +136,9 @@ export default function SanctionsWorldMap({
       name: rec?.names.length === 1 ? rec.names[0] : name,
       line: focused
         ? `${fmt(rec?.total || 0)} ${focus.label} listings`
-        : `${fmt(rec?.total || 0)} listings${onPick ? ' · click to filter' : ''}`,
+        : `${asShare ? `${pct(rec?.total || 0)} of listings with a country · ` : ''}${fmt(
+            rec?.total || 0,
+          )} listings${onPick ? ' · click to filter' : ''}`,
     });
   };
   const movePulse = (e, p) => {
@@ -148,6 +155,11 @@ export default function SanctionsWorldMap({
     if (!onPick) return;
     const rec = base.m.get(name);
     if (rec) onPick(rec.lead);
+  };
+  const asShare = metric === 'share' && shareBase > 0 && !focused;
+  const pct = (n) => {
+    const v = (n / shareBase) * 100;
+    return `${v >= 1 ? v.toFixed(1) : v.toFixed(2)}%`;
   };
   const selectedAtlas = selected ? atlasName(selected, atlasSet) : null;
   const clickable = Boolean(onPick);
@@ -228,12 +240,16 @@ export default function SanctionsWorldMap({
       ) : null}
       <div className="snx-map-legend" aria-hidden="true">
         <span className="snx-map-legend-label">
-          {focused ? `${focus.label} listings` : 'Listings based there'}
+          {focused
+            ? `${focus.label} listings`
+            : asShare
+              ? 'Share of listings with a country'
+              : 'Listings based there'}
         </span>
         {[...bins].reverse().map((b) => (
           <span key={b.label} className="snx-map-legend-bin">
             <i style={{ background: fillFor(b.min, bins) }} />
-            {b.label}
+            {asShare ? `${pct(b.min)}+` : b.label}
           </span>
         ))}
         {pulseDots.length ? (

@@ -141,6 +141,7 @@ function summarize(rows) {
     targets: [...targets.values()].sort(byTotal).map((t) => ({
       ...t,
       codes: [...t.codes.entries()].sort((a, b) => b[1] - a[1]).map(([code]) => code),
+      codeCounts: Object.fromEntries(t.codes),
       basedThere: basedIn.get(ALIAS[t.name] || t.name) || 0,
     })),
     themes: [...themes.values()].sort(byTotal).map((t) => ({ ...t, key: t.name })),
@@ -160,7 +161,7 @@ async function loadSummary() {
 
 /* The aggregate is ~30KB; the raw rows are never cached (they would exceed
    the data-cache entry limit). The ingest revalidates the 'sanctions' tag. */
-export const getSanctionsSummary = unstable_cache(loadSummary, ['sanctions-summary-v2'], {
+export const getSanctionsSummary = unstable_cache(loadSummary, ['sanctions-summary-v3'], {
   revalidate: 21600,
   tags: ['sanctions'],
 });
@@ -341,30 +342,20 @@ async function loadTrends() {
   if (!isServerSupabaseConfigured()) return { rows: [], ready: false };
   try {
     const admin = getAdminClient();
-    const since = new Date();
-    since.setUTCMonth(since.getUTCMonth() - 25, 1);
-    const [trend, fx] = await Promise.all([
-      admin.rpc('sanctions_country_trend', { p_months: 24 }),
-      admin
-        .from('fx_monthly')
-        .select('currency, month, usd_rate')
-        .gte('month', since.toISOString().slice(0, 10))
-        .limit(5000),
-    ]);
+    /* Option A (Oct 15): the card shows sanctions activity only. The currency
+       overlay invited a causal reading the data cannot support, so fx_monthly
+       is no longer read here; computeTrends leaves the FX fields null. */
+    const trend = await admin.rpc('sanctions_country_trend', { p_months: 24 });
     if (trend.error) throw new Error(trend.error.message);
-    const rows = computeTrends(trend.data || [], fx.error ? [] : fx.data || []);
-    return {
-      rows,
-      ready: (trend.data || []).length > 0,
-      fx: !fx.error && (fx.data || []).length > 0,
-    };
+    const rows = computeTrends(trend.data || [], []);
+    return { rows, ready: (trend.data || []).length > 0 };
   } catch (e) {
     console.error('[sanctions] trends:', e?.message || e);
     return { rows: [], ready: false };
   }
 }
 
-export const getSanctionsTrends = unstable_cache(loadTrends, ['sanctions-trends-v1'], {
+export const getSanctionsTrends = unstable_cache(loadTrends, ['sanctions-trends-v2'], {
   revalidate: 21600,
   tags: ['sanctions'],
 });

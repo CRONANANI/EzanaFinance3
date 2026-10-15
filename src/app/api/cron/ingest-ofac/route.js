@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import Papa from 'papaparse';
 import { getAdminClient } from '@/lib/supabase';
+import { withIngestRun } from '@/lib/ingest-runs';
 
 /**
  * OFAC Specially Designated Nationals list (US Treasury, public domain) into
@@ -86,7 +87,7 @@ const parse = (text) =>
     (r) => Array.isArray(r) && /^\d+$/.test(String(r[0]).trim()),
   );
 
-export async function GET(request) {
+async function handler(request) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
@@ -175,6 +176,10 @@ export async function GET(request) {
     upserted,
     removed,
     withCountry: countriesByEnt.size,
+    validation: `${rows.length} entries parsed (minimum ${MIN_ENTRIES}); ${removed} newly absent`,
     errors: errors.slice(0, 10),
   });
 }
+
+/* Every run is logged to ingest_runs from this route's own JSON body. */
+export const GET = withIngestRun('ofac-sdn', handler);

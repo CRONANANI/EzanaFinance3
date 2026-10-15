@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { createEntryDateReader } from '@/lib/sanctions/sdn-advanced';
+import { withIngestRun } from '@/lib/ingest-runs';
 
 /**
  * OFAC's own publication date for every SDN entry, into
@@ -88,7 +89,7 @@ async function activeEntNums(admin) {
   return out;
 }
 
-export async function GET(request) {
+async function handler(request) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
@@ -149,5 +150,9 @@ export async function GET(request) {
     matchedActive: matched,
     active: active.length,
     written,
+    validation: `${matched} of ${active.length} active entries matched a date`,
   });
 }
+
+/* Every run is logged to ingest_runs from this route's own JSON body. */
+export const GET = withIngestRun('ofac-dates', handler);
