@@ -745,7 +745,7 @@ export default function EzanaQLBar({
   return (
     <div className={`eqb${split ? ' eqb--split' : ''}${queryBlock ? ' eqb--qblock' : ''}`}>
       <div className="eqb-main">
-        <div className="eqb-pill">
+        <div className="eqb-pill ds-search">
           <span className="eqb-mark">
             <i className="bi bi-stars" aria-hidden="true" />
             <span>Ezana AI</span>
@@ -753,7 +753,7 @@ export default function EzanaQLBar({
           <span className="eqb-div" aria-hidden="true" />
           <input
             ref={promptRef}
-            className="eqb-input"
+            className="eqb-input ds-search-input"
             placeholder="Describe a report in plain English"
             aria-label="Describe a report in plain English"
             enterKeyHint="go"

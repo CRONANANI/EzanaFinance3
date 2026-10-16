@@ -56,13 +56,19 @@ export function WatchlistSearch({ query, onQueryChange, mockWatchlists, onAddSto
         <input
           ref={inputRef}
           type="text"
+          className="ds-search-input"
           placeholder="Search ticker or company…"
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
           onFocus={() => query.trim().length > 0 && setShowDropdown(true)}
         />
         {query.length > 0 && (
-          <button type="button" className="wl-search-clear" onClick={clearSearch} aria-label="Clear search">
+          <button
+            type="button"
+            className="wl-search-clear"
+            onClick={clearSearch}
+            aria-label="Clear search"
+          >
             <X size={14} />
           </button>
         )}

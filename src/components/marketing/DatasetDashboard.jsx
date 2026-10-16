@@ -82,11 +82,11 @@ export function DatasetDashboard({ config, children }) {
               return (
                 <label key={s.id} className="mkt-ds-search">
                   <span className="mkt-ds-search-label">{s.label}</span>
-                  <span className="mkt-ds-search-field">
+                  <span className="mkt-ds-search-field ds-search">
                     {Icon ? <Icon size={16} aria-hidden /> : null}
                     <input
                       type="text"
-                      className="mkt-ds-input"
+                      className="mkt-ds-input ds-search-input"
                       placeholder={s.placeholder}
                       value={terms[s.id] || ''}
                       onChange={(e) => setTerms((prev) => ({ ...prev, [s.id]: e.target.value }))}

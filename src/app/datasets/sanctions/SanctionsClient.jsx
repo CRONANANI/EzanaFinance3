@@ -5,10 +5,10 @@
  * whole OFAC SDN list. Every figure comes from the server (no sample data).
  *
  * Layout:
- *   01 Executive summary   four KPI cards (coverage, recency, geography,
- *                          concentration)
- *   02 Geography & programs  the map and the program treemap (kept), with
- *                          a country panel, count/share and a theme filter
+ *   01 Sanctions landscape  one card: the four headline measures, the
+ *                          program treemap, then the address-country map
+ *                          (Oct 15: replaces the KPI row, the side-by-side
+ *                          map and treemap, and the left filter rail)
  *   03 Activity            the designation timeline; fastest-rising countries
  *   04 Jurisdictions       program x jurisdiction explorer
  *   05 Intelligence feed   official OFAC actions and press, kept apart
@@ -22,79 +22,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import HubQueryLink from '@/components/datasets/HubQueryLink';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
-import { hasProgramMeta, programMeta, themeOf } from '@/lib/sanctions/programs';
+import { hasProgramMeta } from '@/lib/sanctions/programs';
 import ActivityTimeline from './ActivityTimeline';
 import DataIntegrity from './DataIntegrity';
 import EntityExplorer from './EntityExplorer';
 import IntelFeed from './IntelFeed';
 import JurisdictionExplorer from './JurisdictionExplorer';
-import KpiCards from './KpiCards';
-import MapCard from './MapCard';
-import ProgramsCard from './ProgramsCard';
+import LandscapeCard from './LandscapeCard';
 import { RecordDrawer } from './RecordDetail';
 import RisingCountries from './RisingCountries';
 import { NO_FILTER, TYPE_BY_KEY, filterParams, sameFilter, useReducedMotion } from './ui';
 import './sanctions.css';
-
-/* Rail list: searchable countries or programs, writing the shared filter. */
-function RailList({ items, selected, onPick, render, placeholder, ariaLabel }) {
-  const [term, setTerm] = useState('');
-  const shown = useMemo(() => {
-    const t = term.trim().toLowerCase();
-    return t ? items.filter((it) => it.search.includes(t)) : items;
-  }, [items, term]);
-  const max = items[0]?.total || 1;
-  return (
-    <>
-      <label className="snx-rail-search">
-        <i className="bi bi-search" aria-hidden="true" />
-        <input
-          type="search"
-          value={term}
-          onChange={(e) => setTerm(e.target.value)}
-          placeholder={placeholder}
-          aria-label={ariaLabel}
-        />
-      </label>
-      <div className="snx-rail-list">
-        {shown.length === 0 ? (
-          <p className="snx-rail-note">No match for “{term}”.</p>
-        ) : (
-          shown.map((it) => (
-            <button
-              key={it.key}
-              type="button"
-              className={`snx-rail-row${selected === it.key ? ' is-on' : ''}`}
-              aria-pressed={selected === it.key}
-              onClick={() => onPick(selected === it.key ? '' : it.key)}
-              title={it.title}
-            >
-              {render(it)}
-              <span className="snx-rail-n">{Number(it.total).toLocaleString('en-US')}</span>
-              <span
-                className="snx-rail-bar"
-                style={{ width: `${Math.max(2, (it.total / max) * 100)}%` }}
-                aria-hidden="true"
-              />
-            </button>
-          ))
-        )}
-      </div>
-    </>
-  );
-}
-
-function FilterGroup({ title, meta, children }) {
-  return (
-    <div className="snx-filter">
-      <div className="snx-filter-head">
-        <span className="snx-filter-title">{title}</span>
-        {meta != null ? <span className="snx-filter-meta">{meta}</span> : null}
-      </div>
-      {children}
-    </div>
-  );
-}
 
 export default function SanctionsClient({
   summary,
@@ -119,13 +57,8 @@ export default function SanctionsClient({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(firstPage?.error || null);
   const [drawer, setDrawer] = useState(null);
-  const [railOpen, setRailOpen] = useState(true);
   const tableRef = useRef(null);
   const reqId = useRef(0);
-
-  useEffect(() => {
-    if (window.matchMedia('(max-width: 900px)').matches) setRailOpen(false);
-  }, []);
 
   /* Listings: one server query per filter, the first page comes from the server. */
   useEffect(() => {
@@ -193,6 +126,17 @@ export default function SanctionsClient({
     [patch, toTable],
   );
 
+  const landscapeHandlers = useMemo(
+    () => ({
+      pickCountry,
+      pickProgram,
+      clearCountry: () => patch({ country: '' }),
+      clearProgram: () => patch({ program: '' }),
+      toTable,
+    }),
+    [pickCountry, pickProgram, patch, toTable],
+  );
+
   /* Ticker: the newest additions since tracking began. */
   const tickerItems = useMemo(
     () =>
@@ -212,31 +156,6 @@ export default function SanctionsClient({
     ariaLabel: 'Newest additions to the OFAC sanctions list',
   });
 
-  const countryItems = useMemo(
-    () =>
-      summary.countries.map((c) => ({
-        key: c.name,
-        total: c.total,
-        search: c.name.toLowerCase(),
-        title: c.name,
-      })),
-    [summary.countries],
-  );
-  const programItems = useMemo(
-    () =>
-      summary.programs.map((p) => {
-        const meta = programMeta(p.code);
-        return {
-          key: p.code,
-          total: p.total,
-          search: `${p.code} ${meta.label}`.toLowerCase(),
-          title: meta.label,
-          color: themeOf(p.code).color,
-          label: meta.label,
-        };
-      }),
-    [summary.programs],
-  );
   const programsMapped = useMemo(
     () => ({
       mapped: summary.programs.filter((p) => hasProgramMeta(p.code)).length,
@@ -268,112 +187,54 @@ export default function SanctionsClient({
         </section>
       ) : (
         <>
-          <KpiCards summary={summary} kpis={kpis} syncedAt={summary.synced} />
+          <div className="snx-main">
+            <LandscapeCard
+              summary={summary}
+              kpis={kpis}
+              map={map}
+              filter={filter}
+              pulses={pulses}
+              handlers={landscapeHandlers}
+            />
 
-          <div className="snx-body">
-            <aside className="snx-rail" aria-label="Filters">
-              <details
-                className="snx-rail-fold"
-                open={railOpen}
-                onToggle={(e) => setRailOpen(e.currentTarget.open)}
-              >
-                <summary className="snx-rail-fold-head">
-                  Filters
-                  <i className="bi bi-chevron-down" aria-hidden="true" />
-                </summary>
-                <FilterGroup title="Based in" meta={summary.countries.length}>
-                  <RailList
-                    items={countryItems}
-                    selected={filter.country}
-                    onPick={(c) => patch({ country: c })}
-                    placeholder="Filter countries"
-                    ariaLabel="Filter the country list"
-                    render={(it) => <span className="snx-rail-label">{it.key}</span>}
-                  />
-                </FilterGroup>
-                <FilterGroup title="Program" meta={summary.programs.length}>
-                  <RailList
-                    items={programItems}
-                    selected={filter.program}
-                    onPick={(p) => patch({ program: p })}
-                    placeholder="Filter programs"
-                    ariaLabel="Filter the program list"
-                    render={(it) => (
-                      <span className="snx-rail-label">
-                        <i
-                          className="snx-rail-dot"
-                          style={{ background: it.color }}
-                          aria-hidden="true"
-                        />
-                        <span className="snx-rail-code">{it.key}</span>
-                        <span className="snx-rail-sub">{it.label}</span>
-                      </span>
-                    )}
-                  />
-                </FilterGroup>
-              </details>
-            </aside>
+            <ActivityTimeline
+              initial={activity || { ready: false, rows: [] }}
+              filter={filter}
+              onApplyRange={applyRange}
+              baselineLabel={baselineLabel}
+            />
 
-            <div className="snx-main">
-              <div className="snx-pair snx-pair--map">
-                <MapCard
-                  map={map}
-                  summary={summary}
-                  filter={filter}
-                  pulses={pulses}
-                  onPickCountry={pickCountry}
-                  onClearCountry={() => patch({ country: '' })}
-                  onPickProgram={pickProgram}
-                  onClearProgram={() => patch({ program: '' })}
-                  onShowListings={toTable}
-                />
-                <ProgramsCard
-                  programs={summary.programs}
-                  themes={summary.themes}
-                  selected={filter.program}
-                  onPick={pickProgram}
-                />
-              </div>
+            <JurisdictionExplorer
+              targets={summary.targets}
+              activity={targetActivity}
+              program={filter.program}
+              onPickProgram={pickProgram}
+              onClearProgram={() => patch({ program: '' })}
+            />
 
-              <ActivityTimeline
-                initial={activity || { ready: false, rows: [] }}
-                filter={filter}
-                onApplyRange={applyRange}
-                baselineLabel={baselineLabel}
-              />
-
-              <JurisdictionExplorer
-                targets={summary.targets}
-                activity={targetActivity}
-                program={filter.program}
-                onPickProgram={pickProgram}
-                onClearProgram={() => patch({ program: '' })}
-              />
-
-              <div className="snx-pair">
-                <RisingCountries trends={trends} selected={filter.country} onPick={pickCountry} />
-                <IntelFeed actions={actions} news={news} today={nowIso} />
-              </div>
-
-              <EntityExplorer
-                data={data}
-                filter={filter}
-                setFilter={setFilter}
-                loading={loading}
-                error={error}
-                summary={summary}
-                tableRef={tableRef}
-                onOpenRecord={openRecord}
-              />
-
-              <DataIntegrity
-                status={status}
-                coverage={coverage}
-                summary={summary}
-                programsMapped={programsMapped}
-                nowIso={nowIso}
-              />
+            <div className="snx-pair">
+              <RisingCountries trends={trends} selected={filter.country} onPick={pickCountry} />
+              <IntelFeed actions={actions} news={news} today={nowIso} />
             </div>
+
+            <EntityExplorer
+              data={data}
+              filter={filter}
+              setFilter={setFilter}
+              loading={loading}
+              error={error}
+              summary={summary}
+              tableRef={tableRef}
+              onOpenRecord={openRecord}
+            />
+
+            <DataIntegrity
+              status={status}
+              coverage={coverage}
+              summary={summary}
+              programsMapped={programsMapped}
+              nowIso={nowIso}
+            />
           </div>
           <RecordDrawer
             id={drawer}

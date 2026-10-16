@@ -178,7 +178,7 @@ export function TradeTicket({ getToken, onOrderPlaced }) {
           <div className="trd-field" style={{ position: 'relative' }}>
             <label>Stock / ETF</label>
             <input
-              className="trd-input"
+              className="trd-input ds-search-input"
               value={symbol}
               onChange={(e) => {
                 setSymbol(e.target.value.toUpperCase());

@@ -58,7 +58,9 @@ export function LeaderboardPageClient() {
       const out = {};
       await Promise.all(
         periods.map(async (p) => {
-          const res = await fetch(`/api/leaderboard?period=${p}&includeRising=1&limit=2000&offset=0&persist=0`);
+          const res = await fetch(
+            `/api/leaderboard?period=${p}&includeRising=1&limit=2000&offset=0&persist=0`,
+          );
           const data = await res.json();
           const row = (data.rows || []).find((r) => r.userId === user.id);
           if (row) out[p] = { rank: row.rank, change: row.rankChange };
@@ -79,7 +81,10 @@ export function LeaderboardPageClient() {
 
   return (
     <div className="relative mx-auto max-w-7xl px-4 py-8 pb-24 text-gray-700 dark:text-[#e5e7eb]">
-      <Link href="/community" className="mb-4 inline-flex items-center gap-1 text-sm text-emerald-400 hover:underline">
+      <Link
+        href="/community"
+        className="mb-4 inline-flex items-center gap-1 text-sm text-emerald-400 hover:underline"
+      >
         ← Back to Community
       </Link>
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Leaderboard</h1>
@@ -92,7 +97,9 @@ export function LeaderboardPageClient() {
               type="button"
               onClick={() => setPeriod(p.id)}
               className={`rounded-lg px-4 py-2 text-sm font-semibold ${
-                period === p.id ? 'bg-gray-200 dark:bg-[#1a1a24] text-gray-900 dark:text-white' : 'text-[#6b7280] hover:text-[#9ca3af]'
+                period === p.id
+                  ? 'bg-gray-200 dark:bg-[#1a1a24] text-gray-900 dark:text-white'
+                  : 'text-[#6b7280] hover:text-[#9ca3af]'
               }`}
             >
               {p.label}
@@ -110,12 +117,14 @@ export function LeaderboardPageClient() {
             Include rising traders
           </label>
           <div className="relative">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6b7280]">⌕</span>
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6b7280]">
+              ⌕
+            </span>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by username"
-              className="w-full min-w-0 max-w-full rounded-lg border border-gray-300 dark:border-[#1a1a24] bg-white dark:bg-[#0d0d14] py-2 pl-9 pr-3 text-sm text-gray-900 dark:text-white placeholder:text-[#6b7280] sm:max-w-xs md:w-56"
+              className="ds-search-input w-full min-w-0 max-w-full rounded-lg py-2 pl-9 pr-3 text-sm text-gray-900 dark:text-white placeholder:text-[#6b7280] sm:max-w-xs md:w-56"
             />
           </div>
         </div>
@@ -174,13 +183,17 @@ export function LeaderboardPageClient() {
                         <span>{r.username}</span>
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-emerald-600 dark:text-emerald-400/90">{r.winRate.toFixed(1)}%</td>
+                    <td className="px-4 py-3 text-emerald-600 dark:text-emerald-400/90">
+                      {r.winRate.toFixed(1)}%
+                    </td>
                     <td className="px-4 py-3">{r.avgGain.toFixed(2)}%</td>
                     <td className="px-4 py-3">{r.avgReturn.toFixed(2)}%</td>
                     <td className="px-4 py-3">{r.avgMax.toFixed(2)}%</td>
                     <td className="px-4 py-3">{r.activeTrades}</td>
                     <td className="px-4 py-3">{r.totalTrades}</td>
-                    <td className="px-4 py-3 font-semibold text-emerald-600 dark:text-emerald-400">{r.score.toFixed(0)}</td>
+                    <td className="px-4 py-3 font-semibold text-emerald-600 dark:text-emerald-400">
+                      {r.score.toFixed(0)}
+                    </td>
                   </tr>
                 );
               })}

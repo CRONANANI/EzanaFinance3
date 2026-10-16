@@ -41,7 +41,8 @@ export function AnimatedGlowingSearchBar({
             onBlur={onBlur}
             placeholder={placeholder}
             autoComplete="off"
-            className="bg-[#010201] border border-gray-700 w-full h-[56px] rounded-lg text-white pl-12 pr-14 text-base focus:outline-none focus:border-gray-500 placeholder:text-gray-400"
+            className="ds-search-input w-full h-[56px] rounded-lg pl-12 pr-14 text-base placeholder:text-gray-400"
+            style={{ color: 'var(--text-primary)' }}
           />
           {/*
            * Filter icon: `top-1/2 -translate-y-1/2` vertically centers it

@@ -410,7 +410,7 @@ export default function ForTheQuantsPage() {
           <div className="ftq-card-body-pad ftq-card-body-pad--flush-top">
             <div className="ftq-pm-search">
               <input
-                className="ftq-pm-input"
+                className="ftq-pm-input ds-search-input"
                 placeholder="Search trader username..."
                 value={pmQuery}
                 onChange={(e) => setPmQuery(e.target.value)}

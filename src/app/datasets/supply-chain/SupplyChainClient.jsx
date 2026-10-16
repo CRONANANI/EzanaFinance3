@@ -274,7 +274,7 @@ export default function SupplyChainClient({ data, error }) {
               <>
                 <div className="scm-controls" role="search">
                   <input
-                    className="scm-input"
+                    className="scm-input ds-search-input"
                     type="search"
                     value={q}
                     onChange={(e) => setQ(e.target.value)}

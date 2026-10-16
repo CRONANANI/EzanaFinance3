@@ -183,7 +183,7 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
             <div className="ot-form-group">
               <span className="ot-form-label">Recipient</span>
               <input
-                className="ot-form-input"
+                className="ot-form-input ds-search-input"
                 placeholder="Search members…"
                 value={searchFilter}
                 onChange={(e) => setSearchFilter(e.target.value)}

@@ -86,7 +86,7 @@ export default function EloLeaderboard() {
         <input
           type="text"
           placeholder="Search by name or username…"
-          className="elo-lb-search"
+          className="elo-lb-search ds-search-input"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />

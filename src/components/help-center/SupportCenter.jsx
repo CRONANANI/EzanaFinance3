@@ -373,7 +373,7 @@ export default function SupportCenter({ audience = 'user', initialQuestion = '' 
   const searchBlock = (
     <>
       <form
-        className={`hcs-pill${answered ? ' is-active' : ''}${phase === 'asking' ? ' is-asking' : ''}`}
+        className={`hcs-pill ds-search${answered ? ' is-active' : ''}${phase === 'asking' ? ' is-asking' : ''}`}
         role="search"
         onSubmit={submitPill}
       >
@@ -381,7 +381,7 @@ export default function SupportCenter({ audience = 'user', initialQuestion = '' 
         <input
           ref={inputRef}
           type="search"
-          className="hcs-pill-input"
+          className="hcs-pill-input ds-search-input"
           placeholder="Ask anything, e.g. How do I connect my brokerage?"
           aria-label="Ask the help centre a question"
           value={value}

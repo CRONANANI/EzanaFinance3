@@ -266,7 +266,7 @@ export default function PatentsClient({ data, error }) {
             </p>
             <div className="pat-controls" role="search">
               <input
-                className="pat-input"
+                className="pat-input ds-search-input"
                 type="search"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}

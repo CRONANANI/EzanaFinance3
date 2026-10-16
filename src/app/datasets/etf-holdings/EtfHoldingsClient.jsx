@@ -153,7 +153,7 @@ function WhoHolds() {
         }}
       >
         <input
-          className="etfx-input"
+          className="etfx-input ds-search-input"
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}

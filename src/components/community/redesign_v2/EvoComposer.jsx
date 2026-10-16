@@ -189,11 +189,10 @@ function TickerBody({ tickers, setTickers, period, setPeriod }) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search ticker"
+        className="ds-search-input"
         style={{
           width: '100%',
           padding: '6px 10px',
-          background: 'var(--surface-card)',
-          border: '1px solid var(--border-input)',
           borderRadius: 6,
           color: 'var(--text-primary)',
           fontSize: 12,

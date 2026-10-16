@@ -1702,8 +1702,9 @@
   color: var(--snr-mint) !important;
 }
 
+/* Oct 15: white like the research brief's own text. */
 .snr-band .snr-cta {
-  color: var(--snr-mint-soft) !important;
+  color: var(--snr-text) !important;
 }
 
 .snr-band .snr-cta:hover {
@@ -4457,4 +4458,52 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* ── Oct 15: one left edge, white CTA, read-only demo pill ─────────────
+   The ping bar's text starts on the same x as the research brief's text:
+   both read their inset from --snr-col-pad (the brief's own 18px). The
+   landing pill is the demo's stage, not a field (SonarSection marks it
+   .snr-pingbar--demo): it takes no pointer, so nobody can type into it.
+   "Run your first ping" is white like the brief's text (see the Oct 15 note
+   on .snr-band .snr-cta above). */
+.snr-band {
+  --snr-col-pad: 18px;
+}
+.snr-band .snr-pingbar,
+.snr-band .snr-pingbar:focus-within,
+.dso-page--search .snr-band--page .snr-pingbar {
+  padding-left: var(--snr-col-pad);
+}
+.snr-band .snr-demo {
+  left: var(--snr-col-pad);
+}
+.snr-band .snr-synth {
+  padding-left: var(--snr-col-pad);
+}
+.snr-band .snr-pingbar--demo,
+.snr-band .snr-pingbar--demo * {
+  pointer-events: none;
+  cursor: default;
+}
+/* The sourced-matches list scrolls on its own; its edge never chains into
+   the band or the page. */
+.snr-band.snr-stage2 .snr-rows,
+.snr-band .snr-col-dossier {
+  overscroll-behavior: contain;
+}
+/* The subhead is one sentence and stays on one line wherever it fits;
+   narrower screens wrap it normally. */
+@media (min-width: 1024px) {
+  .snr-band .snr-subhead {
+    white-space: nowrap;
+  }
+}
+@media (max-width: 420px) {
+  .snr-band .snr-pingbar {
+    padding-left: var(--snr-col-pad);
+  }
+  .snr-band .snr-demo {
+    left: var(--snr-col-pad);
+  }
 }

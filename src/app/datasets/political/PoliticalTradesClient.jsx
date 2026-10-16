@@ -848,7 +848,7 @@ function TickerSearch({ onSelectMember }) {
         <div className="ptx-search-input-wrap">
           <Search size={16} className="ptx-search-icon" />
           <input
-            className="ptx-search-input ptx-mono"
+            className="ptx-search-input ptx-mono ds-search-input"
             value={q}
             onChange={(e) => setQ(e.target.value.toUpperCase())}
             onKeyDown={(e) => e.key === 'Enter' && runSearch()}

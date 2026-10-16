@@ -1168,7 +1168,7 @@ function MockTradingPageInner() {
               <div className="mock-search-wrap" ref={searchRef}>
                 <input
                   type="text"
-                  className="mock-search-input"
+                  className="mock-search-input ds-search-input"
                   placeholder="Search company or ticker"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}

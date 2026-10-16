@@ -770,3 +770,56 @@
     animation: none;
   }
 }
+
+/* ── Search pills (Oct 15) ───────────────────────────────────────────────
+   One search design everywhere: no outline, no border, a transparent ground,
+   and a blinking | where typing starts while the field is empty. Focused, the
+   browser's own caret takes over at the same spot.
+
+     .ds-search        the element that draws the pill (label, form or div)
+     .ds-search-input  the <input> itself
+
+   The | is a 1.5px bar painted as the input's background at the start of its
+   content box, so it lines up with the text at any padding, with no extra
+   markup. The placeholder shifts right by the same small indent so the two
+   never overlap. Under reduced motion the bar stays steady instead of
+   blinking. Text colour comes from the input, so it suits light and dark
+   grounds alike. */
+.ds-search,
+.ds-search:hover,
+.ds-search:focus-within {
+  border-color: transparent !important;
+  border-width: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+.ds-search-input,
+.ds-search-input:hover,
+.ds-search-input:focus,
+.ds-search-input:focus-visible {
+  border-color: transparent !important;
+  border-width: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+}
+.ds-search-input:placeholder-shown:not(:focus) {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-origin: content-box;
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 1.5px 1.15em;
+  text-indent: 9px;
+  animation: ds-search-caret 1.06s steps(1, end) infinite;
+}
+@keyframes ds-search-caret {
+  50% {
+    background-size: 0 1.15em;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ds-search-input:placeholder-shown:not(:focus) {
+    animation: none;
+  }
+}

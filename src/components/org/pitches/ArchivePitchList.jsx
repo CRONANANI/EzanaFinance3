@@ -71,7 +71,7 @@ export function ArchivePitchList() {
     <>
       <div className="op-filters">
         <input
-          className="op-search"
+          className="op-search ds-search-input"
           type="search"
           placeholder="Search by ticker, analyst, thesis keyword…"
           value={search}

@@ -54,9 +54,7 @@ export function CompanySearch({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedIndex((prev) =>
-          prev < filteredResults.length - 1 ? prev + 1 : prev
-        );
+        setSelectedIndex((prev) => (prev < filteredResults.length - 1 ? prev + 1 : prev));
         break;
       case 'ArrowUp':
         e.preventDefault();
@@ -134,7 +132,7 @@ export function CompanySearch({
           }}
         />
 
-        <div className="relative bg-white dark:bg-[#0d1117] rounded-2xl">
+        <div className="relative rounded-2xl ds-search">
           <div className="relative flex items-center">
             <div
               className={`absolute left-5 transition-colors duration-300 ${
@@ -153,7 +151,7 @@ export function CompanySearch({
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
-              className="w-full h-14 pl-14 pr-14 bg-gray-50 dark:bg-[#161b22] border border-gray-200 dark:border-gray-700/50 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-transparent transition-all text-lg font-medium"
+              className="ds-search-input w-full h-14 pl-14 pr-14 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-transparent transition-all text-lg font-medium"
               autoComplete="off"
               spellCheck="false"
             />
@@ -223,7 +221,9 @@ export function CompanySearch({
                     <div className="flex items-center gap-2">
                       <span
                         className={`font-bold text-base ${
-                          index === selectedIndex ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-900 dark:text-white'
+                          index === selectedIndex
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-gray-900 dark:text-white'
                         }`}
                       >
                         {result.symbol || result.displaySymbol}
@@ -255,16 +255,24 @@ export function CompanySearch({
             </div>
             <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700/50 flex items-center justify-between text-xs text-gray-500 bg-gray-50 dark:bg-[#0d1117]">
               <span className="flex items-center gap-1.5">
-                <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-400 font-mono">↑</kbd>
-                <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-400 font-mono">↓</kbd>
+                <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-400 font-mono">
+                  ↑
+                </kbd>
+                <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-400 font-mono">
+                  ↓
+                </kbd>
                 <span>navigate</span>
               </span>
               <span className="flex items-center gap-1.5">
-                <kbd className="px-2 py-0.5 bg-gray-200 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-400 font-mono text-[10px]">Enter</kbd>
+                <kbd className="px-2 py-0.5 bg-gray-200 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-400 font-mono text-[10px]">
+                  Enter
+                </kbd>
                 <span>select</span>
               </span>
               <span className="flex items-center gap-1.5">
-                <kbd className="px-2 py-0.5 bg-gray-200 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-400 font-mono text-[10px]">Esc</kbd>
+                <kbd className="px-2 py-0.5 bg-gray-200 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-400 font-mono text-[10px]">
+                  Esc
+                </kbd>
                 <span>close</span>
               </span>
             </div>

@@ -26,7 +26,11 @@ function renderHighlight(text, query, keyPrefix) {
   return parts.map((part, i) => {
     const k = `${keyPrefix}-${i}`;
     if (part.toLowerCase() === q.toLowerCase()) {
-      return <mark key={k} className="us-hl">{part}</mark>;
+      return (
+        <mark key={k} className="us-hl">
+          {part}
+        </mark>
+      );
     }
     return <span key={k}>{part}</span>;
   });
@@ -133,21 +137,27 @@ export function UserSearch({ className = '' }) {
   const debouncedQuery = query.trim();
   const showRecents = !debouncedQuery && recent.length > 0;
 
-  const list = useMemo(() => (debouncedQuery.length >= 2 ? results : recent), [debouncedQuery, results, recent]);
+  const list = useMemo(
+    () => (debouncedQuery.length >= 2 ? results : recent),
+    [debouncedQuery, results, recent],
+  );
 
   useEffect(() => {
     setActiveIdx(list.length > 0 ? 0 : -1);
   }, [list.length, debouncedQuery]);
 
-  const persistRecent = useCallback((user) => {
-    const next = [user, ...recent.filter((u) => u.id !== user.id)].slice(0, RECENT_MAX);
-    setRecent(next);
-    try {
-      window.localStorage.setItem(RECENT_KEY, JSON.stringify(next));
-    } catch {
-      /* ignore */
-    }
-  }, [recent]);
+  const persistRecent = useCallback(
+    (user) => {
+      const next = [user, ...recent.filter((u) => u.id !== user.id)].slice(0, RECENT_MAX);
+      setRecent(next);
+      try {
+        window.localStorage.setItem(RECENT_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+    },
+    [recent],
+  );
 
   const clearRecents = useCallback(() => {
     setRecent([]);
@@ -158,14 +168,17 @@ export function UserSearch({ className = '' }) {
     }
   }, []);
 
-  const selectUser = useCallback((user) => {
-    if (!user) return;
-    persistRecent(user);
-    setOpen(false);
-    setQuery('');
-    const handle = user.username || user.id;
-    router.push(`/profile/${handle}`);
-  }, [persistRecent, router]);
+  const selectUser = useCallback(
+    (user) => {
+      if (!user) return;
+      persistRecent(user);
+      setOpen(false);
+      setQuery('');
+      const handle = user.username || user.id;
+      router.push(`/profile/${handle}`);
+    },
+    [persistRecent, router],
+  );
 
   const onKeyDown = (e) => {
     if (e.key === 'Escape') {
@@ -192,12 +205,12 @@ export function UserSearch({ className = '' }) {
 
   return (
     <div ref={containerRef} className={`us-wrap ${className}`}>
-      <div className={`us-input-box ${open ? 'focus' : ''}`}>
+      <div className={`us-input-box ds-search ${open ? 'focus' : ''}`}>
         <Search className="us-icon" size={16} aria-hidden />
         <input
           ref={inputRef}
           type="text"
-          className="us-input"
+          className="us-input ds-search-input"
           role="combobox"
           aria-expanded={open}
           aria-controls={listboxId}
@@ -207,7 +220,10 @@ export function UserSearch({ className = '' }) {
           }
           placeholder="Search users by name, @handle, or email…"
           value={query}
-          onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+          }}
           onFocus={() => setOpen(true)}
           onKeyDown={onKeyDown}
           autoComplete="off"
@@ -217,7 +233,11 @@ export function UserSearch({ className = '' }) {
           <button
             type="button"
             className="us-clear"
-            onClick={() => { setQuery(''); setResults([]); inputRef.current?.focus(); }}
+            onClick={() => {
+              setQuery('');
+              setResults([]);
+              inputRef.current?.focus();
+            }}
             aria-label="Clear search"
           >
             <X size={14} />
@@ -261,57 +281,59 @@ export function UserSearch({ className = '' }) {
             </>
           )}
 
-          {!loading && list.map((u, idx) => {
-            const badge = deriveTopBadge(u);
-            const active = idx === activeIdx;
-            const displayName = u.full_name || 'Member';
-            const handle = u.username ? `@${u.username}` : '';
-            const showEmail = Boolean(u.email_hint);
-            return (
-              <button
-                key={u.id}
-                id={`${listboxId}-opt-${u.id}`}
-                role="option"
-                aria-selected={active}
-                type="button"
-                className={`us-row ${active ? 'on' : ''}`}
-                onMouseEnter={() => setActiveIdx(idx)}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => selectUser(u)}
-              >
-                <div
-                  className="us-avatar"
-                  style={u.avatar_url ? { backgroundImage: `url(${u.avatar_url})`, backgroundSize: 'cover' } : undefined}
-                  aria-hidden
+          {!loading &&
+            list.map((u, idx) => {
+              const badge = deriveTopBadge(u);
+              const active = idx === activeIdx;
+              const displayName = u.full_name || 'Member';
+              const handle = u.username ? `@${u.username}` : '';
+              const showEmail = Boolean(u.email_hint);
+              return (
+                <button
+                  key={u.id}
+                  id={`${listboxId}-opt-${u.id}`}
+                  role="option"
+                  aria-selected={active}
+                  type="button"
+                  className={`us-row ${active ? 'on' : ''}`}
+                  onMouseEnter={() => setActiveIdx(idx)}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => selectUser(u)}
                 >
-                  {!u.avatar_url && (
-                    displayName ? initialsFor(displayName) : <UserIcon size={14} />
-                  )}
-                </div>
-                <div className="us-row-main">
-                  <div className="us-row-top">
-                    <span className="us-name">
-                      {renderHighlight(displayName, debouncedQuery, `n-${u.id}`)}
-                    </span>
-                    {handle && (
-                      <span className="us-handle">
-                        {renderHighlight(handle, debouncedQuery, `h-${u.id}`)}
+                  <div
+                    className="us-avatar"
+                    style={
+                      u.avatar_url
+                        ? { backgroundImage: `url(${u.avatar_url})`, backgroundSize: 'cover' }
+                        : undefined
+                    }
+                    aria-hidden
+                  >
+                    {!u.avatar_url &&
+                      (displayName ? initialsFor(displayName) : <UserIcon size={14} />)}
+                  </div>
+                  <div className="us-row-main">
+                    <div className="us-row-top">
+                      <span className="us-name">
+                        {renderHighlight(displayName, debouncedQuery, `n-${u.id}`)}
                       </span>
-                    )}
+                      {handle && (
+                        <span className="us-handle">
+                          {renderHighlight(handle, debouncedQuery, `h-${u.id}`)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="us-row-sub">
+                      {showEmail
+                        ? renderHighlight(u.email_hint, debouncedQuery, `e-${u.id}`)
+                        : (u.bio && u.bio.slice(0, 72)) || 'Ezana member'}
+                    </div>
                   </div>
-                  <div className="us-row-sub">
-                    {showEmail
-                      ? renderHighlight(u.email_hint, debouncedQuery, `e-${u.id}`)
-                      : (u.bio && u.bio.slice(0, 72)) || 'Ezana member'}
-                  </div>
-                </div>
-                {badge && (
-                  <span className={`us-badge tone-${badge.tone}`}>{badge.label}</span>
-                )}
-                <ChevronRight size={14} className="us-chev" aria-hidden />
-              </button>
-            );
-          })}
+                  {badge && <span className={`us-badge tone-${badge.tone}`}>{badge.label}</span>}
+                  <ChevronRight size={14} className="us-chev" aria-hidden />
+                </button>
+              );
+            })}
         </div>
       )}
     </div>

@@ -138,7 +138,7 @@ function Search() {
           <option value="insider">Insider name</option>
         </select>
         <input
-          className="insx-input"
+          className="insx-input ds-search-input"
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}

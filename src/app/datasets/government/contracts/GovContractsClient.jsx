@@ -422,14 +422,14 @@ export default function GovContractsClient({
           </FilterGroup>
 
           <FilterGroup title="Awarding agency" meta={agencyTotals.length}>
-            <div className="gcx-agency-search">
+            <div className="gcx-agency-search ds-search">
               <i className="bi bi-search" aria-hidden="true" />
               <input
                 type="search"
                 value={agencySearch}
                 onChange={(e) => setAgencySearch(e.target.value)}
                 placeholder="Filter agencies"
-                className="gcx-agency-search-input"
+                className="gcx-agency-search-input ds-search-input"
                 aria-label="Search awarding agencies"
               />
             </div>

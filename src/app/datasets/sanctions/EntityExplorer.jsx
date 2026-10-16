@@ -35,7 +35,7 @@ import {
 function DateField({ label, value, onChange, min, max, disabled }) {
   return (
     <label className="snx-xf-field">
-      <span>{label}</span>
+      <span className="snx-sr">Listed {label.toLowerCase()}</span>
       <input
         type="date"
         value={value}
@@ -174,16 +174,130 @@ export default function EntityExplorer({
             open the full record.
           </p>
         </div>
-        <button
-          type="button"
-          className="snx-action-btn"
-          onClick={doExport}
-          disabled={exporting || !data.total}
-        >
-          {exporting ? 'Exporting…' : 'Export CSV'}{' '}
-          <i className="bi bi-download" aria-hidden="true" />
-        </button>
       </div>
+
+      {/* Oct 15: the controls as one labelled toolbar. Each row is a label
+          column and a control column, so search, type, dates and toggles
+          line up instead of wrapping as separate loose groups. */}
+      <div className="snx-xbar">
+        <div className="snx-xrow">
+          <span className="snx-xlabel">Search</span>
+          <div className="snx-xctl snx-xctl--search">
+            <Seg
+              label="Search by"
+              value={mode}
+              onChange={(m) => {
+                setMode(m);
+                setText('');
+                lastWritten.current = '';
+                setFilter((f) => (f.q || f.ident ? { ...f, q: '', ident: '', page: 1 } : f));
+              }}
+              options={[
+                { key: 'name', label: 'Name or alias' },
+                { key: 'ident', label: 'Identifier', disabled: !research },
+              ]}
+            />
+            <label className="snx-xsearch-box ds-search">
+              <i className="bi bi-search" aria-hidden="true" />
+              <input
+                className="ds-search-input"
+                type="search"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder={
+                  mode === 'ident'
+                    ? 'IMO, passport, tax ID, registration no.'
+                    : 'A name or an alias'
+                }
+                aria-label={mode === 'ident' ? 'Search by identifier' : 'Search by name or alias'}
+              />
+            </label>
+            <button
+              type="button"
+              className="snx-action-btn snx-xexport"
+              onClick={doExport}
+              disabled={exporting || !data.total}
+            >
+              {exporting ? 'Exporting…' : 'Export CSV'}{' '}
+              <i className="bi bi-download" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+
+        <div className="snx-xrow">
+          <span className="snx-xlabel">Type</span>
+          <div className="snx-xctl">
+            <div className="snx-tabs" role="group" aria-label="Entry type">
+              {typeTabs.map((t) => (
+                <button
+                  key={t.key || 'all'}
+                  type="button"
+                  aria-pressed={filter.type === t.key}
+                  className={`snx-tab${filter.type === t.key ? ' is-on' : ''}`}
+                  onClick={() => set({ type: t.key })}
+                >
+                  {t.label}
+                  <span className="snx-tab-n">{fmt(t.n)}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="snx-xrow">
+          <span className="snx-xlabel">Listed</span>
+          <div className="snx-xctl snx-xctl--split">
+            <div className="snx-xdates">
+              <DateField
+                label="From"
+                value={filter.from}
+                max={filter.to || undefined}
+                disabled={!research}
+                onChange={(v) => set({ from: v })}
+              />
+              <span className="snx-xdates-sep" aria-hidden="true">
+                to
+              </span>
+              <DateField
+                label="To"
+                value={filter.to}
+                min={filter.from || undefined}
+                disabled={!research}
+                onChange={(v) => set({ to: v })}
+              />
+            </div>
+            <div className="snx-xtoggles" role="group" aria-label="Only show">
+              <button
+                type="button"
+                className={`snx-xtoggle${filter.risk ? ' is-on' : ''}`}
+                aria-pressed={filter.risk}
+                disabled={!research}
+                onClick={() => set({ risk: !filter.risk })}
+              >
+                <i
+                  className={`bi ${filter.risk ? 'bi-check2-square' : 'bi-square'}`}
+                  aria-hidden="true"
+                />
+                Secondary sanctions risk
+              </button>
+              <button
+                type="button"
+                className={`snx-xtoggle${filter.linked ? ' is-on' : ''}`}
+                aria-pressed={filter.linked}
+                disabled={!research}
+                onClick={() => set({ linked: !filter.linked })}
+              >
+                <i
+                  className={`bi ${filter.linked ? 'bi-check2-square' : 'bi-square'}`}
+                  aria-hidden="true"
+                />
+                Has linked parties
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {exportMsg ? (
         <p className="snx-rail-note" role="status">
           {exportMsg.auth ? (
@@ -197,85 +311,6 @@ export default function EntityExplorer({
           )}
         </p>
       ) : null}
-
-      <div className="snx-xsearch">
-        <Seg
-          label="Search by"
-          value={mode}
-          onChange={(m) => {
-            setMode(m);
-            setText('');
-            lastWritten.current = '';
-            setFilter((f) => (f.q || f.ident ? { ...f, q: '', ident: '', page: 1 } : f));
-          }}
-          options={[
-            { key: 'name', label: 'Name or alias' },
-            { key: 'ident', label: 'Identifier', disabled: !research },
-          ]}
-        />
-        <label className="snx-rail-search snx-xsearch-box">
-          <i className="bi bi-search" aria-hidden="true" />
-          <input
-            type="search"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder={
-              mode === 'ident' ? 'IMO, passport, tax ID, registration no.' : 'A name or an alias'
-            }
-            aria-label={mode === 'ident' ? 'Search by identifier' : 'Search by name or alias'}
-          />
-        </label>
-      </div>
-
-      <div className="snx-tabs" role="group" aria-label="Entry type">
-        {typeTabs.map((t) => (
-          <button
-            key={t.key || 'all'}
-            type="button"
-            aria-pressed={filter.type === t.key}
-            className={`snx-tab${filter.type === t.key ? ' is-on' : ''}`}
-            onClick={() => set({ type: t.key })}
-          >
-            {t.label}
-            <span className="snx-tab-n">{fmt(t.n)}</span>
-          </button>
-        ))}
-      </div>
-
-      <div className="snx-xfilters">
-        <DateField
-          label="Listed from"
-          value={filter.from}
-          max={filter.to || undefined}
-          disabled={!research}
-          onChange={(v) => set({ from: v })}
-        />
-        <DateField
-          label="to"
-          value={filter.to}
-          min={filter.from || undefined}
-          disabled={!research}
-          onChange={(v) => set({ to: v })}
-        />
-        <label className="snx-xf-check">
-          <input
-            type="checkbox"
-            checked={filter.risk}
-            disabled={!research}
-            onChange={(e) => set({ risk: e.target.checked })}
-          />
-          Secondary sanctions risk stated
-        </label>
-        <label className="snx-xf-check">
-          <input
-            type="checkbox"
-            checked={filter.linked}
-            disabled={!research}
-            onChange={(e) => set({ linked: e.target.checked })}
-          />
-          Has linked parties
-        </label>
-      </div>
       {!research ? (
         <StateNote kind="unavailable">
           Alias, identifier, date and link filters switch on once the research data is loaded. Name
@@ -283,39 +318,40 @@ export default function EntityExplorer({
         </StateNote>
       ) : null}
 
-      {chips.length ? (
-        <div className="snx-active">
-          {chips.map((c) => (
+      <div className="snx-xstatus">
+        {chips.length ? (
+          <div className="snx-active">
+            {chips.map((c) => (
+              <button
+                key={c.label}
+                type="button"
+                className="snx-active-chip"
+                onClick={() => set(c.k)}
+                aria-label={`Remove filter: ${c.label}`}
+              >
+                {c.label}
+                <i className="bi bi-x" aria-hidden="true" />
+              </button>
+            ))}
             <button
-              key={c.label}
               type="button"
-              className="snx-active-chip"
-              onClick={() => set(c.k)}
-              aria-label={`Remove filter: ${c.label}`}
+              className="snx-active-clear"
+              onClick={() => setFilter({ ...NO_FILTER })}
             >
-              {c.label}
-              <i className="bi bi-x" aria-hidden="true" />
+              Clear all
             </button>
-          ))}
-          <button
-            type="button"
-            className="snx-active-clear"
-            onClick={() => setFilter({ ...NO_FILTER })}
-          >
-            Clear all
-          </button>
-        </div>
-      ) : null}
-
-      <p className="snx-count" aria-live="polite">
-        {error
-          ? error
-          : data.total
-            ? `${fmt(from)} to ${fmt(to)} of ${fmt(data.total)} records`
-            : loading
-              ? 'Loading…'
-              : 'No records match these filters.'}
-      </p>
+          </div>
+        ) : null}
+        <p className="snx-count" aria-live="polite">
+          {error
+            ? error
+            : data.total
+              ? `${fmt(from)} to ${fmt(to)} of ${fmt(data.total)} records`
+              : loading
+                ? 'Loading…'
+                : 'No records match these filters.'}
+        </p>
+      </div>
 
       <div className={`snx-table-wrap${loading ? ' is-loading' : ''}`} aria-busy={loading}>
         <table className="snx-table snx-table--x">

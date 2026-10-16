@@ -336,7 +336,7 @@ export function AssignmentDrawer({
                   aria-hidden="true"
                 />
                 <input
-                  className="asg2-input"
+                  className="asg2-input ds-search-input"
                   style={{ paddingLeft: 30 }}
                   placeholder="Search members…"
                   value={query}

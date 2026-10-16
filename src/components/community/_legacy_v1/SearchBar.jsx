@@ -44,6 +44,7 @@ export function SearchBar() {
   return (
     <div ref={wrapRef} style={{ position: 'relative' }}>
       <div
+        className="ds-search"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -60,11 +61,9 @@ export function SearchBar() {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.trim().length >= 2 && setOpen(true)}
           placeholder="Search investors by name, handle, or ticker they hold…"
+          className="ds-search-input"
           style={{
             flex: 1,
-            background: 'transparent',
-            border: 'none',
-            outline: 'none',
             color: 'var(--text-primary)',
             fontSize: 13,
           }}

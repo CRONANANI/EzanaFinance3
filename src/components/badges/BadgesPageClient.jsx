@@ -49,17 +49,23 @@ function AchievementModal({ achievement, onClose }) {
         <button type="button" className="bp-modal-close" onClick={onClose} aria-label="Close">
           <X size={16} />
         </button>
-        <div className={`bp-modal-icon tier-${TIER_TONE[achievement.tier] || 'bronze'} ${earned ? 'on' : 'off'}`}>
+        <div
+          className={`bp-modal-icon tier-${TIER_TONE[achievement.tier] || 'bronze'} ${earned ? 'on' : 'off'}`}
+        >
           {earned ? <Trophy size={28} /> : <Lock size={22} />}
         </div>
         <h3 className="bp-modal-title">{achievement.name}</h3>
-        <div className="bp-modal-cat">{CATEGORY_LABEL[achievement.category] || achievement.category}</div>
+        <div className="bp-modal-cat">
+          {CATEGORY_LABEL[achievement.category] || achievement.category}
+        </div>
         <p className="bp-modal-desc">{achievement.description}</p>
         <div className="bp-modal-crit">
           <span>How to earn:</span> {achievement.criteria}
         </div>
         {earned ? (
-          <div className="bp-modal-ok">Earned on {new Date(achievement.earnedAt).toLocaleDateString()}</div>
+          <div className="bp-modal-ok">
+            Earned on {new Date(achievement.earnedAt).toLocaleDateString()}
+          </div>
         ) : (
           <div className="bp-modal-prog">
             {achievement.progress ? `${achievement.progress}% progress` : 'Not started'}
@@ -92,7 +98,8 @@ export function BadgesPageClient() {
 
     // Status filter
     if (filter === 'Earned') list = list.filter((a) => a.earnedAt);
-    else if (filter === 'In Progress') list = list.filter((a) => !a.earnedAt && (a.progress ?? 0) > 0);
+    else if (filter === 'In Progress')
+      list = list.filter((a) => !a.earnedAt && (a.progress ?? 0) > 0);
     else if (filter === 'Locked') list = list.filter((a) => !a.earnedAt && !(a.progress > 0));
 
     // Category filter
@@ -180,7 +187,7 @@ export function BadgesPageClient() {
             placeholder="Search achievements…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="bp-search"
+            className="bp-search ds-search-input"
           />
         </div>
       </div>

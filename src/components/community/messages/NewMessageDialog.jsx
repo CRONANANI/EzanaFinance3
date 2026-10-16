@@ -9,13 +9,7 @@ function getInitials(name) {
   return parts.map((p) => p.charAt(0).toUpperCase()).join('') || '?';
 }
 
-export function NewMessageDialog({
-  open,
-  friends,
-  loading,
-  onClose,
-  onPickFriend,
-}) {
+export function NewMessageDialog({ open, friends, loading, onClose, onPickFriend }) {
   const [q, setQ] = useState('');
   const inputRef = useRef(null);
 
@@ -58,12 +52,7 @@ export function NewMessageDialog({
           <h2 id="new-message-title" className="m-dialog__title">
             New message
           </h2>
-          <button
-            type="button"
-            className="m-dialog__close"
-            onClick={onClose}
-            aria-label="Close"
-          >
+          <button type="button" className="m-dialog__close" onClick={onClose} aria-label="Close">
             <X size={16} />
           </button>
         </div>
@@ -73,7 +62,7 @@ export function NewMessageDialog({
             <input
               ref={inputRef}
               type="text"
-              className="m-search__input"
+              className="m-search__input ds-search-input"
               placeholder="Search friends..."
               value={q}
               onChange={(e) => setQ(e.target.value)}
@@ -116,12 +105,8 @@ export function NewMessageDialog({
                   {getInitials(f.name)}
                 </div>
               )}
-              <span style={{ flex: 1, fontSize: '0.8125rem', fontWeight: 600 }}>
-                {f.name}
-              </span>
-              {f.conversation_id && (
-                <span className="m-dialog__item-existing">Existing</span>
-              )}
+              <span style={{ flex: 1, fontSize: '0.8125rem', fontWeight: 600 }}>{f.name}</span>
+              {f.conversation_id && <span className="m-dialog__item-existing">Existing</span>}
             </button>
           ))}
         </div>

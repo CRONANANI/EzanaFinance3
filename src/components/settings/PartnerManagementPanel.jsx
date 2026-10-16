@@ -134,7 +134,7 @@ export function PartnerManagementPanel() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by name or username…"
-          className="pmp-search-input"
+          className="pmp-search-input ds-search-input"
         />
       </div>
 

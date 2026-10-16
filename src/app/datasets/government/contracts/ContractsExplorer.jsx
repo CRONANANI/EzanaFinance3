@@ -122,28 +122,28 @@ export default function ContractsExplorer({ coverage = null, onOpenQuickView }) 
       <div className="gcx-exp-filters" role="search" aria-label="Filter and sort awards">
         <label className="gcx-exp-field gcx-exp-grow">
           <span>Recipient</span>
-          <span className="gcx-exp-search">
+          <span className="gcx-exp-search ds-search">
             <Search size={14} />
             <input
               type="search"
               value={recipient}
               onChange={(e) => setRecipient(e.target.value)}
               placeholder="e.g. Lockheed Martin"
-              className="gcx-exp-input"
+              className="gcx-exp-input ds-search-input"
             />
           </span>
         </label>
 
         <label className="gcx-exp-field gcx-exp-grow">
           <span>Awarding agency</span>
-          <span className="gcx-exp-search">
+          <span className="gcx-exp-search ds-search">
             <Search size={14} />
             <input
               type="search"
               value={agency}
               onChange={(e) => setAgency(e.target.value)}
               placeholder="e.g. Department of Defense"
-              className="gcx-exp-input"
+              className="gcx-exp-input ds-search-input"
             />
           </span>
         </label>

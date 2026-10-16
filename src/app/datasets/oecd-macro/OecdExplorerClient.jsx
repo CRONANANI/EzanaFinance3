@@ -221,14 +221,14 @@ function ExplorerInner({ latest, empire, empireMatrix }) {
           <span className="oecd-header-stats oecd-num">
             {model.countries.length} COUNTRIES · {OECD_CURATED_SLUGS.length} INDICATORS · 1961–2025
           </span>
-          <label className="oecd-search">
+          <label className="oecd-search ds-search">
             <svg viewBox="0 0 16 16" className="oecd-search-icon" aria-hidden="true">
               <circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" strokeWidth="1.5" />
               <line x1="11" y1="11" x2="14" y2="14" stroke="currentColor" strokeWidth="1.5" />
             </svg>
             <input
               type="search"
-              className="oecd-search-input"
+              className="oecd-search-input ds-search-input"
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Filter countries…"

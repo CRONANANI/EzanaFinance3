@@ -22,9 +22,6 @@
 .snx-muted {
   color: var(--text-faint);
 }
-.snx-strong {
-  font-weight: 700;
-}
 
 /* ── header ─────────────────────────────────────────────────────────── */
 .snx-header {
@@ -96,17 +93,7 @@
 }
 
 /* ── layout ─────────────────────────────────────────────────────────── */
-.snx-body {
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
-}
-.snx-rail {
-  position: sticky;
-  top: 84px;
-  flex-shrink: 0;
-  width: 248px;
-}
+
 .snx-main {
   display: flex;
   flex: 1;
@@ -199,13 +186,11 @@
 .snx-seg-btn:focus-visible,
 .snx-tab:focus-visible,
 .snx-chip--btn:focus-visible,
-.snx-rail-row:focus-visible,
 .snx-ranked-row:focus-visible,
 .snx-tile:focus-visible,
 .snx-pager-btn:focus-visible,
 .snx-active-chip:focus-visible,
-.snx-active-clear:focus-visible,
-.snx-rail-fold-head:focus-visible {
+.snx-active-clear:focus-visible {
   outline: 2px solid var(--emerald);
   outline-offset: 2px;
 }
@@ -592,140 +577,7 @@
 }
 
 /* ── rail ───────────────────────────────────────────────────────────── */
-.snx-rail-fold {
-  display: flex;
-  flex-direction: column;
-}
-.snx-rail-fold-head {
-  display: none;
-}
-.snx-rail-fold > .snx-filter + .snx-filter {
-  margin-top: 18px;
-}
-.snx-filter-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-.snx-filter-title {
-  font-family: var(--font-mono);
-  font-size: var(--type-eyebrow-size);
-  font-weight: var(--type-eyebrow-weight);
-  letter-spacing: var(--type-eyebrow-tracking);
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-.snx-filter-meta {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  color: var(--text-faint);
-}
-.snx-rail-search {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 0 10px;
-  border: 1px solid var(--border-input);
-  border-radius: var(--radius-md);
-  background: var(--surface-input);
-  color: var(--text-faint);
-}
-.snx-rail-search:focus-within {
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px var(--emerald-bg-subtle);
-}
-.snx-rail-search input {
-  flex: 1;
-  min-width: 0;
-  height: 34px;
-  border: 0;
-  outline: 0;
-  background: none;
-  color: var(--text-primary);
-  font: inherit;
-  font-size: 0.8125rem;
-}
-.snx-rail-search input::placeholder {
-  color: var(--text-ghost);
-}
-.snx-rail-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  max-height: 260px;
-  margin-top: 6px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-.snx-rail-row {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  min-height: 30px;
-  padding: 4px 8px;
-  overflow: hidden;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: none;
-  color: var(--text-secondary);
-  font: inherit;
-  font-size: 0.8125rem;
-  text-align: left;
-  cursor: pointer;
-}
-.snx-rail-row:hover {
-  background: var(--snx-soft);
-}
-.snx-rail-row.is-on {
-  background: var(--emerald-bg);
-  color: var(--text-primary);
-}
-.snx-rail-bar {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 2px;
-  background: var(--emerald);
-  opacity: 0.35;
-}
-.snx-rail-label {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.snx-rail-dot {
-  flex-shrink: 0;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-}
-.snx-rail-code {
-  flex-shrink: 0;
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  font-weight: 600;
-}
-.snx-rail-sub {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 0.75rem;
-  color: var(--text-faint);
-}
-.snx-rail-n {
-  flex-shrink: 0;
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-muted);
-}
+
 .snx-rail-note {
   margin: 6px 2px;
   font-size: 0.75rem;
@@ -744,36 +596,7 @@
   .snx-page {
     padding: 0 16px 48px;
   }
-  .snx-body {
-    flex-direction: column;
-    gap: 14px;
-  }
-  .snx-rail {
-    position: static;
-    width: 100%;
-    padding: 0 14px;
-    border: 1px solid var(--snx-hair);
-    border-radius: var(--radius-lg);
-  }
-  .snx-rail-fold-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    min-height: 44px;
-    list-style: none;
-    font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .snx-rail-fold-head::-webkit-details-marker {
-    display: none;
-  }
-  .snx-rail-fold[open] {
-    padding-bottom: 14px;
-  }
-  .snx-rail-fold[open] .snx-rail-fold-head .bi {
-    transform: rotate(180deg);
-  }
+
   .snx-main {
     width: 100%;
   }
@@ -907,13 +730,7 @@
    by size, at its own aspect ratio, so it reads compressed rather than
    stretched. A program picked in the treemap (or a chip) re-shades the
    map; the focus line says what is shown and clears it. */
-.snx-pair--map {
-  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
-  align-items: start;
-}
-.snx-pair--map .snx-tree {
-  aspect-ratio: 4 / 3;
-}
+
 .snx-focus {
   display: flex;
   flex-wrap: wrap;
@@ -1069,11 +886,6 @@
   background: var(--warning);
 }
 
-@media (max-width: 1100px) {
-  .snx-pair--map {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
 @media (max-width: 640px) {
   .snx-pulse-news li {
     grid-template-columns: auto auto minmax(0, 1fr);
@@ -1186,57 +998,7 @@
 }
 
 /* ── 01 KPI cards ───────────────────────────────────────────────────── */
-.snx-kpis {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin: 18px 0;
-}
-.snx-kpi {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  min-height: 132px;
-  padding: 12px 14px;
-  border: 1px solid var(--snx-hair);
-  border-top: 3px solid var(--snx-accent, var(--emerald));
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-}
-.snx-kpi-step {
-  font-family: var(--font-mono);
-  font-size: var(--type-eyebrow-size);
-  font-weight: var(--type-eyebrow-weight);
-  letter-spacing: var(--type-eyebrow-tracking);
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-.snx-kpi-value {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: var(--type-value-sm-size);
-  font-weight: var(--type-value-sm-weight);
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  color: var(--text-primary);
-}
-.snx-kpi-body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-.snx-kpi-body .snx-strip-legend {
-  justify-content: flex-start;
-}
-.snx-kpi-line {
-  font-size: 0.6875rem;
-  line-height: 1.45;
-  color: var(--text-secondary);
-}
-.snx-kpi-line em,
+
 .snx-jx-trend em {
   margin-left: 6px;
   font-style: normal;
@@ -1247,13 +1009,6 @@
 }
 .is-down {
   color: var(--warning);
-}
-.snx-kpi-foot {
-  padding-top: 6px;
-  border-top: 1px solid var(--border-secondary);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--text-faint);
 }
 
 /* ── programs card additions ─────────────────────────────────────────── */
@@ -1741,23 +1496,11 @@
 }
 
 /* ── 06 entity explorer ─────────────────────────────────────────────── */
-.snx-xsearch {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-}
+
 .snx-xsearch-box {
   flex: 1 1 260px;
 }
-.snx-xfilters {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 8px 14px;
-  margin: 10px 0 6px;
-}
+
 .snx-xf-field {
   display: flex;
   flex-direction: column;
@@ -1781,20 +1524,8 @@
   letter-spacing: 0;
   text-transform: none;
 }
-.snx-xf-check {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 32px;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-.snx-xf-check input {
-  accent-color: var(--emerald);
-}
-.snx-xf-field input:focus-visible,
-.snx-xf-check input:focus-visible {
+
+.snx-xf-field input:focus-visible {
   outline: 2px solid var(--emerald);
   outline-offset: 1px;
 }
@@ -2169,22 +1900,12 @@
 
 /* ── responsive ─────────────────────────────────────────────────────── */
 @media (max-width: 1180px) {
-  .snx-kpis {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
   .snx-dq-grid,
   .snx-jx-detail {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (max-width: 640px) {
-  .snx-kpis {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 8px;
-  }
-  .snx-kpi {
-    min-height: 0;
-  }
   .snx-tl-controls {
     justify-content: flex-start;
   }
@@ -2236,5 +1957,280 @@
   .snx-tl-chart,
   .snx-table-wrap {
     transition: none;
+  }
+}
+
+/* ══ Oct 15: one landscape card, no rail, a tidy explorer toolbar ═════ */
+
+/* The page is one column now that the filter rail is gone. */
+.snx-page > .snx-main {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+/* Sub-sections inside a card (Programs by size, Where listed parties are
+   based): no card chrome of their own, a hairline between them. */
+.snx-sub {
+  min-width: 0;
+  padding-top: 16px;
+  margin-top: 16px;
+  border-top: 1px solid var(--border-secondary);
+}
+.snx-sub-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.snx-landscape .snx-tree {
+  aspect-ratio: 16 / 6;
+}
+.snx-landscape .snx-sub--map .snx-map {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+/* The four headline measures as one strip. */
+.snx-lstats {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr));
+  margin: 0;
+  border: 1px solid var(--snx-hair);
+  border-radius: var(--radius-md);
+}
+.snx-lstat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: 10px 14px;
+}
+.snx-lstat + .snx-lstat {
+  border-left: 1px solid var(--snx-hair);
+}
+.snx-lstat-label {
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.snx-lstat-value {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+.snx-lstat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  min-width: 0;
+}
+.snx-lstat-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+.snx-lstat-line em {
+  margin-left: 6px;
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* Entity explorer toolbar: a label column and a control column per row. */
+.snx-xbar {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+  border: 1px solid var(--snx-hair);
+  border-radius: var(--radius-md);
+}
+.snx-xrow {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 6px 12px;
+}
+.snx-xrow + .snx-xrow {
+  border-top: 1px solid var(--border-secondary);
+}
+.snx-xlabel {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.snx-xctl {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  min-width: 0;
+}
+.snx-xctl .snx-tabs {
+  margin: 0;
+}
+.snx-xctl--split {
+  justify-content: space-between;
+}
+.snx-xsearch-box {
+  display: flex;
+  flex: 1 1 260px;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 34px;
+  color: var(--text-primary);
+}
+.snx-xsearch-box .bi {
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  color: var(--text-faint);
+}
+.snx-xsearch-box input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 0.8125rem;
+  color: var(--text-primary);
+}
+.snx-xexport {
+  margin-left: auto;
+}
+.snx-xdates {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.snx-xdates-sep {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.snx-xtoggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.snx-xtoggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--snx-hair);
+  border-radius: 999px;
+  background: none;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.snx-xtoggle.is-on {
+  border-color: var(--emerald-border);
+  background: var(--emerald-bg);
+  color: var(--text-primary);
+}
+.snx-xtoggle.is-on .bi {
+  color: var(--emerald);
+}
+.snx-xtoggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.snx-xtoggle:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.snx-xstatus {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  margin-bottom: 4px;
+}
+.snx-xstatus .snx-active {
+  margin: 0;
+}
+.snx-xstatus .snx-count {
+  margin: 0 0 0 auto;
+}
+
+@media (max-width: 1180px) {
+  .snx-lstats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .snx-lstat:nth-child(3) {
+    border-left: 0;
+  }
+  .snx-lstat:nth-child(n + 3) {
+    border-top: 1px solid var(--snx-hair);
+  }
+  .snx-landscape .snx-tree {
+    aspect-ratio: 16 / 8;
+  }
+}
+@media (max-width: 640px) {
+  .snx-lstats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .snx-lstat + .snx-lstat {
+    border-left: 0;
+    border-top: 1px solid var(--snx-hair);
+  }
+  .snx-landscape .snx-tree {
+    aspect-ratio: 4 / 3;
+  }
+  .snx-xrow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+    padding: 10px 12px;
+  }
+  .snx-xexport {
+    margin-left: 0;
+  }
+  .snx-xstatus .snx-count {
+    margin-left: 0;
+  }
+}
+@media (min-width: 1181px) {
+  .snx-landscape .snx-themes {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+/* Phones: the compact listing rows (Oct 14 rules above) open the record from
+   the name, so the expand chevron hides, and the right-hand figure is now
+   OFAC's Listed date (the column was "Added"). */
+@media (max-width: 640px) {
+  .snx-listings .snx-table td.snx-td-toggle {
+    display: none;
+  }
+  .snx-listings .snx-table td[data-label='Listed'] {
+    margin-left: auto;
+  }
+  .snx-listings .snx-table td[data-label='Identifier'] {
+    order: 6;
+    width: 100%;
+  }
+  .snx-listings .snx-table .snx-td-name {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
   }
 }

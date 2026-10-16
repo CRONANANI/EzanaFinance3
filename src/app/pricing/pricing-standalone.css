@@ -152,7 +152,7 @@
 .pricing-cards-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
+  gap: 1rem;
   align-items: stretch;
 }
 .pricing-cards-grid--four {
@@ -163,7 +163,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 1.75rem 1.5rem;
+  padding: 1.25rem 1.1rem 1.1rem;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-xl);
@@ -235,22 +235,18 @@
   font-size: 0.875rem;
   line-height: 1.45;
   min-height: calc(0.875rem * 1.45 * 3); /* reserve 3 lines so all CTAs share a baseline */
-  margin: 0 0 1rem;
+  margin: 0 0 0.6rem;
   color: var(--text-muted);
   text-align: center;
 }
 
 /* Lock vertical heights of pre-CTA sections so all 5 CTAs land at the same baseline */
 .plan-price {
-  min-height: 3.2rem;
   display: flex;
   align-items: baseline;
   justify-content: center;
   gap: 0;
-  /* 0.15rem plus the 0.65rem the retired .plan-annual-note line reserved
-     (0.35rem min-height + 0.3rem margin), so the CTAs sit exactly where they
-     did when that line was still rendered empty. */
-  margin: 0 0 0.8rem;
+  margin: 0 0 0.75rem;
 }
 /* $ hugs the figure; the interval gets a little breathing room after it. */
 .plan-price-currency {
@@ -260,7 +256,7 @@
   margin-left: 0.3rem;
 }
 .plan-trial-row {
-  margin: 0 0 1.1rem;
+  margin: 0 0 0.6rem;
   text-align: center;
 }
 /* When billing is yearly, center the trial pill within the card */
@@ -373,9 +369,9 @@
 }
 
 .plan-finesub {
-  margin: 0.55rem 0 0;
+  margin: 0.4rem 0 0;
   text-align: center;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: var(--text-faint);
 }
 /* Renewal terms in the same block as the button (scoped to beat the card's p rules). */
@@ -387,11 +383,11 @@
 
 .plan-features-divider {
   height: 1px;
-  margin: 1.25rem 0 1rem;
+  margin: 1rem 0 0.75rem;
   background: var(--border-primary);
 }
 .plan-features-label {
-  margin: 0 0 0.65rem;
+  margin: 0 0 0.4rem;
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -407,7 +403,7 @@
 .plan-features li {
   display: flex;
   gap: 0.5rem;
-  padding: 0.3rem 0;
+  padding: 0.2rem 0;
   font-size: 0.8125rem;
   line-height: 1.45;
   text-align: left;
@@ -643,14 +639,29 @@
   border-radius: 9999px;
   border: 1px solid var(--border-primary);
   color: var(--emerald-text, var(--emerald-hover));
-  font-size: 1.25rem;
-  font-weight: 700;
-  line-height: 1;
   transition:
     transform 0.25s ease,
     color 0.2s ease,
     border-color 0.2s ease,
     background 0.2s ease;
+}
+/* The plus is drawn as two bars centred on the circle rather than a "+"
+   text glyph: a glyph sits on the font's baseline, so it landed about 3px
+   below centre. Bars stay exactly centred, and rotate 45deg into an x. */
+.pricing-faq-marker::before,
+.pricing-faq-marker::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 2px;
+  margin: -1px 0 0 -6px;
+  border-radius: 1px;
+  background: currentColor;
+}
+.pricing-faq-marker::after {
+  transform: rotate(90deg);
 }
 .pricing-faq-item[open] .pricing-faq-marker {
   transform: translateY(-50%) rotate(45deg);
@@ -941,10 +952,10 @@ body:not(.light-mode) .pricing-page--standalone .pricing-h1 {
    Each card spans the same nine row tracks of the grid (subgrid), so every
    row, including "What's included", sits at the same height on all five
    cards. The trial and renewal terms move to the foot of the card as fine
-   print. Applied where the five cards sit side by side. */
-@media (min-width: 1201px) {
+   print. Applied wherever cards render (769px and up): five across, or
+   three then two, where the second row of cards gets its own nine tracks. */
+@media (min-width: 769px) {
   .pricing-cards-grid--five {
-    grid-template-rows: repeat(9, auto);
     row-gap: 0;
   }
   .pricing-cards-grid--five > .plan-card {
@@ -953,9 +964,26 @@ body:not(.light-mode) .pricing-page--standalone .pricing-h1 {
     grid-template-rows: subgrid;
     row-gap: 0;
   }
+  /* Rows already line up across the cards, so the tagline no longer
+     reserves three lines; its track is as tall as the longest tagline. */
+  .pricing-cards-grid--five .plan-tagline {
+    min-height: 0;
+  }
+}
+@media (min-width: 1201px) {
+  .pricing-cards-grid--five {
+    grid-template-rows: repeat(9, auto);
+  }
+}
+/* Three then two: a card's bottom margin joins its last track, which
+   stands in for the row gap the subgrid layout has to switch off. */
+@media (min-width: 769px) and (max-width: 1200px) {
+  .pricing-cards-grid--five > .plan-card {
+    margin-bottom: 1rem;
+  }
 }
 .plan-features-head .plan-features-divider {
-  margin-top: 1.25rem;
+  margin-top: 0.85rem;
 }
 .plan-sub-slot:empty,
 .plan-terms-slot:empty {
@@ -965,8 +993,8 @@ body:not(.light-mode) .pricing-page--standalone .pricing-h1 {
   align-self: end;
 }
 .pricing-cards-section .plan-terms-slot .renewal-terms.plan-renewal {
-  margin: 1.1rem 0 0;
-  padding-top: 0.75rem;
+  margin: 0.85rem 0 0;
+  padding-top: 0.6rem;
   border-top: 1px solid color-mix(in srgb, var(--text-primary) 7%, transparent);
   font-size: 0.6875rem;
   line-height: 1.5;
@@ -1073,8 +1101,8 @@ body:not(.light-mode) .pricing-page--standalone .pricing-h1 {
     align-items: center;
     gap: 0.75rem;
     width: 100%;
-    min-height: 64px;
-    padding: 0.7rem 0.85rem 0.7rem 1rem;
+    min-height: 56px;
+    padding: 0.55rem 0.75rem 0.55rem 0.9rem;
     border: 0;
     background: none;
     color: inherit;
@@ -1091,7 +1119,7 @@ body:not(.light-mode) .pricing-page--standalone .pricing-h1 {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.3rem;
+    gap: 0.2rem;
     min-width: 0;
   }
   .plan-row-name {
@@ -1320,7 +1348,8 @@ body:not(.light-mode) .pricing-page--standalone .pricing-h1 {
   .plan-row-note {
     animation: none;
   }
-  .plan-row-chev {
+  .plan-row-chev,
+  .pricing-faq-marker {
     transition: none;
   }
 }

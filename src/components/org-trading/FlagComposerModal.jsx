@@ -148,7 +148,7 @@ function PositionSwitcher({ current, book, onSwitch }) {
           <input
             ref={inputRef}
             type="text"
-            className="ot-switcher-search"
+            className="ot-switcher-search ds-search-input"
             placeholder="Search ticker, sector, analyst…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}

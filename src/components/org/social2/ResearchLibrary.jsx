@@ -1011,12 +1011,12 @@ function DossierView({ initialTicker, knownTickers, onOpenNote }) {
 
   return (
     <div>
-      <form className="rl2-searchbar" onSubmit={submit} style={{ marginBottom: 16 }}>
+      <form className="rl2-searchbar ds-search" onSubmit={submit} style={{ marginBottom: 16 }}>
         <span className="rl2-search-icon">
           <Search size={16} />
         </span>
         <input
-          className="rl2-search-input"
+          className="rl2-search-input ds-search-input"
           list="rl2-ticker-list"
           value={input}
           onChange={(e) => setInput(e.target.value.toUpperCase())}
@@ -1553,7 +1553,7 @@ export function ResearchLibrary({ initialData = null }) {
 
       {!error && view === 'library' && (
         <>
-          <div className="rl2-searchbar">
+          <div className="rl2-searchbar ds-search">
             <span className="rl2-search-icon">
               <Search size={16} />
             </span>
@@ -1570,7 +1570,7 @@ export function ResearchLibrary({ initialData = null }) {
               </span>
             ))}
             <input
-              className="rl2-search-input"
+              className="rl2-search-input ds-search-input"
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search titles, abstracts, bodies…"

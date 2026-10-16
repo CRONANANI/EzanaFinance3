@@ -209,7 +209,7 @@ export default function FundamentalsClient({ table }) {
 
       <div className="fndx-controls" role="search">
         <input
-          className="fndx-input"
+          className="fndx-input ds-search-input"
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}

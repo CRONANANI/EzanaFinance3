@@ -162,6 +162,7 @@ export default function EchoHome({
                   ref={searchRef}
                   id="ech-search"
                   type="search"
+                  className="ds-search-input"
                   placeholder="Search stories, tickers, topics"
                   value={filters.q}
                   maxLength={80}

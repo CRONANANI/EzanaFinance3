@@ -10,6 +10,7 @@ import { schedule13Kind } from '@/lib/sec-13f-parse';
 import '../../marketing-explore.css';
 import './whale-moves.css';
 import HubQueryLink from '@/components/datasets/HubQueryLink';
+import { BurryWatcher } from './BurryWatcher';
 
 /* ── formatting ── */
 function fmtUSD(v) {
@@ -116,7 +117,7 @@ const KINDS = [
   { id: 'activist', label: 'Activist (Schedule 13D/13G)' },
 ];
 
-export function WhaleMovesClient({ moves }) {
+export function WhaleMovesClient({ moves, burry = null }) {
   const isLive = Array.isArray(moves) && moves.length > 0;
   const isSample = !isLive && ALLOW_SAMPLE;
   const rows = isLive ? moves : isSample ? WHALE_MOVES_SAMPLE : NO_ROWS;
@@ -328,6 +329,9 @@ export function WhaleMovesClient({ moves }) {
             </table>
           </div>
         </section>
+
+        {/* Burry Watcher: Scion's final public 13F, Echo coverage, major-outlet news */}
+        <BurryWatcher data={burry} />
 
         {/* Explainer: the four factors and their weights, so the number is transparent */}
         <section className="mkt-ds-section">

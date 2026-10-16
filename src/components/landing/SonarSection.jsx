@@ -81,6 +81,36 @@ import SonarResearchDeck from './SonarResearchDeck';
  * position — the same place `finish()` would have left it, but without the
  * animation still holding the property afterwards.
  */
+/** The nearest element between `target` and `stop` that scrolls vertically on its own. */
+function innerScroller(target, stop) {
+  let el = target instanceof Element ? target : null;
+  while (el && el !== stop) {
+    const oy = window.getComputedStyle(el).overflowY;
+    if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return el;
+    el = el.parentElement;
+  }
+  return null;
+}
+
+/** The on-screen box of the first text node in `root` that reads `text`, or null. */
+function wordRect(root, text) {
+  if (typeof document === 'undefined' || !root) return null;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    const i = n.nodeValue.indexOf(text);
+    if (i < 0) continue;
+    const host = n.parentElement;
+    /* Skip the hidden "Pinging" / inactive label: only a visible word counts. */
+    if (host && host.closest('.snr-btn-text') && !host.closest('.snr-btn-text.is-active')) continue;
+    const range = document.createRange();
+    range.setStart(n, i);
+    range.setEnd(n, i + text.length);
+    const r = range.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0) return r;
+  }
+  return null;
+}
+
 function readSettledRect(el) {
   if (!el) return null;
   try {
@@ -937,6 +967,20 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
        blocking it. It drives the band's own scroll and reads exit intent. */
     const onWheel = (e) => {
       if (!lockedRef.current) return;
+      /* Oct 15: a wheel over a panel that scrolls on its own (the research
+         brief, the sourced matches) belongs to that panel. While it can
+         still move in the wheel's direction the browser scrolls it natively;
+         at its edge the event is swallowed, so the band never moves and the
+         lock is never released from inside a panel. */
+      const inner = innerScroller(e.target, band);
+      if (inner) {
+        const canMove =
+          e.deltaY < 0
+            ? inner.scrollTop > 0
+            : inner.scrollTop + inner.clientHeight < inner.scrollHeight - 1;
+        if (!canMove) e.preventDefault();
+        return;
+      }
       /* Mid-glide, a wheel tick would fight the animation frame by frame and
          read as judder. The glide is under a second; hold input until it
          lands. */
@@ -1227,7 +1271,17 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
       if (!btn || !form || !el) return;
       const b = btn.getBoundingClientRect();
       const f = form.getBoundingClientRect();
-      const to = { x: b.left - f.left + b.width * 0.46, y: b.top - f.top + b.height * 0.42 };
+      /* Aim at the word "Ping" itself (the glyphs, measured with a Range),
+         and land the arrow's TIP there: the SVG is positioned by its top-left
+         corner and its tip sits at (5, 3) of a 24-unit box. Falls back to the
+         button's centre if the label cannot be measured. */
+      const word = wordRect(btn, 'Ping') || b;
+      const tipX = (el.getBoundingClientRect().width || 18) * (5 / 24);
+      const tipY = (el.getBoundingClientRect().height || 18) * (3 / 24);
+      const to = {
+        x: word.left + word.width / 2 - f.left - tipX,
+        y: word.top + word.height / 2 - f.top - tipY,
+      };
       if (reduce) {
         setCursorLive(true);
         el.style.transform = `translate3d(${to.x}px, ${to.y}px, 0)`;
@@ -1307,13 +1361,13 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
             setPingPulse((n) => n + 1);
             stopType = startTypewriter(data.answer);
           } else {
-            setPingError('The demo could not load. Type a ping to try it yourself.');
+            setPingError('The demo could not load. Run a ping of your own on the Datasets page.');
             setDemoFailed(true);
           }
           demoDoneRef.current = true;
         } catch {
           if (alive) {
-            setPingError('The demo could not load. Type a ping to try it yourself.');
+            setPingError('The demo could not load. Run a ping of your own on the Datasets page.');
             setDemoFailed(true);
             demoDoneRef.current = true;
           }
@@ -2033,13 +2087,11 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
               <span className="snr-eyebrow">Sonar</span>
             </div>
             <h2 ref={headlineRef} className="snr-headline">
-              Ask about any company, politician or bill.
+              Ask about any company, person, country or policy.
             </h2>
             <p className="snr-subhead">
-              Sonar reads congressional trades, federal contracts, SEC filings, lobbying, prediction
-              markets, Echo analysis and the open web in one pass, then hands back a short briefing
-              with a source behind every line. It reports what the records show; it never tells you
-              what to buy.
+              Sonar sweeps every Ezana dataset and the open web in one pass, then hands back a cited
+              briefing.
             </p>
           </div>
 
@@ -2054,14 +2106,20 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
                 tab into or hear read out. React 18 does not know `inert` as a
                 boolean prop, so it is passed as the empty string, which is
                 the attribute's own HTML form. */}
+              {/* Oct 15: on the landing band the pill is the demo's stage, not a
+                field. It is read-only and takes no pointer, focus or submit;
+                the real entry point is "Run your first ping" below, which opens
+                the Datasets page. The /datasets results band (isPage) keeps it
+                interactive. */}
               <form
                 ref={formRef}
-                className="snr-pingbar"
-                action="/sonar"
+                className={`snr-pingbar${isPage ? '' : ' snr-pingbar--demo'}`}
+                action={isPage ? '/sonar' : undefined}
                 method="get"
-                role="search"
-                onSubmit={onPingSubmit}
-                inert={gateOpen ? '' : undefined}
+                role={isPage ? 'search' : undefined}
+                aria-hidden={isPage ? undefined : 'true'}
+                onSubmit={isPage ? onPingSubmit : (e) => e.preventDefault()}
+                inert={gateOpen || !isPage ? '' : undefined}
               >
                 <i className="bi bi-search snr-pingbar-icon" aria-hidden="true" />
                 <label className="snr-label-sr" htmlFor="snr-ping-input">
@@ -2075,6 +2133,8 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
                   name="q"
                   placeholder=" "
                   autoComplete="off"
+                  readOnly={!isPage}
+                  tabIndex={isPage ? undefined : -1}
                   value={queryValue}
                   onChange={(e) => {
                     userTookOverRef.current = true;
@@ -2097,7 +2157,8 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
                 )}
                 <button
                   ref={pingBtnRef}
-                  type="submit"
+                  type={isPage ? 'submit' : 'button'}
+                  tabIndex={isPage ? undefined : -1}
                   className={`snr-ping-btn snr-anim-press${btnPressed ? ' snr-ping-btn--pressed' : ''}`}
                   disabled={pinging}
                 >
@@ -2244,16 +2305,22 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
                       {pingError || 'That ping did not land.'}
                     </p>
                     <p className="snr-para">
-                      <button
-                        type="button"
-                        className="snr-link"
-                        onClick={() => {
-                          setPingPulse((n) => n + 1);
-                          inputRef.current?.focus();
-                        }}
-                      >
-                        Try another ping
-                      </button>
+                      {isPage ? (
+                        <button
+                          type="button"
+                          className="snr-link"
+                          onClick={() => {
+                            setPingPulse((n) => n + 1);
+                            inputRef.current?.focus();
+                          }}
+                        >
+                          Try another ping
+                        </button>
+                      ) : (
+                        <a className="snr-link" href="/datasets">
+                          Run a ping on the Datasets page
+                        </a>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -2264,7 +2331,7 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
                   <p className="snr-footnote">
                     Findings only, never financial advice. Every claim carries its source.
                   </p>
-                  <a className="snr-cta" href="/sonar">
+                  <a className="snr-cta" href="/datasets">
                     Run your first ping
                     <i className="bi bi-arrow-right" aria-hidden="true" />
                   </a>

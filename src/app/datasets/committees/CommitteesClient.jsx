@@ -515,7 +515,7 @@ function ByMember({ members, initialMember, onSelect, note }) {
         <i className="bi bi-search" aria-hidden="true" />
         <input
           type="search"
-          className="cmx-search-input"
+          className="cmx-search-input ds-search-input"
           placeholder="Search a member by name or state"
           aria-label="Search members of Congress"
           value={query}

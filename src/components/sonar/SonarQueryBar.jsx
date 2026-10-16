@@ -3,9 +3,9 @@
 import { Search, Radar, Paperclip } from 'lucide-react';
 
 /**
- * SonarQueryBar, the Ping input pill. `ghost` (Datasets page): transparent,
- * slightly darker fill, no outline, no search icon or paperclip, a blinking
- * caret at the start.
+ * SonarQueryBar, the Ping input pill. Shares the app-wide search pill design
+ * (ds-search: transparent, no outline, blinking | caret at the start while
+ * empty). `ghost` (Datasets page) also has no search icon or paperclip.
  * Search icon + text input + emerald Ping
  * button. Used in the hero and, compact, in the sticky results bar. Controlled by
  * the page (the page owns query state + the backend call). The paperclip is a
@@ -25,24 +25,20 @@ export function SonarQueryBar({
   const empty = !value;
   return (
     <form
-      className={`sonar-qbar${ghost ? ' sonar-qbar--ghost' : ''}${ghost && empty ? ' is-empty' : ''}`}
+      className={`sonar-qbar ds-search${ghost ? ' sonar-qbar--ghost' : ''}${ghost && empty ? ' is-empty' : ''}`}
       onSubmit={(e) => {
         e.preventDefault();
         if (!loading && !disabled && value.trim()) onSubmit(value);
       }}
     >
-      {ghost ? (
-        /* Ghost bar (Datasets): no search icon; a blinking | sits where typing
-           starts until the visitor types (the native caret takes over then). */
-        <span className="sonar-qbar-caret" aria-hidden>
-          |
-        </span>
-      ) : (
-        <Search className="sonar-qbar-icon" size={18} aria-hidden />
-      )}
+      {/* Oct 15: every search pill shares one design (ds-search in ds.css):
+          no outline, transparent, and a blinking | where typing starts,
+          drawn by .ds-search-input while the field is empty. The ghost bar
+          (Datasets) also drops the search icon. */}
+      {ghost ? null : <Search className="sonar-qbar-icon" size={18} aria-hidden />}
       {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
       <input
-        className="sonar-qbar-input"
+        className="sonar-qbar-input ds-search-input"
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}

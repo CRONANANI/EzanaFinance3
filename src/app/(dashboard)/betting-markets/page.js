@@ -606,6 +606,7 @@ function PolymarketSection() {
         </div>
         <div style={{ padding: '0 1.25rem 1.25rem' }}>
           <div
+            className="ds-search"
             style={{
               display: 'flex',
               gap: '0.5rem',
@@ -620,14 +621,12 @@ function PolymarketSection() {
             <i className="bi bi-search" style={{ color: 'var(--bm-subtle)', fontSize: '0.8rem' }} />
             <input
               type="text"
+              className="ds-search-input"
               data-task-target="polymarket-search"
               placeholder="Search by wallet address or username…"
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
               style={{
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
                 color: 'var(--bm-heading)',
                 fontSize: '0.8125rem',
                 width: '100%',
@@ -920,6 +919,7 @@ function KalshiSection() {
               Search Kalshi Markets
             </p>
             <div
+              className="ds-search"
               style={{
                 display: 'flex',
                 gap: '0.5rem',
@@ -936,13 +936,11 @@ function KalshiSection() {
               />
               <input
                 type="text"
+                className="ds-search-input"
                 placeholder="Search by keyword, ticker, or category…"
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
                 style={{
-                  background: 'transparent',
-                  border: 'none',
-                  outline: 'none',
                   color: 'var(--bm-heading)',
                   fontSize: '0.8125rem',
                   width: '100%',

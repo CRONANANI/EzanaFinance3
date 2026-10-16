@@ -1,21 +1,18 @@
 'use client';
 
 /**
- * Start here as a curved milestone path: each Start here article is a node
- * on a zig-zag curve, read in order. Signed out, every node is unmarked and
- * a line invites the reader to sign in to save progress (reads are kept on
- * the device meanwhile). Signed in, read nodes fill emerald, the next unread
- * node is marked Up next, and the header counts N of M complete. Local reads
- * merge into the account on the first signed-in visit. Under 700px the curve
- * gives way to a vertical timeline.
+ * Start here as a numbered ladder: each Start here article is a step card in
+ * a three column grid, read left to right and top to bottom (1 2 3, 4 5 6,
+ * 7 8 9, and on in rows of three). Signed out, every step is unmarked and a
+ * line invites the reader to sign in to save progress (reads are kept on the
+ * device meanwhile). Signed in, read steps fill emerald, the next unread step
+ * is marked Up next, and the header counts N of M complete. Local reads merge
+ * into the account on the first signed-in visit. Phones get a single column.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/auth-context';
 import { clearLocal, postReads, readLocal } from './help-reads';
-
-const W = 600;
-const ROW_H = 112;
 
 export default function StartHerePath({ milestones }) {
   const { isAuthenticated, loading } = useAuth();
@@ -62,22 +59,6 @@ export default function StartHerePath({ milestones }) {
   const done = milestones.filter((m) => reads.has(m.slug)).length;
   const nextIdx = milestones.findIndex((m) => !reads.has(m.slug));
 
-  /* Zig-zag curve: nodes alternate left and right down the drawing. */
-  const { pts, d, H } = useMemo(() => {
-    const height = ROW_H * Math.max(0, n - 1) + 80;
-    const points = milestones.map((_, i) => ({
-      x: i % 2 === 0 ? W * 0.25 : W * 0.75,
-      y: 40 + i * ROW_H,
-    }));
-    const path = points.reduce((acc, p, i) => {
-      if (i === 0) return `M ${p.x} ${p.y}`;
-      const prev = points[i - 1];
-      const midY = (prev.y + p.y) / 2;
-      return `${acc} C ${prev.x} ${midY}, ${p.x} ${midY}, ${p.x} ${p.y}`;
-    }, '');
-    return { pts: points, d: path, H: height };
-  }, [milestones, n]);
-
   if (!n) return null;
   return (
     <section className="hcs-path" aria-labelledby="hcs-start-title">
@@ -99,38 +80,37 @@ export default function StartHerePath({ milestones }) {
         )}
       </div>
 
-      <div className="hcs-path-box">
-        <svg viewBox={`0 0 ${W} ${H}`} className="hcs-path-svg" aria-hidden="true">
-          <path d={d} className="hcs-path-track" />
-        </svg>
-        <ol className="hcs-path-list">
-          {milestones.map((m, i) => {
-            const isRead = reads.has(m.slug);
-            const isNext = i === nextIdx;
-            const state = isRead ? 'read' : isNext ? 'next' : 'todo';
-            return (
-              <li
-                key={m.slug}
-                className="hcs-path-node"
-                data-state={state}
-                style={{ left: `${(pts[i].x / W) * 100}%`, top: `${(pts[i].y / H) * 100}%` }}
-              >
-                <Link href={m.url} className="hcs-path-link">
+      <ol className="hcs-path-list">
+        {milestones.map((m, i) => {
+          const isRead = reads.has(m.slug);
+          const isNext = i === nextIdx;
+          const state = isRead ? 'read' : isNext ? 'next' : 'todo';
+          return (
+            <li key={m.slug} className="hcs-path-node" data-state={state}>
+              <Link href={m.url} className="hcs-path-link">
+                <span className="hcs-path-top">
                   <span className="hcs-path-dot hcs-mono" aria-hidden="true">
-                    {isRead ? <i className="bi bi-check-lg" /> : i + 1}
+                    {i + 1}
                   </span>
-                  <span className="hcs-path-text">
-                    {isNext ? <em className="hcs-path-upnext">Up next</em> : null}
-                    <strong className="hcs-path-title">{m.title}</strong>
-                    {m.blurb ? <small className="hcs-path-blurb">{m.blurb}</small> : null}
-                    <span className="hcs-sr">{isRead ? ', read' : isNext ? ', up next' : ''}</span>
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ol>
-      </div>
+                  {isRead ? (
+                    <span className="hcs-path-status hcs-path-status--done" aria-hidden="true">
+                      <i className="bi bi-check-lg" />
+                      Read
+                    </span>
+                  ) : isNext ? (
+                    <em className="hcs-path-status hcs-path-upnext" aria-hidden="true">
+                      Up next
+                    </em>
+                  ) : null}
+                </span>
+                <strong className="hcs-path-title">{m.title}</strong>
+                {m.blurb ? <small className="hcs-path-blurb">{m.blurb}</small> : null}
+                <span className="hcs-sr">{isRead ? ', read' : isNext ? ', up next' : ''}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ol>
     </section>
   );
 }

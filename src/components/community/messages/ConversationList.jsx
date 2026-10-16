@@ -123,7 +123,7 @@ export function ConversationList({
           <input
             ref={inputRef}
             type="text"
-            className="m-search__input"
+            className="m-search__input ds-search-input"
             placeholder="Search messages and conversations..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}

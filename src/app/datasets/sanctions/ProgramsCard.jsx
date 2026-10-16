@@ -72,7 +72,7 @@ export function squarify(items, x, y, w, h) {
 
 const shareText = (n, d) => (d ? `${((n / d) * 100).toFixed(1)}%` : 'n/a');
 
-export default function ProgramsCard({ programs, themes, selected, onPick }) {
+export default function ProgramsCard({ programs, themes, selected, onPick, embedded = false }) {
   const [metric, setMetric] = useState('count');
   const [theme, setTheme] = useState('');
   const [hover, setHover] = useState(null);
@@ -98,12 +98,18 @@ export default function ProgramsCard({ programs, themes, selected, onPick }) {
   const val = (n) => (metric === 'share' ? shareText(n, assignments) : fmt(n));
 
   return (
-    <section className="snx-card" aria-labelledby="snx-programs">
+    <section className={embedded ? 'snx-sub' : 'snx-card'} aria-labelledby="snx-programs">
       <div className="snx-card-head">
         <div>
-          <h2 id="snx-programs" className="snx-card-title">
-            Programs by size
-          </h2>
+          {embedded ? (
+            <h3 id="snx-programs" className="snx-sub-title">
+              Programs by size
+            </h3>
+          ) : (
+            <h2 id="snx-programs" className="snx-card-title">
+              Programs by size
+            </h2>
+          )}
           <p className="snx-card-sub">
             Listings per program, coloured by theme. Select one to shade the map and filter the
             page.

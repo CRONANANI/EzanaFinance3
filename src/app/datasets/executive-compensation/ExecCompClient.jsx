@@ -291,7 +291,7 @@ export default function ExecCompClient({ rows }) {
 
       <div className="ecx-controls" role="search">
         <input
-          className="ecx-input"
+          className="ecx-input ds-search-input"
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}

@@ -787,11 +787,15 @@ export default function PricingPage() {
                   )}
                 </div>
 
+                {/* Every card shows a figure, so no card carries an empty price row. */}
                 <div className="plan-price">
                   {price === null ? (
-                    <span className="plan-price-amount"></span>
+                    <span className="plan-price-amount">Custom</span>
                   ) : plan.isFree ? (
-                    <span className="plan-price-amount"></span>
+                    <>
+                      <span className="plan-price-currency">$</span>
+                      <span className="plan-price-amount">0</span>
+                    </>
                   ) : (
                     <>
                       <span className="plan-price-currency">$</span>
@@ -971,9 +975,7 @@ export default function PricingPage() {
             <details key={item.q} className="pricing-faq-item">
               <summary>
                 <span>{item.q}</span>
-                <span className="pricing-faq-marker" aria-hidden>
-                  +
-                </span>
+                <span className="pricing-faq-marker" aria-hidden />
               </summary>
               <p className="pricing-faq-answer">{item.a}</p>
             </details>

@@ -16,7 +16,7 @@ export function FilterBar({
   activeTier,
   onTierChange,
 }) {
-  const { page, brand, shape } = useEloTheme();
+  const { page, shape } = useEloTheme();
   const [localQuery, setLocalQuery] = useState(query);
   const debounceRef = useRef();
   const inputRef = useRef(null);
@@ -95,23 +95,14 @@ export function FilterBar({
           onChange={(e) => setLocalQuery(e.target.value)}
           placeholder="Search trader…"
           aria-label="Search trader by name"
+          className="ds-search-input"
           style={{
             width: '100%',
             padding: '7px 32px 7px 30px',
-            border: `1px solid ${page.border}`,
             borderRadius: shape.radius.button,
-            background: page.surface,
             fontSize: 12,
             fontFamily: typeTokens.sans,
             color: page.ink,
-            boxShadow: shape.shadow.card,
-            outline: 'none',
-          }}
-          onFocus={(e) => {
-            e.currentTarget.style.borderColor = brand.base;
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.borderColor = page.border;
           }}
         />
         <span

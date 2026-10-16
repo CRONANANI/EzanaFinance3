@@ -109,6 +109,7 @@ function CountryPanel({ country, summary, withCountry, program, onProgram, onCle
 }
 
 export default function MapCard({
+  embedded = false,
   map,
   summary,
   filter,
@@ -129,15 +130,24 @@ export default function MapCard({
   const focusMeta = filter.program ? programMeta(filter.program) : null;
 
   return (
-    <section className="snx-card snx-hero snx-hero--map" aria-labelledby="snx-where">
+    <section
+      className={embedded ? 'snx-sub snx-sub--map' : 'snx-card snx-hero snx-hero--map'}
+      aria-labelledby="snx-where"
+    >
       <div className="snx-card-head">
         <div>
-          <h2 id="snx-where" className="snx-card-title">
-            Where listed parties are based
-          </h2>
+          {embedded ? (
+            <h3 id="snx-where" className="snx-sub-title">
+              Where listed parties are based
+            </h3>
+          ) : (
+            <h2 id="snx-where" className="snx-card-title">
+              Where listed parties are based
+            </h2>
+          )}
           <p className="snx-card-sub">
             Address countries OFAC publishes with each listing. Select a country to filter the page,
-            or a program in Programs by size to shade by it.
+            or a program above to shade by it.
           </p>
         </div>
         <div className="snx-tl-controls">

@@ -629,7 +629,7 @@ export default function PoliticianTracker({
                 <span className="ptk-sr">Search a member</span>
                 <input
                   ref={searchRef}
-                  className="dsc-input"
+                  className="dsc-input ds-search-input"
                   placeholder="Search a member"
                   value={queryInput}
                   onChange={(e) => {

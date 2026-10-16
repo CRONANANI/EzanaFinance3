@@ -1899,35 +1899,8 @@ body.light-mode .dso-page--search .sonar-h1 {
 .dso-page--search .sonar-qbar--ghost .sonar-qbar-input::placeholder {
   color: color-mix(in srgb, var(--dso-radar-ink) 45%, transparent);
 }
-/* While empty, the drawn | is the caret, so the native one is hidden. */
-.dso-page--search .sonar-qbar--ghost.is-empty .sonar-qbar-input {
-  caret-color: transparent;
-}
-.sonar-qbar-caret {
-  flex-shrink: 0;
-  margin-right: -10px;
-  font-family: var(--font-sans);
-  font-size: 18px;
-  font-weight: 300;
-  line-height: 1;
-  color: var(--brand-band-mint);
-  animation: sonar-caret-blink 1.06s steps(1, end) infinite;
-}
-.sonar-qbar--ghost:not(.is-empty) .sonar-qbar-caret {
-  visibility: hidden;
-  width: 0;
-  margin-right: -12px;
-}
-@keyframes sonar-caret-blink {
-  50% {
-    opacity: 0;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .sonar-qbar-caret {
-    animation: none;
-  }
-}
+
+/* The ghost bar's caret is now the shared .ds-search-input caret (ds.css). */
 
 /* ── Oct 11 contrast pass ──────────────────────────────────────────────
    Every piece of text on the green globe ground reads clearly: names and
@@ -2475,4 +2448,49 @@ body.light-mode .dso-page--search .dso-sonar-title {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* ── Oct 15: the overview on the landing Sonar band's green ───────────
+   /datasets now sits on exactly the landing Sonar section's ground,
+   --brand-band-green (replacing the Oct 13 black). The category bar's
+   labels (Home, Log in, Join the waitlist) and the notification icons are
+   white so they read on the green, the search placeholder is white at 72%
+   (emerald on green did not read), and the orbital scene keeps its dark
+   slab, which is what separates it from the ground. */
+/* The shell paints the gradient once; the bar and the ground above the
+   globe stay transparent (Oct 12 rule), so there is no seam. */
+.ds-shell--search {
+  --dso-black: var(--dso-radar-core);
+  background: var(--brand-band-green);
+}
+.ds-shell--search .dso-ground {
+  background: transparent;
+}
+/* The landing band has no globe, and the globe layer starts under the bar,
+   which left a lighter strip above it; for an exact match it is hidden. */
+.ds-shell--search .dso-globe {
+  display: none;
+}
+.ds-shell--search[data-nav-theme='datasets'] .dscat-bar .dscat-home,
+.ds-shell--search[data-nav-theme='datasets'] .dscat-bar .dscat-home .bi,
+.ds-shell--search[data-nav-theme='datasets'] .dscat-bar .dscat-btn--text,
+.ds-shell--search[data-nav-theme='datasets'] .dscat-bar .dscat-trigger,
+.ds-shell--search[data-nav-theme='datasets'] .dscat-bar .dscat-trigger.is-active,
+.ds-shell--search[data-nav-theme='datasets'] .dscat-bar .dscat-trigger[aria-expanded='true'] {
+  color: white;
+}
+.ds-shell--search[data-nav-theme='datasets'] .dscat-bar .dscat-trigger:focus-visible,
+.ds-shell--search[data-nav-theme='datasets'] .dscat-bar .dscat-home:focus-visible,
+.ds-shell--search[data-nav-theme='datasets'] .dscat-bar .dscat-btn--text:focus-visible {
+  outline-color: white;
+}
+.ds-shell--search .dso-news-dim,
+.ds-shell--search .dso-news-dim .bi {
+  color: white;
+}
+.ds-shell--search .dso-page--search .sonar-qbar--ghost .sonar-qbar-input::placeholder {
+  color: color-mix(in srgb, white 72%, transparent);
+}
+.ds-shell--search .dso-page--search .sonar-qbar--ghost .sonar-qbar-input {
+  color: white;
 }

@@ -124,7 +124,7 @@ export function CohortRoster({ cohortId, canManage, onCount, onGoRecruit }) {
             style={{ position: 'absolute', left: 10, top: 10, color: 'var(--text-muted)' }}
           />
           <input
-            className="c2-input"
+            className="c2-input ds-search-input"
             placeholder="Search members"
             value={q}
             onChange={(e) => setQ(e.target.value)}

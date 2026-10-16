@@ -1378,6 +1378,7 @@ export default function WatchlistPage() {
               <i className="bi bi-search" />
               <input
                 type="text"
+                className="ds-search-input"
                 placeholder="Search stocks, portfolios, funds…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}

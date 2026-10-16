@@ -206,11 +206,11 @@ export default function InstitutionalClient({ quarterLabel, stats, filers, widel
           <div className="mkt-ds-search-row" role="search">
             <label className="mkt-ds-search">
               <span className="mkt-ds-search-label">Holding search</span>
-              <span className="mkt-ds-search-field">
+              <span className="mkt-ds-search-field ds-search">
                 <i className="bi bi-search" aria-hidden="true" />
                 <input
                   type="text"
-                  className="mkt-ds-input"
+                  className="mkt-ds-input ds-search-input"
                   placeholder="Search by ticker or issuer…"
                   value={holdingTerm}
                   onChange={(e) => setHoldingTerm(e.target.value)}

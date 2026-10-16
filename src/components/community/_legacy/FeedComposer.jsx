@@ -380,7 +380,7 @@ export function FeedComposer({
                 value={tickerQuery}
                 onChange={(e) => setTickerQuery(e.target.value)}
                 autoFocus
-                className="comm-composer-input"
+                className="comm-composer-input ds-search-input"
               />
               {filteredTickers.length > 0 && (
                 <div className="comm-composer-ticker-results">
