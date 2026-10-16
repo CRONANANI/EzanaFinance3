@@ -165,4 +165,16 @@ const sentryWebpackPluginOptions = {
   tunnelRoute: '/monitoring',
 };
 
-module.exports = withSentryConfig(withBundleAnalyzer(nextConfig), sentryWebpackPluginOptions);
+/* Oct 16: Sentry turns on full "source-map" output for every server bundle.
+   On a cold or mostly invalidated build that exhausts Vercel's 8 GB build
+   machine and hits the 45-minute limit (BUILD_EXCEEDED_MAXIMUM_TIME). Keep
+   Sentry's hidden client maps (readable browser stack traces) and skip
+   server maps. */
+const sentryWrapped = withSentryConfig(withBundleAnalyzer(nextConfig), sentryWebpackPluginOptions);
+const sentryWebpack = sentryWrapped.webpack;
+sentryWrapped.webpack = (config, ctx) => {
+  const out = typeof sentryWebpack === 'function' ? sentryWebpack(config, ctx) : config;
+  if (ctx.isServer && !ctx.dev) out.devtool = false;
+  return out;
+};
+module.exports = sentryWrapped;
