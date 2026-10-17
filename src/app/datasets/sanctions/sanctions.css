@@ -2234,3 +2234,169 @@
     gap: 2px;
   }
 }
+
+/* ══ Oct 16: map first, paired cards share one height ═════════════════ */
+
+/* The landscape card (headline measures over the map) takes most of the
+   width; Fastest-rising countries is a narrow card beside it. */
+.snx-lead-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 300px);
+  gap: 18px;
+  align-items: stretch;
+}
+
+/* A paired card that takes its neighbour's height: the card is a column, and
+   its list is a scroll region with no intrinsic height of its own
+   (contain: size), so the row is as tall as the OTHER card and this one
+   scrolls inside it instead of leaving empty space under the shorter card. */
+.snx-fill {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.snx-fill > .snx-fill-scroll {
+  flex: 1 1 0;
+  min-height: 120px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  contain: size;
+  scrollbar-width: thin;
+}
+.snx-fill > .snx-fine {
+  margin-top: 10px;
+}
+
+/* The map is capped so the whole landscape card, measures, map, legend and
+   note, is on screen at 1440x900 without scrolling. The SVG keeps its aspect
+   (it letterboxes), so nothing is distorted. */
+.snx-lead-row .snx-landscape .snx-sub {
+  margin-top: 12px;
+  padding-top: 12px;
+}
+.snx-lead-row .snx-map.is-compact .snx-map-svg {
+  max-height: 272px;
+}
+/* Narrower than the full-width strip it was: let the measure lines wrap
+   rather than end in an ellipsis. */
+.snx-lead-row .snx-lstat-line {
+  white-space: normal;
+}
+
+/* Rising countries, narrow: tighter rows and shorter bars. */
+.snx-rising .snx-mo {
+  gap: 2px;
+  margin-right: -6px;
+  padding-right: 6px;
+}
+.snx-rising .snx-mo-row {
+  align-items: stretch;
+  padding: 6px 4px;
+}
+.snx-rising .snx-mo-chart {
+  height: 34px;
+}
+.snx-rising .snx-mo-name {
+  font-size: 0.8125rem;
+}
+.snx-rising .snx-mo-foot span:nth-child(2) {
+  display: none;
+}
+.snx-rising .snx-strip-legend {
+  margin-top: 8px;
+}
+
+/* Programs by size, compact: a shorter treemap, the theme totals on two
+   lines. */
+.snx-programs .snx-tree {
+  aspect-ratio: auto;
+  height: 300px;
+}
+.snx-programs .snx-tree-detail {
+  margin-top: 8px;
+}
+@media (min-width: 1181px) {
+  .snx-programs .snx-themes {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+/* Explorer beside the intelligence feed. */
+.snx-pair.snx-pair--fit {
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  align-items: stretch;
+}
+.snx-pair--fit .snx-jx-headrow,
+.snx-pair--fit .snx-jx-row {
+  grid-template-columns: 24px minmax(0, 150px) minmax(0, 1fr) 56px 82px 96px;
+  gap: 8px;
+}
+.snx-pair--fit .snx-jx-detail {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  padding: 6px 8px 12px 40px;
+}
+.snx-feed .snx-feed-list {
+  padding-right: 4px;
+}
+
+/* The row's chevron: one glyph that rotates, in a 24px target. */
+.snx-jx-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.snx-jx-toggle .bi {
+  font-size: 0.75rem;
+  transition: transform 0.15s ease;
+}
+.snx-jx-row:hover .snx-jx-toggle,
+.snx-jx-list > li.is-open .snx-jx-toggle {
+  background: var(--emerald-bg);
+  color: var(--emerald);
+}
+.snx-jx-list > li.is-open .snx-jx-toggle .bi {
+  transform: rotate(90deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .snx-jx-toggle,
+  .snx-jx-toggle .bi {
+    transition: none;
+  }
+}
+
+/* Below 1180px the pairs stack, and each card goes back to its own natural
+   height: nothing beside it to match. */
+@media (max-width: 1180px) {
+  .snx-lead-row,
+  .snx-pair.snx-pair--fit {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .snx-fill > .snx-fill-scroll {
+    flex: none;
+    min-height: 0;
+    contain: none;
+    overflow: visible;
+  }
+  .snx-rising .snx-mo-foot span:nth-child(2) {
+    display: inline;
+  }
+}
+@media (max-width: 640px) {
+  .snx-pair--fit .snx-jx-row {
+    grid-template-columns: 24px minmax(0, 1fr) 70px;
+  }
+  .snx-pair--fit .snx-jx-detail {
+    padding-left: 8px;
+  }
+  .snx-programs .snx-tree {
+    height: 260px;
+  }
+}

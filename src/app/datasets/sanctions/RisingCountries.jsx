@@ -14,7 +14,7 @@ import { StateNote, fmt, monthLabel } from './ui';
 
 function Row({ row, selected, onPick }) {
   const W = 240;
-  const H = 46;
+  const H = 34;
   const maxBar = Math.max(1, ...row.added);
   const bw = W / row.added.length;
   const label = `${row.country}: ${fmt(row.recent)} new listings in the last 12 months against ${fmt(row.prior)} in the 12 before.`;
@@ -68,24 +68,25 @@ function Row({ row, selected, onPick }) {
   );
 }
 
+/* Oct 16: a narrow card beside the map. It takes the map card's height and
+   scrolls its rows inside, so neither card leaves empty space under it. */
 export default function RisingCountries({ trends, selected, onPick }) {
   const rows = trends?.rows || [];
   return (
-    <section className="snx-card" aria-labelledby="snx-rising">
+    <section className="snx-card snx-rising snx-fill" aria-labelledby="snx-rising">
       <div className="snx-card-head">
         <div>
           <h2 id="snx-rising" className="snx-card-title">
             Fastest-rising countries
           </h2>
           <p className="snx-card-sub">
-            Address countries adding OFAC listings fastest: the last 12 months against the 12
-            before.
+            Adding OFAC listings fastest: the last 12 months against the 12 before.
           </p>
         </div>
       </div>
       {rows.length ? (
         <>
-          <ol className="snx-mo">
+          <ol className="snx-mo snx-fill-scroll">
             {rows.map((r) => (
               <Row key={r.country} row={r} selected={selected === r.country} onPick={onPick} />
             ))}

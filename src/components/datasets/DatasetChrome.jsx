@@ -19,6 +19,7 @@ import { usePathname } from 'next/navigation';
 import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 import CategoryBar from '@/components/datasets/CategoryBar';
 import DatasetTicker from '@/components/datasets/DatasetTicker';
+import NewsBelt from '@/components/datasets/NewsBelt';
 import { useTickerSlot } from '@/components/datasets/ticker-slot';
 import { dimensionForSlug } from '@/lib/datasets/hubs';
 
@@ -57,7 +58,8 @@ export default function DatasetChrome() {
   const { ticker } = useTickerSlot();
   /* The overview is not one of the datasets, so no dimension is marked there,
      which is how it rendered before this moved to the layout. */
-  const hit = pathname === '/datasets' ? null : resolveActive(pathname);
+  const overview = pathname === '/datasets';
+  const hit = overview ? null : resolveActive(pathname);
   /* One green block, one set of rounded bottom corners, one bottom margin. The
      wrapper's overflow: hidden is what clips the ticker's track to those
      corners; it does NOT affect the bar's dimension menus, which render through
@@ -65,12 +67,16 @@ export default function DatasetChrome() {
      that publishes no ticker gets the bar alone, still rounded. */
   return (
     <div className="dscat-chrome">
+      {/* Oct 16: on the overview the page's items are news cards, and they
+          run inside the bar itself as a belt beside the logo, not as a
+          ticker strip under it. */}
       <CategoryBar
         active={hit?.active ?? null}
         activeItem={hit?.activeItem ?? null}
-        showDimensions={pathname !== '/datasets'}
+        showDimensions={!overview}
+        belt={overview && ticker ? <NewsBelt items={ticker.items} /> : null}
       />
-      {ticker ? (
+      {ticker && !overview ? (
         <DatasetTicker
           items={ticker.items}
           onSelect={ticker.onSelect}

@@ -278,8 +278,11 @@ function usePixelBox() {
 
 const CHART_INSET = 6;
 
-/* How long the answer types on its own before the dossier starts to move. */
-const STAGE_LEAD_MS = 320;
+/* How long the answer types on its own before the dossier starts to move.
+   Oct 16: 900ms, up from 320. The brief's first lines are reading before the
+   Sourced matches card moves, so the sequence is brief, then matches, then
+   the chart card, then news, one beat at a time rather than all at once. */
+const STAGE_LEAD_MS = 900;
 /* Each Sourced matches row pops this long after the previous one, starting
    just after the dossier begins its glide, so the rows fill in as the card
    lands rather than while it is still parked at the edge. */
@@ -1324,26 +1327,59 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
       timers.push(setTimeout(hideDemoCursor, 700));
     };
 
+    /* Oct 16: the answer is fetched WHILE the query types, not after the
+       click. Fetching after the click put the stacked-block loader on screen
+       between the press and the answer on every visit, which read as the
+       brief flashing away and a cube bouncing before the text came back. The
+       endpoint is cached for a day, so by the time the pointer has pressed
+       Ping the answer is almost always already here. The loader now shows
+       only if it is not, and only after a short grace, so a fast answer never
+       flashes it for a frame. Settles to { res, data } or null, never throws. */
+    /* The version is the cache-buster. /api/landing/demo-ping caches for a
+       day, so a response produced before a pipeline fix keeps serving for up
+       to 24h after the deploy that fixed it. Bumping this asks for a
+       different URL, which is a different cache entry. */
+    let answerPromise = null;
+    const prefetch = () => {
+      if (!answerPromise) {
+        answerPromise = fetch('/api/landing/demo-ping?v=9')
+          .then(async (res) => ({ res, data: await res.json().catch(() => null) }))
+          .catch(() => null);
+      }
+      return answerPromise;
+    };
+    const LOADER_GRACE_MS = 260;
+
     const timer = setTimeout(
       async () => {
         if (!alive || userTookOverRef.current) return;
+        prefetch();
         await typeQuery();
         if (!alive || userTookOverRef.current) return;
         await movePointer();
         if (!alive || userTookOverRef.current) return;
 
         hasPingedRef.current = true;
-        setHasPinged(true);
         setLastQuery(DEMO_QUERY);
-        setPinging(true);
+        /* hasPinged and the answer land in the same commit when the answer is
+           already here. Set alone, hasPinged with no answer and no request in
+           flight reads as a failed ping and would flash the error layer. If
+           the answer is still on its way after the grace, the loader takes
+           over until it lands. */
+        const early = await Promise.race([
+          prefetch().then((out) => ({ out })),
+          new Promise((resolve) => {
+            timers.push(setTimeout(() => resolve(null), LOADER_GRACE_MS));
+          }),
+        ]);
+        if (!alive) return;
+        setHasPinged(true);
+        if (!early) setPinging(true);
         try {
-          /* The version is the cache-buster. /api/landing/demo-ping caches for
-           a day, so a response produced before a pipeline fix keeps serving
-           for up to 24h after the deploy that fixed it. Bumping this asks
-           for a different URL, which is a different cache entry. */
-          const res = await fetch('/api/landing/demo-ping?v=9');
-          const data = await res.json().catch(() => null);
+          const out = early ? early.out : await prefetch();
           if (!alive) return;
+          if (!out) throw new Error('demo fetch failed');
+          const { res, data } = out;
           if (res.ok && data?.answer) {
             setLive({
               answer: data.answer,
@@ -1442,7 +1478,8 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
        sequence: the arrow's job is to say the answer has arrived, and waiting
        on the orbital's fade would hold it back after everything readable is
        in place. */
-    const t = setTimeout(() => setStage2Settled(true), staging ? lead + 1300 : 0);
+    /* lead, then the news card's delay (1200ms) and its 900ms entrance. */
+    const t = setTimeout(() => setStage2Settled(true), staging ? lead + 2200 : 0);
     return () => {
       clearTimeout(go);
       clearTimeout(t);
@@ -1478,8 +1515,8 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
       setOrbitalUp(true);
     };
 
-    /* 320ms delay + 900ms duration, plus a frame's grace. */
-    const t = window.setTimeout(raise, 1280);
+    /* The news card's 1200ms delay + 900ms duration, plus a frame's grace. */
+    const t = window.setTimeout(raise, 2160);
     /* The news card when there is one, the chart card when the dossier had no
        news or Echo entries to show. Whichever is last to land is the signal.
        `animationend`, not `transitionend`: the cards mount with .snr-stage2

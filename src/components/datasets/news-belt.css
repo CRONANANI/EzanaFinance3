@@ -1,0 +1,107 @@
+/* The /datasets overview's news belt, drawn inside the top bar beside the
+   Ezana logo (NewsBelt.jsx). Ink is the hero white (--bg-primary, which these
+   light-locked routes resolve to white) on the band green; the meta is the
+   band mint. Tokens only. */
+.dsnb-belt {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  /* Soft edges so cards slide in and out of the bar rather than being cut. */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 48px,
+    black calc(100% - 48px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 48px,
+    black calc(100% - 48px),
+    transparent 100%
+  );
+}
+
+.dsnb-track {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  /* useTickerSpeed sets the live duration from the track's width; this is
+     only the no-JS fallback. */
+  animation: dsnb-tick 120s linear infinite;
+}
+
+.dsnb-belt:hover .dsnb-track {
+  animation-play-state: paused;
+}
+
+@keyframes dsnb-tick {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.dsnb-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 12px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-primary) 8%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bg-primary) 14%, transparent);
+  font-family: var(--font-sans);
+  line-height: 1;
+}
+
+.dsnb-icon {
+  font-size: 13px;
+  color: var(--bg-primary);
+}
+
+.dsnb-headline {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--bg-primary);
+}
+
+.dsnb-meta {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  color: var(--brand-band-mint);
+}
+
+/* A perpetually moving strip is a vestibular trigger: stop it and let the
+   row scroll by hand instead. */
+@media (prefers-reduced-motion: reduce) {
+  .dsnb-belt {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .dsnb-belt::-webkit-scrollbar {
+    display: none;
+  }
+  .dsnb-track {
+    animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .dsnb-card {
+    padding: 7px 12px;
+    gap: 8px;
+  }
+  .dsnb-headline {
+    font-size: 13px;
+  }
+}

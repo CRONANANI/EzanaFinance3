@@ -30,6 +30,7 @@
  */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import Image from 'next/image';
 import Link from 'next/link';
 import { hubHref } from '@/lib/datasets/hubs';
 import { usePathname } from 'next/navigation';
@@ -141,7 +142,12 @@ function useHoverIntentMenu() {
   return { openId, open, scheduleClose, close, toggle, pin };
 }
 
-export default function CategoryBar({ active, activeItem, showDimensions = true }) {
+/**
+ * `showDimensions={false}` is the /datasets overview's bar (Oct 16): the
+ * Ezana logo at the start, the overview's news belt (`belt`) filling the
+ * rest, and no auth actions.
+ */
+export default function CategoryBar({ active, activeItem, showDimensions = true, belt = null }) {
   const barRef = useRef(null);
   const panelRef = useRef(null);
   const activeRef = useRef(null);
@@ -316,17 +322,32 @@ export default function CategoryBar({ active, activeItem, showDimensions = true 
   return (
     <nav className={`dscat-bar${showDimensions ? '' : ' dscat-bar--bare'}`} ref={barRef}>
       <div className="dscat-side dscat-side--start">
-        <Link href="/" className="dscat-home">
-          <i className="bi bi-arrow-left" aria-hidden="true" />
-          <span>Home</span>
-        </Link>
+        {showDimensions ? (
+          <Link href="/" className="dscat-home">
+            <i className="bi bi-arrow-left" aria-hidden="true" />
+            <span>Home</span>
+          </Link>
+        ) : (
+          /* Oct 16: the overview leads with the Ezana mark, drawn in the hero
+             white so it reads on the band green (category-bar.css). */
+          <Link href="/" className="dscat-logo" aria-label="Ezana Finance home">
+            <Image
+              src="/logo-tight.png"
+              alt=""
+              width={34}
+              height={39}
+              priority
+              className="dscat-logo-img"
+            />
+          </Link>
+        )}
       </div>
 
-      {/* The overview (/datasets) keeps only Home and the auth actions. The
-          empty centre column stays so the two sides keep their places. */}
-      <div className="dscat-center">
-        {showDimensions &&
-          DATASET_TAXONOMY.map((cat) => (
+      {/* The overview (/datasets) carries the news belt here instead of the
+          seven dimensions. */}
+      {showDimensions ? (
+        <div className="dscat-center">
+          {DATASET_TAXONOMY.map((cat) => (
             <div
               className="dscat"
               key={cat.id}
@@ -360,24 +381,29 @@ export default function CategoryBar({ active, activeItem, showDimensions = true 
               </button>
             </div>
           ))}
-      </div>
+        </div>
+      ) : (
+        <div className="dscat-belt-slot">{belt}</div>
+      )}
 
-      <div className="dscat-side dscat-side--end">
-        {isAuthenticated ? (
-          <Link href="/home" className="dscat-btn dscat-btn--text">
-            Dashboard
-          </Link>
-        ) : (
-          <>
-            <Link href={signInHref} className="dscat-btn dscat-btn--text">
-              Log in
+      {showDimensions ? (
+        <div className="dscat-side dscat-side--end">
+          {isAuthenticated ? (
+            <Link href="/home" className="dscat-btn dscat-btn--text">
+              Dashboard
             </Link>
-            <Link href="/auth/signup" className="dscat-btn dscat-btn--text">
-              Join the waitlist
-            </Link>
-          </>
-        )}
-      </div>
+          ) : (
+            <>
+              <Link href={signInHref} className="dscat-btn dscat-btn--text">
+                Log in
+              </Link>
+              <Link href="/auth/signup" className="dscat-btn dscat-btn--text">
+                Join the waitlist
+              </Link>
+            </>
+          )}
+        </div>
+      ) : null}
 
       {mounted && openCat && pos
         ? createPortal(

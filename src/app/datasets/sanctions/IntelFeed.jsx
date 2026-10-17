@@ -23,7 +23,10 @@ function ageDays(iso, today) {
   return Number.isNaN(t) ? null : Math.floor((today - t) / DAY);
 }
 
-export default function IntelFeed({ actions, news, today }) {
+/* `fill` (Oct 16): the card sits beside the jurisdiction explorer and takes
+   its height, so every stored item (up to 30) is listed in a scroll region
+   instead of six plus a "Show more" button, which left empty space below. */
+export default function IntelFeed({ actions, news, today, fill = false }) {
   const [tab, setTab] = useState('official');
   const [all, setAll] = useState(false);
   const now = Date.parse(today) || 0;
@@ -31,12 +34,15 @@ export default function IntelFeed({ actions, news, today }) {
   const officialItems = actions?.items || [];
   const pressItems = news?.items || [];
   const items = tab === 'official' ? officialItems : pressItems;
-  const shown = all ? items.slice(0, 30) : items.slice(0, SHOW);
+  const shown = all || fill ? items.slice(0, 30) : items.slice(0, SHOW);
   const newest = items[0]?.date;
   const age = ageDays(newest, now);
 
   return (
-    <section className="snx-card snx-feed" aria-labelledby="snx-feed-title">
+    <section
+      className={`snx-card snx-feed${fill ? ' snx-fill' : ''}`}
+      aria-labelledby="snx-feed-title"
+    >
       <div className="snx-card-head">
         <div>
           <h2 id="snx-feed-title" className="snx-card-title">
@@ -81,7 +87,7 @@ export default function IntelFeed({ actions, news, today }) {
               Newest item is {age} days old ({shortDate(newest)}). This feed may not be updating.
             </StateNote>
           ) : null}
-          <ol className="snx-feed-list">
+          <ol className="snx-feed-list snx-fill-scroll">
             {shown.map((it) =>
               tab === 'official' ? (
                 <li key={it.id} className="snx-feed-item is-official">
@@ -141,7 +147,7 @@ export default function IntelFeed({ actions, news, today }) {
               ),
             )}
           </ol>
-          {items.length > SHOW ? (
+          {items.length > SHOW && !fill ? (
             <button
               type="button"
               className="snx-action-btn"

@@ -44,8 +44,10 @@
      compositor — see the flip effect in SonarSection.jsx. */
   --snr-flip-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --snr-flip-dur: 900ms;
-  --snr-flip-delay-chart: 160ms;
-  --snr-flip-delay-news: 320ms;
+  /* Oct 16: the chart card waits for the Sourced matches rows to fill, and
+     the news card follows the chart, so each card lands on its own beat. */
+  --snr-flip-delay-chart: 700ms;
+  --snr-flip-delay-news: 1200ms;
 
   /* ---- ground ---- */
   /* One declaration site: theme-variables.css owns the gradient, because the
@@ -388,19 +390,8 @@
   margin-right: calc(-46px - 80px - max(0px, (100vw - 1600px) / 2));
 }
 
-/* Accent lip on the exposed edge so the card reads as an object entering the
-   frame rather than a clipped rectangle. */
-.snr-col-dossier::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 14px;
-  bottom: 14px;
-  width: 3px;
-  border-radius: 3px;
-  background: var(--snr-emerald);
-  opacity: 0.85;
-}
+/* Oct 16: the emerald accent lip that sat on the dossier's left edge, the
+   green line between the research brief and Sourced matches, is removed. */
 
 /* ── ping bar ────────────────────────────────────────────────────────────── */
 .snr-pingbar {
@@ -1257,10 +1248,6 @@
     border-radius: var(--snr-r-panel);
     border-right: 0;
     box-shadow: var(--snr-lift);
-  }
-
-  .snr-col-dossier::before {
-    display: none;
   }
 
   .snr-headline {
@@ -4505,5 +4492,29 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   }
   .snr-band .snr-demo {
     left: var(--snr-col-pad);
+  }
+}
+
+/* ── Oct 16: one clean demo sequence ─────────────────────────────────────────
+   The pristine CSS loop used to type a sample Lockheed brief into the
+   research brief on its own 15s cycle while the real demo was typing the
+   query. The visitor saw that sample flash in, vanish under the loader, and
+   then the real answer type out: three states for one ping. The sample copy
+   stays in the DOM only to hold the card's height (it is the one in-flow
+   layer, see .snr-synth-layer--base) and is never painted; until an answer
+   lands the brief shows the quiet "Awaiting ping" line, steady rather than
+   on the loop. */
+.snr-band .snr-synth-layer--base {
+  visibility: hidden;
+}
+
+.snr-band:not(.snr-live) .snr-empty {
+  animation: none;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snr-band:not(.snr-live) .snr-empty {
+    opacity: 1;
   }
 }

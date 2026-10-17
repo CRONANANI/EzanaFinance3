@@ -147,7 +147,7 @@ export default function MapCard({
           )}
           <p className="snx-card-sub">
             Address countries OFAC publishes with each listing. Select a country to filter the page,
-            or a program above to shade by it.
+            or a program below to shade by it.
           </p>
         </div>
         <div className="snx-tl-controls">

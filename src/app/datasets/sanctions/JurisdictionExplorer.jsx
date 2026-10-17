@@ -17,7 +17,7 @@
  * before, by OFAC's listing date, counted once per jurisdiction. Without
  * listing dates the column is marked unavailable, never zero.
  */
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { programMeta } from '@/lib/sanctions/programs';
 import { pctChange } from '@/lib/sanctions/insights';
 import { ProgramChip, Seg, StateNote, TYPES, TypeStrip, fmt, pctOf } from './ui';
@@ -30,7 +30,9 @@ const SORTS = [
   { key: 'aircraft', label: 'Aircraft' },
   { key: 'recent', label: 'Recent' },
 ];
-const SHOW = 10;
+/* Oct 16: six rows before "Show all", so the card sits beside the
+   intelligence feed at about the feed's height. */
+const SHOW = 6;
 
 function Trend({ a }) {
   if (!a) return <span className="snx-muted">n/a</span>;
@@ -58,7 +60,20 @@ export default function JurisdictionExplorer({
   onClearProgram,
 }) {
   const [sort, setSort] = useState('total');
-  const [open, setOpen] = useState(null);
+  /* Oct 16: rows open and close independently. It was one-open-at-a-time:
+     opening a row silently closed the one above it, the list jumped up under
+     the pointer, and the next click landed on a different row, so the
+     chevron read as "sometimes does nothing". A Set of open names never moves
+     a row the visitor did not touch. */
+  const [open, setOpen] = useState(() => new Set());
+  const toggleRow = useCallback((name) => {
+    setOpen((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  }, []);
   const [all, setAll] = useState(false);
   const hasActivity = Boolean(activity);
 
@@ -80,8 +95,7 @@ export default function JurisdictionExplorer({
             Program × jurisdiction explorer
           </h2>
           <p className="snx-card-sub">
-            Jurisdictions OFAC programs are aimed at, with every listing filed under those programs.
-            Expand a row for its programs and mix; select a program to filter the page.
+            Jurisdictions OFAC programs are aimed at. Expand a row for its programs and mix.
           </p>
         </div>
         <Seg
@@ -125,7 +139,8 @@ export default function JurisdictionExplorer({
           </div>
           <ol className="snx-jx-list">
             {visible.map((t) => {
-              const isOpen = open === t.name;
+              const isOpen = open.has(t.name);
+              const detailId = `snx-jx-${t.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`;
               const a = activity?.[t.name] || (hasActivity ? { recent: 0, prior: 0 } : null);
               return (
                 <li key={t.name} className={isOpen ? 'is-open' : undefined}>
@@ -133,12 +148,14 @@ export default function JurisdictionExplorer({
                     type="button"
                     className="snx-jx-row"
                     aria-expanded={isOpen}
-                    onClick={() => setOpen(isOpen ? null : t.name)}
+                    aria-controls={isOpen ? detailId : undefined}
+                    onClick={() => toggleRow(t.name)}
                   >
-                    <i
-                      className={`bi bi-chevron-${isOpen ? 'down' : 'right'}`}
-                      aria-hidden="true"
-                    />
+                    {/* One glyph that rotates, in a 24px hit area. The old
+                      11px chevron swapped glyphs on toggle. */}
+                    <span className="snx-jx-toggle" aria-hidden="true">
+                      <i className="bi bi-chevron-right" />
+                    </span>
                     <span className="snx-jx-name">{t.name}</span>
                     <span className="snx-jx-bar" aria-hidden="true">
                       <span style={{ width: `${(t.value / max) * 100}%` }} />
@@ -152,7 +169,7 @@ export default function JurisdictionExplorer({
                     </span>
                   </button>
                   {isOpen ? (
-                    <div className="snx-jx-detail">
+                    <div className="snx-jx-detail" id={detailId}>
                       <div className="snx-jx-col">
                         <span className="snx-country-label">Programs aimed at {t.name}</span>
                         <ul className="snx-jx-programs">
@@ -223,11 +240,10 @@ export default function JurisdictionExplorer({
         </button>
       ) : null}
       <p className="snx-fine">
-        A listing can fall under programs aimed at several jurisdictions, so rows overlap.
-        &quot;Based in&quot; uses addresses OFAC publishes, which is a different question from which
-        jurisdiction a program targets: most listings under a program can be based elsewhere. Global
-        programs (counter-terrorism, narcotics, cyber, Global Magnitsky) target no single
-        jurisdiction and are not rows here.
+        Rows overlap: a listing can fall under programs aimed at several jurisdictions. &quot;Based
+        in&quot; uses the addresses OFAC publishes, a different question from which jurisdiction a
+        program targets. Global programs (counter-terrorism, narcotics, cyber, Global Magnitsky)
+        target no single jurisdiction and are not rows here.
       </p>
     </section>
   );

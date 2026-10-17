@@ -98,7 +98,10 @@ export default function ProgramsCard({ programs, themes, selected, onPick, embed
   const val = (n) => (metric === 'share' ? shareText(n, assignments) : fmt(n));
 
   return (
-    <section className={embedded ? 'snx-sub' : 'snx-card'} aria-labelledby="snx-programs">
+    <section
+      className={embedded ? 'snx-sub' : 'snx-card snx-programs'}
+      aria-labelledby="snx-programs"
+    >
       <div className="snx-card-head">
         <div>
           {embedded ? (

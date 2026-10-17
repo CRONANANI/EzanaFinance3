@@ -636,3 +636,48 @@
     padding-right: 0;
   }
 }
+
+/* ── Oct 16: the overview bar is the logo and the news belt ─────────────
+   On /datasets (.dscat-bar--bare) the bar leads with the Ezana mark and the
+   news belt fills everything after it; the auth actions are gone. The mark
+   is drawn in the hero white (--bg-primary, white on these light-locked
+   routes): the brand green ibex on the band green read at under 2:1, so it
+   is recoloured as a white silhouette, which keeps the facet cuts (they are
+   transparent in the artwork) and reads at full contrast. */
+.dscat-bar.dscat-bar--bare,
+.dscat-bar.dscat-bar--bare[data-density] {
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 20px;
+}
+.dscat-logo {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 0;
+  border-radius: var(--radius-md);
+}
+.dscat-logo-img {
+  display: block;
+  width: auto;
+  height: 38px;
+  filter: brightness(0) invert(1) drop-shadow(0 1px 6px color-mix(in srgb, black 25%, transparent));
+  transition: opacity 0.15s ease;
+}
+.dscat-logo:hover .dscat-logo-img {
+  opacity: 0.86;
+}
+.dscat-logo:focus-visible {
+  outline: 2px solid var(--bg-primary);
+  outline-offset: 4px;
+}
+.dscat-belt-slot {
+  min-width: 0;
+}
+@media (max-width: 900px) {
+  .dscat-bar.dscat-bar--bare,
+  .dscat-bar.dscat-bar--bare[data-density] {
+    column-gap: 12px;
+  }
+  .dscat-logo-img {
+    height: 32px;
+  }
+}

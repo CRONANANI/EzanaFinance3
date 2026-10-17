@@ -4,16 +4,19 @@
  * Sanctions & Trade Policy Tracking: a sanctions intelligence page over the
  * whole OFAC SDN list. Every figure comes from the server (no sample data).
  *
- * Layout:
- *   01 Sanctions landscape  one card: the four headline measures, the
- *                          program treemap, then the address-country map
- *                          (Oct 15: replaces the KPI row, the side-by-side
- *                          map and treemap, and the left filter rail)
- *   03 Activity            the designation timeline; fastest-rising countries
- *   04 Jurisdictions       program x jurisdiction explorer
+ * Layout (Oct 16):
+ *   01 Sanctions landscape  the four headline measures over the address-
+ *                          country map, with Fastest-rising countries as a
+ *                          narrow card beside it (the whole map is on screen
+ *                          when the page opens on a desktop)
+ *   02 Programs by size    the program treemap, compact
+ *   03 Activity            the designation timeline
+ *   04 Jurisdictions       program x jurisdiction explorer, beside
  *   05 Intelligence feed   official OFAC actions and press, kept apart
  *   06 Entity explorer     alias/identifier search, expandable rows, drawer
  *   07 Data integrity      source freshness and coverage
+ * Paired cards share one height: the narrower card scrolls inside rather
+ * than leaving empty space under the shorter one.
  *
  * One filter state (ui.NO_FILTER) is shared: the map, treemap, explorer,
  * timeline, rising countries and the ticker write into it; the timeline,
@@ -29,6 +32,7 @@ import EntityExplorer from './EntityExplorer';
 import IntelFeed from './IntelFeed';
 import JurisdictionExplorer from './JurisdictionExplorer';
 import LandscapeCard from './LandscapeCard';
+import ProgramsCard from './ProgramsCard';
 import { RecordDrawer } from './RecordDetail';
 import RisingCountries from './RisingCountries';
 import { NO_FILTER, TYPE_BY_KEY, filterParams, sameFilter, useReducedMotion } from './ui';
@@ -188,13 +192,23 @@ export default function SanctionsClient({
       ) : (
         <>
           <div className="snx-main">
-            <LandscapeCard
-              summary={summary}
-              kpis={kpis}
-              map={map}
-              filter={filter}
-              pulses={pulses}
-              handlers={landscapeHandlers}
+            <div className="snx-lead-row">
+              <LandscapeCard
+                summary={summary}
+                kpis={kpis}
+                map={map}
+                filter={filter}
+                pulses={pulses}
+                handlers={landscapeHandlers}
+              />
+              <RisingCountries trends={trends} selected={filter.country} onPick={pickCountry} />
+            </div>
+
+            <ProgramsCard
+              programs={summary.programs}
+              themes={summary.themes}
+              selected={filter.program}
+              onPick={pickProgram}
             />
 
             <ActivityTimeline
@@ -204,17 +218,15 @@ export default function SanctionsClient({
               baselineLabel={baselineLabel}
             />
 
-            <JurisdictionExplorer
-              targets={summary.targets}
-              activity={targetActivity}
-              program={filter.program}
-              onPickProgram={pickProgram}
-              onClearProgram={() => patch({ program: '' })}
-            />
-
-            <div className="snx-pair">
-              <RisingCountries trends={trends} selected={filter.country} onPick={pickCountry} />
-              <IntelFeed actions={actions} news={news} today={nowIso} />
+            <div className="snx-pair snx-pair--fit">
+              <JurisdictionExplorer
+                targets={summary.targets}
+                activity={targetActivity}
+                program={filter.program}
+                onPickProgram={pickProgram}
+                onClearProgram={() => patch({ program: '' })}
+              />
+              <IntelFeed actions={actions} news={news} today={nowIso} fill />
             </div>
 
             <EntityExplorer
