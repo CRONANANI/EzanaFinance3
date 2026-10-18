@@ -817,8 +817,11 @@ function KalshiSection() {
                 : typeof m.probability === 'number'
                   ? m.probability * 100
                   : null;
+            const volNum = Number(m.volume).toLocaleString('en-US', { maximumFractionDigits: 0 });
             const vol = m.volume
-              ? `$${Number(m.volume).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+              ? m.volume_unit === 'contracts'
+                ? `${volNum} contracts`
+                : `$${volNum}`
               : null;
             return (
               <div

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { embedViaSupabase, supaEmbedConfigured } from '@/lib/embeddings-gte';
+import { scoreTrendingBatch, spreadOf, unitPrice } from '@/lib/prediction-markets/trending';
 
 /**
  * Populate prediction_market_index (Polymarket rows) for the semantic matcher
@@ -24,6 +25,27 @@ const EMBED_CONCURRENCY = 5; // parallel embed requests
 const UPSERT_CHUNK = 100;
 const LOOKUP_CHUNK = 200; // ids per existing-embedding lookup
 const STALE_DAYS = 3;
+// Extra pages ordered by 24h volume, so a market heating up today is indexed
+// even when its lifetime volume sits below the main cut.
+const TRENDING_PAGES = 3;
+
+const finite = (v) => {
+  const n = Number(v);
+  return v != null && v !== '' && Number.isFinite(n) ? n : null;
+};
+
+/** CLOB token id for outcome 0 (the YES side we store as probability), or null. */
+function yesTokenId(m) {
+  let ids = m?.clobTokenIds;
+  if (typeof ids === 'string') {
+    try {
+      ids = JSON.parse(ids);
+    } catch {
+      return null;
+    }
+  }
+  return Array.isArray(ids) && ids[0] ? String(ids[0]) : null;
+}
 
 function isAuthorized(request) {
   const secret = process.env.CRON_SECRET;
@@ -84,6 +106,16 @@ function toRow(m) {
       // volumeNum is the numeric field; volume is the same figure as a string.
       volume: Number(m?.volumeNum ?? m?.volume ?? 0) || 0,
       volume_unit: 'usd',
+      volume_24h: finite(m?.volume24hr) ?? 0,
+      price_change_24h: finite(m?.oneDayPriceChange),
+      best_bid: unitPrice(m?.bestBid),
+      best_ask: unitPrice(m?.bestAsk),
+      spread:
+        spreadOf(unitPrice(m?.bestBid), unitPrice(m?.bestAsk)) ??
+        (finite(m?.spread) != null && finite(m?.spread) >= 0 && finite(m?.spread) < 1
+          ? finite(m.spread)
+          : null),
+      yes_token_id: yesTokenId(m),
       liquidity: Number(m?.liquidityNum ?? m?.liquidity ?? 0) || 0,
       end_date: m?.endDate || m?.end_date_iso || null,
       status: 'active',
@@ -93,14 +125,14 @@ function toRow(m) {
   };
 }
 
-async function fetchGammaPage(offset, pageSize) {
+async function fetchGammaPage(offset, pageSize, order = 'volumeNum') {
   const params = new URLSearchParams({
     closed: 'false',
     active: 'true',
     limit: String(pageSize),
     offset: String(offset),
     // volumeNum, not volume: volume is a string and sorts as text.
-    order: 'volumeNum',
+    order,
     ascending: 'false',
   });
   try {
@@ -194,10 +226,23 @@ export async function GET(request) {
     }
     if (page.length < pageSize) break;
   }
+  // 1b) the most active by 24h volume, deduped into the same map
+  for (let n = 0, offset = 0; n < TRENDING_PAGES; n += 1, offset += pageSize) {
+    // eslint-disable-next-line no-await-in-loop
+    const page = await fetchGammaPage(offset, pageSize, 'volume24hr');
+    if (!page.length) break;
+    for (const m of page) {
+      const mapped = toRow(m);
+      if (mapped && !byId.has(mapped.row.market_id)) byId.set(mapped.row.market_id, mapped);
+    }
+    if (page.length < pageSize) break;
+  }
   const items = [...byId.values()];
   if (!items.length) {
     return NextResponse.json({ ok: true, fetched: 0, embedded: 0, reused: 0, upserted: 0, errors });
   }
+  // Score before the rows are split into fresh/reuse batches below.
+  scoreTrendingBatch(items.map((it) => it.row));
 
   // 2) embed only new or changed questions; reuse the stored vector otherwise
   let known = new Map();

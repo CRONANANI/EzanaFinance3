@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
+import {
+  changeOf,
+  scoreTrendingBatch,
+  spreadOf,
+  unitPrice,
+} from '@/lib/prediction-markets/trending';
 
 /**
  * Kalshi open markets into prediction_market_index (platform=kalshi). Public
@@ -21,6 +27,8 @@ const MAX_PAGES = 25;
 const PAGE_LIMIT = 200;
 const UPSERT_CHUNK = 200;
 const STALE_DAYS = 3;
+// Also keep the markets most traded in the last 24h, beyond the lifetime-volume cut.
+const TRENDING_EXTRA = 200;
 
 function isAuthorized(request) {
   const secret = process.env.CRON_SECRET;
@@ -71,6 +79,8 @@ function toRow(ev, m, siblings) {
     siblings > 1 && evTitle && sub ? `${evTitle}: ${sub}` : String(m?.title || evTitle)
   ).trim();
   if (!question) return null;
+  const bid = unitPrice(m?.yes_bid_dollars);
+  const ask = unitPrice(m?.yes_ask_dollars);
   return {
     market_id: `kalshi:${ticker}`,
     adj_ticker: null,
@@ -83,6 +93,14 @@ function toRow(ev, m, siblings) {
     probability: probability(m),
     volume: fp(m?.volume_fp) ?? fp(m?.volume) ?? 0,
     volume_unit: 'contracts',
+    volume_24h: fp(m?.volume_24h_fp) ?? fp(m?.volume_24h) ?? 0,
+    price_change_24h: changeOf(
+      unitPrice(m?.last_price_dollars),
+      unitPrice(m?.previous_price_dollars),
+    ),
+    best_bid: bid,
+    best_ask: ask,
+    spread: spreadOf(bid, ask),
     liquidity: null,
     end_date: m?.close_time || null,
     status: 'active',
@@ -149,13 +167,20 @@ export async function GET(request) {
     cursor = out.cursor;
   }
 
-  // 2) keep the most traded
+  // 2) keep the most traded overall, plus the most traded in the last 24h,
+  //    then score the kept batch for trending
   const stamp = new Date().toISOString();
-  const rows = [...byId.values()]
-    .filter((r) => r.volume > 0)
-    .sort((a, b) => b.volume - a.volume)
-    .slice(0, maxMarkets)
-    .map((r) => ({ ...r, indexed_at: stamp }));
+  const traded = [...byId.values()].filter((r) => r.volume > 0);
+  const keep = new Map();
+  for (const r of [...traded].sort((a, b) => b.volume - a.volume).slice(0, maxMarkets)) {
+    keep.set(r.market_id, r);
+  }
+  for (const r of [...traded]
+    .sort((a, b) => b.volume_24h - a.volume_24h)
+    .slice(0, TRENDING_EXTRA)) {
+    keep.set(r.market_id, r);
+  }
+  const rows = scoreTrendingBatch([...keep.values()]).map((r) => ({ ...r, indexed_at: stamp }));
 
   // 3) upsert
   let upserted = 0;

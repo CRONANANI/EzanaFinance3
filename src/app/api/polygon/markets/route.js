@@ -1,32 +1,57 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-const KALSHI_BASE = 'https://trading-api.kalshi.com/trade-api/v2';
 const POLYMARKET_GAMMA = 'https://gamma-api.polymarket.com';
 
+const num = (v) => {
+  if (v == null || v === '') return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+
+/** ilike pattern with the user's text escaped, so % and _ match literally. */
+function likeTerm(s) {
+  return `%${String(s)
+    .slice(0, 80)
+    .replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+}
+
+/**
+ * Kalshi markets from prediction_market_index (index-kalshi refreshes it every
+ * two hours). The old live host is retired; reading the index also keeps
+ * combo markets and stale rows out. Volume is contracts, never dollars.
+ */
 async function fetchKalshiMarkets(search, limit = 6) {
+  if (!isServerSupabaseConfigured()) return [];
   try {
-    const params = new URLSearchParams({ limit: String(limit), status: 'open' });
-    if (search) params.set('search', search);
-    const res = await fetch(`${KALSHI_BASE}/markets?${params}`, {
-      headers: { Accept: 'application/json' },
-      cache: 'no-store',
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return (data.markets || []).map((m) => ({
-      ticker: m.ticker,
-      title: m.title,
-      question: m.title,
-      yes_bid: m.yes_bid != null ? m.yes_bid / 100 : null,
-      probability: m.yes_bid != null ? m.yes_bid / 100 : null,
-      volume: m.volume,
-      close_time: m.close_time,
+    const admin = getAdminClient();
+    let q = admin
+      .from('prediction_market_index')
+      .select('market_id, question, probability, volume, volume_24h, end_date, link')
+      .eq('platform', 'kalshi')
+      .eq('status', 'active')
+      .or(`end_date.is.null,end_date.gt."${new Date().toISOString()}"`)
+      .order('volume', { ascending: false, nullsFirst: false })
+      .limit(Math.min(Math.max(limit, 1), 50));
+    if (search) q = q.ilike('question', likeTerm(search));
+    const { data, error } = await q;
+    if (error) throw new Error(error.message);
+    return (data || []).map((m) => ({
+      ticker: String(m.market_id).replace(/^kalshi:/, ''),
+      title: m.question,
+      question: m.question,
+      probability: num(m.probability),
+      volume: num(m.volume),
+      volume_24h: num(m.volume_24h),
+      volume_unit: 'contracts',
+      close_time: m.end_date,
+      link: m.link || null,
     }));
   } catch (err) {
-    console.error('[polygon/markets] Kalshi fetch error:', err.message);
+    console.error('[polygon/markets] Kalshi index read error:', err.message);
     return [];
   }
 }
