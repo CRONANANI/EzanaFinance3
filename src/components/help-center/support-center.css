@@ -26,6 +26,8 @@
   --hcs-active-border: color-mix(in srgb, var(--emerald) 60%, transparent);
   --hcs-skel-base: color-mix(in srgb, var(--text-primary) 6%, transparent);
   --hcs-skel-sheen: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  /* Borderless card surface: a hairline of tone instead of a hairline of line. */
+  --hcs-fill: color-mix(in srgb, var(--text-primary) 3%, transparent);
   --hcs-gutter: 40px;
 
   max-width: 1440px;
@@ -1392,14 +1394,12 @@
   gap: 4px;
   width: 100%;
   padding: 14px 16px 16px;
-  border: 1px solid var(--hcs-hair-strong);
+  border: 0;
   border-radius: var(--radius-lg);
-  background: var(--hcs-bg);
+  background: var(--hcs-fill);
   color: var(--hcs-ink);
   text-decoration: none;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
+  transition: background 0.15s ease;
 }
 /* A global phone rule centres every a[class*='link'] flex box; the step
    card keeps its left aligned column. */
@@ -1408,7 +1408,7 @@
   align-items: stretch;
 }
 .hcs-path-link:hover {
-  border-color: var(--hcs-active-border);
+  background: var(--hcs-tint);
 }
 .hcs-path-link:focus-visible {
   outline: 2px solid var(--hcs-emerald);
@@ -1416,11 +1416,15 @@
 }
 .hcs-path-node[data-state='read'] .hcs-path-link {
   background: var(--hcs-tint);
-  border-color: var(--hcs-tint-strong);
 }
+/* Up next is carried by the emerald dot ring and the UP NEXT label; the
+   card itself gets a slightly stronger tint rather than an outline. */
 .hcs-path-node[data-state='next'] .hcs-path-link {
-  border-color: var(--hcs-active-border);
-  box-shadow: 0 0 0 3px var(--hcs-halo);
+  background: var(--hcs-tint);
+}
+.hcs-path-node[data-state='next'] .hcs-path-link:hover,
+.hcs-path-node[data-state='read'] .hcs-path-link:hover {
+  background: var(--hcs-tint-strong);
 }
 .hcs-path-top {
   display: flex;
@@ -1514,9 +1518,9 @@
   flex-direction: column;
   min-width: 0;
   padding: 16px 18px 10px;
-  border: 1px solid var(--hcs-hair-strong);
+  border: 0;
   border-radius: var(--radius-lg);
-  background: var(--hcs-bg);
+  background: var(--hcs-fill);
 }
 .hcs-xcard .hcs-sec-head {
   margin-bottom: 6px;
@@ -1600,18 +1604,20 @@
   gap: 10px;
   width: 100%;
   padding: 9px 12px;
-  border: 1px solid var(--hcs-hair);
+  border: 0;
   border-radius: var(--radius-md);
-  background: none;
+  background: var(--hcs-bg);
   font: inherit;
   font-size: 13px;
   line-height: 1.35;
   color: var(--hcs-ink);
   text-align: left;
   cursor: pointer;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
+  transition: background 0.15s ease;
+}
+.hcs-try-btn:focus-visible {
+  outline: 2px solid var(--hcs-emerald);
+  outline-offset: 2px;
 }
 .hcs-try-btn > .bi:first-child {
   font-size: 14px;
@@ -1622,7 +1628,6 @@
   color: var(--hcs-faint);
 }
 .hcs-try-btn:hover {
-  border-color: var(--hcs-active-border);
   background: var(--hcs-tint);
 }
 .hcs-try-btn:hover .hcs-try-go {
@@ -1635,6 +1640,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .hcs-pop-title,
+  .hcs-path-link,
   .hcs-try-btn {
     transition: none;
   }
