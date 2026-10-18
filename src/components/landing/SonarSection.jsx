@@ -1323,16 +1323,27 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
       if (!btn || !form || !el) return;
       const b = btn.getBoundingClientRect();
       const f = form.getBoundingClientRect();
-      /* Aim at the word "Ping" itself (the glyphs, measured with a Range),
-         and land the arrow's TIP there: the SVG is positioned by its top-left
-         corner and its tip sits at (5, 3) of a 24-unit box. Falls back to the
-         button's centre if the label cannot be measured. */
+      /* Aim at the word "Ping" itself (the glyphs, measured with a Range).
+         Oct 18 (second pass): the arrow's TIP used to land on the word's
+         centre, which left the arrow's body (it hangs about 10px right and
+         14px down of the tip) over "ng" and past the word's right edge, so
+         the pointer read as having overshot the button. The tip now lands
+         40% of the way into the word and 2px above its middle: the body
+         then sits over the word's centre and no part of the arrow extends
+         past the "g". The SVG is positioned by its top-left corner; its tip
+         is at (5, 3) of a 24-unit box, read off the rendered size (CSS
+         width/height, not the rect, so a leftover press scale cannot skew
+         it). Falls back to the button's centre if the label cannot be
+         measured. */
       const word = wordRect(btn, 'Ping') || b;
-      const tipX = (el.getBoundingClientRect().width || 18) * (5 / 24);
-      const tipY = (el.getBoundingClientRect().height || 18) * (3 / 24);
+      const cs0 = window.getComputedStyle(el);
+      const size = parseFloat(cs0.width) || 18;
+      const tipX = size * (5 / 24);
+      const tipY = (parseFloat(cs0.height) || size) * (3 / 24);
+      const AIM_X = 0.4;
       const to = {
-        x: word.left + word.width / 2 - f.left - tipX,
-        y: word.top + word.height / 2 - f.top - tipY,
+        x: word.left + word.width * AIM_X - f.left - tipX,
+        y: word.top + word.height / 2 - 2 - f.top - tipY,
       };
       /* Re-read every frame by humanPointer: the word's offset inside the
          button is fixed at the start (the label swaps to "Pinging" on the
