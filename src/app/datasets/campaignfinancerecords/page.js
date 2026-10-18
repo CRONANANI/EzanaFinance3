@@ -1,20 +1,35 @@
 import CampaignFinanceRecordsClient from './CampaignFinanceRecordsClient';
+import {
+  CF_DEFAULT_CYCLE,
+  getCampaignFinanceCycles,
+  getCampaignFinanceOverview,
+} from '@/lib/campaign-finance/load';
 
 /**
- * Campaign Finance Records dataset page (FEC / OpenFEC) — dedicated route so the
- * Capitol Watch "Campaign Finance Records" menu item lands on a real
- * campaign-finance page instead of the Congressional Trading page. Opts out of
- * the old MarketingPageShell/DatasetsSubnav via the datasets layout's
- * STANDALONE_ROUTES. Data comes from the /api/fec/* routes (server-only key).
+ * Campaign Finance Intelligence: receipts, spending, cash, debt and outside
+ * money for every member of Congress. The overview (per-member figures plus
+ * every party, chamber and network roll-up) is computed on the server and
+ * cached for ten minutes behind the hourly refresh. Opts out of the marketing
+ * shell via the datasets layout's STANDALONE_ROUTES.
  */
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Campaign Finance Records | Ezana',
+  title: 'Campaign Finance Intelligence | Ezana',
   description:
-    'Federal Election Commission contribution and spending data for members of Congress — top raisers, donor industries, and outside money.',
+    'Receipts, spending, cash on hand, debt and outside money for every member of Congress, with party and chamber comparisons, contribution sizes and the outside groups spending around each member.',
 };
 
-export default function CampaignFinanceRecordsPage() {
-  return <CampaignFinanceRecordsClient />;
+export default async function CampaignFinanceRecordsPage() {
+  const [initial, cycles] = await Promise.all([
+    getCampaignFinanceOverview(CF_DEFAULT_CYCLE),
+    getCampaignFinanceCycles(),
+  ]);
+  return (
+    <CampaignFinanceRecordsClient
+      initial={initial}
+      cycles={cycles.length ? cycles : [CF_DEFAULT_CYCLE]}
+      todayIso={new Date().toISOString().slice(0, 10)}
+    />
+  );
 }
