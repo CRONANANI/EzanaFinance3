@@ -1,0 +1,256 @@
+/* Sonar band: country pings (SonarCountryStack.jsx). Scoped snr-cty-.
+   Band tokens only (--snr-*), plus the global --warning for OECD projection
+   years, which is the platform's projected/watch tone. No new globals, no
+   hex: tints are color-mix over the band tokens. */
+
+/* ── Sourced matches rows ─────────────────────────────────────────────── */
+
+.snr-band .snr-cty-row .snr-stat-cap {
+  white-space: nowrap;
+}
+
+.snr-band .snr-cty-proj {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 12px;
+  font-family: var(--snr-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--snr-text-muted);
+}
+
+.snr-band .snr-cty-proj-chip {
+  padding: 1px 5px;
+  border: 1px solid color-mix(in srgb, var(--warning) 60%, transparent);
+  border-radius: var(--snr-r-chip);
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--warning) 18%, transparent) 0 3px,
+    transparent 3px 6px
+  );
+  font-size: 9px;
+  letter-spacing: var(--snr-track-label);
+  color: var(--warning);
+}
+
+/* Dimension bars: name, track, score, rank. A grid so the numbers form
+   columns down the list, like the agency legend. */
+.snr-band .snr-cty-bars {
+  display: grid;
+  gap: 5px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.snr-band .snr-cty-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) 26px 30px;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--snr-text-muted);
+}
+
+.snr-band .snr-cty-bar-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-family: var(--snr-font-sans);
+}
+
+.snr-band .snr-cty-bar-track {
+  position: relative;
+  height: 4px;
+  border-radius: var(--snr-r-pill);
+  background: color-mix(in srgb, var(--snr-mint) 14%, transparent);
+  overflow: hidden;
+}
+
+.snr-band .snr-cty-bar-track > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: var(--snr-mint);
+}
+
+.snr-band .snr-cty-bar-val,
+.snr-band .snr-cty-bar-rank {
+  font-family: var(--snr-font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.snr-band .snr-cty-bar-rank {
+  color: var(--snr-text-faint);
+}
+
+/* ── key chart card ───────────────────────────────────────────────────── */
+
+.snr-band .snr-cty-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 2px 0 8px;
+}
+
+.snr-band .snr-cty-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--snr-hair);
+  border-radius: var(--snr-r-pill);
+  background: transparent;
+  font-family: var(--snr-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--snr-text-faint);
+  cursor: pointer;
+  transition:
+    border-color var(--snr-t-fast) ease,
+    color var(--snr-t-fast) ease,
+    background var(--snr-t-fast) ease;
+}
+
+.snr-band .snr-cty-tab:hover {
+  border-color: var(--snr-hair-strong);
+  color: var(--snr-text);
+}
+
+.snr-band .snr-cty-tab.is-active {
+  border-color: var(--snr-emerald);
+  background: color-mix(in srgb, var(--snr-emerald) 18%, transparent);
+  color: var(--snr-text);
+}
+
+.snr-band .snr-cty-tab:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 2px;
+}
+
+/* Marks the series the server picked as the story. */
+.snr-band .snr-cty-tab-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--snr-mint);
+}
+
+.snr-band .snr-cty-headline {
+  margin: 0 0 8px;
+  font-family: var(--snr-font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--snr-text);
+}
+
+.snr-band .snr-fund--cty .snr-stat-cap {
+  font-family: var(--snr-font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: var(--snr-text-faint);
+}
+
+/* The plot reuses .snr-spark for its height at every breakpoint; the axis
+   sits under it inside the same box. */
+.snr-band .snr-cty-plot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.snr-band .snr-cty-plot svg {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.snr-band .snr-cty-line,
+.snr-band .snr-cty-line--proj {
+  fill: none;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+}
+
+.snr-band .snr-cty-line {
+  stroke: var(--snr-mint);
+}
+
+.snr-band .snr-cty-line--proj {
+  stroke: var(--warning);
+  stroke-dasharray: 4 3;
+}
+
+.snr-band .snr-cty-projband {
+  fill: color-mix(in srgb, var(--warning) 7%, transparent);
+}
+
+.snr-band .snr-cty-median {
+  stroke: var(--snr-text-faint);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.snr-band .snr-cty-zero {
+  stroke: var(--snr-grid);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.snr-band .snr-cty-median-label {
+  font-family: var(--snr-font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  fill: var(--snr-text-faint);
+  text-anchor: end;
+}
+
+.snr-band .snr-cty-dot {
+  fill: var(--snr-mint);
+}
+
+.snr-band .snr-cty-ring {
+  fill: none;
+  stroke: var(--snr-mint);
+  stroke-opacity: 0.6;
+  stroke-width: 1;
+}
+
+.snr-band .snr-cty-axis {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  padding-top: 2px;
+  font-family: var(--snr-font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  color: var(--snr-text-faint);
+}
+
+.snr-band .snr-cty-axis-proj {
+  color: var(--warning);
+}
+
+.snr-band .snr-cty-inline-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--snr-mint);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snr-band .snr-cty-tab {
+    transition: none;
+  }
+}

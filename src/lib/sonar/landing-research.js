@@ -181,7 +181,45 @@ async function cacheBySearch(admin, phrase, limit = 6) {
  * What the three columns are for, per kind of ping, with the articles
  * Ezana's own cache already holds for each.
  */
-export async function columnSpecs({ query, politician, resolved, dossier, intent, admin }) {
+export async function columnSpecs({
+  query,
+  country,
+  politician,
+  resolved,
+  dossier,
+  intent,
+  admin,
+}) {
+  if (country) {
+    const local = (Array.isArray(dossier?.news) ? dossier.news : []).map((n) =>
+      article(n, 'dataset'),
+    );
+    const searched = await cacheBySearch(admin, country.name);
+    return [
+      {
+        id: 'economy',
+        title: `${country.name} economy`,
+        icon: 'bi-globe2',
+        hint: `the latest reporting on ${country.name}'s economy: growth, inflation, jobs, central bank and fiscal decisions`,
+        seed: [...local, ...searched],
+      },
+      {
+        id: 'markets',
+        title: 'Markets & currency',
+        icon: 'bi-graph-up-arrow',
+        hint: `recent moves in ${country.name}'s stock market, government bond yields and currency, and the companies most exposed to it`,
+        seed: [],
+      },
+      {
+        id: 'policy',
+        title: 'Policy & geopolitics',
+        icon: 'bi-bank',
+        hint: `recent trade policy, tariffs, sanctions, elections and diplomatic developments involving ${country.name}`,
+        seed: [],
+      },
+    ];
+  }
+
   if (politician) {
     const holdings = (dossier?.holdings || []).slice(0, 5);
     const tickers = holdings.map((h) => h.ticker).filter(Boolean);

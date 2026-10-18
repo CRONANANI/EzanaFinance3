@@ -63,6 +63,7 @@ import { geometryFor } from './sonar-geometry';
 import { animateWindowScroll, humanPointer } from './sonar-motion';
 import './sonar-band.css';
 import SonarResearchDeck from './SonarResearchDeck';
+import { CountryStack, CountryOecdRow, CountryEmpireRow } from './SonarCountryStack';
 
 /**
  * An element's resting rect, with the mount entrance taken off it first.
@@ -194,6 +195,14 @@ const SWEPT = [
   { id: 'prediction-markets', chip: 'MARKETS', name: 'Prediction markets' },
   { id: '13f', chip: '13F', name: '13F institutional holdings' },
   { id: 'lobbying', chip: 'LOBBYING', name: 'Lobbying disclosures' },
+];
+
+/* A country ping leads with the two macro datasets; the company legs follow,
+   dry, so the visitor still sees everything Sonar swept. */
+const SWEPT_COUNTRY = [
+  { id: 'oecd-macro', chip: 'OECD', name: 'OECD Economic Outlook' },
+  { id: 'empire', chip: 'EMPIRE', name: 'Global Empire Rankings' },
+  ...SWEPT,
 ];
 
 const ROWS = [
@@ -2563,6 +2572,8 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
                   <div className="snr-rows" key={pingPulse}>
                     {(() => {
                       const m = live?.dossier?.matches || null;
+                      const isCountry = live?.dossier?.kind === 'country';
+                      const swept = isCountry ? SWEPT_COUNTRY : SWEPT;
                       /* A dataset is matched only when its leg actually returned
                      something. The honesty rule: no rich row is rendered from
                      an empty leg, and a null leg falls through to the dry row
@@ -2575,10 +2586,14 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
                         '13f': m?.thirteenF?.length ? m.thirteenF : null,
                         lobbying: m?.lobbying || null,
                         'prediction-markets': m?.markets?.length ? m.markets : null,
+                        'oecd-macro': m?.oecd?.headline?.length ? m.oecd : null,
+                        empire: m?.empire || null,
                       };
                       /* Matched rich rows first, in the brief's order, then
                      everything else dimmed. */
                       const order = [
+                        'oecd-macro',
+                        'empire',
                         'gov-contracts',
                         'echo',
                         'congress',
@@ -2587,11 +2602,11 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
                         'lobbying',
                         'prediction-markets',
                       ];
-                      const sorted = [...SWEPT].sort((a, b) => {
+                      const sorted = [...swept].sort((a, b) => {
                         const ra = rich[a.id] ? order.indexOf(a.id) : 99;
                         const rb = rich[b.id] ? order.indexOf(b.id) : 99;
                         if (ra !== rb) return ra - rb;
-                        return SWEPT.indexOf(a) - SWEPT.indexOf(b);
+                        return swept.indexOf(a) - swept.indexOf(b);
                       });
 
                       return sorted.map((d, i) => {
@@ -2618,6 +2633,18 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
                               <span className="snr-rule" />
                               <span className="snr-src">{matched ? 'matched' : 'searched'}</span>
                             </div>
+
+                            {d.id === 'oecd-macro' && data ? (
+                              <CountryOecdRow data={data} name={live.dossier.name} />
+                            ) : null}
+
+                            {d.id === 'empire' && data ? (
+                              <CountryEmpireRow
+                                data={data}
+                                name={live.dossier.name}
+                                onGate={() => openGate()}
+                              />
+                            ) : null}
 
                             {d.id === 'gov-contracts' && data ? (
                               <div className="snr-rich">
@@ -2845,8 +2872,16 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
               <PoliticianStack dossier={live.dossier} onGate={() => openGate()} />
             ) : null}
 
+            {/* A country: the key chart (the series furthest from its own
+              20-year norm, switchable) in the price chart's slot, and the
+              country's news in the news slot. Same shells again. */}
+            {stage2 && live?.dossier?.kind === 'country' ? (
+              <CountryStack dossier={live.dossier} onGate={() => openGate()} />
+            ) : null}
+
             {stage2 &&
             live?.dossier?.kind !== 'politician' &&
+            live?.dossier?.kind !== 'country' &&
             (live?.dossier?.fundamentals ||
               live?.dossier?.news?.length ||
               live?.dossier?.echo?.length) ? (

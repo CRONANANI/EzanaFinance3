@@ -12,6 +12,13 @@ import { getFmpKey } from '@/lib/fmp/upcoming-events';
 import { industryProfile, industryNewsTitle, fetchIndustryNews } from '@/lib/sonar/industry-news';
 import { resolvePolitician, buildPoliticianDossier } from '@/lib/sonar/landing-politician';
 import {
+  resolveCountry,
+  buildCountryDossier,
+  countryEvidence,
+  countryEntityTerms,
+  COUNTRY_ADDENDUM,
+} from '@/lib/sonar/landing-country';
+import {
   detectIntent,
   sanctionsContext,
   splitExposed,
@@ -335,7 +342,12 @@ function relevanceFrom(items, corporaSearched) {
     const dataset = CORPUS_TO_DATASET[item.corpus];
     /* The OFAC aggregates are attached by intent, not retrieved, so they
        have no SONAR_DATASETS entry; they light Global Lighthouse. */
-    const dim = item.corpus === 'sanctions' ? 'lighthouse' : DATASET_DIMENSION[dataset];
+    /* The OECD and Empire figures for a country ping are attached the same
+       way and are Global Lighthouse datasets (DATASET_TAXONOMY). */
+    const dim =
+      item.corpus === 'sanctions' || item.corpus === 'oecd' || item.corpus === 'empire'
+        ? 'lighthouse'
+        : DATASET_DIMENSION[dataset];
     if (!dim) continue;
     byDimension[dim] = (byDimension[dim] || 0) + 1;
   }
@@ -406,7 +418,7 @@ const AGENCY_SHORT = (name) =>
     .replace(/\s*\(.*\)\s*$/, '')
     .trim() || 'Other';
 
-async function matchEcho(admin, { name, ticker }) {
+export async function matchEcho(admin, { name, ticker }) {
   if (!admin || !name) return null;
   try {
     const safe = name.replace(/[,()%*]/g, ' ');
@@ -972,7 +984,22 @@ export async function buildDossier({ ticker, name }, admin) {
 /* The dossier for whatever the ping resolved to: a member of Congress, a
    company, or nothing. An enrichment throughout: a failed leg yields null,
    never a lost answer. */
-async function buildDossierFor({ politician, resolved, admin, leg }) {
+async function buildDossierFor({ country, politician, resolved, admin, leg }) {
+  /* A country carries its own matches (OECD, Empire, Echo, markets); the
+     company legs (contracts, SEC, 13F, lobbying) have nothing to say about a
+     country and render dry. */
+  if (country) {
+    try {
+      return await leg(
+        'dossier-country',
+        () => buildCountryDossier(country, admin, { matchEcho }),
+        (v) =>
+          `oecd=${v.oecd ? v.oecd.headline.length : 0} story=${v.oecd?.stories?.length || 0} empire=${v.empire ? v.empire.rank || 'unranked' : 'n'} news=${v.news.length} echo=${v.echo.length}`,
+      );
+    } catch {
+      return null;
+    }
+  }
   if (politician) {
     try {
       return await leg(
@@ -1049,31 +1076,42 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
      FMP's fuzzy name search returns for it. resolvePolitician is strict (full
      name, or a unique sitting member's last name) so a company ping never
      lands here. When it hits, company resolution is skipped entirely. */
-  const politician = await leg(
-    'resolve-politician',
-    () => resolvePolitician(query, admin),
-    (v) => (v ? v.bioguideId : 'none'),
-  );
-  const resolved = politician
+  /* A country before anything else: strict whole-string match, no I/O, so
+     a non-country ping costs nothing here. When it hits, politician and
+     company resolution are skipped ("Japan" must not become Japan Airlines). */
+  const country = resolveCountry(query);
+  const politician = country
     ? null
     : await leg(
-        'resolve',
-        () => resolveCompany(query),
-        (v) => (v ? v.ticker : 'none'),
+        'resolve-politician',
+        () => resolvePolitician(query, admin),
+        (v) => (v ? v.bioguideId : 'none'),
       );
+  const resolved =
+    country || politician
+      ? null
+      : await leg(
+          'resolve',
+          () => resolveCompany(query),
+          (v) => (v ? v.ticker : 'none'),
+        );
   /* Retrieval sees the enriched string; the ledger and the UI keep the words
      the visitor actually typed. */
-  const retrievalQuery = politician
-    ? politician.name
-    : resolved
-      ? `${resolved.name} (${resolved.ticker})`
-      : query;
+  const retrievalQuery = country
+    ? country.name
+    : politician
+      ? politician.name
+      : resolved
+        ? `${resolved.name} (${resolved.ticker})`
+        : query;
   /* What the synthesis is told the ping resolved to. */
-  const resolvedNote = politician
-    ? ` (resolved to ${politician.name}, ${[politician.party, politician.state].filter(Boolean).join('-')}, U.S. ${politician.chamberLabel || 'Congress'})`
-    : resolved
-      ? ` (resolved to ${resolved.name}, ${resolved.ticker})`
-      : '';
+  const resolvedNote = country
+    ? ` (resolved to the country ${country.name}, ISO ${country.iso3})`
+    : politician
+      ? ` (resolved to ${politician.name}, ${[politician.party, politician.state].filter(Boolean).join('-')}, U.S. ${politician.chamberLabel || 'Congress'})`
+      : resolved
+        ? ` (resolved to ${resolved.name}, ${resolved.ticker})`
+        : '';
 
   const entitlements = getSonarEntitlements({ planTier: 0, version: 'regular' });
   const classification = classifyQuery(retrievalQuery);
@@ -1107,11 +1145,13 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
      field: no retriever emits one, so matching on it would leave every
      haystack empty, drop every item, and send every entity ping down the
      ungrounded path. Checked against the retrievers rather than assumed. */
-  const entityTerms = politician
-    ? [politician.name, politician.lastName].filter(Boolean).map((t) => t.toLowerCase())
-    : resolved
-      ? [resolved.name, resolved.ticker].filter(Boolean).map((t) => t.toLowerCase())
-      : null;
+  const entityTerms = country
+    ? countryEntityTerms(country)
+    : politician
+      ? [politician.name, politician.lastName].filter(Boolean).map((t) => t.toLowerCase())
+      : resolved
+        ? [resolved.name, resolved.ticker].filter(Boolean).map((t) => t.toLowerCase())
+        : null;
   const items = entityTerms
     ? retrieved.filter((it) => {
         const hay = [it.title, it.snippet, ...Object.values(it.meta || {})]
@@ -1131,13 +1171,21 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
   const corporaUsed = [...new Set(items.map((i) => i.corpus))];
 
   /* The dossier and the news columns do not depend on the brief, so they run
-     beside it instead of after it. */
-  const dossierP = wantDossier ? buildDossierFor({ politician, resolved, admin, leg }) : null;
+     beside it instead of after it. The exception is a country: its dossier is
+     also its evidence (the OECD and Empire snippets the brief cites), so it is
+     awaited first. Its legs are bounded DB reads, a fraction of the brief. */
+  const dossierP =
+    wantDossier || country ? buildDossierFor({ country, politician, resolved, admin, leg }) : null;
+  if (country) {
+    const countryDossier = await dossierP;
+    if (countryDossier) items.push(...countryEvidence(countryDossier));
+  }
   const columnsP = wantDossier
     ? (async () => {
         const dossierNow = await dossierP;
         const specs = await columnSpecs({
           query,
+          country,
           politician,
           resolved,
           dossier: dossierNow,
@@ -1148,7 +1196,13 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
           'news-columns',
           () =>
             buildNewsColumns({
-              subject: politician ? politician.name : resolved ? resolved.name : query,
+              subject: country
+                ? country.name
+                : politician
+                  ? politician.name
+                  : resolved
+                    ? resolved.name
+                    : query,
               specs,
             }),
           (cols) => cols.map((c) => `${c.id}=${c.items.length}`).join(' '),
@@ -1174,7 +1228,10 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
       'synthesize',
       () =>
         synthesizeWithFallback({
-          system: sanctions ? GROUNDED_SYSTEM_PROMPT + SANCTIONS_ADDENDUM : GROUNDED_SYSTEM_PROMPT,
+          system:
+            GROUNDED_SYSTEM_PROMPT +
+            (sanctions ? SANCTIONS_ADDENDUM : '') +
+            (country ? COUNTRY_ADDENDUM : ''),
           user: `Ping: ${query}${resolvedNote}\n\nSources:\n${sourcesBlock}`,
           /* Room for four paragraphs of dataset and web findings; the brief
              panel scrolls inside the locked viewport. */
@@ -1226,7 +1283,7 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
     })
     .filter(Boolean);
 
-  const dossier = dossierP ? await dossierP : null;
+  const dossier = wantDossier && dossierP ? await dossierP : null;
   const newsColumns = columnsP ? await columnsP : null;
   if (dossier) dossier.newsColumns = newsColumns;
 
@@ -1265,6 +1322,7 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
     classification,
     resolved,
     politician,
+    country,
     itemCount: items.length,
     retrievedCount: retrieved.length,
     corporaSearched,
