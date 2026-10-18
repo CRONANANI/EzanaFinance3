@@ -237,7 +237,6 @@
 }
 
 .snr-band .snr-num,
-.snr-band .snr-query,
 .snr-band .snr-meta {
   font-family: var(--snr-font-mono);
   font-variant-numeric: tabular-nums;
@@ -455,18 +454,6 @@
 .snr-input:focus ~ .snr-demo,
 .snr-input:not(:placeholder-shown) ~ .snr-demo {
   opacity: 0;
-}
-
-/* Base = end frame: fully typed. Requires a monospace face for ch to equal
-   exactly one glyph. */
-.snr-query {
-  display: inline-block;
-  overflow: hidden;
-  white-space: nowrap;
-  width: 15ch;
-  font-size: 15px;
-  letter-spacing: 0;
-  color: var(--snr-text);
 }
 
 .snr-caret {
@@ -789,87 +776,6 @@
   100% {
     opacity: 0;
   }
-}
-
-/* 1. query types itself in, then backspaces at 96-100% */
-@keyframes snrQuery {
-  0% {
-    width: 0ch;
-  }
-  4% {
-    width: 0ch;
-    animation-timing-function: steps(15, end);
-  }
-  16% {
-    width: 15ch;
-  }
-  96% {
-    width: 15ch;
-    animation-timing-function: steps(15, end);
-  }
-  100% {
-    width: 0ch;
-  }
-}
-.snr-anim-query {
-  animation-name: snrQuery;
-}
-
-/* 2. pointer travels to the button and presses it */
-@keyframes snrCursor {
-  0%,
-  10% {
-    opacity: 0;
-    transform: translate(150px, 48px) scale(1);
-  }
-  12% {
-    opacity: 0.95;
-    transform: translate(150px, 48px) scale(1);
-  }
-  18% {
-    opacity: 0.95;
-    transform: translate(516px, 34px) scale(1);
-  }
-  20% {
-    opacity: 0.95;
-    transform: translate(516px, 34px) scale(0.82);
-  }
-  22% {
-    opacity: 0.95;
-    transform: translate(516px, 34px) scale(1);
-  }
-  27%,
-  100% {
-    opacity: 0;
-    transform: translate(516px, 34px) scale(1);
-  }
-}
-.snr-anim-cursor {
-  animation-name: snrCursor;
-  animation-timing-function: ease-in-out;
-}
-
-@keyframes snrPress {
-  0%,
-  20% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(167, 243, 208, 0);
-  }
-  21% {
-    transform: scale(0.93);
-    box-shadow: 0 0 0 5px rgba(167, 243, 208, 0.3);
-  }
-  24% {
-    transform: scale(1);
-    box-shadow: 0 0 0 18px rgba(167, 243, 208, 0);
-  }
-  100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(167, 243, 208, 0);
-  }
-}
-.snr-anim-press {
-  animation-name: snrPress;
 }
 
 /* 6. empty states and status pills */
@@ -2885,10 +2791,8 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   justify-content: center;
 }
 
-/* No pressed scale is added here: the button already has one. The measured
-   pointer press sets .snr-ping-btn--pressed and the demo runs .snr-anim-press,
-   whose snrPress keyframe already scales to 0.93 and releases. Adding a second
-   transform on the same element would fight it. */
+/* The press is .snr-ping-btn--pressed alone, set by the measured pointer at
+   the moment it depresses (Oct 18: the CSS-loop press is gone). */
 
 @media (prefers-reduced-motion: reduce) {
   /* States switch instantly; the layout is identical either way. */
@@ -4343,23 +4247,6 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   outline: 2px solid color-mix(in srgb, var(--snr-mint) 70%, transparent);
   outline-offset: 2px;
 }
-.snr-band .snr-ping-btn.snr-anim-press {
-  animation-name: snrPressGhost;
-}
-@keyframes snrPressGhost {
-  0%,
-  20%,
-  24%,
-  100% {
-    transform: scale(1);
-  }
-  21% {
-    transform: scale(0.93);
-    text-shadow:
-      0 0 10px var(--snr-mint),
-      0 0 26px color-mix(in srgb, var(--snr-mint) 75%, transparent);
-  }
-}
 @media (max-width: 420px) {
   .snr-band .snr-pingbar {
     padding-left: 4px;
@@ -4517,4 +4404,16 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   .snr-band:not(.snr-live) .snr-empty {
     opacity: 1;
   }
+}
+
+/* ── Oct 18: one choreography on every entry path ──────────────────────────
+   The band holds its opening frame until the scripted demo presses Ping.
+   The CSS master loop used to start the moment the band came on screen and
+   ran its own query, pointer and press on fixed pixel positions; a visitor
+   saw that version or the scripted one depending on how they reached the
+   band. Every loop keyframe opens on the idle state, so pausing from the
+   first paint shows exactly that frame. The caret keeps blinking, and
+   .snr-live (the first ping) takes over from here as before. */
+.snr-band.snr-hold [class*='snr-anim-']:not(.snr-anim-caret) {
+  animation-play-state: paused;
 }

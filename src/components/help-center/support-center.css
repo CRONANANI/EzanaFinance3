@@ -1497,3 +1497,145 @@
     transition: none;
   }
 }
+
+/* ── Oct 18: Most read + Try asking, under Start here ─────────────────
+   Two cards on one row fill the main column beside the category rail.
+   Same hairline card, radius and type as the Start here steps; the only
+   accent is emerald (index numbers, bars, icons, hover). Phones and narrow
+   tablets stack them. */
+.hcs-extras {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+.hcs-xcard {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 16px 18px 10px;
+  border: 1px solid var(--hcs-hair-strong);
+  border-radius: var(--radius-lg);
+  background: var(--hcs-bg);
+}
+.hcs-xcard .hcs-sec-head {
+  margin-bottom: 6px;
+}
+
+/* Most read */
+.hcs-pop {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.hcs-pop li + li .hcs-pop-row {
+  border-top: 1px dotted var(--hcs-dotted);
+}
+.hcs-pop-row {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) 12px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  color: inherit;
+  text-decoration: none;
+}
+.hcs-pop-idx {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--hcs-positive);
+}
+.hcs-pop-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.hcs-pop-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transition: color 0.15s ease;
+}
+.hcs-pop-row:hover .hcs-pop-title {
+  color: var(--hcs-positive);
+}
+.hcs-pop-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--hcs-faint);
+}
+.hcs-pop-bar {
+  display: block;
+  height: 3px;
+  margin-top: 3px;
+  border-radius: var(--radius-sm);
+  background: var(--hcs-tint);
+  overflow: hidden;
+}
+.hcs-pop-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-sm);
+  background: var(--hcs-emerald);
+}
+
+/* Try asking */
+.hcs-try {
+  list-style: none;
+  margin: 0;
+  padding: 2px 0 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.hcs-try-btn {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) 12px;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--hcs-hair);
+  border-radius: var(--radius-md);
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--hcs-ink);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.hcs-try-btn > .bi:first-child {
+  font-size: 14px;
+  color: var(--hcs-positive);
+}
+.hcs-try-go {
+  font-size: 10px;
+  color: var(--hcs-faint);
+}
+.hcs-try-btn:hover {
+  border-color: var(--hcs-active-border);
+  background: var(--hcs-tint);
+}
+.hcs-try-btn:hover .hcs-try-go {
+  color: var(--hcs-positive);
+}
+@media (max-width: 1100px) {
+  .hcs-extras {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hcs-pop-title,
+  .hcs-try-btn {
+    transition: none;
+  }
+}

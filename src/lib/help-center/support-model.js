@@ -104,6 +104,17 @@ export const AUDIENCES = {
     /* The three most-opened categories. Configured until view analytics
        per category exist; ids from help-center-content.js. */
     startHere: ['getting-started', 'portfolio', 'research'],
+    /* Oct 18: the "Try asking" chips under Start here. Deliberately not the
+       eight quickAsks cards above the fold: these are the questions people
+       have once they are inside the product, each a one-click AI answer. */
+    tryAsking: [
+      { icon: 'bi-broadcast', q: 'How does Sonar cite its sources?' },
+      { icon: 'bi-clock-history', q: 'How fresh is the congressional trading data?' },
+      { icon: 'bi-arrow-repeat', q: 'Why are my latest brokerage trades not showing?' },
+      { icon: 'bi-mortarboard', q: 'Can my university investment fund use Ezana?' },
+      { icon: 'bi-trophy', q: 'How is my ELO rating calculated?' },
+      { icon: 'bi-credit-card', q: 'What is included in each plan?' },
+    ],
     faqs: [
       'How do I connect my brokerage account?',
       'What is congressional trading data?',
@@ -170,6 +181,14 @@ export const AUDIENCES = {
       },
     ],
     startHere: ['onboarding', 'dashboard', 'copy-trading'],
+    tryAsking: [
+      { icon: 'bi-people', q: 'How does copy trading work for my followers?' },
+      { icon: 'bi-award', q: 'How are partner badges earned?' },
+      { icon: 'bi-bar-chart', q: 'What does my partner dashboard show?' },
+      { icon: 'bi-link-45deg', q: 'How do referral links get credited?' },
+      { icon: 'bi-person-plus', q: 'Can I co-author an Echo article?' },
+      { icon: 'bi-shield-check', q: 'What are the rules for partner content?' },
+    ],
     faqs: [
       'How do I join the partner program?',
       'What commission do partners earn?',
@@ -372,6 +391,30 @@ export function relativeDate(iso, now = new Date()) {
 }
 
 /** Static trending fallback: the first articles of the first two categories. */
+/**
+ * Oct 18: the "Popular guides" list shown before view counts exist. One
+ * article from each category in turn (round robin), skipping the Start here
+ * steps already on the page, so the card never repeats the cards above it.
+ */
+export function popularFallback(audience, exclude = [], n = 5) {
+  const skip = new Set(exclude);
+  const cats = categoriesFor(audience);
+  const out = [];
+  for (let round = 0; out.length < n && round < 4; round += 1) {
+    for (const c of cats) {
+      const slug = c.slugs.find((x) => !skip.has(x));
+      if (!slug) continue;
+      const a = articleMeta(audience, slug);
+      if (a) {
+        out.push({ ...a, views: null });
+        skip.add(slug);
+      }
+      if (out.length >= n) break;
+    }
+  }
+  return out;
+}
+
 export function trendingFallback(audience, n = 6) {
   const cats = categoriesFor(audience);
   const out = [];

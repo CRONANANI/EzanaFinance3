@@ -727,6 +727,44 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
     return () => io.disconnect();
   }, []);
 
+  /* Oct 18: the demo has one trigger condition, "the visitor is looking at
+     the band", however they got there. It used to start only when the lock
+     engaged, which needs a downward scroll across the band's upper third. A
+     visitor who landed with the band already on screen (a reload, a restored
+     scroll position, a short screen with the lock off) or who scrolled UP
+     into it never got the demo: they got the old CSS loop instead, a
+     different animation. restingView is true while the band fills most of
+     the viewport with no lock or entry glide under way; it is measured on
+     mount and whenever scrolling stops. */
+  const [restingView, setRestingView] = useState(false);
+  useEffect(() => {
+    const band = bandRef.current;
+    if (!band || isPage) return undefined;
+    let timer = null;
+    const measure = () => {
+      if (lockedRef.current || settlingRef.current) return;
+      const r = band.getBoundingClientRect();
+      const vh = window.innerHeight || 1;
+      const visible = Math.min(r.bottom, vh) - Math.max(r.top, 0);
+      setRestingView(visible >= Math.min(r.height, vh) * 0.6);
+    };
+    const onScroll = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(measure, 180);
+    };
+    /* After layout settles, so a restored scroll position has been applied. */
+    const first = setTimeout(measure, 250);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      clearTimeout(first);
+      if (timer) clearTimeout(timer);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [isPage]);
+  const demoArmed = lockedIn || (restingView && inView);
+
   /* Real dossier rows, fetched after hydration so SSR markup stays byte
      identical. A failure leaves the bracketed placeholders alone. The
      threshold of 3 keeps the card from rendering a half-populated state. */
@@ -1214,17 +1252,27 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
        listing it here made the effect tear itself down mid-fetch: alive went
        false, the result was discarded, and the panel sat on the sweep
        skeleton forever. */
-    if (!lockedIn || demoStartedRef.current || hasPingedRef.current) return undefined;
+    if (!demoArmed || demoStartedRef.current || hasPingedRef.current) return undefined;
     demoStartedRef.current = true;
     let alive = true;
     let stopType = () => {};
 
     const DEMO_QUERY = 'Lockheed Martin';
     const PRESS_MS = 150;
-    /* How long until the entry glide has landed, plus a beat. Read once: the
-       glide duration is a function of the distance it covers, and by the time
-       this effect runs it has already started. */
-    const settleWaitMs = () => (settlingRef.current ? 720 : 140);
+    /* Oct 18: the same beat on every entry path. The demo waits for the entry
+       glide to land (when there is one, polled rather than guessed), then a
+       fixed 320ms, so a visitor who scrolled in and one who loaded in place
+       see the typing start the same way. Capped at 1.5s of waiting. */
+    const BEAT_MS = 320;
+    const whenSettled = () =>
+      new Promise((resolve) => {
+        const t0 = Date.now();
+        const poll = () => {
+          if (!settlingRef.current || Date.now() - t0 > 1500) resolve();
+          else timers.push(setTimeout(poll, 50));
+        };
+        poll();
+      });
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const timers = [];
     let pointer = null;
@@ -1262,8 +1310,9 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
 
     /* Beat 2: the pointer appears where the eye already is (just past the
        typed text) and travels to the Ping button like a hand would: reaction
-       pause, arced path, minimum-jerk speed, a small overshoot and
-       correction, a dwell, then the press. Positions are measured off the
+       pause, a shallow arc, minimum-jerk speed straight onto the word "Ping",
+       a dwell, then the press. Oct 18: no overshoot and correction; it read
+       as the pointer missing the button and doubling back. Positions are measured off the
        form, which is the cursor's positioning context, so it lands on the
        button at any width. Driven by rAF on the element, not React state. */
     const movePointer = async () => {
@@ -1284,6 +1333,29 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
       const to = {
         x: word.left + word.width / 2 - f.left - tipX,
         y: word.top + word.height / 2 - f.top - tipY,
+      };
+      /* Re-read every frame by humanPointer: the word's offset inside the
+         button is fixed at the start (the label swaps to "Pinging" on the
+         press, so it is not re-measured), and the button's own position is
+         live, so a layout shift mid-travel cannot make the pointer miss. */
+      /* Layout offsets, not getBoundingClientRect: the press scales the
+         button to 0.95, which would move its rect (and so the target) ~3px
+         under the pointer mid-press. The form is the button's offset
+         parent; the rect path is only a fallback. */
+      const btnBox = () =>
+        btn.offsetParent === form
+          ? { x: btn.offsetLeft, y: btn.offsetTop }
+          : (() => {
+              const bb = btn.getBoundingClientRect();
+              const ff = form.getBoundingClientRect();
+              return { x: bb.left - ff.left, y: bb.top - ff.top };
+            })();
+      const box0 = btnBox();
+      const offX = to.x - box0.x;
+      const offY = to.y - box0.y;
+      const liveTo = () => {
+        const bx = btnBox();
+        return { x: bx.x + offX, y: bx.y + offY };
       };
       if (reduce) {
         setCursorLive(true);
@@ -1314,7 +1386,7 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
         y: b.top - f.top + b.height * 0.78,
       };
       setCursorLive(true);
-      pointer = humanPointer(el, from, to, {
+      pointer = humanPointer(el, from, liveTo, {
         isCancelled: () => !alive || userTookOverRef.current,
         onPress: () => {
           setBtnPressed(true);
@@ -1354,6 +1426,9 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
       async () => {
         if (!alive || userTookOverRef.current) return;
         prefetch();
+        await whenSettled();
+        await wait(BEAT_MS);
+        if (!alive || userTookOverRef.current) return;
         await typeQuery();
         if (!alive || userTookOverRef.current) return;
         await movePointer();
@@ -1411,11 +1486,10 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
           if (alive) setPinging(false);
         }
       },
-      /* Starts as the entry glide lands, not under it. Two motions at once
-         (the page gliding and the field typing) read as a stutter; one after
-         the other reads as a single gesture. The glide is under a second, and
-         the wait is capped so the band can never look inert for long. */
-      reduce ? 0 : settleWaitMs(),
+      /* Starts as the entry glide lands, not under it (whenSettled above).
+         Two motions at once (the page gliding and the field typing) read as
+         a stutter; one after the other reads as a single gesture. */
+      0,
     );
 
     return () => {
@@ -1430,7 +1504,7 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
          never appeared: the visitor was locked in with no way down. */
       if (!demoDoneRef.current) demoStartedRef.current = false;
     };
-  }, [lockedIn, startTypewriter, hideDemoCursor]);
+  }, [demoArmed, startTypewriter, hideDemoCursor]);
 
   /* The deadline that guarantees a way down, in its own effect so it re-arms
      on every lock. It used to live inside the demo effect, where a release
@@ -2112,7 +2186,7 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
         ref={bandRef}
         className={`snr-band${isPage ? ' snr-band--page' : ''}${inView ? '' : ' snr-paused'}${composed ? ' snr-composed' : ''}${
           lockedIn ? ' snr-frozen' : ''
-        }${hasPinged ? ' snr-live' : ''}${stage2 ? ' snr-stage2' : ''}${
+        }${hasPinged ? ' snr-live' : ' snr-hold'}${stage2 ? ' snr-stage2' : ''}${
           live?.dossier?.fundamentals ? ' snr-has-fund' : ''
         }`}
       >
@@ -2186,9 +2260,11 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
                 {/* Decorative demo narration for the pristine loop only. Once
                   the real field has content, whether the demo typed it or the
                   visitor did, the overlay would double it. */}
+                {/* Oct 18: the caret only. The overlay used to type its own
+                  "Lockheed Martin" on the CSS loop before the real demo typed
+                  it again into the field, so the query appeared twice. */}
                 {queryValue ? null : (
                   <span className="snr-demo" aria-hidden="true">
-                    <span className="snr-query snr-anim-query">Lockheed Martin</span>
                     <span className="snr-caret snr-anim-caret" />
                   </span>
                 )}
@@ -2196,7 +2272,7 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
                   ref={pingBtnRef}
                   type={isPage ? 'submit' : 'button'}
                   tabIndex={isPage ? undefined : -1}
-                  className={`snr-ping-btn snr-anim-press${btnPressed ? ' snr-ping-btn--pressed' : ''}`}
+                  className={`snr-ping-btn${btnPressed ? ' snr-ping-btn--pressed' : ''}`}
                   disabled={pinging}
                 >
                   <span className="snr-btn-label">
@@ -2208,10 +2284,15 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
                   </span>
                 </button>
                 {/* Position and opacity are written by humanPointer() while
-                  cursorLive; React only owns the class. */}
+                  cursorLive; React only owns the class. Oct 18: there is no
+                  CSS keyframe pointer any more. Its path was fixed pixels
+                  (it landed ~116px right of Ping at 1440 wide) and it flew
+                  while the real demo typed, so the visitor saw it sail past
+                  the button before the real pointer started over from the
+                  text. Hidden until humanPointer() drives it. */}
                 <svg
                   ref={cursorRef}
-                  className={`snr-cursor ${cursorLive ? 'snr-cursor--demo' : 'snr-anim-cursor'}`}
+                  className={`snr-cursor${cursorLive ? ' snr-cursor--demo' : ''}`}
                   viewBox="0 0 24 24"
                   fill="#ffffff"
                   stroke="#04261c"

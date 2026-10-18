@@ -32,6 +32,7 @@ import {
   keepReading,
   matchesByCategory,
   matchesFor,
+  popularFallback,
   recentlyUpdated,
   relatedArticles,
   relativeDate,
@@ -41,6 +42,7 @@ import {
 } from '@/lib/help-center/support-model';
 import CategoryRail from './CategoryRail';
 import StartHerePath from './StartHerePath';
+import HelpHomeExtras from './HelpHomeExtras';
 import PlatformChangelog from './PlatformChangelog';
 import './support-center.css';
 
@@ -164,6 +166,18 @@ export default function SupportCenter({ audience = 'user', initialQuestion = '' 
   const [allRelated, setAllRelated] = useState(false);
   const [allSources, setAllSources] = useState(false);
   const [trending, setTrending] = useState(() => trendingFallback(audience));
+  /* Most read once views exist; until then popular guides that are not
+     already Start here steps (the static fallback repeats them). */
+  const popular = useMemo(
+    () =>
+      trending.some((t) => t.views > 0)
+        ? trending
+        : popularFallback(
+            audience,
+            milestones.map((m) => m.slug),
+          ),
+    [trending, audience, milestones],
+  );
 
   const inputRef = useRef(null);
   const answerRef = useRef(null);
@@ -460,6 +474,14 @@ export default function SupportCenter({ audience = 'user', initialQuestion = '' 
 
           <div className="hcs-main">
             <StartHerePath milestones={milestones} />
+
+            <HelpHomeExtras
+              trending={popular}
+              base={cfg.base}
+              tryAsking={cfg.tryAsking || []}
+              onAsk={(q) => ask(q, { source: 'try' })}
+              onArticle={onArticle}
+            />
 
             {updated.length ? (
               <section aria-labelledby="hcs-upd-title">

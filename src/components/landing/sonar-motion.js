@@ -74,16 +74,26 @@ const qb = (a, c, b, t) => (1 - t) * (1 - t) * a + 2 * (1 - t) * t * c + t * t *
 
 /**
  * Move an absolutely positioned pointer from `from` to `to` like a hand
- * would: a short reaction pause, an arced path (people do not move a mouse in
- * straight lines), a minimum-jerk speed profile, a small overshoot past the
- * target and a correction back onto it, then a dwell before the press.
+ * would: a short reaction pause, a shallow arc (people do not move a mouse in
+ * straight lines), a minimum-jerk speed profile that arrives on the target at
+ * zero speed, then a dwell before the press.
+ *
+ * Oct 18: no overshoot. The old path ran a few pixels past the target and
+ * corrected back, which on the Ping button read as the pointer missing it and
+ * doubling back. The arc's control point sits on the perpendicular through
+ * the midpoint, so the path never passes the target along the direction of
+ * travel either.
+ *
+ * `to` may be a function returning the target. It is then re-read every
+ * frame, so the pointer still lands on the button if the layout shifts while
+ * it travels (a late web font, the band's locked composition engaging).
  *
  * Resolves after the press has visually landed; `onPress` fires at the moment
  * the pointer depresses, so the caller can press the button in the same frame.
  *
  * @param {HTMLElement|SVGElement} el
  * @param {{x:number,y:number}} from
- * @param {{x:number,y:number}} to
+ * @param {{x:number,y:number}|(() => {x:number,y:number})} to
  * @param {{ onPress?: () => void, isCancelled?: () => boolean }} opts
  * @returns {{ done: Promise<void>, cancel: () => void }}
  */
@@ -94,23 +104,20 @@ export function humanPointer(el, from, to, { onPress, isCancelled } = {}) {
     cancelled = true;
     cancelAnimationFrame(raf);
   };
+  const target = typeof to === 'function' ? to : () => to;
 
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  const dist = Math.hypot(dx, dy) || 1;
+  const first = target();
+  const dist = Math.hypot(first.x - from.x, first.y - from.y) || 1;
   /* Fitts-flavoured duration: longer reaches take longer, within bounds. */
-  const travel = Math.max(520, Math.min(900, 420 + dist * 0.55));
-  /* Arc: the control point sits off the midpoint, perpendicular to the line,
-     bowed upward for a rightward reach (the wrist pivots, the path curves). */
-  const nx = -dy / dist;
-  const ny = dx / dist;
-  const bow = Math.min(46, dist * 0.12);
-  const cx = from.x + dx * 0.5 + nx * -bow;
-  const cy = from.y + dy * 0.5 + ny * -bow;
-  /* Overshoot a few pixels along the direction of travel, then correct. */
-  const over = Math.min(7, dist * 0.02);
-  const ox = to.x + (dx / dist) * over;
-  const oy = to.y + (dy / dist) * over;
+  const travel = Math.max(560, Math.min(900, 440 + dist * 0.55));
+  const bowFor = (t) => {
+    const dx = t.x - from.x;
+    const dy = t.y - from.y;
+    const d = Math.hypot(dx, dy) || 1;
+    /* Bowed upward for a rightward reach (the wrist pivots, the path curves). */
+    const bow = Math.min(36, d * 0.1);
+    return { x: from.x + dx * 0.5 + (dy / d) * bow, y: from.y + dy * 0.5 - (dx / d) * bow };
+  };
 
   const set = (x, y, s, o) => {
     el.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${s})`;
@@ -121,10 +128,9 @@ export function humanPointer(el, from, to, { onPress, isCancelled } = {}) {
   const FADE = 160;
   const REACT = 120;
   const T_MOVE = FADE + REACT;
-  const T_CORRECT = T_MOVE + travel;
-  const CORRECT = 150;
-  const DWELL = 170;
-  const T_PRESS = T_CORRECT + CORRECT + DWELL;
+  const T_ARRIVE = T_MOVE + travel;
+  const DWELL = 220;
+  const T_PRESS = T_ARRIVE + DWELL;
   const PRESS = 95;
   const RELEASE = 140;
   const T_END = T_PRESS + PRESS + RELEASE;
@@ -141,31 +147,30 @@ export function humanPointer(el, from, to, { onPress, isCancelled } = {}) {
       }
       if (!start) start = now;
       const e = now - start;
+      const t = target();
 
       if (e < T_MOVE) {
         /* Fade in where the eye already is, with a 2px settle. */
-        const t = Math.min(1, e / FADE);
-        set(from.x, from.y + (1 - t) * 2, 1, 0.95 * t);
-      } else if (e < T_CORRECT) {
-        const t = minJerk((e - T_MOVE) / travel);
-        set(qb(from.x, cx, ox, t), qb(from.y, cy, oy, t), 1, 0.95);
-      } else if (e < T_CORRECT + CORRECT) {
-        const t = minJerk((e - T_CORRECT) / CORRECT);
-        set(ox + (to.x - ox) * t, oy + (to.y - oy) * t, 1, 0.95);
+        const k = Math.min(1, e / FADE);
+        set(from.x, from.y + (1 - k) * 2, 1, 0.95 * k);
+      } else if (e < T_ARRIVE) {
+        const k = minJerk((e - T_MOVE) / travel);
+        const c = bowFor(t);
+        set(qb(from.x, c.x, t.x, k), qb(from.y, c.y, t.y, k), 1, 0.95);
       } else if (e < T_PRESS) {
-        set(to.x, to.y, 1, 0.95);
+        set(t.x, t.y, 1, 0.95);
       } else if (e < T_PRESS + PRESS) {
         if (!pressed) {
           pressed = true;
           onPress?.();
         }
-        const t = (e - T_PRESS) / PRESS;
-        set(to.x, to.y, 1 - 0.14 * t, 0.95);
+        const k = (e - T_PRESS) / PRESS;
+        set(t.x, t.y, 1 - 0.14 * k, 0.95);
       } else if (e < T_END) {
-        const t = (e - T_PRESS - PRESS) / RELEASE;
-        set(to.x, to.y, 0.86 + 0.14 * minJerk(t), 0.95);
+        const k = (e - T_PRESS - PRESS) / RELEASE;
+        set(t.x, t.y, 0.86 + 0.14 * minJerk(k), 0.95);
       } else {
-        set(to.x, to.y, 1, 0.95);
+        set(t.x, t.y, 1, 0.95);
         resolve();
         return;
       }
