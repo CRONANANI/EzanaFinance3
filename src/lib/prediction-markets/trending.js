@@ -9,15 +9,20 @@
  *   0.3 x size of the 24h YES price move, capped at 10 points
  *   0.1 x share of lifetime volume that traded in the last 24h (new activity)
  *
- * Eligible = probability between 3% and 97% (near-certain markets trade a lot
- * but say little), 24h volume at or above the venue floor, and a spread no
- * wider than 10 points when a spread is known. Everything else gets null.
+ * Eligible = probability between 5% and 95% (near-certain markets trade a lot
+ * but say little), 24h volume at or above the venue floor, a spread no wider
+ * than 10 points when a spread is known, at least 24 hours left before close,
+ * and not part of a short-cycle recurring series (daily, hourly and minute
+ * markets that are re-listed every cycle and always look new). Everything
+ * else gets null. Closing-soon markets belong in their own rail, not here.
  */
 export const TRENDING_RULES = {
-  minProbability: 0.03,
-  maxProbability: 0.97,
+  minProbability: 0.05,
+  maxProbability: 0.95,
   maxSpread: 0.1,
+  minHoursToClose: 24,
   minVolume24h: { polymarket: 5000, kalshi: 500 },
+  shortRecurrence: ['daily', 'hourly', '1h', '4h', '15m', '5m'],
   moveCap: 0.1,
   weights: { volume: 0.6, move: 0.3, fresh: 0.1 },
 };
@@ -46,7 +51,22 @@ export function changeOf(now, before) {
   return Number((now - before).toFixed(4));
 }
 
-export function isTrendingEligible(row) {
+/** True when the market closes within minHoursToClose of nowMs (unknown close = false). */
+export function closesSoon(endDate, nowMs = Date.now()) {
+  if (!endDate) return false;
+  const t = Date.parse(endDate);
+  if (!Number.isFinite(t)) return false;
+  return t - nowMs < TRENDING_RULES.minHoursToClose * 3600000;
+}
+
+export function isShortRecurrence(recurrence) {
+  const r = String(recurrence || '')
+    .trim()
+    .toLowerCase();
+  return r !== '' && TRENDING_RULES.shortRecurrence.includes(r);
+}
+
+export function isTrendingEligible(row, nowMs = Date.now()) {
   const r = TRENDING_RULES;
   const p = num(row?.probability);
   if (p == null || p < r.minProbability || p > r.maxProbability) return false;
@@ -55,16 +75,18 @@ export function isTrendingEligible(row) {
   if (v24 == null || floor == null || v24 < floor) return false;
   const s = num(row?.spread);
   if (s != null && s > r.maxSpread) return false;
+  if (closesSoon(row?.end_date, nowMs)) return false;
+  if (isShortRecurrence(row?.recurrence)) return false;
   return true;
 }
 
 /** Sets row.trending_score on every row in place (null when not eligible). Returns rows. */
-export function scoreTrendingBatch(rows) {
+export function scoreTrendingBatch(rows, nowMs = Date.now()) {
   const r = TRENDING_RULES;
   const byPlatform = new Map();
   for (const row of rows) {
     row.trending_score = null;
-    if (!isTrendingEligible(row)) continue;
+    if (!isTrendingEligible(row, nowMs)) continue;
     if (!byPlatform.has(row.platform)) byPlatform.set(row.platform, []);
     byPlatform.get(row.platform).push(row);
   }

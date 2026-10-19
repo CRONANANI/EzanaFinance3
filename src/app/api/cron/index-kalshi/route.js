@@ -85,6 +85,10 @@ function toRow(ev, m, siblings) {
     market_id: `kalshi:${ticker}`,
     adj_ticker: null,
     platform: 'kalshi',
+    event_key: ev?.event_ticker ? `kalshi:${ev.event_ticker}` : null,
+    event_title: evTitle || null,
+    outcome_label: siblings > 1 && sub ? sub : null,
+    recurrence: null,
     question,
     description:
       typeof m?.rules_primary === 'string' && m.rules_primary

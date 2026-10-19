@@ -89,6 +89,27 @@ function marketLink(m) {
   return null;
 }
 
+/**
+ * Event grouping fields from Gamma. Outcomes of one event share event_key so
+ * trending shows one card per event. recurrence is the series cadence; the
+ * scorer skips short cycles (daily, hourly) that are re-listed every period.
+ */
+function eventInfo(m) {
+  const ev = Array.isArray(m?.events) && m.events.length ? m.events[0] : null;
+  const evId = ev?.id ?? ev?.slug ?? null;
+  const series = Array.isArray(ev?.series) && ev.series.length ? ev.series[0] : null;
+  const label = String(m?.groupItemTitle || '').trim();
+  return {
+    event_key: evId != null && evId !== '' ? `polymarket:${evId}` : null,
+    event_title: typeof ev?.title === 'string' && ev.title.trim() ? ev.title.trim() : null,
+    outcome_label: label || null,
+    recurrence:
+      typeof series?.recurrence === 'string' && series.recurrence.trim()
+        ? series.recurrence.trim().toLowerCase()
+        : null,
+  };
+}
+
 /** Gamma market to { question, row } (MappedMarket shape, platform=polymarket). */
 function toRow(m) {
   const question = String(m?.question ?? m?.title ?? '').trim();
@@ -100,6 +121,7 @@ function toRow(m) {
       market_id: marketId,
       adj_ticker: null,
       platform: 'polymarket',
+      ...eventInfo(m),
       question,
       description: typeof m?.description === 'string' ? m.description : null,
       probability: yesProbability(m),
