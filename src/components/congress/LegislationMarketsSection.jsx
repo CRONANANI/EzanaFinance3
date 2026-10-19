@@ -14,12 +14,12 @@ import { useEffect, useState } from 'react';
 import { BillStageChip } from './chips';
 
 function pct(v) {
-  return v == null ? '—' : `${Math.round(v * 100)}%`;
+  return v == null ? 'n/a' : `${Math.round(v * 100)}%`;
 }
 
 export function LegislationMarketsSection({
   title = 'Legislation markets',
-  intro = 'Where a tracked bill lines up with a live prediction market, we show our transparent structural passage estimate beside the market-implied probability. Informational only — not investment or betting advice.',
+  intro = 'Where a tracked bill lines up with a live prediction market, we show our transparent structural passage estimate beside the market-implied probability. Informational only, not investment or betting advice.',
   limit = 6,
 }) {
   const [state, setState] = useState({ loading: true, pairs: [], disclaimer: '' });
@@ -57,8 +57,8 @@ export function LegislationMarketsSection({
         <p className="congress-surface-empty">Loading legislation markets…</p>
       ) : !top.length ? (
         <p className="congress-surface-empty">
-          No bill-to-market matches right now — pairs appear here when a tracked bill lines up with
-          an active political prediction market.
+          No bill-to-market matches right now. Pairs appear here when a tracked bill is the subject
+          of an active political prediction market.
         </p>
       ) : (
         <ul className="congress-legmarket-list">
@@ -80,12 +80,22 @@ export function LegislationMarketsSection({
                   <span className="congress-legmarket-num-label">Market</span>
                   <span className="congress-legmarket-num-val">{pct(p.implied)}</span>
                 </span>
+                {/* Below the 1-point floor (net of half the spread) the API
+                    withholds the edge: the gap is inside the cost of acting on
+                    it, so it is shown as no gap rather than as a number. */}
                 <span
                   className={`congress-legmarket-edge ${
                     (p.edge ?? 0) > 0 ? 'is-pos' : (p.edge ?? 0) < 0 ? 'is-neg' : ''
                   }`}
+                  title={
+                    p.confidence && p.confidence !== 'none'
+                      ? `${p.confidence} confidence`
+                      : undefined
+                  }
                 >
-                  {p.edge == null ? '—' : `${p.edge > 0 ? '+' : ''}${Math.round(p.edge * 100)} pts`}
+                  {p.edge == null
+                    ? 'No gap'
+                    : `${p.edge > 0 ? '+' : ''}${Math.round(p.edge * 100)} pts`}
                 </span>
               </div>
             </li>

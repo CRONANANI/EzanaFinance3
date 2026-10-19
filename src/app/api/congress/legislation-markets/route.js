@@ -17,14 +17,20 @@ export const runtime = 'nodejs';
 const supaConfigured = () =>
   !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 
+const POLYMARKET_POLITICS_TAG_ID = '2';
+
 async function fetchPoliticsMarkets() {
+  /* Gamma filters on the numeric tag_id; a `tag` string is silently ignored,
+     which is how crypto and sports markets used to reach the matcher.
+     2 = Politics (GET /tags/slug/politics). The pool is wider than before
+     because the matcher is now strict about what counts as a pair. */
   const params = new URLSearchParams({
-    limit: '80',
+    limit: '200',
     active: 'true',
     closed: 'false',
     order: 'volume24hr',
     ascending: 'false',
-    tag: 'politics',
+    tag_id: POLYMARKET_POLITICS_TAG_ID,
   });
   const res = await fetch(`https://gamma-api.polymarket.com/markets?${params.toString()}`, {
     next: { revalidate: 120 },
@@ -38,6 +44,7 @@ async function fetchPoliticsMarkets() {
     outcomes: m.outcomes || [],
     outcomePrices: m.outcomePrices || m.outcome_prices || [],
     volume: parseFloat(m.volume) || 0,
+    spread: Number.isFinite(Number(m.spread)) ? Number(m.spread) : null,
     endDate: m.endDate || m.end_date_iso || '',
     icon: m.icon || '',
   }));
@@ -83,6 +90,8 @@ export async function GET(request) {
       model: p.model,
       edge: p.edge,
       evPct: p.evPct,
+      spread: p.spread,
+      confidence: p.confidence,
     }));
 
     return NextResponse.json({ ok: true, source: 'supabase+polymarket', pairs, disclaimer });
