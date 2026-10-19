@@ -93,7 +93,7 @@ function walk(dir, out = []) {
 
 const SRC = walk(new URL('../src', import.meta.url).pathname);
 const LOCKED_PREFIXES =
-  /from\(\s*['"`](congress_|congressional_trades|contract_awards_resolved|contractor_|country_scores_raw|dimension_metric_map|earnings_|echo_article_chunks|empire_|eyes_|ezq_|fec_|gov_contract_|house_|institution_registry|institutional_holdings_cache|lobbying_|oecd_|personas|politician_annual_performance|polymarket_market_index|prediction_market_index|sec_|senate_|snaptrade_brokerages_cache|ticker_sectors|usaspending_contract_awards|whale_moves)/;
+  /from\(\s*['"`](congress_|congressional_trades|contract_awards_resolved|contractor_|country_scores_raw|dimension_metric_map|earnings_|echo_article_chunks|empire_|eyes_|ezq_|fec_|gov_contract_|house_|institution_registry|institutional_holdings_cache|lobbying_|oecd_|personas|politician_annual_performance|polymarket_market_index|prediction_market_index|prediction_market_snapshots|sec_|senate_|snaptrade_brokerages_cache|ticker_sectors|usaspending_contract_awards|whale_moves)/;
 
 test('no client component reads a locked dataset table directly', () => {
   const offenders = SRC.filter((p) => {

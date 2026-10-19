@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { embedViaSupabase, supaEmbedConfigured } from '@/lib/embeddings-gte';
 import { scoreTrendingBatch, spreadOf, unitPrice } from '@/lib/prediction-markets/trending';
+import { attachWindowMetrics, writeSnapshots } from '@/lib/prediction-markets/snapshot-store';
 
 /**
  * Populate prediction_market_index (Polymarket rows) for the semantic matcher
@@ -10,7 +11,9 @@ import { scoreTrendingBatch, spreadOf, unitPrice } from '@/lib/prediction-market
  * first, embeds new or changed questions with the Supabase gte-small edge
  * function (384-dim), reuses stored vectors for unchanged questions, and
  * upserts on market_id. Kalshi has its own loader (index-kalshi) on the same
- * table. Markets past their end date are closed; markets not refreshed in
+ * table. Each run also stores the market's Polymarket tag ids (mapped to the
+ * page taxonomy by normalizeCategory), its 7d/30d window figures from the
+ * snapshot history, and a fresh snapshot (prediction_market_snapshots). Markets past their end date are closed; markets not refreshed in
  * STALE_DAYS are marked stale so old odds are never shown as current.
  *   GET /api/cron/index-prediction-markets?maxMarkets=2000&pageSize=100
  * Auth: CRON_SECRET as a Bearer header or ?key=.
@@ -56,6 +59,13 @@ function isAuthorized(request) {
   } catch {
     return false;
   }
+}
+
+/** Tag ids from a Gamma market fetched with include_tag=true, as strings. */
+function tagIds(m) {
+  const tags = Array.isArray(m?.tags) ? m.tags : [];
+  const ids = tags.map((t) => (t && t.id != null ? String(t.id) : null)).filter(Boolean);
+  return ids.length ? ids : null;
 }
 
 /** First outcome price as implied YES probability (0..1), or null. */
@@ -143,6 +153,7 @@ function toRow(m) {
       status: 'active',
       link: marketLink(m),
       category: m?.category || null,
+      tag_ids: tagIds(m),
     },
   };
 }
@@ -156,6 +167,8 @@ async function fetchGammaPage(offset, pageSize, order = 'volumeNum') {
     // volumeNum, not volume: volume is a string and sorts as text.
     order,
     ascending: 'false',
+    // Tags inline, so each row carries its categories without extra calls.
+    include_tag: 'true',
   });
   try {
     const res = await fetch(`${GAMMA_BASE}/markets?${params}`, {
@@ -265,6 +278,14 @@ export async function GET(request) {
   }
   // Score before the rows are split into fresh/reuse batches below.
   scoreTrendingBatch(items.map((it) => it.row));
+  // 7d/30d figures from the snapshot history, on the same row objects.
+  const runAt = new Date();
+  const wm = await attachWindowMetrics(
+    admin,
+    items.map((it) => it.row),
+    runAt,
+  );
+  if (!wm.ok) errors.push(wm.error);
 
   // 2) embed only new or changed questions; reuse the stored vector otherwise
   let known = new Map();
@@ -306,6 +327,10 @@ export async function GET(request) {
   const upserted =
     (await upsertChunks(admin, freshRows, errors, 'fresh')) +
     (await upsertChunks(admin, reuseRows, errors, 'reuse'));
+
+  // 3b) one snapshot per indexed market, then prune past the retention window
+  const snap = await writeSnapshots(admin, 'polymarket', [...freshRows, ...reuseRows], stamp);
+  errors.push(...snap.errors);
 
   // 4) close ended markets, mark unrefreshed ones stale, prune long-resolved rows
   const nowIso = new Date().toISOString();
@@ -351,6 +376,8 @@ export async function GET(request) {
     closed,
     stale,
     pruned,
+    snapshots: snap.written,
+    snapshotsPruned: snap.pruned,
     errors: errors.slice(0, 10),
   });
 }

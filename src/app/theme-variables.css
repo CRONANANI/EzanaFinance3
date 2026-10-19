@@ -239,6 +239,18 @@
      today. Revisit as a real semantic pair if light mode ever needs its own. */
   --positive-bright: #34d399;
 
+  /* Editorial data palette, promoted from .echo-article-page so dataset pages
+     (Prediction Markets first) can read it. Same values Echo declares; Echo
+     keeps its own local declarations, so Echo renders unchanged. Blue and
+     purple follow the theme through --blue and --purple. */
+  --echo-chart-red: #e85d4f;
+  --echo-chart-orange: #f59e0b;
+  --echo-chart-green: #10b981;
+  --echo-chart-blue: var(--blue);
+  --echo-chart-purple: var(--purple);
+  --echo-chart-grid: rgba(120, 120, 120, 0.15);
+  --echo-chart-annotation: rgba(120, 120, 120, 0.4);
+
   /* Native form control chrome (dropdowns, date inputs, scrollbars) */
   color-scheme: dark;
 
@@ -389,6 +401,17 @@ body.light-mode {
 
   /* ── Badge ── */
   --badge-ring: #ffffff;
+
+  /* Editorial data palette (see :root). Re-declared here so --echo-chart-blue
+     and --echo-chart-purple resolve against the light --blue and --purple on
+     body as well as html. */
+  --echo-chart-red: #e85d4f;
+  --echo-chart-orange: #f59e0b;
+  --echo-chart-green: #10b981;
+  --echo-chart-blue: var(--blue);
+  --echo-chart-purple: var(--purple);
+  --echo-chart-grid: rgba(120, 120, 120, 0.15);
+  --echo-chart-annotation: rgba(120, 120, 120, 0.4);
 }
 
 /* ═══════════════════════════════════════════════════════════

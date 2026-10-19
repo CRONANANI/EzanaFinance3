@@ -7,6 +7,7 @@ import {
   spreadOf,
   unitPrice,
 } from '@/lib/prediction-markets/trending';
+import { attachWindowMetrics, writeSnapshots } from '@/lib/prediction-markets/snapshot-store';
 
 /**
  * Kalshi open markets into prediction_market_index (platform=kalshi). Public
@@ -185,6 +186,9 @@ export async function GET(request) {
     keep.set(r.market_id, r);
   }
   const rows = scoreTrendingBatch([...keep.values()]).map((r) => ({ ...r, indexed_at: stamp }));
+  // 7d/30d figures from the snapshot history.
+  const wm = await attachWindowMetrics(admin, rows, new Date(stamp));
+  if (!wm.ok) errors.push(wm.error);
 
   // 3) upsert
   let upserted = 0;
@@ -197,6 +201,10 @@ export async function GET(request) {
     if (error) errors.push(`upsert @${i}: ${error.message}`);
     else upserted += chunk.length;
   }
+
+  // 3b) one snapshot per indexed market, then prune past the retention window
+  const snap = await writeSnapshots(admin, 'kalshi', rows, stamp);
+  errors.push(...snap.errors);
 
   // 4) close ended, mark unrefreshed stale, prune long-resolved
   const nowIso = new Date().toISOString();
@@ -240,6 +248,8 @@ export async function GET(request) {
     closed,
     stale,
     pruned,
+    snapshots: snap.written,
+    snapshotsPruned: snap.pruned,
     errors: errors.slice(0, 10),
   });
 }

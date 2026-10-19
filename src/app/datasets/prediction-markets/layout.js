@@ -1,7 +1,7 @@
 export const metadata = {
   title: 'Prediction markets data | Ezana',
   description:
-    'The highest-volume open prediction markets on politics, policy, macro and company events from Polymarket and Kalshi, with implied probabilities and the volume behind them.',
+    'What the crowd is pricing, what is moving, and how much money stands behind each price, across Polymarket and Kalshi: movers, price history, gaps against a reference, top traders and markets closing this week.',
 };
 
 export default function Layout({ children }) {
