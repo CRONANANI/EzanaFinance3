@@ -69,7 +69,11 @@ export default async function DatasetsIndexPage({ searchParams }) {
         <GlobeBackground />
       </div>
       <div className="dso-page dso-page--search">
-        <SonarExperience variant="datasets" heroAddon={map} />
+        <SonarExperience
+          variant="datasets"
+          heroAddon={map}
+          initialQuery={typeof searchParams?.q === 'string' ? searchParams.q : null}
+        />
       </div>
     </div>
   );

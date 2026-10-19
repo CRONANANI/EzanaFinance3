@@ -456,6 +456,45 @@
   opacity: 0;
 }
 
+/* Oct 18: the pill is always clear. A type="search" field can come up with a
+   white fill and black text from outside our rules: Chrome autofill (picking
+   a past query from the field's history dropdown) paints its own background
+   and fieldtext colour, and a light color-scheme hands the UA's white field
+   default through. The fill is declared explicitly, the scheme is pinned
+   dark so UA defaults stay dark, the native search chrome is removed, and
+   autofill is neutralised: the UA's forced background is clipped to the
+   glyphs (where the text fill covers it) and its transition is pushed out so
+   it never paints. */
+.snr-band .snr-input,
+.snr-band .snr-input:hover,
+.snr-band .snr-input:focus {
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: transparent;
+  color-scheme: dark;
+}
+.snr-band .snr-input::-webkit-search-decoration,
+.snr-band .snr-input::-webkit-search-cancel-button,
+.snr-band .snr-input::-webkit-search-results-button,
+.snr-band .snr-input::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+.snr-band .snr-input:-webkit-autofill,
+.snr-band .snr-input:-webkit-autofill:hover,
+.snr-band .snr-input:-webkit-autofill:focus,
+.snr-band .snr-input:autofill {
+  -webkit-text-fill-color: var(--snr-text);
+  caret-color: var(--snr-emerald);
+  -webkit-background-clip: text;
+  background-clip: text;
+  box-shadow: none;
+  transition:
+    background-color 600000s 0s,
+    color 600000s 0s;
+}
+
 .snr-caret {
   width: 2px;
   height: 19px;

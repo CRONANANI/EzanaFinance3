@@ -1,0 +1,152 @@
+/* Sonar sign-up CTA (ssc-), under the /datasets results band.
+   Sits on the page's green globe ground, so it uses the same ghost fill as
+   the search pill (black at 22-24%) and the band's mint for accents. The
+   button follows the branding guide's primary emerald CTA. Tokens only.
+   Text selectors are doubled (.ssc .ssc-x) on purpose: the global
+   `body.light-mode h2` and `body.light-mode p` rules are (0,1,2) and would
+   otherwise paint this copy dark on the green ground. */
+
+.ssc {
+  box-sizing: border-box;
+  margin: 8px clamp(16px, 3vw, 56px) 0;
+  padding: 28px clamp(20px, 3vw, 40px);
+  border-radius: 16px;
+  background: color-mix(in srgb, black 24%, transparent);
+  border: 1px solid color-mix(in srgb, var(--brand-band-mint) 18%, transparent);
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 24px 48px;
+  align-items: center;
+  color: white;
+  font-family: var(--font-sans);
+}
+
+.ssc .ssc-kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brand-band-mint);
+}
+
+.ssc .ssc-title {
+  margin: 8px 0 10px;
+  font-size: clamp(22px, 2.2vw, 30px);
+  font-weight: 700;
+  line-height: 1.2;
+  color: white;
+}
+
+.ssc .ssc-query {
+  color: var(--brand-band-mint);
+}
+
+.ssc .ssc-sub {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 15px;
+  line-height: 1.6;
+  color: color-mix(in srgb, white 82%, transparent);
+}
+
+.ssc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.ssc .ssc-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: color-mix(in srgb, white 90%, transparent);
+}
+
+.ssc .ssc-item i {
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 16px;
+  color: var(--brand-band-mint);
+}
+
+.ssc-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 14px;
+}
+
+.ssc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 0.625rem 1.35rem;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s,
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+
+.ssc-btn--primary {
+  background: var(--emerald);
+  color: white;
+  border: 1px solid transparent;
+}
+
+.ssc-btn--primary:hover {
+  background: var(--emerald-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--emerald-glow);
+}
+
+.ssc-btn--ghost {
+  background: transparent;
+  color: white;
+  border: 1px solid color-mix(in srgb, white 30%, transparent);
+}
+
+.ssc-btn--ghost:hover {
+  border-color: var(--emerald);
+  color: var(--brand-band-mint);
+}
+
+.ssc-btn:focus-visible {
+  outline: 2px solid var(--brand-band-mint);
+  outline-offset: 2px;
+}
+
+.ssc .ssc-note {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: color-mix(in srgb, white 70%, transparent);
+}
+
+@media (max-width: 860px) {
+  .ssc {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ssc-btn {
+    transition: none;
+  }
+  .ssc-btn--primary:hover {
+    transform: none;
+  }
+}

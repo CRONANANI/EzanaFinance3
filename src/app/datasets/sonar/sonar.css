@@ -2033,6 +2033,104 @@ body.light-mode .dso-page--search .dso-sonar-title {
   font-family: var(--font-sans);
   color: white;
 }
+
+/* Oct 18: the hero pill above the orbital map gets the same always-clear
+   guarantee as the results pill (see the Oct 18 note on .snr-input in
+   sonar-band.css): explicit transparent fill, dark color-scheme, no native
+   search chrome, and Chrome autofill clipped to the glyphs so its white or
+   blue fill never paints. */
+.dso-page--search .sonar-qbar-input,
+.dso-page--search .sonar-qbar-input:hover,
+.dso-page--search .sonar-qbar-input:focus {
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: transparent;
+  color-scheme: dark;
+}
+.dso-page--search .sonar-qbar-input::-webkit-search-decoration,
+.dso-page--search .sonar-qbar-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+.dso-page--search .sonar-qbar-input:-webkit-autofill,
+.dso-page--search .sonar-qbar-input:-webkit-autofill:hover,
+.dso-page--search .sonar-qbar-input:-webkit-autofill:focus,
+.dso-page--search .sonar-qbar-input:autofill,
+.dso-page--search .snr-band--page .snr-input:-webkit-autofill,
+.dso-page--search .snr-band--page .snr-input:autofill {
+  -webkit-text-fill-color: white;
+  caret-color: var(--brand-band-mint);
+  -webkit-background-clip: text;
+  background-clip: text;
+  box-shadow: none;
+  transition:
+    background-color 600000s 0s,
+    color 600000s 0s;
+}
+
+/* ── Oct 18: results read as a page, not a locked screen ─────────────
+   The results band is the landing band, whose composed state is locked to
+   exactly one screen (height: 100dvh, geometry-driven --snr-work column
+   height, a 340px-capped brief and a scrolling matches list). On the
+   landing page that lock is the design. Here it clipped the brief and the
+   matches behind inner scrollbars and left an empty band of green under
+   three short columns. On /datasets the band sizes to its content instead,
+   spans the full width, and everything the ping found is on the page. */
+.dso-page--search .snr-band.snr-band--page.snr-composed {
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: visible;
+  padding-top: 16px;
+  padding-bottom: 24px;
+  justify-content: flex-start;
+}
+.dso-page--search .snr-band--page .snr-inner {
+  max-width: none;
+}
+.dso-page--search .snr-band--page.snr-composed .snr-synth-body {
+  flex: 0 0 auto;
+  max-height: none;
+  overflow: visible;
+}
+/* The brief's states are absolutely stacked layers so they can crossfade in
+   a fixed-height card. With no fixed height the active layer joins the flow
+   and the idle ones step out of it. */
+.dso-page--search .snr-band--page .snr-synth-layer:not(.is-active) {
+  display: none;
+}
+.dso-page--search .snr-band--page .snr-synth-layer.is-active {
+  position: relative;
+  inset: auto;
+  overflow: visible;
+}
+.dso-page--search .snr-band--page.snr-composed .snr-rows {
+  overflow: visible;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+@media (min-width: 1024px) {
+  .dso-page--search .snr-band--page.snr-composed .snr-cols {
+    flex: 0 0 auto;
+    width: 100%;
+    height: auto;
+    margin-bottom: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1.1fr);
+    align-items: start;
+  }
+  .dso-page--search .snr-band--page.snr-composed .snr-col-left,
+  .dso-page--search .snr-band--page.snr-composed .snr-col-dossier,
+  .dso-page--search .snr-band--page.snr-composed .snr-stack {
+    height: auto;
+  }
+  /* The dossier no longer pokes off the right edge: it is a full card in a
+     full-width grid. */
+  .dso-page--search .snr-band--page .snr-col-dossier {
+    margin-right: 0;
+    padding-right: 20px;
+    border-radius: var(--snr-r-panel);
+  }
+}
 .dso-page--search .snr-band--page .snr-ping-btn,
 .dso-page--search .snr-band--page .snr-ping-btn[disabled] {
   background: none;

@@ -607,7 +607,7 @@ function PoliticianStack({ dossier, onGate }) {
   );
 }
 
-export function SonarSection({ variant = 'band', query = null } = {}) {
+export function SonarSection({ variant = 'band', query = null, onPing = null } = {}) {
   /* 'page': the same band embedded on the Datasets search page. No takeover,
      no demo, no header (the page has its own), and it pings `query` as soon
      as it mounts or the query changes. */
@@ -2017,6 +2017,23 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
   /* Guest Sonar runs inline now. The form keeps action="/sonar" so a no-JS
      visitor still reaches the app, but with JS on every submit is intercepted:
      an empty press replays the demo pop, a real query pings for real. */
+  /* Landing band submit: hand the query to /datasets, which renders the
+     results band and auto-pings it. A full navigation rather than a client
+     push on purpose: the landing band may hold the body scroll lock, and a
+     fresh document releases it with no cleanup race. */
+  function onLandingSubmit(e) {
+    e.preventDefault();
+    const q = (queryValue || e.currentTarget.elements?.q?.value || '').trim().slice(0, 200);
+    if (!q) {
+      setPingPulse((n) => n + 1);
+      inputRef.current?.focus();
+      return;
+    }
+    userTookOverRef.current = true;
+    hideDemoCursor();
+    window.location.assign(`/datasets?q=${encodeURIComponent(q)}`);
+  }
+
   async function onPingSubmit(e) {
     e.preventDefault();
     const q = (queryValue || e.currentTarget.elements?.q?.value || '').trim();
@@ -2032,6 +2049,8 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
     hasPingedRef.current = true;
     setHasPinged(true);
     setLastQuery(q);
+    /* Oct 18: lets the /datasets host follow follow-up pings (CTA copy, ?q=). */
+    if (typeof onPing === 'function') onPing(q);
     setPinging(true);
     setPingError(null);
     try {
@@ -2237,20 +2256,21 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
                 tab into or hear read out. React 18 does not know `inert` as a
                 boolean prop, so it is passed as the empty string, which is
                 the attribute's own HTML form. */}
-              {/* Oct 15: on the landing band the pill is the demo's stage, not a
-                field. It is read-only and takes no pointer, focus or submit;
-                the real entry point is "Run your first ping" below, which opens
-                the Datasets page. The /datasets results band (isPage) keeps it
-                interactive. */}
+              {/* Oct 18: the landing pill is a real field again. The demo still
+                types into it until the visitor clicks or types, which hands the
+                field over (userTookOverRef stops the loop). Submitting on the
+                landing band does not ping here: it opens /datasets?q=..., where
+                the results band auto-pings that query. The form's action and
+                method mirror that, so it works before hydration too. The
+                /datasets results band (isPage) keeps its in-place ping. */}
               <form
                 ref={formRef}
-                className={`snr-pingbar${isPage ? '' : ' snr-pingbar--demo'}`}
-                action={isPage ? '/sonar' : undefined}
+                className="snr-pingbar"
+                action={isPage ? '/sonar' : '/datasets'}
                 method="get"
-                role={isPage ? 'search' : undefined}
-                aria-hidden={isPage ? undefined : 'true'}
-                onSubmit={isPage ? onPingSubmit : (e) => e.preventDefault()}
-                inert={gateOpen || !isPage ? '' : undefined}
+                role="search"
+                onSubmit={isPage ? onPingSubmit : onLandingSubmit}
+                inert={gateOpen ? '' : undefined}
               >
                 <i className="bi bi-search snr-pingbar-icon" aria-hidden="true" />
                 <label className="snr-label-sr" htmlFor="snr-ping-input">
@@ -2264,15 +2284,17 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
                   name="q"
                   placeholder=" "
                   autoComplete="off"
-                  readOnly={!isPage}
-                  tabIndex={isPage ? undefined : -1}
                   value={queryValue}
                   onChange={(e) => {
                     userTookOverRef.current = true;
                     hideDemoCursor();
                     setQueryValue(e.target.value);
                   }}
-                  onFocus={() => {
+                  onFocus={(e) => {
+                    /* First touch on the landing band: select whatever the
+                       demo typed, so the visitor's first keystroke replaces
+                       it and Ping alone still searches the demo query. */
+                    if (!isPage && !userTookOverRef.current) e.currentTarget.select();
                     userTookOverRef.current = true;
                     hideDemoCursor();
                   }}
@@ -2290,8 +2312,7 @@ export function SonarSection({ variant = 'band', query = null } = {}) {
                 )}
                 <button
                   ref={pingBtnRef}
-                  type={isPage ? 'submit' : 'button'}
-                  tabIndex={isPage ? undefined : -1}
+                  type="submit"
                   className={`snr-ping-btn${btnPressed ? ' snr-ping-btn--pressed' : ''}`}
                   disabled={pinging}
                 >

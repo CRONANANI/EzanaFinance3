@@ -25,6 +25,7 @@ import { SonarLoader } from '@/components/sonar/SonarLoader';
 
 /* The landing Sonar band, loaded only once a Datasets search is sent. */
 import DatasetCardMatches from './DatasetCardMatches';
+import { SonarSignupCta } from './SonarSignupCta';
 
 const SonarBand = dynamic(
   () => import('@/components/landing/SonarSection').then((m) => ({ default: m.SonarSection })),
@@ -94,13 +95,23 @@ function relTime(ts) {
  * (Echo, Government Signal, Prediction Markets, gated when the plan doesn't
  * include it, Key Entities, Ping Next). The API enforces the entitlement matrix.
  */
-export function SonarExperience({ variant = 'app', heroAddon = null }) {
+export function SonarExperience({ variant = 'app', heroAddon = null, initialQuery = null }) {
   const onDatasets = variant === 'datasets';
   /* Datasets: once a search is sent, the page shows the landing Sonar band
-     (same format, same guest pipeline, follow-up pings in its own bar). */
-  const [bandQuery, setBandQuery] = useState(null);
+     (same format, same guest pipeline, follow-up pings in its own bar).
+     Oct 18: /datasets?q=... (the landing pill's hand-off) opens straight on
+     that band; the band's own query prop auto-pings it. */
+  const startQuery = onDatasets
+    ? String(initialQuery || '')
+        .trim()
+        .slice(0, 200) || null
+    : null;
+  const [bandQuery, setBandQuery] = useState(startQuery);
   const [entitlements, setEntitlements] = useState(null);
-  const [queryText, setQueryText] = useState('');
+  const [queryText, setQueryText] = useState(startQuery || '');
+  /* What the band last pinged, including follow-ups typed in its own bar;
+     drives the sign-up CTA and the ?q= in the address. */
+  const [shownQuery, setShownQuery] = useState(startQuery);
   const [phase, setPhase] = useState('idle'); // idle | searching | streaming | complete | error
   const pingIdRef = useRef(0);
   const [result, setResult] = useState(null);
@@ -141,6 +152,18 @@ export function SonarExperience({ variant = 'app', heroAddon = null }) {
     return () => document.body.classList.remove(cls);
   }, [phase, onDatasets]);
 
+  /* Keep the address shareable and refresh-safe without a navigation. */
+  function onBandPing(query) {
+    setShownQuery(query);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('q', query);
+      window.history.replaceState(window.history.state, '', url);
+    } catch {
+      /* non-fatal */
+    }
+  }
+
   function pushRecent(query, classification) {
     const bt = badgeType(classification);
     setRecent((prev) => {
@@ -163,6 +186,7 @@ export function SonarExperience({ variant = 'app', heroAddon = null }) {
     if (onDatasets) {
       setQueryText(query);
       setBandQuery(query);
+      onBandPing(query);
       return;
     }
     setQueryText(query);
@@ -276,7 +300,9 @@ export function SonarExperience({ variant = 'app', heroAddon = null }) {
         {/* The dataset component cards that match the query, loaded through
             their own loaders, above the Sonar results. Nothing when none match. */}
         <DatasetCardMatches query={bandQuery} />
-        <SonarBand variant="page" query={bandQuery} />
+        <SonarBand variant="page" query={bandQuery} onPing={onBandPing} />
+        {/* Guests only: the account pitch under everything the ping found. */}
+        <SonarSignupCta query={shownQuery || bandQuery} />
       </div>
     );
   }

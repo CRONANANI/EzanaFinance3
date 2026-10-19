@@ -16,6 +16,25 @@
 .dso-page--search .snrx {
   background: transparent;
 }
+/* Oct 18: the global `body.light-mode h2/h3/p` rules are (0,1,2) and beat
+   the single-class text rules below, so in light mode this section's
+   headings and copy rendered near-black on the green ground. Doubled
+   selectors restore the intended white and mint in both themes. */
+.snrx .snrx-eyebrow {
+  color: var(--snrx-mint);
+}
+.snrx .snrx-title,
+.snrx .snrx-col-title {
+  color: var(--snrx-text);
+}
+.snrx .snrx-sub,
+.snrx .snrx-loading,
+.snrx .snrx-empty {
+  color: var(--snrx-dim);
+}
+.snrx .snrx-fine {
+  color: var(--snrx-faint);
+}
 .snrx-inner {
   display: flex;
   flex-direction: column;
