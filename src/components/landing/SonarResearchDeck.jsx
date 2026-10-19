@@ -12,6 +12,11 @@
  *      marked as such; web results fill the rest.
  *   3. The web pages the brief read.
  *
+ * Oct 19: the news columns are also exported as <NewsAround rail />, which the
+ * /datasets results band renders in its right column in place of the
+ * Relevant News card. The band then passes hideNews so the deck does not
+ * repeat them below.
+ *
  * Text, icons and data shapes only: no card outlines. It renders nothing
  * when a ping brought back none of the three.
  */
@@ -42,13 +47,19 @@ const host = (url) => {
   }
 };
 
-function NewsColumn({ col }) {
+/** True when a ping brought back at least one news column with items. */
+export function hasNewsColumns(live) {
+  const cols = Array.isArray(live?.newsColumns) ? live.newsColumns : [];
+  return cols.some((c) => c.items?.length);
+}
+
+function NewsColumn({ col, Heading = 'h3' }) {
   return (
     <div className="snrx-col">
-      <h3 className="snrx-col-title">
+      <Heading className="snrx-col-title">
         <i className={`bi ${col.icon || 'bi-newspaper'}`} aria-hidden="true" />
         {col.title}
-      </h3>
+      </Heading>
       {col.items.length ? (
         <ol className="snrx-list">
           {col.items.map((n) => (
@@ -76,32 +87,50 @@ function NewsColumn({ col }) {
   );
 }
 
-export default function SonarResearchDeck({ live }) {
-  const cols = Array.isArray(live?.newsColumns) ? live.newsColumns : [];
-  const hasNews = cols.some((c) => c.items?.length);
+/**
+ * "The news around it". Full width (three columns) below the band, or `rail`:
+ * one stacked column inside the band's right-hand stack on /datasets.
+ */
+export function NewsAround({ live, rail = false }) {
+  if (!hasNewsColumns(live)) return null;
+  const cols = live.newsColumns;
+  const Title = rail ? 'h3' : 'h2';
+  const title = live.query ? `What is moving around “${live.query}”` : 'What is moving around it';
+  const block = (
+    <div className="snrx-block">
+      <div className="snrx-head">
+        <p className="snrx-eyebrow">The news around it</p>
+        <Title className="snrx-title">{title}</Title>
+      </div>
+      <div className="snrx-cols">
+        {cols.map((c) => (
+          <NewsColumn key={c.id} col={c} Heading={rail ? 'h4' : 'h3'} />
+        ))}
+      </div>
+    </div>
+  );
+  /* The rail sits inside the band, outside any .snrx root, so it carries its
+     own .snrx scope for the text and mint tokens. */
+  return rail ? (
+    <section className="snrx snrx--rail" aria-label="The news around it">
+      {block}
+    </section>
+  ) : (
+    block
+  );
+}
+
+export default function SonarResearchDeck({ live, hideNews = false }) {
+  const showNews = !hideNews && hasNewsColumns(live);
   const web = Array.isArray(live?.webSources) ? live.webSources : [];
-  if (!live?.sanctions && !hasNews && !web.length) return null;
+  if (!live?.sanctions && !showNews && !web.length) return null;
 
   return (
     <section className="snrx" aria-label="Further research for this ping">
       <div className="snrx-inner">
         {live.sanctions ? <SonarSanctionsPanel data={live.sanctions} /> : null}
 
-        {hasNews ? (
-          <div className="snrx-block">
-            <div className="snrx-head">
-              <p className="snrx-eyebrow">The news around it</p>
-              <h2 className="snrx-title">
-                {live.query ? `What is moving around “${live.query}”` : 'What is moving around it'}
-              </h2>
-            </div>
-            <div className="snrx-cols">
-              {cols.map((c) => (
-                <NewsColumn key={c.id} col={c} />
-              ))}
-            </div>
-          </div>
-        ) : null}
+        {showNews ? <NewsAround live={live} /> : null}
 
         {web.length ? (
           <div className="snrx-block snrx-block--sources">

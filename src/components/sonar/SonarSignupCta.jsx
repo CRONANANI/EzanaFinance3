@@ -4,12 +4,15 @@ import { useAuth } from '@/components/AuthProvider';
 import './sonar-signup-cta.css';
 
 /**
- * Sign-up prompt under the Datasets results band. Guests only: hidden while
- * auth is resolving (no flash for members) and for anyone signed in. The
- * return path brings the visitor back to the same search on /datasets.
- * Copy stays inside what a free account actually unlocks (see the guest gate
- * in SonarSection: 5 free pings, then a free account keeps pinging across
- * every dataset and opens charts, filings and trackers).
+ * Sign-up prompt on the Datasets results. Guests only: hidden while auth is
+ * resolving (no flash for members) and for anyone signed in. The return path
+ * brings the visitor back to the same search on /datasets.
+ *
+ * Oct 19: a compact one-row card, sticky at the bottom of the first screen
+ * (layout lives in app/datasets/sonar/sonar.css), so the visitor sees it
+ * without scrolling. Copy stays inside what a free account actually unlocks
+ * (the guest gate in SonarSection: 5 free pings, then a free account keeps
+ * pinging across every dataset and opens charts, filings and trackers).
  */
 export function SonarSignupCta({ query }) {
   const { isAuthenticated, loading } = useAuth();
@@ -34,34 +37,35 @@ export function SonarSignupCta({ query }) {
           )}
         </h2>
         <p className="ssc-sub">
-          This ping searched every Ezana dataset. Create a free account to open the charts, filings
-          and trackers behind each match, and keep pinging once your guest pings run out.
+          This ping searched every Ezana dataset. A free account opens what sits behind each match.
         </p>
       </div>
 
       <ul className="ssc-list">
         <li className="ssc-item">
           <i className="bi bi-broadcast" aria-hidden="true" />
-          <span>Keep pinging across every Ezana dataset, past the 5 guest pings.</span>
+          <span>Keep pinging past the 5 guest pings</span>
         </li>
         <li className="ssc-item">
           <i className="bi bi-bar-chart-line" aria-hidden="true" />
-          <span>Open the charts, filings and trackers each sourced match points to.</span>
+          <span>Open the charts, filings and trackers behind each match</span>
         </li>
         <li className="ssc-item">
           <i className="bi bi-clock-history" aria-hidden="true" />
-          <span>Pick up where you left off with your recent pings in Sonar.</span>
+          <span>Pick up your recent pings in Sonar</span>
         </li>
       </ul>
 
       <div className="ssc-actions">
-        <a className="ssc-btn ssc-btn--primary" href={signupHref}>
-          Sign up free
-          <i className="bi bi-arrow-right" aria-hidden="true" />
-        </a>
-        <a className="ssc-btn ssc-btn--ghost" href={loginHref}>
-          Log in
-        </a>
+        <div className="ssc-btns">
+          <a className="ssc-btn ssc-btn--primary" href={signupHref}>
+            Sign up free
+            <i className="bi bi-arrow-right" aria-hidden="true" />
+          </a>
+          <a className="ssc-btn ssc-btn--ghost" href={loginHref}>
+            Log in
+          </a>
+        </div>
         <span className="ssc-note">Findings only, never financial advice.</span>
       </div>
     </section>

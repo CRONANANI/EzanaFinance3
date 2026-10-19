@@ -2421,3 +2421,106 @@ body.light-mode .dso-page--search .dso-sonar-title {
   max-width: 720px;
   margin-inline: auto;
 }
+
+/* ── Oct 19: /datasets results on one page ───────────────────────────────
+   The results band (SonarSection variant="page") was the landing band's
+   locked composition: exactly one viewport tall, every column scrolling
+   inside itself, the account card a full screen down. On /datasets it now
+   lays out at natural height in normal page flow, so every result for the
+   ping is on the page and nothing hides inside a scroller. The landing band
+   is untouched: every rule here is scoped to .dso-page--search and
+   .snr-band--page.
+
+   The results root is "the rest of the first screen" tall at minimum
+   (--snrp-top is published by SonarExperience), and the guest account card
+   sits at its bottom, sticky, so it is in view on arrival and stays in view
+   while the visitor reads. */
+
+.dso-page.dso-page--search:has(.sonar-root--band) {
+  padding-bottom: 0;
+}
+.dso-page--search .sonar-root--band {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100svh - var(--snrp-top, 0px));
+  min-height: calc(100dvh - var(--snrp-top, 0px));
+}
+.dso-page--search .sonar-root--band > .ssc {
+  margin-top: auto;
+  position: sticky;
+  bottom: 12px;
+  z-index: 5;
+}
+
+/* The band: content height, not one locked viewport. Horizontal overflow
+   stays clipped (the sliced-dossier rule); vertical is free. */
+.dso-page--search .snr-band.snr-band--page,
+.dso-page--search .snr-band.snr-band--page.snr-composed {
+  height: auto !important;
+  min-height: 0;
+  overflow-x: clip;
+  overflow-y: visible;
+  padding-bottom: 24px;
+}
+.dso-page--search .snr-band.snr-band--page.snr-composed .snr-cols {
+  flex: none;
+  height: auto;
+  align-items: start;
+}
+.dso-page--search .snr-band.snr-band--page.snr-composed .snr-col-left,
+.dso-page--search .snr-band.snr-band--page.snr-composed .snr-col-dossier,
+.dso-page--search .snr-band.snr-band--page.snr-composed .snr-stack {
+  height: auto;
+  min-height: 0;
+}
+
+/* Research brief: the active layer joins the flow so the card is as tall as
+   the brief, and the sample copy that held the locked card's height goes. */
+.dso-page--search .snr-band.snr-band--page.snr-composed .snr-synth,
+.dso-page--search .snr-band.snr-band--page.snr-composed .snr-synth-body {
+  flex: none;
+  max-height: none;
+  overflow: visible;
+}
+.dso-page--search .snr-band--page .snr-synth-body::before,
+.dso-page--search .snr-band--page .snr-synth-body::after {
+  display: none;
+}
+.dso-page--search .snr-band.snr-band--page.snr-live .snr-synth-layer--base {
+  display: none;
+}
+.dso-page--search .snr-band.snr-band--page.snr-live .snr-synth-layer.is-active {
+  position: relative;
+  inset: auto;
+  overflow: visible;
+}
+
+/* Sourced matches: every dataset row at its own height, no inner scroller. */
+.dso-page--search .snr-band.snr-band--page .snr-col-dossier .snr-dossier-body,
+.dso-page--search .snr-band.snr-band--page .snr-col-dossier .snr-rows,
+.dso-page--search .snr-band.snr-band--page.snr-stage2 .snr-dossier-body,
+.dso-page--search .snr-band.snr-band--page.snr-stage2 .snr-rows {
+  flex: none;
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+.dso-page--search .snr-band.snr-band--page.snr-composed .snr-row {
+  flex: none;
+  height: auto;
+}
+
+/* Right stack: the chart keeps its geometry height, the news card (and the
+   news-around rail that replaces it) grows to its content. */
+.dso-page--search .snr-band.snr-band--page.snr-composed .snr-fund {
+  flex: none;
+}
+.dso-page--search .snr-band.snr-band--page.snr-composed .snr-news {
+  flex: none;
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+.dso-page--search .snr-band--page .snr-news.snr-news--around {
+  padding-top: 4px;
+}

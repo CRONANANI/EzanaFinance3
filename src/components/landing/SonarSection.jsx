@@ -62,7 +62,7 @@ import { SonarLoader } from '@/components/sonar/SonarLoader';
 import { geometryFor } from './sonar-geometry';
 import { animateWindowScroll, humanPointer } from './sonar-motion';
 import './sonar-band.css';
-import SonarResearchDeck from './SonarResearchDeck';
+import SonarResearchDeck, { NewsAround, hasNewsColumns } from './SonarResearchDeck';
 import { CountryStack, CountryOecdRow, CountryEmpireRow } from './SonarCountryStack';
 
 /**
@@ -1820,8 +1820,11 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
       /* Flags the stylesheet switches on, so a tier change is one attribute
          rather than a media query per rule. */
       band.dataset.tier = g.tier;
-      band.dataset.rowDetail = g.rowDetail ? 'on' : 'off';
-      band.dataset.rowsScroll = g.rowsScroll ? 'on' : 'off';
+      /* /datasets lays the results out at natural height (see the Oct 19
+         block in app/datasets/sonar/sonar.css), so rows keep their detail
+         line and never scroll there. */
+      band.dataset.rowDetail = isPage || g.rowDetail ? 'on' : 'off';
+      band.dataset.rowsScroll = !isPage && g.rowsScroll ? 'on' : 'off';
       setUnlocked(g.tier === 'unlocked');
     };
 
@@ -2200,6 +2203,17 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
      single `live ? ... : ...` tail, so the two layers can be active
      independently of which one is mounted. */
   const answerReady = hasPinged && !pinging && Boolean(live);
+  /* Oct 19: on /datasets the "news around it" columns move into the right-hand
+     stack in place of the Relevant News card (company and country stacks; a
+     politician keeps its own stack). Wrapped in the .snr-news shell so the
+     card entrance and the orbital's "last card landed" signal still fire.
+     When placed, the deck below drops its news block so nothing repeats. */
+  const railPlaced = isPage && live?.dossier?.kind !== 'politician' && hasNewsColumns(live);
+  const railNews = railPlaced ? (
+    <div className="snr-news snr-news--around">
+      <NewsAround live={live} rail />
+    </div>
+  ) : null;
   const answerFailed = hasPinged && !pinging && !live;
 
   /* The loader outlives its own active state by one fast duration, so it fades
@@ -2897,7 +2911,7 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
               20-year norm, switchable) in the price chart's slot, and the
               country's news in the news slot. Same shells again. */}
             {stage2 && live?.dossier?.kind === 'country' ? (
-              <CountryStack dossier={live.dossier} onGate={() => openGate()} />
+              <CountryStack dossier={live.dossier} onGate={() => openGate()} newsSlot={railNews} />
             ) : null}
 
             {stage2 &&
@@ -2905,7 +2919,8 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
             live?.dossier?.kind !== 'country' &&
             (live?.dossier?.fundamentals ||
               live?.dossier?.news?.length ||
-              live?.dossier?.echo?.length) ? (
+              live?.dossier?.echo?.length ||
+              railNews) ? (
               <div className="snr-stack">
                 {live.dossier.fundamentals ? (
                   <div className="snr-fund snr-fund--wide">
@@ -2958,7 +2973,9 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
                   </div>
                 ) : null}
 
-                {live.dossier.news.length || live.dossier.echo.length ? (
+                {railNews ? (
+                  railNews
+                ) : live.dossier.news.length || live.dossier.echo.length ? (
                   <div className="snr-news">
                     <div className="snr-card-head">
                       {/* Named for the company's industry ("Defense Industry
@@ -3038,7 +3055,7 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
         the ping was about sanctions, three columns of news, and the web
         sources the brief read. Outside the band so the locked one-screen
         composition above keeps its geometry. */}
-      {answerReady ? <SonarResearchDeck live={live} /> : null}
+      {answerReady ? <SonarResearchDeck live={live} hideNews={railPlaced} /> : null}
     </>
   );
 }

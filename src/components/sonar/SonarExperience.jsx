@@ -294,14 +294,32 @@ export function SonarExperience({ variant = 'app', heroAddon = null, initialQuer
   const trades = useCongressTrades(dossierReady ? primaryTicker : null);
   const lobbying = useLobbying(dossierReady ? primaryTicker : null);
 
+  /* The results root's distance from the top of the document, published as
+     --snrp-top so the root can be exactly "rest of the first screen" tall and
+     the sign-up card lands at the bottom of it without a scroll (Oct 19
+     block in app/datasets/sonar/sonar.css). */
+  const bandRootRef = useRef(null);
+  useEffect(() => {
+    const el = bandRootRef.current;
+    if (!el) return undefined;
+    const publish = () => {
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      el.style.setProperty('--snrp-top', `${Math.max(0, Math.round(top))}px`);
+    };
+    publish();
+    window.addEventListener('resize', publish);
+    return () => window.removeEventListener('resize', publish);
+  }, [onDatasets, bandQuery]);
+
   if (onDatasets && bandQuery) {
     return (
-      <div className="sonar-root sonar-root--datasets sonar-root--band">
+      <div ref={bandRootRef} className="sonar-root sonar-root--datasets sonar-root--band">
         {/* The dataset component cards that match the query, loaded through
             their own loaders, above the Sonar results. Nothing when none match. */}
         <DatasetCardMatches query={bandQuery} />
         <SonarBand variant="page" query={bandQuery} onPing={onBandPing} />
-        {/* Guests only: the account pitch under everything the ping found. */}
+        {/* Guests only: the account pitch, pinned to the bottom of the first
+            screen and sticky while the results scroll. */}
         <SonarSignupCta query={shownQuery || bandQuery} />
       </div>
     );

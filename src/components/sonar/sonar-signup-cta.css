@@ -1,39 +1,50 @@
-/* Sonar sign-up CTA (ssc-), under the /datasets results band.
-   Sits on the page's green globe ground, so it uses the same ghost fill as
-   the search pill (black at 22-24%) and the band's mint for accents. The
-   button follows the branding guide's primary emerald CTA. Tokens only.
+/* Sonar sign-up CTA (ssc-), on the /datasets results.
+   Oct 19: compact. One row on desktop (copy, three benefits, actions), about
+   100px tall, sticky at the bottom of the first screen (the sticky and
+   bottom-of-screen placement live in app/datasets/sonar/sonar.css, where the
+   results root is laid out). It now floats over the results while the
+   visitor scrolls, so the fill is denser than the search pill's ghost and
+   blurs what passes beneath it. Primary button follows the branding guide's
+   emerald CTA. Tokens only.
    Text selectors are doubled (.ssc .ssc-x) on purpose: the global
    `body.light-mode h2` and `body.light-mode p` rules are (0,1,2) and would
    otherwise paint this copy dark on the green ground. */
 
 .ssc {
   box-sizing: border-box;
-  margin: 8px clamp(16px, 3vw, 56px) 0;
-  padding: 28px clamp(20px, 3vw, 40px);
-  border-radius: 16px;
-  background: color-mix(in srgb, black 24%, transparent);
-  border: 1px solid color-mix(in srgb, var(--brand-band-mint) 18%, transparent);
+  margin: 8px clamp(16px, 3vw, 56px) 12px;
+  padding: 14px 20px;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, black 46%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--brand-band-mint) 20%, transparent);
+  box-shadow: 0 8px 28px color-mix(in srgb, black 30%, transparent);
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  gap: 24px 48px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) auto;
+  gap: 8px 28px;
   align-items: center;
   color: white;
   font-family: var(--font-sans);
 }
 
+.ssc-copy {
+  min-width: 0;
+}
+
 .ssc .ssc-kicker {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--brand-band-mint);
 }
 
 .ssc .ssc-title {
-  margin: 8px 0 10px;
-  font-size: clamp(22px, 2.2vw, 30px);
+  margin: 2px 0 2px;
+  font-size: clamp(16px, 1.3vw, 19px);
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.25;
   color: white;
 }
 
@@ -43,10 +54,9 @@
 
 .ssc .ssc-sub {
   margin: 0;
-  max-width: 62ch;
-  font-size: 15px;
-  line-height: 1.6;
-  color: color-mix(in srgb, white 82%, transparent);
+  font-size: 13px;
+  line-height: 1.45;
+  color: color-mix(in srgb, white 78%, transparent);
 }
 
 .ssc-list {
@@ -54,44 +64,50 @@
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 12px;
+  gap: 4px;
+  min-width: 0;
 }
 
 .ssc .ssc-item {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  font-size: 14.5px;
-  line-height: 1.5;
-  color: color-mix(in srgb, white 90%, transparent);
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: color-mix(in srgb, white 88%, transparent);
 }
 
 .ssc .ssc-item i {
   flex-shrink: 0;
-  margin-top: 2px;
-  font-size: 16px;
+  font-size: 14px;
   color: var(--brand-band-mint);
 }
 
 .ssc-actions {
-  grid-column: 1 / -1;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.ssc-btns {
+  display: flex;
   align-items: center;
-  gap: 12px 14px;
+  gap: 10px;
 }
 
 .ssc-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 44px;
+  min-height: 40px;
   box-sizing: border-box;
-  padding: 0.625rem 1.35rem;
+  padding: 0.5rem 1.1rem;
   border-radius: var(--radius-md);
   font-family: var(--font-sans);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
   text-decoration: none;
   transition:
     background 0.15s,
@@ -131,14 +147,46 @@
 
 .ssc .ssc-note {
   font-family: var(--font-mono);
-  font-size: 11.5px;
-  color: color-mix(in srgb, white 70%, transparent);
+  font-size: 10.5px;
+  color: color-mix(in srgb, white 62%, transparent);
 }
 
-@media (max-width: 860px) {
+/* Mid widths: the benefits give way first, copy and actions stay one row. */
+@media (max-width: 1180px) {
+  .ssc {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .ssc-list {
+    display: none;
+  }
+}
+
+/* Phones: a slim sticky bar, title and the two buttons only, so it never
+   covers more than a strip of the results. */
+@media (max-width: 720px) {
   .ssc {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 10px;
+    padding: 12px 14px;
+    margin-inline: 12px;
+  }
+  .ssc .ssc-sub,
+  .ssc .ssc-kicker,
+  .ssc .ssc-note {
+    display: none;
+  }
+  .ssc .ssc-title {
+    font-size: 15px;
+  }
+  .ssc-actions {
+    align-items: stretch;
+  }
+  .ssc-btns {
+    width: 100%;
+  }
+  .ssc-btn {
+    flex: 1 1 0;
+    justify-content: center;
   }
 }
 

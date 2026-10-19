@@ -384,12 +384,15 @@ function EmpireCard({ dossier, onGate }) {
 
 /* ── the stack ──────────────────────────────────────────────────────────── */
 
-export function CountryStack({ dossier, onGate }) {
+/* newsSlot (Oct 19): the /datasets results band hands in the "news around it"
+   rail, which takes the Relevant News card's place. Absent on the landing band,
+   which keeps the card exactly as before. */
+export function CountryStack({ dossier, onGate, newsSlot = null }) {
   const hasStory = Boolean(dossier.oecd?.stories?.length);
   const hasEmpire = Boolean(dossier.empire?.dims?.length);
   const news = dossier.news || [];
   const echo = dossier.echo || [];
-  if (!hasStory && !hasEmpire && !news.length && !echo.length) return null;
+  if (!hasStory && !hasEmpire && !news.length && !echo.length && !newsSlot) return null;
   return (
     <div className="snr-stack">
       {hasStory ? (
@@ -398,7 +401,9 @@ export function CountryStack({ dossier, onGate }) {
         <EmpireCard dossier={dossier} onGate={onGate} />
       ) : null}
 
-      {news.length || echo.length ? (
+      {newsSlot ? (
+        newsSlot
+      ) : news.length || echo.length ? (
         <div className="snr-news">
           <div className="snr-card-head">
             <span className="snr-panel-title">{dossier.newsTitle || 'Relevant News'}</span>

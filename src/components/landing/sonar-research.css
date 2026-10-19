@@ -363,3 +363,35 @@
     transition: none;
   }
 }
+/* ── Oct 19: the news rail (NewsAround rail) ───────────────────────────────
+   "The news around it" inside the /datasets band's right-hand stack, where
+   the Relevant News card used to be. One column, smaller heads, no section
+   padding: it sits in the band's own column rhythm. Doubled selectors for
+   the same light-mode reason as the Oct 18 note above. */
+.snrx.snrx--rail {
+  padding: 0;
+  background: transparent;
+}
+.snrx.snrx--rail .snrx-block {
+  gap: 12px;
+}
+.snrx.snrx--rail .snrx-title {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.3;
+}
+.snrx.snrx--rail .snrx-cols {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+.snrx.snrx--rail .snrx-col {
+  gap: 6px;
+}
+.snrx.snrx--rail .snrx-col-title {
+  font-size: 0.875rem;
+}
+.snrx.snrx--rail .snrx-empty {
+  margin: 0;
+  font-size: 12.5px;
+}
