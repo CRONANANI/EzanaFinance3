@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Prediction markets · desktop</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./pmk.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="pmk-root {{themeClass}}" style="min-height: 100%; position: relative;">
+
+  <!-- App nav (existing chrome, shown for context) -->
+  <header style="height: 56px; border-bottom: 1px solid var(--border-primary); display: flex; align-items: center; background: var(--bg-primary);">
+    <div style="width: 100%; max-width: 1440px; margin: 0 auto; padding: 0 {{gutter}}; display: flex; align-items: center; gap: 24px;">
+      <div style="display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em;">
+        <span aria-hidden="true" style="width: 22px; height: 22px; border-radius: var(--radius-sm); background: var(--emerald-bg-hover); border: 1px solid var(--emerald-border); display: inline-block;"></span>
+        Ezana
+      </div>
+      <sc-if value="{{notMobile}}" hint-placeholder-val="{{ true }}">
+        <nav aria-label="Primary" style="display: flex; gap: 20px; font-size: 13px; color: var(--text-muted);">
+          <span>Home</span><span>Inside the Capitol</span><span style="color: var(--text-primary);">Datasets</span><span>Market analysis</span><span>Echo</span>
+        </nav>
+      </sc-if>
+    </div>
+  </header>
+
+  <main style="width: 100%; max-width: 1440px; margin: 0 auto; padding: 0 {{gutter}} 64px;">
+
+    <!-- 1 · Page header -->
+    <section style="padding: 28px 0 20px; display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: flex-end; justify-content: space-between;">
+      <div style="flex: 999 1 520px; min-width: 0;">
+        <div class="pmk-kicker" style="margin-bottom: 10px;">Datasets / Prediction markets</div>
+        <h1 style="margin: 0; font-size: {{h1Size}}; font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary); line-height: 1.15;">Prediction markets</h1>
+        <p style="margin: 10px 0 0; max-width: 680px; font-size: 14px; line-height: 1.6; color: var(--text-muted);">What the crowd is pricing, what is moving, and how much money stands behind each price, across Polymarket and Kalshi.</p>
+      </div>
+      <div style="flex: 1 1 260px; display: flex; flex-direction: column; align-items: {{headerAlign}}; gap: 10px;">
+        <div class="pmk-mono" style="font-size: 12px; color: var(--text-muted);">Odds as of <span style="color: var(--text-primary);">Oct 18, 2026 · 14:05 ET</span></div>
+        <div style="display: flex; gap: 8px;" aria-label="Venue legend">
+          <span class="pmk-venue"><span class="pmk-dot pmk-dot--poly" aria-hidden="true"></span>Polymarket</span>
+          <span class="pmk-venue"><span class="pmk-dot pmk-dot--kalshi" aria-hidden="true"></span>Kalshi</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 · Sticky filter bar -->
+    <div role="region" aria-label="Market filters" style="position: sticky; top: 0; z-index: 5; margin: 0 -{{gutter}} 24px; padding: 12px {{gutter}}; background: var(--bg-primary); border-top: 1px solid var(--border-secondary); border-bottom: 1px solid var(--border-secondary); box-shadow: var(--shadow-sm);">
+      <div style="display: flex; flex-wrap: {{barWrap}}; align-items: center; gap: 12px;">
+        <div role="radiogroup" aria-label="Category" style="display: flex; gap: 6px; flex: 1 1 auto; min-width: 0; overflow-x: auto; scrollbar-width: none; padding: 2px;">
+          <sc-for list="{{categories}}" as="c" hint-placeholder-count="9">
+            <button type="button" role="radio" aria-checked="{{c.on}}" class="pmk-chip {{c.cls}}" onClick="{{c.pick}}">{{c.label}} <span class="pmk-mono">{{c.count}}</span></button>
+          </sc-for>
+        </div>
+        <sc-if value="{{notMobile}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+            <div class="pmk-seg" role="radiogroup" aria-label="Venue">
+              <sc-for list="{{venues}}" as="v" hint-placeholder-count="3">
+                <button type="button" role="radio" aria-checked="{{v.on}}" class="{{v.cls}}" onClick="{{v.pick}}">{{v.label}}</button>
+              </sc-for>
+            </div>
+            <div class="pmk-seg pmk-seg--mono" role="radiogroup" aria-label="Window">
+              <sc-for list="{{windows}}" as="w" hint-placeholder-count="3">
+                <button type="button" role="radio" aria-checked="{{w.on}}" class="{{w.cls}}" onClick="{{w.pick}}">{{w.label}}</button>
+              </sc-for>
+            </div>
+            <label class="pmk-search">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 1.6; stroke-linecap: round;" aria-hidden="true"><circle cx="7" cy="7" r="5"></circle><path d="M11 11l3.5 3.5"></path></svg>
+              <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Search markets</span>
+              <input type="search" placeholder="Search markets…">
+            </label>
+          </div>
+        </sc-if>
+        <sc-if value="{{isMobile}}" hint-placeholder-val="{{ false }}">
+          <button type="button" class="pmk-chip" style="flex: none;" aria-haspopup="dialog">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 1.6; stroke-linecap: round;" aria-hidden="true"><path d="M2 4h12M4.5 8h7M7 12h2"></path></svg>
+            Filters <span class="pmk-mono">2</span>
+          </button>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+
+      <!-- Card 1 -->
+      <dc-import name="Pulse" state="{{cardState}}" viewport="{{viewport}}" hint-size="100%,190px"></dc-import>
+
+      <!-- Card 2 + Card 3 -->
+      <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: stretch;">
+        <div style="flex: 2 1 600px; min-width: 0; display: flex;">
+          <dc-import name="PriceChart" state="{{cardState}}" viewport="{{viewport}}" hint-size="100%,660px"></dc-import>
+        </div>
+        <div style="flex: 1 1 340px; min-width: 0; display: flex;">
+          <dc-import name="Movers" state="{{cardState}}" viewport="{{viewport}}" hint-size="100%,660px"></dc-import>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <dc-import name="EdgeBoard" state="{{cardState}}" viewport="{{viewport}}" signed-out="{{signedOut}}" hint-size="100%,700px"></dc-import>
+
+      <!-- Card 5 + Card 6 -->
+      <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: stretch;">
+        <div style="flex: 7 1 560px; min-width: 0; display: flex;">
+          <dc-import name="TopTraders" state="{{cardState}}" viewport="{{viewport}}" signed-out="{{signedOut}}" hint-size="100%,800px"></dc-import>
+        </div>
+        <div style="flex: 5 1 400px; min-width: 0; display: flex;">
+          <dc-import name="CategoryMap" state="{{cardState}}" viewport="{{viewport}}" hint-size="100%,800px"></dc-import>
+        </div>
+      </div>
+
+      <!-- Card 7 + Card 8 -->
+      <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: stretch;">
+        <div style="flex: 1 1 520px; min-width: 0; display: flex;">
+          <dc-import name="ClosingSoon" state="{{cardState}}" viewport="{{viewport}}" hint-size="100%,600px"></dc-import>
+        </div>
+        <div style="flex: 1 1 520px; min-width: 0; display: flex;">
+          <dc-import name="Conviction" state="{{cardState}}" viewport="{{viewport}}" hint-size="100%,600px"></dc-import>
+        </div>
+      </div>
+
+      <!-- 8 · Open markets table (existing, restyled) -->
+      <section class="pmk-card" aria-labelledby="pmk-open-title">
+        <div class="pmk-head">
+          <div>
+            <h2 id="pmk-open-title" class="pmk-title">Open markets</h2>
+            <p class="pmk-sub">Source: Polymarket, Kalshi · <span class="pmk-mono">2,808</span> open</p>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <span class="pmk-chip is-on" style="min-height: 28px;">Category: {{activeCategory}}
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 2; stroke-linecap: round;" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13"></path></svg>
+            </span>
+            <span class="pmk-mono" style="font-size: 12px; color: var(--text-faint);">Sorted by volume</span>
+          </div>
+        </div>
+        <sc-if value="{{notMobile}}" hint-placeholder-val="{{ true }}">
+          <div style="overflow-x: auto;">
+            <table class="pmk-table">
+              <thead>
+                <tr><th scope="col">Event</th><th scope="col">Venue</th><th scope="col" style="text-align: right;">Probability</th><th scope="col" style="text-align: right;">Volume</th><th scope="col">Closes</th></tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{openMarkets}}" as="m" hint-placeholder-count="7">
+                  <tr>
+                    <td style="max-width: 560px;"><a href="#chart" class="pmk-link" style="color: var(--text-primary); font-weight: 500;">{{m.q}}</a></td>
+                    <td><span class="pmk-venue"><span class="pmk-dot {{m.dot}}" aria-hidden="true"></span>{{m.venue}}</span></td>
+                    <td class="num" style="color: var(--text-primary); font-weight: 600;">{{m.p}}</td>
+                    <td class="num">{{m.vol}}</td>
+                    <td class="pmk-mono" style="font-size: 12px; color: var(--text-muted); white-space: nowrap;">{{m.close}}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </sc-if>
+        <sc-if value="{{isMobile}}" hint-placeholder-val="{{ false }}">
+          <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column;">
+            <sc-for list="{{openMarkets}}" as="m" hint-placeholder-count="7">
+              <li style="padding: 12px 0; border-bottom: 1px solid var(--border-secondary); display: flex; flex-direction: column; gap: 6px;">
+                <a href="#chart" style="color: var(--text-primary); font-weight: 500; font-size: 14px; text-decoration: none;">{{m.q}}</a>
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                  <span class="pmk-venue"><span class="pmk-dot {{m.dot}}" aria-hidden="true"></span>{{m.venue}}</span>
+                  <span class="pmk-mono" style="font-weight: 600; color: var(--text-primary);">{{m.p}}</span>
+                  <span class="pmk-mono" style="font-size: 12px; color: var(--text-muted);">{{m.vol}}</span>
+                  <span class="pmk-mono" style="font-size: 12px; color: var(--text-faint); margin-left: auto;">{{m.close}}</span>
+                </div>
+              </li>
+            </sc-for>
+          </ul>
+        </sc-if>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; flex-wrap: wrap; gap: 8px;">
+          <span class="pmk-mono" style="font-size: 12px; color: var(--text-faint);">Showing 7 of 2,808</span>
+          <a href="#" class="pmk-link" style="font-size: 13px;">View all open markets</a>
+        </div>
+      </section>
+
+      <!-- 9 · Legislation markets (existing) -->
+      <section class="pmk-card" aria-labelledby="pmk-leg-title">
+        <div class="pmk-head">
+          <div>
+            <h2 id="pmk-leg-title" class="pmk-title">Legislation markets</h2>
+            <p class="pmk-sub">Bills paired with markets · structural estimate vs market</p>
+          </div>
+          <a href="#" class="pmk-link" style="font-size: 13px;">How we calculate this</a>
+        </div>
+        <sc-if value="{{legislationEmpty}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: center;">
+            <div style="flex: 1 1 320px; display: flex; gap: 16px; align-items: flex-start;">
+              <span aria-hidden="true" style="flex: none; width: 44px; height: 44px; border-radius: var(--radius-md); border: 1px solid var(--emerald-border); background: var(--emerald-bg); color: var(--emerald-text); display: inline-flex; align-items: center; justify-content: center;">
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 1.4; stroke-linejoin: round;"><path d="M8 1.5L14 4.5H2L8 1.5zM3 6.5v6M6.3 6.5v6M9.7 6.5v6M13 6.5v6M1.5 14.5h13"></path></svg>
+              </span>
+              <div>
+                <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">No open market names a bill right now</div>
+                <p class="pmk-state-msg" style="margin: 6px 0 12px; max-width: 520px;">Ezana pairs bills before Congress with markets that name them, then sets the market price beside our structural estimate of passage. Pairs appear here as soon as a venue lists one.</p>
+                <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px;">
+                  <a href="#" class="pmk-link">Track bills in Inside the Capitol</a>
+                  <a href="#" class="pmk-link">See the Politics category</a>
+                </div>
+              </div>
+            </div>
+            <div aria-hidden="true" style="flex: 1 1 360px; border: 1px dashed var(--border-hover); border-radius: var(--radius-md); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; opacity: 0.6;">
+              <div class="pmk-kicker" style="font-size: 10px;">What a pair looks like</div>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;"><span style="height: 8px; width: 70%; border-radius: var(--radius-sm); background: var(--border-hover);"></span><span style="height: 8px; width: 40%; border-radius: var(--radius-sm); background: var(--border-primary);"></span></div>
+                <span class="pmk-mono" style="font-size: 12px; color: var(--text-muted);">Model 34%</span>
+                <span class="pmk-mono" style="font-size: 12px; color: var(--text-muted);">Market 22%</span>
+                <span class="pmk-conf pmk-conf--high">High</span>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{legislationFull}}" hint-placeholder-val="{{ false }}">
+          <div style="overflow-x: auto;">
+            <table class="pmk-table">
+              <thead><tr><th scope="col">Bill</th><th scope="col">Market</th><th scope="col" style="text-align: right;">Model</th><th scope="col" style="text-align: right;">Market</th><th scope="col">Confidence</th></tr></thead>
+              <tbody>
+                <sc-for list="{{bills}}" as="b" hint-placeholder-count="3">
+                  <tr>
+                    <td class="pmk-mono" style="font-size: 12px; color: var(--text-primary); white-space: nowrap;">{{b.bill}}</td>
+                    <td>{{b.q}}</td>
+                    <td class="num">{{b.model}}</td>
+                    <td class="num" style="color: var(--text-primary); font-weight: 600;">{{b.mkt}}</td>
+                    <td><span class="pmk-conf {{b.cls}}">{{b.conf}}</span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </sc-if>
+        <p class="pmk-legal" style="margin: 16px 0 0;">For educational purposes only. Not financial advice. Prediction-market participation is subject to eligibility and jurisdiction.</p>
+      </section>
+
+      <!-- 10 · Sign-up band -->
+      <sc-if value="{{signedOut}}" hint-placeholder-val="{{ true }}">
+        <section aria-labelledby="pmk-signup-title" style="border: 1px solid var(--emerald-border); background: var(--emerald-bg); border-radius: var(--radius-xl); padding: {{bandPad}}; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px;">
+          <div style="flex: 999 1 420px; min-width: 0;">
+            <div class="pmk-kicker" style="color: var(--emerald-text); margin-bottom: 8px;">Free account</div>
+            <h2 id="pmk-signup-title" style="margin: 0; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; color: var(--text-primary);">Track markets you care about</h2>
+            <p style="margin: 6px 0 0; font-size: 14px; color: var(--text-muted); max-width: 560px;">Save markets to a watchlist, get alerts when a price moves, and open the math behind every gap on the Edge Board.</p>
+          </div>
+          <div style="flex: 1 1 auto; display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+            <a href="#" class="pmk-btn">Sign up free</a>
+            <a href="#" class="pmk-btn pmk-btn--ghost">Log in</a>
+          </div>
+        </section>
+      </sc-if>
+
+      <p class="pmk-legal" style="margin: 0;">Source: Polymarket, Kalshi. Probabilities are market-implied and update every few minutes. For educational purposes only. Not financial advice.</p>
+    </div>
+  </main>
+
+  <!-- Mobile filter sheet -->
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 20; background: var(--bg-overlay);" aria-hidden="true"></div>
+    <div role="dialog" aria-modal="true" aria-labelledby="pmk-sheet-title" style="position: fixed; left: 0; right: 0; bottom: 0; z-index: 21; background: var(--bg-primary); border-top: 1px solid var(--border-hover); border-radius: var(--radius-xl) var(--radius-xl) 0 0; padding: 10px 16px 20px; box-shadow: var(--shadow-lg);">
+      <div aria-hidden="true" style="width: 36px; height: 4px; border-radius: var(--radius-sm); background: var(--border-hover); margin: 0 auto 14px;"></div>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+        <h2 id="pmk-sheet-title" style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--text-primary);">Filters</h2>
+        <button type="button" class="pmk-icon-btn" aria-label="Close filters">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 2; stroke-linecap: round;" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13"></path></svg>
+        </button>
+      </div>
+      <label class="pmk-search" style="width: 100%; margin-bottom: 18px;">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 1.6; stroke-linecap: round;" aria-hidden="true"><circle cx="7" cy="7" r="5"></circle><path d="M11 11l3.5 3.5"></path></svg>
+        <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Search markets</span>
+        <input type="search" placeholder="Search markets…">
+      </label>
+      <div class="pmk-kicker" style="margin-bottom: 8px;">Venue</div>
+      <div class="pmk-seg" role="radiogroup" aria-label="Venue" style="display: flex; margin-bottom: 18px;">
+        <button type="button" role="radio" aria-checked="true" class="is-on" style="flex: 1; min-height: 40px;">All</button>
+        <button type="button" role="radio" aria-checked="false" style="flex: 1; min-height: 40px;">Polymarket</button>
+        <button type="button" role="radio" aria-checked="false" style="flex: 1; min-height: 40px;">Kalshi</button>
+      </div>
+      <div class="pmk-kicker" style="margin-bottom: 8px;">Window</div>
+      <div class="pmk-seg pmk-seg--mono" role="radiogroup" aria-label="Window" style="display: flex; margin-bottom: 18px;">
+        <button type="button" role="radio" aria-checked="false" style="flex: 1; min-height: 40px;">24h</button>
+        <button type="button" role="radio" aria-checked="true" class="is-on" style="flex: 1; min-height: 40px;">7d</button>
+        <button type="button" role="radio" aria-checked="false" style="flex: 1; min-height: 40px;">30d</button>
+      </div>
+      <div class="pmk-kicker" style="margin-bottom: 8px;">Category</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 22px;">
+        <sc-for list="{{categories}}" as="c" hint-placeholder-count="9">
+          <button type="button" class="pmk-chip {{c.cls}}" style="min-height: 40px;">{{c.label}} <span class="pmk-mono">{{c.count}}</span></button>
+        </sc-for>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button type="button" class="pmk-btn pmk-btn--ghost" style="flex: 1; min-height: 44px;">Reset</button>
+        <button type="button" class="pmk-btn" style="flex: 2; min-height: 44px;">Show 466 markets</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"viewport":{"editor":"enum","options":["desktop","tablet","mobile"],"default":"desktop"},"cardState":{"editor":"enum","options":["default","loading","empty","error"],"default":"default"},"signedOut":{"editor":"boolean","default":true},"legislationEmpty":{"editor":"boolean","default":true},"filterSheet":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":5200}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { cat: 'Elections', venue: 'All', win: '7d' };
+  }
+  renderVals() {
+    const p = this.props;
+    const theme = p.theme ?? 'dark';
+    const viewport = p.viewport ?? 'desktop';
+    const isMobile = viewport === 'mobile';
+    const legislationEmpty = p.legislationEmpty ?? true;
+    const cats = [['All','2,808'],['Politics','412'],['Elections','466'],['Sports','1,104'],['Crypto','286'],['Economy','131'],['Geopolitics','188'],['Tech','97'],['Culture','124']];
+    const categories = cats.map(([label, count]) => ({
+      label, count, on: String(this.state.cat === label), cls: this.state.cat === label ? 'is-on' : '',
+      pick: () => this.setState({ cat: label })
+    }));
+    const seg = (list, key) => list.map((label) => ({
+      label, on: String(this.state[key] === label), cls: this.state[key] === label ? 'is-on' : '',
+      pick: () => this.setState({ [key]: label })
+    }));
+    return {
+      themeClass: theme === 'light' ? 'pmk-light' : 'pmk-dark',
+      viewport, isMobile, notMobile: !isMobile,
+      gutter: isMobile ? '16px' : '24px',
+      h1Size: isMobile ? '1.5rem' : '1.875rem',
+      headerAlign: isMobile ? 'flex-start' : 'flex-end',
+      barWrap: isMobile ? 'nowrap' : 'wrap',
+      bandPad: isMobile ? '20px' : '28px 32px',
+      cardState: p.cardState ?? 'default',
+      signedOut: p.signedOut ?? true,
+      legislationEmpty, legislationFull: !legislationEmpty,
+      sheetOpen: (p.filterSheet ?? false) && isMobile,
+      categories,
+      venues: seg(['All','Polymarket','Kalshi'], 'venue'),
+      windows: seg(['24h','7d','30d'], 'win'),
+      activeCategory: this.state.cat,
+      openMarkets: [
+        { q: 'Will the U.S. invade Iran before 2027?', venue: 'Polymarket', dot: 'pmk-dot--poly', p: '15.5%', vol: '$74.6M', close: 'Dec 31, 2026' },
+        { q: 'Will Flávio Bolsonaro win the 2026 Brazilian presidential election?', venue: 'Polymarket', dot: 'pmk-dot--poly', p: '78.7%', vol: '$22.8M', close: 'Oct 25, 2026' },
+        { q: 'Will the Democratic Party control the House after the 2026 Midterm elections?', venue: 'Polymarket', dot: 'pmk-dot--poly', p: '90.5%', vol: '$18.9M', close: 'Nov 3, 2026' },
+        { q: 'Will Benjamin Netanyahu be the next Prime Minister of Israel?', venue: 'Polymarket', dot: 'pmk-dot--poly', p: '28.5%', vol: '$9.3M', close: 'Oct 27, 2026' },
+        { q: 'US x Iran ceasefire continues through October 31?', venue: 'Polymarket', dot: 'pmk-dot--poly', p: '82.5%', vol: '$4.0M', close: 'Oct 31, 2026' },
+        { q: 'Which party will win the U.S. House?: Republican Party', venue: 'Kalshi', dot: 'pmk-dot--kalshi', p: '10%', vol: '1.24M ct', close: 'Nov 3, 2026' },
+        { q: 'More tech layoffs in 2026 than in 2025?', venue: 'Kalshi', dot: 'pmk-dot--kalshi', p: '95%', vol: '412K ct', close: 'Dec 31, 2026' }
+      ],
+      bills: [
+        { bill: '[BILL NO.]', q: '[Market naming the bill] passes the House by Dec 31?', model: '34%', mkt: '22%', conf: 'High', cls: 'pmk-conf--high' },
+        { bill: '[BILL NO.]', q: '[Market naming the bill] signed into law in 2026?', model: '18%', mkt: '15%', conf: 'Medium', cls: 'pmk-conf--med' },
+        { bill: '[BILL NO.]', q: '[Market naming the bill] clears committee by Nov 30?', model: '41%', mkt: '41%', conf: 'No gap', cls: 'pmk-conf--low' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

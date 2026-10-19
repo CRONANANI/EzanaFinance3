@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Movers</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./pmk.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="pmk-root" style="width: 100%; display: flex;">
+<section class="pmk-card" aria-labelledby="pmk-movers-title" style="flex: 1; width: 100%; display: flex; flex-direction: column;">
+  <div class="pmk-head">
+    <div>
+      <h2 id="pmk-movers-title" class="pmk-title">Movers</h2>
+      <p class="pmk-sub">Elections · 7d · top 8</p>
+    </div>
+    <div class="pmk-seg" role="radiogroup" aria-label="Sort movers">
+      <sc-for list="{{sorts}}" as="o" hint-placeholder-count="2">
+        <button type="button" role="radio" aria-checked="{{o.on}}" class="{{o.cls}}" onClick="{{o.pick}}">{{o.label}}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{isDefault}}" hint-placeholder-val="{{ true }}">
+    <ol style="list-style: none; margin: 0 -8px; padding: 0; display: flex; flex-direction: column; gap: 2px;">
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+        <li>
+          <button type="button" class="pmk-row pmk-row-btn" aria-current="{{r.current}}" onClick="{{r.pick}}" style="padding: 9px 8px; display: grid; grid-template-columns: 18px minmax(0, 1fr) 64px 76px; align-items: center; gap: 10px; background: {{r.bg}}; outline-color: var(--emerald);">
+            <span class="pmk-mono" style="font-size: 12px; color: var(--text-faint); text-align: right;">{{r.rank}}</span>
+            <span style="min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+              <span class="pmk-clamp2" style="font-size: 13px; font-weight: 500; line-height: 1.35; color: var(--text-primary);">{{r.q}}</span>
+              <span style="display: flex; align-items: center; gap: 8px;">
+                <span class="pmk-venue" style="height: 18px; font-size: 10px;"><span class="pmk-dot {{r.dot}}" aria-hidden="true"></span>{{r.venue}}</span>
+                <span class="pmk-mono" style="font-size: 11px; color: var(--text-faint);">{{r.vol}}</span>
+                <sc-if value="{{r.hot}}" hint-placeholder-val="{{ false }}">
+                  <span style="display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: var(--echo-chart-orange);">
+                    <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 15.5c3.2 0 5.5-2.2 5.5-5.4 0-3.3-2.3-4.6-3.4-8.1-.9 2.1-2 3-3 3.2.2-1.3 0-2.6-1-4.7C4.3 3 2.5 6.4 2.5 10.1c0 3.2 2.3 5.4 5.5 5.4z"></path></svg>Hot
+                  </span>
+                </sc-if>
+              </span>
+            </span>
+            <svg class="pmk-svg" width="64" height="24" viewBox="0 0 64 24" aria-hidden="true"><polyline class="pmk-spark {{r.sparkCls}}" points="{{r.spark}}"></polyline></svg>
+            <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+              <span class="pmk-mono" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">{{r.p}}</span>
+              <span class="pmk-pill {{r.pillCls}}" style="height: 20px; font-size: 11px; padding: 0 5px;">
+                <sc-if value="{{r.up}}" hint-placeholder-val="{{ true }}"><svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 2.4; stroke-linecap: round;" aria-hidden="true"><path d="M4 12L12 4M5.5 4H12v6.5"></path></svg></sc-if>
+                <sc-if value="{{r.down}}" hint-placeholder-val="{{ false }}"><svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 2.4; stroke-linecap: round;" aria-hidden="true"><path d="M4 4l8 8M12 5.5V12H5.5"></path></svg></sc-if>
+                {{r.chg}}
+              </span>
+            </span>
+          </button>
+        </li>
+      </sc-for>
+    </ol>
+    <div style="margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border-secondary); display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 11px; color: var(--text-faint);">
+      <span style="display: inline-flex; align-items: center; gap: 4px;"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" style="color: var(--echo-chart-orange);" aria-hidden="true"><path d="M8 15.5c3.2 0 5.5-2.2 5.5-5.4 0-3.3-2.3-4.6-3.4-8.1-.9 2.1-2 3-3 3.2.2-1.3 0-2.6-1-4.7C4.3 3 2.5 6.4 2.5 10.1c0 3.2 2.3 5.4 5.5 5.4z"></path></svg>Hot: volume above 3x its own 30-day norm</span>
+      <span>Select a row to chart it</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading movers" style="display: flex; flex-direction: column; gap: 2px;">
+      <sc-for list="{{eight}}" as="x" hint-placeholder-count="8">
+        <div style="height: 62px; display: grid; grid-template-columns: 18px minmax(0, 1fr) 64px 60px; align-items: center; gap: 10px;">
+          <span class="pmk-skel" style="height: 10px;"></span>
+          <span style="display: flex; flex-direction: column; gap: 6px;"><span class="pmk-skel" style="height: 10px; width: 92%;"></span><span class="pmk-skel" style="height: 10px; width: 48%;"></span></span>
+          <span class="pmk-skel" style="height: 18px;"></span>
+          <span style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end;"><span class="pmk-skel" style="height: 12px; width: 44px;"></span><span class="pmk-skel" style="height: 14px; width: 52px;"></span></span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div style="flex: 1; min-height: 420px; display: flex; flex-direction: column; justify-content: center; gap: 10px; padding: 0 8px;">
+      <svg width="120" height="32" viewBox="0 0 120 32" aria-hidden="true"><path class="pmk-grid" d="M0 16H120" style="stroke: var(--border-hover); stroke-dasharray: 3 4;"></path><circle cx="60" cy="16" r="4" style="fill: var(--text-faint);"></circle></svg>
+      <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">A quiet window</div>
+      <p class="pmk-state-msg" style="margin: 0;">No market in Tech moved more than 1 point in the last 24 hours. Try 7d or All categories.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" style="flex: 1; min-height: 420px; display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 0 8px;">
+      <p class="pmk-state-msg" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="pmk-link" style="background: none; border: 0; font-size: 14px; padding: 0; text-align: left;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","error"],"default":"default"},"viewport":{"editor":"enum","options":["desktop","tablet","mobile"],"default":"desktop"},"$preview":{"width":460,"height":720}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { sort: 'moves', sel: 6 }; }
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    const base = [
+      { q: 'Will Flávio Bolsonaro win the 2026 Brazilian presidential election?', venue: 'Polymarket', p: 78.7, d: 12.0, vol: '$6.1M', v: 6.1, hot: true },
+      { q: 'Which party will win the U.S. House?: Republican Party', venue: 'Kalshi', p: 10, d: -8.0, vol: '214K ct', v: 2.1 },
+      { q: 'US x Iran ceasefire continues through October 31?', venue: 'Polymarket', p: 82.5, d: 7.5, vol: '$1.3M', v: 1.3, hot: true },
+      { q: 'Will the U.S. invade Iran before 2027?', venue: 'Polymarket', p: 15.5, d: -6.0, vol: '$8.8M', v: 8.8 },
+      { q: 'Will the Democratic Party control the House after the 2026 Midterm elections?', venue: 'Polymarket', p: 90.5, d: 5.5, vol: '$2.4M', v: 2.4 },
+      { q: 'More tech layoffs in 2026 than in 2025?', venue: 'Kalshi', p: 95, d: 4.0, vol: '38K ct', v: 0.4 },
+      { q: 'Will Benjamin Netanyahu be the next Prime Minister of Israel?', venue: 'Polymarket', p: 28.5, d: -3.0, vol: '$3.1M', v: 3.1 },
+      { q: 'Will the Fed cut rates at the December 2026 meeting?', venue: 'Kalshi', p: 61, d: -2.5, vol: '96K ct', v: 1.0 }
+    ];
+    const spark = (end, delta, seed) => {
+      const start = end - delta, out = [];
+      for (let i = 0; i < 24; i++) {
+        const t = i / 23;
+        const wig = Math.sin(i * 1.7 + seed) * Math.abs(delta) * 0.12 + Math.cos(i * 0.9 + seed * 2) * 0.6;
+        out.push(start + (end - start) * (t * t * (3 - 2 * t)) + (i === 0 || i === 23 ? 0 : wig));
+      }
+      const min = Math.min(...out), max = Math.max(...out), r = (max - min) || 1;
+      return out.map((v, i) => ((i / 23) * 64).toFixed(1) + ',' + (2 + (1 - (v - min) / r) * 20).toFixed(1)).join(' ');
+    };
+    const list = base.map((m, i) => ({ ...m, idx: i }));
+    if (this.state.sort === 'traded') list.sort((a, b) => b.v - a.v);
+    const rows = list.map((m, i) => {
+      const up = m.d > 0, sel = this.state.sel === m.idx;
+      return {
+        rank: i + 1, q: m.q, venue: m.venue, dot: m.venue === 'Kalshi' ? 'pmk-dot--kalshi' : 'pmk-dot--poly',
+        vol: m.vol, hot: !!m.hot, p: m.p.toFixed(1) + '%',
+        chg: (up ? '+' : '') + m.d.toFixed(1) + ' pts', up, down: !up,
+        pillCls: up ? 'pmk-pill--pos' : 'pmk-pill--neg',
+        sparkCls: up ? 'pmk-spark--pos' : 'pmk-spark--neg',
+        spark: spark(m.p, m.d, m.idx + 1),
+        current: sel ? 'true' : 'false',
+        bg: sel ? 'var(--emerald-bg)' : 'transparent',
+        pick: () => this.setState({ sel: m.idx })
+      };
+    });
+    const sorts = [['moves', 'Biggest moves'], ['traded', 'Most traded']].map(([k, label]) => ({
+      label, on: String(this.state.sort === k), cls: this.state.sort === k ? 'is-on' : '', pick: () => this.setState({ sort: k })
+    }));
+    return {
+      isDefault: s === 'default', isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error',
+      rows: rows.map((r, i) => ({ ...r, pick: list[i] && (() => this.setState({ sel: list[i].idx })) })),
+      sorts, eight: [1, 2, 3, 4, 5, 6, 7, 8]
+    };
+  }
+}
+</script>
+</body>
+</html>

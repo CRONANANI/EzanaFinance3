@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Price chart</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./pmk.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="pmk-root" id="chart" style="width: 100%; display: flex;">
+<section class="pmk-card pmk-card--hero" aria-labelledby="pmk-chart-q" style="flex: 1; width: 100%; display: flex; flex-direction: column;">
+
+  <!-- toolbar: switcher + range -->
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span class="pmk-kicker">Price chart</span>
+      <button type="button" class="pmk-icon-btn" aria-label="Previous market">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" aria-hidden="true"><path d="M10 3L5 8l5 5"></path></svg>
+      </button>
+      <button type="button" class="pmk-chip" aria-haspopup="listbox" style="min-height: 32px;">
+        <span class="pmk-mono">{{position}}</span> Movers
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 2; stroke-linecap: round;" aria-hidden="true"><path d="M4 6l4 4 4-4"></path></svg>
+      </button>
+      <button type="button" class="pmk-icon-btn" aria-label="Next market">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" aria-hidden="true"><path d="M6 3l5 5-5 5"></path></svg>
+      </button>
+    </div>
+    <div class="pmk-seg pmk-seg--mono" role="radiogroup" aria-label="Chart range">
+      <sc-for list="{{ranges}}" as="r" hint-placeholder-count="4">
+        <button type="button" role="radio" aria-checked="{{r.on}}" class="{{r.cls}}" onClick="{{r.pick}}">{{r.label}}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{showChart}}" hint-placeholder-val="{{ true }}">
+    <!-- header -->
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; padding-bottom: 16px; border-bottom: 1px solid var(--border-secondary); margin-bottom: 16px;">
+      <div style="flex: 999 1 360px; min-width: 0;">
+        <h2 id="pmk-chart-q" style="margin: 0 0 8px; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.3; color: var(--text-primary);">{{question}}</h2>
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <span class="pmk-venue"><span class="pmk-dot pmk-dot--poly" aria-hidden="true"></span>Polymarket</span>
+          <span class="pmk-mono" style="font-size: 12px; color: var(--text-muted);">{{meta}}</span>
+        </div>
+      </div>
+      <div style="flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+        <sc-if value="{{isSingle}}" hint-placeholder-val="{{ true }}">
+          <div class="pmk-mono" style="font-size: 2rem; font-weight: 700; line-height: 1; color: var(--text-primary);">28.5<span style="font-size: 1.125rem; color: var(--text-muted);">%</span></div>
+          <span class="pmk-pill pmk-pill--neg">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 2; stroke-linecap: round;" aria-hidden="true"><path d="M4 4l8 8M12 5.5V12H5.5"></path></svg>-3.0 pts · 1W
+          </span>
+        </sc-if>
+        <sc-if value="{{isMulti}}" hint-placeholder-val="{{ false }}">
+          <div class="pmk-mono" style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;">4 outcomes shown</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end;">
+            <sc-for list="{{multi}}" as="o" hint-placeholder-count="4">
+              <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary);"><span aria-hidden="true" style="width: 12px; height: 2px; background: {{o.color}};"></span>{{o.name}}</span>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <!-- chart -->
+    <figure style="margin: 0; display: flex; flex-direction: column; gap: 6px;">
+      <div style="display: flex; gap: 8px; padding-left: 40px;">
+        <div style="flex: 1; min-width: 0; position: relative; height: {{chartH}}; aspect-ratio: {{aspect}};">
+          <!-- y gridline labels -->
+          <sc-for list="{{yTicks}}" as="t" hint-placeholder-count="5">
+            <span class="pmk-mono" style="position: absolute; right: 100%; top: {{t.top}}; transform: translate(-6px, -50%); font-size: 11px; color: var(--text-faint);">{{t.label}}</span>
+          </sc-for>
+          <svg class="pmk-svg" viewBox="0 0 1000 100" preserveAspectRatio="none" role="img" aria-label="{{summary}}" style="position: absolute; inset: 0; width: 100%; height: 100%;">
+            <path class="pmk-grid" d="M0 25H1000M0 50H1000M0 75H1000"></path>
+            <path class="pmk-grid" d="M0 0H1000M0 100H1000" style="stroke: var(--border-primary);"></path>
+            <sc-if value="{{isSingle}}" hint-placeholder-val="{{ true }}">
+              <path class="pmk-area" d="{{areaPath}}"></path>
+              <polyline class="pmk-line" points="{{linePts}}"></polyline>
+            </sc-if>
+            <sc-if value="{{isMulti}}" hint-placeholder-val="{{ false }}">
+              <polyline class="pmk-line" points="{{m0}}"></polyline>
+              <polyline class="pmk-line" points="{{m1}}" style="stroke: var(--echo-chart-orange);"></polyline>
+              <polyline class="pmk-line" points="{{m2}}" style="stroke: var(--echo-chart-purple);"></polyline>
+              <polyline class="pmk-line" points="{{m3}}" style="stroke: var(--text-muted); stroke-dasharray: 4 3;"></polyline>
+            </sc-if>
+          </svg>
+          <!-- annotations: two largest single-period moves -->
+          <sc-if value="{{isSingle}}" hint-placeholder-val="{{ true }}">
+            <sc-for list="{{marks}}" as="k" hint-placeholder-count="2">
+              <div style="position: absolute; left: {{k.left}}; top: {{k.top}}; transform: translate(-50%, -50%); pointer-events: none;">
+                <span aria-hidden="true" style="display: block; width: 9px; height: 9px; transform: rotate(45deg); background: var(--bg-primary); border: 1.5px solid {{k.color}};"></span>
+                <span class="pmk-mono" style="position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); white-space: nowrap; font-size: 11px; font-weight: 600; color: {{k.color}}; background: var(--bg-primary); padding: 1px 4px; border-radius: var(--radius-sm); border: 1px solid var(--border-primary);">{{k.label}}</span>
+              </div>
+            </sc-for>
+            <!-- live end dot -->
+            <span aria-hidden="true" style="position: absolute; left: 100%; top: {{endTop}}; width: 8px; height: 8px; border-radius: 50%; background: var(--echo-chart-blue); transform: translate(-50%, -50%); box-shadow: 0 0 0 4px var(--emerald-bg);"></span>
+          </sc-if>
+          <!-- multi end labels -->
+          <sc-if value="{{isMulti}}" hint-placeholder-val="{{ false }}">
+            <sc-for list="{{multi}}" as="o" hint-placeholder-count="4">
+              <span class="pmk-mono" style="position: absolute; left: 100%; top: {{o.top}}; transform: translate(8px, -50%); white-space: nowrap; font-size: 11px; font-weight: 600; color: {{o.color}};">{{o.short}} {{o.val}}</span>
+            </sc-for>
+          </sc-if>
+          <!-- hover crosshair -->
+          <sc-if value="{{isHover}}" hint-placeholder-val="{{ false }}">
+            <div aria-hidden="true" style="position: absolute; top: 0; bottom: 0; left: {{hx}}; border-left: 1px dashed var(--text-muted);"></div>
+            <div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: {{hy}}; border-top: 1px dashed var(--echo-chart-annotation);"></div>
+            <span aria-hidden="true" style="position: absolute; left: {{hx}}; top: {{hy}}; width: 10px; height: 10px; border-radius: 50%; background: var(--echo-chart-blue); border: 2px solid var(--bg-primary); transform: translate(-50%, -50%);"></span>
+            <div role="status" style="position: absolute; left: {{hx}}; top: 8px; transform: translateX(12px); background: var(--bg-primary); border: 1px solid var(--border-hover); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: 8px 10px; min-width: 150px;">
+              <div class="pmk-mono" style="font-size: 11px; color: var(--text-muted);">Oct 15, 2026 · 02:00 ET</div>
+              <div class="pmk-mono" style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-top: 2px;">27.5%</div>
+              <div class="pmk-mono" style="font-size: 11px; color: var(--echo-chart-red);">-3.0 pts vs prior</div>
+              <div class="pmk-mono" style="font-size: 11px; color: var(--text-faint); margin-top: 4px;">Vol $96K</div>
+            </div>
+            <span class="pmk-mono" style="position: absolute; right: 100%; top: {{hy}}; transform: translate(-6px, -50%); font-size: 11px; font-weight: 600; padding: 0 4px; border-radius: var(--radius-sm); background: var(--echo-chart-blue); color: var(--bg-primary);">27.5</span>
+          </sc-if>
+        </div>
+        <div style="width: {{rightGutter}}; flex: none;"></div>
+      </div>
+      <!-- volume histogram -->
+      <div style="display: flex; gap: 8px; padding-left: 40px;">
+        <div style="flex: 1; min-width: 0; height: 36px; display: flex; align-items: flex-end; gap: 3px; border-bottom: 1px solid var(--border-primary);" role="img" aria-label="Volume per period, peaking at $96K on Oct 15">
+          <sc-for list="{{vol}}" as="v" hint-placeholder-count="13">
+            <span style="flex: 1; height: {{v.h}}; background: {{v.bg}}; border-radius: 2px 2px 0 0;"></span>
+          </sc-for>
+        </div>
+        <div style="width: {{rightGutter}}; flex: none;"></div>
+      </div>
+      <div style="display: flex; gap: 8px; padding-left: 40px;">
+        <div style="flex: 1; min-width: 0; position: relative; height: 16px;">
+          <sc-for list="{{xTicks}}" as="x" hint-placeholder-count="7">
+            <span class="pmk-mono" style="position: absolute; left: {{x.left}}; transform: translateX(-50%); font-size: 11px; color: var(--text-faint); white-space: nowrap;">{{x.label}}</span>
+          </sc-for>
+        </div>
+        <div style="width: {{rightGutter}}; flex: none;"></div>
+      </div>
+      <figcaption style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">{{summary}}</figcaption>
+    </figure>
+
+    <!-- footer -->
+    <div style="margin-top: auto; padding-top: 14px; border-top: 1px solid var(--border-secondary); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+      <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--text-faint);">
+        <span>Source: Polymarket</span>
+        <span class="pmk-mono">Updated 14:05:12 ET</span>
+        <sc-if value="{{isSingle}}" hint-placeholder-val="{{ true }}"><span class="pmk-mono">Bid 28 · Ask 29 · Spread 1 pt</span></sc-if>
+      </div>
+      <a href="#" class="pmk-link" style="font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">Open on Polymarket
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;" aria-hidden="true"><path d="M9 2.5h4.5V7M13.5 2.5L7 9M11.5 9.5v4h-9v-9h4"></path></svg>
+        <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">(opens in a new tab)</span>
+      </a>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading price chart" style="display: flex; flex-direction: column; gap: 14px; flex: 1;">
+      <div style="display: flex; justify-content: space-between; gap: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border-secondary);">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;"><span class="pmk-skel" style="height: 20px; width: 80%;"></span><span class="pmk-skel" style="height: 20px; width: 34%;"></span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;"><span class="pmk-skel" style="height: 32px; width: 110px;"></span><span class="pmk-skel" style="height: 20px; width: 80px;"></span></div>
+      </div>
+      <span class="pmk-skel" style="height: 300px; width: 100%; border-radius: var(--radius-md);"></span>
+      <span class="pmk-skel" style="height: 36px; width: 100%;"></span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div style="flex: 1; min-height: 440px; position: relative; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--border-primary); border-radius: var(--radius-md);">
+      <svg class="pmk-svg" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true" style="position: absolute; inset: 24px; width: calc(100% - 48px); height: calc(100% - 48px);"><path class="pmk-grid" d="M0 25H1000M0 50H1000M0 75H1000"></path></svg>
+      <div style="position: relative; text-align: center; max-width: 340px; background: var(--bg-primary); padding: 16px 20px; border-radius: var(--radius-md);">
+        <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">Select a market to see its price history.</div>
+        <p class="pmk-state-msg" style="margin: 6px 0 0; font-size: 13px;">Pick any market on this page, from Movers, Closing Soon or the table below.</p>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" style="flex: 1; min-height: 440px; display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; border: 1px dashed var(--border-primary); border-radius: var(--radius-md);">
+      <p class="pmk-state-msg" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="pmk-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","error"],"default":"default"},"mode":{"editor":"enum","options":["single","hover","multi"],"default":"single"},"viewport":{"editor":"enum","options":["desktop","tablet","mobile"],"default":"desktop"},"$preview":{"width":920,"height":720}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { range: '1W' }; }
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    const mode = this.props.mode ?? 'single';
+    const vp = this.props.viewport ?? 'desktop';
+    const isMulti = mode === 'multi';
+    const series = [31.5, 30.5, 30.5, 30.5, 31.5, 30.5, 27.5, 30.5, 29.5, 26.5, 27.5, 29.5, 28.5];
+    const n = series.length;
+    const X = (i, len) => (i / ((len || n) - 1)) * 1000;
+    const pts = (vals) => vals.map((v, i) => X(i, vals.length).toFixed(1) + ',' + (100 - v).toFixed(2)).join(' ');
+    const pct = (i, len) => ((i / ((len || n) - 1)) * 100).toFixed(2) + '%';
+    const vols = [38, 41, 29, 33, 47, 52, 96, 88, 61, 74, 55, 49, 44];
+    const vmax = Math.max(...vols);
+    const hoverIdx = 6;
+    const multiData = [
+      { name: 'Flávio Bolsonaro', short: 'Bolsonaro', color: 'var(--echo-chart-blue)', vals: [66.7, 67.9, 70.2, 69.5, 72.8, 75.1, 77.0, 78.7] },
+      { name: 'Lula da Silva', short: 'Lula', color: 'var(--echo-chart-orange)', vals: [30.1, 29.0, 26.9, 27.6, 24.5, 22.4, 20.3, 18.6] },
+      { name: 'Ronaldo Caiado', short: 'Caiado', color: 'var(--echo-chart-purple)', vals: [2.0, 1.9, 1.7, 1.8, 1.6, 1.5, 1.5, 1.4] },
+      { name: 'Other', short: 'Other', color: 'var(--text-muted)', vals: [1.2, 1.2, 1.2, 1.1, 1.1, 1.0, 1.2, 1.3] }
+    ];
+    const ranges = ['1D', '1W', '1M', 'All'].map((label) => ({
+      label, on: String(this.state.range === label), cls: this.state.range === label ? 'is-on' : '',
+      pick: () => this.setState({ range: label })
+    }));
+    const xHours = [10, 34, 58, 82, 106, 130, 154];
+    const xLabels = ['Oct 12', 'Oct 13', 'Oct 14', 'Oct 15', 'Oct 16', 'Oct 17', 'Oct 18'];
+    return {
+      showChart: s === 'default', isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error',
+      isSingle: !isMulti, isMulti, isHover: mode === 'hover',
+      position: isMulti ? '1 / 8' : '7 / 8',
+      question: isMulti ? 'Who will win the 2026 Brazilian presidential election?' : 'Will Benjamin Netanyahu be the next Prime Minister of Israel?',
+      meta: isMulti ? 'Vol $22.8M · Closes Oct 25, 2026' : '24h vol $552K · Vol $9.3M · Closes Oct 27, 2026',
+      ranges,
+      chartH: vp === 'mobile' ? 'auto' : '300px',
+      aspect: vp === 'mobile' ? '16 / 10' : 'auto',
+      rightGutter: isMulti ? '96px' : '8px',
+      yTicks: [100, 75, 50, 25, 0].map((v) => ({ label: v + '%', top: (100 - v) + '%' })),
+      linePts: pts(series),
+      areaPath: 'M0,100 L' + pts(series).split(' ').join(' L') + ' L1000,100 Z',
+      endTop: (100 - series[n - 1]) + '%',
+      marks: [
+        { left: pct(7), top: (100 - series[7]) + '%', label: '+3.0 pts', color: 'var(--positive)' },
+        { left: pct(9), top: (100 - series[9]) + '%', label: '-3.0 pts', color: 'var(--echo-chart-red)' }
+      ],
+      hx: pct(hoverIdx), hy: (100 - series[hoverIdx]) + '%',
+      m0: pts(multiData[0].vals), m1: pts(multiData[1].vals), m2: pts(multiData[2].vals), m3: pts(multiData[3].vals),
+      multi: multiData.map((o) => ({ ...o, val: o.vals[o.vals.length - 1].toFixed(1) + '%', top: (100 - o.vals[o.vals.length - 1]) + '%' })),
+      vol: vols.map((v, i) => ({ h: Math.round((v / vmax) * 34) + 'px', bg: (mode === 'hover' && i === hoverIdx) ? 'var(--echo-chart-blue)' : 'var(--border-hover)' })),
+      xTicks: xHours.map((h, i) => ({ left: ((h / 168) * 100).toFixed(2) + '%', label: xLabels[i] })),
+      summary: isMulti ? 'Flávio Bolsonaro rose from 66.7% to 78.7% over the past week; Lula da Silva fell from 30.1% to 18.6%.' : 'Probability fell from 31.5% to 28.5% over the past week.'
+    };
+  }
+}
+</script>
+</body>
+</html>

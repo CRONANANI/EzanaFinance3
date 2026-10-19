@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Top traders</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./pmk.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="pmk-root" style="width: 100%; display: flex;">
+<section class="pmk-card" aria-labelledby="pmk-traders-title" style="flex: 1; width: 100%; display: flex; flex-direction: column;">
+  <div class="pmk-head" style="margin-bottom: 0; border-bottom: 0; padding-bottom: 8px;">
+    <div>
+      <h2 id="pmk-traders-title" class="pmk-title">Top traders</h2>
+      <p class="pmk-sub">{{sub}}</p>
+    </div>
+  </div>
+  <div class="pmk-tabs" role="tablist" aria-label="Venue">
+    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="2">
+      <button type="button" role="tab" aria-selected="{{t.on}}" class="{{t.cls}}" onClick="{{t.pick}}"><span class="pmk-dot {{t.dot}}" aria-hidden="true" style="margin-right: 6px;"></span>{{t.label}}</button>
+    </sc-for>
+  </div>
+
+  <!-- controls -->
+  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 12px;">
+    <sc-if value="{{isPoly}}" hint-placeholder-val="{{ true }}">
+      <div class="pmk-seg" role="radiogroup" aria-label="Window">
+        <sc-for list="{{windows}}" as="w" hint-placeholder-count="4">
+          <button type="button" role="radio" aria-checked="{{w.on}}" class="{{w.cls}}" onClick="{{w.pick}}">{{w.label}}</button>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{isKalshi}}" hint-placeholder-val="{{ false }}">
+      <span class="pmk-chip" aria-disabled="true" style="cursor: default;"><span class="pmk-mono" style="color: var(--text-primary); font-size: 12px;">30d</span> Kalshi publishes a 30-day leaderboard</span>
+    </sc-if>
+    <div class="pmk-seg" role="radiogroup" aria-label="Rank by">
+      <sc-for list="{{rankBy}}" as="o" hint-placeholder-count="2">
+        <button type="button" role="radio" aria-checked="{{o.on}}" class="{{o.cls}}" onClick="{{o.pick}}">{{o.label}}</button>
+      </sc-for>
+    </div>
+    <sc-if value="{{isPoly}}" hint-placeholder-val="{{ true }}">
+      <span class="pmk-chip is-on" style="min-height: 28px;" title="Follows the page category filter">Politics <span class="pmk-mono">from page filter</span></span>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{isDefault}}" hint-placeholder-val="{{ true }}">
+    <!-- column heads -->
+    <div class="pmk-kicker" style="display: flex; align-items: center; gap: 12px; padding: 0 8px 8px; font-size: 10px; border-bottom: 1px solid var(--border-secondary);">
+      <span style="width: 26px;">#</span>
+      <span style="flex: 1 1 auto; padding-left: 44px;">Trader</span>
+      <sc-if value="{{isPoly}}" hint-placeholder-val="{{ true }}">
+        <span style="width: 92px; text-align: right;">PnL</span>
+        <span style="width: 92px; text-align: right; display: {{volDisplay}};">Volume</span>
+        <span style="width: 104px; display: {{volDisplay}};">PnL / volume</span>
+        <span style="width: 28px;"></span>
+      </sc-if>
+      <sc-if value="{{isKalshi}}" hint-placeholder-val="{{ false }}">
+        <span style="width: 120px; text-align: right;">{{kalshiCol}}</span>
+      </sc-if>
+    </div>
+    <ol style="list-style: none; margin: 0; padding: 0;">
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="10">
+        <li style="border-bottom: 1px solid var(--border-secondary);">
+          <div class="pmk-row" style="display: flex; align-items: center; gap: 12px; padding: 8px; min-height: 52px; background: {{r.bg}};">
+            <span style="width: 26px; display: flex; justify-content: center;">
+              <span class="pmk-mono" style="width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; background: {{r.medalBg}}; color: {{r.medalFg}}; border: 1px solid {{r.medalBorder}};">{{r.rank}}</span>
+            </span>
+            <!-- avatar / identicon -->
+            <span aria-hidden="true" style="width: 32px; height: 32px; flex: none; border-radius: 50%; overflow: hidden; border: 1px solid var(--border-primary); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 6px; gap: 1px; background: var(--bg-tertiary);">
+              <sc-for list="{{r.cells}}" as="c" hint-placeholder-count="9">
+                <span style="background: {{c}}; border-radius: 1px;"></span>
+              </sc-for>
+            </span>
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+              <span style="display: flex; align-items: center; gap: 6px; min-width: 0;">
+                <span class="{{r.nameCls}}" style="font-size: 13px; font-weight: 600; color: var(--text-primary);">{{r.name}}</span>
+                <sc-if value="{{r.verified}}" hint-placeholder-val="{{ false }}">
+                  <svg width="14" height="14" viewBox="0 0 16 16" role="img" aria-label="Verified" style="flex: none; color: var(--echo-chart-blue);"><path d="M8 1l1.8 1.3 2.2-.1.7 2.1 1.8 1.3-.7 2.1.7 2.1-1.8 1.3-.7 2.1-2.2-.1L8 15l-1.8-1.3-2.2.1-.7-2.1-1.8-1.3.7-2.1-.7-2.1 1.8-1.3.7-2.1 2.2.1z" fill="currentColor"></path><path d="M5.5 8.2l1.7 1.6 3.3-3.4" fill="none" stroke="var(--bg-primary)" style="stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;"></path></svg>
+                </sc-if>
+                <sc-if value="{{r.hasX}}" hint-placeholder-val="{{ false }}">
+                  <span class="pmk-venue" style="height: 18px; font-size: 10px;">X {{r.x}}</span>
+                </sc-if>
+              </span>
+              <sc-if value="{{r.hasWallet}}" hint-placeholder-val="{{ true }}">
+                <span style="display: flex; align-items: center; gap: 4px;">
+                  <span class="pmk-mono" style="font-size: 11px; color: var(--text-faint);">{{r.wallet}}</span>
+                  <button type="button" aria-label="Copy wallet address" style="background: none; border: 0; padding: 2px; color: var(--text-faint); display: inline-flex;">
+                    <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 1.5;" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5"></rect><path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5"></path></svg>
+                  </button>
+                </span>
+              </sc-if>
+            </span>
+            <sc-if value="{{isPoly}}" hint-placeholder-val="{{ true }}">
+              <span class="pmk-mono" style="width: 92px; text-align: right; font-size: 13px; font-weight: 600; color: var(--positive);">{{r.pnl}}</span>
+              <span class="pmk-mono" style="width: 92px; text-align: right; font-size: 12px; color: var(--text-muted); display: {{volDisplay}};">{{r.vol}}</span>
+              <span role="img" aria-label="PnL is {{r.effLabel}} of volume" style="width: 104px; display: {{volDisplay}}; align-items: center; gap: 6px;">
+                <span aria-hidden="true" style="flex: 1; height: 6px; border-radius: var(--radius-sm); background: var(--border-primary); overflow: hidden;"><span style="display: block; height: 100%; width: {{r.effW}}; background: var(--emerald);"></span></span>
+                <span class="pmk-mono" style="font-size: 11px; color: var(--text-muted); width: 38px; text-align: right;">{{r.effLabel}}</span>
+              </span>
+              <button type="button" class="pmk-icon-btn" style="width: 28px; height: 28px;" aria-expanded="{{r.expanded}}" aria-label="Show open positions for {{r.name}}" onClick="{{r.toggle}}">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 2; stroke-linecap: round; transform: rotate({{r.rot}});" aria-hidden="true"><path d="M4 6l4 4 4-4"></path></svg>
+              </button>
+            </sc-if>
+            <sc-if value="{{isKalshi}}" hint-placeholder-val="{{ false }}">
+              <span class="pmk-mono" style="width: 120px; text-align: right; font-size: 13px; font-weight: 600; color: var(--text-primary);">{{r.value}}</span>
+            </sc-if>
+          </div>
+          <sc-if value="{{r.open}}" hint-placeholder-val="{{ false }}">
+            <div class="pmk-gate" style="margin: 0 8px 12px 46px; border: 1px solid var(--border-primary); border-radius: var(--radius-md); padding: 12px 14px;">
+              <div class="pmk-kicker" style="font-size: 10px; margin-bottom: 8px;">Top 3 open positions by size</div>
+              <sc-for list="{{positions}}" as="o" hint-placeholder-count="3">
+                <div style="display: flex; align-items: center; gap: 12px; padding: 7px 0; border-top: 1px solid var(--border-secondary);">
+                  <a href="#chart" style="flex: 1; min-width: 0; font-size: 13px; color: var(--text-primary); text-decoration: none;" class="pmk-ellipsis">{{o.q}}</a>
+                  <span class="pmk-mono" style="width: 44px; text-align: center; font-size: 11px; font-weight: 700; padding: 2px 0; border-radius: var(--radius-sm); border: 1px solid var(--border-primary); color: var(--text-secondary);">{{o.side}}</span>
+                  <span class="pmk-mono" style="width: 84px; text-align: right; font-size: 13px; font-weight: 600; color: var(--text-primary);">{{o.size}}</span>
+                  <span class="pmk-mono" style="width: 64px; text-align: right; font-size: 11px; color: var(--text-faint);">avg {{o.avg}}</span>
+                </div>
+              </sc-for>
+              <sc-if value="{{signedOut}}" hint-placeholder-val="{{ false }}">
+                <div class="pmk-gate-veil">
+                  <div style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Sign up free to see open positions</div>
+                  <div style="display: flex; gap: 8px;"><a href="#" class="pmk-btn" style="min-height: 34px;">Sign up free</a><a href="#" class="pmk-btn pmk-btn--ghost" style="min-height: 34px;">Log in</a></div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+        </li>
+      </sc-for>
+    </ol>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading top traders">
+      <sc-for list="{{ten}}" as="x" hint-placeholder-count="10">
+        <div style="height: 53px; display: flex; align-items: center; gap: 12px; padding: 0 8px; border-bottom: 1px solid var(--border-secondary);">
+          <span class="pmk-skel" style="width: 22px; height: 22px; border-radius: 50%;"></span>
+          <span class="pmk-skel" style="width: 32px; height: 32px; border-radius: 50%;"></span>
+          <span style="flex: 1; display: flex; flex-direction: column; gap: 6px;"><span class="pmk-skel" style="height: 10px; width: 40%;"></span><span class="pmk-skel" style="height: 8px; width: 24%;"></span></span>
+          <span class="pmk-skel" style="width: 72px; height: 12px;"></span>
+          <span class="pmk-skel" style="width: 72px; height: 12px;"></span>
+          <span class="pmk-skel" style="width: 96px; height: 6px;"></span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div style="min-height: 420px; display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 0 8px;">
+      <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">No ranked traders for this view</div>
+      <p class="pmk-state-msg" style="margin: 0; max-width: 460px;">Polymarket has not published a Day leaderboard for Tech yet. Switch to Week or All categories.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" style="min-height: 420px; display: flex; align-items: center; gap: 12px; padding: 0 8px;">
+      <p class="pmk-state-msg" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="pmk-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+
+  <div style="margin-top: auto; padding-top: 14px; display: flex; flex-direction: column; gap: 4px;">
+    <sc-if value="{{isKalshi}}" hint-placeholder-val="{{ false }}">
+      <p class="pmk-legal" style="margin: 0;">Kalshi traders appear only if they opt in to the public leaderboard.</p>
+    </sc-if>
+    <p class="pmk-legal" style="margin: 0;">Rankings as published by each venue. Past performance does not predict future results. Source: {{sourceName}}.</p>
+  </div>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","error"],"default":"default"},"tab":{"editor":"enum","options":["polymarket","kalshi"],"default":"polymarket"},"expanded":{"editor":"int","min":-1,"max":9,"default":-1},"signedOut":{"editor":"boolean","default":false},"viewport":{"editor":"enum","options":["desktop","tablet","mobile"],"default":"desktop"},"$preview":{"width":800,"height":860}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: null, open: null, win: 'Week', by: 'Profit' }; }
+  renderVals() {
+    const p = this.props;
+    const s = p.state ?? 'default';
+    const tab = this.state.tab ?? (p.tab ?? 'polymarket');
+    const open = this.state.open ?? (p.expanded ?? -1);
+    const mobile = (p.viewport ?? 'desktop') === 'mobile';
+    const isPoly = tab === 'polymarket';
+    const palette = ['var(--echo-chart-blue)', 'var(--emerald)', 'var(--echo-chart-purple)', 'var(--echo-chart-orange)'];
+    const ident = (seed) => {
+      let h = 0; for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+      const col = palette[h % palette.length], out = [];
+      for (let r = 0; r < 3; r++) { const a = (h >> (r * 2)) & 1, b = (h >> (r * 2 + 1)) & 1; [a, b, a].forEach((on) => out.push(on ? col : 'transparent')); }
+      return out;
+    };
+    const poly = [
+      ['paddaa', '@Impij25', true, 202394, 416521, '0x5c1a…e7f2'],
+      ['Cinibengales', '', false, 164828, 1918400, '0x9b44…12ac'],
+      ['anoin123', '', false, 148081, 530543, '0x2e07…b3d9'],
+      ['', '', false, 121560, 4870200, '0x60a9…5a71'],
+      ['', '', false, 98404, 214900, '0x3f2d…9c18'],
+      ['', '', true, 87212, 1204550, '0xa1c0…44e3'],
+      ['', '', false, 74930, 166020, '0x77b2…0d5e'],
+      ['', '', false, 66118, 2380000, '0xd40f…7a21'],
+      ['', '', false, 59870, 301440, '0x1b9e…c6f0'],
+      ['', '', false, 52405, 98760, '0x8e3a…2b57']
+    ];
+    const kalshi = [['lebronthanos', 1058643.5], ['Zach202', 888516.4], ['penny.jumper', 757948.7], ['[nickname]', 702310.2], ['[nickname]', 655902.8], ['[nickname]', 590114.0], ['[nickname]', 541276.3], ['[nickname]', 498830.9], ['[nickname]', 455012.6], ['[nickname]', 421705.1]];
+    const money = (v) => '$' + Math.round(v).toLocaleString('en-US');
+    const medal = (i) => i === 0 ? ['var(--emerald)', 'var(--bg-primary)', 'var(--emerald)']
+      : i < 3 ? ['var(--emerald-bg-hover)', 'var(--emerald-text)', 'var(--emerald-border)']
+      : ['transparent', 'var(--text-faint)', 'transparent'];
+    const rows = isPoly ? poly.map(([u, x, ver, pnl, vol, w], i) => {
+      const eff = pnl / vol, [mb, mf, mbo] = medal(i);
+      return {
+        rank: i + 1, name: u || w, nameCls: u ? '' : 'pmk-mono', verified: ver, hasX: !!x, x,
+        hasWallet: !!u, wallet: w, cells: ident(w),
+        pnl: '+' + money(pnl), vol: money(vol),
+        effW: Math.min(100, (eff / 0.5) * 100).toFixed(0) + '%', effLabel: (eff * 100).toFixed(1) + '%',
+        medalBg: mb, medalFg: mf, medalBorder: mbo,
+        open: open === i, expanded: String(open === i), rot: open === i ? '180deg' : '0deg',
+        bg: open === i ? 'var(--surface-card-hover)' : 'transparent',
+        toggle: () => this.setState({ open: open === i ? -2 : i })
+      };
+    }) : kalshi.map(([n, v], i) => {
+      const [mb, mf, mbo] = medal(i);
+      return { rank: i + 1, name: n, nameCls: '', verified: false, hasX: false, hasWallet: false, cells: ident(n + i), value: v.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }), medalBg: mb, medalFg: mf, medalBorder: mbo, open: false, bg: 'transparent' };
+    });
+    const seg = (list, key) => list.map((label) => ({ label, on: String(this.state[key] === label), cls: this.state[key] === label ? 'is-on' : '', pick: () => this.setState({ [key]: label }) }));
+    const tabs = [['polymarket', 'Polymarket', 'pmk-dot--poly'], ['kalshi', 'Kalshi', 'pmk-dot--kalshi']].map(([k, label, dot]) => ({
+      label, dot, on: String(tab === k), cls: tab === k ? 'is-on' : '', pick: () => this.setState({ tab: k, open: -2 })
+    }));
+    return {
+      isDefault: s === 'default', isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error',
+      isPoly, isKalshi: !isPoly, tabs,
+      sub: isPoly ? 'Politics · ' + this.state.win + ' · by ' + this.state.by.toLowerCase() : 'All categories · 30d · by ' + this.state.by.toLowerCase(),
+      windows: seg(['Day', 'Week', 'Month', 'All'], 'win'),
+      rankBy: seg(['Profit', 'Volume'], 'by'),
+      kalshiCol: this.state.by === 'Profit' ? 'Projected PnL' : 'Volume',
+      volDisplay: mobile ? 'none' : 'flex',
+      rows, ten: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      signedOut: p.signedOut ?? false,
+      sourceName: isPoly ? 'Polymarket' : 'Kalshi',
+      positions: [
+        { q: 'Will the Democratic Party control the House after the 2026 Midterm elections?', side: 'YES', size: '$84,200', avg: '88.0' },
+        { q: 'Will Benjamin Netanyahu be the next Prime Minister of Israel?', side: 'NO', size: '$41,750', avg: '69.5' },
+        { q: 'Will Flávio Bolsonaro win the 2026 Brazilian presidential election?', side: 'YES', size: '$36,900', avg: '71.2' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

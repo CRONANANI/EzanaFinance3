@@ -1,0 +1,129 @@
+{
+  "page": "/datasets/prediction-markets",
+  "design": "Eight-card dashboard, Oct 2026",
+  "url": {
+    "category": "?category=politics|elections|sports|crypto|economy|geopolitics|tech|culture, omitted when All",
+    "venue": "?venue=polymarket|kalshi, omitted when All",
+    "window": "?window=24h|7d|30d, default 24h until snapshots exist, then 7d; omitted when default",
+    "q": "?q=<text>, omitted when empty",
+    "market": "?market=<venue>:<market_id> loads that market in the Price Chart; survives refresh and share",
+    "history": "filters use router.replace (no history entry per chip click); loading a market into the chart uses replace as well"
+  },
+  "filter_bar": {
+    "position": "sticky, top = shared chrome height (76px), z above cards, below the chrome",
+    "category": {
+      "control": "chip row, single select, role=radiogroup",
+      "options": ["All", "Politics", "Elections", "Sports", "Crypto", "Economy", "Geopolitics", "Tech", "Culture"],
+      "count": "live count of open markets for that category under the current venue filter, mono",
+      "selected": "emerald fill and border (.pmk-chip.is-on)",
+      "mobile": "horizontal scroll, no wrap, scroll-snap optional"
+    },
+    "venue": { "control": "segmented", "options": ["All", "Polymarket", "Kalshi"], "default": "All" },
+    "window": {
+      "control": "segmented, mono",
+      "options": ["24h", "7d", "30d"],
+      "disabled_until_snapshots": ["7d", "30d"],
+      "disabled_tooltip": "Longer windows arrive with price history"
+    },
+    "search": {
+      "placeholder": "Search markets…",
+      "match": "case-insensitive substring on question",
+      "debounce_ms": 200,
+      "clears_with": "Escape while focused",
+      "style": "transparent pill, matches the Sonar search pill"
+    },
+    "mobile": "venue, window and search move into a bottom sheet opened by a 'Filters' chip that shows the count of non-default filters; sheet has Reset and 'Show N markets'"
+  },
+  "filters_apply_to": {
+    "pulse": ["category", "venue", "window", "q"],
+    "chart": "unaffected; it shows whichever market is loaded",
+    "movers": ["category", "venue", "window", "q"],
+    "edge_board": ["category", "venue", "q"],
+    "top_traders": "Polymarket category follows the page category when it maps to a leaderboard category; Kalshi ignores category",
+    "category_map": ["venue", "window"],
+    "closing_soon": ["category", "venue", "q"],
+    "conviction": ["category", "venue", "window", "q"],
+    "open_markets_table": ["category", "venue", "q"]
+  },
+  "load_market_into_chart": {
+    "triggers": ["Movers row", "Pulse biggest-mover tile", "Closing Soon pill", "Most-uncertain callout row", "Edge Board 'Chart this market' link", "Open markets table event link", "Trader position row", "Conviction dot (click)"],
+    "effect": "sets ?market=, chart refetches history, the Movers row (if present) takes the selected treatment",
+    "mobile": "also scrollIntoView({ block: 'start' }) on the chart card, respecting reduced motion",
+    "default_market": "the first Movers row on first load"
+  },
+  "cards": {
+    "pulse": {
+      "tiles": ["Open markets + venue split bar", "Volume traded (window), Polymarket USD and Kalshi contracts side by side", "Biggest mover: change pill, 8-point sparkline, question", "Closing this week: count + 7 day bars, today emerald"],
+      "click": "biggest-mover tile loads the chart"
+    },
+    "chart": {
+      "range": { "options": ["1D", "1W", "1M", "All"], "default": "1W" },
+      "switcher": "dropdown of the current Movers list plus previous/next arrows; label 'n / 8 Movers'",
+      "hover": "vertical crosshair, horizontal guide, dot on line, tooltip (date and time ET, probability, change vs prior point, period volume), y-axis value flag; keyboard: arrow keys move the crosshair point by point when the plot is focused",
+      "annotations": "the two largest absolute single-period moves in range, diamond marker + '+3.0 pts' label",
+      "multi_outcome": "up to 4 outcomes, end-of-line labels 'Name 78.7%', legend in the header; colours blue, orange, purple, then muted dashed for Other",
+      "outbound": "'Open on Polymarket' / 'Open on Kalshi', target _blank rel noopener, visually hidden '(opens in a new tab)'"
+    },
+    "movers": {
+      "rows": 8,
+      "sort": { "options": ["Biggest moves", "Most traded"], "default": "Biggest moves" },
+      "row_click": "loads the chart; aria-current=true on the loaded row",
+      "hot": "bi-fire + 'Hot' in --echo-chart-orange when isHot()"
+    },
+    "edge_board": {
+      "tabs": ["Ezana model vs market", "Cross-venue gaps"],
+      "tab_count": "mono count of rows after filters",
+      "sort": { "options": ["Gap", "Confidence"], "default": "Gap" },
+      "high_only": "toggle button, aria-pressed",
+      "expand": "chevron button per row, aria-expanded; one row open at a time; shows the math (5 lines) and liquidity",
+      "signed_out": "the expanded panel renders blurred with the 'Sign up free to open the math' overlay; the board itself is fully visible"
+    },
+    "top_traders": {
+      "tabs": ["Polymarket", "Kalshi"],
+      "polymarket_controls": { "window": ["Day", "Week", "Month", "All"], "rank_by": ["Profit", "Volume"], "category": "chip showing the page category, 'from page filter'" },
+      "kalshi_controls": { "window": "fixed 30d, shown as a disabled chip", "rank_by": ["Profit", "Volume"] },
+      "expand": "Polymarket rows only; top 3 open positions by size (market, side, size, avg price); one open at a time",
+      "copy_wallet": "copies the full address, announces 'Address copied' via a polite live region",
+      "signed_out": "positions panel gated with overlay"
+    },
+    "category_map": {
+      "venue_toggle": ["Polymarket", "Kalshi", "Both"],
+      "default_venue": "Polymarket",
+      "tile_click": "sets ?category= and the filter bar chip; selected tile gets a 2px emerald border; aria-pressed",
+      "mobile": "stacked horizontal bar + list rows with the same encoding"
+    },
+    "closing_soon": {
+      "days": 7,
+      "today": "first column, emerald tint, label 'TODAY'",
+      "pills_per_day": 3,
+      "more": "'+N more' link opens the open markets table filtered to that day",
+      "pill_click": "loads the chart",
+      "callout": "three open markets resolving within 7 days whose probability is closest to 50%"
+    },
+    "conviction": {
+      "hover": "tooltip with question, probability, liquidity (or volume for Kalshi), spread",
+      "click": "loads the chart",
+      "keyboard": "the plot is one focusable group; a visually hidden table lists the top 20 markets by liquidity with the same fields"
+    }
+  },
+  "states": {
+    "loading": "shimmer skeleton in the card's own shape, reserve the final height; no spinners",
+    "empty": "one sentence naming the active filters and a way out (Reset filters / a wider window)",
+    "error": "This data is unavailable right now. Try again in a moment. + Retry button that refetches only that card",
+    "stale": "if the trending feed reports stale=true, Pulse and Movers show 'Odds delayed' next to the timestamp rather than old numbers"
+  },
+  "motion": {
+    "hover": "0.15s",
+    "card_hover": "0.2s fill and border, no transform",
+    "number_tick": "0.3s on filter change",
+    "list_change": "cross-fade, row heights reserved",
+    "reduced_motion": "no shimmer, no ticks, instant"
+  },
+  "keyboard": {
+    "focus_ring": "2px --emerald outline, 2px offset, on every chip, segment, tab, row button, tile, pill and chart control",
+    "tabs": "role=tablist, arrow keys move between tabs",
+    "segments_and_chips": "role=radiogroup with role=radio buttons",
+    "rows": "each clickable row is a <button>; expanders are separate buttons with aria-expanded",
+    "escape": "closes the mobile filter sheet and returns focus to the Filters chip"
+  }
+}

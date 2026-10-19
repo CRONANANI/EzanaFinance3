@@ -1,0 +1,113 @@
+/* Prediction Markets, page-scoped tokens.
+   Every value maps onto src/app/theme-variables.css. Nothing here is global and
+   no hex appears below. Light mode needs no overrides: the theme variables flip.
+
+   PREREQUISITE. The --echo-chart-* palette is today declared only inside
+   `.echo-article-page` (src/app/(dashboard)/ezana-echo/ezana-echo.css), so it
+   resolves to nothing on a datasets page. Promote it once into
+   theme-variables.css, :root and the light-mode block, with the same values
+   Echo uses (red #e85d4f, orange #f59e0b, green #10b981, blue var(--blue),
+   purple var(--purple), grid rgba(120,120,120,.15), annotation
+   rgba(120,120,120,.4)), and leave Echo's local declarations in place so Echo
+   is unchanged. Do not add fallbacks here instead; lint:css flags them. */
+
+.pmk-page {
+  /* ground and ink */
+  --pmk-bg: var(--bg-primary);
+  --pmk-ink: var(--text-primary);
+  --pmk-body: var(--text-secondary);
+  --pmk-mute: var(--text-muted);
+  --pmk-faint: var(--text-faint);
+
+  /* cards: the Ezana standard card */
+  --pmk-card-bg: var(--surface-card);
+  --pmk-card-bg-hover: var(--surface-card-hover);
+  --pmk-card-border: var(--border-primary);
+  --pmk-card-border-hover: var(--border-hover);
+  --pmk-card-rule: var(--border-secondary);
+  --pmk-card-shadow: var(--shadow-md);
+  --pmk-card-radius: var(--radius-lg); /* 12px */
+  --pmk-hero-radius: var(--radius-xl); /* 16px, Price Chart only */
+  --pmk-card-pad: 1.5rem;
+
+  /* brand and selection */
+  --pmk-accent: var(--emerald);
+  --pmk-accent-text: var(--emerald-text);
+  --pmk-selected-bg: var(--emerald-bg-hover);
+  --pmk-selected-tint: var(--emerald-bg);
+  --pmk-focus: var(--emerald);
+
+  /* direction */
+  --pmk-up: var(--positive);
+  --pmk-up-bg: var(--positive-bg);
+  --pmk-down: var(--echo-chart-red); /* never --danger or --negative for declines */
+  --pmk-down-bg: var(--negative-bg);
+
+  /* venues */
+  --pmk-poly: var(--echo-chart-blue);
+  --pmk-kalshi: var(--echo-chart-purple);
+
+  /* charts */
+  --pmk-line: var(--echo-chart-blue);
+  --pmk-area: color-mix(in srgb, var(--echo-chart-blue) 8%, transparent);
+  --pmk-grid: var(--echo-chart-grid);
+  --pmk-annotation: var(--echo-chart-annotation);
+  --pmk-volume-bar: var(--border-hover);
+  --pmk-outcome-2: var(--echo-chart-orange);
+  --pmk-outcome-3: var(--echo-chart-purple);
+  --pmk-outcome-other: var(--text-muted); /* dashed */
+  --pmk-hot: var(--echo-chart-orange);
+
+  /* confidence chips (Edge Board, Legislation) */
+  --pmk-conf-high: var(--emerald-text);
+  --pmk-conf-high-bg: var(--emerald-bg);
+  --pmk-conf-high-border: var(--emerald-border);
+  --pmk-conf-med: var(--warning);
+  --pmk-conf-med-bg: var(--warning-bg);
+  --pmk-conf-low: var(--text-muted);
+  --pmk-conf-low-border: var(--border-primary);
+
+  /* encodings: alpha is computed by the model and applied as opacity on a
+     solid layer, so these stay solid tokens */
+  --pmk-firming: var(--emerald); /* Category Map, avg move > 0 */
+  --pmk-fading: var(--echo-chart-red); /* Category Map, avg move < 0 */
+  --pmk-decided: var(--echo-chart-blue); /* Closing Soon pill fill */
+  --pmk-trust-zone: color-mix(in srgb, var(--emerald) 7%, transparent); /* Conviction quadrant */
+
+  /* gate */
+  --pmk-gate-veil: var(--bg-overlay);
+
+  /* skeleton */
+  --pmk-skel-a: color-mix(in srgb, var(--text-primary) 3%, transparent);
+  --pmk-skel-b: color-mix(in srgb, var(--text-primary) 8%, transparent);
+
+  /* radii, from the single declaration site */
+  --pmk-r-chip: var(--radius-sm); /* 4px chips, badges, pills */
+  --pmk-r-input: var(--radius-md); /* 8px inputs, segments, tiles, expansions */
+
+  /* type: families and the ramp */
+  --pmk-sans: var(--font-sans);
+  --pmk-mono: var(--font-mono);
+  --pmk-title-size: var(--type-page-title-size); /* 1.875rem / 700 */
+  --pmk-section-size: var(--type-section-size); /* 1.25rem / 600, chart question */
+  --pmk-card-title-size: var(--type-card-title-size); /* 1rem / 600 */
+  --pmk-eyebrow-size: var(--type-eyebrow-size); /* 11px mono uppercase .08em */
+  --pmk-body-size: var(--type-body-size); /* 14px */
+  --pmk-caption-size: var(--type-caption-size); /* 12px */
+  --pmk-micro-size: var(--type-micro-size); /* 11px */
+  --pmk-value-lg-size: var(--type-value-lg-size); /* 1.5rem / 700 mono, Pulse */
+  --pmk-value-sm-size: var(--type-value-sm-size); /* 14px / 600 mono, rows */
+
+  /* motion */
+  --pmk-t-hover: 0.15s;
+  --pmk-t-card: 0.2s;
+  --pmk-t-tick: 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pmk-page {
+    --pmk-t-hover: 0s;
+    --pmk-t-card: 0s;
+    --pmk-t-tick: 0s;
+  }
+}

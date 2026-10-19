@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Top traders · trader expansion</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./pmk.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="pmk-root pmk-dark" style="width: 1696px; padding: 32px; box-sizing: border-box; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; align-items: start;">
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="pmk-kicker" style="color: var(--emerald-text);">Signed in · trader 1 expanded</div>
+    <dc-import name="TopTraders" expanded="{{ 0 }}" signed-out="{{ false }}" hint-size="800px,920px"></dc-import>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="pmk-kicker" style="color: var(--emerald-text);">Signed out · positions gated</div>
+    <dc-import name="TopTraders" expanded="{{ 0 }}" signed-out="{{ true }}" hint-size="800px,920px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1696,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

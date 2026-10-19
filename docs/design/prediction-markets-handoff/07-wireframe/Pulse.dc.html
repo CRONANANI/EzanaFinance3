@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Market pulse</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./pmk.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="pmk-root" style="width: 100%; display: flex;">
+<section class="pmk-card" aria-labelledby="pmk-pulse-title" style="flex: 1; width: 100%; padding: 1.25rem 1.5rem;">
+  <div class="pmk-head" style="padding-bottom: 12px; margin-bottom: 14px;">
+    <div>
+      <h2 id="pmk-pulse-title" class="pmk-title">Market pulse</h2>
+      <p class="pmk-sub">Elections · All venues · 7d</p>
+    </div>
+    <span class="pmk-mono" style="font-size: 11px; color: var(--text-faint);">Updated 14:05 ET</span>
+  </div>
+
+  <sc-if value="{{isDefault}}" hint-placeholder-val="{{ true }}">
+    <div style="display: grid; grid-template-columns: repeat({{cols}}, minmax(0, 1fr)); gap: 12px;">
+
+      <!-- Open markets -->
+      <div style="border: 1px solid var(--border-secondary); border-radius: var(--radius-md); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0;">
+        <div class="pmk-kicker">Open markets</div>
+        <div class="pmk-mono" style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); line-height: 1.1;">466</div>
+        <div role="img" aria-label="Polymarket 218 markets, Kalshi 248 markets" style="display: flex; height: 6px; border-radius: var(--radius-sm); overflow: hidden; gap: 2px;">
+          <span style="flex: 218; background: var(--venue-poly);"></span>
+          <span style="flex: 248; background: var(--venue-kalshi);"></span>
+        </div>
+        <div class="pmk-mono" style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
+          <span><span class="pmk-dot pmk-dot--poly" aria-hidden="true"></span> Poly 218</span>
+          <span><span class="pmk-dot pmk-dot--kalshi" aria-hidden="true"></span> Kalshi 248</span>
+        </div>
+      </div>
+
+      <!-- Volume traded -->
+      <div style="border: 1px solid var(--border-secondary); border-radius: var(--radius-md); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0;">
+        <div class="pmk-kicker">Volume traded · 7d</div>
+        <div style="display: flex; align-items: stretch; gap: 12px;">
+          <div style="flex: 1; min-width: 0;">
+            <div class="pmk-mono" style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); line-height: 1.15;">$96.4M</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;"><span class="pmk-dot pmk-dot--poly" aria-hidden="true"></span> Polymarket, USD</div>
+          </div>
+          <span aria-hidden="true" style="width: 1px; background: var(--border-primary);"></span>
+          <div style="flex: 1; min-width: 0;">
+            <div class="pmk-mono" style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); line-height: 1.15;">8.7M</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;"><span class="pmk-dot pmk-dot--kalshi" aria-hidden="true"></span> Kalshi, contracts</div>
+          </div>
+        </div>
+        <div style="font-size: 11px; color: var(--text-faint);">Units differ, so venues are not summed.</div>
+      </div>
+
+      <!-- Biggest mover -->
+      <a href="#chart" style="border: 1px solid var(--border-secondary); border-radius: var(--radius-md); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; text-decoration: none; color: inherit;">
+        <div class="pmk-kicker">Biggest mover · 7d</div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span class="pmk-pill pmk-pill--pos" style="font-size: 14px; height: 26px;">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 2; stroke-linecap: round;" aria-hidden="true"><path d="M4 12L12 4M5.5 4H12v6.5"></path></svg>+12 pts
+          </span>
+          <svg class="pmk-svg" width="88" height="26" viewBox="0 0 88 26" role="img" aria-label="Rose from 66.7% to 78.7% over 7 days" style="flex: none;"><polyline class="pmk-spark pmk-spark--pos" points="{{moverSpark}}"></polyline></svg>
+          <span class="pmk-mono" style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-left: auto;">78.7%</span>
+        </div>
+        <div class="pmk-ellipsis" style="font-size: 12px; color: var(--text-secondary);">Flávio Bolsonaro wins Brazil presidency</div>
+      </a>
+
+      <!-- Closing this week -->
+      <div style="border: 1px solid var(--border-secondary); border-radius: var(--radius-md); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0;">
+        <div class="pmk-kicker">Closing this week</div>
+        <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;">
+          <div class="pmk-mono" style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); line-height: 1.1;">143</div>
+          <div role="img" aria-label="Markets resolving per day, next 7 days: 18, 24, 21, 31, 17, 12, 20" style="display: flex; align-items: flex-end; gap: 3px; height: 28px;">
+            <sc-for list="{{closeBars}}" as="b" hint-placeholder-count="7">
+              <span style="width: 7px; height: {{b.h}}; border-radius: 2px; background: {{b.bg}};"></span>
+            </sc-for>
+          </div>
+        </div>
+        <div class="pmk-mono" style="font-size: 11px; color: var(--text-muted);">Next 7 days · peak Thu <span style="color: var(--text-primary);">31</span></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading market pulse" style="display: grid; grid-template-columns: repeat({{cols}}, minmax(0, 1fr)); gap: 12px;">
+      <sc-for list="{{four}}" as="t" hint-placeholder-count="4">
+        <div style="border: 1px solid var(--border-secondary); border-radius: var(--radius-md); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; height: 118px;">
+          <span class="pmk-skel" style="height: 10px; width: 46%;"></span>
+          <span class="pmk-skel" style="height: 24px; width: 38%;"></span>
+          <span class="pmk-skel" style="height: 6px; width: 100%;"></span>
+          <span class="pmk-skel" style="height: 10px; width: 64%;"></span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div style="min-height: 118px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; border: 1px dashed var(--border-primary); border-radius: var(--radius-md); padding: 16px 20px;">
+      <p class="pmk-state-msg" style="margin: 0; max-width: 620px;">No open markets match <span style="color: var(--text-primary);">Tech · Kalshi · 24h</span>. Widen the window or switch to All venues to see the pulse.</p>
+      <button type="button" class="pmk-chip">Reset filters</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" style="min-height: 118px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border: 1px dashed var(--border-primary); border-radius: var(--radius-md); padding: 16px 20px;">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 1.5; stroke-linecap: round; color: var(--text-muted);" aria-hidden="true"><circle cx="8" cy="8" r="6.5"></circle><path d="M8 4.8v3.6M8 11h.01"></path></svg>
+      <p class="pmk-state-msg" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="pmk-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","error"],"default":"default"},"viewport":{"editor":"enum","options":["desktop","tablet","mobile"],"default":"desktop"},"$preview":{"width":1392,"height":230}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    const vp = this.props.viewport ?? 'desktop';
+    const spark = (vals, w, h, pad) => {
+      const min = Math.min(...vals), max = Math.max(...vals), r = (max - min) || 1;
+      return vals.map((v, i) => ((i / (vals.length - 1)) * w).toFixed(1) + ',' + (pad + (1 - (v - min) / r) * (h - pad * 2)).toFixed(1)).join(' ');
+    };
+    const days = [18, 24, 21, 31, 17, 12, 20];
+    return {
+      isDefault: s === 'default', isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error',
+      cols: vp === 'desktop' ? 4 : 2,
+      moverSpark: spark([66.7, 67.9, 70.2, 69.5, 72.8, 75.1, 77.0, 78.7], 88, 26, 2),
+      closeBars: days.map((d, i) => ({ h: Math.round((d / 31) * 28) + 'px', bg: i === 0 ? 'var(--emerald)' : 'var(--border-hover)' })),
+      four: [1, 2, 3, 4]
+    };
+  }
+}
+</script>
+</body>
+</html>

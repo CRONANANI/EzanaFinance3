@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Closing soon</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./pmk.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="pmk-root" style="width: 100%; display: flex;">
+<section class="pmk-card" aria-labelledby="pmk-close-title" style="flex: 1; width: 100%; display: flex; flex-direction: column;">
+  <div class="pmk-head">
+    <div>
+      <h2 id="pmk-close-title" class="pmk-title">Closing soon</h2>
+      <p class="pmk-sub">Resolving in the next 7 days · <span class="pmk-mono">143</span> markets</p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-muted);">
+      <span>Near 50%</span>
+      <span aria-hidden="true" style="display: flex; width: 72px; height: 8px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-primary);">
+        <span style="flex: 1; background: var(--echo-chart-blue); opacity: 0.1;"></span><span style="flex: 1; background: var(--echo-chart-blue); opacity: 0.28;"></span><span style="flex: 1; background: var(--echo-chart-blue); opacity: 0.46;"></span><span style="flex: 1; background: var(--echo-chart-blue); opacity: 0.64;"></span>
+      </span>
+      <span>Decided</span>
+    </div>
+  </div>
+
+  <sc-if value="{{isDefault}}" hint-placeholder-val="{{ true }}">
+    <!-- most uncertain callout -->
+    <div style="border: 1px solid var(--border-hover); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 16px;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 1.6; stroke-linecap: round; color: var(--echo-chart-orange);" aria-hidden="true"><path d="M8 1.5v13M3 5h10M3 5L1 10h4L3 5zM13 5l-2 5h4l-2-5z"></path></svg>
+        <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">This week's most uncertain</span>
+        <span class="pmk-mono" style="font-size: 11px; color: var(--text-faint);">closest to 50%</span>
+      </div>
+      <ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat({{calloutCols}}, minmax(0, 1fr)); gap: 8px;">
+        <sc-for list="{{uncertain}}" as="u" hint-placeholder-count="3">
+          <li>
+            <button type="button" class="pmk-row pmk-row-btn" style="display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--border-primary);">
+              <span class="pmk-dot {{u.dot}}" aria-hidden="true"></span>
+              <span class="pmk-ellipsis" style="flex: 1; min-width: 0; font-size: 12px; color: var(--text-secondary);">{{u.q}}</span>
+              <span class="pmk-mono" style="font-size: 12px; font-weight: 700; color: var(--text-primary);">{{u.p}}</span>
+              <span class="pmk-mono" style="font-size: 10px; color: var(--text-faint);">{{u.day}}</span>
+            </button>
+          </li>
+        </sc-for>
+      </ol>
+    </div>
+
+    <!-- 7-day timeline -->
+    <div style="overflow-x: auto; margin: 0 -4px; padding: 0 4px 4px;">
+      <div role="list" aria-label="Markets resolving each day" style="display: grid; grid-template-columns: repeat(7, minmax({{colMin}}, 1fr)); gap: 6px;">
+        <sc-for list="{{days}}" as="d" hint-placeholder-count="7">
+          <div role="listitem" style="display: flex; flex-direction: column; gap: 5px; padding: 8px 6px; border-radius: var(--radius-md); background: {{d.bg}}; border: 1px solid {{d.border}}; min-height: 300px;">
+            <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 0 2px 6px; border-bottom: 1px solid var(--border-secondary); margin-bottom: 2px;">
+              <span class="pmk-mono" style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: {{d.labelColor}};">{{d.label}}</span>
+              <span class="pmk-mono" style="font-size: 11px; color: var(--text-faint);">{{d.count}}</span>
+            </div>
+            <sc-for list="{{d.pills}}" as="m" hint-placeholder-count="3">
+              <button type="button" aria-label="{{m.aria}}" style="position: relative; display: flex; flex-direction: column; gap: 3px; padding: 6px 7px; border-radius: var(--radius-sm); border: 1px solid var(--border-primary); background: none; text-align: left; color: inherit; overflow: hidden;">
+                <span aria-hidden="true" style="position: absolute; inset: 0; background: var(--echo-chart-blue); opacity: {{m.alpha}};"></span>
+                <span class="pmk-clamp2" style="position: relative; font-size: 11px; line-height: 1.3; color: var(--text-primary);">{{m.q}}</span>
+                <span style="position: relative; display: flex; align-items: center; gap: 5px;">
+                  <span class="pmk-dot {{m.dot}}" aria-hidden="true" style="width: 6px; height: 6px;"></span>
+                  <span class="pmk-mono" style="font-size: 12px; font-weight: 700; color: var(--text-primary);">{{m.p}}</span>
+                </span>
+              </button>
+            </sc-for>
+            <a href="#" class="pmk-link" style="font-size: 11px; padding: 2px; margin-top: auto;">+{{d.more}} more</a>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading closing soon">
+      <span class="pmk-skel" style="display: block; height: 72px; border-radius: var(--radius-md); margin-bottom: 16px;"></span>
+      <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px;">
+        <sc-for list="{{seven}}" as="x" hint-placeholder-count="7">
+          <div style="display: flex; flex-direction: column; gap: 6px; min-height: 300px; padding: 8px 6px; border: 1px solid var(--border-secondary); border-radius: var(--radius-md);">
+            <span class="pmk-skel" style="height: 10px; width: 60%;"></span>
+            <span class="pmk-skel" style="height: 44px;"></span>
+            <span class="pmk-skel" style="height: 44px;"></span>
+            <span class="pmk-skel" style="height: 44px;"></span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div style="min-height: 380px; display: flex; flex-direction: column; justify-content: center; gap: 8px; border: 1px dashed var(--border-primary); border-radius: var(--radius-md); padding: 24px;">
+      <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">Nothing resolves this week</div>
+      <p class="pmk-state-msg" style="margin: 0; max-width: 480px;">No Geopolitics market on Kalshi closes in the next 7 days. The nearest closes on <span class="pmk-mono" style="color: var(--text-primary);">Oct 31, 2026</span>.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" style="min-height: 380px; display: flex; align-items: center; justify-content: center; gap: 12px; border: 1px dashed var(--border-primary); border-radius: var(--radius-md);">
+      <p class="pmk-state-msg" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="pmk-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","error"],"default":"default"},"viewport":{"editor":"enum","options":["desktop","tablet","mobile"],"default":"desktop"},"$preview":{"width":690,"height":640}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    const mobile = (this.props.viewport ?? 'desktop') === 'mobile';
+    const P = 'pmk-dot--poly', K = 'pmk-dot--kalshi';
+    const raw = [
+      ['SUN 18', 18, [['Bitcoin above $105K on Oct 18?', 52, P], ['Chiefs beat the Raiders?', 71, K], ['Dodgers win Game 1?', 63, K]]],
+      ['MON 19', 24, [['Ether above $4K on Oct 19?', 47, P], ['Waller remarks mention a December cut?', 64, K], ['Tesla closes above $250 on Oct 19?', 58, P]]],
+      ['TUE 20', 21, [['Lakers beat the Warriors on Oct 20?', 48, K], ['Netflix beats Q3 subscriber estimates?', 81, P], ['30-year mortgage rate above 6.5%?', 22, K]]],
+      ['WED 21', 31, [['Jobless claims above 230K?', 39, K], ['Gold above $2,700 on Oct 21?', 88, P], ['Arsenal win on Oct 21?', 55, P]]],
+      ['THU 22', 17, [['Tesla beats Q3 delivery margin?', 41, P], ['Existing home sales above 4M?', 66, K], ['Solana above $200 on Oct 22?', 9, P]]],
+      ['FRI 23', 12, [['US x Iran talks resume by Oct 23?', 27, P], ['S&amp;P 500 up on the week?', 61, K], ['Michigan sentiment above 70?', 34, K]]],
+      ['SAT 24', 20, [['Real Madrid win El Clásico?', 44, P], ['Ohio State cover vs Penn State?', 57, K], ['Bitcoin above $110K on Oct 24?', 31, P]]]
+    ];
+    const days = raw.map(([label, count, pills], i) => ({
+      label: i === 0 ? 'TODAY' : label, count, more: count - pills.length,
+      bg: i === 0 ? 'var(--emerald-bg)' : 'transparent',
+      border: i === 0 ? 'var(--emerald-border)' : 'var(--border-secondary)',
+      labelColor: i === 0 ? 'var(--emerald-text)' : 'var(--text-muted)',
+      pills: pills.map(([q, p, dot]) => ({
+        q: q.replace('&amp;', '&'), p: p + '%', dot,
+        alpha: (0.06 + (Math.abs(p - 50) / 50) * 0.5).toFixed(2),
+        aria: q.replace('&amp;', '&') + ', ' + p + '%, ' + (dot === P ? 'Polymarket' : 'Kalshi') + '. Load in price chart.'
+      }))
+    }));
+    return {
+      isDefault: s === 'default', isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error',
+      colMin: mobile ? '124px' : '0', calloutCols: mobile ? 1 : 3,
+      days, seven: [1, 2, 3, 4, 5, 6, 7],
+      uncertain: [
+        { q: 'Bitcoin above $105K on Oct 18?', p: '52%', day: 'Today', dot: P },
+        { q: 'Lakers beat the Warriors on Oct 20?', p: '48%', day: 'Tue', dot: K },
+        { q: 'Ether above $4K on Oct 19?', p: '47%', day: 'Mon', dot: P }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

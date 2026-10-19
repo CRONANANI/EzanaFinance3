@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Prediction markets · component spec</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./pmk.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="pmk-root pmk-dark" style="width: 1440px; min-height: 2400px; padding: 56px 64px; box-sizing: border-box; display: flex; flex-direction: column; gap: 40px;">
+  <header>
+    <div class="pmk-kicker" style="color: var(--emerald-text); margin-bottom: 10px;">/datasets/prediction-markets · spec</div>
+    <h1 style="margin: 0; font-size: 1.875rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary);">Component spec sheet</h1>
+    <p style="margin: 10px 0 0; max-width: 760px; font-size: 14px; line-height: 1.6; color: var(--text-muted);">Page-scoped classes use the <span class="pmk-mono" style="color: var(--text-primary);">pmk-</span> prefix. Every colour is a token from <span class="pmk-mono" style="color: var(--text-primary);">theme-variables.css</span>; no hex appears in component CSS. Numbers are mono with tabular numerals; questions, names and paragraphs are sans.</p>
+  </header>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; align-items: start;">
+
+    <!-- Components -->
+    <section class="pmk-card">
+      <div class="pmk-head"><div><h2 class="pmk-title">Components</h2><p class="pmk-sub">Class · grid span (desktop 12 col)</p></div></div>
+      <table class="pmk-table">
+        <thead><tr><th scope="col">Class</th><th scope="col">Component</th><th scope="col" style="text-align: right;">Span</th></tr></thead>
+        <tbody>
+          <sc-for list="{{components}}" as="c" hint-placeholder-count="14">
+            <tr><td class="pmk-mono" style="font-size: 12px; color: var(--emerald-text); white-space: nowrap;">{{c.cls}}</td><td>{{c.name}}</td><td class="num" style="font-size: 12px; white-space: nowrap;">{{c.span}}</td></tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Colour roles -->
+    <section class="pmk-card">
+      <div class="pmk-head"><div><h2 class="pmk-title">Colour roles</h2><p class="pmk-sub">Role · token</p></div></div>
+      <table class="pmk-table">
+        <thead><tr><th scope="col"></th><th scope="col">Role</th><th scope="col">Token</th></tr></thead>
+        <tbody>
+          <sc-for list="{{colors}}" as="c" hint-placeholder-count="20">
+            <tr>
+              <td style="width: 28px;"><span aria-hidden="true" style="display: inline-block; width: 18px; height: 18px; border-radius: var(--radius-sm); background: var({{c.token}}); border: 1px solid var(--border-hover);"></span></td>
+              <td>{{c.role}}</td>
+              <td class="pmk-mono" style="font-size: 12px; color: var(--text-primary);">{{c.token}}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Type -->
+    <section class="pmk-card">
+      <div class="pmk-head"><div><h2 class="pmk-title">Type</h2><p class="pmk-sub">Role · family · size / weight</p></div></div>
+      <table class="pmk-table">
+        <thead><tr><th scope="col">Role</th><th scope="col">Family</th><th scope="col" style="text-align: right;">Size / weight</th></tr></thead>
+        <tbody>
+          <sc-for list="{{type}}" as="t" hint-placeholder-count="12">
+            <tr><td>{{t.role}}</td><td class="pmk-mono" style="font-size: 12px;">{{t.fam}}</td><td class="num" style="font-size: 12px; white-space: nowrap;">{{t.size}}</td></tr>
+          </sc-for>
+        </tbody>
+      </table>
+      <p style="margin: 14px 0 0; font-size: 12px; color: var(--text-muted);">At most two weight levels inside one card: 600 for titles and key values, 400 or 500 for the rest.</p>
+    </section>
+
+    <!-- Layout, motion, icons -->
+    <section class="pmk-card" style="display: flex; flex-direction: column; gap: 20px;">
+      <div class="pmk-head" style="margin-bottom: 0;"><div><h2 class="pmk-title">Layout, motion, icons</h2><p class="pmk-sub">Rules for the build</p></div></div>
+      <div>
+        <div class="pmk-kicker" style="margin-bottom: 8px;">Layout</div>
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-secondary);">
+          <sc-for list="{{layout}}" as="l" hint-placeholder-count="6"><li>{{l}}</li></sc-for>
+        </ul>
+      </div>
+      <div>
+        <div class="pmk-kicker" style="margin-bottom: 8px;">Motion</div>
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-secondary);">
+          <sc-for list="{{motion}}" as="l" hint-placeholder-count="5"><li>{{l}}</li></sc-for>
+        </ul>
+      </div>
+      <div>
+        <div class="pmk-kicker" style="margin-bottom: 8px;">Icons (Bootstrap Icons in the build; drawn inline in this wireframe)</div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 20px;">
+          <sc-for list="{{icons}}" as="i" hint-placeholder-count="12">
+            <div style="display: flex; justify-content: space-between; gap: 10px; font-size: 12px; border-bottom: 1px solid var(--border-secondary); padding: 4px 0;"><span style="color: var(--text-muted);">{{i.use}}</span><span class="pmk-mono" style="color: var(--text-primary);">{{i.bi}}</span></div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <!-- Primitives -->
+    <section class="pmk-card" style="grid-column: span 2;">
+      <div class="pmk-head"><div><h2 class="pmk-title">Primitives</h2><p class="pmk-sub">Shared across the eight cards</p></div></div>
+      <div style="display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start;">
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div class="pmk-kicker">.pmk-chip</div>
+          <div style="display: flex; gap: 6px;"><span class="pmk-chip is-on">Elections <span class="pmk-mono">466</span></span><span class="pmk-chip">Sports <span class="pmk-mono">1,104</span></span></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div class="pmk-kicker">.pmk-seg</div>
+          <div class="pmk-seg pmk-seg--mono"><button type="button">24h</button><button type="button" class="is-on">7d</button><button type="button">30d</button></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div class="pmk-kicker">.pmk-venue</div>
+          <div style="display: flex; gap: 6px;"><span class="pmk-venue"><span class="pmk-dot pmk-dot--poly" aria-hidden="true"></span>Polymarket</span><span class="pmk-venue"><span class="pmk-dot pmk-dot--kalshi" aria-hidden="true"></span>Kalshi</span></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div class="pmk-kicker">.pmk-pill</div>
+          <div style="display: flex; gap: 6px;"><span class="pmk-pill pmk-pill--pos">+8.0 pts</span><span class="pmk-pill pmk-pill--neg">-6.0 pts</span></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div class="pmk-kicker">.pmk-conf</div>
+          <div style="display: flex; gap: 6px;"><span class="pmk-conf pmk-conf--high">High</span><span class="pmk-conf pmk-conf--med">Medium</span><span class="pmk-conf pmk-conf--low">Low</span></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; width: 200px;">
+          <div class="pmk-kicker">.pmk-skel</div>
+          <span class="pmk-skel" style="height: 12px; width: 100%;"></span><span class="pmk-skel" style="height: 12px; width: 60%;"></span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div class="pmk-kicker">.pmk-btn</div>
+          <div style="display: flex; gap: 6px;"><a href="#" class="pmk-btn">Sign up free</a><a href="#" class="pmk-btn pmk-btn--ghost">Log in</a></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Compliance + data -->
+    <section class="pmk-card" style="grid-column: span 2;">
+      <div class="pmk-head"><div><h2 class="pmk-title">Compliance and data notes</h2><p class="pmk-sub">Binding on every EV surface</p></div></div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px;">
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-secondary);">
+          <sc-for list="{{compliance}}" as="l" hint-placeholder-count="5"><li>{{l}}</li></sc-for>
+        </ul>
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-secondary);">
+          <sc-for list="{{data}}" as="l" hint-placeholder-count="5"><li>{{l}}</li></sc-for>
+        </ul>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      components: [
+        { cls: '.pmk-page', name: 'Page shell, 1392px max content, 24px gutter (16px mobile)', span: '12' },
+        { cls: '.pmk-header', name: 'Title, lead, odds timestamp, venue legend', span: '12' },
+        { cls: '.pmk-filterbar', name: 'Sticky filter bar: category chips, venue, window, search', span: '12' },
+        { cls: '.pmk-pulse', name: 'Card 1 · Market Pulse, four metric tiles', span: '12' },
+        { cls: '.pmk-chart', name: 'Card 2 · Price Chart (hero, radius-xl)', span: '8' },
+        { cls: '.pmk-movers', name: 'Card 3 · Movers', span: '4' },
+        { cls: '.pmk-edge', name: 'Card 4 · Edge Board', span: '12' },
+        { cls: '.pmk-traders', name: 'Card 5 · Top Traders', span: '7' },
+        { cls: '.pmk-catmap', name: 'Card 6 · Category Map', span: '5' },
+        { cls: '.pmk-closing', name: 'Card 7 · Closing Soon', span: '6' },
+        { cls: '.pmk-conviction', name: 'Card 8 · Price Conviction', span: '6' },
+        { cls: '.pmk-open-table', name: 'Existing · Open markets table, restyled', span: '12' },
+        { cls: '.pmk-legislation', name: 'Existing · Legislation markets', span: '12' },
+        { cls: '.pmk-signup', name: 'Sign-up band, signed-out only', span: '12' }
+      ],
+      colors: [
+        { role: 'Page background', token: '--bg-primary' },
+        { role: 'Card fill', token: '--surface-card' },
+        { role: 'Card and row hover', token: '--surface-card-hover' },
+        { role: 'Card border', token: '--border-primary' },
+        { role: 'Header rule, row dividers', token: '--border-secondary' },
+        { role: 'Hover border, empty-state dashes', token: '--border-hover' },
+        { role: 'Titles, values', token: '--text-primary' },
+        { role: 'Body, labels', token: '--text-secondary' },
+        { role: 'Kickers, axis labels, hollow market dot', token: '--text-muted' },
+        { role: 'Volumes, timestamps, compliance line', token: '--text-faint' },
+        { role: 'Brand, selected, focus ring, model dot, High chip', token: '--emerald' },
+        { role: 'Gains, positive change pill', token: '--positive' },
+        { role: 'Declines, negative pill, fading tiles', token: '--echo-chart-red' },
+        { role: 'Price line, Polymarket dot, pill fill', token: '--echo-chart-blue' },
+        { role: 'Kalshi dot, third outcome line', token: '--echo-chart-purple' },
+        { role: 'Hot flag, second outcome, Sports dots', token: '--echo-chart-orange' },
+        { role: 'Medium confidence chip', token: '--warning' },
+        { role: 'Chart gridlines', token: '--echo-chart-grid' },
+        { role: 'Gated overlay backdrop', token: '--bg-overlay' }
+      ],
+      type: [
+        { role: 'Page title', fam: '--font-sans', size: '1.875rem / 700' },
+        { role: 'Chart market question', fam: '--font-sans', size: '1.25rem / 600' },
+        { role: 'Card title', fam: '--font-sans', size: '1rem / 600' },
+        { role: 'Card subtitle, kicker (uppercase)', fam: '--font-mono', size: '11px / 600' },
+        { role: 'Body, row questions', fam: '--font-sans', size: '13 to 14px / 500' },
+        { role: 'Chart current probability', fam: '--font-mono', size: '2rem / 700' },
+        { role: 'Pulse values', fam: '--font-mono', size: '1.5rem / 700' },
+        { role: 'Row probability, PnL', fam: '--font-mono', size: '13 to 14px / 600' },
+        { role: 'Change pills, chips counts', fam: '--font-mono', size: '11 to 12px / 600' },
+        { role: 'Axis ticks', fam: '--font-mono', size: '11px / 400' },
+        { role: 'Compliance and source lines', fam: '--font-sans', size: '11px / 400' }
+      ],
+      layout: [
+        'Desktop 1440: 12 columns, 24px gaps, rows as listed in the components table.',
+        'Below 1200: Chart and Movers stack; Traders and Category Map stack; Closing Soon and Conviction stay two-up until 1100.',
+        'Below 900: every card one-up. Pulse tiles go 2 x 2.',
+        'Mobile 375: chips scroll horizontally, venue, window and search move into the Filters sheet; chart keeps 16:10; tables become stacked rows; treemap becomes a stacked bar plus list.',
+        'Reserve row heights (Movers 62px, Edge 64px, Traders 53px) so filter changes never shift the layout.',
+        'Card radius 12px (--radius-lg); hero chart 16px (--radius-xl); chips and pills 4px; inputs and tiles 8px.'
+      ],
+      motion: [
+        'Hover: 0.15s on chips, rows, segments.',
+        'Card hover: fill and border shift over 0.2s; no scale.',
+        'Numbers: 0.3s tick on filter change; lists cross-fade.',
+        'Loading: shimmer skeletons in each card’s own shape; no spinners.',
+        'prefers-reduced-motion: no shimmer, no ticks, instant state changes.'
+      ],
+      icons: [
+        { use: 'Positive change', bi: 'bi-arrow-up-right' }, { use: 'Negative change', bi: 'bi-arrow-down-right' },
+        { use: 'Hot market', bi: 'bi-fire' }, { use: 'Search', bi: 'bi-search' },
+        { use: 'Filters sheet', bi: 'bi-sliders' }, { use: 'Previous / next market', bi: 'bi-chevron-left / -right' },
+        { use: 'Row expand', bi: 'bi-chevron-down' }, { use: 'Outbound link', bi: 'bi-box-arrow-up-right' },
+        { use: 'Copy wallet', bi: 'bi-copy' }, { use: 'Verified trader', bi: 'bi-patch-check-fill' },
+        { use: 'Gated content', bi: 'bi-lock' }, { use: 'Legislation empty state', bi: 'bi-bank' },
+        { use: 'Most uncertain callout', bi: 'bi-signpost-split' }, { use: 'Error state', bi: 'bi-exclamation-circle' }
+      ],
+      compliance: [
+        'Allowed words: market-implied probability, reference price, Ezana model estimate, gap, edge.',
+        'Never: buy, bet, take YES, stake sizing, Kelly fractions, projected profit per bet.',
+        'Edge Board and Legislation carry the educational line in --text-faint plus a How we calculate this link.',
+        'Gaps always net of half the spread; under 1 pt never shown. High 4+, Medium 2 to 4, Low 1 to 2.',
+        'Signed out: only the Edge Board math and trader positions are gated, with a soft overlay on the expanded area.'
+      ],
+      data: [
+        'Market values beyond the Oct 18, 2026 brief snapshot are illustrative placeholders for layout.',
+        'Kalshi leaderboard values show as plain numbers until units are confirmed; no currency symbol.',
+        'Kalshi has no liquidity field, so its Conviction dots are hollow and use volume on the x-axis.',
+        'Pulse never sums Polymarket dollars and Kalshi contracts; Category Map labels the unit per venue.',
+        'Cross-venue gaps tab is designed ahead of the matcher; its empty state ships first.'
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

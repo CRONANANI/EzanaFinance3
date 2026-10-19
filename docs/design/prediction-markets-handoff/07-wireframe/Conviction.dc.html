@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Price conviction</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./pmk.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="pmk-root" style="width: 100%; display: flex;">
+<section class="pmk-card" aria-labelledby="pmk-conv-title" style="flex: 1; width: 100%; display: flex; flex-direction: column;">
+  <div class="pmk-head">
+    <div>
+      <h2 id="pmk-conv-title" class="pmk-title">Price conviction</h2>
+      <p class="pmk-sub">Liquidity vs spread · 7d · <span class="pmk-mono">466</span> markets</p>
+      <p style="margin: 8px 0 0; font-size: 13px; color: var(--text-muted);">A price is only as informative as the money behind it.</p>
+    </div>
+  </div>
+
+  <sc-if value="{{isDefault}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-direction: column; gap: 6px; padding-left: 44px;">
+      <div role="img" aria-label="{{summary}}" style="position: relative; height: 320px; border-left: 1px solid var(--border-primary); border-bottom: 1px solid var(--border-primary);">
+        <!-- quadrant shading + labels -->
+        <span aria-hidden="true" style="position: absolute; left: 62%; right: 0; bottom: 0; height: 22%; background: var(--emerald); opacity: 0.07; border-radius: var(--radius-sm) var(--radius-sm) 0 0;"></span>
+        <span style="position: absolute; right: 8px; bottom: calc(22% + 6px); font-size: 11px; font-weight: 600; color: var(--emerald-text); text-align: right; max-width: 46%;">Deep and tight: prices worth trusting</span>
+        <span style="position: absolute; left: 8px; top: 8px; font-size: 11px; font-weight: 600; color: var(--text-muted); max-width: 46%;">Thin and wide: treat with care</span>
+        <!-- gridlines -->
+        <sc-for list="{{yTicks}}" as="t" hint-placeholder-count="5">
+          <span aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: {{t.b}}; border-top: 1px solid var(--echo-chart-grid);"></span>
+          <span class="pmk-mono" style="position: absolute; right: 100%; bottom: {{t.b}}; transform: translate(-6px, 50%); font-size: 11px; color: var(--text-faint); white-space: nowrap;">{{t.label}}</span>
+        </sc-for>
+        <sc-for list="{{xTicks}}" as="t" hint-placeholder-count="5">
+          <span aria-hidden="true" style="position: absolute; top: 0; bottom: 0; left: {{t.l}}; border-left: 1px solid var(--echo-chart-grid);"></span>
+        </sc-for>
+        <!-- dots -->
+        <sc-for list="{{dots}}" as="d" hint-placeholder-count="40">
+          <span aria-hidden="true" style="position: absolute; left: {{d.l}}; bottom: {{d.b}}; width: {{d.s}}; height: {{d.s}}; transform: translate(-50%, 50%); border-radius: 50%; background: {{d.fill}}; border: 1.5px solid {{d.c}}; opacity: {{d.o}};"></span>
+        </sc-for>
+        <!-- pinned hover -->
+        <sc-if value="{{showHover}}" hint-placeholder-val="{{ true }}">
+          <span aria-hidden="true" style="position: absolute; left: {{hl}}; bottom: {{hb}}; width: 20px; height: 20px; transform: translate(-50%, 50%); border-radius: 50%; border: 2px solid var(--text-primary);"></span>
+          <div role="status" style="position: absolute; left: {{hl}}; bottom: {{hb}}; transform: translate(-105%, -14px); background: var(--bg-primary); border: 1px solid var(--border-hover); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: 8px 10px; width: 210px;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--text-primary); line-height: 1.35;">Will Benjamin Netanyahu be the next Prime Minister of Israel?</div>
+            <div class="pmk-mono" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 6px; font-size: 11px; color: var(--text-muted);">
+              <span>Prob<br><b style="color: var(--text-primary);">28.5%</b></span>
+              <span>Liq<br><b style="color: var(--text-primary);">$880K</b></span>
+              <span>Spread<br><b style="color: var(--text-primary);">1 pt</b></span>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+      <div style="position: relative; height: 16px;">
+        <sc-for list="{{xTicks}}" as="t" hint-placeholder-count="5">
+          <span class="pmk-mono" style="position: absolute; left: {{t.l}}; transform: translateX(-50%); font-size: 11px; color: var(--text-faint);">{{t.label}}</span>
+        </sc-for>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-faint);">
+        <span>Bid-ask spread, pts (y)</span>
+        <span>Liquidity, log scale (x)</span>
+      </div>
+    </div>
+    <div style="margin-top: auto; padding-top: 14px; border-top: 1px solid var(--border-secondary); display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; font-size: 11px; color: var(--text-muted);">
+      <sc-for list="{{legend}}" as="g" hint-placeholder-count="4">
+        <span style="display: inline-flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 9px; height: 9px; border-radius: 50%; background: {{g.c}};"></span>{{g.label}}</span>
+      </sc-for>
+      <span style="display: inline-flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--text-muted);"></span>Kalshi: volume on x</span>
+      <span style="margin-left: auto;">Dot size: 7d volume</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading price conviction" style="position: relative; height: 360px; margin-left: 44px; border-left: 1px solid var(--border-primary); border-bottom: 1px solid var(--border-primary);">
+      <sc-for list="{{ghost}}" as="d" hint-placeholder-count="14">
+        <span class="pmk-skel" style="position: absolute; left: {{d.l}}; bottom: {{d.b}}; width: {{d.s}}; height: {{d.s}}; border-radius: 50%;"></span>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div style="min-height: 360px; display: flex; flex-direction: column; justify-content: center; gap: 8px; border: 1px dashed var(--border-primary); border-radius: var(--radius-md); padding: 24px;">
+      <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">Not enough quotes to plot</div>
+      <p class="pmk-state-msg" style="margin: 0; max-width: 460px;">Fewer than 5 markets in Culture have a live bid and ask. Widen the category to compare liquidity and spread.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" style="min-height: 360px; display: flex; align-items: center; justify-content: center; gap: 12px; border: 1px dashed var(--border-primary); border-radius: var(--radius-md);">
+      <p class="pmk-state-msg" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="pmk-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","error"],"default":"default"},"hover":{"editor":"boolean","default":true},"viewport":{"editor":"enum","options":["desktop","tablet","mobile"],"default":"desktop"},"$preview":{"width":690,"height":640}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    const groups = [
+      { label: 'Politics and elections', c: 'var(--echo-chart-blue)' },
+      { label: 'Sports', c: 'var(--echo-chart-orange)' },
+      { label: 'Crypto', c: 'var(--echo-chart-purple)' },
+      { label: 'Other', c: 'var(--text-muted)' }
+    ];
+    const lx = (v) => ((Math.log10(v) - 3) / 4) * 100;
+    const ly = (pts) => (Math.min(pts, 10) / 10) * 100;
+    let seed = 7;
+    const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+    const dots = [];
+    for (let i = 0; i < 46; i++) {
+      const g = i % 4 === 0 ? 0 : i % 4 === 1 ? 1 : i % 7 === 2 ? 2 : (i % 3 === 0 ? 0 : 3);
+      const lg = 3.2 + rnd() * 3.6;
+      const spread = Math.max(0.4, (7.2 - lg) * 2.1 + (rnd() - 0.5) * 2.4);
+      const kalshi = i % 5 === 0;
+      const size = 6 + Math.round(rnd() * 12 * ((lg - 3) / 4));
+      dots.push({ l: lx(Math.pow(10, lg)).toFixed(2) + '%', b: ly(spread).toFixed(2) + '%', s: size + 'px', c: groups[g].c, fill: kalshi ? 'transparent' : groups[g].c, o: kalshi ? '0.9' : '0.55' });
+    }
+    [[880000, 1, 0, 16], [2100000, 1, 0, 20], [1600000, 1, 0, 18], [184000, 2, 0, 10]].forEach(([liq, sp, g, sz]) => dots.push({ l: lx(liq).toFixed(2) + '%', b: ly(sp).toFixed(2) + '%', s: sz + 'px', c: groups[g].c, fill: groups[g].c, o: '0.7' }));
+    const ghost = [];
+    for (let i = 0; i < 14; i++) ghost.push({ l: (8 + rnd() * 84).toFixed(1) + '%', b: (8 + rnd() * 80).toFixed(1) + '%', s: (8 + Math.round(rnd() * 10)) + 'px' });
+    return {
+      isDefault: s === 'default', isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error',
+      showHover: this.props.hover ?? true,
+      dots, ghost, legend: groups,
+      hl: lx(880000).toFixed(2) + '%', hb: ly(1).toFixed(2) + '%',
+      yTicks: [0, 2, 4, 6, 8, 10].map((v) => ({ b: (v * 10) + '%', label: v + (v === 10 ? '+' : '') })),
+      xTicks: [[1e3, '$1K'], [1e4, '$10K'], [1e5, '$100K'], [1e6, '$1M'], [1e7, '$10M']].map(([v, label]) => ({ l: lx(v) + '%', label })),
+      summary: 'Most high-liquidity markets sit under a 2 point spread; markets under $10K liquidity mostly show spreads above 5 points.'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Edge board · row expansion</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./pmk.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="pmk-root pmk-dark" style="width: 1392px; display: flex; flex-direction: column; gap: 40px;">
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="pmk-kicker" style="color: var(--emerald-text);">Signed in · row 1 expanded</div>
+    <dc-import name="EdgeBoard" expanded="{{ 0 }}" signed-out="{{ false }}" hint-size="1392px,900px"></dc-import>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="pmk-kicker" style="color: var(--emerald-text);">Signed out · the expanded area is gated, the board stays visible</div>
+    <dc-import name="EdgeBoard" expanded="{{ 0 }}" signed-out="{{ true }}" hint-size="1392px,900px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1392,"height":1900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
