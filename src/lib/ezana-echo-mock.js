@@ -55,6 +55,7 @@ import { datacenterPowerCrunch2026 } from './ezana-echo-article-datacenter-power
 import { sovereignWealthLeagueTable2026 } from './ezana-echo-article-sovereign-wealth-league-table-2026.js';
 import { modernaCancerTrialTrump2026 } from './ezana-echo-article-moderna-cancer-trial-trump-2026.js';
 import { aiStackUpsideDown2026 } from './ezana-echo-article-ai-stack-upside-down-2026.js';
+import { grindrPinterestAppianLobbyingQ22026 } from './ezana-echo-article-grindr-pinterest-appian-lobbying-q2-2026.js';
 
 const ARTICLES = [
   johnnyMnemonicConsolidation2026,
@@ -89,6 +90,7 @@ const ARTICLES = [
   sovereignWealthLeagueTable2026,
   modernaCancerTrialTrump2026,
   aiStackUpsideDown2026,
+  grindrPinterestAppianLobbyingQ22026,
 ];
 
 export { AOTM_HISTORY } from './echo/aotm.js';
@@ -191,6 +193,22 @@ export const ECHO_TRENDING = {
 
 /** @type {Record<string, { id: string; author: { name: string; initials: string; id?: string }; content: string; createdAt: string }[]>} */
 export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
+  'grindr-pinterest-appian-lobbying-q2-2026': [
+    {
+      id: 'c-lobby-q2-1',
+      author: { name: 'Dana Whitfield', initials: 'DW' },
+      content:
+        'The in-house vs outside-firm split is the detail I had not seen anywhere else. 91% in-house says these are standing budgets, not one-off engagements, and the Grindr curve backs that up quarter by quarter.',
+      createdAt: '2026-10-18T21:10:00Z',
+    },
+    {
+      id: 'c-lobby-q2-2',
+      author: { name: 'Marcus Oyelaran', initials: 'MO' },
+      content:
+        'Good that the piece flags the Grindr filing period instead of quietly counting it. A Q3 report posted two days before Q3 ended is exactly the kind of thing that makes a headline number wrong.',
+      createdAt: '2026-10-18T22:35:00Z',
+    },
+  ],
   'empire-rankings-1500-2026': [
     {
       id: 'c-empire-1',

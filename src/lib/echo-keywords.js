@@ -3476,6 +3476,43 @@ export const KEYWORDS = {
     courseId: 'policy-101-1',
     courseTitle: 'How Regulators Decide',
   },
+  'lobbying-disclosure-act': {
+    id: 'lobbying-disclosure-act',
+    term: 'Lobbying Disclosure Act (LDA)',
+    definition:
+      'The 1995 federal law that requires companies and lobbying firms to register and report their lobbying of Congress and the executive branch. Reports are public and list the amount spent, the issue areas, the specific bills and the chambers or agencies contacted.',
+    template: 'comparison',
+    templateData: {
+      title: 'The three LDA filings',
+      headers: ['Form', 'When', 'What it discloses'],
+      rows: [
+        {
+          label: 'LD-1',
+          cells: [
+            'Once, at registration',
+            'Who is lobbying, for which client, on what issue areas',
+          ],
+        },
+        {
+          label: 'LD-2',
+          cells: [
+            'Quarterly, 20 days after quarter end',
+            'Amount spent, issues, bills named, chambers and agencies contacted',
+          ],
+        },
+        {
+          label: 'LD-203',
+          cells: ['Twice a year', 'Political contributions by the registrant and its lobbyists'],
+        },
+      ],
+      footnote:
+        "An in-house LD-2 covers a company's own staff costs; an outside firm's LD-2 covers only the fee billed to that client.",
+    },
+    realWorld:
+      'LD-2 reports list subjects, not positions: a filing shows that a company lobbied a bill, not whether it argued for or against it.',
+    courseId: 'policy-101-1',
+    courseTitle: 'Industrial Policy & Markets',
+  },
 };
 
 export function getKeywordById(id) {
