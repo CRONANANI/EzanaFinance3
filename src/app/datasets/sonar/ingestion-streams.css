@@ -1,0 +1,222 @@
+/* Ingestion streams around the Sonar device on /datasets (dso-ing-).
+   Tokens only; colour from the emerald and band mint the scene already uses. */
+
+.dso-ing-host {
+  container-type: inline-size;
+  width: 100%;
+}
+.dso-ing {
+  --ing-line: color-mix(in srgb, var(--brand-band-mint) 70%, white);
+  --ing-flow: color-mix(in srgb, var(--emerald) 40%, white);
+  --ing-glass: color-mix(in srgb, white 7%, transparent);
+  --ing-glass-on: color-mix(in srgb, var(--emerald) 26%, transparent);
+  --ing-ink: color-mix(in srgb, white 92%, transparent);
+  --ing-mute: color-mix(in srgb, var(--brand-band-mint) 70%, transparent);
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(150px, 210px) minmax(0, 1fr) minmax(150px, 210px);
+  grid-template-areas:
+    'kicker kicker kicker'
+    'left stage right';
+  column-gap: clamp(8px, 1.5vw, 24px);
+  align-items: center;
+  color: var(--ing-ink);
+}
+.dso-ing-kicker {
+  grid-area: kicker;
+  margin: 0 0 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--ing-mute);
+}
+.dso-ing-kicker span {
+  color: var(--ing-ink);
+}
+.dso-ing-stage {
+  grid-area: stage;
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+.dso-ing-col {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+}
+.dso-ing-col--left {
+  grid-area: left;
+}
+.dso-ing-col--right {
+  grid-area: right;
+}
+
+/* source chip: glass, no outline */
+.dso-ing-src {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--ing-glass);
+  color: inherit;
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition:
+    background 0.15s ease,
+    opacity 0.15s ease;
+}
+.dso-ing-src.is-right {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+.dso-ing-src:hover,
+.dso-ing-src.is-on {
+  background: var(--ing-glass-on);
+}
+.dso-ing-src.is-quiet {
+  opacity: 0.55;
+}
+.dso-ing-src.is-road {
+  opacity: 0.75;
+}
+.dso-ing-src:focus-visible {
+  outline: 2px solid var(--brand-band-mint);
+  outline-offset: 2px;
+}
+.dso-ing-src-text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+.dso-ing-src-name {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.dso-ing-src-meta {
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ing-mute);
+}
+.dso-ing-port {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ing-line);
+  box-shadow: 0 0 10px var(--emerald-glow);
+}
+.dso-ing-src.is-road .dso-ing-port {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--ing-mute);
+}
+
+/* streams */
+.dso-ing-svg {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: visible;
+  pointer-events: none;
+}
+.dso-ing-stop {
+  stop-color: var(--ing-line);
+}
+.dso-ing-line {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  transition: opacity 0.15s ease;
+}
+.dso-ing-stream.is-road .dso-ing-line {
+  stroke-dasharray: 3 6;
+  opacity: 0.6;
+}
+.dso-ing-flow {
+  fill: none;
+  stroke: var(--ing-flow);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 2 22;
+  opacity: 0.85;
+  animation: dso-ing-flow 1.6s linear infinite;
+}
+.dso-ing-stream.is-on .dso-ing-line {
+  stroke-width: 2.5;
+}
+.dso-ing-stream.is-on .dso-ing-flow {
+  stroke-width: 3.5;
+  opacity: 1;
+}
+.dso-ing-stream.is-quiet .dso-ing-line,
+.dso-ing-stream.is-quiet .dso-ing-flow {
+  opacity: 0.2;
+}
+@keyframes dso-ing-flow {
+  from {
+    stroke-dashoffset: 48;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dso-ing-flow {
+    animation: none;
+    stroke-dasharray: 2 10;
+  }
+}
+
+/* narrow: all sources in rows above the device, streams drop into it */
+@container (max-width: 1099px) {
+  .dso-ing {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'kicker'
+      'left'
+      'right'
+      'stage';
+    row-gap: 8px;
+  }
+  .dso-ing-col {
+    flex-flow: row wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  .dso-ing-src,
+  .dso-ing-src.is-right {
+    flex-direction: column;
+    align-items: center;
+    width: auto;
+    min-width: 120px;
+    padding: 8px 10px 14px;
+    text-align: center;
+  }
+  .dso-ing-port {
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .dso-ing-col--right {
+    margin-bottom: 28px;
+  }
+}

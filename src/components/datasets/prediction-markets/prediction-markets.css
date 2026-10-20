@@ -90,7 +90,7 @@
   --pmk-t-card: 0.2s;
   --pmk-t-tick: 0.3s;
 
-  --pmk-gutter: 24px;
+  --pmk-gutter: clamp(16px, 2vw, 32px);
   --pmk-gap: 24px;
 
   background: var(--pmk-bg);
@@ -208,9 +208,10 @@
 
 /* ── layout ────────────────────────────────────────────────────────── */
 .pmk-wrap {
+  /* Full canvas, side to side (Oct 20): no centred max-width column. */
   width: 100%;
-  max-width: calc(1392px + 2 * var(--pmk-gutter));
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   padding: 0 var(--pmk-gutter) 64px;
 }
 .pmk-grid {
@@ -764,7 +765,9 @@
   flex-direction: column;
   min-width: 0;
   padding: var(--pmk-card-pad);
-  border: 1px solid var(--pmk-card-border);
+  /* No outline on this page's cards (Oct 20): the fill and shadow separate
+     them. The 1px stays transparent so nothing shifts on hover. */
+  border: 1px solid transparent;
   border-radius: var(--pmk-card-radius);
   background: var(--pmk-card-bg);
   box-shadow: var(--pmk-card-shadow);
@@ -775,7 +778,6 @@
 }
 .pmk-card:hover {
   background: var(--pmk-card-bg-hover);
-  border-color: var(--pmk-card-border-hover);
 }
 .pmk-card--hero {
   border-radius: var(--pmk-hero-radius);
@@ -1202,9 +1204,22 @@
 .pmk-swatch--3 {
   border-top: 2px dashed var(--pmk-outcome-other);
 }
+.pmk-card--chart .pmk-card-body {
+  display: flex;
+  flex-direction: column;
+}
+/* The plot takes whatever height the row gives the card (the Movers card
+   beside it usually sets the row), so there is no dead band under the chart.
+   The canvas is absolute, so the drawn chart never props the row open. */
 .pmk-plot {
   position: relative;
+  flex: 1 1 auto;
   width: 100%;
+  min-height: 300px;
+}
+.pmk-plot-canvas {
+  position: absolute;
+  inset: 0;
 }
 .pmk-plot-hit {
   position: absolute;
@@ -1344,7 +1359,8 @@
 }
 @media (max-width: 640px) {
   .pmk-plot {
-    height: auto !important;
+    flex: 0 0 auto;
+    min-height: 0;
     aspect-ratio: 16 / 10;
   }
 }
@@ -1421,279 +1437,256 @@
   color: var(--pmk-ink);
 }
 
-/* ── card 4: edge board ────────────────────────────────────────────── */
-.pmk-toggle {
-  min-height: 28px;
+/* ── card 4: event horizon ─────────────────────────────────────────── */
+.pmk-hz-plot {
+  position: relative;
+  width: 100%;
+}
+.pmk-hz-svg {
+  display: block;
+  overflow: visible;
+}
+.pmk-hz-grid {
+  stroke: var(--pmk-grid);
+  stroke-width: 1;
+}
+.pmk-hz-grid--v {
+  stroke-dasharray: 2 4;
+}
+.pmk-hz-tick,
+.pmk-hz-lane-label,
+.pmk-hz-today-label {
+  font-family: var(--pmk-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  fill: var(--pmk-faint);
+}
+.pmk-hz-lane-label {
+  font-family: var(--pmk-sans);
+  font-weight: 600;
+  fill: var(--pmk-mute);
+}
+.pmk-hz-today {
+  stroke: var(--pmk-accent);
+  stroke-width: 1.5;
+}
+.pmk-hz-today-label {
+  font-weight: 600;
+  fill: var(--pmk-accent-text);
+}
+.pmk-hz-lane {
+  stroke: var(--pmk-card-rule);
+  stroke-width: 1;
+}
+.pmk-hz-guide {
+  stroke: var(--pmk-mute);
+  stroke-dasharray: 3 3;
+  pointer-events: none;
+}
+.pmk-hz-ev {
+  cursor: default;
+  outline: none;
+}
+.pmk-hz-ev > * {
+  stroke-width: 1.25;
+  fill-opacity: 0.55;
+  transition: fill-opacity var(--pmk-t-hover) ease;
+}
+.pmk-hz-ev.is-macro > * {
+  fill: var(--pmk-hot);
+  stroke: var(--pmk-hot);
+}
+.pmk-hz-ev.is-earnings > * {
+  fill: var(--pmk-poly);
+  stroke: var(--pmk-poly);
+}
+.pmk-hz-ev.is-congress > * {
+  fill: var(--pmk-kalshi);
+  stroke: var(--pmk-kalshi);
+}
+.pmk-hz-ev.is-on > *,
+.pmk-hz-ev:focus-visible > * {
+  fill-opacity: 1;
+  stroke-width: 2;
+}
+.pmk-hz-mkt {
+  cursor: pointer;
+  outline: none;
+}
+.pmk-hz-hit {
+  fill: transparent;
+}
+.pmk-hz-mkt.is-on .pmk-cdot,
+.pmk-hz-mkt:focus-visible .pmk-cdot {
+  fill-opacity: 0.9;
+  stroke-width: 2.5;
+}
+.pmk-hz-tip {
+  max-width: 240px;
+}
+
+/* modal: portalled to <body>, so the content re-enters the page scope */
+.pmk-page.pmk-hz-scope {
+  min-height: 0;
+  background: transparent;
+}
+.pmk-hz-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
   font-size: 12px;
+}
+.pmk-hz-tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--pmk-selected-tint);
+  color: var(--pmk-accent-text);
+  font-size: 11px;
   font-weight: 600;
 }
-.pmk-switch {
-  position: relative;
-  width: 26px;
-  height: 14px;
-  border-radius: 999px;
-  background: var(--pmk-card-border-hover);
+.pmk-hz-q {
+  margin-top: 10px;
+  font-size: var(--pmk-section-size);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--pmk-ink);
 }
-.pmk-switch::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--pmk-mute);
-  transition: transform var(--pmk-t-hover) ease;
-}
-.pmk-toggle.is-on .pmk-switch {
-  background: var(--pmk-accent);
-}
-.pmk-toggle.is-on .pmk-switch::after {
-  background: var(--bg-primary);
-  transform: translateX(12px);
-}
-.pmk-method {
-  margin: -4px 0 16px;
-  font-size: 13px;
-  color: var(--pmk-mute);
-}
-.pmk-edge-head,
-.pmk-edge-row {
-  display: flex;
-  align-items: center;
-  gap: 10px 16px;
-}
-.pmk-edge-head {
-  padding: 0 12px 8px;
+.pmk-hz-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--pmk-card-rule);
   border-bottom: 1px solid var(--pmk-card-rule);
+}
+.pmk-hz-big {
+  margin: 2px 0 6px;
+  font-size: var(--pmk-value-lg-size);
+  font-weight: 700;
+  color: var(--pmk-ink);
+}
+.pmk-hz-val {
+  margin-top: 2px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--pmk-ink);
+}
+.pmk-hz-explain {
+  margin-top: 14px;
+  font-size: 14px;
+  color: var(--pmk-body);
+}
+.pmk-hz-section {
+  margin-top: 18px;
+}
+.pmk-hz-events {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+.pmk-hz-event {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 2px 10px;
+  padding: 10px 12px;
+  border-radius: var(--pmk-r-input);
+  background: var(--pmk-card-bg-hover);
+}
+.pmk-hz-event > :nth-child(n + 4) {
+  grid-column: 3;
+}
+.pmk-hz-kind {
   font-family: var(--pmk-mono);
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+.pmk-hz-event.is-macro .pmk-hz-kind {
+  color: var(--pmk-hot);
+}
+.pmk-hz-event.is-earnings .pmk-hz-kind {
+  color: var(--pmk-poly);
+}
+.pmk-hz-event.is-congress .pmk-hz-kind {
+  color: var(--pmk-kalshi);
+}
+.pmk-hz-date {
+  font-size: 12px;
   color: var(--pmk-mute);
 }
-.pmk-edge-row {
-  padding: 12px;
-  border-bottom: 1px solid var(--pmk-card-rule);
-}
-.pmk-c-rank {
-  flex: 0 0 22px;
-  font-size: 12px;
-  color: var(--pmk-faint);
-}
-.pmk-c-q {
-  flex: 2.2 1 280px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-.pmk-c-num {
-  flex: 0 0 64px;
-  text-align: right;
+.pmk-hz-title {
   font-size: 13px;
-}
-.pmk-c-track {
-  flex: 1.2 1 160px;
-  min-width: 0;
-  display: flex;
-  justify-content: space-between;
-}
-.pmk-c-gap {
-  flex: 0 0 70px;
-  text-align: right;
-  font-size: 14px;
-  font-weight: 700;
-}
-.pmk-c-ev {
-  flex: 0 0 64px;
-  text-align: right;
-  font-size: 13px;
-}
-.pmk-c-conf {
-  flex: 0 0 82px;
-}
-.pmk-c-exp {
-  flex: 0 0 28px;
-}
-.pmk-c-exp .pmk-icon-btn {
-  width: 28px;
-  height: 28px;
-}
-.pmk-edge-q {
-  font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--pmk-ink);
 }
-.pmk-edge-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
+.pmk-hz-why {
   color: var(--pmk-faint);
 }
-.pmk-inline-k {
-  display: none;
+.pmk-hz-empty {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--pmk-mute);
 }
-.pmk-dumbbell,
-.pmk-db-illus {
-  position: relative;
-  display: block;
-  width: 100%;
-  height: 20px;
-}
-.pmk-db-track {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 9px;
-  height: 2px;
-  background: var(--pmk-card-border);
-}
-.pmk-db-mid {
-  position: absolute;
-  left: 50%;
-  top: 5px;
-  width: 1px;
-  height: 10px;
-  background: var(--pmk-card-border-hover);
-}
-.pmk-db-bar {
-  position: absolute;
-  top: 8px;
-  height: 4px;
-  border-radius: var(--pmk-r-chip);
-}
-.pmk-db-bar.is-up {
-  background: var(--pmk-up);
-}
-.pmk-db-bar.is-down {
-  background: var(--pmk-down);
-}
-.pmk-db-dot {
-  position: absolute;
-  top: 4px;
-  width: 12px;
-  height: 12px;
-  margin-left: -6px;
-  border-radius: 50%;
-}
-.pmk-db-dot--market {
-  border: 2px solid var(--pmk-mute);
-  background: var(--pmk-bg);
-}
-.pmk-db-dot--model {
-  background: var(--pmk-accent);
-}
-.pmk-db-dot--inline {
-  position: static;
-  display: inline-block;
-  margin: 0 2px -1px 0;
-  vertical-align: baseline;
-  width: 10px;
-  height: 10px;
-}
-.pmk-edge-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  margin-top: 12px;
-  font-size: 11px;
-  color: var(--pmk-faint);
-}
-.pmk-edge-legend > span {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.pmk-edge-empty {
+.pmk-hz-others {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 240px;
-  padding: 24px;
-  border: 1px dashed var(--pmk-card-border);
-  border-radius: var(--pmk-r-input);
-  text-align: center;
+  margin-top: 6px;
 }
-.pmk-db-illus {
-  width: 180px;
-  margin-bottom: 6px;
+.pmk-hz-other {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 8px;
+  border: 0;
+  border-bottom: 1px solid var(--pmk-card-rule);
+  background: transparent;
+  color: var(--pmk-body);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.pmk-hz-other:hover {
+  background: var(--pmk-selected-tint);
+}
+.pmk-hz-note {
+  margin-top: 16px;
+}
+.pmk-hz-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+@media (max-width: 640px) {
+  .pmk-hz-event {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .pmk-hz-event > :nth-child(n + 3) {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ── shared from the retired Edge Board (toggle, expand, method) ──── */
+.pmk-method {
+  margin: -4px 0 16px;
+  font-size: 13px;
+  color: var(--pmk-mute);
 }
 .pmk-expand {
   margin: 0 12px 14px 50px;
   padding: 14px 16px;
   border: 1px solid var(--pmk-card-border);
   border-radius: var(--pmk-r-input);
-}
-.pmk-expand-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px 32px;
-}
-.pmk-math {
-  flex: 1 1 380px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.pmk-math-line {
-  display: grid;
-  grid-template-columns: 104px 76px minmax(0, 1fr);
-  gap: 10px;
-  font-size: 12px;
-}
-.pmk-math-k {
-  font-size: 11px;
-  text-transform: uppercase;
-  color: var(--pmk-mute);
-}
-.pmk-math-v {
-  text-align: right;
-  font-weight: 600;
-  color: var(--pmk-ink);
-}
-.pmk-math-w {
-  color: var(--pmk-faint);
-}
-.pmk-liq {
-  flex: 1 1 240px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.pmk-liq-v {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--pmk-ink);
-}
-.pmk-liq-v .pmk-faint {
-  font-size: 11px;
-  font-weight: 400;
-}
-.pmk-liq-bar {
-  display: block;
-  height: 6px;
-  border-radius: var(--pmk-r-chip);
-  background: var(--pmk-card-border);
-  overflow: hidden;
-}
-.pmk-liq-bar > span {
-  display: block;
-  height: 100%;
-  background: var(--pmk-accent);
-}
-.pmk-liq-read {
-  font-size: 12px;
-  color: var(--pmk-body);
-}
-.pmk-liq-links {
-  display: flex;
-  gap: 14px;
 }
 
 /* ── card 5: top traders ───────────────────────────────────────────── */
@@ -1941,9 +1934,16 @@ button.pmk-pos-q:hover {
 }
 
 /* ── card 6: category map ──────────────────────────────────────────── */
+.pmk-card--map .pmk-card-body {
+  display: flex;
+  flex-direction: column;
+}
+/* Fills the card body; tiles are absolute, so the map never props the row. */
 .pmk-map {
   position: relative;
+  flex: 1 1 auto;
   width: 100%;
+  min-height: 360px;
 }
 .pmk-maptile {
   position: absolute;
@@ -2154,8 +2154,20 @@ button.pmk-pos-q:hover {
 .pmk-callout-row .pmk-faint {
   font-size: 10px;
 }
+.pmk-card--closing .pmk-card-body {
+  display: flex;
+  flex-direction: column;
+}
+/* The week strip grows to the row height (Price Conviction beside it sets
+   it), so the pills stretch instead of leaving a gap under the strip. */
 .pmk-days-scroll {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   overflow-x: auto;
+}
+.pmk-days-scroll > .pmk-days {
+  flex: 1 1 auto;
 }
 .pmk-days {
   display: grid;
@@ -2192,8 +2204,14 @@ button.pmk-pos-q:hover {
 }
 .pmk-day-pills {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: 6px;
+}
+.pmk-day-pills > .pmk-cpill {
+  flex: 1 1 0;
+  min-height: 72px;
+  max-height: 168px;
 }
 .pmk-cpill {
   position: relative;
@@ -2245,12 +2263,29 @@ button.pmk-pos-q:hover {
   font-size: 13px;
   color: var(--pmk-mute);
 }
+.pmk-card--conviction .pmk-card-body {
+  display: flex;
+  flex-direction: column;
+}
 .pmk-conv {
   position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+/* Fills the card; the canvas is absolute so the chart never props the row. */
+.pmk-conv-plot {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 320px;
+}
+.pmk-conv-canvas {
+  position: absolute;
+  inset: 0;
 }
 .pmk-conv-label {
   position: absolute;
-  z-index: 1;
+  z-index: 2;
   font-size: 11px;
   font-weight: 600;
   pointer-events: none;
@@ -2262,12 +2297,14 @@ button.pmk-pos-q:hover {
 }
 .pmk-conv-label--deep {
   right: 14px;
-  top: calc(24px + (320px - 24px - 22px) * 0.8 - 16px);
+  /* Bottom-right of the plot, just above the x axis, where the deep and
+     tight zone is drawn: no fixed-height arithmetic. */
+  bottom: calc(22px + 8px);
   color: var(--pmk-accent-text);
 }
 .pmk-cdot {
-  stroke-width: 1.5;
-  fill-opacity: 0.55;
+  stroke-width: 1.25;
+  fill-opacity: 0.4;
   cursor: pointer;
 }
 .pmk-cdot.is-politics {
@@ -2409,62 +2446,6 @@ button.pmk-pos-q:hover {
 .pmk-table-q:hover {
   color: var(--pmk-accent-text);
   text-decoration: underline;
-}
-
-/* ── legislation ───────────────────────────────────────────────────── */
-.pmk-leg-q {
-  display: block;
-  font-weight: 500;
-  color: var(--pmk-ink);
-}
-.pmk-leg-bill {
-  display: block;
-  margin-top: 2px;
-  font-size: 11px;
-  color: var(--pmk-faint);
-}
-.pmk-leg-empty {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 24px;
-}
-.pmk-leg-empty-copy {
-  flex: 1 1 360px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.pmk-leg-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--pmk-r-input);
-  background: var(--pmk-selected-tint);
-  color: var(--pmk-accent-text);
-  font-size: 20px;
-}
-.pmk-leg-links {
-  display: flex;
-  gap: 16px;
-}
-.pmk-leg-example {
-  flex: 1 1 360px;
-  padding: 14px;
-  border: 1px dashed var(--pmk-card-border);
-  border-radius: var(--pmk-r-input);
-  opacity: 0.6;
-}
-.pmk-leg-row {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto auto;
-  align-items: center;
-  gap: 10px;
-  margin-top: 10px;
-  font-size: 12px;
-  color: var(--pmk-body);
 }
 
 /* ── sign-up band and method ───────────────────────────────────────── */

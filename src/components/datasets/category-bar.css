@@ -658,7 +658,8 @@
 .dscat-logo-img {
   display: block;
   width: auto;
-  height: 38px;
+  /* Same size as the landing nav mark (EzanaNavLogo, 45 x 51). */
+  height: 51px;
   filter: brightness(0) invert(1) drop-shadow(0 1px 6px color-mix(in srgb, black 25%, transparent));
   transition: opacity 0.15s ease;
 }
@@ -678,6 +679,6 @@
     column-gap: 12px;
   }
   .dscat-logo-img {
-    height: 32px;
+    height: 51px;
   }
 }

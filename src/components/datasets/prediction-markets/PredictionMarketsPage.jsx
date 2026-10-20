@@ -1,8 +1,10 @@
 'use client';
 
 /**
- * /datasets/prediction-markets: the eight-card dashboard
- * (docs/design/prediction-markets-handoff). This file owns the page state
+ * /datasets/prediction-markets: the card dashboard
+ * (docs/design/prediction-markets-handoff). Oct 20: the Edge Board and the
+ * Legislation card are retired; Event Horizon takes the Edge Board's row.
+ * This file owns the page state
  * (filters in the URL, the loaded market, the shared fetches) and lays the
  * cards out; page-model.js calculates, the cards render.
  *
@@ -25,13 +27,12 @@ import { FilterBar } from './FilterBar';
 import { PulseCard } from './PulseCard';
 import { PriceChartCard } from './PriceChartCard';
 import { MoversCard } from './MoversCard';
-import { EdgeBoardCard } from './EdgeBoardCard';
+import { HorizonCard } from './HorizonCard';
 import { TopTradersCard } from './TopTradersCard';
 import { CategoryMapCard } from './CategoryMapCard';
 import { ClosingSoonCard } from './ClosingSoonCard';
 import { ConvictionCard } from './ConvictionCard';
 import { OpenMarketsCard } from './OpenMarketsCard';
-import { LegislationCard } from './LegislationCard';
 import { SignupBand } from './SignupBand';
 import { MethodNote } from './MethodNote';
 import { VenueChip } from './parts';
@@ -71,7 +72,6 @@ export default function PredictionMarketsPage() {
 
   /* ── data ── */
   const universe = useJson('/api/prediction-markets/universe');
-  const legislation = useJson('/api/congress/legislation-markets');
   const rows = useMemo(() => decode(universe.data), [universe.data]);
   const windowsAvailable = universe.data?.windows || { '24h': true, '7d': false, '30d': false };
   const defaultWindow = windowsAvailable['7d'] ? '7d' : '24h';
@@ -233,16 +233,13 @@ export default function PredictionMarketsPage() {
             onRetry={universe.retry}
           />
 
-          <EdgeBoardCard
+          <HorizonCard
             className="pmk-span-12"
-            legislation={legislation}
+            state={uState}
+            rows={filtered}
             filters={filters}
-            signedIn={signedIn}
-            onLoadByQuestion={(question) => {
-              const hit = rows.find((r) => r.question === question);
-              if (hit) loadMarket(hit.id);
-            }}
-            rows={rows}
+            onLoad={loadMarket}
+            onRetry={universe.retry}
           />
 
           <TopTradersCard
@@ -293,8 +290,6 @@ export default function PredictionMarketsPage() {
               onRetry={universe.retry}
             />
           </div>
-
-          <LegislationCard className="pmk-span-12" legislation={legislation} />
 
           {!authLoading && !isAuthenticated ? <SignupBand className="pmk-span-12" /> : null}
         </div>

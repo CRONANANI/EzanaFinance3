@@ -7,6 +7,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  daysUntil,
+  horizonEnd,
+  horizonEvents,
+  horizonMarkets,
+  keywords,
+  monthTicks,
+  relatedEvents,
+  relatedMarkets,
+} from '../src/lib/prediction-markets/horizon-model.js';
+import {
   availableWindows,
   coversWindow,
   windowMetrics,
@@ -596,4 +606,84 @@ test('outcomeLabel shortens Kalshi and Polymarket outcome questions', () => {
     outcomeLabel('Will the Democratic Party control the House?'),
     'Will the Democratic Party control the House?',
   );
+});
+
+/* ── event horizon (src/lib/prediction-markets/horizon-model.js) ── */
+
+const HZ_NOW = new Date('2026-10-20T12:00:00Z');
+const hzDay = (n) => new Date(HZ_NOW.getTime() + n * 86400000).toISOString();
+
+test('horizonEnd adds calendar months', () => {
+  assert.equal(new Date(horizonEnd(HZ_NOW, '3m')).toISOString(), '2027-01-20T12:00:00.000Z');
+  assert.equal(new Date(horizonEnd(HZ_NOW, '12m')).toISOString(), '2027-10-20T12:00:00.000Z');
+});
+
+test('horizonMarkets keeps open markets closing inside the window, by volume', () => {
+  const rows = [
+    { id: 'a', p: 0.4, vol: 10, closes: hzDay(30) },
+    { id: 'b', p: 0.6, vol: 50, closes: hzDay(60) },
+    { id: 'c', p: 0.5, vol: 99, closes: hzDay(200) },
+    { id: 'd', p: 0.5, vol: 99, closes: hzDay(-1) },
+    { id: 'e', p: null, vol: 99, closes: hzDay(10) },
+  ];
+  assert.deepEqual(
+    horizonMarkets(rows, HZ_NOW, '3m').map((r) => r.id),
+    ['b', 'a'],
+  );
+  assert.deepEqual(
+    horizonMarkets(rows, HZ_NOW, '12m').map((r) => r.id),
+    ['c', 'b', 'a'],
+  );
+});
+
+test('horizonEvents trims to the window in date order', () => {
+  const ev = [
+    { id: 'x', date: hzDay(100) },
+    { id: 'y', date: hzDay(5) },
+    { id: 'z', date: hzDay(400) },
+  ];
+  assert.deepEqual(
+    horizonEvents(ev, HZ_NOW, '6m').map((e) => e.id),
+    ['y', 'x'],
+  );
+});
+
+test('relatedEvents: before the close, by theme or shared word, words first', () => {
+  const market = {
+    id: 'm',
+    category: 'economy',
+    question: 'Will the Fed cut interest rates in December?',
+    closes: hzDay(50),
+  };
+  const ev = [
+    { id: 'e1', kind: 'congress', title: 'Banking hearing on interest rates', date: hzDay(20) },
+    { id: 'e2', kind: 'macro', title: 'CPI', date: hzDay(10) },
+    { id: 'e3', kind: 'macro', title: 'GDP', date: hzDay(80) },
+    { id: 'e4', kind: 'congress', title: 'Farm bill markup', date: hzDay(15) },
+  ];
+  const out = relatedEvents(market, ev, HZ_NOW);
+  assert.deepEqual(
+    out.map((e) => e.id),
+    ['e1', 'e2'],
+  );
+  assert.match(out[0].why, /interest|rates/);
+});
+
+test('relatedMarkets, keywords, monthTicks and daysUntil', () => {
+  const m = { id: 'a', category: 'crypto', closes: hzDay(30) };
+  const ms = [
+    m,
+    { id: 'b', category: 'crypto', closes: hzDay(80) },
+    { id: 'c', category: 'crypto', closes: hzDay(35) },
+    { id: 'd', category: 'sports', closes: hzDay(30) },
+  ];
+  assert.deepEqual(
+    relatedMarkets(m, ms).map((x) => x.id),
+    ['c', 'b'],
+  );
+  assert.ok(keywords('Will Bitcoin reach $150k before 2027?').has('bitcoin'));
+  assert.ok(!keywords('Will the price be above?').has('will'));
+  assert.equal(monthTicks(HZ_NOW.getTime(), horizonEnd(HZ_NOW, '3m')).length, 3);
+  assert.equal(daysUntil(hzDay(3), HZ_NOW), 3);
+  assert.equal(daysUntil(hzDay(-3), HZ_NOW), 0);
 });

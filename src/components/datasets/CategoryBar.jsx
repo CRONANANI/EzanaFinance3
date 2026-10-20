@@ -334,8 +334,8 @@ export default function CategoryBar({ active, activeItem, showDimensions = true,
             <Image
               src="/logo-tight.png"
               alt=""
-              width={34}
-              height={39}
+              width={45}
+              height={51}
               priority
               className="dscat-logo-img"
             />

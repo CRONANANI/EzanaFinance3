@@ -2,6 +2,7 @@ import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 import { resolveDimension, taxonomyCounts } from './sonar/derive';
 import { SonarSelectionProvider } from './sonar/SonarSelection';
 import OrbitalMap from './sonar/OrbitalMap';
+import IngestionStreams from './sonar/IngestionStreams';
 import OrbitalNewsTicker from './sonar/OrbitalNewsTicker';
 import { buildNewsItems } from './sonar/news-feed';
 import { readOrbitalFeed } from '@/lib/datasets/orbital-feed';
@@ -16,7 +17,8 @@ import './sonar/sonar.css';
  * search bar; sending a ping hides it, shows the stacked-block loader, then
  * the results. Every mark on the map is derived from taxonomy.js; the
  * notification cards around it are real rows from the Politician Tracker and
- * Government Contracts feeds (readOrbitalFeed).
+ * Government Contracts feeds (readOrbitalFeed). The ingestion streams
+ * (Oct 20) draw the seven dimensions as sources feeding the device.
  */
 export const dynamic = 'force-dynamic';
 
@@ -57,7 +59,9 @@ export default async function DatasetsIndexPage({ searchParams }) {
           className="dso-sonar dso-sonar--solo"
           aria-label="The seven dataset dimensions that feed Ezana Sonar"
         >
-          <OrbitalMap dims={ORBIT_DIMS} pinging={COUNTS.live} silent={COUNTS.roadmap} />
+          <IngestionStreams dims={ORBIT_DIMS}>
+            <OrbitalMap dims={ORBIT_DIMS} pinging={COUNTS.live} silent={COUNTS.roadmap} />
+          </IngestionStreams>
         </section>
       </OrbitalNewsTicker>
     </SonarSelectionProvider>

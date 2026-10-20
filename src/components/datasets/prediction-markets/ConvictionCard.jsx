@@ -4,17 +4,16 @@
  * Card 8, Price Conviction: liquidity (log) against spread. A price is only
  * as informative as the money behind it. Kalshi publishes no liquidity, so
  * its markets plot on volume and draw hollow.
+ *
+ * Both axes fit the markets in view (Oct 20). The fixed $1K to $10M by
+ * 0 to 10 pt frame clamped the deepest markets onto the right edge and the
+ * sub-point spreads onto the floor, so every dot piled into the bottom-right
+ * corner. The x axis now spans the decades the data covers (2nd to 98th
+ * percentile) and the y axis is square-root scaled up to the 95th percentile
+ * spread, which separates the tight spreads where most markets sit.
  */
 import { useMemo, useState } from 'react';
-import {
-  ReferenceArea,
-  ResponsiveContainer,
-  Scatter,
-  ScatterChart,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { ReferenceArea, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from 'recharts';
 import { CHART } from '@/lib/chart-theme';
 import {
   CATEGORY_LABEL,
@@ -24,10 +23,46 @@ import {
 } from '@/lib/prediction-markets/page-model';
 import { Card, CardHead, Skeleton, StateBox, cx } from './parts';
 import { int, pct, usd, venueVolume } from './format';
+import { useSize } from './use-size';
 
 const PLOT_H = 320;
+const TOP = 24;
+const X_AXIS_H = 22;
+const Y_AXIS_W = 44;
 const TICK = { ...CHART.tick, fill: 'var(--text-faint)', fontFamily: 'var(--font-mono)' };
-const X_TICKS = [1e3, 1e4, 1e5, 1e6, 1e7];
+const Y_STEPS = [0.5, 1, 2, 3, 5, 10, 20, 50];
+
+function quantile(sorted, q) {
+  if (!sorted.length) return null;
+  const i = Math.min(sorted.length - 1, Math.max(0, Math.floor(q * (sorted.length - 1))));
+  return sorted[i];
+}
+
+/** Axis frame that fits the plotted markets. Pure, so it is testable. */
+function convictionFrame(points) {
+  const xs = points
+    .map((p) => p.rawX)
+    .filter((v) => v > 0)
+    .sort((a, b) => a - b);
+  const ys = points.map((p) => p.spreadPts).sort((a, b) => a - b);
+  const lo = quantile(xs, 0.02) ?? CONVICTION.xMin;
+  const hi = quantile(xs, 0.98) ?? CONVICTION.xMax;
+  const d0 = Math.floor(Math.log10(lo));
+  let d1 = Math.ceil(Math.log10(hi));
+  if (d1 <= d0) d1 = d0 + 1;
+  const xTicks = [];
+  for (let d = d0; d <= d1; d += 1) xTicks.push(10 ** d);
+  const yTop = quantile(ys, 0.95) ?? CONVICTION.yMax;
+  const yMax = Y_STEPS.find((v) => v >= yTop) ?? Y_STEPS[Y_STEPS.length - 1];
+  const yTicks = [0, yMax / 4, yMax / 2, (3 * yMax) / 4, yMax].map(
+    (v) => Math.round(v * 100) / 100,
+  );
+  return { xMin: 10 ** d0, xMax: 10 ** d1, xTicks, yMax, yTicks };
+}
+
+function spreadTick(v) {
+  return Number.isInteger(v) ? String(v) : v.toFixed(v < 1 ? 2 : 1).replace(/0+$/, '');
+}
 const GROUP_LABEL = {
   politics: 'Politics and elections',
   sports: 'Sports',
@@ -74,7 +109,12 @@ function Tip({ active, payload }) {
 
 export function ConvictionCard({ className, state, rows, win, filters, onLoad, onRetry }) {
   const [focusTable, setFocusTable] = useState(false);
+  const [plotRef, plotSize] = useSize();
   const pts = useMemo(() => convictionLayout(rows, win, 300), [rows, win]);
+  const frame = useMemo(
+    () => convictionFrame(pts.map((p) => ({ rawX: p.x, spreadPts: p.spreadPts }))),
+    [pts],
+  );
   const data = useMemo(
     () =>
       pts.map((p) => ({
@@ -85,13 +125,18 @@ export function ConvictionCard({ className, state, rows, win, filters, onLoad, o
         group: convictionGroup(p.row),
         xBasis: p.xBasis,
         rawX: p.x,
-        x: Math.min(CONVICTION.xMax, Math.max(CONVICTION.xMin, p.x)),
-        y: Math.min(CONVICTION.yMax, p.spreadPts),
+        x: Math.min(frame.xMax, Math.max(frame.xMin, p.x)),
+        y: Math.min(frame.yMax, p.spreadPts),
         spreadPts: p.spreadPts,
         r: p.r,
       })),
-    [pts],
+    [pts, frame],
   );
+  const zoneX1 = Math.max(CONVICTION.trustLiquidity, frame.xMin);
+  const showZone = zoneX1 < frame.xMax;
+  const zoneY2 = Math.min(CONVICTION.trustSpreadPts, frame.yMax);
+  const plotW = plotSize.w;
+  const plotH = plotSize.h > 0 ? plotSize.h : PLOT_H;
   const top20 = useMemo(
     () =>
       [...data]
@@ -130,13 +175,8 @@ export function ConvictionCard({ className, state, rows, win, filters, onLoad, o
           </StateBox>
         ) : (
           <div className="pmk-conv">
-            <span className="pmk-conv-label pmk-conv-label--thin">
-              Thin and wide: treat with care
-            </span>
-            <span className="pmk-conv-label pmk-conv-label--deep">
-              Deep and tight: prices worth trusting
-            </span>
             <div
+              ref={plotRef}
               className="pmk-conv-plot"
               role="img"
               aria-label={`Scatter of ${data.length} markets, liquidity against bid-ask spread. ${
@@ -148,54 +188,73 @@ export function ConvictionCard({ className, state, rows, win, filters, onLoad, o
                 ).length
               } sit in the deep and tight zone.`}
             >
-              <ResponsiveContainer width="100%" height={PLOT_H}>
-                <ScatterChart margin={{ top: 24, right: 12, bottom: 0, left: 0 }}>
-                  <ReferenceArea
-                    x1={CONVICTION.trustLiquidity}
-                    x2={CONVICTION.xMax}
-                    y1={0}
-                    y2={CONVICTION.trustSpreadPts}
-                    fill="var(--pmk-trust-zone)"
-                    fillOpacity={1}
-                    stroke="none"
-                    ifOverflow="hidden"
-                  />
-                  <XAxis
-                    type="number"
-                    dataKey="x"
-                    scale="log"
-                    domain={[CONVICTION.xMin, CONVICTION.xMax]}
-                    ticks={X_TICKS}
-                    tickFormatter={(v) => usd(v)}
-                    tick={TICK}
-                    tickLine={false}
-                    axisLine={{ stroke: 'var(--pmk-card-border)' }}
-                    allowDataOverflow
-                    height={22}
-                  />
-                  <YAxis
-                    type="number"
-                    dataKey="y"
-                    domain={[0, CONVICTION.yMax]}
-                    ticks={[0, 2, 4, 6, 8, 10]}
-                    tickFormatter={(v) => (v === 10 ? '10+' : String(v))}
-                    tick={TICK}
-                    tickLine={false}
-                    axisLine={{ stroke: 'var(--pmk-card-border)' }}
-                    width={44}
-                    allowDataOverflow
-                  />
-                  <Tooltip content={<Tip />} cursor={false} isAnimationActive={false} />
-                  <Scatter
-                    data={data}
-                    isAnimationActive={false}
-                    shape={(props) => <Dot {...props} onPick={onLoad} />}
-                  />
-                </ScatterChart>
-              </ResponsiveContainer>
+              <span className="pmk-conv-label pmk-conv-label--thin" aria-hidden="true">
+                Thin and wide: treat with care
+              </span>
+              {showZone ? (
+                <span className="pmk-conv-label pmk-conv-label--deep" aria-hidden="true">
+                  Deep and tight: prices worth trusting
+                </span>
+              ) : null}
+              {plotW > 0 ? (
+                <div className="pmk-conv-canvas">
+                  <ScatterChart
+                    width={plotW}
+                    height={plotH}
+                    margin={{ top: TOP, right: 12, bottom: 0, left: 0 }}
+                  >
+                    {showZone ? (
+                      <ReferenceArea
+                        x1={zoneX1}
+                        x2={frame.xMax}
+                        y1={0}
+                        y2={zoneY2}
+                        fill="var(--pmk-trust-zone)"
+                        fillOpacity={1}
+                        stroke="none"
+                        ifOverflow="hidden"
+                      />
+                    ) : null}
+                    <XAxis
+                      type="number"
+                      dataKey="x"
+                      scale="log"
+                      domain={[frame.xMin, frame.xMax]}
+                      ticks={frame.xTicks}
+                      tickFormatter={(v) => usd(v)}
+                      tick={TICK}
+                      tickLine={false}
+                      axisLine={{ stroke: 'var(--pmk-card-border)' }}
+                      allowDataOverflow
+                      height={X_AXIS_H}
+                    />
+                    <YAxis
+                      type="number"
+                      dataKey="y"
+                      scale="sqrt"
+                      domain={[0, frame.yMax]}
+                      ticks={frame.yTicks}
+                      tickFormatter={(v) =>
+                        v === frame.yMax ? `${spreadTick(v)}+` : spreadTick(v)
+                      }
+                      tick={TICK}
+                      tickLine={false}
+                      axisLine={{ stroke: 'var(--pmk-card-border)' }}
+                      width={Y_AXIS_W}
+                      allowDataOverflow
+                    />
+                    <Tooltip content={<Tip />} cursor={false} isAnimationActive={false} />
+                    <Scatter
+                      data={data}
+                      isAnimationActive={false}
+                      shape={(props) => <Dot {...props} onPick={onLoad} />}
+                    />
+                  </ScatterChart>
+                </div>
+              ) : null}
             </div>
             <p className="pmk-conv-axes pmk-legal pmk-num">
-              <span>Bid-ask spread, pts (y)</span>
+              <span>Bid-ask spread, pts, square-root scale (y)</span>
               <span>Liquidity, log scale (x)</span>
             </p>
             <button

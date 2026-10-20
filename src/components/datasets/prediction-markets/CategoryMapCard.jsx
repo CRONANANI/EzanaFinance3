@@ -6,10 +6,11 @@
  * $1 for area only); colour is the average window move. A tile sets the page
  * category filter. Below 640px it becomes a stacked bar and a list.
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { categoryTiles, squarify, tileOpacity } from '@/lib/prediction-markets/page-model';
 import { Card, CardHead, Seg, Skeleton, StateBox, cx } from './parts';
 import { contracts, int, ptsRaw, usd } from './format';
+import { useSize } from './use-size';
 
 const VENUE_OPTS = [
   { value: 'polymarket', label: 'Polymarket' },
@@ -21,7 +22,9 @@ const NOTE = {
   kalshi: 'Kalshi volume in contracts',
   both: 'Kalshi counted at $1 per contract',
 };
-const MAP_H = 440;
+/* Minimum treemap height. The map grows to fill the card when Top Traders
+   beside it sets a taller row, so there is no empty band under the tiles. */
+const MAP_H = 360;
 
 function volText(v, venue) {
   return venue === 'kalshi' ? contracts(v) : usd(v);
@@ -45,18 +48,10 @@ function MapSkeleton() {
 
 export function CategoryMapCard({ className, state, rows, win, category, onPick, onRetry }) {
   const [venue, setVenue] = useState('polymarket');
-  const boxRef = useRef(null);
-  const [w, setW] = useState(0);
+  const [boxRef, box] = useSize();
   const tiles = useMemo(() => categoryTiles(rows, venue, win), [rows, venue, win]);
-  const hasTiles = tiles.length > 0;
-  useEffect(() => {
-    const el = boxRef.current;
-    if (!el || typeof ResizeObserver === 'undefined') return undefined;
-    const ro = new ResizeObserver(([e]) => setW(e.contentRect.width));
-    ro.observe(el);
-    setW(el.getBoundingClientRect().width);
-    return () => ro.disconnect();
-  }, [state, hasTiles]);
+  const w = box.w;
+  const h = Math.max(MAP_H, box.h || 0);
 
   const rects = useMemo(
     () =>
@@ -64,10 +59,10 @@ export function CategoryMapCard({ className, state, rows, win, category, onPick,
         ? squarify(
             tiles.map((t) => ({ ...t })),
             w,
-            MAP_H,
+            h,
           )
         : [],
-    [tiles, w],
+    [tiles, w, h],
   );
 
   const tileClass = (t) => cx('pmk-tile-fill', t.avgMove >= 0 ? 'is-firming' : 'is-fading');
@@ -96,7 +91,7 @@ export function CategoryMapCard({ className, state, rows, win, category, onPick,
           </StateBox>
         ) : (
           <>
-            <div className="pmk-map" ref={boxRef} style={{ height: MAP_H }}>
+            <div className="pmk-map" ref={boxRef}>
               {rects.map((r) => {
                 const t = tiles.find((x) => x.key === r.key);
                 const big = r.w > 96 && r.h > 72;

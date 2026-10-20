@@ -161,12 +161,6 @@ export function ChangePill({ change, size }) {
   );
 }
 
-const CONF_LABEL = { high: 'High', medium: 'Medium', low: 'Low', none: 'No gap' };
-export function ConfChip({ confidence }) {
-  const c = confidence || 'none';
-  return <span className={cx('pmk-conf', `pmk-conf--${c}`)}>{CONF_LABEL[c] || c}</span>;
-}
-
 /** Inline SVG sparkline from model points. */
 export function Spark({ points, width = 64, height = 24, direction }) {
   const d = sparkPath(points, width, height);

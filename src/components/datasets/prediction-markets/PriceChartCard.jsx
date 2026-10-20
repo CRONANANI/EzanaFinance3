@@ -5,21 +5,13 @@
  * (recharts, presentation props from CHART). No third-party iframe.
  * Any market anywhere on the page loads here through ?market=.
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Area,
-  ComposedChart,
-  Line,
-  ReferenceDot,
-  ReferenceLine,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { useEffect, useMemo, useState } from 'react';
+import { Area, ComposedChart, Line, ReferenceDot, ReferenceLine, XAxis, YAxis } from 'recharts';
 import { CHART } from '@/lib/chart-theme';
 import { largestMoves, outcomeLabel, seriesChange } from '@/lib/prediction-markets/page-model';
 import { Card, ChangePill, Seg, Skeleton, StateBox, VenueChip, cx } from './parts';
 import { useJson } from './use-json';
+import { useSize } from './use-size';
 import {
   VENUE_LABEL,
   axisTick,
@@ -44,6 +36,8 @@ const RANGE_PHRASE = {
   '1m': 'over the past month',
   all: 'over its full history',
 };
+/* The plot grows to fill the card when the Movers card beside it sets a taller
+   row, so the space under the chart is chart, not padding. */
 const PLOT_H = 300;
 const TOP = 16;
 const X_AXIS_H = 22;
@@ -55,19 +49,6 @@ const OUTCOME_STROKES = [
   'var(--pmk-outcome-other)',
 ];
 const TICK = { ...CHART.tick, fill: 'var(--text-faint)', fontFamily: 'var(--font-mono)' };
-
-function useWidth(ref) {
-  const [w, setW] = useState(0);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || typeof ResizeObserver === 'undefined') return undefined;
-    const ro = new ResizeObserver(([e]) => setW(e.contentRect.width));
-    ro.observe(el);
-    setW(el.getBoundingClientRect().width);
-    return () => ro.disconnect();
-  }, [ref]);
-  return w;
-}
 
 function xTicksFor(t0, t1, range) {
   if (!(t1 > t0)) return [t0];
@@ -133,8 +114,9 @@ export function PriceChartCard({ marketId, movers, onLoad, universeState }) {
   }, [marketId]);
   useEffect(() => setHover(null), [range]);
 
-  const plotRef = useRef(null);
-  const width = useWidth(plotRef);
+  const [plotRef, plotSize, plotEl] = useSize();
+  const width = plotSize.w;
+  const plotH = plotSize.h > 0 ? plotSize.h : PLOT_H;
 
   const market = data?.market?.id === marketId ? data.market : null;
   const points = useMemo(() => (market ? data.points || [] : []), [market, data]);
@@ -146,7 +128,7 @@ export function PriceChartCard({ marketId, movers, onLoad, universeState }) {
   const t1 = points.length ? points[points.length - 1].t : 1;
   const right = multi ? 96 : 12;
   const innerW = Math.max(1, width - Y_AXIS_W - right);
-  const innerH = PLOT_H - TOP - X_AXIS_H;
+  const innerH = plotH - TOP - X_AXIS_H;
   const xOf = (t) => Y_AXIS_W + ((t - t0) / Math.max(1, t1 - t0)) * innerW;
   const yOf = (p) => TOP + (1 - p) * innerH;
 
@@ -180,8 +162,8 @@ export function PriceChartCard({ marketId, movers, onLoad, universeState }) {
   };
 
   const onMove = (e) => {
-    if (!points.length || !plotRef.current) return;
-    const rect = plotRef.current.getBoundingClientRect();
+    if (!points.length || !plotEl || innerW <= 1) return;
+    const rect = plotEl.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const t = t0 + ((x - Y_AXIS_W) / innerW) * (t1 - t0);
     let best = 0;
@@ -277,119 +259,124 @@ export function PriceChartCard({ marketId, movers, onLoad, universeState }) {
         <div
           className="pmk-plot"
           ref={plotRef}
-          style={{ height: PLOT_H }}
           role="img"
           aria-label={`${market.question}. ${summary || ''}`}
         >
-          <ResponsiveContainer width="100%" height={PLOT_H}>
-            <ComposedChart margin={{ top: TOP, right, bottom: 0, left: 0 }}>
-              <XAxis
-                type="number"
-                dataKey="t"
-                domain={[t0, t1]}
-                ticks={xTicksFor(t0, t1, range)}
-                tickFormatter={(t) => axisTick(t, range)}
-                tick={TICK}
-                tickLine={false}
-                axisLine={{ stroke: 'var(--pmk-card-border)' }}
-                height={X_AXIS_H}
-                allowDataOverflow
-              />
-              <YAxis
-                type="number"
-                domain={[0, 100]}
-                ticks={[0, 25, 50, 75, 100]}
-                tickFormatter={(v) => `${v}%`}
-                tick={TICK}
-                tickLine={false}
-                axisLine={false}
-                width={Y_AXIS_W}
-                allowDataOverflow
-              />
-              {[25, 50, 75].map((y) => (
-                <ReferenceLine key={y} y={y} stroke="var(--pmk-grid)" ifOverflow="hidden" />
-              ))}
-              <ReferenceLine y={100} stroke="var(--pmk-card-border)" />
-              {multi ? (
-                series.map((s, i) => (
-                  <Line
-                    key={s.id}
-                    data={s.points.map((pt) => ({ t: pt.t, v: pt.p * 100 }))}
-                    dataKey="v"
-                    type="linear"
-                    stroke={OUTCOME_STROKES[i]}
-                    strokeWidth={i === 0 ? 2 : 1.5}
-                    strokeDasharray={i === 3 ? '4 3' : undefined}
-                    dot={false}
-                    activeDot={false}
-                    isAnimationActive={false}
-                  />
-                ))
-              ) : (
-                <>
-                  <Area
-                    data={mainData}
-                    dataKey="v"
-                    type="linear"
-                    stroke="none"
-                    fill="var(--pmk-area)"
-                    fillOpacity={1}
-                    isAnimationActive={false}
-                    activeDot={false}
-                  />
-                  <Line
-                    data={mainData}
-                    dataKey="v"
-                    type="linear"
-                    stroke="var(--pmk-line)"
-                    strokeWidth={CHART.primaryStrokeWidth}
-                    strokeLinejoin="round"
-                    dot={false}
-                    activeDot={false}
-                    isAnimationActive={false}
-                  />
-                  {annos.map((a) => (
-                    <ReferenceDot
-                      key={a.index}
-                      x={points[a.index].t}
-                      y={points[a.index].p * 100}
-                      r={0}
-                      shape={(props) => <Diamond {...props} delta={a.delta} />}
-                    />
-                  ))}
-                  {points.length ? (
-                    <ReferenceDot
-                      x={points[points.length - 1].t}
-                      y={points[points.length - 1].p * 100}
-                      r={0}
-                      shape={(props) => <EndDot {...props} />}
-                    />
-                  ) : null}
-                </>
-              )}
-              {hoverPt ? (
-                <ReferenceLine x={hoverPt.t} stroke="var(--pmk-mute)" strokeDasharray="3 3" />
-              ) : null}
-              {hoverPt ? (
-                <ReferenceLine
-                  y={hoverPt.p * 100}
-                  stroke="var(--pmk-annotation)"
-                  strokeDasharray="3 3"
+          {width > 0 ? (
+            <div className="pmk-plot-canvas">
+              <ComposedChart
+                width={width}
+                height={plotH}
+                margin={{ top: TOP, right, bottom: 0, left: 0 }}
+              >
+                <XAxis
+                  type="number"
+                  dataKey="t"
+                  domain={[t0, t1]}
+                  ticks={xTicksFor(t0, t1, range)}
+                  tickFormatter={(t) => axisTick(t, range)}
+                  tick={TICK}
+                  tickLine={false}
+                  axisLine={{ stroke: 'var(--pmk-card-border)' }}
+                  height={X_AXIS_H}
+                  allowDataOverflow
                 />
-              ) : null}
-              {hoverPt ? (
-                <ReferenceDot
-                  x={hoverPt.t}
-                  y={hoverPt.p * 100}
-                  r={5}
-                  className="pmk-hoverdot"
-                  fill="var(--pmk-line)"
-                  stroke="var(--pmk-bg)"
-                  strokeWidth={2}
+                <YAxis
+                  type="number"
+                  domain={[0, 100]}
+                  ticks={[0, 25, 50, 75, 100]}
+                  tickFormatter={(v) => `${v}%`}
+                  tick={TICK}
+                  tickLine={false}
+                  axisLine={false}
+                  width={Y_AXIS_W}
+                  allowDataOverflow
                 />
-              ) : null}
-            </ComposedChart>
-          </ResponsiveContainer>
+                {[25, 50, 75].map((y) => (
+                  <ReferenceLine key={y} y={y} stroke="var(--pmk-grid)" ifOverflow="hidden" />
+                ))}
+                <ReferenceLine y={100} stroke="var(--pmk-card-border)" />
+                {multi ? (
+                  series.map((s, i) => (
+                    <Line
+                      key={s.id}
+                      data={s.points.map((pt) => ({ t: pt.t, v: pt.p * 100 }))}
+                      dataKey="v"
+                      type="linear"
+                      stroke={OUTCOME_STROKES[i]}
+                      strokeWidth={i === 0 ? 2 : 1.5}
+                      strokeDasharray={i === 3 ? '4 3' : undefined}
+                      dot={false}
+                      activeDot={false}
+                      isAnimationActive={false}
+                    />
+                  ))
+                ) : (
+                  <>
+                    <Area
+                      data={mainData}
+                      dataKey="v"
+                      type="linear"
+                      stroke="none"
+                      fill="var(--pmk-area)"
+                      fillOpacity={1}
+                      isAnimationActive={false}
+                      activeDot={false}
+                    />
+                    <Line
+                      data={mainData}
+                      dataKey="v"
+                      type="linear"
+                      stroke="var(--pmk-line)"
+                      strokeWidth={CHART.primaryStrokeWidth}
+                      strokeLinejoin="round"
+                      dot={false}
+                      activeDot={false}
+                      isAnimationActive={false}
+                    />
+                    {annos.map((a) => (
+                      <ReferenceDot
+                        key={a.index}
+                        x={points[a.index].t}
+                        y={points[a.index].p * 100}
+                        r={0}
+                        shape={(props) => <Diamond {...props} delta={a.delta} />}
+                      />
+                    ))}
+                    {points.length ? (
+                      <ReferenceDot
+                        x={points[points.length - 1].t}
+                        y={points[points.length - 1].p * 100}
+                        r={0}
+                        shape={(props) => <EndDot {...props} />}
+                      />
+                    ) : null}
+                  </>
+                )}
+                {hoverPt ? (
+                  <ReferenceLine x={hoverPt.t} stroke="var(--pmk-mute)" strokeDasharray="3 3" />
+                ) : null}
+                {hoverPt ? (
+                  <ReferenceLine
+                    y={hoverPt.p * 100}
+                    stroke="var(--pmk-annotation)"
+                    strokeDasharray="3 3"
+                  />
+                ) : null}
+                {hoverPt ? (
+                  <ReferenceDot
+                    x={hoverPt.t}
+                    y={hoverPt.p * 100}
+                    r={5}
+                    className="pmk-hoverdot"
+                    fill="var(--pmk-line)"
+                    stroke="var(--pmk-bg)"
+                    strokeWidth={2}
+                  />
+                ) : null}
+              </ComposedChart>
+            </div>
+          ) : null}
 
           {multi
             ? series.map((s, i) => {
