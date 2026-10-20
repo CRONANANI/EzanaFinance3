@@ -50,6 +50,7 @@ export const DEFAULT_FILTERS = Object.freeze({ section: '', region: '', range: '
    article's source file. It is the tile TAG; without one the tile shows the
    short section name. When adding an article, tag it in BOTH places. */
 export const ARTICLE_SUBCATEGORY = {
+  'mcmaster-dfic-portfolio-scorecard-2026': 'Equities',
   'nvidia-worlds-second-most-valuable-asset-2026': 'Equities',
   'private-credit-maturity-wall-2026': 'Credit',
   'fda-peptides-bpc157-compounding-vote-2026': 'Equities',

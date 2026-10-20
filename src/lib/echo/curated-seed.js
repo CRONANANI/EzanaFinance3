@@ -41,6 +41,7 @@ import { datacenterPowerCrunch2026 } from '@/lib/ezana-echo-article-datacenter-p
 import { sovereignWealthLeagueTable2026 } from '@/lib/ezana-echo-article-sovereign-wealth-league-table-2026.js';
 import { modernaCancerTrialTrump2026 } from '@/lib/ezana-echo-article-moderna-cancer-trial-trump-2026.js';
 import { aiStackUpsideDown2026 } from '@/lib/ezana-echo-article-ai-stack-upside-down-2026.js';
+import { mcmasterDficPortfolioScorecard2026 } from '@/lib/ezana-echo-article-mcmaster-dfic-portfolio-scorecard-2026.js';
 
 const SOURCE = [
   aiStackUpsideDown2026,
@@ -65,6 +66,7 @@ const SOURCE = [
   sovereignWealthLeagueTable2026,
   modernaCancerTrialTrump2026,
   // Drafts (invisible until status flips to published + reseed):
+  mcmasterDficPortfolioScorecard2026,
   bitcoinInstitutionalHolders2026,
   stablecoinSettlementLayer2026,
   cryptoLegislationPredictionMarkets2026,

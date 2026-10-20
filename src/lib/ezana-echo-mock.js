@@ -56,6 +56,7 @@ import { sovereignWealthLeagueTable2026 } from './ezana-echo-article-sovereign-w
 import { modernaCancerTrialTrump2026 } from './ezana-echo-article-moderna-cancer-trial-trump-2026.js';
 import { aiStackUpsideDown2026 } from './ezana-echo-article-ai-stack-upside-down-2026.js';
 import { grindrPinterestAppianLobbyingQ22026 } from './ezana-echo-article-grindr-pinterest-appian-lobbying-q2-2026.js';
+import { mcmasterDficPortfolioScorecard2026 } from './ezana-echo-article-mcmaster-dfic-portfolio-scorecard-2026.js';
 
 const ARTICLES = [
   johnnyMnemonicConsolidation2026,
@@ -91,6 +92,7 @@ const ARTICLES = [
   modernaCancerTrialTrump2026,
   aiStackUpsideDown2026,
   grindrPinterestAppianLobbyingQ22026,
+  mcmasterDficPortfolioScorecard2026,
 ];
 
 export { AOTM_HISTORY } from './echo/aotm.js';
@@ -193,6 +195,22 @@ export const ECHO_TRENDING = {
 
 /** @type {Record<string, { id: string; author: { name: string; initials: string; id?: string }; content: string; createdAt: string }[]>} */
 export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
+  'mcmaster-dfic-portfolio-scorecard-2026': [
+    {
+      id: 'c-dfic-1',
+      author: { name: 'Priya Natarajan', initials: 'PN' },
+      content:
+        'Scoring the council against its own Sell and exit calls is the fair version of this. Four of five exits holding up is a better grade than the frozen-book number suggests.',
+      createdAt: '2026-10-20T21:40:00Z',
+    },
+    {
+      id: 'c-dfic-2',
+      author: { name: 'Owen Mercer', initials: 'OM' },
+      content:
+        'The TLT sizing is the whole story for me. Nearly a fifth of a balanced fund in one long-duration ETF is a macro fund inside a 60/40 wrapper.',
+      createdAt: '2026-10-20T22:15:00Z',
+    },
+  ],
   'grindr-pinterest-appian-lobbying-q2-2026': [
     {
       id: 'c-lobby-q2-1',

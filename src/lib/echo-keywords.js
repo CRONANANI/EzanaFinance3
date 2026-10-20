@@ -3513,6 +3513,163 @@ export const KEYWORDS = {
     courseId: 'policy-101-1',
     courseTitle: 'Industrial Policy & Markets',
   },
+
+  'student-managed-investment-fund': {
+    id: 'student-managed-investment-fund',
+    term: 'Student-Managed Investment Fund (SMIF)',
+    definition:
+      'A real-money portfolio run by university students, usually seeded by a donor or the school endowment. Students pitch positions, defend them to a committee and report results against a stated benchmark, so the fund doubles as a training ground and a public track record.',
+    template: 'comparison',
+    templateData: {
+      title: 'SMIF vs paper portfolio',
+      headers: ['Dimension', 'SMIF', 'Paper portfolio'],
+      rows: [
+        { label: 'Capital', cells: ['Real, donor or endowment', 'Simulated'] },
+        { label: 'Accountability', cells: ['Committee, annual report', 'None'] },
+        { label: 'Benchmark', cells: ['Stated in the mandate', 'Optional'] },
+      ],
+    },
+  },
+
+  'blended-benchmark': {
+    id: 'blended-benchmark',
+    term: 'Blended Benchmark',
+    definition:
+      'A yardstick built from several indexes in fixed proportions, used when a fund holds more than one asset class. A 40/60 bond and stock blend lets a balanced fund be judged against what a passive mix of the same assets would have earned.',
+    template: 'formula',
+    templateData: {
+      formula: 'R(benchmark) = sum of (index weight x index return)',
+      example: {
+        title: 'DFIC benchmark',
+        substitution: '20% AGG + 20% XBB + 30% XIU + 30% SPY',
+      },
+    },
+  },
+
+  'portfolio-beta': {
+    id: 'portfolio-beta',
+    term: 'Portfolio Beta',
+    definition:
+      'How much a portfolio has historically moved relative to the market. A beta of 1.0 moves with the market; 1.21 moves about 21% more in both directions. Balanced funds normally run well below 1.0 because bonds dampen equity swings.',
+    template: 'comparison',
+    templateData: {
+      title: 'Reading a beta',
+      headers: ['Beta', 'Behaviour', 'Typical holder'],
+      rows: [
+        { label: 'Below 0.7', cells: ['Dampened', 'Balanced or income fund'] },
+        { label: 'Around 1.0', cells: ['Moves with the market', 'Index fund'] },
+        { label: 'Above 1.2', cells: ['Amplified', 'Concentrated growth fund'] },
+      ],
+    },
+  },
+
+  'unrealized-gain': {
+    id: 'unrealized-gain',
+    term: 'Unrealized Gain',
+    definition:
+      "The increase in a position's value above its cost that has not yet been locked in by selling. It can grow or disappear with the price, which is why a large unrealized gain is a decision point, not a result.",
+    template: 'comparison',
+    templateData: {
+      title: 'Unrealized vs realized',
+      headers: ['Dimension', 'Unrealized', 'Realized'],
+      rows: [
+        { label: 'Locked in', cells: ['No', 'Yes, on sale'] },
+        { label: 'Exposed to price', cells: ['Yes', 'No'] },
+        { label: 'Taxed (taxable accounts)', cells: ['Not yet', 'Yes'] },
+      ],
+    },
+  },
+
+  'position-sizing': {
+    id: 'position-sizing',
+    term: 'Position Sizing',
+    definition:
+      "How much of a portfolio is allocated to each holding. A position's contribution is its weight times its return, so a 2% holding that doubles adds 2 points while a 20% holding that falls 7% removes 1.4. Sizing often matters more than picking.",
+    template: 'formula',
+    templateData: {
+      formula: 'Contribution = position weight x position return',
+      example: {
+        title: 'Two DFIC positions, May 2025 to Oct 2026 (CAD)',
+        substitution: 'Hudbay: 1.87% x 179.4% = +3.35 pts · TLT: 18.54% x -5.9% = -1.09 pts',
+      },
+    },
+  },
+
+  'duration-risk': {
+    id: 'duration-risk',
+    term: 'Duration Risk',
+    definition:
+      "The sensitivity of a bond's price to interest rates. Duration in years approximates the percentage price change for a one-point move in yields, so long-dated Treasury funds swing several times harder than a broad bond index.",
+    template: 'comparison',
+    templateData: {
+      title: 'Approximate duration by bond fund type',
+      headers: ['Fund type', 'Duration', 'Price move per 1-pt yield rise'],
+      rows: [
+        {
+          label: 'Universe bond index (AGG, XBB)',
+          cells: ['About 6 to 7 years', 'About -6% to -7%'],
+        },
+        { label: '20+ year Treasury (TLT)', cells: ['About 16 to 17 years', 'About -16% to -17%'] },
+      ],
+    },
+  },
+
+  'total-return-vs-price-return': {
+    id: 'total-return-vs-price-return',
+    term: 'Total Return vs Price Return',
+    definition:
+      "Price return counts only the change in a security's price. Total return adds dividends or bond fund distributions, assumed reinvested. For income-heavy holdings like bond ETFs, the two can differ by several points a year.",
+    template: 'formula',
+    templateData: {
+      formula: 'Total return = price return + income received (reinvested)',
+      example: {
+        title: 'Bond ETF',
+        substitution:
+          'Price -6.7% · plus monthly distributions · total return is several points higher',
+      },
+    },
+  },
+
+  'take-private': {
+    id: 'take-private',
+    term: 'Take-Private',
+    definition:
+      "An acquisition in which buyers purchase all of a listed company's shares and delist it. Shareholders receive the deal price, usually in cash, which ends their position at a fixed value.",
+    template: 'timeline',
+    templateData: {
+      title: 'How a take-private resolves a position',
+      events: [
+        {
+          year: 'Step 1',
+          label: 'Announcement',
+          detail: 'Buyers agree a per-share price with the board',
+        },
+        { year: 'Step 2', label: 'Approval', detail: 'Shareholders and regulators sign off' },
+        {
+          year: 'Step 3',
+          label: 'Close',
+          detail: 'Shares are cashed out and the stock is delisted',
+        },
+      ],
+    },
+  },
+
+  'risk-budget': {
+    id: 'risk-budget',
+    term: 'Risk Budget',
+    definition:
+      'A set of limits that decides how much risk a portfolio may take and where: caps on single positions, sector weights, beta or bond duration. It keeps a single wrong view from dominating the result.',
+    template: 'comparison',
+    templateData: {
+      title: 'Common risk-budget limits',
+      headers: ['Limit', 'What it caps'],
+      rows: [
+        { label: 'Single position', cells: ['Weight of any one holding'] },
+        { label: 'Duration band', cells: ['Bond sleeve rate sensitivity vs benchmark'] },
+        { label: 'Beta range', cells: ['Overall equity sensitivity'] },
+      ],
+    },
+  },
 };
 
 export function getKeywordById(id) {
