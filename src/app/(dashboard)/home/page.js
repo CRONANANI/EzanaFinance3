@@ -947,7 +947,7 @@ export default function HomePage() {
       try {
         const [tradesRes, lobbyingRes] = await Promise.allSettled([
           fetch('/api/fmp/congress-latest?raw=1&limit=12', { cache: 'no-store' }),
-          fetch('/api/quiver/lobbying', { cache: 'no-store' }),
+          fetch('/api/lobbying/feed?limit=8', { cache: 'no-store' }),
         ]);
 
         const tradeRows = [];

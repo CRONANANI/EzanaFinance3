@@ -166,7 +166,7 @@ export async function loadArrivals() {
     getJson('/api/fmp/congress-latest'),
     getJson('/api/usaspending/contract-awards?limit=8'),
     getJson('/api/polymarket/markets?limit=12&active=true'),
-    getJson('/api/quiver/lobbying'),
+    getJson('/api/lobbying/feed?limit=12'),
   ]);
   const sources = [
     { name: 'Congress trading', items: congressItems(congress) },

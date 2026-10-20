@@ -3,10 +3,34 @@
  */
 
 export const FTQ_STAT_CARDS = [
-  { id: 'built', biClass: 'bi-bar-chart-line', label: 'Strategies Built', value: '47', sub: '+8 this month' },
-  { id: 'top', biClass: 'bi-trophy', label: 'Top Strategy Return', value: '+142.3% (6mo)', sub: 'by @EmmaWilson' },
-  { id: 'community', biClass: 'bi-people', label: 'Community Strategies', value: '1,234', sub: '+89 this week' },
-  { id: 'backtests', biClass: 'bi-lightning-charge', label: 'Active Backtests', value: '12', sub: 'running now' },
+  {
+    id: 'built',
+    biClass: 'bi-bar-chart-line',
+    label: 'Strategies Built',
+    value: '47',
+    sub: '+8 this month',
+  },
+  {
+    id: 'top',
+    biClass: 'bi-trophy',
+    label: 'Top Strategy Return',
+    value: '+142.3% (6mo)',
+    sub: 'by @EmmaWilson',
+  },
+  {
+    id: 'community',
+    biClass: 'bi-people',
+    label: 'Community Strategies',
+    value: '1,234',
+    sub: '+89 this week',
+  },
+  {
+    id: 'backtests',
+    biClass: 'bi-lightning-charge',
+    label: 'Active Backtests',
+    value: '12',
+    sub: 'running now',
+  },
 ];
 
 export const MY_STRATEGIES = [
@@ -74,11 +98,56 @@ export const LATEST_BACKTESTS = [
 ];
 
 export const LEADERBOARD = [
-  { id: 'mean-reversion-alpha', rank: 1, name: 'Mean Reversion Alpha', returnPct: '+142.3%', author: 'Emma Wilson', creatorId: 'emma-wilson', subscribers: 234, hot: true },
-  { id: 'momentum-congress', rank: 2, name: 'Momentum + Congressional', returnPct: '+89.7%', author: 'David Kim', creatorId: 'david-kim', subscribers: 156, hot: false },
-  { id: 'pairs-etfs', rank: 3, name: 'Pairs Trading ETFs', returnPct: '+67.2%', author: 'Alex Chen', creatorId: 'alex-chen', subscribers: 98, hot: false },
-  { id: 'vol-breakout', rank: 4, name: 'Volatility Breakout', returnPct: '+54.8%', author: 'Lisa Park', creatorId: 'lisa-park', subscribers: 67, hot: false },
-  { id: 'sector-ml', rank: 5, name: 'Sector Rotation ML', returnPct: '+48.3%', author: 'James Wilson', creatorId: 'james-wilson', subscribers: 45, hot: false },
+  {
+    id: 'mean-reversion-alpha',
+    rank: 1,
+    name: 'Mean Reversion Alpha',
+    returnPct: '+142.3%',
+    author: 'Emma Wilson',
+    creatorId: 'emma-wilson',
+    subscribers: 234,
+    hot: true,
+  },
+  {
+    id: 'momentum-congress',
+    rank: 2,
+    name: 'Momentum + Congressional',
+    returnPct: '+89.7%',
+    author: 'David Kim',
+    creatorId: 'david-kim',
+    subscribers: 156,
+    hot: false,
+  },
+  {
+    id: 'pairs-etfs',
+    rank: 3,
+    name: 'Pairs Trading ETFs',
+    returnPct: '+67.2%',
+    author: 'Alex Chen',
+    creatorId: 'alex-chen',
+    subscribers: 98,
+    hot: false,
+  },
+  {
+    id: 'vol-breakout',
+    rank: 4,
+    name: 'Volatility Breakout',
+    returnPct: '+54.8%',
+    author: 'Lisa Park',
+    creatorId: 'lisa-park',
+    subscribers: 67,
+    hot: false,
+  },
+  {
+    id: 'sector-ml',
+    rank: 5,
+    name: 'Sector Rotation ML',
+    returnPct: '+48.3%',
+    author: 'James Wilson',
+    creatorId: 'james-wilson',
+    subscribers: 45,
+    hot: false,
+  },
 ];
 
 export const RISK_ANALYTICS = {
@@ -95,9 +164,27 @@ export const RISK_ANALYTICS = {
 };
 
 export const TRENDING_MARKETS = [
-  { id: 'fed-june', question: 'Will Fed cut rates in June?', side: 'Yes: 72%', volume: '$12.3M', traders: '45K' },
-  { id: 'pres-2028', question: 'Next president 2028?', side: 'Vance: 34%', volume: '$8.7M', traders: '32K' },
-  { id: 'btc-100k', question: 'Bitcoin > $100K by July?', side: 'Yes: 58%', volume: '$5.1M', traders: '18K' },
+  {
+    id: 'fed-june',
+    question: 'Will Fed cut rates in June?',
+    side: 'Yes: 72%',
+    volume: '$12.3M',
+    traders: '45K',
+  },
+  {
+    id: 'pres-2028',
+    question: 'Next president 2028?',
+    side: 'Vance: 34%',
+    volume: '$8.7M',
+    traders: '32K',
+  },
+  {
+    id: 'btc-100k',
+    question: 'Bitcoin > $100K by July?',
+    side: 'Yes: 58%',
+    volume: '$5.1M',
+    traders: '18K',
+  },
 ];
 
 export const BETTING_ANALYTICS = {
@@ -155,7 +242,14 @@ export const STRATEGY_DETAILS = {
     performance: { return6mo: '+89.7%', sharpe: '1.42', maxDd: '-9.4%', winRate: '58%' },
     parameters: [
       { key: 'momWindow', label: 'Momentum window (d)', value: 60, min: 20, max: 120, step: 5 },
-      { key: 'congressWeight', label: 'Congress signal weight', value: 0.15, min: 0, max: 0.5, step: 0.05 },
+      {
+        key: 'congressWeight',
+        label: 'Congress signal weight',
+        value: 0.15,
+        min: 0,
+        max: 0.5,
+        step: 0.05,
+      },
     ],
     backtest: {
       period: 'Jan 2025 — Jan 2026',
@@ -288,13 +382,13 @@ export const DATASETS = [
   {
     id: 'lobbying',
     name: 'Corporate Lobbying Spend',
-    source: 'Quiver',
+    source: 'Senate LDA',
     description: 'Quarterly lobbying expenditure by company and sector',
     updateFreq: 'Quarterly',
-    historyRange: '2018–present',
+    historyRange: '2024–present',
     icon: 'bi-megaphone',
     planAccess: { personal: null, advanced: '3 years', family: 'Full', pro: 'Full' },
-    endpoint: '/api/quiver/lobbying',
+    endpoint: '/api/lobbying/feed',
   },
   {
     id: 'sector-performance',
@@ -322,8 +416,21 @@ export const STRATEGY_TEMPLATES = [
     sharpe: '1.42',
     icon: 'bi-bank2',
     conditions: [
-      { type: 'data', dataset: 'congressional-trades', field: 'type', op: 'equals', value: 'purchase' },
-      { type: 'aggregate', fn: 'count_distinct', field: 'representative', window: '7d', op: 'gte', value: 3 },
+      {
+        type: 'data',
+        dataset: 'congressional-trades',
+        field: 'type',
+        op: 'equals',
+        value: 'purchase',
+      },
+      {
+        type: 'aggregate',
+        fn: 'count_distinct',
+        field: 'representative',
+        window: '7d',
+        op: 'gte',
+        value: 3,
+      },
       { type: 'action', action: 'buy', sizing: 'equal_weight', exitRule: '30d_or_10pct' },
     ],
   },
@@ -360,7 +467,13 @@ export const STRATEGY_TEMPLATES = [
         op: 'in',
         value: ['CEO', 'CFO', 'COO'],
       },
-      { type: 'data', dataset: 'insider-trading', field: 'transaction_value', op: 'gte', value: 500000 },
+      {
+        type: 'data',
+        dataset: 'insider-trading',
+        field: 'transaction_value',
+        op: 'gte',
+        value: 500000,
+      },
       { type: 'action', action: 'buy', sizing: 'equal_weight', exitRule: '60d_hold' },
     ],
   },
@@ -401,11 +514,31 @@ export const CONDITION_CATEGORIES = [
   {
     label: 'Market Data',
     conditions: [
-      { id: 'price_above_sma', label: 'Price above SMA', params: [{ name: 'Period', type: 'number', default: 50 }] },
-      { id: 'price_below_sma', label: 'Price below SMA', params: [{ name: 'Period', type: 'number', default: 200 }] },
-      { id: 'rsi_below', label: 'RSI below threshold', params: [{ name: 'Threshold', type: 'number', default: 30 }] },
-      { id: 'rsi_above', label: 'RSI above threshold', params: [{ name: 'Threshold', type: 'number', default: 70 }] },
-      { id: 'volume_spike', label: 'Volume spike (vs 20d avg)', params: [{ name: 'Multiple', type: 'number', default: 2 }] },
+      {
+        id: 'price_above_sma',
+        label: 'Price above SMA',
+        params: [{ name: 'Period', type: 'number', default: 50 }],
+      },
+      {
+        id: 'price_below_sma',
+        label: 'Price below SMA',
+        params: [{ name: 'Period', type: 'number', default: 200 }],
+      },
+      {
+        id: 'rsi_below',
+        label: 'RSI below threshold',
+        params: [{ name: 'Threshold', type: 'number', default: 30 }],
+      },
+      {
+        id: 'rsi_above',
+        label: 'RSI above threshold',
+        params: [{ name: 'Threshold', type: 'number', default: 70 }],
+      },
+      {
+        id: 'volume_spike',
+        label: 'Volume spike (vs 20d avg)',
+        params: [{ name: 'Multiple', type: 'number', default: 2 }],
+      },
       { id: 'macd_crossover', label: 'MACD bullish crossover', params: [] },
       {
         id: 'bollinger_touch',
@@ -417,10 +550,26 @@ export const CONDITION_CATEGORIES = [
   {
     label: 'Alternative Data',
     conditions: [
-      { id: 'congress_buy', label: 'Congress member buys stock', params: [{ name: 'Min members', type: 'number', default: 1 }] },
-      { id: 'congress_sell', label: 'Congress member sells stock', params: [{ name: 'Min members', type: 'number', default: 1 }] },
-      { id: 'insider_purchase', label: 'Corporate insider purchase', params: [{ name: 'Min value ($)', type: 'number', default: 100000 }] },
-      { id: 'hedge_fund_new_position', label: 'Hedge fund initiates position', params: [{ name: 'Min AUM ($B)', type: 'number', default: 10 }] },
+      {
+        id: 'congress_buy',
+        label: 'Congress member buys stock',
+        params: [{ name: 'Min members', type: 'number', default: 1 }],
+      },
+      {
+        id: 'congress_sell',
+        label: 'Congress member sells stock',
+        params: [{ name: 'Min members', type: 'number', default: 1 }],
+      },
+      {
+        id: 'insider_purchase',
+        label: 'Corporate insider purchase',
+        params: [{ name: 'Min value ($)', type: 'number', default: 100000 }],
+      },
+      {
+        id: 'hedge_fund_new_position',
+        label: 'Hedge fund initiates position',
+        params: [{ name: 'Min AUM ($B)', type: 'number', default: 10 }],
+      },
     ],
   },
   {
@@ -429,12 +578,16 @@ export const CONDITION_CATEGORIES = [
       {
         id: 'fed_rate_change',
         label: 'Fed changes interest rate',
-        params: [{ name: 'Direction', type: 'select', options: ['Cut', 'Hike', 'Any'], default: 'Any' }],
+        params: [
+          { name: 'Direction', type: 'select', options: ['Cut', 'Hike', 'Any'], default: 'Any' },
+        ],
       },
       {
         id: 'cpi_surprise',
         label: 'CPI surprise vs consensus',
-        params: [{ name: 'Direction', type: 'select', options: ['Above', 'Below'], default: 'Above' }],
+        params: [
+          { name: 'Direction', type: 'select', options: ['Above', 'Below'], default: 'Above' },
+        ],
       },
       { id: 'yield_curve_inversion', label: 'Yield curve inverts (2Y/10Y)', params: [] },
     ],
@@ -475,7 +628,10 @@ export const EXPLAINER_TRADES = [
     date: '2026-01-15',
     price: '$142.50',
     reasons: [
-      { condition: 'Congress member buys stock', detail: 'Rep. Pelosi disclosed NVDA purchase ($500K–$1M) on 2026-01-14' },
+      {
+        condition: 'Congress member buys stock',
+        detail: 'Rep. Pelosi disclosed NVDA purchase ($500K–$1M) on 2026-01-14',
+      },
       { condition: 'RSI below 30', detail: 'RSI(14) was 28.4 — oversold signal confirmed' },
     ],
     outcome: { exitDate: '2026-02-14', exitPrice: '$168.20', pnl: '+18.0%', holdDays: 30 },
@@ -487,7 +643,10 @@ export const EXPLAINER_TRADES = [
     date: '2026-02-03',
     price: '$198.10',
     reasons: [
-      { condition: 'Corporate insider purchase', detail: 'CEO Tim Cook purchased 50,000 shares ($9.9M) on 2026-02-02' },
+      {
+        condition: 'Corporate insider purchase',
+        detail: 'CEO Tim Cook purchased 50,000 shares ($9.9M) on 2026-02-02',
+      },
     ],
     outcome: { exitDate: '2026-04-03', exitPrice: '$215.40', pnl: '+8.7%', holdDays: 59 },
   },
@@ -498,8 +657,14 @@ export const EXPLAINER_TRADES = [
     date: '2026-03-10',
     price: '$510.00',
     reasons: [
-      { condition: 'Volume spike (vs 20d avg)', detail: 'Volume was 3.2× the 20-day average — institutional accumulation signal' },
-      { condition: 'Price above SMA(50)', detail: 'Price $510 vs SMA(50) $485 — uptrend confirmed' },
+      {
+        condition: 'Volume spike (vs 20d avg)',
+        detail: 'Volume was 3.2× the 20-day average — institutional accumulation signal',
+      },
+      {
+        condition: 'Price above SMA(50)',
+        detail: 'Price $510 vs SMA(50) $485 — uptrend confirmed',
+      },
     ],
     outcome: { exitDate: null, exitPrice: null, pnl: 'Open', holdDays: null },
   },
@@ -507,9 +672,59 @@ export const EXPLAINER_TRADES = [
 
 /* ── Strategy Comparison ──────────────────────────────────── */
 export const COMPARISON_STRATEGIES = [
-  { id: 'cmp-congress', name: 'Follow Congress', returnPct: '+18.4%', sharpe: '1.42', maxDd: '-8.2%', winRate: '67%', trades: 42, alpha: '+6.3%', color: '#6366f1' },
-  { id: 'cmp-momentum', name: 'Momentum RSI', returnPct: '+14.2%', sharpe: '1.18', maxDd: '-12.1%', winRate: '58%', trades: 89, alpha: '+2.1%', color: '#10b981' },
-  { id: 'cmp-insider', name: 'Insider Buying', returnPct: '+22.1%', sharpe: '1.65', maxDd: '-6.8%', winRate: '72%', trades: 28, alpha: '+10.0%', color: '#f59e0b' },
-  { id: 'cmp-mean-rev', name: 'Mean Reversion', returnPct: '+11.8%', sharpe: '1.31', maxDd: '-9.5%', winRate: '62%', trades: 156, alpha: '-0.3%', color: '#ec4899' },
-  { id: 'cmp-sector-rot', name: 'Sector Rotation', returnPct: '+16.7%', sharpe: '1.25', maxDd: '-10.4%', winRate: '61%', trades: 36, alpha: '+4.6%', color: '#06b6d4' },
+  {
+    id: 'cmp-congress',
+    name: 'Follow Congress',
+    returnPct: '+18.4%',
+    sharpe: '1.42',
+    maxDd: '-8.2%',
+    winRate: '67%',
+    trades: 42,
+    alpha: '+6.3%',
+    color: '#6366f1',
+  },
+  {
+    id: 'cmp-momentum',
+    name: 'Momentum RSI',
+    returnPct: '+14.2%',
+    sharpe: '1.18',
+    maxDd: '-12.1%',
+    winRate: '58%',
+    trades: 89,
+    alpha: '+2.1%',
+    color: '#10b981',
+  },
+  {
+    id: 'cmp-insider',
+    name: 'Insider Buying',
+    returnPct: '+22.1%',
+    sharpe: '1.65',
+    maxDd: '-6.8%',
+    winRate: '72%',
+    trades: 28,
+    alpha: '+10.0%',
+    color: '#f59e0b',
+  },
+  {
+    id: 'cmp-mean-rev',
+    name: 'Mean Reversion',
+    returnPct: '+11.8%',
+    sharpe: '1.31',
+    maxDd: '-9.5%',
+    winRate: '62%',
+    trades: 156,
+    alpha: '-0.3%',
+    color: '#ec4899',
+  },
+  {
+    id: 'cmp-sector-rot',
+    name: 'Sector Rotation',
+    returnPct: '+16.7%',
+    sharpe: '1.25',
+    maxDd: '-10.4%',
+    winRate: '61%',
+    trades: 36,
+    alpha: '+4.6%',
+    color: '#06b6d4',
+  },
 ];

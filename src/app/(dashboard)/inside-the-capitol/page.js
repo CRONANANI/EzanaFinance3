@@ -439,7 +439,7 @@ function InsideTheCapitolContent() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/quiver/lobbying');
+        const res = await fetch('/api/lobbying/feed?limit=25');
         const data = res.ok ? await res.json() : [];
         if (cancelled) return;
         const arr = Array.isArray(data) ? data : [];

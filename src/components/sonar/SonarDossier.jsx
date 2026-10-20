@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from 'react';
  * Every panel renders from a REAL wired source and unmounts cleanly when its
  * source returns nothing: Key Stats and the Government Signal band from
  * /api/usaspending/contract-awards + /api/quiver/congress-trades +
- * /api/quiver/lobbying, the chart band from /api/market-data/stock-candles
+ * /api/lobbying/feed, the chart band from /api/market-data/stock-candles
  * with event markers pinned to sourced dates. No invented figures anywhere:
  * a number either traces to a fetched row or its line is omitted.
  *
@@ -87,7 +87,9 @@ function useCongressTrades(ticker) {
 }
 
 function useLobbying(ticker) {
-  const url = ticker ? `/api/quiver/lobbying?ticker=${encodeURIComponent(ticker)}` : null;
+  /* Up to 200 newest reports: enough to cover a calendar year for the
+     biggest corporate filers, which the YTD stat sums. */
+  const url = ticker ? `/api/lobbying/feed?ticker=${encodeURIComponent(ticker)}&limit=200` : null;
   return useJson(url, (j) => (Array.isArray(j) ? j : []));
 }
 

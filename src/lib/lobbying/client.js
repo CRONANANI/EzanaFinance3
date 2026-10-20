@@ -224,8 +224,27 @@ export function getLobbyist(id, opts) {
 
 /* ── Contributions (LD-203) ─────────────────────────────────────────────── */
 
-export function listContributions({ page = 1, pageSize = 25 } = {}, opts) {
-  return ldaGet('contributions', { page, page_size: pageSize }, opts);
+/**
+ * List LD-203 contribution reports. Pages are capped at 25 server-side whatever
+ * page_size says. `ordering: 'dt_posted'` is the stable walk order (verified
+ * 2026-10-20): new reports land at the end, so earlier pages never shift.
+ * `ordering: 'filing_uuid'` is accepted but ignored on this endpoint.
+ * @param {{filingYear, filingPeriod, registrantId, lobbyistId, ordering, page, pageSize}} f
+ */
+export function listContributions(f = {}, opts) {
+  return ldaGet(
+    'contributions',
+    {
+      filing_year: f.filingYear,
+      filing_period: f.filingPeriod,
+      registrant_id: f.registrantId,
+      lobbyist_id: f.lobbyistId,
+      ordering: f.ordering || 'dt_posted',
+      page: f.page || 1,
+      page_size: f.pageSize || 25,
+    },
+    opts,
+  );
 }
 
 /* ── Constants (filter vocabularies — don't count toward the rate limit) ──── */
