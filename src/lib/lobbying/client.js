@@ -119,12 +119,37 @@ export async function ldaGet(path, params = {}, opts = {}) {
       clearTimeout(timer);
       if (res.status === 429 || res.status >= 500) {
         if (attempt < retries) {
-          await sleep(800 * 2 ** attempt);
+          // Honour Retry-After (seconds) when sent, capped so one call can
+          // never eat the run's wall clock.
+          const retryAfter = Number(res.headers.get('retry-after'));
+          await sleep(
+            Number.isFinite(retryAfter) && retryAfter > 0
+              ? Math.min(retryAfter * 1000, 10000)
+              : 800 * 2 ** attempt,
+          );
           continue;
         }
       }
       if (!res.ok) {
-        return { ok: false, status: res.status, error: `HTTP ${res.status}`, data: null };
+        // Keep a short slice of the body: LDA explains throttles and bad
+        // tokens there, and without it a failed run is indistinguishable
+        // from an empty one.
+        let detail = '';
+        try {
+          detail = (await res.text()).slice(0, 160).replace(/\s+/g, ' ').trim();
+        } catch {
+          /* body unreadable */
+        }
+        const error = `HTTP ${res.status}${detail ? `: ${detail}` : ''}`;
+        console.error(`[lda] ${path} page=${clean.page ?? '-'} ${error}`);
+        return {
+          ok: false,
+          status: res.status,
+          error,
+          data: null,
+          authRejected: res.status === 401 || res.status === 403,
+          rateLimited: res.status === 429,
+        };
       }
       const data = await res.json();
       return { ok: true, status: 200, data };
@@ -134,7 +159,9 @@ export async function ldaGet(path, params = {}, opts = {}) {
         await sleep(800 * 2 ** attempt);
         continue;
       }
-      return { ok: false, status: 0, error: err?.message || 'fetch failed', data: null };
+      const error = err?.name === 'AbortError' ? 'timeout' : err?.message || 'fetch failed';
+      console.error(`[lda] ${path} page=${clean.page ?? '-'} ${error}`);
+      return { ok: false, status: 0, error, data: null };
     }
   }
   return { ok: false, status: 0, error: 'exhausted retries', data: null };

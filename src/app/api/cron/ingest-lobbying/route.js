@@ -45,6 +45,20 @@ const REQUESTED_PAGE_SIZE = 100;
    is the function's wall clock rather than the rate limit: 300 requests at one
    per 500ms is 150s, inside the 300s maxDuration below. */
 const REQUEST_BUDGET = 300;
+/* Vercel stops the function at maxDuration (300s), and a full hourly run was
+   taking about five minutes. Stop starting new pages at 240s so every run
+   leaves time to persist its cursors instead of being cut off mid-write. */
+const RUN_DEADLINE_MS = 240_000;
+
+/** Out of requests or out of wall clock: stop starting new pages. */
+function outOfTime(budget) {
+  return budget.remaining < 2 || Date.now() > (budget.deadlineAt ?? Infinity);
+}
+
+/** A failure that will repeat for every quarter this run (bad key, throttled). */
+function isRunFatal(res) {
+  return Boolean(res?.authRejected || res?.rateLimited);
+}
 
 function isAuthorized(request) {
   const secret = process.env.CRON_SECRET;
@@ -169,9 +183,10 @@ async function backfillQuarter(
   let delta = 0;
   let done = false;
   let valReason = null;
+  let fetchFail = null;
 
   for (let i = 0; i < maxPages; i++) {
-    if (budget.remaining < 2) break;
+    if (outOfTime(budget)) break;
     const page = lastPage + 1;
     const res = await listFilings(
       {
@@ -185,6 +200,7 @@ async function backfillQuarter(
     );
     if (!res.ok) {
       errors.push(`${year} ${quarter} p${page}: ${res.error}`);
+      fetchFail = { reason: `p${page} ${res.error}`.slice(0, 300), fatal: isRunFatal(res) };
       break;
     }
     const results = Array.isArray(res.data?.results) ? res.data.results : [];
@@ -224,7 +240,8 @@ async function backfillQuarter(
      `done` is set by the absence of a `next` link (or an empty page), which
      is the server telling us there is no more. rows_fetched >= totalCount is
      the backstop for a feed that omits `next` on the last page. */
-  const complete = !valReason && (done || (totalCount != null && rowsFetched >= totalCount));
+  const complete =
+    !valReason && !fetchFail && (done || (totalCount != null && rowsFetched >= totalCount));
   return {
     year,
     quarter,
@@ -236,8 +253,11 @@ async function backfillQuarter(
     phase: complete ? 'incremental' : 'backfill',
     rows_upserted: (state?.rows_upserted || 0) + delta,
     last_run_at: new Date().toISOString(),
-    last_status: valReason ? 'failed' : 'ok',
-    last_reason: valReason,
+    // A failed fetch is a failure, not an 'ok' with zero rows: it used to be
+    // recorded as ok/null, which hid every stalled run.
+    last_status: valReason || fetchFail ? 'failed' : 'ok',
+    last_reason: valReason || fetchFail?.reason || null,
+    _fatal: Boolean(fetchFail?.fatal),
     last_delta: delta,
     updated_at: new Date().toISOString(),
     _delta: delta,
@@ -254,9 +274,10 @@ async function incrementalQuarter(admin, budget, { year, quarter, state }, maxPa
   const since = state?.last_seen_posted ? Date.parse(state.last_seen_posted) : null;
   let delta = 0;
   let newest = since;
+  let fetchFail = null;
 
   for (let page = 1; page <= maxPages; page++) {
-    if (budget.remaining < 2) break;
+    if (outOfTime(budget)) break;
     const res = await listFilings(
       {
         filingYear: year,
@@ -269,6 +290,7 @@ async function incrementalQuarter(admin, budget, { year, quarter, state }, maxPa
     );
     if (!res.ok) {
       errors.push(`${year} ${quarter} inc p${page}: ${res.error}`);
+      fetchFail = { reason: `inc p${page} ${res.error}`.slice(0, 300), fatal: isRunFatal(res) };
       break;
     }
     const results = Array.isArray(res.data?.results) ? res.data.results : [];
@@ -315,8 +337,9 @@ async function incrementalQuarter(admin, budget, { year, quarter, state }, maxPa
       newest != null ? new Date(newest).toISOString() : state?.last_seen_posted || null,
     rows_upserted: (state?.rows_upserted || 0) + delta,
     last_run_at: new Date().toISOString(),
-    last_status: 'ok',
-    last_reason: null,
+    last_status: fetchFail ? 'failed' : 'ok',
+    last_reason: fetchFail?.reason || null,
+    _fatal: Boolean(fetchFail?.fatal),
     last_delta: delta,
     updated_at: new Date().toISOString(),
     _delta: delta,
@@ -332,8 +355,9 @@ async function incrementalQuarter(admin, budget, { year, quarter, state }, maxPa
 async function rescanQuarter(admin, budget, { year, quarter, state }, pages, errors) {
   const periodCode = QUARTER_PERIOD_CODE[quarter];
   let delta = 0;
+  let fetchFail = null;
   for (let page = 1; page <= pages; page++) {
-    if (budget.remaining < 2) break;
+    if (outOfTime(budget)) break;
     const res = await listFilings(
       {
         filingYear: year,
@@ -346,6 +370,7 @@ async function rescanQuarter(admin, budget, { year, quarter, state }, pages, err
     );
     if (!res.ok) {
       errors.push(`${year} ${quarter} rescan p${page}: ${res.error}`);
+      fetchFail = { reason: `rescan p${page} ${res.error}`.slice(0, 300), fatal: isRunFatal(res) };
       break;
     }
     const results = Array.isArray(res.data?.results) ? res.data.results : [];
@@ -372,8 +397,9 @@ async function rescanQuarter(admin, budget, { year, quarter, state }, pages, err
     last_seen_posted: state?.last_seen_posted || null,
     rows_upserted: (state?.rows_upserted || 0) + 0, // rescan overwrites; don't inflate cumulative
     last_run_at: new Date().toISOString(),
-    last_status: 'ok',
-    last_reason: 'rescan',
+    last_status: fetchFail ? 'failed' : 'ok',
+    last_reason: fetchFail?.reason || 'rescan',
+    _fatal: Boolean(fetchFail?.fatal),
     last_delta: delta,
     updated_at: new Date().toISOString(),
     _delta: delta,
@@ -410,13 +436,17 @@ export async function GET(request) {
   const mode = (searchParams.get('mode') || 'auto').toLowerCase();
   const admin = getAdminClient();
   const budget = createLdaBudget(REQUEST_BUDGET);
+  budget.deadlineAt = Date.now() + RUN_DEADLINE_MS;
+  /* Set by the first auth or throttle failure: every later quarter would hit
+     the same wall, so the run stops instead of burning a request on each. */
+  let stopReason = null;
   const states = await loadStates(admin, targetYears);
   const errors = [];
   const results = [];
   const mergeSink = []; // sample of fetched rows for over-merge visibility
 
   const persist = async (next) => {
-    const { _delta, ...row } = next;
+    const { _delta, _fatal, ...row } = next;
     /* rows_fetched arrives with its own migration, applied by hand after this
        deploys. Until then PostgREST would reject the whole cursor write for
        that one unknown column, which would freeze the ingest entirely — so
@@ -446,7 +476,10 @@ export async function GET(request) {
       rowsFetched: row.rows_fetched,
       totalCount: row.total_count,
       complete: row.complete,
+      status: row.last_status,
+      reason: row.last_reason,
     });
+    if (_fatal && !stopReason) stopReason = `${row.year} ${row.quarter}: ${row.last_reason}`;
   };
 
   if (mode === 'rescan') {
@@ -454,7 +487,7 @@ export async function GET(request) {
     const rescanPages = Math.min(Math.max(Number(searchParams.get('rescanPages')) || 3, 1), 10);
     for (const year of targetYears) {
       for (const quarter of targetQuarters) {
-        if (budget.remaining < 3) break;
+        if (stopReason || outOfTime(budget)) break;
         const state = states.get(`${year}-${quarter}`) || null;
         await persist(
           await rescanQuarter(admin, budget, { year, quarter, state }, rescanPages, errors),
@@ -474,23 +507,25 @@ export async function GET(request) {
     }
     incomplete.sort((a, b) => (a.state?.last_page || 0) - (b.state?.last_page || 0));
 
-    for (const it of incomplete) {
-      errors.push(
-        `cursor-read ${it.year}-${it.quarter}: state=${it.state ? `last_page=${it.state.last_page}` : 'NULL(miss)'}`,
-      );
-    }
-
+    /* The per-quarter cursor-read lines that used to be pushed here filled
+       the first eleven of the twelve error slots in the response, so a real
+       fetch failure was never visible. Cursor state is in `quarters` below. */
     for (const item of incomplete) {
-      if (budget.remaining < 3) break;
+      if (stopReason || outOfTime(budget)) break;
       await persist(await backfillQuarter(admin, budget, item, pagesPerQuarter, errors, mergeSink));
     }
     for (const item of complete) {
-      if (budget.remaining < 3) break;
+      if (stopReason || outOfTime(budget)) break;
       await persist(await incrementalQuarter(admin, budget, item, 3, errors));
     }
   }
 
-  const constantsUpserted = await refreshConstants(admin, budget);
+  const deadlineHit = Date.now() > budget.deadlineAt;
+  const constantsUpserted = stopReason ? 0 : await refreshConstants(admin, budget);
+  if (errors.length) {
+    console.error('[ingest-lobbying] errors:', JSON.stringify(errors.slice(0, 20)));
+  }
+  if (stopReason) console.error('[ingest-lobbying] run stopped early:', stopReason);
 
   // Over-merge visibility: log the biggest canonical merges so a bad merge
   // (two distinct companies collapsed) is spot-checkable in run logs.
@@ -512,8 +547,10 @@ export async function GET(request) {
   if (results.some((r) => r.delta)) revalidateTag('hubs');
 
   return NextResponse.json({
-    ok: true,
+    ok: !stopReason,
     mode,
+    stoppedReason: stopReason,
+    deadlineHit,
     quarters: results,
     filingsUpserted: results.reduce((s, r) => s + (r.delta || 0), 0),
     constantsUpserted,
