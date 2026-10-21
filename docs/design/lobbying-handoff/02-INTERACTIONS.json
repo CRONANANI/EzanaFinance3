@@ -1,0 +1,81 @@
+{
+  "page": "/datasets/government/lobbying",
+  "design": "Ten-card Lobbying Activity, Oct 2026",
+  "url": {
+    "period": "?period=fy2024|fy2025|ytd|q1..q4|90d, default fy2025; omitted when default",
+    "issue": "?issue=<code>, omitted when All",
+    "entity": "?entity=congress|executive|independent, omitted when All",
+    "min": "?min=<stop>, discrete stops 0,10K,50K,100K,250K,500K,1M,5M,10M; omitted when 0",
+    "public": "?public=1 when the toggle is on, omitted otherwise",
+    "q": "?q=<text> over client and firm, omitted when empty",
+    "filing": "?filing=<uuid> opens the filing modal; survives refresh",
+    "company": "?company=<ticker> opens the company modal",
+    "history": "filter changes use router.replace; opening a modal pushes one history entry so Back closes it"
+  },
+  "filter_bar": {
+    "position": "sticky under the shared chrome, full-bleed hairlines top and bottom",
+    "row_1": ["period segmented (FY 2024, FY 2025, 2026 YTD, Quarter, 90 days; Quarter opens a small quarter picker)", "entity segmented (All, Congress, Executive, Independent)", "min-amount slider over the discrete stops with the current stop labelled in mono", "Public companies only toggle (aria-pressed)", "search pill", "Reset link"],
+    "row_2": "issue chips: All + top 12 by filing count with live mono counts, then an 'All 79 issues…' chip opening a searchable sheet; selected chip emerald",
+    "phone": "row of scrolling issue chips plus a Filters chip (count of non-default filters) opening a bottom sheet: period, entity, min, toggle, search, Reset, 'Show N filings'",
+    "live_counts": "issue chip counts respect period, entity, min and public filters"
+  },
+  "filters_apply_to": {
+    "pulse": ["period", "issue", "entity", "min", "public", "q"],
+    "leaderboard": ["period", "issue", "entity", "min", "public", "q"],
+    "issues": ["period", "entity", "min", "public"],
+    "pressure": ["period", "min", "public"],
+    "rhythm": ["issue", "entity", "min", "public"],
+    "door": ["period", "issue", "entity"],
+    "lens": ["period", "issue", "min"],
+    "ratio": ["window toggle only (1y/2y); page filters do not apply, the ratio endpoint is per-ticker aggregate"],
+    "members": ["period (LD-203 semiannual periods map from the page period), type chips, min"],
+    "table": ["period", "issue", "entity", "min", "public", "q", "mode"]
+  },
+  "cards": {
+    "pulse": { "tiles": 5, "yoy": "vs same period last year, emerald up, --echo-chart-red down, sign and arrow always", "note": "spend tile carries the registrations note" },
+    "leaderboard": {
+      "toggle": "Clients | Firms",
+      "row": "rank, name, ticker chip when mapped, bar vs rank 1, spend mono, share of period total",
+      "row_click": "opens the client drawer: sparkline of filings over time, issues cited, firms hired, latest filings each linking to the filing modal",
+      "coverage": "amber chip when ingest-status says the period is below 100%"
+    },
+    "issues": { "row_click": "sets ?issue= and the chip row; aria-pressed on the active row" },
+    "pressure": {
+      "cell_hover": "tooltip: issue x body, filing count, top three clients for the cell",
+      "cell_click": "sets the issue filter",
+      "scroll": "horizontal scroll inside the card under 1100px",
+      "a11y": "visually hidden table fallback with the same counts"
+    },
+    "rhythm": { "ghost": "unfiled future quarters draw dashed ghost bars labelled 'Not yet filed'", "partial": "the in-progress quarter carries the received percent from ingest-status" },
+    "door": { "expand": "firm row expands to covered positions as filed; one open at a time; aria-expanded" },
+    "lens": {
+      "tile_click": "opens the company modal: price chart with quarterly lobbying spend overlaid as bars, largest filings, firms hired; emerald only",
+      "badges": "verified: solid patch-check in emerald; exact-name: dashed 'Name match' chip with the tooltip"
+    },
+    "ratio": { "toggle": "1 year | 2 years", "dot_hover": "company, lobbying spend, contract awards", "list": "top 5 awards per lobbying dollar" },
+    "members": {
+      "tabs": "Top honorees | Top committees | Largest items",
+      "type_chips": "FECA, Honorary, Meeting, Inaugural, Library with mono counts; chips filter the card",
+      "no_links": "honoree rows never link anywhere"
+    },
+    "table": {
+      "modes": "Public companies (default) | Largest | Most recent",
+      "row": "View opens the filing modal; issues render as max 3 chips plus +N",
+      "csv": "Export CSV signed-in; signed-out shows the link disabled with a sign-in tooltip"
+    }
+  },
+  "states": {
+    "loading": "shimmer skeleton in each card's own shape; reserved heights so nothing jumps",
+    "empty": "one sentence naming the active filters plus a way out; Reset chip on Pulse and Table",
+    "partial": "amber chip '{quarter} is still being filed, {pct}% received' on Pulse, Leaderboard, Issues, Pressure; rhythm flags the bar",
+    "error": "standard line + Retry refetching only that card"
+  },
+  "keyboard": {
+    "focus": "2px emerald ring, offset 2, on every chip, segment, slider, toggle, row, cell group, tab and link",
+    "segments_chips": "radiogroup/radio; tabs are tablist/tab with arrow keys",
+    "slider": "role slider, arrow keys move between stops, aria-valuetext is the stop label",
+    "modals": "focus trap, Escape closes, focus returns to the opener; drawer likewise",
+    "rows": "clickable rows are buttons; expanders separate buttons with aria-expanded"
+  },
+  "motion": { "hover": "0.15s", "card": "0.2s", "modal": "0.35s", "numbers": "0.3s tick on filter change", "reduced_motion": "no shimmer, no ticks, instant states" }
+}

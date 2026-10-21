@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Issue landscape</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./lbx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="lbx-root" style="width: 100%; display: flex;">
+<section class="lbx-card" aria-labelledby="lbx-iss-t" style="flex: 1; width: 100%; display: flex; flex-direction: column;">
+  <div class="lbx-head">
+    <div>
+      <h2 id="lbx-iss-t" class="lbx-title">Share of filings by issue</h2>
+      <p class="lbx-sub">Top 12 of 79 issue areas · FY 2025</p>
+    </div>
+    <sc-if value="{{isPartial}}" hint-placeholder-val="{{ false }}">
+      <span class="lbx-note">Period still being filed</span>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{showData}}" hint-placeholder-val="{{ true }}">
+    <ol style="list-style: none; margin: 0 -8px; padding: 0; display: flex; flex-direction: column;">
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="12">
+        <li>
+          <button type="button" class="lbx-row lbx-row-btn {{r.onCls}}" aria-pressed="{{r.on}}" style="display: grid; grid-template-columns: minmax(0, 132px) minmax(0, 1fr) 72px; align-items: center; gap: 10px; padding: 7px 8px; min-height: 42px; background: {{r.bg}};" aria-label="Filter the page to {{r.name}}">
+            <span class="lbx-ellipsis" style="font-size: 12.5px; font-weight: {{r.fw}}; color: var(--text-primary);">{{r.name}}</span>
+            <span class="lbx-track" style="height: 10px;" aria-hidden="true"><span style="width: {{r.w}}; background: {{r.fill}};"></span></span>
+            <span style="text-align: right; display: flex; flex-direction: column; gap: 1px;">
+              <span class="lbx-mono" style="font-size: 12.5px; font-weight: 700; color: var(--text-primary);">{{r.share}}</span>
+              <span class="lbx-mono" style="font-size: 10px; color: var(--text-faint);">{{r.count}}</span>
+            </span>
+          </button>
+        </li>
+      </sc-for>
+    </ol>
+    <div style="margin-top: auto; padding-top: 12px; display: flex; flex-direction: column; gap: 4px;">
+      <p class="lbx-legal" style="margin: 0;">The LDA does not report dollars per issue, so this shows activity, not spend.</p>
+      <p class="lbx-legal" style="margin: 0;">Filings cite several issues, so shares total more than 100%. Select an issue to filter the page.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading issue landscape" style="display: flex; flex-direction: column; gap: 8px;">
+      <sc-for list="{{twelve}}" as="x" hint-placeholder-count="12">
+        <div style="height: 34px; display: grid; grid-template-columns: 120px minmax(0, 1fr) 60px; align-items: center; gap: 10px; padding: 0 8px;">
+          <span class="lbx-skel" style="height: 10px; width: 86%;"></span>
+          <span class="lbx-skel" style="height: 10px;"></span>
+          <span class="lbx-skel" style="height: 10px;"></span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div class="lbx-statebox" style="flex: 1; min-height: 480px;">
+      <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">No filings match these filters</div>
+      <p class="lbx-state" style="margin: 0; max-width: 400px;">No filing in <span style="color: var(--text-primary);">White House · $5M+ · 90 days</span> cites an issue. Widen the period or clear the minimum.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" class="lbx-statebox" style="flex: 1; min-height: 480px; align-items: flex-start;">
+      <p class="lbx-state" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="lbx-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","partial","error"],"default":"default"},"viewport":{"editor":"enum","options":["desktop","phone"],"default":"desktop"},"$preview":{"width":560,"height":760}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { sel: 'Health issues' }; }
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    const DATA = [
+      ['Health issues', 13.8, 6827], ['Taxation', 11.2, 5541], ['Budget & appropriations', 10.4, 5145],
+      ['Defense', 8.1, 4007], ['Trade', 6.9, 3414], ['Energy & nuclear', 6.2, 3067],
+      ['Telecom & technology', 5.8, 2869], ['Transportation', 4.9, 2424], ['Environment', 4.3, 2127],
+      ['Financial institutions', 4.1, 2028], ['Agriculture', 3.4, 1682], ['Immigration', 3.1, 1534]
+    ];
+    const max = DATA[0][1];
+    const rows = DATA.map(([name, share, count]) => {
+      const on = this.state.sel === name;
+      return {
+        name, on: String(on), onCls: on ? 'is-on' : '',
+        fw: on ? 700 : 500,
+        bg: on ? 'var(--emerald-bg)' : 'transparent',
+        fill: on ? 'var(--emerald)' : 'var(--echo-chart-blue)',
+        share: share.toFixed(1) + '%',
+        count: count.toLocaleString('en-US') + ' filings',
+        w: Math.round((share / max) * 100) + '%',
+        pick: () => this.setState({ sel: name })
+      };
+    }).map((r) => ({ ...r }));
+    return {
+      showData: s === 'default' || s === 'partial',
+      isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error', isPartial: s === 'partial',
+      rows, twelve: Array.from({ length: 12 }, (_, i) => i)
+    };
+  }
+}
+</script>
+</body>
+</html>

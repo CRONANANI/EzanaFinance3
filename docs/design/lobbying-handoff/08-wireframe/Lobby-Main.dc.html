@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lobbying activity · desktop</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./lbx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="lbx-root {{themeClass}}" style="min-height: 100%;">
+
+  <!-- shared datasets chrome stand-in: belt publishes latest filings -->
+  <header style="height: 56px; border-bottom: 1px solid var(--border-primary); display: flex; align-items: center; background: var(--bg-primary);">
+    <div style="width: 100%; max-width: 1440px; margin: 0 auto; padding: 0 {{gutter}}; display: flex; align-items: center; gap: 20px; min-width: 0;">
+      <span style="flex: none; display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em;">
+        <span aria-hidden="true" style="width: 22px; height: 22px; border-radius: var(--radius-sm); background: var(--emerald-bg-hover); border: 1px solid var(--emerald-border); display: inline-block;"></span>Ezana
+      </span>
+      <div aria-hidden="true" style="flex: 1; min-width: 0; overflow: hidden; display: flex; gap: 22px; align-items: center; -webkit-mask-image: linear-gradient(to right, transparent 0, black 32px, black calc(100% - 32px), transparent 100%); mask-image: linear-gradient(to right, transparent 0, black 32px, black calc(100% - 32px), transparent 100%);">
+        <sc-for list="{{belt}}" as="b" hint-placeholder-count="4">
+          <span style="display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; font-size: 12.5px; color: var(--text-muted);">
+            <span style="color: var(--text-primary); font-weight: 500;">{{b.c}}</span>
+            <span class="lbx-mono" style="color: var(--emerald-text); font-weight: 600;">{{b.a}}</span>
+            <span class="lbx-mono" style="font-size: 10px; letter-spacing: 0.06em;">{{b.i}}</span>
+          </span>
+        </sc-for>
+      </div>
+    </div>
+  </header>
+
+  <main style="width: 100%; max-width: 1440px; margin: 0 auto; padding: 0 {{gutter}} 64px;">
+
+    <!-- header -->
+    <section style="padding: 28px 0 20px; display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: flex-end; justify-content: space-between;">
+      <div style="flex: 999 1 520px; min-width: 0;">
+        <div class="lbx-kicker" style="margin-bottom: 10px;">Datasets · Lobbying activity</div>
+        <h1 style="margin: 0; font-size: {{h1Size}}; font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary); line-height: 1.15;">Lobbying activity</h1>
+        <p style="margin: 10px 0 0; max-width: 700px; font-size: 14px; line-height: 1.6; color: var(--text-muted);">Who pays to influence Washington, on which issues, through which firms, and how that reaches public companies and the members they fund.</p>
+      </div>
+      <div class="lbx-mono" style="flex: 1 1 220px; font-size: 12px; color: var(--text-muted); text-align: {{tsAlign}};">Filings as of <span style="color: var(--text-primary);">Oct 21, 2026</span></div>
+    </section>
+
+    <!-- sticky filter bar -->
+    <div role="region" aria-label="Filing filters" style="position: sticky; top: 0; z-index: 5; margin: 0 -{{gutter}} 28px; padding: 12px {{gutter}}; background: var(--bg-primary); border-top: 1px solid var(--border-secondary); border-bottom: 1px solid var(--border-secondary);">
+      <sc-if value="{{isDesktop}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <div class="lbx-seg" role="radiogroup" aria-label="Period">
+              <sc-for list="{{periods}}" as="p" hint-placeholder-count="5">
+                <button type="button" role="radio" aria-checked="{{p.on}}" class="{{p.cls}}" onClick="{{p.pick}}">{{p.label}}</button>
+              </sc-for>
+            </div>
+            <div class="lbx-seg" role="radiogroup" aria-label="Government entity group">
+              <sc-for list="{{entities}}" as="e" hint-placeholder-count="4">
+                <button type="button" role="radio" aria-checked="{{e.on}}" class="{{e.cls}}" onClick="{{e.pick}}">{{e.label}}</button>
+              </sc-for>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="lbx-kicker" style="font-size: 10px;">Min</span>
+              <div style="position: relative; width: 140px; height: 20px;" role="slider" aria-label="Minimum amount" aria-valuetext="$100K" tabindex="0">
+                <span aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 9px; height: 3px; border-radius: 2px; background: var(--border-primary);"></span>
+                <span aria-hidden="true" style="position: absolute; left: 0; width: 38%; top: 9px; height: 3px; border-radius: 2px; background: var(--emerald);"></span>
+                <span aria-hidden="true" style="position: absolute; left: 38%; top: 4px; width: 13px; height: 13px; margin-left: -7px; border-radius: 50%; background: var(--emerald); border: 2px solid var(--bg-primary);"></span>
+              </div>
+              <span class="lbx-mono" style="font-size: 11px; font-weight: 600; color: var(--emerald-text);">$100K+</span>
+            </div>
+            <button type="button" class="lbx-chip is-on" aria-pressed="true" style="min-height: 28px; font-size: 12px;">
+              <span aria-hidden="true" style="width: 24px; height: 13px; border-radius: 9999px; border: 1px solid currentColor; position: relative; display: inline-block;"><span style="position: absolute; top: 2px; left: 13px; width: 7px; height: 7px; border-radius: 50%; background: currentColor;"></span></span>
+              Public companies only
+            </button>
+            <label class="lbx-search" style="margin-left: auto;">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 1.6; stroke-linecap: round;" aria-hidden="true"><circle cx="7" cy="7" r="5"></circle><path d="M11 11l3.5 3.5"></path></svg>
+              <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Search clients or firms</span>
+              <input type="search" placeholder="Search clients or firms…">
+            </label>
+            <button type="button" class="lbx-link" style="background: none; border: 0; font-size: 12px; padding: 0;">Reset</button>
+          </div>
+          <div role="radiogroup" aria-label="Issue area" style="display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px;">
+            <sc-for list="{{issues}}" as="c" hint-placeholder-count="13">
+              <button type="button" role="radio" aria-checked="{{c.on}}" class="lbx-chip {{c.cls}}" style="min-height: 28px; font-size: 12px;" onClick="{{c.pick}}">{{c.label}} <span class="lbx-mono">{{c.n}}</span></button>
+            </sc-for>
+            <button type="button" class="lbx-chip" style="min-height: 28px; font-size: 12px;">All 79 issues…</button>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{isPhone}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div role="radiogroup" aria-label="Issue area" style="display: flex; gap: 6px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; padding: 2px;">
+            <sc-for list="{{issuesShort}}" as="c" hint-placeholder-count="5">
+              <button type="button" role="radio" aria-checked="{{c.on}}" class="lbx-chip {{c.cls}}" style="min-height: 36px;">{{c.label}}</button>
+            </sc-for>
+          </div>
+          <button type="button" class="lbx-chip" style="flex: none; min-height: 36px;" aria-haspopup="dialog">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 1.6; stroke-linecap: round;" aria-hidden="true"><path d="M2 4h12M4.5 8h7M7 12h2"></path></svg>
+            Filters <span class="lbx-mono">3</span>
+          </button>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 28px;">
+
+      <dc-import name="LbxPulse" state="{{cardState}}" viewport="{{viewport}}" hint-size="100%,190px"></dc-import>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: stretch;">
+        <div style="flex: 7 1 540px; min-width: 0; display: flex;"><dc-import name="LbxLeaderboard" state="{{cardState}}" viewport="{{viewport}}" hint-size="100%,720px"></dc-import></div>
+        <div style="flex: 5 1 400px; min-width: 0; display: flex;"><dc-import name="LbxIssues" state="{{cardState}}" viewport="{{viewport}}" hint-size="100%,720px"></dc-import></div>
+      </div>
+
+      <dc-import name="LbxPressure" state="{{cardState}}" viewport="{{viewport}}" hint-size="100%,620px"></dc-import>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: stretch;">
+        <div style="flex: 1 1 480px; min-width: 0; display: flex;"><dc-import name="LbxRhythm" state="{{cardState}}" viewport="{{viewport}}" hint-size="100%,500px"></dc-import></div>
+        <div style="flex: 1 1 480px; min-width: 0; display: flex;"><dc-import name="LbxDoor" state="{{cardState}}" viewport="{{viewport}}" hint-size="100%,500px"></dc-import></div>
+      </div>
+
+      <dc-import name="LbxLens" state="{{cardState}}" viewport="{{viewport}}" hint-size="100%,560px"></dc-import>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: stretch;">
+        <div style="flex: 1 1 480px; min-width: 0; display: flex;"><dc-import name="LbxRatio" state="{{cardState}}" viewport="{{viewport}}" hint-size="100%,540px"></dc-import></div>
+        <div style="flex: 1 1 480px; min-width: 0; display: flex;"><dc-import name="LbxMembers" state="{{cardState}}" viewport="{{viewport}}" hint-size="100%,540px"></dc-import></div>
+      </div>
+
+      <dc-import name="LbxTable" state="{{cardState}}" viewport="{{viewport}}" hint-size="100%,620px"></dc-import>
+
+      <!-- sign-up band -->
+      <sc-if value="{{signedOut}}" hint-placeholder-val="{{ true }}">
+        <section aria-labelledby="lbx-su-t" style="border: 1px solid var(--emerald-border); background: var(--emerald-bg); border-radius: var(--radius-xl); padding: {{bandPad}}; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px;">
+          <div style="flex: 999 1 420px; min-width: 0;">
+            <div class="lbx-kicker" style="color: var(--emerald-text); margin-bottom: 8px;">Free account</div>
+            <h2 id="lbx-su-t" style="margin: 0; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; color: var(--text-primary);">Follow the money behind the markets</h2>
+            <p style="margin: 6px 0 0; font-size: 14px; color: var(--text-muted); max-width: 560px;">Save companies to a watchlist, export disclosures to CSV, and get an alert when a client you follow files.</p>
+          </div>
+          <div style="flex: 1 1 auto; display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+            <a href="#" class="lbx-btn">Sign up free</a>
+            <a href="#" class="lbx-btn lbx-btn--ghost">Log in</a>
+          </div>
+        </section>
+      </sc-if>
+
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <p class="lbx-legal" style="margin: 0;">Source: Senate LDA (lda.gov). Amounts are as reported by filers. For educational purposes only. Not financial advice.</p>
+        <p class="lbx-legal lbx-mono" style="margin: 0; font-size: 10px;">Coverage: 2024 complete · 2025 complete · 2026 Q1 100% · Q2 100% · Q3 64%, still being filed · last sync Oct 21, 06:00 ET</p>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"viewport":{"editor":"enum","options":["desktop","phone"],"default":"desktop"},"cardState":{"editor":"enum","options":["default","loading","empty","partial","error"],"default":"default"},"signedOut":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":6150}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { period: 'FY 2025', entity: 'All', issue: 'All' }; }
+  renderVals() {
+    const p = this.props;
+    const theme = p.theme ?? 'dark';
+    const viewport = p.viewport ?? 'desktop';
+    const phone = viewport === 'phone';
+    const seg = (list, key) => list.map((label) => ({
+      label, on: String(this.state[key] === label), cls: this.state[key] === label ? 'is-on' : '',
+      pick: () => this.setState({ [key]: label })
+    }));
+    const ISSUES = [['All', '49,473'], ['Health', '6,827'], ['Tax', '5,541'], ['Budget', '5,145'], ['Defense', '4,007'], ['Trade', '3,414'], ['Energy', '3,067'], ['Tech', '2,869'], ['Transport', '2,424'], ['Environment', '2,127'], ['Financial', '2,028'], ['Agriculture', '1,682'], ['Immigration', '1,534']];
+    const issues = ISSUES.map(([label, n]) => ({
+      label, n, on: String(this.state.issue === label), cls: this.state.issue === label ? 'is-on' : '',
+      pick: () => this.setState({ issue: label })
+    }));
+    return {
+      themeClass: theme === 'light' ? 'lbx-light' : 'lbx-dark',
+      viewport, isDesktop: !phone, isPhone: phone,
+      gutter: phone ? '16px' : '24px',
+      h1Size: phone ? '1.5rem' : '1.875rem',
+      tsAlign: phone ? 'left' : 'right',
+      bandPad: phone ? '20px' : '28px 32px',
+      cardState: p.cardState ?? 'default',
+      signedOut: p.signedOut ?? true,
+      periods: seg(['FY 2024', 'FY 2025', '2026 YTD', 'Quarter', '90 days'], 'period'),
+      entities: seg(['All', 'Congress', 'Executive', 'Independent'], 'entity'),
+      issues, issuesShort: issues.slice(0, 5),
+      belt: [
+        { c: 'U.S. Chamber of Commerce', a: '$18.6M', i: 'TAX' },
+        { c: 'Meta Platforms', a: '$5.8M', i: 'TECH' },
+        { c: 'Lockheed Martin', a: '$3.5M', i: 'DEFENSE' },
+        { c: 'Pfizer', a: '$3.1M', i: 'HEALTH' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

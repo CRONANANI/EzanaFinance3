@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quarterly rhythm</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./lbx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="lbx-root" style="width: 100%; display: flex;">
+<section class="lbx-card" aria-labelledby="lbx-qr-t" style="flex: 1; width: 100%; display: flex; flex-direction: column;">
+  <div class="lbx-head">
+    <div>
+      <h2 id="lbx-qr-t" class="lbx-title">Quarterly rhythm</h2>
+      <p class="lbx-sub">Disclosed spend and filings · 2024 Q1 to 2026 Q4</p>
+    </div>
+    <div style="display: flex; gap: 14px; align-items: center; font-size: 11px; color: var(--text-muted); flex-wrap: wrap;">
+      <span style="display: inline-flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 2px; background: var(--echo-chart-blue); opacity: 0.75;"></span>Spend, $M</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 14px; height: 2px; background: var(--emerald);"></span>Filings</span>
+    </div>
+  </div>
+
+  <sc-if value="{{showData}}" hint-placeholder-val="{{ true }}">
+    <figure style="margin: 0; display: flex; flex-direction: column; gap: 6px;">
+      <div style="position: relative; height: 240px; padding-left: 40px;">
+        <sc-for list="{{yTicks}}" as="t" hint-placeholder-count="4">
+          <span aria-hidden="true" style="position: absolute; left: 40px; right: 0; bottom: {{t.b}}; border-top: 1px solid var(--echo-chart-grid);"></span>
+          <span class="lbx-mono" style="position: absolute; left: 0; bottom: {{t.b}}; transform: translateY(50%); font-size: 10px; color: var(--text-faint);">{{t.l}}</span>
+        </sc-for>
+        <div role="img" aria-label="{{summary}}" style="position: absolute; left: 40px; right: 0; top: 0; bottom: 0; display: flex; align-items: flex-end; gap: 8px;">
+          <sc-for list="{{bars}}" as="b" hint-placeholder-count="12">
+            <span style="flex: 1; position: relative; display: flex; flex-direction: column; justify-content: flex-end; height: 100%;">
+              <sc-if value="{{b.ghost}}" hint-placeholder-val="{{ false }}">
+                <span style="height: {{b.h}}; border: 1px dashed var(--border-hover); border-bottom: 0; border-radius: 3px 3px 0 0; display: flex; align-items: flex-start; justify-content: center;">
+                  <span class="lbx-mono" style="font-size: 8.5px; color: var(--text-ghost); padding-top: 4px; text-align: center; line-height: 1.3;">Not yet<br>filed</span>
+                </span>
+              </sc-if>
+              <sc-if value="{{b.solid}}" hint-placeholder-val="{{ true }}">
+                <span style="height: {{b.h}}; background: var(--echo-chart-blue); opacity: {{b.op}}; border-radius: 3px 3px 0 0;"></span>
+                <sc-if value="{{b.part}}" hint-placeholder-val="{{ false }}">
+                  <span class="lbx-mono" style="position: absolute; left: 50%; transform: translateX(-50%); bottom: calc({{b.h}} + 5px); font-size: 8.5px; font-weight: 600; color: var(--warning); white-space: nowrap;">64% filed</span>
+                </sc-if>
+              </sc-if>
+            </span>
+          </sc-for>
+        </div>
+        <svg class="lbx-svg" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true" style="position: absolute; left: 40px; right: 0; top: 0; width: calc(100% - 40px); height: 100%; pointer-events: none;">
+          <polyline points="{{line}}" fill="none" stroke="var(--emerald)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"></polyline>
+        </svg>
+      </div>
+      <div style="display: flex; gap: 8px; padding-left: 40px;">
+        <sc-for list="{{bars}}" as="b" hint-placeholder-count="12">
+          <span class="lbx-mono" style="flex: 1; text-align: center; font-size: 9px; color: {{b.lc}}; white-space: nowrap;">{{b.label}}</span>
+        </sc-for>
+      </div>
+      <figcaption style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">{{summary}}</figcaption>
+    </figure>
+    <p class="lbx-legal" style="margin: auto 0 0; padding-top: 10px;">Respects the issue filter. Quarters are the LDA's native grain; spend is as reported by filers.</p>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading quarterly rhythm" style="display: flex; align-items: flex-end; gap: 8px; height: 260px; padding-left: 40px;">
+      <sc-for list="{{twelve}}" as="x" hint-placeholder-count="12">
+        <span class="lbx-skel" style="flex: 1; height: {{x.h}};"></span>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div class="lbx-statebox" style="flex: 1; min-height: 280px;">
+      <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">No filings match these filters</div>
+      <p class="lbx-state" style="margin: 0; max-width: 420px;">No <span style="color: var(--text-primary);">Immigration</span> filing above <span class="lbx-mono" style="color: var(--text-primary);">$5M</span> in any quarter shown.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" class="lbx-statebox" style="flex: 1; min-height: 280px; align-items: flex-start;">
+      <p class="lbx-state" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="lbx-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","partial","error"],"default":"default"},"viewport":{"editor":"enum","options":["desktop","phone"],"default":"desktop"},"$preview":{"width":676,"height":540}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    const Q = [
+      ['24 Q1', 508, 12.1], ['24 Q2', 512, 12.3], ['24 Q3', 497, 11.9], ['24 Q4', 543, 12.8],
+      ['25 Q1', 538, 12.4], ['25 Q2', 529, 12.2], ['25 Q3', 516, 12.0], ['25 Q4', 557, 12.9],
+      ['26 Q1', 601, 13.6], ['26 Q2', 612, 13.8], ['26 Q3', 618, 13.7], ['26 Q4', 590, null]
+    ];
+    const MAX = 700;
+    const bars = Q.map(([label, m, f], i) => {
+      const ghost = i === 11, part = i === 10;
+      return {
+        label, ghost, solid: !ghost, part,
+        h: Math.round((m / MAX) * 100) + '%',
+        op: part ? 0.45 : 0.75,
+        lc: ghost ? 'var(--text-ghost)' : 'var(--text-faint)'
+      };
+    });
+    const fMin = 11.5, fMax = 14.2;
+    const pts = [];
+    Q.forEach((q, i) => {
+      if (q[2] == null) return;
+      const x = ((i + 0.5) / Q.length) * 1000;
+      const y = 100 - 10 - ((q[2] - fMin) / (fMax - fMin)) * 80;
+      pts.push(x.toFixed(0) + ',' + y.toFixed(1));
+    });
+    const line = pts.join(' ');
+    return {
+      showData: s === 'default' || s === 'partial',
+      isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error', isPartial: s === 'partial',
+      bars, line,
+      yTicks: [[0, '$0'], [33, '$233M'], [66, '$466M'], [100, '$700M']].map(([b, l]) => ({ b: b + '%', l })),
+      summary: 'Disclosed spend rose from $508M in 2024 Q1 to $618M so far in 2026 Q3; filings per quarter held between 11.9K and 13.8K.',
+      twelve: Array.from({ length: 12 }, (_, i) => ({ h: (30 + ((i * 37) % 60)) + '%' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

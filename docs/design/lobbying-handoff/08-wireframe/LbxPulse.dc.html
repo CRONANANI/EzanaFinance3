@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Influence pulse</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./lbx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="lbx-root" style="width: 100%; display: flex;">
+<section class="lbx-card" aria-labelledby="lbx-pulse-t" style="flex: 1; width: 100%; padding: 1.25rem 1.5rem;">
+  <div class="lbx-head" style="padding-bottom: 12px; margin-bottom: 14px;">
+    <div>
+      <h2 id="lbx-pulse-t" class="lbx-title">Influence pulse</h2>
+      <p class="lbx-sub">{{periodLabel}} · vs same period last year</p>
+    </div>
+    <sc-if value="{{isPartial}}" hint-placeholder-val="{{ false }}">
+      <span class="lbx-note">2026 Q3 is still being filed · 64% received</span>
+    </sc-if>
+    <sc-if value="{{notPartial}}" hint-placeholder-val="{{ true }}">
+      <span class="lbx-mono" style="font-size: 11px; color: var(--text-faint);">Filings as of Oct 21, 2026</span>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{showData}}" hint-placeholder-val="{{ true }}">
+    <div style="display: grid; grid-template-columns: repeat({{cols}}, minmax(0, 1fr)); gap: 12px;">
+      <sc-for list="{{tiles}}" as="t" hint-placeholder-count="5">
+        <div style="border-radius: var(--radius-md); background: var(--surface-card-hover); padding: 14px 16px; display: flex; flex-direction: column; gap: 7px; min-width: 0;">
+          <div class="lbx-kicker" style="font-size: 10px;">{{t.k}}</div>
+          <div style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;">
+            <span class="lbx-mono" style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); line-height: 1.05;">{{t.v}}</span>
+            <span class="lbx-pill {{t.cls}}" style="height: 20px; font-size: 11px; padding: 0 5px;">
+              <sc-if value="{{t.up}}" hint-placeholder-val="{{ true }}"><svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 2.4; stroke-linecap: round;" aria-hidden="true"><path d="M4 12L12 4M5.5 4H12v6.5"></path></svg></sc-if>
+              <sc-if value="{{t.down}}" hint-placeholder-val="{{ false }}"><svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 2.4; stroke-linecap: round;" aria-hidden="true"><path d="M4 4l8 8M12 5.5V12H5.5"></path></svg></sc-if>
+              {{t.chg}}
+            </span>
+          </div>
+          <div style="font-size: 11px; color: var(--text-faint); line-height: 1.45;">{{t.n}}</div>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading influence pulse" style="display: grid; grid-template-columns: repeat({{cols}}, minmax(0, 1fr)); gap: 12px;">
+      <sc-for list="{{five}}" as="x" hint-placeholder-count="5">
+        <div style="border-radius: var(--radius-md); background: var(--surface-card-hover); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; height: 104px;">
+          <span class="lbx-skel" style="height: 9px; width: 56%;"></span>
+          <span class="lbx-skel" style="height: 24px; width: 48%;"></span>
+          <span class="lbx-skel" style="height: 9px; width: 72%;"></span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div class="lbx-statebox" style="min-height: 104px; flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+      <p class="lbx-state" style="margin: 0; max-width: 640px;">No filings match these filters. <span style="color: var(--text-primary);">Defense · Independent agencies · $10M+ · 90 days</span> is a narrow slice; widen the period or clear the minimum.</p>
+      <button type="button" class="lbx-chip">Reset filters</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" class="lbx-statebox" style="min-height: 104px; flex-direction: row; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <p class="lbx-state" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="lbx-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","partial","error"],"default":"default"},"viewport":{"editor":"enum","options":["desktop","phone"],"default":"desktop"},"$preview":{"width":1392,"height":220}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    const phone = (this.props.viewport ?? 'desktop') === 'phone';
+    const partial = s === 'partial';
+    const T = partial
+      ? [
+          ['Disclosed spend', '$1.83B', '+2.4%', true, 'Sum of reported amounts on activity reports. Registrations carry no dollar figure.'],
+          ['Filings', '41,183', '+1.1%', true, 'Non-registration and registration filings posted in the period.'],
+          ['Distinct clients', '15,902', '+1.8%', true, 'Organisations that paid for lobbying.'],
+          ['Lobbying firms', '3,811', '-0.9%', false, 'Registrants, including companies lobbying in-house.'],
+          ['Revolving door', '2,054', '+4.6%', true, 'Lobbyists naming a covered government position.']
+        ]
+      : [
+          ['Disclosed spend', '$2.14B', '+3.9%', true, 'Sum of reported amounts on activity reports. Registrations carry no dollar figure.'],
+          ['Filings', '49,473', '+0.6%', true, 'Non-registration and registration filings posted in the period.'],
+          ['Distinct clients', '17,624', '+2.1%', true, 'Organisations that paid for lobbying.'],
+          ['Lobbying firms', '3,963', '-1.4%', false, 'Registrants, including companies lobbying in-house.'],
+          ['Revolving door', '2,218', '+5.2%', true, 'Lobbyists naming a covered government position.']
+        ];
+    return {
+      showData: s === 'default' || partial,
+      isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error',
+      isPartial: partial, notPartial: !partial,
+      periodLabel: partial ? '2026 YTD' : 'FY 2025',
+      cols: phone ? 1 : 5,
+      five: [1, 2, 3, 4, 5],
+      tiles: T.map(([k, v, chg, up, n]) => ({ k, v, chg, n, up, down: !up, cls: up ? 'lbx-pill--pos' : 'lbx-pill--neg' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pressure map</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./lbx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.lbx-hm-cell{position:relative;height:30px;border-radius:3px;overflow:hidden}
+.lbx-hm-cell>i{position:absolute;inset:0;background:var(--emerald)}
+</style>
+</helmet>
+<div class="lbx-root" style="width: 100%; display: flex;">
+<section class="lbx-card" aria-labelledby="lbx-pm-t" style="flex: 1; width: 100%; display: flex; flex-direction: column;">
+  <div class="lbx-head">
+    <div>
+      <h2 id="lbx-pm-t" class="lbx-title">Pressure map</h2>
+      <p class="lbx-sub">Filings by issue and government body contacted · FY 2025</p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <sc-if value="{{isPartial}}" hint-placeholder-val="{{ false }}"><span class="lbx-note">Period still being filed</span></sc-if>
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-muted);">
+        <span>Fewer</span>
+        <span aria-hidden="true" style="display: flex; width: 96px; height: 8px; border-radius: var(--radius-sm); overflow: hidden;">
+          <span style="flex: 1; background: var(--emerald); opacity: 0.08;"></span><span style="flex: 1; background: var(--emerald); opacity: 0.2;"></span><span style="flex: 1; background: var(--emerald); opacity: 0.38;"></span><span style="flex: 1; background: var(--emerald); opacity: 0.6;"></span><span style="flex: 1; background: var(--emerald); opacity: 0.85;"></span>
+        </span>
+        <span>More filings</span>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{showData}}" hint-placeholder-val="{{ true }}">
+    <div style="overflow-x: auto; margin: 0 -4px; padding: 0 4px;">
+      <div style="min-width: 980px;">
+        <!-- column heads -->
+        <div style="display: grid; grid-template-columns: 170px repeat(10, minmax(0, 1fr)) 64px; gap: 3px; margin-bottom: 6px;">
+          <span></span>
+          <sc-for list="{{cols}}" as="c" hint-placeholder-count="10">
+            <span class="lbx-mono" style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{c}}</span>
+          </sc-for>
+          <span class="lbx-mono" style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: var(--text-faint); text-align: right;">TOTAL</span>
+        </div>
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="12">
+          <div style="display: grid; grid-template-columns: 170px repeat(10, minmax(0, 1fr)) 64px; gap: 3px; margin-bottom: 3px; align-items: center;">
+            <span class="lbx-ellipsis" style="font-size: 12px; font-weight: 500; color: var(--text-primary); padding-right: 8px;">{{r.name}}</span>
+            <sc-for list="{{r.cells}}" as="c" hint-placeholder-count="10">
+              <span class="lbx-hm-cell" role="img" aria-label="{{c.aria}}"><i style="opacity: {{c.o}};"></i>
+                <sc-if value="{{c.show}}" hint-placeholder-val="{{ false }}">
+                  <span class="lbx-mono" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: {{c.ink}};">{{c.v}}</span>
+                </sc-if>
+              </span>
+            </sc-for>
+            <span class="lbx-mono" style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-align: right;">{{r.total}}</span>
+          </div>
+        </sc-for>
+        <!-- column totals -->
+        <div style="display: grid; grid-template-columns: 170px repeat(10, minmax(0, 1fr)) 64px; gap: 3px; margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--border-secondary);">
+          <span class="lbx-mono" style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: var(--text-faint);">TOTAL</span>
+          <sc-for list="{{colTotals}}" as="t" hint-placeholder-count="10">
+            <span class="lbx-mono" style="font-size: 10.5px; font-weight: 600; color: var(--text-muted); text-align: center;">{{t}}</span>
+          </sc-for>
+          <span></span>
+        </div>
+      </div>
+    </div>
+    <!-- pinned hover example -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-top: 14px; flex-wrap: wrap;">
+      <div style="border-radius: var(--radius-md); background: var(--surface-card-hover); padding: 10px 14px; max-width: 460px;">
+        <div style="font-size: 12px; font-weight: 600; color: var(--text-primary);">Defense × Dept of Defense · <span class="lbx-mono">1,284 filings</span></div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">Most active clients: Lockheed Martin, Boeing, RTX</div>
+      </div>
+      <span style="font-size: 11px; color: var(--text-faint);">Counts are filings naming both, not dollars. A filing can touch several bodies.</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading pressure map" style="display: flex; flex-direction: column; gap: 3px;">
+      <sc-for list="{{twelve}}" as="x" hint-placeholder-count="12">
+        <div style="display: grid; grid-template-columns: 170px 1fr; gap: 10px; align-items: center;">
+          <span class="lbx-skel" style="height: 10px; width: 70%;"></span>
+          <span class="lbx-skel" style="height: 30px;"></span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div class="lbx-statebox" style="min-height: 400px;">
+      <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">No filings match these filters</div>
+      <p class="lbx-state" style="margin: 0; max-width: 460px;">Nothing in <span style="color: var(--text-primary);">Agriculture · White House · $1M+</span> this period. The map needs at least one filing naming both an issue and a body.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" class="lbx-statebox" style="min-height: 400px; align-items: flex-start;">
+      <p class="lbx-state" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="lbx-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","partial","error"],"default":"default"},"viewport":{"editor":"enum","options":["desktop","phone"],"default":"desktop"},"$preview":{"width":1392,"height":660}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    const cols = ['House', 'Senate', 'HHS', 'DOD', 'Treasury', 'EPA', 'DOE', 'Commerce', 'USTR', 'White House'];
+    const issues = ['Health issues', 'Taxation', 'Budget & approps', 'Defense', 'Trade', 'Energy & nuclear', 'Telecom & tech', 'Transportation', 'Environment', 'Financial inst.', 'Agriculture', 'Immigration'];
+    /* base intensity: House and Senate dominate; hand-set hot pairings */
+    const hot = { 'Health issues:HHS': 1891, 'Defense:DOD': 1284, 'Taxation:Treasury': 1130, 'Energy & nuclear:DOE': 842, 'Environment:EPA': 798, 'Trade:USTR': 611, 'Telecom & tech:Commerce': 572, 'Financial inst.:Treasury': 540 };
+    let seed = 11;
+    const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+    const base = [6827, 5541, 5145, 4007, 3414, 3067, 2869, 2424, 2127, 2028, 1682, 1534];
+    const rows = issues.map((name, i) => {
+      const cells = cols.map((c) => {
+        const key = name + ':' + c;
+        let v;
+        if (hot[key]) v = hot[key];
+        else if (c === 'House' || c === 'Senate') v = Math.round(base[i] * (0.34 + rnd() * 0.08));
+        else v = Math.round(base[i] * (0.02 + rnd() * 0.07));
+        return v;
+      });
+      const maxAll = 2400;
+      const total = cells.reduce((a, b) => a + b, 0);
+      return {
+        name,
+        total: total.toLocaleString('en-US'),
+        cells: cells.map((v, k) => {
+          const o = Math.min(0.88, 0.05 + (v / maxAll) * 0.85);
+          return {
+            v: v >= 1000 ? (v / 1000).toFixed(1) + 'K' : String(v),
+            o: o.toFixed(2),
+            show: v > 500,
+            ink: o > 0.45 ? '#04140d' : 'var(--text-secondary)',
+            aria: name + ' and ' + cols[k] + ', ' + v.toLocaleString('en-US') + ' filings'
+          };
+        })
+      };
+    });
+    const colTotals = cols.map((_, k) => {
+      const t = rows.reduce((a, r) => a + Number(r.cells[k].v.replace('K', '')) * (r.cells[k].v.includes('K') ? 1000 : 1), 0);
+      return t >= 1000 ? (t / 1000).toFixed(1) + 'K' : String(Math.round(t));
+    });
+    return {
+      showData: s === 'default' || s === 'partial',
+      isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error', isPartial: s === 'partial',
+      cols, rows, colTotals, twelve: Array.from({ length: 12 }, (_, i) => i)
+    };
+  }
+}
+</script>
+</body>
+</html>

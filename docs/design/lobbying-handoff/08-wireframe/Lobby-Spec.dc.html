@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lobbying activity · component spec</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./lbx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="lbx-root lbx-dark" style="width: 1440px; min-height: 2700px; padding: 56px 64px; box-sizing: border-box; display: flex; flex-direction: column; gap: 36px;">
+  <header>
+    <div class="lbx-kicker" style="color: var(--emerald-text); margin-bottom: 10px;">/datasets/government/lobbying · spec</div>
+    <h1 style="margin: 0; font-size: 1.875rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary);">Component spec sheet</h1>
+    <p style="margin: 10px 0 0; max-width: 820px; font-size: 14px; line-height: 1.6; color: var(--text-muted);">Page-scoped prefix <span class="lbx-mono" style="color: var(--text-primary);">lbx-</span>. Cards draw no outline border and no shadow (ds-cards.css rule): separation is spacing plus each card's header rule. Every number is JetBrains Mono with tabular numerals. Bootstrap Icons in the build; icons are drawn inline in this wireframe. No gold anywhere.</p>
+  </header>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; align-items: start;">
+
+    <section class="lbx-card" style="grid-column: span 2;">
+      <div class="lbx-head"><div><h2 class="lbx-title">Cards</h2><p class="lbx-sub">Span (12 col) · data source · key interactions · empty copy pattern</p></div></div>
+      <table class="lbx-table">
+        <thead><tr><th scope="col">Card</th><th scope="col" style="text-align: right;">Span</th><th scope="col">Data</th><th scope="col">Interactions</th><th scope="col">Empty copy names</th></tr></thead>
+        <tbody>
+          <sc-for list="{{cards}}" as="c" hint-placeholder-count="10">
+            <tr>
+              <td style="font-weight: 600; color: var(--text-primary); white-space: nowrap;">{{c.n}}</td>
+              <td class="num" style="font-size: 12px;">{{c.s}}</td>
+              <td class="lbx-mono" style="font-size: 11.5px; color: var(--emerald-text); white-space: nowrap;">{{c.d}}</td>
+              <td style="font-size: 12.5px;">{{c.i}}</td>
+              <td style="font-size: 12.5px; color: var(--text-muted);">{{c.e}}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="lbx-card">
+      <div class="lbx-head"><div><h2 class="lbx-title">Interactions</h2><p class="lbx-sub">What each click, hover and filter change does</p></div></div>
+      <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 7px; font-size: 13px; color: var(--text-secondary);">
+        <sc-for list="{{inter}}" as="l" hint-placeholder-count="14"><li>{{l}}</li></sc-for>
+      </ul>
+    </section>
+
+    <section class="lbx-card">
+      <div class="lbx-head"><div><h2 class="lbx-title">Tokens</h2><p class="lbx-sub">Existing tokens only · flags where a new value is tempting</p></div></div>
+      <table class="lbx-table">
+        <thead><tr><th scope="col"></th><th scope="col">Role</th><th scope="col">Token</th></tr></thead>
+        <tbody>
+          <sc-for list="{{tokens}}" as="t" hint-placeholder-count="16">
+            <tr>
+              <td style="width: 28px;"><span aria-hidden="true" style="display: inline-block; width: 18px; height: 18px; border-radius: var(--radius-sm); background: var({{t.tok}}); border: 1px solid var(--border-hover);"></span></td>
+              <td style="font-size: 12.5px;">{{t.role}}</td>
+              <td class="lbx-mono" style="font-size: 12px; color: var(--text-primary);">{{t.tok}}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+      <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 8px;">
+        <div class="lbx-kicker" style="font-size: 10px;">Flags, not new tokens</div>
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--text-secondary);">
+          <li>Heatmap ramp: opacity steps 0.05 to 0.88 on <span class="lbx-mono">--emerald</span>, computed per cell. No ramp token needed.</li>
+          <li>Ghost bars and disabled labels use <span class="lbx-mono">--text-ghost</span> (exists) with a dashed <span class="lbx-mono">--border-hover</span> edge.</li>
+          <li>Card fill with no border: keep <span class="lbx-mono">--surface-card</span> (transparent on dark). Inner tiles use <span class="lbx-mono">--surface-card-hover</span>. If light mode needs more separation, that is a change to the shared ds-cards rule, not a page token.</li>
+          <li>Partial-period chip uses <span class="lbx-mono">--warning / --warning-bg</span>; never red, a late quarter is not an error.</li>
+          <li>The <span class="lbx-mono">--echo-chart-*</span> palette must be promoted to :root before build (same prerequisite as the Prediction Markets package).</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="lbx-card" style="grid-column: span 2;">
+      <div class="lbx-head"><div><h2 class="lbx-title">Honesty rules carried into the design</h2><p class="lbx-sub">From the data brief · binding</p></div></div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 32px;">
+        <sc-for list="{{honest}}" as="l" hint-placeholder-count="8">
+          <div style="display: flex; gap: 8px; font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;">
+            <span aria-hidden="true" style="color: var(--emerald-text); flex: none;">·</span><span>{{l}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2700}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      cards: [
+        { n: '1 · Influence pulse', s: '12', d: '/summary', i: 'None beyond filters; spend tile carries the registrations note', e: 'Active filters + Reset' },
+        { n: '2 · Spend leaderboard', s: '7', d: '/top-spenders', i: 'Clients/Firms toggle; row opens client drawer; coverage chip when partial', e: 'Min amount + issue + period' },
+        { n: '3 · Issue landscape', s: '5', d: '/by-issue', i: 'Row click sets the page issue filter (aria-pressed)', e: 'Entity + min + period' },
+        { n: '4 · Pressure map', s: '12', d: '/filings issues x entities', i: 'Cell hover: count + top 3 clients; horizontal scroll under 1100', e: 'Issue + entity pair' },
+        { n: '5 · Quarterly rhythm', s: '6', d: '/filings by quarter', i: 'Ghost bars for unfiled quarters; 64% flag on the partial one', e: 'Issue + min' },
+        { n: '6 · Former officials now lobbying', s: '6', d: '/filings lobbyists[]', i: 'Firm row expands to covered positions as filed', e: 'Issue + period' },
+        { n: '7 · Public company lens', s: '12', d: '/filings onlyPublic + quotes + candles', i: 'Tile opens company modal (price + quarterly spend bars); verified vs Name match', e: 'Public-only + issue + min' },
+        { n: '8 · Lobbying vs contracts', s: '6', d: '/datasets/capitol/lobbying-ratio', i: '1y/2y toggle; dot hover names company, both figures', e: 'Needs 3+ mapped companies' },
+        { n: '9 · Money to members', s: '6', d: '/contributions (first UI)', i: 'Tabs honorees/committees/items; type chips filter; nothing links to member profiles', e: 'Type + min + period' },
+        { n: '10 · Disclosures', s: '12', d: '/filings', i: 'Mode seg; View opens filing modal with lda.gov link; CSV signed-in', e: 'Full filter set + Reset' }
+      ],
+      inter: [
+        'The sticky filter bar drives every card: period, issue, entity group, min amount, public-only, search. Filters round-trip through the URL.',
+        'Issue chips show live counts under the current period and venue of filters; the selected chip is emerald.',
+        'Card subtitles restate the active filters, so a screenshot is self-describing.',
+        'Issue Landscape rows and Pressure Map rows both set the issue filter; the chip row reflects it.',
+        'Leaderboard row click opens the client drawer: filings over time, issues cited, firms hired, each filing linking to its modal.',
+        'Company tile click opens the company card modal: price chart with quarterly lobbying spend overlaid as bars, largest filings, firms hired. Emerald only.',
+        'Disclosures View opens the filing modal (restyle of the existing one) with the original lda.gov document link.',
+        'Filter changes tick numbers over 0.3s and cross-fade lists; row heights are reserved so nothing jumps.',
+        'Partial periods show the amber chip on affected cards and the 64% flag on the rhythm bar; never an error state.',
+        'Every card has Retry on error, refetching only that card.',
+        'Phone: filter bar collapses to scrolling issue chips + a Filters sheet (period, entity, min, toggle, search, Reset, Show N).',
+        'Keyboard: chips and segments are radiogroups; rows are buttons; expanders carry aria-expanded; focus ring is 2px emerald.',
+        'Ticker belt publishes the latest filings as CLIENT · $AMOUNT · ISSUE through the shared chrome.',
+        'Charts carry a one-sentence accessible summary; the heatmap offers a visually hidden table fallback.'
+      ],
+      tokens: [
+        { role: 'Page ground', tok: '--bg-primary' },
+        { role: 'Card fill (transparent on dark)', tok: '--surface-card' },
+        { role: 'Inner tiles, row hover', tok: '--surface-card-hover' },
+        { role: 'Card header rule', tok: '--border-hover' },
+        { role: 'Row dividers, table rules', tok: '--border-secondary' },
+        { role: 'Titles, values', tok: '--text-primary' },
+        { role: 'Body', tok: '--text-secondary' },
+        { role: 'Kickers, axis labels', tok: '--text-muted' },
+        { role: 'Captions, legal lines', tok: '--text-faint' },
+        { role: 'Ghost bars, disabled', tok: '--text-ghost' },
+        { role: 'Selected, focus, verified, heat ramp', tok: '--emerald' },
+        { role: 'YoY gains', tok: '--positive' },
+        { role: 'YoY declines', tok: '--echo-chart-red' },
+        { role: 'Leaderboard and share bars', tok: '--echo-chart-blue' },
+        { role: 'Spend bars (rhythm)', tok: '--echo-chart-blue' },
+        { role: 'Partial-period chip', tok: '--warning' }
+      ],
+      honest: [
+        'Issue views are counts or shares of filings, never dollars: the LDA reports one lump amount per filing.',
+        'Dollar figures come only from non-registration filings with amount above zero; the Pulse spend tile says so.',
+        'Verified ticker mappings (29) show a solid check; exact-name matches (300) show the outlined Name match badge everywhere they appear.',
+        'LD-203 honoree names render exactly as filed and never link to member profiles.',
+        'Contribution dates are clamped to the filing period; the card footnote admits filer typos.',
+        'Empty states name the active filters; no placeholder numbers anywhere.',
+        'People in fixtures are [Name as filed] placeholders; no invented dollars attach to a real member.',
+        'Scatter caption: correlation is not causation; both figures are public disclosures.'
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

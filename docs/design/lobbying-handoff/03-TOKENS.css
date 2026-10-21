@@ -1,0 +1,106 @@
+/* Lobbying Activity, page-scoped tokens.
+   Every value maps onto src/app/theme-variables.css. No hex below. Light mode
+   needs no overrides: the theme variables flip.
+
+   PREREQUISITES.
+   1. The --echo-chart-* palette must be promoted from Echo's page scope to
+      :root (dark and light) in theme-variables.css. The Prediction Markets
+      package carries the same prerequisite; check whether its build already
+      did it before adding it twice.
+   2. .lbx-card is already on the ds-cards.css no-outline list: cards paint
+      no border and no shadow. Do not add either back. */
+
+.lbx-page {
+  /* ground and ink */
+  --lbx-bg: var(--bg-primary);
+  --lbx-ink: var(--text-primary);
+  --lbx-body: var(--text-secondary);
+  --lbx-mute: var(--text-muted);
+  --lbx-faint: var(--text-faint);
+  --lbx-ghost: var(--text-ghost); /* ghost bars, disabled, placeholders */
+
+  /* cards: no outline; separation by spacing and the header rule */
+  --lbx-card-bg: var(--surface-card);
+  --lbx-tile-bg: var(--surface-card-hover); /* inner KPI tiles, company tiles, hover */
+  --lbx-head-rule: var(--border-hover); /* each card's own header rule */
+  --lbx-row-rule: var(--border-secondary);
+  --lbx-input-border: var(--border-primary);
+
+  /* brand and state */
+  --lbx-accent: var(--emerald);
+  --lbx-accent-text: var(--emerald-text);
+  --lbx-selected-bg: var(--emerald-bg-hover);
+  --lbx-selected-tint: var(--emerald-bg);
+  --lbx-focus: var(--emerald);
+  --lbx-up: var(--positive);
+  --lbx-up-bg: var(--positive-bg);
+  --lbx-down: var(--echo-chart-red); /* YoY declines, price falls; never --danger */
+  --lbx-down-bg: var(--negative-bg);
+  --lbx-partial: var(--warning); /* late-quarter chips; a late quarter is not an error */
+  --lbx-partial-bg: var(--warning-bg);
+
+  /* data marks */
+  --lbx-bar: var(--echo-chart-blue); /* leaderboard, issue shares, rhythm bars */
+  --lbx-line: var(--emerald); /* filings line on the rhythm chart */
+  --lbx-heat: var(--emerald); /* pressure map: opacity 0.05 to 0.88 computed per cell */
+  --lbx-grid: var(--echo-chart-grid);
+  --lbx-scatter-a: var(--echo-chart-orange); /* defense-heavy dots */
+  --lbx-scatter-b: var(--echo-chart-blue); /* everything else */
+
+  /* mapping badges */
+  --lbx-verified: var(--emerald-text); /* solid patch-check */
+  --lbx-namematch-border: var(--border-hover); /* dashed chip */
+  --lbx-namematch-ink: var(--text-muted);
+
+  /* ticker chip */
+  --lbx-tick-ink: var(--emerald-text);
+  --lbx-tick-bg: var(--emerald-bg);
+  --lbx-tick-border: var(--emerald-border);
+
+  /* gate and overlays */
+  --lbx-overlay: var(--bg-overlay);
+  --lbx-modal-shadow: var(--shadow-lg);
+
+  /* skeleton */
+  --lbx-skel-a: color-mix(in srgb, var(--text-primary) 3%, transparent);
+  --lbx-skel-b: color-mix(in srgb, var(--text-primary) 8%, transparent);
+
+  /* radii from the single declaration site */
+  --lbx-r-chip: var(--radius-sm);
+  --lbx-r-tile: var(--radius-md);
+  --lbx-r-card: var(--radius-lg);
+  --lbx-r-band: var(--radius-xl); /* sign-up band only */
+
+  /* type: families and the platform ramp */
+  --lbx-sans: var(--font-sans);
+  --lbx-mono: var(--font-mono);
+  --lbx-title-size: var(--type-page-title-size);
+  --lbx-card-title-size: var(--type-card-title-size);
+  --lbx-eyebrow-size: var(--type-eyebrow-size);
+  --lbx-body-size: var(--type-body-size);
+  --lbx-caption-size: var(--type-caption-size);
+  --lbx-micro-size: var(--type-micro-size);
+  --lbx-value-lg-size: var(--type-value-lg-size);
+  --lbx-value-sm-size: var(--type-value-sm-size);
+
+  /* motion */
+  --lbx-t-hover: 0.15s;
+  --lbx-t-card: 0.2s;
+  --lbx-t-modal: 0.35s;
+  --lbx-t-tick: 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lbx-page {
+    --lbx-t-hover: 0s;
+    --lbx-t-card: 0s;
+    --lbx-t-modal: 0s;
+    --lbx-t-tick: 0s;
+  }
+}
+
+/* Flags, not new tokens:
+   - Heatmap ramp: computed opacity on --lbx-heat; no ramp token.
+   - Ghost bars: 1px dashed --border-hover edge with --lbx-ghost labels.
+   - If light mode wants more card separation without outlines, that is a
+     change to the shared ds-cards rule, not a page token. */

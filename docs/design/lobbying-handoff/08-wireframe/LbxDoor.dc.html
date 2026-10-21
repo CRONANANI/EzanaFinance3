@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Revolving door</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./lbx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="lbx-root" style="width: 100%; display: flex;">
+<section class="lbx-card" aria-labelledby="lbx-rd-t" style="flex: 1; width: 100%; display: flex; flex-direction: column;">
+  <div class="lbx-head">
+    <div>
+      <h2 id="lbx-rd-t" class="lbx-title">Former officials now lobbying</h2>
+      <p class="lbx-sub">Covered government positions, as filed · FY 2025</p>
+    </div>
+    <sc-if value="{{isPartial}}" hint-placeholder-val="{{ false }}"><span class="lbx-note">Period still being filed</span></sc-if>
+  </div>
+
+  <sc-if value="{{showData}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; align-items: center; gap: 18px; margin-bottom: 16px; flex-wrap: wrap;">
+      <span class="lbx-mono" style="font-size: 2rem; font-weight: 700; color: var(--text-primary); line-height: 1;">38%</span>
+      <div style="flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 13px; color: var(--text-secondary);">of filings this period name at least one lobbyist with a covered government position</span>
+        <span class="lbx-track" aria-hidden="true"><span style="width: 38%;"></span></span>
+      </div>
+      <span class="lbx-mono" style="font-size: 11px; color: var(--text-faint);">2,218 lobbyists</span>
+    </div>
+
+    <div class="lbx-kicker" style="font-size: 10px; padding: 0 8px 8px; border-bottom: 1px solid var(--border-secondary); display: grid; grid-template-columns: minmax(0, 1fr) 110px 28px; gap: 10px;">
+      <span>Firm</span><span style="text-align: right;">Revolving-door lobbyists</span><span></span>
+    </div>
+    <ol style="list-style: none; margin: 0 -8px; padding: 0;">
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+        <li style="border-bottom: 1px solid var(--border-secondary);">
+          <button type="button" class="lbx-row lbx-row-btn" aria-expanded="{{r.expanded}}" onClick="{{r.toggle}}" style="display: grid; grid-template-columns: minmax(0, 1fr) 110px 28px; align-items: center; gap: 10px; padding: 10px 8px; background: {{r.bg}};">
+            <span class="lbx-ellipsis" style="font-size: 13px; font-weight: 500; color: var(--text-primary);">{{r.name}}</span>
+            <span style="display: flex; align-items: center; gap: 8px; justify-content: flex-end;">
+              <span class="lbx-track" style="width: 56px; height: 5px;" aria-hidden="true"><span style="width: {{r.w}};"></span></span>
+              <span class="lbx-mono" style="font-size: 13px; font-weight: 600; color: var(--text-primary);">{{r.n}}</span>
+            </span>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--text-muted)" style="stroke-width: 2; stroke-linecap: round; justify-self: center; transform: rotate({{r.rot}});" aria-hidden="true"><path d="M4 6l4 4 4-4"></path></svg>
+          </button>
+          <sc-if value="{{r.open}}" hint-placeholder-val="{{ false }}">
+            <div style="margin: 0 8px 12px; border-radius: var(--radius-md); background: var(--surface-card-hover); padding: 12px 14px;">
+              <div class="lbx-kicker" style="font-size: 10px; margin-bottom: 8px;">Covered positions, as filed</div>
+              <sc-for list="{{positions}}" as="p" hint-placeholder-count="3">
+                <div style="display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-top: 1px solid var(--border-secondary); font-size: 12.5px;">
+                  <span style="color: var(--text-primary); font-weight: 500;">{{p.who}}</span>
+                  <span class="lbx-ellipsis" style="color: var(--text-muted); text-align: right;">{{p.pos}}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </li>
+      </sc-for>
+    </ol>
+    <p class="lbx-legal" style="margin: auto 0 0; padding-top: 12px;">Positions are shown exactly as the filer wrote them. A named position is a disclosure requirement, not a finding.</p>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading revolving door" style="display: flex; flex-direction: column; gap: 10px;">
+      <span class="lbx-skel" style="height: 40px; width: 70%;"></span>
+      <sc-for list="{{five}}" as="x" hint-placeholder-count="5">
+        <div style="height: 40px; display: grid; grid-template-columns: 1fr 110px; gap: 10px; align-items: center;">
+          <span class="lbx-skel" style="height: 11px; width: 54%;"></span>
+          <span class="lbx-skel" style="height: 11px;"></span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div class="lbx-statebox" style="flex: 1; min-height: 300px;">
+      <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">No filings match these filters</div>
+      <p class="lbx-state" style="margin: 0; max-width: 420px;">No filing in <span style="color: var(--text-primary);">Agriculture · 90 days</span> names a covered position.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" class="lbx-statebox" style="flex: 1; min-height: 300px; align-items: flex-start;">
+      <p class="lbx-state" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="lbx-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","partial","error"],"default":"default"},"viewport":{"editor":"enum","options":["desktop","phone"],"default":"desktop"},"$preview":{"width":676,"height":540}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { open: 0 }; }
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    const FIRMS = [['Akin Gump Strauss Hauer & Feld', 94], ['Brownstein Hyatt Farber Schreck', 88], ['Holland & Knight', 76], ['Squire Patton Boggs', 63], ['K&L Gates', 51]];
+    const max = FIRMS[0][1];
+    const open = this.state.open;
+    const rows = FIRMS.map(([name, n], i) => ({
+      name, n,
+      w: Math.round((n / max) * 100) + '%',
+      open: open === i, expanded: String(open === i), rot: open === i ? '180deg' : '0deg',
+      bg: open === i ? 'var(--surface-card-hover)' : 'transparent',
+      toggle: () => this.setState({ open: open === i ? -1 : i })
+    }));
+    return {
+      showData: s === 'default' || s === 'partial',
+      isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error', isPartial: s === 'partial',
+      rows, five: [1, 2, 3, 4, 5],
+      positions: [
+        { who: '[Lobbyist name]', pos: 'Legislative Director, Office of Sen. [Name]' },
+        { who: '[Lobbyist name]', pos: 'Deputy Assistant Secretary, Dept of the Treasury' },
+        { who: '[Lobbyist name]', pos: 'Counsel, House Committee on Energy and Commerce' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

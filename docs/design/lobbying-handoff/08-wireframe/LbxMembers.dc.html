@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Money to members</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./lbx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="lbx-root" style="width: 100%; display: flex;">
+<section class="lbx-card" aria-labelledby="lbx-mm-t" style="flex: 1; width: 100%; display: flex; flex-direction: column;">
+  <div class="lbx-head" style="margin-bottom: 0; border-bottom: 0; padding-bottom: 8px;">
+    <div>
+      <h2 id="lbx-mm-t" class="lbx-title">Money to members</h2>
+      <p class="lbx-sub">LD-203 contributions · 2026 mid-year period</p>
+    </div>
+    <div style="display: flex; align-items: baseline; gap: 8px;">
+      <span class="lbx-mono" style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">$218.4M</span>
+      <span class="lbx-mono" style="font-size: 11px; color: var(--text-faint);">17,581 reports</span>
+    </div>
+  </div>
+
+  <div class="lbx-tabs" role="tablist" aria-label="Contribution view">
+    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+      <button type="button" role="tab" aria-selected="{{t.on}}" class="{{t.cls}}" onClick="{{t.pick}}">{{t.label}}</button>
+    </sc-for>
+  </div>
+
+  <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;">
+    <sc-for list="{{types}}" as="t" hint-placeholder-count="5">
+      <button type="button" class="lbx-chip {{t.cls}}" aria-pressed="{{t.on}}" style="min-height: 28px; font-size: 12px;">{{t.label}} <span class="lbx-mono">{{t.n}}</span></button>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{showData}}" hint-placeholder-val="{{ true }}">
+    <ol style="list-style: none; margin: 0 -8px; padding: 0;">
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+        <li>
+          <div class="lbx-row" style="display: grid; grid-template-columns: 18px minmax(0, 1fr) 90px; gap: 10px; align-items: center; padding: 9px 8px; min-height: 46px;">
+            <span class="lbx-mono" style="font-size: 11px; color: var(--text-faint); text-align: right;">{{r.rank}}</span>
+            <span style="min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+              <span class="lbx-ellipsis" style="font-size: 13px; font-weight: 500; color: var(--text-primary);">{{r.name}}</span>
+              <span class="lbx-mono" style="font-size: 10px; color: var(--text-faint);">{{r.meta}}</span>
+            </span>
+            <span class="lbx-mono" style="font-size: 13px; font-weight: 600; color: var(--text-primary); text-align: right;">{{r.v}}</span>
+          </div>
+        </li>
+      </sc-for>
+    </ol>
+    <div style="margin-top: auto; padding-top: 12px; display: flex; flex-direction: column; gap: 4px;">
+      <p class="lbx-legal" style="margin: 0;">Names as filed by the contributor. Free-text honorees are not joined to member profiles.</p>
+      <p class="lbx-legal" style="margin: 0;">Dates outside the filing period are clamped to it; filer typos exist in the source.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading contributions" style="display: flex; flex-direction: column; gap: 6px;">
+      <sc-for list="{{six}}" as="x" hint-placeholder-count="6">
+        <div style="height: 40px; display: grid; grid-template-columns: 18px 1fr 90px; gap: 10px; align-items: center; padding: 0 8px;">
+          <span class="lbx-skel" style="height: 9px;"></span>
+          <span style="display: flex; flex-direction: column; gap: 5px;"><span class="lbx-skel" style="height: 10px; width: 56%;"></span><span class="lbx-skel" style="height: 8px; width: 34%;"></span></span>
+          <span class="lbx-skel" style="height: 11px;"></span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div class="lbx-statebox" style="flex: 1; min-height: 260px;">
+      <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">No contributions match these filters</div>
+      <p class="lbx-state" style="margin: 0; max-width: 420px;">No <span style="color: var(--text-primary);">presidential library</span> item above <span class="lbx-mono" style="color: var(--text-primary);">$50K</span> in this period.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" class="lbx-statebox" style="flex: 1; min-height: 260px; align-items: flex-start;">
+      <p class="lbx-state" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="lbx-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","partial","error"],"default":"default"},"viewport":{"editor":"enum","options":["desktop","phone"],"default":"desktop"},"$preview":{"width":676,"height":580}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: 'Top honorees' }; }
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    const tab = this.state.tab;
+    const BY_TAB = {
+      'Top honorees': [
+        ['Sen. [Name as filed]', 'FECA · 214 items', '$1.92M'],
+        ['Rep. [Name as filed]', 'FECA · 188 items', '$1.64M'],
+        ['Sen. [Name as filed]', 'FECA · 171 items', '$1.41M'],
+        ['Rep. [Name as filed]', 'FECA · 145 items', '$1.22M'],
+        ['[Official as filed]', 'Honorary expenses · 12 items', '$980K'],
+        ['Rep. [Name as filed]', 'FECA · 117 items', '$905K']
+      ],
+      'Top committees': [
+        ['[Committee as filed] PAC', 'Paid by 96 registrants', '$3.84M'],
+        ['[Party committee as filed]', 'Paid by 71 registrants', '$3.10M'],
+        ['[Committee as filed] PAC', 'Paid by 64 registrants', '$2.66M'],
+        ['[Leadership PAC as filed]', 'Paid by 41 registrants', '$1.87M'],
+        ['[Committee as filed] PAC', 'Paid by 36 registrants', '$1.54M'],
+        ['[Party committee as filed]', 'Paid by 29 registrants', '$1.31M']
+      ],
+      'Largest items': [
+        ['[Registrant name]', 'Presidential inaugural · Jan 2026', '$1.00M'],
+        ['[Registrant name]', 'FECA · honoring Sen. [Name as filed]', '$500K'],
+        ['[Organisation name]', 'Honorary expenses · event co-host', '$350K'],
+        ['[Registrant name]', 'FECA · honoring Rep. [Name as filed]', '$250K'],
+        ['[Lobbyist name]', 'FECA · honoring Sen. [Name as filed]', '$150K'],
+        ['[Organisation name]', 'Meeting expenses · retreat', '$120K']
+      ]
+    };
+    const tabs = Object.keys(BY_TAB).map((label) => ({
+      label, on: String(tab === label), cls: tab === label ? 'is-on' : '',
+      pick: () => this.setState({ tab: label })
+    }));
+    return {
+      showData: s === 'default' || s === 'partial',
+      isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error', isPartial: s === 'partial',
+      tabs,
+      types: [
+        { label: 'FECA', n: '67,742', on: 'true', cls: 'is-on' },
+        { label: 'Honorary', n: '451', on: 'false', cls: '' },
+        { label: 'Meeting', n: '62', on: 'false', cls: '' },
+        { label: 'Inaugural', n: '24', on: 'false', cls: '' },
+        { label: 'Library', n: '17', on: 'false', cls: '' }
+      ],
+      rows: BY_TAB[tab].map(([name, meta, v], i) => ({ rank: i + 1, name, meta, v })),
+      six: [1, 2, 3, 4, 5, 6]
+    };
+  }
+}
+</script>
+</body>
+</html>

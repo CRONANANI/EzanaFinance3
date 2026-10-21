@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lobbying vs contracts</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./lbx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="lbx-root" style="width: 100%; display: flex;">
+<section class="lbx-card" aria-labelledby="lbx-lc-t" style="flex: 1; width: 100%; display: flex; flex-direction: column;">
+  <div class="lbx-head">
+    <div>
+      <h2 id="lbx-lc-t" class="lbx-title">Lobbying vs contracts</h2>
+      <p class="lbx-sub">Mapped public companies · log scales</p>
+    </div>
+    <div class="lbx-seg lbx-seg--mono" role="radiogroup" aria-label="Window">
+      <sc-for list="{{wins}}" as="w" hint-placeholder-count="2">
+        <button type="button" role="radio" aria-checked="{{w.on}}" class="{{w.cls}}" onClick="{{w.pick}}">{{w.label}}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{showData}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+      <figure style="flex: 1.4 1 300px; min-width: 0; margin: 0; display: flex; flex-direction: column; gap: 4px;">
+        <div role="img" aria-label="{{summary}}" style="position: relative; height: 280px; margin-left: 40px; border-left: 1px solid var(--border-primary); border-bottom: 1px solid var(--border-primary);">
+          <sc-for list="{{yT}}" as="t" hint-placeholder-count="4">
+            <span aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: {{t.p}}; border-top: 1px solid var(--echo-chart-grid);"></span>
+            <span class="lbx-mono" style="position: absolute; right: 100%; bottom: {{t.p}}; transform: translate(-6px, 50%); font-size: 10px; color: var(--text-faint); white-space: nowrap;">{{t.l}}</span>
+          </sc-for>
+          <sc-for list="{{dots}}" as="d" hint-placeholder-count="10">
+            <span aria-hidden="true" style="position: absolute; left: {{d.x}}; bottom: {{d.y}}; width: {{d.s}}; height: {{d.s}}; transform: translate(-50%, 50%); border-radius: 50%; background: {{d.c}}; opacity: 0.6; border: 1.5px solid {{d.c}};"></span>
+            <span class="lbx-mono" style="position: absolute; left: {{d.x}}; bottom: {{d.y}}; transform: translate(8px, 50%); font-size: 9px; font-weight: 600; color: var(--text-muted);">{{d.t}}</span>
+          </sc-for>
+        </div>
+        <div style="position: relative; height: 14px; margin-left: 40px;">
+          <sc-for list="{{xT}}" as="t" hint-placeholder-count="4">
+            <span class="lbx-mono" style="position: absolute; left: {{t.p}}; transform: translateX(-50%); font-size: 10px; color: var(--text-faint);">{{t.l}}</span>
+          </sc-for>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text-faint); margin-left: 40px;">
+          <span>Federal contract awards (y)</span><span>Lobbying spend (x)</span>
+        </div>
+      </figure>
+      <div style="flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column;">
+        <div class="lbx-kicker" style="font-size: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border-secondary);">Awards per lobbying dollar</div>
+        <ol style="list-style: none; margin: 0; padding: 0;">
+          <sc-for list="{{ranked}}" as="r" hint-placeholder-count="5">
+            <li style="display: grid; grid-template-columns: 18px 1fr 76px; gap: 8px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border-secondary);">
+              <span class="lbx-mono" style="font-size: 11px; color: var(--text-faint);">{{r.rank}}</span>
+              <span style="display: flex; align-items: center; gap: 7px; min-width: 0;"><span class="lbx-tick">{{r.t}}</span><span class="lbx-ellipsis" style="font-size: 12.5px; color: var(--text-primary);">{{r.name}}</span></span>
+              <span class="lbx-mono" style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); text-align: right;">{{r.v}}</span>
+            </li>
+          </sc-for>
+        </ol>
+        <p class="lbx-legal" style="margin: auto 0 0; padding-top: 10px;">Correlation is not causation. Both figures are public disclosures.</p>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading lobbying vs contracts" style="display: flex; gap: 20px;">
+      <span class="lbx-skel" style="flex: 1.4; height: 300px; border-radius: var(--radius-md);"></span>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
+        <sc-for list="{{five}}" as="x" hint-placeholder-count="5"><span class="lbx-skel" style="height: 24px;"></span></sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div class="lbx-statebox" style="flex: 1; min-height: 320px;">
+      <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">Not enough mapped companies</div>
+      <p class="lbx-state" style="margin: 0; max-width: 440px;">Fewer than 3 companies in <span style="color: var(--text-primary);">Culture-free filters like Agriculture · $10M+</span> have both lobbying spend and contract awards. Widen the filters.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" class="lbx-statebox" style="flex: 1; min-height: 320px; align-items: flex-start;">
+      <p class="lbx-state" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="lbx-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","partial","error"],"default":"default"},"viewport":{"editor":"enum","options":["desktop","phone"],"default":"desktop"},"$preview":{"width":676,"height":580}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { win: '1 year' }; }
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    /* [name, ticker, lobbyM, awardsB, defense?] */
+    const D = [
+      ['Lockheed Martin', 'LMT', 14.1, 64.0, true], ['General Dynamics', 'GD', 10.2, 45.1, true],
+      ['Northrop Grumman', 'NOC', 11.0, 38.2, true], ['RTX', 'RTX', 12.1, 41.3, true],
+      ['Boeing', 'BA', 16.8, 32.4, true], ['Pfizer', 'PFE', 11.8, 4.2, false],
+      ['Amazon.com', 'AMZN', 19.7, 2.6, false], ['Alphabet', 'GOOGL', 13.6, 1.2, false],
+      ['Exxon Mobil', 'XOM', 12.4, 0.8, false], ['Meta Platforms', 'META', 21.4, 0.02, false]
+    ];
+    const lx = (m) => ((Math.log10(m) - 0.9) / (1.5 - 0.9)) * 86 + 7; /* $8M..$32M approx */
+    const ly = (b) => ((Math.log10(b * 1000) - 1) / (Math.log10(70000) - 1)) * 88 + 6; /* $10M..$70B */
+    const dots = D.map(([name, t, m, b, def]) => ({
+      t, x: lx(m).toFixed(1) + '%', y: ly(b).toFixed(1) + '%',
+      s: (8 + Math.round(m / 2)) + 'px',
+      c: def ? 'var(--echo-chart-orange)' : 'var(--echo-chart-blue)'
+    }));
+    const ranked = D.map(([name, t, m, b]) => ({ name, t, r: (b * 1000) / m }))
+      .sort((a, z) => z.r - a.r).slice(0, 5)
+      .map((r, i) => ({ rank: i + 1, name: r.name, t: r.t, v: '$' + Math.round(r.r).toLocaleString('en-US') }));
+    const wins = ['1 year', '2 years'].map((label) => ({
+      label, on: String(this.state.win === label), cls: this.state.win === label ? 'is-on' : '',
+      pick: () => this.setState({ win: label })
+    }));
+    return {
+      showData: s === 'default' || s === 'partial',
+      isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error', isPartial: s === 'partial',
+      dots, ranked, wins, five: [1, 2, 3, 4, 5],
+      yT: [[6, '$10M'], [35, '$1B'], [64, '$10B'], [94, '$70B']].map(([p, l]) => ({ p: p + '%', l })),
+      xT: [[7, '$8M'], [38, '$12M'], [69, '$20M'], [93, '$32M']].map(([p, l]) => ({ p: p + '%', l })),
+      summary: 'Defense primes cluster at high contract awards for moderate lobbying spend; large tech companies spend more on lobbying with far smaller awards.'
+    };
+  }
+}
+</script>
+</body>
+</html>

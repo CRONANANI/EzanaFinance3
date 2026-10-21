@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Disclosures</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./lbx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="lbx-root" style="width: 100%; display: flex;">
+<section class="lbx-card" aria-labelledby="lbx-tb-t" style="flex: 1; width: 100%; display: flex; flex-direction: column;">
+  <div class="lbx-head">
+    <div>
+      <h2 id="lbx-tb-t" class="lbx-title">Disclosures</h2>
+      <p class="lbx-sub">FY 2025 · 49,473 filings · filtered <span style="color: var(--text-primary);">1,218</span></p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <div class="lbx-seg" role="radiogroup" aria-label="Table mode">
+        <sc-for list="{{modes}}" as="m" hint-placeholder-count="3">
+          <button type="button" role="radio" aria-checked="{{m.on}}" class="{{m.cls}}" onClick="{{m.pick}}">{{m.label}}</button>
+        </sc-for>
+      </div>
+      <a href="#" class="lbx-link" style="font-size: 12px; display: inline-flex; align-items: center; gap: 5px;">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;" aria-hidden="true"><path d="M8 2v8M4.5 7L8 10.5 11.5 7M2.5 13h11"></path></svg>Export CSV
+      </a>
+    </div>
+  </div>
+
+  <sc-if value="{{showData}}" hint-placeholder-val="{{ true }}">
+    <div style="overflow-x: auto;">
+      <table class="lbx-table">
+        <thead>
+          <tr><th scope="col">Posted</th><th scope="col">Client</th><th scope="col">Firm</th><th scope="col" style="text-align: right;">Amount</th><th scope="col">Issues</th><th scope="col" style="text-align: right;">Lobbyists</th><th scope="col"></th></tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="7">
+            <tr>
+              <td class="lbx-mono" style="font-size: 12px; color: var(--text-muted); white-space: nowrap;">{{r.posted}}</td>
+              <td style="max-width: 280px;">
+                <span style="display: flex; align-items: center; gap: 7px; min-width: 0;">
+                  <span class="lbx-ellipsis" style="font-weight: 500; color: var(--text-primary);">{{r.client}}</span>
+                  <sc-if value="{{r.hasTicker}}" hint-placeholder-val="{{ false }}"><span class="lbx-tick">{{r.ticker}}</span></sc-if>
+                </span>
+              </td>
+              <td class="lbx-ellipsis" style="max-width: 220px; color: var(--text-secondary);">{{r.firm}}</td>
+              <td class="num" style="font-weight: 600; color: var(--text-primary);">{{r.amount}}</td>
+              <td>
+                <span style="display: inline-flex; gap: 4px; align-items: center; flex-wrap: wrap;">
+                  <sc-for list="{{r.issues}}" as="i" hint-placeholder-count="3"><span class="lbx-tick lbx-tick--name" style="font-family: var(--font-sans); font-weight: 500;">{{i}}</span></sc-for>
+                  <sc-if value="{{r.more}}" hint-placeholder-val="{{ false }}"><span class="lbx-mono" style="font-size: 10px; color: var(--text-faint);">{{r.moreN}}</span></sc-if>
+                </span>
+              </td>
+              <td class="num" style="font-size: 12px; color: var(--text-muted);">{{r.lob}}</td>
+              <td><a href="#" class="lbx-link" style="font-size: 12px;" aria-label="Open filing for {{r.client}}">View</a></td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; flex-wrap: wrap; gap: 8px;">
+      <span class="lbx-mono" style="font-size: 12px; color: var(--text-faint);">1 to 7 of 1,218</span>
+      <span style="font-size: 11px; color: var(--text-faint);">Amounts are reported income or expenses; registrations carry none. View opens the filing with its lda.gov link.</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading disclosures" style="display: flex; flex-direction: column;">
+      <sc-for list="{{seven}}" as="x" hint-placeholder-count="7">
+        <div style="height: 49px; display: grid; grid-template-columns: 90px 2fr 1.6fr 90px 2fr 70px 40px; gap: 12px; align-items: center; border-bottom: 1px solid var(--border-secondary);">
+          <span class="lbx-skel" style="height: 10px;"></span><span class="lbx-skel" style="height: 11px; width: 80%;"></span><span class="lbx-skel" style="height: 10px; width: 70%;"></span><span class="lbx-skel" style="height: 11px;"></span><span class="lbx-skel" style="height: 16px; width: 86%;"></span><span class="lbx-skel" style="height: 10px;"></span><span class="lbx-skel" style="height: 10px;"></span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div class="lbx-statebox" style="min-height: 340px;">
+      <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">No filings match these filters</div>
+      <p class="lbx-state" style="margin: 0; max-width: 440px;"><span style="color: var(--text-primary);">Public companies only · Immigration · $10M+ · 90 days</span> returns nothing. Clear the minimum or the public-only toggle.</p>
+      <button type="button" class="lbx-chip" style="align-self: flex-start;">Reset filters</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" class="lbx-statebox" style="min-height: 340px; align-items: flex-start;">
+      <p class="lbx-state" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="lbx-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","partial","error"],"default":"default"},"viewport":{"editor":"enum","options":["desktop","phone"],"default":"desktop"},"$preview":{"width":1392,"height":660}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { mode: 'Public companies' }; }
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    const ROWS = [
+      ['Oct 20, 2026', 'Meta Platforms', 'META', 'In-house', '$5,840,000', ['Tech', 'Privacy', 'Tax'], 2, 14],
+      ['Oct 20, 2026', 'Boeing', 'BA', 'Cornerstone Government Affairs', '$1,200,000', ['Defense', 'Approps', 'Trade'], 1, 9],
+      ['Oct 19, 2026', 'Pfizer', 'PFE', 'In-house', '$3,110,000', ['Health', 'Medicare', 'Tax'], 3, 18],
+      ['Oct 19, 2026', 'U.S. Chamber of Commerce', '', 'In-house', '$18,600,000', ['Tax', 'Trade', 'Labor'], 5, 42],
+      ['Oct 18, 2026', 'Amazon.com', 'AMZN', 'Akin Gump Strauss Hauer & Feld', '$640,000', ['Trade', 'Postal', 'Tech'], 0, 6],
+      ['Oct 18, 2026', 'Lockheed Martin', 'LMT', 'In-house', '$3,480,000', ['Defense', 'Approps', 'Space'], 1, 22],
+      ['Oct 17, 2026', 'Exxon Mobil', 'XOM', 'In-house', '$2,950,000', ['Energy', 'Environment', 'Tax'], 2, 16]
+    ];
+    const modes = ['Public companies', 'Largest', 'Most recent'].map((label) => ({
+      label, on: String(this.state.mode === label), cls: this.state.mode === label ? 'is-on' : '',
+      pick: () => this.setState({ mode: label })
+    }));
+    return {
+      showData: s === 'default' || s === 'partial',
+      isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error', isPartial: s === 'partial',
+      modes, seven: [1, 2, 3, 4, 5, 6, 7],
+      rows: ROWS.map(([posted, client, ticker, firm, amount, issues, moreN, lob]) => ({
+        posted, client, ticker, hasTicker: !!ticker, firm, amount, issues,
+        more: moreN > 0, moreN: '+' + moreN, lob
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>
