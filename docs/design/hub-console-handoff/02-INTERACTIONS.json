@@ -1,0 +1,41 @@
+{
+  "page": "/datasets",
+  "design": "V1.1 Console rail below the deck",
+  "url": {
+    "dimension": "?dimension=<id> selects a dimension, exactly as today via SonarSelection; strips are the new triggers for the same state"
+  },
+  "belt": {
+    "container": "one glass band, radius 12, no border, no pill per item",
+    "items": "icon + headline with the value in mint + mono meta, divided by 1px mint hairlines (border-left on every item but the first)",
+    "motion": "keep NewsBelt marquee: linear loop, duration from useTickerSpeed, paused on hover",
+    "reduced_motion": "no animation; band becomes a hand-scrollable row with hidden scrollbar (today's behaviour)",
+    "empty": "no items: the band does not render (today's behaviour); never an empty shell",
+    "a11y": "band stays aria-hidden decorative as today; the same stories are reachable in their feeds"
+  },
+  "rail": {
+    "order": "taxonomy order, left to right, all seven always present",
+    "strip_is": "a <button>, the whole strip is the hit area, min target 44px tall",
+    "hover": "background lifts one step, hue border alpha rises, 0.15s; waveform amplitude unchanged",
+    "selected": "strip border goes solid in its hue, background takes a hue tint at 10%, its stem brightens to 80% alpha; aria-pressed=true; same panels open as selecting that dimension today",
+    "roadmap": "strip at 62% opacity, flat dashed waveform, hollow ticks, status ROADMAP; click routes to the dimension's roadmap view exactly as its current mark does",
+    "live_pulse": "on a live strip a 2px dot may travel its stem toward the deck every few seconds; off under prefers-reduced-motion",
+    "keyboard": "strips are in tab order left to right; visible focus ring 2px mint, offset 2; Enter/Space select; Escape clears selection if a selection exists (today's rule)",
+    "touch": "no hover states required on touch; selected state alone carries meaning plus the pressed label"
+  },
+  "bus": {
+    "role": "purely presentational, aria-hidden",
+    "parts": "feed line from deck base with a mint node dot, horizontal bus hairline fading at both ends, one stem per strip rising from the bus into the strip top",
+    "selected": "only the selected strip's stem brightens; the bus itself never changes"
+  },
+  "states": {
+    "loading": "counts unknown: strip shows a shimmer block where count and ticks sit; name and hue render immediately; never a spinner",
+    "ping_flow": "unchanged: sending a ping swaps the whole scene (deck + rail) for the loader and results, exactly as the map is swapped today",
+    "error": "taxonomy is static so the rail cannot fail; if the news feed fails the belt simply does not render"
+  },
+  "motion_budget": {
+    "hover": "0.15s",
+    "selection": "0.2s",
+    "waveform_idle": "slow drift, 6s+ loop, subtle",
+    "reduced_motion": "waveform static, no stem pulse, no marquee"
+  }
+}

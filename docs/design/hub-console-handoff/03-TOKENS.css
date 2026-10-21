@@ -1,0 +1,74 @@
+/* Datasets hub console rail, page-scoped tokens.
+   Every value maps onto src/app/theme-variables.css or the brand band tokens.
+   This route is light-locked green: nothing below may resolve differently in
+   light mode. The seven dimension hues are the FIXED dot colours from the
+   shared chrome contract (docs/design/tracker-handoff/06-SHARED-CHROME.md);
+   they exist nowhere else in this page's CSS. */
+
+.dcr-scope {
+  /* ground and ink (band green, white ink) */
+  --dcr-ground: var(--brand-band-green);
+  --dcr-mint: var(--brand-band-mint); /* #6ee7b7 */
+  --dcr-ink: #ffffff; /* hero white on the band, as the belt uses today */
+  --dcr-ink-soft: rgba(255, 255, 255, 0.92);
+  --dcr-ink-mute: rgba(255, 255, 255, 0.5);
+  --dcr-ink-faint: rgba(255, 255, 255, 0.4);
+
+  /* the glass belt */
+  --dcr-belt-bg: rgba(2, 26, 20, 0.62); /* darker than the band, no border */
+  --dcr-belt-divider: color-mix(in srgb, var(--dcr-mint) 14%, transparent);
+  --dcr-belt-value: var(--dcr-mint);
+  --dcr-belt-meta: color-mix(in srgb, var(--dcr-mint) 75%, transparent);
+  --dcr-belt-radius: var(--radius-lg); /* 12px */
+
+  /* strips */
+  --dcr-strip-bg: rgba(2, 22, 17, 0.42);
+  --dcr-strip-bg-hover: rgba(2, 22, 17, 0.58);
+  --dcr-strip-radius: 10px; /* between --radius-md and --radius-lg; use --radius-md if the guard objects */
+  --dcr-strip-border: color-mix(in srgb, var(--dim) 26%, transparent);
+  --dcr-strip-border-hover: color-mix(in srgb, var(--dim) 45%, transparent);
+  --dcr-strip-border-selected: var(--dim);
+  --dcr-strip-selected-tint: color-mix(in srgb, var(--dim) 10%, transparent);
+  --dcr-tick-hollow: rgba(255, 255, 255, 0.3);
+  --dcr-road-opacity: 0.62;
+
+  /* bus and stems */
+  --dcr-bus: color-mix(in srgb, var(--dcr-mint) 35%, transparent);
+  --dcr-stem: color-mix(in srgb, var(--dim) 55%, transparent);
+  --dcr-stem-selected: color-mix(in srgb, var(--dim) 80%, transparent);
+  --dcr-node: var(--dcr-mint);
+
+  /* status */
+  --dcr-live: var(--dcr-mint);
+  --dcr-road: rgba(255, 255, 255, 0.45);
+
+  /* focus */
+  --dcr-focus: var(--dcr-mint);
+
+  /* type */
+  --dcr-sans: var(--font-sans);
+  --dcr-mono: var(--font-mono);
+
+  /* motion */
+  --dcr-t-hover: 0.15s;
+  --dcr-t-select: 0.2s;
+}
+
+/* The seven dimension hues, fixed, set as --dim on each strip and its stem.
+   Source of truth: the shared chrome dot table. Never reassigned. */
+.dcr-scope {
+  --dcr-dim-capitol: #6ee7b7; /* Capitol Watch */
+  --dcr-dim-titans: #c4b5fd; /* Titans Shadow */
+  --dcr-dim-eyes: #67e8f9; /* Eyes Above */
+  --dcr-dim-consumer: #fcd34d; /* Consumer Whispers */
+  --dcr-dim-hive: #f9a8d4; /* The Hive */
+  --dcr-dim-global: #93c5fd; /* Global Empire Lighthouse */
+  --dcr-dim-regulatory: #d9f99d; /* Regulatory Winds */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dcr-scope {
+    --dcr-t-hover: 0s;
+    --dcr-t-select: 0s;
+  }
+}
