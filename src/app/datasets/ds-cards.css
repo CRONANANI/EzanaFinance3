@@ -1,0 +1,71 @@
+/* Dataset card outlines (Oct 21).
+   No component card on a /datasets page draws an outline or a halo. Dark
+   mode cards are transparent over the page ground, so a 1px border or a drop
+   shadow reads as a ring around each card; separation comes from spacing and
+   each card's own header rule instead.
+
+   Scoped to .ds-shell (the wrapper the datasets layout puts around every
+   /datasets route), so the same classes used elsewhere (mkt-card on the
+   brokerages page, for one) keep their look. The border stays 1px and only
+   turns transparent so nothing shifts by a pixel. Inner tiles, chips, inputs
+   and table rules are left alone on purpose: this is the card shell only.
+   Focus outlines are untouched, so keyboard focus still shows.
+
+   New dataset page? Add its card class to both lists. */
+.ds-shell
+  :is(
+    .mkt-card,
+    .hub-card,
+    .cwh-card,
+    .cwh-strip-card,
+    .cfi-card,
+    .cre-card,
+    .cmx-card,
+    .etfx-card,
+    .ecx-card,
+    .gcx-card,
+    .lbx-card,
+    .insx-card,
+    .fndx-card,
+    .ntl-card,
+    .oecd-card,
+    .pat-card,
+    .pcf-card,
+    .ptx-card,
+    .snx-card,
+    .dso-dimcard,
+    .scm-card,
+    .bw-card,
+    .ptk-card,
+    .pmk-card
+  ),
+.ds-shell
+  :is(
+    .mkt-card,
+    .hub-card,
+    .cwh-card,
+    .cwh-strip-card,
+    .cfi-card,
+    .cre-card,
+    .cmx-card,
+    .etfx-card,
+    .ecx-card,
+    .gcx-card,
+    .lbx-card,
+    .insx-card,
+    .fndx-card,
+    .ntl-card,
+    .oecd-card,
+    .pat-card,
+    .pcf-card,
+    .ptx-card,
+    .snx-card,
+    .dso-dimcard,
+    .scm-card,
+    .bw-card,
+    .ptk-card,
+    .pmk-card
+  ):is(:hover, :focus-within) {
+  border-color: transparent;
+  box-shadow: none;
+}

@@ -186,6 +186,20 @@ export default function PredictionMarketsPage() {
           </div>
         </header>
 
+        {/* Oct 21: Market pulse leads, the filter card sits directly under it,
+            then the grid. Both are full width of the shared dataset canvas. */}
+        <PulseCard
+          state={uState}
+          rows={filtered}
+          win={win}
+          filters={filters}
+          updatedAt={universe.data?.updatedAt}
+          stale={stale}
+          onRetry={universe.retry}
+          onLoad={loadMarket}
+          onReset={() => setParams({ category: null, venue: null, q: null, window: null })}
+        />
+
         <FilterBar
           category={category}
           venue={venue}
@@ -199,19 +213,6 @@ export default function PredictionMarketsPage() {
         />
 
         <div className="pmk-grid">
-          <PulseCard
-            className="pmk-span-12"
-            state={uState}
-            rows={filtered}
-            win={win}
-            filters={filters}
-            updatedAt={universe.data?.updatedAt}
-            stale={stale}
-            onRetry={universe.retry}
-            onLoad={loadMarket}
-            onReset={() => setParams({ category: null, venue: null, q: null, window: null })}
-          />
-
           <div className="pmk-span-8 pmk-slot" ref={chartRef}>
             <PriceChartCard
               marketId={loadedId}

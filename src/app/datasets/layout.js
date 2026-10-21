@@ -9,6 +9,7 @@ import { TickerSlotProvider } from '@/components/datasets/ticker-slot';
 import { HUB_SLUGS } from '@/lib/datasets/hubs';
 import '../marketing-explore.css';
 import './dataset-type.css';
+import './ds-cards.css';
 
 // Datasets taken offline pending completion — the taxonomy marks them
 // live:false (so nav renders them "Soon"); this gate stops direct-URL access.

@@ -15,6 +15,9 @@ import { Card, CardHead, ChangePill, Skeleton, Spark, StateBox, cx } from './par
 import { contracts, int, pct, timeEt, usd, weekday } from './format';
 import { useSparklines } from './use-sparklines';
 
+/** Day-bar height in px; matches .pmk-daybars in prediction-markets.css. */
+const DAYBAR_MAX = 20;
+
 export function filterLabel({ category, venue }, win) {
   const c = category && category !== 'all' ? CATEGORY_LABEL[category] : 'All categories';
   const v = venue === 'polymarket' ? 'Polymarket' : venue === 'kalshi' ? 'Kalshi' : 'All venues';
@@ -28,9 +31,10 @@ function PulseSkeleton() {
       {Array.from({ length: 4 }).map((_, i) => (
         <div key={i} className="pmk-tile">
           <Skeleton width="45%" height={10} />
-          <Skeleton width="60%" height={24} />
-          <Skeleton width="100%" height={8} />
-          <Skeleton width="70%" height={10} />
+          <div className="pmk-tile-row">
+            <Skeleton width="34%" height={22} />
+            <Skeleton width="60%" height={10} />
+          </div>
         </div>
       ))}
     </div>
@@ -70,11 +74,11 @@ export function PulseCard({
       {state === 'loading' ? (
         <PulseSkeleton />
       ) : state === 'error' ? (
-        <StateBox kind="error" onRetry={onRetry} minHeight={118} />
+        <StateBox kind="error" onRetry={onRetry} minHeight={64} />
       ) : !totalOpen ? (
         <StateBox
           title="No open markets match"
-          minHeight={118}
+          minHeight={64}
           actions={
             <button type="button" className="pmk-link" onClick={onReset}>
               Reset filters
@@ -87,29 +91,41 @@ export function PulseCard({
         <div className="pmk-pulse">
           <div className="pmk-tile">
             <p className="pmk-eyebrow">Open markets</p>
-            <p className="pmk-value pmk-num">{int(totalOpen)}</p>
-            <div className="pmk-split" aria-hidden="true">
-              {stats.open.polymarket ? (
-                <span className="pmk-split-poly" style={{ flex: stats.open.polymarket }} />
-              ) : null}
-              {stats.open.kalshi ? (
-                <span className="pmk-split-kalshi" style={{ flex: stats.open.kalshi }} />
-              ) : null}
+            <div className="pmk-tile-row">
+              <p className="pmk-value pmk-num">{int(totalOpen)}</p>
+              <div className="pmk-tile-aside">
+                <div className="pmk-split" aria-hidden="true">
+                  {stats.open.polymarket ? (
+                    <span className="pmk-split-poly" style={{ flex: stats.open.polymarket }} />
+                  ) : null}
+                  {stats.open.kalshi ? (
+                    <span className="pmk-split-kalshi" style={{ flex: stats.open.kalshi }} />
+                  ) : null}
+                </div>
+                <p className="pmk-tile-legend pmk-num">
+                  <span>
+                    <span className="pmk-dot pmk-dot--polymarket" aria-hidden="true" /> Poly{' '}
+                    {int(stats.open.polymarket)}
+                  </span>
+                  <span>
+                    <span className="pmk-dot pmk-dot--kalshi" aria-hidden="true" /> Kalshi{' '}
+                    {int(stats.open.kalshi)}
+                  </span>
+                </p>
+              </div>
             </div>
-            <p className="pmk-tile-legend pmk-num">
-              <span>
-                <span className="pmk-dot pmk-dot--polymarket" aria-hidden="true" /> Poly{' '}
-                {int(stats.open.polymarket)}
-              </span>
-              <span>
-                <span className="pmk-dot pmk-dot--kalshi" aria-hidden="true" /> Kalshi{' '}
-                {int(stats.open.kalshi)}
-              </span>
-            </p>
           </div>
 
           <div className="pmk-tile">
-            <p className="pmk-eyebrow">Volume traded · {win}</p>
+            <div className="pmk-tile-top">
+              <p className="pmk-eyebrow">Volume traded · {win}</p>
+              <p
+                className="pmk-tile-note pmk-faint"
+                title="Units differ, so venues are not summed."
+              >
+                Not summed
+              </p>
+            </div>
             <div className="pmk-vol-halves">
               <div>
                 <p className="pmk-value-md pmk-num">
@@ -124,7 +140,7 @@ export function PulseCard({
                 <p className="pmk-tile-note">Kalshi, contracts</p>
               </div>
             </div>
-            <p className="pmk-tile-note pmk-faint">Units differ, so venues are not summed.</p>
+            <span className="pmk-sr">Units differ, so venues are not summed.</span>
           </div>
 
           <button
@@ -143,8 +159,8 @@ export function PulseCard({
                   <ChangePill change={windowChange(mover, win)} size="lg" />
                   <Spark
                     points={moverPoints ? downsample(moverPoints, 8) : null}
-                    width={88}
-                    height={26}
+                    width={72}
+                    height={20}
                     direction={Math.sign(windowChange(mover, win) || 0)}
                   />
                   <span className="pmk-mover-p pmk-num">{pct(mover.p)}</span>
@@ -158,20 +174,24 @@ export function PulseCard({
 
           <div className="pmk-tile">
             <p className="pmk-eyebrow">Closing this week</p>
-            <p className="pmk-value pmk-num">{int(stats.closingTotal)}</p>
-            <div className="pmk-daybars" aria-hidden="true">
-              {stats.closing.map((d, i) => (
-                <span
-                  key={d.date}
-                  className={cx('pmk-daybar', i === 0 && 'is-today')}
-                  style={{ height: `${Math.max(2, (d.count / maxDay) * 28)}px` }}
-                />
-              ))}
+            <div className="pmk-tile-row">
+              <p className="pmk-value pmk-num">{int(stats.closingTotal)}</p>
+              <div className="pmk-tile-aside">
+                <div className="pmk-daybars" aria-hidden="true">
+                  {stats.closing.map((d, i) => (
+                    <span
+                      key={d.date}
+                      className={cx('pmk-daybar', i === 0 && 'is-today')}
+                      style={{ height: `${Math.max(2, (d.count / maxDay) * DAYBAR_MAX)}px` }}
+                    />
+                  ))}
+                </div>
+                <p className="pmk-tile-note pmk-num">
+                  Next 7 days
+                  {stats.peak ? ` · peak ${weekday(stats.peak.date)} ${int(stats.peak.count)}` : ''}
+                </p>
+              </div>
             </div>
-            <p className="pmk-tile-note pmk-num">
-              Next 7 days
-              {stats.peak ? ` · peak ${weekday(stats.peak.date)} ${int(stats.peak.count)}` : ''}
-            </p>
           </div>
         </div>
       )}
