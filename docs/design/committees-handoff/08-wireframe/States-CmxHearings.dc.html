@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hearings · states</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./cmx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="cmx-root cmx-dark" style="width: 642px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 28px;">
+  <sc-for list="{{states}}" as="s" hint-placeholder-count="4">
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div class="cmx-kicker" style="color: var(--emerald-text);">{{s.label}}</div>
+      <dc-import name="CmxHearings" state="{{s.key}}" hint-size="578px,560px"></dc-import>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":642,"height":2580}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { states: [['default', 'Default · ships first: not yet available'], ['loading', 'Loading'], ['future', 'Future · once dates are ingested'], ['error', 'Error']].map(([key, label]) => ({ key, label })) };
+  }
+}
+</script>
+</body>
+</html>

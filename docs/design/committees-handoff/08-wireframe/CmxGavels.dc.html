@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gavels</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./cmx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="cmx-root" style="width: 100%; display: flex;">
+<section class="cmx-card" aria-labelledby="cmx-gv-t" style="flex: 1; width: 100%; display: flex; flex-direction: column;">
+  <div class="cmx-head">
+    <div>
+      <h2 id="cmx-gv-t" class="cmx-title">Gavels</h2>
+      <p class="cmx-sub">Who holds power · full committees</p>
+    </div>
+    <div class="cmx-seg" role="radiogroup" aria-label="Leadership role">
+      <sc-for list="{{roles}}" as="r" hint-placeholder-count="2">
+        <button type="button" role="radio" aria-checked="{{r.on}}" class="{{r.cls}}" onClick="{{r.pick}}">{{r.label}}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{isDefault}}" hint-placeholder-val="{{ true }}">
+    <ol style="list-style: none; margin: 0 -8px; padding: 0; display: flex; flex-direction: column;">
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="9">
+        <li>
+          <button type="button" class="cmx-row cmx-row-btn" style="display: flex; align-items: center; gap: 10px; padding: 8px; min-height: 52px;" aria-label="Open member lookup for {{r.name}}">
+            <span class="cmx-avatar" style="width: 32px; height: 32px; font-size: 11px;" aria-hidden="true">{{r.init}}</span>
+            <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+              <span style="display: flex; align-items: center; gap: 7px; min-width: 0;">
+                <span class="cmx-ellipsis" style="font-size: 13px; font-weight: 600; color: var(--text-primary);">{{r.name}}</span>
+                <span class="cmx-party" aria-label="Party {{r.party}}">{{r.party}}</span>
+                <span class="cmx-mono" style="font-size: 10px; color: var(--text-faint);">{{r.state}}</span>
+              </span>
+              <span class="cmx-ellipsis" style="font-size: 11px; color: var(--text-muted);">{{r.committee}}</span>
+            </span>
+            <span class="cmx-code">{{r.code}}</span>
+          </button>
+        </li>
+      </sc-for>
+    </ol>
+    <div style="margin-top: auto; padding-top: 12px; display: flex; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--text-faint);">
+      <span>Select a person to open Member lookup</span>
+      <a href="#" class="cmx-link" style="font-size: 12px;">All 49 committees</a>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading gavels" style="display: flex; flex-direction: column; gap: 6px;">
+      <sc-for list="{{nine}}" as="x" hint-placeholder-count="9">
+        <div style="height: 46px; display: flex; align-items: center; gap: 10px; padding: 0 8px;">
+          <span class="cmx-skel" style="width: 32px; height: 32px; border-radius: 50%;"></span>
+          <span style="flex: 1; display: flex; flex-direction: column; gap: 5px;"><span class="cmx-skel" style="height: 10px; width: 54%;"></span><span class="cmx-skel" style="height: 8px; width: 70%;"></span></span>
+          <span class="cmx-skel" style="width: 44px; height: 16px;"></span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div class="cmx-statebox" style="flex: 1; min-height: 420px;">
+      <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">No gavels match these filters</div>
+      <p class="cmx-state" style="margin: 0; max-width: 360px;">No <span style="color: var(--text-primary);">Joint</span> committee chair sits in a <span style="color: var(--text-primary);">Fintech</span> mapped committee. Widen the sector.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" class="cmx-statebox" style="flex: 1; min-height: 420px; align-items: flex-start;">
+      <p class="cmx-state" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="cmx-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","error"],"default":"default"},"viewport":{"editor":"enum","options":["desktop","phone"],"default":"desktop"},"$preview":{"width":464,"height":760}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { role: 'Chairs' }; }
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    const chair = this.state.role === 'Chairs';
+    const DATA = [
+      ['Energy and Commerce', 'HSIF', 'R', 'KY'], ['Appropriations', 'HSAP', 'R', 'OK'],
+      ['Armed Services', 'HSAS', 'R', 'AL'], ['Financial Services', 'HSBA', 'R', 'AR'],
+      ['Ways and Means', 'HSWM', 'R', 'MO'], ['Senate Finance', 'SSFI', 'R', 'ID'],
+      ['Senate Banking', 'SSBK', 'R', 'SC'], ['Senate Commerce', 'SSCM', 'R', 'TX'],
+      ['Senate Armed Services', 'SSAS', 'R', 'MS']
+    ];
+    const rows = DATA.map(([committee, code, p, st], i) => ({
+      name: '[Member name]',
+      init: 'M' + (i + 1),
+      party: chair ? p : (p === 'R' ? 'D' : 'R'),
+      state: chair ? st : ['NJ', 'CT', 'WA', 'CA', 'MA', 'OR', 'OH', 'MI', 'RI'][i],
+      committee: committee + (chair ? '' : ''),
+      code
+    }));
+    const roles = [['Chairs'], ['Ranking members']].map(([label]) => ({
+      label, on: String(this.state.role === label), cls: this.state.role === label ? 'is-on' : '',
+      pick: () => this.setState({ role: label })
+    }));
+    return {
+      isDefault: s === 'default', isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error',
+      rows, roles, nine: Array.from({ length: 9 }, (_, i) => i)
+    };
+  }
+}
+</script>
+</body>
+</html>

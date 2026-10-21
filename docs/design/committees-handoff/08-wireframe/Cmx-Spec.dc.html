@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Committee assignments · component spec</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./cmx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="cmx-root cmx-dark" style="width: 1440px; min-height: 2650px; padding: 56px 64px; box-sizing: border-box; display: flex; flex-direction: column; gap: 36px;">
+  <header>
+    <div class="cmx-kicker" style="color: var(--emerald-text); margin-bottom: 10px;">/datasets/committees · spec</div>
+    <h1 style="margin: 0; font-size: 1.875rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary);">Component spec sheet</h1>
+    <p style="margin: 10px 0 0; max-width: 820px; font-size: 14px; line-height: 1.6; color: var(--text-muted);">Page-scoped prefix <span class="cmx-mono" style="color: var(--text-primary);">cmx-</span>. Cards draw no outline border and no shadow (ds-cards.css); separation is spacing plus each card's header rule. Numbers, tickers, dates and committee codes are JetBrains Mono tabular; party is a neutral bordered letter tag, never a colour. Bootstrap Icons in the build; drawn inline in this wireframe. No gold.</p>
+  </header>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; align-items: start;">
+
+    <section class="cmx-card" style="grid-column: span 2;">
+      <div class="cmx-head"><div><h2 class="cmx-title">Cards</h2><p class="cmx-sub">Span (12 col) · data source · key interactions · empty copy pattern</p></div></div>
+      <table class="cmx-table">
+        <thead><tr><th scope="col">Card</th><th scope="col" style="text-align: right;">Span</th><th scope="col">Data</th><th scope="col">Interactions</th><th scope="col">Empty copy names</th></tr></thead>
+        <tbody>
+          <sc-for list="{{cards}}" as="c" hint-placeholder-count="10">
+            <tr>
+              <td style="font-weight: 600; color: var(--text-primary); white-space: nowrap;">{{c.n}}</td>
+              <td class="num" style="font-size: 12px;">{{c.s}}</td>
+              <td class="cmx-mono" style="font-size: 11px; color: var(--emerald-text); white-space: nowrap;">{{c.d}}</td>
+              <td style="font-size: 12.5px;">{{c.i}}</td>
+              <td style="font-size: 12.5px; color: var(--text-muted);">{{c.e}}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="cmx-card">
+      <div class="cmx-head"><div><h2 class="cmx-title">Interactions</h2><p class="cmx-sub">Clicks, hovers, filters, deep links</p></div></div>
+      <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 7px; font-size: 13px; color: var(--text-secondary);">
+        <sc-for list="{{inter}}" as="l" hint-placeholder-count="14"><li>{{l}}</li></sc-for>
+      </ul>
+    </section>
+
+    <section class="cmx-card">
+      <div class="cmx-head"><div><h2 class="cmx-title">Tokens</h2><p class="cmx-sub">Existing tokens only · flags where a new value is tempting</p></div></div>
+      <table class="cmx-table">
+        <thead><tr><th scope="col"></th><th scope="col">Role</th><th scope="col">Token</th></tr></thead>
+        <tbody>
+          <sc-for list="{{tokens}}" as="t" hint-placeholder-count="15">
+            <tr>
+              <td style="width: 28px;"><span aria-hidden="true" style="display: inline-block; width: 18px; height: 18px; border-radius: var(--radius-sm); background: var({{t.tok}}); border: 1px solid var(--border-hover);"></span></td>
+              <td style="font-size: 12.5px;">{{t.role}}</td>
+              <td class="cmx-mono" style="font-size: 12px; color: var(--text-primary);">{{t.tok}}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+      <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 8px;">
+        <div class="cmx-kicker" style="font-size: 10px;">Flags, not new tokens</div>
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--text-secondary);">
+          <li>Majority and minority are encoded as <span class="cmx-mono">--emerald</span> vs <span class="cmx-mono">--echo-chart-blue</span> plus a text label; party itself stays the neutral tag from Politician Tracker.</li>
+          <li>Matrix ramp: opacity 0.1 to 0.85 on <span class="cmx-mono">--emerald</span>, computed per cell; zero cells at 0.04. No ramp token.</li>
+          <li>Hearings ghost timeline: dashed <span class="cmx-mono">--border-hover</span> with <span class="cmx-mono">--text-ghost</span> labels.</li>
+          <li>The <span class="cmx-mono">--echo-chart-*</span> promotion to :root is a shared prerequisite with the Prediction Markets and Lobbying packages; add once.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="cmx-card" style="grid-column: span 2;">
+      <div class="cmx-head"><div><h2 class="cmx-title">Honesty rules carried into the design</h2><p class="cmx-sub">From the data brief · binding</p></div></div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 32px;">
+        <sc-for list="{{honest}}" as="l" hint-placeholder-count="6">
+          <div style="display: flex; gap: 8px; font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;">
+            <span aria-hidden="true" style="color: var(--emerald-text); flex: none;">·</span><span>{{l}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2650}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      cards: [
+        { n: '1 · Congress at a glance', s: '12', d: '/api/committees counts', i: 'Counts follow the chamber control; seat split bar', e: 'Chamber + sector' },
+        { n: '2 · Committee atlas', s: '8', d: '/api/committees', i: 'Tile sized by seats, grouped by chamber; click loads the profile; unmapped tiles calmer', e: 'Chamber + sector' },
+        { n: '3 · Gavels', s: '4', d: 'chairs + ranking members', i: 'Chairs/Ranking toggle; person click opens Member lookup', e: 'Chamber + sector' },
+        { n: '4 · Committee profile', s: '12', d: '/api/committees/[thomasId]', i: 'Facing majority/minority roster by rank; subcommittee chips swap the roster; trades strip links to Card 7 filtered; ?committee= deep link', e: 'Select-a-committee prompt' },
+        { n: '5 · Oversight map', s: '7', d: 'committee-sectors.js', i: 'Bipartite; hover highlights either side; sector click sets the page filter', e: 'Joint has no mapping' },
+        { n: '6 · Seat load', s: '5', d: 'seats per member', i: 'Histogram + most-seated list; person click opens Member lookup', e: 'Party + sector' },
+        { n: '7 · Trades in overseen sectors', s: '12', d: 'belt + member route', i: 'Side and committee filters; summary split; unmapped count shown quietly', e: 'Side + committee + sector' },
+        { n: '8 · Holdings matrix', s: '7', d: 'hub_committee_ticker_stats', i: 'Cell hover: buyers and sellers since 180d, holder names; inferred label always on', e: 'Sector' },
+        { n: '9 · Hearings', s: '5', d: '/api/congress/meetings', i: 'Ships as not-yet-available over a ghost 14-day timeline; future state designed', e: 'Not available yet (default)' },
+        { n: '10 · Member lookup', s: '12', d: '/api/committees/member/[id]', i: 'Grouped search; seat chips with rank and title; 24-month dot timeline; ?member= deep link; Open in Politician Tracker', e: 'No member found' }
+      ],
+      inter: [
+        'Sticky controls: view (Committees/Members), chamber, party, sector chips, one grouped search. All round-trip through the URL.',
+        'Any committee click anywhere (atlas tile, gavel row code, matrix row, trade row code) loads Card 4 and sets ?committee=.',
+        'Any member click anywhere (gavel, roster row, seat-load row, trade row) loads Card 10 and sets ?member=.',
+        'Deep links ?committee=HSIF and ?member=BIOGUIDE keep working and scroll their card into view.',
+        'Oversight map sector click and the profile sector chips set the page sector filter.',
+        'View switch Members reorders the page: Member lookup moves under the controls; committee cards remain below.',
+        'Ticker belt publishes overseen-sector trades as MEMBER (P-ST) · SIDE · TICKER · $RANGE · COMMITTEE.',
+        'Member panel continuity: Open in Politician Tracker goes to /datasets/politician-tracker?member=<slug>.',
+        'Filter changes tick numbers 0.3s and cross-fade lists; row heights reserved.',
+        'Headshots load lazily with initials fallback and a shimmer circle while loading.',
+        'Keyboard: segments and chips are radiogroups; rows are buttons; the matrix and map have visually hidden table fallbacks.',
+        'Hover tooltips (matrix cells, oversight links) are also reachable on focus.',
+        'Every card refetches only itself on Retry.',
+        'Phone: controls collapse to chamber chips + a Filters sheet; atlas becomes a list; matrix becomes a ranked list per committee.'
+      ],
+      tokens: [
+        { role: 'Page ground', tok: '--bg-primary' },
+        { role: 'Card fill (transparent on dark)', tok: '--surface-card' },
+        { role: 'Inner tiles, row hover', tok: '--surface-card-hover' },
+        { role: 'Card header rule', tok: '--border-hover' },
+        { role: 'Row dividers', tok: '--border-secondary' },
+        { role: 'Titles, values, names', tok: '--text-primary' },
+        { role: 'Body', tok: '--text-secondary' },
+        { role: 'Kickers, meta', tok: '--text-muted' },
+        { role: 'Captions, legal', tok: '--text-faint' },
+        { role: 'Ghost timeline, disabled', tok: '--text-ghost' },
+        { role: 'Selected, focus, majority, matrix ramp', tok: '--emerald' },
+        { role: 'Minority, histogram, map links', tok: '--echo-chart-blue' },
+        { role: 'Buys, buy dots', tok: '--positive' },
+        { role: 'Sells, sell dots', tok: '--echo-chart-red' },
+        { role: 'Ticker chips', tok: '--emerald-bg' }
+      ],
+      honest: [
+        'A trade in an overseen sector is a disclosure pattern, not evidence of wrongdoing; the footnote sits on Cards 7, 8 and 10.',
+        'Sector links are editorial and always carry the jurisdiction note; unmapped committees and tickers are counted, never guessed.',
+        'Open positions are labelled inferred from disclosures wherever they appear.',
+        'Trade amounts are disclosure ranges, never point values, in the belt, the feed and the timeline.',
+        'People in fixtures are [Member name] placeholders; no invented trade or holding attaches to a real member.',
+        'Hearings ship with the honest not-yet-available state until dates and committees are ingested.'
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

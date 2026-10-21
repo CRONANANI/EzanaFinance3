@@ -1,0 +1,94 @@
+{
+  "page": "/datasets/committees",
+  "design": "Ten-card Committee Assignments, Oct 2026",
+  "url": {
+    "view": "?view=members switches to the Members ordering, omitted for Committees",
+    "chamber": "?chamber=house|senate|joint, omitted when All",
+    "party": "?party=D|R|I, omitted when ALL",
+    "sector": "?sector=<name>, omitted when All",
+    "q": "?q=<text>, omitted when empty",
+    "committee": "?committee=<thomasId> loads Card 4 and scrolls it into view; survives refresh (existing deep link)",
+    "member": "?member=<bioguideId> loads Card 10 and scrolls it into view; survives refresh (existing deep link)",
+    "history": "filter changes use router.replace; committee and member selections push one entry so Back returns"
+  },
+  "controls": {
+    "view": "segmented Committees | Members; Members moves Card 10 under the controls, everything else follows",
+    "chamber": "segmented All | House | Senate | Joint",
+    "party": "segmented mono ALL | D | R | I",
+    "sector": "chip row: All + the mapped sectors from committee-sectors.js; selected chip emerald; scrolls horizontally",
+    "search": "one box over committees and members; results grouped (Committees, Members) with codes and party tags; Enter on a result selects it",
+    "phone": "chamber chips scroll + a Filters chip (count of non-default) opening a bottom sheet with view, party, sector, search, Reset"
+  },
+  "controls_apply_to": {
+    "glance": ["chamber", "sector"],
+    "atlas": ["chamber", "sector", "q"],
+    "gavels": ["chamber", "party", "sector"],
+    "profile": "follows the selected committee only",
+    "oversight": ["chamber"],
+    "seatload": ["chamber", "party", "sector"],
+    "trades": ["chamber", "party", "sector", "plus its own side and committee filters"],
+    "matrix": ["chamber", "sector"],
+    "hearings": ["chamber (future state)"],
+    "lookup": "follows the selected member only"
+  },
+  "selection": {
+    "committee_click": "atlas tile, gavel row code, matrix row label, trade row code, profile subcommittee parent: all set ?committee= and load Card 4",
+    "member_click": "gavel person, roster row, seat-load row, trade row member, search result: all set ?member= and load Card 10",
+    "continuity": "Card 10's Open in Politician Tracker goes to /datasets/politician-tracker?member=<slug>"
+  },
+  "cards": {
+    "glance": { "tiles": 4, "split": "one proportional majority/minority bar with mono counts and text labels" },
+    "atlas": {
+      "tiles": "grouped House, Senate, Joint; span 2 columns at 55+ seats; split bar, code, seats and sub counts, up to 2 sector chips + '+N'",
+      "unmapped": "72% opacity, no chips",
+      "selected": "emerald border and tint, code chip emerald",
+      "more": "'+N more' tile per chamber expands the group in place"
+    },
+    "gavels": { "toggle": "Chairs | Ranking members", "row": "avatar, name, party tag, state, committee line, code chip" },
+    "profile": {
+      "default": "HSIF on first load, else the ?committee= target",
+      "subcommittees": "chips swap the roster below; Full committee first",
+      "roster": "facing majority/minority columns ordered by rank; Chair and Ranking badged; 'All N members' expands in place",
+      "trades_strip": "links to Card 7 with the committee filter applied"
+    },
+    "oversight": {
+      "hover": "hovering a sector highlights its committees and links; hovering a committee highlights its sectors; emerald for the hot side, links otherwise at 18% chart blue",
+      "click": "sector sets the page sector filter; committee loads Card 4",
+      "a11y": "focus mirrors hover; a visually hidden table lists committee to sector pairs"
+    },
+    "seatload": { "histogram": "1 to 10+ seats", "list": "top 5 most-seated; person click opens Card 10" },
+    "trades": {
+      "summary": "window trades, buy vs sell split bar, members traded, unmapped count as a quiet line",
+      "filters": "side segmented All | Buys | Sells; committee chip opening a committee picker",
+      "row": "date, member (avatar, party, state), side pill, ticker chip, range as disclosed, sector, committee code"
+    },
+    "matrix": {
+      "cell_hover": "members holding, buyers and sellers since 180 days, holder names (+N) in the tooltip",
+      "row_click": "loads Card 4",
+      "phone": "ranked list per committee: top tickers with holder counts"
+    },
+    "hearings": {
+      "default": "not-yet-available message over a ghost 14-day timeline, link to the committee profile",
+      "future": "day rows with committee code, title, optional bill chip, time; gated on the ingest fix"
+    },
+    "lookup": {
+      "search": "the shared grouped search scoped to members when the card has focus",
+      "seats": "chips with code, name, rank and leadership badge",
+      "timeline": "24 months, dot per trade, colour by side, size by disclosure range, unmapped count beside the total"
+    }
+  },
+  "states": {
+    "loading": "shimmer in each card's shape; reserved heights",
+    "empty": "names the active filters plus a way out; Profile and Lookup use select prompts instead",
+    "error": "standard line + Retry refetching only that card",
+    "hearings_default": "the not-yet-available state is the shipped default, not an error"
+  },
+  "keyboard": {
+    "focus": "2px emerald ring, offset 2, everywhere interactive",
+    "segments_chips": "radiogroup/radio; search results are a listbox with arrow keys",
+    "tiles_rows": "buttons; atlas tiles and matrix rows included",
+    "map_matrix": "visually hidden table fallbacks; tooltips shown on focus",
+    "escape": "closes the phone filter sheet and clears an open search listbox"
+  },
+  "motion": { "hover": "0.15s", "card": "0.2s", "numbers": "0.3s tick on filter change", "reduced_motion": "no shimmer, no ticks, instant" }
+}

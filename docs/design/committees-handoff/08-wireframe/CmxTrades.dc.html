@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Trades in overseen sectors</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./cmx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="cmx-root" style="width: 100%; display: flex;">
+<section class="cmx-card" aria-labelledby="cmx-tr-t" style="flex: 1; width: 100%; display: flex; flex-direction: column;">
+  <div class="cmx-head">
+    <div>
+      <h2 id="cmx-tr-t" class="cmx-title">Trades in overseen sectors</h2>
+      <p class="cmx-sub">Last 3 months · members trading where their committees oversee</p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <div class="cmx-seg" role="radiogroup" aria-label="Side">
+        <sc-for list="{{sides}}" as="o" hint-placeholder-count="3">
+          <button type="button" role="radio" aria-checked="{{o.on}}" class="{{o.cls}}" onClick="{{o.pick}}">{{o.label}}</button>
+        </sc-for>
+      </div>
+      <span class="cmx-chip" style="min-height: 28px; font-size: 12px;">Committee: All <span class="cmx-mono">14</span></span>
+    </div>
+  </div>
+
+  <sc-if value="{{isDefault}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+      <!-- summary -->
+      <div style="flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column; gap: 12px;">
+        <div style="border-radius: var(--radius-md); background: var(--surface-card-hover); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
+          <div class="cmx-kicker" style="font-size: 10px;">Trades in window</div>
+          <div class="cmx-mono" style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); line-height: 1;">312</div>
+          <div class="cmx-split" role="img" aria-label="188 buys, 124 sells" style="height: 8px;">
+            <span style="flex: 188; background: var(--positive);"></span><span style="flex: 124; background: var(--echo-chart-red);"></span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
+            <span>Buys <span class="cmx-mono" style="color: var(--positive);">188</span></span>
+            <span>Sells <span class="cmx-mono" style="color: var(--echo-chart-red);">124</span></span>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 11.5px; color: var(--text-muted);">
+          <span><span class="cmx-mono" style="color: var(--text-primary);">87</span> members traded in an overseen sector</span>
+          <span><span class="cmx-mono" style="color: var(--text-primary);">46</span> trades in tickers the sector map cannot place (not counted above)</span>
+        </div>
+        <p class="cmx-legal" style="margin: auto 0 0;">A trade in an overseen sector is a disclosure pattern, not evidence of wrongdoing. Amounts are disclosure ranges.</p>
+      </div>
+      <!-- feed -->
+      <div style="flex: 2.4 1 520px; min-width: 0;">
+        <div style="overflow-x: auto;">
+          <table class="cmx-table">
+            <thead><tr><th scope="col">Date</th><th scope="col">Member</th><th scope="col">Side</th><th scope="col">Ticker</th><th scope="col" style="text-align: right;">Range</th><th scope="col">Sector</th><th scope="col">Committee</th></tr></thead>
+            <tbody>
+              <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+                <tr>
+                  <td class="cmx-mono" style="font-size: 11.5px; color: var(--text-muted); white-space: nowrap;">{{r.d}}</td>
+                  <td>
+                    <span style="display: flex; align-items: center; gap: 7px; min-width: 0;">
+                      <span class="cmx-avatar" style="width: 22px; height: 22px; font-size: 8.5px;" aria-hidden="true">{{r.init}}</span>
+                      <span class="cmx-ellipsis" style="font-weight: 500; color: var(--text-primary); max-width: 150px;">{{r.m}}</span>
+                      <span class="cmx-party">{{r.p}}</span>
+                      <span class="cmx-mono" style="font-size: 10px; color: var(--text-faint);">{{r.st}}</span>
+                    </span>
+                  </td>
+                  <td><span class="cmx-side {{r.sideCls}}">{{r.side}}</span></td>
+                  <td><span class="cmx-tick">{{r.t}}</span></td>
+                  <td class="num" style="font-size: 12px; white-space: nowrap;">{{r.range}}</td>
+                  <td style="font-size: 12px; color: var(--text-secondary);">{{r.sector}}</td>
+                  <td><span class="cmx-code">{{r.code}}</span></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; flex-wrap: wrap; gap: 8px;">
+          <span class="cmx-mono" style="font-size: 11px; color: var(--text-faint);">1 to 6 of 312</span>
+          <a href="#" class="cmx-link" style="font-size: 12px;">View all in the window</a>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading trades" style="display: flex; gap: 24px;">
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;"><span class="cmx-skel" style="height: 110px;"></span><span class="cmx-skel" style="height: 14px; width: 80%;"></span><span class="cmx-skel" style="height: 14px; width: 64%;"></span></div>
+      <div style="flex: 2.4; display: flex; flex-direction: column;">
+        <sc-for list="{{six}}" as="x" hint-placeholder-count="6"><span class="cmx-skel" style="height: 40px; margin-bottom: 7px;"></span></sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div class="cmx-statebox" style="min-height: 300px;">
+      <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">No overseen-sector trades match these filters</div>
+      <p class="cmx-state" style="margin: 0; max-width: 460px;">No <span style="color: var(--text-primary);">sell</span> by a <span style="color: var(--text-primary);">Senate Agriculture</span> member in <span style="color: var(--text-primary);">Agriculture</span> this window. Widen the side or the committee.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" class="cmx-statebox" style="min-height: 300px; align-items: flex-start;">
+      <p class="cmx-state" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="cmx-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","error"],"default":"default"},"viewport":{"editor":"enum","options":["desktop","phone"],"default":"desktop"},"$preview":{"width":1392,"height":640}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { side: 'All' }; }
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    const ROWS = [
+      ['Oct 17, 2026', 'R', 'TX', 'BUY', 'NVDA', '$15K-$50K', 'Semis', 'HSSY'],
+      ['Oct 16, 2026', 'D', 'CA', 'SELL', 'PFE', '$1K-$15K', 'Pharma', 'HSIF'],
+      ['Oct 15, 2026', 'R', 'OH', 'BUY', 'LMT', '$50K-$100K', 'Defense', 'SSAS'],
+      ['Oct 14, 2026', 'D', 'NY', 'BUY', 'JPM', '$15K-$50K', 'Banks', 'HSBA'],
+      ['Oct 11, 2026', 'R', 'FL', 'SELL', 'XOM', '$1K-$15K', 'Energy', 'SSEG'],
+      ['Oct 10, 2026', 'D', 'WA', 'BUY', 'MSFT', '$15K-$50K', 'Tech', 'SSCM']
+    ];
+    const sides = ['All', 'Buys', 'Sells'].map((label) => ({
+      label, on: String(this.state.side === label), cls: this.state.side === label ? 'is-on' : '',
+      pick: () => this.setState({ side: label })
+    }));
+    return {
+      isDefault: s === 'default', isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error',
+      sides, six: [1, 2, 3, 4, 5, 6],
+      rows: ROWS.map(([d, p, st, side, t, range, sector, code], i) => ({
+        d, p, st, side, t, range, sector, code,
+        m: '[Member name]', init: 'T' + (i + 1),
+        sideCls: side === 'BUY' ? 'cmx-side--buy' : 'cmx-side--sell'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

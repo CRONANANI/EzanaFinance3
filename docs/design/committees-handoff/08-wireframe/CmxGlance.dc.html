@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Congress at a glance</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./cmx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="cmx-root" style="width: 100%; display: flex;">
+<section class="cmx-card" aria-labelledby="cmx-gl-t" style="flex: 1; width: 100%; padding: 1.25rem 1.5rem;">
+  <div class="cmx-head" style="padding-bottom: 12px; margin-bottom: 14px;">
+    <div>
+      <h2 id="cmx-gl-t" class="cmx-title">Congress at a glance</h2>
+      <p class="cmx-sub">{{scope}} · current Congress</p>
+    </div>
+    <span class="cmx-mono" style="font-size: 11px; color: var(--text-faint);">Rosters as of Oct 21, 2026</span>
+  </div>
+
+  <sc-if value="{{isDefault}}" hint-placeholder-val="{{ true }}">
+    <div style="display: grid; grid-template-columns: repeat({{cols}}, minmax(0, 1fr)); gap: 12px; align-items: stretch;">
+      <sc-for list="{{tiles}}" as="t" hint-placeholder-count="4">
+        <div style="border-radius: var(--radius-md); background: var(--surface-card-hover); padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; min-width: 0;">
+          <div class="cmx-kicker" style="font-size: 10px;">{{t.k}}</div>
+          <div class="cmx-mono" style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); line-height: 1.05;">{{t.v}}</div>
+          <div style="font-size: 11px; color: var(--text-faint);">{{t.n}}</div>
+        </div>
+      </sc-for>
+      <div style="border-radius: var(--radius-md); background: var(--surface-card-hover); padding: 14px 16px; display: flex; flex-direction: column; gap: 9px; min-width: 0; grid-column: span {{splitSpan}};">
+        <div class="cmx-kicker" style="font-size: 10px;">Seat split</div>
+        <div class="cmx-split" role="img" aria-label="Majority holds 2,160 seats, minority 1,735" style="height: 10px;">
+          <span class="maj" style="flex: 2160;"></span><span class="min" style="flex: 1735;"></span>
+        </div>
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--text-muted);">
+          <span style="display: inline-flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 2px; background: var(--emerald);"></span>Majority <span class="cmx-mono" style="color: var(--text-primary);">2,160</span></span>
+          <span style="display: inline-flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 2px; background: var(--echo-chart-blue);"></span>Minority <span class="cmx-mono" style="color: var(--text-primary);">1,735</span></span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading counts" style="display: grid; grid-template-columns: repeat({{cols}}, minmax(0, 1fr)); gap: 12px;">
+      <sc-for list="{{five}}" as="x" hint-placeholder-count="5">
+        <div style="border-radius: var(--radius-md); background: var(--surface-card-hover); padding: 14px 16px; display: flex; flex-direction: column; gap: 9px; height: 92px;">
+          <span class="cmx-skel" style="height: 9px; width: 56%;"></span>
+          <span class="cmx-skel" style="height: 24px; width: 40%;"></span>
+          <span class="cmx-skel" style="height: 9px; width: 68%;"></span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div class="cmx-statebox" style="min-height: 92px; flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+      <p class="cmx-state" style="margin: 0; max-width: 620px;">No committees match <span style="color: var(--text-primary);">Joint · Banks</span>. Joint committees carry no sector mapping; switch the sector to All.</p>
+      <button type="button" class="cmx-chip">Reset filters</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" class="cmx-statebox" style="min-height: 92px; flex-direction: row; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <p class="cmx-state" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="cmx-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","error"],"default":"default"},"viewport":{"editor":"enum","options":["desktop","phone"],"default":"desktop"},"$preview":{"width":1392,"height":200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    const phone = (this.props.viewport ?? 'desktop') === 'phone';
+    return {
+      isDefault: s === 'default', isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error',
+      scope: 'All chambers',
+      cols: phone ? 1 : 5, splitSpan: 1,
+      five: [1, 2, 3, 4, 5],
+      tiles: [
+        { k: 'Committees', v: '49', n: 'House 23 · Senate 21 · Joint 5' },
+        { k: 'Subcommittees', v: '181', n: 'House 109 · Senate 72' },
+        { k: 'Seats', v: '3,895', n: 'Committee and subcommittee' },
+        { k: 'Members seated', v: '531', n: 'Holding at least one seat' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

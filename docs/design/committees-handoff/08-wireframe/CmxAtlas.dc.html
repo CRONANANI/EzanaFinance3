@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Committee atlas</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./cmx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.cmx-at-tile{position:relative;border-radius:var(--radius-md);background:var(--surface-card-hover);padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0;text-align:left;color:inherit;font:inherit;border:1px solid transparent;transition:border-color .15s ease-out}
+.cmx-at-tile:hover{border-color:var(--border-hover)}
+.cmx-at-tile.is-on{border-color:var(--emerald);background:var(--emerald-bg)}
+.cmx-at-tile.is-dim{opacity:.72}
+</style>
+</helmet>
+<div class="cmx-root" style="width: 100%; display: flex;">
+<section class="cmx-card" aria-labelledby="cmx-at-t" style="flex: 1; width: 100%; display: flex; flex-direction: column;">
+  <div class="cmx-head">
+    <div>
+      <h2 id="cmx-at-t" class="cmx-title">Committee atlas</h2>
+      <p class="cmx-sub">49 committees · tile size follows seat count</p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; font-size: 11px; color: var(--text-muted); flex-wrap: wrap;">
+      <span style="display: inline-flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 2px; background: var(--emerald);"></span>Majority</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 2px; background: var(--echo-chart-blue);"></span>Minority</span>
+    </div>
+  </div>
+
+  <sc-if value="{{isDefault}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-direction: column; gap: 18px;">
+      <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+        <div>
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px;">
+            <span class="cmx-kicker" style="font-size: 10px;">{{g.name}}</span>
+            <span class="cmx-mono" style="font-size: 10px; color: var(--text-faint);">{{g.meta}}</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat({{gridCols}}, minmax(0, 1fr)); gap: 8px;">
+            <sc-for list="{{g.tiles}}" as="t" hint-placeholder-count="8">
+              <button type="button" class="cmx-at-tile {{t.cls}}" style="grid-column: span {{t.span}};" aria-pressed="{{t.on}}" aria-label="{{t.aria}}">
+                <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0;">
+                  <span class="cmx-ellipsis" style="font-size: {{t.fs}}; font-weight: 600; color: var(--text-primary);">{{t.name}}</span>
+                  <span class="cmx-code {{t.codeCls}}">{{t.code}}</span>
+                </span>
+                <span class="cmx-split" role="img" aria-label="{{t.splitAria}}"><span class="maj" style="flex: {{t.maj}};"></span><span class="min" style="flex: {{t.min}};"></span></span>
+                <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+                  <span class="cmx-mono" style="font-size: 10px; color: var(--text-faint);">{{t.seats}} seats · {{t.subs}} sub</span>
+                  <sc-if value="{{t.mapped}}" hint-placeholder-val="{{ false }}">
+                    <span style="display: inline-flex; gap: 4px; flex-wrap: wrap;">
+                      <sc-for list="{{t.sectors}}" as="x" hint-placeholder-count="2"><span class="cmx-sector" style="height: 18px; font-size: 10px;">{{x}}</span></sc-for>
+                    </span>
+                  </sc-if>
+                </span>
+              </button>
+            </sc-for>
+            <sc-if value="{{g.hasMore}}" hint-placeholder-val="{{ false }}">
+              <button type="button" class="cmx-at-tile is-dim" style="justify-content: center; align-items: center;"><span class="cmx-mono" style="font-size: 11px; color: var(--text-muted);">{{g.more}}</span></button>
+            </sc-if>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <p class="cmx-legal" style="margin: auto 0 0; padding-top: 12px;">Select a committee to open its profile below. Sector links are Ezana's reading of each committee's published jurisdiction; unmapped committees carry no chips.</p>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading committee atlas" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px;">
+      <sc-for list="{{twelve}}" as="x" hint-placeholder-count="12">
+        <span class="cmx-skel" style="height: 86px; border-radius: var(--radius-md);"></span>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div class="cmx-statebox" style="flex: 1; min-height: 420px;">
+      <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">No committees match these filters</div>
+      <p class="cmx-state" style="margin: 0; max-width: 440px;">No <span style="color: var(--text-primary);">Joint</span> committee is mapped to <span style="color: var(--text-primary);">Semis</span>. Switch the sector to All or the chamber to House.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" class="cmx-statebox" style="flex: 1; min-height: 420px; align-items: flex-start;">
+      <p class="cmx-state" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="cmx-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","error"],"default":"default"},"viewport":{"editor":"enum","options":["desktop","phone"],"default":"desktop"},"$preview":{"width":904,"height":760}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    const phone = (this.props.viewport ?? 'desktop') === 'phone';
+    /* [name, code, seats, subs, maj, min, sectors[], selected] */
+    const HOUSE = [
+      ['Energy and Commerce', 'HSIF', 55, 6, 31, 24, ['Energy', 'Tech', '+2'], true],
+      ['Transportation', 'HSPW', 65, 6, 36, 29, ['Industrials', 'Autos'], false],
+      ['Appropriations', 'HSAP', 62, 12, 34, 28, [], false],
+      ['Armed Services', 'HSAS', 59, 7, 32, 27, ['Defense'], false],
+      ['Financial Services', 'HSBA', 54, 6, 30, 24, ['Banks', 'Fintech'], false],
+      ['Agriculture', 'HSAG', 54, 6, 30, 24, ['Agriculture'], false],
+      ['Foreign Affairs', 'HSFA', 50, 7, 27, 23, [], false],
+      ['Science, Space, Tech', 'HSSY', 41, 5, 22, 19, ['Tech', 'Semis'], false]
+    ];
+    const SENATE = [
+      ['Appropriations', 'SSAP', 29, 12, 15, 14, [], false],
+      ['Commerce', 'SSCM', 28, 6, 15, 13, ['Tech', 'Autos', '+1'], false],
+      ['Finance', 'SSFI', 27, 6, 14, 13, [], false],
+      ['Armed Services', 'SSAS', 25, 7, 13, 12, ['Defense'], false],
+      ['Banking', 'SSBK', 24, 5, 13, 11, ['Banks', 'Fintech'], false],
+      ['Energy and Nat. Res.', 'SSEG', 21, 4, 11, 10, ['Energy', '+1'], false]
+    ];
+    const JOINT = [
+      ['Joint Economic', 'JSEC', 20, 0, 11, 9, [], false],
+      ['Joint Taxation', 'JSTX', 10, 0, 6, 4, [], false]
+    ];
+    const tile = ([name, code, seats, subs, maj, min, sectors, on]) => ({
+      name, code, seats, subs, maj, min, sectors,
+      mapped: sectors.length > 0,
+      on: String(on),
+      cls: (on ? 'is-on' : '') + (sectors.length === 0 ? ' is-dim' : ''),
+      codeCls: on ? 'is-on' : '',
+      span: phone ? 1 : (seats >= 55 ? 2 : 1),
+      fs: seats >= 55 ? '13px' : '12px',
+      aria: name + ', ' + code + ', ' + seats + ' seats, ' + subs + ' subcommittees',
+      splitAria: 'Majority ' + maj + ', minority ' + min
+    });
+    return {
+      isDefault: s === 'default', isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error',
+      gridCols: phone ? 1 : 4,
+      twelve: Array.from({ length: 12 }, (_, i) => i),
+      groups: [
+        { name: 'House', meta: '23 committees · 109 subcommittees', tiles: HOUSE.map(tile), hasMore: true, more: '+15 more' },
+        { name: 'Senate', meta: '21 committees · 72 subcommittees', tiles: SENATE.map(tile), hasMore: true, more: '+15 more' },
+        { name: 'Joint', meta: '5 committees', tiles: JOINT.map(tile), hasMore: true, more: '+3 more' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

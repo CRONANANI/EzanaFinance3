@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Oversight map</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./cmx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="cmx-root" style="width: 100%; display: flex;">
+<section class="cmx-card" aria-labelledby="cmx-ov-t" style="flex: 1; width: 100%; display: flex; flex-direction: column;">
+  <div class="cmx-head">
+    <div>
+      <h2 id="cmx-ov-t" class="cmx-title">Oversight map</h2>
+      <p class="cmx-sub">14 mapped committees · 11 sectors</p>
+    </div>
+    <span class="cmx-mono" style="font-size: 11px; color: var(--text-faint);">Hovering: <span style="color: var(--emerald-text);">Tech</span></span>
+  </div>
+
+  <sc-if value="{{isDefault}}" hint-placeholder-val="{{ true }}">
+    <div style="position: relative; display: flex; justify-content: space-between; gap: 12px;">
+      <svg width="100%" height="{{svgH}}" viewBox="0 0 700 {{svgH}}" preserveAspectRatio="none" aria-hidden="true" style="position: absolute; inset: 0;">
+        <sc-for list="{{links}}" as="l" hint-placeholder-count="22">
+          <path d="M 198 {{l.y1}} C 360 {{l.y1}}, 340 {{l.y2}}, 502 {{l.y2}}" fill="none" stroke="{{l.c}}" stroke-opacity="{{l.o}}" stroke-width="{{l.w}}"></path>
+        </sc-for>
+      </svg>
+      <!-- committees -->
+      <div role="list" aria-label="Mapped committees" style="width: 198px; flex: none; display: flex; flex-direction: column; gap: 5px; position: relative;">
+        <sc-for list="{{coms}}" as="c" hint-placeholder-count="14">
+          <button type="button" role="listitem" class="cmx-row" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 8px; min-height: 27px; background: {{c.bg}}; border: 0; text-align: left; color: inherit; font: inherit;" aria-label="{{c.aria}}">
+            <span class="cmx-ellipsis" style="font-size: 11.5px; font-weight: {{c.fw}}; color: {{c.ink}};">{{c.name}}</span>
+            <span class="cmx-mono" style="font-size: 9.5px; color: var(--text-faint);">{{c.code}}</span>
+          </button>
+        </sc-for>
+      </div>
+      <!-- sectors -->
+      <div role="list" aria-label="Sectors" style="width: 198px; flex: none; display: flex; flex-direction: column; gap: 5px; position: relative;">
+        <sc-for list="{{secs}}" as="x" hint-placeholder-count="11">
+          <button type="button" role="listitem" class="cmx-row" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 8px; min-height: 27px; background: {{x.bg}}; border: 0; text-align: left; color: inherit; font: inherit;" aria-label="Filter the page to {{x.name}}">
+            <span style="font-size: 11.5px; font-weight: {{x.fw}}; color: {{x.ink}};">{{x.name}}</span>
+            <span class="cmx-mono" style="font-size: 9.5px; color: var(--text-faint);">{{x.n}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+    <p class="cmx-legal" style="margin: auto 0 0; padding-top: 12px;">Sector links are Ezana's reading of each committee's published jurisdiction. Select a sector to filter the page; subcommittees inherit their parent's sectors.</p>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading oversight map" style="display: flex; justify-content: space-between; gap: 12px;">
+      <div style="width: 198px; display: flex; flex-direction: column; gap: 6px;"><sc-for list="{{fourteen}}" as="x" hint-placeholder-count="14"><span class="cmx-skel" style="height: 24px;"></span></sc-for></div>
+      <div style="width: 198px; display: flex; flex-direction: column; gap: 6px;"><sc-for list="{{eleven}}" as="x" hint-placeholder-count="11"><span class="cmx-skel" style="height: 24px;"></span></sc-for></div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div class="cmx-statebox" style="flex: 1; min-height: 360px;">
+      <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">No mapped committees in this view</div>
+      <p class="cmx-state" style="margin: 0; max-width: 420px;"><span style="color: var(--text-primary);">Joint</span> committees carry no sector mapping. Switch the chamber to All, House or Senate.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" class="cmx-statebox" style="flex: 1; min-height: 360px; align-items: flex-start;">
+      <p class="cmx-state" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="cmx-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","error"],"default":"default"},"viewport":{"editor":"enum","options":["desktop","phone"],"default":"desktop"},"$preview":{"width":790,"height":560}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    const COMS = [
+      ['House Armed Services', 'HSAS', ['Defense']],
+      ['Senate Armed Services', 'SSAS', ['Defense']],
+      ['House Energy and Commerce', 'HSIF', ['Energy', 'Pharma', 'Providers', 'Tech']],
+      ['House Financial Services', 'HSBA', ['Banks', 'Fintech']],
+      ['Senate Banking', 'SSBK', ['Banks', 'Fintech']],
+      ['Senate Energy and Nat. Res.', 'SSEG', ['Energy', 'Clean energy']],
+      ['House Natural Resources', 'HSII', ['Energy']],
+      ['House Agriculture', 'HSAG', ['Agriculture']],
+      ['Senate Agriculture', 'SSAF', ['Agriculture']],
+      ['Senate Commerce', 'SSCM', ['Tech', 'Autos', 'Industrials']],
+      ['House Transportation', 'HSPW', ['Industrials', 'Autos']],
+      ['Senate Environment', 'SSEV', ['Industrials']],
+      ['Senate HELP', 'SSHR', ['Pharma', 'Providers']],
+      ['House Science, Space, Tech', 'HSSY', ['Tech', 'Semis']]
+    ];
+    const SECS = ['Defense', 'Energy', 'Clean energy', 'Pharma', 'Providers', 'Tech', 'Semis', 'Banks', 'Fintech', 'Agriculture', 'Autos', 'Industrials'].slice(0, 11);
+    const HOT = 'Tech';
+    const rowH = 32, top = 14;
+    const cy = (i) => top + i * rowH;
+    const secIdx = Object.fromEntries(SECS.map((x, i) => [x, i]));
+    const links = [];
+    COMS.forEach(([name, code, sectors], i) => {
+      sectors.forEach((x) => {
+        if (secIdx[x] == null) return;
+        const hot = x === HOT;
+        links.push({ y1: cy(i), y2: cy(secIdx[x]), c: hot ? 'var(--emerald)' : 'var(--echo-chart-blue)', o: hot ? 0.75 : 0.18, w: hot ? 1.6 : 1 });
+      });
+    });
+    const coms = COMS.map(([name, code, sectors], i) => {
+      const hot = sectors.includes(HOT);
+      return {
+        name, code,
+        fw: hot ? 600 : 500,
+        ink: hot ? 'var(--text-primary)' : 'var(--text-muted)',
+        bg: hot ? 'var(--emerald-bg)' : 'transparent',
+        aria: name + ' oversees ' + sectors.join(', ')
+      };
+    });
+    const counts = {};
+    COMS.forEach(([, , sx]) => sx.forEach((x) => { counts[x] = (counts[x] || 0) + 1; }));
+    const secs = SECS.map((name) => ({
+      name, n: (counts[name] || 0) + ' com.',
+      fw: name === HOT ? 700 : 500,
+      ink: name === HOT ? 'var(--emerald-text)' : 'var(--text-secondary)',
+      bg: name === HOT ? 'var(--emerald-bg)' : 'transparent'
+    }));
+    return {
+      isDefault: s === 'default', isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error',
+      coms, secs, links, svgH: top + 14 * rowH,
+      fourteen: Array.from({ length: 14 }, (_, i) => i), eleven: Array.from({ length: 11 }, (_, i) => i)
+    };
+  }
+}
+</script>
+</body>
+</html>

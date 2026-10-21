@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hearings</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./cmx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="cmx-root" style="width: 100%; display: flex;">
+<section class="cmx-card" aria-labelledby="cmx-hr-t" style="flex: 1; width: 100%; display: flex; flex-direction: column;">
+  <div class="cmx-head">
+    <div>
+      <h2 id="cmx-hr-t" class="cmx-title">Hearings</h2>
+      <p class="cmx-sub">Next 14 days · by committee</p>
+    </div>
+  </div>
+
+  <!-- default = not yet available (ships first) -->
+  <sc-if value="{{isDefault}}" hint-placeholder-val="{{ true }}">
+    <div style="flex: 1; position: relative; min-height: 330px;">
+      <!-- ghost timeline behind the message -->
+      <div aria-hidden="true" style="position: absolute; inset: 0; opacity: 0.35; display: flex; flex-direction: column; gap: 8px; pointer-events: none;">
+        <sc-for list="{{ghost}}" as="g" hint-placeholder-count="5">
+          <div style="display: grid; grid-template-columns: 56px 1fr; gap: 10px; align-items: center;">
+            <span class="cmx-mono" style="font-size: 9.5px; color: var(--text-ghost);">{{g.d}}</span>
+            <span style="height: 34px; border: 1px dashed var(--border-hover); border-radius: var(--radius-md);"></span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="position: relative; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; padding: 20px;">
+        <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="var(--text-muted)" style="stroke-width: 1.4;" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="1.5"></rect><path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3"></path></svg>
+        <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">Hearing schedules are not available yet.</div>
+        <p class="cmx-state" style="margin: 0; max-width: 340px; font-size: 13px;">Dates and committees are still being ingested. Until then, each committee profile links to its official site for its calendar.</p>
+        <a href="#" class="cmx-link" style="font-size: 13px;">Open the committee profile</a>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- future populated state, once the ingest is fixed -->
+  <sc-if value="{{isFuture}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <sc-for list="{{days}}" as="d" hint-placeholder-count="5">
+        <div style="display: grid; grid-template-columns: 56px 1fr; gap: 10px; align-items: start;">
+          <span class="cmx-mono" style="font-size: 9.5px; font-weight: 600; color: {{d.c}}; padding-top: 8px;">{{d.d}}</span>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <sc-for list="{{d.items}}" as="h" hint-placeholder-count="2">
+              <button type="button" class="cmx-row cmx-row-btn" style="border-radius: var(--radius-md); background: var(--surface-card-hover); padding: 8px 12px; display: flex; align-items: center; gap: 10px;">
+                <span class="cmx-code">{{h.code}}</span>
+                <span class="cmx-ellipsis" style="flex: 1; font-size: 12.5px; color: var(--text-primary);">{{h.t}}</span>
+                <sc-if value="{{h.hasBill}}" hint-placeholder-val="{{ false }}"><span class="cmx-tick" style="font-size: 10px;">{{h.bill}}</span></sc-if>
+                <span class="cmx-mono" style="font-size: 10px; color: var(--text-faint);">{{h.time}}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <p class="cmx-legal" style="margin: auto 0 0; padding-top: 12px;">Future state: ships only once hearing dates and committees are ingested.</p>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading hearings" style="display: flex; flex-direction: column; gap: 10px;">
+      <sc-for list="{{five}}" as="x" hint-placeholder-count="5">
+        <div style="display: grid; grid-template-columns: 56px 1fr; gap: 10px;">
+          <span class="cmx-skel" style="height: 10px; margin-top: 8px;"></span>
+          <span class="cmx-skel" style="height: 38px;"></span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" class="cmx-statebox" style="flex: 1; min-height: 330px; align-items: flex-start;">
+      <p class="cmx-state" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="cmx-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","future","error"],"default":"default"},"viewport":{"editor":"enum","options":["desktop","phone"],"default":"desktop"},"$preview":{"width":578,"height":560}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    return {
+      isDefault: s === 'default', isLoading: s === 'loading', isFuture: s === 'future', isError: s === 'error',
+      ghost: ['WED 22', 'THU 23', 'FRI 24', 'MON 27', 'TUE 28'].map((d) => ({ d })),
+      five: [1, 2, 3, 4, 5],
+      days: [
+        { d: 'WED 22', c: 'var(--emerald-text)', items: [
+          { code: 'HSIF', t: 'Oversight of drug pricing transparency', bill: '[BILL]', hasBill: true, time: '10:00' },
+          { code: 'SSBK', t: 'Stablecoin market structure', bill: '', hasBill: false, time: '14:30' }
+        ] },
+        { d: 'THU 23', c: 'var(--text-muted)', items: [
+          { code: 'SSAS', t: 'Defense industrial base readiness', bill: '[BILL]', hasBill: true, time: '09:30' }
+        ] },
+        { d: 'FRI 24', c: 'var(--text-muted)', items: [
+          { code: 'HSSY', t: 'Semiconductor research authorization', bill: '', hasBill: false, time: '10:00' }
+        ] },
+        { d: 'MON 27', c: 'var(--text-muted)', items: [
+          { code: 'HSAG', t: 'Farm credit conditions', bill: '', hasBill: false, time: '11:00' }
+        ] },
+        { d: 'TUE 28', c: 'var(--text-muted)', items: [
+          { code: 'SSCM', t: 'AV deployment framework', bill: '[BILL]', hasBill: true, time: '10:30' }
+        ] }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

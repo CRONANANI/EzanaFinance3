@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Committee holdings matrix</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./cmx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.cmx-mx-cell{position:relative;height:30px;border-radius:3px;overflow:hidden}
+.cmx-mx-cell>i{position:absolute;inset:0;background:var(--emerald)}
+</style>
+</helmet>
+<div class="cmx-root" style="width: 100%; display: flex;">
+<section class="cmx-card" aria-labelledby="cmx-mx-t" style="flex: 1; width: 100%; display: flex; flex-direction: column;">
+  <div class="cmx-head">
+    <div>
+      <h2 id="cmx-mx-t" class="cmx-title">Committee holdings matrix</h2>
+      <p class="cmx-sub">Members holding the most-held tickers in their committee's sectors</p>
+    </div>
+    <span class="cmx-mono" style="font-size: 10.5px; color: var(--text-faint);">Holdings inferred from disclosures</span>
+  </div>
+
+  <sc-if value="{{isDefault}}" hint-placeholder-val="{{ true }}">
+    <div style="overflow-x: auto; margin: 0 -4px; padding: 0 4px;">
+      <div style="min-width: 640px;">
+        <div style="display: grid; grid-template-columns: 150px repeat(7, minmax(0, 1fr)); gap: 3px; margin-bottom: 5px;">
+          <span></span>
+          <sc-for list="{{cols}}" as="c" hint-placeholder-count="7">
+            <span class="cmx-mono" style="font-size: 10px; font-weight: 600; color: var(--text-muted); text-align: center;">{{c}}</span>
+          </sc-for>
+        </div>
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+          <div style="display: grid; grid-template-columns: 150px repeat(7, minmax(0, 1fr)); gap: 3px; margin-bottom: 3px; align-items: center;">
+            <span style="display: flex; align-items: center; gap: 6px; min-width: 0; padding-right: 6px;">
+              <span class="cmx-ellipsis" style="font-size: 11.5px; font-weight: 500; color: var(--text-primary);">{{r.name}}</span>
+            </span>
+            <sc-for list="{{r.cells}}" as="c" hint-placeholder-count="7">
+              <span class="cmx-mx-cell" role="img" aria-label="{{c.aria}}"><i style="opacity: {{c.o}};"></i>
+                <sc-if value="{{c.show}}" hint-placeholder-val="{{ false }}">
+                  <span class="cmx-mono" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 700; color: {{c.ink}};">{{c.v}}</span>
+                </sc-if>
+              </span>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <!-- pinned hover example -->
+    <div style="margin-top: 12px; border-radius: var(--radius-md); background: var(--surface-card-hover); padding: 10px 14px; max-width: 480px;">
+      <div style="font-size: 12px; font-weight: 600; color: var(--text-primary);">SSAS × LMT · <span class="cmx-mono">6 members hold it</span></div>
+      <div style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">Since 180 days: <span class="cmx-mono" style="color: var(--positive);">2 buyers</span> · <span class="cmx-mono" style="color: var(--echo-chart-red);">1 seller</span> · holders: [Member name], [Member name], +4</div>
+    </div>
+    <p class="cmx-legal" style="margin: auto 0 0; padding-top: 10px;">Open positions are inferred from disclosures (bought and not fully sold). A holding on an overseeing committee is a fact pattern, not a finding.</p>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading holdings matrix" style="display: flex; flex-direction: column; gap: 3px;">
+      <sc-for list="{{eight}}" as="x" hint-placeholder-count="8">
+        <div style="display: grid; grid-template-columns: 150px 1fr; gap: 10px; align-items: center;">
+          <span class="cmx-skel" style="height: 10px; width: 76%;"></span>
+          <span class="cmx-skel" style="height: 30px;"></span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div class="cmx-statebox" style="flex: 1; min-height: 300px;">
+      <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">No inferred holdings match these filters</div>
+      <p class="cmx-state" style="margin: 0; max-width: 420px;">No member of a <span style="color: var(--text-primary);">Clean energy</span> mapped committee holds a ticker the map places there. Widen the sector.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" class="cmx-statebox" style="flex: 1; min-height: 300px; align-items: flex-start;">
+      <p class="cmx-state" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="cmx-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","error"],"default":"default"},"viewport":{"editor":"enum","options":["desktop","phone"],"default":"desktop"},"$preview":{"width":790,"height":560}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    const cols = ['NVDA', 'MSFT', 'LMT', 'XOM', 'JPM', 'PFE', 'DE'];
+    const DATA = [
+      ['Armed Services (H)', [2, 3, 7, 1, 0, 0, 0]],
+      ['Armed Services (S)', [1, 2, 6, 0, 1, 0, 0]],
+      ['Energy & Commerce', [5, 6, 0, 4, 0, 5, 0]],
+      ['Financial Services', [3, 4, 0, 1, 8, 1, 0]],
+      ['Senate Banking', [2, 3, 0, 0, 6, 0, 0]],
+      ['Senate Commerce', [6, 5, 0, 1, 1, 0, 1]],
+      ['Science, Space, Tech', [7, 4, 1, 0, 0, 0, 0]],
+      ['Agriculture (H)', [0, 1, 0, 1, 0, 0, 5]]
+    ];
+    const max = 8;
+    const rows = DATA.map(([name, cells]) => ({
+      name,
+      cells: cells.map((v, k) => ({
+        v, show: v > 0,
+        o: v === 0 ? 0.04 : Math.min(0.85, 0.1 + (v / max) * 0.75).toFixed(2),
+        ink: v / max > 0.5 ? '#04140d' : 'var(--text-secondary)',
+        aria: name + ' and ' + cols[k] + ', ' + v + ' members hold it'
+      }))
+    }));
+    return {
+      isDefault: s === 'default', isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error',
+      cols, rows, eight: Array.from({ length: 8 }, (_, i) => i)
+    };
+  }
+}
+</script>
+</body>
+</html>

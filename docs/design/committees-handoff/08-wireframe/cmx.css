@@ -1,0 +1,118 @@
+/* Committee Assignments wireframe: tokens mirrored from src/app/theme-variables.css.
+   Markup only reads var(--token); hex lives here, as in the app. Dataset-page
+   rule (ds-cards.css): cards draw NO outline and NO shadow; separation is
+   spacing plus each card's own header rule. Party is a neutral letter tag,
+   never a colour (Politician Tracker precedent). */
+:root, .cmx-dark {
+  --bg-primary: #0a0e13; --bg-tertiary: #0a0e13; --bg-overlay: rgba(0,0,0,0.6);
+  --surface-card: transparent; --surface-card-hover: rgba(16,185,129,0.04);
+  --border-primary: rgba(16,185,129,0.08); --border-secondary: rgba(16,185,129,0.06);
+  --border-hover: rgba(16,185,129,0.2);
+  --text-primary: #f0f6fc; --text-secondary: #e2e8f0; --text-muted: #8b949e; --text-faint: #6b7280; --text-ghost: #4b5563;
+  --emerald: #10b981; --emerald-text: #34d399; --emerald-bg: rgba(16,185,129,0.08);
+  --emerald-bg-hover: rgba(16,185,129,0.12); --emerald-border: rgba(16,185,129,0.15);
+  --positive: #10b981; --positive-bg: rgba(16,185,129,0.12);
+  --negative-bg: rgba(239,68,68,0.08);
+  --warning: #fbbf24; --warning-bg: rgba(251,191,36,0.12);
+  --info: #3b82f6;
+  --echo-chart-blue: #3b82f6; --echo-chart-green: #10b981; --echo-chart-orange: #f59e0b;
+  --echo-chart-red: #e85d4f; --echo-chart-purple: #a78bfa;
+  --echo-chart-grid: rgba(120,120,120,0.15);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
+  --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px; --radius-xl: 16px;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  --skel-a: rgba(255,255,255,0.03); --skel-b: rgba(255,255,255,0.08);
+}
+.cmx-light {
+  --bg-primary: #ffffff; --bg-tertiary: #f1f5f9; --bg-overlay: rgba(0,0,0,0.4);
+  --surface-card: transparent; --surface-card-hover: #f3f4f6;
+  --border-primary: rgba(0,0,0,0.08); --border-secondary: rgba(0,0,0,0.05); --border-hover: rgba(16,185,129,0.25);
+  --text-primary: #0f172a; --text-secondary: #1e293b; --text-muted: #64748b; --text-faint: #94a3b8; --text-ghost: #cbd5e1;
+  --emerald: #059669; --emerald-text: #047857; --emerald-bg: rgba(16,185,129,0.06);
+  --emerald-bg-hover: rgba(16,185,129,0.1); --emerald-border: rgba(16,185,129,0.2);
+  --positive: #059669; --positive-bg: rgba(5,150,105,0.08);
+  --negative-bg: rgba(220,38,38,0.06);
+  --warning: #d97706; --warning-bg: rgba(217,119,6,0.08);
+  --info: #2563eb;
+  --echo-chart-blue: #2563eb; --echo-chart-red: #dc4a3c; --echo-chart-purple: #7c3aed; --echo-chart-orange: #d97706;
+  --echo-chart-grid: rgba(15,23,42,0.08);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+  --skel-a: rgba(15,23,42,0.04); --skel-b: rgba(15,23,42,0.09);
+}
+
+.cmx-root { background: var(--bg-primary); color: var(--text-secondary); font-family: var(--font-sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+.cmx-root *, .cmx-card * { box-sizing: border-box; }
+.cmx-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.cmx-kicker { font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+
+/* Card: NO outline, NO shadow. Header rule only. */
+.cmx-card { background: var(--surface-card); border-radius: var(--radius-lg); padding: 1.5rem; font-family: var(--font-sans); color: var(--text-secondary); min-width: 0; }
+.cmx-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-bottom: 14px; margin-bottom: 16px; border-bottom: 1px solid var(--border-hover); }
+.cmx-title { margin: 0; font-size: 1rem; font-weight: 600; letter-spacing: -0.01em; color: var(--text-primary); }
+.cmx-sub { margin: 4px 0 0; font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+
+.cmx-root button, .cmx-card button { font-family: inherit; cursor: pointer; }
+.cmx-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-primary); background: transparent; color: var(--text-muted); font-size: 13px; font-weight: 500; white-space: nowrap; transition: all 0.15s ease-out; }
+.cmx-chip:hover { border-color: var(--border-hover); color: var(--text-primary); }
+.cmx-chip .cmx-mono { font-size: 11px; color: var(--text-faint); }
+.cmx-chip.is-on { background: var(--emerald-bg-hover); border-color: var(--emerald); color: var(--emerald-text); }
+.cmx-chip.is-on .cmx-mono { color: var(--emerald-text); }
+.cmx-seg { display: inline-flex; padding: 2px; gap: 2px; border: 1px solid var(--border-primary); border-radius: var(--radius-md); }
+.cmx-seg button { min-height: 28px; padding: 0 10px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-muted); font-size: 12px; font-weight: 600; transition: all 0.15s ease-out; }
+.cmx-seg button.is-on { background: var(--emerald-bg-hover); color: var(--emerald-text); }
+.cmx-seg--mono button { font-family: var(--font-mono); }
+.cmx-tabs { display: flex; gap: 20px; border-bottom: 1px solid var(--border-secondary); margin-bottom: 14px; }
+.cmx-tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 0 10px; margin-bottom: -1px; color: var(--text-muted); font-size: 13px; font-weight: 600; }
+.cmx-tabs button.is-on { color: var(--text-primary); border-bottom-color: var(--emerald); }
+.cmx-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 18px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; border: 1px solid var(--emerald); background: var(--emerald); color: #04140d; text-decoration: none; }
+.cmx-btn--ghost { background: transparent; color: var(--emerald-text); }
+.cmx-link { color: var(--emerald-text); text-decoration: none; font-weight: 600; }
+.cmx-link:hover { text-decoration: underline; }
+.cmx-search { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 9999px; border: 1px solid var(--border-primary); background: transparent; color: var(--text-muted); min-width: 220px; }
+.cmx-search input { background: transparent; border: 0; outline: 0; color: var(--text-primary); font: inherit; font-size: 13px; width: 100%; }
+
+/* people: headshot-with-initials fallback, neutral party tag */
+.cmx-avatar { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--surface-card-hover); border: 1px solid var(--border-primary); color: var(--text-muted); font-family: var(--font-sans); font-weight: 600; flex: none; }
+.cmx-party { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 4px; border-radius: var(--radius-sm); border: 1px solid var(--border-hover); font-family: var(--font-mono); font-size: 10px; font-weight: 600; color: var(--text-muted); }
+.cmx-code { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 11px; font-weight: 600; border: 1px solid var(--border-primary); color: var(--text-muted); white-space: nowrap; }
+.cmx-code.is-on { border-color: var(--emerald-border); color: var(--emerald-text); background: var(--emerald-bg); }
+.cmx-tick { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 11px; font-weight: 600; border: 1px solid var(--emerald-border); color: var(--emerald-text); background: var(--emerald-bg); white-space: nowrap; }
+.cmx-lead { display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: var(--radius-sm); font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; background: var(--emerald-bg-hover); color: var(--emerald-text); white-space: nowrap; }
+.cmx-sector { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 600; border: 1px solid var(--border-primary); color: var(--text-secondary); background: var(--surface-card-hover); white-space: nowrap; }
+
+/* split bar: majority vs minority */
+.cmx-split { display: flex; height: 6px; border-radius: var(--radius-sm); overflow: hidden; gap: 1px; }
+.cmx-split > .maj { background: var(--emerald); }
+.cmx-split > .min { background: var(--echo-chart-blue); }
+
+/* side pill for trades */
+.cmx-side { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; }
+.cmx-side--buy { background: var(--positive-bg); color: var(--positive); }
+.cmx-side--sell { background: var(--negative-bg); color: var(--echo-chart-red); }
+
+.cmx-row { transition: background 0.15s ease-out; border-radius: var(--radius-md); }
+.cmx-row:hover { background: var(--surface-card-hover); }
+.cmx-row-btn { display: block; width: 100%; text-align: left; background: none; border: 0; color: inherit; padding: 0; }
+.cmx-track { height: 8px; border-radius: var(--radius-sm); background: var(--border-primary); overflow: hidden; }
+.cmx-track > span { display: block; height: 100%; background: var(--echo-chart-blue); }
+.cmx-ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.cmx-root :focus-visible, .cmx-card :focus-visible { outline: 2px solid var(--emerald); outline-offset: 2px; }
+
+.cmx-skel { background: linear-gradient(90deg, var(--skel-a) 0%, var(--skel-b) 50%, var(--skel-a) 100%); background-size: 200% 100%; animation: cmx-shimmer 1.4s linear infinite; border-radius: var(--radius-sm); }
+@keyframes cmx-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .cmx-skel { animation: none; }
+  .cmx-chip, .cmx-row, .cmx-seg button { transition: none; }
+}
+
+.cmx-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.cmx-table th { text-align: left; padding: 10px 12px; font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border-secondary); white-space: nowrap; }
+.cmx-table td { padding: 11px 12px; border-bottom: 1px solid var(--border-secondary); color: var(--text-secondary); vertical-align: middle; }
+.cmx-table tbody tr:hover { background: var(--surface-card-hover); }
+.cmx-table .num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+.cmx-legal { font-size: 11px; color: var(--text-faint); line-height: 1.5; }
+.cmx-state { font-size: 14px; color: var(--text-muted); line-height: 1.55; }
+.cmx-statebox { border: 1px dashed var(--border-primary); border-radius: var(--radius-md); display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 20px 24px; }

@@ -1,0 +1,108 @@
+/* Committee Assignments, page-scoped tokens.
+   Every value maps onto src/app/theme-variables.css. No hex below. Light mode
+   needs no overrides: the theme variables flip.
+
+   PREREQUISITES.
+   1. The --echo-chart-* palette promoted to :root in theme-variables.css,
+      the shared prerequisite with the Prediction Markets and Lobbying
+      packages; add once, check whether a prior build already did it.
+   2. .cmx-card is already on the ds-cards.css no-outline list: cards paint
+      no border and no shadow. Do not add either back.
+   3. Party is NEVER a colour. The neutral bordered letter tag (Politician
+      Tracker precedent); majority/minority is the only sided encoding and
+      always carries a text label. */
+
+.cmx-page {
+  /* ground and ink */
+  --cmx-bg: var(--bg-primary);
+  --cmx-ink: var(--text-primary);
+  --cmx-body: var(--text-secondary);
+  --cmx-mute: var(--text-muted);
+  --cmx-faint: var(--text-faint);
+  --cmx-ghost: var(--text-ghost); /* hearings ghost timeline, disabled */
+
+  /* cards: no outline; separation by spacing and the header rule */
+  --cmx-card-bg: var(--surface-card);
+  --cmx-tile-bg: var(--surface-card-hover); /* KPI tiles, atlas tiles, expansions, hover */
+  --cmx-head-rule: var(--border-hover);
+  --cmx-row-rule: var(--border-secondary);
+  --cmx-input-border: var(--border-primary);
+
+  /* brand and state */
+  --cmx-accent: var(--emerald);
+  --cmx-accent-text: var(--emerald-text);
+  --cmx-selected-bg: var(--emerald-bg-hover);
+  --cmx-selected-tint: var(--emerald-bg);
+  --cmx-focus: var(--emerald);
+
+  /* sides and marks */
+  --cmx-majority: var(--emerald); /* always with a text label */
+  --cmx-minority: var(--echo-chart-blue); /* always with a text label */
+  --cmx-buy: var(--positive);
+  --cmx-buy-bg: var(--positive-bg);
+  --cmx-sell: var(--echo-chart-red); /* never --danger */
+  --cmx-sell-bg: var(--negative-bg);
+  --cmx-bar: var(--echo-chart-blue); /* histogram, seat bars, map links */
+  --cmx-heat: var(--emerald); /* matrix ramp: opacity 0.1 to 0.85 computed per cell */
+  --cmx-grid: var(--echo-chart-grid);
+
+  /* people */
+  --cmx-avatar-bg: var(--surface-card-hover);
+  --cmx-avatar-ink: var(--text-muted);
+  --cmx-party-border: var(--border-hover); /* neutral tag, same for D, R, I */
+  --cmx-party-ink: var(--text-muted);
+  --cmx-lead-bg: var(--emerald-bg-hover); /* Chair / Ranking badge */
+  --cmx-lead-ink: var(--emerald-text);
+
+  /* chips */
+  --cmx-code-border: var(--border-primary); /* thomas codes */
+  --cmx-ticker-ink: var(--emerald-text);
+  --cmx-ticker-bg: var(--emerald-bg);
+  --cmx-ticker-border: var(--emerald-border);
+  --cmx-sector-bg: var(--surface-card-hover);
+
+  /* overlays */
+  --cmx-overlay: var(--bg-overlay);
+  --cmx-pop-shadow: var(--shadow-lg);
+
+  /* skeleton */
+  --cmx-skel-a: color-mix(in srgb, var(--text-primary) 3%, transparent);
+  --cmx-skel-b: color-mix(in srgb, var(--text-primary) 8%, transparent);
+
+  /* radii from the single declaration site */
+  --cmx-r-chip: var(--radius-sm);
+  --cmx-r-tile: var(--radius-md);
+  --cmx-r-card: var(--radius-lg);
+  --cmx-r-band: var(--radius-xl);
+
+  /* type: families and the platform ramp */
+  --cmx-sans: var(--font-sans);
+  --cmx-mono: var(--font-mono);
+  --cmx-title-size: var(--type-page-title-size);
+  --cmx-card-title-size: var(--type-card-title-size);
+  --cmx-eyebrow-size: var(--type-eyebrow-size);
+  --cmx-body-size: var(--type-body-size);
+  --cmx-caption-size: var(--type-caption-size);
+  --cmx-micro-size: var(--type-micro-size);
+  --cmx-value-lg-size: var(--type-value-lg-size);
+
+  /* motion */
+  --cmx-t-hover: 0.15s;
+  --cmx-t-card: 0.2s;
+  --cmx-t-tick: 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cmx-page {
+    --cmx-t-hover: 0s;
+    --cmx-t-card: 0s;
+    --cmx-t-tick: 0s;
+  }
+}
+
+/* Flags, not new tokens:
+   - Matrix ramp and atlas tile sizing are computed in the model, not tokens.
+   - Trade-dot size on the lookup timeline maps the disclosure range bucket
+     to 5 to 14px in the model; no size tokens.
+   - If light mode wants more card separation without outlines, that is a
+     change to the shared ds-cards rule, not a page token. */

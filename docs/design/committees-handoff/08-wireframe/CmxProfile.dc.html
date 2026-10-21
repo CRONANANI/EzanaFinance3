@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Committee profile</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./cmx.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="cmx-root" style="width: 100%; display: flex;">
+<section class="cmx-card" aria-labelledby="cmx-cp-t" style="flex: 1; width: 100%; display: flex; flex-direction: column;">
+  <div class="cmx-head" style="align-items: center;">
+    <div style="min-width: 0;">
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <h2 id="cmx-cp-t" class="cmx-title" style="font-size: 1.125rem;">House Committee on Energy and Commerce</h2>
+        <span class="cmx-code is-on">HSIF</span>
+        <span class="cmx-sector" style="height: 20px;">House</span>
+      </div>
+      <p class="cmx-sub">Committee profile · 55 seats · 6 subcommittees</p>
+    </div>
+    <a href="#" class="cmx-link" style="font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">Official site
+      <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;" aria-hidden="true"><path d="M9 2.5h4.5V7M13.5 2.5L7 9M11.5 9.5v4h-9v-9h4"></path></svg>
+      <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">(opens in a new tab)</span>
+    </a>
+  </div>
+
+  <sc-if value="{{isDefault}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+      <!-- left: jurisdiction + sectors + subcommittees + trades strip -->
+      <div style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+        <p style="margin: 0; font-size: 13px; line-height: 1.6; color: var(--text-secondary);">Jurisdiction over energy policy, interstate and foreign commerce, consumer protection, food and drug safety, public health, communications and technology, and environmental quality, as published by the committee.</p>
+        <div>
+          <div class="cmx-kicker" style="font-size: 10px; margin-bottom: 7px;">Overseen sectors</div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <sc-for list="{{sectors}}" as="x" hint-placeholder-count="4"><span class="cmx-sector">{{x}}</span></sc-for>
+          </div>
+          <p class="cmx-legal" style="margin: 7px 0 0;">Sector links are Ezana's reading of each committee's published jurisdiction.</p>
+        </div>
+        <div>
+          <div class="cmx-kicker" style="font-size: 10px; margin-bottom: 7px;">Subcommittees</div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;" role="radiogroup" aria-label="Roster scope">
+            <sc-for list="{{subs}}" as="t" hint-placeholder-count="7">
+              <button type="button" role="radio" aria-checked="{{t.on}}" class="cmx-chip {{t.cls}}" style="min-height: 28px; font-size: 12px;" onClick="{{t.pick}}">{{t.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+        <button type="button" class="cmx-row cmx-row-btn" style="margin-top: auto; border-radius: var(--radius-md); background: var(--surface-card-hover); padding: 12px 14px; display: flex; align-items: center; gap: 12px;" aria-label="Open trades in overseen sectors, filtered to this committee">
+          <span class="cmx-mono" style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">1,284</span>
+          <span style="flex: 1; font-size: 12.5px; color: var(--text-secondary);">trades by members of this committee in its sectors over 24 months</span>
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="var(--emerald-text)" style="stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" aria-hidden="true"><path d="M6 3l5 5-5 5"></path></svg>
+        </button>
+      </div>
+
+      <!-- right: facing roster -->
+      <div style="flex: 1.4 1 420px; min-width: 0;">
+        <div style="display: grid; grid-template-columns: repeat({{rosterCols}}, minmax(0, 1fr)); gap: 0 20px;">
+          <sc-for list="{{sides}}" as="sd" hint-placeholder-count="2">
+            <div>
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border-secondary); margin-bottom: 4px;">
+                <span class="cmx-kicker" style="font-size: 10px; display: inline-flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 2px; background: {{sd.sw}};"></span>{{sd.name}}</span>
+                <span class="cmx-mono" style="font-size: 10px; color: var(--text-faint);">{{sd.count}} seats</span>
+              </div>
+              <ol style="list-style: none; margin: 0; padding: 0;">
+                <sc-for list="{{sd.rows}}" as="m" hint-placeholder-count="6">
+                  <li>
+                    <button type="button" class="cmx-row cmx-row-btn" style="display: flex; align-items: center; gap: 9px; padding: 6px 4px; min-height: 42px;" aria-label="Open member lookup for {{m.name}}">
+                      <span class="cmx-mono" style="width: 16px; font-size: 10px; color: var(--text-faint); text-align: right;">{{m.rank}}</span>
+                      <span class="cmx-avatar" style="width: 26px; height: 26px; font-size: 9.5px;" aria-hidden="true">{{m.init}}</span>
+                      <span class="cmx-ellipsis" style="flex: 1; font-size: 12.5px; font-weight: 500; color: var(--text-primary);">{{m.name}}</span>
+                      <span class="cmx-party">{{m.party}}</span>
+                      <span class="cmx-mono" style="font-size: 10px; color: var(--text-faint); width: 22px;">{{m.st}}</span>
+                      <sc-if value="{{m.lead}}" hint-placeholder-val="{{ false }}"><span class="cmx-lead">{{m.title}}</span></sc-if>
+                    </button>
+                  </li>
+                </sc-for>
+              </ol>
+              <a href="#" class="cmx-link" style="display: inline-block; font-size: 12px; padding: 6px 4px;">{{sd.moreLabel}}</a>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading committee profile" style="display: flex; gap: 24px;">
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
+        <span class="cmx-skel" style="height: 48px;"></span><span class="cmx-skel" style="height: 22px; width: 70%;"></span><span class="cmx-skel" style="height: 28px; width: 90%;"></span><span class="cmx-skel" style="height: 52px;"></span>
+      </div>
+      <div style="flex: 1.4; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px;">
+        <sc-for list="{{twelve}}" as="x" hint-placeholder-count="12"><span class="cmx-skel" style="height: 34px;"></span></sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div class="cmx-statebox" style="min-height: 320px;">
+      <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">Select a committee</div>
+      <p class="cmx-state" style="margin: 0; max-width: 400px;">Pick any tile in the atlas or a gavel row to load its profile here.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" class="cmx-statebox" style="min-height: 320px; align-items: flex-start;">
+      <p class="cmx-state" style="margin: 0;">This data is unavailable right now. Try again in a moment.</p>
+      <button type="button" class="cmx-link" style="background: none; border: 0; font-size: 14px; padding: 0;">Retry</button>
+    </div>
+  </sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["default","loading","empty","error"],"default":"default"},"viewport":{"editor":"enum","options":["desktop","phone"],"default":"desktop"},"$preview":{"width":1392,"height":720}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { sub: 'Full committee' }; }
+  renderVals() {
+    const s = this.props.state ?? 'default';
+    const phone = (this.props.viewport ?? 'desktop') === 'phone';
+    const SUBS = ['Full committee', 'Health', 'Energy', 'Communications and Technology', 'Environment', 'Oversight and Investigations', 'Innovation, Data, and Commerce'];
+    const subs = SUBS.map((label) => ({
+      label, on: String(this.state.sub === label), cls: this.state.sub === label ? 'is-on' : '',
+      pick: () => this.setState({ sub: label })
+    }));
+    const mk = (n, side) => Array.from({ length: n }, (_, i) => ({
+      rank: i + 1,
+      name: '[Member name]',
+      init: (side === 'maj' ? 'M' : 'm') + (i + 1),
+      party: side === 'maj' ? 'R' : 'D',
+      st: ['KY', 'TX', 'FL', 'OH', 'GA', 'WA'][i] || 'CA',
+      lead: i === 0,
+      title: side === 'maj' ? 'Chair' : 'Ranking'
+    }));
+    return {
+      isDefault: s === 'default', isLoading: s === 'loading', isEmpty: s === 'empty', isError: s === 'error',
+      sectors: ['Energy', 'Pharma', 'Providers', 'Tech'],
+      subs,
+      rosterCols: phone ? 1 : 2,
+      twelve: Array.from({ length: 12 }, (_, i) => i),
+      sides: [
+        { name: 'Majority', sw: 'var(--emerald)', count: 31, rows: mk(6, 'maj'), moreLabel: 'All 31 majority members' },
+        { name: 'Minority', sw: 'var(--echo-chart-blue)', count: 24, rows: mk(6, 'min'), moreLabel: 'All 24 minority members' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
