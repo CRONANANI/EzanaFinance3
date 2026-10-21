@@ -30,17 +30,20 @@ export function SonarSelectionProvider({ initial, ids, children }) {
 
   const select = useCallback(
     (id, from = 'radar') => {
-      if (!ids.includes(id)) return;
+      /* null clears the lock (toggle-off, Escape, the hub button). It used to
+         be rejected by the ids check, so clearing silently did nothing. */
+      if (id !== null && !ids.includes(id)) return;
       setSelected(id);
-      emit('dsx_blip_select', { dimension: id, from });
+      if (id !== null) emit('dsx_blip_select', { dimension: id, from });
       try {
         const url = new URL(window.location.href);
-        url.searchParams.set('dimension', id);
+        if (id === null) url.searchParams.delete('dimension');
+        else url.searchParams.set('dimension', id);
         window.history.replaceState(window.history.state, '', url);
       } catch {
         /* ignore */
       }
-      if (window.matchMedia?.('(max-width: 1000px)').matches) {
+      if (id !== null && window.matchMedia?.('(max-width: 1000px)').matches) {
         const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         requestAnimationFrame(() =>
           document

@@ -19,6 +19,22 @@ import { useMemo, useRef } from 'react';
 import { useTickerSpeed } from './useTickerSpeed';
 import './news-belt.css';
 
+/* Oct 21 (Hub V1.1): a trailing dollar figure in the headline ("... wins
+   $313K") is drawn in mint. Presentation only: the row text from news-feed.js
+   is unchanged, it is just split for styling. */
+const TRAILING_VALUE = /^(.*\s)(\$\S+)$/;
+
+function Headline({ text }) {
+  const m = TRAILING_VALUE.exec(text);
+  if (!m) return <span className="dsnb-headline">{text}</span>;
+  return (
+    <span className="dsnb-headline">
+      {m[1]}
+      <span className="dsnb-value">{m[2]}</span>
+    </span>
+  );
+}
+
 export default function NewsBelt({ items }) {
   const loop = useMemo(() => {
     const list = (items || []).filter((it) => it && it.headline).slice(0, 30);
@@ -35,7 +51,7 @@ export default function NewsBelt({ items }) {
         {loop.map((it, i) => (
           <span key={`${it.key}-${i}`} className="dsnb-card">
             <i className={`bi ${it.icon} dsnb-icon`} aria-hidden="true" />
-            <span className="dsnb-headline">{it.headline}</span>
+            <Headline text={it.headline} />
             {it.meta ? <span className="dsnb-meta">{it.meta}</span> : null}
           </span>
         ))}

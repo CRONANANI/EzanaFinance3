@@ -1,25 +1,37 @@
 /* The /datasets overview's news belt, drawn inside the top bar beside the
-   Ezana logo (NewsBelt.jsx). Ink is the hero white (--bg-primary, which these
-   light-locked routes resolve to white) on the band green; the meta is the
-   band mint. Tokens only. */
+   Ezana logo (NewsBelt.jsx). Oct 21 (Hub V1.1): one dark glass band with mint
+   hairline dividers between items. No pills, no ring, no border, no shadow.
+   Ink is white on the band green (the route is light-locked, so nothing here
+   reads a token that flips with the app theme). Tokens only. */
 .dsnb-belt {
+  --dsnb-bg: rgba(2, 26, 20, 0.62);
+  --dsnb-divider: color-mix(in srgb, var(--brand-band-mint) 14%, transparent);
+  --dsnb-ink: color-mix(in srgb, white 92%, transparent);
+  --dsnb-icon: color-mix(in srgb, white 80%, transparent);
+  --dsnb-value: var(--brand-band-mint);
+  --dsnb-meta: color-mix(in srgb, var(--brand-band-mint) 75%, transparent);
   position: relative;
+  display: flex;
+  align-items: center;
+  height: 46px;
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
-  /* Soft edges so cards slide in and out of the bar rather than being cut. */
+  border-radius: var(--radius-lg);
+  background: var(--dsnb-bg);
+  /* Soft edges so items slide in and out of the band rather than being cut. */
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0,
-    black 48px,
-    black calc(100% - 48px),
+    black 56px,
+    black calc(100% - 56px),
     transparent 100%
   );
   mask-image: linear-gradient(
     to right,
     transparent 0,
-    black 48px,
-    black calc(100% - 48px),
+    black 56px,
+    black calc(100% - 56px),
     transparent 100%
   );
 }
@@ -46,39 +58,45 @@
   }
 }
 
+/* One item: icon, headline (value in mint), meta. Every item carries the
+   hairline on its left, the first included: the list is drawn twice for the
+   loop, so a first-child exception would make the seam jump at -50%. The
+   leading hairline sits under the 56px edge mask. */
 .dsnb-card {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  margin-right: 12px;
-  padding: 8px 14px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--bg-primary) 8%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bg-primary) 14%, transparent);
+  padding: 0 20px;
+  border-left: 1px solid var(--dsnb-divider);
   font-family: var(--font-sans);
   line-height: 1;
 }
 
 .dsnb-icon {
   font-size: 13px;
-  color: var(--bg-primary);
+  color: var(--dsnb-icon);
 }
 
 .dsnb-headline {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
   letter-spacing: -0.01em;
-  color: var(--bg-primary);
+  color: var(--dsnb-ink);
+}
+
+.dsnb-value {
+  font-weight: 600;
+  color: var(--dsnb-value);
 }
 
 .dsnb-meta {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
-  color: var(--brand-band-mint);
+  color: var(--dsnb-meta);
 }
 
 /* A perpetually moving strip is a vestibular trigger: stop it and let the
@@ -96,11 +114,13 @@
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 899px) {
   .dsnb-card {
-    padding: 7px 12px;
-    gap: 8px;
+    padding: 0 16px;
   }
+}
+
+@media (max-width: 639px) {
   .dsnb-headline {
     font-size: 13px;
   }

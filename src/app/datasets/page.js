@@ -2,7 +2,7 @@ import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 import { resolveDimension, taxonomyCounts } from './sonar/derive';
 import { SonarSelectionProvider } from './sonar/SonarSelection';
 import OrbitalMap from './sonar/OrbitalMap';
-import IngestionStreams from './sonar/IngestionStreams';
+import ConsoleRail, { RailStatus } from './sonar/ConsoleRail';
 import OrbitalNewsTicker from './sonar/OrbitalNewsTicker';
 import { buildNewsItems } from './sonar/news-feed';
 import { readOrbitalFeed } from '@/lib/datasets/orbital-feed';
@@ -17,8 +17,9 @@ import './sonar/sonar.css';
  * search bar; sending a ping hides it, shows the stacked-block loader, then
  * the results. Every mark on the map is derived from taxonomy.js; the
  * notification cards around it are real rows from the Politician Tracker and
- * Government Contracts feeds (readOrbitalFeed). The ingestion streams
- * (Oct 20) draw the seven dimensions as sources feeding the device.
+ * Government Contracts feeds (readOrbitalFeed). The console rail (Oct 21,
+ * Hub V1.1) docks the seven dimensions under the device as channel strips,
+ * wired to it by a bus line; it replaced the Oct 20 ingestion streams.
  */
 export const dynamic = 'force-dynamic';
 
@@ -56,12 +57,12 @@ export default async function DatasetsIndexPage({ searchParams }) {
     <SonarSelectionProvider initial={selected} ids={DIM_IDS}>
       <OrbitalNewsTicker items={newsItems}>
         <section
-          className="dso-sonar dso-sonar--solo"
+          className="dso-sonar dso-sonar--solo dcr-scope"
           aria-label="The seven dataset dimensions that feed Ezana Sonar"
         >
-          <IngestionStreams dims={ORBIT_DIMS}>
-            <OrbitalMap dims={ORBIT_DIMS} pinging={COUNTS.live} silent={COUNTS.roadmap} />
-          </IngestionStreams>
+          <RailStatus dims={ORBIT_DIMS} live={COUNTS.live} total={COUNTS.live + COUNTS.roadmap} />
+          <OrbitalMap dims={ORBIT_DIMS} pinging={COUNTS.live} silent={COUNTS.roadmap} />
+          <ConsoleRail dims={ORBIT_DIMS} />
         </section>
       </OrbitalNewsTicker>
     </SonarSelectionProvider>

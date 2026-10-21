@@ -85,6 +85,20 @@
      own stops. The band is a constant, so its mint is too. */
   --brand-band-mint: #6ee7b7;
 
+  /* ── Dataset dimension hues ── */
+  /* The seven fixed dot colours of the shared dataset chrome contract
+     (docs/design/tracker-handoff/06-SHARED-CHROME.md), keyed by taxonomy id.
+     Constants like the band mint: declared here only, never re-declared in
+     light mode, so the light-locked /datasets routes read the same hue in
+     either shell. The hub console rail maps them onto its --dcr-dim-* set. */
+  --dim-hue-capitol: #6ee7b7;
+  --dim-hue-titans: #c4b5fd;
+  --dim-hue-eyes: #67e8f9;
+  --dim-hue-whispers: #fcd34d;
+  --dim-hue-hive: #f9a8d4;
+  --dim-hue-lighthouse: #93c5fd;
+  --dim-hue-regulatory: #d9f99d;
+
   /* ── Brand: Gold (Partner) ── */
   --gold: #d4a853;
   --gold-hover: #b8922f;

@@ -1,0 +1,433 @@
+/* Console rail under the Sonar deck on /datasets (dcr-), Hub V1.1.
+   Spec: docs/design/hub-console-handoff/04-SPEC.md. Tokens:
+   docs/design/hub-console-handoff/03-TOKENS.css, mapped onto the band tokens.
+   The route is light-locked green, so nothing here reads a token that flips
+   with the app theme (no --bg-primary, no --emerald). */
+
+.dcr-scope {
+  --dcr-mint: var(--brand-band-mint);
+  --dcr-ink-soft: color-mix(in srgb, white 92%, transparent);
+  --dcr-ink-mute: color-mix(in srgb, white 50%, transparent);
+
+  --dcr-strip-bg: rgba(2, 22, 17, 0.42);
+  --dcr-strip-bg-hover: rgba(2, 22, 17, 0.58);
+  --dcr-strip-radius: var(--radius-md);
+  --dcr-tick-hollow: color-mix(in srgb, white 30%, transparent);
+  --dcr-road-opacity: 0.62;
+
+  --dcr-bus: color-mix(in srgb, var(--dcr-mint) 35%, transparent);
+  --dcr-node: var(--dcr-mint);
+  --dcr-live: var(--dcr-mint);
+  --dcr-road: color-mix(in srgb, white 45%, transparent);
+  --dcr-focus: var(--dcr-mint);
+
+  --dcr-sans: var(--font-sans);
+  --dcr-mono: var(--font-mono);
+  --dcr-t-hover: 0.15s;
+  --dcr-t-select: 0.2s;
+
+  /* The seven dimension hues: the fixed dot colours of the shared chrome
+     contract (docs/design/tracker-handoff/06-SHARED-CHROME.md), keyed by
+     taxonomy id. Declared once as --dim-hue-* in theme-variables.css (the
+     sonar guard allows no hex in this directory); never reassigned. */
+  --dcr-dim-capitol: var(--dim-hue-capitol);
+  --dcr-dim-titans: var(--dim-hue-titans);
+  --dcr-dim-eyes: var(--dim-hue-eyes);
+  --dcr-dim-whispers: var(--dim-hue-whispers);
+  --dcr-dim-hive: var(--dim-hue-hive);
+  --dcr-dim-lighthouse: var(--dim-hue-lighthouse);
+  --dcr-dim-regulatory: var(--dim-hue-regulatory);
+}
+
+/* ── status line (above the deck) ─────────────────────────────────────── */
+/* Scoped selector on purpose: a global body.light-mode p rule would
+   otherwise repaint this line grey in light mode. */
+.dcr-scope .dcr-status {
+  margin: 0 0 10px;
+  font-family: var(--dcr-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--dcr-ink-mute);
+}
+.dcr-status-live {
+  color: var(--dcr-mint);
+}
+
+/* ── the rail: breaks out of the 720px deck column to 1240 ────────────── */
+.dcr-rail {
+  --dcr-rail-w: min(100vw - 48px, 1240px);
+  /* Tuck the bus under the deck's base: the deck's stage keeps a band of
+     empty ground under the slab, so the feed node would float without this. */
+  --dcr-tuck: 20px;
+  position: relative;
+  width: var(--dcr-rail-w);
+  margin-top: calc(var(--dcr-tuck) * -1);
+  margin-inline: calc((100% - var(--dcr-rail-w)) / 2);
+  text-align: left;
+}
+
+/* ── the bus ──────────────────────────────────────────────────────────── */
+.dcr-bus {
+  position: relative;
+  height: 64px;
+  pointer-events: none;
+}
+.dcr-hair {
+  position: absolute;
+  top: 37px;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--dcr-bus) 18%,
+    var(--dcr-bus) 82%,
+    transparent
+  );
+}
+.dcr-feed {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 1px;
+  height: 47px;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--dcr-mint) 10%, transparent),
+    color-mix(in srgb, var(--dcr-mint) 50%, transparent)
+  );
+}
+.dcr-node {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: var(--dcr-node);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--dcr-mint) 80%, transparent);
+}
+
+/* ── the strips ───────────────────────────────────────────────────────── */
+.dcr-strips {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.dcr-strip {
+  --dcr-stem: color-mix(in srgb, var(--dim) 55%, transparent);
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+  min-height: 44px;
+  margin: 0;
+  padding: 12px 12px 10px;
+  border: 1px solid color-mix(in srgb, var(--dim) 26%, transparent);
+  border-radius: var(--dcr-strip-radius);
+  background: var(--dcr-strip-bg);
+  color: var(--dcr-ink-soft);
+  font: inherit;
+  font-family: var(--dcr-sans);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color var(--dcr-t-hover) ease,
+    border-color var(--dcr-t-hover) ease;
+}
+
+/* Stem: rises 27px from the strip's top edge into the bus hairline. The
+   padding box starts inside the 1px border, so -28px lands on the hairline. */
+.dcr-strip::before {
+  content: '';
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  width: 1px;
+  height: 27px;
+  background: linear-gradient(
+    to top,
+    var(--dcr-stem),
+    color-mix(in srgb, var(--dcr-mint) 12%, transparent)
+  );
+  transition: background var(--dcr-t-select) ease;
+}
+
+/* Optional pulse: a 2px dot travels a live stem toward the deck. */
+.dcr-strip.is-live::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  width: 2px;
+  height: 2px;
+  margin-left: -0.5px;
+  border-radius: 50%;
+  background: var(--dim);
+  opacity: 0;
+  animation: dcr-pulse 4.2s ease-in infinite;
+  animation-delay: calc(var(--i, 0) * 0.6s);
+}
+
+@media (hover: hover) {
+  .dcr-strip:hover {
+    border-color: color-mix(in srgb, var(--dim) 45%, transparent);
+    background: var(--dcr-strip-bg-hover);
+  }
+}
+
+.dcr-strip.is-on {
+  --dcr-stem: color-mix(in srgb, var(--dim) 80%, transparent);
+  border-color: var(--dim);
+  background: color-mix(in srgb, var(--dim) 10%, transparent);
+  transition-duration: var(--dcr-t-select);
+}
+
+.dcr-strip.is-road {
+  opacity: var(--dcr-road-opacity);
+}
+
+.dcr-strip:focus-visible {
+  outline: 2px solid var(--dcr-focus);
+  outline-offset: 2px;
+}
+
+/* head */
+.dcr-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.dcr-dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dim);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--dim) 70%, transparent);
+}
+.dcr-name {
+  overflow: hidden;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--dcr-ink-soft);
+}
+
+/* waveform (decorative) */
+.dcr-wave {
+  display: block;
+  width: 100%;
+  height: 34px;
+  overflow: hidden;
+}
+.dcr-wave-base {
+  fill: none;
+  stroke: color-mix(in srgb, white 10%, transparent);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.dcr-wave-line {
+  fill: none;
+  stroke: var(--dim);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.dcr-strip.is-live .dcr-wave-line {
+  animation: dcr-drift 9s linear infinite;
+  animation-delay: calc(var(--i, 0) * -1.3s);
+}
+.dcr-strip.is-road .dcr-wave-line {
+  stroke-dasharray: 3 5;
+}
+
+/* ticks: one per dataset */
+.dcr-ticks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 4px;
+}
+.dcr-tick {
+  width: 10px;
+  height: 4px;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--dcr-tick-hollow);
+}
+.dcr-tick.is-live {
+  background: var(--dim);
+  box-shadow: none;
+}
+
+/* foot */
+.dcr-foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+.dcr-count {
+  font-family: var(--dcr-mono);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--dcr-ink-soft);
+}
+.dcr-state {
+  font-family: var(--dcr-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--dcr-live);
+}
+.dcr-strip.is-road .dcr-state {
+  color: var(--dcr-road);
+}
+
+/* loading: shimmer blocks where ticks and count sit; never a spinner */
+.dcr-shimmer {
+  display: block;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, white 8%, transparent) 0%,
+    color-mix(in srgb, white 18%, transparent) 50%,
+    color-mix(in srgb, white 8%, transparent) 100%
+  );
+  background-size: 200% 100%;
+  animation: dcr-shimmer 1.4s linear infinite;
+}
+.dcr-count.dcr-shimmer {
+  width: 28px;
+  height: 12px;
+}
+
+@keyframes dcr-drift {
+  to {
+    transform: translateX(-134px);
+  }
+}
+@keyframes dcr-pulse {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  6% {
+    opacity: 1;
+  }
+  34% {
+    opacity: 1;
+  }
+  40%,
+  100% {
+    transform: translateY(-25px);
+    opacity: 0;
+  }
+}
+@keyframes dcr-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ── responsive (04-SPEC section 6) ───────────────────────────────────── */
+@media (max-width: 1199px) {
+  .dcr-strips {
+    gap: 10px;
+  }
+  .dcr-strip {
+    padding: 10px;
+  }
+}
+
+/* 640 to 899: two rows (4 + 3). Stems only on row one; row two carries a
+   3px top rule in its hue instead. */
+@media (max-width: 899px) {
+  .dcr-rail {
+    width: 100%;
+    margin-inline: 0;
+  }
+  .dcr-strips {
+    flex-wrap: wrap;
+  }
+  .dcr-strip {
+    flex: 1 1 calc((100% - 30px) / 4);
+  }
+  .dcr-strip:nth-child(n + 5) {
+    box-shadow: inset 0 3px 0 var(--dim);
+  }
+  .dcr-strip:nth-child(n + 5)::before,
+  .dcr-strip:nth-child(n + 5)::after {
+    display: none;
+  }
+}
+
+/* Under 640: full-width rows (head left, ticks and count right), no bus,
+   no waveform, a 3px left rule in the hue. */
+@media (max-width: 639px) {
+  .dcr-rail {
+    margin-top: 16px;
+  }
+  .dcr-bus,
+  .dcr-wave,
+  .dcr-strip::before,
+  .dcr-strip::after {
+    display: none;
+  }
+  .dcr-strips {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .dcr-strip,
+  .dcr-strip:nth-child(n + 5) {
+    display: grid;
+    flex: none;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    column-gap: 12px;
+    padding: 10px 12px 10px 14px;
+    box-shadow: inset 3px 0 0 var(--dim);
+  }
+  .dcr-ticks {
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+  }
+  .dcr-foot {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dcr-scope {
+    --dcr-t-hover: 0s;
+    --dcr-t-select: 0s;
+  }
+  .dcr-strip.is-live .dcr-wave-line,
+  .dcr-strip.is-live::after,
+  .dcr-shimmer {
+    animation: none;
+  }
+  .dcr-strip.is-live::after {
+    display: none;
+  }
+}
