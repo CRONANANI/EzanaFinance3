@@ -15,9 +15,13 @@ import {
   normalize13FValue,
   parseActivistCover,
   parseSchedule13Xml,
-  isAmendmentForm,
 } from '@/lib/sec-13f-parse';
 import { recentPeriods } from '@/lib/sec/quarters';
+import {
+  SCHEDULE13_PARSER_VERSION,
+  parseSecHeader,
+  buildActivistRow,
+} from '@/lib/sec/schedule13-meta';
 
 /**
  * Phase 2: parse holdings for filings already in sec_filings.
@@ -31,7 +35,13 @@ import { recentPeriods } from '@/lib/sec/quarters';
  *            later.
  *   - 13D/13G -> the structured XML cover (SCHEDULE 13D/13G, Dec 2024 on) or,
  *            for older text/HTML filings, the best-effort cover scrape ->
- *            sec_activist_positions.
+ *            sec_activist_positions. Parser v2 (Oct 2026) also stores the
+ *            investor (from the cover, or for legacy filings from the SEC
+ *            header's FILED BY block), Item 3 source of funds, Item 4 purpose
+ *            and its keyword tags, reporting-person types, voting and
+ *            dispositive power, the 13G filing rule, the group flag and the
+ *            amendment number. Rows parsed by an older parser version are
+ *            re-read from EDGAR, newest first, up to ?maxReparse per run.
  * Retention: holdings for quarters older than the parse window are deleted at
  * the end of each run (sec_filings rows are never deleted).
  *
@@ -39,7 +49,7 @@ import { recentPeriods } from '@/lib/sec/quarters';
  * (each 13F costs two SEC requests, each 13D/13G one or two; at about 6 req/s
  * the default caps take well under a minute of SEC time). Idempotent.
  * Auth: CRON_SECRET bearer (or ?key=).
- *   GET /api/cron/ingest-sec-holdings?max13f=40&maxActivist=40
+ *   GET /api/cron/ingest-sec-holdings?max13f=40&maxActivist=40[&maxReparse=20]
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -139,10 +149,39 @@ async function tickersFor(admin, cusips) {
    (…/xslSCHEDULE_13D_X01/primary_doc.xml); the raw XML sits one level up. */
 const rawXmlUrl = (url) => String(url || '').replace(/\/xsl[^/]*\//i, '/');
 
+/* Legacy (pre-structured) filing: the full submission .txt carries both the
+   SEC header (SUBJECT COMPANY / FILED BY, which tells the investor apart from
+   the target) and the cover text, in one request. */
+async function fetchLegacyCover(f) {
+  const { base } = edgarUrls({ accessionNo: f.accession_no, cik: f.cik });
+  let text = null;
+  try {
+    text = await secFetchText(`${base}/${f.accession_no}.txt`);
+  } catch {
+    if (f.primary_doc_url) text = await secFetchText(f.primary_doc_url);
+  }
+  if (!text) return null;
+  const header = parseSecHeader(text);
+  const cover = parseActivistCover(text);
+  return {
+    form_type: null,
+    subject_name: cover.subject_name || header.subject?.name || null,
+    subject_cik: header.subject?.cik || null,
+    subject_cusip: null,
+    event_date: null,
+    percent_of_class: cover.percent_of_class,
+    shares: cover.shares,
+    reporting_persons: [],
+    header,
+    via: 'text',
+  };
+}
+
 async function fetchActivistCover(f) {
-  let url = f.primary_doc_url ? rawXmlUrl(f.primary_doc_url) : null;
   const structured = /^SCHEDULE\s/i.test(String(f.form_type || ''));
-  if ((!url || !/\.xml$/i.test(url)) && structured) {
+  if (!structured) return fetchLegacyCover(f);
+  let url = f.primary_doc_url ? rawXmlUrl(f.primary_doc_url) : null;
+  if (!url || !/\.xml$/i.test(url)) {
     // New-style filing whose search hit pointed at another document: find the
     // XML primary document in the filing index.
     const index = await getFilingIndexJson({ cik: f.cik, accessionNo: f.accession_no });
@@ -152,22 +191,30 @@ async function fetchActivistCover(f) {
       items.find((it) => /\.xml$/i.test(it?.name || ''));
     if (xml) url = `${edgarUrls({ accessionNo: f.accession_no, cik: f.cik }).base}/${xml.name}`;
   }
-  if (!url) return null;
-  const text = await secFetchText(url);
-  const parsed = parseSchedule13Xml(text);
-  if (parsed) return { ...parsed, via: 'xml' };
-  const cover = parseActivistCover(text);
-  return {
-    form_type: null,
-    subject_name: cover.subject_name,
-    subject_cik: null,
-    subject_cusip: null,
-    event_date: null,
-    percent_of_class: cover.percent_of_class,
-    shares: cover.shares,
-    reporting_persons: [],
-    via: 'text',
-  };
+  if (!url) return fetchLegacyCover(f);
+  const parsed = parseSchedule13Xml(await secFetchText(url));
+  return parsed ? { ...parsed, via: 'xml' } : fetchLegacyCover(f);
+}
+
+/** Filings whose stored row came from an older parser, newest first. */
+async function staleActivist(admin, cap) {
+  if (cap <= 0) return [];
+  const { data: stale, error } = await admin
+    .from('sec_activist_positions')
+    .select('accession_no')
+    .or(`parser_version.is.null,parser_version.lt.${SCHEDULE13_PARSER_VERSION}`)
+    .limit(cap * 3);
+  if (error || !stale?.length) return [];
+  const { data } = await admin
+    .from('sec_filings')
+    .select('accession_no, cik, form_type, filed_at, primary_doc_url')
+    .in(
+      'accession_no',
+      stale.map((r) => r.accession_no),
+    )
+    .order('filed_at', { ascending: false })
+    .limit(cap);
+  return data || [];
 }
 
 /** Delete holdings of filings older than the parse window, by accession. */
@@ -294,58 +341,69 @@ export async function GET(request) {
     }
   }
 
-  // ── 13D/13G stakes ────────────────────────────────────────────────────────
-  const act = await unparsedActivist(admin, 400, maxActivist);
+  // ── 13D/13G stakes: new filings first, then rows from an older parser ────
+  const maxReparse = Math.min(Math.max(Number(searchParams.get('maxReparse') ?? 20) || 0, 0), 60);
+  let reparsed = 0;
+  let legacyFilerFound = 0;
   let cikTicker = null;
+
+  const subjectTickerFor = async (cover) => {
+    if (cover.subject_cusip) {
+      const t = (await tickersFor(admin, [cover.subject_cusip])).get(cover.subject_cusip);
+      if (t) return t;
+    }
+    if (!cover.subject_cik) return null;
+    if (!cikTicker) {
+      try {
+        cikTicker = buildCikTickerIndex(await getTickerMap());
+      } catch (e) {
+        cikTicker = new Map();
+        errors.push(`ticker map: ${e?.message || e}`);
+      }
+    }
+    return cikTicker.get(String(parseInt(cover.subject_cik, 10))) || null;
+  };
+
+  const processActivist = async (f) => {
+    const cover = await fetchActivistCover(f);
+    if (!cover) return false;
+    if (cover.via === 'xml') viaXml += 1;
+    if (cover.via === 'text' && cover.header?.filedBy) legacyFilerFound += 1;
+    const row = buildActivistRow({
+      accessionNo: f.accession_no,
+      filingFormType: f.form_type,
+      cover,
+      subjectTicker: await subjectTickerFor(cover),
+    });
+    const { error } = await admin
+      .from('sec_activist_positions')
+      .upsert(row, { onConflict: 'accession_no' });
+    if (error) {
+      errors.push(`activist ${f.accession_no}: ${error.message}`);
+      return false;
+    }
+    return true;
+  };
+
+  const act = await unparsedActivist(admin, 400, maxActivist);
   for (const f of act) {
     if (outOfTime()) break;
     try {
       // eslint-disable-next-line no-await-in-loop
-      const cover = await fetchActivistCover(f);
-      if (!cover) continue;
-      if (cover.via === 'xml') viaXml += 1;
-
-      let subjectTicker = null;
-      if (cover.subject_cusip) {
-        // eslint-disable-next-line no-await-in-loop
-        subjectTicker =
-          (await tickersFor(admin, [cover.subject_cusip])).get(cover.subject_cusip) || null;
-      }
-      if (!subjectTicker && cover.subject_cik) {
-        if (!cikTicker) {
-          try {
-            // eslint-disable-next-line no-await-in-loop
-            cikTicker = buildCikTickerIndex(await getTickerMap());
-          } catch (e) {
-            cikTicker = new Map();
-            errors.push(`ticker map: ${e?.message || e}`);
-          }
-        }
-        subjectTicker = cikTicker.get(String(parseInt(cover.subject_cik, 10))) || null;
-      }
-
-      const formType = cover.form_type || f.form_type || null;
-      // eslint-disable-next-line no-await-in-loop
-      const { error } = await admin.from('sec_activist_positions').upsert(
-        {
-          accession_no: f.accession_no,
-          subject_name: cover.subject_name,
-          subject_cik: cover.subject_cik,
-          subject_cusip: cover.subject_cusip,
-          subject_ticker: subjectTicker,
-          percent_of_class: cover.percent_of_class,
-          shares: cover.shares,
-          form_type: formType,
-          event_date: cover.event_date,
-          reporting_persons: cover.reporting_persons || [],
-          is_amendment: isAmendmentForm(formType),
-        },
-        { onConflict: 'accession_no' },
-      );
-      if (error) errors.push(`activist ${f.accession_no}: ${error.message}`);
-      else positions += 1;
+      if (await processActivist(f)) positions += 1;
     } catch (e) {
       errors.push(`activist ${f.accession_no}: ${e?.message || e}`);
+    }
+  }
+
+  const stale = outOfTime() ? [] : await staleActivist(admin, maxReparse);
+  for (const f of stale) {
+    if (outOfTime()) break;
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      if (await processActivist(f)) reparsed += 1;
+    } catch (e) {
+      errors.push(`activist reparse ${f.accession_no}: ${e?.message || e}`);
     }
   }
 
@@ -357,7 +415,7 @@ export async function GET(request) {
       `[ingest-sec-holdings] retention removed ${removed} holdings older than ${oldestKept}`,
     );
 
-  if (holdingsRows || positions || removed) {
+  if (holdingsRows || positions || reparsed || removed) {
     revalidateTag('titans');
     revalidateTag('hubs');
   }
@@ -370,6 +428,8 @@ export async function GET(request) {
     tickers_at_insert: mappedAtInsert,
     activist_positions: positions,
     activist_xml: viaXml,
+    activist_reparsed: reparsed,
+    activist_legacy_filer_found: legacyFilerFound,
     retention_removed: removed,
     sec_requests: secRequestCount(),
     errors: errors.slice(0, 20),

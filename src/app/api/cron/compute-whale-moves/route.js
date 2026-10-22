@@ -295,27 +295,61 @@ async function scoreInstitutional(admin, f) {
 async function scoreActivist(admin, f) {
   const { data: pos } = await admin
     .from('sec_activist_positions')
-    .select('subject_name, subject_ticker, subject_cusip, form_type, percent_of_class, shares')
+    .select(
+      'subject_name, subject_ticker, subject_cusip, form_type, percent_of_class, shares, filer_name, filer_cik',
+    )
     .eq('accession_no', f.accession_no)
     .maybeSingle();
   if (!pos || pos.percent_of_class == null) return [];
 
   // Prior stake by the same filer on the same subject, if any earlier filing.
+  // Parser v2 rows carry the confirmed investor CIK; older rows fall back to
+  // the EDGAR index CIK.
   let priorPct = null;
-  const { data: earlier } = await admin
-    .from('sec_filings')
-    .select('accession_no')
-    .eq('form_family', 'activist')
-    .eq('cik', f.cik)
-    .lt('filed_at', f.filed_at)
-    .order('filed_at', { ascending: false })
-    .limit(5);
-  const earlierAccs = (earlier || []).map((e) => e.accession_no);
-  if (earlierAccs.length) {
-    const { data: earlierPos } = await admin
+  let earlierPos = [];
+  if (pos.filer_cik) {
+    const { data: mine } = await admin
       .from('sec_activist_positions')
       .select('accession_no, subject_name, subject_cusip, percent_of_class')
-      .in('accession_no', earlierAccs);
+      .eq('filer_cik', pos.filer_cik)
+      .neq('accession_no', f.accession_no)
+      .limit(100);
+    if (mine?.length) {
+      const { data: dated } = await admin
+        .from('sec_filings')
+        .select('accession_no')
+        .in(
+          'accession_no',
+          mine.map((m) => m.accession_no),
+        )
+        .lt('filed_at', f.filed_at)
+        .order('filed_at', { ascending: false })
+        .limit(5);
+      const byAcc = new Map(mine.map((m) => [m.accession_no, m]));
+      earlierPos = (dated || []).map((d) => byAcc.get(d.accession_no)).filter(Boolean);
+    }
+  } else {
+    const { data: earlier } = await admin
+      .from('sec_filings')
+      .select('accession_no')
+      .eq('form_family', 'activist')
+      .eq('cik', f.cik)
+      .lt('filed_at', f.filed_at)
+      .order('filed_at', { ascending: false })
+      .limit(5);
+    const earlierAccs = (earlier || []).map((e) => e.accession_no);
+    if (earlierAccs.length) {
+      const { data } = await admin
+        .from('sec_activist_positions')
+        .select('accession_no, subject_name, subject_cusip, percent_of_class')
+        .in('accession_no', earlierAccs);
+      const order = new Map(earlierAccs.map((a, i) => [a, i]));
+      earlierPos = (data || []).sort(
+        (a, b) => order.get(a.accession_no) - order.get(b.accession_no),
+      );
+    }
+  }
+  if (earlierPos.length) {
     const subj = String(pos.subject_name || '')
       .trim()
       .toUpperCase();
@@ -325,7 +359,7 @@ async function scoreActivist(admin, f) {
         : String(e.subject_name || '')
             .trim()
             .toUpperCase() === subj;
-    const match = (earlierPos || []).find((e) => same(e) && e.percent_of_class != null);
+    const match = earlierPos.find((e) => same(e) && e.percent_of_class != null);
     if (match) priorPct = Number(match.percent_of_class);
   }
 
@@ -341,8 +375,10 @@ async function scoreActivist(admin, f) {
   return [
     {
       kind: 'activist',
-      filer_name: f.filer_name,
-      filer_cik: f.cik,
+      /* The confirmed investor from the cover or SEC header (parser v2); the
+         EDGAR index name can be the target company on a 13D/13G. */
+      filer_name: pos.filer_name || f.filer_name,
+      filer_cik: pos.filer_cik || f.cik,
       ticker: pos.subject_ticker || f.ticker || null,
       cusip: pos.subject_cusip || null,
       issuer: pos.subject_name || null,

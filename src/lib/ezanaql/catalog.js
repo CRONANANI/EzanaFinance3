@@ -550,6 +550,17 @@ export const CATALOG = {
       percent_of_class: 'percent_of_class',
       shares: 'shares',
       is_amendment: 'is_amendment',
+      filer_confirmed: 'filer_confirmed',
+      amendment_no: 'amendment_no',
+      person_types: 'person_types',
+      fund_sources: 'fund_sources',
+      purpose_tags: 'purpose_tags',
+      g_basis: 'g_basis',
+      member_of_group: 'member_of_group',
+      sole_voting: 'sole_voting',
+      shared_voting: 'shared_voting',
+      sole_dispositive: 'sole_dispositive',
+      shared_dispositive: 'shared_dispositive',
     },
     defaultProjection: ['filer', 'company', 'ticker', 'percent_of_class', 'filed_on'],
     fields: {
@@ -565,6 +576,23 @@ export const CATALOG = {
       percent_of_class: { type: 'float', nullable: true },
       shares: { type: 'float', nullable: true },
       is_amendment: { type: 'bool', nullable: true },
+      /* Parser v2 (Oct 2026). Code lists are comma-separated: person types
+         use the SEC Row 14 codes (IA, PN, IN, HC...), fund sources the 13D
+         Row 4 codes (WC, PF, AF, BK, SC, OO), purpose tags the Item 4 keyword
+         tags (board, proxy, sale, capital, management, governance,
+         operations, letter, agreement, investment). g_basis is the 13G
+         filing basis: qualified_institution, passive, exempt or mixed. */
+      filer_confirmed: { type: 'bool', nullable: true },
+      amendment_no: { type: 'int', nullable: true },
+      person_types: { type: 'string', nullable: true },
+      fund_sources: { type: 'string', nullable: true },
+      purpose_tags: { type: 'string', nullable: true },
+      g_basis: { type: 'string', nullable: true },
+      member_of_group: { type: 'bool', nullable: true },
+      sole_voting: { type: 'float', nullable: true },
+      shared_voting: { type: 'float', nullable: true },
+      sole_dispositive: { type: 'float', nullable: true },
+      shared_dispositive: { type: 'float', nullable: true },
     },
     joinableWith: TITANS_PEERS('titans.activist_stakes'),
     joinKeys: ['ticker'],

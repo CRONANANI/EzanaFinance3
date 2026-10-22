@@ -5,7 +5,11 @@
  *   getInstitutionalOverview(): the latest complete 13F quarter, from the
  *     snapshot refresh_titans_institutional() stores each hour (filers ranked
  *     by reported value, most widely held securities, largest new positions).
- *   getActivistStakes({ limit }): newest Schedule 13D/13G stakes.
+ *   getActivistStakes({ limit }): newest Schedule 13D/13G stakes, with the
+ *     parser v2 detail (investor, purpose tags and excerpt, funds, person
+ *     types, voting power, 13G basis) once a row has been reparsed.
+ *   getActivistFiling(accessionNo): one 13D/13G filing with its full Item 3
+ *     and Item 4 text and every reporting person.
  *   getFundHoldings(cik): one filer's latest 13F holdings with the change
  *     versus its prior quarter.
  *
@@ -17,6 +21,15 @@ import { unstable_cache } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { classifyChange } from '@/lib/whale-score';
 import { schedule13Kind } from '@/lib/sec-13f-parse';
+import {
+  SCHEDULE13_PARSER_VERSION,
+  PERSON_TYPE_LABEL,
+  FUND_SOURCE_LABEL,
+  PURPOSE_TAG_LABEL,
+  labelled,
+  gBasis,
+  purposeExcerpt,
+} from '@/lib/sec/schedule13-meta';
 import {
   latestCompleteQuarter,
   priorQuarterEnd,
@@ -119,7 +132,7 @@ async function loadActivist(limit) {
     const { data: rows, error: pErr } = await admin
       .from('sec_activist_positions')
       .select(
-        'accession_no, subject_name, subject_cik, subject_cusip, subject_ticker, percent_of_class, shares, form_type, event_date, reporting_persons, is_amendment',
+        'accession_no, subject_name, subject_cik, subject_cusip, subject_ticker, percent_of_class, shares, form_type, event_date, reporting_persons, is_amendment, filer_name, filer_cik, filer_source, amendment_no, person_types, fund_sources, funds_source_text, transaction_purpose, purpose_tags, g_rules, member_of_group, sole_voting, shared_voting, sole_dispositive, shared_dispositive, parser_version',
       )
       .in(
         'accession_no',
@@ -134,9 +147,18 @@ async function loadActivist(limit) {
     if (!p || (p.percent_of_class == null && p.shares == null)) continue;
     const persons = Array.isArray(p.reporting_persons) ? p.reporting_persons : [];
     const form = p.form_type || f.form_type;
+    const v2 = (p.parser_version || 0) >= SCHEDULE13_PARSER_VERSION;
+    /* Parser v2 stores the confirmed investor. A v2 row without one is NOT
+       given the EDGAR index name, which can be the target company. Rows still
+       waiting for their reparse keep the old fallback, flagged unconfirmed. */
+    const filer = v2 ? p.filer_name || null : persons[0]?.name || f.filer_name || null;
+    const filerConfirmed = v2 ? Boolean(p.filer_name) : Boolean(persons[0]?.name);
     out.push({
       accessionNo: f.accession_no,
-      filer: persons[0]?.name || f.filer_name || null,
+      filer,
+      filerCik: (v2 && p.filer_cik) || null,
+      filerConfirmed,
+      filerSource: v2 ? p.filer_source || null : null,
       reportingPersons: persons.length,
       subject: p.subject_name || null,
       ticker: p.subject_ticker || null,
@@ -147,15 +169,118 @@ async function loadActivist(limit) {
       eventDate: p.event_date || null,
       filedAt: f.filed_at,
       href: f.index_url || f.primary_doc_url || null,
+      /* Parser v2 detail; empty or null until the row is reparsed. */
+      detailParsed: v2,
+      amendmentNo: p.amendment_no ?? null,
+      personTypes: labelled(p.person_types, PERSON_TYPE_LABEL),
+      fundSources: labelled(p.fund_sources, FUND_SOURCE_LABEL),
+      purposeTags: (p.purpose_tags || []).map((t) => ({
+        tag: t,
+        label: PURPOSE_TAG_LABEL[t] || t,
+      })),
+      purposeExcerpt: purposeExcerpt(p.transaction_purpose),
+      hasPurpose: Boolean(p.transaction_purpose),
+      hasFundsSource: Boolean(p.funds_source_text),
+      gBasis: gBasis(p.g_rules),
+      memberOfGroup: p.member_of_group ?? null,
+      voting: {
+        sole: num(p.sole_voting),
+        shared: num(p.shared_voting),
+        soleDispositive: num(p.sole_dispositive),
+        sharedDispositive: num(p.shared_dispositive),
+      },
     });
     if (out.length >= lim) break;
   }
   return out;
 }
 
-const cachedActivist = unstable_cache(loadActivist, ['titans-activist-v1'], CACHE);
+const cachedActivist = unstable_cache(loadActivist, ['titans-activist-v2'], CACHE);
 export function getActivistStakes({ limit = 100 } = {}) {
   return cachedActivist(limit);
+}
+
+/* ── One 13D/13G filing in full (Stated Intent card, dossier panels) ─── */
+
+const ACC_RE = /^\d{10}-\d{2}-\d{6}$/;
+
+async function loadActivistFiling(accessionNo) {
+  if (!supaConfigured() || !ACC_RE.test(String(accessionNo || ''))) return null;
+  const admin = getAdminClient();
+  const [{ data: p, error }, { data: f }] = await Promise.all([
+    admin
+      .from('sec_activist_positions')
+      .select(
+        'accession_no, subject_name, subject_ticker, subject_cusip, percent_of_class, shares, form_type, event_date, reporting_persons, is_amendment, filer_name, filer_cik, filer_source, amendment_no, person_types, fund_sources, funds_source_text, transaction_purpose, purpose_tags, g_rules, member_of_group, sole_voting, shared_voting, sole_dispositive, shared_dispositive, parser_version',
+      )
+      .eq('accession_no', accessionNo)
+      .maybeSingle(),
+    admin
+      .from('sec_filings')
+      .select('filed_at, form_type, index_url, primary_doc_url')
+      .eq('accession_no', accessionNo)
+      .maybeSingle(),
+  ]);
+  if (error) throw new Error(error.message);
+  if (!p) return null;
+  const v2 = (p.parser_version || 0) >= SCHEDULE13_PARSER_VERSION;
+  return {
+    accessionNo: p.accession_no,
+    form: schedule13Kind(p.form_type || f?.form_type),
+    isAmendment: !!p.is_amendment,
+    amendmentNo: p.amendment_no ?? null,
+    filedAt: f?.filed_at || null,
+    eventDate: p.event_date || null,
+    href: f?.index_url || f?.primary_doc_url || null,
+    detailParsed: v2,
+    filer: v2 ? p.filer_name || null : null,
+    filerCik: v2 ? p.filer_cik || null : null,
+    filerConfirmed: v2 && Boolean(p.filer_name),
+    subject: p.subject_name || null,
+    ticker: p.subject_ticker || null,
+    cusip: p.subject_cusip || null,
+    percentOfClass: num(p.percent_of_class),
+    shares: num(p.shares),
+    voting: {
+      sole: num(p.sole_voting),
+      shared: num(p.shared_voting),
+      soleDispositive: num(p.sole_dispositive),
+      sharedDispositive: num(p.shared_dispositive),
+    },
+    memberOfGroup: p.member_of_group ?? null,
+    personTypes: labelled(p.person_types, PERSON_TYPE_LABEL),
+    fundSources: labelled(p.fund_sources, FUND_SOURCE_LABEL),
+    gBasis: gBasis(p.g_rules),
+    purposeTags: (p.purpose_tags || []).map((t) => ({ tag: t, label: PURPOSE_TAG_LABEL[t] || t })),
+    /* Verbatim filing text, never summarised. */
+    transactionPurpose: p.transaction_purpose || null,
+    fundsSourceText: p.funds_source_text || null,
+    reportingPersons: (Array.isArray(p.reporting_persons) ? p.reporting_persons : []).map((r) => ({
+      name: r.name || null,
+      cik: r.cik || null,
+      shares: num(r.shares),
+      percent: num(r.percent),
+      types: labelled(r.types, PERSON_TYPE_LABEL),
+      fundSources: labelled(r.fund_sources, FUND_SOURCE_LABEL),
+      citizenship: r.citizenship || null,
+      voting: {
+        sole: num(r.sole_voting),
+        shared: num(r.shared_voting),
+        soleDispositive: num(r.sole_dispositive),
+        sharedDispositive: num(r.shared_dispositive),
+      },
+      group: r.group ?? null,
+    })),
+  };
+}
+
+const cachedActivistFiling = unstable_cache(
+  loadActivistFiling,
+  ['titans-activist-filing-v1'],
+  CACHE,
+);
+export function getActivistFiling(accessionNo) {
+  return cachedActivistFiling(String(accessionNo || ''));
 }
 
 /* ── One fund's holdings ────────────────────────────────────────────── */

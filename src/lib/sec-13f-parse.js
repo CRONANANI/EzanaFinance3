@@ -3,6 +3,14 @@
  * unit-test in isolation. Namespace-tolerant (SEC XML sometimes prefixes tags,
  * e.g. <ns1:infoTable>).
  */
+import {
+  PERSON_TYPE_LABEL,
+  FUND_SOURCE_LABEL,
+  knownCodes,
+  normaliseGRule,
+  cleanText,
+  tagPurpose,
+} from './sec/schedule13-meta.js';
 
 /** Read the text of the first <name>…</name> (any/no namespace prefix) in a block. */
 function tag(block, name) {
@@ -123,59 +131,135 @@ function qty(s) {
   return n != null && n >= 0 ? n : null;
 }
 
+/** Every <name> text in a block, decoded (repeatable elements). */
+function tags(block, name) {
+  return blocks(block, name)
+    .map((v) => decodeXml(v))
+    .filter(Boolean);
+}
+
+/* One reporting person, 13D layout (reportingPersonInfo) or 13G layout
+   (coverPageHeaderReportingPersonDetails, powers nested one level down).
+   Unknown codes are dropped, never guessed. */
+function readPerson(b, layout) {
+  const is13D = layout === '13D';
+  const powers = is13D ? b : blocks(b, 'reportingPersonBeneficiallyOwnedNumberOfShares')[0] || b;
+  const cikRaw = tag(b, 'reportingPersonCIK');
+  const group = String(tag(b, is13D ? 'memberOfGroup' : 'memberGroup') || '')
+    .trim()
+    .toLowerCase();
+  return {
+    name: decodeXml(tag(b, 'reportingPersonName')),
+    cik: cikRaw && /^\d+$/.test(cikRaw.trim()) ? String(parseInt(cikRaw, 10)) : null,
+    shares: qty(
+      tag(
+        b,
+        is13D ? 'aggregateAmountOwned' : 'reportingPersonBeneficiallyOwnedAggregateNumberOfShares',
+      ),
+    ),
+    percent: pct(tag(b, is13D ? 'percentOfClass' : 'classPercent')),
+    types: knownCodes(tags(b, 'typeOfReportingPerson'), PERSON_TYPE_LABEL),
+    fund_sources: is13D ? knownCodes(tags(b, 'fundType'), FUND_SOURCE_LABEL) : [],
+    citizenship: decodeXml(tag(b, 'citizenshipOrOrganization')),
+    sole_voting: qty(tag(powers, 'soleVotingPower')),
+    shared_voting: qty(tag(powers, 'sharedVotingPower')),
+    sole_dispositive: qty(tag(powers, 'soleDispositivePower')),
+    shared_dispositive: qty(tag(powers, 'sharedDispositivePower')),
+    group: group === 'a' ? true : group === 'b' ? false : null,
+  };
+}
+
 /**
  * Parse a Schedule 13D or 13G primary XML document. Element names follow the
  * SEC schemas (verified against real filings saved in scripts/fixtures):
- *   13D: coverPageHeader/dateOfEvent, issuerInfo/{issuerCIK, issuerCUSIP or
- *        issuerCusips/issuerCusipNumber, issuerName};
- *        reportingPersons/reportingPersonInfo/{reportingPersonName,
- *        aggregateAmountOwned, percentOfClass}
- *   13G: coverPageHeader/eventDateRequiresFilingThisStatement,
- *        issuerInfo/{issuerCik, issuerCusip or issuerCusips/issuerCusipNumber,
- *        issuerName}; coverPageHeaderReportingPersonDetails/
- *        {reportingPersonName,
- *         reportingPersonBeneficiallyOwnedAggregateNumberOfShares, classPercent}
+ *   13D: coverPageHeader/{dateOfEvent, amendmentNo}, issuerInfo/{issuerCIK,
+ *        issuerCUSIP or issuerCusips/issuerCusipNumber, issuerName};
+ *        reportingPersons/reportingPersonInfo/{reportingPersonCIK,
+ *        reportingPersonName, fundType, citizenshipOrOrganization,
+ *        sole|shared Voting|Dispositive Power, aggregateAmountOwned,
+ *        percentOfClass, typeOfReportingPerson, memberOfGroup};
+ *        items1To7/item3/fundsSource, item4/transactionPurpose
+ *   13G: coverPageHeader/{eventDateRequiresFilingThisStatement, amendmentNo,
+ *        designateRulesPursuantThisScheduleFiled}, issuerInfo/{issuerCik,
+ *        issuerCusip or issuerCusips/issuerCusipNumber, issuerName};
+ *        coverPageHeaderReportingPersonDetails/{reportingPersonName,
+ *        citizenshipOrOrganization, reportingPersonBeneficiallyOwnedNumberOfShares/
+ *        sole|shared Voting|Dispositive Power,
+ *        reportingPersonBeneficiallyOwnedAggregateNumberOfShares, classPercent,
+ *        memberGroup, typeOfReportingPerson (repeatable)};
+ *        items/item3/typeOfPersonFiling (repeatable)
+ *   Both: headerData/filerInfo/filer/filerCredentials/cik (the filer's CIK).
+ *
  * The stake reported for the filing is the largest reporting person's (group
- * members usually repeat the same aggregate). Nothing is invented: a field the
- * document lacks stays null.
- * @returns {{ form_type, subject_name, subject_cik, subject_cusip, event_date,
- *             percent_of_class, shares, reporting_persons: Array<{name, shares, percent}> } | null}
+ * members usually repeat the same aggregate), and that person's voting and
+ * dispositive powers are the filing's. The filer is the reporting person
+ * whose CIK matches the submission's filer CIK, else the first reporting
+ * person. Nothing is invented: a field the document lacks stays null or [].
  */
 export function parseSchedule13Xml(xml) {
   const doc = String(xml || '');
   if (!/<(?:\w+:)?edgarSubmission\b/i.test(doc)) return null;
+  const formType = decodeXml(tag(doc, 'submissionType'));
+  const layout =
+    /13\s*G/i.test(formType || '') || /schedule13g/i.test(doc.slice(0, 400)) ? '13G' : '13D';
   const cover = blocks(doc, 'coverPageHeader')[0] || '';
   const issuer = blocks(cover, 'issuerInfo')[0] || '';
+  const header = blocks(doc, 'headerData')[0] || '';
 
   const cikRaw = tag(issuer, 'issuerCIK') || tag(issuer, 'issuerCik');
+  const subjectCik = cikRaw ? String(parseInt(cikRaw, 10) || '') || null : null;
   const cusipRaw =
     tag(issuer, 'issuerCUSIP') || tag(issuer, 'issuerCusip') || tag(issuer, 'issuerCusipNumber');
   const cusip = cusipRaw ? cusipRaw.replace(/\s+/g, '').toUpperCase() : null;
 
-  const persons = [];
-  for (const b of blocks(doc, 'reportingPersonInfo')) {
-    persons.push({
-      name: decodeXml(tag(b, 'reportingPersonName')),
-      shares: qty(tag(b, 'aggregateAmountOwned')),
-      percent: pct(tag(b, 'percentOfClass')),
-    });
-  }
-  for (const b of blocks(doc, 'coverPageHeaderReportingPersonDetails')) {
-    persons.push({
-      name: decodeXml(tag(b, 'reportingPersonName')),
-      shares: qty(tag(b, 'reportingPersonBeneficiallyOwnedAggregateNumberOfShares')),
-      percent: pct(tag(b, 'classPercent')),
-    });
-  }
+  const persons = [
+    ...blocks(doc, 'reportingPersonInfo').map((b) => readPerson(b, '13D')),
+    ...blocks(doc, 'coverPageHeaderReportingPersonDetails').map((b) => readPerson(b, '13G')),
+  ].filter((p) => p.name || p.shares != null || p.percent != null);
+
   const top = persons.reduce(
     (best, p) => ((p.percent ?? -1) > (best?.percent ?? -1) ? p : best),
     null,
   );
 
+  /* The submission's filer. Guard against a header CIK that is the issuer. */
+  const headerCikRaw = tag(blocks(header, 'filerCredentials')[0] || '', 'cik');
+  let filerCik = headerCikRaw ? String(parseInt(headerCikRaw, 10) || '') || null : null;
+  if (filerCik && filerCik === subjectCik) filerCik = null;
+  const byCik = (filerCik && persons.find((p) => p.cik === filerCik)) || null;
+  const filerPerson = byCik || persons[0] || null;
+
+  const items = blocks(doc, layout === '13D' ? 'items1To7' : 'items')[0] || '';
+  const item3 = blocks(items, 'item3')[0] || '';
+  const item4 = blocks(items, 'item4')[0] || '';
+  const purpose = layout === '13D' ? cleanText(tag(item4, 'transactionPurpose')) : null;
+
+  const personTypes = knownCodes(
+    [
+      ...persons.flatMap((p) => p.types),
+      ...(layout === '13G' ? tags(item3, 'typeOfPersonFiling') : []),
+    ],
+    PERSON_TYPE_LABEL,
+  );
+  const gRules =
+    layout === '13G'
+      ? [
+          ...new Set(
+            tags(cover, 'designateRulePursuantThisScheduleFiled')
+              .map(normaliseGRule)
+              .filter(Boolean),
+          ),
+        ]
+      : [];
+  const amendmentRaw = tag(cover, 'amendmentNo');
+  const amendmentNo =
+    amendmentRaw && /^\d+$/.test(amendmentRaw.trim()) ? Number(amendmentRaw) : null;
+  const groupFlags = persons.map((p) => p.group).filter((g) => g != null);
+
   return {
-    form_type: decodeXml(tag(doc, 'submissionType')),
+    form_type: formType,
     subject_name: decodeXml(tag(issuer, 'issuerName')),
-    subject_cik: cikRaw ? String(parseInt(cikRaw, 10) || '') || null : null,
+    subject_cik: subjectCik,
     subject_cusip: cusip && /^[0-9A-Z]{9}$/.test(cusip) ? cusip : null,
     event_date: xmlDate(
       tag(cover, 'dateOfEvent') || tag(cover, 'eventDateRequiresFilingThisStatement'),
@@ -183,6 +267,29 @@ export function parseSchedule13Xml(xml) {
     percent_of_class: top?.percent ?? null,
     shares: top?.shares ?? null,
     reporting_persons: persons,
+    /* Parser v2 */
+    /* 'cover_cik': the reporting person whose CIK is the submission's filer.
+       'cover_first': the first reporting person on the cover (13G persons
+       carry no CIK, so the match cannot be made). Both come from the filing
+       itself, so the investor is confirmed either way. */
+    filer_cik: filerCik || filerPerson?.cik || null,
+    filer_name: filerPerson?.name || null,
+    filer_source: byCik ? 'cover_cik' : filerPerson?.name ? 'cover_first' : null,
+    amendment_no: amendmentNo,
+    person_types: personTypes,
+    fund_sources: knownCodes(
+      persons.flatMap((p) => p.fund_sources),
+      FUND_SOURCE_LABEL,
+    ),
+    funds_source_text: layout === '13D' ? cleanText(tag(item3, 'fundsSource'), 8000) : null,
+    transaction_purpose: purpose,
+    purpose_tags: tagPurpose(purpose),
+    g_rules: gRules,
+    member_of_group: groupFlags.length ? groupFlags.some(Boolean) : null,
+    sole_voting: top?.sole_voting ?? null,
+    shared_voting: top?.shared_voting ?? null,
+    sole_dispositive: top?.sole_dispositive ?? null,
+    shared_dispositive: top?.shared_dispositive ?? null,
   };
 }
 

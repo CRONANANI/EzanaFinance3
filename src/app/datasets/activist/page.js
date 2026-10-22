@@ -27,7 +27,8 @@ export default async function ActivistDatasetPage() {
   }
   const rows = stakes.map((s) => ({
     id: s.accessionNo,
-    filer: s.filer || 'Unknown filer',
+    /* Never the EDGAR index name: for a 13D/13G it can be the target. */
+    filer: s.filer || 'Filer not confirmed',
     ticker: s.ticker,
     subject: s.subject,
     form: `${FORM_LABEL[s.form] || 'Schedule 13D/13G'}${s.isAmendment ? '/A' : ''}`,
