@@ -1,0 +1,20 @@
+/* Dataset page canvas (Oct 21).
+   One max width for the content column of every /datasets page, so card
+   edges sit at the same distance from the screen edge everywhere. 1872px is
+   the Politician Tracker's former 1440px canvas made 30% wider, split evenly
+   on both sides. Scoped to .ds-shell (the datasets layout wrapper), so
+   nothing outside /datasets changes. Each page keeps its own side gutter and
+   its own mobile padding.
+
+   New dataset page? Cap its page wrapper with
+   max-width: var(--ds-canvas-max, 1872px); margin-inline: auto. */
+.ds-shell {
+  --ds-canvas-max: 1872px;
+}
+
+/* Shared shells that also render outside /datasets keep their 1100px column
+   there; inside /datasets they take the canvas. */
+.ds-shell .dsx-main,
+.ds-shell .mkt-main {
+  max-width: var(--ds-canvas-max, 1872px);
+}

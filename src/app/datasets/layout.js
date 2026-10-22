@@ -10,6 +10,7 @@ import { HUB_SLUGS } from '@/lib/datasets/hubs';
 import '../marketing-explore.css';
 import './dataset-type.css';
 import './ds-cards.css';
+import './ds-canvas.css';
 
 // Datasets taken offline pending completion — the taxonomy marks them
 // live:false (so nav renders them "Soon"); this gate stops direct-URL access.

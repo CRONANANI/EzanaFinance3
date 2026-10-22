@@ -2,7 +2,7 @@
    colour arrives as --hub-accent and is mixed, never hardcoded. */
 
 .hub-page {
-  max-width: var(--marketing-shell-max);
+  max-width: var(--ds-canvas-max, 1872px);
   margin: 0 auto;
   padding: 0 32px 64px;
   overflow-x: clip;

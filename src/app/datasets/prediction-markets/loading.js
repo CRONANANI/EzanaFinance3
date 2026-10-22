@@ -10,7 +10,7 @@ export default function DatasetLoading() {
     <SkeletonRegion
       label="Loading dataset…"
       style={{
-        maxWidth: 'var(--marketing-shell-max)',
+        maxWidth: 'var(--ds-canvas-max, 1872px)',
         margin: '0 auto',
         padding: '28px 32px 48px',
       }}

@@ -24,7 +24,7 @@
   --cfi-s4: color-mix(in srgb, var(--emerald) 70%, black);
   --cfi-s5: color-mix(in srgb, var(--emerald) 45%, black);
 
-  max-width: 1440px;
+  max-width: var(--ds-canvas-max, 1872px);
   margin: 0 auto;
   padding: 0 32px 72px;
   overflow-x: clip;

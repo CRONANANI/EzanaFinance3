@@ -93,7 +93,7 @@
   --pmk-t-tick: 0.3s;
 
   /* Same canvas as the other dataset pages (insx-, fndx-, gcx-): a
-     --marketing-shell-max column with a 32px gutter. */
+     --ds-canvas-max column with a 32px gutter. */
   --pmk-gutter: 32px;
   --pmk-gap: 24px;
 
@@ -215,7 +215,7 @@
   /* Oct 21: back on the shared dataset canvas, so this page lines up with
      the CategoryBar and every other /datasets page. */
   width: 100%;
-  max-width: var(--marketing-shell-max);
+  max-width: var(--ds-canvas-max, 1872px);
   margin: 0 auto;
   padding: 0 var(--pmk-gutter) 64px;
   min-width: 0;

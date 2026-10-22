@@ -63,7 +63,7 @@
 }
 
 .lbx-page {
-  max-width: var(--marketing-shell-max);
+  max-width: var(--ds-canvas-max, 1872px);
   min-width: 0;
   margin: 0 auto;
   padding: 0 32px 64px;
