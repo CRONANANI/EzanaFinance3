@@ -3,7 +3,12 @@ import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { whaleScore, MIN_POSITION_USD } from '@/lib/whale-score';
 import { schedule13Kind } from '@/lib/sec-13f-parse';
-import { recentPeriods, priorQuarterEnd, latestCompleteQuarter } from '@/lib/sec/quarters';
+import {
+  recentPeriods,
+  priorQuarterEnd,
+  latestCompleteQuarter,
+  currentReportQuarter,
+} from '@/lib/sec/quarters';
 
 /**
  * Materialize Whale Moves. DERIVED from the parsed SEC tables (sec_13f_holdings /
@@ -460,13 +465,22 @@ export async function GET(request) {
     }
   }
 
-  // Institutional page snapshot for the latest complete quarter.
+  // Institutional page snapshot for the latest complete quarter, and for the
+  // open quarter while its filing window runs (the page's partial view).
   const period = latestCompleteQuarter(now);
   const { data: snapshot, error: snapErr } = await admin.rpc('refresh_titans_institutional', {
     p_period: period,
     p_limit: 25,
   });
   if (snapErr) errors.push(`snapshot ${period}: ${snapErr.message}`);
+  const openPeriod = currentReportQuarter(now);
+  if (openPeriod !== period) {
+    const { error: openErr } = await admin.rpc('refresh_titans_institutional', {
+      p_period: openPeriod,
+      p_limit: 25,
+    });
+    if (openErr) errors.push(`snapshot ${openPeriod}: ${openErr.message}`);
+  }
 
   if (instRows || actRows || snapshot) {
     revalidateTag('titans');

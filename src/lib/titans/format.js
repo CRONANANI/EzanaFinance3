@@ -45,6 +45,8 @@ export function quarterShort(iso) {
 }
 
 export const DASH = '–';
+/* The 13F redesign shows unknowns as a middle dot; other Titans pages keep DASH. */
+export const MISSING = '·';
 export const OPENFIGI_NOTE =
   'Tickers mapped from CUSIP via OpenFIGI; unmapped securities show the issuer name.';
 
@@ -54,6 +56,13 @@ export const ALLOW_SAMPLE =
 
 /** Shown wherever the SEC filing did not report a figure. */
 export const NOT_REPORTED = 'Not reported';
+
+/** 738 -> '+738'; -567 -> '-567'. */
+export function signedInt(v) {
+  const n = Number(v);
+  if (v == null || !Number.isFinite(n)) return null;
+  return `${n > 0 ? '+' : ''}${Math.round(n).toLocaleString('en-US')}`;
+}
 
 /** 12.345 -> '+12.3%'. */
 export function signedPct(v, digits = 1) {

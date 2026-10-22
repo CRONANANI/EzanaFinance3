@@ -21,6 +21,7 @@ import { unstable_cache } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { classifyChange } from '@/lib/whale-score';
 import { schedule13Kind } from '@/lib/sec-13f-parse';
+import { getDailyBars } from '@/lib/prices/daily-bars';
 import {
   SCHEDULE13_PARSER_VERSION,
   PERSON_TYPE_LABEL,
@@ -31,11 +32,20 @@ import {
   purposeExcerpt,
 } from '@/lib/sec/schedule13-meta';
 import {
+  FILING_DEADLINE_DAYS,
   latestCompleteQuarter,
+  currentReportQuarter,
   priorQuarterEnd,
   recentPeriods,
   quarterLabelLong,
 } from '@/lib/sec/quarters';
+import {
+  effectiveN,
+  filingDay,
+  flowAdjustedChange,
+  pctSince,
+  topNWeight,
+} from '@/lib/titans/institutional-model';
 
 const CACHE = { revalidate: 900, tags: ['titans'] };
 const num = (v) => (v == null || v === '' || !Number.isFinite(Number(v)) ? null : Number(v));
@@ -51,16 +61,19 @@ const secFilerUrl = (cik) =>
 
 /* ── Institutional overview ─────────────────────────────────────────── */
 
-async function loadOverview() {
+async function loadOverview(period = '') {
   if (!supaConfigured()) return null;
   const admin = getAdminClient();
-  const wanted = `institutional:${latestCompleteQuarter(new Date())}`;
+  const wanted = `institutional:${period || latestCompleteQuarter(new Date())}`;
   let { data, error } = await admin
     .from('titans_snapshots')
     .select('key, payload, computed_at')
     .eq('key', wanted)
     .maybeSingle();
   if (error) throw new Error(error.message);
+  // An explicitly requested period (the open quarter) has no fallback: a
+  // missing snapshot is an honest "not computed yet".
+  if (!data && period) return null;
   if (!data) {
     // Fall back to the newest snapshot on file (e.g. right after a quarter
     // completes, before the first refresh of the new one).
@@ -74,8 +87,19 @@ async function loadOverview() {
     data = res.data?.[0] || null;
   }
   if (!data?.payload) return null;
-  const p = data.payload;
-  const quarter = p.period || data.key.split(':')[1];
+  return mapInstitutionalPayload(data.payload, {
+    key: data.key,
+    computedAt: data.computed_at,
+  });
+}
+
+/**
+ * Map one institutional snapshot payload (or the dev fixture, which shares
+ * its shape) to the page's camelCase overview. Exported so the sample path
+ * renders through exactly the same mapping as the live one.
+ */
+export function mapInstitutionalPayload(p, { key = '', computedAt = null } = {}) {
+  const quarter = p.period || String(key).split(':')[1];
   const row = (r) => ({
     cik: r.cik || null,
     filer: r.filer_name || null,
@@ -90,7 +114,7 @@ async function loadOverview() {
     quarter,
     quarterLabel: quarterLabelLong(quarter),
     priorQuarter: p.prior_period || priorQuarterEnd(quarter),
-    computedAt: data.computed_at,
+    computedAt,
     filers: num(p.filers) || 0,
     filersWithPrior: num(p.filers_with_prior) || 0,
     holdings: num(p.holdings) || 0,
@@ -98,18 +122,413 @@ async function loadOverview() {
     topFilers: (p.top_filers || []).map((r) => ({
       ...row(r),
       positions: num(r.positions),
+      filedAt: r.filed_at || null,
+      topTicker: r.top_ticker || null,
+      topWeight: num(r.top_weight),
       href: secFilerUrl(r.cik),
     })),
-    widelyHeld: (p.widely_held || []).map((r) => ({ ...row(r), holders: num(r.holders) })),
-    newPositions: (p.new_positions || []).map(row),
+    widelyHeld: (p.widely_held || []).map((r) => ({
+      ...row(r),
+      holders: num(r.holders),
+      holdersPrior: num(r.holders_prior),
+      netBreadth: num(r.net_breadth),
+    })),
+    newPositions: (p.new_positions || []).map((r) => ({
+      ...row(r),
+      pctOfBook: num(r.pct_of_book),
+    })),
+    /* v2 snapshot keys (null-safe for a v1 snapshot still on file) */
+    prior: p.prior
+      ? {
+          filers: num(p.prior.filers) || 0,
+          holdings: num(p.prior.holdings) || 0,
+          totalValueUsd: num(p.prior.total_value_usd) || 0,
+        }
+      : null,
+    breadth: (p.breadth || []).map((r) => ({
+      cusip: r.cusip,
+      ticker: r.ticker || null,
+      issuer: r.issuer || null,
+      buyers: num(r.buyers) || 0,
+      sellers: num(r.sellers) || 0,
+      newCount: num(r.new) || 0,
+      exited: num(r.exited) || 0,
+      holdersNow: num(r.holders_now) || 0,
+      holdersPrior: num(r.holders_prior) || 0,
+    })),
+    newlyEntering: (p.newly_entering || []).map((r) => ({
+      cusip: r.cusip,
+      ticker: r.ticker || null,
+      issuer: r.issuer || null,
+      newCount: num(r.new) || 0,
+      holdersNow: num(r.holders_now) || 0,
+    })),
+    convictionMap: (p.conviction_map || []).map((r) => ({
+      cusip: r.cusip,
+      ticker: r.ticker || null,
+      issuer: r.issuer || null,
+      holders: num(r.holders) || 0,
+      medianWeight: num(r.median_weight),
+      valueUsd: num(r.value_usd),
+      sector: r.sector || null,
+    })),
+    sectors: (p.sectors || []).map((r) => ({
+      sector: r.sector || 'Unclassified',
+      shareNow: num(r.share_now) || 0,
+      sharePrior: num(r.share_prior) || 0,
+      flowUsd: num(r.flow_usd) || 0,
+    })),
+    exits: (p.exits || []).map((r) => ({
+      cik: r.cik,
+      filer: r.filer_name || null,
+      cusip: r.cusip,
+      ticker: r.ticker || null,
+      issuer: r.issuer || null,
+      valuePrior: num(r.value_prior),
+      sharesPrior: num(r.shares_prior),
+      pctOfPriorBook: num(r.pct_of_prior_book),
+    })),
+    filerShape: (p.filer_shape || [])
+      .map((a) => ({ cik: a?.[0], valueUsd: num(a?.[1]), effN: num(a?.[2]) }))
+      .filter((f) => f.cik && f.valueUsd != null),
+    effNMedian: num(p.eff_n_median),
+    options: (p.options || []).map((r) => ({
+      cusip: r.cusip,
+      ticker: r.ticker || null,
+      issuer: r.issuer || null,
+      callUsd: num(r.call_usd) || 0,
+      putUsd: num(r.put_usd) || 0,
+      callFilers: num(r.call_filers) || 0,
+      putFilers: num(r.put_filers) || 0,
+    })),
+    sectorWeights: (p.sector_weights || []).map((r) => ({
+      sector: r.sector || 'Unclassified',
+      weight: num(r.weight) || 0,
+    })),
   };
 }
 
 export const getInstitutionalOverview = unstable_cache(
   loadOverview,
-  ['titans-institutional-v1'],
+  ['titans-institutional-v2'],
   CACHE,
 );
+
+/** The snapshot for one explicit period (the open quarter); null when absent. */
+const cachedOverviewFor = unstable_cache(loadOverview, ['titans-institutional-for-v1'], CACHE);
+export function getInstitutionalOverviewFor(period) {
+  return cachedOverviewFor(String(period || ''));
+}
+
+/* ── Filing season clock ────────────────────────────────────────────── */
+
+async function loadFilingCurve(period) {
+  const empty = {
+    period: period || null,
+    deadline: null,
+    todayDay: null,
+    open: [],
+    prior: [],
+    priorFinal: 0,
+    earlyMovers: [],
+  };
+  if (!supaConfigured() || !period) return empty;
+  const admin = getAdminClient();
+  const { data, error } = await admin.rpc('titans_filing_curve', { p_period: period });
+  if (error) throw new Error(error.message);
+  if (!data) return empty;
+  const end = new Date(`${period}T00:00:00Z`);
+  const deadline = new Date(end.getTime() + FILING_DEADLINE_DAYS * 86400000)
+    .toISOString()
+    .slice(0, 10);
+
+  /* The four largest filers already in, each with its biggest move. */
+  const movers = [];
+  for (const m of data.early_movers || []) {
+    let headline = null;
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      const fund = await getFundHoldings(m.cik);
+      let best = null;
+      for (const h of fund?.holdings || []) {
+        if (!h.ticker || h.change == null) continue;
+        const flow = flowAdjustedChange({
+          sharesNow: h.shares,
+          sharesPrior: h.priorShares,
+          priceNow: h.shares && h.valueUsd ? h.valueUsd / h.shares : null,
+        });
+        if (flow == null) continue;
+        if (!best || Math.abs(flow) > Math.abs(best.flow)) {
+          best = { flow, ticker: h.ticker, change: h.change };
+        }
+      }
+      if (best) {
+        headline = {
+          kind: best.change === 'new' ? 'new' : best.flow >= 0 ? 'largest_add' : 'largest_cut',
+          ticker: best.ticker,
+        };
+      }
+    } catch {
+      headline = null;
+    }
+    movers.push({
+      cik: m.cik,
+      filer: m.filer_name || null,
+      filedAt: m.filed_at || null,
+      valueUsd: num(m.value_usd),
+      positions: num(m.positions),
+      headline,
+    });
+  }
+  return {
+    period,
+    deadline,
+    todayDay: filingDay(period, new Date().toISOString().slice(0, 10)),
+    open: (data.open || []).map((d) => [num(d?.[0]) || 0, num(d?.[1]) || 0]),
+    prior: (data.prior || []).map((d) => [num(d?.[0]) || 0, num(d?.[1]) || 0]),
+    priorFinal: num(data.prior_final) || 0,
+    earlyMovers: movers,
+  };
+}
+
+const cachedFilingCurve = unstable_cache(loadFilingCurve, ['titans-filing-curve-v1'], CACHE);
+export function getFilingCurve(period) {
+  return cachedFilingCurve(String(period || currentReportQuarter(new Date())));
+}
+
+/* ── Security X-ray ─────────────────────────────────────────────────── */
+
+const XRAY_KEY_RE = /^[A-Z0-9.\-]{1,12}$/;
+
+async function loadSecurityHolders(key, page) {
+  if (!supaConfigured()) return null;
+  const k = String(key || '')
+    .trim()
+    .toUpperCase();
+  if (!XRAY_KEY_RE.test(k)) return null;
+  const admin = getAdminClient();
+  const period = latestCompleteQuarter(new Date());
+  const pageN = Math.min(Math.max(Number(page) || 1, 1), 100);
+  const { data, error } = await admin.rpc('titans_security_xray', {
+    p_key: k,
+    p_period: period,
+    p_limit: 25,
+    p_offset: (pageN - 1) * 25,
+  });
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+
+  const ticker = data.ticker ? String(data.ticker).toUpperCase() : null;
+  let sector = null;
+  let priceChange = null;
+  let cross = null;
+  if (ticker) {
+    const [{ data: sec }, bars] = await Promise.all([
+      admin.from('ticker_sectors').select('sector').eq('ticker', ticker).maybeSingle(),
+      getDailyBars(ticker, data.period).catch(() => ({ candles: [] })),
+    ]);
+    sector = sec?.sector || null;
+    const candles = bars?.candles || [];
+    if (candles.length >= 2) {
+      priceChange = pctSince(candles[0]?.close, candles[candles.length - 1]?.close);
+    }
+    cross = await loadCrossSignals(admin, ticker, data.period);
+  }
+
+  return {
+    cusip: data.cusip,
+    ticker,
+    issuer: data.issuer || null,
+    sector,
+    period: data.period,
+    priorPeriod: data.prior_period,
+    holdersNow: num(data.holders_now) || 0,
+    holdersPrior: num(data.holders_prior) || 0,
+    buyers: num(data.buyers) || 0,
+    sellers: num(data.sellers) || 0,
+    newCount: num(data.new) || 0,
+    exited: num(data.exited) || 0,
+    valueUsd: num(data.value_usd),
+    shares: num(data.shares),
+    sharesPrior: num(data.shares_prior),
+    priceChangeSincePeriod: priceChange,
+    ladderTotal: num(data.ladder_total) || 0,
+    ladderPage: pageN,
+    ladder: (data.ladder || []).map((r) => ({
+      cik: r.cik,
+      filer: r.filer_name || null,
+      valueUsd: num(r.value_usd),
+      weight: num(r.weight),
+      change: r.class || null,
+    })),
+    joined: (data.joined || []).map((r) => ({
+      cik: r.cik,
+      filer: r.filer_name || null,
+      valueUsd: num(r.value_usd),
+    })),
+    left: (data.left || []).map((r) => ({
+      cik: r.cik,
+      filer: r.filer_name || null,
+      valuePrior: num(r.value_prior),
+    })),
+    cross,
+  };
+}
+
+/** Insider, Congress, activist and ETF reads for one ticker; null per block
+    when that dataset has nothing, whole thing null when no ticker. */
+async function loadCrossSignals(admin, ticker, period) {
+  const since = period;
+  const [insider, congress, activist, etf] = await Promise.all([
+    admin
+      .from('sec_insider_trades')
+      .select('transaction_date, is_purchase')
+      .eq('ticker', ticker)
+      .gte('transaction_date', since)
+      .order('transaction_date', { ascending: false })
+      .limit(200)
+      .then((r) => r.data || [])
+      .catch(() => []),
+    admin
+      .from('congress_trades')
+      .select('type')
+      .eq('ticker', ticker)
+      .gte('transaction_date', since)
+      .limit(500)
+      .then((r) => r.data || [])
+      .catch(() => []),
+    admin
+      .from('sec_activist_positions')
+      .select('percent_of_class, form_type')
+      .eq('subject_ticker', ticker)
+      .order('event_date', { ascending: false, nullsFirst: false })
+      .limit(1)
+      .then((r) => r.data?.[0] || null)
+      .catch(() => null),
+    admin
+      .from('sec_etf_holdings')
+      .select('series_id', { count: 'exact', head: true })
+      .eq('ticker', ticker)
+      .then((r) => r.count || 0)
+      .catch(() => 0),
+  ]);
+  const insBuys = insider.filter((r) => r.is_purchase).length;
+  const congressBuys = congress.filter((r) =>
+    String(r.type || '')
+      .toLowerCase()
+      .startsWith('p'),
+  ).length;
+  const congressSells = congress.filter((r) =>
+    String(r.type || '')
+      .toLowerCase()
+      .startsWith('s'),
+  ).length;
+  return {
+    insider: insider.length
+      ? {
+          buys: insBuys,
+          sells: insider.length - insBuys,
+          latest: insider[0]?.transaction_date || null,
+        }
+      : null,
+    congress: congress.length ? { buys: congressBuys, sells: congressSells } : null,
+    activist:
+      activist && num(activist.percent_of_class) != null
+        ? { pct: num(activist.percent_of_class), form: schedule13Kind(activist.form_type) }
+        : null,
+    etf: etf ? { funds: etf } : null,
+  };
+}
+
+const cachedXray = unstable_cache(loadSecurityHolders, ['titans-security-xray-v1'], CACHE);
+export function getSecurityHolders(key, { page = 1 } = {}) {
+  return cachedXray(String(key || ''), Number(page) || 1);
+}
+
+/* ── Twin funds ─────────────────────────────────────────────────────── */
+
+async function loadTwins(cik, period) {
+  if (!supaConfigured() || !cik || !period) return [];
+  const admin = getAdminClient();
+  const { data, error } = await admin.rpc('titans_fund_twins', {
+    p_cik: cik,
+    p_period: period,
+  });
+  if (error) throw new Error(error.message);
+  return (data || []).map((t) => ({
+    cik: t.cik,
+    filer: t.filer_name || null,
+    valueUsd: num(t.book),
+    overlap: num(t.overlap),
+    shared: num(t.shared) || 0,
+    sharedTickers: t.shared_tickers || [],
+    onlyA: t.only_a || [],
+    onlyB: t.only_b || [],
+  }));
+}
+
+/* ── The lag tax: price change since the quarter end, per ticker ─────── */
+
+async function loadLagTax(tickersCsv, period) {
+  const tickers = String(tickersCsv || '')
+    .split(',')
+    .map((t) => t.trim().toUpperCase())
+    .filter(Boolean)
+    .slice(0, 12);
+  const out = {};
+  await Promise.all(
+    tickers.map(async (t) => {
+      try {
+        const { candles } = await getDailyBars(t, period);
+        if (candles.length >= 2) {
+          out[t] = pctSince(candles[0]?.close, candles[candles.length - 1]?.close);
+        }
+      } catch {
+        /* a ticker without price history is simply absent */
+      }
+    }),
+  );
+  return out;
+}
+
+const cachedLagTax = unstable_cache(loadLagTax, ['titans-lag-tax-v1'], CACHE);
+export function getLagTax(tickers, period) {
+  return cachedLagTax((tickers || []).join(','), String(period || ''));
+}
+
+/* ── Signal convergence: which other datasets point at a ticker ──────── */
+
+async function loadConvergence(tickersCsv, period) {
+  if (!supaConfigured()) return {};
+  const admin = getAdminClient();
+  const tickers = String(tickersCsv || '')
+    .split(',')
+    .map((t) => t.trim().toUpperCase())
+    .filter(Boolean)
+    .slice(0, 12);
+  const out = {};
+  await Promise.all(
+    tickers.map(async (t) => {
+      out[t] = await loadCrossSignals(admin, t, period);
+    }),
+  );
+  return out;
+}
+
+const cachedConvergence = unstable_cache(loadConvergence, ['titans-convergence-v1'], CACHE);
+export function getConvergence(tickers, period) {
+  return cachedConvergence((tickers || []).join(','), String(period || ''));
+}
+
+const cachedTwins = unstable_cache(loadTwins, ['titans-fund-twins-v1'], CACHE);
+export function getFundTwins(cik, period) {
+  return cachedTwins(
+    String(cik || '')
+      .replace(/\D/g, '')
+      .padStart(10, '0'),
+    String(period || latestCompleteQuarter(new Date())),
+  );
+}
 
 /* ── Activist stakes ────────────────────────────────────────────────── */
 
@@ -355,6 +774,64 @@ async function loadFund(cik) {
       };
     })
     .sort((a, b) => (b.valueUsd || 0) - (a.valueUsd || 0));
+
+  /* Fingerprint figures (v2, non-breaking): all computed from the rows above. */
+  const eqRows = rows.filter((h) => !h.putCall);
+  const weights = eqRows.map((h) => (total ? (h.valueUsd || 0) / total : 0));
+  const turnover = { new: 0, doubled: 0, added: 0, trimmed: 0, flat: 0, exited: 0 };
+  for (const h of rows) if (h.change && turnover[h.change] != null) turnover[h.change] += 1;
+  if (prior) {
+    const nowKeys = new Set(now.map(key));
+    for (const h of before) if (!nowKeys.has(key(h)) && !h.put_call) turnover.exited += 1;
+  }
+
+  /* Flow-adjusted moves: share change at the current implied price. */
+  const priceOf = (h) => (h.shares && h.valueUsd ? h.valueUsd / h.shares : null);
+  const moves = eqRows
+    .filter((h) => h.change && h.change !== 'flat' && h.ticker)
+    .map((h) => ({
+      ticker: h.ticker,
+      change: h.change,
+      flowUsd: flowAdjustedChange({
+        sharesNow: h.shares,
+        sharesPrior: h.priorShares,
+        priceNow: priceOf(h),
+      }),
+    }))
+    .filter((m) => m.flowUsd != null);
+  const topAdds = moves
+    .filter((m) => m.flowUsd > 0)
+    .sort((a, b) => b.flowUsd - a.flowUsd)
+    .slice(0, 5);
+  const topCuts = moves
+    .filter((m) => m.flowUsd < 0)
+    .sort((a, b) => a.flowUsd - b.flowUsd)
+    .slice(0, 5);
+
+  /* The manager's own sector weights, from the same editorial sector map. */
+  let sectorWeights = [];
+  const tickers = [...new Set(eqRows.map((h) => h.ticker).filter(Boolean))];
+  if (tickers.length) {
+    const sectorBy = new Map();
+    for (let i = 0; i < tickers.length; i += 200) {
+      // eslint-disable-next-line no-await-in-loop
+      const { data: secs } = await admin
+        .from('ticker_sectors')
+        .select('ticker, sector')
+        .in('ticker', tickers.slice(i, i + 200));
+      for (const s of secs || []) sectorBy.set(s.ticker, s.sector);
+    }
+    const agg = new Map();
+    for (const h of eqRows) {
+      const sector = (h.ticker && sectorBy.get(h.ticker)) || 'Unclassified';
+      agg.set(sector, (agg.get(sector) || 0) + (h.valueUsd || 0));
+    }
+    const eqTotal = eqRows.reduce((s, h) => s + (h.valueUsd || 0), 0);
+    sectorWeights = [...agg.entries()]
+      .map(([sector, v]) => ({ sector, weight: eqTotal ? v / eqTotal : 0 }))
+      .sort((a, b) => b.weight - a.weight);
+  }
+
   return {
     cik: padded,
     filer: cur.filer_name,
@@ -365,6 +842,13 @@ async function loadFund(cik) {
     positions: rows.length,
     href: cur.index_url || null,
     holdings: rows,
+    filedAt: cur.filed_at || null,
+    effN: effectiveN(weights),
+    top10Weight: topNWeight(weights, 10),
+    sectorWeights,
+    turnover,
+    topAdds,
+    topCuts,
   };
 }
 

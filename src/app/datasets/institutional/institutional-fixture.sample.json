@@ -1,0 +1,1512 @@
+{
+  "_note": "SAMPLE DATA for local development only (NEXT_PUBLIC_ALLOW_SAMPLE_DATA). Manager names and CIKs are fictional. Tickers are real but every figure is invented. Never attach these figures to a real filer. cusip/issuer are null where the board showed only a ticker.",
+  "overview": {
+    "period": "2026-06-30",
+    "prior_period": "2026-03-31",
+    "filers": 9412,
+    "filers_with_prior": 8957,
+    "holdings": 3412880,
+    "total_value_usd": 48620000000000.0,
+    "prior": {
+      "filers": 9226,
+      "holdings": 3341676,
+      "total_value_usd": 46310000000000.0
+    },
+    "top_filers": [
+      {
+        "cik": "0000990011",
+        "filer_name": "Ashgrove Meridian",
+        "total_value_usd": 4060000000000.0,
+        "positions": 4188,
+        "top": {
+          "ticker": "MSFT",
+          "weight": 0.049
+        },
+        "filed_at": "2026-08-13"
+      },
+      {
+        "cik": "0001100312",
+        "filer_name": "Brightwater Quay",
+        "total_value_usd": 1210000000000.0,
+        "positions": 3016,
+        "top": {
+          "ticker": "NVDA",
+          "weight": 0.052000000000000005
+        },
+        "filed_at": "2026-08-14"
+      },
+      {
+        "cik": "0000883104",
+        "filer_name": "Halverd Point Capital",
+        "total_value_usd": 842600000000.0,
+        "positions": 2744,
+        "top": {
+          "ticker": "AAPL",
+          "weight": 0.040999999999999995
+        },
+        "filed_at": "2026-08-11"
+      },
+      {
+        "cik": "0001421733",
+        "filer_name": "Larkspur Hollow Advisors",
+        "total_value_usd": 208900000000.0,
+        "positions": 652,
+        "top": {
+          "ticker": "MSFT",
+          "weight": 0.068
+        },
+        "filed_at": "2026-08-08"
+      },
+      {
+        "cik": "0001562210",
+        "filer_name": "Coldwater Basin Capital",
+        "total_value_usd": 75300000000.0,
+        "positions": 311,
+        "top": {
+          "ticker": "AVGO",
+          "weight": 0.064
+        },
+        "filed_at": "2026-08-14"
+      },
+      {
+        "cik": "0001811947",
+        "filer_name": "Ninefold Harbor LP",
+        "total_value_usd": 24900000000.0,
+        "positions": 115,
+        "top": {
+          "ticker": "UBER",
+          "weight": 0.098
+        },
+        "filed_at": "2026-08-12"
+      },
+      {
+        "cik": "0001733480",
+        "filer_name": "Tamarack Spire Mgmt",
+        "total_value_usd": 8199999999.999999,
+        "positions": 41,
+        "top": {
+          "ticker": "PLTR",
+          "weight": 0.239
+        },
+        "filed_at": "2026-08-01"
+      }
+    ],
+    "widely_held": [
+      {
+        "cusip": "67066G104",
+        "ticker": "NVDA",
+        "issuer": "NVIDIA Corp",
+        "holders": 5180,
+        "holders_delta": 412,
+        "value_usd": 3350000000000.0,
+        "shares": 21200000000.0,
+        "net_breadth": 738
+      },
+      {
+        "cusip": "594918104",
+        "ticker": "MSFT",
+        "issuer": "Microsoft Corp",
+        "holders": 5410,
+        "holders_delta": 188,
+        "value_usd": 3120000000000.0,
+        "shares": 6310000000.0,
+        "net_breadth": 475
+      },
+      {
+        "cusip": "037833100",
+        "ticker": "AAPL",
+        "issuer": "Apple Inc",
+        "holders": 5620,
+        "holders_delta": -96,
+        "value_usd": 2980000000000.0,
+        "shares": 14600000000.0,
+        "net_breadth": -567
+      },
+      {
+        "cusip": "11135F101",
+        "ticker": "AVGO",
+        "issuer": "Broadcom Inc",
+        "holders": 3650,
+        "holders_delta": 301,
+        "value_usd": 1080000000000.0,
+        "shares": 4350000000.0,
+        "net_breadth": 454
+      },
+      {
+        "cusip": "90353T100",
+        "ticker": "UBER",
+        "issuer": "Uber Technologies Inc",
+        "holders": 2015,
+        "holders_delta": 321,
+        "value_usd": 61800000000.0,
+        "shares": 772000000.0,
+        "net_breadth": 321
+      },
+      {
+        "cusip": "40541X107",
+        "ticker": null,
+        "issuer": "HALDANE ROBOTICS INC",
+        "holders": 38,
+        "holders_delta": 9,
+        "value_usd": 1900000000.0,
+        "shares": 41200000.0,
+        "net_breadth": 11
+      }
+    ],
+    "breadth": [
+      {
+        "cusip": null,
+        "ticker": "NVDA",
+        "issuer": null,
+        "buyers": 1842,
+        "sellers": 1104,
+        "new": null,
+        "exited": null,
+        "holders_now": null,
+        "holders_prior": null
+      },
+      {
+        "cusip": null,
+        "ticker": "MSFT",
+        "issuer": null,
+        "buyers": 1690,
+        "sellers": 1215,
+        "new": null,
+        "exited": null,
+        "holders_now": null,
+        "holders_prior": null
+      },
+      {
+        "cusip": null,
+        "ticker": "AVGO",
+        "issuer": null,
+        "buyers": 1402,
+        "sellers": 948,
+        "new": null,
+        "exited": null,
+        "holders_now": null,
+        "holders_prior": null
+      },
+      {
+        "cusip": null,
+        "ticker": "LLY",
+        "issuer": null,
+        "buyers": 1288,
+        "sellers": 902,
+        "new": null,
+        "exited": null,
+        "holders_now": null,
+        "holders_prior": null
+      },
+      {
+        "cusip": null,
+        "ticker": "GOOGL",
+        "issuer": null,
+        "buyers": 1511,
+        "sellers": 1163,
+        "new": null,
+        "exited": null,
+        "holders_now": null,
+        "holders_prior": null
+      },
+      {
+        "cusip": null,
+        "ticker": "UBER",
+        "issuer": null,
+        "buyers": 862,
+        "sellers": 541,
+        "new": null,
+        "exited": null,
+        "holders_now": null,
+        "holders_prior": null
+      },
+      {
+        "cusip": null,
+        "ticker": "PLTR",
+        "issuer": null,
+        "buyers": 905,
+        "sellers": 611,
+        "new": null,
+        "exited": null,
+        "holders_now": null,
+        "holders_prior": null
+      },
+      {
+        "cusip": null,
+        "ticker": "V",
+        "issuer": null,
+        "buyers": 1120,
+        "sellers": 849,
+        "new": null,
+        "exited": null,
+        "holders_now": null,
+        "holders_prior": null
+      },
+      {
+        "cusip": null,
+        "ticker": "AAPL",
+        "issuer": null,
+        "buyers": 1121,
+        "sellers": 1688,
+        "new": null,
+        "exited": null,
+        "holders_now": null,
+        "holders_prior": null
+      },
+      {
+        "cusip": null,
+        "ticker": "TSLA",
+        "issuer": null,
+        "buyers": 744,
+        "sellers": 1180,
+        "new": null,
+        "exited": null,
+        "holders_now": null,
+        "holders_prior": null
+      },
+      {
+        "cusip": null,
+        "ticker": "UNH",
+        "issuer": null,
+        "buyers": 802,
+        "sellers": 1191,
+        "new": null,
+        "exited": null,
+        "holders_now": null,
+        "holders_prior": null
+      },
+      {
+        "cusip": null,
+        "ticker": "XOM",
+        "issuer": null,
+        "buyers": 698,
+        "sellers": 1014,
+        "new": null,
+        "exited": null,
+        "holders_now": null,
+        "holders_prior": null
+      },
+      {
+        "cusip": null,
+        "ticker": "INTC",
+        "issuer": null,
+        "buyers": 402,
+        "sellers": 701,
+        "new": null,
+        "exited": null,
+        "holders_now": null,
+        "holders_prior": null
+      },
+      {
+        "cusip": null,
+        "ticker": "PFE",
+        "issuer": null,
+        "buyers": 510,
+        "sellers": 788,
+        "new": null,
+        "exited": null,
+        "holders_now": null,
+        "holders_prior": null
+      },
+      {
+        "cusip": null,
+        "ticker": "NKE",
+        "issuer": null,
+        "buyers": 455,
+        "sellers": 712,
+        "new": null,
+        "exited": null,
+        "holders_now": null,
+        "holders_prior": null
+      },
+      {
+        "cusip": null,
+        "ticker": "BA",
+        "issuer": null,
+        "buyers": 488,
+        "sellers": 731,
+        "new": null,
+        "exited": null,
+        "holders_now": null,
+        "holders_prior": null
+      }
+    ],
+    "newly_entering": [
+      {
+        "ticker": "PLTR",
+        "new": 214,
+        "holders_now": 1620
+      },
+      {
+        "ticker": "APP",
+        "new": 188,
+        "holders_now": 390
+      },
+      {
+        "ticker": "HOOD",
+        "new": 176,
+        "holders_now": 860
+      },
+      {
+        "ticker": "VRT",
+        "new": 152,
+        "holders_now": 690
+      },
+      {
+        "ticker": "ANET",
+        "new": 141,
+        "holders_now": 1180
+      },
+      {
+        "ticker": "CRWD",
+        "new": 133,
+        "holders_now": 1410
+      },
+      {
+        "ticker": "DELL",
+        "new": 121,
+        "holders_now": 1050
+      },
+      {
+        "ticker": "SMCI",
+        "new": 97,
+        "holders_now": 540
+      }
+    ],
+    "conviction_map": [
+      {
+        "cusip": null,
+        "ticker": "MSFT",
+        "issuer": null,
+        "holders": 5410,
+        "median_weight": 0.032,
+        "value_usd": 3120000000000.0,
+        "sector": "Information Technology"
+      },
+      {
+        "cusip": null,
+        "ticker": "AAPL",
+        "issuer": null,
+        "holders": 5620,
+        "median_weight": 0.029,
+        "value_usd": 2980000000000.0,
+        "sector": "Information Technology"
+      },
+      {
+        "cusip": null,
+        "ticker": "NVDA",
+        "issuer": null,
+        "holders": 5180,
+        "median_weight": 0.034,
+        "value_usd": 3350000000000.0,
+        "sector": "Information Technology"
+      },
+      {
+        "cusip": null,
+        "ticker": "AMZN",
+        "issuer": null,
+        "holders": 4950,
+        "median_weight": 0.024,
+        "value_usd": 1890000000000.0,
+        "sector": "Consumer Discretionary"
+      },
+      {
+        "cusip": null,
+        "ticker": "GOOGL",
+        "issuer": null,
+        "holders": 4720,
+        "median_weight": 0.021,
+        "value_usd": 1640000000000.0,
+        "sector": "Communication Services"
+      },
+      {
+        "cusip": null,
+        "ticker": "META",
+        "issuer": null,
+        "holders": 4410,
+        "median_weight": 0.02,
+        "value_usd": 1420000000000.0,
+        "sector": "Communication Services"
+      },
+      {
+        "cusip": null,
+        "ticker": "AVGO",
+        "issuer": null,
+        "holders": 3650,
+        "median_weight": 0.018,
+        "value_usd": 1080000000000.0,
+        "sector": "Information Technology"
+      },
+      {
+        "cusip": null,
+        "ticker": "BRK.B",
+        "issuer": null,
+        "holders": 3900,
+        "median_weight": 0.022,
+        "value_usd": 760000000000.0,
+        "sector": "Financials"
+      },
+      {
+        "cusip": null,
+        "ticker": "JPM",
+        "issuer": null,
+        "holders": 3980,
+        "median_weight": 0.013,
+        "value_usd": 640000000000.0,
+        "sector": "Financials"
+      },
+      {
+        "cusip": null,
+        "ticker": "LLY",
+        "issuer": null,
+        "holders": 3420,
+        "median_weight": 0.015,
+        "value_usd": 690000000000.0,
+        "sector": "Health Care"
+      },
+      {
+        "cusip": null,
+        "ticker": "V",
+        "issuer": null,
+        "holders": 3710,
+        "median_weight": 0.012,
+        "value_usd": 520000000000.0,
+        "sector": "Financials"
+      },
+      {
+        "cusip": null,
+        "ticker": "JNJ",
+        "issuer": null,
+        "holders": 4100,
+        "median_weight": 0.0062,
+        "value_usd": 390000000000.0,
+        "sector": "Health Care"
+      },
+      {
+        "cusip": null,
+        "ticker": "PG",
+        "issuer": null,
+        "holders": 4050,
+        "median_weight": 0.0058,
+        "value_usd": 360000000000.0,
+        "sector": "Consumer Staples"
+      },
+      {
+        "cusip": null,
+        "ticker": "XOM",
+        "issuer": null,
+        "holders": 3880,
+        "median_weight": 0.0055,
+        "value_usd": 410000000000.0,
+        "sector": "Energy"
+      },
+      {
+        "cusip": null,
+        "ticker": "KO",
+        "issuer": null,
+        "holders": 3600,
+        "median_weight": 0.0041,
+        "value_usd": 240000000000.0,
+        "sector": "Consumer Staples"
+      },
+      {
+        "cusip": null,
+        "ticker": "PEP",
+        "issuer": null,
+        "holders": 3500,
+        "median_weight": 0.0044,
+        "value_usd": 210000000000.0,
+        "sector": "Consumer Staples"
+      },
+      {
+        "cusip": null,
+        "ticker": "VZ",
+        "issuer": null,
+        "holders": 3300,
+        "median_weight": 0.0029,
+        "value_usd": 150000000000.0,
+        "sector": "Communication Services"
+      },
+      {
+        "cusip": null,
+        "ticker": "T",
+        "issuer": null,
+        "holders": 3200,
+        "median_weight": 0.0026,
+        "value_usd": 140000000000.0,
+        "sector": "Communication Services"
+      },
+      {
+        "cusip": null,
+        "ticker": "PFE",
+        "issuer": null,
+        "holders": 3400,
+        "median_weight": 0.0031,
+        "value_usd": 130000000000.0,
+        "sector": "Health Care"
+      },
+      {
+        "cusip": null,
+        "ticker": "DIS",
+        "issuer": null,
+        "holders": 3350,
+        "median_weight": 0.0036,
+        "value_usd": 170000000000.0,
+        "sector": "Communication Services"
+      },
+      {
+        "cusip": null,
+        "ticker": "CSCO",
+        "issuer": null,
+        "holders": 3600,
+        "median_weight": 0.0049,
+        "value_usd": 230000000000.0,
+        "sector": "Information Technology"
+      },
+      {
+        "cusip": null,
+        "ticker": "INTC",
+        "issuer": null,
+        "holders": 3050,
+        "median_weight": 0.0024,
+        "value_usd": 90000000000.0,
+        "sector": "Information Technology"
+      },
+      {
+        "cusip": null,
+        "ticker": "MMM",
+        "issuer": null,
+        "holders": 2800,
+        "median_weight": 0.0022,
+        "value_usd": 60000000000.0,
+        "sector": "Industrials"
+      },
+      {
+        "cusip": null,
+        "ticker": "CAT",
+        "issuer": null,
+        "holders": 2900,
+        "median_weight": 0.007,
+        "value_usd": 190000000000.0,
+        "sector": "Industrials"
+      },
+      {
+        "cusip": null,
+        "ticker": "UBER",
+        "issuer": null,
+        "holders": 2015,
+        "median_weight": 0.011,
+        "value_usd": 62000000000.0,
+        "sector": "Industrials"
+      },
+      {
+        "cusip": null,
+        "ticker": "PLTR",
+        "issuer": null,
+        "holders": 1620,
+        "median_weight": 0.014,
+        "value_usd": 110000000000.0,
+        "sector": "Information Technology"
+      },
+      {
+        "cusip": null,
+        "ticker": "SPOT",
+        "issuer": null,
+        "holders": 520,
+        "median_weight": 0.036,
+        "value_usd": 38000000000.0,
+        "sector": "Communication Services"
+      },
+      {
+        "cusip": null,
+        "ticker": "APP",
+        "issuer": null,
+        "holders": 390,
+        "median_weight": 0.041,
+        "value_usd": 44000000000.0,
+        "sector": "Information Technology"
+      },
+      {
+        "cusip": null,
+        "ticker": "CVNA",
+        "issuer": null,
+        "holders": 210,
+        "median_weight": 0.046,
+        "value_usd": 22000000000.0,
+        "sector": "Consumer Discretionary"
+      },
+      {
+        "cusip": null,
+        "ticker": "FICO",
+        "issuer": null,
+        "holders": 420,
+        "median_weight": 0.031,
+        "value_usd": 26000000000.0,
+        "sector": "Information Technology"
+      },
+      {
+        "cusip": null,
+        "ticker": "TDG",
+        "issuer": null,
+        "holders": 610,
+        "median_weight": 0.026,
+        "value_usd": 41000000000.0,
+        "sector": "Industrials"
+      },
+      {
+        "cusip": null,
+        "ticker": "MELI",
+        "issuer": null,
+        "holders": 740,
+        "median_weight": 0.029,
+        "value_usd": 52000000000.0,
+        "sector": "Consumer Discretionary"
+      },
+      {
+        "cusip": null,
+        "ticker": "AXON",
+        "issuer": null,
+        "holders": 480,
+        "median_weight": 0.022,
+        "value_usd": 24000000000.0,
+        "sector": "Industrials"
+      },
+      {
+        "cusip": null,
+        "ticker": "CPRT",
+        "issuer": null,
+        "holders": 580,
+        "median_weight": 0.024,
+        "value_usd": 30000000000.0,
+        "sector": "Industrials"
+      },
+      {
+        "cusip": null,
+        "ticker": "VRT",
+        "issuer": null,
+        "holders": 690,
+        "median_weight": 0.019,
+        "value_usd": 29000000000.0,
+        "sector": "Industrials"
+      },
+      {
+        "cusip": null,
+        "ticker": "HOOD",
+        "issuer": null,
+        "holders": 860,
+        "median_weight": 0.013,
+        "value_usd": 21000000000.0,
+        "sector": "Financials"
+      },
+      {
+        "cusip": null,
+        "ticker": "SIRI",
+        "issuer": null,
+        "holders": 160,
+        "median_weight": 0.004,
+        "value_usd": 4000000000.0,
+        "sector": "Communication Services"
+      },
+      {
+        "cusip": null,
+        "ticker": "PARA",
+        "issuer": null,
+        "holders": 380,
+        "median_weight": 0.0035,
+        "value_usd": 6000000000.0,
+        "sector": "Communication Services"
+      },
+      {
+        "cusip": null,
+        "ticker": "LUMN",
+        "issuer": null,
+        "holders": 240,
+        "median_weight": 0.002,
+        "value_usd": 3000000000.0,
+        "sector": "Communication Services"
+      },
+      {
+        "cusip": null,
+        "ticker": "WBA",
+        "issuer": null,
+        "holders": 620,
+        "median_weight": 0.003,
+        "value_usd": 5000000000.0,
+        "sector": "Consumer Staples"
+      },
+      {
+        "cusip": null,
+        "ticker": "AAL",
+        "issuer": null,
+        "holders": 450,
+        "median_weight": 0.0028,
+        "value_usd": 5000000000.0,
+        "sector": "Industrials"
+      },
+      {
+        "cusip": null,
+        "ticker": "M",
+        "issuer": null,
+        "holders": 300,
+        "median_weight": 0.0025,
+        "value_usd": 3000000000.0,
+        "sector": "Consumer Discretionary"
+      }
+    ],
+    "sectors": [
+      {
+        "sector": "Information Technology",
+        "share_now": 0.291,
+        "share_prior": 0.278,
+        "flow_usd": 142000000000.0
+      },
+      {
+        "sector": "Financials",
+        "share_now": 0.126,
+        "share_prior": 0.124,
+        "flow_usd": 38000000000.0
+      },
+      {
+        "sector": "Health Care",
+        "share_now": 0.101,
+        "share_prior": 0.109,
+        "flow_usd": -61000000000.0
+      },
+      {
+        "sector": "Consumer Discretionary",
+        "share_now": 0.094,
+        "share_prior": 0.096,
+        "flow_usd": -12000000000.0
+      },
+      {
+        "sector": "Industrials",
+        "share_now": 0.083,
+        "share_prior": 0.082,
+        "flow_usd": 21000000000.0
+      },
+      {
+        "sector": "Communication Services",
+        "share_now": 0.085,
+        "share_prior": 0.081,
+        "flow_usd": 47000000000.0
+      },
+      {
+        "sector": "Funds & ETFs",
+        "share_now": 0.06,
+        "share_prior": 0.061,
+        "flow_usd": 4000000000.0
+      },
+      {
+        "sector": "Consumer Staples",
+        "share_now": 0.048,
+        "share_prior": 0.051,
+        "flow_usd": -29000000000.0
+      },
+      {
+        "sector": "Energy",
+        "share_now": 0.036,
+        "share_prior": 0.039,
+        "flow_usd": -33000000000.0
+      },
+      {
+        "sector": "Utilities",
+        "share_now": 0.024,
+        "share_prior": 0.023,
+        "flow_usd": 9000000000.0
+      },
+      {
+        "sector": "Real Estate",
+        "share_now": 0.019,
+        "share_prior": 0.02,
+        "flow_usd": -6000000000.0
+      },
+      {
+        "sector": "Materials",
+        "share_now": 0.019,
+        "share_prior": 0.02,
+        "flow_usd": -8000000000.0
+      },
+      {
+        "sector": "Unclassified",
+        "share_now": 0.014,
+        "share_prior": 0.016,
+        "flow_usd": -3000000000.0
+      }
+    ],
+    "new_positions": [
+      {
+        "filer_name": "Coldwater Basin Capital",
+        "ticker": "AVGO",
+        "value_usd": 4820000000.0,
+        "pct_of_book": 0.064,
+        "whale": {
+          "score": 88,
+          "conviction": 30,
+          "newness": 30,
+          "concentration": 18,
+          "size": 10
+        }
+      },
+      {
+        "filer_name": "Larkspur Hollow Advisors",
+        "ticker": "LLY",
+        "value_usd": 3100000000.0,
+        "pct_of_book": 0.021,
+        "whale": {
+          "score": 71,
+          "conviction": 22,
+          "newness": 30,
+          "concentration": 10,
+          "size": 9
+        }
+      },
+      {
+        "filer_name": "Ninefold Harbor LP",
+        "ticker": "UBER",
+        "value_usd": 2440000000.0,
+        "pct_of_book": 0.098,
+        "whale": {
+          "score": 93,
+          "conviction": 36,
+          "newness": 30,
+          "concentration": 19,
+          "size": 8
+        }
+      },
+      {
+        "filer_name": "Tamarack Spire Mgmt",
+        "ticker": "PLTR",
+        "value_usd": 1960000000.0,
+        "pct_of_book": 0.043,
+        "whale": {
+          "score": 79,
+          "conviction": 28,
+          "newness": 30,
+          "concentration": 14,
+          "size": 7
+        }
+      },
+      {
+        "filer_name": "Ashgrove Meridian",
+        "ticker": "V",
+        "value_usd": 1710000000.0,
+        "pct_of_book": 0.012,
+        "whale": {
+          "score": 58,
+          "conviction": 12,
+          "newness": 30,
+          "concentration": 9,
+          "size": 7
+        }
+      }
+    ],
+    "exits": [
+      {
+        "filer_name": "Ninefold Harbor LP",
+        "ticker": "AAPL",
+        "value_prior": 3880000000.0,
+        "pct_of_prior_book": 0.121,
+        "whale": {
+          "score": 90,
+          "conviction": 38,
+          "newness": 25,
+          "concentration": 19,
+          "size": 8
+        }
+      },
+      {
+        "filer_name": "Brightwater Quay",
+        "ticker": "UNH",
+        "value_prior": 2650000000.0,
+        "pct_of_prior_book": 0.034,
+        "whale": {
+          "score": 66,
+          "conviction": 20,
+          "newness": 25,
+          "concentration": 13,
+          "size": 8
+        }
+      },
+      {
+        "filer_name": "Coldwater Basin Capital",
+        "ticker": "TSLA",
+        "value_prior": 2120000000.0,
+        "pct_of_prior_book": 0.027999999999999997,
+        "whale": {
+          "score": 64,
+          "conviction": 19,
+          "newness": 25,
+          "concentration": 12,
+          "size": 8
+        }
+      },
+      {
+        "filer_name": "Fenwick Lark Partners",
+        "ticker": "INTC",
+        "value_prior": 1400000000.0,
+        "pct_of_prior_book": 0.05,
+        "whale": {
+          "score": 72,
+          "conviction": 26,
+          "newness": 25,
+          "concentration": 15,
+          "size": 6
+        }
+      },
+      {
+        "filer_name": "Sable Orchard Capital",
+        "ticker": "PFE",
+        "value_prior": 1180000000.0,
+        "pct_of_prior_book": 0.019,
+        "whale": {
+          "score": 55,
+          "conviction": 14,
+          "newness": 25,
+          "concentration": 10,
+          "size": 6
+        }
+      }
+    ],
+    "eff_n_median": 41.6,
+    "options": [
+      {
+        "ticker": "SPY",
+        "call_usd": 182000000000.0,
+        "put_usd": 311000000000.0
+      },
+      {
+        "ticker": "QQQ",
+        "call_usd": 141000000000.0,
+        "put_usd": 226000000000.0
+      },
+      {
+        "ticker": "NVDA",
+        "call_usd": 96000000000.0,
+        "put_usd": 71000000000.0
+      },
+      {
+        "ticker": "AAPL",
+        "call_usd": 72000000000.0,
+        "put_usd": 49000000000.0
+      },
+      {
+        "ticker": "TSLA",
+        "call_usd": 58000000000.0,
+        "put_usd": 64000000000.0
+      },
+      {
+        "ticker": "IWM",
+        "call_usd": 22000000000.0,
+        "put_usd": 57000000000.0
+      },
+      {
+        "ticker": "MSFT",
+        "call_usd": 41000000000.0,
+        "put_usd": 30000000000.0
+      },
+      {
+        "ticker": "META",
+        "call_usd": 37000000000.0,
+        "put_usd": 25000000000.0
+      }
+    ],
+    "filer_shape_named": [
+      ["Ashgrove Meridian", 4060000000000.0, 610],
+      ["Brightwater Quay", 1210000000000.0, 240],
+      ["Halverd Point Capital", 842600000000.0, 310],
+      ["Larkspur Hollow Advisors", 208900000000.0, 96],
+      ["Coldwater Basin Capital", 75300000000.0, 38],
+      ["Ninefold Harbor LP", 24900000000.0, 24.8],
+      ["Tamarack Spire Mgmt", 8199999999.999999, 6.1],
+      ["Sable Orchard Capital", 640000000.0, 3.2]
+    ]
+  },
+  "convergence": [
+    {
+      "ticker": "VRT",
+      "f13": 1,
+      "insider": 1,
+      "congress": 0,
+      "activist": 1
+    },
+    {
+      "ticker": "UBER",
+      "f13": 1,
+      "insider": 1,
+      "congress": 1,
+      "activist": 0
+    },
+    {
+      "ticker": "HOOD",
+      "f13": 1,
+      "insider": 0,
+      "congress": 0,
+      "activist": 1
+    },
+    {
+      "ticker": "LLY",
+      "f13": 1,
+      "insider": 0,
+      "congress": 1,
+      "activist": 0
+    },
+    {
+      "ticker": "NVDA",
+      "f13": 1,
+      "insider": 0,
+      "congress": 1,
+      "activist": 0
+    },
+    {
+      "ticker": "PLTR",
+      "f13": 1,
+      "insider": 0,
+      "congress": 1,
+      "activist": 0
+    },
+    {
+      "ticker": "APP",
+      "f13": 1,
+      "insider": 1,
+      "congress": 0,
+      "activist": 0
+    },
+    {
+      "ticker": "MSFT",
+      "f13": 1,
+      "insider": 0,
+      "congress": 0,
+      "activist": 0
+    }
+  ],
+  "lag": {
+    "since": "2026-06-30",
+    "asof": "2026-10-22",
+    "days": 114,
+    "rows": [
+      {
+        "ticker": "NVDA",
+        "pct_since": 0.184
+      },
+      {
+        "ticker": "MSFT",
+        "pct_since": 0.062
+      },
+      {
+        "ticker": "AVGO",
+        "pct_since": 0.227
+      },
+      {
+        "ticker": "LLY",
+        "pct_since": -0.041
+      },
+      {
+        "ticker": "GOOGL",
+        "pct_since": 0.113
+      },
+      {
+        "ticker": "UBER",
+        "pct_since": -0.078
+      },
+      {
+        "ticker": "PLTR",
+        "pct_since": 0.315
+      },
+      {
+        "ticker": "V",
+        "pct_since": 0.03
+      },
+      {
+        "ticker": "CRWD",
+        "pct_since": 0.096
+      },
+      {
+        "ticker": "ANET",
+        "pct_since": 0.142
+      }
+    ]
+  },
+  "filing_curve": {
+    "period": "2026-09-30",
+    "deadline": "2026-11-14",
+    "today_day": 22,
+    "open": [
+      [0, 0],
+      [3, 150],
+      [5, 340],
+      [8, 610],
+      [10, 880],
+      [13, 1240],
+      [15, 1560],
+      [18, 1890],
+      [20, 2120],
+      [22, 2318]
+    ],
+    "prior": [
+      [0, 0],
+      [5, 310],
+      [10, 820],
+      [15, 1450],
+      [20, 2010],
+      [22, 2190],
+      [25, 2600],
+      [30, 3350],
+      [35, 4600],
+      [40, 6500],
+      [43, 8300],
+      [45, 9412]
+    ],
+    "prior_final": 9412,
+    "early_movers": [
+      {
+        "filer_name": "Ashgrove Meridian",
+        "filed_at": "2026-10-09",
+        "value_usd": 4120000000000.0,
+        "positions": 4236,
+        "headline": {
+          "kind": "largest_add",
+          "ticker": "NVDA"
+        }
+      },
+      {
+        "filer_name": "Brightwater Quay",
+        "filed_at": "2026-10-14",
+        "value_usd": 1180000000000.0,
+        "positions": 3051,
+        "headline": {
+          "kind": "largest_add",
+          "ticker": "AVGO"
+        }
+      },
+      {
+        "filer_name": "Larkspur Hollow Advisors",
+        "filed_at": "2026-10-06",
+        "value_usd": 212400000000.0,
+        "positions": 640,
+        "headline": {
+          "kind": "largest_cut",
+          "ticker": "AAPL"
+        }
+      },
+      {
+        "filer_name": "Fenwick Lark Partners",
+        "filed_at": "2026-10-16",
+        "value_usd": 38700000000.0,
+        "positions": 92,
+        "headline": {
+          "kind": "new",
+          "ticker": "VRT"
+        }
+      }
+    ]
+  },
+  "fund": {
+    "cik": "0001811947",
+    "filer_name": "Ninefold Harbor LP",
+    "period": "2026-06-30",
+    "filed_at": "2026-08-12",
+    "value_usd": 24900000000.0,
+    "positions": 115,
+    "eff_n": 24.8,
+    "top10_weight": 0.569,
+    "turnover": {
+      "new": 14,
+      "doubled": 9,
+      "added": 29,
+      "trimmed": 41,
+      "flat": 22,
+      "exited": 9
+    },
+    "sector_tilt": [
+      {
+        "sector": "Information Technology",
+        "manager": 0.412,
+        "all": 0.291
+      },
+      {
+        "sector": "Communication Services",
+        "manager": 0.146,
+        "all": 0.085
+      },
+      {
+        "sector": "Industrials",
+        "manager": 0.099,
+        "all": 0.083
+      },
+      {
+        "sector": "Consumer Discretionary",
+        "manager": 0.098,
+        "all": 0.094
+      },
+      {
+        "sector": "Financials",
+        "manager": 0.084,
+        "all": 0.126
+      },
+      {
+        "sector": "Health Care",
+        "manager": 0.032,
+        "all": 0.101
+      },
+      {
+        "sector": "Consumer Staples",
+        "manager": 0.008,
+        "all": 0.048
+      },
+      {
+        "sector": "Energy",
+        "manager": 0.0,
+        "all": 0.036
+      }
+    ],
+    "top_adds": [
+      {
+        "ticker": "UBER",
+        "class": "new",
+        "flow_usd": 2440000000.0
+      },
+      {
+        "ticker": "NVDA",
+        "class": "doubled",
+        "flow_usd": 990000000.0
+      },
+      {
+        "ticker": "MSFT",
+        "class": "added",
+        "flow_usd": 620000000.0
+      },
+      {
+        "ticker": "GOOGL",
+        "class": "added",
+        "flow_usd": 410000000.0
+      },
+      {
+        "ticker": "CRWD",
+        "class": "added",
+        "flow_usd": 330000000.0
+      }
+    ],
+    "top_cuts": [
+      {
+        "ticker": "AAPL",
+        "class": "exited",
+        "flow_usd": -3880000000.0
+      },
+      {
+        "ticker": "AMZN",
+        "class": "trimmed",
+        "flow_usd": -720000000.0
+      },
+      {
+        "ticker": "TSLA",
+        "class": "exited",
+        "flow_usd": -510000000.0
+      },
+      {
+        "ticker": "UNH",
+        "class": "trimmed",
+        "flow_usd": -440000000.0
+      },
+      {
+        "ticker": "NKE",
+        "class": "exited",
+        "flow_usd": -210000000.0
+      }
+    ],
+    "holdings_top10": [
+      {
+        "ticker": "UBER",
+        "weight": 0.098,
+        "value_usd": 2440200000,
+        "shares": 30500000.0,
+        "class": "new"
+      },
+      {
+        "ticker": "MSFT",
+        "weight": 0.086,
+        "value_usd": 2141400000,
+        "shares": 4320000.0,
+        "class": "added"
+      },
+      {
+        "ticker": "NVDA",
+        "weight": 0.079,
+        "value_usd": 1967100000,
+        "shares": 12470000.0,
+        "class": "doubled"
+      },
+      {
+        "ticker": "AMZN",
+        "weight": 0.062,
+        "value_usd": 1543800000,
+        "shares": 7030000.0,
+        "class": "trimmed"
+      },
+      {
+        "ticker": "META",
+        "weight": 0.055,
+        "value_usd": 1369500000,
+        "shares": 1900000.0,
+        "class": "flat"
+      },
+      {
+        "ticker": "GOOGL",
+        "weight": 0.049,
+        "value_usd": 1220100000,
+        "shares": 6930000.0,
+        "class": "added"
+      },
+      {
+        "ticker": "AVGO",
+        "weight": 0.044,
+        "value_usd": 1095600000,
+        "shares": 4030000.0,
+        "class": "flat"
+      },
+      {
+        "ticker": "V",
+        "weight": 0.038,
+        "value_usd": 946200000,
+        "shares": 2710000.0,
+        "class": "trimmed"
+      },
+      {
+        "ticker": "CRWD",
+        "weight": 0.031,
+        "value_usd": 771900000,
+        "shares": 1620000.0,
+        "class": "added"
+      },
+      {
+        "ticker": "ANET",
+        "weight": 0.027,
+        "value_usd": 672300000,
+        "shares": 6810000.0,
+        "class": "flat"
+      }
+    ],
+    "twins": [
+      {
+        "filer_name": "Coldwater Basin Capital",
+        "overlap": 0.61,
+        "shared_count": 48,
+        "value_usd": 75300000000.0,
+        "shared": ["MSFT", "NVDA", "AMZN", "META", "GOOGL", "AVGO"],
+        "only_a": ["UBER", "CRWD", "ANET"],
+        "only_b": ["TSM", "ASML", "NFLX"]
+      },
+      {
+        "filer_name": "Larkspur Hollow Advisors",
+        "overlap": 0.542,
+        "shared_count": 71,
+        "value_usd": 208900000000.0
+      },
+      {
+        "filer_name": "Tamarack Spire Mgmt",
+        "overlap": 0.495,
+        "shared_count": 22,
+        "value_usd": 8200000000.0
+      }
+    ]
+  },
+  "security": {
+    "cusip": "90353T100",
+    "ticker": "UBER",
+    "issuer": "Uber Technologies Inc",
+    "sector": "Industrials",
+    "security_type": "Common Stock",
+    "period": "2026-06-30",
+    "prior_period": "2026-03-31",
+    "holders_now": 2015,
+    "holders_prior": 1694,
+    "buyers": 862,
+    "sellers": 541,
+    "new": 412,
+    "exited": 91,
+    "value_usd": 61800000000.0,
+    "shares": 772000000.0,
+    "shares_prior": 713600000.0,
+    "price_change_since_period": -0.078,
+    "ladder": [
+      {
+        "filer_name": "Ashgrove Meridian",
+        "value_usd": 5120000000.0,
+        "weight": 0.0013,
+        "class": "added"
+      },
+      {
+        "filer_name": "Brightwater Quay",
+        "value_usd": 2980000000.0,
+        "weight": 0.0025,
+        "class": "flat"
+      },
+      {
+        "filer_name": "Ninefold Harbor LP",
+        "value_usd": 2440000000.0,
+        "weight": 0.098,
+        "class": "new"
+      },
+      {
+        "filer_name": "Halverd Point Capital",
+        "value_usd": 1710000000.0,
+        "weight": 0.002,
+        "class": "trimmed"
+      },
+      {
+        "filer_name": "Larkspur Hollow Advisors",
+        "value_usd": 1020000000.0,
+        "weight": 0.0049,
+        "class": "added"
+      },
+      {
+        "filer_name": "Coldwater Basin Capital",
+        "value_usd": 880000000.0,
+        "weight": 0.0117,
+        "class": "doubled"
+      }
+    ],
+    "joined": [
+      {
+        "filer_name": "Ninefold Harbor LP",
+        "value_usd": 2440000000.0
+      },
+      {
+        "filer_name": "Fenwick Lark Partners",
+        "value_usd": 410000000.0
+      },
+      {
+        "filer_name": "Sable Orchard Capital",
+        "value_usd": 96000000.0
+      }
+    ],
+    "left": [
+      {
+        "filer_name": "Quillmoor Capital",
+        "value_prior": 520000000.0
+      },
+      {
+        "filer_name": "Redfern Ash Partners",
+        "value_prior": 210000000.0
+      },
+      {
+        "filer_name": "Osprey Lantern LP",
+        "value_prior": 88000000.0
+      }
+    ],
+    "cross": {
+      "insider": {
+        "buys": 1,
+        "latest": "2026-08-14"
+      },
+      "congress": {
+        "buys": 3,
+        "sells": 1
+      },
+      "activist": null,
+      "etf": {
+        "funds": 312,
+        "pct_shares_out": 0.094
+      }
+    }
+  }
+}
