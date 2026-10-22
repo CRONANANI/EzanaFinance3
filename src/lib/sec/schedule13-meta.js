@@ -199,6 +199,43 @@ export function purposeExcerpt(text, max = 600) {
   return `${(sp > max * 0.6 ? cut.slice(0, sp) : cut).replace(/[,;:]$/, '')}…`;
 }
 
+/*
+ * Item 4 split into sentences for the Filing Reader: each sentence verbatim,
+ * marked as reservation boilerplate or tagged with the same keyword tags
+ * tagPurpose uses, so highlighting a tag lights the sentences that carry it.
+ * The union of sentence tags equals tagPurpose(text) (asserted in tests).
+ */
+const ABBREV = /\b(Inc|No|U\.S|Corp|Co|Ltd|L\.P|L\.L\.C|Mr|Ms|Mrs|Dr|St|Jr|Sr|vs|approx)\./g;
+const MARK = '\u0001';
+
+export function purposeSentences(text) {
+  if (!text) return [];
+  const guarded = String(text).replace(ABBREV, (m) => m.replace(/\./g, MARK));
+  const parts = guarded
+    .split(/(?<=[.;:])\s+|\n+/)
+    .map((s) => s.replace(new RegExp(MARK, 'g'), '.').trim())
+    .filter(Boolean);
+  const out = parts.map((s) => ({
+    text: s,
+    reservation: BOILERPLATE.some((re) => re.test(s)),
+    tags: [],
+  }));
+  for (const sent of out) {
+    if (sent.reservation) continue;
+    sent.tags = PURPOSE_TAGS.filter(([, re]) => re.test(sent.text)).map(([t]) => t);
+  }
+  /* The investment fallback mirrors tagPurpose: when nothing specific remains
+     anywhere, the sentence carrying the investment language takes the tag. */
+  const any = out.some((s) => !s.reservation && s.tags.length);
+  if (!any && /investment purposes?|ordinary course/i.test(text)) {
+    const hit =
+      out.find((s) => !s.reservation && /investment purposes?|ordinary course/i.test(s.text)) ||
+      out.find((s) => /investment purposes?|ordinary course/i.test(s.text));
+    if (hit) hit.tags = ['investment'];
+  }
+  return out;
+}
+
 /** Codes to { code, label } pairs for display. */
 export function labelled(codes, table) {
   return (codes || []).filter((c) => table[c]).map((c) => ({ code: c, label: table[c] }));

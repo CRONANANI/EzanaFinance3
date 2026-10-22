@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { getActivistFiling } from '@/lib/titans/store';
+import { raisedFrom } from '@/lib/titans/activist-store';
+import { purposeSentences } from '@/lib/sec/schedule13-meta';
+import { whaleScore } from '@/lib/whale-score';
 
 /**
  * GET /api/titans/activist?accession=0001193125-26-123456
@@ -25,8 +28,27 @@ export async function GET(request) {
   try {
     const filing = await getActivistFiling(accession);
     if (!filing) return NextResponse.json({ ok: false, error: 'Unknown filing.' }, { status: 404 });
+    const prev = await raisedFrom(filing).catch(() => null);
+    const score =
+      filing.percentOfClass != null
+        ? whaleScore({
+            kind: 'activist',
+            form: filing.form,
+            percentOfClass: filing.percentOfClass,
+            priorPercentOfClass: prev?.pct ?? null,
+          })
+        : null;
     return NextResponse.json(
-      { ok: true, filing },
+      {
+        ok: true,
+        filing: {
+          ...filing,
+          purposeSentences: purposeSentences(filing.transactionPurpose),
+          raisedFrom: prev,
+          score: score?.score ?? null,
+          scoreFactors: score?.factors ?? null,
+        },
+      },
       { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=3600' } },
     );
   } catch (e) {

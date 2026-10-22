@@ -482,6 +482,12 @@ export async function GET(request) {
     if (openErr) errors.push(`snapshot ${openPeriod}: ${openErr.message}`);
   }
 
+  // Activist page snapshot (campaign read model), same hourly cadence.
+  const { error: actErr } = await admin.rpc('refresh_titans_activist', {
+    p_asof: now.toISOString().slice(0, 10),
+  });
+  if (actErr) errors.push(`activist snapshot: ${actErr.message}`);
+
   if (instRows || actRows || snapshot) {
     revalidateTag('titans');
     revalidateTag('hubs');

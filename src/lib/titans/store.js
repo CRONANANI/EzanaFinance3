@@ -381,9 +381,11 @@ async function loadCrossSignals(admin, ticker, period) {
   const since = period;
   const [insider, congress, activist, etf] = await Promise.all([
     admin
-      .from('sec_insider_trades')
-      .select('transaction_date, is_purchase')
-      .eq('ticker', ticker)
+      .from('sec_insider_transactions')
+      .select('transaction_date, transaction_code')
+      .eq('issuer_ticker', ticker)
+      .in('transaction_code', ['P', 'S'])
+      .eq('table_kind', 'non_derivative')
       .gte('transaction_date', since)
       .order('transaction_date', { ascending: false })
       .limit(200)
@@ -412,7 +414,7 @@ async function loadCrossSignals(admin, ticker, period) {
       .then((r) => r.count || 0)
       .catch(() => 0),
   ]);
-  const insBuys = insider.filter((r) => r.is_purchase).length;
+  const insBuys = insider.filter((r) => r.transaction_code === 'P').length;
   const congressBuys = congress.filter((r) =>
     String(r.type || '')
       .toLowerCase()
@@ -856,6 +858,16 @@ const cachedFund = unstable_cache(loadFund, ['titans-fund-v1'], CACHE);
 export function getFundHoldings(cik) {
   return cachedFund(String(cik || ''));
 }
+
+/* ── Activist page reads (campaign model, dossier, target, paths) ───── */
+export {
+  getActivistOverview,
+  getActivistFilings,
+  getInvestorDossier,
+  getTargetFile,
+  getEventPricePaths,
+  raisedFrom,
+} from './activist-store';
 
 /* ── Titans Shadow steps 2 to 4 (each in its own module) ───────────── */
 export { getInsiderOverview, searchInsider } from './insider-store';

@@ -1,0 +1,1001 @@
+{
+  "_note": "SAMPLE DATA for local development only (NEXT_PUBLIC_ALLOW_SAMPLE_DATA). Every investor, company, ticker, CIK, CUSIP, accession number and quoted passage is fictional. Never place this data next to a real firm or company.",
+  "overview": {
+    "asof": "2026-10-22",
+    "reparse": {
+      "v2": 48210,
+      "total": 49804
+    },
+    "windows": {
+      "90d": {
+        "range": ["2026-07-24", "2026-10-22"],
+        "ledger": {
+          "new": 412,
+          "amendments": 1286,
+          "new_13d": 76,
+          "exits": 147,
+          "stated_plan": 49,
+          "prior": {
+            "new": 374,
+            "amendments": 1184,
+            "new_13d": 73,
+            "exits": 136,
+            "stated_plan": 40
+          }
+        },
+        "tags_13d": [
+          {
+            "tag": "investment",
+            "label": "Investment only",
+            "n": 27
+          },
+          {
+            "tag": "board",
+            "label": "Board seats",
+            "n": 19
+          },
+          {
+            "tag": "letter",
+            "label": "Letter to the company",
+            "n": 11
+          },
+          {
+            "tag": "governance",
+            "label": "Governance",
+            "n": 10
+          },
+          {
+            "tag": "sale",
+            "label": "Deal or sale",
+            "n": 9
+          },
+          {
+            "tag": "capital",
+            "label": "Capital return",
+            "n": 7
+          },
+          {
+            "tag": "management",
+            "label": "Management",
+            "n": 6
+          },
+          {
+            "tag": "agreement",
+            "label": "Agreement signed",
+            "n": 5
+          },
+          {
+            "tag": "proxy",
+            "label": "Proxy fight",
+            "n": 4
+          },
+          {
+            "tag": "operations",
+            "label": "Operations",
+            "n": 4
+          }
+        ],
+        "types": {
+          "13D": [
+            {
+              "code": "IA",
+              "n": 31
+            },
+            {
+              "code": "PN",
+              "n": 22
+            },
+            {
+              "code": "IN",
+              "n": 9
+            },
+            {
+              "code": "CO",
+              "n": 7
+            },
+            {
+              "code": "HC",
+              "n": 4
+            },
+            {
+              "code": "OO",
+              "n": 3
+            }
+          ],
+          "13G": [
+            {
+              "code": "IA",
+              "n": 198
+            },
+            {
+              "code": "HC",
+              "n": 61
+            },
+            {
+              "code": "PN",
+              "n": 21
+            },
+            {
+              "code": "BK",
+              "n": 24
+            },
+            {
+              "code": "IC",
+              "n": 18
+            },
+            {
+              "code": "CO",
+              "n": 9
+            },
+            {
+              "code": "IN",
+              "n": 5
+            }
+          ],
+          "no_cover": 18
+        },
+        "funds_13d": [
+          {
+            "code": "WC",
+            "n": 34
+          },
+          {
+            "code": "AF",
+            "n": 21
+          },
+          {
+            "code": "PF",
+            "n": 9
+          },
+          {
+            "code": "OO",
+            "n": 6
+          },
+          {
+            "code": "BK",
+            "n": 5
+          },
+          {
+            "code": "SC",
+            "n": 1
+          }
+        ],
+        "basis_13g": [
+          {
+            "rule": "b",
+            "label": "Qualified institutional investor",
+            "n": 214
+          },
+          {
+            "rule": "c",
+            "label": "Passive investor",
+            "n": 104
+          },
+          {
+            "rule": "d",
+            "label": "Exempt investor",
+            "n": 18
+          }
+        ],
+        "sectors": [
+          {
+            "sector": "Health Care",
+            "new": 96,
+            "new_13d": 24
+          },
+          {
+            "sector": "Information Technology",
+            "new": 78,
+            "new_13d": 15
+          },
+          {
+            "sector": "Industrials",
+            "new": 61,
+            "new_13d": 11
+          },
+          {
+            "sector": "Financials",
+            "new": 52,
+            "new_13d": 9
+          },
+          {
+            "sector": "Consumer Discretionary",
+            "new": 41,
+            "new_13d": 8
+          },
+          {
+            "sector": "Communication Services",
+            "new": 24,
+            "new_13d": 4
+          },
+          {
+            "sector": "Energy",
+            "new": 18,
+            "new_13d": 2
+          },
+          {
+            "sector": "Materials",
+            "new": 14,
+            "new_13d": 1
+          },
+          {
+            "sector": "Consumer Staples",
+            "new": 12,
+            "new_13d": 2
+          },
+          {
+            "sector": "Real Estate",
+            "new": 9,
+            "new_13d": 0
+          },
+          {
+            "sector": "Utilities",
+            "new": 4,
+            "new_13d": 0
+          },
+          {
+            "sector": "Unclassified",
+            "new": 3,
+            "new_13d": 0
+          }
+        ],
+        "speed": {
+          "bins": ["0", "1", "2", "3", "4", "5", "6-10", "11-30", "31+"],
+          "d": [0, 2, 5, 9, 18, 31, 8, 2, 1],
+          "da": [40, 118, 162, 44, 18, 12, 8, 3, 1],
+          "g": [9, 14, 18, 15, 12, 21, 64, 121, 62],
+          "no_event_date": 118
+        },
+        "leaderboard_13d": [
+          {
+            "name": "Halvard Lane Capital",
+            "types": ["IA", "PN"],
+            "campaigns": 3,
+            "new": 1,
+            "median_first_pct": 6.2,
+            "raises": 3,
+            "exits": 1,
+            "top_tag": "board",
+            "tickers": ["CRVN", "WXLY", "DNLM"]
+          },
+          {
+            "name": "Osric Peak Management",
+            "types": ["IA"],
+            "campaigns": 2,
+            "new": 1,
+            "median_first_pct": 9.4,
+            "raises": 2,
+            "exits": 0,
+            "top_tag": "board",
+            "tickers": ["TLBX", "FRNT"]
+          },
+          {
+            "name": "Brackenridge Partners",
+            "types": ["PN"],
+            "campaigns": 2,
+            "new": 1,
+            "median_first_pct": 5.6,
+            "raises": 1,
+            "exits": 0,
+            "top_tag": "sale",
+            "tickers": ["MLWY", "SLVT"]
+          },
+          {
+            "name": "Fairhollow Advisors",
+            "types": ["IA"],
+            "campaigns": 2,
+            "new": 0,
+            "median_first_pct": 6.0,
+            "raises": 1,
+            "exits": 1,
+            "top_tag": "operations",
+            "tickers": ["QNBY", "HRTW"]
+          },
+          {
+            "name": "Dunmore Holdings Corp",
+            "types": ["CO"],
+            "campaigns": 1,
+            "new": 1,
+            "median_first_pct": 12.5,
+            "raises": 0,
+            "exits": 0,
+            "top_tag": "sale",
+            "tickers": ["ASHL"]
+          },
+          {
+            "name": "Ilse Varga",
+            "types": ["IN"],
+            "campaigns": 1,
+            "new": 1,
+            "median_first_pct": 7.8,
+            "raises": 0,
+            "exits": 0,
+            "top_tag": "governance",
+            "tickers": ["PMBK"]
+          }
+        ]
+      }
+    },
+    "campaigns": [
+      {
+        "key": "0001877412:21874K104",
+        "filer_cik": "0001877412",
+        "filer": "Halvard Lane Capital",
+        "ticker": "CRVN",
+        "cusip": "21874K104",
+        "subject": "Corvane Systems Inc",
+        "status": "building",
+        "first_filed": "2026-03-12",
+        "last_filed": "2026-10-09",
+        "latest_pct": 8.2,
+        "filings": [
+          {
+            "accession": "0001877412-26-000003",
+            "filed": "2026-03-12",
+            "event": "2026-03-02",
+            "form": "13G",
+            "amendment_no": null,
+            "pct": 5.4,
+            "tags": [],
+            "g_rule": "c",
+            "detail": true,
+            "raise": false,
+            "exit": false,
+            "switch": false
+          },
+          {
+            "accession": "0001877412-26-000011",
+            "filed": "2026-09-18",
+            "event": "2026-09-11",
+            "form": "13D",
+            "amendment_no": null,
+            "pct": 6.9,
+            "tags": ["board", "letter"],
+            "g_rule": null,
+            "detail": true,
+            "raise": true,
+            "exit": false,
+            "switch": true
+          },
+          {
+            "accession": "0001877412-26-000014",
+            "filed": "2026-10-09",
+            "event": "2026-10-07",
+            "form": "13D",
+            "amendment_no": 1,
+            "pct": 8.2,
+            "tags": ["board", "proxy", "letter"],
+            "g_rule": null,
+            "detail": true,
+            "raise": true,
+            "exit": false,
+            "switch": false
+          }
+        ]
+      },
+      {
+        "key": "0001790233:74812Q206",
+        "filer_cik": "0001790233",
+        "filer": "Fairhollow Advisors",
+        "ticker": "QNBY",
+        "cusip": "74812Q206",
+        "subject": "Quenby Industrial Inc",
+        "status": "exited",
+        "first_filed": "2025-12-03",
+        "last_filed": "2026-10-14",
+        "latest_pct": 4.6,
+        "filings": [
+          {
+            "accession": "0001790233-25-000041",
+            "filed": "2025-12-03",
+            "event": "2025-11-26",
+            "form": "13D",
+            "amendment_no": null,
+            "pct": 6.2,
+            "tags": ["operations"],
+            "g_rule": null,
+            "detail": true,
+            "raise": false,
+            "exit": false,
+            "switch": false
+          },
+          {
+            "accession": "0001790233-26-000017",
+            "filed": "2026-05-19",
+            "event": "2026-05-15",
+            "form": "13D",
+            "amendment_no": 1,
+            "pct": 7.0,
+            "tags": ["operations"],
+            "g_rule": null,
+            "detail": true,
+            "raise": true,
+            "exit": false,
+            "switch": false
+          },
+          {
+            "accession": "0001790233-26-000052",
+            "filed": "2026-10-14",
+            "event": "2026-10-10",
+            "form": "13D",
+            "amendment_no": 2,
+            "pct": 4.6,
+            "tags": ["operations"],
+            "g_rule": null,
+            "detail": true,
+            "raise": false,
+            "exit": true,
+            "switch": false
+          }
+        ]
+      },
+      {
+        "key": "0001902117:87423T108",
+        "filer_cik": "0001902117",
+        "filer": "Osric Peak Management",
+        "ticker": "TLBX",
+        "cusip": "87423T108",
+        "subject": "Tallis Biotherapeutics Inc",
+        "status": "building",
+        "first_filed": "2026-07-14",
+        "last_filed": "2026-10-06",
+        "latest_pct": 11.6,
+        "filings": [
+          {
+            "accession": "0001902117-26-000021",
+            "filed": "2026-07-14",
+            "event": "2026-07-07",
+            "form": "13D",
+            "amendment_no": null,
+            "pct": 9.4,
+            "tags": ["board"],
+            "g_rule": null,
+            "detail": true,
+            "raise": false,
+            "exit": false,
+            "switch": false
+          },
+          {
+            "accession": "0001902117-26-000029",
+            "filed": "2026-08-21",
+            "event": "2026-08-19",
+            "form": "13D",
+            "amendment_no": 1,
+            "pct": 10.8,
+            "tags": ["board"],
+            "g_rule": null,
+            "detail": true,
+            "raise": true,
+            "exit": false,
+            "switch": false
+          },
+          {
+            "accession": "0001902117-26-000036",
+            "filed": "2026-10-06",
+            "event": "2026-10-02",
+            "form": "13D",
+            "amendment_no": 2,
+            "pct": 11.6,
+            "tags": ["board", "agreement"],
+            "g_rule": null,
+            "detail": true,
+            "raise": true,
+            "exit": false,
+            "switch": false
+          }
+        ]
+      },
+      {
+        "key": "0001655081:04413X109",
+        "filer_cik": "0001655081",
+        "filer": "Dunmore Holdings Corp",
+        "ticker": "ASHL",
+        "cusip": "04413X109",
+        "subject": "Ashcombe Logistics Inc",
+        "status": "new",
+        "first_filed": "2026-10-02",
+        "last_filed": "2026-10-02",
+        "latest_pct": 12.5,
+        "filings": [
+          {
+            "accession": "0001655081-26-000008",
+            "filed": "2026-10-02",
+            "event": "2026-09-30",
+            "form": "13D",
+            "amendment_no": null,
+            "pct": 12.5,
+            "tags": ["sale", "agreement"],
+            "g_rule": null,
+            "detail": true,
+            "raise": false,
+            "exit": false,
+            "switch": false
+          }
+        ]
+      },
+      {
+        "key": "0001823390:68829R105",
+        "filer_cik": "0001823390",
+        "filer": "Calder Reach Fund",
+        "ticker": "OSTV",
+        "cusip": "68829R105",
+        "subject": "Ostrava Networks Inc",
+        "status": "building",
+        "first_filed": "2026-01-30",
+        "last_filed": "2026-10-01",
+        "latest_pct": 6.0,
+        "filings": [
+          {
+            "accession": "0001823390-26-000002",
+            "filed": "2026-01-30",
+            "event": "2025-12-31",
+            "form": "13G",
+            "amendment_no": null,
+            "pct": 5.8,
+            "tags": [],
+            "g_rule": "b",
+            "detail": true,
+            "raise": false,
+            "exit": false,
+            "switch": false
+          },
+          {
+            "accession": "0001823390-26-000019",
+            "filed": "2026-10-01",
+            "event": "2026-09-29",
+            "form": "13D",
+            "amendment_no": null,
+            "pct": 6.0,
+            "tags": ["governance"],
+            "g_rule": null,
+            "detail": true,
+            "raise": true,
+            "exit": false,
+            "switch": true
+          }
+        ]
+      },
+      {
+        "key": "0001744562:58631L102",
+        "filer_cik": "0001744562",
+        "filer": "Brackenridge Partners",
+        "ticker": "MLWY",
+        "cusip": "58631L102",
+        "subject": "Melloway Foods Inc",
+        "status": "building",
+        "first_filed": "2026-08-04",
+        "last_filed": "2026-09-29",
+        "latest_pct": 7.1,
+        "filings": [
+          {
+            "accession": "0001744562-26-000030",
+            "filed": "2026-08-04",
+            "event": "2026-07-28",
+            "form": "13D",
+            "amendment_no": null,
+            "pct": 5.6,
+            "tags": ["investment"],
+            "g_rule": null,
+            "detail": true,
+            "raise": false,
+            "exit": false,
+            "switch": false
+          },
+          {
+            "accession": "0001744562-26-000038",
+            "filed": "2026-09-29",
+            "event": "2026-09-25",
+            "form": "13D",
+            "amendment_no": 1,
+            "pct": 7.1,
+            "tags": ["sale", "capital"],
+            "g_rule": null,
+            "detail": true,
+            "raise": true,
+            "exit": false,
+            "switch": false
+          }
+        ]
+      },
+      {
+        "key": "0001931005:70646B104",
+        "filer_cik": "0001931005",
+        "filer": "Ilse Varga",
+        "ticker": "PMBK",
+        "cusip": "70646B104",
+        "subject": "Pembrook Bancorp",
+        "status": "new",
+        "first_filed": "2026-09-22",
+        "last_filed": "2026-09-22",
+        "latest_pct": 7.8,
+        "filings": [
+          {
+            "accession": "0001931005-26-000001",
+            "filed": "2026-09-22",
+            "event": "2026-09-15",
+            "form": "13D",
+            "amendment_no": null,
+            "pct": 7.8,
+            "tags": ["governance", "management"],
+            "g_rule": null,
+            "detail": true,
+            "raise": false,
+            "exit": false,
+            "switch": false
+          }
+        ]
+      }
+    ],
+    "unconfirmed": [
+      {
+        "accession": "0001977310-26-000004",
+        "filed": "2026-10-16",
+        "event": "2026-10-09",
+        "form": "13D",
+        "pct": 5.2,
+        "ticker": "LRRN",
+        "subject": "Lorrin Therapeutics Inc",
+        "tags": ["investment"],
+        "filer": null
+      }
+    ],
+    "crowded": [
+      {
+        "ticker": "TLBX",
+        "subject": "Tallis Biotherapeutics Inc",
+        "holders": [
+          {
+            "filer": "Osric Peak Management",
+            "form": "13D",
+            "pct": 11.6
+          },
+          {
+            "filer": "Grayfield Index Advisors",
+            "form": "13G",
+            "pct": 7.4
+          },
+          {
+            "filer": "Merrow Bio Fund",
+            "form": "13G",
+            "pct": 5.9
+          },
+          {
+            "filer": "Ketterly Partners",
+            "form": "13D",
+            "pct": 5.1
+          }
+        ]
+      },
+      {
+        "ticker": "CRVN",
+        "subject": "Corvane Systems Inc",
+        "holders": [
+          {
+            "filer": "Halvard Lane Capital",
+            "form": "13D",
+            "pct": 8.2
+          },
+          {
+            "filer": "Northline Asset Management",
+            "form": "13G",
+            "pct": 6.1
+          },
+          {
+            "filer": "Selwyn Park Capital",
+            "form": "13G",
+            "pct": 5.3
+          }
+        ]
+      },
+      {
+        "ticker": "ASHL",
+        "subject": "Ashcombe Logistics Inc",
+        "holders": [
+          {
+            "filer": "Dunmore Holdings Corp",
+            "form": "13D",
+            "pct": 12.5
+          },
+          {
+            "filer": "Grayfield Index Advisors",
+            "form": "13G",
+            "pct": 6.8
+          },
+          {
+            "filer": "Rowan Hill Advisers",
+            "form": "13G",
+            "pct": 5.2
+          }
+        ]
+      },
+      {
+        "ticker": "MLWY",
+        "subject": "Melloway Foods Inc",
+        "holders": [
+          {
+            "filer": "Brackenridge Partners",
+            "form": "13D",
+            "pct": 7.1
+          },
+          {
+            "filer": "Northline Asset Management",
+            "form": "13G",
+            "pct": 5.5
+          }
+        ]
+      }
+    ]
+  },
+  "filings_table_states": [
+    {
+      "state": "filer_not_confirmed",
+      "filed": "2026-10-16",
+      "form": "13D",
+      "filer": null,
+      "filerConfirmed": false,
+      "ticker": "LRRN",
+      "percentOfClass": 5.2,
+      "detailParsed": true
+    },
+    {
+      "state": "detail_arriving",
+      "filed": "2026-08-12",
+      "form": "13G",
+      "isAmendment": true,
+      "filer": "Rowan Hill Advisers",
+      "filerConfirmed": true,
+      "ticker": "ASHL",
+      "percentOfClass": 5.2,
+      "detailParsed": false,
+      "purposeTags": [],
+      "personTypes": []
+    },
+    {
+      "state": "text_filing",
+      "filed": "2024-11-18",
+      "form": "13D",
+      "isAmendment": true,
+      "legacy": true,
+      "filer": "Westerly Gate LP",
+      "filerSource": "sec_header",
+      "ticker": null,
+      "subject": "HARBISON MILLS INC",
+      "percentOfClass": 6.6,
+      "eventDate": null
+    },
+    {
+      "state": "13g",
+      "filed": "2026-10-08",
+      "form": "13G",
+      "filer": "Northline Asset Management",
+      "ticker": "CRVN",
+      "percentOfClass": 6.1,
+      "gBasis": {
+        "rule": "13d-1(b)",
+        "key": "b",
+        "label": "Qualified institutional investor"
+      },
+      "hasPurpose": false,
+      "hasFundsSource": false
+    }
+  ],
+  "filing_13d": {
+    "accession": "0001877412-26-000014",
+    "form": "13D",
+    "amendmentNo": 1,
+    "filer": "Halvard Lane Capital",
+    "filerSource": "cover_cik",
+    "ticker": "CRVN",
+    "subject": "Corvane Systems Inc",
+    "percentOfClass": 8.2,
+    "shares": 4118200,
+    "eventDate": "2026-10-07",
+    "filedAt": "2026-10-09",
+    "raisedFrom": {
+      "pct": 6.9,
+      "form": "13D",
+      "filed": "2026-09-18"
+    },
+    "score": 86,
+    "scoreFactors": {
+      "form": 45,
+      "stake": 21,
+      "escalation": 20
+    },
+    "purposeTags": [
+      {
+        "tag": "board",
+        "label": "Board seats"
+      },
+      {
+        "tag": "proxy",
+        "label": "Proxy fight"
+      },
+      {
+        "tag": "letter",
+        "label": "Letter to the company"
+      }
+    ],
+    "purposeSentences": [
+      {
+        "text": "The Reporting Persons acquired the Shares because they believed the Shares, when purchased, were undervalued and represented an attractive investment opportunity.",
+        "tags": [],
+        "reservation": false
+      },
+      {
+        "text": "On September 16, 2026, the Reporting Persons delivered a letter to the Issuer\u2019s Chief Executive Officer requesting a meeting to discuss the composition of the Board of Directors of the Issuer (the \u201cBoard\u201d).",
+        "tags": ["letter", "board"],
+        "reservation": false
+      },
+      {
+        "text": "On October 7, 2026, the Reporting Persons delivered a letter to the Board, a copy of which is filed as Exhibit 99.2 hereto, stating that the Reporting Persons intend to nominate four candidates for election to the Board at the Issuer\u2019s 2027 annual meeting of stockholders.",
+        "tags": ["letter", "board", "proxy"],
+        "reservation": false
+      },
+      {
+        "text": "If the Issuer does not agree to reconstitute the Board, the Reporting Persons intend to solicit proxies in support of their nominees.",
+        "tags": ["proxy", "board"],
+        "reservation": false
+      },
+      {
+        "text": "The Reporting Persons believe the Shares are undervalued and that the Board should form a committee of independent directors to review strategic alternatives.",
+        "tags": [],
+        "reservation": false
+      },
+      {
+        "text": "The Reporting Persons intend to review their investment in the Issuer on a continuing basis and, depending on various factors, may from time to time engage in discussions with management, the Board, other stockholders and other relevant parties, and may take positions with respect to any of the matters set forth in clauses (a) through (j) of Item 4 of Schedule 13D.",
+        "tags": [],
+        "reservation": true
+      }
+    ],
+    "fundSources": [
+      {
+        "code": "WC",
+        "label": "Working capital"
+      },
+      {
+        "code": "AF",
+        "label": "Affiliate funds"
+      }
+    ],
+    "fundsSourceText": "The aggregate purchase price of the 4,118,200 Shares beneficially owned by the Reporting Persons is approximately $96.4 million, including brokerage commissions. The Shares held by the Master Fund were purchased with the working capital of the Master Fund. The Shares held in a separately managed account advised by the Adviser were purchased with the funds of that account.",
+    "memberOfGroup": false,
+    "reportingPersons": [
+      {
+        "name": "Halvard Lane Capital LP",
+        "cik": "0001877412",
+        "types": ["IA", "PN"],
+        "citizenship": "DE",
+        "shares": 4118200,
+        "percent": 8.2,
+        "soleVoting": 0,
+        "sharedVoting": 4118200,
+        "soleDispositive": 0,
+        "sharedDispositive": 4118200
+      },
+      {
+        "name": "Halvard Lane Master Fund LP",
+        "cik": "0001877415",
+        "types": ["PN"],
+        "citizenship": "E9",
+        "shares": 3602000,
+        "percent": 7.2,
+        "soleVoting": 0,
+        "sharedVoting": 3602000,
+        "soleDispositive": 0,
+        "sharedDispositive": 3602000
+      },
+      {
+        "name": "Halvard Lane GP LLC",
+        "cik": "0001877413",
+        "types": ["HC"],
+        "citizenship": "DE",
+        "shares": 4118200,
+        "percent": 8.2,
+        "soleVoting": 0,
+        "sharedVoting": 4118200,
+        "soleDispositive": 0,
+        "sharedDispositive": 4118200
+      },
+      {
+        "name": "Mara Ellison",
+        "cik": "0001877419",
+        "types": ["IN", "HC"],
+        "citizenship": "US",
+        "shares": 4118200,
+        "percent": 8.2,
+        "soleVoting": 0,
+        "sharedVoting": 4118200,
+        "soleDispositive": 0,
+        "sharedDispositive": 4118200
+      }
+    ]
+  },
+  "filing_13g": {
+    "accession": "0001288471-26-000090",
+    "form": "13G",
+    "filer": "Northline Asset Management",
+    "filerSource": "cover_first",
+    "ticker": "CRVN",
+    "percentOfClass": 6.1,
+    "shares": 3062000,
+    "eventDate": "2026-09-30",
+    "filedAt": "2026-10-08",
+    "gBasis": {
+      "rule": "13d-1(b)",
+      "key": "b",
+      "label": "Qualified institutional investor"
+    },
+    "score": 33,
+    "reportingPersons": [
+      {
+        "name": "Northline Asset Management LLC",
+        "cik": null,
+        "types": ["IA"],
+        "citizenship": "DE",
+        "shares": 3062000,
+        "percent": 6.1,
+        "soleVoting": 2870000,
+        "sharedVoting": 0,
+        "soleDispositive": 3062000,
+        "sharedDispositive": 0
+      }
+    ]
+  },
+  "dossier_graph": {
+    "nodes": [
+      {
+        "name": "Halvard Lane Capital LP",
+        "type": "IA",
+        "max_shares": 4118200
+      },
+      {
+        "name": "Halvard Lane Master Fund LP",
+        "type": "PN",
+        "max_shares": 3602000
+      },
+      {
+        "name": "Halvard Lane Opportunities Fund LP",
+        "type": "PN",
+        "max_shares": 516200
+      },
+      {
+        "name": "Halvard Lane GP LLC",
+        "type": "HC",
+        "max_shares": 4118200
+      },
+      {
+        "name": "Mara Ellison",
+        "type": "IN",
+        "max_shares": 4118200
+      }
+    ],
+    "edges": [
+      {
+        "a": 0,
+        "b": 1,
+        "filings": 8
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "filings": 3
+      },
+      {
+        "a": 0,
+        "b": 3,
+        "filings": 11
+      },
+      {
+        "a": 0,
+        "b": 4,
+        "filings": 11
+      },
+      {
+        "a": 3,
+        "b": 4,
+        "filings": 11
+      }
+    ]
+  }
+}

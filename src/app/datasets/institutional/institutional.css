@@ -340,7 +340,7 @@
 }
 .inst-card {
   background: var(--inst-card-bg);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   box-shadow: var(--inst-card-shadow);
   padding: 24px;
   display: flex;

@@ -1,42 +1,40 @@
-import { getActivistStakes } from '@/lib/titans/store';
-import { int, pct, shortDate } from '@/lib/titans/format';
+import { Suspense } from 'react';
+import { getActivistOverview } from '@/lib/titans/store';
+import { ALLOW_SAMPLE } from '@/lib/titans/format';
 import ActivistClient from './ActivistClient';
+import fixture from './activist-fixture.sample.json';
 
 /**
- * Activist & block positions (Schedule 13D / 13G). Server component: loads the
- * newest parsed stakes and hands plain rows to the client dashboard. Empty ->
- * honest empty state; samples only under NEXT_PUBLIC_ALLOW_SAMPLE_DATA in
- * local development.
+ * Activist & Block Positions (Schedule 13D / 13G), Oct 2026 redesign
+ * (docs: activist-handoff). Server component: loads the campaign snapshot
+ * (refresh_titans_activist) and hands it to the client; the filings table,
+ * price paths and the three panels read their own API routes. Empty
+ * snapshot -> honest empty states; the SAMPLE fixture renders only under
+ * NEXT_PUBLIC_ALLOW_SAMPLE_DATA with its chip and fictional names.
  */
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Activist and block positions (Schedule 13D/13G) | Ezana',
+  title: 'Activist and block positions (13D/13G) | Ezana',
   description:
-    'Schedule 13D and 13G filings from SEC EDGAR: who crossed 5% of which company, with the reported stake.',
+    'Schedule 13D and 13G filings from SEC EDGAR as campaigns: who crossed 5% of which company, what they say they want, how stakes develop, and what happened around the event date.',
 };
 
-const FORM_LABEL = { '13D': 'Schedule 13D', '13G': 'Schedule 13G' };
-
 export default async function ActivistDatasetPage() {
-  let stakes = [];
+  let overview = null;
   try {
-    stakes = await getActivistStakes({ limit: 150 });
+    overview = await getActivistOverview();
   } catch (e) {
-    console.error('[titans] activist stakes:', e?.message || e);
+    console.error('[titans] activist overview:', e?.message || e);
   }
-  const rows = stakes.map((s) => ({
-    id: s.accessionNo,
-    /* Never the EDGAR index name: for a 13D/13G it can be the target. */
-    filer: s.filer || 'Filer not confirmed',
-    ticker: s.ticker,
-    subject: s.subject,
-    form: `${FORM_LABEL[s.form] || 'Schedule 13D/13G'}${s.isAmendment ? '/A' : ''}`,
-    percent: pct(s.percentOfClass),
-    shares: int(s.shares),
-    eventDate: shortDate(s.eventDate),
-    date: shortDate(s.filedAt),
-    href: s.href,
-  }));
-  return <ActivistClient rows={rows} />;
+  let sampled = false;
+  if (!overview && ALLOW_SAMPLE) {
+    overview = fixture.overview;
+    sampled = true;
+  }
+  return (
+    <Suspense fallback={null}>
+      <ActivistClient overview={overview} sampled={sampled} />
+    </Suspense>
+  );
 }
