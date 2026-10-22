@@ -63,7 +63,7 @@
 }
 
 .lbx-page {
-  max-width: var(--ds-canvas-max, 1872px);
+  max-width: var(--ds-canvas-max, 1400px);
   min-width: 0;
   margin: 0 auto;
   padding: 0 32px 64px;

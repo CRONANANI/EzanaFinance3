@@ -69,7 +69,7 @@
   --inst-scrim: var(--dsc-scrim);
 
   width: 100%;
-  max-width: var(--ds-canvas-max, 1872px);
+  max-width: var(--ds-canvas-max, 1400px);
   margin-inline: auto;
   box-sizing: border-box;
   padding: 28px var(--inst-gutter) 64px;

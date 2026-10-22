@@ -58,7 +58,7 @@ html:not(.light-mode) .cwh-tokens {
 
 /* ── frame ────────────────────────────────────────────────────────────── */
 .cwh-page {
-  max-width: var(--ds-canvas-max, 1872px);
+  max-width: var(--ds-canvas-max, 1400px);
   margin: 0 auto;
   padding: 28px var(--cwh-gutter) 0;
   background: var(--cwh-bg);
@@ -2171,7 +2171,7 @@ button.cwh-port-row:hover {
   text-decoration: none;
 }
 .cwh-sources {
-  max-width: var(--ds-canvas-max, 1872px);
+  max-width: var(--ds-canvas-max, 1400px);
   margin: 36px auto 0;
   padding: 20px var(--cwh-gutter);
   border-top: 1px solid var(--cwh-hair);

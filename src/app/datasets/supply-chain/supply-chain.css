@@ -2,7 +2,7 @@
    the other Eyes Above pages (scm-, cre-, pat-, ntl-) and the Titans Shadow pages. */
 
 .scm-page {
-  max-width: var(--ds-canvas-max, 1872px);
+  max-width: var(--ds-canvas-max, 1400px);
   margin: 0 auto;
   padding: 0 32px 64px;
   overflow-x: clip;

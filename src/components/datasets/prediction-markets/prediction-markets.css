@@ -215,7 +215,7 @@
   /* Oct 21: back on the shared dataset canvas, so this page lines up with
      the CategoryBar and every other /datasets page. */
   width: 100%;
-  max-width: var(--ds-canvas-max, 1872px);
+  max-width: var(--ds-canvas-max, 1400px);
   margin: 0 auto;
   padding: 0 var(--pmk-gutter) 64px;
   min-width: 0;

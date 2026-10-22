@@ -16,7 +16,7 @@
 }
 
 .gcx-page {
-  max-width: var(--ds-canvas-max, 1872px);
+  max-width: var(--ds-canvas-max, 1400px);
   margin: 0 auto;
   padding: 0 32px 64px;
   background: var(--bg-primary);

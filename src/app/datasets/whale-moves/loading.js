@@ -9,9 +9,9 @@ export default function WhaleMovesLoading() {
     <SkeletonRegion
       label="Loading Whale Moves…"
       style={{
-        maxWidth: 'var(--ds-canvas-max, 1872px)',
+        maxWidth: 'var(--ds-canvas-max, 1400px)',
         margin: '0 auto',
-        padding: '28px 24px 48px',
+        padding: '28px var(--ds-gutter, 32px) 48px',
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
