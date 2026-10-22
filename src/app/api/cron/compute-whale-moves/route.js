@@ -3,12 +3,7 @@ import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { whaleScore, MIN_POSITION_USD } from '@/lib/whale-score';
 import { schedule13Kind } from '@/lib/sec-13f-parse';
-import {
-  recentPeriods,
-  priorQuarterEnd,
-  latestCompleteQuarter,
-  currentReportQuarter,
-} from '@/lib/sec/quarters';
+import { recentPeriods, priorQuarterEnd } from '@/lib/sec/quarters';
 
 /**
  * Materialize Whale Moves. DERIVED from the parsed SEC tables (sec_13f_holdings /
@@ -25,8 +20,9 @@ import {
  * MIN_POSITION_USD or more this quarter or last) are skipped up front, so they
  * never occupy the per-run cap.
  *
- * At the end of each run, refresh_titans_institutional() rebuilds the
- * Institutional page snapshot for the latest complete quarter.
+ * The Institutional page snapshots are rebuilt in pg_cron, not here (the v2
+ * refresh runs past the API statement timeout); this run only purges the
+ * page cache at the end.
  *
  *   GET /api/cron/compute-whale-moves?maxFilings=60&maxActivist=60
  * Auth: CRON_SECRET bearer (or ?key=).
@@ -465,22 +461,12 @@ export async function GET(request) {
     }
   }
 
-  // Institutional page snapshot for the latest complete quarter, and for the
-  // open quarter while its filing window runs (the page's partial view).
-  const period = latestCompleteQuarter(now);
-  const { data: snapshot, error: snapErr } = await admin.rpc('refresh_titans_institutional', {
-    p_period: period,
-    p_limit: 25,
-  });
-  if (snapErr) errors.push(`snapshot ${period}: ${snapErr.message}`);
-  const openPeriod = currentReportQuarter(now);
-  if (openPeriod !== period) {
-    const { error: openErr } = await admin.rpc('refresh_titans_institutional', {
-      p_period: openPeriod,
-      p_limit: 25,
-    });
-    if (openErr) errors.push(`snapshot ${openPeriod}: ${openErr.message}`);
-  }
+  // The Institutional page snapshots are NOT refreshed here any more. The v2
+  // refresh materialises a full quarter of 13F holdings, which runs well past
+  // the 30 s statement timeout API calls get. It runs in pg_cron inside the
+  // database instead: refresh_titans_institutional_latest() at :55 (the
+  // complete quarter) and refresh_titans_institutional_open() at :25 (the
+  // quarter still filing). See 20261022120000_titans_institutional_snapshot_v2.sql.
 
   // Activist page snapshot (campaign read model), same hourly cadence.
   const { error: actErr } = await admin.rpc('refresh_titans_activist', {
@@ -488,17 +474,16 @@ export async function GET(request) {
   });
   if (actErr) errors.push(`activist snapshot: ${actErr.message}`);
 
-  if (instRows || actRows || snapshot) {
-    revalidateTag('titans');
-    revalidateTag('hubs');
-  }
+  // The 13F snapshots refresh in pg_cron and cannot purge the page cache; an
+  // hourly purge here (plus the 15-minute cache window) keeps them current.
+  revalidateTag('titans');
+  revalidateTag('hubs');
 
   return NextResponse.json({
     ok: errors.length === 0,
     institutional_moves: instRows,
     activist_moves: actRows,
     waiting_for_prior_quarter: waitingForPrior,
-    snapshot: snapshot || null,
     errors: errors.slice(0, 20),
   });
 }

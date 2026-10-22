@@ -35,18 +35,23 @@ export default async function InstitutionalDatasetPage() {
   const completeQ = latestCompleteQuarter(now);
   const openQ = currentReportQuarter(now);
 
-  let overview = null;
-  let openOverview = null;
-  let curve = null;
-  try {
-    [overview, openOverview, curve] = await Promise.all([
-      getInstitutionalOverview(),
-      openQ !== completeQ ? getInstitutionalOverviewFor(openQ) : Promise.resolve(null),
-      openQ !== completeQ ? getFilingCurve(openQ) : Promise.resolve(null),
-    ]);
-  } catch (e) {
-    console.error('[titans] institutional overview:', e?.message || e);
-  }
+  /* Each read settles on its own. They used to share one Promise.all, so a
+     single failure (Oct 22: the filing-curve function was missing from the
+     database) threw away the overview that HAD loaded and the whole page
+     rendered empty. Now a failed read only empties its own cards. */
+  const [overviewRes, openRes, curveRes] = await Promise.allSettled([
+    getInstitutionalOverview(),
+    openQ !== completeQ ? getInstitutionalOverviewFor(openQ) : Promise.resolve(null),
+    openQ !== completeQ ? getFilingCurve(openQ) : Promise.resolve(null),
+  ]);
+  const settled = (res, label) => {
+    if (res.status === 'fulfilled') return res.value;
+    console.error(`[titans] institutional ${label}:`, res.reason?.message || res.reason);
+    return null;
+  };
+  let overview = settled(overviewRes, 'overview');
+  const openOverview = settled(openRes, 'open quarter');
+  let curve = settled(curveRes, 'filing curve');
 
   let sampled = false;
   if (!overview && ALLOW_SAMPLE) {
@@ -63,20 +68,13 @@ export default async function InstitutionalDatasetPage() {
   let lag = {};
   let convergence = {};
   if (!sampled && topBreadth.length) {
-    try {
-      [lag, convergence] = await Promise.all([
-        getLagTax(
-          topBreadth.map((b) => b.ticker),
-          overview.quarter,
-        ),
-        getConvergence(
-          topBreadth.map((b) => b.ticker),
-          overview.quarter,
-        ),
-      ]);
-    } catch (e) {
-      console.error('[titans] institutional lag/convergence:', e?.message || e);
-    }
+    const tickers = topBreadth.map((b) => b.ticker);
+    const [lagRes, convRes] = await Promise.allSettled([
+      getLagTax(tickers, overview.quarter),
+      getConvergence(tickers, overview.quarter),
+    ]);
+    lag = settled(lagRes, 'lag tax') || {};
+    convergence = settled(convRes, 'convergence') || {};
   } else if (sampled) {
     lag = Object.fromEntries((fixture.lag?.rows || []).map((r) => [r.ticker, r.pct_since]));
     convergence = Object.fromEntries(
