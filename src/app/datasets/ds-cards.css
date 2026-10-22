@@ -11,7 +11,8 @@
    and table rules are left alone on purpose: this is the card shell only.
    Focus outlines are untouched, so keyboard focus still shows.
 
-   New dataset page? Add its card class to both lists. */
+   New dataset page? Add its card class to both lists, and to the card
+   list in ds-align.css (which drops the shell's side padding). */
 .ds-shell
   :is(
     .mkt-card,

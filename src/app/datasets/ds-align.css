@@ -1,0 +1,144 @@
+/* Dataset page edge alignment (Oct 22).
+   Every /datasets page lines up on the same two vertical edges: the left
+   and right edges of the page canvas. Cards, card text, section titles and
+   notes all start on the left edge and end on the right edge, so a page
+   reads as one column instead of a ragged stack.
+
+   Four rules, all scoped to .ds-shell (the wrapper the datasets layout
+   puts around every /datasets route), so nothing outside /datasets moves:
+
+   1. One gutter. Every page canvas uses --ds-gutter (32px, 16px on phones)
+      for its side padding, so the canvas edges sit at the same distance
+      from the screen edge on every page. The page-specific gutter tokens
+      (--cwh-, --dsc-, --pmk-gutter) take the same value, so the full-bleed
+      bars that use them still bleed exactly to the screen-side padding.
+
+   2. Card shells carry no side padding. Since Oct 21 a dataset card draws
+      no outline and no fill (ds-cards.css), so its side padding showed only
+      as a ragged indent: card text sat 14 to 26px inside the page edge while
+      the section titles above it sat on the edge. Vertical padding stays,
+      so spacing between cards is unchanged. Cards that still draw a visible
+      box keep their padding: selectable tiles (stat buttons, member cards),
+      tinted bands and callouts, and "soon" cards.
+
+   3. Open tables open and close on the edges. In a table that sits on the
+      page ground (no box of its own), the first cell of a row has no left
+      padding and the last cell no right padding, so column text lines up
+      with the card title above it. Cell padding between columns is
+      unchanged. Tables inside a bordered wrapper (the DatasetDashboard
+      table, the contracts explorer, Biggest Whales) keep their cell padding,
+      since their box edge is what lines up with the page.
+
+   4. Card rows reach the right edge. Rows of small cards that used
+      repeat(auto-fill, ...) left empty tracks at the end of the row, so a
+      row of three stopped a third of the way across; auto-fit stretches the
+      cards that are there across the full canvas.
+
+   Left as they are on purpose: centered page titles (eyebrow, h1, sub line),
+   which are symmetric about both edges; prose kept to a reading width
+   (it starts on the left edge); buttons, pills and inputs, whose padding is
+   part of the control; full-bleed tickers and rails.
+
+   New dataset page? Put its canvas class in list 1 and its card class in
+   list 2 (only if the card draws no fill or outline). */
+
+/* ── 1. one gutter ─────────────────────────────────────────────────────── */
+.ds-shell {
+  --ds-gutter: 32px;
+}
+@media (max-width: 640px) {
+  .ds-shell {
+    --ds-gutter: 16px;
+  }
+}
+
+.ds-shell :is(.cwh-tokens, .dsc, .pmk-page) {
+  --cwh-gutter: var(--ds-gutter);
+  --dsc-gutter: var(--ds-gutter);
+  --pmk-gutter: var(--ds-gutter);
+}
+
+.ds-shell
+  :is(
+    .dsx-main,
+    .mkt-main,
+    .cfi-page,
+    .cre-page,
+    .cmx-page,
+    .cds-page,
+    .ecx-page,
+    .etfx-page,
+    .fndx-page,
+    .gcx-page,
+    .hub-page,
+    .insx-page,
+    .lbx-page,
+    .ntl-page,
+    .oecd-page,
+    .pat-page,
+    .ptx-page,
+    .scm-page,
+    .snx-page
+  ) {
+  padding-inline: var(--ds-gutter);
+}
+
+/* Full-bleed bars inside a canvas bleed by exactly the gutter. */
+.ds-shell :is(.cfi-secnav, .lbx-fb) {
+  margin-inline: calc(-1 * var(--ds-gutter));
+  padding-inline: var(--ds-gutter);
+}
+
+/* ── 2. card shells: no side padding ───────────────────────────────────── */
+.ds-shell
+  :is(
+    .mkt-card,
+    .congress-surface,
+    .bw-card,
+    .cfi-card,
+    .cmx-card,
+    .cre-card,
+    .ecx-card,
+    .etfx-card,
+    .fndx-card,
+    .gcx-card,
+    .hub-card:not(.hub-card--soon),
+    .insx-card,
+    .lbx-card,
+    .ntl-card,
+    .oecd-card,
+    .pat-card,
+    .pcf-card,
+    .pmk-card,
+    .pmk-bar,
+    .ptx-card,
+    .scm-card,
+    .snx-card,
+    .cwh-panel-body
+  ) {
+  padding-inline: 0;
+}
+
+/* A prediction-markets card lights its fill on hover; with no side padding
+   that fill would sit tight against the text, so it stays at rest. */
+.ds-shell .pmk-card:hover {
+  background: var(--pmk-card-bg);
+}
+
+/* ── 3. open tables open and close on the edges ────────────────────────── */
+.ds-shell
+  :is(th, td):first-child:not(:is(.mkt-ds-table-wrap, .gcx-exp-tablewrap, .bw-table-wrap) *) {
+  padding-inline-start: 0;
+}
+.ds-shell
+  :is(th, td):last-child:not(:is(.mkt-ds-table-wrap, .gcx-exp-tablewrap, .bw-table-wrap) *) {
+  padding-inline-end: 0;
+}
+
+/* ── 4. card rows reach the right edge ─────────────────────────────────── */
+.ds-shell :is(.cre-cards, .ntl-cards, .pat-cards, .scm-cards) {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+}
+.ds-shell .wm-highlights {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}

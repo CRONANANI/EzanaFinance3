@@ -7,7 +7,8 @@
    its own mobile padding.
 
    New dataset page? Cap its page wrapper with
-   max-width: var(--ds-canvas-max, 1872px); margin-inline: auto. */
+   max-width: var(--ds-canvas-max, 1872px); margin-inline: auto, and add it
+   to the gutter list in ds-align.css so its side padding is --ds-gutter. */
 .ds-shell {
   --ds-canvas-max: 1872px;
 }
