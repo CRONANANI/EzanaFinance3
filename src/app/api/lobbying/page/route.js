@@ -37,6 +37,9 @@ import {
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+/* A cold aggregate can take several seconds under ingest load; the database
+   allows service_role 30s (see 20261021190000_service_role_timeout.sql). */
+export const maxDuration = 60;
 
 const SOURCE = 'Senate LDA (lda.gov)';
 const VIEWS = [

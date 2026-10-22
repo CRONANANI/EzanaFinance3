@@ -45,7 +45,7 @@ import RatioCard from './RatioCard';
 import MembersCard from './MembersCard';
 import DisclosuresCard from './DisclosuresCard';
 import { ClientDrawer, CompanyModal, FilingModal } from './Overlays';
-import { useJson, useView } from './ui';
+import { useJson, useNearViewport, useView } from './ui';
 import './lobbying.css';
 
 const SOURCE_LINE =
@@ -137,13 +137,19 @@ export default function LobbyingClient() {
   const issues = useView(`view=issues&${qs('issues')}`);
   const pulse = useView(`view=pulse&${qs('pulse')}`);
   const leaders = useView(`view=leaders&by=${by}&${qs('leaders')}`);
-  const pressure = useView(`view=pressure&${qs('pressure')}`);
-  const rhythm = useView(`view=rhythm&${qs('rhythm')}`);
-  const door = useView(`view=door&${qs('door')}`);
-  const lens = useView(`view=lens&${qs('lens')}`);
-  const members = useView(`view=members&types=${types.join(',')}&${qs('members')}`);
+  /* Above the fold load at once; the rest load as they near the viewport. */
+  const [pressureRef, pressureNear] = useNearViewport();
+  const [midRef, midNear] = useNearViewport();
+  const [lensRef, lensNear] = useNearViewport();
+  const [lowRef, lowNear] = useNearViewport();
+  const [tableRef, tableNear] = useNearViewport();
+  const pressure = useView(`view=pressure&${qs('pressure')}`, pressureNear);
+  const rhythm = useView(`view=rhythm&${qs('rhythm')}`, midNear);
+  const door = useView(`view=door&${qs('door')}`, midNear);
+  const lens = useView(`view=lens&${qs('lens')}`, lensNear);
+  const members = useView(`view=members&types=${types.join(',')}&${qs('members')}`, lowNear);
   const tableBase = `view=filings&mode=${mode}&${qs('filings')}`;
-  const table = useView(`${tableBase}&page=${tablePage}`);
+  const table = useView(`${tableBase}&page=${tablePage}`, tableNear);
 
   /* ── coverage ─────────────────────────────────────────────────────────── */
   const { year: cy } = currentQuarter(nowMs);
@@ -261,16 +267,18 @@ export default function LobbyingClient() {
           />
         </div>
 
-        <PressureCard
-          view={pressure}
-          selected={filters.issue}
-          onPick={(code) => setFilters({ issue: code })}
-          sub={sub('pressure')}
-          partial={partial}
-          empty={empty('pressure')}
-        />
+        <div ref={pressureRef} className="lbx-lazy">
+          <PressureCard
+            view={pressure}
+            selected={filters.issue}
+            onPick={(code) => setFilters({ issue: code })}
+            sub={sub('pressure')}
+            partial={partial}
+            empty={empty('pressure')}
+          />
+        </div>
 
-        <div className="lbx-pair">
+        <div className="lbx-pair" ref={midRef}>
           <RhythmCard
             view={rhythm}
             coverageRows={covRows}
@@ -284,14 +292,16 @@ export default function LobbyingClient() {
           <DoorCard view={door} sub={sub('door')} empty={empty('door')} />
         </div>
 
-        <LensCard
-          view={lens}
-          sub={sub('lens')}
-          empty={empty('lens', 'public companies')}
-          onOpen={openCompany}
-        />
+        <div ref={lensRef} className="lbx-lazy">
+          <LensCard
+            view={lens}
+            sub={sub('lens')}
+            empty={empty('lens', 'public companies')}
+            onOpen={openCompany}
+          />
+        </div>
 
-        <div className="lbx-pair">
+        <div className="lbx-pair" ref={lowRef}>
           <RatioCard />
           <MembersCard
             view={members}
@@ -302,19 +312,21 @@ export default function LobbyingClient() {
           />
         </div>
 
-        <DisclosuresCard
-          view={table}
-          mode={mode}
-          setMode={setMode}
-          page={tablePage}
-          setPage={setPage}
-          baseQuery={tableBase}
-          signedIn={Boolean(isAuthenticated)}
-          sub={sub('filings')}
-          empty={empty('filings')}
-          onReset={resetFilters}
-          onOpenFiling={openFiling}
-        />
+        <div ref={tableRef} className="lbx-lazy">
+          <DisclosuresCard
+            view={table}
+            mode={mode}
+            setMode={setMode}
+            page={tablePage}
+            setPage={setPage}
+            baseQuery={tableBase}
+            signedIn={Boolean(isAuthenticated)}
+            sub={sub('filings')}
+            empty={empty('filings')}
+            onReset={resetFilters}
+            onOpenFiling={openFiling}
+          />
+        </div>
 
         {!isAuthenticated ? (
           <section className="lbx-band" aria-labelledby="lbx-band-title">

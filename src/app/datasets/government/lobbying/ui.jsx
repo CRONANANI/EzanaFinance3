@@ -15,7 +15,10 @@ import { fmtSignedPct } from '@/lib/lobbying/page-format';
 
 /**
  * Fetch one /api/lobbying/page view. `query` is the full query string; a
- * change refetches. Retry refetches only this view.
+ * change refetches. A failed request is retried once after a short pause
+ * before the card shows its error, because a cold aggregate can lose a race
+ * with the ingest job and succeed a moment later. Retry refetches only
+ * this view. `enabled` false defers the fetch (cards below the fold).
  * @returns {{ status:'loading'|'ready'|'error', data:any, retry:()=>void }}
  */
 export function useView(query, enabled = true) {
@@ -24,19 +27,58 @@ export function useView(query, enabled = true) {
   useEffect(() => {
     if (!enabled) return undefined;
     const ctrl = new AbortController();
+    let timer = null;
     setState((s) => ({ status: 'loading', data: s.data }));
-    fetch(`/api/lobbying/page?${query}`, { signal: ctrl.signal })
-      .then((r) => r.json().then((j) => ({ ok: r.ok && j?.ok !== false, j })))
-      .then(({ ok, j }) =>
-        setState(ok ? { status: 'ready', data: j.data } : { status: 'error', data: null }),
-      )
-      .catch((e) => {
-        if (e?.name !== 'AbortError') setState({ status: 'error', data: null });
-      });
-    return () => ctrl.abort();
+    const attempt = (n) =>
+      fetch(`/api/lobbying/page?${query}`, { signal: ctrl.signal })
+        .then((r) => r.json().then((j) => ({ ok: r.ok && j?.ok !== false, j })))
+        .catch((e) => {
+          if (e?.name === 'AbortError') throw e;
+          return { ok: false, j: null };
+        })
+        .then(({ ok, j }) => {
+          if (ok) return setState({ status: 'ready', data: j.data });
+          if (n > 0) {
+            timer = setTimeout(() => attempt(n - 1).catch(() => {}), 1500);
+            return undefined;
+          }
+          return setState({ status: 'error', data: null });
+        });
+    attempt(1).catch(() => {});
+    return () => {
+      ctrl.abort();
+      if (timer) clearTimeout(timer);
+    };
   }, [query, enabled, nonce]);
   const retry = useCallback(() => setNonce((n) => n + 1), []);
   return { ...state, retry };
+}
+
+/**
+ * True once the element comes within `margin` of the viewport, and stays
+ * true. Defers the heavier below-the-fold cards so a first visit does not
+ * start every aggregate on the database at the same moment.
+ */
+export function useNearViewport(margin = '600px') {
+  const ref = useRef(null);
+  const [near, setNear] = useState(false);
+  useEffect(() => {
+    if (near) return undefined;
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setNear(true);
+      return undefined;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) setNear(true);
+      },
+      { rootMargin: `${margin} 0px` },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [near, margin]);
+  return [ref, near];
 }
 
 /** Plain JSON fetch for the existing routes (ingest-status, ratio, quotes). */

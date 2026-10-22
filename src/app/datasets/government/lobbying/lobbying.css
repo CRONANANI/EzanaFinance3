@@ -573,6 +573,11 @@
   gap: 24px;
   align-items: stretch;
 }
+.lbx-lazy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
 .lbx-pair--7-5 {
   grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
 }
