@@ -1,705 +1,445 @@
 'use client';
 
 /**
- * Committee Assignments (Capitol Watch). Two views on one page:
- *   By committee: House / Senate / Joint tabs, one card per committee with its
- *     leaders, seat split, mapped sectors, and an expander for members and
- *     subcommittees (?committee=<thomasId> opens one).
- *   By member: search the members who hold a seat, then their committees and
- *     their disclosed trades in sectors those committees oversee
- *     (?member=<bioguideId> opens one).
+ * Committee Assignments (Oct 2026 redesign): ten cards under one sticky
+ * control bar. Design: docs/design/committees-handoff. One page; the view
+ * switch reorders it (Members moves Member Lookup under the controls) and
+ * every card stays live in both views.
  *
- * Reads /api/committees*. No mock data: an unsynced table shows an honest
- * empty state. Sector links are editorial and always carry their note.
+ * State lives in the URL: filter changes use router.replace; committee and
+ * member selections push one entry so Back returns. ?committee= and
+ * ?member= deep links keep working and scroll their card into view.
+ * Components render; the maths lives in committees-page-model.js.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/components/AuthProvider';
 import HubQueryLink from '@/components/datasets/HubQueryLink';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
+import { mappingNote } from '@/lib/congress/committees-page-model';
+import Controls from './Controls';
+import GlanceCard from './GlanceCard';
+import AtlasCard from './AtlasCard';
+import GavelsCard from './GavelsCard';
+import ProfileCard from './ProfileCard';
+import OversightCard from './OversightCard';
+import SeatLoadCard from './SeatLoadCard';
+import TradesCard from './TradesCard';
+import MatrixCard from './MatrixCard';
+import HearingsCard from './HearingsCard';
+import LookupCard from './LookupCard';
+import { CHAMBER_WORD, fmtDate, fmtRange, useJson } from './ui';
 import './committees.css';
 
-const CHAMBERS = [
-  { id: 'house', label: 'House' },
-  { id: 'senate', label: 'Senate' },
-  { id: 'joint', label: 'Joint' },
-];
-const CHAMBER_WORD = { house: 'House', senate: 'Senate', joint: 'Joint' };
-const PARTY_WORD = { D: 'Democrat', R: 'Republican', I: 'Independent' };
+const DEFAULT_COMMITTEE = 'HSIF';
 const SOURCE_LINE =
-  'Source: congress-legislators project (public domain), compiled from House Clerk and Senate records. Trades: House Clerk and Senate disclosures.';
+  'Source: House Clerk and Senate records via the congress-legislators project; Periodic Transaction Reports. For educational purposes only. Not financial advice.';
+const LEAD =
+  'Who sits on each committee in Congress, who holds the gavel, which markets each committee oversees, and where members trade in the sectors they oversee.';
 
-function fmtShortUSD(v) {
-  const n = Number(v);
-  if (!Number.isFinite(n) || n <= 0) return null;
-  if (n >= 1e6) return `$${+(n / 1e6).toFixed(n % 1e6 ? 1 : 0)}M`;
-  if (n >= 1e3) return `$${Math.round(n / 1e3)}K`;
-  return `$${Math.round(n)}`;
-}
-function fmtRange(min, max) {
-  const a = fmtShortUSD(min);
-  const b = fmtShortUSD(max);
-  if (a && b) return `${a} to ${b}`;
-  return a ? `${a}+` : b || 'Undisclosed';
-}
-function fmtDate(iso) {
-  if (!iso) return null;
-  const d = new Date(`${String(iso).slice(0, 10)}T00:00:00Z`);
-  return Number.isNaN(d.getTime())
-    ? null
-    : d.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        timeZone: 'UTC',
-      });
-}
-function fmtType(t) {
-  const s = String(t || '').toLowerCase();
-  if (s.startsWith('p')) return 'Buy';
-  if (s.startsWith('s')) return 'Sell';
-  if (s.startsWith('e')) return 'Exchange';
-  return t || 'Other';
-}
-const seatLabel = (m) =>
-  m?.chamber === 'Senate'
-    ? `Sen. ${m.state || ''}`.trim()
-    : m?.state
-      ? `Rep. ${m.state}${m.district != null ? `-${m.district === 0 ? 'AL' : m.district}` : ''}`
-      : null;
+const DEFAULTS = { view: 'committees', chamber: 'all', party: 'all', sector: 'all', q: '' };
 
-function useJson(url) {
-  const [state, setState] = useState({ status: url ? 'loading' : 'idle', data: null });
-  const [nonce, setNonce] = useState(0);
-  useEffect(() => {
-    if (!url) {
-      setState({ status: 'idle', data: null });
-      return undefined;
-    }
-    let alive = true;
-    setState((s) => ({ status: 'loading', data: s.data }));
-    fetch(url)
-      .then((r) => r.json().then((j) => ({ ok: r.ok && j?.ok !== false, j })))
-      .then(({ ok, j }) => alive && setState({ status: ok ? 'ready' : 'error', data: j }))
-      .catch(() => alive && setState({ status: 'error', data: null }));
-    return () => {
-      alive = false;
-    };
-  }, [url, nonce]);
-  const retry = useCallback(() => setNonce((n) => n + 1), []);
-  return { ...state, retry };
+function parseUrl(sp) {
+  const view = sp.get('view') === 'members' ? 'members' : 'committees';
+  const chamber = ['house', 'senate', 'joint'].includes(sp.get('chamber'))
+    ? sp.get('chamber')
+    : 'all';
+  const party = ['D', 'R', 'I'].includes(sp.get('party')) ? sp.get('party') : 'all';
+  const sector = sp.get('sector') || 'all';
+  const q = sp.get('q') || '';
+  const committee = (sp.get('committee') || '').toUpperCase() || null;
+  const member = (sp.get('member') || '').toUpperCase() || null;
+  return { view, chamber, party, sector, q, committee, member };
 }
 
-function PartyTag({ party }) {
-  if (!party) return null;
-  return (
-    <span className={`cmx-party cmx-party--${party}`} title={PARTY_WORD[party] || party}>
-      {party}
-    </span>
-  );
+function toQuery(state) {
+  const p = new URLSearchParams();
+  if (state.view !== 'committees') p.set('view', state.view);
+  if (state.chamber !== 'all') p.set('chamber', state.chamber);
+  if (state.party !== 'all') p.set('party', state.party);
+  if (state.sector !== 'all') p.set('sector', state.sector);
+  if (state.q) p.set('q', state.q);
+  if (state.committee) p.set('committee', state.committee);
+  if (state.member) p.set('member', state.member);
+  return p.toString();
 }
 
-function Headshot({ src, name }) {
-  const [failed, setFailed] = useState(false);
-  const initials = (name || '?')
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase();
-  if (!src || failed) {
-    return (
-      <span className="cmx-face cmx-face--blank" aria-hidden="true">
-        {initials}
-      </span>
-    );
-  }
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img className="cmx-face" src={src} alt="" loading="lazy" onError={() => setFailed(true)} />
-  );
-}
-
-function SectorChips({ sectors }) {
-  if (!sectors?.length) return null;
-  return (
-    <div className="cmx-chips" aria-label="Sectors this committee oversees">
-      {sectors.map((s) => (
-        <span key={s.key} className="cmx-chip">
-          {s.label}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function SplitBar({ majority, minority }) {
-  const total = majority + minority;
-  if (!total) return null;
-  const pct = Math.round((majority / total) * 100);
-  return (
-    <div className="cmx-split">
-      <div
-        className="cmx-split-bar"
-        role="img"
-        aria-label={`${majority} majority seats, ${minority} minority seats`}
-      >
-        <span className="cmx-split-maj" style={{ width: `${pct}%` }} />
-      </div>
-      <div className="cmx-split-legend cmx-mono">
-        <span>
-          <i className="cmx-dot cmx-dot--maj" aria-hidden="true" />
-          {majority} majority
-        </span>
-        <span>
-          <i className="cmx-dot cmx-dot--min" aria-hidden="true" />
-          {minority} minority
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function Leader({ label, who }) {
-  return (
-    <div className="cmx-leader">
-      <span className="cmx-leader-label">{label}</span>
-      {who ? (
-        <span className="cmx-leader-name">
-          {who.name || who.bioguideId} <PartyTag party={who.party} />
-        </span>
-      ) : (
-        <span className="cmx-leader-name cmx-muted">Not listed</span>
-      )}
-    </div>
-  );
-}
-
-/* ── By committee ───────────────────────────────────────────────────── */
-
-function CommitteeDetail({ thomasId }) {
-  const { status, data, retry } = useJson(`/api/committees/${thomasId}`);
-  const c = data?.committee;
-  if (status === 'loading' && !c) {
-    return (
-      <div className="cmx-detail" aria-busy="true">
-        {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="cmx-skel cmx-skel--row" />
-        ))}
-      </div>
-    );
-  }
-  if (status === 'error' || !c) {
-    return (
-      <div className="cmx-detail cmx-empty">
-        Could not load this committee.{' '}
-        <button type="button" className="cmx-link-btn" onClick={retry}>
-          Try again
-        </button>
-      </div>
-    );
-  }
-  return (
-    <div className="cmx-detail">
-      {c.members.length ? (
-        <ul className="cmx-members">
-          {c.members.map((m) => (
-            <li key={m.bioguideId} className="cmx-member">
-              <Headshot src={m.headshot} name={m.name} />
-              <span className="cmx-member-main">
-                <span className="cmx-member-name">
-                  {m.name} <PartyTag party={m.party} />
-                </span>
-                <span className="cmx-member-meta">
-                  {m.title ||
-                    (m.side === 'majority'
-                      ? 'Majority'
-                      : m.side === 'minority'
-                        ? 'Minority'
-                        : 'Member')}
-                  {m.rank ? <span className="cmx-mono"> · #{m.rank}</span> : null}
-                </span>
-              </span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="cmx-empty">No members listed for this committee.</p>
-      )}
-      {c.subcommittees.length > 0 && (
-        <div className="cmx-subs">
-          <h4 className="cmx-subs-title">
-            Subcommittees <span className="cmx-mono cmx-muted">{c.subcommittees.length}</span>
-          </h4>
-          <ul className="cmx-sub-list">
-            {c.subcommittees.map((s) => (
-              <li key={s.thomasId} className="cmx-sub">
-                <span className="cmx-sub-name">{s.name}</span>
-                <span className="cmx-sub-meta">
-                  {s.chair ? <>Chair {s.chair.name}</> : null}
-                  <span className="cmx-mono"> · {s.seats} seats</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function CommitteeCard({ c, open, onToggle, cardRef }) {
-  const panelId = `cmx-panel-${c.thomasId}`;
-  return (
-    <article
-      className={`cmx-card${open ? ' is-open' : ''}`}
-      ref={cardRef}
-      id={`committee-${c.thomasId}`}
-    >
-      <header className="cmx-card-head">
-        <h3 className="cmx-card-title">{c.name}</h3>
-        <span className="cmx-card-meta cmx-mono">
-          {c.seats} seats
-          {c.subcommittees.length ? ` · ${c.subcommittees.length} subcommittees` : ''}
-        </span>
-      </header>
-      <div className="cmx-leaders">
-        <Leader label="Chair" who={c.chair} />
-        <Leader label="Ranking member" who={c.ranking} />
-      </div>
-      <SplitBar majority={c.majority} minority={c.minority} />
-      <SectorChips sectors={c.sectors} />
-      <button
-        type="button"
-        className="cmx-expand"
-        aria-expanded={open}
-        aria-controls={panelId}
-        onClick={onToggle}
-      >
-        <i className={`bi ${open ? 'bi-chevron-up' : 'bi-chevron-down'}`} aria-hidden="true" />
-        {open ? 'Hide members' : 'Members and subcommittees'}
-      </button>
-      {open && (
-        <div id={panelId}>
-          <CommitteeDetail thomasId={c.thomasId} />
-        </div>
-      )}
-    </article>
-  );
-}
-
-function ByCommittee({ committees, initialCommittee, onOpenCommittee }) {
-  const initialChamber =
-    committees.find((c) => c.thomasId === initialCommittee)?.chamber || 'house';
-  const [chamber, setChamber] = useState(initialChamber);
-  const [open, setOpen] = useState(() => new Set(initialCommittee ? [initialCommittee] : []));
-  const refs = useRef({});
-
-  useEffect(() => {
-    if (!initialCommittee) return;
-    const el = refs.current[initialCommittee];
-    if (el) {
-      const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      el.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
-    }
-  }, [initialCommittee]);
-
-  const list = committees.filter((c) => c.chamber === chamber);
-  const toggle = (id) => {
-    setOpen((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-    onOpenCommittee(id);
-  };
-
-  return (
-    <>
-      <div className="cmx-tabs" role="tablist" aria-label="Chamber">
-        {CHAMBERS.map((ch) => {
-          const n = committees.filter((c) => c.chamber === ch.id).length;
-          return (
-            <button
-              key={ch.id}
-              type="button"
-              role="tab"
-              aria-selected={chamber === ch.id}
-              className={`cmx-tab${chamber === ch.id ? ' is-active' : ''}`}
-              onClick={() => setChamber(ch.id)}
-            >
-              {ch.label} <span className="cmx-mono cmx-muted">{n}</span>
-            </button>
-          );
-        })}
-      </div>
-      <div className="cmx-grid" role="tabpanel">
-        {list.map((c) => (
-          <CommitteeCard
-            key={c.thomasId}
-            c={c}
-            open={open.has(c.thomasId)}
-            onToggle={() => toggle(c.thomasId)}
-            cardRef={(el) => {
-              refs.current[c.thomasId] = el;
-            }}
-          />
-        ))}
-      </div>
-    </>
-  );
-}
-
-/* ── By member ──────────────────────────────────────────────────────── */
-
-function MemberResult({ bioguideId, note }) {
-  const { status, data, retry } = useJson(`/api/committees/member/${bioguideId}`);
-  if (status === 'loading' && !data) {
-    return (
-      <div className="cmx-member-view" aria-busy="true">
-        <div className="cmx-skel cmx-skel--title" />
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="cmx-skel cmx-skel--row" />
-        ))}
-      </div>
-    );
-  }
-  if (status === 'error' || !data) {
-    return (
-      <div className="cmx-member-view cmx-empty">
-        Could not load this member.{' '}
-        <button type="button" className="cmx-link-btn" onClick={retry}>
-          Try again
-        </button>
-      </div>
-    );
-  }
-  const { member, committees, trades, counts } = data;
-  return (
-    <div className="cmx-member-view">
-      <div className="cmx-mv-head">
-        <div>
-          <h3 className="cmx-mv-name">
-            {member.name || member.bioguideId} <PartyTag party={member.party} />
-          </h3>
-          <p className="cmx-mv-sub cmx-mono">{seatLabel(member)}</p>
-        </div>
-        <Link
-          className="cmx-mv-link"
-          href={`/datasets/politician-tracker?member=${encodeURIComponent(member.bioguideId)}`}
-        >
-          <i className="bi bi-person-lines-fill" aria-hidden="true" />
-          Politician Tracker profile
-        </Link>
-      </div>
-
-      {committees.length ? (
-        <ul className="cmx-mv-committees">
-          {committees.map((c) => (
-            <li key={c.thomasId} className="cmx-mv-committee">
-              <div className="cmx-mv-c-head">
-                <Link
-                  className="cmx-mv-c-name"
-                  href={`/datasets/committees?committee=${c.thomasId}`}
-                >
-                  {c.name}
-                </Link>
-                {c.title ? <span className="cmx-title-pill">{c.title}</span> : null}
-              </div>
-              {c.subcommittees.length > 0 && (
-                <ul className="cmx-mv-subs">
-                  {c.subcommittees.map((s) => (
-                    <li key={s.thomasId}>
-                      {s.name}
-                      {s.title ? <span className="cmx-title-pill">{s.title}</span> : null}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <SectorChips sectors={c.sectors} />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="cmx-empty">No committee assignments on record for this member.</p>
-      )}
-
-      <section className="cmx-trades" aria-labelledby="cmx-trades-title">
-        <h4 id="cmx-trades-title" className="cmx-section-title">
-          Disclosed trades in sectors their committees oversee
-        </h4>
-        <p className="cmx-note">
-          {note} Last 24 months.{' '}
-          <span className="cmx-mono">
-            {counts.overseen} of {counts.trades}
-          </span>{' '}
-          ticker trades fall in an overseen sector;{' '}
-          <span className="cmx-mono">{counts.unmapped}</span> have tickers the sector map does not
-          cover.
-        </p>
-        {trades.length ? (
-          <div className="cmx-table-wrap">
-            <table className="cmx-table">
-              <thead>
-                <tr>
-                  <th scope="col">Date</th>
-                  <th scope="col">Ticker</th>
-                  <th scope="col">Type</th>
-                  <th scope="col">Amount</th>
-                  <th scope="col">Committee</th>
-                  <th scope="col">Sector</th>
-                  <th scope="col">
-                    <span className="cmx-sr">Filing</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {trades.map((t, i) => (
-                  <tr key={`${t.transaction_date}-${t.ticker}-${i}`}>
-                    <td className="cmx-mono">{fmtDate(t.transaction_date)}</td>
-                    <td className="cmx-mono cmx-strong">{t.ticker}</td>
-                    <td>{fmtType(t.type)}</td>
-                    <td className="cmx-mono">{fmtRange(t.amount_min, t.amount_max)}</td>
-                    <td>{t.committee.shortName}</td>
-                    <td>{t.sector.label}</td>
-                    <td>
-                      {t.source_url ? (
-                        <a
-                          className="cmx-icon-link"
-                          href={t.source_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label={`Open the ${t.ticker} filing`}
-                        >
-                          <i className="bi bi-box-arrow-up-right" aria-hidden="true" />
-                        </a>
-                      ) : null}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="cmx-empty">
-            No disclosed trades in the sectors this member&apos;s committees oversee.
-          </p>
-        )}
-      </section>
-    </div>
-  );
-}
-
-function ByMember({ members, initialMember, onSelect, note }) {
-  const [query, setQuery] = useState('');
-  const [selected, setSelected] = useState(initialMember || null);
-  const q = query.trim().toLowerCase();
-  const matches = useMemo(() => {
-    if (!q) return [];
-    return members
-      .filter((m) => m.name.toLowerCase().includes(q) || (m.state || '').toLowerCase() === q)
-      .slice(0, 12);
-  }, [members, q]);
-
-  const pick = (id) => {
-    setSelected(id);
-    setQuery('');
-    onSelect(id);
-  };
-
-  return (
-    <div className="cmx-by-member">
-      <div className="cmx-search">
-        <i className="bi bi-search" aria-hidden="true" />
-        <input
-          type="search"
-          className="cmx-search-input ds-search-input"
-          placeholder="Search a member by name or state"
-          aria-label="Search members of Congress"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-      </div>
-      {q && (
-        <ul className="cmx-results" aria-label="Matching members">
-          {matches.length ? (
-            matches.map((m) => (
-              <li key={m.bioguideId}>
-                <button type="button" className="cmx-result" onClick={() => pick(m.bioguideId)}>
-                  <span>
-                    {m.name} <PartyTag party={m.party} />
-                  </span>
-                  <span className="cmx-mono cmx-muted">{seatLabel(m)}</span>
-                </button>
-              </li>
-            ))
-          ) : (
-            <li className="cmx-empty">No member with a committee seat matches.</li>
-          )}
-        </ul>
-      )}
-      {selected ? (
-        <MemberResult key={selected} bioguideId={selected} note={note} />
-      ) : (
-        !q && (
-          <p className="cmx-empty">
-            Pick a member to see their committees and the trades they disclosed in the sectors those
-            committees oversee.
-          </p>
-        )
-      )}
-    </div>
-  );
-}
-
-/* ── Page ───────────────────────────────────────────────────────────── */
+const scrollToCard = (id) => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  el.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+};
 
 export default function CommitteesClient() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const pathname = usePathname();
-  const initialCommittee = (searchParams.get('committee') || '').toUpperCase() || null;
-  const initialMember = (searchParams.get('member') || '').toUpperCase() || null;
-  const [view, setView] = useState(initialMember ? 'member' : 'committee');
-  const { status, data, retry } = useJson('/api/committees');
+  const pathname = usePathname() || '/datasets/committees';
+  const sp = useSearchParams();
+  const url = parseUrl(sp);
+  const { isAuthenticated } = useAuth() || {};
 
-  const setParam = useCallback(
-    (key, value) => {
-      const next = new URLSearchParams();
-      if (value) next.set(key, value);
-      const qs = next.toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  const index = useJson('/api/committees');
+  const committees = useMemo(() => index.data?.committees || [], [index.data]);
+  const allMembers = useMemo(() => index.data?.members || [], [index.data]);
+  const selectedCommittee = url.committee || (committees.length ? DEFAULT_COMMITTEE : null);
+  const selectedMember = url.member;
+
+  /* ── URL writes: replace for filters, push for selections ───────────── */
+  const navigate = useCallback(
+    (patch, { push = false } = {}) => {
+      const next = { ...parseUrl(sp), ...patch };
+      const qs = toQuery(next);
+      const target = qs ? `${pathname}?${qs}` : pathname;
+      if (push) router.push(target, { scroll: false });
+      else router.replace(target, { scroll: false });
     },
-    [pathname, router],
+    [sp, pathname, router],
+  );
+  const setFilters = useCallback((patch) => navigate(patch), [navigate]);
+  const resetFilters = useCallback(() => navigate({ ...DEFAULTS }), [navigate]);
+  const openCommittee = useCallback(
+    (thomasId) => {
+      if (!thomasId) return;
+      navigate({ committee: thomasId }, { push: true });
+      scrollToCard('cmx-profile');
+    },
+    [navigate],
+  );
+  const openMember = useCallback(
+    (bioguideId) => {
+      if (!bioguideId) return;
+      navigate({ member: bioguideId }, { push: true });
+      scrollToCard('cmx-lookup');
+    },
+    [navigate],
   );
 
-  const belt = data?.belt;
+  /* deep links scroll their card into view once the data is up */
+  const landed = useRef(false);
+  useEffect(() => {
+    if (landed.current || index.status !== 'ready') return;
+    landed.current = true;
+    if (url.member) scrollToCard('cmx-lookup');
+    else if (url.committee) scrollToCard('cmx-profile');
+  }, [index.status, url.member, url.committee]);
+
+  const activeCount =
+    (url.chamber !== 'all') + (url.party !== 'all') + (url.sector !== 'all') + (url.q ? 1 : 0);
+
+  /* ── filtered views of the index (controls_apply_to) ─────────────────── */
+  const sectors = useMemo(() => {
+    const by = new Map();
+    for (const c of committees) for (const s of c.sectors) by.set(s.key, s);
+    return [...by.values()].sort((a, b) => a.label.localeCompare(b.label));
+  }, [committees]);
+  const sectorLabel =
+    url.sector !== 'all' ? sectors.find((s) => s.key === url.sector)?.label : null;
+
+  const byChamberSector = useCallback(
+    (chamber, sector) =>
+      committees.filter(
+        (c) =>
+          (chamber === 'all' || c.chamber === chamber) &&
+          (sector === 'all' || c.sectors.some((s) => s.key === sector)),
+      ),
+    [committees],
+  );
+  const glanceList = useMemo(
+    () => byChamberSector(url.chamber, url.sector),
+    [byChamberSector, url.chamber, url.sector],
+  );
+  const atlasList = useMemo(() => {
+    const t = url.q.trim().toLowerCase();
+    return glanceList.filter(
+      (c) =>
+        !t ||
+        c.shortName.toLowerCase().includes(t) ||
+        c.name.toLowerCase().includes(t) ||
+        c.thomasId.toLowerCase().includes(t),
+    );
+  }, [glanceList, url.q]);
+  const oversightList = useMemo(
+    () => byChamberSector(url.chamber, 'all'),
+    [byChamberSector, url.chamber],
+  );
+
+  const glanceStats = useMemo(() => {
+    if (!committees.length) return null;
+    const ids = new Set(glanceList.map((c) => c.thomasId));
+    let seatRows = 0;
+    let majority = 0;
+    let minority = 0;
+    let subs = 0;
+    for (const c of glanceList) {
+      subs += c.subcommittees.length;
+      for (const unit of [c, ...c.subcommittees]) {
+        seatRows += unit.seats;
+        majority += unit.majority;
+        minority += unit.minority;
+      }
+    }
+    const members = allMembers.filter((m) => m.committeeIds?.some((id) => ids.has(id))).length;
+    return {
+      committees: glanceList.length,
+      subcommittees: subs,
+      seats: seatRows,
+      majority,
+      minority,
+      members,
+    };
+  }, [committees.length, glanceList, allMembers]);
+
+  const seatLoadMembers = useMemo(() => {
+    const ids = new Set(glanceList.map((c) => c.thomasId));
+    return allMembers.filter(
+      (m) =>
+        (url.party === 'all' || m.party === url.party) && m.committeeIds?.some((id) => ids.has(id)),
+    );
+  }, [allMembers, glanceList, url.party]);
+
+  /* ── per-card scope subtitles and empty copy ─────────────────────────── */
+  const scopeParts = (keys) => {
+    const parts = [];
+    if (keys.includes('chamber'))
+      parts.push(url.chamber === 'all' ? 'ALL CHAMBERS' : CHAMBER_WORD[url.chamber].toUpperCase());
+    if (keys.includes('party') && url.party !== 'all') parts.push(`PARTY ${url.party}`);
+    if (keys.includes('sector'))
+      parts.push(url.sector === 'all' ? 'ALL SECTORS' : (sectorLabel || url.sector).toUpperCase());
+    return parts.join(' · ');
+  };
+  const emptyMsg = (what, keys) => {
+    const live = [];
+    if (keys.includes('chamber') && url.chamber !== 'all') live.push(CHAMBER_WORD[url.chamber]);
+    if (keys.includes('party') && url.party !== 'all') live.push(`party ${url.party}`);
+    if (keys.includes('sector') && url.sector !== 'all') live.push(sectorLabel || url.sector);
+    if (keys.includes('q') && url.q) live.push(`"${url.q.trim()}"`);
+    return live.length
+      ? `No ${what} match ${live.join(', ')}. Reset the filters to see everything.`
+      : `No ${what} are on record yet. They refresh daily from the public record.`;
+  };
+
+  /* ── Card 7 feed and the profile strip ───────────────────────────────── */
+  const [tradeSide, setTradeSide] = useState('all');
+  const [tradeCommittee, setTradeCommittee] = useState(null);
+  const [tradePage, setTradePage] = useState(1);
+  const tradeParams = (extra) => {
+    const p = new URLSearchParams();
+    if (url.chamber !== 'all') p.set('chamber', url.chamber);
+    if (url.party !== 'all') p.set('party', url.party);
+    if (url.sector !== 'all') p.set('sector', url.sector);
+    for (const [k, v] of Object.entries(extra)) if (v) p.set(k, v);
+    return p.toString();
+  };
+  const trades = useJson(
+    `/api/committees/trades?${tradeParams({
+      side: tradeSide === 'all' ? null : tradeSide,
+      committee: tradeCommittee,
+      page: tradePage > 1 ? String(tradePage) : null,
+    })}`,
+  );
+  const setTradeSideAnd = (v) => {
+    setTradeSide(v);
+    setTradePage(1);
+  };
+  const setTradeCommitteeAnd = (v) => {
+    setTradeCommittee(v);
+    setTradePage(1);
+  };
+  const profileStrip = useJson(
+    selectedCommittee ? `/api/committees/trades?committee=${selectedCommittee}` : null,
+  );
+  const matrix = useJson('/api/committees/matrix');
+
+  /* ── ticker belt: MEMBER (P-ST) · SIDE · TICKER · $RANGE · COMMITTEE ─── */
+  const belt = index.data?.belt;
   const tickerItems = useMemo(
     () =>
-      (belt || []).map((t, i) => ({
-        id: `${t.bioguideId}-${t.transaction_date}-${t.ticker}-${i}`,
-        lead: `${CHAMBER_WORD[t.committee.chamber] || ''} ${t.committee.shortName}`.trim(),
-        main: t.member || t.bioguideId,
-        value: `${t.ticker} ${fmtRange(t.amount_min, t.amount_max)}`,
-        _member: t.bioguideId,
-      })),
-    [belt],
+      (belt || []).map((t, i) => {
+        const kind = String(t.type || '').toLowerCase();
+        const side = kind.startsWith('p') ? 'BUY' : kind.startsWith('s') ? 'SELL' : 'TRADE';
+        const dir = allMembers.find((m) => m.bioguideId === t.bioguideId);
+        const seat = dir?.party && dir?.state ? ` (${dir.party}-${dir.state})` : '';
+        return {
+          id: `${t.bioguideId}-${t.transaction_date}-${t.ticker}-${i}`,
+          lead: `${t.member || t.bioguideId}${seat}`,
+          main: `${side} · ${t.ticker}`,
+          value: `${fmtRange(t.amount_min, t.amount_max)} · ${t.committee.shortName}`,
+          _member: t.bioguideId,
+        };
+      }),
+    [belt, allMembers],
   );
-  const onTickerSelect = useCallback(
-    (it) => {
-      setView('member');
-      setParam('member', it._member);
-    },
-    [setParam],
-  );
+  const onTickerSelect = useCallback((it) => openMember(it._member), [openMember]);
   usePublishTicker({
     items: tickerItems,
     onSelect: onTickerSelect,
-    ariaLabel: 'Recent trades in sectors the trader’s committees oversee',
+    ariaLabel: 'Recent trades in sectors the trading member’s committees oversee',
   });
 
-  const counts = data?.counts;
-  const committees = data?.committees || [];
-  const note = data?.note || '';
-  const synced = data?.syncedAt ? fmtDate(data.syncedAt) : null;
+  const synced = index.data?.syncedAt ? fmtDate(index.data.syncedAt) : null;
+  const filters = {
+    view: url.view,
+    chamber: url.chamber,
+    party: url.party,
+    sector: url.sector,
+    q: url.q,
+  };
+
+  const lookupCard = (
+    <LookupCard bioguideId={selectedMember} members={allMembers} onMember={openMember} />
+  );
 
   return (
     <div className="cmx-page">
       <header className="cmx-header">
-        <p className="cmx-eyebrow">DATASETS · CAPITOL WATCH</p>
-        <h1 className="cmx-title">Committee Assignments</h1>
-        <p className="cmx-sub">
-          Who sits on every House, Senate and joint committee, who leads it, and what its members
-          trade in the sectors it oversees.
-        </p>
-        <dl className="cmx-stats">
-          <div className="cmx-stat">
-            <dt>Committees</dt>
-            <dd className="cmx-mono">{counts ? counts.committees : '–'}</dd>
-          </div>
-          <div className="cmx-stat">
-            <dt>Subcommittees</dt>
-            <dd className="cmx-mono">{counts ? counts.subcommittees : '–'}</dd>
-          </div>
-          <div className="cmx-stat">
-            <dt>Seats filled</dt>
-            <dd className="cmx-mono">{counts ? counts.seats.toLocaleString('en-US') : '–'}</dd>
-          </div>
-          <div className="cmx-stat">
-            <dt>Last synced</dt>
-            <dd className="cmx-mono">{synced || '–'}</dd>
-          </div>
-        </dl>
+        <div className="cmx-header-main">
+          <p className="cmx-eyebrow">DATASETS · COMMITTEE ASSIGNMENTS</p>
+          <h1 className="cmx-pagetitle">Committee assignments</h1>
+          <p className="cmx-lead">{LEAD}</p>
+        </div>
+        {synced ? <p className="cmx-asof cmx-mono">Rosters as of {synced}</p> : null}
       </header>
 
       <HubQueryLink dimension="capitol" />
 
-      <div className="cmx-seg" role="group" aria-label="View">
-        <button
-          type="button"
-          className={`cmx-seg-btn${view === 'committee' ? ' is-active' : ''}`}
-          aria-pressed={view === 'committee'}
-          onClick={() => {
-            setView('committee');
-            setParam('committee', null);
+      <Controls
+        filters={filters}
+        set={setFilters}
+        reset={resetFilters}
+        activeCount={activeCount}
+        sectors={sectors}
+        committees={committees}
+        members={allMembers}
+        onCommittee={openCommittee}
+        onMember={openMember}
+      />
+
+      <div className="cmx-cards">
+        {url.view === 'members' ? lookupCard : null}
+
+        <GlanceCard
+          status={index.status}
+          retry={index.retry}
+          sub={scopeParts(['chamber', 'sector'])}
+          empty={
+            index.status === 'ready' && !glanceList.length
+              ? emptyMsg('committees', ['chamber', 'sector'])
+              : null
+          }
+          stats={glanceStats}
+        />
+
+        <div className="cmx-pair cmx-pair--8-4">
+          <AtlasCard
+            committees={atlasList}
+            status={index.status}
+            retry={index.retry}
+            sub={scopeParts(['chamber', 'sector'])}
+            empty={emptyMsg('committees', ['chamber', 'sector', 'q'])}
+            selected={selectedCommittee}
+            onSelect={openCommittee}
+          />
+          <GavelsCard
+            committees={glanceList}
+            status={index.status}
+            retry={index.retry}
+            sub={scopeParts(['chamber', 'party', 'sector'])}
+            empty={emptyMsg('leaders', ['chamber', 'party', 'sector'])}
+            party={url.party}
+            onMember={openMember}
+            onCommittee={openCommittee}
+          />
+        </div>
+
+        <ProfileCard
+          thomasId={selectedCommittee}
+          tradesCount={profileStrip.data?.summary?.trades ?? null}
+          tradesWindow={profileStrip.data?.window?.months ?? null}
+          onMember={openMember}
+          onTrades={() => {
+            setTradeCommitteeAnd(selectedCommittee);
+            scrollToCard('cmx-trades');
           }}
-        >
-          <i className="bi bi-diagram-3" aria-hidden="true" /> By committee
-        </button>
-        <button
-          type="button"
-          className={`cmx-seg-btn${view === 'member' ? ' is-active' : ''}`}
-          aria-pressed={view === 'member'}
-          onClick={() => {
-            setView('member');
-            setParam('member', null);
-          }}
-        >
-          <i className="bi bi-person" aria-hidden="true" /> By member
-        </button>
+        />
+
+        <div className="cmx-pair cmx-pair--7-5">
+          <OversightCard
+            committees={oversightList}
+            status={index.status}
+            retry={index.retry}
+            sub={scopeParts(['chamber'])}
+            empty={emptyMsg('mapped committees', ['chamber'])}
+            onSector={(key) => setFilters({ sector: key })}
+            onCommittee={openCommittee}
+          />
+          <SeatLoadCard
+            members={seatLoadMembers}
+            status={index.status}
+            retry={index.retry}
+            sub={scopeParts(['chamber', 'party', 'sector'])}
+            empty={emptyMsg('members', ['chamber', 'party', 'sector'])}
+            onMember={openMember}
+          />
+        </div>
+
+        <TradesCard
+          view={trades}
+          side={tradeSide}
+          setSide={setTradeSideAnd}
+          committee={tradeCommittee}
+          setCommittee={setTradeCommitteeAnd}
+          committees={committees.filter((c) => c.sectors.length)}
+          page={tradePage}
+          setPage={setTradePage}
+          sub={scopeParts(['chamber', 'party', 'sector'])}
+          empty={emptyMsg('overseen-sector trades', ['chamber', 'party', 'sector'])}
+          onMember={openMember}
+          onCommittee={openCommittee}
+        />
+
+        <div className="cmx-pair cmx-pair--7-5">
+          <MatrixCard
+            view={matrix}
+            chamber={url.chamber}
+            sector={url.sector}
+            sub={scopeParts(['chamber', 'sector'])}
+            empty={emptyMsg('held tickers', ['chamber', 'sector'])}
+            onCommittee={openCommittee}
+          />
+          <HearingsCard onProfile={() => scrollToCard('cmx-profile')} />
+        </div>
+
+        {url.view !== 'members' ? lookupCard : null}
+
+        {!isAuthenticated ? (
+          <section className="cmx-band" aria-labelledby="cmx-band-title">
+            <div>
+              <p className="cmx-kicker">Free account</p>
+              <h2 id="cmx-band-title" className="cmx-band-title">
+                Follow the committees that move your sectors
+              </h2>
+              <p className="cmx-band-line">
+                Create a free account to keep exploring Ezana&apos;s congressional datasets.
+              </p>
+            </div>
+            <div className="cmx-band-actions">
+              <a className="cmx-btn" href="/auth/signup?redirect=/datasets/committees">
+                Create free account
+              </a>
+              <a
+                className="cmx-btn cmx-btn--ghost"
+                href="/auth/login?redirect=/datasets/committees"
+              >
+                Sign in
+              </a>
+            </div>
+          </section>
+        ) : null}
       </div>
 
-      {status === 'loading' && !data ? (
-        <div className="cmx-grid" aria-busy="true" aria-label="Loading committees">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="cmx-card cmx-card--skel">
-              <div className="cmx-skel cmx-skel--title" />
-              <div className="cmx-skel cmx-skel--row" />
-              <div className="cmx-skel cmx-skel--row" />
-            </div>
-          ))}
-        </div>
-      ) : status === 'error' ? (
-        <div className="cmx-empty cmx-empty--block">
-          Committee data could not be loaded.{' '}
-          <button type="button" className="cmx-link-btn" onClick={retry}>
-            Try again
-          </button>
-        </div>
-      ) : !committees.length ? (
-        <div className="cmx-empty cmx-empty--block">
-          Committee assignments have not been synced yet. They refresh daily from the public record.
-        </div>
-      ) : view === 'committee' ? (
-        <ByCommittee
-          committees={committees}
-          initialCommittee={initialCommittee}
-          onOpenCommittee={(id) => setParam('committee', id)}
-        />
-      ) : (
-        <ByMember
-          members={data.members || []}
-          initialMember={initialMember}
-          onSelect={(id) => setParam('member', id)}
-          note={note}
-        />
-      )}
-
-      <footer className="cmx-foot">
-        {note ? <p>{note}</p> : null}
+      <footer className="cmx-legal">
         <p>{SOURCE_LINE}</p>
+        <p>{mappingNote()}</p>
       </footer>
     </div>
   );

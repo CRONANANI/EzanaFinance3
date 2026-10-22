@@ -10,7 +10,7 @@
 import { memberByBioguide } from '@/lib/politicians/member-directory';
 import { resolveHeadshot } from '@/lib/politicians/headshots';
 import { SECTORS, sectorsForTicker } from './policy-sector-map';
-import { sectorsForCommittee, sectorLabel } from './committee-sectors';
+import { COMMITTEE_SECTORS, sectorsForCommittee, sectorLabel } from './committee-sectors';
 import { committeeLeaders } from './committees';
 
 const PAGE = 1000;
@@ -35,11 +35,13 @@ const partyOf = (bioguideId) => memberByBioguide(bioguideId)?.party || null;
 function person(seat) {
   if (!seat) return null;
   const dir = memberByBioguide(seat.bioguide_id);
+  const name = dir?.fullName || seat.member_name || null;
   return {
     bioguideId: seat.bioguide_id,
-    name: dir?.fullName || seat.member_name || null,
+    name,
     party: dir?.party || null,
     title: seat.title || null,
+    headshot: resolveHeadshot({ name, bioguideId: seat.bioguide_id })?.src || null,
   };
 }
 
@@ -212,7 +214,8 @@ export async function getCommitteeIndex(admin) {
     }
   }
 
-  /* Everyone holding a seat, for the page's member search. */
+  /* Everyone holding a seat, for the page's member search and Seat Load.
+     seatCount includes subcommittee seats (one row per seat held). */
   const members = [...seatsByMember.entries()]
     .map(([bioguideId, list]) => {
       const dir = memberByBioguide(bioguideId);
@@ -223,9 +226,31 @@ export async function getCommitteeIndex(admin) {
         chamber: dir?.chamber || null,
         state: dir?.state || null,
         district: dir?.district ?? null,
+        seatCount: list.length,
+        committeeIds: [
+          ...new Set(
+            list.map((s) => {
+              const c = committeeById.get(s.committee_thomas_id);
+              return c?.parent_thomas_id || s.committee_thomas_id;
+            }),
+          ),
+        ],
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name));
+
+  /* Majority/minority seat totals per chamber for Congress at a Glance. */
+  const split = { majority: 0, minority: 0 };
+  const byChamber = {};
+  for (const s of seats) {
+    const c = committeeById.get(s.committee_thomas_id);
+    const chamber = c?.chamber || 'house';
+    if (!byChamber[chamber]) byChamber[chamber] = { majority: 0, minority: 0 };
+    if (s.side === 'majority' || s.side === 'minority') {
+      split[s.side] += 1;
+      byChamber[chamber][s.side] += 1;
+    }
+  }
 
   const syncedAt = committees.reduce(
     (max, c) => (c.synced_at && c.synced_at > max ? c.synced_at : max),
@@ -237,10 +262,162 @@ export async function getCommitteeIndex(admin) {
       committees: parents.length,
       subcommittees: committees.length - parents.length,
       seats: seats.length,
+      members: members.length,
     },
+    split,
+    splitByChamber: byChamber,
     syncedAt: syncedAt || null,
     belt,
     members,
+  };
+}
+
+/* ── Card 7: the overseen-trades window feed ─────────────────────────── */
+
+const TRADE_WINDOW_MONTHS = 3;
+const FEED_PAGE_SIZE = 25;
+const FEED_SCAN_LIMIT = 5000;
+
+/**
+ * Every trade in the window by a member holding a seat, matched against the
+ * sectors that member's committees oversee. Matched rows carry the
+ * overseeing committee and sector; a seated member's trade in a ticker the
+ * sector map cannot place is returned as unmapped (counted quietly, never
+ * guessed). Amounts stay the disclosure range. Filters narrow the matched
+ * rows; the unmapped count follows the party filter only (it has no
+ * committee or sector to filter on).
+ */
+export async function getOverseenTradeFeed(
+  admin,
+  { committee = null, sector = null, side = null, party = null, chamber = null, page = 1 } = {},
+) {
+  const { committees, seats } = await loadAll(admin);
+  const committeeById = new Map(committees.map((c) => [c.thomas_id, c]));
+  const seatsByMember = new Map();
+  for (const s of seats) {
+    if (!seatsByMember.has(s.bioguide_id)) seatsByMember.set(s.bioguide_id, []);
+    seatsByMember.get(s.bioguide_id).push(s);
+  }
+
+  const from = monthsAgo(TRADE_WINDOW_MONTHS);
+  const { data: recent, error } = await admin
+    .from('congress_trades')
+    .select(TRADE_COLS)
+    .not('ticker', 'is', null)
+    .gte('transaction_date', from)
+    .order('transaction_date', { ascending: false })
+    .limit(FEED_SCAN_LIMIT);
+  if (error) throw new Error(error.message);
+
+  const oversightCache = new Map();
+  const matched = [];
+  let unmapped = 0;
+  for (const t of recent || []) {
+    const mySeats = seatsByMember.get(t.bioguide_id);
+    if (!mySeats) continue;
+    const dir = memberByBioguide(t.bioguide_id);
+    if (party && (dir?.party || null) !== party) continue;
+    if (!oversightCache.has(t.bioguide_id)) {
+      oversightCache.set(t.bioguide_id, oversightFor(mySeats, committeeById));
+    }
+    const res = matchOverseenTrades([t], oversightCache.get(t.bioguide_id));
+    if (!res.matched.length) {
+      if (res.unmapped) unmapped += 1;
+      continue;
+    }
+    const m = res.matched[0];
+    if (committee && m.committee.thomasId !== committee) continue;
+    if (sector && m.sector.key !== sector) continue;
+    if (chamber && m.committee.chamber !== chamber) continue;
+    const kind = String(t.type || '').toLowerCase();
+    const rowSide = kind.startsWith('p') ? 'buy' : kind.startsWith('s') ? 'sell' : 'other';
+    if (side && rowSide !== side) continue;
+    matched.push({
+      ...m,
+      bioguideId: t.bioguide_id,
+      member: dir?.fullName || null,
+      party: dir?.party || null,
+      state: dir?.state || null,
+      side: rowSide,
+    });
+  }
+
+  const people = new Set(matched.map((r) => r.bioguideId));
+  const summary = {
+    trades: matched.length,
+    buys: matched.filter((r) => r.side === 'buy').length,
+    sells: matched.filter((r) => r.side === 'sell').length,
+    members: people.size,
+    unmapped,
+  };
+  const pages = Math.max(1, Math.ceil(matched.length / FEED_PAGE_SIZE));
+  const p = Math.min(Math.max(1, page), pages);
+  return {
+    window: { from, months: TRADE_WINDOW_MONTHS },
+    summary,
+    rows: matched.slice((p - 1) * FEED_PAGE_SIZE, p * FEED_PAGE_SIZE),
+    page: p,
+    pages,
+    pageSize: FEED_PAGE_SIZE,
+  };
+}
+
+/* ── Card 8: the committee holdings matrix ───────────────────────────── */
+
+const MATRIX_PAIR_CHUNK = 50;
+
+/**
+ * hub_committee_ticker_stats over every mapped committee and the tickers of
+ * its overseen sectors. Counts and names only: the function returns no
+ * dollar figure, so the matrix cannot show one. Holdings are open positions
+ * inferred from disclosures (bought and not fully sold).
+ */
+export async function getCommitteeTickerMatrix(admin) {
+  const entries = Object.entries(COMMITTEE_SECTORS);
+  const pairs = [];
+  for (const [thomasId, sectorKeys] of entries) {
+    const tickers = [...new Set(sectorKeys.flatMap((k) => SECTORS[k]?.tickers || []))];
+    for (const ticker of tickers) pairs.push({ committee: thomasId, ticker });
+  }
+
+  const { data: rows } = await admin
+    .from('congress_committees')
+    .select('thomas_id, chamber, name')
+    .in(
+      'thomas_id',
+      entries.map(([id]) => id),
+    );
+  const nameBy = new Map((rows || []).map((r) => [r.thomas_id, r]));
+
+  const cells = [];
+  for (let i = 0; i < pairs.length; i += MATRIX_PAIR_CHUNK) {
+    const { data, error } = await admin.rpc('hub_committee_ticker_stats', {
+      p_pairs: pairs.slice(i, i + MATRIX_PAIR_CHUNK),
+    });
+    if (error) throw new Error(error.message);
+    cells.push(...(data || []));
+  }
+
+  return {
+    sinceDays: 180,
+    committees: entries.map(([thomasId, sectorKeys]) => {
+      const c = nameBy.get(thomasId);
+      return {
+        thomasId,
+        chamber: c?.chamber || null,
+        shortName: c ? shortCommitteeName(c.name) : thomasId,
+        sectors: sectorList(sectorKeys),
+      };
+    }),
+    cells: cells.map((c) => ({
+      committee: c.committee_thomas_id,
+      ticker: c.ticker,
+      seats: c.seats,
+      holders: c.holders,
+      holderNames: c.holder_names || [],
+      buyers: c.buyers,
+      sellers: c.sellers,
+    })),
   };
 }
 
