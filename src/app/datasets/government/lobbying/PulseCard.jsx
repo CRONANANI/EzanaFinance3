@@ -40,6 +40,7 @@ export default function PulseCard({
       title="Influence pulse"
       sub={sub}
       status={view.status}
+      refreshing={view.refreshing}
       onRetry={view.retry}
       empty={isEmpty ? empty : null}
       onReset={onReset}

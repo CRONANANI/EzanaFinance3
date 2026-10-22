@@ -33,6 +33,7 @@ export default function PressureCard({ view, selected, onPick, sub, partial, emp
         </div>
       }
       status={view.status}
+      refreshing={view.refreshing}
       onRetry={view.retry}
       empty={isEmpty ? empty : null}
       partial={partial}

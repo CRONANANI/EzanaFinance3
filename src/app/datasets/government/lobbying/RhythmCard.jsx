@@ -57,6 +57,7 @@ export default function RhythmCard({ view, coverageRows, nowMs, sub, empty }) {
       title="Quarterly rhythm"
       sub={sub}
       status={view.status}
+      refreshing={view.refreshing}
       onRetry={view.retry}
       empty={isEmpty ? empty : null}
       skeleton={<Skel h={H} />}

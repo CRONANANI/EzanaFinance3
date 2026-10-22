@@ -101,6 +101,7 @@ export default function DisclosuresCard({
         </div>
       }
       status={view.status}
+      refreshing={view.refreshing}
       onRetry={view.retry}
       empty={isEmpty ? empty : null}
       onReset={onReset}

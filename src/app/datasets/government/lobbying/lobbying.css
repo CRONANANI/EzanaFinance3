@@ -737,6 +737,45 @@
   }
 }
 
+/* refreshing: the last answer stays on screen, dimmed, while the next loads */
+.lbx-card {
+  position: relative;
+}
+.lbx-card-body {
+  transition: opacity var(--lbx-t-hover) ease-out;
+}
+.lbx-card.is-refreshing .lbx-card-body {
+  opacity: 0.55;
+}
+.lbx-card.is-refreshing::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 24px;
+  right: 24px;
+  height: 2px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, transparent, var(--lbx-accent), transparent) no-repeat;
+  background-size: 40% 100%;
+  animation: lbx-refresh 1.1s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes lbx-refresh {
+  0% {
+    background-position: -60% 0;
+  }
+  100% {
+    background-position: 160% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lbx-card.is-refreshing::after {
+    animation: none;
+    background: var(--lbx-accent);
+    opacity: 0.5;
+  }
+}
+
 /* ticker chip and badges */
 .lbx-tickwrap {
   display: inline-flex;

@@ -33,6 +33,7 @@ import {
   shareOfTotal,
   snapMin,
   sparkPath,
+  viewQuery,
   yoyDelta,
 } from '../src/lib/lobbying/page-model.js';
 import {
@@ -381,4 +382,20 @@ test('membersScopeLabel', () => {
     ]),
     'LD-203 · 2025 mid-year and year-end',
   );
+});
+
+test('viewQuery: view, options, then only the filters the card applies', () => {
+  const now = Date.UTC(2026, 9, 21);
+  const f = { ...parseFilters({ issue: 'tax', min: '50000', public: '1' }, now) };
+  const pulse = new URLSearchParams(viewQuery('pulse', f, now));
+  assert.equal(pulse.get('view'), 'pulse');
+  assert.equal(pulse.get('issue'), 'TAX');
+  assert.equal(pulse.get('min'), '50000');
+  const pressure = new URLSearchParams(viewQuery('pressure', f, now));
+  assert.equal(pressure.get('issue'), null, 'pressure does not apply the issue filter');
+  assert.equal(
+    viewQuery('leaders', f, now, { by: 'firm' }).startsWith('view=leaders&by=firm&'),
+    true,
+  );
+  assert.equal(viewQuery('issues', f, now), viewQuery('issues', { ...f, issue: 'DEF' }, now));
 });

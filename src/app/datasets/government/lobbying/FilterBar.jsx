@@ -80,8 +80,22 @@ function EntityControl({ filters, set, size }) {
   );
 }
 
+/* The slider moves locally and commits after a short pause (or on release),
+   so dragging across stops refetches once, not once per stop. */
+const MIN_COMMIT_MS = 250;
+
 function MinControl({ filters, set, id }) {
-  const idx = Math.max(0, MIN_STOPS.indexOf(filters.min));
+  const committed = Math.max(0, MIN_STOPS.indexOf(filters.min));
+  const [idx, setIdx] = useState(committed);
+  useEffect(() => setIdx(committed), [committed]);
+  useEffect(() => {
+    if (idx === committed) return undefined;
+    const t = setTimeout(() => set({ min: MIN_STOPS[idx] }), MIN_COMMIT_MS);
+    return () => clearTimeout(t);
+  }, [idx, committed, set]);
+  const commitNow = () => {
+    if (idx !== committed) set({ min: MIN_STOPS[idx] });
+  };
   return (
     <div className="lbx-fb-min">
       <label className="lbx-kicker" htmlFor={id}>
@@ -97,7 +111,8 @@ function MinControl({ filters, set, id }) {
         value={idx}
         aria-valuetext={fmtMinStop(MIN_STOPS[idx])}
         style={{ '--lbx-range-fill': `${(idx / (MIN_STOPS.length - 1)) * 100}%` }}
-        onChange={(e) => set({ min: MIN_STOPS[Number(e.target.value)] })}
+        onChange={(e) => setIdx(Number(e.target.value))}
+        onPointerUp={commitNow}
       />
       <span className="lbx-fb-minval lbx-mono" aria-hidden="true">
         {fmtMinStop(MIN_STOPS[idx])}
@@ -203,7 +218,7 @@ function IssueSheet({ issues, selected, onPick, onClose }) {
   );
 }
 
-function IssueChips({ issues, selected, onPick, onOpenAll, phone }) {
+function IssueChips({ issues, selected, onPick, onPreview, onOpenAll, phone }) {
   const top = issues.slice(0, TOP_ISSUES);
   const extra =
     selected && !top.some((i) => i.code === selected)
@@ -229,6 +244,8 @@ function IssueChips({ issues, selected, onPick, onOpenAll, phone }) {
           aria-checked={selected === i.code}
           className={`lbx-chip${selected === i.code ? ' is-on' : ''}`}
           onClick={() => onPick(i.code)}
+          onPointerEnter={onPreview ? () => onPreview(i.code) : undefined}
+          onFocus={onPreview ? () => onPreview(i.code) : undefined}
         >
           {i.label}
           {!phone ? <span className="lbx-mono">{fmtCount(i.filings)}</span> : null}
@@ -245,9 +262,18 @@ function IssueChips({ issues, selected, onPick, onOpenAll, phone }) {
 
 /**
  * @param {{ filters, set:(patch)=>void, reset:()=>void, nowMs:number,
- *   issues:{code,label,filings}[], filingCount:number|null }} props
+ *   issues:{code,label,filings}[], onPreviewIssue?:(code)=>void,
+ *   filingCount:number|null }} props
  */
-export default function FilterBar({ filters, set, reset, nowMs, issues, filingCount }) {
+export default function FilterBar({
+  filters,
+  set,
+  reset,
+  nowMs,
+  issues,
+  onPreviewIssue,
+  filingCount,
+}) {
   const [sheet, setSheet] = useState(false);
   const [allIssues, setAllIssues] = useState(false);
   const count = activeFilterCount(filters, nowMs);
@@ -275,6 +301,7 @@ export default function FilterBar({ filters, set, reset, nowMs, issues, filingCo
           issues={issues}
           selected={filters.issue}
           onPick={pickIssue}
+          onPreview={onPreviewIssue}
           onOpenAll={() => setAllIssues(true)}
         />
       </div>
@@ -285,6 +312,7 @@ export default function FilterBar({ filters, set, reset, nowMs, issues, filingCo
           issues={issues}
           selected={filters.issue}
           onPick={pickIssue}
+          onPreview={onPreviewIssue}
           onOpenAll={() => setAllIssues(true)}
           phone
         />

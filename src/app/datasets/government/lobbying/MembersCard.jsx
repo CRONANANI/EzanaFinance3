@@ -52,6 +52,7 @@ export default function MembersCard({ view, types, setTypes, sub, empty }) {
         ) : null
       }
       status={view.status}
+      refreshing={view.refreshing}
       onRetry={view.retry}
       empty={isEmpty ? empty : null}
       skeleton={<SkelRows n={6} h={46} />}

@@ -8,7 +8,7 @@ import { issueShareRows } from '@/lib/lobbying/page-model';
 import { fmtCount, fmtPct } from '@/lib/lobbying/page-format';
 import { Card, SkelRows } from './ui';
 
-export default function IssuesCard({ view, selected, onPick, sub, partial, empty }) {
+export default function IssuesCard({ view, selected, onPick, onPreview, sub, partial, empty }) {
   const { rows } = issueShareRows(view.data, 12);
   const isEmpty = view.status === 'ready' && !rows.length;
   return (
@@ -18,6 +18,7 @@ export default function IssuesCard({ view, selected, onPick, sub, partial, empty
       title="Share of filings by issue"
       sub={sub}
       status={view.status}
+      refreshing={view.refreshing}
       onRetry={view.retry}
       empty={isEmpty ? empty : null}
       partial={partial}
@@ -39,6 +40,8 @@ export default function IssuesCard({ view, selected, onPick, sub, partial, empty
                 className={`lbx-iss-row lbx-row${on ? ' is-on' : ''}`}
                 aria-pressed={on}
                 onClick={() => onPick(on ? null : r.code)}
+                onPointerEnter={onPreview ? () => onPreview(on ? null : r.code) : undefined}
+                onFocus={onPreview ? () => onPreview(on ? null : r.code) : undefined}
                 aria-label={`${r.label}: ${fmtPct(r.share)} of filings, ${fmtCount(r.filings)} filings. ${on ? 'Clear the issue filter.' : 'Filter the page to this issue.'}`}
               >
                 <span className="lbx-iss-name lbx-ellipsis" title={r.label}>

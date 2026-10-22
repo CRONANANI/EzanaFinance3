@@ -272,6 +272,19 @@ export function pickFilters(f, view) {
   return out;
 }
 
+/**
+ * The /api/lobbying/page query string one card requests: the view, its own
+ * options (`extra`, e.g. { by: 'firm' }), then only the filters that card
+ * applies. The page uses the string as its cache key and the server uses it
+ * to seed the first paint, so both sides must build it here.
+ */
+export function viewQuery(view, f, nowMs, extra = {}) {
+  const out = new URLSearchParams({ view });
+  for (const [k, v] of Object.entries(extra)) out.set(k, String(v ?? ''));
+  for (const [k, v] of serializeFilters(pickFilters(f, view), nowMs)) out.set(k, v);
+  return out.toString();
+}
+
 /** Escape a search string into an ILIKE contains-pattern. */
 export function likePattern(q) {
   const t = String(q || '')

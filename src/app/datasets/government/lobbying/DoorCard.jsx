@@ -24,6 +24,7 @@ export default function DoorCard({ view, sub, empty }) {
       title="Former officials now lobbying"
       sub={sub}
       status={view.status}
+      refreshing={view.refreshing}
       onRetry={view.retry}
       empty={isEmpty ? empty : null}
       skeleton={

@@ -13,45 +13,137 @@ import { fmtSignedPct } from '@/lib/lobbying/page-format';
 
 /* ── data ──────────────────────────────────────────────────────────────── */
 
+/*
+ * One shared cache for /api/lobbying/page responses, keyed by the exact
+ * query string. Toggling a filter back, paging back, or a second card asking
+ * for the same view is answered from memory at once, and two cards asking
+ * for the same query at the same moment share one request. Entries live for
+ * the server's own cache window, so nothing here is staler than the API.
+ */
+const VIEW_TTL_MS = 10 * 60 * 1000;
+const VIEW_CACHE_MAX = 150;
+const viewCache = new Map();
+const inflight = new Map();
+
+function remember(query, data) {
+  viewCache.delete(query);
+  viewCache.set(query, { data, at: Date.now() });
+  if (viewCache.size > VIEW_CACHE_MAX) viewCache.delete(viewCache.keys().next().value);
+}
+
+/** The cached entry for a query, or null when missing or expired. */
+function peek(query) {
+  const e = viewCache.get(query);
+  if (!e) return null;
+  if (Date.now() - e.at > VIEW_TTL_MS) {
+    viewCache.delete(query);
+    return null;
+  }
+  return e;
+}
+
+function loadView(query) {
+  let p = inflight.get(query);
+  if (!p) {
+    p = fetch(`/api/lobbying/page?${query}`)
+      .then((r) =>
+        r.json().then((j) => {
+          if (!r.ok || j?.ok === false) throw new Error('unavailable');
+          remember(query, j.data);
+          return j.data;
+        }),
+      )
+      .finally(() => inflight.delete(query));
+    inflight.set(query, p);
+  }
+  return p;
+}
+
+/**
+ * Seed the browser cache with views the server already read (first paint).
+ * A no-op on the server: the cache is per browser tab, never shared across
+ * requests. Server rendering reads the same answers from useView's `seed`.
+ */
+export function seedViews(entries) {
+  if (!entries || typeof window === 'undefined') return;
+  for (const [query, data] of Object.entries(entries)) {
+    if (data !== undefined && !peek(query)) remember(query, data);
+  }
+}
+
+/** Warm one view in the background (no state, errors ignored). */
+export function prefetchView(query) {
+  if (!peek(query)) loadView(query).catch(() => {});
+}
+
 /**
  * Fetch one /api/lobbying/page view. `query` is the full query string; a
- * change refetches. A failed request is retried once after a short pause
- * before the card shows its error, because a cold aggregate can lose a race
- * with the ingest job and succeed a moment later. Retry refetches only
- * this view. `enabled` false defers the fetch (cards below the fold).
- * @returns {{ status:'loading'|'ready'|'error', data:any, retry:()=>void }}
+ * change refetches unless the answer is already cached. A failed request is
+ * retried once after a short pause before the card shows its error, because
+ * a cold aggregate can lose a race with the ingest job and succeed a moment
+ * later. Retry refetches only this view. `enabled` false defers the fetch
+ * (cards below the fold).
+ *
+ * `keepPrevious` keeps the last answer on screen while the next one loads
+ * (status stays 'ready', `refreshing` is true) so a filter change dims the
+ * card instead of dropping it back to a skeleton. Leave it off where the
+ * previous answer would describe a different subject (the entity drawer).
+ * `seed` is the server's first-paint answers keyed by query; it only sets
+ * the initial state, so the server render and hydration agree.
+ * @returns {{ status:'loading'|'ready'|'error', data:any, refreshing:boolean, retry:()=>void }}
  */
-export function useView(query, enabled = true) {
-  const [state, setState] = useState({ status: 'loading', data: null });
+export function useView(query, enabled = true, { keepPrevious = false, seed = null } = {}) {
+  const [state, setState] = useState(() => {
+    const seeded =
+      seed && Object.prototype.hasOwnProperty.call(seed, query) ? { data: seed[query] } : null;
+    const hit = enabled ? peek(query) || seeded : null;
+    return hit
+      ? { status: 'ready', data: hit.data, refreshing: false, query }
+      : { status: 'loading', data: null, refreshing: false, query: null };
+  });
   const [nonce, setNonce] = useState(0);
   useEffect(() => {
     if (!enabled) return undefined;
-    const ctrl = new AbortController();
+    let live = true;
     let timer = null;
-    setState((s) => ({ status: 'loading', data: s.data }));
+    const hit = peek(query);
+    if (hit) {
+      setState((s) =>
+        s.query === query && s.status === 'ready' && !s.refreshing && s.data === hit.data
+          ? s
+          : { status: 'ready', data: hit.data, refreshing: false, query },
+      );
+      return undefined;
+    }
+    setState((s) =>
+      keepPrevious && s.status === 'ready' && s.data != null
+        ? { ...s, refreshing: true }
+        : { status: 'loading', data: null, refreshing: false, query: null },
+    );
     const attempt = (n) =>
-      fetch(`/api/lobbying/page?${query}`, { signal: ctrl.signal })
-        .then((r) => r.json().then((j) => ({ ok: r.ok && j?.ok !== false, j })))
-        .catch((e) => {
-          if (e?.name === 'AbortError') throw e;
-          return { ok: false, j: null };
-        })
-        .then(({ ok, j }) => {
-          if (ok) return setState({ status: 'ready', data: j.data });
+      loadView(query).then(
+        (data) => {
+          if (live) setState({ status: 'ready', data, refreshing: false, query });
+        },
+        () => {
+          if (!live) return;
           if (n > 0) {
-            timer = setTimeout(() => attempt(n - 1).catch(() => {}), 1500);
-            return undefined;
+            timer = setTimeout(() => {
+              if (live) attempt(n - 1);
+            }, 1500);
+            return;
           }
-          return setState({ status: 'error', data: null });
-        });
-    attempt(1).catch(() => {});
+          setState({ status: 'error', data: null, refreshing: false, query });
+        },
+      );
+    attempt(1);
     return () => {
-      ctrl.abort();
+      live = false;
       if (timer) clearTimeout(timer);
     };
-  }, [query, enabled, nonce]);
+  }, [query, enabled, nonce, keepPrevious]);
   const retry = useCallback(() => setNonce((n) => n + 1), []);
-  return { ...state, retry };
+  return { status: state.status, data: state.data, refreshing: state.refreshing, retry };
 }
 
 /**
@@ -111,6 +203,7 @@ export const ERROR_COPY = 'This data is unavailable right now. Try again in a mo
 /**
  * @param {object} props
  * @param {'loading'|'ready'|'error'} props.status
+ * @param {boolean} props.refreshing  showing the previous answer while the next loads
  * @param {string|null} props.empty  the empty-state sentence, or null when populated
  * @param {string|null} props.partial  the amber partial-period chip text
  * @param {React.ReactNode} props.skeleton  shimmer in the card's own shape
@@ -122,6 +215,7 @@ export function Card({
   sub,
   right,
   status = 'ready',
+  refreshing = false,
   empty = null,
   partial = null,
   onRetry,
@@ -134,9 +228,9 @@ export function Card({
   const headId = `${id}-title`;
   return (
     <section
-      className={`lbx-card ${className}`}
+      className={`lbx-card${refreshing && status === 'ready' ? ' is-refreshing' : ''} ${className}`}
       aria-labelledby={headId}
-      aria-busy={status === 'loading'}
+      aria-busy={status === 'loading' || refreshing}
     >
       <header className="lbx-head">
         <div className="lbx-head-text">

@@ -109,6 +109,7 @@ export default function LensCard({ view, sub, empty, onOpen }) {
         </div>
       }
       status={view.status}
+      refreshing={view.refreshing}
       onRetry={view.retry}
       empty={isEmpty ? empty : null}
       skeleton={

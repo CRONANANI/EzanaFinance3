@@ -31,6 +31,7 @@ export default function LeaderboardCard({
       sub={sub}
       right={<Segmented label="Rank by" value={by} options={BY} onChange={setBy} />}
       status={view.status}
+      refreshing={view.refreshing}
       onRetry={view.retry}
       empty={isEmpty ? empty : null}
       partial={partial}

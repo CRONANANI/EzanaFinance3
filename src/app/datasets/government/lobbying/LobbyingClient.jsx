@@ -6,12 +6,15 @@
  * real Senate LDA copy through /api/lobbying/page (cache-only aggregates)
  * or an existing route; nothing here is sample data.
  *
- * State lives in the URL: filters round-trip with router.replace; opening
- * the filing or company modal pushes one history entry so Back closes it.
- * Each card fetches with only the filters it applies (FILTERS_APPLY), so a
- * change refetches the cards it affects and no others.
+ * State lives in the URL. Filters update it in place with
+ * history.replaceState (Next syncs useSearchParams without a server round
+ * trip); opening the filing or company modal pushes one history entry so
+ * Back closes it. Each card fetches with only the filters it applies
+ * (FILTERS_APPLY), so a change refetches the cards it affects and no others.
+ * Answers are cached by query (ui.jsx), a card keeps its last answer dimmed
+ * while the next loads, and the server seeds the above-the-fold cards.
  */
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
@@ -23,6 +26,7 @@ import {
   periodCoverage,
   pickFilters,
   serializeFilters,
+  viewQuery,
 } from '@/lib/lobbying/page-model';
 import {
   cardSubtitle,
@@ -45,13 +49,25 @@ import RatioCard from './RatioCard';
 import MembersCard from './MembersCard';
 import DisclosuresCard from './DisclosuresCard';
 import { ClientDrawer, CompanyModal, FilingModal } from './Overlays';
-import { useJson, useNearViewport, useView } from './ui';
+import { prefetchView, seedViews, useJson, useNearViewport, useView } from './ui';
 import './lobbying.css';
 
 const SOURCE_LINE =
   'Source: Senate LDA (lda.gov). Amounts are as reported by filers. For educational purposes only. Not financial advice.';
 
-export default function LobbyingClient() {
+/* Filter and modal changes stay on the client: Next 14.1+ syncs
+   useSearchParams with the native history API, so no server render runs. */
+function replaceUrl(url) {
+  window.history.replaceState(window.history.state, '', url);
+}
+function pushUrl(url) {
+  window.history.pushState(null, '', url);
+}
+
+export default function LobbyingClient({ initialViews = null }) {
+  /* Seed the view cache before any card reads it, so server-read cards
+     render ready on the first pass (and hydrate without a refetch). */
+  useState(() => seedViews(initialViews));
   const router = useRouter();
   const pathname = usePathname() || '/datasets/government/lobbying';
   const sp = useSearchParams();
@@ -76,29 +92,27 @@ export default function LobbyingClient() {
   const setFilters = useCallback(
     (patch) => {
       const next = { ...filters, ...patch };
-      router.replace(urlWith(next, { filing: filingId, company: companyTicker }), {
-        scroll: false,
-      });
+      replaceUrl(urlWith(next, { filing: filingId, company: companyTicker }));
     },
-    [filters, router, urlWith, filingId, companyTicker],
+    [filters, urlWith, filingId, companyTicker],
   );
   const resetFilters = useCallback(
-    () => router.replace(urlWith(defaultFilters(nowMs)), { scroll: false }),
-    [router, urlWith, nowMs],
+    () => replaceUrl(urlWith(defaultFilters(nowMs))),
+    [urlWith, nowMs],
   );
   const openFiling = useCallback(
     (uuid) => {
       pushed.current += 1;
-      router.push(urlWith(filters, { filing: uuid, company: companyTicker }), { scroll: false });
+      pushUrl(urlWith(filters, { filing: uuid, company: companyTicker }));
     },
-    [router, urlWith, filters, companyTicker],
+    [urlWith, filters, companyTicker],
   );
   const openCompany = useCallback(
     (ticker) => {
       pushed.current += 1;
-      router.push(urlWith(filters, { company: ticker }), { scroll: false });
+      pushUrl(urlWith(filters, { company: ticker }));
     },
-    [router, urlWith, filters],
+    [urlWith, filters],
   );
   const closeParam = useCallback(
     (name) => {
@@ -107,12 +121,11 @@ export default function LobbyingClient() {
         router.back();
         return;
       }
-      router.replace(
+      replaceUrl(
         urlWith(filters, {
           filing: name === 'filing' ? null : filingId,
           company: name === 'company' ? null : companyTicker,
         }),
-        { scroll: false },
       );
     },
     [router, urlWith, filters, filingId, companyTicker],
@@ -134,22 +147,51 @@ export default function LobbyingClient() {
   const setPage = (n) => setPageState({ key: tableKey, n });
   const [drawer, setDrawer] = useState(null);
 
-  const issues = useView(`view=issues&${qs('issues')}`);
-  const pulse = useView(`view=pulse&${qs('pulse')}`);
-  const leaders = useView(`view=leaders&by=${by}&${qs('leaders')}`);
+  /* Every card query comes from viewQuery, the same builder the server
+     uses to seed the first paint, so cache keys always line up. */
+  const vq = useCallback(
+    (view, extra, f = filters) => viewQuery(view, f, nowMs, extra),
+    [filters, nowMs],
+  );
+  const keep = { keepPrevious: true, seed: initialViews };
+  const issues = useView(vq('issues'), true, keep);
+  const pulse = useView(vq('pulse'), true, keep);
+  const leaders = useView(vq('leaders', { by }), true, keep);
   /* Above the fold load at once; the rest load as they near the viewport. */
   const [pressureRef, pressureNear] = useNearViewport();
   const [midRef, midNear] = useNearViewport();
   const [lensRef, lensNear] = useNearViewport();
   const [lowRef, lowNear] = useNearViewport();
   const [tableRef, tableNear] = useNearViewport();
-  const pressure = useView(`view=pressure&${qs('pressure')}`, pressureNear);
-  const rhythm = useView(`view=rhythm&${qs('rhythm')}`, midNear);
-  const door = useView(`view=door&${qs('door')}`, midNear);
-  const lens = useView(`view=lens&${qs('lens')}`, lensNear);
-  const members = useView(`view=members&types=${types.join(',')}&${qs('members')}`, lowNear);
-  const tableBase = `view=filings&mode=${mode}&${qs('filings')}`;
-  const table = useView(`${tableBase}&page=${tablePage}`, tableNear);
+  const pressure = useView(vq('pressure'), pressureNear, keep);
+  const rhythm = useView(vq('rhythm'), midNear, keep);
+  const door = useView(vq('door'), midNear, keep);
+  const lens = useView(vq('lens'), lensNear, keep);
+  const members = useView(vq('members', { types: types.join(',') }), lowNear, keep);
+  const tableBase = vq('filings', { mode });
+  const table = useView(`${tableBase}&page=${tablePage}`, tableNear, keep);
+
+  /* Hovering or focusing an issue warms the cards that issue would change,
+     so the click usually lands on a cached answer. Short intent delay so a
+     pointer sweeping across the list does not fire a request per row. */
+  const previewTimer = useRef(null);
+  const previewIssue = useCallback(
+    (code) => {
+      clearTimeout(previewTimer.current);
+      previewTimer.current = setTimeout(() => {
+        const next = { ...filters, issue: code };
+        prefetchView(vq('pulse', {}, next));
+        prefetchView(vq('leaders', { by }, next));
+        if (midNear) {
+          prefetchView(vq('rhythm', {}, next));
+          prefetchView(vq('door', {}, next));
+        }
+        if (lensNear) prefetchView(vq('lens', {}, next));
+      }, 150);
+    },
+    [filters, vq, by, midNear, lensNear],
+  );
+  useEffect(() => () => clearTimeout(previewTimer.current), []);
 
   /* ── coverage ─────────────────────────────────────────────────────────── */
   const { year: cy } = currentQuarter(nowMs);
@@ -229,6 +271,7 @@ export default function LobbyingClient() {
         reset={resetFilters}
         nowMs={nowMs}
         issues={issueList}
+        onPreviewIssue={previewIssue}
         filingCount={pulse.data?.now?.filings ?? null}
       />
 
@@ -261,6 +304,7 @@ export default function LobbyingClient() {
             view={issues}
             selected={filters.issue}
             onPick={(code) => setFilters({ issue: code })}
+            onPreview={previewIssue}
             sub={sub('issues')}
             partial={partial}
             empty={empty('issues')}
