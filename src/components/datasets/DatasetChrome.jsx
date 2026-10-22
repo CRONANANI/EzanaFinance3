@@ -74,7 +74,16 @@ export default function DatasetChrome() {
         active={hit?.active ?? null}
         activeItem={hit?.activeItem ?? null}
         showDimensions={!overview}
-        belt={overview && ticker ? <NewsBelt items={ticker.items} /> : null}
+        belt={
+          overview && ticker ? (
+            <NewsBelt
+              items={ticker.items}
+              onSelect={ticker.onSelect}
+              ariaLabel={ticker.ariaLabel}
+              activeKey={ticker.activeKey}
+            />
+          ) : null
+        }
       />
       {ticker && !overview ? (
         <DatasetTicker

@@ -45,7 +45,8 @@
   animation: dsnb-tick 120s linear infinite;
 }
 
-.dsnb-belt:hover .dsnb-track {
+.dsnb-belt:hover .dsnb-track,
+.dsnb-belt:focus-within .dsnb-track {
   animation-play-state: paused;
 }
 
@@ -74,7 +75,37 @@
 
 .dsnb-icon {
   font-size: 13px;
-  color: var(--dsnb-icon);
+  /* The dimension's hue when the card names one (set inline). */
+  color: var(--dsnb-hue, var(--dsnb-icon));
+}
+
+/* Oct 21: cards are buttons that open the signal's brief on the page. A
+   plain button reset keeps them identical to the static cards at rest. */
+.dsnb-card--btn {
+  height: 46px;
+  margin: 0;
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.dsnb-card--btn:hover {
+  background: color-mix(in srgb, var(--brand-band-mint) 9%, transparent);
+}
+.dsnb-card--btn:hover .dsnb-headline {
+  color: white;
+}
+.dsnb-card--btn.is-active {
+  background: color-mix(in srgb, var(--brand-band-mint) 14%, transparent);
+  box-shadow: inset 0 -2px 0 var(--dsnb-hue, var(--brand-band-mint));
+}
+.dsnb-card--btn:focus-visible {
+  outline: 2px solid var(--brand-band-mint);
+  outline-offset: -4px;
+  border-radius: var(--radius-md);
 }
 
 .dsnb-headline {

@@ -29,18 +29,20 @@ export function useTickerSlot() {
 }
 
 /**
- * Pages publish { items, onSelect, ariaLabel } into the chrome; cleared on
- * unmount, so a page without a ticker leaves the bar alone.
+ * Pages publish { items, onSelect, ariaLabel, activeKey } into the chrome;
+ * cleared on unmount, so a page without a ticker leaves the bar alone.
+ * `activeKey` (optional, Oct 21) marks the item the page has open; only the
+ * /datasets overview's belt reads it.
  *
  * Every argument must be referentially stable — useMemo the items, useCallback
  * the handler — or the effect republishes on each render and the chrome
  * re-renders forever. The default context value is a no-op setter, so calling
  * this outside a provider is harmless rather than a crash.
  */
-export function usePublishTicker({ items, onSelect, ariaLabel } = {}) {
+export function usePublishTicker({ items, onSelect, ariaLabel, activeKey = null } = {}) {
   const { setTicker } = useContext(TickerSlotContext);
   useEffect(() => {
-    setTicker(items && items.length ? { items, onSelect, ariaLabel } : null);
+    setTicker(items && items.length ? { items, onSelect, ariaLabel, activeKey } : null);
     return () => setTicker(null);
-  }, [items, onSelect, ariaLabel, setTicker]);
+  }, [items, onSelect, ariaLabel, activeKey, setTicker]);
 }

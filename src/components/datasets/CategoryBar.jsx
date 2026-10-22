@@ -30,8 +30,8 @@
  */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import Image from 'next/image';
 import Link from 'next/link';
+import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import { hubHref } from '@/lib/datasets/hubs';
 import { usePathname } from 'next/navigation';
 import { DATASET_TAXONOMY, isNavigable, isPreview } from '@/lib/datasets/taxonomy';
@@ -328,17 +328,11 @@ export default function CategoryBar({ active, activeItem, showDimensions = true,
             <span>Home</span>
           </Link>
         ) : (
-          /* Oct 16: the overview leads with the Ezana mark, drawn in the hero
-             white so it reads on the band green (category-bar.css). */
+          /* Oct 21: the overview leads with the same mark as the landing
+             nav over the Ezana Sonar band (EzanaNavLogo, natural emerald),
+             no longer a white knock-out (category-bar.css). */
           <Link href="/" className="dscat-logo" aria-label="Ezana Finance home">
-            <Image
-              src="/logo-tight.png"
-              alt=""
-              width={45}
-              height={51}
-              priority
-              className="dscat-logo-img"
-            />
+            <EzanaNavLogo priority className="dscat-logo-img dscat-logo-img--brand" />
           </Link>
         )}
       </div>

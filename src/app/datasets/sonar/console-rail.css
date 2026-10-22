@@ -1,4 +1,5 @@
-/* Console rail under the Sonar deck on /datasets (dcr-), Hub V1.1.
+/* Console rail under the Sonar deck on /datasets (dcr-). Hub V1.1, cards
+   redesigned Oct 21 as the "continuum" rail (see ConsoleRail.jsx).
    Spec: docs/design/hub-console-handoff/04-SPEC.md. Tokens:
    docs/design/hub-console-handoff/03-TOKENS.css, mapped onto the band tokens.
    The route is light-locked green, so nothing here reads a token that flips
@@ -114,11 +115,27 @@
   box-shadow: 0 0 10px color-mix(in srgb, var(--dcr-mint) 80%, transparent);
 }
 
-/* ── the strips ───────────────────────────────────────────────────────── */
+/* ── the continuum cards (Oct 21) ─────────────────────────────────────── */
+/* One row of seven. --dcr-gap is shared by the row and the joints so the
+   trace crosses each gap exactly. --dcr-trace-top pins every card's trace to
+   the same y (the head row has a fixed height), which is what lets one line
+   run through all seven. */
+.dcr-scope {
+  --dcr-gap: 12px;
+  --dcr-pad: 12px;
+  --dcr-trace-top: 40px;
+  --dcr-trace-h: 34px;
+  --dcr-card-bg: color-mix(in srgb, black 40%, transparent);
+  --dcr-card-bg-hover: color-mix(in srgb, black 54%, transparent);
+  --dcr-thread: color-mix(in srgb, var(--dcr-mint) 30%, transparent);
+  --dcr-t-flex: 0.35s;
+  --dcr-relay: 9.8s;
+}
+
 .dcr-strips {
   display: flex;
   align-items: stretch;
-  gap: 12px;
+  gap: var(--dcr-gap);
 }
 
 .dcr-strip {
@@ -127,30 +144,31 @@
   display: flex;
   flex: 1 1 0;
   flex-direction: column;
-  gap: 9px;
   min-width: 0;
-  min-height: 44px;
   margin: 0;
-  padding: 12px 12px 10px;
-  border: 1px solid color-mix(in srgb, var(--dim) 26%, transparent);
-  border-radius: var(--dcr-strip-radius);
-  background: var(--dcr-strip-bg);
+  padding: 12px var(--dcr-pad) 11px;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--dcr-card-bg);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 5%, transparent);
   color: var(--dcr-ink-soft);
   font: inherit;
   font-family: var(--dcr-sans);
   text-align: left;
   cursor: pointer;
   transition:
+    flex-grow var(--dcr-t-flex) cubic-bezier(0.25, 0.46, 0.45, 0.94),
     background-color var(--dcr-t-hover) ease,
-    border-color var(--dcr-t-hover) ease;
+    transform var(--dcr-t-select) ease,
+    box-shadow var(--dcr-t-select) ease,
+    opacity var(--dcr-t-select) ease;
 }
 
-/* Stem: rises 27px from the strip's top edge into the bus hairline. The
-   padding box starts inside the 1px border, so -28px lands on the hairline. */
+/* Stem: rises from the card's top edge into the bus hairline. */
 .dcr-strip::before {
   content: '';
   position: absolute;
-  top: -28px;
+  top: -27px;
   left: 50%;
   width: 1px;
   height: 27px;
@@ -162,7 +180,7 @@
   transition: background var(--dcr-t-select) ease;
 }
 
-/* Optional pulse: a 2px dot travels a live stem toward the deck. */
+/* Stem pulse: a 2px dot travels a live stem toward the deck. */
 .dcr-strip.is-live::after {
   content: '';
   position: absolute;
@@ -178,34 +196,42 @@
   animation-delay: calc(var(--i, 0) * 0.6s);
 }
 
+/* Adaptability: the row reflows. The card under the pointer or the selected
+   one widens and its neighbours give way; the trace stretches with it. */
 @media (hover: hover) {
   .dcr-strip:hover {
-    border-color: color-mix(in srgb, var(--dim) 45%, transparent);
-    background: var(--dcr-strip-bg-hover);
+    flex-grow: 1.5;
+    background: var(--dcr-card-bg-hover);
   }
 }
-
 .dcr-strip.is-on {
-  --dcr-stem: color-mix(in srgb, var(--dim) 80%, transparent);
-  border-color: var(--dim);
-  background: color-mix(in srgb, var(--dim) 10%, transparent);
-  transition-duration: var(--dcr-t-select);
+  --dcr-stem: color-mix(in srgb, var(--dim) 85%, transparent);
+  flex-grow: 1.6;
+  background:
+    linear-gradient(to bottom, color-mix(in srgb, var(--dim) 16%, transparent), transparent 70%),
+    var(--dcr-card-bg-hover);
+  box-shadow:
+    inset 0 2px 0 color-mix(in srgb, var(--dim) 70%, transparent),
+    0 14px 30px color-mix(in srgb, black 30%, transparent);
+  transform: translateY(-2px);
 }
-
+.dcr-strips.has-on .dcr-strip:not(.is-on) {
+  opacity: 0.72;
+}
 .dcr-strip.is-road {
   opacity: var(--dcr-road-opacity);
 }
-
 .dcr-strip:focus-visible {
   outline: 2px solid var(--dcr-focus);
   outline-offset: 2px;
 }
 
-/* head */
+/* head: fixed height so every trace lands at --dcr-trace-top */
 .dcr-head {
   display: flex;
   align-items: center;
   gap: 7px;
+  height: 18px;
   min-width: 0;
 }
 .dcr-dot {
@@ -227,52 +253,125 @@
   color: var(--dcr-ink-soft);
 }
 
-/* waveform (decorative) */
-.dcr-wave {
+/* The trace segment (decorative). */
+.dcr-trace {
   display: block;
   width: 100%;
-  height: 34px;
-  overflow: hidden;
+  height: var(--dcr-trace-h);
+  margin-top: calc(var(--dcr-trace-top) - 12px - 18px);
+  overflow: visible;
 }
-.dcr-wave-base {
+.dcr-trace-line {
   fill: none;
-  stroke: color-mix(in srgb, white 10%, transparent);
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-}
-.dcr-wave-line {
-  fill: none;
-  stroke: var(--dim);
+  stroke: color-mix(in srgb, var(--dim) 70%, transparent);
   stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
+  transform-box: view-box;
+  transform-origin: center;
+  transition:
+    transform var(--dcr-t-flex) ease,
+    stroke var(--dcr-t-select) ease;
 }
-.dcr-strip.is-live .dcr-wave-line {
-  animation: dcr-drift 9s linear infinite;
-  animation-delay: calc(var(--i, 0) * -1.3s);
+.dcr-strip.is-road .dcr-trace-line {
+  stroke: var(--dcr-thread);
+  stroke-dasharray: 2 5;
 }
-.dcr-strip.is-road .dcr-wave-line {
-  stroke-dasharray: 3 5;
+@media (hover: hover) {
+  .dcr-strip.is-live:hover .dcr-trace-line {
+    transform: scaleY(1.2);
+  }
+}
+.dcr-strip.is-on .dcr-trace-line {
+  stroke: var(--dim);
+  transform: scaleY(1.3);
 }
 
-/* ticks: one per dataset */
-.dcr-ticks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  min-height: 4px;
+/* The relay: a bright dash crosses each card in turn, one seventh of the
+   cycle each, so the pulse is handed left to right through the whole row. */
+.dcr-trace-pulse {
+  fill: none;
+  stroke: var(--dim);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  /* 14 on, 200 off (pathLength 100): the dash starts just before the path
+     and ends just past it, so it is never visible outside its slot. */
+  stroke-dasharray: 14 200;
+  stroke-dashoffset: 14;
+  filter: drop-shadow(0 0 4px var(--dim));
+  opacity: 0;
+  animation: dcr-relay var(--dcr-relay) linear infinite;
+  animation-delay: calc(var(--i, 0) * var(--dcr-relay) / 7);
 }
-.dcr-tick {
-  width: 10px;
+.dcr-strip.is-road .dcr-trace-pulse {
+  stroke: var(--dcr-thread);
+  filter: none;
+}
+
+/* Joint: carries the trace from the end of the previous card's segment to
+   the start of this one (both cards' side padding plus the gap), at the
+   baseline (trace top plus half its height). */
+.dcr-joint {
+  position: absolute;
+  top: calc(var(--dcr-trace-top) + var(--dcr-trace-h) / 2);
+  left: calc((var(--dcr-gap) + var(--dcr-pad)) * -1);
+  width: calc(var(--dcr-gap) + var(--dcr-pad) * 2);
+  height: 1px;
+  background: var(--dcr-thread);
+  pointer-events: none;
+}
+.dcr-joint::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: calc(var(--dcr-pad) + var(--dcr-gap) / 2);
+  width: 5px;
+  height: 5px;
+  margin-left: -2.5px;
+  border-radius: 50%;
+  background: var(--dcr-mint);
+  opacity: 0.55;
+}
+
+/* Meter: one cell per dataset, the cells share the width so a dimension with
+   more datasets reads denser, not longer. */
+.dcr-cells {
+  display: flex;
+  gap: 3px;
+  min-height: 4px;
+  margin-top: 10px;
+}
+.dcr-cell {
+  flex: 1 1 0;
+  max-width: 18px;
   height: 4px;
   border-radius: 999px;
   background: transparent;
   box-shadow: inset 0 0 0 1px var(--dcr-tick-hollow);
 }
-.dcr-tick.is-live {
+.dcr-cell.is-live {
   background: var(--dim);
   box-shadow: none;
+}
+
+/* The dimension's freshest live signal (a real pulse row). */
+.dcr-latest {
+  display: block;
+  overflow: hidden;
+  margin-top: 9px;
+  font-size: 11px;
+  line-height: 1.3;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--dcr-ink-mute);
+  transition: color var(--dcr-t-select) ease;
+}
+.dcr-strip.is-on .dcr-latest,
+.dcr-strip:hover .dcr-latest {
+  color: var(--dcr-ink-soft);
 }
 
 /* foot */
@@ -281,6 +380,7 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 6px;
+  margin-top: 8px;
 }
 .dcr-count {
   font-family: var(--dcr-mono);
@@ -300,7 +400,7 @@
   color: var(--dcr-road);
 }
 
-/* loading: shimmer blocks where ticks and count sit; never a spinner */
+/* loading: shimmer blocks where cells and count sit; never a spinner */
 .dcr-shimmer {
   display: block;
   height: 4px;
@@ -319,9 +419,19 @@
   height: 12px;
 }
 
-@keyframes dcr-drift {
-  to {
-    transform: translateX(-134px);
+@keyframes dcr-relay {
+  0% {
+    stroke-dashoffset: 14;
+    opacity: 1;
+  }
+  14.2857% {
+    stroke-dashoffset: -100;
+    opacity: 1;
+  }
+  14.2858%,
+  100% {
+    stroke-dashoffset: -100;
+    opacity: 0;
   }
 }
 @keyframes dcr-pulse {
@@ -347,18 +457,17 @@
   }
 }
 
-/* ── responsive (04-SPEC section 6) ───────────────────────────────────── */
+/* ── responsive ───────────────────────────────────────────────────────── */
 @media (max-width: 1199px) {
-  .dcr-strips {
-    gap: 10px;
-  }
-  .dcr-strip {
-    padding: 10px;
+  .dcr-scope {
+    --dcr-gap: 10px;
+    --dcr-pad: 10px;
   }
 }
 
-/* 640 to 899: two rows (4 + 3). Stems only on row one; row two carries a
-   3px top rule in its hue instead. */
+/* 640 to 899: two rows (4 + 3). The thread still runs along each row; the
+   first card of row two has no joint (nothing to its left). Stems only on
+   row one. No flex reflow here: the rows would jump. */
 @media (max-width: 899px) {
   .dcr-rail {
     width: 100%;
@@ -367,11 +476,13 @@
   .dcr-strips {
     flex-wrap: wrap;
   }
-  .dcr-strip {
-    flex: 1 1 calc((100% - 30px) / 4);
+  .dcr-strip,
+  .dcr-strip:hover,
+  .dcr-strip.is-on {
+    flex: 1 1 calc((100% - var(--dcr-gap) * 3) / 4);
   }
-  .dcr-strip:nth-child(n + 5) {
-    box-shadow: inset 0 3px 0 var(--dim);
+  .dcr-strip:nth-child(5) .dcr-joint {
+    display: none;
   }
   .dcr-strip:nth-child(n + 5)::before,
   .dcr-strip:nth-child(n + 5)::after {
@@ -379,16 +490,17 @@
   }
 }
 
-/* Under 640: full-width rows (head left, ticks and count right), no bus,
-   no waveform, a 3px left rule in the hue. */
+/* Under 640: one column. The thread turns vertical: a hairline in the hue
+   down each row's left edge, joined row to row across the gap. */
 @media (max-width: 639px) {
   .dcr-rail {
     margin-top: 16px;
   }
   .dcr-bus,
-  .dcr-wave,
+  .dcr-trace,
   .dcr-strip::before,
-  .dcr-strip::after {
+  .dcr-strip::after,
+  .dcr-joint {
     display: none;
   }
   .dcr-strips {
@@ -397,23 +509,50 @@
     gap: 8px;
   }
   .dcr-strip,
-  .dcr-strip:nth-child(n + 5) {
+  .dcr-strip:hover,
+  .dcr-strip.is-on {
     display: grid;
     flex: none;
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'head foot'
+      'latest cells';
     align-items: center;
     column-gap: 12px;
-    padding: 10px 12px 10px 14px;
+    row-gap: 6px;
+    padding: 10px 12px 10px 16px;
+    transform: none;
     box-shadow: inset 3px 0 0 var(--dim);
   }
-  .dcr-ticks {
-    flex-wrap: nowrap;
-    justify-content: flex-end;
+  .dcr-strip + .dcr-strip .dcr-head::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 1px;
+    width: 1px;
+    height: 8px;
+    background: var(--dcr-thread);
+  }
+  .dcr-head {
+    grid-area: head;
   }
   .dcr-foot {
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
+    grid-area: foot;
+    margin-top: 0;
+    gap: 8px;
+  }
+  .dcr-latest {
+    grid-area: latest;
+    margin-top: 0;
+  }
+  .dcr-cells {
+    grid-area: cells;
+    justify-content: flex-end;
+    margin-top: 0;
+  }
+  .dcr-cell {
+    flex: none;
+    width: 10px;
   }
 }
 
@@ -421,12 +560,14 @@
   .dcr-scope {
     --dcr-t-hover: 0s;
     --dcr-t-select: 0s;
+    --dcr-t-flex: 0s;
   }
-  .dcr-strip.is-live .dcr-wave-line,
+  .dcr-trace-pulse,
   .dcr-strip.is-live::after,
   .dcr-shimmer {
     animation: none;
   }
+  .dcr-trace-pulse,
   .dcr-strip.is-live::after {
     display: none;
   }

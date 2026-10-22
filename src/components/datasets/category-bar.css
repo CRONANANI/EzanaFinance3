@@ -663,6 +663,14 @@
   filter: brightness(0) invert(1) drop-shadow(0 1px 6px color-mix(in srgb, black 25%, transparent));
   transition: opacity 0.15s ease;
 }
+/* Oct 21: the landing nav's mark in its own emerald, as over the Sonar band
+   on the landing page. Same treatment as .nav-logo-img in dark mode, applied
+   unconditionally because this route is light-locked green (a light-mode
+   darken blend would sink the mark into the band). */
+.dscat-logo-img.dscat-logo-img--brand {
+  filter: contrast(1.05) brightness(1.08);
+  mix-blend-mode: normal;
+}
 .dscat-logo:hover .dscat-logo-img {
   opacity: 0.86;
 }

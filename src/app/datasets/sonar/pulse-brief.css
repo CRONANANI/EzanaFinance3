@@ -1,0 +1,444 @@
+/* The signal brief on /datasets (dpb-), opened from the top-bar belt and
+   drawn in the deck's place. The route is light-locked green, so the ink is
+   white on dark glass and nothing reads a token that flips with the app theme.
+   No outer outline on the card (dataset-page rule); depth comes from fill and
+   shadow. --dim is the open signal's dimension hue (set inline). No hex. */
+
+.dpb-brief {
+  --dpb-glass: color-mix(in srgb, black 46%, transparent);
+  --dpb-glass-2: color-mix(in srgb, black 28%, transparent);
+  --dpb-ink: color-mix(in srgb, white 94%, transparent);
+  --dpb-soft: color-mix(in srgb, white 74%, transparent);
+  --dpb-mute: color-mix(in srgb, white 52%, transparent);
+  --dpb-hair: color-mix(in srgb, white 10%, transparent);
+  --dpb-mint: var(--brand-band-mint);
+  position: relative;
+  display: grid;
+  gap: 18px;
+  width: min(100%, 1040px);
+  margin: 8px auto 4px;
+  padding: 22px 24px 20px;
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(
+      120% 80% at 0% 0%,
+      color-mix(in srgb, var(--dim) 14%, transparent),
+      transparent 60%
+    ),
+    var(--dpb-glass);
+  box-shadow:
+    0 24px 60px color-mix(in srgb, black 32%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 6%, transparent);
+  color: var(--dpb-ink);
+  font-family: var(--font-sans);
+  text-align: left;
+  animation: dpb-in 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.dpb-brief:focus {
+  outline: none;
+}
+.dpb-brief:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--dpb-mint),
+    0 24px 60px color-mix(in srgb, black 32%, transparent);
+}
+
+/* The continuity thread: a hairline in the dimension hue along the top
+   edge, the same line the rail's trace draws. */
+.dpb-brief::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 24px;
+  right: 24px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--dim) 20%, var(--dim) 80%, transparent);
+  opacity: 0.8;
+}
+
+.dpb-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dpb-brief .dpb-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dpb-soft);
+}
+.dpb-kicker .bi {
+  font-size: 12px;
+  color: var(--dim);
+}
+.dpb-kicker-sep {
+  color: var(--dpb-mute);
+}
+.dpb-asof {
+  margin-left: 6px;
+  padding-left: 10px;
+  border-left: 1px solid var(--dpb-hair);
+  color: var(--dpb-mute);
+  font-variant-numeric: tabular-nums;
+}
+.dpb-close {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--dpb-glass-2);
+  color: var(--dpb-soft);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.dpb-close:hover {
+  background: color-mix(in srgb, var(--dpb-mint) 16%, transparent);
+  color: var(--dpb-ink);
+}
+.dpb-close:focus-visible {
+  outline: 2px solid var(--dpb-mint);
+  outline-offset: 2px;
+}
+
+.dpb-brief .dpb-title {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--dpb-ink);
+}
+
+/* Stat tiles: four across, values in mono. */
+.dpb-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+.dpb-tile {
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--dpb-glass-2);
+}
+.dpb-tile dt {
+  margin: 0 0 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dpb-mute);
+}
+.dpb-tile dd {
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: 1.125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--dpb-ink);
+}
+.dpb-tile.is-up dd {
+  color: var(--dpb-mint);
+}
+.dpb-tile.is-down dd {
+  color: var(--echo-chart-red, var(--negative));
+}
+
+.dpb-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 22px;
+  align-items: start;
+}
+.dpb-brief .dpb-eyebrow {
+  margin: 0 0 10px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dpb-mute);
+}
+.dpb-findings ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dpb-findings li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--dpb-soft);
+}
+.dpb-findings li::before {
+  content: '';
+  position: absolute;
+  top: 0.6em;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dim);
+}
+.dpb-context {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--dpb-hair);
+}
+.dpb-context div {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+.dpb-context dt {
+  font-size: 0.75rem;
+  color: var(--dpb-mute);
+}
+.dpb-context dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--dpb-ink);
+}
+
+/* Bars: label, track, value. One hue; the open signal's bar is full
+   strength, the rest at half. Diverging sets centre on zero. */
+.dpb-bars {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dpb-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  font-size: 0.75rem;
+}
+.dpb-bar-label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--dpb-soft);
+}
+.dpb-bar-track {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, white 6%, transparent);
+}
+.dpb-bar-track.is-diverging::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  left: 50%;
+  width: 1px;
+  background: var(--dpb-hair);
+}
+.dpb-bar-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--dim) 55%, transparent);
+  transform-origin: left center;
+  animation: dpb-grow 0.4s ease-out both;
+}
+.dpb-bar.is-neg .dpb-bar-fill {
+  background: color-mix(in srgb, var(--echo-chart-red, var(--negative)) 60%, transparent);
+  transform-origin: right center;
+}
+.dpb-bar.is-focus .dpb-bar-fill {
+  background: var(--dim);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--dim) 60%, transparent);
+}
+.dpb-bar.is-focus .dpb-bar-label {
+  color: var(--dpb-ink);
+  font-weight: 600;
+}
+.dpb-bar-value {
+  min-width: 3.5rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--dpb-ink);
+}
+
+/* Line: one series, area wash, end value labelled. */
+.dpb-line {
+  margin: 0;
+}
+.dpb-line svg {
+  display: block;
+  width: 100%;
+  height: 150px;
+}
+.dpb-line-path {
+  fill: none;
+  stroke: var(--dim);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.dpb-line-area {
+  fill: color-mix(in srgb, var(--dim) 14%, transparent);
+}
+.dpb-line-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--dpb-mute);
+}
+.dpb-line-last {
+  color: var(--dpb-ink);
+  font-weight: 600;
+}
+
+/* Related signals from the same dataset. */
+.dpb-related-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.dpb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--dpb-glass-2);
+  color: var(--dpb-ink);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.dpb-chip span:first-child {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.dpb-chip:hover {
+  background: color-mix(in srgb, var(--dim) 16%, transparent);
+}
+.dpb-chip:focus-visible {
+  outline: 2px solid var(--dpb-mint);
+  outline-offset: 2px;
+}
+.dpb-chip-meta {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dpb-mute);
+}
+
+.dpb-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--dpb-hair);
+}
+.dpb-brief .dpb-source {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--dpb-mute);
+}
+.dpb-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--dpb-mint);
+  text-decoration: none;
+}
+.dpb-open:hover {
+  color: var(--dpb-ink);
+}
+.dpb-open:focus-visible {
+  outline: 2px solid var(--dpb-mint);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes dpb-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes dpb-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (max-width: 899px) {
+  .dpb-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dpb-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 639px) {
+  .dpb-brief {
+    padding: 18px 16px 16px;
+  }
+  .dpb-bar {
+    grid-template-columns: minmax(0, 5.5rem) minmax(0, 1fr) auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dpb-brief,
+  .dpb-bar-fill {
+    animation: none;
+  }
+}
