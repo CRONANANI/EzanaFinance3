@@ -6,11 +6,13 @@
  * router inherits the parent's entities; the breadcrumb comes back from the
  * server. Quota errors and degraded composes render honestly.
  */
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import SonarBriefing from '@/components/sonar/SonarBriefing';
 import './sonar-v2.css';
 
 export default function SonarV2Client() {
+  const sp = useSearchParams();
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -18,16 +20,19 @@ export default function SonarV2Client() {
   const [thread, setThread] = useState([]);
 
   const ping = useCallback(
-    async (query, parentPingId = null) => {
+    async (query, parentPingId = null, kind = 'text') => {
       const q = String(query || '').trim();
       if (!q || busy) return;
       setBusy(true);
       setError(null);
       try {
-        const res = await fetch('/api/sonar/v2', {
+        /* An EzanaQL follow-up (or a ?eq= handoff from the console) goes to
+           the cluster pipeline; free text goes to the template router. */
+        const isEq = kind === 'ezanaql' || /^from\s/i.test(q);
+        const res = await fetch(isEq ? '/api/sonar/ping' : '/api/sonar/v2', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: q, parentPingId }),
+          body: JSON.stringify(isEq ? { query: q } : { query: q, parentPingId }),
         });
         const json = await res.json().catch(() => null);
         if (res.status === 401) {
@@ -48,6 +53,16 @@ export default function SonarV2Client() {
     },
     [busy],
   );
+
+  /* EzanaQL handoff: /sonar/briefings?eq=<query> pings the cluster once. */
+  const eqRan = useRef(false);
+  useEffect(() => {
+    const eq = sp?.get('eq');
+    if (eq && !eqRan.current) {
+      eqRan.current = true;
+      ping(eq, null, 'ezanaql');
+    }
+  }, [sp, ping]);
 
   return (
     <div className="snv2">

@@ -99,7 +99,7 @@ export function validateBriefing(parsed, { sources, template }) {
   for (const f of parsed.followups || []) {
     if (typeof f?.label !== 'string') errors.push('followup without a label');
   }
-  if (parsed.template && parsed.template !== template) {
+  if (template && parsed.template && parsed.template !== template) {
     errors.push('template field does not match the routed template');
   }
   return errors;
@@ -158,4 +158,84 @@ export async function composeBriefing({
     lastErrors = errors;
   }
   return { briefing: null, sources, empty: false, errors: lastErrors };
+}
+
+/* ── cluster composition (sonar-ezanaql-coverage-prompt.md Step 7) ────────
+   The generic pipeline's compose hook: the prompt input is the cluster
+   signature, entity labels, each adapter's digest, the computed KPIs, link
+   ratios and narratives, and the numbered sources. Validation is the same
+   validateBriefing as the template engine; the pipeline falls back to its
+   deterministic brief when this returns null. */
+
+export async function composeClusterBrief({
+  cluster,
+  sig,
+  perDataset,
+  ratios,
+  links,
+  sources,
+  exemplars = [],
+  maxTokens = 1200,
+}) {
+  if (!sources.length) return null;
+  const digest = {};
+  for (const d of perDataset) {
+    if (!d.rows.length) continue;
+    digest[d.id] = d.digest.map((row, i) => ({
+      marker: sources.find((s) => s.dataset === d.id && s.row === row)?.id || `S${i + 1}`,
+      ...row,
+    }));
+  }
+  const shots = exemplars
+    .map(
+      (ex, i) =>
+        `EXAMPLE ${i + 1} (query: ${JSON.stringify(ex.query)})\nOUTPUT: ${JSON.stringify(ex.ideal_output)}`,
+    )
+    .join('\n\n');
+  const user = `${shots ? `${shots}\n\n` : ''}NOW (signature: ${sig})\nENTITIES: ${JSON.stringify(
+    cluster.entities.map((e) => ({ kind: e.kind, labels: e.labels.slice(0, 5) })),
+  )}\nKPIS AND RATIOS: ${JSON.stringify(
+    [...perDataset.flatMap((d) => d.kpis), ...ratios].slice(0, 12),
+  )}\nCONNECTIONS: ${JSON.stringify(
+    links
+      .map((l) => l.narrative)
+      .filter(Boolean)
+      .slice(0, 6),
+  )}\nDATA: ${JSON.stringify(digest)}\nWrite the brief: a lede, one section per dataset present (primary first), one Connections section when connections exist, then What to watch. OUTPUT:`;
+
+  let lastErrors = [];
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const prompt =
+      attempt === 0
+        ? user
+        : `${user}\n\nYour previous output failed validation:\n- ${lastErrors
+            .slice(0, 6)
+            .join('\n- ')}\nReturn corrected JSON only.`;
+    // eslint-disable-next-line no-await-in-loop
+    const out = await synthesizeWithFallback({
+      system: COMPOSER_SYSTEM,
+      user: prompt,
+      maxTokens,
+      model: COMPOSE_MODEL,
+      fallbackModel: HAIKU_MODEL,
+      webSearch: false,
+    });
+    const m = /\{[\s\S]*\}/.exec(String(out?.answer || ''));
+    let parsed = null;
+    if (m) {
+      try {
+        parsed = JSON.parse(m[0]);
+      } catch {
+        parsed = null;
+      }
+    }
+    if (!parsed) {
+      lastErrors = ['output was not parseable JSON'];
+      continue;
+    }
+    const errors = validateBriefing(parsed, { sources, template: null });
+    if (!errors.length) return parsed;
+    lastErrors = errors;
+  }
+  return null;
 }

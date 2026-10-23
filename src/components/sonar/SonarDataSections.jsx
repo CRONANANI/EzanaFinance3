@@ -130,7 +130,11 @@ export function RelevantNews({ tickers, query }) {
             .filter((w) => w.length > 3);
           if (terms.length) {
             items = items.filter((n) =>
-              terms.some((t) => String(n.headline || '').toLowerCase().includes(t)),
+              terms.some((t) =>
+                String(n.headline || '')
+                  .toLowerCase()
+                  .includes(t),
+              ),
             );
           }
         }

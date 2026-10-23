@@ -17,6 +17,21 @@ import { useEffect, useRef, useState } from 'react';
 import './sonar-briefing.css';
 
 const DATASET_LABELS = {
+  'gov.contracts': 'Gov contracts',
+  'capitol.congress_trades': 'Congress trades',
+  'capitol.holdings': 'Congress holdings',
+  'capitol.lobbying': 'Lobbying',
+  'capitol.committee_seats': 'Committee seats',
+  'capitol.campaign_finance': 'Campaign finance',
+  'prediction.markets': 'Prediction markets',
+  'titans.holdings_13f': '13F holdings',
+  'titans.activist_stakes': '13D/13G',
+  'titans.whale_moves': 'Whale moves',
+  'lighthouse.oecd': 'OECD outlook',
+  'eyes.chokepoints': 'Chokepoints',
+  'eyes.ports': 'Ports',
+  'eyes.patents': 'Patents',
+  'house.filings': 'House filings',
   market: 'Market data',
   contracts: 'Gov contracts',
   f13: '13F holdings',
@@ -248,10 +263,10 @@ export default function SonarBriefing({ result, onFollowup, busy = false }) {
     .filter(Boolean)
     .filter((m) => m.id !== 'news');
 
-  const ask = (q) => {
+  const ask = (q, kind = 'text') => {
     if (!q || busy) return;
     setDraft('');
-    onFollowup(q, result.pingId);
+    onFollowup(q, result.pingId, kind);
   };
 
   return (
@@ -303,7 +318,7 @@ export default function SonarBriefing({ result, onFollowup, busy = false }) {
                   key={f.label}
                   type="button"
                   className="snb-followup"
-                  onClick={() => ask(f.query || f.label)}
+                  onClick={() => ask(f.query || f.label, f.kind)}
                 >
                   {f.label}
                 </button>
@@ -397,7 +412,7 @@ export default function SonarBriefing({ result, onFollowup, busy = false }) {
                 key={f.label}
                 type="button"
                 className="snb-followup"
-                onClick={() => ask(f.query || f.label)}
+                onClick={() => ask(f.query || f.label, f.kind)}
               >
                 {f.label}
               </button>

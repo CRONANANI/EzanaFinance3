@@ -365,6 +365,16 @@ export default function QueryConsole({ example, initial, chips, dims, pending = 
                 />
               </button>
             ) : null}
+            {res && res.rows.length && query ? (
+              /* Hand this exact result cluster to Sonar: the briefings page
+                 re-runs the query server-side and composes the cited brief. */
+              <a
+                className="dso-btn-ink dso-btn-ink--sm"
+                href={`/sonar/briefings?eq=${encodeURIComponent(query)}`}
+              >
+                Ping in Sonar <i className="bi bi-broadcast" aria-hidden="true" />
+              </a>
+            ) : null}
           </span>
         </div>
 

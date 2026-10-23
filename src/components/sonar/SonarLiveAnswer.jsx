@@ -93,7 +93,9 @@ export function SonarLiveAnswer({
               <span
                 key={d.id}
                 className={`sonar-src-chip${d.used ? ' sonar-src-chip--hit' : ''}`}
-                title={d.used ? `${d.source} — returned matches` : `${d.source} — searched, no matches`}
+                title={
+                  d.used ? `${d.source} — returned matches` : `${d.source} — searched, no matches`
+                }
               >
                 {d.label}
               </span>

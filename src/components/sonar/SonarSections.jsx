@@ -29,7 +29,9 @@ function SourceRow({ item, serif }) {
             {item.title}
           </a>
         ) : (
-          <span className={`sonar-mod-rowtitle${serif ? ' sonar-echo-title' : ''}`}>{item.title}</span>
+          <span className={`sonar-mod-rowtitle${serif ? ' sonar-echo-title' : ''}`}>
+            {item.title}
+          </span>
         )}
         <div className="sonar-mod-meta">
           {item.ticker && <span>{item.ticker}</span>}
@@ -100,9 +102,25 @@ export function PredictionMarkets({ sections, locked }) {
               <div style={{ minWidth: 0, width: '100%' }}>
                 <div
                   className="sonar-mod-rowtitle"
-                  style={{ height: 12, width: '78%', background: 'currentColor', opacity: 0.25, borderRadius: 4 }}
+                  style={{
+                    height: 12,
+                    width: '78%',
+                    background: 'currentColor',
+                    opacity: 0.25,
+                    borderRadius: 4,
+                  }}
                 />
-                <div className="sonar-mod-meta" style={{ height: 9, width: '40%', background: 'currentColor', opacity: 0.18, borderRadius: 4, marginTop: 8 }} />
+                <div
+                  className="sonar-mod-meta"
+                  style={{
+                    height: 9,
+                    width: '40%',
+                    background: 'currentColor',
+                    opacity: 0.18,
+                    borderRadius: 4,
+                    marginTop: 8,
+                  }}
+                />
               </div>
             </div>
           ))}
