@@ -1,0 +1,98 @@
+/* First-visit guided tour (GuidedTour.jsx). The layer passes pointer events
+   through so the spotlit element stays clickable; only the tooltip is
+   interactive. The spotlight's oversized box-shadow is the page scrim.
+   Tokens only; light and dark both read from the theme variables. */
+
+.gtour-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+}
+.gtour-spotlight {
+  position: fixed;
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 0 0 9999px rgba(0, 0, 0, 0.55),
+    0 0 0 2px var(--emerald);
+  animation: gtour-pulse 1.8s ease-in-out infinite;
+  transition: all 0.3s ease;
+}
+.gtour-tooltip {
+  position: fixed;
+  width: min(320px, calc(100vw - 32px));
+  pointer-events: auto;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  font-family: var(--font-sans);
+  box-shadow: var(--shadow-lg);
+}
+.gtour-title {
+  margin: 4px 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.gtour-body {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.gtour-counter {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--emerald);
+}
+.gtour-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+.gtour-primary,
+.gtour-ghost {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 0;
+}
+.gtour-primary {
+  background: var(--emerald);
+  color: var(--bg-primary);
+  border-radius: var(--radius-md);
+  padding: 6px 14px;
+}
+.gtour-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+}
+.gtour-tooltip :is(button):focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+@keyframes gtour-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 9999px rgba(0, 0, 0, 0.55),
+      0 0 0 2px var(--emerald);
+  }
+  50% {
+    box-shadow:
+      0 0 0 9999px rgba(0, 0, 0, 0.55),
+      0 0 0 6px var(--emerald-soft);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gtour-spotlight {
+    animation: none;
+    transition: none;
+  }
+}

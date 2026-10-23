@@ -55,7 +55,7 @@ function CommitteeChips({ bioguideId, onDone }) {
   }, [bioguideId, onDone]);
   if (!list.length) return null;
   return (
-    <section className="dsc-p-block">
+    <section className="dsc-p-block" data-tour="sb-committees">
       <div className="dsc-p-block-head">
         <span className="dsc-label">Committees</span>
       </div>
@@ -217,7 +217,7 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
           </div>
         </div>
 
-        <div className="dsc-p-stats">
+        <div className="dsc-p-stats" data-tour="sb-stats">
           <Stat label="Trades" value={member.count} />
           <Stat label="Buys" value={member.buys} />
           <Stat label="Sells" value={member.sells} />
@@ -228,7 +228,7 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
 
         <PortfolioCharts state={portfolio.state} data={portfolio.data} />
 
-        <section className="dsc-p-block">
+        <section className="dsc-p-block" data-tour="sb-activity">
           <div className="dsc-p-block-head">
             <span className="dsc-label">Trade activity</span>
             <span className="dsc-block-cap">counts by month</span>
@@ -311,7 +311,7 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
           ) : null}
         </section>
 
-        <section className="dsc-p-block">
+        <section className="dsc-p-block" data-tour="sb-alike">
           <div className="dsc-p-block-head">
             <span className="dsc-label">Trades most like</span>
             <span className="dsc-block-cap">shared tickers, overlap</span>
@@ -352,7 +352,7 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
           )}
         </section>
 
-        <section className="dsc-p-block">
+        <section className="dsc-p-block" data-tour="sb-contractors">
           <div className="dsc-p-block-head">
             <span className="dsc-label">Government contractors they trade</span>
             {contractData?.fiscalYear ? (

@@ -47,11 +47,64 @@ const MemberPanel = dynamic(() => import('./MemberPanel'), { ssr: false });
 import MostHeldChart from './MostHeldChart';
 import StateMap from '@/components/datasets/hub/StateMap';
 import Segmented from './Segmented';
+import GuidedTour from '@/components/tour/GuidedTour';
+import { useTourState } from '@/components/tour/useTourState';
 import '@/components/datasets/disclosures/disclosures.css';
 import './politician-tracker.css';
 import { listenForMemberIntent, prefetchTrackerMember } from '@/components/datasets/prefetch-cache';
 
 const NONE = '·';
+
+/* ── first-visit guided tour ─────────────────────────────────────────────
+   Phase one spotlights one card and waits for the click; phase two walks the
+   member panel's sections top to bottom. Copy describes what each section
+   actually renders, in plain words, never advice. Steps whose section did
+   not render (no committees on file, say) are skipped by GuidedTour. */
+const TOUR_KEY = 'politician_v1';
+const CARD_STEP = [
+  {
+    target: 'pelosi-card',
+    title: 'Start here',
+    body: "Click Nancy Pelosi's card to see how we track congressional trades.",
+  },
+];
+const SIDEBAR_STEPS = [
+  {
+    target: 'sb-stats',
+    title: 'The headline counts',
+    body: 'Trades, buys and sells in the loaded window, and the disclosed volume. Amounts are the midpoints of the ranges members report, because filings disclose ranges, not exact sums.',
+  },
+  {
+    target: 'sb-committees',
+    title: 'Committees',
+    body: 'The committees this member sits on. Each chip opens the Committee Assignments dataset filtered to that committee.',
+  },
+  {
+    target: 'sb-portfolio',
+    title: 'Portfolio, top holdings',
+    body: 'An estimate of what they still hold, built from every disclosure on file. Positions still open are sized from the midpoints of disclosed ranges; no market prices are applied.',
+  },
+  {
+    target: 'sb-sectors',
+    title: 'Sector breakdown',
+    body: 'The same estimated portfolio grouped by sector, so you can see where their holdings concentrate.',
+  },
+  {
+    target: 'sb-activity',
+    title: 'Trade activity',
+    body: 'Buys and sells by month, then each disclosed trade with its amount range, trade date and a link to the source filing.',
+  },
+  {
+    target: 'sb-alike',
+    title: 'Trades most like',
+    body: 'Members whose traded tickers overlap this one the most. The percentage is the overlap of their traded tickers in the loaded window.',
+  },
+  {
+    target: 'sb-contractors',
+    title: 'Government contractors they trade',
+    body: 'Tickers this member trades that are also top federal contractors, with the contract value awarded to each company.',
+  },
+];
 
 /* One key per filter set; the server seed and the client fetch share it. */
 function summaryKeyFor({ chamber, party, query, sort, days, reload }) {
@@ -165,7 +218,7 @@ function Tickers({ tickers, n = 3, cls = '' }) {
 
 const plural = (n, word) => (n === 1 ? word : `${word}s`);
 
-function Card({ m, selected, showPct, onOpen }) {
+function Card({ m, selected, showPct, onOpen, tourTarget = false }) {
   const seat = seatLabel(m);
   const ch = String(m.chamber || '').toLowerCase();
   return (
@@ -177,6 +230,7 @@ function Card({ m, selected, showPct, onOpen }) {
       aria-label={`${m.name}, rank ${m.rank}, disclosed volume ${usdShort(m.volume)}`}
       aria-pressed={selected}
       data-member={m.bioguideId || undefined}
+      data-tour={tourTarget ? 'pelosi-card' : undefined}
       onClick={(e) => onOpen(m, e.currentTarget)}
     >
       <span className={`ptk-rank dsc-mn${m.rank === 1 ? ' ptk-rank--first' : ''}`}>#{m.rank}</span>
@@ -551,6 +605,46 @@ export default function PoliticianTracker({
     triggerRef.current?.focus();
   }, [chamber, party, sort, period, query]);
 
+  /* ── first-visit guided tour ── */
+  const tour = useTourState(TOUR_KEY);
+  const [tourPhase, setTourPhase] = useState(null); // null | 'card' | 'sidebar'
+  const tourStarted = useRef(false);
+  /* Pelosi's card is the spotlight; when she is filtered out of the current
+     gallery, the first card stands in. */
+  const tourTargetKey = useMemo(() => {
+    const hit = gallery.find((m) => /pelosi/i.test(m.name || ''));
+    return (hit || gallery[0])?.key ?? null;
+  }, [gallery]);
+  useEffect(() => {
+    if (!tour.shouldRun || tourStarted.current) return;
+    if (!rankingReady || !gallery.length || openMember) return;
+    tourStarted.current = true;
+    setTourPhase('card');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tour.shouldRun, rankingReady, gallery.length, openMember]);
+  const endTour = useCallback(() => {
+    setTourPhase(null);
+    tour.complete();
+  }, [tour]);
+  /* Clicking any card while the spotlight is up opens its panel; the tour
+     follows into that panel once the slide-in settles. */
+  const openWithTour = useCallback(
+    (m, el) => {
+      open(m, el);
+      if (tourPhase === 'card') setTimeout(() => setTourPhase('sidebar'), 350);
+    },
+    [open, tourPhase],
+  );
+  /* Closing the panel mid-walk ends the tour rather than stranding it. */
+  useEffect(() => {
+    if (tourPhase === 'sidebar' && !openMember) endTour();
+  }, [tourPhase, openMember, endTour]);
+  const replayTour = useCallback(() => {
+    tour.replay();
+    tourStarted.current = true;
+    setTourPhase(openMember ? 'sidebar' : 'card');
+  }, [tour, openMember]);
+
   useEffect(() => {
     const onPop = () => {
       pushedRef.current = false;
@@ -732,6 +826,9 @@ export default function PoliticianTracker({
                 <i className="bi bi-chevron-down" aria-hidden="true" />
               </label>
               <span className="ptk-cap">ring colour is chamber, letter tag is party</span>
+              <button type="button" className="ptk-link ptk-tour-replay" onClick={replayTour}>
+                Replay tour
+              </button>
             </div>
           </div>
 
@@ -765,7 +862,8 @@ export default function PoliticianTracker({
                     m={m}
                     selected={openMember?.key === m.key}
                     showPct={sort === 'volume'}
-                    onOpen={open}
+                    onOpen={openWithTour}
+                    tourTarget={tourPhase === 'card' && m.key === tourTargetKey}
                   />
                 ))}
               </div>
@@ -1050,6 +1148,20 @@ export default function PoliticianTracker({
           />
         </>
       ) : null}
+
+      <GuidedTour
+        open={tourPhase === 'card'}
+        hideNext
+        steps={CARD_STEP}
+        onFinish={endTour}
+        onSkip={endTour}
+      />
+      <GuidedTour
+        open={tourPhase === 'sidebar' && Boolean(openMember)}
+        steps={SIDEBAR_STEPS}
+        onFinish={endTour}
+        onSkip={endTour}
+      />
     </div>
   );
 }

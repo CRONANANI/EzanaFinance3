@@ -1578,3 +1578,19 @@
 .ptk-shot > * {
   grid-area: 1 / 1;
 }
+
+/* ── first-visit guided tour (GuidedTour.jsx) ───────────────────────────── */
+.ptk-tour-replay {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--emerald);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ptk-tour-replay:hover {
+  text-decoration: underline;
+}

@@ -81,7 +81,11 @@ export default function PortfolioCharts({ state, data }) {
 
   return (
     <>
-      <section className="dsc-p-block ptk-pf" aria-labelledby="ptk-pf-stocks">
+      <section
+        className="dsc-p-block ptk-pf"
+        aria-labelledby="ptk-pf-stocks"
+        data-tour="sb-portfolio"
+      >
         <div className="dsc-p-block-head">
           <span className="dsc-label" id="ptk-pf-stocks">
             Portfolio, top holdings
@@ -112,7 +116,11 @@ export default function PortfolioCharts({ state, data }) {
         )}
       </section>
 
-      <section className="dsc-p-block ptk-pf" aria-labelledby="ptk-pf-sectors">
+      <section
+        className="dsc-p-block ptk-pf"
+        aria-labelledby="ptk-pf-sectors"
+        data-tour="sb-sectors"
+      >
         <div className="dsc-p-block-head">
           <span className="dsc-label" id="ptk-pf-sectors">
             Sector breakdown
