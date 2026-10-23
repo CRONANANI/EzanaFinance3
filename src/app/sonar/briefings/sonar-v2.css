@@ -1,0 +1,132 @@
+/* The /sonar briefing page shell (SonarV2Client.jsx). Tokens only. */
+
+.snv2 {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 36px 32px 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+}
+.snv2-head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 720px;
+}
+.snv2-eyebrow {
+  margin: 0;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--emerald);
+}
+.snv2-h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+.snv2-lede {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+.snv2-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  padding: 0 14px;
+  height: 48px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+}
+.snv2-bar input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 14px;
+}
+.snv2-bar input:focus {
+  outline: none;
+}
+.snv2-bar button {
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--emerald);
+  color: var(--bg-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+.snv2-bar button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.snv2-bar:focus-within {
+  border-color: var(--emerald);
+}
+.snv2-error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.snv2-thread {
+  margin: 0;
+  padding: 0 0 0 16px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.snv2-skel {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.snv2-skel span {
+  display: block;
+  height: 220px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--text-primary) 4%, transparent),
+    color-mix(in srgb, var(--text-primary) 9%, transparent),
+    color-mix(in srgb, var(--text-primary) 4%, transparent)
+  );
+  background-size: 200% 100%;
+  animation: snv2-shimmer 1.4s ease infinite;
+}
+@keyframes snv2-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+@media (max-width: 640px) {
+  .snv2 {
+    padding: 24px 16px 64px;
+  }
+  .snv2-skel {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .snv2-skel span {
+    animation: none;
+  }
+}
