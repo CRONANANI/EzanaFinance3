@@ -101,6 +101,20 @@
 
   /* ── Brand: Gold (Partner) ── */
   --gold: #d4a853;
+
+  /* ── Categorical chart palette (Oct 2026) ──
+     Eight colour-blind-friendly series colours for multi-category charts
+     (sector bars, holding chips, donut slices), built around the brand
+     emerald and gold. Light mode overrides 3 to 8 with darker companions.
+     Semantic buy/sell green/red stays separate; never reuse these for it. */
+  --chart-cat-1: var(--emerald);
+  --chart-cat-2: var(--gold);
+  --chart-cat-3: #3b82f6; /* blue */
+  --chart-cat-4: #8b5cf6; /* violet */
+  --chart-cat-5: #f59e0b; /* amber */
+  --chart-cat-6: #fb7185; /* coral */
+  --chart-cat-7: #2dd4bf; /* teal */
+  --chart-cat-8: #94a3b8; /* slate */
   --gold-hover: #b8922f;
   --gold-bg: rgba(212, 168, 83, 0.08);
   --gold-bg-hover: rgba(212, 168, 83, 0.12);
@@ -354,6 +368,15 @@ body.light-mode {
 
   /* ── Brand: Gold (Partner) ── */
   --gold: #b8922f;
+
+  /* Categorical chart palette, light companions (1 and 2 track the brand
+     tokens above). */
+  --chart-cat-3: #2563eb;
+  --chart-cat-4: #7c3aed;
+  --chart-cat-5: #d97706;
+  --chart-cat-6: #e11d48;
+  --chart-cat-7: #0d9488;
+  --chart-cat-8: #64748b;
   --gold-hover: #9a7a24;
   --gold-bg: rgba(184, 146, 47, 0.06);
   --gold-bg-hover: rgba(184, 146, 47, 0.1);

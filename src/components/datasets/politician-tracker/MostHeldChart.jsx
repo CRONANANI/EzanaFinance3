@@ -75,7 +75,12 @@ export default function MostHeldChart({ items, loading = false }) {
                 {t.holders}
               </span>
               <span className="ptk-held-slot" aria-hidden="true">
-                <i style={{ height: `${Math.max(4, (t.holders / max) * 100)}%` }} />
+                <i
+                  style={{
+                    height: `${Math.max(4, (t.holders / max) * 100)}%`,
+                    background: `var(--chart-cat-${(i % 8) + 1})`,
+                  }}
+                />
               </span>
               <span className="ptk-held-tk dsc-mn" aria-hidden="true">
                 {t.ticker}

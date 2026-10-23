@@ -1655,3 +1655,13 @@
   gap: 2px;
   min-width: 64px;
 }
+
+/* Categorical colour chips on the portfolio lists (tokens --chart-cat-*). */
+.ptk-pf-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+  margin-right: 2px;
+}

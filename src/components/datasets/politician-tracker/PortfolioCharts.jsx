@@ -17,6 +17,12 @@
  */
 import { companyLabel, usdShort } from '@/lib/politicians/tracker-model';
 
+/* Categorical palette tokens (theme-variables.css): one colour per sector,
+   assigned by sector rank and reused on the holding rows, so the two lists
+   read against each other. Buy/sell keep their semantic green/red. */
+const CAT_TOKENS = 8;
+const catVar = (i) => `var(--chart-cat-${(i % CAT_TOKENS) + 1})`;
+
 const pct = (s) => {
   const v = (s || 0) * 100;
   if (v > 0 && v < 1) return '<1%';
@@ -30,11 +36,19 @@ function Bars({ rows, label }) {
       {rows.map((r) => (
         <li key={r.key} className="ptk-pf-row" aria-label={r.aria}>
           <span className="ptk-pf-name" aria-hidden="true">
+            {r.color ? (
+              <i className="ptk-pf-dot" style={{ background: r.color }} title={r.sector} />
+            ) : null}
             {r.tag ? <b className="dsc-mn ptk-pf-tag">{r.tag}</b> : null}
             <span className="ptk-pf-label">{r.label}</span>
           </span>
           <span className="ptk-pf-track" aria-hidden="true">
-            <i style={{ width: `${Math.max(2, ((r.share || 0) / max) * 100)}%` }} />
+            <i
+              style={{
+                width: `${Math.max(2, ((r.share || 0) / max) * 100)}%`,
+                ...(r.color ? { background: r.color } : null),
+              }}
+            />
           </span>
           <span className="ptk-pf-val dsc-mn" aria-hidden="true">
             {pct(r.share)}
@@ -58,6 +72,9 @@ function Skeleton() {
 
 /** state: 'loading' | 'ready' | 'failed' | 'unavailable' */
 export default function PortfolioCharts({ state, data }) {
+  /* One colour per sector, by sector rank; holding rows reuse their
+     sector's colour as a chip, so the lists cross-reference. */
+  const sectorColor = new Map((data?.sectors || []).map((x, i) => [x.sector, catVar(i)]));
   const holdings = (data?.holdings || []).map((h) => {
     const name = companyLabel(h.company) || h.ticker;
     return {
@@ -66,14 +83,17 @@ export default function PortfolioCharts({ state, data }) {
       label: name,
       share: h.share,
       est: h.est,
+      sector: h.sector,
+      color: sectorColor.get(h.sector) || 'var(--chart-cat-8)',
       aria: `${h.ticker}, ${name}: about ${pct(h.share)} of the estimated portfolio, ${usdShort(h.est)}, ${h.sector}`,
     };
   });
-  const sectors = (data?.sectors || []).map((x) => ({
+  const sectors = (data?.sectors || []).map((x, i) => ({
     key: x.sector,
     label: x.sector,
     share: x.share,
     est: x.est,
+    color: catVar(i),
     aria: `${x.sector}: about ${pct(x.share)} of the estimated portfolio, ${x.positions} position${
       x.positions === 1 ? '' : 's'
     }`,
