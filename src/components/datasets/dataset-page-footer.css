@@ -1,0 +1,90 @@
+/* The shared dataset page footer (DatasetPageFooter.jsx). One hard band under
+   every /datasets page, aligned to the shared canvas and gutter. */
+
+.dsx-foot {
+  margin-top: 40px;
+  border-top: 1px solid var(--border-primary);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+}
+.dsx-foot-inner {
+  max-width: var(--ds-canvas-max, 1400px);
+  margin: 0 auto;
+  padding: 36px var(--ds-gutter, 32px) 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) repeat(2, minmax(0, 1fr));
+  gap: 32px;
+}
+.dsx-foot-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.dsx-foot-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  width: fit-content;
+}
+.dsx-foot-wordmark {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+.dsx-foot-tag {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  max-width: 44ch;
+}
+.dsx-foot-col {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+.dsx-foot-col h4 {
+  margin: 0 0 4px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.dsx-foot-col a {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  width: fit-content;
+}
+.dsx-foot-col a:hover {
+  color: var(--emerald);
+  text-decoration: underline;
+}
+.dsx-foot-col a:focus-visible,
+.dsx-foot-logo:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.dsx-foot-legal {
+  max-width: var(--ds-canvas-max, 1400px);
+  margin: 0 auto;
+  padding: 14px var(--ds-gutter, 32px) 22px;
+  border-top: 1px solid var(--border-primary);
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+@media (max-width: 640px) {
+  .dsx-foot-inner {
+    grid-template-columns: 1fr 1fr;
+  }
+  .dsx-foot-brand {
+    grid-column: 1 / -1;
+  }
+}

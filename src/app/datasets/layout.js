@@ -5,6 +5,7 @@ import { MarketingPageShell } from '@/components/marketing/MarketingPageShell';
 import { DatasetsSubnav } from '@/components/marketing/DatasetsSubnav';
 import { DatasetComingSoon } from '@/components/marketing/DatasetComingSoon';
 import DatasetChrome from '@/components/datasets/DatasetChrome';
+import DatasetPageFooter from '@/components/datasets/DatasetPageFooter';
 import { TickerSlotProvider } from '@/components/datasets/ticker-slot';
 import { HUB_SLUGS } from '@/lib/datasets/hubs';
 import '../marketing-explore.css';
@@ -105,6 +106,7 @@ export default function DatasetsLayout({ children }) {
         <TickerSlotProvider>
           <DatasetChrome />
           {children}
+          <DatasetPageFooter />
         </TickerSlotProvider>
       </Shell>
     );
@@ -115,6 +117,7 @@ export default function DatasetsLayout({ children }) {
       <MarketingPageShell>
         <DatasetsSubnav />
         {children}
+        <DatasetPageFooter />
       </MarketingPageShell>
     </Shell>
   );

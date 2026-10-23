@@ -200,6 +200,14 @@ export default function InstitutionalClient({
 
   return (
     <div className="dsc inst">
+      {/* The quarter's headline figures sit directly under the conveyor belt,
+          before the page header, as compact single-line tiles. */}
+      <LedgerRow
+        overview={bodyOverview}
+        chip={quarterShort(activeQuarter)}
+        chipPartial={chipPartial}
+      />
+
       <header className="inst-header">
         <p className="inst-eyebrow inst-eyebrow--page">
           DATASETS · SEC EDGAR FORM 13F-HR
@@ -265,12 +273,6 @@ export default function InstitutionalClient({
           usually within an hour of each filing.
         </p>
       ) : null}
-
-      <LedgerRow
-        overview={bodyOverview}
-        chip={quarterShort(activeQuarter)}
-        chipPartial={chipPartial}
-      />
 
       <div className="inst-row">
         {openQuarter ? (
