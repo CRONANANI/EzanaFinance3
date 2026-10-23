@@ -374,30 +374,41 @@ export default function MemberPanel({ member, members, contractors, onClose, onS
               Contract data is unavailable right now.
             </p>
           ) : contracted.length ? (
-            <table className="dsc-p-table">
-              <thead>
-                <tr>
-                  <th>Ticker</th>
-                  <th>Recipient</th>
-                  <th>Awarded</th>
-                  <th>Trades</th>
-                </tr>
-              </thead>
-              <tbody>
-                {contracted.map((c) => (
-                  <tr key={c.ticker}>
-                    <td className="dsc-mn">{c.ticker}</td>
-                    <td className="ptk-recipient">{c.recipient}</td>
-                    <td className="dsc-mn">{usdShort(c.total)}</td>
-                    <td className="dsc-mn">{c.n}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <ul className="ptk-con-list">
+              {contracted.map((c) => {
+                const side = c.lastTradeSide ? SIDE[c.lastTradeSide] || SIDE.other : null;
+                return (
+                  <li key={c.ticker} className="ptk-con-row">
+                    <span className="ptk-con-main">
+                      <span className="dsc-mn ptk-con-ticker">{c.ticker}</span>
+                      <span className="ptk-con-text">
+                        <span className="ptk-recipient">{c.recipient}</span>
+                        <span className="ptk-con-cap">
+                          {c.topAgency || NONE}
+                          {c.lastAwardDate ? ` · last award ${c.lastAwardDate}` : ''}
+                        </span>
+                      </span>
+                    </span>
+                    <span className="ptk-con-figures">
+                      <span className="dsc-mn ptk-con-usd">{usdShort(c.total)}</span>
+                      <span className="ptk-con-cap">
+                        {c.awards ? `${c.awards.toLocaleString('en-US')} awards` : NONE}
+                      </span>
+                    </span>
+                    <span className="ptk-con-trade">
+                      {side ? <span className={`dsc-chip ${side.cls}`}>{side.label}</span> : null}
+                      <span className="dsc-mn ptk-con-cap">
+                        {c.lastTradeAt || (c.n ? `${c.n} trades` : NONE)}
+                      </span>
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
           ) : (
             <p className="dsc-note">
-              No top federal contractors among the tickers traded
-              {contractData?.fiscalYear ? `, FY${contractData.fiscalYear}` : ''}.
+              No traded companies hold federal contracts
+              {contractData?.fiscalYear ? ` in FY${contractData.fiscalYear}` : ''}.
             </p>
           )}
         </section>

@@ -484,3 +484,71 @@ export function contractFreshnessNote(source, syncedAt) {
   }
   return 'Sample of recent awards — full live dataset available in the app.';
 }
+
+/**
+ * Contractor exposure for the Politician Tracker sidebar: EVERY recipient row
+ * of ONE fiscal year (the display trim in getContractRollups is for the
+ * contracts page's treemap and drops mid-sized public contractors such as
+ * Microsoft or IBM, which is exactly what the sidebar must not lose).
+ * Aggregated per recipient name with per-agency totals. Null on any error.
+ */
+export async function getContractorExposure({ fiscalYear } = {}) {
+  const fy = Number(fiscalYear);
+  if (!fy) return null;
+  try {
+    const supabase = getAnonClient();
+    const PAGE = 1000;
+    const { count: totalRows, error: countErr } = await supabase
+      .from('gov_contract_recipient_rollup')
+      .select('fiscal_year', { count: 'exact', head: true })
+      .eq('fiscal_year', fy);
+    if (countErr || !totalRows) return null;
+
+    const pages = await Promise.all(
+      Array.from({ length: Math.ceil(Math.min(totalRows, 20000) / PAGE) }, (_, i) =>
+        supabase
+          .from('gov_contract_recipient_rollup')
+          .select('recipient_name, awarding_agency, total_amount, award_count')
+          .eq('fiscal_year', fy)
+          .order('recipient_name', { ascending: true })
+          .order('awarding_agency', { ascending: true })
+          .range(i * PAGE, i * PAGE + PAGE - 1),
+      ),
+    );
+    const rows = [];
+    for (const { data, error } of pages) {
+      if (error) return null;
+      if (data) rows.push(...data);
+    }
+    if (!rows.length) return null;
+
+    const byName = new Map();
+    for (const r of rows) {
+      const name = r.recipient_name || 'Unknown';
+      const agency = r.awarding_agency || 'Unknown';
+      const val = Number(r.total_amount) || 0;
+      const cnt = Number(r.award_count) || 0;
+      let rec = byName.get(name);
+      if (!rec) {
+        rec = { name, total: 0, count: 0, agencies: new Map() };
+        byName.set(name, rec);
+      }
+      rec.total += val;
+      rec.count += cnt;
+      rec.agencies.set(agency, (rec.agencies.get(agency) || 0) + val);
+    }
+    return [...byName.values()].map((r) => {
+      let topAgency = null;
+      let topVal = -1;
+      for (const [agency, val] of r.agencies) {
+        if (val > topVal) {
+          topVal = val;
+          topAgency = agency;
+        }
+      }
+      return { name: r.name, total: r.total, count: r.count, topAgency };
+    });
+  } catch {
+    return null;
+  }
+}

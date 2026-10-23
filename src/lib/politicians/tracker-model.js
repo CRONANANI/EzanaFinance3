@@ -136,7 +136,17 @@ export function contractorTrades(member, byTicker) {
   if (!byTicker) return [];
   return member.tickers
     .filter(({ ticker }) => byTicker[ticker])
-    .map(({ ticker, n }) => ({ ticker, n, ...byTicker[ticker] }))
+    .map(({ ticker, n }) => {
+      /* The member's newest trade on this ticker (trades are newest-first). */
+      const last = (member.trades || []).find((t) => t.ticker === ticker) || null;
+      return {
+        ticker,
+        n,
+        lastTradeSide: last?.side || null,
+        lastTradeAt: last?.tradedAt || null,
+        ...byTicker[ticker],
+      };
+    })
     .sort((a, b) => b.total - a.total);
 }
 

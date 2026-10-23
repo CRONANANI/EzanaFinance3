@@ -1594,3 +1594,64 @@
 .ptk-tour-replay:hover {
   text-decoration: underline;
 }
+
+/* ── contractors-they-trade rows (MemberPanel) ──────────────────────────── */
+.ptk-con-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ptk-con-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 0;
+  border-top: 1px solid var(--border-primary);
+}
+.ptk-con-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.ptk-con-ticker {
+  font-weight: 700;
+  flex: none;
+}
+.ptk-con-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.ptk-con-text .ptk-recipient {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ptk-con-cap {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ptk-con-figures {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+.ptk-con-usd {
+  font-weight: 600;
+}
+.ptk-con-trade {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  min-width: 64px;
+}
