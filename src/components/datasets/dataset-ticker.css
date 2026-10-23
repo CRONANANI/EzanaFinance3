@@ -126,3 +126,116 @@
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
+
+/* Clicking an item pauses the belt while its detail modal is open (hover and
+   focus pause above still apply). */
+.dsx-ticker-track[data-paused] {
+  animation-play-state: paused;
+}
+
+/* ── the generic event detail modal (EventDetailModal.jsx) ─────────────── */
+.dsx-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.dsx-modal {
+  width: min(440px, 100%);
+  max-height: min(80vh, 640px);
+  overflow-y: auto;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-sans);
+}
+.dsx-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px 10px;
+}
+.dsx-modal-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  min-width: 0;
+}
+.dsx-modal-x {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.dsx-modal-body {
+  padding: 4px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.dsx-modal-dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dsx-modal-dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  font-size: 13px;
+}
+.dsx-modal-dl dt {
+  color: var(--text-muted);
+}
+.dsx-modal-dl dd {
+  margin: 0;
+  text-align: right;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.dsx-modal .dsx-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.dsx-modal-src {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--emerald);
+  text-decoration: none;
+  width: fit-content;
+}
+.dsx-modal-src:hover {
+  text-decoration: underline;
+}
+.dsx-modal :is(a, button):focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+/* Bottom sheet on phones. */
+@media (max-width: 640px) {
+  .dsx-modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .dsx-modal {
+    width: 100%;
+    max-height: 80vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-bottom: 0;
+  }
+}

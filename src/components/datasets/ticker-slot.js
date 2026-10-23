@@ -39,10 +39,21 @@ export function useTickerSlot() {
  * re-renders forever. The default context value is a no-op setter, so calling
  * this outside a provider is harmless rather than a crash.
  */
-export function usePublishTicker({ items, onSelect, ariaLabel, activeKey = null } = {}) {
+export function usePublishTicker({
+  items,
+  onSelect,
+  renderDetails,
+  getTitle,
+  ariaLabel,
+  activeKey = null,
+} = {}) {
   const { setTicker } = useContext(TickerSlotContext);
   useEffect(() => {
-    setTicker(items && items.length ? { items, onSelect, ariaLabel, activeKey } : null);
+    setTicker(
+      items && items.length
+        ? { items, onSelect, renderDetails, getTitle, ariaLabel, activeKey }
+        : null,
+    );
     return () => setTicker(null);
-  }, [items, onSelect, ariaLabel, activeKey, setTicker]);
+  }, [items, onSelect, renderDetails, getTitle, ariaLabel, activeKey, setTicker]);
 }

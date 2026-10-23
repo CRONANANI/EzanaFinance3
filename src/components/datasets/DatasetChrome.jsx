@@ -89,6 +89,8 @@ export default function DatasetChrome() {
         <DatasetTicker
           items={ticker.items}
           onSelect={ticker.onSelect}
+          renderDetails={ticker.renderDetails}
+          getTitle={ticker.getTitle}
           ariaLabel={ticker.ariaLabel}
         />
       ) : null}
