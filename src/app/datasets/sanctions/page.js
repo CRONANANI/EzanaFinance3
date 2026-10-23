@@ -44,32 +44,26 @@ const NO_SEARCH = {
 };
 
 export default async function SanctionsPage() {
-  const summary = await getSanctionsSummary();
+  /* The summary used to be awaited alone before every other read (only
+     getNewestAdditions and getTargetActivity actually need it), serializing
+     two full round trips. The independent reads now overlap it. */
+  const [summary, search, trends, pulses, kpis, activity, actions, news, coverage, status] =
+    await Promise.all([
+      getSanctionsSummary(),
+      searchSanctions(NO_SEARCH),
+      getSanctionsTrends(),
+      getSanctionsNewsPulses(),
+      getSanctionsKpis(),
+      getSanctionsActivity(24, null, null, null),
+      getOfacActions(30),
+      getSanctionsNewsFeed(30),
+      getSanctionsCoverage(),
+      getIngestStatus(),
+    ]);
   const targetMap = Object.fromEntries(summary.targets.map((t) => [t.name, t.codes]));
-  const [
-    search,
-    newest,
-    trends,
-    pulses,
-    kpis,
-    activity,
-    targetActivity,
-    actions,
-    news,
-    coverage,
-    status,
-  ] = await Promise.all([
-    searchSanctions(NO_SEARCH),
+  const [newest, targetActivity] = await Promise.all([
     getNewestAdditions(summary.baseline, 30),
-    getSanctionsTrends(),
-    getSanctionsNewsPulses(),
-    getSanctionsKpis(),
-    getSanctionsActivity(24, null, null, null),
     getTargetActivity(targetMap, 365),
-    getOfacActions(30),
-    getSanctionsNewsFeed(30),
-    getSanctionsCoverage(),
-    getIngestStatus(),
   ]);
   /* Before the research functions are installed, the first page comes from
      the original listing query. */

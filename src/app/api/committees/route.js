@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { getCommitteeIndex } from '@/lib/congress/committee-data';
 import { COMMITTEE_SECTOR_NOTE } from '@/lib/congress/committee-sectors';
+import { timed } from '@/lib/server-timing';
 
 /**
  * GET /api/committees: every current committee (House, Senate, joint) with its
@@ -20,6 +22,15 @@ const CACHE = { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=
 const supaConfigured = () =>
   !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 
+/* The source syncs daily, so the index is built at most once an hour (it was
+   rebuilt on every request before: three paged table reads per visit). The
+   CDN header below still short-circuits most hits before this runs. */
+const cachedIndex = unstable_cache(
+  () => timed('committees:index', () => getCommitteeIndex(getAdminClient())),
+  ['committees-index-v1'],
+  { revalidate: 3600, tags: ['committees'] },
+);
+
 export async function GET(request) {
   const rl = await checkRateLimit(`committees:index:${getClientIp(request)}`, { limit: 60 });
   if (!rl.success) return rateLimitResponse(rl);
@@ -36,7 +47,7 @@ export async function GET(request) {
   if (!supaConfigured()) return NextResponse.json(empty);
 
   try {
-    const data = await getCommitteeIndex(getAdminClient());
+    const data = await cachedIndex();
     return NextResponse.json(
       { ok: true, source: SOURCE, note: COMMITTEE_SECTOR_NOTE, ...data },
       { headers: CACHE },

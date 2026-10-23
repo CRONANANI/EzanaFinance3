@@ -173,7 +173,19 @@ const MAPPED_TICKERS = [...new Set(Object.values(SECTORS).flatMap((s) => s.ticke
 
 /** All committees with subcommittees, counts, leaders, sectors, belt items. */
 export async function getCommitteeIndex(admin) {
-  const { committees, seats, seatsBy } = await loadAll(admin);
+  /* The belt's trade query only needs the static ticker map, so it runs in
+     parallel with the committee/seat load instead of after it (it used to be
+     a second round trip on every request). */
+  const [{ committees, seats, seatsBy }, { data: recentTrades }] = await Promise.all([
+    loadAll(admin),
+    admin
+      .from('congress_trades')
+      .select(TRADE_COLS)
+      .in('ticker', MAPPED_TICKERS)
+      .gte('transaction_date', monthsAgo(3))
+      .order('transaction_date', { ascending: false })
+      .limit(400),
+  ]);
   const committeeById = new Map(committees.map((c) => [c.thomas_id, c]));
 
   const parents = committees
@@ -196,14 +208,7 @@ export async function getCommitteeIndex(admin) {
   }
   let belt = [];
   if (seats.length) {
-    const { data: recent } = await admin
-      .from('congress_trades')
-      .select(TRADE_COLS)
-      .in('ticker', MAPPED_TICKERS)
-      .gte('transaction_date', monthsAgo(3))
-      .order('transaction_date', { ascending: false })
-      .limit(400);
-    for (const t of recent || []) {
+    for (const t of recentTrades || []) {
       if (belt.length >= 20) break;
       const mine = seatsByMember.get(t.bioguide_id);
       if (!mine) continue;
