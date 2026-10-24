@@ -26,7 +26,7 @@ export const BRAND = {
 export const SOCIAL_PROFILES = {
   x: 'https://x.com/EzanaWorld',
   linkedin: 'https://www.linkedin.com/company/119054217/',
-  instagram: null,
+  instagram: 'https://www.instagram.com/ezanafinance/',
   facebook: null,
   youtube: null,
   crunchbase: null,
