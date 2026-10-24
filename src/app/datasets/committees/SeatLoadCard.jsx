@@ -54,7 +54,7 @@ export default function SeatLoadCard({ members, status, retry, sub, empty, onMem
               type="button"
               className="cmx-seated-row"
               onClick={() => onMember(m.bioguideId)}
-              aria-label={`${m.name}, ${m.seatCount} seats. Open member lookup.`}
+              aria-label={`${m.name}, ${m.seatCount} seats. Open member panel.`}
             >
               <Headshot name={m.name} size={26} />
               <span className="cmx-ellipsis">{m.name}</span>

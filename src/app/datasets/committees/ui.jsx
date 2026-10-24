@@ -286,7 +286,7 @@ export function SplitBar({ split, tall = false }) {
 
 /* ── overlay (phone filter sheet) ────────────────────────────────────── */
 
-export function Overlay({ label, onClose, children }) {
+export function Overlay({ label, onClose, children, className = '' }) {
   const ref = useRef(null);
   useEffect(() => {
     const el = ref.current;
@@ -325,7 +325,7 @@ export function Overlay({ label, onClose, children }) {
   return createPortal(
     <div className="cmx-overlay" role="presentation" onClick={onClose}>
       <div
-        className="cmx-sheet"
+        className={`cmx-sheet${className ? ` ${className}` : ''}`}
         role="dialog"
         aria-modal="true"
         aria-label={label}

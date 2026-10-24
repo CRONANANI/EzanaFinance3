@@ -46,7 +46,7 @@ function RosterColumn({ side, label, members, onMember }) {
               type="button"
               className="cmx-roster-row"
               onClick={() => onMember(m.bioguideId)}
-              aria-label={`${m.name}${m.title ? `, ${m.title}` : ''}. Open member lookup.`}
+              aria-label={`${m.name}${m.title ? `, ${m.title}` : ''}. Open member panel.`}
             >
               <span className="cmx-roster-rank cmx-mono">{m.rank ?? ''}</span>
               <Headshot src={m.headshot} name={m.name} size={26} />

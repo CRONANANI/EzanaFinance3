@@ -1512,12 +1512,8 @@
   border-radius: var(--cmx-r-tile);
 }
 
-/* ── card 10: lookup ──────────────────────────────────────────────────── */
+/* ── member panel (MemberPanel.jsx) ───────────────────────────────────── */
 
-.cmx-card--lookup .cmx-search {
-  min-width: 260px;
-  margin-left: 0;
-}
 .cmx-lookup {
   display: flex;
   gap: 24px;
@@ -1688,6 +1684,18 @@
 }
 
 /* ── phone sheet ──────────────────────────────────────────────────────── */
+
+/* The member panel is a centred dialog on desktop and the bottom sheet on
+   phones (the 720px block below). */
+@media (min-width: 721px) {
+  .cmx-overlay:has(.cmx-sheet--member) {
+    align-items: center;
+  }
+  .cmx-sheet--member {
+    width: min(920px, calc(100% - 48px));
+    border-radius: var(--cmx-r-band);
+  }
+}
 
 .cmx-overlay {
   position: fixed;

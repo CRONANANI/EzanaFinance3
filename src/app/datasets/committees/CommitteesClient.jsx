@@ -3,8 +3,9 @@
 /**
  * Committee Assignments (Oct 2026 redesign): ten cards under one sticky
  * control bar. Design: docs/design/committees-handoff. One page; the view
- * switch reorders it (Members moves Member Lookup under the controls) and
- * every card stays live in both views.
+ * switch filters it and every card stays live in both views. A member opens
+ * in the member panel (the control-bar search, gavels, seat load, trades,
+ * the ticker belt); there is no separate lookup card.
  *
  * State lives in the URL: filter changes use router.replace; committee and
  * member selections push one entry so Back returns. ?committee= and
@@ -27,7 +28,7 @@ import SeatLoadCard from './SeatLoadCard';
 import TradesCard from './TradesCard';
 import MatrixCard from './MatrixCard';
 import HearingsCard from './HearingsCard';
-import LookupCard from './LookupCard';
+import MemberPanel from './MemberPanel';
 import { CHAMBER_WORD, fmtDate, fmtRange, useJson } from './ui';
 import './committees.css';
 
@@ -109,18 +110,17 @@ export default function CommitteesClient() {
     (bioguideId) => {
       if (!bioguideId) return;
       navigate({ member: bioguideId }, { push: true });
-      scrollToCard('cmx-lookup');
     },
     [navigate],
   );
+  const closeMember = useCallback(() => navigate({ member: null }), [navigate]);
 
   /* deep links scroll their card into view once the data is up */
   const landed = useRef(false);
   useEffect(() => {
     if (landed.current || index.status !== 'ready') return;
     landed.current = true;
-    if (url.member) scrollToCard('cmx-lookup');
-    else if (url.committee) scrollToCard('cmx-profile');
+    if (!url.member && url.committee) scrollToCard('cmx-profile');
   }, [index.status, url.member, url.committee]);
 
   const activeCount =
@@ -285,10 +285,6 @@ export default function CommitteesClient() {
     q: url.q,
   };
 
-  const lookupCard = (
-    <LookupCard bioguideId={selectedMember} members={allMembers} onMember={openMember} />
-  );
-
   return (
     <div className="cmx-page">
       <header className="cmx-header">
@@ -315,8 +311,6 @@ export default function CommitteesClient() {
       />
 
       <div className="cmx-cards">
-        {url.view === 'members' ? lookupCard : null}
-
         <GlanceCard
           status={index.status}
           retry={index.retry}
@@ -409,8 +403,6 @@ export default function CommitteesClient() {
           <HearingsCard onProfile={() => scrollToCard('cmx-profile')} />
         </div>
 
-        {url.view !== 'members' ? lookupCard : null}
-
         {!isAuthenticated ? (
           <section className="cmx-band" aria-labelledby="cmx-band-title">
             <div>
@@ -436,6 +428,8 @@ export default function CommitteesClient() {
           </section>
         ) : null}
       </div>
+
+      <MemberPanel bioguideId={selectedMember} members={allMembers} onClose={closeMember} />
 
       <footer className="cmx-legal">
         <p>{SOURCE_LINE}</p>

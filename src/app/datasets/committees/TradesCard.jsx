@@ -138,7 +138,7 @@ export default function TradesCard({
                       type="button"
                       className="cmx-feed-member"
                       onClick={() => onMember(t.bioguideId)}
-                      aria-label={`${t.member || t.bioguideId}. Open member lookup.`}
+                      aria-label={`${t.member || t.bioguideId}. Open member panel.`}
                     >
                       <Headshot name={t.member} size={22} />
                       <span className="cmx-ellipsis">{t.member || t.bioguideId}</span>

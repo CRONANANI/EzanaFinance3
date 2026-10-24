@@ -2,7 +2,7 @@
 
 /**
  * Card 3, Gavels: who holds power. Chairs or ranking members by committee;
- * a person opens Member Lookup, the code chip opens the Committee Profile.
+ * a person opens the member panel, the code chip opens the Committee Profile.
  */
 import { useState } from 'react';
 import { Card, CodeChip, Headshot, PartyTag, Segmented, SkelRows } from './ui';
@@ -58,7 +58,7 @@ export default function GavelsCard({
               type="button"
               className="cmx-gavel-person"
               onClick={() => onMember(who.bioguideId)}
-              aria-label={`${who.name}, ${mode === 'chair' ? 'chair' : 'ranking member'} of ${c.shortName}. Open member lookup.`}
+              aria-label={`${who.name}, ${mode === 'chair' ? 'chair' : 'ranking member'} of ${c.shortName}. Open member panel.`}
             >
               <Headshot src={who.headshot} name={who.name} size={32} />
               <span className="cmx-gavel-main">
