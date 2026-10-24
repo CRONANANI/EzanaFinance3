@@ -1308,26 +1308,32 @@
 /* The explorer keeps .gcx-card for its padding and internal spacing but drops
    the card's frame: the table sits directly on the page background, so its own
    row dividers do the separating instead of a box around a box. */
-/* ── Explore all awards (Oct 13 redesign) ─────────────────────────────
-   A dark emerald card in the Sonar band's language: the brand band green
-   as the surface, white ink mixes, emerald accents, a single-row filter
-   bar on desktop, mono tabular numbers, and rows that lift on hover. All
-   values are tokens or mixes of tokens. */
+/* ── Explore all awards ───────────────────────────────────────────────
+   Oct 24: this card used to be painted with the Sonar band's green
+   (--brand-band-green) and white ink mixes in both themes, so it read as a
+   green CTA block among plain cards. It now sits on the page canvas like
+   every other card: the same shell (radius, shadow, no outside border),
+   standard ink and muted tokens, and emerald only for text accents and
+   focus, never emerald on emerald. Contrast ratios are recorded in
+   docs/perf/explore-awards-contrast.md. */
 .gcx-exp {
-  --gx-ink: color-mix(in srgb, white 92%, transparent);
-  --gx-ink-2: color-mix(in srgb, white 72%, transparent);
-  --gx-ink-3: color-mix(in srgb, white 52%, transparent);
-  --gx-hair: color-mix(in srgb, white 10%, transparent);
-  --gx-hair-strong: color-mix(in srgb, white 18%, transparent);
-  --gx-well: color-mix(in srgb, black 24%, transparent);
-  --gx-well-hover: color-mix(in srgb, white 6%, transparent);
-  --gx-accent: var(--brand-band-mint);
+  --gx-ink: var(--text-primary);
+  --gx-ink-2: var(--text-secondary);
+  --gx-ink-3: var(--text-muted);
+  --gx-hair: var(--border-primary);
+  /* Control borders carry the 3:1 non-text contrast (WCAG 1.4.11). */
+  --gx-hair-strong: var(--text-muted);
+  --gx-well: var(--bg-primary);
+  --gx-well-hover: var(--surface-card-hover);
+  --gx-head: var(--bg-secondary);
+  --gx-field: var(--surface-input);
+  --gx-accent: var(--emerald-text);
   margin-top: 18px;
   padding: 22px 22px 18px;
-  background: var(--brand-band-green);
-  border: 1px solid var(--gx-hair);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-md);
+  background: var(--bg-primary);
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   color: var(--gx-ink);
 }
 .gcx-exp-head {
@@ -1375,7 +1381,7 @@
 .gcx-exp-search {
   min-height: 42px;
   border: 1px solid var(--gx-hair-strong);
-  background: color-mix(in srgb, black 18%, transparent);
+  background: var(--gx-field);
   border-radius: var(--radius-md);
   color: var(--gx-ink);
   font-family: var(--font-sans);
@@ -1388,7 +1394,6 @@
 }
 .gcx-exp-select {
   padding: 0 12px;
-  color-scheme: dark;
 }
 .gcx-exp-search {
   display: flex;
@@ -1448,7 +1453,7 @@
   letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
-  background: color-mix(in srgb, black 14%, transparent);
+  background: var(--gx-head);
 }
 .gcx-exp-table tbody tr:last-child td {
   border-bottom: none;
@@ -1544,7 +1549,7 @@
   height: 32px;
   width: 32px;
   border: 1px solid var(--gx-hair-strong);
-  background: color-mix(in srgb, black 18%, transparent);
+  background: var(--gx-field);
   border-radius: var(--radius-md);
   color: var(--gx-ink);
   cursor: pointer;
