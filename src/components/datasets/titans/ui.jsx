@@ -58,14 +58,42 @@ export function ScoreChip({ score, factors, prefix = 'inst' }) {
   );
 }
 
-/** The side-panel shell: one open at a time, Politician Tracker behaviour. */
-export function Panel({ label, onClose, prefix = 'inst', children }) {
+/**
+ * The side-panel shell: one open at a time, Politician Tracker behaviour.
+ *
+ * The panel is portalled to <body>, outside the page's `.dsc .<prefix>`
+ * wrapper, so it is mounted inside its own `dsc <prefix>` scope wrapper
+ * (display: contents, see disclosures.css). Without it every page token the
+ * panel reads (--dsc-bg, --<prefix>-scrim, --<prefix>-card-bg ...) was
+ * undefined and the surface and scrim painted transparent: the page showed
+ * through the Security X-ray, Manager Fingerprint, Investor Dossier, Target
+ * File and Filing Reader alike.
+ *
+ * Focus moves to the panel heading (h2, or [data-panel-title]) as soon as it
+ * renders, including a heading that only appears once the panel's data has
+ * loaded; Escape closes and focus returns to the opener.
+ */
+export function Panel({ label, onClose, prefix = 'inst', className = '', children }) {
   const ref = useRef(null);
   useEffect(() => {
     const el = ref.current;
     const prev = document.activeElement;
-    el?.querySelector('h2, [data-panel-title]')?.focus?.();
-    el?.focus();
+    const focusHeading = () => {
+      const h = el?.querySelector('h2, [data-panel-title]');
+      if (!h) return false;
+      if (!h.hasAttribute('tabindex')) h.setAttribute('tabindex', '-1');
+      h.focus({ preventScroll: true });
+      return true;
+    };
+    let observer = null;
+    if (!focusHeading()) {
+      el?.focus();
+      observer = new MutationObserver(() => {
+        /* Only take focus while it is still on the panel itself. */
+        if (document.activeElement === el && focusHeading()) observer.disconnect();
+      });
+      if (el) observer.observe(el, { childList: true, subtree: true });
+    }
     const onKey = (e) => {
       if (e.key === 'Escape') {
         e.stopPropagation();
@@ -90,6 +118,7 @@ export function Panel({ label, onClose, prefix = 'inst', children }) {
     document.addEventListener('keydown', onKey, true);
     document.body.style.overflow = 'hidden';
     return () => {
+      observer?.disconnect();
       document.removeEventListener('keydown', onKey, true);
       document.body.style.overflow = '';
       if (prev instanceof HTMLElement) prev.focus();
@@ -97,18 +126,20 @@ export function Panel({ label, onClose, prefix = 'inst', children }) {
   }, [onClose]);
   if (typeof document === 'undefined') return null;
   return createPortal(
-    <div className={`${prefix}-scrim`} role="presentation" onClick={onClose}>
-      <aside
-        className={`${prefix}-panel`}
-        role="dialog"
-        aria-modal="true"
-        aria-label={label}
-        tabIndex={-1}
-        ref={ref}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {children}
-      </aside>
+    <div className={`dsc ${prefix} dsc-portal`}>
+      <div className={`${prefix}-scrim`} role="presentation" onClick={onClose}>
+        <aside
+          className={`${prefix}-panel${className ? ` ${className}` : ''}`}
+          role="dialog"
+          aria-modal="true"
+          aria-label={label}
+          tabIndex={-1}
+          ref={ref}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {children}
+        </aside>
+      </div>
     </div>,
     document.body,
   );

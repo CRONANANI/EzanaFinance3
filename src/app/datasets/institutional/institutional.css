@@ -946,9 +946,16 @@
   min-width: 0;
 }
 .inst-readout {
-  background: var(--inst-inset-bg);
+  /* Solid card: the canvas fill, a 1px ring and the card shadow. */
+  background: var(--dsc-bg);
+  border: 1px solid var(--dsc-border);
+  box-shadow: var(--inst-card-shadow);
   border-radius: var(--radius-md);
   padding: 14px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 .inst-readout-ticker {
   font-size: 20px;
@@ -962,10 +969,15 @@
   font-size: 12px;
   margin: 10px 0;
 }
+.inst-readout-dl {
+  align-self: stretch;
+}
+/* Label above value, both on the card's left edge. */
 .inst-readout-dl div {
   display: flex;
-  justify-content: space-between;
-  gap: 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
 }
 .inst-readout-dl dt {
   color: var(--inst-muted);
@@ -1381,7 +1393,7 @@
   position: fixed;
   inset: 0;
   z-index: 90;
-  background: var(--inst-scrim);
+  background: var(--inst-scrim, color-mix(in srgb, var(--dsc-ink) 40%, transparent));
   display: flex;
   justify-content: flex-end;
 }
@@ -1389,7 +1401,12 @@
   width: min(var(--inst-panel-w, 480px), 100%);
   height: 100%;
   overflow-y: auto;
+  /* Opaque: --dsc-bg resolves because the portal mounts inside a
+     `dsc inst` scope wrapper (titans/ui.jsx Panel). */
   background: var(--dsc-bg);
+  color: var(--inst-ink);
+  isolation: isolate;
+  text-align: left;
   box-shadow: var(--inst-panel-shadow);
   animation: inst-slide var(--inst-panel-ms, 220ms) ease-out;
 }
@@ -1785,4 +1802,191 @@
 .ds-shell .inst .inst-card,
 .ds-shell .inst .inst-card:is(:hover, :focus-within) {
   box-shadow: var(--inst-card-shadow);
+}
+
+/* ── Security X-ray: one left edge (institutional-security-xray-fix) ──────
+   Everything in the X-ray starts at the panel's 24px inline padding: the
+   eyebrow, title, ticker, issuer, stat labels and values, section headings,
+   tables (numeric columns included, tabular-nums keeps digits aligned) and
+   footnotes. The close button is the only right-aligned element. */
+.inst-xray,
+.inst-xray :is(p, h2, h3, th, td, dt, dd) {
+  text-align: left;
+}
+.inst-xray .inst-num {
+  text-align: left;
+}
+.inst-xray .inst-xray-head {
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 10px;
+}
+.inst-xray .inst-xray-price {
+  text-align: left;
+}
+.inst-xray .inst-panel-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  justify-items: start;
+}
+.inst-xray .inst-panel-stats > * {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 0;
+}
+.inst-xray .inst-table th,
+.inst-xray .inst-table td {
+  padding-left: 0;
+  padding-right: 12px;
+}
+.inst-xray .inst-moves-cols > * {
+  min-width: 0;
+}
+
+/* ── Largest holders ─────────────────────────────────────────────────── */
+.inst-lh-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 12px;
+  row-gap: 2px;
+}
+.inst-lh-head > * {
+  margin: 0;
+}
+.inst-lh-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--inst-ink);
+}
+.inst-lh-wrap {
+  overflow-x: auto;
+  min-width: 0;
+}
+.inst-lh-table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+.inst-lh-table .inst-mono,
+.inst-lh-table td {
+  font-variant-numeric: tabular-nums;
+}
+.inst-lh-table th.inst-lh-rank,
+.inst-lh-table td.inst-lh-rank {
+  width: 22px;
+}
+.inst-lh-table th:nth-child(3),
+.inst-lh-table td:nth-child(3) {
+  width: 96px;
+}
+.inst-lh-table th:nth-child(4),
+.inst-lh-table td:nth-child(4) {
+  width: 70px;
+}
+.inst-lh-table th:last-child,
+.inst-lh-table td:last-child {
+  width: 92px;
+  padding-right: 0;
+}
+.inst-lh-table td {
+  vertical-align: top;
+}
+.inst-lh-sub {
+  display: block;
+  font-size: 10.5px;
+  color: var(--inst-muted);
+}
+.inst-lh-name {
+  min-width: 0;
+}
+.inst-lh-link {
+  all: unset;
+  /* Long legal names wrap to two lines, then ellipsize; the left edge and
+     the bar under the name stay put. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  max-width: 100%;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  line-height: 1.3;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--inst-ink);
+}
+.inst-lh-link:hover {
+  text-decoration: underline;
+}
+.inst-lh-link:focus-visible {
+  outline: 2px solid var(--dsc-pos);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.inst-lh-track {
+  display: block;
+  height: 3px;
+  margin-top: 4px;
+  background: var(--inst-track);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.inst-lh-track > span {
+  display: block;
+  height: 100%;
+  background: var(--inst-titans-ink);
+}
+.inst-lh-qoq {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+.inst-lh-flag {
+  font-family: var(--inst-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+.inst-lh-flag--new,
+.inst-lh-flag--added {
+  background: var(--inst-chip-added-bg);
+  color: var(--inst-pos);
+}
+.inst-lh-flag--trimmed,
+.inst-lh-flag--exited {
+  background: color-mix(in srgb, var(--echo-chart-red) 12%, transparent);
+  color: var(--inst-neg-ink);
+}
+.inst-lh-flag--unchanged,
+.inst-lh-flag--none {
+  background: var(--inst-track);
+  color: var(--inst-muted);
+}
+.inst-lh-all {
+  align-self: flex-start;
+}
+.inst-lh-foot {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--inst-muted);
+}
+@media (max-width: 480px) {
+  .inst-xray .inst-panel-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .inst-lh-table th:nth-child(4),
+  .inst-lh-table td:nth-child(4) {
+    display: none;
+  }
 }

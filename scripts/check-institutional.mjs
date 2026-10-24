@@ -163,3 +163,73 @@ test('divergingScale: next nice step up', () => {
   assert.equal(divergingScale([311]), 320);
   assert.equal(divergingScale([]), 1);
 });
+
+/* ── Security X-ray: Largest holders ──────────────────────────────────── */
+
+const { groupSharesByCik, holderFlag, largestHolders } =
+  await import('../src/lib/titans/institutional-model.js');
+
+test('largest holders: a filer reporting several lines is summed by CIK', () => {
+  const by = groupSharesByCik([
+    { cik: '1', shares: 100, valueUsd: 10 },
+    { cik: '1', shares: 50, valueUsd: 5 },
+    { cik: '2', shares: 120, valueUsd: 12 },
+  ]);
+  assert.equal(by.get('1').shares, 150);
+  assert.equal(by.get('1').valueUsd, 15);
+  const out = largestHolders({ rows: [...by.values()] });
+  assert.deepEqual(
+    out.holders.map((h) => [h.cik, h.shares]),
+    [
+      ['1', 150],
+      ['2', 120],
+    ],
+  );
+  assert.equal(out.filers, 2);
+  assert.equal(out.totalShares13F, 270);
+});
+
+test('largest holders: QoQ flags new / added / trimmed / exited / unchanged', () => {
+  assert.equal(holderFlag(10, 0), 'new');
+  assert.equal(holderFlag(0, 10), 'exited');
+  assert.equal(holderFlag(12, 10), 'added');
+  assert.equal(holderFlag(8, 10), 'trimmed');
+  assert.equal(holderFlag(10, 10), 'unchanged');
+  assert.equal(holderFlag(10, null), null);
+});
+
+test('largest holders: no prior 13F means no flag and no change, never "new"', () => {
+  const out = largestHolders({
+    rows: [
+      { cik: 'A', shares: 300 },
+      { cik: 'B', shares: 200 },
+      { cik: 'C', shares: 100 },
+    ],
+    priorRows: [{ cik: 'A', shares: 250 }],
+    priorFilers: ['A', 'B'],
+  });
+  const by = Object.fromEntries(out.holders.map((h) => [h.cik, h]));
+  assert.equal(by.A.flag, 'added');
+  assert.equal(by.A.changeShares, 50);
+  assert.equal(by.B.flag, 'new'); // filed last quarter without this security
+  assert.equal(by.C.flag, null); // no 13F last quarter at all
+  assert.equal(by.C.priorShares, null);
+});
+
+test('largest holders: pctOf13F sums to <= 100% across all holders, top 15 only', () => {
+  const rows = Array.from({ length: 40 }, (_, i) => ({ cik: String(i), shares: 1000 - i * 7 }));
+  const out = largestHolders({ rows, limit: 15 });
+  assert.equal(out.holders.length, 15);
+  const sum = out.holders.reduce((s, h) => s + h.pctOf13F, 0);
+  assert.ok(sum > 0 && sum <= 1 + 1e-9);
+  const full = largestHolders({ rows, limit: 100 });
+  const all = full.holders.reduce((s, h) => s + h.pctOf13F, 0);
+  assert.ok(Math.abs(all - 1) < 1e-9);
+  assert.ok(out.holders.every((h, i, a) => i === 0 || a[i - 1].shares >= h.shares));
+});
+
+test('largest holders: % of outstanding only when shares outstanding is known', () => {
+  const rows = [{ cik: '1', shares: 50 }];
+  assert.equal(largestHolders({ rows }).holders[0].pctOfOutstanding, null);
+  assert.equal(largestHolders({ rows, sharesOutstanding: 1000 }).holders[0].pctOfOutstanding, 0.05);
+});

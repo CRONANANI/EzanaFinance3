@@ -43,6 +43,7 @@ import {
   effectiveN,
   filingDay,
   flowAdjustedChange,
+  largestHolders,
   pctSince,
   topNWeight,
 } from '@/lib/titans/institutional-model';
@@ -317,6 +318,14 @@ async function loadSecurityHolders(key, page) {
   if (!data) return null;
 
   const ticker = data.ticker ? String(data.ticker).toUpperCase() : null;
+  /* Largest holders: its own cached read, page 1 only, never fatal. */
+  const largestP =
+    pageN === 1 && data.cusip
+      ? getLargestHolders(data.cusip, data.period, ticker).catch((e) => {
+          console.error('[titans] largest holders:', e?.message || e);
+          return { error: true };
+        })
+      : Promise.resolve(null);
   let sector = null;
   let priceChange = null;
   let cross = null;
@@ -333,11 +342,13 @@ async function loadSecurityHolders(key, page) {
     cross = await loadCrossSignals(admin, ticker, data.period);
   }
 
+  const largest = await largestP;
   return {
     cusip: data.cusip,
     ticker,
     issuer: data.issuer || null,
     sector,
+    largest,
     period: data.period,
     priorPeriod: data.prior_period,
     holdersNow: num(data.holders_now) || 0,
@@ -440,7 +451,130 @@ async function loadCrossSignals(admin, ticker, period) {
   };
 }
 
-const cachedXray = unstable_cache(loadSecurityHolders, ['titans-security-xray-v1'], CACHE);
+/* ── Largest holders (the X-ray's first section) ─────────────────────── */
+
+/* One quarter's class-share lines for a CUSIP from the materialised table
+   (put_call is stored as '' for share lines). sh_shares (SH lines only,
+   20261025120000_titans_sh_shares.sql) is preferred when the column exists
+   and is populated; before that migration runs, `shares` is used, which on
+   a few hundred CUSIPs also carries PRN (principal) lines. */
+async function positionLines(admin, period, cusip, ciks = null) {
+  const run = (cols) => {
+    let q = admin
+      .from('titans_13f_positions')
+      .select(cols)
+      .eq('period', period)
+      .eq('cusip', cusip)
+      .eq('put_call', '');
+    if (ciks) q = q.in('cik', ciks);
+    return q.limit(5000);
+  };
+  let res = await run('cik, shares, sh_shares, value_usd');
+  let sh = true;
+  if (res.error) {
+    sh = false;
+    res = await run('cik, shares, value_usd');
+  }
+  if (res.error) throw new Error(res.error.message);
+  return (res.data || []).map((r) => ({
+    cik: r.cik,
+    shares: num(sh && r.sh_shares != null ? r.sh_shares : r.shares) || 0,
+    valueUsd: num(r.value_usd) || 0,
+  }));
+}
+
+async function loadLargestHolders(cusip, period, ticker) {
+  if (!supaConfigured() || !cusip || !period) return null;
+  const admin = getAdminClient();
+  const prior = priorQuarterEnd(period);
+  const [rows, latestFiled, outstanding] = await Promise.all([
+    positionLines(admin, period, cusip),
+    admin
+      .from('titans_13f_filers')
+      .select('filed_at')
+      .eq('period', period)
+      .order('filed_at', { ascending: false })
+      .limit(1)
+      .then((r) => r.data?.[0]?.filed_at || null),
+    ticker
+      ? admin
+          .from('sec_fundamentals')
+          .select('value, period_end, accession_no')
+          .eq('concept', 'shares_outstanding')
+          .eq('ticker', ticker)
+          .order('period_end', { ascending: false })
+          .limit(1)
+          .then((r) => r.data?.[0] || null)
+          .catch(() => null)
+      : null,
+  ]);
+  /* Top candidates first, then only their prior lines and names. */
+  const first = largestHolders({ rows, limit: 15 });
+  const ciks = first.holders.map((h) => h.cik);
+  const [priorRows, priorFilers, names] = ciks.length
+    ? await Promise.all([
+        positionLines(admin, prior, cusip, ciks),
+        admin
+          .from('titans_13f_filers')
+          .select('cik')
+          .eq('period', prior)
+          .in('cik', ciks)
+          .then((r) => (r.data || []).map((x) => x.cik)),
+        admin
+          .from('titans_13f_filers')
+          .select('cik, filer_name')
+          .eq('period', period)
+          .in('cik', ciks)
+          .then((r) => new Map((r.data || []).map((x) => [x.cik, x.filer_name]))),
+      ])
+    : [[], [], new Map()];
+  const out = largestHolders({
+    rows: rows.map((r) => ({ ...r, name: names.get(r.cik) || null })),
+    priorRows,
+    priorFilers,
+    sharesOutstanding: outstanding ? num(outstanding.value) : null,
+    limit: 15,
+  });
+  return {
+    quarter: period,
+    quarterLabel: quarterShortLabel(period),
+    priorQuarter: prior,
+    filedThrough: latestFiled,
+    stillFiling: (() => {
+      const d = filingDeadline(period)?.effective;
+      return d ? new Date().toISOString().slice(0, 10) <= d : false;
+    })(),
+    sharesOutstandingAsOf: outstanding?.period_end || null,
+    ...out,
+    holders: out.holders.map((h) => ({ ...h, name: h.name ? filerLabelCase(h.name) : null })),
+  };
+}
+
+const quarterShortLabel = (iso) => {
+  const m = /^(\d{4})-(\d{2})/.exec(String(iso || ''));
+  return m ? `Q${Math.ceil(Number(m[2]) / 3)} ${m[1]}` : null;
+};
+
+/* "VANGUARD GROUP INC" -> "Vanguard Group Inc"; mixed case left as filed. */
+function filerLabelCase(raw) {
+  const s = String(raw || '').trim();
+  if (s !== s.toUpperCase()) return s;
+  return s
+    .toLowerCase()
+    .replace(/\b([a-z])/g, (c) => c.toUpperCase())
+    .replace(/\b(Llc|Lp|Llp|Na|Fsb|Plc|Ag|Sa|Ii|Iii)\b/g, (w) => w.toUpperCase());
+}
+
+const cachedLargestHolders = unstable_cache(
+  loadLargestHolders,
+  ['titans-largest-holders-v1'],
+  CACHE,
+);
+export function getLargestHolders(cusip, period, ticker = null) {
+  return cachedLargestHolders(String(cusip || ''), String(period || ''), ticker || null);
+}
+
+const cachedXray = unstable_cache(loadSecurityHolders, ['titans-security-xray-v2'], CACHE);
 export function getSecurityHolders(key, { page = 1 } = {}) {
   return cachedXray(String(key || ''), Number(page) || 1);
 }

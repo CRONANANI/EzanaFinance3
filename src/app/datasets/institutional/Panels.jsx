@@ -340,7 +340,182 @@ const CROSS_ROWS = [
   ],
 ];
 
-export function SecurityXray({ keyParam, sampled, onClose }) {
+/* ── Security X-ray: Largest holders ──────────────────────────────────── */
+
+const FLAG_WORD = {
+  new: 'New',
+  added: 'Added',
+  trimmed: 'Trimmed',
+  exited: 'Exited',
+  unchanged: 'Unchanged',
+};
+
+/* +2.1M / −0.4M / +12,400: share changes, compact past a million. */
+function signedShares(v) {
+  if (v == null || !Number.isFinite(Number(v))) return M;
+  const n = Number(v);
+  if (n === 0) return '0';
+  const sign = n > 0 ? '+' : '\u2212';
+  const a = Math.abs(n);
+  if (a >= 1e9) return `${sign}${(a / 1e9).toFixed(1)}B`;
+  if (a >= 1e6) return `${sign}${(a / 1e6).toFixed(1)}M`;
+  if (a >= 1e4) return `${sign}${(a / 1e3).toFixed(0)}K`;
+  return `${sign}${Math.round(a).toLocaleString('en-US')}`;
+}
+
+function compactShares(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return M;
+  if (n >= 1e9) return `${(n / 1e9).toFixed(2)}B`;
+  if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M`;
+  return Math.round(n).toLocaleString('en-US');
+}
+
+const pctFrac = (f, d = 1) => (f == null ? M : `${(f * 100).toFixed(d)}%`);
+
+export function LargestHolders({ largest, status, retry, onManager, onShowAll }) {
+  const quarter = largest?.quarterLabel || '';
+  const head = (
+    <div className="inst-lh-head">
+      <p className="inst-eyebrow">Largest holders · 13F{quarter ? ` · ${quarter}` : ''}</p>
+      {largest?.filedThrough ? (
+        <p className="inst-note inst-mono">filed through {shortDate(largest.filedThrough)}</p>
+      ) : null}
+    </div>
+  );
+  if (status === 'loading') {
+    return (
+      <section className="inst-psec inst-lh" aria-busy="true">
+        {head}
+        {Array.from({ length: 8 }).map((_, i) => (
+          <Skel key={i} w={`${92 - i * 4}%`} h={18} />
+        ))}
+      </section>
+    );
+  }
+  if (status === 'error' || largest?.error) {
+    return (
+      <section className="inst-psec inst-lh">
+        {head}
+        <p className="inst-empty">
+          This data is unavailable right now. Try again in a moment.{' '}
+          <button type="button" className="inst-link" onClick={retry}>
+            Retry
+          </button>
+        </p>
+      </section>
+    );
+  }
+  if (!largest || !largest.holders?.length) {
+    return (
+      <section className="inst-psec inst-lh">
+        {head}
+        <p className="inst-empty">
+          No 13F holders reported for this security{quarter ? ` in ${quarter}` : ''}.
+        </p>
+      </section>
+    );
+  }
+  const max = largest.holders[0]?.pctOf13F || 1;
+  const showOutstanding = largest.sharesOutstanding != null;
+  return (
+    <section className="inst-psec inst-lh" aria-labelledby="inst-lh-title">
+      {head}
+      <h3 id="inst-lh-title" className="inst-lh-title">
+        Who holds the most shares
+      </h3>
+      <p className="inst-note inst-mono">
+        {int(largest.filers)} filers · {compactShares(largest.totalShares13F)} shares reported on
+        13F
+        {showOutstanding ? ` · ${compactShares(largest.sharesOutstanding)} outstanding` : ''}
+      </p>
+      <div className="inst-lh-wrap">
+        <table className="inst-table inst-table--panel inst-lh-table">
+          <caption className="inst-sr">
+            Largest 13F holders of this security by shares, {quarter}
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col" className="inst-lh-rank">
+                #
+              </th>
+              <th scope="col">Holder</th>
+              <th scope="col">Shares</th>
+              <th scope="col">% of 13F</th>
+              <th scope="col">QoQ</th>
+            </tr>
+          </thead>
+          <tbody>
+            {largest.holders.map((h, i) => (
+              <tr key={h.cik}>
+                <td className="inst-mono inst-muted inst-lh-rank">{i + 1}</td>
+                <td className="inst-lh-name">
+                  {onManager ? (
+                    <button
+                      type="button"
+                      className="inst-lh-link"
+                      onClick={() => onManager(h.cik)}
+                      title={h.name || h.cik}
+                    >
+                      {h.name || `CIK ${h.cik}`}
+                    </button>
+                  ) : (
+                    <span className="inst-ellipsis">{h.name || `CIK ${h.cik}`}</span>
+                  )}
+                  <span className="inst-lh-track" aria-hidden="true">
+                    <span style={{ width: `${Math.min(100, (h.pctOf13F / max) * 100)}%` }} />
+                  </span>
+                </td>
+                <td className="inst-mono">{int(h.shares)}</td>
+                <td className="inst-mono">
+                  {pctFrac(h.pctOf13F)}
+                  {showOutstanding ? (
+                    <span className="inst-lh-sub">{pctFrac(h.pctOfOutstanding, 2)} out.</span>
+                  ) : null}
+                </td>
+                <td>
+                  <div className="inst-lh-qoq">
+                    <span className="inst-mono">{signedShares(h.changeShares)}</span>
+                    {h.flag ? (
+                      <span className={`inst-lh-flag inst-lh-flag--${h.flag}`}>
+                        {FLAG_WORD[h.flag]}
+                      </span>
+                    ) : (
+                      <span
+                        className="inst-lh-flag inst-lh-flag--none"
+                        title="No 13F from this filer for the prior quarter"
+                      >
+                        No prior 13F
+                      </span>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {onShowAll ? (
+        <button type="button" className="inst-link inst-lh-all" onClick={onShowAll}>
+          Show all holders <i className="bi bi-arrow-right" aria-hidden="true" />
+        </button>
+      ) : null}
+      <p className="inst-lh-foot">
+        Shares as reported on Form 13F-HR for the quarter. Each manager&apos;s lines are combined.
+        13F covers institutions with over $100M in qualifying assets; it is not every holder, and
+        short positions are not shown.
+        {showOutstanding && largest.sharesOutstandingAsOf
+          ? ` Shares outstanding from the issuer's SEC cover-page filing as of ${shortDate(largest.sharesOutstandingAsOf)}.`
+          : ''}
+        {largest.stillFiling
+          ? ' Quarter still being filed; totals will rise until the deadline.'
+          : ''}
+      </p>
+    </section>
+  );
+}
+
+export function SecurityXray({ keyParam, sampled, onClose, onManager }) {
   const [page, setPage] = useState(1);
   const [expanded, setExpanded] = useState(false);
   const { status, data, retry } = useJson(
@@ -355,7 +530,7 @@ export function SecurityXray({ keyParam, sampled, onClose }) {
   const ladder = expanded ? s?.ladder || [] : (s?.ladder || []).slice(0, 6);
 
   return (
-    <Panel label="Security X-ray" onClose={onClose}>
+    <Panel label="Security X-ray" onClose={onClose} className="inst-xray">
       <header className="inst-panel-head">
         <p className="inst-eyebrow">
           Security X-ray{q ? ` · ${q} vs ${qPrior}` : ''}
@@ -400,8 +575,23 @@ export function SecurityXray({ keyParam, sampled, onClose }) {
         )}
       </header>
 
+      {status === 'loading' && !s ? <LargestHolders status="loading" /> : null}
       {s ? (
         <>
+          {page === 1 || s.largest ? (
+            <LargestHolders
+              largest={s.largest}
+              status={status === 'error' ? 'error' : 'ready'}
+              retry={retry}
+              onManager={onManager}
+              onShowAll={() => {
+                setExpanded(true);
+                document
+                  .getElementById('inst-xray-ladder')
+                  ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            />
+          ) : null}
           <PanelSection title="Ownership">
             <div className="inst-panel-stats">
               <div>
@@ -452,6 +642,7 @@ export function SecurityXray({ keyParam, sampled, onClose }) {
             </p>
           </PanelSection>
 
+          <span id="inst-xray-ladder" />
           <PanelSection title="Holder ladder · largest first">
             <table className="inst-table inst-table--panel">
               <thead>

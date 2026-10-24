@@ -190,3 +190,75 @@ export function divergingScale(values) {
   const step = mag / 10;
   return Math.ceil(max / step) * step;
 }
+
+/**
+ * The Security X-ray's "Largest holders" (institutional-security-xray-fix).
+ * Pure: the store hands in this quarter's class-share 13F lines for one
+ * CUSIP (rows may repeat a CIK: one filer can report several lines, and they
+ * are SUMMED per CIK), the prior quarter's lines, the set of CIKs that filed
+ * a 13F in the prior quarter, and shares outstanding when it is known.
+ *
+ * QoQ flag, only for filers that filed in BOTH quarters: prior 0 -> new;
+ * now 0 -> exited; more -> added; fewer -> trimmed; same -> unchanged. A
+ * filer with no prior-quarter 13F gets flag null and no change: calling it
+ * "new" would claim a purchase the filings do not show.
+ * pctOf13F is shares / total 13F-reported shares of THIS security, so the
+ * holders' percentages sum to <= 100 by construction.
+ */
+export function groupSharesByCik(rows) {
+  const by = new Map();
+  for (const r of rows || []) {
+    if (!r?.cik) continue;
+    const prev = by.get(r.cik) || { cik: r.cik, name: r.name || null, shares: 0, valueUsd: 0 };
+    prev.shares += Number(r.shares) || 0;
+    prev.valueUsd += Number(r.valueUsd) || 0;
+    if (!prev.name && r.name) prev.name = r.name;
+    by.set(r.cik, prev);
+  }
+  return by;
+}
+
+export function holderFlag(now, prior) {
+  if (prior == null) return null;
+  const a = Number(now) || 0;
+  const b = Number(prior) || 0;
+  if (b === 0 && a > 0) return 'new';
+  if (a === 0 && b > 0) return 'exited';
+  if (a > b) return 'added';
+  if (a < b) return 'trimmed';
+  return 'unchanged';
+}
+
+export function largestHolders({
+  rows,
+  priorRows = [],
+  priorFilers = null,
+  sharesOutstanding = null,
+  limit = 15,
+} = {}) {
+  const now = groupSharesByCik(rows);
+  const prior = groupSharesByCik(priorRows);
+  const filedPrior = priorFilers ? new Set(priorFilers) : null;
+  const all = [...now.values()].filter((h) => h.shares > 0);
+  const totalShares13F = all.reduce((s, h) => s + h.shares, 0);
+  const so = Number(sharesOutstanding) > 0 ? Number(sharesOutstanding) : null;
+  const holders = all
+    .sort((a, b) => b.shares - a.shares || String(a.cik).localeCompare(String(b.cik)))
+    .slice(0, limit)
+    .map((h) => {
+      const known = filedPrior ? filedPrior.has(h.cik) : prior.has(h.cik);
+      const priorShares = known ? prior.get(h.cik)?.shares || 0 : null;
+      return {
+        cik: h.cik,
+        name: h.name,
+        shares: h.shares,
+        valueUsd: h.valueUsd,
+        pctOf13F: totalShares13F ? h.shares / totalShares13F : 0,
+        pctOfOutstanding: so ? h.shares / so : null,
+        priorShares,
+        changeShares: priorShares == null ? null : h.shares - priorShares,
+        flag: holderFlag(h.shares, priorShares),
+      };
+    });
+  return { filers: all.length, totalShares13F, sharesOutstanding: so, holders };
+}

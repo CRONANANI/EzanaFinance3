@@ -75,6 +75,14 @@
   padding-bottom: 64px;
 }
 
+/* The scope wrapper a portalled panel mounts in (titans/ui.jsx Panel): it
+   carries the .dsc and page tokens to the panel without drawing a box of
+   its own (no sheet padding or background under <body>). Custom properties
+   still inherit through display: contents. */
+.dsc.dsc-portal {
+  display: contents;
+}
+
 /* Every figure, ticker, date, bracket, lag and rank. */
 .dsc .dsc-mn {
   font-family: var(--dsc-mono);

@@ -431,7 +431,12 @@ export default function InstitutionalClient({
         />
       ) : null}
       {securityParam ? (
-        <SecurityXray keyParam={securityParam} sampled={sampled} onClose={closePanel} />
+        <SecurityXray
+          keyParam={securityParam}
+          sampled={sampled}
+          onClose={closePanel}
+          onManager={openManager}
+        />
       ) : null}
     </div>
   );
