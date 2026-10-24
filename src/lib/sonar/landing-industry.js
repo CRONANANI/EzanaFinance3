@@ -21,7 +21,7 @@ export function industryTerms(industryId) {
   return [...new Set([ind?.label, ...(ind?.synonyms || [])].filter((t) => t && t.length >= 5))];
 }
 
-async function basketCongress(admin, basket) {
+export async function basketCongress(admin, basket) {
   if (!admin || !basket.length) return null;
   try {
     const { data, error } = await admin
@@ -48,7 +48,7 @@ async function basketCongress(admin, basket) {
 
 /* Top 13F holders across the basket, merged by filer and summed by value.
    Bounded to the first eight tickers: one RPC each. */
-async function basket13f(admin, basket, match13f) {
+export async function basket13f(admin, basket, match13f) {
   if (!admin || !basket.length || !match13f) return null;
   const per = await Promise.all(
     basket.slice(0, 8).map((t) => match13f(admin, { ticker: t }).catch(() => null)),

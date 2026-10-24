@@ -67,6 +67,7 @@ import { CountryStack, CountryOecdRow, CountryEmpireRow } from './SonarCountrySt
 import { SonarUnderstoodNotice } from './SonarUnderstoodNotice';
 import { IndustryStack } from './SonarIndustryStack';
 import { IndustryLayout } from '@/components/sonar/industry/IndustryLayout';
+import { CountryRankPanel } from '@/components/sonar/macro/CountryRankPanel';
 
 /**
  * An element's resting rect, with the mount entrance taken off it first.
@@ -3091,6 +3092,16 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
       {answerReady ? <SonarResearchDeck live={live} hideNews={railPlaced} /> : null}
       {answerReady && live?.dossier?.kind === 'industry' ? (
         <IndustryLayout dossier={live.dossier} />
+      ) : null}
+      {answerReady && live?.dossier?.rank ? (
+        <CountryRankPanel
+          dossier={live.dossier}
+          onFollowup={(q) => {
+            setQueryValue(q);
+            runPing(q);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
       ) : null}
     </>
   );

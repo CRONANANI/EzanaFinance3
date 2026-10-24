@@ -112,6 +112,7 @@ export function SonarExperience({ variant = 'app', heroAddon = null, initialQuer
   /* What the band last pinged, including follow-ups typed in its own bar;
      drives the sign-up CTA and the ?q= in the address. */
   const [shownQuery, setShownQuery] = useState(startQuery);
+  const [answeredQuery, setAnsweredQuery] = useState(null);
   const [phase, setPhase] = useState('idle'); // idle | searching | streaming | complete | error
   const pingIdRef = useRef(0);
   const [result, setResult] = useState(null);
@@ -159,8 +160,12 @@ export function SonarExperience({ variant = 'app', heroAddon = null, initialQuer
        sign-up CTA shows. The address keeps the raw words. */
     if (meta?.display) {
       setShownQuery(meta.display);
+      /* The briefing has landed: only now may matching dataset cards show,
+         so a card list is never the whole response. */
+      setAnsweredQuery(query);
       return;
     }
+    setAnsweredQuery(null);
     setShownQuery(query);
     try {
       const url = new URL(window.location.href);
@@ -321,10 +326,12 @@ export function SonarExperience({ variant = 'app', heroAddon = null, initialQuer
   if (onDatasets && bandQuery) {
     return (
       <div ref={bandRootRef} className="sonar-root sonar-root--datasets sonar-root--band">
-        {/* The dataset component cards that match the query, loaded through
-            their own loaders, above the Sonar results. Nothing when none match. */}
-        <DatasetCardMatches query={bandQuery} />
         <SonarBand variant="page" query={bandQuery} onPing={onBandPing} />
+        {/* The dataset component cards that match the query, as one block
+            AFTER the briefing has landed (never the whole response), and only
+            cards that pass the relevance rule (a row for the searched entity,
+            or the exact metric named). Nothing when none qualify. */}
+        {answeredQuery ? <DatasetCardMatches query={answeredQuery} /> : null}
         {/* Guests only: the account pitch, pinned to the bottom of the first
             screen and sticky while the results scroll. */}
         <SonarSignupCta query={shownQuery || bandQuery} />

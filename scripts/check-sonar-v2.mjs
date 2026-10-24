@@ -88,7 +88,7 @@ test('every template id has a complete registry entry', () => {
     assert.equal(typeof t.sweepParams, 'function', `${id} has no sweepParams`);
   }
   assert.equal(getTemplate('nonsense'), TEMPLATES.open_question);
-  assert.equal(TEMPLATE_IDS.length, 23); // 21 + industry_layout + open_question
+  assert.equal(TEMPLATE_IDS.length, 24); // 21 + industry_layout + country_rank + open_question
 });
 
 /* ── exemplar seeds ──────────────────────────────────────────────────── */
@@ -196,4 +196,13 @@ test('the hero query routes to industry_layout with the US, never the USA ticker
   assert.equal(r.entities.industryId, 'semiconductors');
   assert.equal(r.entities.country, 'USA');
   assert.equal(r.understood.display, 'Semiconductor industry in the United States');
+});
+
+test('the India rank ping routes to country_rank with the country, not an industry', async () => {
+  const { routeUnderstood } = await import('../src/lib/sonar/router.js');
+  const r = routeUnderstood('what ranking is india in the world economy');
+  assert.equal(r.template, 'country_rank');
+  assert.equal(r.entities.country, 'IND');
+  assert.equal(r.entities.metric, 'gdp_nominal_usd');
+  assert.equal(r.understood.display, "India's rank in the world economy");
 });

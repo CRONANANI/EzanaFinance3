@@ -60,3 +60,28 @@
   color: var(--text-secondary);
   white-space: nowrap;
 }
+/* The searched entity's row (sonar-country-ranking-fix): a tinted row and a
+   "You searched" chip; an appended row outside the top list starts after a
+   gap marker. */
+.hdc-row.is-searched {
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
+  border-radius: var(--radius-sm);
+  padding-left: 6px;
+  padding-right: 6px;
+}
+.hdc-row.has-gap {
+  margin-top: 10px;
+  border-top: 1px dashed color-mix(in srgb, var(--text-primary) 14%, transparent);
+}
+.hdc-searched {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--emerald-text);
+  background: color-mix(in srgb, var(--emerald) 14%, transparent);
+}

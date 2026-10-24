@@ -9,6 +9,9 @@
 export const CARD_REGISTRY = [
   {
     id: 'most-held',
+    metric:
+      /\b(most|widely)[- ]held\b.*\b(congress|politicians?|members?|senators?)\b|\b(congress|politicians?|members of congress|senators?)\b.*\b(hold|holds|held|own|owns)\b/i,
+    entity: 'ticker',
     datasetSlug: 'politician-tracker',
     dataset: 'Politician Tracker',
     href: '/datasets/politician-tracker',
@@ -40,6 +43,8 @@ export const CARD_REGISTRY = [
   },
   {
     id: 'house-senate',
+    metric: /\bhouse\b.*\bsenate\b|\bsenate\b.*\bhouse\b|\bby chamber\b/i,
+    entity: null,
     datasetSlug: 'politician-tracker',
     dataset: 'Politician Tracker',
     href: '/datasets/politician-tracker',
@@ -60,6 +65,9 @@ export const CARD_REGISTRY = [
   },
   {
     id: 'widely-held',
+    metric:
+      /\b(most|widely)[- ]held\b.*\b(funds?|institutions?|managers?)\b|\b13f\b|\binstitutional (holdings|owners|ownership)\b/i,
+    entity: 'ticker',
     datasetSlug: 'institutional',
     dataset: 'Institutional',
     href: '/datasets/institutional',
@@ -83,6 +91,8 @@ export const CARD_REGISTRY = [
   },
   {
     id: 'insider-buys',
+    metric: /\binsider (buys|buying|purchases|trades|trading)\b|\bform 4\b/i,
+    entity: 'ticker',
     datasetSlug: 'insider',
     dataset: 'Insider Trading',
     href: '/datasets/insider',
@@ -106,6 +116,8 @@ export const CARD_REGISTRY = [
   },
   {
     id: 'fastest-growth',
+    metric: /\b(fastest|highest)[- ]?grow|\bgdp growth\b|\bgrowth rates?\b|\bgrowing econom/i,
+    entity: 'country',
     datasetSlug: 'world-bank',
     dataset: 'World Bank Economic Indicators',
     href: '/datasets/world-bank',
@@ -127,6 +139,8 @@ export const CARD_REGISTRY = [
   },
   {
     id: 'biggest-markets',
+    metric: /\bprediction markets?\b|\bpolymarket\b|\bkalshi\b|\bbetting markets?\b/i,
+    entity: null,
     datasetSlug: 'prediction-markets',
     dataset: 'Prediction Markets',
     href: '/datasets/prediction-markets',
@@ -151,6 +165,8 @@ export const CARD_REGISTRY = [
   },
   {
     id: 'crowd-forecasts',
+    metric: /\bcrowd forecasts?\b|\bmetaculus\b|\bmanifold\b|\bforecasting\b/i,
+    entity: null,
     datasetSlug: 'crowd-forecasts',
     dataset: 'Crowdsourced Intelligence',
     href: '/datasets/crowd-forecasts',
@@ -169,6 +185,8 @@ export const CARD_REGISTRY = [
   },
   {
     id: 'sanctions',
+    metric: /\bsanction(s|ed)?\b|\bofac\b|\bsdn list\b/i,
+    entity: null,
     datasetSlug: 'sanctions',
     dataset: 'Sanctions',
     href: '/datasets/sanctions',
@@ -189,6 +207,33 @@ export const CARD_REGISTRY = [
     ],
   },
 ];
+
+/**
+ * The relevance rule (sonar-country-ranking-fix, Part A). Keyword overlap
+ * picks candidates; a candidate is SHOWN only when
+ *   (a) the query resolved an entity of the card's kind (a country, a
+ *       ticker) and the loaded card has a row for it (appended by the loader
+ *       when outside its top rows), or
+ *   (b) the query names the card's exact metric (`metric`) and no entity of
+ *       another kind was resolved.
+ * "ranking" and "economy" matching a card's keywords never qualify alone.
+ */
+export function cardQualifies(card, loaded, { query, entities = [] } = {}) {
+  const def = CARD_BY_ID[card.id] || card;
+  const keyed = entities.filter((e) => e.kind === def.entity);
+  if (keyed.length) {
+    const keys = new Set(
+      keyed.flatMap((e) => [e.key, e.label].filter(Boolean).map((k) => String(k).toLowerCase())),
+    );
+    return (loaded?.rows || []).some(
+      (r) =>
+        keys.has(String(r.key || '').toLowerCase()) || keys.has(String(r.name || '').toLowerCase()),
+    );
+  }
+  /* An entity was named, but of another kind (India for a ticker card). */
+  if (entities.some((e) => e.kind === 'country' || e.kind === 'ticker')) return false;
+  return Boolean(def.metric && def.metric.test(String(query || '')));
+}
 
 export const CARD_BY_ID = Object.fromEntries(CARD_REGISTRY.map((c) => [c.id, c]));
 

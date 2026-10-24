@@ -13,6 +13,9 @@ import { COUNTRIES } from '@/lib/sonar/understand/geo-codes';
 import {
   INDUSTRIES,
   LAYOUT_WORDS,
+  METRIC_LABEL,
+  RANK_CUE,
+  rankMetricOf,
   POLICIES,
   SECTORS,
   THEMES,
@@ -32,6 +35,7 @@ export const INTENTS = [
   'country',
   'policy',
   'ranking',
+  'country_rank',
   'comparison',
   'theme',
   'commodity',
@@ -142,11 +146,26 @@ function phraseEntities(tokens) {
 const the = (e) => (e?.takesThe ? 'the ' : '');
 const inPlace = (country) => (country ? ` in ${the(country)}${country.label}` : '');
 
+const ECONOMY_WORDS = /\b(econom(y|ies)|gdp|ppp|per capita)\b/i;
+
 function pickIntent(text, entities) {
   const has = (k) => entities.find((e) => e.kind === k) || null;
   const tickers = entities.filter((e) => e.kind === 'ticker');
+  const countries = entities.filter((e) => e.kind === 'country');
   if (/\s(vs\.?|versus)\s/i.test(text) || /^compare\b/i.test(text)) return 'comparison';
+  /* "is india bigger than japan's economy" */
+  if (countries.length >= 2 && /\b(bigger|larger|smaller|richer|poorer) than\b/i.test(text))
+    return 'comparison';
   if (/^\s*(top|biggest|largest)\b/i.test(text)) return 'ranking';
+  /* A country plus a rank cue: "what ranking is india in the world economy". */
+  if (countries.length === 1 && !has('industry') && RANK_CUE.test(text)) return 'country_rank';
+  /* "fastest growing economies", "richest countries" */
+  if (
+    !countries.length &&
+    /\b(fastest|slowest|richest|poorest|largest|biggest)\b/i.test(text) &&
+    /\b(econom(y|ies)|countries|nations)\b/i.test(text)
+  )
+    return 'ranking';
   if (has('person_politician')) return 'politician';
   if (has('policy')) return 'policy';
   if (has('industry') && LAYOUT_WORDS.test(text)) return 'industry_layout';
@@ -180,14 +199,34 @@ function buildDisplay(intent, entities, corrected) {
       if (industry) return `${industry.noun || industry.label} industry${inPlace(country)}`;
       if (sector) return `${sector.label} sector${inPlace(country)}`;
       break;
+    case 'country_rank': {
+      const { metric, metricExplicit } = rankMetricOf(corrected);
+      const who = country ? `${the(country) ? 'The ' : ''}${country.label}` : 'The country';
+      const poss = /s$/i.test(who) ? `${who}'` : `${who}'s`;
+      if (metric === 'lighthouse_composite') return `${who} on the Global Empire ranking`;
+      return metricExplicit
+        ? `${poss} rank by ${METRIC_LABEL[metric]}`
+        : `${poss} rank in the world economy`;
+    }
     case 'ranking': {
       const n = (/\b(\d{1,3})\b/.exec(corrected) || [])[1] || '10';
+      if (!industry && ECONOMY_WORDS.test(corrected) && /\btop\b/i.test(corrected)) {
+        const { metric, metricExplicit } = rankMetricOf(corrected);
+        return `Top ${n} economies${metricExplicit ? ` by ${METRIC_LABEL[metric]}` : ''}`;
+      }
+      if (!industry && /\bfastest\b/i.test(corrected) && ECONOMY_WORDS.test(corrected))
+        return 'Fastest-growing economies';
       if (industry)
         return `Top ${n} ${(industry.noun || industry.label).toLowerCase()} companies${inPlace(country)}`;
       break;
     }
     case 'comparison':
       if (tickers.length >= 2) return `${tickers[0].id} vs ${tickers[1].id}`;
+      {
+        const cs = entities.filter((e) => e.kind === 'country');
+        if (cs.length >= 2 && ECONOMY_WORDS.test(corrected))
+          return `${cs[0].label} vs ${cs[1].label}: economy size`;
+      }
       break;
     case 'politician':
       return get('person_politician').label;
@@ -256,6 +295,12 @@ export function understandDeterministic(raw, { noCorrect = false, tickerName = n
       alternatives: e.alternatives,
     }));
 
+  const macro =
+    intent === 'country_rank' ||
+    ((intent === 'ranking' || intent === 'comparison') && ECONOMY_WORDS.test(corrected))
+      ? rankMetricOf(corrected)
+      : null;
+
   return {
     raw: normalise(raw),
     corrected,
@@ -264,6 +309,7 @@ export function understandDeterministic(raw, { noCorrect = false, tickerName = n
     intent,
     entities,
     ambiguities,
+    ...(macro ? { metric: macro.metric, metricExplicit: macro.metricExplicit } : {}),
   };
 }
 

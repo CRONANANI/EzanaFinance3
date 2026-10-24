@@ -12,6 +12,8 @@
 import { resolveBasket, termsFor } from '@/lib/sonar/sweeps';
 import { getIndustryRegistry, industryBasket } from '@/lib/sonar/industries';
 import { getAdminClient } from '@/lib/supabase';
+import { REGIONS as NEWS_REGIONS } from '@/lib/services/massive-news';
+import { RANK_SECTIONS } from '@/lib/sonar/macro/brief';
 
 const FULL_SWEEP = [
   'market',
@@ -59,7 +61,31 @@ async function industryLayoutParams(entities, query) {
   return { tickers, terms: termsFor(entities, query), query, entities };
 }
 
+/* The country's US-listed basket (ETFs, ADRs) from the repo's region map. */
+async function countryRankParams(entities, query) {
+  const name = String(entities.countryName || '').toLowerCase();
+  const hit = NEWS_REGIONS.find((r) => String(r.label || '').toLowerCase() === name);
+  return {
+    tickers: hit ? hit.tickers : [],
+    terms: termsFor(entities, query),
+    query,
+    entities,
+  };
+}
+
 export const TEMPLATES = {
+  country_rank: T({
+    label: 'Country ranking',
+    datasets: ['market', 'f13', 'congress', 'pred_markets', 'echo', 'news'],
+    briefSections: RANK_SECTIONS,
+    charts: [{ id: 'basket', type: 'ranked_bar', source: 'market', title: 'Country basket' }],
+    defaultFollowups: [
+      'Top 10 economies by PPP',
+      'Fastest-growing large economies',
+      "Institutional money in this country's ETFs",
+    ],
+    sweepParams: countryRankParams,
+  }),
   industry_layout: T({
     label: 'Industry layout',
     datasets: FULL_SWEEP,

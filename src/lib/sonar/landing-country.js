@@ -395,8 +395,24 @@ async function buildEmpire(country) {
     if (!dims.length) return null;
 
     const byStrength = [...dims].sort((a, b) => b.score - a.score);
+    /* The top three by composite, with their pillar scores on the same
+       0-100 scale, for the country_rank pillar comparison. */
+    const ranked = [...composite].sort((x, y) => y.composite - x.composite);
+    const leaders = ranked.slice(0, 3).map((c, i) => ({
+      iso: c.iso,
+      name: c.name,
+      rank: i + 1,
+      dims: Object.fromEntries(
+        model.liveDims
+          .map((d) => [d.id, normScore(d, model.scoreMap.get(c.iso)?.get(d.id))])
+          .filter(([, n]) => n != null)
+          .map(([id, n]) => [id, Math.round(n * 1000) / 10]),
+      ),
+    }));
     return {
       year: model.year,
+      leaders,
+      href: `/datasets/oecd-macro?a=${encodeURIComponent(country.iso3)}`,
       rank: me ? at + 1 : null,
       of: composite.length,
       composite: me ? Math.round(me.composite * 10) / 10 : null,

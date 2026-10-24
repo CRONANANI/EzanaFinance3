@@ -151,10 +151,68 @@ export const KNOWN_TICKERS = {
 };
 
 /** Words that make an industry ping a LAYOUT ping. */
+/* A country plus one of these is a country_rank ping. */
+export const RANK_CUE =
+  /\b(rank|ranks|ranked|ranking|rankings|where does .+ (rank|stand|place)|how big is .+ econom|largest econom|biggest econom|top econom|position in the (world|global) econom|world econom|global econom|global empire|empire (index|ranking|rankings)|lighthouse)\b/i;
+
+/** The macro metric a rank ping names, and whether it named one. */
+export function rankMetricOf(text) {
+  const t = String(text || '').toLowerCase();
+  if (/\b(global empire|empire (index|ranking|rankings|score)|lighthouse)\b/.test(t))
+    return { metric: 'lighthouse_composite', metricExplicit: true };
+  if (/\b(per capita|per-capita|per head|per person)\b/.test(t))
+    return /\b(ppp|purchasing power)\b/.test(t)
+      ? { metric: 'gdp_per_capita_ppp', metricExplicit: true }
+      : { metric: 'gdp_per_capita_usd', metricExplicit: true };
+  if (/\b(ppp|purchasing power)\b/.test(t)) return { metric: 'gdp_ppp', metricExplicit: true };
+  if (/\b(growth|growing|fastest)\b/.test(t))
+    return { metric: 'gdp_growth_real', metricExplicit: true };
+  if (/\b(gdp|nominal|bigger|smaller|largest|biggest|size)\b/.test(t))
+    return { metric: 'gdp_nominal_usd', metricExplicit: /\b(gdp|nominal)\b/.test(t) };
+  return { metric: 'gdp_nominal_usd', metricExplicit: false };
+}
+
+export const METRIC_LABEL = {
+  gdp_nominal_usd: 'nominal GDP',
+  gdp_ppp: 'GDP at PPP',
+  gdp_per_capita_usd: 'GDP per capita',
+  gdp_per_capita_ppp: 'GDP per capita at PPP',
+  gdp_growth_real: 'real GDP growth',
+  lighthouse_composite: 'the Global Empire ranking',
+};
+
 export const LAYOUT_WORDS =
   /\b(layout|overview|landscape|map|mapping|breakdown|ecosystem|structure|value chain|supply chain|how does|how do|explain|anatomy|primer)\b/i;
 
 const INTENT_VOCAB = [
+  /* Rank and macro words: "ranking" is one edit from "banking" and "rank"
+     one from "bank", so without these the spell pass turned "what ranking is
+     india in the world economy" into the banking industry in India. */
+  'rank',
+  'ranks',
+  'ranked',
+  'ranking',
+  'rankings',
+  'economy',
+  'economies',
+  'economic',
+  'world',
+  'global',
+  'gdp',
+  'ppp',
+  'capita',
+  'growth',
+  'growing',
+  'fastest',
+  'nominal',
+  'position',
+  'bigger',
+  'smaller',
+  'richest',
+  'poorest',
+  'index',
+  'empire',
+  'lighthouse',
   'layout',
   'overview',
   'breakdown',
@@ -388,9 +446,14 @@ export function lookupIndustry(token) {
 }
 
 export function lookupGeo(surface) {
-  const t = String(surface || '').toLowerCase();
+  const raw = String(surface || '');
+  const t = raw.toLowerCase();
+  /* An ISO3 code counts only as written in capitals: "per" in "gdp per
+     capita" is not Peru, "can" is not Canada. Aliases and names match in any
+     case. */
+  const codeOk = raw === raw.toUpperCase();
   for (const [iso2, iso3, label, aliases, takesThe] of COUNTRIES) {
-    if (aliases.includes(t) || label.toLowerCase() === t || iso3.toLowerCase() === t) {
+    if (aliases.includes(t) || label.toLowerCase() === t || (codeOk && iso3.toLowerCase() === t)) {
       return {
         id: iso2,
         iso3,

@@ -8,6 +8,9 @@ import { getReferralPlanOverride } from '@/lib/referrals-server';
 import { getSonarEntitlements, describeDatasetAccess } from '@/lib/sonar/entitlements';
 import { routeQuery } from '@/lib/sonar/router';
 import { getIndustryRegistryCached } from '@/lib/sonar/industries';
+import { getMacroRankings } from '@/lib/sonar/macro/store';
+import { countryRankView, SCOPE_NOTE, WB_ATTRIBUTION } from '@/lib/sonar/macro/rank';
+import { rankFollowups, rankLede } from '@/lib/sonar/macro/brief';
 
 const shownQueryFor = (route, query) =>
   route.understood?.display || route.understood?.corrected || query;
@@ -196,6 +199,29 @@ export const POST = withApiGuard(
     const params = await template.sweepParams(route.entities, query);
     const sweep = await runSweeps(template.datasets, params);
     const sweepMs = Date.now() - t0;
+    /* The country_rank charts: one rankings snapshot row (World Bank, one
+       common year per metric). */
+    let countryRank = null;
+    if (route.template === 'country_rank' && route.entities?.country) {
+      const payload = await getMacroRankings().catch(() => null);
+      const view = payload ? countryRankView(payload, route.entities.country) : null;
+      if (view) {
+        countryRank = {
+          kind: 'country',
+          iso3: route.entities.country,
+          name: view.name,
+          empire: null,
+          rank: {
+            view,
+            lede: rankLede(view),
+            followups: rankFollowups(view),
+            attribution: WB_ATTRIBUTION,
+            scope: SCOPE_NOTE,
+            source: payload.source,
+          },
+        };
+      }
+    }
     /* The Industry Layout's registry (structure plus approved sourced rows). */
     let industryLayout = null;
     if (route.template === 'industry_layout' && route.entities?.industryId) {
@@ -289,6 +315,7 @@ export const POST = withApiGuard(
           }
         : null,
       industryLayout,
+      countryRank,
       template: route.template,
       templateLabel: template.label,
       routedBy: route.routedBy,

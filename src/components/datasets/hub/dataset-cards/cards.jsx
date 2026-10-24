@@ -23,6 +23,8 @@ import { getInsiderOverview } from '@/lib/titans/insider-store';
 import { lighthouseLatest, sanctionsEntries, openCrowdForecasts } from '@/lib/lighthouse/store';
 import { getOpenMarkets } from '@/lib/hive/store';
 import { usd, shortDate } from '@/lib/titans/format';
+import { getMacroRankings } from '@/lib/sonar/macro/store';
+import { rankedFrom } from '@/lib/sonar/macro/rank';
 
 const n = (v) => (v == null ? null : Number(v).toLocaleString('en-US'));
 
@@ -147,29 +149,44 @@ async function InsiderBuys() {
 
 /* ── Global Empire Lighthouse ───────────────────────────────────────── */
 
-export async function loadFastestGrowth() {
-  const obs = await lighthouseLatest('worldbank', ['NY.GDP.MKTP.KD.ZG']).catch(() => null);
-  const rows = (obs || [])
-    .filter((o) => o.latest_value != null)
-    .sort((a, b) => Number(b.latest_value) - Number(a.latest_value))
-    .slice(0, 8)
-    .map((o) => ({
-      key: o.ref_area,
-      name: o.ref_area_name || o.ref_area,
-      meta: `Real GDP growth, ${String(o.latest_period).slice(0, 4)}`,
-      value: `${Number(o.latest_value).toFixed(1)}%`,
-      href: '/datasets/world-bank',
-    }));
+/**
+ * Fastest-growing economies, on ONE common year for every country (the
+ * newest year >= 85% of sovereign economies report), regional aggregates
+ * excluded and territories left out (sonar-country-ranking-fix). It used to
+ * rank each country's own latest year, mixing 2025 with 2011. `entityIso3`
+ * (a country the search named) is appended, highlighted, when it sits
+ * outside the top rows; a country with no value for the year is not added.
+ */
+export async function loadFastestGrowth({ entityIso3 = null } = {}) {
+  const payload = await getMacroRankings().catch(() => null);
+  const ranked = rankedFrom(payload, 'gdp_growth_real');
+  const year = payload?.metrics?.gdp_growth_real?.year || null;
+  const row = (r, extra = {}) => ({
+    key: r.iso3,
+    rank: r.rank,
+    name: r.name,
+    meta: `Real GDP growth, ${year}`,
+    value: `${Number(r.value).toFixed(1)}%`,
+    href: '/datasets/world-bank',
+    ...(r.iso3 === entityIso3 ? { highlight: true } : {}),
+    ...extra,
+  });
+  const rows = ranked.slice(0, 8).map((r) => row(r));
+  const me = entityIso3 ? ranked.find((r) => r.iso3 === entityIso3) : null;
+  if (me && !rows.some((r) => r.key === entityIso3)) rows.push(row(me, { gapBefore: true }));
   return {
     id: 'fastest-growth',
     title: 'Fastest-growing economies',
     dataset: 'World Bank Economic Indicators',
     href: '/datasets/world-bank',
-    desc: 'Countries with the highest real GDP growth in their latest reported year.',
+    desc: year
+      ? `Highest real GDP growth in ${year}, the latest year most economies have reported.`
+      : 'Highest real GDP growth in the latest common year.',
     rows,
-    error: obs === null,
+    entityRow: Boolean(me),
+    error: payload === null,
     empty: 'Appears once the World Bank data is loaded.',
-    foot: 'World Bank Indicators API (CC BY 4.0).',
+    foot: `World Bank, World Development Indicators (CC BY 4.0)${year ? ` · ${year}` : ''} · Excludes regional aggregates; territories labelled`,
   };
 }
 async function FastestGrowth() {

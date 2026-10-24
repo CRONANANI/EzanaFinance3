@@ -12,9 +12,14 @@
 import 'server-only';
 import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
+import { buildMacroRankings } from '@/lib/sonar/macro/store';
 
 /** key -> { route, build: async (admin) => ({ payload, sourceMaxUpdatedAt? }) } */
-export const BUILDERS = {};
+export const BUILDERS = {
+  /* Country rankings for Sonar's country_rank briefing (one common year,
+     sovereigns only). Rebuilt by /api/cron/macro-worldbank after each import. */
+  'macro:rankings': { route: null, build: (admin) => buildMacroRankings(admin) },
+};
 
 export const PAYLOAD_BUDGET_KB = 150;
 

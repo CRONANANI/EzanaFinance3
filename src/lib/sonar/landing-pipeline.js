@@ -17,7 +17,23 @@ import {
   getIndustryRegistryCached,
   industryBasket,
 } from '@/lib/sonar/industries';
-import { buildIndustryDossier, industryEvidence } from '@/lib/sonar/landing-industry';
+import {
+  basket13f,
+  basketCongress,
+  buildIndustryDossier,
+  industryEvidence,
+} from '@/lib/sonar/landing-industry';
+import { getMacroRankings } from '@/lib/sonar/macro/store';
+import { countryRankView, SCOPE_NOTE, WB_ATTRIBUTION } from '@/lib/sonar/macro/rank';
+import {
+  RANK_SECTIONS,
+  deterministicBrief,
+  rankFacts,
+  rankFollowups,
+  rankLede,
+  unsupportedNumbers,
+} from '@/lib/sonar/macro/brief';
+import { REGIONS as NEWS_REGIONS } from '@/lib/services/massive-news';
 import { industryProfile, industryNewsTitle, fetchIndustryNews } from '@/lib/sonar/industry-news';
 import { resolvePolitician, buildPoliticianDossier } from '@/lib/sonar/landing-politician';
 import {
@@ -359,7 +375,10 @@ function relevanceFrom(items, corporaSearched) {
     /* The OECD and Empire figures for a country ping are attached the same
        way and are Global Lighthouse datasets (DATASET_TAXONOMY). */
     const dim =
-      item.corpus === 'sanctions' || item.corpus === 'oecd' || item.corpus === 'empire'
+      item.corpus === 'sanctions' ||
+      item.corpus === 'oecd' ||
+      item.corpus === 'empire' ||
+      item.corpus === 'macro'
         ? 'lighthouse'
         : DATASET_DIMENSION[dataset];
     if (!dim) continue;
@@ -1092,6 +1111,40 @@ async function buildDossierFor({
  */
 const INDUSTRY_INTENTS = new Set(['industry_layout', 'industry_country']);
 
+/* The country's US-listed basket (ETFs and ADRs) from the repo's
+   region -> ticker map, never a hard-coded list here. */
+function countryBasket(country) {
+  const iso2 = (country.iso2 || '').toUpperCase();
+  const hit = NEWS_REGIONS.find(
+    (r) => r.id === iso2 || String(r.label || '').toLowerCase() === country.name.toLowerCase(),
+  );
+  return hit ? [...new Set(hit.tickers)] : [];
+}
+
+/** Everything the country_rank briefing adds to the country dossier. */
+async function buildRankBlock(country, dossier, admin) {
+  const payload = await getMacroRankings();
+  const view = payload ? countryRankView(payload, country.iso3) : null;
+  const basket = countryBasket(country);
+  const [congress, thirteenF] = await Promise.all([
+    basketCongress(admin, basket).catch(() => null),
+    basket13f(admin, basket, match13f).catch(() => null),
+  ]);
+  if (!view && !dossier.empire) return null;
+  return {
+    view,
+    lede: view ? rankLede(view, dossier.empire) : null,
+    followups: rankFollowups(view, dossier.empire),
+    attribution: WB_ATTRIBUTION,
+    scope: SCOPE_NOTE,
+    source: payload?.source || null,
+    builtAt: payload?.builtAt || null,
+    basket,
+    congress,
+    thirteenF,
+  };
+}
+
 export async function runLandingPipeline(
   query,
   { admin, wantDossier = true, noCorrect = false, force = null } = {},
@@ -1157,7 +1210,10 @@ export async function runLandingPipeline(
   const country = industryPing
     ? null
     : resolveCountry(q) ||
-      (understood.intent === 'country' && countryEnt ? resolveCountry(countryEnt.label) : null);
+      (['country', 'country_rank'].includes(understood.intent) && countryEnt
+        ? resolveCountry(countryEnt.label)
+        : null);
+  const rankPing = understood.intent === 'country_rank' && Boolean(country);
   /* A member of Congress before a company: "Nancy Pelosi" must not resolve
      to whatever FMP's fuzzy name search returns for it. */
   const politician =
@@ -1192,7 +1248,9 @@ export async function runLandingPipeline(
   const retrievalQuery = industryPing
     ? display
     : country
-      ? country.name
+      ? rankPing
+        ? `${country.name} economy size, growth and world ranking`
+        : country.name
       : politician
         ? politician.name
         : resolved
@@ -1202,7 +1260,9 @@ export async function runLandingPipeline(
   const resolvedNote = industryPing
     ? ` (understood as an industry layout: ${display}; describe structure, major players, where it operates, concentration, capital flows, key dependencies and what to watch, from the sources only)`
     : country
-      ? ` (resolved to the country ${country.name}, ISO ${country.iso3})`
+      ? rankPing
+        ? ` (understood as ${display}: where ${country.name} ranks among the world's economies. Use ONLY the ranks, values, years and sources in the sources; name the measure, year and source for every rank; never state a rank or figure the sources do not give; projections only as "IMF projects" with the year. Sections: ${RANK_SECTIONS.join(' · ')}.)`
+        : ` (resolved to the country ${country.name}, ISO ${country.iso3})`
       : politician
         ? ` (resolved to ${politician.name}, ${[politician.party, politician.state].filter(Boolean).join('-')}, U.S. ${politician.chamberLabel || 'Congress'})`
         : resolved
@@ -1279,9 +1339,34 @@ export async function runLandingPipeline(
     wantDossier || country || industry
       ? buildDossierFor({ country, politician, resolved, industry, understood, admin, leg })
       : null;
+  let rankFactLines = [];
   if (country) {
     const countryDossier = await dossierP;
     if (countryDossier) items.push(...countryEvidence(countryDossier));
+    /* A country_rank ping: the macro rankings (one snapshot row), the
+       country basket's 13F and Congress matches, and the rank facts the
+       brief may cite. */
+    if (rankPing && countryDossier) {
+      const rank = await leg(
+        'macro-rank',
+        () => buildRankBlock(country, countryDossier, admin),
+        (v) => (v ? `metrics=${Object.keys(v.view?.metrics || {}).length}` : 'none'),
+      ).catch(() => null);
+      if (rank) {
+        countryDossier.rank = rank;
+        countryDossier.matches.congress = rank.congress;
+        countryDossier.matches.thirteenF = rank.thirteenF;
+        rankFactLines = rankFacts(rank.view, countryDossier.empire);
+        items.push(
+          ...rankFactLines.map((line, i) => ({
+            corpus: 'macro',
+            title: `World Bank rank fact ${i + 1}`,
+            snippet: line,
+            meta: { source: WB_ATTRIBUTION },
+          })),
+        );
+      }
+    }
   }
   /* The registry's structure is the industry brief's spine. */
   if (industry) {
@@ -1367,6 +1452,21 @@ export async function runLandingPipeline(
       (v) => Boolean(v.answer),
     );
     answer = synth.answer || null;
+    /* country_rank: every number must come from the rank facts and the
+       other sources; a brief with an invented figure is replaced by the
+       deterministic brief built from the same facts. */
+    if (answer && rankPing && rankFactLines.length) {
+      const allowed = [
+        ...rankFactLines,
+        ...marked.map((it) => String(it.text || it.snippet || '')),
+      ];
+      const bad = unsupportedNumbers(answer, allowed);
+      if (bad.length) {
+        console.error('[sonar-pipeline] rank brief had unsupported numbers', bad.slice(0, 5));
+        const dossierNow = await dossierP;
+        answer = deterministicBrief(dossierNow?.rank?.view, dossierNow?.empire) || answer;
+      }
+    }
     grounded = Boolean(answer);
     webUsed = Boolean(synth.webUsed);
     webSources = (synth.webSources || []).slice(0, 6);
@@ -1452,6 +1552,8 @@ export async function runLandingPipeline(
       corrections: understood.corrections,
       display,
       intent: understood.intent,
+      metric: understood.metric || null,
+      metricExplicit: understood.metricExplicit ?? null,
       entities: understood.entities.map(({ kind, id, label, surface, confidence }) => ({
         kind,
         id,

@@ -45,14 +45,12 @@ page (duration, row count, payload KB).
      from cached snapshots (one cached read, no live aggregates) and
      functions co-located with the database. This gets warm TTFB close to
      the render cost alone (roughly 100 to 250 ms) but not CDN-cache TTFB.
-2. **Region mismatch.** Supabase project `jhdzpadfzrhiekcfgtai` runs in
-   **us-west-2 (Oregon)**. `vercel.json` sets no `regions` and no route sets
-   `preferredRegion`, so functions run in Vercel's default **iad1
-   (Washington, DC)**. Every database round trip crosses the country (about
-   60 to 70 ms each), and pages with several sequential reads pay it several
-   times. Fix: `"regions": ["pdx1"]` in `vercel.json` (Portland, next to
-   us-west-2). It moves every function, crons included, so it is listed here
-   for approval rather than applied.
+2. **Regions (corrected Oct 25).** Supabase project `jhdzpadfzrhiekcfgtai`
+   runs in **us-west-2 (Oregon)**. An earlier version of this note said
+   functions ran in Vercel's default iad1; the production runtime logs show
+   `region=pdx1` (Portland) on `/api/sonar/landing-query`, so the project's
+   function region is already set (in the Vercel project settings, not in
+   `vercel.json`) next to the database. No region change is needed.
 3. **Client fetch waterfalls.** Several pages render an empty shell on the
    server (`<Suspense fallback={null}>` around a client component) and only
    start their API requests after hydration, so LCP waits for HTML, the JS
@@ -121,5 +119,5 @@ client JS, 6 region mismatch.
 
 ## Stopped here, as Step 4.0 asks
 
-Per-page changes (4.3) wait for the measured table and two decisions:
-the root-layout option (a or b above) and the `pdx1` region move.
+Per-page changes (4.3) wait for the measured table and one decision: the
+root-layout option (a or b above).

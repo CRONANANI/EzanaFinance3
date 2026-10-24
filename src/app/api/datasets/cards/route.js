@@ -9,7 +9,9 @@
  * edge-cached for 15 minutes per query. Public, rate limited by IP.
  */
 import { NextResponse } from 'next/server';
-import { rankCardsForQuery } from '@/lib/datasets/card-registry';
+import { cardQualifies, rankCardsForQuery } from '@/lib/datasets/card-registry';
+import { understandDeterministic } from '@/lib/sonar/understand';
+import { resolveCountry } from '@/lib/sonar/landing-country';
 import { CARD_LOADERS } from '@/components/datasets/hub/dataset-cards/cards';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 
@@ -28,12 +30,26 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const q = String(searchParams.get('q') || '').slice(0, 200);
   const matches = rankCardsForQuery(q, { limit: MAX });
+  /* The entities the query resolved: a country (keyed by ISO3, the cards'
+     row key) or a ticker. */
+  const understood = understandDeterministic(q);
+  const entities = understood.entities
+    .map((e) => {
+      if (e.kind === 'country') {
+        const c = resolveCountry(e.label);
+        return c ? { kind: 'country', key: c.iso3, label: c.name } : null;
+      }
+      if (e.kind === 'ticker') return { kind: 'ticker', key: e.id, label: e.label };
+      return null;
+    })
+    .filter(Boolean);
+  const countryIso3 = entities.find((e) => e.kind === 'country')?.key || null;
   const loaded = await Promise.all(
     matches.map(async (m) => {
       const load = CARD_LOADERS[m.id];
       if (!load) return null;
       try {
-        const props = await load();
+        const props = await load(m.entity === 'country' ? { entityIso3: countryIso3 } : undefined);
         return { ...props, datasetSlug: m.datasetSlug, score: m.score };
       } catch {
         return {
@@ -50,7 +66,11 @@ export async function GET(request) {
     }),
   );
   return NextResponse.json(
-    { ok: true, q, cards: loaded.filter(Boolean) },
+    {
+      ok: true,
+      q,
+      cards: loaded.filter((c) => c && !c.error && cardQualifies(c, c, { query: q, entities })),
+    },
     { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=3600' } },
   );
 }

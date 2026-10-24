@@ -38,8 +38,11 @@ export default function ListCard({
       ) : (
         <ol className="hdc-rows">
           {rows.map((r, i) => (
-            <li key={r.key || i} className="hdc-row">
-              <span className="hdc-rank">{i + 1}</span>
+            <li
+              key={r.key || i}
+              className={`hdc-row${r.highlight ? ' is-searched' : ''}${r.gapBefore ? ' has-gap' : ''}`}
+            >
+              <span className="hdc-rank">{r.rank ?? i + 1}</span>
               <span className="hdc-main">
                 <span className="hdc-name">
                   {r.href ? (
@@ -54,7 +57,13 @@ export default function ListCard({
                     r.name
                   )}
                 </span>
-                {r.meta ? <span className="hdc-meta">{r.meta}</span> : null}
+                {r.meta || r.territory || r.highlight ? (
+                  <span className="hdc-meta">
+                    {r.meta}
+                    {r.territory ? ' · territory' : ''}
+                    {r.highlight ? <span className="hdc-searched">You searched</span> : null}
+                  </span>
+                ) : null}
               </span>
               {r.value != null ? <span className="hdc-value">{r.value}</span> : null}
             </li>

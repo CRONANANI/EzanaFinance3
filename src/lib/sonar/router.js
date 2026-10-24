@@ -39,6 +39,7 @@ export const TEMPLATE_IDS = [
   'etf_index',
   'macro_indicator',
   'industry_layout',
+  'country_rank',
   'open_question',
 ];
 
@@ -387,6 +388,24 @@ export function routeUnderstood(query, parent = null) {
       confidence: 0.92,
       understood: u,
     };
+  }
+  if (u.intent === 'country_rank') {
+    const geo = u.entities.find((e) => e.kind === 'country');
+    const country = geo ? resolveCountry(geo.label) : null;
+    if (country) {
+      return {
+        template: 'country_rank',
+        entities: {
+          ...(parent?.entities || {}),
+          country: country.iso3,
+          countryName: country.name,
+          metric: u.metric,
+          metricExplicit: u.metricExplicit,
+        },
+        confidence: 0.92,
+        understood: u,
+      };
+    }
   }
   const ruled = routeByRules(u.corrected || query, parent);
   return ruled ? { ...ruled, understood: u } : { understood: u };

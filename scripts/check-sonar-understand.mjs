@@ -71,6 +71,8 @@ for (const ex of EXAMPLES) {
     const u = understandDeterministic(ex.raw);
     assert.equal(u.intent, ex.intent, `intent for "${ex.raw}"`);
     for (const k of ex.entities) assert.ok(has(u, k), `missing ${k} in ${chosen(u).join(', ')}`);
+    if (ex.metric) assert.equal(u.metric, ex.metric, `metric for "${ex.raw}"`);
+    if (ex.metricExplicit != null) assert.equal(u.metricExplicit, ex.metricExplicit);
     if (ex.corrected !== ex.raw && ex.raw.toLowerCase() !== ex.corrected.toLowerCase()) {
       assert.equal(u.corrected.toLowerCase(), ex.corrected.toLowerCase());
     }
@@ -139,4 +141,28 @@ test('news without an entity term in the title or lead is dropped', () => {
     kept.map((n) => n.title),
     ['US chipmakers ramp new fabs under CHIPS Act', 'Markets close higher'],
   );
+});
+
+/* ── country ranks (sonar-country-ranking-fix) ── */
+
+test('"ranking" and "rank" are never spell-corrected into banking', () => {
+  for (const q of ['what ranking is india in the world economy', 'where does canada rank by gdp']) {
+    const u = understandDeterministic(q);
+    assert.deepEqual(u.corrections, []);
+    assert.ok(!u.entities.some((e) => e.kind === 'industry'), chosen(u).join(', '));
+  }
+});
+
+test('the India rank ping: country_rank, India, display title, nominal default', () => {
+  const u = understandDeterministic('what ranking is india in the world economy');
+  assert.equal(u.intent, 'country_rank');
+  assert.deepEqual(chosen(u), ['country:IN']);
+  assert.equal(u.display, "India's rank in the world economy");
+  assert.equal(u.metric, 'gdp_nominal_usd');
+  assert.equal(u.metricExplicit, false);
+});
+
+test('lowercase "per" and "can" are not country codes', () => {
+  const u = understandDeterministic('where does canada rank by gdp per capita');
+  assert.deepEqual(chosen(u), ['country:CA']);
 });

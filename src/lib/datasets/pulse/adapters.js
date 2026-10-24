@@ -1434,12 +1434,10 @@ const predictionMarkets = {
             : null,
       },
     }));
-    const top = markets
-      .slice(0, 8)
-      .map((m) => ({
-        label: clip(m.outcome || m.eventTitle, 14),
-        value: num(m.probability) * 100,
-      }));
+    const top = markets.slice(0, 8).map((m) => ({
+      label: clip(m.outcome || m.eventTitle, 14),
+      value: num(m.probability) * 100,
+    }));
     return {
       items,
       dataset: {

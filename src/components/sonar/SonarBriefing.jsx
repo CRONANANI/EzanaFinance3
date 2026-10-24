@@ -16,6 +16,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { SonarLoader } from '@/components/sonar/SonarLoader';
 import { IndustryLayout } from '@/components/sonar/industry/IndustryLayout';
+import { CountryRankPanel } from '@/components/sonar/macro/CountryRankPanel';
 import './sonar-briefing.css';
 
 const DATASET_LABELS = {
@@ -384,6 +385,13 @@ export default function SonarBriefing({ result, onFollowup, busy = false }) {
       </div>
 
       {result.industryLayout ? <IndustryLayout dossier={result.industryLayout} tone="app" /> : null}
+      {result.countryRank ? (
+        <CountryRankPanel
+          dossier={result.countryRank}
+          tone="app"
+          onFollowup={(q) => ask(q, 'text')}
+        />
+      ) : null}
 
       {/* ── floating follow-up launcher + slide-up panel ── */}
       <button

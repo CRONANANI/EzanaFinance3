@@ -59,4 +59,53 @@ export const EXAMPLES = [
     intent: 'theme',
     entities: ['theme:ai', 'country:GB'],
   },
+  /* Country ranks (sonar-country-ranking-fix). `metric` is the macro slot;
+     metricExplicit is false when the ping only says "world economy". */
+  {
+    raw: 'what ranking is india in the world economy',
+    corrected: 'what ranking is india in the world economy',
+    intent: 'country_rank',
+    entities: ['country:IN'],
+    metric: 'gdp_nominal_usd',
+    metricExplicit: false,
+  },
+  {
+    raw: 'where does canada rank by gdp per capita',
+    corrected: 'where does canada rank by gdp per capita',
+    intent: 'country_rank',
+    entities: ['country:CA'],
+    metric: 'gdp_per_capita_usd',
+    metricExplicit: true,
+  },
+  {
+    raw: "is india bigger than japan's economy",
+    corrected: "is india bigger than japan's economy",
+    intent: 'comparison',
+    entities: ['country:IN', 'country:JP'],
+    metric: 'gdp_nominal_usd',
+  },
+  {
+    raw: 'top 10 economies',
+    corrected: 'top 10 economies',
+    intent: 'ranking',
+    entities: [],
+    metric: 'gdp_nominal_usd',
+    metricExplicit: false,
+  },
+  {
+    raw: 'fastest growing economies',
+    corrected: 'fastest growing economies',
+    intent: 'ranking',
+    entities: [],
+    metric: 'gdp_growth_real',
+    metricExplicit: true,
+  },
+  {
+    raw: 'how does brazil rank on the global empire index',
+    corrected: 'how does brazil rank on the global empire index',
+    intent: 'country_rank',
+    entities: ['country:BR'],
+    metric: 'lighthouse_composite',
+    metricExplicit: true,
+  },
 ];

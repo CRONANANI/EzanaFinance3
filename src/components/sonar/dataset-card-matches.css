@@ -81,3 +81,31 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Matching cards as Sonar match cards (sonar-country-ranking-fix, Part C):
+   an opaque, theme-aware surface, everything inside a 20px / 24px padding,
+   a 28px rank column, values never clipped, long names ellipsized. */
+.dcm .hdc {
+  background: var(--bg-elev);
+  color: var(--text-primary);
+  padding: 20px 24px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 0;
+  min-width: 0;
+}
+.dcm .hdc-row {
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  gap: 12px;
+}
+.dcm .hdc-value {
+  padding-right: 2px;
+}
+@media (max-width: 720px) {
+  .dcm-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dcm {
+    padding: 0 16px;
+  }
+}
