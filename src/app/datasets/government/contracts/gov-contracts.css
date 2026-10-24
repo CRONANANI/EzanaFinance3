@@ -1963,62 +1963,7 @@ body.light-mode .gcx-award-badge {
   color: var(--text-secondary);
 }
 
-/* loading */
-.gcx-award-loading {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 24px 12px;
-}
-.gcx-award-spark {
-  color: var(--emerald);
-  animation: gcx-award-pulse 1.6s ease-in-out infinite;
-}
-body.light-mode .gcx-award-spark {
-  color: var(--emerald-dark);
-}
-@keyframes gcx-award-pulse {
-  0%,
-  100% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 0.9;
-  }
-}
-.gcx-award-loading-note {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: var(--ds-type-disclaimer-size);
-  font-weight: var(--ds-type-eyebrow-weight);
-  letter-spacing: var(--ds-type-badge-tracking);
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  text-align: center;
-}
-.gcx-award-bars {
-  width: 100%;
-  max-width: 240px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 4px;
-}
-.gcx-award-bar {
-  height: 6px;
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--emerald) 12%, transparent);
-  animation: gcx-award-pulse 1.6s ease-in-out infinite;
-}
-.gcx-award-bar:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.gcx-award-bar:nth-child(3) {
-  animation-delay: 0.4s;
-}
+/* loading: the shared SonarLoader (components/sonar/sonar-loader.css) */
 
 /* error */
 .gcx-award-error {
@@ -2187,13 +2132,8 @@ body.light-mode .gcx-award-ghost.is-on {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .gcx-award-modal-root,
-  .gcx-award-spark,
-  .gcx-award-bar {
+  .gcx-award-modal-root {
     animation: none;
-  }
-  .gcx-award-spark {
-    opacity: 0.9;
   }
 }
 

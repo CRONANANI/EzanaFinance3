@@ -10,12 +10,58 @@
   --snrl-bright: var(--emerald);
   --snrl-led: var(--echo-chart-orange, var(--warning));
   --snrl-shadow: color-mix(in srgb, var(--text-primary) 18%, transparent);
+  --snrl-ghost-y: -25px;
 
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
   padding: 32px 0;
+}
+/* Sizes: lg is the landing band's original geometry; md and sm scale the
+   two SVGs (viewBox keeps them crisp) and the ghost's offset with them. */
+.snrl-wrap--md {
+  --snrl-ghost-y: -19px;
+  padding: 20px 0;
+}
+.snrl-wrap--md .snrl-mini svg {
+  width: 56px;
+  height: 68px;
+}
+.snrl-wrap--md .snrl-ghost svg {
+  width: 45px;
+  height: 27px;
+}
+.snrl-wrap--sm {
+  --snrl-ghost-y: -12px;
+  padding: 10px 0;
+}
+.snrl-wrap--sm .snrl-mini svg {
+  width: 37px;
+  height: 45px;
+}
+.snrl-wrap--sm .snrl-ghost svg {
+  width: 30px;
+  height: 18px;
+}
+.snrl-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+.snrl-label {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.snrl-sublabel {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--text-muted);
 }
 .snrl-stack {
   display: flex;
@@ -26,7 +72,7 @@
   animation: snrl-bounce 4s infinite ease-in-out;
 }
 .snrl-ghost {
-  transform: translate(0, -25px);
+  transform: translate(0, var(--snrl-ghost-y));
   z-index: -1;
   animation: snrl-breathe 4s infinite ease-in-out;
 }
@@ -52,11 +98,11 @@
   0%,
   100% {
     opacity: 1;
-    scale: 1;
+    transform: scale(1) translate(0, var(--snrl-ghost-y));
   }
   50% {
     opacity: 0.5;
-    scale: 0.9;
+    transform: scale(0.9) translate(0, var(--snrl-ghost-y));
   }
 }
 @keyframes snrl-strobe {
@@ -73,40 +119,46 @@
     opacity: 1;
   }
 }
-@keyframes snrl-strobe-fill-a {
+/* LED strobes: opacity only (60 fps, compositor). -a/-b blink the emerald
+   LED between full and 60% (what the old fill swap to a 60% emerald mix
+   drew); -c fades the orange LED out to show the deep face beneath it (what
+   the old fill swap to --snrl-deep drew). Same look, no paint work. */
+@keyframes snrl-blink-b {
   0%,
   50%,
   100% {
-    fill: var(--echo-chart-orange, var(--warning));
+    opacity: 1;
   }
   25%,
   75% {
-    fill: var(--snrl-deep);
+    opacity: 0.6;
   }
 }
-@keyframes snrl-strobe-fill-b {
+@keyframes snrl-blink-a {
   0%,
   50%,
   100% {
-    fill: var(--emerald);
+    opacity: 1;
   }
   25%,
   75% {
-    fill: color-mix(in srgb, var(--emerald) 60%, transparent);
+    opacity: 0;
   }
 }
 .snrl-strobe-led {
   animation: snrl-strobe 0.5s infinite;
 }
 .snrl-strobe-a {
-  animation: snrl-strobe-fill-b 0.8s infinite;
+  fill: var(--emerald);
+  animation: snrl-blink-b 0.8s infinite;
 }
 .snrl-strobe-b {
-  animation: snrl-strobe-fill-b 0.8s infinite;
+  fill: var(--emerald);
+  animation: snrl-blink-b 0.8s infinite;
   animation-delay: 0.4s;
 }
 .snrl-strobe-c {
-  animation: snrl-strobe-fill-a 0.8s infinite;
+  animation: snrl-blink-a 0.8s infinite;
   animation-delay: 3s;
 }
 

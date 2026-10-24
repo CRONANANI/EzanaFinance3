@@ -2,13 +2,25 @@
 
 import './sonar-loader.css';
 
-/* Stacked-platform loader for Sonar pings, adapted from Noah's 21st.dev
-   reference. Converted: no styled-components, no TS, palette derived from
-   Ezana tokens via component-scoped custom props (see CSS). Decorative. */
-
-export function SonarLoader({ caption = 'Sweeping the field...' }) {
+/**
+ * The Sonar loading state: the bouncing data stack from the landing page's
+ * Sonar band (adapted from Noah's 21st.dev reference; no styled-components,
+ * palette from Ezana tokens via component-scoped custom props).
+ *
+ *   <SonarLoader size="md" />                       "Sonar is analyzing"
+ *   <SonarLoader size="sm" label="..." sublabel="Sweeping filings, trades and contracts" />
+ *   <SonarLoader caption="Sweeping 8 datasets..." /> the landing band's
+ *     original single mono caption, unchanged (size lg)
+ *
+ * role="status" + aria-live="polite" on the wrapper; the label is visible
+ * text. Animation is transform/opacity only; under prefers-reduced-motion
+ * the stack is static.
+ */
+export function SonarLoader({ size = 'lg', label, sublabel, caption } = {}) {
+  const legacy = caption != null && label == null;
+  const text = legacy ? caption : label || 'Sonar is analyzing';
   return (
-    <div className="snrl-wrap">
+    <div className={`snrl-wrap snrl-wrap--${size}`} role="status" aria-live="polite">
       <div className="snrl-stack" aria-hidden="true">
         <div className="snrl-mini">
           <svg
@@ -138,9 +150,14 @@ export function SonarLoader({ caption = 'Sweeping the field...' }) {
           </svg>
         </div>
       </div>
-      <p className="snrl-caption" role="status">
-        {caption}
-      </p>
+      {legacy ? (
+        <p className="snrl-caption">{text}</p>
+      ) : (
+        <div className="snrl-text">
+          <span className="snrl-label">{text}</span>
+          {sublabel ? <span className="snrl-sublabel">{sublabel}</span> : null}
+        </div>
+      )}
     </div>
   );
 }

@@ -34,8 +34,8 @@ const SonarBand = dynamic(
 
 function SonarBandLoading() {
   return (
-    <div className="sonar-ds-loader" role="status" aria-live="polite">
-      <SonarLoader caption="Sweeping the datasets..." />
+    <div className="sonar-ds-loader">
+      <SonarLoader size="md" sublabel="Sweeping filings, trades and contracts" />
     </div>
   );
 }
@@ -389,8 +389,8 @@ export function SonarExperience({ variant = 'app', heroAddon = null, initialQuer
                   error and quota states render in the normal page below. */}
               {onDatasets ? (
                 phase === 'searching' ? (
-                  <div className="sonar-ds-loader" role="status" aria-live="polite">
-                    <SonarLoader caption={`Sweeping the datasets for “${queryText}”...`} />
+                  <div className="sonar-ds-loader">
+                    <SonarLoader size="md" sublabel="Sweeping filings, trades and contracts" />
                   </div>
                 ) : null
               ) : (

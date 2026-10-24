@@ -60,7 +60,7 @@ export function SonarLoadingOverlay({ open }) {
       tabIndex={-1}
     >
       <div className="snro-glow" aria-hidden="true" />
-      <SonarLoader caption="Sweeping the field..." />
+      <SonarLoader size="md" sublabel="Sweeping filings, trades and contracts" />
     </div>
   );
 }

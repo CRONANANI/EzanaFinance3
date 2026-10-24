@@ -14,6 +14,7 @@
  * computes a figure, only draws what the API returned.
  */
 import { useEffect, useRef, useState } from 'react';
+import { SonarLoader } from '@/components/sonar/SonarLoader';
 import { IndustryLayout } from '@/components/sonar/industry/IndustryLayout';
 import './sonar-briefing.css';
 
@@ -437,9 +438,12 @@ export default function SonarBriefing({ result, onFollowup, busy = false }) {
               onChange={(e) => setDraft(e.target.value)}
             />
             <button type="submit" disabled={busy || !draft.trim()}>
-              {busy ? 'Pinging…' : 'Ping'}
+              Ping
             </button>
           </form>
+          {busy ? (
+            <SonarLoader size="sm" sublabel="Sweeping filings, trades and contracts" />
+          ) : null}
           {result.quota ? (
             <p className="snb-panel-foot snb-mono">
               {result.quota.remaining} of {result.quota.limit} pings left today

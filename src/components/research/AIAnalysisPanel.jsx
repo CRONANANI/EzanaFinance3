@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import dynamic from 'next/dynamic';
+import { SonarLoader } from '@/components/sonar/SonarLoader';
 import { getModelConfig } from '@/lib/ai/analysis-prompts';
 import { getModelStripVariables } from '@/lib/research/modelStripVariables';
 import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
@@ -219,43 +220,7 @@ function GenericAnalysisPanel({ modelId, symbol, onClose, showTips }) {
           {/* Loading State */}
           {loading && (
             <div className="ai-analysis-loading">
-              <div className="ai-loading-visual">
-                <div className="ai-loading-rings">
-                  <div
-                    className="ai-ring ai-ring-1"
-                    style={{ borderColor: `${modelConfig.color}40` }}
-                  />
-                  <div
-                    className="ai-ring ai-ring-2"
-                    style={{ borderColor: `${modelConfig.color}25` }}
-                  />
-                  <div
-                    className="ai-ring ai-ring-3"
-                    style={{ borderColor: `${modelConfig.color}15` }}
-                  />
-                  <div className="ai-loading-icon" style={{ color: modelConfig.color }}>
-                    <i className={`bi ${modelConfig.icon}`} />
-                  </div>
-                </div>
-              </div>
-              <div className="ai-loading-text">
-                <span className="ai-loading-title">Running {modelConfig.name}</span>
-                <span className="ai-loading-desc">
-                  Analyzing {symbol} with {modelConfig.subtitle.toLowerCase()} methodology...
-                </span>
-              </div>
-              <div className="ai-loading-skeleton">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="ai-skeleton-line"
-                    style={{
-                      width: `${60 + Math.random() * 40}%`,
-                      animationDelay: `${i * 0.1}s`,
-                    }}
-                  />
-                ))}
-              </div>
+              <SonarLoader size="md" sublabel={`Running ${modelConfig.name} on ${symbol}`} />
             </div>
           )}
 
@@ -287,7 +252,7 @@ function GenericAnalysisPanel({ modelId, symbol, onClose, showTips }) {
                   {new Date(analysis.generatedAt).toLocaleTimeString()}
                 </span>
                 <span className="ai-meta-item">
-                  <i className="bi bi-cpu" /> Claude Sonnet 4
+                  <i className="bi bi-cpu" /> Sonar
                 </span>
                 <span className="ai-meta-item">
                   <i className="bi bi-diagram-3" /> {analysis.modelName}

@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SonarBriefing from '@/components/sonar/SonarBriefing';
+import { SonarLoader } from '@/components/sonar/SonarLoader';
 import './sonar-v2.css';
 
 export default function SonarV2Client() {
@@ -91,7 +92,7 @@ export default function SonarV2Client() {
             onChange={(e) => setInput(e.target.value)}
           />
           <button type="submit" disabled={busy || input.trim().length < 2}>
-            {busy ? 'Pinging…' : 'Ping'}
+            Ping
           </button>
         </form>
         {error ? (
@@ -109,11 +110,7 @@ export default function SonarV2Client() {
       </header>
 
       {busy && !result ? (
-        <div className="snv2-skel" aria-busy="true">
-          <span />
-          <span />
-          <span />
-        </div>
+        <SonarLoader size="md" sublabel="Sweeping filings, trades and contracts" />
       ) : null}
 
       <SonarBriefing result={result} busy={busy} onFollowup={(q, parentId) => ping(q, parentId)} />

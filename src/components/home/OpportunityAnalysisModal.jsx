@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { SonarLoader } from '@/components/sonar/SonarLoader';
 
 const CONFIDENCE_CONFIG = {
   high: { color: '#10b981', label: 'High Confidence', icon: 'bi-shield-fill-check' },
@@ -91,7 +92,10 @@ export function OpportunityAnalysisModal({ event, onClose }) {
               <h2 className="mkt-modal-title">{event.headline}</h2>
               <div className="mkt-modal-meta">
                 {event.ticker && (
-                  <Link href={`/company-research?q=${encodeURIComponent(event.ticker)}`} className="mkt-modal-ticker">
+                  <Link
+                    href={`/company-research?q=${encodeURIComponent(event.ticker)}`}
+                    className="mkt-modal-ticker"
+                  >
                     ${event.ticker}
                   </Link>
                 )}
@@ -115,8 +119,7 @@ export function OpportunityAnalysisModal({ event, onClose }) {
         <div className="mkt-modal-body">
           {loading ? (
             <div className="mkt-modal-loading">
-              <div className="mkt-modal-spinner" />
-              <p>Generating analysis tailored to your profile…</p>
+              <SonarLoader size="md" sublabel="Tailoring the analysis to your profile" />
             </div>
           ) : error ? (
             <div className="mkt-modal-error">
@@ -210,7 +213,10 @@ export function OpportunityAnalysisModal({ event, onClose }) {
                           <p className="mkt-modal-news-title">{n.title}</p>
                           <span className="mkt-modal-news-source">
                             {n.source} ·{' '}
-                            {new Date(n.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            {new Date(n.publishedAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                            })}
                           </span>
                         </div>
                         <i className="bi bi-box-arrow-up-right mkt-modal-news-arrow" />
@@ -237,7 +243,12 @@ export function OpportunityAnalysisModal({ event, onClose }) {
                   </Link>
                 )}
                 {event.url && (
-                  <a href={event.url} target="_blank" rel="noopener noreferrer" className="mkt-modal-action-btn">
+                  <a
+                    href={event.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mkt-modal-action-btn"
+                  >
                     <i className="bi bi-box-arrow-up-right" /> Read Full Article
                   </a>
                 )}

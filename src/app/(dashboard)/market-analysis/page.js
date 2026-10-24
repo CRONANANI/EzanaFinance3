@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { SonarLoader } from '@/components/sonar/SonarLoader';
 import { useRouter } from 'next/navigation';
 import { WorldMap, scoreToColor } from '@/components/ui/world-map';
 import { useGlobalPowerMap } from '@/hooks/useGlobalPowerMap';
@@ -1534,21 +1535,7 @@ function ChainView({
                   Portfolio impact
                 </h3>
                 {analyzing ? (
-                  <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
-                    <i
-                      className="bi bi-lightning-charge-fill"
-                      style={{
-                        fontSize: '1.5rem',
-                        color: '#d4af37',
-                        display: 'block',
-                        marginBottom: '0.5rem',
-                      }}
-                      aria-hidden
-                    />
-                    <p className="sentinel-modal-prose" style={{ margin: 0, color: '#9ca3af' }}>
-                      Analyzing impact on your portfolio…
-                    </p>
-                  </div>
+                  <SonarLoader size="md" sublabel="Measuring the impact on your portfolio" />
                 ) : (
                   <EventAnalysisProse text={analysis} />
                 )}
