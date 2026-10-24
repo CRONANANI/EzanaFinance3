@@ -7,7 +7,7 @@ import { getActivePlan, getPlanTier } from '@/lib/subscription';
 import { getReferralPlanOverride } from '@/lib/referrals-server';
 import { getSonarEntitlements, describeDatasetAccess } from '@/lib/sonar/entitlements';
 import { routeQuery } from '@/lib/sonar/router';
-import { getIndustryRegistry } from '@/lib/sonar/industries';
+import { getIndustryRegistryCached } from '@/lib/sonar/industries';
 
 const shownQueryFor = (route, query) =>
   route.understood?.display || route.understood?.corrected || query;
@@ -199,7 +199,7 @@ export const POST = withApiGuard(
     /* The Industry Layout's registry (structure plus approved sourced rows). */
     let industryLayout = null;
     if (route.template === 'industry_layout' && route.entities?.industryId) {
-      const reg = await getIndustryRegistry(admin, route.entities.industryId).catch(() => null);
+      const reg = await getIndustryRegistryCached(route.entities.industryId).catch(() => null);
       if (reg) {
         const { industry, ...rest } = reg;
         industryLayout = {

@@ -272,6 +272,14 @@
     {
       "path": "/api/cron/api-housekeeping",
       "schedule": "15 4 * * *"
+    },
+    {
+      "path": "/api/cron/chips-usaspending",
+      "schedule": "17 7 * * 1"
+    },
+    {
+      "path": "/api/cron/chips-nist",
+      "schedule": "23 7 3 * *"
     }
   ]
 }

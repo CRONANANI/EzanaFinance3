@@ -11,6 +11,7 @@
  */
 import { createContext, useContext, useMemo, useState } from 'react';
 import {
+  BUSINESS_MODELS,
   KPI_METRICS,
   applyFilters,
   byDimension,
@@ -24,7 +25,6 @@ import {
   investmentPipeline,
   usdCompact,
 } from '@/lib/sonar/industry-layout-model';
-import { BUSINESS_MODELS } from '@/lib/sonar/industries';
 import { US_TILES } from './us-tiles';
 import './industry-layout.css';
 

@@ -12,21 +12,15 @@
  * component shows its empty state until then. No figure is ever invented.
  */
 
+import { unstable_cache } from 'next/cache';
+import { getAdminClient } from '@/lib/supabase';
+
 const AS_OF = '2026-10-24';
 const edgar = (ticker, form = '10-K') =>
   `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${ticker}&type=${form}&dateb=&owner=include&count=10`;
 
-export const BUSINESS_MODELS = {
-  fabless: 'Fabless',
-  idm: 'IDM',
-  foundry: 'Foundry',
-  equipment: 'Equipment',
-  materials: 'Materials',
-  eda_ip: 'EDA & IP',
-  osat: 'OSAT',
-  prime: 'Prime contractor',
-  supplier: 'Supplier',
-};
+/* Pure (client-safe) label map lives with the layout model. */
+export { BUSINESS_MODELS } from '@/lib/sonar/industry-layout-model';
 
 const SEED = {
   industries: [
@@ -239,19 +233,82 @@ export async function getIndustryRegistry(admin, id) {
       .from('industry_stage_links')
       .select('from_stage, to_stage')
       .in('from_stage', stageIds);
+    const facilityRows = await attachAwards(admin, facilities.data || []);
     return {
       industry: ind.data,
       stages: stages.data,
       links: links || [],
       companies: companies.data?.length ? companies.data : seed?.companies || [],
       metrics: metrics.data || [],
-      facilities: facilities.data || [],
+      facilities: facilityRows,
       risks: risks.data || [],
       source: 'tables',
     };
   } catch {
     return seed;
   }
+}
+
+/**
+ * CHIPS awards on each approved facility: { id, source, status, amount_usd,
+ * is_split_award, n_sites, source_url, action_date }. n_sites counts every
+ * site the award is linked to, so a split award reads "Split across N
+ * sites" with its full amount once. Missing tables leave awards empty.
+ */
+async function attachAwards(admin, facilities) {
+  if (!facilities.length) return facilities;
+  try {
+    const ids = facilities.map((f) => f.id).filter(Boolean);
+    const { data: links, error } = await admin
+      .from('chips_award_facilities')
+      .select('award_id, facility_id')
+      .in('facility_id', ids);
+    if (error || !links?.length) return facilities.map((f) => ({ ...f, awards: [] }));
+    const awardIds = [...new Set(links.map((l) => l.award_id))];
+    const [{ data: awards }, { data: allLinks }] = await Promise.all([
+      admin
+        .from('chips_awards')
+        .select(
+          'id, source, status, amount_usd, is_split_award, source_url, action_date, fetched_at',
+        )
+        .in('id', awardIds),
+      admin.from('chips_award_facilities').select('award_id').in('award_id', awardIds),
+    ]);
+    const sites = new Map();
+    for (const l of allLinks || []) sites.set(l.award_id, (sites.get(l.award_id) || 0) + 1);
+    const byId = new Map(
+      (awards || []).map((a) => [
+        a.id,
+        {
+          ...a,
+          amount_usd: a.amount_usd == null ? null : Number(a.amount_usd),
+          n_sites: sites.get(a.id) || 1,
+          as_of: (a.action_date || a.fetched_at || '').slice(0, 10) || null,
+        },
+      ]),
+    );
+    return facilities.map((f) => ({
+      ...f,
+      awards: links
+        .filter((l) => l.facility_id === f.id)
+        .map((l) => byId.get(l.award_id))
+        .filter(Boolean),
+    }));
+  } catch {
+    return facilities.map((f) => ({ ...f, awards: [] }));
+  }
+}
+
+/**
+ * The registry through the Next data cache, tagged `industry:<id>` so the
+ * importers and admin approvals can bust it (revalidateTag).
+ */
+export function getIndustryRegistryCached(id) {
+  return unstable_cache(
+    async () => getIndustryRegistry(getAdminClient(), id),
+    ['industry-registry', id],
+    { tags: [`industry:${id}`], revalidate: 3600 },
+  )();
 }
 
 /** Tickers of the industry (or one stage), public companies only. */

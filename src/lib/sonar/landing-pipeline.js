@@ -12,7 +12,11 @@ import { getFmpKey } from '@/lib/fmp/upcoming-events';
 import { understandQuery } from '@/lib/sonar/understand';
 import { TICKER_BLOCKLIST } from '@/lib/sonar/understand/blocklist';
 import { gateMarkets, gateNews, subjectTerms } from '@/lib/sonar/relevance';
-import { getIndustryRegistry, industryBasket } from '@/lib/sonar/industries';
+import {
+  getIndustryRegistry,
+  getIndustryRegistryCached,
+  industryBasket,
+} from '@/lib/sonar/industries';
 import { buildIndustryDossier, industryEvidence } from '@/lib/sonar/landing-industry';
 import { industryProfile, industryNewsTitle, fetchIndustryNews } from '@/lib/sonar/industry-news';
 import { resolvePolitician, buildPoliticianDossier } from '@/lib/sonar/landing-politician';
@@ -1139,7 +1143,10 @@ export async function runLandingPipeline(
   const industry = industryEnt
     ? await leg(
         'industry',
-        () => getIndustryRegistry(admin, industryEnt.id),
+        () =>
+          admin
+            ? getIndustryRegistryCached(industryEnt.id)
+            : getIndustryRegistry(null, industryEnt.id),
         (v) => (v ? `${v.source} stages=${v.stages.length}` : 'none'),
       )
     : null;

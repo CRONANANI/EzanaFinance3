@@ -5,6 +5,19 @@
  * input always yields an empty output (the component's empty state).
  */
 
+/** Business-model labels, as companies describe themselves in filings. */
+export const BUSINESS_MODELS = {
+  fabless: 'Fabless',
+  idm: 'IDM',
+  foundry: 'Foundry',
+  equipment: 'Equipment',
+  materials: 'Materials',
+  eda_ip: 'EDA & IP',
+  osat: 'OSAT',
+  prime: 'Prime contractor',
+  supplier: 'Supplier',
+};
+
 /** Metric ids the overview tiles look for, in display order. */
 export const KPI_METRICS = [
   { id: 'industry_sales', label: 'Industry sales' },
