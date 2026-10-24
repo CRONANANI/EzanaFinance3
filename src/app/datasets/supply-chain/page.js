@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { getSupplyChain } from '@/lib/eyes/store';
 import SupplyChainClient from './SupplyChainClient';
 
@@ -18,7 +19,7 @@ export default async function SupplyChainPage() {
   let data = null;
   let error = false;
   try {
-    data = await getSupplyChain();
+    data = await timed('/datasets/supply-chain', getSupplyChain, 'getSupplyChain')();
   } catch (e) {
     console.error('[eyes] supply chain:', e?.message || e);
     error = true;

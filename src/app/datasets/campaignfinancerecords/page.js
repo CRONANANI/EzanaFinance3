@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import CampaignFinanceRecordsClient from './CampaignFinanceRecordsClient';
 import {
   CF_DEFAULT_CYCLE,
@@ -22,8 +23,16 @@ export const metadata = {
 
 export default async function CampaignFinanceRecordsPage() {
   const [initial, cycles] = await Promise.all([
-    getCampaignFinanceOverview(CF_DEFAULT_CYCLE),
-    getCampaignFinanceCycles(),
+    timed(
+      '/datasets/campaignfinancerecords',
+      getCampaignFinanceOverview,
+      'getCampaignFinanceOverview',
+    )(CF_DEFAULT_CYCLE),
+    timed(
+      '/datasets/campaignfinancerecords',
+      getCampaignFinanceCycles,
+      'getCampaignFinanceCycles',
+    )(),
   ]);
   return (
     <CampaignFinanceRecordsClient

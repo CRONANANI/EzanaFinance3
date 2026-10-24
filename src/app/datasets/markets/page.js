@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { getFundamentalsTable } from '@/lib/titans/store';
 import FundamentalsClient from './FundamentalsClient';
 
@@ -11,7 +12,11 @@ export const dynamic = 'force-dynamic';
 export default async function MarketsDatasetPage() {
   let table = null;
   try {
-    table = await getFundamentalsTable({ limit: 500 });
+    table = await timed(
+      '/datasets/markets',
+      getFundamentalsTable,
+      'getFundamentalsTable',
+    )({ limit: 500 });
   } catch (e) {
     console.error('[titans] fundamentals table:', e?.message || e);
   }

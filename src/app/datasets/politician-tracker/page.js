@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import ReactDOM from 'react-dom';
 import { unstable_cache } from 'next/cache';
 import PoliticianTracker from '@/components/datasets/politician-tracker/PoliticianTracker';
@@ -46,7 +47,11 @@ const PERIOD_KEYS = ['30d', '90d', '6m', '1y', '2y', 'all'];
    and falls back to its local model. */
 const cachedSummary = unstable_cache(
   async (chamber, party, q, sort, windowDays) => {
-    const summary = await readSummary({ chamber, party, q, sort, windowDays });
+    const summary = await timed(
+      '/datasets/politician-tracker',
+      readSummary,
+      'readSummary',
+    )({ chamber, party, q, sort, windowDays });
     if (summary.error) return null;
     return { ok: true, windowDays, sort, ...summary, error: undefined };
   },
@@ -56,7 +61,7 @@ const cachedSummary = unstable_cache(
 
 async function initialSummaryFor({ chamber, party, q, sort, period }) {
   try {
-    return await cachedSummary(
+    return await timed('/datasets/politician-tracker', cachedSummary, 'cachedSummary')(
       chamberParam(chamber ? chamber.toLowerCase() : null),
       partyParam(party),
       queryParam(q || null),
@@ -89,14 +94,18 @@ export default async function Page({ searchParams }) {
     initialQuery: str(searchParams?.q) || '',
   };
   const [initialSummary, stateTrades] = await Promise.all([
-    initialSummaryFor({
+    timed(
+      '/datasets/politician-tracker',
+      initialSummaryFor,
+      'initialSummaryFor',
+    )({
       chamber: initial.initialChamber,
       party: initial.initialParty,
       q: initial.initialQuery,
       sort: initial.initialSort,
       period: initial.initialPeriod,
     }),
-    getStateTrades(),
+    timed('/datasets/politician-tracker', getStateTrades, 'getStateTrades')(),
   ]);
   return (
     <PoliticianTracker {...initial} initialSummary={initialSummary} stateTrades={stateTrades} />

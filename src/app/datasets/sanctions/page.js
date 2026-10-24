@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { shortDate } from '@/lib/titans/format';
 import {
   getNewestAdditions,
@@ -49,27 +50,39 @@ export default async function SanctionsPage() {
      two full round trips. The independent reads now overlap it. */
   const [summary, search, trends, pulses, kpis, activity, actions, news, coverage, status] =
     await Promise.all([
-      getSanctionsSummary(),
-      searchSanctions(NO_SEARCH),
-      getSanctionsTrends(),
-      getSanctionsNewsPulses(),
-      getSanctionsKpis(),
-      getSanctionsActivity(24, null, null, null),
-      getOfacActions(30),
-      getSanctionsNewsFeed(30),
-      getSanctionsCoverage(),
-      getIngestStatus(),
+      timed('/datasets/sanctions', getSanctionsSummary, 'getSanctionsSummary')(),
+      timed('/datasets/sanctions', searchSanctions, 'searchSanctions')(NO_SEARCH),
+      timed('/datasets/sanctions', getSanctionsTrends, 'getSanctionsTrends')(),
+      timed('/datasets/sanctions', getSanctionsNewsPulses, 'getSanctionsNewsPulses')(),
+      timed('/datasets/sanctions', getSanctionsKpis, 'getSanctionsKpis')(),
+      timed('/datasets/sanctions', getSanctionsActivity, 'getSanctionsActivity')(
+        24,
+        null,
+        null,
+        null,
+      ),
+      timed('/datasets/sanctions', getOfacActions, 'getOfacActions')(30),
+      timed('/datasets/sanctions', getSanctionsNewsFeed, 'getSanctionsNewsFeed')(30),
+      timed('/datasets/sanctions', getSanctionsCoverage, 'getSanctionsCoverage')(),
+      timed('/datasets/sanctions', getIngestStatus, 'getIngestStatus')(),
     ]);
   const targetMap = Object.fromEntries(summary.targets.map((t) => [t.name, t.codes]));
   const [newest, targetActivity] = await Promise.all([
-    getNewestAdditions(summary.baseline, 30),
-    getTargetActivity(targetMap, 365),
+    timed('/datasets/sanctions', getNewestAdditions, 'getNewestAdditions')(summary.baseline, 30),
+    timed('/datasets/sanctions', getTargetActivity, 'getTargetActivity')(targetMap, 365),
   ]);
   /* Before the research functions are installed, the first page comes from
      the original listing query. */
   const firstPage =
     search.research === false
-      ? { ...(await getSanctionsPage({ page: 1 })), research: false }
+      ? {
+          ...(await timed(
+            '/datasets/sanctions',
+            getSanctionsPage,
+            'getSanctionsPage',
+          )({ page: 1 })),
+          research: false,
+        }
       : search;
   const hasDates = Boolean(kpis && kpis.active_dated > 0);
 

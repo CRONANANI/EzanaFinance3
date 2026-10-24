@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { Suspense } from 'react';
 import { getActivistOverview } from '@/lib/titans/store';
 import { ALLOW_SAMPLE } from '@/lib/titans/format';
@@ -23,7 +24,7 @@ export const metadata = {
 export default async function ActivistDatasetPage() {
   let overview = null;
   try {
-    overview = await getActivistOverview();
+    overview = await timed('/datasets/activist', getActivistOverview, 'getActivistOverview')();
   } catch (e) {
     console.error('[titans] activist overview:', e?.message || e);
   }

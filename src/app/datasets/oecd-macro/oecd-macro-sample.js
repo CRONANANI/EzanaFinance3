@@ -12,8 +12,18 @@
 
 // Headline callout cards — { name, meta, value, tone }
 export const OECD_HIGHLIGHTS = [
-  { name: 'Canada CLI', meta: 'Composite Leading Indicator · placeholder', value: '100.4', tone: 'pos' },
-  { name: 'OECD area CLI', meta: 'Composite Leading Indicator · placeholder', value: '100.1', tone: 'pos' },
+  {
+    name: 'Canada CLI',
+    meta: 'Composite Leading Indicator · placeholder',
+    value: '100.4',
+    tone: 'pos',
+  },
+  {
+    name: 'OECD area CLI',
+    meta: 'Composite Leading Indicator · placeholder',
+    value: '100.1',
+    tone: 'pos',
+  },
   { name: 'OECD area CPI (YoY)', meta: 'Consumer prices · placeholder', value: '3.0%' },
   { name: 'OECD area unemployment', meta: 'Harmonised rate · placeholder', value: '4.9%' },
 ];

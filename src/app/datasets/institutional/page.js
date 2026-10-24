@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { Suspense } from 'react';
 import {
   getConvergence,
@@ -41,10 +42,18 @@ export default async function InstitutionalDatasetPage() {
      database) threw away the overview that HAD loaded and the whole page
      rendered empty. Now a failed read only empties its own cards. */
   const [overviewRes, openRes, curveRes, progressRes] = await Promise.allSettled([
-    getInstitutionalOverview(),
-    openQ !== completeQ ? getInstitutionalOverviewFor(openQ) : Promise.resolve(null),
-    openQ !== completeQ ? getFilingCurve(openQ) : Promise.resolve(null),
-    getFilingProgress(),
+    timed('/datasets/institutional', getInstitutionalOverview, 'getInstitutionalOverview')(),
+    openQ !== completeQ
+      ? timed(
+          '/datasets/institutional',
+          getInstitutionalOverviewFor,
+          'getInstitutionalOverviewFor',
+        )(openQ)
+      : Promise.resolve(null),
+    openQ !== completeQ
+      ? timed('/datasets/institutional', getFilingCurve, 'getFilingCurve')(openQ)
+      : Promise.resolve(null),
+    timed('/datasets/institutional', getFilingProgress, 'getFilingProgress')(),
   ]);
   const settled = (res, label) => {
     if (res.status === 'fulfilled') return res.value;
@@ -73,8 +82,8 @@ export default async function InstitutionalDatasetPage() {
   if (!sampled && topBreadth.length) {
     const tickers = topBreadth.map((b) => b.ticker);
     const [lagRes, convRes] = await Promise.allSettled([
-      getLagTax(tickers, overview.quarter),
-      getConvergence(tickers, overview.quarter),
+      timed('/datasets/institutional', getLagTax, 'getLagTax')(tickers, overview.quarter),
+      timed('/datasets/institutional', getConvergence, 'getConvergence')(tickers, overview.quarter),
     ]);
     lag = settled(lagRes, 'lag tax') || {};
     convergence = settled(convRes, 'convergence') || {};

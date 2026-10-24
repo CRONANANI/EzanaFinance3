@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { Suspense } from 'react';
 import { readFirstPaint } from '@/lib/lobbying/page-read';
 import LobbyingClient from './LobbyingClient';
@@ -25,7 +26,11 @@ export const metadata = {
 };
 
 export default async function LobbyingPage({ searchParams }) {
-  const initialViews = await readFirstPaint(searchParams);
+  const initialViews = await timed(
+    '/datasets/government/lobbying',
+    readFirstPaint,
+    'readFirstPaint',
+  )(searchParams);
   return (
     <Suspense fallback={null}>
       <LobbyingClient initialViews={initialViews} />

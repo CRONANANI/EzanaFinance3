@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { openCrowdForecasts } from '@/lib/lighthouse/store';
 import { pct, shortDate } from '@/lib/titans/format';
 import CrowdForecastsClient from './CrowdForecastsClient';
@@ -9,7 +10,11 @@ import CrowdForecastsClient from './CrowdForecastsClient';
 export const dynamic = 'force-dynamic';
 
 export default async function CrowdForecastsPage() {
-  const items = await openCrowdForecasts(150);
+  const items = await timed(
+    '/datasets/crowd-forecasts',
+    openCrowdForecasts,
+    'openCrowdForecasts',
+  )(150);
   const rows = items.map((f) => ({
     id: f.forecast_id,
     question: f.question,

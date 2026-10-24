@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 import { resolveDimension, taxonomyCounts } from './sonar/derive';
 import { SonarSelectionProvider } from './sonar/SonarSelection';
@@ -53,7 +54,7 @@ export default async function DatasetsIndexPage({ searchParams }) {
      client's first refresh a few seconds later. readPulse never throws. */
   let pulse = EMPTY_PULSE;
   try {
-    pulse = await readPulse({ budgetMs: 1800 });
+    pulse = await timed('/datasets', readPulse, 'readPulse')({ budgetMs: 1800 });
   } catch {
     /* No pulse, no belt: the map still renders. */
   }

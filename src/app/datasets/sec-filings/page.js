@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { getSecFilings } from '@/lib/sec-filings-store';
 import { INSIDER_TRADES_SAMPLE } from './sec-filings-sample';
 import { ALLOW_SAMPLE } from '@/lib/titans/format';
@@ -20,9 +21,21 @@ export const metadata = {
 
 export default async function SecFilingsDatasetPage() {
   const [insiderRes, instRes, activistRes] = await Promise.allSettled([
-    getSecFilings({ family: 'insider', limit: 50 }),
-    getSecFilings({ family: 'institutional', limit: 50 }),
-    getSecFilings({ family: 'activist', limit: 50 }),
+    timed(
+      '/datasets/sec-filings',
+      getSecFilings,
+      'getSecFilings',
+    )({ family: 'insider', limit: 50 }),
+    timed(
+      '/datasets/sec-filings',
+      getSecFilings,
+      'getSecFilings',
+    )({ family: 'institutional', limit: 50 }),
+    timed(
+      '/datasets/sec-filings',
+      getSecFilings,
+      'getSecFilings',
+    )({ family: 'activist', limit: 50 }),
   ]);
   const val = (r) => (r.status === 'fulfilled' && Array.isArray(r.value) ? r.value : []);
 

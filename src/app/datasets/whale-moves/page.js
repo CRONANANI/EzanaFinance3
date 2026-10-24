@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { getWhaleMoves } from '@/lib/whale-moves-store';
 import { getBurryWatcher } from '@/lib/whales/burry';
 import { WhaleMovesClient } from './WhaleMovesClient';
@@ -16,8 +17,8 @@ export const dynamic = 'force-dynamic';
 
 export default async function WhaleMovesPage() {
   const [moves, burry] = await Promise.all([
-    getWhaleMoves({ limit: 120 }),
-    getBurryWatcher().catch(() => null),
+    timed('/datasets/whale-moves', getWhaleMoves, 'getWhaleMoves')({ limit: 120 }),
+    timed('/datasets/whale-moves', getBurryWatcher, 'getBurryWatcher')().catch(() => null),
   ]);
   return <WhaleMovesClient moves={moves} burry={burry} />;
 }

@@ -20,8 +20,7 @@ function buildLiveRows(latest) {
     const series = OECD_SERIES_BY_SLUG[r.ezana_slug];
     if (!series || AGGREGATE_AREAS.has(r.ref_area)) continue;
     if (r.latest_value == null) continue;
-    const change =
-      r.prior_value != null ? Number(r.latest_value) - Number(r.prior_value) : null;
+    const change = r.prior_value != null ? Number(r.latest_value) - Number(r.prior_value) : null;
     const lensLabel = OECD_LENSES.find((l) => l.id === series.lens)?.label ?? series.lens;
     rows.push({
       id: `${r.ezana_slug}-${r.ref_area}`,
@@ -36,9 +35,7 @@ function buildLiveRows(latest) {
       period: fmtPeriod(r.latest_year),
     });
   }
-  rows.sort(
-    (a, b) => a.indicator.localeCompare(b.indicator) || a.country.localeCompare(b.country),
-  );
+  rows.sort((a, b) => a.indicator.localeCompare(b.indicator) || a.country.localeCompare(b.country));
   return rows;
 }
 
@@ -74,13 +71,32 @@ export default function OecdMacroClient({ latest }) {
 
   const config = {
     title: 'OECD macro data',
-    lead:
-      'Harmonised OECD Economic Outlook indicators — growth, households, inflation, rates, government, and external balances — on one comparable basis, so a position in one market can be read against the conditions in another.',
+    lead: 'Harmonised OECD Economic Outlook indicators — growth, households, inflation, rates, government, and external balances — on one comparable basis, so a position in one market can be read against the conditions in another.',
     searches: [
-      { id: 'country', label: 'Country search', placeholder: 'Search by country…', icon: Globe, keys: ['country', 'iso'] },
-      { id: 'indicator', label: 'Indicator search', placeholder: 'Search by indicator…', icon: LineChart, keys: ['indicator'] },
+      {
+        id: 'country',
+        label: 'Country search',
+        placeholder: 'Search by country…',
+        icon: Globe,
+        keys: ['country', 'iso'],
+      },
+      {
+        id: 'indicator',
+        label: 'Indicator search',
+        placeholder: 'Search by indicator…',
+        icon: LineChart,
+        keys: ['indicator'],
+      },
       ...(isLive
-        ? [{ id: 'lens', label: 'Lens filter', placeholder: 'Growth, Households, Inflation, Rates, Government, External…', icon: Layers, keys: ['lensLabel'] }]
+        ? [
+            {
+              id: 'lens',
+              label: 'Lens filter',
+              placeholder: 'Growth, Households, Inflation, Rates, Government, External…',
+              icon: Layers,
+              keys: ['lensLabel'],
+            },
+          ]
         : []),
     ],
     highlight: {

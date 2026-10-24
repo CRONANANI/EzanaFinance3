@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { lighthouseLatest } from '@/lib/lighthouse/store';
 import { WB_INDICATORS } from '@/lib/lighthouse/indicators';
 import { shortDate } from '@/lib/titans/format';
@@ -23,7 +24,11 @@ const usdCompact = (v) => {
 };
 
 export default async function WorldBankPage() {
-  const obs = await lighthouseLatest('worldbank');
+  const obs = await timed(
+    '/datasets/world-bank',
+    lighthouseLatest,
+    'lighthouseLatest',
+  )('worldbank');
   const byCountry = new Map();
   for (const o of obs) {
     if (!byCountry.has(o.ref_area)) {

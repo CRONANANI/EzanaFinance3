@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { getInsiderOverview } from '@/lib/titans/store';
 import InsiderClient from './InsiderClient';
 
@@ -17,7 +18,7 @@ export const metadata = {
 export default async function InsiderPage() {
   let overview = null;
   try {
-    overview = await getInsiderOverview();
+    overview = await timed('/datasets/insider', getInsiderOverview, 'getInsiderOverview')();
   } catch (e) {
     console.error('[titans] insider overview:', e?.message || e);
   }

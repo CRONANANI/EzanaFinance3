@@ -20,6 +20,7 @@ import NativeBridge from '@/components/native/NativeBridge';
 import { getServerTheme } from '@/lib/user-preferences/server';
 import { resolveRouteShellClasses } from '@/lib/route-shell';
 import { BRAND, brandJsonLd } from '@/lib/brand';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 /* Force dynamic rendering on every route. The root layout reads `cookies()`
    (inside getServerTheme) and the forwarded `x-pathname` header, both of
@@ -294,6 +295,8 @@ export default async function RootLayout({ children }) {
             </ProGateProvider>
           </AuthProvider>
         </ThemeProvider>
+        {/* Real-user Core Web Vitals per route (Vercel Speed Insights). */}
+        <SpeedInsights />
       </body>
     </html>
   );

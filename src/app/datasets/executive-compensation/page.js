@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { getExecCompTable } from '@/lib/titans/store';
 import ExecCompClient from './ExecCompClient';
 
@@ -17,7 +18,7 @@ export const metadata = {
 export default async function ExecCompPage() {
   let rows = [];
   try {
-    rows = await getExecCompTable();
+    rows = await timed('/datasets/executive-compensation', getExecCompTable, 'getExecCompTable')();
   } catch (e) {
     console.error('[titans] exec comp:', e?.message || e);
   }

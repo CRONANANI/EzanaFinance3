@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { getCre } from '@/lib/eyes/store';
 import CreClient from './CreClient';
 
@@ -17,7 +18,7 @@ export default async function Page() {
   let data = null;
   let error = false;
   try {
-    data = await getCre();
+    data = await timed('/datasets/commercial-real-estate', getCre, 'getCre')();
   } catch (e) {
     console.error('[eyes] commercial-real-estate:', e?.message || e);
     error = true;

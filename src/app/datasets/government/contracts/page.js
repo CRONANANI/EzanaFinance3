@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { formatDisplayDate } from '@/lib/usaspending';
 import {
   getContractAwardsWithFallback,
@@ -43,10 +44,22 @@ export default async function GovernmentContractsPage() {
   // rejection (or a timeout) rendered the generic error boundary instead of the
   // sample-data fallback the page was designed to have.
   const [rollupRes, awardsRes, coverageRes, recentRes] = await Promise.allSettled([
-    getContractRollups({ limit: 40000 }),
-    getContractAwardsWithFallback({ limit: 200 }),
-    getContractCoverage(),
-    getRecentAwardFeed({ limit: 60 }),
+    timed(
+      '/datasets/government/contracts',
+      getContractRollups,
+      'getContractRollups',
+    )({ limit: 40000 }),
+    timed(
+      '/datasets/government/contracts',
+      getContractAwardsWithFallback,
+      'getContractAwardsWithFallback',
+    )({ limit: 200 }),
+    timed('/datasets/government/contracts', getContractCoverage, 'getContractCoverage')(),
+    timed(
+      '/datasets/government/contracts',
+      getRecentAwardFeed,
+      'getRecentAwardFeed',
+    )({ limit: 60 }),
   ]);
 
   const rollup = rollupRes.status === 'fulfilled' ? rollupRes.value : null;

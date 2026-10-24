@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { getNightLights } from '@/lib/eyes/store';
 import { worldLandPath } from '@/lib/eyes/world-path';
 import NightLightsClient from './NightLightsClient';
@@ -18,7 +19,7 @@ export default async function Page() {
   let data = null;
   let error = false;
   try {
-    data = await getNightLights();
+    data = await timed('/datasets/night-lights', getNightLights, 'getNightLights')();
   } catch (e) {
     console.error('[eyes] night-lights:', e?.message || e);
     error = true;

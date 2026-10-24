@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { formatDisplayDate } from '@/lib/usaspending';
 import { getContractAwardsWithFallback, contractFreshnessNote } from '@/lib/usaspending-store';
 import { GovernmentContractsDashboard } from '@/components/marketing/GovernmentContractsDashboard';
@@ -28,7 +29,11 @@ const SOURCE = {
 };
 
 export default async function GovernmentDatasetPage() {
-  const { rows, topRecipients, source, syncedAt } = await getContractAwardsWithFallback({
+  const { rows, topRecipients, source, syncedAt } = await timed(
+    '/datasets/government',
+    getContractAwardsWithFallback,
+    'getContractAwardsWithFallback',
+  )({
     limit: 15,
   });
 

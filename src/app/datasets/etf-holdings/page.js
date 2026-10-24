@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { getEtfFunds } from '@/lib/titans/store';
 import EtfHoldingsClient from './EtfHoldingsClient';
 
@@ -17,7 +18,7 @@ export const metadata = {
 export default async function EtfHoldingsPage() {
   let data = { funds: [], notCovered: [] };
   try {
-    data = await getEtfFunds();
+    data = await timed('/datasets/etf-holdings', getEtfFunds, 'getEtfFunds')();
   } catch (e) {
     console.error('[titans] etf funds:', e?.message || e);
   }

@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { lighthouseLatest } from '@/lib/lighthouse/store';
 import GeopoliticalRiskClient from './GeopoliticalRiskClient';
 
@@ -20,7 +21,11 @@ const monthLabel = (iso) => {
 const fix = (v, d = 2) => (v == null || !Number.isFinite(Number(v)) ? null : Number(v).toFixed(d));
 
 export default async function GeopoliticalRiskPage() {
-  const obs = await lighthouseLatest('gpr', ['GPR', 'GPRC']);
+  const obs = await timed(
+    '/datasets/geopolitical-risk',
+    lighthouseLatest,
+    'lighthouseLatest',
+  )('gpr', ['GPR', 'GPRC']);
   const global = obs.find((o) => o.indicator === 'GPR' && o.ref_area === 'WLD') || null;
   const rows = obs
     .filter((o) => o.indicator === 'GPRC' && o.latest_value != null)

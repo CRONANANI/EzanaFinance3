@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { getOecdLatest } from '@/lib/oecd-store';
 import { getEmpireScoresForExplorer, getEmpireMatrixData } from '@/lib/empire-public-store';
 import OecdExplorerClient from './OecdExplorerClient';
@@ -24,9 +25,9 @@ export default async function OecdMacroDatasetPage() {
   // the backbone is unsynced this is null and empire mode shows its unavailable
   // state (OECD mode is unaffected).
   const [latestRes, empireRes, matrixRes] = await Promise.allSettled([
-    getOecdLatest(),
-    getEmpireScoresForExplorer(),
-    getEmpireMatrixData(),
+    timed('/datasets/oecd-macro', getOecdLatest, 'getOecdLatest')(),
+    timed('/datasets/oecd-macro', getEmpireScoresForExplorer, 'getEmpireScoresForExplorer')(),
+    timed('/datasets/oecd-macro', getEmpireMatrixData, 'getEmpireMatrixData')(),
   ]);
   const latest = latestRes.status === 'fulfilled' ? latestRes.value : null;
   const empire = empireRes.status === 'fulfilled' ? empireRes.value : null;

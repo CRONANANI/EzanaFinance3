@@ -1,3 +1,4 @@
+import { timed } from '@/lib/perf/timed';
 import { getPatents } from '@/lib/eyes/store';
 import PatentsClient from './PatentsClient';
 
@@ -17,7 +18,7 @@ export default async function Page() {
   let data = null;
   let error = false;
   try {
-    data = await getPatents();
+    data = await timed('/datasets/patents', getPatents, 'getPatents')();
   } catch (e) {
     console.error('[eyes] patents:', e?.message || e);
     error = true;
