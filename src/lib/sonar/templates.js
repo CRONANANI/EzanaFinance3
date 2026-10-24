@@ -10,6 +10,8 @@
  * "no matches" chip; the brief never mentions it.
  */
 import { resolveBasket, termsFor } from '@/lib/sonar/sweeps';
+import { getIndustryRegistry, industryBasket } from '@/lib/sonar/industries';
+import { getAdminClient } from '@/lib/supabase';
 
 const FULL_SWEEP = [
   'market',
@@ -43,7 +45,45 @@ const T = (def) => ({
   ...def,
 });
 
+/* The industry layout sweeps the REGISTRY basket (public companies placed
+   by their own filings), not a screener guess, and its terms are the
+   industry's own words, never the raw query. */
+async function industryLayoutParams(entities, query) {
+  let tickers = [];
+  try {
+    const reg = await getIndustryRegistry(getAdminClient(), entities.industryId);
+    tickers = industryBasket(reg).slice(0, 12);
+  } catch {
+    tickers = [];
+  }
+  return { tickers, terms: termsFor(entities, query), query, entities };
+}
+
 export const TEMPLATES = {
+  industry_layout: T({
+    label: 'Industry layout',
+    datasets: FULL_SWEEP,
+    briefSections: [
+      'Structure',
+      'Major players',
+      'Where it operates',
+      'Concentration',
+      'Capital flows',
+      'Key dependencies',
+      'What to watch',
+    ],
+    charts: [
+      { id: 'basket', type: 'ranked_bar', source: 'market', title: 'Registry companies by cap' },
+      { id: 'gov_dollars', type: 'ranked_bar', source: 'contracts', title: 'Federal awards' },
+    ],
+    defaultFollowups: [
+      'Top 10 companies by market cap',
+      'Which funds hold the most of this industry?',
+      'Which members of Congress trade these companies?',
+      'Where are the new fabs being built?',
+    ],
+    sweepParams: industryLayoutParams,
+  }),
   company: T({
     label: 'Company',
     datasets: FULL_SWEEP,

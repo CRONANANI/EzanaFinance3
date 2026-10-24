@@ -57,7 +57,12 @@ export const ALL_DATASET_IDS = Object.keys(SONAR_DATASETS);
  *   webSearch: { enabled: boolean, maxUses: number }, planTier: number,
  *   version: string, orgRole: string|null }}
  */
-export function getSonarEntitlements({ planTier = 0, version = 'regular', isPartner = false, orgRole = null } = {}) {
+export function getSonarEntitlements({
+  planTier = 0,
+  version = 'regular',
+  isPartner = false,
+  orgRole = null,
+} = {}) {
   // Free tier — the public-ish datasets, shallow synthesis, small quota, and light
   // live web search (Anthropic's native tool is billed PER SEARCH on top of tokens,
   // so `maxUses` is a real cost control — it rises with plan so cost tracks revenue).

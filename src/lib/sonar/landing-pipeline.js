@@ -9,6 +9,11 @@ import {
 import { orchestrate } from '@/lib/research-copilot/orchestrate';
 import { synthesizeWithFallback } from '@/lib/sonar/llm-providers';
 import { getFmpKey } from '@/lib/fmp/upcoming-events';
+import { understandQuery } from '@/lib/sonar/understand';
+import { TICKER_BLOCKLIST } from '@/lib/sonar/understand/blocklist';
+import { gateMarkets, gateNews, subjectTerms } from '@/lib/sonar/relevance';
+import { getIndustryRegistry, industryBasket } from '@/lib/sonar/industries';
+import { buildIndustryDossier, industryEvidence } from '@/lib/sonar/landing-industry';
 import { industryProfile, industryNewsTitle, fetchIndustryNews } from '@/lib/sonar/industry-news';
 import { resolvePolitician, buildPoliticianDossier } from '@/lib/sonar/landing-politician';
 import {
@@ -126,8 +131,14 @@ const FLOOR_UNGROUNDED = 0.12;
 const RESOLVE_TTL_MS = 24 * 60 * 60 * 1000;
 const resolveCache = new Map();
 
+/* A bare all-caps token is a ticker only when it is not geography or a
+   common acronym: "…industry in the USA" used to take the ticker branch and
+   resolve to Liberty All-Star Equity Fund (USA). A $-cued token always is. */
+const bareTickers = (query) =>
+  (String(query).match(/\b[A-Z]{2,5}\b/g) || []).filter((t) => !TICKER_BLOCKLIST.has(t));
+
 function looksLikeTicker(query) {
-  return /\$[A-Za-z]{1,5}\b/.test(query) || /\b[A-Z]{2,5}\b/.test(query);
+  return /\$[A-Za-z]{1,5}\b/.test(query) || bareTickers(query).length > 0;
 }
 
 async function fetchJson(url, ms = 4000) {
@@ -169,8 +180,7 @@ async function firstOf(urls, pick, ms = 4000) {
 function tickerToken(query) {
   const dollar = String(query).match(/\$([A-Za-z]{1,5})\b/);
   if (dollar) return dollar[1].toUpperCase();
-  const bare = String(query).match(/\b([A-Z]{2,5})\b/);
-  return bare ? bare[1] : null;
+  return bareTickers(query)[0] || null;
 }
 
 /**
@@ -737,7 +747,7 @@ const RELATED_MARKET_TERMS = {
   LMT: ['F-35', 'defense budget', 'Pentagon'],
 };
 
-async function matchMarkets(admin, { ticker, name }) {
+async function matchMarkets(admin, { ticker, name, understood = null }) {
   if (!admin || !name) return null;
   const run = async (terms) => {
     const ors = terms
@@ -750,16 +760,26 @@ async function matchMarkets(admin, { ticker, name }) {
       .join(',');
     const { data } = await admin
       .from('prediction_market_index')
-      .select('question, probability, platform, volume')
+      .select('question, description, category, probability, platform, volume')
       .or(ors)
       .order('volume', { ascending: false, nullsFirst: false })
-      .limit(2);
-    return data || [];
+      .limit(12);
+    /* Relevance gate: no sports or entertainment, and the subject must
+       appear in the market itself. Never padded with weak matches. */
+    const gate = understood
+      ? understood
+      : {
+          entities: [
+            ticker ? { kind: 'ticker', id: ticker, label: name } : null,
+            { kind: 'company', id: name, label: name },
+          ].filter(Boolean),
+        };
+    return gateMarkets(data || [], gate).slice(0, 2);
   };
   try {
-    const first = name.split(/\s+/)[0];
-    const direct = first && first.length >= 5 ? [name, first] : [name];
-    let rows = await run(direct);
+    /* The full name only. The old first-word fallback ("Liberty" from
+       "Liberty All-Star Equity Fund") matched sports spreads. */
+    let rows = await run(understood?.marketTerms?.length ? understood.marketTerms : [name]);
     let related = false;
     const extra = ticker ? RELATED_MARKET_TERMS[ticker.toUpperCase()] : null;
     if (!rows.length && extra) {
@@ -779,7 +799,7 @@ async function matchMarkets(admin, { ticker, name }) {
   }
 }
 
-export async function buildMatches({ ticker, name }, admin) {
+export async function buildMatches({ ticker, name }, admin, understood = null) {
   const [echo, contracts, congress, sec, thirteenF, lobbying, markets] = await Promise.all([
     matchEcho(admin, { name, ticker }),
     matchContracts(admin, { name }),
@@ -787,7 +807,7 @@ export async function buildMatches({ ticker, name }, admin) {
     matchSec(admin, { ticker }),
     match13f(admin, { ticker }),
     matchLobbying(admin, { ticker, name }),
-    matchMarkets(admin, { ticker, name }),
+    matchMarkets(admin, { ticker, name, understood }),
   ]);
   return { echo, contracts, congress, sec, thirteenF, lobbying, markets };
 }
@@ -984,7 +1004,27 @@ export async function buildDossier({ ticker, name }, admin) {
 /* The dossier for whatever the ping resolved to: a member of Congress, a
    company, or nothing. An enrichment throughout: a failed leg yields null,
    never a lost answer. */
-async function buildDossierFor({ country, politician, resolved, admin, leg }) {
+async function buildDossierFor({
+  country,
+  politician,
+  resolved,
+  industry,
+  understood,
+  admin,
+  leg,
+}) {
+  if (industry) {
+    try {
+      return await leg(
+        'dossier-industry',
+        () => buildIndustryDossier({ registry: industry, understood, admin, deps: { match13f } }),
+        (v) =>
+          `stages=${v.registry.stages.length} companies=${v.registry.companies.length} 13f=${v.matches.thirteenF?.length || 0} congress=${v.matches.congress?.length || 0} markets=${v.matches.markets?.length || 0} echo=${v.echo.length}`,
+      );
+    } catch {
+      return null;
+    }
+  }
   /* A country carries its own matches (OECD, Empire, Echo, markets); the
      company legs (contracts, SEC, 13F, lobbying) have nothing to say about a
      country and render dry. */
@@ -1031,7 +1071,7 @@ async function buildDossierFor({ country, politician, resolved, admin, leg }) {
     try {
       dossier.matches = await leg(
         'matches',
-        () => buildMatches(resolved, admin),
+        () => buildMatches(resolved, admin, understood),
         (m) =>
           `echo=${m.echo?.length || 0} contracts=${m.contracts ? 'y' : 'n'} congress=${m.congress?.length || 0} sec=${m.sec?.length || 0} 13f=${m.thirteenF?.length || 0} lobbying=${m.lobbying ? 'y' : 'n'} markets=${m.markets?.length || 0}`,
       );
@@ -1046,7 +1086,12 @@ async function buildDossierFor({ country, politician, resolved, admin, leg }) {
  * One ping, end to end. `admin` is the service-role client; the caller owns it
  * so the demo route and the guest route share one connection policy.
  */
-export async function runLandingPipeline(query, { admin, wantDossier = true } = {}) {
+const INDUSTRY_INTENTS = new Set(['industry_layout', 'industry_country']);
+
+export async function runLandingPipeline(
+  query,
+  { admin, wantDossier = true, noCorrect = false, force = null } = {},
+) {
   /* A run that ends without an answer has to say WHERE it broke, or the only
      signal in the logs is that it broke. Each leg records its name, outcome
      and duration; nothing from an error message goes in, so the leg names are
@@ -1072,46 +1117,90 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
     }
   };
 
-  /* A member of Congress first: "Nancy Pelosi" must not resolve to whatever
-     FMP's fuzzy name search returns for it. resolvePolitician is strict (full
-     name, or a unique sitting member's last name) so a company ping never
-     lands here. When it hits, company resolution is skipped entirely. */
-  /* A country before anything else: strict whole-string match, no I/O, so
-     a non-country ping costs nothing here. When it hits, politician and
-     company resolution are skipped ("Japan" must not become Japan Airlines). */
-  const country = resolveCountry(query);
-  const politician = country
+  /* Understanding first (spec Part A): the corrected text, the display
+     title, the intent and the typed entities. Everything downstream reads
+     this, never the raw string, so "give me a lyout of the semiconductor
+     industry in the USA" is never echoed back and "USA" after "in the" is a
+     country, not the Liberty All-Star Equity Fund. */
+  const understood = await leg(
+    'understand',
+    () => understandQuery(query, { noCorrect, force }),
+    (v) => `${v.intent} ${v.entities.map((e) => `${e.kind}:${e.id}`).join(',')}`,
+  );
+  const q = understood.corrected || query;
+  const entity = (kind) => understood.entities.find((e) => e.kind === kind) || null;
+  const industryEnt = INDUSTRY_INTENTS.has(understood.intent) ? entity('industry') : null;
+  const tickerEnt = entity('ticker');
+  const countryEnt = entity('country');
+
+  /* An industry ping is about the industry: no politician or company
+     resolution at all. The registry may not cover every lexicon industry; the
+     brief still answers, the layout renders only when the registry has it. */
+  const industry = industryEnt
+    ? await leg(
+        'industry',
+        () => getIndustryRegistry(admin, industryEnt.id),
+        (v) => (v ? `${v.source} stages=${v.stages.length}` : 'none'),
+      )
+    : null;
+  const industryPing = Boolean(industry);
+
+  /* A country: the strict whole-string match, or a country-intent ping
+     whose chosen country entity resolves by name. */
+  const country = industryPing
     ? null
-    : await leg(
-        'resolve-politician',
-        () => resolvePolitician(query, admin),
-        (v) => (v ? v.bioguideId : 'none'),
-      );
-  const resolved =
-    country || politician
+    : resolveCountry(q) ||
+      (understood.intent === 'country' && countryEnt ? resolveCountry(countryEnt.label) : null);
+  /* A member of Congress before a company: "Nancy Pelosi" must not resolve
+     to whatever FMP's fuzzy name search returns for it. */
+  const politician =
+    country ||
+    industryPing ||
+    (tickerEnt && !understood.entities.some((e) => e.kind === 'person_politician'))
       ? null
       : await leg(
-          'resolve',
-          () => resolveCompany(query),
-          (v) => (v ? v.ticker : 'none'),
+          'resolve-politician',
+          () => resolvePolitician(q, admin),
+          (v) => (v ? v.bioguideId : 'none'),
         );
-  /* Retrieval sees the enriched string; the ledger and the UI keep the words
-     the visitor actually typed. */
-  const retrievalQuery = country
-    ? country.name
-    : politician
-      ? politician.name
-      : resolved
-        ? `${resolved.name} (${resolved.ticker})`
-        : query;
+  /* A company: only from a chosen ticker entity, or a ping with no other
+     reading. A blocklisted word ("USA", "IT") never reaches here as a ticker
+     unless the understanding layer chose it (a cue, or the chip). */
+  const companyAllowed =
+    !country &&
+    !politician &&
+    !industryEnt &&
+    (tickerEnt ||
+      ['company', 'ticker_lookup', 'open_question', 'fund'].includes(understood.intent));
+  const resolved = companyAllowed
+    ? await leg(
+        'resolve',
+        () => resolveCompany(tickerEnt ? `$${tickerEnt.id}` : q),
+        (v) => (v ? v.ticker : 'none'),
+      )
+    : null;
+  const display = understood.display || q;
+  /* Retrieval sees the enriched string; the ledger keeps the raw words, the
+     UI shows the display title. */
+  const retrievalQuery = industryPing
+    ? display
+    : country
+      ? country.name
+      : politician
+        ? politician.name
+        : resolved
+          ? `${resolved.name} (${resolved.ticker})`
+          : q;
   /* What the synthesis is told the ping resolved to. */
-  const resolvedNote = country
-    ? ` (resolved to the country ${country.name}, ISO ${country.iso3})`
-    : politician
-      ? ` (resolved to ${politician.name}, ${[politician.party, politician.state].filter(Boolean).join('-')}, U.S. ${politician.chamberLabel || 'Congress'})`
-      : resolved
-        ? ` (resolved to ${resolved.name}, ${resolved.ticker})`
-        : '';
+  const resolvedNote = industryPing
+    ? ` (understood as an industry layout: ${display}; describe structure, major players, where it operates, concentration, capital flows, key dependencies and what to watch, from the sources only)`
+    : country
+      ? ` (resolved to the country ${country.name}, ISO ${country.iso3})`
+      : politician
+        ? ` (resolved to ${politician.name}, ${[politician.party, politician.state].filter(Boolean).join('-')}, U.S. ${politician.chamberLabel || 'Congress'})`
+        : resolved
+          ? ` (resolved to ${resolved.name}, ${resolved.ticker})`
+          : '';
 
   const entitlements = getSonarEntitlements({ planTier: 0, version: 'regular' });
   const classification = classifyQuery(retrievalQuery);
@@ -1119,7 +1208,7 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
   /* Wider than the old 'summary' budget: more snippets per corpus and more
      characters for the brief to read. */
   const budget = depthBudget('standard');
-  const intent = detectIntent(query);
+  const intent = detectIntent(q);
 
   const out = await leg(
     'retrieve',
@@ -1145,13 +1234,18 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
      field: no retriever emits one, so matching on it would leave every
      haystack empty, drop every item, and send every entity ping down the
      ungrounded path. Checked against the retrievers rather than assumed. */
-  const entityTerms = country
-    ? countryEntityTerms(country)
-    : politician
-      ? [politician.name, politician.lastName].filter(Boolean).map((t) => t.toLowerCase())
-      : resolved
-        ? [resolved.name, resolved.ticker].filter(Boolean).map((t) => t.toLowerCase())
-        : null;
+  const industryTermList = industryPing
+    ? subjectTerms(understood).map((t) => t.toLowerCase())
+    : null;
+  const entityTerms = industryTermList?.length
+    ? industryTermList
+    : country
+      ? countryEntityTerms(country)
+      : politician
+        ? [politician.name, politician.lastName].filter(Boolean).map((t) => t.toLowerCase())
+        : resolved
+          ? [resolved.name, resolved.ticker].filter(Boolean).map((t) => t.toLowerCase())
+          : null;
   const items = entityTerms
     ? retrieved.filter((it) => {
         const hay = [it.title, it.snippet, ...Object.values(it.meta || {})]
@@ -1175,38 +1269,58 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
      also its evidence (the OECD and Empire snippets the brief cites), so it is
      awaited first. Its legs are bounded DB reads, a fraction of the brief. */
   const dossierP =
-    wantDossier || country ? buildDossierFor({ country, politician, resolved, admin, leg }) : null;
+    wantDossier || country || industry
+      ? buildDossierFor({ country, politician, resolved, industry, understood, admin, leg })
+      : null;
   if (country) {
     const countryDossier = await dossierP;
     if (countryDossier) items.push(...countryEvidence(countryDossier));
+  }
+  /* The registry's structure is the industry brief's spine. */
+  if (industry) {
+    const industryDossier = await dossierP;
+    if (industryDossier) items.push(...industryEvidence(industryDossier));
   }
   const columnsP = wantDossier
     ? (async () => {
         const dossierNow = await dossierP;
         const specs = await columnSpecs({
-          query,
+          query: display,
           country,
           politician,
           resolved,
           dossier: dossierNow,
           intent,
           admin,
+          industry: industry
+            ? {
+                label: industry.industry.label,
+                basket: industryBasket(industry),
+                geo: countryEnt?.label || null,
+              }
+            : null,
         });
-        return leg(
+        const cols = await leg(
           'news-columns',
           () =>
             buildNewsColumns({
-              subject: country
-                ? country.name
-                : politician
-                  ? politician.name
-                  : resolved
-                    ? resolved.name
-                    : query,
+              subject: industryPing
+                ? display
+                : country
+                  ? country.name
+                  : politician
+                    ? politician.name
+                    : resolved
+                      ? resolved.name
+                      : display,
               specs,
             }),
-          (cols) => cols.map((c) => `${c.id}=${c.items.length}`).join(' '),
+          (c) => c.map((x) => `${x.id}=${x.items.length}`).join(' '),
         );
+        /* Term-gated for any ping that is not one named entity: a column
+           item must mention the subject in its title or lead. Never padded. */
+        const gated = !country && !politician && !resolved && subjectTerms(understood).length;
+        return gated ? cols.map((c) => ({ ...c, items: gateNews(c.items, understood) })) : cols;
       })().catch(() => null)
     : null;
 
@@ -1232,7 +1346,7 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
             GROUNDED_SYSTEM_PROMPT +
             (sanctions ? SANCTIONS_ADDENDUM : '') +
             (country ? COUNTRY_ADDENDUM : ''),
-          user: `Ping: ${query}${resolvedNote}\n\nSources:\n${sourcesBlock}`,
+          user: `Ping: ${display}${resolvedNote}\n\nSources:\n${sourcesBlock}`,
           /* Room for four paragraphs of dataset and web findings; the brief
              panel scrolls inside the locked viewport. */
           maxTokens: sanctions ? BRIEF_TOKENS + 400 : BRIEF_TOKENS,
@@ -1258,7 +1372,7 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
       () =>
         synthesizeWithFallback({
           system: GENERAL_SYSTEM_PROMPT,
-          user: `Ping: ${query}${resolvedNote}`,
+          user: `Ping: ${display}${resolvedNote}`,
           maxTokens: BRIEF_TOKENS,
           model: BRIEF_MODEL,
           fallbackModel: HAIKU_MODEL,
@@ -1323,6 +1437,24 @@ export async function runLandingPipeline(query, { admin, wantDossier = true } = 
     resolved,
     politician,
     country,
+    /* What the UI shows instead of the raw text, plus the corrections and
+       ambiguity chips. */
+    understood: {
+      raw: understood.raw,
+      corrected: understood.corrected,
+      corrections: understood.corrections,
+      display,
+      intent: understood.intent,
+      entities: understood.entities.map(({ kind, id, label, surface, confidence }) => ({
+        kind,
+        id,
+        label,
+        surface,
+        confidence,
+      })),
+      ambiguities: understood.ambiguities,
+    },
+    industry: industry ? industry.industry.id : null,
     itemCount: items.length,
     retrievedCount: retrieved.length,
     corporaSearched,

@@ -18,7 +18,7 @@
     "check:echo-stats": "node --no-warnings scripts/check-echo-stat-grid.mjs",
     "check:signals": "node scripts/check-signal-uniqueness.mjs",
     "check:help-emdash": "node scripts/check-help-center-emdash.mjs",
-    "test": "npm run test:whale && npm run test:house && npm run test:competitions && npm run test:judging && npm run test:recruiting && npm run test:council && npm run test:metrics && npm run test:security && npm run test:ezanaql && npm run test:ezanaql-scope && npm run test:mobile && npm run test:api && npm run test:tracker && npm run test:congress && npm run test:senate && npm run test:help-search && npm run test:referrals && npm run test:support && npm run test:echo-home && npm run test:capitol-hub && npm run test:datasets-sonar && npm run test:sanctions && npm run test:burry && npm run test:social-rating && npm run test:campaign-finance && npm run test:legislation-edge && npm run test:prediction-markets && npm run test:lobbying-contributions && npm run test:lobbying-page && npm run test:committees-page && npm run test:institutional && npm run test:activist && npm run test:sonar-v2 && npm run test:sonar-coverage && npm run test:filing-progress",
+    "test": "npm run test:whale && npm run test:house && npm run test:competitions && npm run test:judging && npm run test:recruiting && npm run test:council && npm run test:metrics && npm run test:security && npm run test:ezanaql && npm run test:ezanaql-scope && npm run test:mobile && npm run test:api && npm run test:tracker && npm run test:congress && npm run test:senate && npm run test:help-search && npm run test:referrals && npm run test:support && npm run test:echo-home && npm run test:capitol-hub && npm run test:datasets-sonar && npm run test:sanctions && npm run test:burry && npm run test:social-rating && npm run test:campaign-finance && npm run test:legislation-edge && npm run test:prediction-markets && npm run test:lobbying-contributions && npm run test:lobbying-page && npm run test:committees-page && npm run test:institutional && npm run test:activist && npm run test:sonar-v2 && npm run test:sonar-coverage && npm run test:filing-progress && npm run test:sonar-understand && npm run test:industry-layout",
     "test:security": "node scripts/check-security-guards.mjs",
     "test:ezanaql": "node scripts/check-ezanaql-generate.mjs",
     "test:ezanaql-scope": "node scripts/check-ezanaql-scope.mjs",
@@ -77,7 +77,9 @@
     "check:copy": "node --no-warnings scripts/check-no-backend-copy.mjs",
     "test:sonar-v2": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-v2.mjs",
     "test:sonar-coverage": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-coverage.mjs",
-    "test:filing-progress": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-filing-progress.mjs"
+    "test:filing-progress": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-filing-progress.mjs",
+    "test:sonar-understand": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-understand.mjs",
+    "test:industry-layout": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-industry-layout.mjs"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [

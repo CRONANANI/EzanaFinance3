@@ -20,6 +20,7 @@
  * Text, icons and data shapes only: no card outlines. It renders nothing
  * when a ping brought back none of the three.
  */
+import { newsHeaderTitle } from '@/lib/sonar/display-copy';
 import dynamic from 'next/dynamic';
 import './sonar-research.css';
 
@@ -95,7 +96,7 @@ export function NewsAround({ live, rail = false }) {
   if (!hasNewsColumns(live)) return null;
   const cols = live.newsColumns;
   const Title = rail ? 'h3' : 'h2';
-  const title = live.query ? `What is moving around “${live.query}”` : 'What is moving around it';
+  const title = newsHeaderTitle(live);
   const block = (
     <div className="snrx-block">
       <div className="snrx-head">

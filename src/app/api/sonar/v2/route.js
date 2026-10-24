@@ -7,6 +7,10 @@ import { getActivePlan, getPlanTier } from '@/lib/subscription';
 import { getReferralPlanOverride } from '@/lib/referrals-server';
 import { getSonarEntitlements, describeDatasetAccess } from '@/lib/sonar/entitlements';
 import { routeQuery } from '@/lib/sonar/router';
+import { getIndustryRegistry } from '@/lib/sonar/industries';
+
+const shownQueryFor = (route, query) =>
+  route.understood?.display || route.understood?.corrected || query;
 import { getTemplate } from '@/lib/sonar/templates';
 import { runSweeps } from '@/lib/sonar/sweeps';
 import { getExemplars } from '@/lib/sonar/exemplars';
@@ -192,10 +196,26 @@ export const POST = withApiGuard(
     const params = await template.sweepParams(route.entities, query);
     const sweep = await runSweeps(template.datasets, params);
     const sweepMs = Date.now() - t0;
+    /* The Industry Layout's registry (structure plus approved sourced rows). */
+    let industryLayout = null;
+    if (route.template === 'industry_layout' && route.entities?.industryId) {
+      const reg = await getIndustryRegistry(admin, route.entities.industryId).catch(() => null);
+      if (reg) {
+        const { industry, ...rest } = reg;
+        industryLayout = {
+          kind: 'industry',
+          name: shownQueryFor(route, query),
+          industry: { id: industry.id, label: industry.label },
+          registry: rest,
+        };
+      }
+    }
     const exemplars = await getExemplars(admin, route.template);
     const t1 = Date.now();
+    /* The composer reads the understood title, never the raw text. */
+    const shownQuery = route.understood?.display || route.understood?.corrected || query;
     const composed = await composeBriefing({
-      query,
+      query: shownQuery,
       template: route.template,
       entities: route.entities,
       exemplars,
@@ -259,7 +279,16 @@ export const POST = withApiGuard(
     return NextResponse.json({
       pingId,
       parentPingId: parent?.id || null,
-      breadcrumb: parent ? [parent.query, query] : [query],
+      breadcrumb: parent ? [parent.query, shownQuery] : [shownQuery],
+      understood: route.understood
+        ? {
+            display: route.understood.display,
+            corrected: route.understood.corrected,
+            corrections: route.understood.corrections,
+            intent: route.understood.intent,
+          }
+        : null,
+      industryLayout,
       template: route.template,
       templateLabel: template.label,
       routedBy: route.routedBy,

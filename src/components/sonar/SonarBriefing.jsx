@@ -14,6 +14,7 @@
  * computes a figure, only draws what the API returned.
  */
 import { useEffect, useRef, useState } from 'react';
+import { IndustryLayout } from '@/components/sonar/industry/IndustryLayout';
 import './sonar-briefing.css';
 
 const DATASET_LABELS = {
@@ -380,6 +381,8 @@ export default function SonarBriefing({ result, onFollowup, busy = false }) {
           ) : null}
         </section>
       </div>
+
+      {result.industryLayout ? <IndustryLayout dossier={result.industryLayout} tone="app" /> : null}
 
       {/* ── floating follow-up launcher + slide-up panel ── */}
       <button

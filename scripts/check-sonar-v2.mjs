@@ -88,7 +88,7 @@ test('every template id has a complete registry entry', () => {
     assert.equal(typeof t.sweepParams, 'function', `${id} has no sweepParams`);
   }
   assert.equal(getTemplate('nonsense'), TEMPLATES.open_question);
-  assert.equal(TEMPLATE_IDS.length, 22);
+  assert.equal(TEMPLATE_IDS.length, 23); // 21 + industry_layout + open_question
 });
 
 /* ── exemplar seeds ──────────────────────────────────────────────────── */
@@ -185,4 +185,15 @@ test('the composer prompt carries the exemplars, never the answer', () => {
   assert.ok(prompt.includes('auto industry in Germany') || prompt.includes('semiconductor'));
   assert.ok(prompt.includes('NOW (template: industry_country'));
   assert.ok(prompt.includes('{{top_company}}'));
+});
+
+/* ── query understanding in front of the rules ─────────────────────── */
+
+test('the hero query routes to industry_layout with the US, never the USA ticker', async () => {
+  const { routeUnderstood } = await import('../src/lib/sonar/router.js');
+  const r = routeUnderstood('give me a lyout of the semiconductor industry in the USA');
+  assert.equal(r.template, 'industry_layout');
+  assert.equal(r.entities.industryId, 'semiconductors');
+  assert.equal(r.entities.country, 'USA');
+  assert.equal(r.understood.display, 'Semiconductor industry in the United States');
 });

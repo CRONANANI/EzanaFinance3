@@ -189,7 +189,42 @@ export async function columnSpecs({
   dossier,
   intent,
   admin,
+  industry = null,
 }) {
+  /* An industry layout: the basket's own cached headlines, then two
+     web-searched columns. Every column is term-gated by the pipeline. */
+  if (industry) {
+    const basket = (industry.basket || []).slice(0, 12);
+    const [byTickers, searched] = await Promise.all([
+      cacheByTickers(admin, basket),
+      cacheBySearch(admin, industry.label),
+    ]);
+    const scope = industry.geo ? ` in ${industry.geo}` : '';
+    return [
+      {
+        id: 'industry',
+        title: `${industry.label} headlines`,
+        icon: 'bi-cpu',
+        hint: `the latest reporting on the ${industry.label.toLowerCase()} industry${scope}: capacity, results, deals`,
+        seed: [...byTickers, ...searched],
+      },
+      {
+        id: 'supply',
+        title: 'Supply chain & capacity',
+        icon: 'bi-diagram-3',
+        hint: `recent news on ${industry.label.toLowerCase()} manufacturing capacity, new facilities, equipment and materials supply${scope}`,
+        seed: [],
+      },
+      {
+        id: 'policy',
+        title: 'Policy & trade',
+        icon: 'bi-bank',
+        hint: `recent subsidies, export controls, tariffs and legislation affecting the ${industry.label.toLowerCase()} industry${scope}`,
+        seed: [],
+      },
+    ];
+  }
+
   if (country) {
     const local = (Array.isArray(dossier?.news) ? dossier.news : []).map((n) =>
       article(n, 'dataset'),

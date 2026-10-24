@@ -153,7 +153,14 @@ export function SonarExperience({ variant = 'app', heroAddon = null, initialQuer
   }, [phase, onDatasets]);
 
   /* Keep the address shareable and refresh-safe without a navigation. */
-  function onBandPing(query) {
+  function onBandPing(query, meta = null) {
+    /* The band reports twice: the raw words when the ping starts (for ?q=),
+       then the understood display title once it lands, which is what the
+       sign-up CTA shows. The address keeps the raw words. */
+    if (meta?.display) {
+      setShownQuery(meta.display);
+      return;
+    }
     setShownQuery(query);
     try {
       const url = new URL(window.location.href);

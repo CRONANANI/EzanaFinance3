@@ -47,6 +47,7 @@ function bodyFrom(result) {
     newsColumns: result.newsColumns,
     intent: result.intent,
     sanctions: result.sanctions,
+    understood: result.understood,
     query: DEMO_QUERY,
     demo: true,
     disclaimer: DISCLAIMER,

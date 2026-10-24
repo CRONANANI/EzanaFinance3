@@ -229,17 +229,24 @@ async function sweepEcho({ terms }) {
   if (!needles.length) return [];
   const { data } = await admin
     .from('echo_articles')
-    .select('slug, title, excerpt, published_at')
+    /* echo_articles names its columns article_*; the old slug/title/excerpt
+       select errored and every Echo sweep came back empty. */
+    .select('article_slug, article_title, article_excerpt, published_at')
     .eq('article_status', 'published')
-    .or(needles.flatMap((t) => [`title.ilike.%${t}%`, `excerpt.ilike.%${t}%`]).join(','))
+    .or(
+      needles
+        .flatMap((t) => [`article_title.ilike.%${t}%`, `article_excerpt.ilike.%${t}%`])
+        .join(','),
+    )
     .order('published_at', { ascending: false })
-    .limit(5);
+    .limit(2);
+  /* At most two, labelled "From Ezana Echo" in the UI; never padded. */
   return (data || []).map((r) => ({
-    title: r.title,
-    slug: r.slug,
-    excerpt: r.excerpt,
+    title: r.article_title,
+    slug: r.article_slug,
+    excerpt: r.article_excerpt,
     publishedAt: r.published_at,
-    url: `/ezana-echo/${r.slug}`,
+    url: `/ezana-echo/${r.article_slug}`,
   }));
 }
 

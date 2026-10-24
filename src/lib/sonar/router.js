@@ -12,6 +12,9 @@
  */
 import { resolveCountry } from '@/lib/sonar/landing-country';
 import { synthesizeWithFallback } from '@/lib/sonar/llm-providers';
+import { understandDeterministic } from '@/lib/sonar/understand';
+import { TICKER_BLOCKLIST } from '@/lib/sonar/understand/blocklist';
+import { INDUSTRY_SEED } from '@/lib/sonar/industries';
 
 export const TEMPLATE_IDS = [
   'company',
@@ -35,6 +38,7 @@ export const TEMPLATE_IDS = [
   'region',
   'etf_index',
   'macro_indicator',
+  'industry_layout',
   'open_question',
 ];
 
@@ -197,10 +201,13 @@ const wordHit = (q, words) => words.find((w) => new RegExp(`\\b${esc(w)}\\b`, 'i
 
 /** Bare ticker shapes: "NVDA", "BRK.B", "$TSLA". */
 function bareTicker(raw) {
+  const dollar = /^\s*\$/.test(raw);
   const s = raw.trim().replace(/^\$/, '');
-  return /^[A-Za-z]{1,5}([.-][A-Za-z]{1,2})?$/.test(s) && s === s.toUpperCase()
-    ? s.toUpperCase()
-    : null;
+  if (!/^[A-Za-z]{1,5}([.-][A-Za-z]{1,2})?$/.test(s) || s !== s.toUpperCase()) return null;
+  /* "US", "IT", "AI" are words before they are tickers: only a $ makes them
+     a ticker in the rules (the understanding layer weighs the rest). */
+  if (!dollar && TICKER_BLOCKLIST.has(s.toUpperCase()) && s.toUpperCase() !== 'USA') return null;
+  return s.toUpperCase();
 }
 
 /* ── the rules ───────────────────────────────────────────────────────── */
@@ -350,13 +357,48 @@ const ROUTER_SYSTEM = `You classify a research query into exactly one template i
   ', ',
 )}. Respond with ONLY a JSON object: {"template":"<id>","entities":{...}} where entities uses keys like ticker, company, industry, country (ISO-2), person, fund, policy, commodity, theme, event, question, agency, region, etf, indicator, n, compare (array of two strings). No prose.`;
 
+const LAYOUT_INDUSTRIES = new Set(INDUSTRY_SEED.industries.map((i) => i.id));
+
+/**
+ * Understanding first (query-understanding spec, Part A): the corrected text
+ * feeds the rules, and an industry layout of a registry industry routes to
+ * the industry_layout template whatever the rules would have said ("USA"
+ * after "in the" is the United States, never the ticker).
+ */
+export function routeUnderstood(query, parent = null) {
+  const u = understandDeterministic(query);
+  const ind = u.entities.find((e) => e.kind === 'industry');
+  if (
+    ['industry_layout', 'industry_country'].includes(u.intent) &&
+    ind &&
+    LAYOUT_INDUSTRIES.has(ind.id)
+  ) {
+    const geo = u.entities.find((e) => e.kind === 'country');
+    const country = geo ? resolveCountry(geo.label) : null;
+    return {
+      template: 'industry_layout',
+      entities: {
+        ...(parent?.entities || {}),
+        industry: String(ind.noun || ind.label).toLowerCase(),
+        industryId: ind.id,
+        country: country?.iso3 || null,
+        countryName: country?.name || geo?.label || null,
+      },
+      confidence: 0.92,
+      understood: u,
+    };
+  }
+  const ruled = routeByRules(u.corrected || query, parent);
+  return ruled ? { ...ruled, understood: u } : { understood: u };
+}
+
 export async function routeQuery(query, { parent = null } = {}) {
-  const ruled = routeByRules(query, parent);
-  if (ruled) return { ...ruled, routedBy: 'rules' };
+  const pre = routeUnderstood(query, parent);
+  if (pre.template) return { ...pre, routedBy: 'rules' };
   try {
     const out = await synthesizeWithFallback({
       system: ROUTER_SYSTEM,
-      user: String(query).slice(0, 300),
+      user: String(pre.understood?.corrected || query).slice(0, 300),
       maxTokens: 300,
       model: 'claude-haiku-4-5-20251001',
       fallbackModel: 'claude-haiku-4-5-20251001',

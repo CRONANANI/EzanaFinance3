@@ -64,6 +64,9 @@ import { animateWindowScroll, humanPointer } from './sonar-motion';
 import './sonar-band.css';
 import SonarResearchDeck, { NewsAround, hasNewsColumns } from './SonarResearchDeck';
 import { CountryStack, CountryOecdRow, CountryEmpireRow } from './SonarCountryStack';
+import { SonarUnderstoodNotice } from './SonarUnderstoodNotice';
+import { IndustryStack } from './SonarIndustryStack';
+import { IndustryLayout } from '@/components/sonar/industry/IndustryLayout';
 
 /**
  * An element's resting rect, with the mount entrance taken off it first.
@@ -2047,7 +2050,7 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
     await runPing(q);
   }
 
-  async function runPing(q) {
+  async function runPing(q, opts = {}) {
     if (pinging) return;
     hasPingedRef.current = true;
     setHasPinged(true);
@@ -2060,7 +2063,11 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
       const res = await fetch('/api/sonar/landing-query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: q }),
+        body: JSON.stringify({
+          query: q,
+          ...(opts.noCorrect ? { noCorrect: true } : {}),
+          ...(opts.force ? { force: opts.force } : {}),
+        }),
       });
       const data = await res.json().catch(() => null);
       if (data?.gate) {
@@ -2081,9 +2088,17 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
           newsColumns: data.newsColumns || null,
           sanctions: data.sanctions || null,
           intent: data.intent || null,
-          query: q,
+          /* The understood DISPLAY title, never the raw text: "give me a
+             lyout of ..." is shown as "Semiconductor industry in the United
+             States". The raw words stay in rawQuery for the re-ping links. */
+          query: data.understood?.display || q,
+          rawQuery: q,
+          understood: data.understood || null,
           remaining: data.remaining,
         });
+        if (typeof onPing === 'function' && data.understood?.display) {
+          onPing(q, { display: data.understood.display });
+        }
         startTypewriter(data.answer);
         setPingPulse((n) => n + 1);
       } else if (res.ok) {
@@ -2367,6 +2382,14 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
                 <div className="snr-panel-head">
                   <span className="snr-panel-title">Research brief</span>
                 </div>
+                {live?.understood && !pinging ? (
+                  <SonarUnderstoodNotice
+                    understood={live.understood}
+                    rawQuery={live.rawQuery}
+                    onSearchInstead={() => runPing(live.rawQuery, { noCorrect: true })}
+                    onForce={(force) => runPing(live.rawQuery, { force })}
+                  />
+                ) : null}
 
                 {/* 2c: the four states are stacked layers that crossfade. The card
                   height is set by its flex parent, so swapping the ACTIVE layer
@@ -2416,7 +2439,7 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
                       className={`snr-synth-layer${pinging ? ' is-active' : ''}`}
                       inert={pinging ? undefined : ''}
                     >
-                      <SonarLoader caption={`Sweeping 8 datasets for “${lastQuery}”...`} />
+                      <SonarLoader caption="Sweeping 8 datasets..." />
                     </div>
                   ) : null}
 
@@ -2573,7 +2596,7 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
               <div ref={radarRef} className="snr-col-radar snr-col-radar--in">
                 <SonarOrbital
                   relevance={live?.relevance ?? null}
-                  hubLabel={live ? lastQuery : null}
+                  hubLabel={live ? live.query || lastQuery : null}
                   hubTicker={live?.dossier?.ticker ?? null}
                   compact
                 />
@@ -2597,9 +2620,12 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
                   reads as a different company. A ticker is short and true,
                   where half a name is neither. */}
                   <span className="snr-meta snr-term">
-                    {lastQuery.length > 16 && live?.dossier?.ticker
-                      ? live.dossier.ticker.toUpperCase()
-                      : lastQuery.toUpperCase()}
+                    {(() => {
+                      const term = live?.query || lastQuery;
+                      return term.length > 16 && live?.dossier?.ticker
+                        ? live.dossier.ticker.toUpperCase()
+                        : term.toUpperCase();
+                    })()}
                   </span>
                 </div>
 
@@ -2914,9 +2940,16 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
               <CountryStack dossier={live.dossier} onGate={() => openGate()} newsSlot={railNews} />
             ) : null}
 
+            {/* An industry: the value-chain preview in the price chart's slot.
+              The full Industry Layout renders below the deck on the page. */}
+            {stage2 && live?.dossier?.kind === 'industry' ? (
+              <IndustryStack dossier={live.dossier} newsSlot={railNews} />
+            ) : null}
+
             {stage2 &&
             live?.dossier?.kind !== 'politician' &&
             live?.dossier?.kind !== 'country' &&
+            live?.dossier?.kind !== 'industry' &&
             (live?.dossier?.fundamentals ||
               live?.dossier?.news?.length ||
               live?.dossier?.echo?.length ||
@@ -3056,6 +3089,9 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
         sources the brief read. Outside the band so the locked one-screen
         composition above keeps its geometry. */}
       {answerReady ? <SonarResearchDeck live={live} hideNews={railPlaced} /> : null}
+      {answerReady && live?.dossier?.kind === 'industry' ? (
+        <IndustryLayout dossier={live.dossier} />
+      ) : null}
     </>
   );
 }

@@ -71,6 +71,8 @@ function setGuestCount(res, n) {
   });
 }
 
+const FORCE_KINDS = new Set(['ticker', 'country', 'industry', 'sector', 'state_province', 'theme']);
+
 function startOfUtcDayISO() {
   const d = new Date();
   d.setUTCHours(0, 0, 0, 0);
@@ -137,9 +139,27 @@ export const POST = withApiGuard(
       );
     }
 
+    /* "Search instead for" re-pings with noCorrect; an ambiguity chip
+       re-pings with one forced entity. Both are validated, never trusted. */
+    const noCorrect = body?.noCorrect === true;
+    const f = body?.force;
+    const force =
+      f &&
+      FORCE_KINDS.has(f.kind) &&
+      typeof f.id === 'string' &&
+      f.id.length <= 60 &&
+      (f.surface == null || (typeof f.surface === 'string' && f.surface.length <= 60))
+        ? {
+            kind: f.kind,
+            id: f.id,
+            label: typeof f.label === 'string' ? f.label.slice(0, 80) : f.id,
+            surface: f.surface || null,
+          }
+        : null;
+
     let result;
     try {
-      result = await runLandingPipeline(query, { admin });
+      result = await runLandingPipeline(query, { admin, noCorrect, force });
     } catch (e) {
       return safeErrorResponse(e);
     }
@@ -217,6 +237,7 @@ export const POST = withApiGuard(
       newsColumns: result.newsColumns,
       intent: result.intent,
       sanctions: result.sanctions,
+      understood: result.understood,
       remaining: member ? null : Math.max(0, GUEST_LIMIT - nextUsed),
       disclaimer: DISCLAIMER,
     });

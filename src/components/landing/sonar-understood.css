@@ -1,0 +1,75 @@
+/* The understood-query notice and the industry stack inside the landing
+   band. Reads the band's own --snr-* palette (sonar-band.css). */
+
+.snr-understood {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 0 8px;
+  font-size: 12.5px;
+  color: var(--snr-text-muted);
+}
+.snr-understood-line {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.snr-understood strong {
+  color: var(--snr-text);
+  font-weight: 600;
+}
+.snr-understood-link,
+.snr-understood-chip {
+  all: unset;
+  cursor: pointer;
+  color: var(--snr-mint);
+}
+.snr-understood-link:hover,
+.snr-understood-link:focus-visible {
+  text-decoration: underline;
+}
+.snr-understood-chip {
+  padding: 2px 8px;
+  border: 1px solid var(--snr-hair-strong);
+  border-radius: var(--radius-lg);
+  font-size: 11.5px;
+}
+.snr-understood-link:focus-visible,
+.snr-understood-chip:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 2px;
+}
+
+.snr-ind-chain {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.snr-ind-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 12.5px;
+  color: var(--snr-text);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--snr-divider);
+}
+.snr-ind-stage.is-upstream {
+  color: var(--snr-text-muted);
+}
+.snr-ind-names {
+  grid-column: 1 / -1;
+  font-size: 11.5px;
+  color: var(--snr-text-faint);
+}
+.snr-ind-n {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--snr-mint);
+}
