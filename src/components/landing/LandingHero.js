@@ -160,6 +160,10 @@ export function LandingHero() {
                       </Fragment>
                     );
                   })}
+                  {/* A real space between lines, so the headline reads as
+                      words to crawlers and screen readers ("to the", not
+                      "tothe"). Collapses visually at the end of a line. */}
+                  {li < HEADLINE.length - 1 ? ' ' : null}
                 </span>
               ));
             })()}

@@ -1,6 +1,11 @@
 import { notFound } from 'next/navigation';
 import { Source_Serif_4 } from 'next/font/google';
-import { getArticleBySlug, getRelatedAndMore, bumpArticleView } from '@/lib/echo-data';
+import {
+  getArticleBySlug,
+  getRelatedAndMore,
+  bumpArticleView,
+  hasUnverifiedMarkers,
+} from '@/lib/echo-data';
 import { getUserClient } from '@/lib/supabase';
 import { isAdminUser } from '@/lib/admin-helpers';
 import { isArticleArchived } from '@/lib/echo-article-status';
@@ -29,6 +34,8 @@ export async function generateMetadata({ params }) {
     title: `${a.title} | Ezana Echo`,
     description: a.excerpt,
     alternates: { canonical: url },
+    // Unfinished fact-checking: readable, but not indexed until cleared.
+    ...(hasUnverifiedMarkers(a) ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       title: a.title,
       description: a.excerpt,

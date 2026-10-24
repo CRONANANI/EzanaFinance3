@@ -1,4 +1,4 @@
-import { getPublishedArticles } from '@/lib/echo-data';
+import { getPublishedArticles, getUnverifiedArticleSlugs } from '@/lib/echo-data';
 import { getArchivedArticleIds } from '@/lib/echo-article-status';
 import { PUBLISHED_CURATED_SLUGS } from '@/lib/echo/curated-seed';
 import {
@@ -97,12 +97,17 @@ export default async function sitemap() {
 
   let articleEntries = [];
   try {
-    const [published, archivedRows] = await Promise.all([
+    const [published, archivedRows, unverifiedSlugs] = await Promise.all([
       getPublishedArticles(),
       getArchivedArticleIds().catch(() => []),
+      getUnverifiedArticleSlugs().catch(() => []),
     ]);
     const archived = new Set((archivedRows || []).map((r) => r.article_id));
-    const live = (published || []).filter((a) => a.slug && !archived.has(a.slug));
+    // Articles still carrying fact-check markers are noindex; keep them out too.
+    const unverified = new Set(unverifiedSlugs || []);
+    const live = (published || []).filter(
+      (a) => a.slug && !archived.has(a.slug) && !unverified.has(a.slug),
+    );
     articleEntries = live.map((a) =>
       entry(`${SITE_URL}/ezana-echo/${a.slug}`, a.publishedAt ? new Date(a.publishedAt) : now, 0.8),
     );

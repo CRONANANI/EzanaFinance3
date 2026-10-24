@@ -72,6 +72,34 @@ export async function getPublishedArticles() {
   return (data || []).map(mapCard);
 }
 
+/* Search hygiene: an article that still carries editorial fact-check markers
+   ("[VERIFY: ...]") is unfinished. It stays readable, but is marked noindex
+   and kept out of the sitemap until the markers are resolved, so Google does
+   not judge the whole site on draft-quality pages. */
+export const UNVERIFIED_MARKER = '[VERIFY';
+
+export function hasUnverifiedMarkers(article) {
+  try {
+    return JSON.stringify(article || {}).includes(UNVERIFIED_MARKER);
+  } catch {
+    return false;
+  }
+}
+
+/** Slugs of published articles whose body still holds fact-check markers. */
+export async function getUnverifiedArticleSlugs() {
+  const { data, error } = await admin
+    .from('echo_articles')
+    .select('article_slug')
+    .eq('article_status', 'published')
+    .ilike('article_body', `%${UNVERIFIED_MARKER}%`);
+  if (error) {
+    console.error('[echo] getUnverifiedArticleSlugs:', error.message);
+    return [];
+  }
+  return (data || []).map((r) => r.article_slug);
+}
+
 /** Hub payload: cards + the featured article. */
 export async function getHubData() {
   const articles = await getPublishedArticles();

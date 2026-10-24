@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Facebook, Instagram, Linkedin } from 'lucide-react';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import { NewsletterSignup } from '@/components/landing/NewsletterSignup';
+import { SOCIAL_PROFILES } from '@/lib/brand';
 import './footer-section.css';
 
 export function FooterSection({ onContactClick }) {
@@ -60,17 +61,19 @@ export function FooterSection({ onContactClick }) {
           <div className="landing-footer-col">
             <h4>Connect</h4>
             <div className="landing-footer-socials">
+              {SOCIAL_PROFILES.facebook ? (
+                <a
+                  href={SOCIAL_PROFILES.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="landing-footer-social"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="h-4 w-4" />
+                </a>
+              ) : null}
               <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="landing-footer-social"
-                aria-label="Facebook"
-              >
-                <Facebook className="h-4 w-4" />
-              </a>
-              <a
-                href="https://x.com/EzanaWorld"
+                href={SOCIAL_PROFILES.x}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="landing-footer-social"
@@ -89,24 +92,28 @@ export function FooterSection({ onContactClick }) {
                   <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z" />
                 </svg>
               </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="landing-footer-social"
-                aria-label="Instagram"
-              >
-                <Instagram className="h-4 w-4" />
-              </a>
-              <a
-                href="https://linkedin.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="landing-footer-social"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="h-4 w-4" />
-              </a>
+              {SOCIAL_PROFILES.instagram ? (
+                <a
+                  href={SOCIAL_PROFILES.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="landing-footer-social"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="h-4 w-4" />
+                </a>
+              ) : null}
+              {SOCIAL_PROFILES.linkedin ? (
+                <a
+                  href={SOCIAL_PROFILES.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="landing-footer-social"
+                  aria-label="LinkedIn"
+                >
+                  <Linkedin className="h-4 w-4" />
+                </a>
+              ) : null}
             </div>
           </div>
         </div>
