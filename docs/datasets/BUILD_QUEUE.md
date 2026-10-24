@@ -31,13 +31,10 @@ every row in its dimension is merged.
 | government/lobbying    | /datasets/government/lobbying    | todo   |
 | committees             | /datasets/committees             | todo   |
 | institutional          | /datasets/institutional          | todo   |
-| activist               | /datasets/activist               | todo   |
-| sec-filings            | /datasets/sec-filings            | todo   |
 | insider                | /datasets/insider                | todo   |
 | executive-compensation | /datasets/executive-compensation | todo   |
 | whale-moves            | /datasets/whale-moves            | todo   |
 | etf-holdings           | /datasets/etf-holdings           | todo   |
-| markets                | /datasets/markets                | todo   |
 
 ## Wave 4: Consumer Whispers and Eyes Above
 

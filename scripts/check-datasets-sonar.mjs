@@ -103,13 +103,14 @@ test('resolveDimension falls back to capitol for anything unknown', () => {
 
 test('rollup: shared reads counted once, any failure leaves records unknown, no future dates', () => {
   const ok = D.rollup(
-    ['Fund Holdings Data', 'SEC EDGAR', 'Insider Trading'],
+    ['Holdings A', 'Holdings B', 'Insider Trading'],
     {
-      'Fund Holdings Data': { records: 100, freshest: '2026-10-01' },
-      'SEC EDGAR': { records: 100, freshest: '2026-10-01' },
+      'Holdings A': { records: 100, freshest: '2026-10-01' },
+      'Holdings B': { records: 100, freshest: '2026-10-01' },
       'Insider Trading': { records: 5, freshest: '2027-01-01' },
     },
     '2026-10-08',
+    { 'Holdings A': 'Holdings B' },
   );
   assert.equal(ok.records, 105);
   assert.equal(ok.freshest, '2026-10-01');

@@ -2,7 +2,7 @@
  * Loader timing for the dataset pages (perf Task 4.0). Wraps an async data
  * loader so each call logs one line to the function logs:
  *
- *   [timing] dataset:/datasets/activist getActivistOverview 182ms rows=40 kb=36.2
+ *   [timing] dataset:/datasets/insider getInsiderOverview 182ms rows=40 kb=36.2
  *
  * rows = the largest array in the result (top level or one level down), kb
  * = the JSON size handed to the page. Never throws on its own: the loader's

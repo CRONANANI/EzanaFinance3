@@ -344,7 +344,7 @@ export function ConvergenceCard({ overview, convergence, chip, chipPartial, onSe
                 <td>
                   {dot(r.congress, 'Congress buys', '/datasets/politician-tracker', r.ticker)}
                 </td>
-                <td>{dot(r.activist, '13D or 13G stake', '/datasets/activist', r.ticker)}</td>
+                <td>{dot(r.activist, '13D or 13G stake', '/datasets/whale-moves', r.ticker)}</td>
                 <td className="inst-mono inst-sig-count">{r.count} of 4</td>
               </tr>
             ))}

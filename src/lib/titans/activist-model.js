@@ -1,5 +1,5 @@
 /**
- * Activist & Block Positions page model: PURE calculation, no React, no I/O,
+ * Schedule 13D/13G campaign model: PURE calculation, no React, no I/O,
  * no formatting. A campaign is one confirmed investor (CIK) on one target
  * (CUSIP, name fallback); unconfirmed filings are never grouped. Contract:
  * activist-handoff/06-DATA-CONTRACT.md section 4; tested by

@@ -69,6 +69,36 @@ const nextConfig = {
         destination: '/help-center/user/category/research',
         permanent: true,
       },
+      /* Titans Shadow pages removed (Oct 2026, docs/cleanup/titans-pages-removal.md).
+         The data, ingests and reads stay; old links land on the nearest page.
+         Activist 13D/13G stakes now live in Whale Moves; Fund Holdings and
+         SEC EDGAR (both /datasets/sec-filings) and Prices & Fundamentals
+         (/datasets/markets) go to Institutional. A ?manager= link keeps its
+         CIK so it opens Manager Fingerprint. */
+      { source: '/datasets/activist', destination: '/datasets/whale-moves', permanent: true },
+      {
+        source: '/datasets/activist/:path*',
+        destination: '/datasets/whale-moves',
+        permanent: true,
+      },
+      {
+        source: '/datasets/sec-filings',
+        has: [{ type: 'query', key: 'manager' }],
+        destination: '/datasets/institutional?manager=:manager',
+        permanent: true,
+      },
+      { source: '/datasets/sec-filings', destination: '/datasets/institutional', permanent: true },
+      {
+        source: '/datasets/sec-filings/:path*',
+        destination: '/datasets/institutional',
+        permanent: true,
+      },
+      { source: '/datasets/markets', destination: '/datasets/institutional', permanent: true },
+      {
+        source: '/datasets/markets/:path*',
+        destination: '/datasets/institutional',
+        permanent: true,
+      },
       { source: '/commodities-research', destination: '/alternative-markets', permanent: true },
       {
         source: '/commodities-research/:path*',

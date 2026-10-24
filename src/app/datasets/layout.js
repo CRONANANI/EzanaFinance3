@@ -38,17 +38,14 @@ const STANDALONE_ROUTES = new Set([
   '/datasets/etf-holdings',
   '/datasets/political',
   // DatasetDashboard now draws its own full-bleed CategoryBar + ticker (and the
-  // bespoke sec-filings client draws the same chrome), so these opt out of the
+  // bespoke page clients draw the same chrome), so these opt out of the
   // marketing shell too — no "Back to home" bar, no old pill row, matching the
   // Government Contracts page.
   '/datasets/institutional',
-  '/datasets/activist',
-  '/datasets/sec-filings',
   '/datasets/whale-moves',
   '/datasets/alternative',
   '/datasets/global',
   '/datasets/oecd-macro',
-  '/datasets/markets',
   '/datasets/prediction-markets',
   // Dataset pages of their own (they used to point at their hubs).
   '/datasets/crowd-forecasts',

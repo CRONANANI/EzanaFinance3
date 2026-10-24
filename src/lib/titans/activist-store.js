@@ -1,7 +1,7 @@
 /**
- * Activist & Block Positions read layer: SERVER ONLY, cached 15 minutes
- * under the `titans` tag. The page's snapshot (refresh_titans_activist)
- * carries the campaign read model; the reads here add the per-investor,
+ * Schedule 13D/13G (activist) read layer: SERVER ONLY, cached 15 minutes
+ * under the `titans` tag. The snapshot read (refresh_titans_activist) is no
+ * longer rebuilt since its page was removed; the reads here add the per-investor,
  * per-target, per-filing and price-path views. Every function returns an
  * empty shape when the data is not there yet. Re-exported from store.js.
  */

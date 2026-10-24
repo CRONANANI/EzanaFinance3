@@ -318,7 +318,8 @@ const insiderTrading = {
 };
 
 const activist = {
-  label: 'Activist',
+  label: 'Activist stakes',
+  dimensionId: 'titans',
   source: 'SEC EDGAR Schedule 13D and 13G filings',
   read: () => getActivistStakes({ limit: 40 }),
   map(rows) {
@@ -502,6 +503,7 @@ const institutional = {
 function filingsAdapter(label, family, source) {
   return {
     label,
+    dimensionId: 'titans',
     source,
     read: () => getSecFilings({ family, limit: 40 }),
     map(rows) {
@@ -652,7 +654,8 @@ const etfHoldings = {
 };
 
 const fundamentals = {
-  label: 'Prices & Fundamentals',
+  label: 'Company fundamentals',
+  dimensionId: 'titans',
   source: 'SEC EDGAR XBRL company facts',
   read: () => getFundamentalsTable({ limit: 300 }),
   map(o) {
@@ -1172,8 +1175,9 @@ const sanctions = {
 /*
  * Every adapter, in taxonomy order. read.js warns (server log) for any LIVE
  * taxonomy dataset with no adapter here, so a new live dataset cannot be
- * forgotten silently. Datasets that share a page (SEC EDGAR and Fund Holdings
- * Data) still get one adapter each, keyed by their own label.
+ * forgotten silently. Adapters with a `dimensionId` and no taxonomy item
+ * (activist stakes, 13F filings, SEC filings, company fundamentals: their
+ * pages were removed) still feed the belt; their items open the event panel.
  */
 /* ── Capitol Watch, the audited three ────────────────────────────────────
    Sample row shapes (printed from the live readers, Oct 22, 2026):
@@ -1556,8 +1560,8 @@ export const PULSE_ADAPTERS = [
   governmentContracts,
   institutional,
   activist,
-  filingsAdapter('Fund Holdings Data', 'institutional', 'SEC EDGAR Form 13F filings'),
-  filingsAdapter('SEC EDGAR', undefined, 'SEC EDGAR full-text filing index'),
+  filingsAdapter('13F filings', 'institutional', 'SEC EDGAR Form 13F filings'),
+  filingsAdapter('SEC filings', undefined, 'SEC EDGAR full-text filing index'),
   insiderTrading,
   execComp,
   whaleMoves,

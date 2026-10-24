@@ -6,8 +6,7 @@ import { usePathname } from 'next/navigation';
 const TABS = [
   { href: '/datasets/political', label: 'Congressional & Political' },
   { href: '/datasets/government', label: 'Government activity' },
-  { href: '/datasets/sec-filings', label: 'SEC filings' },
-  { href: '/datasets/markets', label: 'Markets & equities' },
+  { href: '/datasets/institutional', label: 'Institutional holdings' },
   { href: '/datasets/alternative', label: 'Alternative signals' },
   { href: '/datasets/prediction-markets', label: 'Prediction markets' },
   { href: '/datasets/global', label: 'Global & macro' },

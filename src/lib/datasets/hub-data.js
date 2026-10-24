@@ -305,77 +305,6 @@ const SUMMARIES = {
     };
   },
 
-  async Activist(admin) {
-    const since = isoDaysAgo(90);
-    const [records, recent, newest] = await Promise.all([
-      count(() =>
-        admin.from('ezq_activist_stakes').select('accession_no', { count: 'exact', head: true }),
-      ),
-      count(() =>
-        admin
-          .from('ezq_activist_stakes')
-          .select('accession_no', { count: 'exact', head: true })
-          .gte('filed_at', since),
-      ),
-      admin
-        .from('ezq_activist_stakes')
-        .select('filer_name, subject_name, ticker, percent_of_class, filed_at')
-        .order('filed_at', { ascending: false })
-        .limit(1),
-    ]);
-    if (!records) return { empty: true, records };
-    const s = newest.data?.[0];
-    return {
-      records,
-      freshest: day(s?.filed_at),
-      numbers: [
-        n('13D and 13G stakes, last 90 days', recent),
-        n(
-          'Newest stake',
-          s
-            ? `${s.filer_name || 'Filer'} in ${s.ticker || s.subject_name || 'a company'}${
-                num(s.percent_of_class) != null ? ` (${num(s.percent_of_class)}%)` : ''
-              }`
-            : null,
-          'text',
-        ),
-      ],
-    };
-  },
-
-  async 'Fund Holdings Data'(admin) {
-    return SUMMARIES['SEC EDGAR'](admin);
-  },
-
-  async 'SEC EDGAR'(admin) {
-    const since = isoDaysAgo(30);
-    const fam = (family) =>
-      count(() =>
-        admin
-          .from('sec_filings')
-          .select('accession_no', { count: 'exact', head: true })
-          .eq('form_family', family)
-          .gte('filed_at', since),
-      );
-    const [records, inst, act, ins, latest] = await Promise.all([
-      count(() => admin.from('sec_filings').select('accession_no', { count: 'exact', head: true })),
-      fam('institutional'),
-      fam('activist'),
-      fam('insider'),
-      admin.from('sec_filings').select('filed_at').order('filed_at', { ascending: false }).limit(1),
-    ]);
-    if (!records) return { empty: true, records };
-    return {
-      records,
-      freshest: day(latest.data?.[0]?.filed_at),
-      numbers: [
-        n('13F filings, last 30 days', inst),
-        n('13D and 13G, last 30 days', act),
-        n('Form 4, last 30 days', ins),
-      ],
-    };
-  },
-
   async 'Whale Moves'(admin) {
     const { data: q } = await admin
       .from('whale_moves')
@@ -536,43 +465,6 @@ const SUMMARIES = {
       records,
       freshest: d,
       numbers: [n('ETFs covered', funds), n('Latest report date', d, 'date')],
-    };
-  },
-
-  async 'Prices & Fundamentals'(admin) {
-    const records = await count(() =>
-      admin.from('sec_fundamentals').select('cik', { count: 'exact', head: true }),
-    );
-    if (!records)
-      return {
-        empty: true,
-        records,
-        fills: 'Fills as the daily XBRL frames ingest runs. Prices are pending a licensed source.',
-      };
-    const [companies, latest] = await Promise.all([
-      count(() =>
-        admin
-          .from('sec_fundamentals')
-          .select('cik', { count: 'exact', head: true })
-          .eq('concept', 'revenue')
-          .eq('period_type', 'annual'),
-      ),
-      admin
-        .from('sec_fundamentals')
-        .select('frame, period_end')
-        .eq('period_type', 'annual')
-        .order('frame', { ascending: false })
-        .limit(1),
-    ]);
-    const frame = latest.data?.[0]?.frame || null;
-    return {
-      records,
-      freshest: day(latest.data?.[0]?.period_end),
-      numbers: [
-        n('Companies with annual revenue', companies),
-        n('Latest fiscal year loaded', frame ? frame.replace(/^CY/, '') : null, 'text'),
-        n('Prices', 'Pending', 'text'),
-      ],
     };
   },
 
@@ -1555,7 +1447,7 @@ const LINKAGES = {
         },
       ],
       query: s.ticker ? Q.activistTicker(s.ticker) : null,
-      href: '/datasets/activist',
+      href: '/datasets/whale-moves',
     }));
   },
 

@@ -327,8 +327,8 @@ const CROSS_ROWS = [
   ],
   [
     'activist',
-    'Activist',
-    '/datasets/activist',
+    'Whale Moves (13D/13G)',
+    '/datasets/whale-moves',
     (c) =>
       c ? `${c.form || '13D/G'}${c.pct != null ? ` · ${pct(c.pct, 1)} of class` : ''}` : null,
   ],

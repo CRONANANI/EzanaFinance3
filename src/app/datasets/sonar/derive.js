@@ -228,8 +228,12 @@ export function sweepPath(deg = 66, r = RADAR.rings[3]) {
 
 /* ── figures ──────────────────────────────────────────────────────────── */
 
-/** Labels whose summary is another label's (the hub counts these once). */
-export const SAME_READ_AS = { 'Fund Holdings Data': 'SEC EDGAR' };
+/**
+ * Labels whose summary is another label's (the hub counts these once). Empty
+ * since the two Titans items that shared the SEC filings read were removed
+ * (titans-remove-pages); kept so a future shared read has one place to go.
+ */
+export const SAME_READ_AS = {};
 
 /**
  * Roll a dimension's per-dataset figures up. `figures` maps label to
@@ -237,13 +241,18 @@ export const SAME_READ_AS = { 'Fund Holdings Data': 'SEC EDGAR' };
  * read makes the records roll-up unknown (null) rather than a partial sum;
  * freshest is the latest date that is not in the future.
  */
-export function rollup(liveLabels, figures, today = new Date().toISOString().slice(0, 10)) {
+export function rollup(
+  liveLabels,
+  figures,
+  today = new Date().toISOString().slice(0, 10),
+  sameAs = SAME_READ_AS,
+) {
   const seen = new Set();
   let records = 0;
   let failed = false;
   let freshest = null;
   for (const label of liveLabels) {
-    const key = SAME_READ_AS[label] || label;
+    const key = sameAs[label] || label;
     const f = figures[label];
     if (!f || f.error) {
       failed = true;

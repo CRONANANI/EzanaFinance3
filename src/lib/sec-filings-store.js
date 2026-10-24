@@ -1,6 +1,6 @@
 /**
- * Read layer for the hosted SEC EDGAR filings. The sec-filings page reads these
- * small Supabase tables (populated by the ingest-sec-filings cron) instead of
+ * Read layer for the hosted SEC EDGAR filings. Readers (the datasets pulse)
+ * use these small Supabase tables (populated by the ingest-sec-filings cron) instead of
  * calling EDGAR on every request — same rule as "the page never queries
  * BigQuery directly". Service-role reads on the server; only the cron writes.
  */

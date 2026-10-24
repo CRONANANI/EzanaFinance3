@@ -7,6 +7,7 @@ import { RowActions } from '@/components/datasets/hub/HubClient';
 import AwardTradeChart from '@/components/datasets/hub/AwardTradeChart';
 import QuickStepBadge from '@/components/datasets/hub/QuickStepBadge';
 import { fmt, isMono } from './hub-format';
+import { SAME_READ_AS } from '../sonar/derive';
 
 /* One read per dataset per request, shared by the stat strip and the cards. */
 export const summaryFor = cache((label) =>
@@ -25,10 +26,8 @@ function Value({ kind, value }) {
 export async function HubStats({ dimension }) {
   const items = dimension.items;
   const live = items.filter((it) => it.live);
-  /* Fund Holdings Data and SEC EDGAR read the same filings; count them once. */
-  const labels = [
-    ...new Set(live.map((it) => (it.label === 'Fund Holdings Data' ? 'SEC EDGAR' : it.label))),
-  ];
+  /* Labels that share one read are counted once. */
+  const labels = [...new Set(live.map((it) => SAME_READ_AS[it.label] || it.label))];
   const sums = await Promise.all(labels.map((l) => summaryFor(l)));
   const records = sums.reduce((s, x) => s + (x?.records || 0), 0);
   /* Never report a date after today as the latest data. */

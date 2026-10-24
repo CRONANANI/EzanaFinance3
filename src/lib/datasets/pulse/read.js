@@ -66,10 +66,21 @@ function withBudget(promise, ms) {
   ]).finally(() => clearTimeout(t));
 }
 
-async function runAdapter(adapter, budgetMs) {
+/* Feeds whose dataset page was removed (titans-remove-pages, Oct 2026) keep
+   their belt items: the adapter names its dimension, the item opens the
+   event panel, and the panel shows the dataset without a page link. */
+function resolve(adapter) {
   const hit = BY_LABEL.get(adapter.label);
-  if (!hit || !hit.item.live) return { skipped: true };
-  const { dim, item } = hit;
+  if (hit) return hit.item.live ? hit : null;
+  if (!adapter.dimensionId) return null;
+  const dim = DATASET_TAXONOMY.find((d) => d.id === adapter.dimensionId);
+  return dim ? { dim, item: { href: null }, pageless: true } : null;
+}
+
+async function runAdapter(adapter, budgetMs) {
+  const hit = resolve(adapter);
+  if (!hit) return { skipped: true };
+  const { dim, item, pageless } = hit;
   const id = datasetSlug(adapter.label);
   let res;
   try {
@@ -105,13 +116,14 @@ async function runAdapter(adapter, budgetMs) {
   if (!items.length) return { id };
   return {
     id,
+    pageless: !!pageless,
     items,
     dataset: {
       id,
       label: adapter.label,
       dimensionId: dim.id,
       dimension: dim.label,
-      href: item.href || '/datasets',
+      href: pageless ? null : item.href || '/datasets',
       source: adapter.source,
       asOf: mapped.dataset?.asOf || null,
       findings: mapped.dataset?.findings || [],
@@ -141,6 +153,7 @@ export async function readPulse({ budgetMs = 3500 } = {}) {
   const results = await Promise.all(PULSE_ADAPTERS.map((a) => runAdapter(a, budgetMs)));
   const datasets = {};
   const groups = [];
+  let live = 0;
   let partial = false;
   for (const r of results) {
     if (r.skipped) continue;
@@ -148,13 +161,14 @@ export async function readPulse({ budgetMs = 3500 } = {}) {
     if (r.items?.length) {
       datasets[r.id] = r.dataset;
       groups.push(r.items);
+      if (!r.pageless) live += 1;
     }
   }
   const expected = DATASET_TAXONOMY.flatMap((d) => d.items || []).filter((it) => it.live).length;
   return {
     items: interleave(groups),
     datasets,
-    live: groups.length,
+    live,
     expected,
     partial,
     generatedAt: new Date().toISOString(),

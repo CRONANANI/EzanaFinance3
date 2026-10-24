@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* Activist & Block Positions page model (src/lib/titans/activist-model.js)
+/* Schedule 13D/13G campaign model (src/lib/titans/activist-model.js)
    and purposeSentences (src/lib/sec/schedule13-meta.js). Contract: the
    handoff's 06-DATA-CONTRACT.md section 4.
    Usage: node --no-warnings --test scripts/check-activist.mjs */

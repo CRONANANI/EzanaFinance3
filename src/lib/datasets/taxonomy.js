@@ -97,7 +97,7 @@ export const DATASET_TAXONOMY = [
     corner: 'TITANS SHADOW',
     tagline: 'Keep up with the giants of finance',
     blurb:
-      'Institutional and corporate-insider filings — 13F/13D-13G positions, insider trades, executive pay, ETF flows, and market prices.',
+      'Institutional and corporate-insider filings: 13F positions, 13D/13G stakes in Whale Moves, insider trades, executive pay and ETF holdings.',
     items: [
       // orbital sources
       {
@@ -106,30 +106,6 @@ export const DATASET_TAXONOMY = [
         href: '/datasets/institutional',
         live: true,
         source: 'SEC EDGAR, Form 13F-HR',
-        sourceType: 'gov',
-      },
-      {
-        label: 'Activist',
-        description: 'SEC 13D / 13G filings — significant investor stakes and activist positions',
-        href: '/datasets/activist',
-        live: true,
-        source: 'SEC EDGAR, Schedule 13D/13G',
-        sourceType: 'gov',
-      },
-      {
-        label: 'Fund Holdings Data',
-        description: 'Institutional fund composition and manager positioning',
-        href: '/datasets/sec-filings',
-        live: true,
-        source: 'SEC EDGAR · FMP',
-        sourceType: 'gov',
-      },
-      {
-        label: 'SEC EDGAR',
-        description: 'Fund prospectuses, disclosures, and institutional reports',
-        href: '/datasets/sec-filings',
-        live: true,
-        source: 'SEC EDGAR API (data.sec.gov)',
         sourceType: 'gov',
       },
       // folded in from the old nav buckets
@@ -165,14 +141,6 @@ export const DATASET_TAXONOMY = [
         live: true,
         source: 'SEC EDGAR, Form N-PORT',
         sourceType: 'gov',
-      },
-      {
-        label: 'Prices & Fundamentals', // was "Markets & Equities"
-        description: 'Real-time prices, fundamentals, and analyst ratings',
-        href: '/datasets/markets',
-        live: true,
-        source: 'SEC EDGAR XBRL (fundamentals) · prices pending',
-        sourceType: 'licensed',
       },
     ],
   },

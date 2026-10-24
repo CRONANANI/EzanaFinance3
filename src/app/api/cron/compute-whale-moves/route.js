@@ -468,11 +468,9 @@ export async function GET(request) {
   // complete quarter) and refresh_titans_institutional_open() at :25 (the
   // quarter still filing). See 20261022120000_titans_institutional_snapshot_v2.sql.
 
-  // Activist page snapshot (campaign read model), same hourly cadence.
-  const { error: actErr } = await admin.rpc('refresh_titans_activist', {
-    p_asof: now.toISOString().slice(0, 10),
-  });
-  if (actErr) errors.push(`activist snapshot: ${actErr.message}`);
+  // The activist page snapshot (refresh_titans_activist) is no longer built:
+  // its only reader was the removed activist dataset page. The function and
+  // the existing titans_snapshots rows stay in the database.
 
   // The 13F snapshots refresh in pg_cron and cannot purge the page cache; an
   // hourly purge here (plus the 15-minute cache window) keeps them current.

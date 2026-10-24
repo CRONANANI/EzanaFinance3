@@ -14,7 +14,6 @@ const DIMENSIONS = [
   ['Capitol Watch', '/datasets/politician-tracker'],
   ['Government money', '/datasets/government/contracts'],
   ['Titans Shadow', '/datasets/institutional'],
-  ['Markets', '/datasets/markets'],
   ['Eyes Above', '/datasets/supply-chain'],
 ];
 const PRODUCT = [

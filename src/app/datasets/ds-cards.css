@@ -39,7 +39,6 @@
     .bw-card,
     .ptk-card,
     .inst-card,
-    .act-card,
     .pmk-card
   ),
 .ds-shell
@@ -68,7 +67,6 @@
     .bw-card,
     .ptk-card,
     .inst-card,
-    .act-card,
     .pmk-card
   ):is(:hover, :focus-within) {
   border-color: transparent;
