@@ -141,26 +141,40 @@ function mapHit(hit, family, cikTicker) {
   };
 }
 
-/** Page through efts for one form list; returns mapped rows (deduped). */
+/** Page through efts for one form list; returns mapped rows (deduped).
+ *  A run that stops before efts' reported total (page cap reached, or a page
+ *  failed) is TRUNCATED: it is logged, because the 13F filing-progress
+ *  indicator and every 13F card silently undercount EDGAR when it happens. */
 async function fetchFamily({ family, forms, startdt, enddt, pages, cikTicker, errors }) {
   const byAcc = new Map();
+  let total = 0;
+  let hitsSeen = 0;
+  let pageError = null;
   for (let page = 0; page < pages; page += 1) {
     let json;
     try {
       // eslint-disable-next-line no-await-in-loop
       json = await searchFilings({ forms, startdt, enddt, from: page * PAGE_SIZE });
     } catch (e) {
-      errors.push(`${family} page ${page}: ${e?.message || e}`);
+      pageError = `${family} page ${page}: ${e?.message || e}`;
+      errors.push(pageError);
       break;
     }
     const hits = json?.hits?.hits || [];
+    hitsSeen += hits.length;
     for (const h of hits) {
       const r = mapHit(h, family, cikTicker);
       // An accession can surface under more than one document.
       if (r) byAcc.set(r.accession_no, r);
     }
-    const total = Number(json?.hits?.total?.value ?? json?.hits?.total ?? 0);
+    total = Number(json?.hits?.total?.value ?? json?.hits?.total ?? 0) || total;
     if (hits.length < PAGE_SIZE || (total && (page + 1) * PAGE_SIZE >= total)) break;
+  }
+  if (pageError || (total && hitsSeen < total)) {
+    console.warn(
+      `[sec-ingest] ${family} truncated ${startdt}..${enddt}: ${hitsSeen} of ${total} hits` +
+        (pageError ? ` (${pageError})` : ` (page cap ${pages})`),
+    );
   }
   return [...byAcc.values()];
 }
@@ -275,8 +289,13 @@ export async function GET(request) {
     errors.push(...res.errors);
   }
 
-  // The dimension hubs summarise this table.
+  // The dimension hubs summarise this table; new 13F filings move the
+  // institutional page's filing-progress indicator.
   if (Object.values(perFamily).some(Boolean)) revalidateTag('hubs');
+  if (perFamily.institutional) {
+    revalidateTag('dataset:13f');
+    revalidateTag('titans');
+  }
 
   return NextResponse.json({
     ok: errors.length === 0,

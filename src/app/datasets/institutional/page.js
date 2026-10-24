@@ -10,6 +10,7 @@ import {
 import { netBreadth } from '@/lib/titans/institutional-model';
 import { ALLOW_SAMPLE } from '@/lib/titans/format';
 import { currentReportQuarter, latestCompleteQuarter } from '@/lib/sec/quarters';
+import { getFilingProgress } from '@/lib/datasets/institutional/filingProgress';
 import InstitutionalClient from './InstitutionalClient';
 import fixture from './institutional-fixture.sample.json';
 
@@ -39,10 +40,11 @@ export default async function InstitutionalDatasetPage() {
      single failure (Oct 22: the filing-curve function was missing from the
      database) threw away the overview that HAD loaded and the whole page
      rendered empty. Now a failed read only empties its own cards. */
-  const [overviewRes, openRes, curveRes] = await Promise.allSettled([
+  const [overviewRes, openRes, curveRes, progressRes] = await Promise.allSettled([
     getInstitutionalOverview(),
     openQ !== completeQ ? getInstitutionalOverviewFor(openQ) : Promise.resolve(null),
     openQ !== completeQ ? getFilingCurve(openQ) : Promise.resolve(null),
+    getFilingProgress(),
   ]);
   const settled = (res, label) => {
     if (res.status === 'fulfilled') return res.value;
@@ -52,6 +54,7 @@ export default async function InstitutionalDatasetPage() {
   let overview = settled(overviewRes, 'overview');
   const openOverview = settled(openRes, 'open quarter');
   let curve = settled(curveRes, 'filing curve');
+  const progress = settled(progressRes, 'filing progress');
 
   let sampled = false;
   if (!overview && ALLOW_SAMPLE) {
@@ -99,6 +102,7 @@ export default async function InstitutionalDatasetPage() {
         lag={lag}
         convergence={convergence}
         openQuarter={openQ !== completeQ ? openQ : null}
+        progress={sampled ? null : progress}
         sampled={sampled}
       />
     </Suspense>

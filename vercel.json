@@ -134,6 +134,10 @@
       "schedule": "30 * * * *"
     },
     {
+      "path": "/api/cron/ingest-sec-filings?days=2&families=institutional&pages=40",
+      "schedule": "40 */3 * * *"
+    },
+    {
       "path": "/api/cron/map-cusips",
       "schedule": "15 * * * *"
     },

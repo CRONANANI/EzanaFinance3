@@ -30,6 +30,7 @@ import {
   ManagerUniverseCard,
 } from './Boards';
 import { ManagersTable, MethodSection, SecuritiesTable } from './Tables';
+import FilingProgress from './FilingProgress';
 import { ManagerFingerprint, SecurityXray } from './Panels';
 import { GroupedToolbarSearch } from './Toolbar';
 import '@/components/datasets/disclosures/disclosures.css';
@@ -41,6 +42,7 @@ const LEDE =
 export default function InstitutionalClient({
   overview,
   openOverview,
+  progress = null,
   curve,
   lag,
   convergence,
@@ -133,10 +135,11 @@ export default function InstitutionalClient({
 
   /* ── filing progress for the quarter control badge ────────────────── */
   const openFiled = curve?.open?.length ? curve.open[curve.open.length - 1][1] : 0;
-  const filedShare = pctFiled(
-    openFiled,
-    overview?.filers || curve?.priorFinal || curve?.prior_final,
-  );
+  /* The canonical definition (filingProgress) when it loaded; the curve-based
+     ratio is only the fallback. */
+  const filedShare =
+    progress?.pct ??
+    pctFiled(openFiled, overview?.filers || curve?.priorFinal || curve?.prior_final);
   const daysSince = completeQ ? filingDay(completeQ, new Date().toISOString().slice(0, 10)) : null;
 
   /* ── ticker belt ──────────────────────────────────────────────────── */
@@ -256,6 +259,8 @@ export default function InstitutionalClient({
           </a>
         </div>
       </div>
+
+      <FilingProgress progress={progress} />
 
       {partialSelected ? (
         <p className="inst-banner" role="status">

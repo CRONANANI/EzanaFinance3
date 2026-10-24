@@ -1671,6 +1671,63 @@
   margin: 0;
 }
 
+/* ── filing-season progress (FilingProgress.jsx) ───────────────────── */
+
+.inst-fp {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  background: var(--inst-card-bg);
+  box-shadow: var(--inst-card-shadow);
+}
+.inst-fp p {
+  margin: 0;
+}
+.inst-fp-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+}
+.inst-fp-title {
+  font-weight: 700;
+}
+.inst-fp-bar {
+  position: relative;
+  height: 10px;
+  border-radius: var(--radius-sm);
+  background: var(--inst-track);
+  overflow: visible;
+}
+.inst-fp-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: var(--radius-sm);
+  background: var(--inst-titans-ink);
+}
+.inst-fp-pace {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 0;
+  border-left: 2px dashed var(--inst-annotation);
+  transform: translateX(-1px);
+}
+.inst-fp-line {
+  font-size: 12.5px;
+}
+.inst-fp-foot {
+  font-size: 11px;
+  color: var(--inst-muted);
+}
+.inst-fp-stale {
+  color: var(--inst-watch-ink);
+}
+
 /* ── responsive ─────────────────────────────────────────────────────── */
 
 @media (max-width: 1000px) {

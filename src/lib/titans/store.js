@@ -32,7 +32,7 @@ import {
   purposeExcerpt,
 } from '@/lib/sec/schedule13-meta';
 import {
-  FILING_DEADLINE_DAYS,
+  filingDeadline,
   latestCompleteQuarter,
   currentReportQuarter,
   priorQuarterEnd,
@@ -237,10 +237,8 @@ async function loadFilingCurve(period) {
   const { data, error } = await admin.rpc('titans_filing_curve', { p_period: period });
   if (error) throw new Error(error.message);
   if (!data) return empty;
-  const end = new Date(`${period}T00:00:00Z`);
-  const deadline = new Date(end.getTime() + FILING_DEADLINE_DAYS * 86400000)
-    .toISOString()
-    .slice(0, 10);
+  /* The effective deadline: day 45 rolled to the next business day. */
+  const deadline = filingDeadline(period).effective;
 
   /* The four largest filers already in, each with its biggest move. */
   const movers = [];
