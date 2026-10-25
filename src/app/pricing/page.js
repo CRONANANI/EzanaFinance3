@@ -38,7 +38,7 @@ import {
 import { useTheme } from '@/components/ThemeProvider';
 import RenewalTerms from '@/components/billing/RenewalTerms';
 import { PLANS as CATALOG } from '@/config/pricing';
-import { RENEWAL_POLICY_TEXT } from '@/lib/billing/renewal-terms';
+import { RENEWAL_POLICY_TEXT, TRIAL_DAYS } from '@/lib/billing/renewal-terms';
 import './pricing-standalone.css';
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -384,7 +384,7 @@ function planPricing(plan, billing) {
 function ctaLabelFor(plan, isPending) {
   if (plan.isFree) return isPending ? 'Activating…' : 'Get Started Free';
   if (plan.contactSales) return 'Contact Sales';
-  return isPending ? 'Starting checkout…' : 'Start 14-day free trial';
+  return isPending ? 'Starting checkout…' : `Start ${TRIAL_DAYS}-day free trial`;
 }
 
 const FAQ_ITEMS = [
@@ -394,10 +394,10 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Do I need a credit card to start the free trial?',
-    a: 'Yes, a card is required so your account can continue seamlessly once the trial ends — but you will not be charged for 14 days, and you can cancel anytime from your account settings during the trial with zero charge.',
+    a: `Yes, a card is required so your account can continue seamlessly once the trial ends, but you will not be charged for ${TRIAL_DAYS} days, and you can cancel anytime from your account settings during the trial with zero charge.`,
   },
   {
-    q: 'What happens when my 14-day trial ends?',
+    q: `What happens when my ${TRIAL_DAYS}-day trial ends?`,
     a: 'On day 15 your card is charged for the plan and billing interval you selected. We send a reminder email 3 days before the trial ends so you can change your mind or switch plans.',
   },
   {
@@ -460,7 +460,7 @@ function PlanList({ billing, openPlan, setOpenPlan, pendingPlan, onSelect }) {
           ? 'Free forever'
           : plan.contactSales
             ? 'Custom pricing'
-            : '14-day free trial';
+            : `${TRIAL_DAYS}-day free trial`;
         return (
           <li
             key={plan.id}
@@ -708,15 +708,15 @@ export default function PricingPage() {
       <header className="pricing-hero">
         <div className="pricing-trial-pill" role="note">
           <Sparkles size={13} aria-hidden />
-          14-day free trial on every paid plan
+          {TRIAL_DAYS}-day free trial on every paid plan
         </div>
         <h1 className="pricing-h1">
           Simple pricing. <span className="pricing-h1-accent">Serious investing.</span>
         </h1>
         <p className="pricing-subtitle">
           <span className="pricing-subtitle-long">
-            Start with the plan that fits where you are. Every paid plan includes a full 14-day free
-            trial — cancel anytime, no charge until the trial ends.
+            Start with the plan that fits where you are. Every paid plan includes a full{' '}
+            {TRIAL_DAYS}-day free trial. Cancel anytime, no charge until the trial ends.
           </span>
           <span className="pricing-subtitle-short">
             No charge until your trial ends. Cancel anytime.
@@ -801,7 +801,7 @@ export default function PricingPage() {
                   ) : isContact ? (
                     <span className="plan-trial-chip plan-trial-chip--neutral">Custom pricing</span>
                   ) : (
-                    <span className="plan-trial-chip">14-day free trial</span>
+                    <span className="plan-trial-chip">{TRIAL_DAYS}-day free trial</span>
                   )}
                 </div>
 

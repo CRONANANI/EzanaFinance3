@@ -1,4 +1,8 @@
-const ACCOUNT_TRIAL_DAYS = 7;
+import { TRIAL_DAYS } from '@/lib/billing/renewal-terms';
+
+/* One trial length for copy and logic (QA RET-18): the account-age window
+   used before a Stripe subscription exists matches the Stripe trial. */
+const ACCOUNT_TRIAL_DAYS = TRIAL_DAYS;
 
 /**
  * Trial / subscription display state.
