@@ -11,7 +11,7 @@ import { supabase } from '@/lib/supabase-browser';
 import { isActivePartner } from '@/lib/partner-access';
 
 function authErrorPath(flow, type) {
-  if (type === 'partner') return '/auth/partner-login';
+  if (type === 'partner') return '/auth/partner/signin';
   if (flow === 'signup') return '/auth/signup';
   return '/auth/signin';
 }

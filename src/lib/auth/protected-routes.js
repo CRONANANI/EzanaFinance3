@@ -1,6 +1,6 @@
 /**
  * Routes that require a signed-in Supabase session (middleware redirect to sign-in).
- * Partner-only routes use /auth/partner-login when unauthenticated.
+ * Partner-only routes use /auth/partner/signin when unauthenticated.
  */
 
 export const USER_DASHBOARD_ROUTES = [

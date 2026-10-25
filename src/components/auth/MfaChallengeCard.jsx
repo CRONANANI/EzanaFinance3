@@ -114,7 +114,7 @@ export default function MfaChallengeCard({ redirectTo = '/home' }) {
     } = await supabase.auth.getUser();
     const isPartner = !!user?.app_metadata?.partner_role;
     await supabase.auth.signOut();
-    window.location.assign(isPartner ? '/auth/partner-login' : '/auth/signin');
+    window.location.assign(isPartner ? '/auth/partner/signin' : '/auth/signin');
   }
 
   return (

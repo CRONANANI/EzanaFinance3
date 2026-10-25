@@ -47,7 +47,7 @@ export default function LoginChoicePage({ searchParams }) {
           </Link>
 
           <Link
-            href={withRedirect('/auth/partner-login')}
+            href={withRedirect('/auth/partner/signin')}
             className="portal-login-choice group flex min-h-[6.5rem] items-center gap-4 rounded-xl border border-amber-400/25 bg-amber-500/5 p-4 transition-all hover:border-amber-400/50 hover:bg-amber-500/10"
           >
             <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-amber-500/15 transition-colors group-hover:bg-amber-500/25">

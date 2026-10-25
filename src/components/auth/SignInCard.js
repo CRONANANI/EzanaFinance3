@@ -95,7 +95,9 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
           onboarded = false;
         }
       }
-      return { path: onboarded ? '/partner-home' : '/onboarding' };
+      if (!onboarded) return { path: '/onboarding' };
+      // The partner form honours ?redirect= (QA PAR-9), sanitized above.
+      return { path: variant === 'partner' && redirectTo ? destination : '/partner-home' };
     }
 
     return { path: destination };
@@ -402,7 +404,7 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
                   <div className="h-px flex-1 bg-slate-200" />
                 </div>
                 <Link
-                  href="/auth/partner-login"
+                  href="/auth/partner/signin"
                   className="flex w-full items-center justify-center gap-2 rounded-lg border border-amber-300 bg-amber-50 py-3 text-sm font-medium text-amber-700 transition-all hover:border-amber-400 hover:bg-amber-100"
                 >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">

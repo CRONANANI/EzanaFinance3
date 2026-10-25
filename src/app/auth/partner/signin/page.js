@@ -1,11 +1,19 @@
 import SignInCard from '@/components/auth/SignInCard';
+import { safeInternalPath } from '@/lib/sanitize';
 
 export const metadata = {
   title: 'Partner Login | Ezana Finance',
   description: 'Sign in to your Ezana Finance partner or creator account.',
 };
 
-export default function PartnerSignInPage() {
+export default function PartnerSignInPage({ searchParams }) {
+  /* ?redirect= (set by the middleware and the legacy /auth/partner-login
+     redirect) is honoured after sign-in; unsafe targets are dropped. */
+  const requested = searchParams?.redirect ?? searchParams?.next;
+  const redirectTo = safeInternalPath(requested, '') || undefined;
+  const oauthErrorMessage =
+    typeof searchParams?.error === 'string' ? searchParams.error : undefined;
+
   return (
     <div className="signin-dark-lock flex min-h-screen w-full items-center justify-center bg-[#f8fafb]">
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
@@ -13,7 +21,7 @@ export default function PartnerSignInPage() {
         <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-teal-500/10 blur-3xl" />
       </div>
 
-      <SignInCard variant="partner" />
+      <SignInCard variant="partner" redirectTo={redirectTo} oauthErrorMessage={oauthErrorMessage} />
     </div>
   );
 }
