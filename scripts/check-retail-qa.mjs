@@ -5,7 +5,7 @@
    Usage: node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-retail-qa.mjs */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { buildCommunityImagePath } from '../src/lib/community-utils.js';
 import { createMockSupabase } from './lib/mock-supabase.mjs';
 import { normalizePost } from '../src/components/community/redesign_v2/normalizePost.js';
@@ -274,4 +274,20 @@ test('poll vote: option validated before the old vote is deleted; support inbox'
   const patch = src.slice(src.indexOf('export async function PATCH'));
   assert.ok(patch.indexOf('Invalid option') < patch.indexOf(".from('poll_votes')"));
   assert.match(read('src/app/api/support/contact/route.js'), /'support@ezana\.world'/);
+});
+
+/* ── RET-9 ───────────────────────────────────────────────────────────── */
+
+test('login lockout cannot be driven by unauthenticated client-reported failures', () => {
+  const route = read('src/app/api/auth/record-attempt/route.js');
+  assert.ok(!/request\.json\(/.test(route), 'record-attempt must not read email/success from the body');
+  assert.match(route, /getCurrentUser\(request\)/);
+  assert.match(route, /status: 401/);
+  assert.ok(!existsSync(new URL('../src/app/api/auth/check-lockout/route.js', import.meta.url)));
+  const lib = read('src/lib/login-lockout.js');
+  assert.match(lib, /success: true/);
+  assert.ok(!/success: false|isLockedOut/.test(lib));
+  const card = read('src/components/auth/SignInCard.js');
+  assert.ok(!card.includes('check-lockout') && !card.includes('423'));
+  assert.ok(!/success: !signInError/.test(card));
 });

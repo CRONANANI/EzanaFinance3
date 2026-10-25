@@ -108,27 +108,22 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
 
     let navigating = false;
     try {
-      const lockRes = await fetch('/api/auth/check-lockout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      if (lockRes.status === 423) {
-        const data = await lockRes.json();
-        setError(data.error);
-        return;
-      }
-
+      /* No app-level lockout (QA RET-9): brute force is limited by Supabase
+         Auth's own rate limits. Only a successful sign-in is recorded, by the
+         now-authenticated session; failures are never client-reported. */
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      await fetch('/api/auth/record-attempt', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, success: !signInError }),
-      }).catch(() => {});
+      if (!signInError) {
+        await fetch('/api/auth/record-attempt', {
+          method: 'POST',
+          headers: signInData?.session?.access_token
+            ? { Authorization: `Bearer ${signInData.session.access_token}` }
+            : {},
+        }).catch(() => {});
+      }
 
       if (signInError) {
         if (signInError.message?.toLowerCase().includes('disabled')) {

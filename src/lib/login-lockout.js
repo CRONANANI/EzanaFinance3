@@ -1,98 +1,35 @@
 import { getAdminClient } from '@/lib/supabase';
-import { logSecurityEvent } from './security-audit';
 
-const MAX_FAILED_ATTEMPTS = 10;
-const LOCKOUT_WINDOW_MINUTES = 60;
-
-async function findUserIdByEmail(admin, email) {
-  const normalized = email.toLowerCase();
-  let page = 1;
-  const perPage = 200;
-
-  while (page <= 50) {
-    const { data: listData, error: listErr } = await admin.auth.admin.listUsers({ page, perPage });
-    if (listErr) {
-      console.warn('[login-lockout] listUsers failed:', listErr.message);
-      return null;
-    }
-    const users = listData?.users ?? [];
-    const match = users.find((u) => u.email?.toLowerCase() === normalized);
-    if (match) return match.id;
-    if (users.length < perPage) break;
-    page += 1;
-  }
-  return null;
-}
-
-/**
- * Record a login attempt and check if the account should be locked.
+/*
+ * Login attempt log (QA RET-9).
+ *
+ * The app used to count failed sign-ins reported by the browser
+ * (`POST /api/auth/record-attempt { email, success:false }`) and lock the
+ * email out (HTTP 423) after 10. Those reports were unauthenticated, so
+ * anyone could lock a victim's web sign-in by posting their email ten times.
+ *
+ * Now only a SUCCESSFUL sign-in is recorded, and only for the authenticated
+ * caller (the route derives the email from the session, never the body).
+ * There is no app-level lockout: brute-force protection is Supabase Auth's
+ * own credential rate limits plus the per-IP limits on the auth endpoints
+ * (`enforceAuthRateLimit`). A server-counted lockout can return if password
+ * sign-in is ever proxied through a server route that sees the outcome.
  */
-export async function recordLoginAttempt(email, ip, success) {
-  const admin = getAdminClient();
 
-  await admin.from('login_attempts').insert({
-    email: email.toLowerCase(),
-    ip_address: ip,
-    success,
+/** Record a successful sign-in for an authenticated user. Never throws. */
+export async function recordLoginSuccess(admin, { email, ip }) {
+  const { error } = await admin.from('login_attempts').insert({
+    email: String(email || '').toLowerCase(),
+    ip_address: ip || null,
+    success: true,
   });
-
-  if (success) {
-    return { locked: false, attemptsRemaining: MAX_FAILED_ATTEMPTS };
-  }
-
-  const cutoff = new Date(Date.now() - LOCKOUT_WINDOW_MINUTES * 60 * 1000).toISOString();
-  const { count, error } = await admin
-    .from('login_attempts')
-    .select('id', { count: 'exact', head: true })
-    .eq('email', email.toLowerCase())
-    .eq('success', false)
-    .gte('created_at', cutoff);
-
   if (error) {
-    console.warn('[login-lockout] count query failed:', error.message);
-    return { locked: false, attemptsRemaining: MAX_FAILED_ATTEMPTS };
+    console.warn('[login-lockout] success insert failed:', error.message);
+    return { recorded: false };
   }
-
-  const failedCount = count || 0;
-  const remaining = Math.max(0, MAX_FAILED_ATTEMPTS - failedCount);
-
-  if (failedCount >= MAX_FAILED_ATTEMPTS) {
-    // SECURITY: do NOT auto-disable the account here. Attempts are reported
-    // by the (unauthenticated) client via /api/auth/record-attempt, so the
-    // counts are spoofable — flipping profiles.is_disabled from this signal
-    // let anyone permanently lock an arbitrary victim out by email
-    // (lockout DoS). Brute-force protection remains: Supabase Auth's own
-    // credential rate limits + the per-IP limits on the auth endpoints.
-    // A hard lockout may return once sign-in is proxied server-side so
-    // failures can be counted from a trusted path.
-    await logSecurityEvent('account_locked_brute_force', {
-      ip,
-      details: {
-        email: email.toLowerCase(),
-        failedAttempts: failedCount,
-        windowMinutes: LOCKOUT_WINDOW_MINUTES,
-      },
-    });
-
-    return { locked: true, attemptsRemaining: 0 };
-  }
-
-  return { locked: false, attemptsRemaining: remaining };
+  return { recorded: true };
 }
 
-/**
- * Check if an email is currently locked out (without recording an attempt).
- */
-export async function isLockedOut(email) {
-  const admin = getAdminClient();
-  const cutoff = new Date(Date.now() - LOCKOUT_WINDOW_MINUTES * 60 * 1000).toISOString();
-
-  const { count } = await admin
-    .from('login_attempts')
-    .select('id', { count: 'exact', head: true })
-    .eq('email', email.toLowerCase())
-    .eq('success', false)
-    .gte('created_at', cutoff);
-
-  return (count || 0) >= MAX_FAILED_ATTEMPTS;
+export function getLoginAttemptsClient() {
+  return getAdminClient();
 }

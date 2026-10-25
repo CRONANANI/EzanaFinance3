@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server';
-import { recordLoginAttempt } from '@/lib/login-lockout';
+import { getCurrentUser } from '@/lib/supabase';
+import { getLoginAttemptsClient, recordLoginSuccess } from '@/lib/login-lockout';
 import { enforceAuthRateLimit } from '@/lib/auth-rate-limit';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
+/*
+ * QA RET-9: records a successful sign-in for the AUTHENTICATED caller only.
+ * The email comes from the session, never the body, and client-reported
+ * failures are no longer accepted (they let anyone lock a victim's sign-in).
+ * An unauthenticated call is a 401 and records nothing.
+ */
 export async function POST(request) {
   const rl = await checkRateLimit(`auth:record-attempt:${getClientIp(request)}`, {
     limit: 20,
@@ -16,17 +23,17 @@ export async function POST(request) {
   if (rateLimited) return rateLimited;
 
   try {
-    const { email, success } = await request.json();
-    if (!email || typeof email !== 'string' || typeof success !== 'boolean') {
-      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+    const user = await getCurrentUser(request);
+    if (!user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const ip = getClientIp(request);
-
-    const result = await recordLoginAttempt(email, ip, success);
+    const result = await recordLoginSuccess(getLoginAttemptsClient(), {
+      email: user.email,
+      ip: getClientIp(request),
+    });
     return NextResponse.json(result);
   } catch (e) {
     console.error('[record-attempt]', e);
-    return NextResponse.json({ locked: false, attemptsRemaining: 10 }, { status: 500 });
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }
