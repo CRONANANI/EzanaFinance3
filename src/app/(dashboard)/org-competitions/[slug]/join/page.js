@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import { getUserClient, getAdminClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { loadConfig } from '@/lib/competitions/onboarding';
@@ -32,11 +33,22 @@ export default async function CompetitionJoinPage({ params }) {
       </div>
     );
   }
+  // A draft is unpublished: only its host org may see it (ORG-13).
+  if (competition.status === 'draft' && competition.host_org_id !== member.org_id) notFound();
 
   const config = await loadConfig(admin, competition.id);
   const [{ count: myTeams }, { count: myPending }] = await Promise.all([
-    admin.from('pitch_teams').select('id', { count: 'exact', head: true }).eq('competition_id', competition.id).eq('org_id', member.org_id),
-    admin.from('pitch_join_requests').select('id', { count: 'exact', head: true }).eq('competition_id', competition.id).eq('org_id', member.org_id).eq('status', 'pending'),
+    admin
+      .from('pitch_teams')
+      .select('id', { count: 'exact', head: true })
+      .eq('competition_id', competition.id)
+      .eq('org_id', member.org_id),
+    admin
+      .from('pitch_join_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('competition_id', competition.id)
+      .eq('org_id', member.org_id)
+      .eq('status', 'pending'),
   ]);
 
   return (

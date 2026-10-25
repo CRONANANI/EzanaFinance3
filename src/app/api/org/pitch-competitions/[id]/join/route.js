@@ -35,11 +35,9 @@ export const POST = withApiGuard(
       .maybeSingle();
     if (!comp) return bad('Not found', 404);
     if (comp.host_org_id === member.org_id) return bad('Your org hosts this competition.', 400);
-    if (!['open', 'draft'].includes(comp.status) && comp.status !== 'in_progress') {
-      // Registration is only meaningful before/at the open phase.
-      if (comp.status === 'complete' || comp.status === 'archived')
-        return bad('Registration is closed.', 400);
-    }
+    // Registration happens only while the competition is open (ORG-13): a draft
+    // is not published yet, and later phases are closed to new teams.
+    if (comp.status !== 'open') return bad('Registration is not open for this competition.', 409);
 
     const config = await loadConfig(admin, comp.id);
 
