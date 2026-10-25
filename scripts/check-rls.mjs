@@ -288,3 +288,38 @@ test('plaid_*: read own holdings only, never write', (t) => {
     denied(() => asA(`update ${tbl} set amount = 1e9 where user_id = '${A}'`));
   }
 });
+
+/* ── QA remediation (Phase 8.2): static assertions on the new migrations ── */
+import { readFileSync } from 'node:fs';
+
+const migText = (name) => readFileSync(path.join(MIG_DIR, name), 'utf8');
+
+test('org_members_guard_privileged exists and covers role, tier, sub_role, is_active, can_invite', () => {
+  const sql = migText('20261026120000_org_privilege_guards.sql');
+  assert.match(sql, /create or replace function public\.org_members_guard_privileged\(\)/);
+  assert.match(sql, /create trigger org_members_guard_privileged/);
+  for (const col of ['role', 'tier', 'sub_role', 'is_active', 'can_invite']) {
+    assert.match(sql, new RegExp(`new\\.${col}\\s+is distinct from old\\.${col}`), col);
+  }
+});
+
+test('the org_pitches update policy carries a WITH CHECK', () => {
+  const sql = migText('20261026120000_org_privilege_guards.sql');
+  const policy = sql.slice(sql.indexOf('create policy "members update pitches in org"'));
+  assert.ok(policy.length > 0, 'policy present');
+  const body = policy.slice(0, policy.indexOf('$p$'));
+  assert.match(body, /for update/);
+  assert.match(body, /with check \(/);
+});
+
+test('no owner FOR ALL policy remains on mock_portfolios, user_course_progress, user_learning_badges', (t) => {
+  const sql = migText('20261026130000_server_only_gamification_writes.sql');
+  const code = sql.replace(/--.*$/gm, '');
+  assert.doesNotMatch(code, /create policy[^;]*for all/i);
+  if (skip(t)) return;
+  const n = pg.sql(
+    `select count(*) from pg_policies where schemaname = 'public' and cmd = 'ALL'
+       and tablename in ('mock_portfolios', 'user_course_progress', 'user_learning_badges')`,
+  );
+  assert.equal(n, '0');
+});
