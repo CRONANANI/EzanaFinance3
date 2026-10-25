@@ -15,6 +15,10 @@ import {
 } from '../src/lib/org-trading-server.js';
 import { resolvePrefsAccess } from '../src/lib/org-notification-prefs.js';
 import { mergeImportRows, POSITION_IMPORT_CONFLICT } from '../src/lib/org-position-import.js';
+import {
+  computeStandings,
+  refreshCompetitionStandings,
+} from '../src/lib/org-competition-standings.js';
 
 const NOW = Date.parse('2026-10-25T12:00:00Z');
 
@@ -218,4 +222,90 @@ test('ORG-12: duplicate tickers in one import merge (summed shares, weighted cos
   assert.equal(aapl.shares, 40);
   assert.equal(aapl.avg_cost, 175);
   assert.equal(aapl.name, 'Apple');
+});
+
+/* ── ORG-15: competition standings refresh ──────────────────────────── */
+
+test('ORG-15: standings rank by return since the baseline; no baseline = unranked', () => {
+  const entries = [
+    { id: 'e1', org_id: 'o1' },
+    { id: 'e2', org_id: 'o2' },
+    { id: 'e3', org_id: 'o3' },
+    { id: 'e4', org_id: 'o4' },
+  ];
+  const value = new Map([
+    ['o1', 110],
+    ['o2', 120],
+    ['o3', 90],
+    ['o4', 50],
+  ]);
+  const base = new Map([
+    ['e1', 100],
+    ['e2', 100],
+    ['e3', 100],
+  ]);
+  const out = Object.fromEntries(computeStandings(entries, value, base).map((r) => [r.id, r]));
+  assert.equal(out.e2.rank, 1);
+  assert.equal(out.e2.return_pct, 20);
+  assert.equal(out.e1.rank, 2);
+  assert.equal(out.e3.rank, 3);
+  assert.equal(out.e3.return_pct, -10);
+  assert.equal(out.e4.return_pct, null);
+  assert.equal(out.e4.rank, null);
+  assert.equal(out.e4.current_value, 50);
+});
+
+test('ORG-15: refresh updates open inter-org competitions only', async () => {
+  const db = createMockSupabase({
+    seed: {
+      competitions: [
+        { id: 'c1', is_inter_org: true, status: 'active', starts_at: '2026-10-01T00:00:00Z' },
+        { id: 'c2', is_inter_org: true, status: 'scored', starts_at: '2026-09-01T00:00:00Z' },
+      ],
+      competition_org_entries: [
+        {
+          id: 'e1',
+          competition_id: 'c1',
+          org_id: 'o1',
+          status: 'active',
+          created_at: '2026-10-02T00:00:00Z',
+        },
+        {
+          id: 'e2',
+          competition_id: 'c1',
+          org_id: 'o2',
+          status: 'active',
+          created_at: '2026-09-20T00:00:00Z',
+        },
+        {
+          id: 'e3',
+          competition_id: 'c2',
+          org_id: 'o1',
+          status: 'active',
+          created_at: '2026-09-02T00:00:00Z',
+          rank: 7,
+        },
+      ],
+      org_fund_snapshots: [
+        { org_id: 'o1', snapshot_date: '2026-10-01', total_value: 1000 },
+        { org_id: 'o2', snapshot_date: '2026-10-05', total_value: 2000 },
+      ],
+    },
+  });
+  const res = await refreshCompetitionStandings(
+    db,
+    new Map([
+      ['o1', 1100],
+      ['o2', 2100],
+    ]),
+  );
+  assert.deepEqual(res.failures, []);
+  assert.equal(res.entries, 2);
+  const rows = Object.fromEntries(db.rows('competition_org_entries').map((r) => [r.id, r]));
+  assert.equal(rows.e1.return_pct, 10);
+  assert.equal(rows.e1.rank, 1);
+  assert.equal(rows.e2.return_pct, 5, 'baseline = earliest snapshot after the start');
+  assert.equal(rows.e2.rank, 2);
+  assert.equal(rows.e1.current_value, 1100);
+  assert.equal(rows.e3.rank, 7, 'closed competition untouched');
 });

@@ -8,6 +8,7 @@ import {
   attributionByPitch,
 } from '@/lib/org-attribution';
 import { cronRoute } from '@/lib/cron/with-cron-lock';
+import { refreshCompetitionStandings } from '@/lib/org-competition-standings';
 
 /**
  * Daily (weekday) org fund pipeline: refresh every active position's
@@ -16,6 +17,8 @@ import { cronRoute } from '@/lib/cron/with-cron-lock';
  * so the chart, headline, and snapshot history reconcile by construction.
  * Replaces the manager-must-visit `?snapshot=1` path as the primary writer
  * (that path remains as an on-demand refresh; same conflict key).
+ * Then refreshes competition_org_entries (current_value, return_pct, rank)
+ * for every open inter-university competition from those same values.
  *
  * Idempotent: safe to rerun — prices converge, snapshot upserts on
  * (org_id, snapshot_date). Auth: CRON_SECRET bearer only (cronRoute).
@@ -45,6 +48,7 @@ async function run(request) {
     const snapshotDate = new Date().toISOString().slice(0, 10);
     let snapshots = 0;
     const failures = [];
+    const valueByOrg = new Map();
     for (const orgId of orgIds) {
       try {
         const [performance, byAnalyst, bySector, byPitch] = await Promise.all([
@@ -68,6 +72,9 @@ async function run(request) {
           },
           { onConflict: 'org_id,snapshot_date' },
         );
+        if (Number.isFinite(Number(performance.total_value))) {
+          valueByOrg.set(orgId, Number(performance.total_value));
+        }
         if (error) failures.push({ orgId, error: error.message });
         else snapshots += 1;
       } catch (e) {
@@ -75,11 +82,17 @@ async function run(request) {
       }
     }
 
+    // 4) Competition standings (QA ORG-15) — after today's snapshots exist,
+    //    so an entry made today gets a baseline.
+    const competitions = await refreshCompetitionStandings(admin, valueByOrg);
+    for (const f of competitions.failures) failures.push({ competition: true, ...f });
+
     return NextResponse.json({
       ok: failures.length === 0,
       pricing,
       orgs: orgIds.length,
       snapshots,
+      competitions: { competitions: competitions.competitions, entries: competitions.entries },
       failures,
     });
   } catch (e) {
