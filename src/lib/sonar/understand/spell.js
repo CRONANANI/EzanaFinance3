@@ -6,7 +6,7 @@
  * touches an all-caps token, a $TICKER, a number, a quoted phrase or a token
  * with internal dots (U.S.).
  */
-import { BIGRAMS, FREQ, LEXICON, STOPWORDS } from '@/lib/sonar/understand/lexicons';
+import { BIGRAMS, FREQ, GEO_LEXICON, LEXICON, STOPWORDS } from '@/lib/sonar/understand/lexicons';
 
 /** Damerau-Levenshtein, optimal string alignment. */
 export function dl(a, b) {
@@ -36,9 +36,24 @@ const protectedToken = (raw) =>
   /^["']/.test(raw) ||
   /\./.test(raw);
 
+/* A demonym or adjective built on a place name ("Indian" on India,
+   "Canadian" on Canada, "German" on Germany, "Mexican" on Mexico) is a real
+   word, not a typo. The token is still read as the place, so the country
+   resolves, but it is returned as a reading rather than a correction, and
+   the UI never offers "Search instead for" the words the visitor typed
+   correctly. The stem drops one trailing vowel or y from the place name;
+   what follows the stem must be a demonym ending. */
+const DEMONYM_TAIL = /^(?:n|an|ian|ese|ish|i)?$/;
+export function isDerivedPlaceWord(word, candidate) {
+  if (!GEO_LEXICON.has(candidate)) return false;
+  const stem = candidate.replace(/[aeiouy]$/, '');
+  return stem.length >= 4 && word.startsWith(stem) && DEMONYM_TAIL.test(word.slice(stem.length));
+}
+
 export function correct(rawTokens) {
   const out = [...rawTokens];
   const corrections = [];
+  const readings = [];
   rawTokens.forEach((raw, i) => {
     if (protectedToken(raw)) return;
     const w = raw.toLowerCase().replace(/[^a-z]/g, '');
@@ -57,8 +72,9 @@ export function correct(rawTokens) {
     }
     if (best) {
       out[i] = matchCase(raw, best.word);
-      corrections.push({ from: raw, to: out[i] });
+      if (isDerivedPlaceWord(w, best.word)) readings.push({ from: raw, to: out[i] });
+      else corrections.push({ from: raw, to: out[i] });
     }
   });
-  return { tokens: out, corrections };
+  return { tokens: out, corrections, readings };
 }

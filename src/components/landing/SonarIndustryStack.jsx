@@ -8,13 +8,14 @@
  */
 import './sonar-understood.css';
 
-export function IndustryStack({ dossier, newsSlot = null }) {
+export function IndustryStack({ dossier, newsSlot = null, topSlot = null }) {
   const stages = dossier?.registry?.stages || [];
   const companies = dossier?.registry?.companies || [];
   const echo = (dossier?.echo || []).slice(0, 2);
-  if (!stages.length && !newsSlot && !echo.length) return null;
+  if (!stages.length && !newsSlot && !echo.length && !topSlot) return null;
   return (
     <div className="snr-stack">
+      {topSlot}
       {stages.length ? (
         <div className="snr-fund snr-fund--wide">
           <div className="snr-card-head">

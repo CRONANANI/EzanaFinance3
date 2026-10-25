@@ -20,6 +20,16 @@
   color: var(--snr-text);
   font-weight: 600;
 }
+/* Oct 25: each line is a <p>, and the legacy light-mode sheet forces
+   `body.light-mode p` near-black with !important, which painted "Showing
+   results for" dark on the green ground. Same two-class answer as the band's
+   mode-stability block (sonar-band.css). */
+.snr-band .snr-understood-line {
+  color: var(--snr-text-muted) !important;
+}
+.snr-band .snr-understood strong {
+  color: var(--snr-text) !important;
+}
 .snr-understood-link,
 .snr-understood-chip {
   all: unset;

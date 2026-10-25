@@ -13,8 +13,13 @@ import './sonar-signup-cta.css';
  * without scrolling. Copy stays inside what a free account actually unlocks
  * (the guest gate in SonarSection: 5 free pings, then a free account keeps
  * pinging across every dataset and opens charts, filings and trackers).
+ *
+ * Oct 25: variant 'rail' is the same card as a tall, narrow column beside the
+ * research brief (the results band places it, see SonarSection leftRail).
+ * The default 'bar' stays as the sticky bottom bar, which /datasets now
+ * shows only below the rail's breakpoint.
  */
-export function SonarSignupCta({ query }) {
+export function SonarSignupCta({ query, variant = 'bar' }) {
   const { isAuthenticated, loading } = useAuth();
   if (loading || isAuthenticated) return null;
 
@@ -23,11 +28,14 @@ export function SonarSignupCta({ query }) {
   const signupHref = `/auth/continue?intent=signup&next=${encodeURIComponent(next)}`;
   const loginHref = `/auth/continue?next=${encodeURIComponent(next)}`;
 
+  const rail = variant === 'rail';
+  const titleId = rail ? 'ssc-rail-title' : 'ssc-title';
+
   return (
-    <section className="ssc" aria-labelledby="ssc-title">
+    <section className={`ssc${rail ? ' ssc--rail' : ''}`} aria-labelledby={titleId}>
       <div className="ssc-copy">
         <span className="ssc-kicker">Free Ezana account</span>
-        <h2 id="ssc-title" className="ssc-title">
+        <h2 id={titleId} className="ssc-title">
           {q ? (
             <>
               There is more on <span className="ssc-query">{q}</span> than one brief.

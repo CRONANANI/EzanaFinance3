@@ -409,6 +409,13 @@ const geoWords = [
 ];
 const politicianWords = POLITICIANS.map((p) => p[0]);
 
+/** Place-name words only (countries and US states), normalised like LEXICON.
+    The spell pass reads it to tell a demonym ("Indian", "Canadian") from a
+    typo: the first is a word built on the place, the second a misspelling. */
+export const GEO_LEXICON = new Set(
+  geoWords.map((w) => w.toLowerCase().replace(/[^a-z&]/g, '')).filter((w) => w.length >= 3),
+);
+
 export const LEXICON = new Set(
   [...INTENT_VOCAB, ...industryWords, ...geoWords, ...politicianWords]
     .map((w) => w.toLowerCase().replace(/[^a-z&]/g, ''))

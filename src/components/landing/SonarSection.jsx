@@ -482,6 +482,13 @@ function initialsOf(name) {
   return `${first}${last}`.toUpperCase();
 }
 
+/* The /datasets guest rail (Oct 25): its width, its gap to the research
+   brief, and the narrowest viewport that keeps three readable columns
+   beside it. Mirrored in app/datasets/sonar/sonar.css. */
+const RAIL_W = 208;
+const RAIL_GAP = 24;
+const RAIL_MIN_VW = 1360;
+
 const PARTY_CLASS = { D: 'snr-face--d', R: 'snr-face--r', I: 'snr-face--i' };
 
 /* A portrait with fallbacks: `srcs` is tried in order (the mirrored copy,
@@ -517,10 +524,11 @@ const seatOf = (p) => [p.party, p.state].filter(Boolean).join(' · ');
  * time, then the members whose traded tickers overlap most. Every figure is an
  * estimate from disclosed ranges, and the card says so.
  */
-function PoliticianStack({ dossier, onGate }) {
+function PoliticianStack({ dossier, onGate, topSlot = null }) {
   const s = dossier.stats || {};
   return (
     <div className="snr-stack">
+      {topSlot}
       <div className="snr-fund snr-fund--wide snr-fund--pol">
         <div className="snr-fund-head">
           <Face
@@ -611,11 +619,22 @@ function PoliticianStack({ dossier, onGate }) {
   );
 }
 
-export function SonarSection({ variant = 'band', query = null, onPing = null } = {}) {
+export function SonarSection({
+  variant = 'band',
+  query = null,
+  onPing = null,
+  leftRail = null,
+  stackTop = null,
+} = {}) {
   /* 'page': the same band embedded on the Datasets search page. No takeover,
      no demo, no header (the page has its own), and it pings `query` as soon
      as it mounts or the query changes. */
   const isPage = variant === 'page';
+  /* Oct 25 (/datasets only): leftRail is the guest account card, set in a
+     narrow column left of the research brief; stackTop is the matching
+     dataset cards, set at the top of the right-hand stack. Both are null on
+     the landing band, which is untouched. */
+  const railOn = isPage && Boolean(leftRail);
   const bandRef = useRef(null);
   const inputRef = useRef(null);
   const formRef = useRef(null);
@@ -1761,7 +1780,11 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
       const clampedBanner = Math.min(Math.max(0, rawBanner), window.innerHeight * 0.25);
       const bannerPx = 0; /* see above; clampedBanner is the documented alternative */
       const budgetH = Math.max(MIN_BUDGET_PX, window.innerHeight - bannerPx);
-      const base = geometryFor(window.innerWidth, budgetH, navPx);
+      /* The guest rail takes a strip off the left of the content box, so the
+         three columns are budgeted against what is left. Below RAIL_MIN_VW
+         the rail is hidden in CSS and the sticky account bar shows instead. */
+      const railPx = railOn && window.innerWidth >= RAIL_MIN_VW ? RAIL_W + RAIL_GAP : 0;
+      const base = geometryFor(window.innerWidth - railPx, budgetH, navPx);
       /* On the Datasets page the band has no header or exit arrow, so their
          tracks collapse and the cards start at the top. */
       const g = isPage
@@ -1818,7 +1841,8 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
       px('--snr-rest-region', g.restRegion);
       /* Resting placement of the sliced dossier, both derived from the live
          left column so the poke tracks the grid at every width. */
-      px('--snr-poke-left', g.gutter + g.content - g.colL + 40);
+      px('--snr-rail-l', railPx);
+      px('--snr-poke-left', g.gutter + railPx + g.content - g.colL + 40);
       px('--snr-poke-w', g.colL + 60);
 
       /* Flags the stylesheet switches on, so a tier change is one attribute
@@ -1856,7 +1880,46 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
       if (raf) window.cancelAnimationFrame(raf);
       bannerWatch.disconnect();
     };
-  }, [isPage]);
+  }, [isPage, railOn]);
+
+  /* Oct 25 (/datasets): the nav logo sits on the same left line as the ping
+     bar's text. The x is published on <body> (never <html>, whose style
+     attribute the geometry effect observes), and the Datasets sheet reads
+     it for the nav container. Removed on unmount so no other page sees it. */
+  useEffect(() => {
+    if (!isPage) return undefined;
+    const input = inputRef.current;
+    const band = bandRef.current;
+    if (!input || !band) return undefined;
+    const body = document.body;
+    let raf = 0;
+    const publish = () => {
+      raf = 0;
+      const r = input.getBoundingClientRect();
+      const pad = parseFloat(getComputedStyle(input).paddingLeft) || 0;
+      const inner = band.querySelector('.snr-inner');
+      const right = inner ? inner.getBoundingClientRect().right : window.innerWidth;
+      body.style.setProperty('--snrp-logo-x', `${Math.max(0, Math.round(r.left + pad))}px`);
+      body.style.setProperty(
+        '--snrp-nav-right',
+        `${Math.max(0, Math.round(document.documentElement.clientWidth - right))}px`,
+      );
+    };
+    const schedule = () => {
+      if (!raf) raf = window.requestAnimationFrame(publish);
+    };
+    schedule();
+    const ro = new ResizeObserver(schedule);
+    ro.observe(band);
+    window.addEventListener('resize', schedule);
+    return () => {
+      if (raf) window.cancelAnimationFrame(raf);
+      ro.disconnect();
+      window.removeEventListener('resize', schedule);
+      body.style.removeProperty('--snrp-logo-x');
+      body.style.removeProperty('--snrp-nav-right');
+    };
+  }, [isPage, railOn]);
 
   /* Stage 2 pins the orbital top-right with its top edge on the headline, and
      drops the stack below it by exactly the orbital's reach.
@@ -2253,7 +2316,7 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
     <>
       <section
         ref={bandRef}
-        className={`snr-band${isPage ? ' snr-band--page' : ''}${inView ? '' : ' snr-paused'}${composed ? ' snr-composed' : ''}${
+        className={`snr-band${isPage ? ' snr-band--page' : ''}${railOn ? ' snr-band--rail' : ''}${inView ? '' : ' snr-paused'}${composed ? ' snr-composed' : ''}${
           lockedIn ? ' snr-frozen' : ''
         }${hasPinged ? ' snr-live' : ' snr-hold'}${stage2 ? ' snr-stage2' : ''}${
           live?.dossier?.fundamentals ? ' snr-has-fund' : ''
@@ -2262,6 +2325,7 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
         <div className="snr-grid-layer" aria-hidden="true" />
 
         <div ref={innerRef} className="snr-inner">
+          {railOn ? <aside className="snr-rail-l">{leftRail}</aside> : null}
           <div className="snr-head">
             <div ref={eyebrowRef} className="snr-eyebrow-row">
               <span className="snr-eyebrow">Sonar</span>
@@ -2931,20 +2995,29 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
               .snr-news shells, so the geometry budget, the card entrance and
               the orbital's "last card landed" signal all hold unchanged. */}
             {stage2 && live?.dossier?.kind === 'politician' ? (
-              <PoliticianStack dossier={live.dossier} onGate={() => openGate()} />
+              <PoliticianStack
+                dossier={live.dossier}
+                onGate={() => openGate()}
+                topSlot={stackTop}
+              />
             ) : null}
 
             {/* A country: the key chart (the series furthest from its own
               20-year norm, switchable) in the price chart's slot, and the
               country's news in the news slot. Same shells again. */}
             {stage2 && live?.dossier?.kind === 'country' ? (
-              <CountryStack dossier={live.dossier} onGate={() => openGate()} newsSlot={railNews} />
+              <CountryStack
+                dossier={live.dossier}
+                onGate={() => openGate()}
+                newsSlot={railNews}
+                topSlot={stackTop}
+              />
             ) : null}
 
             {/* An industry: the value-chain preview in the price chart's slot.
               The full Industry Layout renders below the deck on the page. */}
             {stage2 && live?.dossier?.kind === 'industry' ? (
-              <IndustryStack dossier={live.dossier} newsSlot={railNews} />
+              <IndustryStack dossier={live.dossier} newsSlot={railNews} topSlot={stackTop} />
             ) : null}
 
             {stage2 &&
@@ -2954,8 +3027,10 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
             (live?.dossier?.fundamentals ||
               live?.dossier?.news?.length ||
               live?.dossier?.echo?.length ||
-              railNews) ? (
+              railNews ||
+              stackTop) ? (
               <div className="snr-stack">
+                {stackTop}
                 {live.dossier.fundamentals ? (
                   <div className="snr-fund snr-fund--wide">
                     <div className="snr-fund-head">
@@ -3066,6 +3141,12 @@ export function SonarSection({ variant = 'band', query = null, onPing = null } =
               </div>
             ) : null}
           </div>
+
+          {/* A ping that lands without a dossier has no right-hand stack, so
+            the matching dataset cards fall back to a row under the columns. */}
+          {stackTop && answerReady && !stage2 ? (
+            <div className="snr-stack-fallback">{stackTop}</div>
+          ) : null}
         </div>
 
         {/* One continue control: a translucent white bar flush with the band's

@@ -6,6 +6,10 @@
  * renders each with the hub's ListCard under a small header naming the
  * dataset it comes from (linked). Renders nothing while loading, on failure,
  * or when no card matches, so the results read as before in those cases.
+ *
+ * Oct 25: variant 'rail' sets the cards at the top of the results band's
+ * right-hand stack on the green ground: transparent fill, white ink, mint
+ * hairlines and a single column (dataset-card-matches.css).
  */
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -13,7 +17,7 @@ import ListCard from '@/components/datasets/hub/dataset-cards/ListCard';
 import '@/app/datasets/[hub]/hub.css';
 import './dataset-card-matches.css';
 
-export default function DatasetCardMatches({ query }) {
+export default function DatasetCardMatches({ query, variant = 'block' }) {
   const [state, setState] = useState({ q: null, cards: [] });
 
   useEffect(() => {
@@ -32,7 +36,10 @@ export default function DatasetCardMatches({ query }) {
   if (state.q !== String(query || '').trim() || !state.cards.length) return null;
 
   return (
-    <section className="dcm" aria-label="Matching dataset cards">
+    <section
+      className={`dcm${variant === 'rail' ? ' dcm--rail' : ''}`}
+      aria-label="Matching dataset cards"
+    >
       <div className="dcm-head">
         <span className="dcm-title">Matching dataset cards</span>
         <span className="dcm-rule" />

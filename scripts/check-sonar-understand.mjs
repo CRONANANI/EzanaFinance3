@@ -166,3 +166,23 @@ test('lowercase "per" and "can" are not country codes', () => {
   const u = understandDeterministic('where does canada rank by gdp per capita');
   assert.deepEqual(chosen(u), ['country:CA']);
 });
+
+/* ── demonyms are words, not typos (Oct 25) ── */
+
+test('"indian economy report 2026" reads India without a "Search instead" correction', () => {
+  const u = understandDeterministic('indian economy report 2026');
+  assert.deepEqual(u.corrections, []);
+  assert.equal(u.display, 'India');
+  assert.ok(has(u, 'country:IN'));
+});
+
+test('demonyms built on a place name never surface as corrections', () => {
+  for (const q of ['canadian banks', 'german inflation', 'mexican economy', 'russian exports']) {
+    assert.deepEqual(understandDeterministic(q).corrections, [], q);
+  }
+});
+
+test('a real misspelling of a place is still reported as a correction', () => {
+  const u = understandDeterministic('indai economy');
+  assert.ok(u.corrections.length > 0);
+});

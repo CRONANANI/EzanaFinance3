@@ -387,14 +387,17 @@ function EmpireCard({ dossier, onGate }) {
 /* newsSlot (Oct 19): the /datasets results band hands in the "news around it"
    rail, which takes the Relevant News card's place. Absent on the landing band,
    which keeps the card exactly as before. */
-export function CountryStack({ dossier, onGate, newsSlot = null }) {
+export function CountryStack({ dossier, onGate, newsSlot = null, topSlot = null }) {
   const hasStory = Boolean(dossier.oecd?.stories?.length);
   const hasEmpire = Boolean(dossier.empire?.dims?.length);
   const news = dossier.news || [];
   const echo = dossier.echo || [];
-  if (!hasStory && !hasEmpire && !news.length && !echo.length && !newsSlot) return null;
+  if (!hasStory && !hasEmpire && !news.length && !echo.length && !newsSlot && !topSlot) {
+    return null;
+  }
   return (
     <div className="snr-stack">
+      {topSlot}
       {hasStory ? (
         <StoryCard dossier={dossier} />
       ) : hasEmpire ? (

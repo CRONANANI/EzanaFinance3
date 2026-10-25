@@ -190,6 +190,62 @@
   }
 }
 
+/* ── Oct 25: the rail variant (ssc--rail) ────────────────────────────────
+   The same card as a tall, narrow column left of the research brief on the
+   /datasets results (SonarSection places it; the column itself and its
+   breakpoint live in app/datasets/sonar/sonar.css). Copy, the three
+   benefits and the actions stack top to bottom; the card is sticky under the
+   nav so it stays beside the brief while the results scroll. */
+.ssc.ssc--rail {
+  --ssc-rail-top: 80px;
+  position: sticky;
+  top: var(--ssc-rail-top);
+  margin: 0;
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+  min-height: min(520px, calc(100vh - var(--ssc-rail-top) - 24px));
+  min-height: min(520px, calc(100dvh - var(--ssc-rail-top) - 24px));
+}
+.ssc.ssc--rail .ssc-title {
+  margin-top: 8px;
+  font-size: 18px;
+  line-height: 1.3;
+}
+.ssc.ssc--rail .ssc-sub {
+  margin-top: 8px;
+}
+.ssc.ssc--rail .ssc-list {
+  display: grid;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--brand-band-mint) 18%, transparent);
+}
+.ssc.ssc--rail .ssc-item {
+  align-items: flex-start;
+}
+.ssc.ssc--rail .ssc-item i {
+  margin-top: 1px;
+}
+.ssc.ssc--rail .ssc-actions {
+  margin-top: auto;
+  align-items: stretch;
+  gap: 10px;
+}
+.ssc.ssc--rail .ssc-btns {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+.ssc.ssc--rail .ssc-btn {
+  justify-content: center;
+}
+.ssc.ssc--rail .ssc-note {
+  text-align: center;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ssc-btn {
     transition: none;

@@ -251,10 +251,16 @@ function buildDisplay(intent, entities, corrected) {
 /** The deterministic understanding: no I/O, unit tested. */
 export function understandDeterministic(raw, { noCorrect = false, tickerName = null } = {}) {
   const rawTokens = tokenize(raw);
-  const spell = noCorrect ? { tokens: rawTokens, corrections: [] } : correct(rawTokens);
+  const spell = noCorrect
+    ? { tokens: rawTokens, corrections: [], readings: [] }
+    : correct(rawTokens);
   const tokens = spell.tokens;
-  const corrected = spell.corrections.length
-    ? spell.corrections.reduce(
+  /* Readings (a demonym read as its place) rewrite the working text exactly
+     like corrections, so intent and display are unchanged, but only real
+     corrections are reported to the UI's "Showing results for" notice. */
+  const rewrites = [...spell.corrections, ...(spell.readings || [])];
+  const corrected = rewrites.length
+    ? rewrites.reduce(
         (s, c) =>
           s.replace(new RegExp(`\\b${c.from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`), c.to),
         normalise(raw),

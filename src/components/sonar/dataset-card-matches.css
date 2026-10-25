@@ -109,3 +109,89 @@
     padding: 0 16px;
   }
 }
+
+/* ── Oct 25: the rail variant (dcm--rail) ────────────────────────────────
+   At the top of the /datasets results band's right-hand stack, on the green
+   ground: one column, no fill, white ink, a mint hairline outline and mint
+   row rules so the ranked list reads clearly. Text selectors are two classes
+   deep with !important where the legacy light-mode sheet forces h3 and p
+   near-black (same answer as sonar-band.css's mode-stability block). */
+.dcm.dcm--rail {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  gap: 10px;
+  animation: dcm-rail-in var(--snr-t-base, 420ms) var(--snr-ease-out, ease-out) both;
+}
+.dcm.dcm--rail .dcm-grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+.dcm.dcm--rail .dcm-meta,
+.dcm.dcm--rail .dcm-from-label {
+  color: color-mix(in srgb, white 85%, transparent);
+}
+.dcm.dcm--rail .dcm-rule {
+  background: color-mix(in srgb, var(--brand-band-mint) 24%, transparent);
+}
+.dcm.dcm--rail .hdc.hub-card {
+  background: transparent;
+  box-shadow: none;
+  border: 1px solid color-mix(in srgb, var(--brand-band-mint) 34%, transparent);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  color: white;
+}
+.dcm.dcm--rail .hdc .hub-card-title {
+  color: white !important;
+  font-size: 15px;
+}
+.dcm.dcm--rail .hdc .hub-card-desc,
+.dcm.dcm--rail .hdc .hub-card-src,
+.dcm.dcm--rail .hdc .hub-empty {
+  color: color-mix(in srgb, white 85%, transparent) !important;
+}
+.dcm.dcm--rail .hdc-row {
+  border-top-color: color-mix(in srgb, var(--brand-band-mint) 20%, transparent);
+  padding: 7px 0;
+}
+.dcm.dcm--rail .hdc-rank {
+  color: var(--brand-band-mint);
+}
+.dcm.dcm--rail .hdc-name {
+  color: white;
+}
+.dcm.dcm--rail .hdc-name a:hover {
+  color: var(--brand-band-mint);
+}
+.dcm.dcm--rail .hdc-meta {
+  color: color-mix(in srgb, white 85%, transparent);
+}
+.dcm.dcm--rail .hdc-value {
+  color: white;
+}
+.dcm.dcm--rail .hdc-row.is-searched {
+  background: color-mix(in srgb, var(--brand-band-mint) 16%, transparent);
+}
+.dcm.dcm--rail .hdc-row.has-gap {
+  border-top-color: color-mix(in srgb, var(--brand-band-mint) 34%, transparent);
+}
+.dcm.dcm--rail .hdc-searched {
+  color: var(--brand-band-mint);
+  background: color-mix(in srgb, var(--brand-band-mint) 18%, transparent);
+}
+@keyframes dcm-rail-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dcm.dcm--rail {
+    animation: none;
+  }
+}
