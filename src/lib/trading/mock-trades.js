@@ -7,13 +7,23 @@
 const UNIQUE_VIOLATION = '23505';
 const REQ_ID_RE = /^[A-Za-z0-9_-]{8,64}$/;
 
-export async function listMockTrades(client, userId) {
+export const MOCK_TRADES_DEFAULT_LIMIT = 200;
+export const MOCK_TRADES_MAX_LIMIT = 5000;
+
+/** Clamp a requested page size; anything unparsable falls back to the default. */
+export function clampMockTradesLimit(raw) {
+  const n = Number.parseInt(raw, 10);
+  if (!Number.isFinite(n) || n <= 0) return MOCK_TRADES_DEFAULT_LIMIT;
+  return Math.min(n, MOCK_TRADES_MAX_LIMIT);
+}
+
+export async function listMockTrades(client, userId, { limit = MOCK_TRADES_DEFAULT_LIMIT } = {}) {
   const { data, error } = await client
     .from('mock_trades')
     .select('id, ticker, quantity, price, trade_type, total_amount, created_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
-    .limit(200);
+    .limit(clampMockTradesLimit(limit));
   if (error) return { status: 500, body: { error: error.message } };
   return { status: 200, body: { trades: data || [] } };
 }

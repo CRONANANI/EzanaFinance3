@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { usePartner } from '@/contexts/PartnerContext';
 import { useOrg } from '@/contexts/OrgContext';
+import { buildMockPortfolioCsv } from '@/lib/trading/mock-portfolio-csv';
 
 const REQUEST_OPTIONS = [
   {
@@ -65,6 +66,44 @@ export function DataRequestPanel() {
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [exporting, setExporting] = useState(false);
+  const [exportMsg, setExportMsg] = useState(null);
+
+  /* QA RET-21: the CSV is built from the user's own mock trade log. */
+  const exportPortfolioCsv = useCallback(async () => {
+    if (exporting) return;
+    setExporting(true);
+    setExportMsg(null);
+    try {
+      const r = await fetch('/api/mock-trades?limit=5000', {
+        credentials: 'include',
+        cache: 'no-store',
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data?.error || 'Could not load your mock trades.');
+      const trades = Array.isArray(data?.trades) ? data.trades : [];
+      if (trades.length === 0) {
+        setExportMsg({ kind: 'info', text: 'Your mock portfolio has no trades to export yet.' });
+        return;
+      }
+      const blob = new Blob([buildMockPortfolioCsv(trades)], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ezana-mock-portfolio-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e) {
+      setExportMsg({
+        kind: 'error',
+        text: e?.message || 'Could not export your portfolio. Please try again.',
+      });
+    } finally {
+      setExporting(false);
+    }
+  }, [exporting]);
 
   const accountSummary = [
     isPartner && `Partner account${partnerRole ? ` (${partnerRole})` : ''}`,
@@ -150,14 +189,21 @@ export function DataRequestPanel() {
         <button
           type="button"
           className="settings-btn-secondary"
-          onClick={() => {
-            alert(
-              'Export feature coming soon: use the Reset Portfolio button on the Mock Trading page to save a CSV before resetting.',
-            );
-          }}
+          onClick={exportPortfolioCsv}
+          disabled={exporting}
+          aria-busy={exporting || undefined}
         >
-          <i className="bi bi-download" /> Export Current Portfolio as CSV
+          <i className="bi bi-download" aria-hidden="true" />{' '}
+          {exporting ? 'Preparing CSV...' : 'Export Current Portfolio as CSV'}
         </button>
+        {exportMsg ? (
+          <p
+            className={exportMsg.kind === 'error' ? 'settings-field-error' : 'settings-toggle-desc'}
+            role={exportMsg.kind === 'error' ? 'alert' : 'status'}
+          >
+            {exportMsg.text}
+          </p>
+        ) : null}
       </div>
 
       <div className="settings-section">

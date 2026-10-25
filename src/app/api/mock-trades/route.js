@@ -8,9 +8,11 @@ export const dynamic = 'force-dynamic';
 /* Both handlers read and write as the signed-in user (RLS: own rows only). */
 
 export const GET = withApiGuard(
-  async (_request, user) => {
+  async (request, user) => {
     try {
-      const { status, body } = await listMockTrades(getUserClient(), user.id);
+      // ?limit= lets the CSV export read the whole log (clamped server-side).
+      const limit = new URL(request.url).searchParams.get('limit');
+      const { status, body } = await listMockTrades(getUserClient(), user.id, { limit });
       return NextResponse.json(body, { status });
     } catch (e) {
       return NextResponse.json({ error: e?.message || 'Server error' }, { status: 500 });
