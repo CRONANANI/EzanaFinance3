@@ -4,6 +4,8 @@ import { getUserClient, getAdminClient, isServerSupabaseConfigured } from '@/lib
 
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { logOrgAction } from '@/lib/org-audit';
+import { resend } from '@/lib/services/resend';
+import { inviteLink, sendOrgInviteEmail, validateInviteScope } from '@/lib/org-invites';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -66,8 +68,9 @@ export const GET = withApiGuard(
 
 /* POST /api/org/invites: create an invite. Executives, or members granted
    can_invite (non-executive roles only, and they cannot pass the right on).
-   Enforces the org's email domain. Returns a copyable invite link (no
-   transactional email wired). */
+   Enforces the org's email domain and that team_id / cohort_id are this
+   org's. Emails the invite link (Resend) and also returns it so it can be
+   copied by hand; a failed send is reported as emailSent:false, not an error. */
 export const POST = withApiGuard(
   async (request) => {
     const supabase = getUserClient();
@@ -98,7 +101,7 @@ export const POST = withApiGuard(
 
     const { data: org } = await getAdminClient()
       .from('organizations')
-      .select('email_domain')
+      .select('name, email_domain')
       .eq('id', member.org_id)
       .maybeSingle();
     const domain = (org?.email_domain || '').toLowerCase();
@@ -110,6 +113,12 @@ export const POST = withApiGuard(
       return NextResponse.json({ error: 'Server not configured for invites' }, { status: 503 });
     }
     const service = getAdminClient();
+    const scopeErr = await validateInviteScope(service, member.org_id, {
+      team_id: body?.team_id || null,
+      cohort_id: body?.cohort_id || null,
+    });
+    if (scopeErr) return NextResponse.json({ error: scopeErr }, { status: 400 });
+
     const { data: invite, error } = await service
       .from('org_invites')
       .insert({
@@ -136,7 +145,15 @@ export const POST = withApiGuard(
       detail: { email, role, can_invite: canInvite },
     });
 
-    return NextResponse.json({ invite }, { status: 201 });
+    const link = inviteLink(invite.token);
+    const emailSent = await sendOrgInviteEmail(resend, {
+      email,
+      orgName: org?.name || null,
+      role,
+      link,
+    });
+
+    return NextResponse.json({ ok: true, invite, link, emailSent }, { status: 201 });
   },
   { requireAuth: true },
 );

@@ -36,8 +36,11 @@ export const DELETE = withApiGuard(
       .eq('org_id', member.org_id)
       .eq('status', 'pending');
     if (!isExec) q = q.eq('invited_by', member.user_id);
-    const { error } = await q;
+    const { data: revoked, error } = await q.select('id');
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!revoked || revoked.length === 0) {
+      return NextResponse.json({ error: 'No pending invite found' }, { status: 404 });
+    }
 
     return NextResponse.json({ ok: true });
   },

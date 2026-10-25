@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { safeInternalPath } from '@/lib/sanitize';
+import { isInviteReturnPath } from '@/lib/org-invites';
 import { Eye, EyeOff, ArrowRight, GraduationCap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -51,6 +52,13 @@ const OrgSignInCard = ({ redirectTo = '/org-team-hub' }) => {
 
       if (signInError) {
         setError(signInError.message);
+        return;
+      }
+
+      // Returning to an invite: skip the "not a member" sign-outs and go back
+      // to the accept screen, which joins them to the org.
+      if (isInviteReturnPath(redirectTo)) {
+        router.replace(safeInternalPath(redirectTo, '/org-team-hub'));
         return;
       }
 

@@ -78,7 +78,15 @@ export function InviteOnboarding() {
       if (!res.ok) throw new Error(data?.error || 'Invite failed');
       setInvites((prev) => [data.invite, ...prev]);
       setForm(EMPTY);
-      setMsg({ ok: 'Invite created. Copy the link below and share it.' });
+      setMsg(
+        data.emailSent === false
+          ? {
+              err: "Invite created, but the email couldn't be sent. Copy the link below and share it.",
+            }
+          : {
+              ok: `Invite emailed to ${data.invite?.email || 'the invitee'}. You can also copy the link below.`,
+            },
+      );
     } catch (err) {
       setMsg({ err: err.message });
     } finally {
@@ -87,8 +95,18 @@ export function InviteOnboarding() {
   };
 
   const revoke = async (id) => {
-    setInvites((prev) => prev.map((i) => (i.id === id ? { ...i, status: 'revoked' } : i)));
-    await fetch(`/api/org/invites/${id}`, { method: 'DELETE' }).catch(() => {});
+    setMsg(null);
+    try {
+      const res = await fetch(`/api/org/invites/${id}`, { method: 'DELETE' });
+      // 404: already accepted, revoked or gone. Either way it is no longer pending.
+      if (!res.ok && res.status !== 404) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || 'Could not revoke the invite');
+      }
+      setInvites((prev) => prev.map((i) => (i.id === id ? { ...i, status: 'revoked' } : i)));
+    } catch (err) {
+      setMsg({ err: err.message });
+    }
   };
 
   const inviteLink = (token) =>

@@ -120,8 +120,10 @@ export default function OrgInviteAccept({ token }) {
   }
 
   const inv = state.invite;
-  const signInHref = `/auth/org-login?redirect=${encodeURIComponent(
-    `/auth/org-login?invite=${token}`,
+  // The standard sign-in (not the org sign-in) because the invitee is not a
+  // member yet; it returns here so they can press Join.
+  const signInHref = `/auth/signin?redirect=${encodeURIComponent(
+    `/auth/org-login?invite=${encodeURIComponent(token)}`,
   )}`;
   const matches = sessionEmail && sessionEmail === inv.email.toLowerCase();
 
