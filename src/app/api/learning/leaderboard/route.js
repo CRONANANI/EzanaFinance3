@@ -16,7 +16,7 @@ function deriveTier(totalElo) {
 }
 
 export const GET = withApiGuard(
-  async (request) => {
+  async (request, user) => {
     try {
       const supabase = getUserClient();
       const url = new URL(request.url);
@@ -103,5 +103,7 @@ export const GET = withApiGuard(
       return NextResponse.json({ error: 'Failed to fetch leaderboard' }, { status: 500 });
     }
   },
-  { requireAuth: false },
+  /* Friends and you: needs the signed-in user (it read an undeclared
+     `user` and 500'd for everyone before). */
+  { requireAuth: true },
 );

@@ -151,6 +151,7 @@ export const GET = withApiGuard(
   async (request, user, context) => {
     let riskCategory = 'Moderate';
     if (user) {
+      const supabase = getUserClient();
       const { data: profile } = await supabase
         .from('profiles')
         .select('investor_profile, risk_category')

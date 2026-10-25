@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { getUserClient } from '@/lib/supabase';
+import { getAuthUser, getUserClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request) {
   try {
     const supabase = getUserClient();
+    /* Optional: signed-out visitors see the events without watch state. */
+    const user = await getAuthUser(request);
     const { data: events } = await supabase
       .from('community_events')
       .select('*')

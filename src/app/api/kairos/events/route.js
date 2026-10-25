@@ -17,6 +17,7 @@ export const GET = withApiGuard(
       const status = searchParams.get('status');
       const region = searchParams.get('region');
 
+      const supabase = getUserClient();
       let q = supabase
         .from('kairos_geopolitical_events')
         .select('*')

@@ -42,6 +42,7 @@ export const GET = withApiGuard(
         return NextResponse.json({ error: 'region required' }, { status: 400 });
       }
 
+      const supabase = getUserClient();
       const { data: rows, error } = await supabase
         .from('kairos_correlations')
         .select('*')

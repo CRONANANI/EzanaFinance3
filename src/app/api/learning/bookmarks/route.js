@@ -11,37 +11,40 @@ function rewardForLevel(level) {
   return 15;
 }
 
-export async function GET() {
-  try {
-    const supabase = getUserClient();
-    const { data: rows } = await supabase
-      .from('user_course_bookmarks')
-      .select('course_id, created_at')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+export const GET = withApiGuard(
+  async (request, user) => {
+    try {
+      const supabase = getUserClient();
+      const { data: rows } = await supabase
+        .from('user_course_bookmarks')
+        .select('course_id, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
-    const bookmarks = (rows || [])
-      .map((r) => {
-        const course = getCourseById(r.course_id);
-        if (!course) return null;
-        return {
-          course_id: r.course_id,
-          title: course.title,
-          track: course.track,
-          level: course.level,
-          duration_minutes: course.duration_minutes,
-          reward_elo: rewardForLevel(course.level),
-          created_at: r.created_at,
-        };
-      })
-      .filter(Boolean);
+      const bookmarks = (rows || [])
+        .map((r) => {
+          const course = getCourseById(r.course_id);
+          if (!course) return null;
+          return {
+            course_id: r.course_id,
+            title: course.title,
+            track: course.track,
+            level: course.level,
+            duration_minutes: course.duration_minutes,
+            reward_elo: rewardForLevel(course.level),
+            created_at: r.created_at,
+          };
+        })
+        .filter(Boolean);
 
-    return NextResponse.json({ bookmarks });
-  } catch (err) {
-    console.error('[learning/bookmarks GET]', err);
-    return NextResponse.json({ error: 'Failed' }, { status: 500 });
-  }
-}
+      return NextResponse.json({ bookmarks });
+    } catch (err) {
+      console.error('[learning/bookmarks GET]', err);
+      return NextResponse.json({ error: 'Failed' }, { status: 500 });
+    }
+  },
+  { requireAuth: true },
+);
 
 export const POST = withApiGuard(
   async (request, user) => {

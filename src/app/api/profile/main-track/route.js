@@ -6,22 +6,25 @@ export const dynamic = 'force-dynamic';
 
 const VALID_TRACKS = ['stocks', 'crypto', 'betting', 'commodities', 'risk'];
 
-export async function GET() {
-  try {
-    const supabase = getUserClient();
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('user_settings')
-      .eq('id', user.id)
-      .maybeSingle();
+export const GET = withApiGuard(
+  async (request, user) => {
+    try {
+      const supabase = getUserClient();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('user_settings')
+        .eq('id', user.id)
+        .maybeSingle();
 
-    return NextResponse.json({
-      main_track: profile?.user_settings?.learning_main_track || 'stocks',
-    });
-  } catch {
-    return NextResponse.json({ main_track: 'stocks' });
-  }
-}
+      return NextResponse.json({
+        main_track: profile?.user_settings?.learning_main_track || 'stocks',
+      });
+    } catch {
+      return NextResponse.json({ main_track: 'stocks' });
+    }
+  },
+  { requireAuth: true },
+);
 
 export const POST = withApiGuard(
   async (request, user) => {

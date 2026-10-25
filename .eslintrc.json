@@ -89,7 +89,7 @@
               },
               {
                 "name": "@/lib/api-guard",
-                "message": "withApiGuard is a route-handler wrapper — it has no meaning in client code."
+                "message": "withApiGuard is a route-handler wrapper \u2014 it has no meaning in client code."
               },
               {
                 "name": "@/lib/services/fmp",
@@ -116,6 +116,17 @@
             ]
           }
         ]
+      }
+    },
+    {
+      "files": ["src/app/api/**/*.js", "src/lib/**/*.js"],
+      "env": {
+        "node": true,
+        "es2022": true,
+        "browser": true
+      },
+      "rules": {
+        "no-undef": "error"
       }
     }
   ]
