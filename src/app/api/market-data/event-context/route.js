@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { withApiGuard } from '@/lib/api-guard';
 import { fetchAV, getAlphaVantageApiKey } from '@/lib/alpha-vantage';
+import { enforceAiRateLimit, reserveGlobalAiCall } from '@/lib/ai-rate-limit';
+import { HAIKU_MODEL } from '@/lib/sonar/llm-providers';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -12,7 +14,9 @@ export const runtime = 'nodejs';
 
 const MAX_EVENTS = 20;
 const ARTICLE_MAX_AGE_MS = 14 * 86400000; // prefer articles within ~14 days
-const BLURB_MODEL = 'claude-opus-4-8';
+/* Security assessment F-07: a short blurb does not need Opus. Haiku is the
+   model the Sonar pipeline runs; imported so the two cannot drift. */
+const BLURB_MODEL = HAIKU_MODEL;
 const BLURB_SYSTEM =
   'You are a concise financial analyst. In 2-3 sentences, explain the market ' +
   'implications of the given upcoming event: what it could signal, and which ' +
@@ -20,8 +24,11 @@ const BLURB_SYSTEM =
   'No preamble, no disclaimers, just the analysis.';
 
 // In-memory enrichment cache. The implication of a fixed event ("June CPI")
-// doesn't change hour to hour, so cache by event id + date for ~6h to avoid
-// re-generating blurbs (and re-hitting the news API) on every page load.
+// doesn't change hour to hour, so cache for ~6h to avoid re-generating blurbs
+// (and re-hitting the news API) on every page load. The cache is shared by all
+// users, so it is keyed on the CONTENT the blurb was built from (title,
+// category, symbol, date), never on the client's id alone: otherwise one user
+// could plant a blurb for a crafted title under a real event's id.
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const CACHE_MAX = 1000;
 const cache = new Map(); // key -> { at, value: { article, blurb } }
@@ -42,6 +49,37 @@ function cacheSet(key, value) {
     const oldest = cache.keys().next().value;
     cache.delete(oldest);
   }
+}
+
+/* Client-supplied event fields reach the prompt, so bound and clean them. */
+// eslint-disable-next-line no-control-regex
+const CONTROL = /[\x00-\x1f\x7f]+/g;
+const SYMBOL_RE = /^[A-Z][A-Z0-9.-]{0,9}$/;
+const DATE_RE = /^\d{4}-\d{2}-\d{2}/;
+
+function cleanText(v, max) {
+  if (typeof v !== 'string') return '';
+  return v.replace(CONTROL, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+}
+
+function sanitizeEvent(ev) {
+  if (!ev || typeof ev !== 'object') return null;
+  const id = cleanText(ev.id, 120);
+  if (!id) return null;
+  const symbol = cleanText(ev.symbol, 12).toUpperCase();
+  const fullDate = cleanText(ev.fullDate, 40);
+  return {
+    id,
+    title: cleanText(ev.title, 160),
+    category: cleanText(ev.category, 40),
+    type: cleanText(ev.type, 40),
+    symbol: SYMBOL_RE.test(symbol) ? symbol : '',
+    fullDate: DATE_RE.test(fullDate) ? fullDate.slice(0, 10) : '',
+  };
+}
+
+function contentKey(ev) {
+  return [ev.title, ev.category || ev.type, ev.symbol, ev.fullDate].join('|');
 }
 
 /** Parse Alpha Vantage's `YYYYMMDDTHHMMSS` timestamp to epoch ms (0 if unknown). */
@@ -91,6 +129,8 @@ async function fetchTickerArticle(symbol) {
 /** 2-3 sentence market-implications blurb via Claude, or null. */
 async function generateBlurb(event) {
   if (!process.env.ANTHROPIC_API_KEY) return null;
+  if (!event.title) return null;
+  if (!(await reserveGlobalAiCall('event-context'))) return null;
   try {
     const anthropic = new Anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY,
@@ -101,8 +141,7 @@ async function generateBlurb(event) {
     const userText = `Event: ${event.title || 'Upcoming market event'}. Category: ${
       event.category || event.type || 'general'
     }.${date}`;
-    // Opus 4.8: thinking off (omitted) for a fast, cheap short generation; no
-    // temperature/top_p (removed on 4.8). A 2-3 sentence answer fits easily.
+    // A 2-3 sentence answer fits easily in 200 tokens.
     const msg = await anthropic.messages.create({
       model: BLURB_MODEL,
       max_tokens: 200,
@@ -123,12 +162,10 @@ async function generateBlurb(event) {
 
 /** Enrich a single event. Article preferred; blurb fallback; never throws. */
 async function enrichEvent(ev) {
-  const id = ev?.id;
-  const key = `${id}|${ev?.fullDate || ''}`;
-  if (id) {
-    const cached = cacheGet(key);
-    if (cached) return { id, ...cached };
-  }
+  const id = ev.id;
+  const key = contentKey(ev);
+  const cached = cacheGet(key);
+  if (cached) return { id, ...cached };
 
   let value = { article: null, blurb: null };
   try {
@@ -137,7 +174,7 @@ async function enrichEvent(ev) {
       if (article) value = { article, blurb: null };
     }
     if (!value.article) {
-      const blurb = await generateBlurb(ev || {});
+      const blurb = await generateBlurb(ev);
       if (blurb) value = { article: null, blurb };
     }
   } catch {
@@ -145,12 +182,17 @@ async function enrichEvent(ev) {
   }
 
   // Cache only successful enrichments so transient failures retry next time.
-  if (id && (value.article || value.blurb)) cacheSet(key, value);
+  if (value.article || value.blurb) cacheSet(key, value);
   return { id, ...value };
 }
 
 export const POST = withApiGuard(
-  async (request) => {
+  async (request, user) => {
+    /* F-07: signed-in only (the Schedule band lives on the dashboard home),
+       per-user minute/day caps, plus the global daily budget per model call. */
+    const blocked = await enforceAiRateLimit(user.id, 'event-context');
+    if (blocked) return blocked;
+
     let body;
     try {
       body = await request.json();
@@ -158,7 +200,9 @@ export const POST = withApiGuard(
       return NextResponse.json({ error: 'Invalid JSON', results: [] }, { status: 400 });
     }
 
-    const events = Array.isArray(body?.events) ? body.events.slice(0, MAX_EVENTS) : [];
+    const events = (Array.isArray(body?.events) ? body.events.slice(0, MAX_EVENTS) : [])
+      .map(sanitizeEvent)
+      .filter(Boolean);
     if (events.length === 0) {
       return NextResponse.json({ results: [] });
     }
@@ -169,10 +213,7 @@ export const POST = withApiGuard(
       s.status === 'fulfilled' ? s.value : { id: events[i]?.id, article: null, blurb: null },
     );
 
-    return NextResponse.json(
-      { results },
-      { headers: { 'Cache-Control': 's-maxage=21600, stale-while-revalidate=3600' } },
-    );
+    return NextResponse.json({ results }, { headers: { 'Cache-Control': 'private, max-age=600' } });
   },
-  { requireAuth: false },
+  { requireAuth: true },
 );

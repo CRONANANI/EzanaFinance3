@@ -5,6 +5,8 @@ import { alpaca } from '@/lib/alpaca';
 import { placeOrderOnce, readIdempotencyKey } from '@/lib/trading/idempotent';
 import { assertAlpacaAccountOwner } from '@/lib/trading/account-guard';
 import { awardXP } from '@/lib/rewards';
+import { checkRateLimit } from '@/lib/persistent-rate-limit';
+import { validateOrder, checkOrderVelocity } from '@/lib/trading/order-validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,8 +24,16 @@ export const POST = withApiGuard(
       );
     }
     try {
-      const body = await request.json();
-      const { symbol, qty, notional, side, type = 'market', time_in_force = 'day' } = body;
+      let body;
+      try {
+        body = await request.json();
+      } catch {
+        return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+      }
+      /* F-17: enums, symbol, size caps before anything else. */
+      const checked = validateOrder(body);
+      if (!checked.ok) return NextResponse.json({ error: checked.error }, { status: 400 });
+      const orderBody = checked.order;
       const admin = getAdminClient();
 
       let account = null;
@@ -47,21 +57,8 @@ export const POST = withApiGuard(
       if (!account || !['ACTIVE', 'APPROVED'].includes(account.account_status)) {
         return NextResponse.json({ error: 'No active brokerage account' }, { status: 400 });
       }
-      if (!symbol || !['buy', 'sell'].includes(String(side).toLowerCase())) {
-        return NextResponse.json({ error: 'symbol and side are required' }, { status: 400 });
-      }
-
-      const orderBody = {
-        symbol: String(symbol).toUpperCase(),
-        side: String(side).toLowerCase(),
-        type,
-        time_in_force,
-      };
-      if (notional != null && notional !== '') orderBody.notional = String(notional);
-      else if (qty != null && qty !== '') orderBody.qty = String(qty);
-      else {
-        return NextResponse.json({ error: 'Either qty or notional is required' }, { status: 400 });
-      }
+      const tooFast = await checkOrderVelocity(user.id, { checkRateLimit });
+      if (tooFast) return NextResponse.json({ error: tooFast }, { status: 429 });
 
       /* The stored account id must be this user's at Alpaca (F-03). */
       await assertAlpacaAccountOwner(alpaca, account.alpaca_account_id, user);

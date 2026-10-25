@@ -37,6 +37,27 @@ test('safeInternalPath rejects absolute URLs and garbage', () => {
   assert.equal(safeInternalPath(42), '/home');
 });
 
+test('safeInternalPath rejects control-character bypasses (F-06)', () => {
+  for (const evil of [
+    '/\t/evil.com',
+    '/\n/evil.com',
+    '/\r\n//evil.com',
+    decodeURIComponent('/%09/evil.com'),
+    decodeURIComponent('/%0d%0a/evil.com/verify'),
+    '/ /evil.com',
+    '/\u007f/evil.com',
+    '/a\\b',
+  ]) {
+    assert.equal(safeInternalPath(evil), '/home', JSON.stringify(evil));
+  }
+});
+
+test('safeInternalPath keeps query and hash, normalises dot segments in place', () => {
+  assert.equal(safeInternalPath('/settings?tab=security#mfa'), '/settings?tab=security#mfa');
+  assert.equal(safeInternalPath('/a/../home'), '/home');
+  assert.equal(safeInternalPath('/%2Fevil.com'), '/%2Fevil.com');
+});
+
 test('safeInternalPath honors a custom fallback', () => {
   assert.equal(safeInternalPath('//evil.com', '/org-team-hub'), '/org-team-hub');
 });

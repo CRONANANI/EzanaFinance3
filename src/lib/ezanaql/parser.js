@@ -13,6 +13,8 @@
  * dataset are not multiplied by the number of matches.
  */
 
+import { likePatternProblem } from './like';
+
 export class EzanaQLError extends Error {
   constructor(message) {
     super(message);
@@ -411,6 +413,10 @@ class Parser {
     if (this.isKw('LIKE') || this.isKw('CONTAINS')) {
       const op = this.next().value; // LIKE | CONTAINS
       const val = this.parseValue();
+      if (op === 'LIKE' && val?.type === 'lit') {
+        const problem = likePatternProblem(val.value);
+        if (problem) throw new EzanaQLError(problem);
+      }
       return { type: 'text', op: op.toLowerCase(), expr: left, value: val };
     }
     if (this.isKw('STARTS') || this.isKw('ENDS')) {

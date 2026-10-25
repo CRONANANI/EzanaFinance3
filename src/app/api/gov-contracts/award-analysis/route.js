@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
 import { HAIKU_MODEL } from '@/lib/sonar/llm-providers';
+import { reserveGlobalAiCall } from '@/lib/ai-rate-limit';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -145,7 +146,11 @@ export const POST = withApiGuard(
       body = {};
     }
     const generatedAwardId = body?.generatedAwardId;
-    if (!generatedAwardId || typeof generatedAwardId !== 'string') {
+    if (
+      !generatedAwardId ||
+      typeof generatedAwardId !== 'string' ||
+      generatedAwardId.length > 200
+    ) {
       return NextResponse.json({ error: 'generatedAwardId is required' }, { status: 400 });
     }
 
@@ -194,6 +199,15 @@ export const POST = withApiGuard(
       // No fabricated fallback — the client shows an honest error and still
       // renders the facts panel.
       return NextResponse.json({ error: 'Analysis is temporarily unavailable.' }, { status: 503 });
+    }
+
+    /* F-07: public route, so bound total spend with a global daily budget of
+       model calls (cache hits above cost nothing and are not counted). */
+    if (!(await reserveGlobalAiCall('award-analysis'))) {
+      return NextResponse.json(
+        { error: 'Analysis is temporarily unavailable. Please try again tomorrow.' },
+        { status: 503, headers: { 'Retry-After': '3600' } },
+      );
     }
 
     let text = '';

@@ -8,6 +8,8 @@ import { alpacaRequest, alpaca } from '@/lib/alpaca';
 import { getAdminClient } from '@/lib/supabase';
 import { createTransferOnce, readIdempotencyKey } from '@/lib/trading/idempotent';
 import { assertAlpacaAccountOwner } from '@/lib/trading/account-guard';
+import { checkRateLimit } from '@/lib/persistent-rate-limit';
+import { validateTransfer, checkTransferVelocity } from '@/lib/trading/order-validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,6 +38,9 @@ export const POST = withApiGuard(
       const body = await request.json();
 
       if (body.action === 'link_bank') {
+        if (typeof body.processorToken !== 'string' || body.processorToken.length > 512) {
+          return NextResponse.json({ error: 'processorToken required' }, { status: 400 });
+        }
         const relationship = await alpacaRequest(`/v1/accounts/${accountId}/ach_relationships`, {
           method: 'POST',
           body: JSON.stringify({
@@ -60,24 +65,23 @@ export const POST = withApiGuard(
             { status: 400 },
           );
         }
-        const amount = Math.round(Number(body.amount) * 100) / 100;
-        const direction = String(body.direction || 'INCOMING').toUpperCase();
-        if (!body.relationshipId || !Number.isFinite(amount) || amount <= 0) {
-          return NextResponse.json(
-            { error: 'relationshipId and amount required' },
-            { status: 400 },
-          );
-        }
-        if (!['INCOMING', 'OUTGOING'].includes(direction)) {
-          return NextResponse.json({ error: 'Invalid direction' }, { status: 400 });
-        }
+        /* F-17: amount cap, direction enum, per-user count and dollar caps. */
+        const checked = validateTransfer(body);
+        if (!checked.ok) return NextResponse.json({ error: checked.error }, { status: 400 });
+        const { amount, direction, relationshipId } = checked.transfer;
+        const tooMuch = await checkTransferVelocity(
+          supabaseAdmin,
+          { userId: user.id, idempotencyKey, amount },
+          { checkRateLimit },
+        );
+        if (tooMuch) return NextResponse.json({ error: tooMuch }, { status: 429 });
         const { transfer, row, replay } = await createTransferOnce(
           { admin: supabaseAdmin, alpaca },
           {
             userId: user.id,
             accountId,
             idempotencyKey,
-            relationshipId: body.relationshipId,
+            relationshipId,
             amount,
             direction,
           },
@@ -102,7 +106,7 @@ export const POST = withApiGuard(
       );
     }
   },
-  { requireAuth: true },
+  { requireAuth: true, strict: true },
 );
 
 export const GET = withApiGuard(

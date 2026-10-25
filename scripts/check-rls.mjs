@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-/* Security assessment P0 regression suite (F-01, F-02, F-03, F-11).
+/* Security assessment P0 regression suite (F-01, F-02, F-03, F-11), plus
+   the P1 over-broad policies (waitlist, Echo, plaid_*).
    Starts a throwaway LOCAL Postgres (never production), loads the tables
    with the policies the live database had before the fix, applies the
    migrations, then acts as two synthetic signed-in users (role
@@ -27,9 +28,34 @@ const MIGRATIONS = readdirSync(MIG_DIR)
 const A = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const B = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 
+/* Tables outside the shared stub, with the policies they have live. */
+const LIVE_P1 = `
+create table public.waitlist (id uuid primary key default gen_random_uuid(), email text, status text default 'pending');
+alter table public.waitlist enable row level security;
+create policy "Allow authenticated to view" on public.waitlist for select to authenticated using (true);
+create policy "Allow public inserts" on public.waitlist for insert with check (true);
+create table public.echo_writer_applications (id uuid primary key default gen_random_uuid(), user_id uuid, status text default 'pending');
+alter table public.echo_writer_applications enable row level security;
+create policy "Users see own application" on public.echo_writer_applications for all using (auth.uid() = user_id);
+create table public.echo_articles (id uuid primary key default gen_random_uuid(), author_id uuid, title text,
+  article_status text default 'draft', is_featured boolean not null default false);
+alter table public.echo_articles enable row level security;
+create policy "Anyone can read published articles" on public.echo_articles for select using (article_status = 'published');
+create policy "Authors manage own articles" on public.echo_articles for all using (auth.uid() = author_id);
+${['plaid_accounts', 'plaid_holdings', 'plaid_transactions']
+  .map(
+    (
+      t,
+    ) => `create table public.${t} (id uuid primary key default gen_random_uuid(), user_id uuid, amount numeric);
+alter table public.${t} enable row level security;
+create policy "Users see own ${t}" on public.${t} for all using (auth.uid() = user_id);`,
+  )
+  .join('\n')}
+`;
+
 let pg = null;
 test.before(async () => {
-  pg = await startPg({ migrations: MIGRATIONS });
+  pg = await startPg({ migrations: MIGRATIONS, extraSchema: LIVE_P1 });
   if (!pg) return;
   pg.sql(`
     insert into auth.users (id) values ('${A}'), ('${B}');
@@ -39,6 +65,11 @@ test.before(async () => {
     insert into alpaca_accounts (user_id, alpaca_account_id, account_status) values ('${A}', 'acct-a2', 'SUBMITTED');
     insert into user_rewards (user_id, total_xp) values ('${A}', 10);
     insert into plaid_items (user_id, item_id, access_token, status) values ('${A}', 'it-1', 'enc:secret', 'active');
+    insert into waitlist (email) values ('someone@example.com');
+    insert into echo_writer_applications (user_id) values ('${A}');
+    insert into echo_articles (author_id, title) values ('${A}', 'draft by A');
+    insert into echo_articles (author_id, title, article_status) values ('${B}', 'live by B', 'published');
+    insert into plaid_holdings (user_id, amount) values ('${A}', 10), ('${B}', 20);
   `);
 });
 test.after(() => pg?.stop());
@@ -208,5 +239,52 @@ test('profiles: the guard trigger holds even if table-wide UPDATE is granted aga
     pg.sql(
       `grant update (full_name, bio, pinned_cards, onboarding_step, updated_at) on profiles to authenticated`,
     );
+  }
+});
+
+const lastLine = (out) => out.split('\n').pop();
+
+test('waitlist: signed-in users and anon can neither read nor insert', (t) => {
+  if (skip(t)) return;
+  denied(() => asA('select email from waitlist'));
+  denied(() => asA(`insert into waitlist (email) values ('x@example.com')`));
+  denied(() => pg.sql(`set role anon; insert into waitlist (email) values ('x@example.com')`));
+  assert.equal(pg.sql('select count(*) from waitlist'), '1');
+});
+
+test('echo_writer_applications: read own, never self-approve', (t) => {
+  if (skip(t)) return;
+  assert.equal(lastLine(asA('select status from echo_writer_applications')), 'pending');
+  denied(() =>
+    asA(`update echo_writer_applications set status = 'approved' where user_id = '${A}'`),
+  );
+  denied(() =>
+    asA(`insert into echo_writer_applications (user_id, status) values ('${A}', 'approved')`),
+  );
+});
+
+test('echo_articles: authors see their drafts but cannot publish, feature or insert', (t) => {
+  if (skip(t)) return;
+  assert.equal(lastLine(asA(`select count(*) from echo_articles`)), '2');
+  denied(() =>
+    asA(
+      `update echo_articles set article_status = 'published', is_featured = true where author_id = '${A}'`,
+    ),
+  );
+  denied(() =>
+    asA(
+      `insert into echo_articles (author_id, title, article_status) values ('${A}', 'x', 'published')`,
+    ),
+  );
+  denied(() => asA(`delete from echo_articles where author_id = '${A}'`));
+  assert.equal(lastLine(pg.sql(`set role anon; select title from echo_articles`)), 'live by B');
+});
+
+test('plaid_*: read own holdings only, never write', (t) => {
+  if (skip(t)) return;
+  assert.equal(lastLine(asA('select sum(amount) from plaid_holdings')), '10');
+  for (const tbl of ['plaid_accounts', 'plaid_holdings', 'plaid_transactions']) {
+    denied(() => asA(`insert into ${tbl} (user_id, amount) values ('${A}', 1e9)`));
+    denied(() => asA(`update ${tbl} set amount = 1e9 where user_id = '${A}'`));
   }
 });

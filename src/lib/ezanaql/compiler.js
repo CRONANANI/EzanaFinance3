@@ -10,6 +10,7 @@
  * is ever interpolated into a query string.
  */
 import { EzanaQLError } from './parser';
+import { likeMatch } from './like';
 
 /* ── relative dates → concrete ISO date (UTC) or numeric fiscal year ── */
 function usFiscalYear(d) {
@@ -219,18 +220,9 @@ function matchText(op, v, pat) {
       return val.startsWith(p);
     case 'ends':
       return val.endsWith(p);
-    case 'like': {
-      // SQL LIKE: % → .*, _ → .
-      const re = new RegExp(
-        '^' +
-          p
-            .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-            .replace(/%/g, '.*')
-            .replace(/_/g, '.') +
-          '$',
-      );
-      return re.test(val);
-    }
+    case 'like':
+      // Linear, regex-free matcher with pattern caps (F-10).
+      return likeMatch(val, p);
     default:
       return false;
   }

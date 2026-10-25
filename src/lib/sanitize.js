@@ -162,17 +162,34 @@ export function httpUrlOrNull(input, maxLength = 2000) {
 }
 
 /**
- * Validate a post-auth redirect target as an INTERNAL path. Rejects
- * protocol-relative ("//evil.com") and backslash ("/\evil.com") forms that
- * pass a naive startsWith('/') check but navigate off-site.
+ * Validate a post-auth redirect target as an INTERNAL path (security
+ * assessment F-06). A naive startsWith('/') check is not enough: browsers
+ * strip tab, CR and LF from URLs, so "/\t/evil.com" becomes "//evil.com"
+ * and navigates off-site. So:
+ *   1. reject any control character, space, DEL or backslash outright;
+ *   2. require a single leading "/" (no "//");
+ *   3. resolve against a sentinel origin and require the origin unchanged;
+ *   4. return the normalised path + query + hash.
  *
  * @param {unknown} path
  * @param {string} [fallback='/home']
  * @returns {string}
  */
+const SENTINEL = 'https://ezana-internal.invalid';
+// eslint-disable-next-line no-control-regex
+const UNSAFE_CHARS = /[\x00-\x20\x7f\\]/;
+
 export function safeInternalPath(path, fallback = '/home') {
-  if (typeof path !== 'string') return fallback;
-  if (!path.startsWith('/')) return fallback;
-  if (path.startsWith('//') || path.startsWith('/\\')) return fallback;
-  return path;
+  if (typeof path !== 'string' || path.length > 2048) return fallback;
+  if (!path.startsWith('/') || path.startsWith('//')) return fallback;
+  if (UNSAFE_CHARS.test(path)) return fallback;
+  let url;
+  try {
+    url = new URL(path, SENTINEL);
+  } catch {
+    return fallback;
+  }
+  if (url.origin !== SENTINEL) return fallback;
+  const out = `${url.pathname}${url.search}${url.hash}`;
+  return out.startsWith('//') ? fallback : out;
 }

@@ -9,6 +9,8 @@ import { placeOrderOnce, readIdempotencyKey } from '@/lib/trading/idempotent';
 import { assertAlpacaAccountOwner } from '@/lib/trading/account-guard';
 import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
+import { checkRateLimit } from '@/lib/persistent-rate-limit';
+import { validateOrder, checkOrderVelocity } from '@/lib/trading/order-validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,32 +38,18 @@ async function postOrder(request, user) {
     const accountId = await getAlpacaAccountId(supabaseAdmin, user.id);
     if (!accountId) return NextResponse.json({ error: 'No brokerage account' }, { status: 404 });
 
-    const body = await request.json();
-    const { symbol, side, type, timeInForce, qty, notional, limitPrice, stopPrice, trailPercent } =
-      body;
-
-    if (!symbol || !side) {
-      return NextResponse.json({ error: 'symbol and side are required' }, { status: 400 });
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
     }
-
-    const orderPayload = {
-      symbol: symbol.toUpperCase(),
-      side: side,
-      type: type || 'market',
-      time_in_force: timeInForce || 'day',
-    };
-
-    if (notional) {
-      orderPayload.notional = notional.toString();
-    } else if (qty) {
-      orderPayload.qty = qty.toString();
-    } else {
-      return NextResponse.json({ error: 'Either qty or notional is required' }, { status: 400 });
-    }
-
-    if (limitPrice) orderPayload.limit_price = limitPrice.toString();
-    if (stopPrice) orderPayload.stop_price = stopPrice.toString();
-    if (trailPercent) orderPayload.trail_percent = trailPercent.toString();
+    /* F-17: enums, symbol, size caps and per-user velocity before the broker. */
+    const checked = validateOrder(body);
+    if (!checked.ok) return NextResponse.json({ error: checked.error }, { status: 400 });
+    const orderPayload = checked.order;
+    const tooFast = await checkOrderVelocity(user.id, { checkRateLimit });
+    if (tooFast) return NextResponse.json({ error: tooFast }, { status: 429 });
 
     /* The stored account id must be this user's at Alpaca (F-03). */
     await assertAlpacaAccountOwner(alpaca, accountId, user);
@@ -115,8 +103,10 @@ async function getOrders(request, user) {
     if (!accountId) return NextResponse.json({ error: 'No brokerage account' }, { status: 404 });
 
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status') || 'all';
-    const limit = searchParams.get('limit') || '50';
+    const status = ['open', 'closed', 'all'].includes(searchParams.get('status'))
+      ? searchParams.get('status')
+      : 'all';
+    const limit = String(Math.min(500, Math.max(1, parseInt(searchParams.get('limit'), 10) || 50)));
 
     const orders = await alpacaRequest(
       `/v1/trading/accounts/${accountId}/orders?status=${status}&limit=${limit}&direction=desc`,
@@ -155,6 +145,9 @@ async function deleteOrders(request, user) {
 
     const { searchParams } = new URL(request.url);
     const orderId = searchParams.get('orderId');
+    if (orderId && !/^[0-9a-f-]{36}$/i.test(orderId)) {
+      return NextResponse.json({ error: 'Invalid orderId' }, { status: 400 });
+    }
 
     if (orderId) {
       await alpacaRequest(`/v1/trading/accounts/${accountId}/orders/${orderId}`, {
