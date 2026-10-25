@@ -71,17 +71,38 @@ test('row states: completed below, current, one next, locked above', () => {
   assert.deepEqual(states, ['completed', 'current', 'next', 'locked', 'locked', 'locked']);
 });
 
-test('every "fastest way up" is a real ledger event', () => {
+test('every ascent step is a real, positive ledger event and the climb ends on 1498', () => {
   const src = readFileSync(
     new URL('../src/components/landing/SocialLedgerSection.jsx', import.meta.url),
     'utf8',
   );
-  const specs = src.slice(src.indexOf('const WAY_UP_SPECS'), src.indexOf('const WAYS_UP'));
+  const pool = src.slice(
+    src.indexOf('const LEDGER_EVENTS'),
+    src.indexOf('];', src.indexOf('const LEDGER_EVENTS')),
+  );
+  const deltas = new Map(
+    [...pool.matchAll(/d:\s*(-?\d+),\s*event:\s*("([^"]+)"|'([^']+)')/g)].map((m) => [
+      m[3] ?? m[4],
+      Number(m[1]),
+    ]),
+  );
+  assert.ok(deltas.size >= 2, 'could not read LEDGER_EVENTS');
+  const specs = src.slice(src.indexOf('const ASCENT_SPECS'), src.indexOf('const ASCENT_STEPS'));
   const events = [...specs.matchAll(/event:\s*("([^"]+)"|'([^']+)')/g)].map((m) => m[2] ?? m[3]);
-  assert.equal(events.length, 3);
+  assert.equal(events.length, 7);
+  let sum = 0;
   for (const e of events) {
-    const q = e.includes("'") ? `"${e}"` : `'${e}'`;
-    assert.ok(src.includes(`event: ${q}`), `ledger has no event ${e}`);
+    assert.ok(deltas.has(e), `ledger has no event ${e}`);
+    assert.ok(deltas.get(e) > 0, `ascent step ${e} does not earn rating`);
+    sum += deltas.get(e);
   }
+  const you = src
+    .match(/const YOU_SERIES = \[([^\]]+)\]/)[1]
+    .split(',')
+    .map(Number);
+  const end = you[you.length - 1];
+  assert.equal(end, 1498);
+  assert.equal(end - sum, 1446, 'the climb starts at 1446');
+  assert.ok(!src.includes('SocialRatingPanel'), 'the old rating panel is no longer rendered');
   assert.ok(!/to\s*\{frame\.nextName/.test(src), 'the old ladder caption is gone');
 });

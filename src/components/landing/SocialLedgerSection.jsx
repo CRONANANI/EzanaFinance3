@@ -1,9 +1,11 @@
 /**
  * SocialLedgerSection: the "Social investing" landing section.
  *
- * Layout is the docs/design/sled-handoff v2 composition: a centred header,
- * the record zone (rating | chart) and the sheets zone (ledger | standings),
- * with both sheets one height BY STRUCTURE.
+ * Layout: a centred header, then the record zone, which is now the pinned
+ * climb (SocialAscentStage: a scroll-driven gauge that climbs to the chart's
+ * last point while the actions that earned it pop in left and right), then
+ * the sheets as a condensed board (chart | standings, ledger full width
+ * beneath, 4 rows).
  *
  * Motion, rebuilt (Sept 2026):
  *
@@ -46,7 +48,7 @@ import {
   Customized,
 } from 'recharts';
 import { CHART } from '@/lib/chart-theme';
-import SocialRatingPanel from './SocialRatingPanel';
+import SocialAscentStage from './SocialAscentStage';
 import './social-ledger.css';
 
 /* ────────────────────────── fixture ────────────────────────── */
@@ -134,26 +136,77 @@ const STANDINGS = [
   { rank: '06', name: 'Sam O.', rating: 1396, week: '-2', tier: 'Apprentice' },
 ];
 
-/* The rating panel's "fastest ways up": each one IS a ledger event, so its
-   points are read from the pool rather than typed twice. The tier bands live
-   in social-rating.js (the platform's real ELO tiers). */
-const WAY_UP_SPECS = [
-  { id: 'sprint', label: 'Win a sprint', icon: 'bi-trophy', event: "Won 'Q3 Momentum Sprint'" },
+/* The climb at the top of the section. Each step IS a positive ledger event,
+   so its points are read from the pool, never typed twice. The climb ends on
+   the chart's last point (the same 1498 the standings show), the start is the
+   end minus the steps, and the gauge's right edge is the leader, so "to first"
+   matches the standings foot. */
+const ASCENT_SPECS = [
+  {
+    id: 'course',
+    side: 'left',
+    icon: 'bi-mortarboard',
+    label: 'Pass a Learning Center course',
+    event: "Passed 'Options Greeks I' in the Learning Center",
+  },
+  {
+    id: 'streak',
+    side: 'right',
+    icon: 'bi-fire',
+    label: 'Keep a 7 day login streak',
+    event: '7-day login streak',
+  },
+  {
+    id: 'heat',
+    side: 'left',
+    icon: 'bi-lightning-charge',
+    label: 'Win a sprint heat',
+    event: "Beat Priya S. in a 'Season 4 Sprint' heat",
+  },
   {
     id: 'research',
-    label: 'Research upvoted',
+    side: 'right',
     icon: 'bi-hand-thumbs-up',
+    label: 'Get your research upvoted',
     event: 'Research post upvoted, consensus signal',
   },
-  { id: 'streak', label: 'Keep a 7 day streak', icon: 'bi-fire', event: '7-day login streak' },
+  {
+    id: 'copied',
+    side: 'left',
+    icon: 'bi-files',
+    label: 'Have a trade idea copied',
+    event: 'Trade idea copied by 3 circle members',
+  },
+  {
+    id: 'referral',
+    side: 'right',
+    icon: 'bi-person-plus',
+    label: 'Bring a friend into your circle',
+    event: 'Maya K. joined your circle on your referral',
+  },
+  {
+    id: 'sprint',
+    side: 'right',
+    icon: 'bi-trophy',
+    label: 'Win a season sprint',
+    event: "Won 'Q3 Momentum Sprint'",
+  },
 ];
-const WAYS_UP = WAY_UP_SPECS.map((w) => ({
-  ...w,
-  points: LEDGER_EVENTS.find((e) => e.event === w.event)?.d ?? null,
-})).filter((w) => Number.isFinite(w.points) && w.points > 0);
+const ASCENT_STEPS = ASCENT_SPECS.map((s) => ({
+  ...s,
+  points: LEDGER_EVENTS.find((e) => e.event === s.event)?.d ?? null,
+})).filter((s) => Number.isFinite(s.points) && s.points > 0);
+const ASCENT_END = YOU_SERIES[YOU_SERIES.length - 1];
+const ASCENT_START = ASCENT_END - ASCENT_STEPS.reduce((sum, s) => sum + s.points, 0);
+const ASCENT_FLOOR = 1400;
 
-if (process.env.NODE_ENV !== 'production' && WAYS_UP.length !== WAY_UP_SPECS.length) {
-  console.warn('[sled] a "fastest way up" no longer matches a ledger event');
+if (process.env.NODE_ENV !== 'production') {
+  if (ASCENT_STEPS.length !== ASCENT_SPECS.length) {
+    console.warn('[sled] an ascent step no longer matches a ledger event');
+  }
+  if (ASCENT_START < ASCENT_FLOOR || ASCENT_END > LEADER) {
+    console.warn('[sled] the climb leaves the gauge range');
+  }
 }
 
 const BAR_MIN = 1390;
@@ -171,8 +224,8 @@ const BEAT = {
   rating: [900, 1600],
   stand: [1400, 2000],
 };
-const DEFAULT_VISIBLE = 8;
-const ROW_TARGET_PX = 44;
+const DEFAULT_VISIBLE = 4;
+const ROW_TARGET_PX = 36;
 
 const clamp01 = (n) => (n < 0 ? 0 : n > 1 ? 1 : n);
 const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
@@ -500,12 +553,17 @@ export function SocialLedgerSection() {
           </p>
         </div>
 
-        {/* ── zone B, the record: 5fr rating | 7fr chart ── */}
-        <div className="sled-record">
-          <div className="sled-ratingcol">
-            <SocialRatingPanel rating={frame.rating} delta={frame.lastDelta} waysUp={WAYS_UP} />
-          </div>
+        {/* ── the climb: pinned gauge, steps pop in left and right ── */}
+        <SocialAscentStage
+          steps={ASCENT_STEPS}
+          start={ASCENT_START}
+          floor={ASCENT_FLOOR}
+          ceiling={LEADER}
+          ceilingLabel={`${LEADER} ${DOT} #1`}
+        />
 
+        {/* ── the board, condensed: chart | standings, ledger beneath ── */}
+        <div className="sled-board">
           <div className="sled-chartcol">
             <div className="sled-chart-head">
               <div className="sled-chart-controls">
@@ -527,10 +585,55 @@ export function SocialLedgerSection() {
               <RatingChart cohort={cohort} />
             </div>
           </div>
-        </div>
 
-        {/* ── zone C, the sheets: 7fr ledger | 5fr standings ── */}
-        <div className="sled-sheets">
+          <div className="sled-sheet sled-standsheet">
+            <div className="sled-sheet-head">
+              <span>Season 4 standings</span>
+              <span className="sled-stamp">
+                <i className="sled-live-dot" aria-hidden="true" />
+                Season 4 {DOT} Live
+              </span>
+            </div>
+            <div className="sled-tr sled-thead sled-tr--stand">
+              <span>#</span>
+              <span>Member</span>
+              <span>Week</span>
+              <span className="sled-ta-r">Rating</span>
+            </div>
+            <div className="sled-rows">
+              {STANDINGS.map((p) => {
+                const rating = p.you ? frame.standRating : p.rating;
+                const week = p.you ? frame.standWeek : p.week;
+                const neg = week.startsWith('-');
+                return (
+                  <div
+                    key={p.rank}
+                    className={`sled-tr sled-tr--stand${p.you ? ' sled-tr--you' : ''}`}
+                  >
+                    <span className="sled-tile-rank">{p.rank}</span>
+                    <span className="sled-tile-name">{p.name}</span>
+                    <span
+                      className={`sled-tile-delta${neg ? ' sled-tile-delta--down' : ' sled-tile-delta--up'}`}
+                    >
+                      {week}
+                    </span>
+                    <span className="sled-tile-elo sled-ta-r">{rating}</span>
+                    <span className="sled-bar" aria-hidden="true">
+                      <span className="sled-bar-tier">{p.tier}</span>
+                      <span className="sled-bar-track">
+                        <span className="sled-bar-fill" style={{ width: `${barPct(rating)}%` }} />
+                      </span>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="sled-footrow">
+              <span>6 members</span>
+              <span className="sled-ta-r">{frame.gap} to first</span>
+            </div>
+          </div>
+
           <div className="sled-sheet sled-ledgersheet">
             <div className="sled-sheet-head">The ledger</div>
             <div className="sled-tr sled-thead sled-tr--ledger">
@@ -584,54 +687,6 @@ export function SocialLedgerSection() {
                 Net {signed(frame.net)} {DOT} last {visible}
               </span>
               <span className="sled-ta-r">Full ledger</span>
-            </div>
-          </div>
-
-          <div className="sled-sheet sled-standsheet">
-            <div className="sled-sheet-head">
-              <span>Season 4 standings</span>
-              <span className="sled-stamp">
-                <i className="sled-live-dot" aria-hidden="true" />
-                Season 4 {DOT} Live
-              </span>
-            </div>
-            <div className="sled-tr sled-thead sled-tr--stand">
-              <span>#</span>
-              <span>Member</span>
-              <span>Week</span>
-              <span className="sled-ta-r">Rating</span>
-            </div>
-            <div className="sled-rows">
-              {STANDINGS.map((p) => {
-                const rating = p.you ? frame.standRating : p.rating;
-                const week = p.you ? frame.standWeek : p.week;
-                const neg = week.startsWith('-');
-                return (
-                  <div
-                    key={p.rank}
-                    className={`sled-tr sled-tr--stand${p.you ? ' sled-tr--you' : ''}`}
-                  >
-                    <span className="sled-tile-rank">{p.rank}</span>
-                    <span className="sled-tile-name">{p.name}</span>
-                    <span
-                      className={`sled-tile-delta${neg ? ' sled-tile-delta--down' : ' sled-tile-delta--up'}`}
-                    >
-                      {week}
-                    </span>
-                    <span className="sled-tile-elo sled-ta-r">{rating}</span>
-                    <span className="sled-bar" aria-hidden="true">
-                      <span className="sled-bar-tier">{p.tier}</span>
-                      <span className="sled-bar-track">
-                        <span className="sled-bar-fill" style={{ width: `${barPct(rating)}%` }} />
-                      </span>
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="sled-footrow">
-              <span>6 members</span>
-              <span className="sled-ta-r">{frame.gap} to first</span>
             </div>
           </div>
         </div>

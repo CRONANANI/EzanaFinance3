@@ -310,8 +310,8 @@ export function HeroDeviceShowcase() {
             <span className="lpd-sat-title">New follower</span>
           </div>
           <p className="lpd-sat-body">
-            &quot;Appreciate you walking through the reasoning — good to know the strategy
-            isn&apos;t chasing the dip.&quot;
+            &quot;Appreciate you walking through the reasoning. Good to know the strategy isn&apos;t
+            chasing the dip.&quot;
           </p>
           <div className="lpd-sat-foot">
             <i className="bi bi-heart-fill lpd-heart" aria-hidden />{' '}
@@ -333,7 +333,7 @@ export function HeroDeviceShowcase() {
           </div>
           <p className="lpd-sat-body">
             Rotating weight toward stronger risk-adjusted signals after the pullback. Routine,
-            signal-driven — not a change in the core thesis.
+            signal-driven, not a change in the core thesis.
           </p>
         </div>
       </div>
