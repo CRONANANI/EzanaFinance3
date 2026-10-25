@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { getAdminClient } from '@/lib/supabase';
 import { getPitchContext, fetchPitchRaw, fetchPitchDetail } from '@/lib/org-pitch-api-helpers';
 import { STAGE_CONFIG, canAdvanceStage, canOverrideStage } from '@/lib/pitch/stage-config';
 import { evaluateGates, allGatesPass } from '@/lib/pitch/gates';
@@ -51,13 +52,16 @@ export const POST = withApiGuard(
         actor_member_id: viewer.id,
         gate_snapshot: [],
       });
-      await supabase
+      // canAdvanceStage above authorizes this (tier-based, so the actor may not
+      // be a manager); workflow columns are DB-guarded (ORG-8) -> service role.
+      await getAdminClient()
         .from('org_pitches')
         .update({
           stage: 'rejected',
           decision: 'rejected',
           stage_entered_at: new Date().toISOString(),
         })
+        .eq('org_id', orgId)
         .eq('id', pitch.id);
       const detail = await fetchPitchDetail(supabase, orgId, pitch.id);
       return NextResponse.json({ pitch: detail });
@@ -120,11 +124,19 @@ export const POST = withApiGuard(
     const updates = { stage: toStage, stage_entered_at: new Date().toISOString() };
     if (toStage === 'approved') updates.decision = 'accepted';
 
-    const { error: updErr } = await supabase.from('org_pitches').update(updates).eq('id', pitch.id);
+    // Authorized by canAdvanceStage + the recomputed gates above; the actor may
+    // hold an advancing tier without a manager role, and workflow columns are
+    // DB-guarded (ORG-8), so the write runs on the service-role client.
+    const admin = getAdminClient();
+    const { error: updErr } = await admin
+      .from('org_pitches')
+      .update(updates)
+      .eq('org_id', orgId)
+      .eq('id', pitch.id);
     if (updErr) return NextResponse.json({ error: updErr.message }, { status: 500 });
 
     // Side effects (spec §3.3) — best-effort, never rolls back the transition.
-    await applyTransitionSideEffects(supabase, orgId, pitch, fromStage, toStage, actor);
+    await applyTransitionSideEffects(admin, orgId, pitch, fromStage, toStage, actor);
 
     const detail = await fetchPitchDetail(supabase, orgId, pitch.id);
     return NextResponse.json({ pitch: detail, from: fromStage, to: toStage, override });

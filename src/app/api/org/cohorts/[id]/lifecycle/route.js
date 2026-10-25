@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { getUserClient } from '@/lib/supabase';
+import { getUserClient, getAdminClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 
 export const dynamic = 'force-dynamic';
@@ -94,7 +94,11 @@ export const PATCH = withApiGuard(
       return NextResponse.json({ error: 'Nothing to update' }, { status: 400 });
     }
 
-    const { data, error } = await supabase
+    // Authorized above (manager role + target in this org's cohort). is_active is
+    // a DB-guarded column that only executives may change from the browser
+    // (ORG-2), so a PM's lifecycle move runs on the service-role client, scoped
+    // to the caller's org.
+    const { data, error } = await getAdminClient()
       .from('org_members')
       .update(update)
       .eq('id', memberId)

@@ -407,8 +407,10 @@ export async function addDeliverableDb(supabase, orgId, pitch, payload) {
   if (error) return { error: error.message };
 
   // Auto-advance research_approved → research_in_progress on first deliverable.
-  if (pitch.stage === 'research_approved') {
-    await applyStageTransitionDb(supabase, orgId, pitch, 'research_in_progress', {
+  // The stage column is DB-guarded (ORG-8): the route passes a service-role
+  // `workflowClient` only after authorizing the uploader (author or manager).
+  if (pitch.stage === 'research_approved' && payload.workflowClient) {
+    await applyStageTransitionDb(payload.workflowClient, orgId, pitch, 'research_in_progress', {
       actorId: payload.uploaded_by_member_id,
       note: 'First deliverable uploaded',
     });

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { getAdminClient } from '@/lib/supabase';
 import { validateTransition } from '@/lib/org-pitch-state-machine';
 import {
   getPitchContext,
@@ -47,7 +48,11 @@ export const POST = withApiGuard(
     }
 
     const targetStage = toStage === 'rejected' ? 'decision' : toStage;
-    const result = await applyStageTransitionDb(supabase, orgId, pitch, targetStage, {
+    // validateTransition above is the authorization (role + state machine). Analysts
+    // may move their own pitch, but org_pitches' workflow columns are guarded in
+    // the DB (ORG-8), so the validated write runs on the service-role client,
+    // scoped to orgId + pitch.id.
+    const result = await applyStageTransitionDb(getAdminClient(), orgId, pitch, targetStage, {
       actorId: viewer.id,
       note: body.note,
       research_due_at: body.research_due_at,
