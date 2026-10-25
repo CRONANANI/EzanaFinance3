@@ -13,6 +13,7 @@ import {
   pickMembership,
   readPreferredOrgId,
 } from '../src/lib/org-trading-server.js';
+import { resolvePrefsAccess } from '../src/lib/org-notification-prefs.js';
 
 const NOW = Date.parse('2026-10-25T12:00:00Z');
 
@@ -134,4 +135,65 @@ test('ORG-9: a user in two orgs resolves (no maybeSingle error) and honours the 
 
 test('ORG-9: cookie read is safe outside a request scope', () => {
   assert.equal(readPreferredOrgId(), null);
+});
+
+/* ── ORG-10: notification prefs default to the caller's membership ──── */
+
+const prefsDb = () =>
+  createMockSupabase({
+    seed: {
+      org_members: [
+        {
+          id: 'pm1',
+          user_id: 'upm',
+          org_id: ORG_A,
+          role: 'portfolio_manager',
+          team_id: 't1',
+          is_active: true,
+        },
+        {
+          id: 'an1',
+          user_id: 'uan',
+          org_id: ORG_A,
+          role: 'analyst',
+          team_id: 't1',
+          is_active: true,
+        },
+        {
+          id: 'an2',
+          user_id: 'uan2',
+          org_id: ORG_A,
+          role: 'analyst',
+          team_id: 't2',
+          is_active: true,
+        },
+        {
+          id: 'pmB',
+          user_id: 'upm',
+          org_id: ORG_B,
+          role: 'analyst',
+          team_id: null,
+          is_active: true,
+        },
+      ],
+    },
+  });
+
+test('ORG-10: missing target defaults to the caller (no 400)', async () => {
+  const g = await resolvePrefsAccess(prefsDb(), 'uan', null);
+  assert.equal(g.ok, true);
+  assert.equal(g.target.id, 'an1');
+  assert.equal(g.isSelf, true);
+});
+
+test('ORG-10: supervisor scope and cross-team / non-member denial', async () => {
+  const db = prefsDb();
+  const sub = await resolvePrefsAccess(db, 'upm', 'an1');
+  assert.equal(sub.ok, true);
+  assert.equal(sub.isSelf, false);
+  assert.equal(sub.caller.id, 'pm1', 'caller resolved in the target org');
+  assert.equal((await resolvePrefsAccess(db, 'upm', 'an2')).ok, false, 'other team');
+  assert.equal((await resolvePrefsAccess(db, 'uan', 'pm1')).ok, false, 'upward');
+  assert.equal((await resolvePrefsAccess(db, 'stranger', null)).ok, false);
+  assert.equal((await resolvePrefsAccess(db, 'uan', 'missing')).ok, false);
 });
