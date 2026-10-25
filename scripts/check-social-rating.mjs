@@ -71,7 +71,7 @@ test('row states: completed below, current, one next, locked above', () => {
   assert.deepEqual(states, ['completed', 'current', 'next', 'locked', 'locked', 'locked']);
 });
 
-test('every ascent step is a real, positive ledger event and the climb ends on 1498', () => {
+test('every ascent step is a real, positive ledger event and the climb ends on 2500, the Strategist line', () => {
   const src = readFileSync(
     new URL('../src/components/landing/SocialLedgerSection.jsx', import.meta.url),
     'utf8',
@@ -101,8 +101,11 @@ test('every ascent step is a real, positive ledger event and the climb ends on 1
     .split(',')
     .map(Number);
   const end = you[you.length - 1];
-  assert.equal(end, 1498);
-  assert.equal(end - sum, 1446, 'the climb starts at 1446');
+  assert.equal(end, 2500);
+  assert.equal(end - sum, 2448, 'the climb starts at 2448');
+  /* The promotion the gauge plays is real: 2448 is Apprentice, 2500 Strategist. */
+  assert.equal(deriveTierState(end - sum).current.name, 'Apprentice');
+  assert.equal(deriveTierState(end).current.name, 'Strategist');
   assert.ok(!src.includes('SocialRatingPanel'), 'the old rating panel is no longer rendered');
   assert.ok(!/to\s*\{frame\.nextName/.test(src), 'the old ladder caption is gone');
 });

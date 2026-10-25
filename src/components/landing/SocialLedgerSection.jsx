@@ -30,9 +30,16 @@
  *    the track's style directly from the rAF loop.
  *
  * Fixture only, never live, and labelled so in the section foot. The rating
- * chain stays inside Maya K. (1458) and Daniel R. (1512), so "You" holds
+ * chain stays inside Maya K. (2460) and Daniel R. (2514), so "You" holds
  * rank 02 on every frame and the standings never claim a rank change the
  * numbers cannot support.
+ *
+ * Oct 25: the fixture sits 1002 higher than it did (every number moved
+ * together, so every relation above still holds). The climb now ends on
+ * exactly 2500, the platform's Strategist line (lib/elo.js ELO_TIERS), so the
+ * gauge can promote the visitor from Apprentice to Strategist at the end of
+ * its runway and then show the next league's tasks. Tiers on the standings
+ * are derived from each rating (deriveTierState), never typed in.
  */
 
 'use client';
@@ -49,39 +56,40 @@ import {
 } from 'recharts';
 import { CHART } from '@/lib/chart-theme';
 import SocialAscentStage from './SocialAscentStage';
+import { deriveTierState } from './social-rating';
 import './social-ledger.css';
 
 /* ────────────────────────── fixture ────────────────────────── */
 
 const DOT = '·';
 const WEEKS = ['W01', 'W02', 'W03', 'W04', 'W05', 'W06', 'W07', 'W08'];
-const YOU_SERIES = [1408, 1416, 1410, 1428, 1440, 1452, 1484, 1498];
+const YOU_SERIES = [2410, 2418, 2412, 2430, 2442, 2454, 2486, 2500];
 
 const COHORTS = {
   friends: {
     label: 'Friends',
     caption: 'vs. 5 friends',
-    a: [1452, 1460, 1466, 1472, 1484, 1494, 1504, 1512],
-    b: [1418, 1424, 1430, 1438, 1446, 1452, 1460, 1466],
+    a: [2454, 2462, 2468, 2474, 2486, 2496, 2506, 2514],
+    b: [2420, 2426, 2432, 2440, 2448, 2454, 2462, 2468],
   },
   whales: {
     label: 'Whales',
     caption: 'vs. 13F whales',
-    a: [1470, 1478, 1486, 1492, 1502, 1512, 1520, 1528],
-    b: [1430, 1436, 1442, 1450, 1458, 1466, 1472, 1480],
+    a: [2472, 2480, 2488, 2494, 2504, 2514, 2522, 2530],
+    b: [2432, 2438, 2444, 2452, 2460, 2468, 2474, 2482],
   },
   politicians: {
     label: 'Politicians',
     caption: 'vs. Congress',
-    a: [1440, 1448, 1456, 1464, 1474, 1484, 1494, 1502],
-    b: [1402, 1408, 1416, 1424, 1432, 1440, 1446, 1452],
+    a: [2442, 2450, 2458, 2466, 2476, 2486, 2496, 2504],
+    b: [2404, 2410, 2418, 2426, 2434, 2442, 2448, 2454],
   },
 };
 
 /* The circular event pool, oldest first. Every row is rated, so every column
    has a value on every row. The deltas sum to zero (asserted below), which is
    what lets the conveyor loop without a seam. */
-const LEDGER_START = 1466;
+const LEDGER_START = 2468;
 const LEDGER_EVENTS = [
   { d: 6, event: "Passed 'Options Greeks I' in the Learning Center", when: 'Mon' },
   { d: 5, event: '7-day login streak', when: 'Mon' },
@@ -109,7 +117,7 @@ const LEDGER = (() => {
 })();
 const N = LEDGER.length;
 /* The event the composed (reduced-motion / first paint) frame lands on. */
-const PEAK = LEDGER.findIndex((e) => e.to === 1498);
+const PEAK = LEDGER.findIndex((e) => e.to === 2500);
 
 if (process.env.NODE_ENV !== 'production') {
   const net = LEDGER_EVENTS.reduce((s, e) => s + e.d, 0);
@@ -126,14 +134,14 @@ const netOf = (endSeq, count) => {
   return s;
 };
 
-const LEADER = 1512;
+const LEADER = 2514;
 const STANDINGS = [
-  { rank: '01', name: 'Daniel R.', rating: LEADER, week: '+6', tier: 'Apprentice' },
-  { rank: '02', name: 'You', rating: 1498, week: '+24', tier: 'Apprentice', you: true },
-  { rank: '03', name: 'Maya K.', rating: 1458, week: '+4', tier: 'Apprentice' },
-  { rank: '04', name: 'Priya S.', rating: 1441, week: '-5', tier: 'Apprentice' },
-  { rank: '05', name: 'Jordan T.', rating: 1418, week: '+3', tier: 'Apprentice' },
-  { rank: '06', name: 'Sam O.', rating: 1396, week: '-2', tier: 'Apprentice' },
+  { rank: '01', name: 'Daniel R.', rating: LEADER, week: '+6' },
+  { rank: '02', name: 'You', rating: 2500, week: '+24', you: true },
+  { rank: '03', name: 'Maya K.', rating: 2460, week: '+4' },
+  { rank: '04', name: 'Priya S.', rating: 2443, week: '-5' },
+  { rank: '05', name: 'Jordan T.', rating: 2420, week: '+3' },
+  { rank: '06', name: 'Sam O.', rating: 2398, week: '-2' },
 ];
 
 /* The climb at the top of the section. Each step IS a positive ledger event,
@@ -198,7 +206,56 @@ const ASCENT_STEPS = ASCENT_SPECS.map((s) => ({
 })).filter((s) => Number.isFinite(s.points) && s.points > 0);
 const ASCENT_END = YOU_SERIES[YOU_SERIES.length - 1];
 const ASCENT_START = ASCENT_END - ASCENT_STEPS.reduce((sum, s) => sum + s.points, 0);
-const ASCENT_FLOOR = 1400;
+const ASCENT_FLOOR = 2400;
+
+/* What the next league asks for, shown once the gauge promotes the visitor.
+   To-dos, not results: no points are claimed for them, and each one names a
+   real surface of the product (Learning Center, sprints, duels, research,
+   circles, streaks). */
+const NEXT_LEAGUE_TASKS = [
+  {
+    id: 'course2',
+    side: 'left',
+    icon: 'bi-mortarboard',
+    label: 'Pass an advanced course',
+    detail: 'Any advanced track in the Learning Center',
+  },
+  {
+    id: 'podium',
+    side: 'right',
+    icon: 'bi-trophy',
+    label: 'Finish top 3 in a sprint',
+    detail: 'Podium any season sprint',
+  },
+  {
+    id: 'streak30',
+    side: 'left',
+    icon: 'bi-fire',
+    label: 'Keep a 30 day login streak',
+    detail: 'Log in every day for a month',
+  },
+  {
+    id: 'consensus',
+    side: 'right',
+    icon: 'bi-journal-text',
+    label: 'Publish research to consensus',
+    detail: 'Your circle upvotes it into a consensus signal',
+  },
+  {
+    id: 'duels',
+    side: 'left',
+    icon: 'bi-lightning-charge',
+    label: 'Win three duels',
+    detail: 'Beat a Strategist head to head',
+  },
+  {
+    id: 'circle10',
+    side: 'right',
+    icon: 'bi-people',
+    label: 'Grow your circle to 10',
+    detail: 'Invite friends into your circle',
+  },
+];
 
 if (process.env.NODE_ENV !== 'production') {
   if (ASCENT_STEPS.length !== ASCENT_SPECS.length) {
@@ -209,7 +266,7 @@ if (process.env.NODE_ENV !== 'production') {
   }
 }
 
-const BAR_MIN = 1390;
+const BAR_MIN = 2392;
 const BAR_SPAN = 150;
 const barPct = (rating) => Math.max(0, Math.min(100, ((rating - BAR_MIN) / BAR_SPAN) * 100));
 
@@ -560,6 +617,7 @@ export function SocialLedgerSection() {
           floor={ASCENT_FLOOR}
           ceiling={LEADER}
           ceilingLabel={`${LEADER} ${DOT} #1`}
+          nextTasks={NEXT_LEAGUE_TASKS}
         />
 
         {/* ── the board, condensed: chart | standings, ledger beneath ── */}
@@ -619,7 +677,7 @@ export function SocialLedgerSection() {
                     </span>
                     <span className="sled-tile-elo sled-ta-r">{rating}</span>
                     <span className="sled-bar" aria-hidden="true">
-                      <span className="sled-bar-tier">{p.tier}</span>
+                      <span className="sled-bar-tier">{deriveTierState(rating).current.name}</span>
                       <span className="sled-bar-track">
                         <span className="sled-bar-fill" style={{ width: `${barPct(rating)}%` }} />
                       </span>
@@ -637,9 +695,8 @@ export function SocialLedgerSection() {
           <div className="sled-sheet sled-ledgersheet">
             <div className="sled-sheet-head">The ledger</div>
             <div className="sled-tr sled-thead sled-tr--ledger">
-              <span>Delta</span>
               <span>Event</span>
-              <span className="sled-hide-sm">Rating</span>
+              <span>Rating</span>
               <span className="sled-ta-r">When</span>
             </div>
             {/* The conveyor. The viewport clips; the track glides. aria-live
@@ -666,15 +723,23 @@ export function SocialLedgerSection() {
                         .join(' ')}
                       aria-hidden={entering ? 'true' : undefined}
                     >
-                      <span className={`sled-delta${ev.d < 0 ? ' sled-delta--neg' : ''}`}>
-                        {signed(ev.d)}
-                      </span>
                       <span className="sled-row-body">
                         {text}
                         {typing ? <span className="sled-caret" aria-hidden="true" /> : null}
                       </span>
-                      <span className="sled-num sled-hide-sm">
-                        {ev.from} {DOT} {ev.to}
+                      {/* Oct 25: the Delta column is gone; the rating carries its
+                          own direction, a green arrow up or a red arrow down
+                          between the before and after figures. */}
+                      <span
+                        className={`sled-num sled-rate${ev.d < 0 ? ' sled-rate--down' : ' sled-rate--up'}`}
+                      >
+                        <span>{ev.from}</span>
+                        <i
+                          className={`bi ${ev.d < 0 ? 'bi-arrow-down-right' : 'bi-arrow-up-right'} sled-rate-arrow`}
+                          aria-hidden="true"
+                        />
+                        <span className="sled-sr">{ev.d < 0 ? 'fell to' : 'rose to'}</span>
+                        <span className="sled-rate-to">{ev.to}</span>
                       </span>
                       <span className="sled-time sled-ta-r">{ev.when}</span>
                     </div>

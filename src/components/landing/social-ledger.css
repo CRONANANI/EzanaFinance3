@@ -582,9 +582,11 @@
   align-items: center;
 }
 .sled-tr--ledger {
+  /* Oct 25: event | rating (before, arrow, after) | when. The Delta column
+     is gone; the arrow in the rating carries the direction. */
   grid-template-columns:
-    clamp(44px, 4.4vw, 58px) minmax(0, 1fr)
-    clamp(96px, 9vw, 124px) clamp(34px, 3.4vw, 44px);
+    minmax(0, 1fr)
+    clamp(124px, 10.5vw, 150px) clamp(34px, 3.4vw, 44px);
   min-height: var(--sled-row);
   border-bottom: 1px dotted var(--sled-dot);
 }
@@ -708,6 +710,36 @@
   font-variant-numeric: tabular-nums;
   font-size: clamp(11px, 0.92vw, 13px);
   color: var(--text-muted);
+}
+.sled-rate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.sled-rate-arrow {
+  font-size: 13px;
+  line-height: 1;
+}
+.sled-rate--up .sled-rate-arrow {
+  color: var(--emerald);
+}
+.sled-rate--down .sled-rate-arrow {
+  color: var(--negative);
+}
+.sled-rate-to {
+  color: var(--text-primary);
+}
+.sled-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 .sled-time {
   font-family: var(--font-mono);
@@ -900,7 +932,7 @@
     display: none;
   }
   .sled-tr--ledger {
-    grid-template-columns: 42px minmax(0, 1fr) 40px;
+    grid-template-columns: minmax(0, 1fr) auto 36px;
   }
 }
 
@@ -911,7 +943,14 @@
   margin-top: clamp(20px, 2.4vw, 36px);
   /* One stage-height of pin plus a hold per step (same runway pattern as
      dimension-scroll.css). */
-  height: calc((100svh - var(--sled-asc-nav)) + (var(--sled-asc-steps, 7) * 0.34 * 100svh));
+  height: calc(
+    (100svh - var(--sled-asc-nav)) +
+      ((var(--sled-asc-steps, 7) + var(--sled-asc-extra, 0)) * 0.34 * 100svh)
+  );
+  /* Oct 25: the pinned stage is a viewport tall but its content is not; the
+     component measures the empty half below the content (--sled-asc-slack)
+     and the runway gives it back, so the board follows the gauge closely. */
+  margin-bottom: calc(-1 * var(--sled-asc-slack, 0px));
 }
 .sled-asc-stage {
   position: sticky;
@@ -1132,10 +1171,141 @@
   color: var(--text-muted);
 }
 
+/* ── the promotion (Oct 25) ────────────────────────────────────────────
+   The badge replaces the +points bump once promoted; the burst and ring
+   pulse play once, on a forward crossing only (is-celebrating, about 1.5s,
+   inside the dial). Task cards reuse the step card with a To do chip in
+   place of the points. Tokens only; motion off under reduced motion. */
+.sled-asc-badge {
+  position: absolute;
+  top: -34px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--emerald-text);
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
+}
+.sled-asc.is-celebrating .sled-asc-badge {
+  animation: sledAscBadge 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+}
+@keyframes sledAscBadge {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 10px) scale(0.6);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+.sled-asc.is-celebrating .sled-asc-figure {
+  animation: sledAscFigure 0.9s ease-out both;
+}
+@keyframes sledAscFigure {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.08);
+    text-shadow: 0 0 24px var(--emerald-glow);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.sled-asc-burst {
+  position: absolute;
+  left: 50%;
+  bottom: 30%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.sled-asc-pulse {
+  position: absolute;
+  left: -60px;
+  top: -60px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 2px solid var(--emerald);
+  animation: sledAscPulse 1.1s ease-out both;
+}
+@keyframes sledAscPulse {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(3.2);
+  }
+}
+.sled-asc-spark {
+  position: absolute;
+  left: calc(var(--s) / -2);
+  top: calc(var(--s) / -2);
+  width: var(--s);
+  height: var(--s);
+  border-radius: var(--radius-sm);
+  animation: sledAscSpark 1.2s cubic-bezier(0.15, 0.7, 0.3, 1) both;
+}
+.sled-asc-spark--a {
+  background: var(--emerald);
+}
+.sled-asc-spark--b {
+  background: var(--emerald-dark);
+  border-radius: 50%;
+}
+.sled-asc-spark--c {
+  background: color-mix(in srgb, var(--emerald) 45%, var(--bg-primary));
+}
+@keyframes sledAscSpark {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--a)) translateY(0) scale(0.4);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--a)) translateY(calc(-1 * var(--d))) scale(1) rotate(90deg);
+  }
+}
+.sled-asc-card--task {
+  border-style: dashed;
+}
+.sled-asc-card--task.is-latest {
+  border-style: solid;
+}
+.sled-asc-todo {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--emerald-text);
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
+}
+
 /* ══ the board, condensed: chart | standings, ledger beneath ═══════════ */
 .sled-board {
   --sled-row: clamp(32px, 2.6vw, 38px);
-  margin-top: clamp(28px, 3vw, 48px);
+  margin-top: clamp(12px, 1.4vw, 24px);
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
   grid-template-areas:
@@ -1214,5 +1384,12 @@
   .sled-asc-bump {
     animation: none;
     display: none;
+  }
+  .sled-asc-burst {
+    display: none;
+  }
+  .sled-asc.is-celebrating .sled-asc-badge,
+  .sled-asc.is-celebrating .sled-asc-figure {
+    animation: none;
   }
 }
