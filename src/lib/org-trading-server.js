@@ -1,4 +1,53 @@
+import { cookies } from 'next/headers';
 import { isValidUuid } from '@/lib/uuid';
+
+/** Cookie holding the org a multi-org user last switched to (Team Hub switcher). */
+export const ORG_COOKIE = 'ez_org';
+
+/**
+ * The preferred org id from the request's `ez_org` cookie, or null outside a
+ * request scope / when the cookie is absent or not a UUID. Never throws.
+ */
+export function readPreferredOrgId() {
+  try {
+    const v = cookies().get(ORG_COOKIE)?.value;
+    return isValidUuid(v) ? v : null;
+  } catch {
+    return null; // no request scope (cron, script, test)
+  }
+}
+
+/**
+ * Deterministically pick one membership from a user's active rows: the one in
+ * `preferredOrgId` when the user belongs to it, else the earliest-joined row.
+ * Rows are expected earliest-joined first.
+ */
+export function pickMembership(rows, preferredOrgId = null) {
+  if (!Array.isArray(rows) || rows.length === 0) return null;
+  return (preferredOrgId && rows.find((r) => r.org_id === preferredOrgId)) || rows[0];
+}
+
+/**
+ * Resolve `userId`'s active org membership with ANY client (user-bound or
+ * service-role). Safe for users in several orgs: never `.maybeSingle()` over
+ * multiple rows. `preferredOrgId` defaults to the `ez_org` cookie; pass null
+ * to ignore the cookie. `select` must include `org_id`.
+ *
+ * @returns {Promise<object|null>} the chosen row plus `memberships` (all active rows)
+ */
+export async function getOrgMemberForUser(db, userId, { preferredOrgId, select = '*' } = {}) {
+  if (!userId) return null;
+  const { data: rows, error } = await db
+    .from('org_members')
+    .select(select)
+    .eq('user_id', userId)
+    .eq('is_active', true)
+    .order('joined_at', { ascending: true }); // stable: earliest membership first
+  if (error || !rows || rows.length === 0) return null;
+  const preferred = preferredOrgId === undefined ? readPreferredOrgId() : preferredOrgId;
+  const member = pickMembership(rows, preferred);
+  return { ...member, memberships: rows };
+}
 
 /**
  * Resolve the caller's active org membership. A user can be an active member of
@@ -6,31 +55,26 @@ import { isValidUuid } from '@/lib/uuid';
  * elsewhere; staff across programs), so this must NOT use `.maybeSingle()` — that
  * returns null when several rows match, silently locking multi-org users out of
  * every org page. Instead it fetches all active memberships (earliest join first)
- * and deterministically picks one: an explicitly requested `preferredOrgId` if the
- * user belongs to it, else the earliest-joined membership (a stable default).
+ * and deterministically picks one: `preferredOrgId` (defaulting to the `ez_org`
+ * cookie set by the Team Hub org switcher) if the user belongs to it, else the
+ * earliest-joined membership (a stable default).
  *
  * Returns the chosen membership plus `email` and `memberships` (all active rows,
- * for a future org switcher), or null when the user has no active membership.
+ * for the org switcher), or null when the user has no active membership.
  *
  * @param supabase a Supabase client bound to the caller
- * @param {string|null} preferredOrgId prefer the membership in this org when present
+ * @param {string|null} [preferredOrgId] prefer the membership in this org when
+ *   present; omit to use the `ez_org` cookie, pass null to ignore it
  */
-export async function getCurrentOrgMember(supabase, preferredOrgId = null) {
+export async function getCurrentOrgMember(supabase, preferredOrgId) {
   const {
     data: { user },
     error: authErr,
   } = await supabase.auth.getUser();
   if (authErr || !user) return null;
-  const { data: rows, error } = await supabase
-    .from('org_members')
-    .select('*')
-    .eq('user_id', user.id)
-    .eq('is_active', true)
-    .order('joined_at', { ascending: true }); // stable: earliest membership first
-  if (error || !rows || rows.length === 0) return null;
-
-  const member = (preferredOrgId && rows.find((r) => r.org_id === preferredOrgId)) || rows[0];
-  return { ...member, email: user.email || null, memberships: rows };
+  const member = await getOrgMemberForUser(supabase, user.id, { preferredOrgId });
+  if (!member) return null;
+  return { ...member, email: user.email || null };
 }
 
 /**
@@ -65,7 +109,9 @@ export function assertOrgRole(member, allowedRoles) {
  * @returns {Promise<{coveringAnalystOrgId: string|null, sectorHeadOrgId: string|null, coverage: {sector: string|null, thesis: string|null, pitch_id: string|null}|null}>}
  */
 export async function resolveFlagRoutingDb(supabase, orgId, { ticker, teamDbId, sector }) {
-  const sym = String(ticker || '').toUpperCase().trim();
+  const sym = String(ticker || '')
+    .toUpperCase()
+    .trim();
 
   // 1) Most recent pitch on the ticker → covering analyst + thesis.
   const { data: pitch } = await supabase

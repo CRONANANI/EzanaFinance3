@@ -4,17 +4,13 @@ import { getUserClient, getAdminClient, isServerSupabaseConfigured } from '@/lib
 
 import { getMemberPermissions } from '@/lib/org-permissions-config';
 import { insertNotificationAndPush } from '@/lib/push/fanout';
+import { getOrgMemberForUser } from '@/lib/org-trading-server';
 
 export const dynamic = 'force-dynamic';
 
-async function getCurrentMember(supabase, user) {
-  const { data } = await supabase
-    .from('org_members')
-    .select('*')
-    .eq('user_id', user.id)
-    .eq('is_active', true)
-    .maybeSingle();
-  return data;
+// Multi-org safe (QA ORG-9): honours the ez_org switcher cookie.
+function getCurrentMember(supabase, user) {
+  return getOrgMemberForUser(supabase, user?.id);
 }
 
 /** GET /api/org/messages?filter=inbox|sent|unread&limit=50 */

@@ -29,6 +29,7 @@ import { useOrg } from '@/contexts/OrgContext';
 import { buildTeamCalendar, teamHubEyebrow } from '@/lib/org-team-calendar';
 import { FundDataHealthCard } from '@/components/org/FundDataHealthCard';
 import { OrgSetupChecklist } from '@/components/org/OrgSetupChecklist';
+import { OrgSwitcher } from '@/components/org/OrgSwitcher';
 import './team-hub-wire.css';
 
 /* ── Team Hub destinations (the 14 sidebar shortcuts) ──────────────
@@ -1048,16 +1049,19 @@ export default function OrgTeamHubPage() {
             <div className="thw-eyebrow">{teamHubEyebrow(summary?.statStrip?.cohort)}</div>
             <h1 className="thw-h1">Command Center</h1>
           </div>
-          <div className="thw-search" onClick={() => searchRef.current?.focus()}>
-            <Search size={15} strokeWidth={1.8} />
-            <input
-              ref={searchRef}
-              type="text"
-              className="thw-search-input"
-              placeholder="Jump to anything…"
-              aria-label="Jump to anything"
-            />
-            <span className="thw-kbd">⌘K</span>
+          <div className="thw-header-tools">
+            <OrgSwitcher />
+            <div className="thw-search" onClick={() => searchRef.current?.focus()}>
+              <Search size={15} strokeWidth={1.8} />
+              <input
+                ref={searchRef}
+                type="text"
+                className="thw-search-input"
+                placeholder="Jump to anything…"
+                aria-label="Jump to anything"
+              />
+              <span className="thw-kbd">⌘K</span>
+            </div>
           </div>
         </header>
 

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
+import { getOrgMemberForUser } from '@/lib/org-trading-server';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -156,14 +157,9 @@ export const GET = withApiGuard(
     let mgmtProfile = {};
 
     if (user) {
-      const [orgRes, profileRes] = await Promise.all([
-        supabase
-          .from('org_members')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('is_active', true)
-          .limit(1)
-          .maybeSingle(),
+      const [orgMember, profileRes] = await Promise.all([
+        // Multi-org safe (QA ORG-9): the switcher's org, else earliest-joined.
+        getOrgMemberForUser(supabase, user.id, { select: 'role, org_id' }),
         supabase
           .from('profiles')
           .select('investor_profile, risk_category')
@@ -171,7 +167,6 @@ export const GET = withApiGuard(
           .maybeSingle(),
       ]);
 
-      const orgMember = orgRes.data;
       const profile = profileRes.data;
 
       role = normalizeOrgRole(orgMember?.role || 'analyst');

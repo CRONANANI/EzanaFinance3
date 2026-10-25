@@ -353,6 +353,47 @@ html.light-mode .thw-card {
   margin: 6px 0 0;
   line-height: 1.1;
 }
+/* Org switcher (multi-org users only; QA ORG-9). */
+.thw-header-tools {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.thw-org-switch {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.thw-org-switch-label {
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.thw-org-switch-select {
+  height: 40px;
+  max-width: 100%;
+  padding: 0 12px;
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--type-caption-size);
+}
+.thw-org-switch-select:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.thw-org-switch-error {
+  font-size: var(--type-micro-size);
+  color: var(--danger);
+}
+
 .thw-search {
   display: flex;
   align-items: center;

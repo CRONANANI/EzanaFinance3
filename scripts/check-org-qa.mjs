@@ -7,6 +7,12 @@ import assert from 'node:assert/strict';
 import { createMockSupabase } from './lib/mock-supabase.mjs';
 import { buildTeamCalendar, teamHubEyebrow } from '../src/lib/org-team-calendar.js';
 import { ASSIGNABLE_PERMISSIONS, memberHasPermission } from '../src/lib/org-permissions-server.js';
+import {
+  getCurrentOrgMember,
+  getOrgMemberForUser,
+  pickMembership,
+  readPreferredOrgId,
+} from '../src/lib/org-trading-server.js';
 
 const NOW = Date.parse('2026-10-25T12:00:00Z');
 
@@ -84,4 +90,48 @@ test('ORG-7: mentor_juniors is hidden from the grant UI until it gates something
   ]) {
     assert.ok(ASSIGNABLE_PERMISSIONS.includes(k), k);
   }
+});
+
+/* ── ORG-9: multi-org membership resolution ─────────────────────────── */
+
+const ORG_A = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+const ORG_B = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+const multiOrgDb = () => {
+  const db = createMockSupabase({
+    seed: {
+      org_members: [
+        { id: 'ma', user_id: 'u1', org_id: ORG_A, role: 'analyst', is_active: true },
+        { id: 'mb', user_id: 'u1', org_id: ORG_B, role: 'executive', is_active: true },
+        { id: 'mx', user_id: 'u1', org_id: 'gone', role: 'executive', is_active: false },
+      ],
+    },
+  });
+  db.auth = { getUser: async () => ({ data: { user: { id: 'u1', email: 'u1@x.test' } } }) };
+  return db;
+};
+
+test('ORG-9: pickMembership prefers the requested org, else the earliest row', () => {
+  const rows = [{ org_id: ORG_A }, { org_id: ORG_B }];
+  assert.equal(pickMembership(rows, ORG_B).org_id, ORG_B);
+  assert.equal(pickMembership(rows, 'not-mine').org_id, ORG_A);
+  assert.equal(pickMembership(rows, null).org_id, ORG_A);
+  assert.equal(pickMembership([], ORG_A), null);
+});
+
+test('ORG-9: a user in two orgs resolves (no maybeSingle error) and honours the preference', async () => {
+  const db = multiOrgDb();
+  const a = await getOrgMemberForUser(db, 'u1', { preferredOrgId: null });
+  assert.equal(a.org_id, ORG_A);
+  assert.equal(a.memberships.length, 2, 'inactive membership excluded');
+  const b = await getOrgMemberForUser(db, 'u1', { preferredOrgId: ORG_B });
+  assert.equal(b.id, 'mb');
+  const cur = await getCurrentOrgMember(db, ORG_B);
+  assert.equal(cur.org_id, ORG_B);
+  assert.equal(cur.email, 'u1@x.test');
+  assert.equal(await getOrgMemberForUser(db, 'nobody'), null);
+  assert.equal(await getOrgMemberForUser(db, null), null);
+});
+
+test('ORG-9: cookie read is safe outside a request scope', () => {
+  assert.equal(readPreferredOrgId(), null);
 });

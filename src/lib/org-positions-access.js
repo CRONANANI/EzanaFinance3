@@ -6,6 +6,8 @@
 // enough. All checks run against the service-role client so RLS can't mask a
 // missing membership row.
 
+import { getOrgMemberForUser } from '@/lib/org-trading-server';
+
 const MANAGE_POSITIONS_ROLES = new Set(['executive', 'portfolio_manager']);
 
 /**
@@ -20,15 +22,9 @@ const MANAGE_POSITIONS_ROLES = new Set(['executive', 'portfolio_manager']);
  * @param {string} userId
  */
 export async function getOrgMemberByUserId(admin, userId) {
-  if (!userId) return null;
-  const { data, error } = await admin
-    .from('org_members')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('is_active', true)
-    .maybeSingle();
-  if (error || !data) return null;
-  return data;
+  // Multi-org safe (QA ORG-9): honours the ez_org switcher cookie, never
+  // .maybeSingle() over several active memberships.
+  return getOrgMemberForUser(admin, userId);
 }
 
 /**

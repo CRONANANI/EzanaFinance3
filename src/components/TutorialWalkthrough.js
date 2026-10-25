@@ -206,11 +206,16 @@ export function TutorialWalkthrough() {
       .maybeSingle();
     if (!profile || profile.onboarding_completed !== true || profile.has_seen_tutorial === true)
       return;
+    // Browser client: getCurrentOrgMember is server-only, so pick the
+    // earliest-joined membership explicitly (.maybeSingle() alone errors for
+    // users in 2+ orgs; QA ORG-9).
     const { data: orgMember } = await supabase
       .from('org_members')
       .select('role')
       .eq('user_id', user.id)
       .eq('is_active', true)
+      .order('joined_at', { ascending: true })
+      .limit(1)
       .maybeSingle();
     const role = orgMember?.role || 'regular';
     setUserRole(role);

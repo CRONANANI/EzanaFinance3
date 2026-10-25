@@ -23,6 +23,7 @@ function applyNonOrg(set) {
   set.permissionOverrides([]);
   set.orgRoles([]);
   set.primaryRoleName(null);
+  set.memberships([]);
 }
 
 export function OrgProvider({ children }) {
@@ -35,6 +36,8 @@ export function OrgProvider({ children }) {
   // Additive to orgRole (the tier); the tier still drives all existing gates.
   const [orgRoles, setOrgRoles] = useState([]);
   const [primaryRoleName, setPrimaryRoleName] = useState(null);
+  // Every active membership ({ orgId, name, role, current }) for the org switcher.
+  const [memberships, setMemberships] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   // Guards against overlapping/re-entrant runs (auth context can churn
   // `user`/`isAuthenticated` during boot, re-triggering the effect).
@@ -48,6 +51,7 @@ export function OrgProvider({ children }) {
       permissionOverrides: setPermissionOverrides,
       orgRoles: setOrgRoles,
       primaryRoleName: setPrimaryRoleName,
+      memberships: setMemberships,
     };
 
     // Wait for auth to settle before deciding org status. Running while `user`
@@ -90,6 +94,7 @@ export function OrgProvider({ children }) {
       );
       setOrgRoles(Array.isArray(payload.orgRoles) ? payload.orgRoles : []);
       setPrimaryRoleName(payload.primaryRoleName ?? null);
+      setMemberships(Array.isArray(payload.memberships) ? payload.memberships : []);
     } catch (err) {
       console.error('[Org] Status check error:', err);
       applyNonOrg(set);
@@ -102,6 +107,19 @@ export function OrgProvider({ children }) {
   useEffect(() => {
     checkOrgStatus();
   }, [checkOrgStatus]);
+
+  // Switch the active org (multi-org users): the server validates membership
+  // and sets the ez_org cookie; a full reload re-resolves every org surface.
+  const switchOrg = useCallback(async (orgId) => {
+    const res = await fetch('/api/org/switch', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orgId }),
+    });
+    if (!res.ok) throw new Error('Could not switch organization');
+    window.location.reload();
+  }, []);
 
   const effectivePermissions = useMemo(() => {
     if (!orgData?.member) return getMemberPermissions(null, []);
@@ -160,6 +178,8 @@ export function OrgProvider({ children }) {
     universityName,
     logoUrl: org?.logo_url || null,
     refreshOrg: checkOrgStatus,
+    memberships,
+    switchOrg,
   };
 
   return <OrgContext.Provider value={value}>{children}</OrgContext.Provider>;

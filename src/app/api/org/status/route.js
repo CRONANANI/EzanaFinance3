@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { getEffectivePermissions } from '@/lib/org-roles-server';
+import { getOrgMemberForUser } from '@/lib/org-trading-server';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -37,21 +38,21 @@ export const GET = withApiGuard(
     } = await supabase.auth.getUser();
     if (authErr || !user) return NextResponse.json(NON_ORG);
 
-    // 1) active membership + the organization embed
-    const { data: member, error } = await supabase
-      .from('org_members')
-      .select(
-        `
-        *,
-        organizations (*)
-      `,
-      )
-      .eq('user_id', user.id)
-      .eq('is_active', true)
-      .limit(1)
-      .maybeSingle();
+    // 1) active membership + the organization embed. Multi-org safe (QA
+    //    ORG-9): the ez_org switcher cookie picks the org, else earliest-joined.
+    const resolved = await getOrgMemberForUser(supabase, user.id, {
+      select: '*, organizations (*)',
+    });
+    if (!resolved) return NextResponse.json(NON_ORG);
+    const { memberships: allRows, ...member } = resolved;
 
-    if (error || !member) return NextResponse.json(NON_ORG);
+    // Every active membership, for the Team Hub org switcher (2+ only).
+    const memberships = (allRows || []).map((m) => ({
+      orgId: m.org_id,
+      name: m.organizations?.university_name || m.organizations?.name || 'Organization',
+      role: m.role,
+      current: m.org_id === member.org_id,
+    }));
 
     // 2) the member's own team (if assigned)
     let team = null;
@@ -102,6 +103,7 @@ export const GET = withApiGuard(
         teams: teams || [],
       },
       permissionOverrides: (permRows || []).map((p) => p.permission_key),
+      memberships,
       orgRoles,
       primaryRoleName,
     });
