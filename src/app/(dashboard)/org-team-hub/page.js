@@ -26,7 +26,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { useOrg } from '@/contexts/OrgContext';
-import { getFundCalendar } from '@/lib/orgMockData';
+import { buildTeamCalendar, teamHubEyebrow } from '@/lib/org-team-calendar';
 import { FundDataHealthCard } from '@/components/org/FundDataHealthCard';
 import { OrgSetupChecklist } from '@/components/org/OrgSetupChecklist';
 import './team-hub-wire.css';
@@ -99,12 +99,6 @@ const NAV_TOOL_IDS = [
   'permissions',
 ];
 
-const ROLE_LABEL = {
-  executive: 'Executive',
-  portfolio_manager: 'Portfolio Manager',
-  analyst: 'Analyst',
-};
-
 /* ── Formatting helpers ───────────────────────────────────────── */
 function fmtMoney(n) {
   if (n == null || !Number.isFinite(Number(n))) return '—';
@@ -174,6 +168,8 @@ function useTeamHubData(enabled) {
   const [summary, setSummary] = useState(null);
   const [digest, setDigest] = useState(null);
   const [tasksData, setTasksData] = useState(null);
+  const [meetingsData, setMeetingsData] = useState(null);
+  const [assignmentsData, setAssignmentsData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const reloadTasks = useCallback(async () => {
@@ -185,15 +181,19 @@ function useTeamHubData(enabled) {
     if (!enabled) return undefined;
     let alive = true;
     (async () => {
-      const [s, d, t] = await Promise.allSettled([
+      const [s, d, t, m, a] = await Promise.allSettled([
         fetchJson('/api/org/team-hub/summary'),
         fetchJson('/api/org/digest'),
         fetchJson('/api/org/tasks'),
+        fetchJson('/api/org/meetings'),
+        fetchJson('/api/org/assignments'),
       ]);
       if (!alive) return;
       setSummary(s.status === 'fulfilled' ? s.value : null);
       setDigest(d.status === 'fulfilled' ? d.value : null);
       setTasksData(t.status === 'fulfilled' ? t.value : null);
+      setMeetingsData(m.status === 'fulfilled' ? m.value : null);
+      setAssignmentsData(a.status === 'fulfilled' ? a.value : null);
       setLoading(false);
     })();
     return () => {
@@ -201,7 +201,16 @@ function useTeamHubData(enabled) {
     };
   }, [enabled]);
 
-  return { summary, digest, tasksData, loading, reloadTasks, setTasksData };
+  return {
+    summary,
+    digest,
+    tasksData,
+    meetingsData,
+    assignmentsData,
+    loading,
+    reloadTasks,
+    setTasksData,
+  };
 }
 
 /* ── Fund-value chart (live snapshots, timeframe-switchable) ─────
@@ -582,6 +591,14 @@ function CalendarStrip({ items, loading, onOpen, onOpenAll }) {
               transform: `translateX(calc(-1 * ${clamped} * (100% + ${CAL_GAP}px)))`,
             }}
           >
+            {rows.length === 0 && (
+              <div className="thw-cal-card thw-cal-empty" role="status">
+                <span className="thw-cal-card-title">Nothing scheduled yet</span>
+                <span className="thw-cal-tag">
+                  Meetings, tasks and assignment due dates will appear here.
+                </span>
+              </div>
+            )}
             {rows.map((it) => (
               <button key={it.id} type="button" className="thw-cal-card" onClick={() => onOpen(it)}>
                 <span className="thw-cal-date">{calChip(it.date)}</span>
@@ -906,9 +923,8 @@ function Deadlines({ tasksData, loading, onOpenBoard }) {
 export default function OrgTeamHubPage() {
   const router = useRouter();
   const { isOrgUser, orgRole, isLoading } = useOrg();
-  const { summary, tasksData, loading, setTasksData } = useTeamHubData(
-    Boolean(isOrgUser && !isLoading),
-  );
+  const { summary, tasksData, meetingsData, assignmentsData, loading, setTasksData } =
+    useTeamHubData(Boolean(isOrgUser && !isLoading));
 
   // Header search stub — no command palette exists; ⌘K just focuses the input.
   const searchRef = useRef(null);
@@ -1012,20 +1028,16 @@ export default function OrgTeamHubPage() {
 
   const perf = summary?.performance || null;
 
-  // Identity block — real viewer where available, else a sensible VP fallback.
-  const identityName =
-    summary?.viewer?.displayName || summary?.organization?.you?.name || 'Noah Raymond-Leigh';
-  const identityTitle =
-    summary?.viewer?.title ||
-    summary?.organization?.you?.title ||
-    ROLE_LABEL[orgRole] ||
-    'VP of Operations';
-
-  // Fund numbers + chart series + calendar: live summary when present, else the
-  // mock Ezana Test University Fund so the demo is always populated.
+  // Fund numbers + chart series + calendar: live data only. Empty orgs render
+  // honest "—" / empty states, never a mock fund.
   const fund = perf || null; // honest-empty: fmtMoney/fmtSignedPct render "—" on null
   const fundSnapshots = Array.isArray(summary?.snapshots) ? summary.snapshots : [];
-  const calendarItems = getFundCalendar();
+  const calendarItems = buildTeamCalendar({
+    meetings: meetingsData?.meetings,
+    tasks: tasksData?.tasks,
+    assignments: assignmentsData?.assignments,
+    teams: summary?.sectors,
+  });
 
   return (
     <div className="thw-root">
@@ -1033,7 +1045,7 @@ export default function OrgTeamHubPage() {
       <main className="thw-main">
         <header className="thw-header">
           <div className="thw-header-lede">
-            <div className="thw-eyebrow">Team Hub · Fall 2026</div>
+            <div className="thw-eyebrow">{teamHubEyebrow(summary?.statStrip?.cohort)}</div>
             <h1 className="thw-h1">Command Center</h1>
           </div>
           <div className="thw-search" onClick={() => searchRef.current?.focus()}>
@@ -1052,7 +1064,7 @@ export default function OrgTeamHubPage() {
         <CalendarStrip
           items={calendarItems}
           loading={loading}
-          onOpen={() => router.push('/org-team-hub/meetings')}
+          onOpen={(it) => router.push(it?.href || '/org-team-hub/meetings')}
           onOpenAll={() => router.push('/org-team-hub/meetings')}
         />
 

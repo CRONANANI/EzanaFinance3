@@ -2,7 +2,7 @@
  * Org permission configuration — REAL shared config, not mock data.
  * The tier table and effective-permission math used by server-side gates
  * (`withApiGuard` routes, org-permissions-server) and by client gating.
- * Moved out of orgMockData.js so "mock" means mock.
+ * (Formerly lived in the now-deleted orgMockData.js.)
  */
 
 export const PERMISSION_TIERS = {

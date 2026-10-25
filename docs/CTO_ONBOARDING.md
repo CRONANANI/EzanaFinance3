@@ -181,9 +181,9 @@ hop). Provider keys are server-only; anything `NEXT_PUBLIC_` is public.
    only because we deploy on Vercel/Linux; the upgrade clears them properly.
 2. **`app-legacy/`** — static legacy pages copied into `public/` each build;
    uses `innerHTML` on mock data; should be deleted or auth-gated.
-3. **`src/lib/orgMockData.js`** (1,935 lines) — dead except `getFundCalendar`
-   (Team Hub calendar); delete once demo seeds are no longer needed for
-   pitches.
+3. ~~**`src/lib/orgMockData.js`**~~ — deleted (QA ORG-6). The Team Hub
+   calendar is now built from real meetings, tasks and assignment due dates
+   (`src/lib/org-team-calendar.js`).
 4. **Echo figure check** (`npm run check:echo-figures`) contradicts the
    documented 3-figure standard and fails — needs an editorial decision.
 5. **No E2E tests** — critical journeys (signup→dashboard→portfolio,
