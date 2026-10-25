@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
+import { upsertImportedPositions } from '@/lib/org-position-import';
 import {
   getOrgMemberByUserId,
   canManagePositionsServer,
@@ -102,7 +103,9 @@ export const POST = withApiGuard(
       return NextResponse.json({ inserted: 0, source, message: 'No importable positions found' });
     }
 
-    const { data, error: insErr } = await admin.from('org_positions').insert(rows).select('id');
+    // Upsert on (org, team, ticker, source, account): reconnecting the same
+    // brokerage account refreshes positions instead of duplicating them (ORG-12).
+    const { data, error: insErr } = await upsertImportedPositions(admin, rows);
     if (insErr) return NextResponse.json({ error: insErr.message }, { status: 500 });
 
     return NextResponse.json({ inserted: data.length, source });

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Papa from 'papaparse';
 import { withApiGuard } from '@/lib/api-guard';
+import { upsertImportedPositions } from '@/lib/org-position-import';
 import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 import {
   getOrgMemberByUserId,
@@ -141,7 +142,9 @@ export const POST = withApiGuard(
       );
     }
 
-    const { data, error: insErr } = await admin.from('org_positions').insert(rows).select('id');
+    // Upsert on (org, team, ticker, source, account): re-uploading a CSV
+    // refreshes those positions instead of duplicating them (QA ORG-12).
+    const { data, error: insErr } = await upsertImportedPositions(admin, rows);
     if (insErr) return NextResponse.json({ error: insErr.message }, { status: 500 });
 
     return NextResponse.json({ inserted: data.length, skipped: errors.length, errors });

@@ -92,23 +92,48 @@ export const POST = withApiGuard(
       return NextResponse.json({ error: 'team_id does not belong to your org' }, { status: 400 });
     }
 
-    const { data, error } = await admin
-      .from('org_positions')
-      .insert({
-        org_id: member.org_id,
-        team_id: team.teamId,
-        ticker: sym,
-        name: name ? String(name).slice(0, 200) : null,
-        shares: sharesNum,
-        avg_cost: costNum,
-        sector: sector ? String(sector).slice(0, 100) : null,
-        notes: notes ? String(notes).slice(0, 2000) : null,
-        source: 'manual',
-        added_by_user_id: member.user_id,
-      })
-      .select()
-      .single();
+    const values = {
+      org_id: member.org_id,
+      team_id: team.teamId,
+      ticker: sym,
+      name: name ? String(name).slice(0, 200) : null,
+      shares: sharesNum,
+      avg_cost: costNum,
+      sector: sector ? String(sector).slice(0, 100) : null,
+      notes: notes ? String(notes).slice(0, 2000) : null,
+      source: 'manual',
+      added_by_user_id: member.user_id,
+    };
+    const { data, error } = await admin.from('org_positions').insert(values).select().single();
 
+    // Unique import key (org, team, ticker, source, account; QA ORG-12): a
+    // soft-archived manual row is revived with the new values; a live one is a
+    // 409 so the user edits it rather than silently double-counting.
+    if (error?.code === '23505') {
+      let q = admin
+        .from('org_positions')
+        .select('id, is_active')
+        .eq('org_id', member.org_id)
+        .eq('ticker', sym)
+        .eq('source', 'manual')
+        .is('unified_account_id', null);
+      q = team.teamId ? q.eq('team_id', team.teamId) : q.is('team_id', null);
+      const { data: existing } = await q.maybeSingle();
+      if (existing && !existing.is_active) {
+        const { data: revived, error: revErr } = await admin
+          .from('org_positions')
+          .update({ ...values, is_active: true, updated_at: new Date().toISOString() })
+          .eq('id', existing.id)
+          .select()
+          .single();
+        if (revErr) return NextResponse.json({ error: revErr.message }, { status: 500 });
+        return NextResponse.json({ position: revived });
+      }
+      return NextResponse.json(
+        { error: `${sym} is already on this book. Edit the existing position instead.` },
+        { status: 409 },
+      );
+    }
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ position: data });
   },

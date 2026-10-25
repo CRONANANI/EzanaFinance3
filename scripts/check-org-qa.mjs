@@ -14,6 +14,7 @@ import {
   readPreferredOrgId,
 } from '../src/lib/org-trading-server.js';
 import { resolvePrefsAccess } from '../src/lib/org-notification-prefs.js';
+import { mergeImportRows, POSITION_IMPORT_CONFLICT } from '../src/lib/org-position-import.js';
 
 const NOW = Date.parse('2026-10-25T12:00:00Z');
 
@@ -196,4 +197,25 @@ test('ORG-10: supervisor scope and cross-team / non-member denial', async () => 
   assert.equal((await resolvePrefsAccess(db, 'uan', 'pm1')).ok, false, 'upward');
   assert.equal((await resolvePrefsAccess(db, 'stranger', null)).ok, false);
   assert.equal((await resolvePrefsAccess(db, 'uan', 'missing')).ok, false);
+});
+
+/* ── ORG-12: idempotent imports ─────────────────────────────────────── */
+
+test('ORG-12: upsert key matches the migration index columns', () => {
+  assert.equal(POSITION_IMPORT_CONFLICT, 'org_id,team_id,ticker,source,unified_account_id');
+});
+
+test('ORG-12: duplicate tickers in one import merge (summed shares, weighted cost)', () => {
+  const base = { org_id: 'o', team_id: null, source: 'csv', unified_account_id: null };
+  const out = mergeImportRows([
+    { ...base, ticker: 'AAPL', shares: 10, avg_cost: 100, name: null },
+    { ...base, ticker: 'MSFT', shares: 1, avg_cost: 5 },
+    { ...base, ticker: 'AAPL', shares: 30, avg_cost: 200, name: 'Apple' },
+    { ...base, team_id: 't2', ticker: 'AAPL', shares: 1, avg_cost: 1 },
+  ]);
+  assert.equal(out.length, 3);
+  const aapl = out.find((r) => r.ticker === 'AAPL' && r.team_id === null);
+  assert.equal(aapl.shares, 40);
+  assert.equal(aapl.avg_cost, 175);
+  assert.equal(aapl.name, 'Apple');
 });
