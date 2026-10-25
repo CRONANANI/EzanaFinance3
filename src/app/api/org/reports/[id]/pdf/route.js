@@ -90,6 +90,12 @@ export const GET = withApiGuard(
       )
       .join('');
 
+    /* The page CSP (set by middleware on this response) allows inline scripts
+       only with the per-request nonce, forwarded as `x-nonce` (ORG-18). The
+       nonce is base64; anything else is dropped rather than echoed. */
+    const rawNonce = request.headers.get('x-nonce') || '';
+    const nonceAttr = /^[A-Za-z0-9+/=]{8,}$/.test(rawNonce) ? ` nonce="${rawNonce}"` : '';
+
     const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8" />
 <title>${esc(report.title)}</title>
@@ -183,7 +189,7 @@ export const GET = withApiGuard(
     <span class="mono">Generated ${esc(genDate)}</span>
   </div>
 </div>
-<script>window.addEventListener('load',function(){setTimeout(function(){try{window.print();}catch(e){}},400);});</script>
+<script${nonceAttr}>window.addEventListener('load',function(){setTimeout(function(){try{window.print();}catch(e){}},400);});</script>
 </body></html>`;
 
     return new NextResponse(html, {
