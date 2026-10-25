@@ -1,9 +1,12 @@
 /**
- * GET    /api/partner/payout-account   -> { account | null }
+ * GET    /api/partner/payout-account   -> { account, pendingAccount, accounts }
+ *   account: the active account (or null); pendingAccount: a manual_ach
+ *   account awaiting verification (or null); accounts: both, newest first.
  * POST   /api/partner/payout-account   -> link a bank account
  *   Plaid:  { method: 'plaid_ach', public_token, plaid_account_id }
  *   Manual: { method: 'manual_ach', accountNumber, routingNumber, accountName, institutionName }
- * DELETE /api/partner/payout-account   -> soft-remove active account
+ * DELETE /api/partner/payout-account[?id=] -> soft-remove one account (or all),
+ *   active or pending_verification
  * Partners only (403 otherwise).
  */
 import { getAdminClient } from '@/lib/supabase';
@@ -11,12 +14,26 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { plaidClient } from '@/lib/plaid';
 import { encryptToken } from '@/lib/crypto/token-cipher';
-import { isPayoutPartner } from '@/lib/partner-payouts';
+import {
+  isPayoutPartner,
+  listPayoutAccounts,
+  savePayoutAccount,
+  removePayoutAccount,
+} from '@/lib/partner-payouts';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
-const PUBLIC_FIELDS =
-  'id, method, institution_name, account_name, account_last4, routing_last4, status, created_at';
+/* PAR-15: an exchanged Plaid item we end up not storing must be removed at
+   Plaid, or it stays billable and orphaned. Best effort; failures are logged. */
+async function removePlaidItem(accessToken) {
+  if (!accessToken) return;
+  try {
+    await plaidClient.itemRemove({ access_token: accessToken });
+  } catch (e) {
+    logger.error('Plaid itemRemove failed for orphaned payout item', { error: e?.message });
+  }
+}
 
 function isValidRouting(rn) {
   if (!/^\d{9}$/.test(rn)) return false;
@@ -30,19 +47,20 @@ export const GET = withApiGuard(
     if (!(await isPayoutPartner(getAdminClient(), user))) {
       return NextResponse.json({ error: 'Partner access required' }, { status: 403 });
     }
-    const { data } = await getAdminClient()
-      .from('partner_payout_accounts')
-      .select(PUBLIC_FIELDS)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .maybeSingle();
-    return NextResponse.json({ account: data || null });
+    const { error, accounts, account, pendingAccount } = await listPayoutAccounts(
+      getAdminClient(),
+      user.id,
+    );
+    if (error)
+      return NextResponse.json({ error: 'Failed to load payout account' }, { status: 500 });
+    return NextResponse.json({ account, pendingAccount, accounts });
   },
   { requireAuth: true },
 );
 
 export const POST = withApiGuard(
   async (request, user) => {
+    let plaidAccessToken = null;
     try {
       if (!(await isPayoutPartner(getAdminClient(), user))) {
         return NextResponse.json({ error: 'Partner access required' }, { status: 403 });
@@ -58,6 +76,7 @@ export const POST = withApiGuard(
 
         const ex = await plaidClient.itemPublicTokenExchange({ public_token: body.public_token });
         const { access_token, item_id } = ex.data;
+        plaidAccessToken = access_token;
 
         const authRes = await plaidClient.authGet({ access_token });
         const acct = authRes.data.accounts.find((a) => a.account_id === body.plaid_account_id);
@@ -65,6 +84,7 @@ export const POST = withApiGuard(
           (n) => n.account_id === body.plaid_account_id,
         );
         if (!acct || !numbers) {
+          await removePlaidItem(access_token);
           return NextResponse.json({ error: 'Account not found on item' }, { status: 400 });
         }
 
@@ -121,22 +141,22 @@ export const POST = withApiGuard(
         return NextResponse.json({ error: 'Unknown method' }, { status: 400 });
       }
 
-      // Retire any existing active account, then insert.
-      await getAdminClient()
-        .from('partner_payout_accounts')
-        .update({ status: 'removed', updated_at: new Date().toISOString() })
-        .eq('user_id', user.id)
-        .eq('status', 'active');
+      // PAR-4: a manual account is stored as pending_verification and does
+      // not retire the active one; a Plaid account replaces it.
+      const { error: saveErr, account } = await savePayoutAccount(
+        getAdminClient(),
+        user.id,
+        record,
+      );
+      if (saveErr) {
+        await removePlaidItem(plaidAccessToken);
+        logger.error('Payout account insert failed', { userId: user.id, error: saveErr });
+        return NextResponse.json({ error: 'Failed to link account' }, { status: 500 });
+      }
 
-      const { data, error } = await getAdminClient()
-        .from('partner_payout_accounts')
-        .insert(record)
-        .select(PUBLIC_FIELDS)
-        .single();
-      if (error) throw error;
-
-      return NextResponse.json({ account: data });
+      return NextResponse.json({ account });
     } catch (error) {
+      await removePlaidItem(plaidAccessToken);
       console.error('[Payouts] account link error:', error?.response?.data || error.message);
       return NextResponse.json({ error: 'Failed to link account' }, { status: 500 });
     }
@@ -149,11 +169,8 @@ export const DELETE = withApiGuard(
     if (!(await isPayoutPartner(getAdminClient(), user))) {
       return NextResponse.json({ error: 'Partner access required' }, { status: 403 });
     }
-    const { error } = await getAdminClient()
-      .from('partner_payout_accounts')
-      .update({ status: 'removed', updated_at: new Date().toISOString() })
-      .eq('user_id', user.id)
-      .eq('status', 'active');
+    const id = new URL(request.url).searchParams.get('id');
+    const { error } = await removePayoutAccount(getAdminClient(), user.id, id || null);
     if (error) return NextResponse.json({ error: 'Failed to remove' }, { status: 500 });
     return NextResponse.json({ ok: true });
   },

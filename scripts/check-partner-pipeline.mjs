@@ -11,6 +11,13 @@ import {
   resendPartnerVerification,
   RESEND_GENERIC_REPLY,
 } from '../src/lib/partner-application.js';
+import {
+  isPayoutPartner,
+  listPayoutAccounts,
+  savePayoutAccount,
+  removePayoutAccount,
+} from '../src/lib/partner-payouts.js';
+import { isActivePartner } from '../src/lib/partner-access.js';
 
 const quiet = { info() {}, warn() {}, error() {} };
 const BODY = { fullName: 'Ada Partner', email: 'Ada@Example.com ', partnerType: 'creator' };
@@ -129,4 +136,81 @@ test('PAR-10: resend for an unknown or decided email sends nothing', async () =>
   }
   assert.equal(resend.sent.length, 0);
   assert.doesNotMatch(RESEND_GENERIC_REPLY.message, /not found|no application/i);
+});
+
+/* ---------- PAR-4: manual ACH payout accounts ---------- */
+const PARTNER = '33333333-3333-4333-8333-333333333333';
+const ACTIVE = {
+  id: 'acct-active',
+  user_id: PARTNER,
+  method: 'plaid_ach',
+  account_name: 'Checking',
+  account_last4: '1111',
+  status: 'active',
+};
+const MANUAL = {
+  method: 'manual_ach',
+  account_name: 'New bank',
+  account_last4: '2222',
+  routing_last4: '0021',
+  status: 'pending_verification',
+};
+const payoutDb = () => createMockSupabase({ seed: { partner_payout_accounts: [{ ...ACTIVE }] } });
+
+test('PAR-4: a manual account is pending, visible, and does not retire the active one', async () => {
+  const db = payoutDb();
+  const saved = await savePayoutAccount(db, PARTNER, MANUAL);
+  assert.equal(saved.error, null);
+  assert.equal(saved.account.status, 'pending_verification');
+
+  const list = await listPayoutAccounts(db, PARTNER);
+  assert.equal(list.error, null);
+  assert.equal(list.accounts.length, 2);
+  assert.equal(list.account.id, 'acct-active');
+  assert.equal(list.pendingAccount.account_last4, '2222');
+});
+
+test('PAR-4: a pending account can be removed; the active one survives', async () => {
+  const db = payoutDb();
+  const { account } = await savePayoutAccount(db, PARTNER, MANUAL);
+  assert.equal((await removePayoutAccount(db, PARTNER, account.id)).error, null);
+  const list = await listPayoutAccounts(db, PARTNER);
+  assert.equal(list.pendingAccount, null);
+  assert.equal(list.account.id, 'acct-active');
+});
+
+test('PAR-4: a Plaid account replaces both the active and the pending account', async () => {
+  const db = payoutDb();
+  await savePayoutAccount(db, PARTNER, MANUAL);
+  const { id: _drop, ...plaid } = { ...ACTIVE, account_last4: '3333' };
+  const { account } = await savePayoutAccount(db, PARTNER, plaid);
+  const list = await listPayoutAccounts(db, PARTNER);
+  assert.equal(list.accounts.length, 1);
+  assert.equal(list.account.id, account.id);
+});
+
+test('PAR-4/15: a failed insert restores the accounts it would have replaced', async () => {
+  const db = createMockSupabase({
+    unique: { partner_payout_accounts: [['account_last4']] },
+    seed: { partner_payout_accounts: [{ ...ACTIVE }] },
+  });
+  // Same last4 as the active row trips the mock unique index on insert.
+  const r = await savePayoutAccount(db, PARTNER, { ...ACTIVE, id: 'x' });
+  assert.ok(r.error);
+  const list = await listPayoutAccounts(db, PARTNER);
+  assert.equal(list.account?.id, 'acct-active');
+});
+
+test('PAR-3: payout routes gate on the shared isActivePartner', async () => {
+  const db = createMockSupabase({
+    seed: { partners: [{ id: 'p1', user_id: PARTNER, status: 'active' }] },
+  });
+  assert.equal(await isPayoutPartner(db, { id: PARTNER }), true);
+  assert.equal(await isPayoutPartner(db, { id: 'someone-else' }), false);
+  assert.equal(
+    await isPayoutPartner(db, { id: 'x', app_metadata: { partner_role: 'partner' } }),
+    true,
+  );
+  assert.equal(await isActivePartner(db, PARTNER), true);
+  assert.equal(await isActivePartner(db, null), false);
 });

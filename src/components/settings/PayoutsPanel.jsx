@@ -20,7 +20,7 @@ function fmtDate(v) {
 }
 
 export function PayoutsPanel() {
-  const [account, setAccount] = useState(null);
+  const [accounts, setAccounts] = useState([]);
   const [payouts, setPayouts] = useState([]);
   const [pendingCents, setPendingCents] = useState(0);
   const [lifetimeCents, setLifetimeCents] = useState(0);
@@ -53,7 +53,9 @@ export function PayoutsPanel() {
       ]);
       const a = await aRes.json();
       const p = await pRes.json();
-      setAccount(a.account || null);
+      if (!aRes.ok) throw new Error(a.error);
+      // Active account plus any manual account awaiting verification (PAR-4).
+      setAccounts(a.accounts || (a.account ? [a.account] : []));
       setPayouts(p.payouts || []);
       setPendingCents(p.pendingCents || 0);
       setLifetimeCents(p.lifetimeCents || 0);
@@ -112,7 +114,7 @@ export function PayoutsPanel() {
             });
             const data = await linkRes.json();
             if (!linkRes.ok) throw new Error(data.error || 'Link failed');
-            setAccount(data.account);
+            await load();
           } catch (e) {
             setError(e.message || 'Failed to link account.');
           } finally {
@@ -140,7 +142,7 @@ export function PayoutsPanel() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to save account');
-      setAccount(data.account);
+      await load();
       setMode('view');
       setManual({ institutionName: '', accountName: '', routingNumber: '', accountNumber: '' });
     } catch (e) {
@@ -150,20 +152,31 @@ export function PayoutsPanel() {
     }
   };
 
-  const removeAccount = async () => {
+  const removeAccount = async (id) => {
     if (!window.confirm('Remove this payout account?')) return;
+    setError('');
     setBusy(true);
     try {
       const token = await getToken();
-      await fetch('/api/partner/payout-account', {
+      const res = await fetch(`/api/partner/payout-account?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
-      setAccount(null);
+      // PAR-15: only drop the card once the server confirms the removal.
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to remove account.');
+      }
+      setAccounts((list) => list.filter((a) => a.id !== id));
+    } catch (e) {
+      setError(e.message || 'Failed to remove account.');
     } finally {
       setBusy(false);
     }
   };
+
+  const activeAccount = accounts.find((a) => a.status === 'active') || null;
+  const hasPending = accounts.some((a) => a.status === 'pending_verification');
 
   if (loading) return <div aria-hidden className="ppo-skeleton" />;
 
@@ -202,8 +215,8 @@ export function PayoutsPanel() {
           <i className="bi bi-bank" /> Payout account
         </h3>
 
-        {account ? (
-          <div className="ppo-account-card">
+        {accounts.map((account) => (
+          <div className="ppo-account-card" key={account.id}>
             <div className="ppo-account-icon">
               <i className="bi bi-bank2" />
             </div>
@@ -217,17 +230,26 @@ export function PayoutsPanel() {
               <span className={`ppo-account-status ppo-status-${account.status}`}>
                 {account.status === 'active' ? 'Active' : 'Pending verification'}
               </span>
+              {account.status === 'pending_verification' ? (
+                <span className="ppo-account-meta">
+                  {activeAccount
+                    ? 'Payouts keep going to your active account until this one is verified.'
+                    : 'Payouts start once this account is verified.'}
+                </span>
+              ) : null}
             </div>
             <button
               type="button"
               className="settings-btn-secondary"
-              onClick={removeAccount}
+              onClick={() => removeAccount(account.id)}
               disabled={busy}
             >
               Remove
             </button>
           </div>
-        ) : mode === 'manual' ? (
+        ))}
+
+        {hasPending ? null : mode === 'manual' ? (
           <div className="ppo-manual-form">
             <div className="settings-row">
               <div className="settings-field">
@@ -297,8 +319,9 @@ export function PayoutsPanel() {
         ) : (
           <div className="ppo-connect">
             <p className="ppo-connect-copy">
-              Connect a bank account to receive payouts. Instant verification through Plaid, or
-              enter your details manually.
+              {activeAccount
+                ? 'Switching banks? Plaid replaces your account right away. A manually entered account is held for verification and your current account keeps receiving payouts until then.'
+                : 'Connect a bank account to receive payouts. Instant verification through Plaid, or enter your details manually.'}
             </p>
             <div className="settings-btn-row">
               <button
