@@ -3,7 +3,15 @@
 import React, { useState } from 'react';
 import { usePortfolio } from '@/hooks/usePortfolio';
 import { PlaidLinkButton } from './PlaidLinkButton';
-import { TrendingUp, TrendingDown, DollarSign, PieChart, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  PieChart,
+  RefreshCw,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('en-US', {
@@ -72,7 +80,8 @@ export default function PortfolioDashboard() {
           </div>
           <h3 className="text-lg font-semibold text-white mb-2">Connect Your Brokerage</h3>
           <p className="text-gray-400 mb-6 max-w-md">
-            Link your investment accounts via Plaid to see your real portfolio data, holdings, and performance.
+            Link your investment accounts via Plaid to see your real portfolio data, holdings, and
+            performance.
           </p>
           <PlaidLinkButton onSuccess={() => refetch()} />
         </div>
@@ -84,7 +93,7 @@ export default function PortfolioDashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-white">Portfolio Overview</h2>
-          <button
+        <button
           onClick={refetch}
           className="flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-white bg-[#161b22] rounded-lg border border-gray-700 hover:border-emerald-500/30 transition-all"
         >
@@ -104,7 +113,11 @@ export default function PortfolioDashboard() {
         </div>
         <div className="metric-item">
           <div className={`metric-icon-wrap ${isPositive ? 'positive' : 'negative'}`}>
-            {isPositive ? <TrendingUp className="w-5 h-5 text-emerald-500" /> : <TrendingDown className="w-5 h-5 text-red-500" />}
+            {isPositive ? (
+              <TrendingUp className="w-5 h-5 text-emerald-500" />
+            ) : (
+              <TrendingDown className="w-5 h-5 text-red-500" />
+            )}
           </div>
           <span className="metric-label">Total Gain/Loss</span>
           <span className={`metric-value ${isPositive ? 'text-emerald-500' : 'text-red-500'}`}>
@@ -148,15 +161,22 @@ export default function PortfolioDashboard() {
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-gray-500 flex-shrink-0">
-                      {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                      {isExpanded ? (
+                        <ChevronUp className="w-5 h-5" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5" />
+                      )}
                     </span>
                     <h4 className="font-medium text-white">{account.name}</h4>
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-white">{formatCurrency(account.totalValue)}</p>
                     {isExpanded && (
-                      <p className={`text-sm ${account.gainLoss >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                        {formatCurrency(account.gainLoss)} ({formatPercent(account.gainLossPercent)})
+                      <p
+                        className={`text-sm ${account.gainLoss >= 0 ? 'text-emerald-500' : 'text-red-500'}`}
+                      >
+                        {formatCurrency(account.gainLoss)} ({formatPercent(account.gainLossPercent)}
+                        )
                       </p>
                     )}
                   </div>
@@ -164,9 +184,15 @@ export default function PortfolioDashboard() {
                 {isExpanded && (
                   <div className="px-5 pb-5 space-y-2 bg-gray-900/30">
                     {account.holdings?.map((holding) => {
-                      const value = Number(holding.quantity) * Number(holding.institution_price || holding.institution_value || 0);
+                      const value = Number(
+                        holding.total_value ??
+                          Number(holding.quantity) * Number(holding.price_per_share || 0),
+                      );
                       const gain = value - Number(holding.cost_basis || 0);
-                      const gainPercent = Number(holding.cost_basis) > 0 ? (gain / Number(holding.cost_basis) * 100) : 0;
+                      const gainPercent =
+                        Number(holding.cost_basis) > 0
+                          ? (gain / Number(holding.cost_basis)) * 100
+                          : 0;
                       return (
                         <div
                           key={holding.id || `${holding.security_id}-${holding.account_id}`}
@@ -179,13 +205,21 @@ export default function PortfolioDashboard() {
                               </span>
                             </div>
                             <div>
-                              <p className="font-medium text-white text-sm">{holding.ticker_symbol || 'N/A'}</p>
-                              <p className="text-xs text-gray-500">{Number(holding.quantity)} shares</p>
+                              <p className="font-medium text-white text-sm">
+                                {holding.ticker_symbol || 'N/A'}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {Number(holding.quantity)} shares
+                              </p>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="font-medium text-white text-sm">{formatCurrency(value)}</p>
-                            <p className={`text-xs ${gain >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                            <p className="font-medium text-white text-sm">
+                              {formatCurrency(value)}
+                            </p>
+                            <p
+                              className={`text-xs ${gain >= 0 ? 'text-emerald-500' : 'text-red-500'}`}
+                            >
                               {formatPercent(gainPercent)}
                             </p>
                           </div>
@@ -213,7 +247,11 @@ export default function PortfolioDashboard() {
               Top Performers
             </h3>
             <span className="text-gray-500">
-              {topPerformersExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              {topPerformersExpanded ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
             </span>
           </button>
           <div className="p-5">
@@ -222,34 +260,51 @@ export default function PortfolioDashboard() {
                 <div className="flex items-center gap-3">
                   <span className="text-gray-500 text-sm w-5">1</span>
                   <div>
-                    <p className="font-medium text-white">{topPerformers[0].ticker_symbol || 'N/A'}</p>
-                    <p className="text-xs text-gray-500 truncate max-w-[150px]">{topPerformers[0].name || topPerformers[0].ticker_symbol}</p>
+                    <p className="font-medium text-white">
+                      {topPerformers[0].ticker_symbol || 'N/A'}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate max-w-[150px]">
+                      {topPerformers[0].name || topPerformers[0].ticker_symbol}
+                    </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-medium text-emerald-500">{formatPercent(topPerformers[0].gainLossPercent)}</p>
-                  <p className="text-xs text-white font-medium">{formatCurrency(topPerformers[0].currentValue || (Number(topPerformers[0].quantity) * Number(topPerformers[0].institution_price || topPerformers[0].institution_value || 0)))}</p>
+                  <p className="font-medium text-emerald-500">
+                    {formatPercent(topPerformers[0].gainLossPercent)}
+                  </p>
+                  <p className="text-xs text-white font-medium">
+                    {formatCurrency(
+                      topPerformers[0].currentValue || Number(topPerformers[0].total_value || 0),
+                    )}
+                  </p>
                 </div>
               </div>
             )}
-            {topPerformersExpanded && topPerformers.slice(1).map((holding, index) => (
-              <div
-                key={holding.id || `${holding.security_id}-${index}`}
-                className="flex items-center justify-between p-3 bg-[#0d1117] rounded-lg mb-2 last:mb-0"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-gray-500 text-sm w-5">{index + 2}</span>
-                  <div>
-                    <p className="font-medium text-white text-sm">{holding.ticker_symbol || 'N/A'}</p>
-                    <p className="text-xs text-gray-500 truncate max-w-[150px]">{holding.name || holding.ticker_symbol}</p>
+            {topPerformersExpanded &&
+              topPerformers.slice(1).map((holding, index) => (
+                <div
+                  key={holding.id || `${holding.security_id}-${index}`}
+                  className="flex items-center justify-between p-3 bg-[#0d1117] rounded-lg mb-2 last:mb-0"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-gray-500 text-sm w-5">{index + 2}</span>
+                    <div>
+                      <p className="font-medium text-white text-sm">
+                        {holding.ticker_symbol || 'N/A'}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate max-w-[150px]">
+                        {holding.name || holding.ticker_symbol}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-medium text-emerald-500 text-sm">
+                      {formatPercent(holding.gainLossPercent)}
+                    </p>
+                    <p className="text-xs text-gray-500">{formatCurrency(holding.gainLoss)}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-medium text-emerald-500 text-sm">{formatPercent(holding.gainLossPercent)}</p>
-                  <p className="text-xs text-gray-500">{formatCurrency(holding.gainLoss)}</p>
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
 
@@ -264,30 +319,40 @@ export default function PortfolioDashboard() {
               Asset Allocation
             </h3>
             <span className="text-gray-500">
-              {allocationExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              {allocationExpanded ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
             </span>
           </button>
           <div className="p-5 space-y-4">
-            {Object.entries(allocation).slice(0, allocationExpanded ? undefined : 1).map(([type, value]) => {
-              const percentage = summary.totalValue > 0 ? (value / summary.totalValue) * 100 : 0;
-              const colors = { Stocks: 'bg-emerald-500', ETFs: 'bg-blue-500', Other: 'bg-purple-500' };
-              return (
-                <div key={type}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-gray-300">{type}</span>
-                    <span className="text-white font-medium">
-                      {formatCurrency(value)} ({percentage.toFixed(1)}%)
-                    </span>
+            {Object.entries(allocation)
+              .slice(0, allocationExpanded ? undefined : 1)
+              .map(([type, value]) => {
+                const percentage = summary.totalValue > 0 ? (value / summary.totalValue) * 100 : 0;
+                const colors = {
+                  Stocks: 'bg-emerald-500',
+                  ETFs: 'bg-blue-500',
+                  Other: 'bg-purple-500',
+                };
+                return (
+                  <div key={type}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-gray-300">{type}</span>
+                      <span className="text-white font-medium">
+                        {formatCurrency(value)} ({percentage.toFixed(1)}%)
+                      </span>
+                    </div>
+                    <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${colors[type] || 'bg-gray-500'} rounded-full transition-all`}
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full ${colors[type] || 'bg-gray-500'} rounded-full transition-all`}
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
       </div>

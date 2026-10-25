@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
+import { normalizePlaidHolding } from '@/lib/plaid-rows';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,11 +10,13 @@ export const GET = withApiGuard(
     try {
       const supabase = getAdminClient();
 
-      const { data: holdings, error: holdingsError } = await supabase
+      const { data: rawHoldings, error: holdingsError } = await supabase
         .from('plaid_holdings')
-        .select(`*, plaid_accounts (name, type, subtype, plaid_items (institution_name))`)
+        .select(
+          `*, plaid_accounts (account_name, account_type, account_subtype, plaid_items (institution_name))`,
+        )
         .eq('user_id', user.id)
-        .order('institution_value', { ascending: false });
+        .order('total_value', { ascending: false });
 
       if (holdingsError) throw holdingsError;
 
@@ -33,12 +36,13 @@ export const GET = withApiGuard(
 
       if (transactionsError) throw transactionsError;
 
-      const totalValue = holdings?.reduce((sum, h) => sum + (h.institution_value || 0), 0) || 0;
-      const totalCostBasis = holdings?.reduce((sum, h) => sum + (h.cost_basis || 0), 0) || 0;
+      const holdings = (rawHoldings || []).map(normalizePlaidHolding);
+      const totalValue = holdings.reduce((sum, h) => sum + (h.value || 0), 0);
+      const totalCostBasis = holdings.reduce((sum, h) => sum + (h.cost_basis || 0), 0);
       const totalGainLoss = totalValue - totalCostBasis;
       const totalReturnPercent = totalCostBasis > 0 ? (totalGainLoss / totalCostBasis) * 100 : 0;
 
-      const holdingsByType = holdings?.reduce((acc, h) => {
+      const holdingsByType = holdings.reduce((acc, h) => {
         const type = h.type || 'other';
         if (!acc[type]) acc[type] = [];
         acc[type].push(h);
@@ -51,11 +55,11 @@ export const GET = withApiGuard(
           totalCostBasis,
           totalGainLoss,
           totalReturnPercent,
-          totalPositions: holdings?.length || 0,
+          totalPositions: holdings.length,
           totalAccounts: accounts?.length || 0,
         },
         holdings,
-        topHoldings: holdings?.slice(0, 10) || [],
+        topHoldings: holdings.slice(0, 10),
         holdingsByType,
         accounts,
         recentTransactions: transactions,

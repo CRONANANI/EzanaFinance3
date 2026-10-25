@@ -3,6 +3,7 @@ import { withApiGuard } from '@/lib/api-guard';
 import { getAuthUser, getAdminClient } from '@/lib/supabase';
 
 import { buildSyntheticValuePoints } from '@/lib/portfolio-value-series-synth';
+import { sumPlaidHoldingsValue } from '@/lib/plaid-rows';
 import { HERO_DATA } from '@/lib/dashboard-hero-data';
 
 export const dynamic = 'force-dynamic';
@@ -181,13 +182,11 @@ async function getPortfolioEndValue(userId) {
 
   const { data: holdings, error: hErr } = await getAdminClient()
     .from('plaid_holdings')
-    .select('value, institution_value')
+    .select('quantity, price_per_share, total_value')
     .eq('user_id', userId);
+  if (hErr) console.error('[portfolio/value-series] plaid_holdings read:', hErr.message);
   if (!hErr && Array.isArray(holdings) && holdings.length > 0) {
-    return holdings.reduce((s, h) => {
-      const v = Number(h.value ?? h.institution_value ?? 0) || 0;
-      return s + v;
-    }, 0);
+    return sumPlaidHoldingsValue(holdings);
   }
 
   const { data: row } = await getAdminClient()

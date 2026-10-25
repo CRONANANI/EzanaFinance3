@@ -26,6 +26,21 @@ function getKey() {
   return key;
 }
 
+/**
+ * True when TOKEN_ENCRYPTION_KEY is present and decodes to 32 bytes. Callers
+ * that are about to mint a provider secret (e.g. a Plaid public-token
+ * exchange) check this first so a misconfigured key can't leave an orphaned,
+ * unstorable item at the provider.
+ */
+export function isTokenKeyConfigured() {
+  try {
+    getKey();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // Returns a self-describing string: v1:<iv>:<authTag>:<ciphertext> (all base64)
 export function encryptToken(plaintext) {
   if (plaintext == null) return plaintext;

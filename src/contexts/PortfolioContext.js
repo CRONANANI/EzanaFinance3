@@ -134,9 +134,9 @@ export function PortfolioProvider({ children }) {
       ticker_symbol: h.ticker,
       gainLossPercent: h.gainLossPercent,
       currentValue: h.totalValue,
-      institution_value: h.totalValue,
+      total_value: h.totalValue,
       quantity: h.totalQuantity,
-      institution_price: h.lastPrice,
+      price_per_share: h.lastPrice,
     }));
 
   const allocation = (portfolio.aggregated || []).reduce((acc, h) => {
@@ -147,7 +147,7 @@ export function PortfolioProvider({ children }) {
 
   const accountsWithHoldings = (portfolio.accounts || []).map((acc) => {
     const acctHoldings = (portfolio.holdings || []).filter((h) => h.account_id === acc.account_id);
-    const totalValue = acctHoldings.reduce((s, h) => s + (h.value ?? h.institution_value ?? 0), 0);
+    const totalValue = acctHoldings.reduce((s, h) => s + (h.value ?? h.total_value ?? 0), 0);
     const totalCost = acctHoldings.reduce((s, h) => s + (h.cost_basis || 0), 0);
     return {
       ...acc,

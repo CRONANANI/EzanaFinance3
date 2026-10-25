@@ -85,13 +85,13 @@ async function generateDefaultReport(userId) {
 
   const { data: holdings } = await supabaseAdmin
     .from('plaid_holdings')
-    .select('ticker_symbol, quantity, institution_value, institution_price, institution_name, name')
+    .select('ticker_symbol, security_name, quantity, price_per_share, total_value')
     .eq('user_id', userId)
-    .order('institution_value', { ascending: false })
+    .order('total_value', { ascending: false })
     .limit(40);
 
   const rows = holdings || [];
-  const totalValue = rows.reduce((s, h) => s + (Number(h.institution_value) || 0), 0);
+  const totalValue = rows.reduce((s, h) => s + (Number(h.total_value) || 0), 0);
   const report_text = buildSentinelReportText(rows, { totalValue });
 
   return {

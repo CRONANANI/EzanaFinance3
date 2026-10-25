@@ -20,14 +20,14 @@ function sectionBlock(id, body) {
 }
 
 /**
- * @param {Array<{ ticker_symbol?: string, institution_value?: number, quantity?: number, institution_price?: number }>} holdings
+ * @param {Array<{ ticker_symbol?: string, total_value?: number, quantity?: number, price_per_share?: number }>} holdings
  * @param {{ totalValue?: number }} [opts]
  */
 export function buildSentinelReportText(holdings, opts = {}) {
   const rows = Array.isArray(holdings) ? holdings : [];
-  const totalValue = opts.totalValue ?? rows.reduce((s, h) => s + (Number(h.institution_value) || 0), 0);
+  const totalValue = opts.totalValue ?? rows.reduce((s, h) => s + (Number(h.total_value) || 0), 0);
   const sorted = [...rows].sort(
-    (a, b) => (Number(b.institution_value) || 0) - (Number(a.institution_value) || 0),
+    (a, b) => (Number(b.total_value) || 0) - (Number(a.total_value) || 0),
   );
   const top = sorted.slice(0, 8);
   const tickers = [...new Set(rows.map((r) => r.ticker_symbol).filter(Boolean))];
@@ -58,14 +58,16 @@ export function buildSentinelReportText(holdings, opts = {}) {
   if (top.length > 0) {
     top.forEach((h, i) => {
       const t = h.ticker_symbol || '—';
-      const v = Number(h.institution_value) || 0;
+      const v = Number(h.total_value) || 0;
       const pct = totalValue > 0 ? ((v / totalValue) * 100).toFixed(1) : '0';
       topPerformers.push(
         `• ${t}: ~${pct}% of portfolio value ($${v.toLocaleString('en-US', { maximumFractionDigits: 0 })}). ${i === 0 ? 'Largest sleeve — watch earnings revisions and sector beta.' : 'Track position size vs. your plan and rebalance if extended.'}`,
       );
     });
   } else {
-    topPerformers.push('• No holdings detected yet — top names will appear here after your accounts sync.');
+    topPerformers.push(
+      '• No holdings detected yet — top names will appear here after your accounts sync.',
+    );
   }
 
   const events = [
@@ -76,12 +78,16 @@ export function buildSentinelReportText(holdings, opts = {}) {
 
   const recommendations = [];
   if (tickers.length > 0) {
-    recommendations.push(`• Cross-check ${tickers.slice(0, 5).join(', ')} against your debrief queue and trim into strength if policy limits are breached.`);
+    recommendations.push(
+      `• Cross-check ${tickers.slice(0, 5).join(', ')} against your debrief queue and trim into strength if policy limits are breached.`,
+    );
     recommendations.push('• Refresh stop levels and position sizing on higher-beta names.');
     recommendations.push('• Revisit tax-lot and cost basis assumptions before year-end activity.');
   } else {
     recommendations.push('• Link brokerage accounts to unlock ticker-level recommendations.');
-    recommendations.push('• Use the dashboard portfolio view to validate totals against this report.');
+    recommendations.push(
+      '• Use the dashboard portfolio view to validate totals against this report.',
+    );
   }
 
   let out = '';
@@ -139,7 +145,9 @@ function parseMarkedSections(text) {
 
 function parseLegacySections(text) {
   const raw = stripLegacyHeaders(text);
-  const disclaimerMatch = raw.match(/(This report is generated for educational purposes only\.[\s\S]*)$/i);
+  const disclaimerMatch = raw.match(
+    /(This report is generated for educational purposes only\.[\s\S]*)$/i,
+  );
   const disclaimer = disclaimerMatch ? disclaimerMatch[1].trim() : SENTINEL_DISCLAIMER;
   let body = disclaimerMatch ? raw.slice(0, disclaimerMatch.index).trim() : raw;
   /* Safety: legacy path sometimes receives @@SECTION markup if the marked parser failed */
@@ -208,4 +216,3 @@ export function parseSentinelReportText(text) {
 
   return parseLegacySections(text);
 }
-

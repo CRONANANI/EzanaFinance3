@@ -210,10 +210,10 @@ export default function HomeTerminalPage() {
       const { data, error } = await supabase
         .from('plaid_holdings')
         .select(
-          'id, ticker_symbol, quantity, institution_price, institution_value, cost_basis, type',
+          'id, ticker_symbol, quantity, price_per_share, total_value, cost_basis, security_type',
         )
         .eq('user_id', user.id)
-        .order('institution_value', { ascending: false });
+        .order('total_value', { ascending: false });
 
       if (error) throw error;
       const rows = data || [];
@@ -264,7 +264,7 @@ export default function HomeTerminalPage() {
   const enrichedHoldings = useMemo(() => {
     return holdings.map((h) => {
       const q = quotes[h.ticker_symbol];
-      const livePrice = q?.price ?? h.institution_price ?? 0;
+      const livePrice = q?.price ?? h.price_per_share ?? 0;
       const liveChange = q?.change ?? 0;
       const livePct = q?.changePercent ?? 0;
       const shares = h.quantity || 0;
@@ -280,7 +280,7 @@ export default function HomeTerminalPage() {
         value,
         costBasis,
         totalGain,
-        type: h.type || 'equity',
+        type: h.security_type || 'equity',
       };
     });
   }, [holdings, quotes]);

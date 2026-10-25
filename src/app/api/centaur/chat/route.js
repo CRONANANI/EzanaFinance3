@@ -208,13 +208,13 @@ export async function POST(request) {
 
     const { data: holdings } = await supabaseAdmin
       .from('plaid_holdings')
-      .select('ticker_symbol, quantity, cost_basis, price_per_unit')
+      .select('ticker_symbol, quantity, cost_basis, price_per_share')
       .eq('user_id', user.id);
 
     const portfolioContext = (holdings || [])
       .map(
         (h) =>
-          `${h.ticker_symbol}: ${h.quantity} shares, cost basis $${h.cost_basis}, current ~$${h.price_per_unit}`,
+          `${h.ticker_symbol}: ${h.quantity} shares, cost basis $${h.cost_basis}, current ~$${h.price_per_share}`,
       )
       .join('\n');
 

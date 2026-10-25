@@ -4,6 +4,7 @@ import { alpacaRequest } from '@/lib/alpaca';
 import { runSnapTradeDailySync, refreshBrokerageCache } from '@/lib/snaptrade';
 import { refreshInstitutionRegistry } from '@/lib/portfolio/institution-registry';
 import { cronRoute } from '@/lib/cron/with-cron-lock';
+import { sumPlaidHoldingsValue } from '@/lib/plaid-rows';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -36,13 +37,14 @@ async function fetchAlpacaValue(supabase, userId) {
 }
 
 async function fetchPlaidValue(supabase, userId) {
-  const { data: holdings } = await supabase
+  const { data: holdings, error } = await supabase
     .from('plaid_holdings')
-    .select('value, institution_value')
+    .select('quantity, price_per_share, total_value')
     .eq('user_id', userId);
+  if (error) throw new Error(`plaid_holdings read: ${error.message}`);
 
   if (!holdings?.length) return 0;
-  return holdings.reduce((sum, h) => sum + (Number(h.value ?? h.institution_value) || 0), 0);
+  return sumPlaidHoldingsValue(holdings);
 }
 
 async function fetchMockValue(supabase, userId) {

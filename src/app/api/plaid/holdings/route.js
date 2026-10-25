@@ -9,42 +9,44 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 
-import { getAuthUser, getAdminClient } from '@/lib/supabase';
+import { getAdminClient } from '@/lib/supabase';
+import { normalizePlaidHolding } from '@/lib/plaid-rows';
 
 export const dynamic = 'force-dynamic';
 
 export const GET = withApiGuard(
   async (request, user) => {
     try {
+      const admin = getAdminClient();
+
       // Fetch all user's connected institutions
-      const { data: items } = await getAdminClient()
+      const { data: items, error: itemsError } = await admin
         .from('plaid_items')
         .select('id, item_id, institution_name, institution_logo, status, created_at')
         .eq('user_id', user.id)
         .eq('status', 'active')
         .order('created_at', { ascending: false });
+      if (itemsError) throw new Error(`plaid_items read: ${itemsError.message}`);
 
       // Fetch all accounts
-      const { data: accounts } = await getAdminClient()
+      const { data: accounts, error: accountsError } = await admin
         .from('plaid_accounts')
         .select('*')
         .eq('user_id', user.id)
         .order('balance_current', { ascending: false });
+      if (accountsError) throw new Error(`plaid_accounts read: ${accountsError.message}`);
 
-      // Fetch all holdings (support both schemas: value/cost_basis or institution_value/cost_basis)
-      const { data: holdings } = await getAdminClient()
+      // Fetch all holdings (live columns: ticker_symbol, security_name,
+      // security_type, price_per_share, total_value, synced_at)
+      const { data: holdings, error: holdingsError } = await admin
         .from('plaid_holdings')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('synced_at', { ascending: false });
+      if (holdingsError) throw new Error(`plaid_holdings read: ${holdingsError.message}`);
 
-      // Normalize holdings - some schemas use institution_value, others use value
-      const normalizedHoldings = (holdings || []).map((h) => ({
-        ...h,
-        value: h.value ?? h.institution_value ?? 0,
-        cost_basis: h.cost_basis ?? 0,
-        ticker: h.ticker ?? h.ticker_symbol,
-      }));
+      // Adds the short aliases the dashboard reads: ticker, name, type, price, value
+      const normalizedHoldings = (holdings || []).map(normalizePlaidHolding);
 
       // Compute portfolio summary
       const totalValue = normalizedHoldings.reduce((sum, h) => sum + (h.value || 0), 0);
@@ -64,7 +66,7 @@ export const GET = withApiGuard(
             totalQuantity: 0,
             totalValue: 0,
             totalCostBasis: 0,
-            lastPrice: h.price ?? h.institution_price,
+            lastPrice: h.price,
           };
         }
         tickerMap[key].totalQuantity += h.quantity || 0;

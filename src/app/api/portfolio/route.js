@@ -14,6 +14,7 @@
 import { getAdminClient } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { normalizePlaidHolding, sumPlaidHoldingsValue } from '@/lib/plaid-rows';
 
 export const dynamic = 'force-dynamic';
 
@@ -97,11 +98,7 @@ export const GET = withApiGuard(
       }
 
       // Calculate totals
-      const totalValue = holdings.reduce(
-        (sum, h) =>
-          sum + Number(h.quantity) * Number(h.institution_price || h.institution_value || 0),
-        0,
-      );
+      const totalValue = sumPlaidHoldingsValue(holdings);
 
       const totalCostBasis = holdings.reduce((sum, h) => sum + Number(h.cost_basis || 0), 0);
 
@@ -110,8 +107,7 @@ export const GET = withApiGuard(
 
       // Process holdings with gains
       const holdingsWithGains = holdings.map((h) => {
-        const price = Number(h.institution_price || h.institution_value || 0);
-        const currentValue = Number(h.quantity) * price;
+        const currentValue = normalizePlaidHolding(h).value;
         const costBasis = Number(h.cost_basis || 0);
         const gainLoss = currentValue - costBasis;
         const gainLossPercent = costBasis > 0 ? (gainLoss / costBasis) * 100 : 0;

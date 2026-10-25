@@ -5,13 +5,19 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { plaidClient } from '@/lib/plaid';
-import { getAuthUser, getAdminClient } from '@/lib/supabase';
+import { getAdminClient } from '@/lib/supabase';
 import {
   upsertPlaidAccount,
   upsertPlaidPositions,
   upsertPlaidTransactions,
 } from '@/lib/portfolio/adapters/plaid';
-import { encryptToken } from '@/lib/crypto/token-cipher';
+import { encryptToken, isTokenKeyConfigured } from '@/lib/crypto/token-cipher';
+import {
+  toPlaidAccountRow,
+  toPlaidHoldingRows,
+  PLAID_ACCOUNTS_CONFLICT,
+  PLAID_HOLDINGS_CONFLICT,
+} from '@/lib/plaid-rows';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +28,17 @@ export const POST = withApiGuard(
       const { public_token, institutionName: passedName, institutionId: passedId } = body;
       if (!public_token)
         return NextResponse.json({ error: 'Missing public_token' }, { status: 400 });
+
+      // The access token must be encrypted before it is stored. Check the key
+      // BEFORE the exchange so a misconfiguration can't mint a live Plaid item
+      // that we then fail to persist (an orphan we could never remove).
+      if (!isTokenKeyConfigured()) {
+        console.error('[Plaid] exchange-token: TOKEN_ENCRYPTION_KEY missing or invalid');
+        return NextResponse.json(
+          { error: 'Brokerage linking is temporarily unavailable. Please try again later.' },
+          { status: 503 },
+        );
+      }
 
       const exchangeRes = await plaidClient.itemPublicTokenExchange({ public_token });
       const { access_token, item_id } = exchangeRes.data;
@@ -171,44 +188,32 @@ export const POST = withApiGuard(
         throw err;
       }
 
-      for (const a of accounts) {
-        await getAdminClient()
+      // Legacy Plaid tables read by /api/plaid/holdings, /api/portfolio and the
+      // portfolio-snapshot cron. Every error surfaces as a 500 (QA RET-8).
+      const now = new Date().toISOString();
+      if (accounts.length > 0) {
+        const accountRows = accounts.map((a) =>
+          toPlaidAccountRow({ userId: user.id, plaidItemRowId: itemRow.id, account: a, now }),
+        );
+        const { error: acctErr } = await getAdminClient()
           .from('plaid_accounts')
-          .upsert(
-            {
-              user_id: user.id,
-              plaid_item_id: itemRow.id,
-              account_id: a.account_id,
-              name: a.name,
-              type: a.type,
-              subtype: a.subtype,
-              mask: a.mask,
-              balance_current: a.balances?.current,
-              balance_available: a.balances?.available,
-              currency: a.balances?.iso_currency_code || 'USD',
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: 'account_id' },
-          );
+          .upsert(accountRows, { onConflict: PLAID_ACCOUNTS_CONFLICT });
+        if (acctErr) throw new Error(`plaid_accounts upsert: ${acctErr.message}`);
       }
-      for (const h of holdings) {
-        const sec = securitiesByID[h.security_id];
-        if (!sec) continue;
-        await getAdminClient()
+      const { rows: holdingRows, skipped } = toPlaidHoldingRows({
+        userId: user.id,
+        holdings,
+        securitiesByID,
+        now,
+      });
+      if (skipped > 0) {
+        console.warn('[plaid/exchange] skipped holdings without a ticker:', skipped);
+      }
+      if (holdingRows.length > 0) {
+        const { error: holdErr } = await getAdminClient()
           .from('plaid_holdings')
-          .upsert({
-            user_id: user.id,
-            account_id: h.account_id,
-            security_id: h.security_id,
-            ticker: sec.ticker_symbol || sec.symbol,
-            name: sec.name,
-            type: sec.type,
-            quantity: h.quantity,
-            price: h.institution_price,
-            value: h.institution_value,
-            cost_basis: h.cost_basis,
-            synced_at: new Date().toISOString(),
-          });
+          .upsert(holdingRows, { onConflict: PLAID_HOLDINGS_CONFLICT });
+        if (holdErr) throw new Error(`plaid_holdings upsert: ${holdErr.message}`);
       }
 
       return NextResponse.json({

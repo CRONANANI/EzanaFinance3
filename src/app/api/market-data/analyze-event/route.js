@@ -71,16 +71,16 @@ async function tryFetchArticle(url) {
  * Returns { source: 'brokerage'|'mock'|'none', holdings: [{ ticker, qty, price?, costBasis? }] }
  */
 async function loadHoldings(supabase, admin, userId) {
-  // Priority 1: Plaid live holdings (schema: ticker, quantity, price, cost_basis; some rows use ticker_symbol)
+  // Priority 1: Plaid live holdings (columns: ticker_symbol, quantity, price_per_share, cost_basis)
   const { data: plaid } = await supabase.from('plaid_holdings').select('*').eq('user_id', userId);
 
   if (Array.isArray(plaid) && plaid.length > 0) {
     return {
       source: 'brokerage',
       holdings: plaid.slice(0, MAX_HOLDINGS).map((h) => ({
-        ticker: h.ticker_symbol || h.ticker || '',
+        ticker: h.ticker_symbol || '',
         qty: Number(h.quantity) || 0,
-        price: Number(h.price_per_unit ?? h.price) || 0,
+        price: Number(h.price_per_share) || 0,
         costBasis: Number(h.cost_basis) || 0,
       })),
     };
