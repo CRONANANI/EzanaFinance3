@@ -15,13 +15,24 @@ import {
   SkeletonCard,
   SkeletonStatStrip,
   SkeletonTable,
+  ErrorState,
+  Button,
 } from '@/components/ds';
 import { EarnXpModal } from './EarnXpModal';
 import { EloThemeProvider, useEloTheme } from './EloThemeContext';
-import { MOCK_LEAGUE, MOCK_STATS, MOCK_QUESTS } from './mock-data';
 import './elo-redesign.css';
 
 const PAGE_LIMIT = 100;
+
+/* A section that fails to load is hidden, never filled with demo numbers. */
+async function readJson(res) {
+  if (!res || !res.ok) return null;
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
 
 function normalizeUser(row) {
   return {
@@ -51,9 +62,10 @@ function EloLeaderboardContent() {
 
   const [users, setUsers] = useState([]);
   const [me, setMe] = useState(null);
-  const [league, setLeague] = useState(MOCK_LEAGUE);
-  const [stats, setStats] = useState(MOCK_STATS);
-  const [quests, setQuests] = useState(MOCK_QUESTS);
+  /* QA RET-11: start empty (skeleton), never with demo stats. */
+  const [league, setLeague] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [quests, setQuests] = useState(null);
   const [refreshesAt, setRefreshesAt] = useState('—');
   const [totalTraders, setTotalTraders] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -79,14 +91,16 @@ function EloLeaderboardContent() {
       ]);
 
       const [eloData, meData, leagueData, statsData, questsData] = await Promise.all([
-        eloRes.json(),
-        meRes.ok ? meRes.json() : null,
-        leagueRes.json(),
-        statsRes.json(),
-        questsRes.json(),
+        readJson(eloRes),
+        readJson(meRes),
+        readJson(leagueRes),
+        readJson(statsRes),
+        readJson(questsRes),
       ]);
 
-      if (eloData.error) throw new Error(eloData.error);
+      if (!eloData || eloData.error) {
+        throw new Error(eloData?.error || 'The leaderboard is unavailable right now.');
+      }
 
       setUsers((eloData.rows || []).map(normalizeUser));
       setTotalTraders(eloData.pagination?.total ?? statsData?.totalTraders ?? 0);
@@ -96,7 +110,7 @@ function EloLeaderboardContent() {
         setStats(statsData);
         if (!eloData.pagination?.total) setTotalTraders(statsData.totalTraders ?? 0);
       }
-      if (questsData?.quests) {
+      if (Array.isArray(questsData?.quests)) {
         setQuests(questsData.quests);
         setRefreshesAt(questsData.refreshesIn || '—');
       }
@@ -193,6 +207,25 @@ function EloLeaderboardContent() {
     );
   }
 
+  if (error && users.length === 0) {
+    return (
+      <div
+        className="elo-page-wrap"
+        style={{ background: page.bg, minHeight: '60vh', padding: '20px 28px 40px' }}
+      >
+        <ErrorState
+          title="Leaderboard unavailable"
+          description="We couldn't load the rankings right now. Please try again in a moment."
+          action={
+            <Button variant="secondary" onClick={() => loadLeaderboard()}>
+              Try again
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+
   const currentUserId = me?.id;
   const heroUser = me
     ? { ...me, totalTraders: stats?.totalTraders ?? totalTraders }
@@ -235,7 +268,7 @@ function EloLeaderboardContent() {
         </p>
       )}
 
-      <LeagueHeader league={league} />
+      {league && <LeagueHeader league={league} />}
 
       <div
         className="elo-hero-row"
@@ -252,10 +285,10 @@ function EloLeaderboardContent() {
             streakDays={me?.streakDays ?? 0}
           />
         )}
-        <DailyQuests quests={quests} refreshesAt={refreshesAt} />
+        {quests && quests.length > 0 && <DailyQuests quests={quests} refreshesAt={refreshesAt} />}
       </div>
 
-      <StatsStrip stats={stats} />
+      {stats && <StatsStrip stats={stats} />}
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
         <FilterBar
