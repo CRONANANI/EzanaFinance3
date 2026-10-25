@@ -13,6 +13,7 @@ import {
   isInviteReturnPath,
 } from '../src/lib/org-invites.js';
 import { resolveProvisionRoleTier } from '../src/lib/org-provision.js';
+import { targetMatchesMember, submitAssignment } from '../src/lib/org-assignment-submit.js';
 
 // ── ORG-1 ──────────────────────────────────────────────────────────────────
 test('ORG-1: invite link points at the org-login accept screen', () => {
@@ -116,4 +117,94 @@ test('ORG-3: allowed provisions pass through', () => {
     resolveProvisionRoleTier(PRESIDENT, { role: 'executive', tier: 'president' }).ok,
     true,
   );
+});
+
+// ── ORG-4 ──────────────────────────────────────────────────────────────────
+const COHORT_MEMBER = {
+  id: 'm-ana',
+  user_id: 'u-ana',
+  org_id: 'org-1',
+  role: 'analyst',
+  team_id: 'team-a',
+  cohort_id: 'cohort-1',
+  display_name: 'Ana',
+};
+
+function assignmentDb(targets, assignedTo = 'u-someone-else') {
+  return createMockSupabase({
+    seed: {
+      org_assignments: [
+        { id: 'asg-1', org_id: 'org-1', assigned_to: assignedTo, status: 'assigned' },
+      ],
+      org_assignment_assignees: targets.map((t) => ({
+        assignment_id: 'asg-1',
+        org_id: 'org-1',
+        ...t,
+      })),
+    },
+  });
+}
+
+test('ORG-4: target matching mirrors auth_targeted_assignment_ids()', () => {
+  const m = { ...COHORT_MEMBER, title: 'Desk Lead', sub_role: 'quant' };
+  assert.equal(targetMatchesMember({ target_type: 'org' }, m), true);
+  assert.equal(targetMatchesMember({ target_type: 'member', target_id: 'm-ana' }, m), true);
+  assert.equal(targetMatchesMember({ target_type: 'team', target_id: 'team-a' }, m), true);
+  assert.equal(targetMatchesMember({ target_type: 'cohort', target_id: 'cohort-1' }, m), true);
+  assert.equal(targetMatchesMember({ target_type: 'role', target_role: 'analyst' }, m), true);
+  assert.equal(targetMatchesMember({ target_type: 'role', target_role: 'desk lead' }, m), true);
+  assert.equal(targetMatchesMember({ target_type: 'role', target_role: 'QUANT' }, m), true);
+  assert.equal(targetMatchesMember({ target_type: 'cohort', target_id: 'cohort-2' }, m), false);
+  assert.equal(targetMatchesMember({ target_type: 'team', target_id: 'team-b' }, m), false);
+  assert.equal(targetMatchesMember({ target_type: 'role', target_role: '' }, m), false);
+});
+
+test('ORG-4: a cohort assignee (not assigned_to) submits and gets 201', async () => {
+  const db = assignmentDb([{ target_type: 'cohort', target_id: 'cohort-1' }]);
+  const res = await submitAssignment({
+    userClient: db,
+    adminClient: db,
+    member: COHORT_MEMBER,
+    isManager: false,
+    assignmentId: 'asg-1',
+    note: 'done',
+  });
+  assert.equal(res.status, 201, JSON.stringify(res.body));
+  assert.equal(res.body.submission.version, 1);
+  assert.equal(res.body.submission.submitted_by, 'u-ana');
+  assert.equal(db.rows('org_assignments')[0].status, 'submitted');
+});
+
+test('ORG-4: a member outside every target gets 403 and nothing is written', async () => {
+  const db = assignmentDb([{ target_type: 'cohort', target_id: 'cohort-2' }]);
+  const res = await submitAssignment({
+    userClient: db,
+    adminClient: db,
+    member: COHORT_MEMBER,
+    isManager: false,
+    assignmentId: 'asg-1',
+  });
+  assert.equal(res.status, 403);
+  assert.equal(db.rows('org_assignment_submissions').length, 0);
+  assert.equal(db.rows('org_assignments')[0].status, 'assigned');
+});
+
+test('ORG-4: the legacy assigned_to still submits; a missing assignment is 404', async () => {
+  const db = assignmentDb([], 'u-ana');
+  const ok = await submitAssignment({
+    userClient: db,
+    adminClient: db,
+    member: COHORT_MEMBER,
+    isManager: false,
+    assignmentId: 'asg-1',
+  });
+  assert.equal(ok.status, 201);
+  const missing = await submitAssignment({
+    userClient: db,
+    adminClient: db,
+    member: COHORT_MEMBER,
+    isManager: false,
+    assignmentId: 'nope',
+  });
+  assert.equal(missing.status, 404);
 });

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { getUserClient } from '@/lib/supabase';
+import { getUserClient, getAdminClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { isAssignmentTarget } from '@/lib/org-assignment-submit';
 import { MANAGER_ROLES, TYPES, STATUSES, resolveTargetsToMembers } from './_shared';
 import { loadAssignments, ROSTER_COLS } from './_loader';
 
@@ -273,7 +274,8 @@ export const PATCH = withApiGuard(
     if (!assignment) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     const isManager = assertOrgRole(member, MANAGER_ROLES);
-    const isAssignee = assignment.assigned_to === member.user_id;
+    // ORG-4: every targeted assignee (not only the legacy assigned_to).
+    const isAssignee = await isAssignmentTarget(getAdminClient(), assignment, member);
     if (!isManager && !isAssignee) {
       return NextResponse.json({ error: 'Not allowed' }, { status: 403 });
     }
@@ -348,7 +350,10 @@ export const PATCH = withApiGuard(
       });
     }
 
-    const { data, error } = await supabase
+    // Authorized above (manager, or a targeted assignee limited to progress and
+    // the assignee statuses). The RLS UPDATE policy only admits the legacy
+    // assigned_to, so the write runs on the service role, scoped to the org.
+    const { data, error } = await getAdminClient()
       .from('org_assignments')
       .update(update)
       .eq('id', id)
