@@ -4,6 +4,7 @@ import { withApiGuard } from '@/lib/api-guard';
 import { alpaca } from '@/lib/alpaca';
 import { claimBrokerageAccount, isDefiniteRejection } from '@/lib/trading/idempotent';
 import { getClientIp } from '@/lib/client-ip';
+import { checklistGate, gateMessage } from '@/lib/trading/checklist-gate';
 
 import { awardELO } from '@/lib/elo';
 
@@ -70,14 +71,14 @@ export const POST = withApiGuard(
     try {
       const kycData = await request.json();
 
-      const { data: profile } = await getAdminClient()
-        .from('profiles')
-        .select('checklist_completed')
-        .eq('id', user.id)
-        .single();
-
-      if (!profile?.checklist_completed) {
-        return NextResponse.json({ error: 'Complete all checklist tasks first' }, { status: 403 });
+      /* Computed server-side from the task list and the user's records,
+         not the browser-written checklist_completed flag (RET-13). */
+      const gate = await checklistGate(getAdminClient(), user.id);
+      if (!gate.ok) {
+        return NextResponse.json(
+          { error: gateMessage(gate.missing), missing: gate.missing },
+          { status: 403 },
+        );
       }
 
       /* Claim first: only the request that inserts the 'creating' row calls
