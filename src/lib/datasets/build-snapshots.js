@@ -13,12 +13,36 @@ import 'server-only';
 import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { buildMacroRankings } from '@/lib/sonar/macro/store';
+import {
+  SUMMARY_LABELS,
+  LINKAGE_IDS,
+  loadSummaryOrThrow,
+  loadLinkageOrThrow,
+  summarySnapshotKey,
+  linkageSnapshotKey,
+} from '@/lib/datasets/hub-data';
+import { createLimiter } from '@/lib/concurrency';
 
 /** key -> { route, build: async (admin) => ({ payload, sourceMaxUpdatedAt? }) } */
 export const BUILDERS = {
   /* Country rankings for Sonar's country_rank briefing (one common year,
      sovereigns only). Rebuilt by /api/cron/macro-worldbank after each import. */
   'macro:rankings': { route: null, build: (admin) => buildMacroRankings(admin) },
+  /* Dataset hub cards (QA PLAT-2): /datasets/[hub] reads these first when
+     they are under 24 hours old, so a visit no longer fans out 15+ live
+     aggregates. One row per summary label and per linkage card. */
+  ...Object.fromEntries(
+    SUMMARY_LABELS.map((label) => [
+      summarySnapshotKey(label),
+      { route: null, hub: true, build: async () => ({ payload: await loadSummaryOrThrow(label) }) },
+    ]),
+  ),
+  ...Object.fromEntries(
+    LINKAGE_IDS.map((id) => [
+      linkageSnapshotKey(id),
+      { route: null, hub: true, build: async () => ({ payload: await loadLinkageOrThrow(id) }) },
+    ]),
+  ),
 };
 
 export const PAYLOAD_BUDGET_KB = 150;
@@ -30,6 +54,7 @@ export async function rebuild(key, { warm = true } = {}) {
   const t0 = Date.now();
   const built = await def.build(admin);
   const payload = built?.payload ?? built;
+  if (payload == null) return { key, skipped: 'no payload' };
   const kb = JSON.stringify(payload).length / 1024;
   const { error } = await admin.from('dataset_snapshots').upsert({
     key,
@@ -60,14 +85,45 @@ export async function rebuild(key, { warm = true } = {}) {
   };
 }
 
-export async function rebuildAll(keys = Object.keys(BUILDERS)) {
-  const out = [];
-  for (const k of keys) {
+/* Rebuild keys, at most `concurrency` at a time, stalest row first (so a run
+   cut short by the time budget still refreshes the oldest rows). Keys not
+   started within `budgetMs` are reported as deferred to the next run. */
+export async function rebuildAll(
+  keys = Object.keys(BUILDERS),
+  { concurrency = 2, budgetMs = 240000 } = {},
+) {
+  const t0 = Date.now();
+  let ordered = keys;
+  try {
+    const { data } = await getAdminClient()
+      .from('dataset_snapshots')
+      .select('key, built_at')
+      .in('key', keys);
+    const builtAt = new Map((data || []).map((r) => [r.key, Date.parse(r.built_at) || 0]));
+    ordered = [...keys].sort((a, b) => (builtAt.get(a) || 0) - (builtAt.get(b) || 0));
+  } catch {
+    /* table not applied yet: keep the given order */
+  }
+  const limit = createLimiter(concurrency);
+  const out = await Promise.all(
+    ordered.map((k) =>
+      limit(async () => {
+        if (Date.now() - t0 > budgetMs) return { key: k, deferred: true };
+        try {
+          return await rebuild(k);
+        } catch (e) {
+          return { key: k, error: String(e?.message || e).slice(0, 200) };
+        }
+      }),
+    ),
+  );
+  /* Hub pages cache their reads under `hubs` for 15 minutes; bust it once so
+     the fresh rows show. */
+  if (ordered.some((k) => BUILDERS[k]?.hub)) {
     try {
-      // eslint-disable-next-line no-await-in-loop
-      out.push(await rebuild(k));
-    } catch (e) {
-      out.push({ key: k, error: String(e?.message || e).slice(0, 200) });
+      revalidateTag('hubs');
+    } catch {
+      /* outside a request scope */
     }
   }
   return out;

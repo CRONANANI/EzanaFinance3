@@ -38,3 +38,38 @@ export function readSnapshot(key, tag, { revalidate = 900 } = {}) {
     { revalidate, tags: [tag, `snapshot:${key}`].filter(Boolean) },
   )();
 }
+
+/* Set when the table is not there yet (migration 20261024200000 unapplied),
+   so a page render does not pay a failing round trip per card. */
+let tableMissingUntil = 0;
+const TABLE_MISSING_BACKOFF_MS = 10 * 60 * 1000;
+const isMissingTable = (error) =>
+  error?.code === '42P01' ||
+  error?.code === 'PGRST205' ||
+  /dataset_snapshots/.test(String(error?.message || '')) ||
+  /does not exist|schema cache/i.test(String(error?.message || ''));
+
+/**
+ * One snapshot row, read directly (no Next data cache: for callers that are
+ * already inside their own unstable_cache). Resolves to { payload, builtAt }
+ * or null. Never throws: a missing table, a missing row, an error or a slow
+ * read (> timeoutMs) all resolve to null.
+ */
+export async function readSnapshotRow(key, { timeoutMs = 2000 } = {}) {
+  if (Date.now() < tableMissingUntil) return null;
+  try {
+    const { data, error } = await getAdminClient()
+      .from('dataset_snapshots')
+      .select('payload, built_at')
+      .eq('key', key)
+      .abortSignal(AbortSignal.timeout(timeoutMs))
+      .maybeSingle();
+    if (error) {
+      if (isMissingTable(error)) tableMissingUntil = Date.now() + TABLE_MISSING_BACKOFF_MS;
+      return null;
+    }
+    return data ? { payload: data.payload, builtAt: data.built_at } : null;
+  } catch {
+    return null;
+  }
+}

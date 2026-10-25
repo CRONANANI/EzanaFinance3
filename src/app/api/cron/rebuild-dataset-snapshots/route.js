@@ -4,7 +4,8 @@ import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Rebuild every dataset snapshot (or ?key=a,b), bust its tag and warm its
- * page. Scheduled every 15 minutes in vercel.json; ingests can also call it.
+ * page. Scheduled hourly (:37) in vercel.json; ingests can also call it. Rebuilds the
+ * stalest rows first within a 240 s budget; the rest wait for the next run.
  *   curl -H "Authorization: Bearer $CRON_SECRET" https://ezana.world/api/cron/rebuild-dataset-snapshots
  */
 export const dynamic = 'force-dynamic';

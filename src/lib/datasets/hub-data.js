@@ -28,6 +28,9 @@ import {
 import { getInstitutionalOverview } from '@/lib/titans/store';
 import { HUB_QUERIES as Q } from './hub-queries';
 import { WB_BY_ID, WB_MOVE_IDS } from '@/lib/lighthouse/indicators';
+import { createLimiter } from '@/lib/concurrency';
+import { preferSnapshot } from './prefer-snapshot';
+import { readSnapshotRow } from './snapshot';
 
 const CACHE = { revalidate: 900, tags: ['hubs'] };
 const PAGE = 1000;
@@ -45,6 +48,19 @@ const thisYear = () => new Date().getUTCFullYear();
    state and the next request tries again. */
 const RPC_TIMEOUT_MS = 9000;
 export const timed = (q) => q.abortSignal(AbortSignal.timeout(RPC_TIMEOUT_MS));
+
+/* QA PLAT-2: a hub page streams 15+ cards, each a heavy live read. At most
+   four live loads run at once per server instance; the rest queue. A card
+   still unresolved after HUB_LOAD_TIMEOUT_MS (queue wait included) gives up
+   and renders its "unavailable" state; the next request tries again. Reads
+   prefer the precomputed `dataset_snapshots` row (hub:summary:<label>,
+   hub:linkage:<id>, written by /api/cron/rebuild-dataset-snapshots) when it
+   is under 24 hours old. */
+export const HUB_CONCURRENCY = 4;
+const HUB_LOAD_TIMEOUT_MS = 25000;
+const hubLimit = createLimiter(HUB_CONCURRENCY);
+export const summarySnapshotKey = (label) => `hub:summary:${label}`;
+export const linkageSnapshotKey = (id) => `hub:linkage:${id}`;
 
 export function configured() {
   return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -916,15 +932,24 @@ const CPC_SECTION_NAMES = {
 /** Labels that have a summary loader (the rest render as not live). */
 export const SUMMARY_LABELS = Object.keys(SUMMARIES);
 
-async function loadSummaryOrThrow(label) {
+/** The live summary read, no cache or snapshot (the snapshot builder uses it). */
+export async function loadSummaryOrThrow(label) {
   const fn = SUMMARIES[label];
   if (!fn || !configured()) return null;
   return fn(getAdminClient());
 }
 
+function summaryPreferSnapshot(label) {
+  if (!SUMMARIES[label] || !configured()) return null;
+  return preferSnapshot({
+    readSnapshot: () => readSnapshotRow(summarySnapshotKey(label)),
+    live: () => hubLimit(() => loadSummaryOrThrow(label), { timeoutMs: HUB_LOAD_TIMEOUT_MS }),
+  });
+}
+
 /* v2: errors are thrown inside the cache and caught outside, so a failure is
    retried on the next request instead of being served for 15 minutes. */
-const cachedSummary = unstable_cache(loadSummaryOrThrow, ['hub-summary-v2'], CACHE);
+const cachedSummary = unstable_cache(summaryPreferSnapshot, ['hub-summary-v2'], CACHE);
 
 /* The Eyes Above summaries also carry the `eyes` tag, so the Eyes ingest
    crons (which revalidate `eyes`) refresh the hub as well as the pages. */
@@ -934,7 +959,7 @@ const EYES_SUMMARY_LABELS = new Set([
   'Patent Activity',
   'Satellite Imagery',
 ]);
-const cachedEyesSummary = unstable_cache(loadSummaryOrThrow, ['hub-summary-eyes-v1'], {
+const cachedEyesSummary = unstable_cache(summaryPreferSnapshot, ['hub-summary-eyes-v1'], {
   ...CACHE,
   tags: ['hubs', 'eyes'],
 });
@@ -1926,7 +1951,8 @@ function titansRow(r) {
   };
 }
 
-async function loadLinkageOrThrow(id) {
+/** The live linkage read, no cache or snapshot (the snapshot builder uses it). */
+export async function loadLinkageOrThrow(id) {
   const fn = LINKAGES[id];
   if (!fn || !configured()) return { rows: [] };
   const out = await fn(getAdminClient());
@@ -1934,11 +1960,22 @@ async function loadLinkageOrThrow(id) {
   return Array.isArray(out) ? { rows: out } : { rows: out?.rows || [], extra: out?.extra || null };
 }
 
+/** Every linkage id that has a loader. */
+export const LINKAGE_IDS = Object.keys(LINKAGES);
+
+function linkagePreferSnapshot(id) {
+  if (!LINKAGES[id] || !configured()) return { rows: [] };
+  return preferSnapshot({
+    readSnapshot: () => readSnapshotRow(linkageSnapshotKey(id)),
+    live: () => hubLimit(() => loadLinkageOrThrow(id), { timeoutMs: HUB_LOAD_TIMEOUT_MS }),
+  });
+}
+
 /* v4, row shapes changed. Errors are thrown inside the cache and caught outside, so a timeout is
    retried on the next request instead of being served for 15 minutes. */
-const cachedLinkage = unstable_cache(loadLinkageOrThrow, ['hub-linkage-v4'], CACHE);
+const cachedLinkage = unstable_cache(linkagePreferSnapshot, ['hub-linkage-v4'], CACHE);
 
-const cachedEyesLinkage = unstable_cache(loadLinkageOrThrow, ['hub-linkage-eyes-v1'], {
+const cachedEyesLinkage = unstable_cache(linkagePreferSnapshot, ['hub-linkage-eyes-v1'], {
   ...CACHE,
   tags: ['hubs', 'eyes'],
 });

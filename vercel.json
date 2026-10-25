@@ -166,6 +166,10 @@
       "schedule": "50 * * * *"
     },
     {
+      "path": "/api/cron/rebuild-dataset-snapshots",
+      "schedule": "37 * * * *"
+    },
+    {
       "path": "/api/cron/ingest-lobbying?years=2026,2025,2024&pagesPerQuarter=20",
       "schedule": "6 * * * *"
     },
