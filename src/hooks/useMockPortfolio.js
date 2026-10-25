@@ -25,7 +25,6 @@ import { supabase } from '@/lib/supabase-browser';
  */
 
 const STARTING_CASH = 100_000;
-const DEBOUNCE_MS = 800;
 const LEGACY_LS_PREFIX = 'ezana_mock_portfolio_v1';
 
 /* ─────────────────────────────────────────────────────────────────
@@ -185,33 +184,27 @@ async function getAccessToken() {
   }
 }
 
-async function apiSave(portfolio) {
+/**
+ * POST to a server-authoritative portfolio endpoint (QA RET-10). The server
+ * prices trades and owns the portfolio; the response carries the new one.
+ * Returns { ok, status, body }.
+ */
+async function apiPost(path, payload) {
   const token = await getAccessToken();
-  if (!token) {
-    // eslint-disable-next-line no-console
-    console.error('[useMockPortfolio] no access token — cannot save');
-    return false;
-  }
+  if (!token) return { ok: false, status: 401, body: { error: 'Sign in to trade.' } };
   try {
-    const res = await fetch('/api/mock-portfolio', {
+    const res = await fetch(path, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ portfolio }),
+      body: JSON.stringify(payload),
     });
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      // eslint-disable-next-line no-console
-      console.error('[useMockPortfolio] save failed', res.status, text);
-      return false;
-    }
-    return true;
+    const body = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, body };
   } catch (e) {
-    // eslint-disable-next-line no-console
-    console.error('[useMockPortfolio] save error:', e?.message);
-    return false;
+    return { ok: false, status: 0, body: { error: e?.message || 'Network error' } };
   }
 }
 
@@ -250,33 +243,12 @@ export function useMockPortfolio() {
   const [quotesLoading, setQuotesLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const intervalRef = useRef(null);
-  const debounceRef = useRef(null);
-  const pendingRef = useRef(null);
 
-  const flushSave = useCallback(async () => {
-    if (!user?.id || !pendingRef.current) return;
-    const payload = pendingRef.current;
-    pendingRef.current = null;
-    setSyncing(true);
-    await apiSave(payload);
-    setSyncing(false);
-  }, [user?.id]);
-
-  const scheduleSave = useCallback(
-    (p) => {
-      pendingRef.current = p;
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        debounceRef.current = null;
-        flushSave();
-      }, DEBOUNCE_MS);
-    },
-    [flushSave],
-  );
-
+  /* Local-only update (e.g. patching live prices for display). Nothing here
+     is ever sent to the server: the portfolio is written only by the trade
+     and reset endpoints (QA RET-10). */
   const setPortfolio = useCallback(
-    (update, options = {}) => {
-      const { skipSync = false } = options;
+    (update) => {
       setPortfolioState((prev) => {
         const base = prev ?? {
           cash: STARTING_CASH,
@@ -294,48 +266,61 @@ export function useMockPortfolio() {
         // of this hook (e.g. on a different dashboard page) picks up
         // the change without having to wait for the server round-trip.
         if (user?.id) publish(user.id, next);
-        if (!skipSync && user?.id) {
-          // Fire-and-forget immediate save, plus a debounced backup in
-          // case the user clicks through a bunch of trades quickly.
-          apiSave(next);
-          scheduleSave(next);
-        }
         return next;
       });
     },
-    [scheduleSave, user?.id],
+    [user?.id],
   );
 
-  // Flush any pending debounced save on tab close / hide so the
-  // server has the freshest state before the next page load runs.
-  useEffect(() => {
-    if (!user?.id) return undefined;
-    const flush = () => {
-      if (!pendingRef.current) return;
-      const p = pendingRef.current;
-      pendingRef.current = null;
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-        debounceRef.current = null;
-      }
-      apiSave(p).catch(() => {});
-    };
-    const onVis = () => {
-      if (document.visibilityState === 'hidden') flush();
-    };
-    window.addEventListener('beforeunload', flush);
-    document.addEventListener('visibilitychange', onVis);
-    return () => {
-      window.removeEventListener('beforeunload', flush);
-      document.removeEventListener('visibilitychange', onVis);
-    };
-  }, [user?.id]);
+  /* Adopt the portfolio the server returned. */
+  const applyServerPortfolio = useCallback(
+    (serverP) => {
+      if (!serverP || typeof serverP !== 'object') return;
+      const next = withMeta(serverP);
+      setPortfolioState(next);
+      if (user?.id) publish(user.id, next);
+    },
+    [user?.id],
+  );
 
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
+  /**
+   * Place a mock trade. `order` = { ticker, side: 'buy'|'sell', amount? (USD),
+   * quantity?, close?, name?, asset_type? }. Never send a price: the server
+   * quotes it. Resolves { ok, error?, trade?, portfolio? }.
+   */
+  const placeTrade = useCallback(
+    async (order) => {
+      setSyncing(true);
+      try {
+        const r = await apiPost('/api/mock-trades', {
+          ...order,
+          client_request_id: crypto.randomUUID(),
+        });
+        if (!r.ok) return { ok: false, error: r.body?.error || 'Trade failed' };
+        applyServerPortfolio(r.body.portfolio);
+        return { ok: true, trade: r.body.trade, portfolio: r.body.portfolio };
+      } finally {
+        setSyncing(false);
+      }
+    },
+    [applyServerPortfolio],
+  );
+
+  /** Reset to a fresh portfolio with `startingCash` (server-validated range). */
+  const resetPortfolio = useCallback(
+    async (startingCash) => {
+      setSyncing(true);
+      try {
+        const r = await apiPost('/api/mock-portfolio', { action: 'reset', startingCash });
+        if (!r.ok) return { ok: false, error: r.body?.error || 'Reset failed' };
+        applyServerPortfolio(r.body.portfolio);
+        return { ok: true, portfolio: r.body.portfolio };
+      } finally {
+        setSyncing(false);
+      }
+    },
+    [applyServerPortfolio],
+  );
 
   // Cross-instance sync: when another mounted instance of this hook
   // publishes new state for the same user, pick it up here.
@@ -541,6 +526,8 @@ export function useMockPortfolio() {
     hasMockPortfolio,
     portfolio,
     setPortfolio,
+    placeTrade,
+    resetPortfolio,
     syncing,
     isLoading,
     enrichedPositions,

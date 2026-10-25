@@ -5,52 +5,11 @@ import {
   fetchAllBulkQuotesAlpha,
   getAlphaVantageApiKey,
 } from '@/lib/alpha-vantage';
-import { fetchWithTimeout } from '@/lib/http/fetch-json';
+import { fetchFmpQuote, normalizeQuoteSymbol } from '@/lib/trading/server-quote';
 
 export const dynamic = 'force-dynamic';
 
-function normalizeSymbol(sym) {
-  return String(sym || '')
-    .trim()
-    .toUpperCase()
-    .replace(/-/g, '');
-}
-
-function getFmpKey() {
-  return process.env.FMP_API_KEY || '';
-}
-
-async function fetchFmpQuote(symbol) {
-  const fmpKey = getFmpKey();
-  if (!fmpKey) return null;
-  const sym = normalizeSymbol(symbol);
-  if (!sym) return null;
-  try {
-    const res = await fetchWithTimeout(
-      `https://financialmodelingprep.com/stable/quote?symbol=${encodeURIComponent(sym)}&apikey=${encodeURIComponent(fmpKey)}`,
-      { cache: 'no-store' },
-      8000,
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    const q = Array.isArray(data) ? data[0] : data;
-    if (!q?.price && !q?.previousClose) return null;
-    const price = Number(q.price || q.previousClose);
-    if (!Number.isFinite(price)) return null;
-    return {
-      symbol: String(q.symbol || sym).toUpperCase(),
-      name: q.name || null,
-      price,
-      change: Number(q.change ?? 0),
-      changesPercentage: Number(q.changesPercentage ?? 0),
-      previousClose: Number(q.previousClose) || null,
-      open: Number(q.open) || null,
-      _source: 'fmp',
-    };
-  } catch {
-    return null;
-  }
-}
+const normalizeSymbol = normalizeQuoteSymbol;
 
 export const GET = withApiGuard(
   async (request) => {

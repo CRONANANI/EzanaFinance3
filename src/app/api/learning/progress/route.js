@@ -25,7 +25,14 @@ import { insertNotificationAndPush } from '@/lib/push/fanout';
 
 export const dynamic = 'force-dynamic';
 
-const admin = getAdminClient();
+/*
+ * QA RET-10 / RET-14: `user_course_progress` and `user_learning_badges` are
+ * owner-SELECT-only under RLS (migration 20261026130000). Every write below
+ * runs on the service-role client AFTER withApiGuard authenticated the caller,
+ * and every write is scoped to that caller's user id. Quiz answers are graded
+ * here against the curriculum's own `correctIndex` (getCourseContent), and
+ * `quiz_passed` and badges are derived from that grading only.
+ */
 
 function labelForLevelBadgeKey(key) {
   const m = typeof key === 'string' ? key.match(/_level_(.+)$/) : null;
@@ -41,7 +48,7 @@ async function syncTrackAndBadges(supabase, userId, course) {
   const progressById = buildProgressMap(rows || []);
   const track = course.track;
 
-  await supabase.from('user_track_progress').upsert(
+  const { error: trackErr } = await supabase.from('user_track_progress').upsert(
     {
       user_id: userId,
       track,
@@ -53,6 +60,7 @@ async function syncTrackAndBadges(supabase, userId, course) {
     },
     { onConflict: 'user_id,track' },
   );
+  if (trackErr) console.error('[learning progress] track progress upsert', trackErr.message);
 
   const newBadges = [];
 
@@ -65,6 +73,8 @@ async function syncTrackAndBadges(supabase, userId, course) {
         .insert({ user_id: userId, badge_key: key });
       if (!error) {
         newBadges.push({ key, label: labelForLevelBadgeKey(key) });
+      } else if (error.code !== '23505') {
+        console.error('[learning progress] level badge insert', error.message);
       }
     }
   }
@@ -81,32 +91,47 @@ async function syncTrackAndBadges(supabase, userId, course) {
       .insert({ user_id: userId, badge_key: tk });
     if (!error) {
       newBadges.push({ key: tk, label: TRACK_BADGE_LABELS[track] || tk });
+    } else if (error.code !== '23505') {
+      console.error('[learning progress] track badge insert', error.message);
     }
   }
 
   return newBadges;
 }
 
-async function updateBrokerageFlags(supabase, userId, courseId) {
-  if (courseId === 'stocks-advanced-3') {
-    await supabase
-      .from('brokerage_accounts')
-      .update({ short_selling_course_completed: true, updated_at: new Date().toISOString() })
-      .eq('user_id', userId);
+/* Brokerage course flags gate short selling / margin. Written with the
+   service role (users cannot update brokerage_accounts); returns false and
+   logs when the write fails so the failure is never silent. */
+const BROKERAGE_COURSE_FLAGS = {
+  'stocks-advanced-3': 'short_selling_course_completed',
+  'stocks-advanced-4': 'margin_course_completed',
+};
+
+async function updateBrokerageFlags(admin, userId, courseId) {
+  const column = BROKERAGE_COURSE_FLAGS[courseId];
+  if (!column) return true;
+  const { error } = await admin
+    .from('brokerage_accounts')
+    .update({ [column]: true, updated_at: new Date().toISOString() })
+    .eq('user_id', userId);
+  if (error) {
+    console.error('[learning progress] brokerage course flag', column, error.message);
+    return false;
   }
-  if (courseId === 'stocks-advanced-4') {
-    await supabase
-      .from('brokerage_accounts')
-      .update({ margin_course_completed: true, updated_at: new Date().toISOString() })
-      .eq('user_id', userId);
-  }
+  return true;
 }
 
 export const POST = withApiGuard(
   async (request, user) => {
     try {
       const supabase = getUserClient();
-      const body = await request.json();
+      let admin;
+      try {
+        admin = getAdminClient();
+      } catch {
+        return NextResponse.json({ error: 'Server misconfigured' }, { status: 503 });
+      }
+      const body = await request.json().catch(() => ({}));
       const { courseId, action, answers } = body;
 
       const course = getCourseById(courseId);
@@ -136,7 +161,7 @@ export const POST = withApiGuard(
           .maybeSingle();
 
         if (existing) {
-          const { data: upd, error } = await supabase
+          const { data: upd, error } = await admin
             .from('user_course_progress')
             .update({
               status: 'in_progress',
@@ -150,7 +175,7 @@ export const POST = withApiGuard(
           return NextResponse.json({ progress: upd });
         }
 
-        const { data: ins, error } = await supabase
+        const { data: ins, error } = await admin
           .from('user_course_progress')
           .insert({
             user_id: user.id,
@@ -181,7 +206,7 @@ export const POST = withApiGuard(
           .eq('course_id', courseId)
           .maybeSingle();
 
-        const { data: upd, error } = await supabase
+        const { data: upd, error } = await admin
           .from('user_course_progress')
           .upsert(
             {
@@ -262,7 +287,7 @@ export const POST = withApiGuard(
           completed_at: passed ? now : null,
         };
 
-        const { data: saved, error } = await supabase
+        const { data: saved, error } = await admin
           .from('user_course_progress')
           .upsert(row, { onConflict: 'user_id,course_id' })
           .select()
@@ -270,14 +295,15 @@ export const POST = withApiGuard(
         if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
         let badges = [];
+        let brokerageFlagOk = true;
         let eloChanged = false;
         let eloDelta = 0;
         let newRating;
         let oldRating;
         let newTier;
         if (passed) {
-          await updateBrokerageFlags(getAdminClient(), user.id, courseId);
-          badges = await syncTrackAndBadges(supabase, user.id, course);
+          brokerageFlagOk = await updateBrokerageFlags(admin, user.id, courseId);
+          badges = await syncTrackAndBadges(admin, user.id, course);
 
           try {
             if (!existing?.quiz_passed) {
@@ -400,6 +426,7 @@ export const POST = withApiGuard(
           passThreshold: QUIZ_PASS_THRESHOLD,
           quiz,
           badges,
+          ...(brokerageFlagOk ? {} : { brokerageFlagSaved: false }),
           ...(eloChanged ? { eloChanged: true, eloDelta, newRating, oldRating, newTier } : {}),
         });
       }

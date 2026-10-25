@@ -135,28 +135,46 @@ function MockTradingPageInner() {
   const searchParams = useSearchParams();
   const { completeTask } = useChecklist();
   /* Portfolio state — backed by Supabase via useMockPortfolio */
-  const { portfolio: portfolioFromHook, setPortfolio, syncing } = useMockPortfolio();
+  const {
+    portfolio: portfolioFromHook,
+    setPortfolio,
+    placeTrade,
+    resetPortfolio,
+    syncing,
+  } = useMockPortfolio();
   const [dbTrades, setDbTrades] = useState([]);
+  /* Double-submit guard: one trade request in flight at a time. */
+  const [tradePending, setTradePending] = useState(false);
+  const tradePendingRef = useRef(false);
 
-  const persistMockTrade = useCallback(
-    async (payload) => {
-      if (!user?.id) return;
+  const refreshDbTrades = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const listRes = await fetch('/api/mock-trades');
+      const data = listRes.ok ? await listRes.json() : { trades: [] };
+      setDbTrades(data.trades || []);
+    } catch {
+      /* ignore */
+    }
+  }, [user?.id]);
+
+  /* QA RET-10: the server quotes the price, executes against the stored cash
+     and returns the new portfolio; the page renders that, not local maths. */
+  const submitTrade = useCallback(
+    async (order) => {
+      if (tradePendingRef.current) return null;
+      tradePendingRef.current = true;
+      setTradePending(true);
       try {
-        const res = await fetch('/api/mock-trades', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          /* client_request_id: a retried POST of this trade records it once. */
-          body: JSON.stringify({ ...payload, client_request_id: crypto.randomUUID() }),
-        });
-        if (!res.ok) return;
-        const listRes = await fetch('/api/mock-trades');
-        const data = listRes.ok ? await listRes.json() : { trades: [] };
-        setDbTrades(data.trades || []);
-      } catch {
-        /* ignore */
+        const r = await placeTrade(order);
+        if (r.ok) void refreshDbTrades();
+        return r;
+      } finally {
+        tradePendingRef.current = false;
+        setTradePending(false);
       }
     },
-    [user?.id],
+    [placeTrade, refreshDbTrades],
   );
 
   useEffect(() => {
@@ -345,14 +363,9 @@ function MockTradingPageInner() {
     toastRef.current = setTimeout(() => setToast(null), 3200);
   };
 
-  const executeTrade = () => {
+  const executeTrade = async () => {
     if (!selectedSymbol) {
       showToast('Search for a ticker to trade.', 'error');
-      return;
-    }
-    const price = quoteData?.price;
-    if (!price || price <= 0) {
-      showToast('Could not get current price.', 'error');
       return;
     }
     const dollarAmount = parseFloat(amount);
@@ -360,116 +373,33 @@ function MockTradingPageInner() {
       showToast('Enter a valid amount.', 'error');
       return;
     }
-    const qty = dollarAmount / price;
-
-    if (side === 'buy') {
-      if (dollarAmount > portfolio.cash) {
-        showToast('Insufficient funds.', 'error');
+    if (side === 'buy' && dollarAmount > portfolio.cash) {
+      showToast('Insufficient funds.', 'error');
+      return;
+    }
+    if (side === 'sell') {
+      const pos = portfolio.positions[selectedSymbol];
+      if (!pos || pos.qty <= 0) {
+        showToast(`No ${selectedSymbol} position to sell.`, 'error');
         return;
       }
-      setPortfolio((prev) => {
-        const total = dollarAmount;
-        const p = { ...prev, cash: prev.cash - total };
-        const existing = p.positions[selectedSymbol];
-        if (existing) {
-          const newQty = existing.qty + qty;
-          const newAvgCost = (existing.avgCost * existing.qty + price * qty) / newQty;
-          p.positions = {
-            ...p.positions,
-            [selectedSymbol]: {
-              ...existing,
-              qty: newQty,
-              avgCost: newAvgCost,
-              currentPrice: price,
-            },
-          };
-        } else {
-          p.positions = {
-            ...p.positions,
-            [selectedSymbol]: {
-              symbol: selectedSymbol,
-              name: selectedName,
-              type: selectedType,
-              qty,
-              avgCost: price,
-              currentPrice: price,
-              openedAt: new Date().toISOString(),
-            },
-          };
-        }
-        p.history = [
-          {
-            id: Date.now(),
-            side: 'buy',
-            symbol: selectedSymbol,
-            qty,
-            price,
-            total,
-            ts: new Date().toISOString(),
-          },
-          ...p.history,
-        ].slice(0, 100);
-        return p;
-      });
-      void persistMockTrade({
-        ticker: selectedSymbol,
-        quantity: qty,
-        price,
-        trade_type: 'buy',
-        total_amount: dollarAmount,
-      });
-      showToast(`✓ Bought ${fmtUSD(dollarAmount)} of ${selectedSymbol} @ ${fmtUSD(price)}`);
-      completeTask('action_2');
-      setAmount('');
-      return;
     }
-
-    const pos = portfolio.positions[selectedSymbol];
-    if (!pos || pos.qty <= 0) {
-      showToast(`No ${selectedSymbol} position to sell.`, 'error');
-      return;
-    }
-    const sellQty = Math.min(qty, pos.qty);
-    const sellTotal = sellQty * price;
-
-    setPortfolio((prev) => {
-      const pPos = prev.positions[selectedSymbol];
-      if (!pPos || pPos.qty <= 0) return prev;
-      const sq = Math.min(qty, pPos.qty);
-      const st = sq * price;
-      const p = { ...prev, cash: prev.cash + st };
-      const newQty = pPos.qty - sq;
-      if (newQty < 0.00001) {
-        const { [selectedSymbol]: _, ...rest } = p.positions;
-        p.positions = rest;
-      } else {
-        p.positions = {
-          ...p.positions,
-          [selectedSymbol]: { ...pPos, qty: newQty, currentPrice: price },
-        };
-      }
-      p.history = [
-        {
-          id: Date.now(),
-          side: 'sell',
-          symbol: selectedSymbol,
-          qty: sq,
-          price,
-          total: st,
-          ts: new Date().toISOString(),
-        },
-        ...p.history,
-      ].slice(0, 100);
-      return p;
-    });
-    void persistMockTrade({
+    const r = await submitTrade({
       ticker: selectedSymbol,
-      quantity: sellQty,
-      price,
-      trade_type: 'sell',
-      total_amount: sellTotal,
+      side,
+      amount: dollarAmount,
+      name: selectedName,
+      asset_type: selectedType,
     });
-    showToast(`✓ Sold ${fmtUSD(sellTotal)} of ${selectedSymbol} @ ${fmtUSD(price)}`);
+    if (!r) return;
+    if (!r.ok) {
+      showToast(r.error || 'Trade failed.', 'error');
+      return;
+    }
+    const verb = side === 'buy' ? 'Bought' : 'Sold';
+    showToast(
+      `✓ ${verb} ${fmtUSD(r.trade?.total ?? dollarAmount)} of ${selectedSymbol} @ ${fmtUSD(r.trade?.price)}`,
+    );
     completeTask('action_2');
     setAmount('');
   };
@@ -477,54 +407,13 @@ function MockTradingPageInner() {
   const closePosition = async (sym) => {
     const pos = portfolio.positions[sym];
     if (!pos) return;
-
-    let price = pos.currentPrice;
-    if (!price || price <= 0) {
-      try {
-        const r = await fetch(`/api/fmp/quote?symbol=${encodeURIComponent(sym)}`, {
-          cache: 'no-store',
-        });
-        const d = await r.json();
-        price = d?.price ?? 0;
-      } catch {
-        price = 0;
-      }
-    }
-
-    if (!price) {
-      showToast('Could not get price to close position.', 'error');
+    const r = await submitTrade({ ticker: sym, side: 'sell', close: true });
+    if (!r) return;
+    if (!r.ok) {
+      showToast(r.error || 'Could not close position.', 'error');
       return;
     }
-
-    const total = pos.qty * price;
-    setPortfolio((prev) => {
-      const { [sym]: _, ...rest } = prev.positions;
-      return {
-        ...prev,
-        cash: prev.cash + total,
-        positions: rest,
-        history: [
-          {
-            id: Date.now(),
-            side: 'sell',
-            symbol: sym,
-            qty: pos.qty,
-            price,
-            total,
-            ts: new Date().toISOString(),
-          },
-          ...prev.history,
-        ].slice(0, 100),
-      };
-    });
-    void persistMockTrade({
-      ticker: sym,
-      quantity: pos.qty,
-      price,
-      trade_type: 'sell',
-      total_amount: total,
-    });
-    showToast(`✓ Closed ${sym} position for ${fmtUSD(total)}`);
+    showToast(`✓ Closed ${sym} position for ${fmtUSD(r.trade?.total)}`);
   };
 
   const mergedActivity = useMemo(() => {
@@ -868,15 +757,14 @@ function MockTradingPageInner() {
           <ResetPortfolioModal
             open={resetModalOpen}
             onClose={() => setResetModalOpen(false)}
-            onConfirm={(startingAmount) => {
-              const fresh = {
-                cash: startingAmount,
-                positions: {},
-                history: [],
-                startingCash: startingAmount,
-              };
+            onConfirm={async (startingAmount) => {
+              const r = await resetPortfolio(startingAmount);
+              if (!r.ok) {
+                showToast(r.error || 'Reset failed.', 'error');
+                return;
+              }
               userExplicitChartPickRef.current = false;
-              setPortfolio(fresh);
+              void refreshDbTrades();
               showToast(`Portfolio reset to $${startingAmount.toLocaleString('en-US')}.`);
             }}
             portfolio={{ ...portfolio, history: mergedActivity }}
@@ -1106,6 +994,7 @@ function MockTradingPageInner() {
                                 className="mock-close-pos-btn"
                                 type="button"
                                 onClick={() => closePosition(pos.symbol)}
+                                disabled={tradePending}
                               >
                                 Close
                               </button>
@@ -1354,7 +1243,9 @@ function MockTradingPageInner() {
               type="button"
               data-task-target="mock-trade-submit"
               onClick={executeTrade}
+              aria-busy={tradePending}
               disabled={
+                tradePending ||
                 !selectedSymbol ||
                 !currentPrice ||
                 !dollarAmount ||
