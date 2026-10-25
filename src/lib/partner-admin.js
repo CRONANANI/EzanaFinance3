@@ -87,3 +87,37 @@ async function setPartnerRoleClaim(db, userId, role) {
   });
   return upErr ? `app_metadata update failed: ${upErr.message}` : null;
 }
+
+/**
+ * Find an auth user's id by email (service role). There is no direct
+ * lookup in auth-js, so page through listUsers like login-lockout does.
+ * @returns {Promise<{ id: string|null, error: string|null }>}
+ */
+export async function findAuthUserIdByEmail(db, email) {
+  const normalized = String(email || '').toLowerCase();
+  const perPage = 200;
+  for (let page = 1; page <= 50; page += 1) {
+    const { data, error } = await db.auth.admin.listUsers({ page, perPage });
+    if (error) return { id: null, error: error.message };
+    const users = data?.users ?? [];
+    const match = users.find((u) => u.email?.toLowerCase() === normalized);
+    if (match) return { id: match.id, error: null };
+    if (users.length < perPage) break;
+  }
+  return { id: null, error: null };
+}
+
+/**
+ * Reuse the auth user for `email`, or invite one (Supabase sends the invite).
+ * @returns {Promise<{ id: string|null, invited: boolean, error: string|null }>}
+ */
+export async function findOrInviteAuthUser(db, email, redirectTo) {
+  const existing = await findAuthUserIdByEmail(db, email);
+  if (existing.error) return { id: null, invited: false, error: existing.error };
+  if (existing.id) return { id: existing.id, invited: false, error: null };
+  const { data, error } = await db.auth.admin.inviteUserByEmail(email, { redirectTo });
+  if (error || !data?.user?.id) {
+    return { id: null, invited: false, error: `invite failed: ${error?.message || 'no user'}` };
+  }
+  return { id: data.user.id, invited: true, error: null };
+}

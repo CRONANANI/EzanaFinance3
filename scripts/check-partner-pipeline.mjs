@@ -10,6 +10,7 @@ import {
   submitPartnerApplication,
   resendPartnerVerification,
   RESEND_GENERIC_REPLY,
+  reviewPartnerApplication,
 } from '../src/lib/partner-application.js';
 import {
   isPayoutPartner,
@@ -213,4 +214,99 @@ test('PAR-3: payout routes gate on the shared isActivePartner', async () => {
   );
   assert.equal(await isActivePartner(db, PARTNER), true);
   assert.equal(await isActivePartner(db, null), false);
+});
+
+/* ---------- PAR-2: admin review ---------- */
+const APP_ID = '44444444-4444-4444-8444-444444444444';
+const reviewDb = (application_status) =>
+  createMockSupabase({
+    seed: {
+      partner_applications: [
+        {
+          id: APP_ID,
+          email: 'ada@example.com',
+          full_name: 'Ada Partner',
+          partner_type: 'creator',
+          application_status,
+          verification_token: 'tok',
+        },
+      ],
+    },
+  });
+function fakePartnerAdmin() {
+  const calls = [];
+  return {
+    calls,
+    async findOrInviteAuthUser(_db, email) {
+      calls.push(['find', email]);
+      return { id: PARTNER, invited: false, error: null };
+    },
+    async grantPartnerAccess(_db, opts) {
+      calls.push(['grant', opts]);
+      return { error: null };
+    },
+  };
+}
+
+test('PAR-2: approve grants partner access, records the decision and emails', async () => {
+  const db = reviewDb('under_review');
+  const resend = mockResend();
+  const partnerAdmin = fakePartnerAdmin();
+  const r = await reviewPartnerApplication({
+    db,
+    resend,
+    logger: quiet,
+    partnerAdmin,
+    applicationId: APP_ID,
+    action: 'approve',
+    note: 'looks good',
+    reviewerId: 'admin-1',
+  });
+  assert.equal(r.status, 200);
+  assert.equal(r.body.status, 'approved');
+  assert.deepEqual(
+    partnerAdmin.calls.map((c) => c[0]),
+    ['find', 'grant'],
+  );
+  assert.equal(partnerAdmin.calls[1][1].markApproved, true);
+  const { data: row } = await db.from('partner_applications').select('*').eq('id', APP_ID).single();
+  assert.equal(row.application_status, 'approved');
+  assert.equal(row.reviewed_by, 'admin-1');
+  assert.equal(row.verification_token, null);
+  assert.match(resend.sent[0].subject, /approved/);
+});
+
+test('PAR-2: approve needs submitted documents; decided apps are final', async () => {
+  for (const s of ['pending_documents', 'approved', 'rejected']) {
+    const partnerAdmin = fakePartnerAdmin();
+    const r = await reviewPartnerApplication({
+      db: reviewDb(s),
+      resend: mockResend(),
+      logger: quiet,
+      partnerAdmin,
+      applicationId: APP_ID,
+      action: 'approve',
+    });
+    assert.equal(r.status, 409, s);
+    assert.equal(partnerAdmin.calls.length, 0);
+  }
+});
+
+test('PAR-2: reject records the decision and emails without granting access', async () => {
+  const db = reviewDb('under_review');
+  const resend = mockResend({ fail: 'error' });
+  const partnerAdmin = fakePartnerAdmin();
+  const r = await reviewPartnerApplication({
+    db,
+    resend,
+    logger: quiet,
+    partnerAdmin,
+    applicationId: APP_ID,
+    action: 'reject',
+  });
+  assert.equal(r.status, 200);
+  assert.equal(r.body.status, 'rejected');
+  assert.equal(r.body.emailSent, false);
+  assert.ok(r.body.warning);
+  assert.equal(partnerAdmin.calls.length, 0);
 });

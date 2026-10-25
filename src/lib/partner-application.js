@@ -289,3 +289,176 @@ export async function resendPartnerVerification({ db, resend, logger, email, now
   }
   return { sent: true, reason: null };
 }
+
+/* ---------- Admin review (PAR-2) ---------- */
+
+export const REVIEW_STATUSES = [
+  'under_review',
+  'pending_documents',
+  'pending_verification',
+  'approved',
+  'rejected',
+];
+
+/** Columns an admin reviewer sees: never the verification token. */
+export const ADMIN_APPLICATION_COLS =
+  'id, full_name, email, phone, country, city, partner_type, years_experience, current_role, company_name, linkedin_url, website_url, assets_under_management, trading_style, markets_traded, certifications, why_partner, content_plan, referral_source, email_verified, documents_submitted, documents_submitted_at, id_document_url, financial_document_url, application_status, reviewer_notes, reviewed_by, reviewed_at, created_at, updated_at';
+
+const SIGNED_URL_SECONDS = 600;
+
+async function signDoc(db, path) {
+  if (!path) return null;
+  const { data, error } = await db.storage
+    .from('documents')
+    .createSignedUrl(path, SIGNED_URL_SECONDS);
+  return error ? null : data?.signedUrl || null;
+}
+
+/**
+ * Applications in one status (or 'all'), newest first, each with 10-minute
+ * signed URLs for its documents in the private `documents` bucket, plus
+ * per-status counts. Caller has already checked admin access.
+ */
+export async function listPartnerApplications(db, status = 'under_review') {
+  let filter = 'under_review';
+  if (status === 'all') filter = null;
+  else if (REVIEW_STATUSES.includes(status)) filter = status;
+
+  let q = db
+    .from('partner_applications')
+    .select(ADMIN_APPLICATION_COLS)
+    .order('created_at', { ascending: false })
+    .limit(200);
+  if (filter) q = q.eq('application_status', filter);
+  const { data, error } = await q;
+  if (error) return { error: error.message };
+
+  const applications = await Promise.all(
+    (data || []).map(async (app) => {
+      const [idUrl, finUrl] = await Promise.all([
+        signDoc(db, app.id_document_url),
+        signDoc(db, app.financial_document_url),
+      ]);
+      return { ...app, id_document_signed_url: idUrl, financial_document_signed_url: finUrl };
+    }),
+  );
+
+  const counts = {};
+  await Promise.all(
+    REVIEW_STATUSES.map(async (s) => {
+      const { count } = await db
+        .from('partner_applications')
+        .select('id', { count: 'exact', head: true })
+        .eq('application_status', s);
+      counts[s] = count || 0;
+    }),
+  );
+  return { error: null, status: filter || 'all', applications, counts };
+}
+
+/**
+ * Approve or reject one application. Caller has already checked admin access.
+ * Approve: find or invite the auth user, grant partner access (partners row
+ * active, profiles.is_partner, app_metadata.partner_role), then record the
+ * decision. Reject: record the decision. Both email the applicant; a failed
+ * email does not undo the decision (the reply carries a warning).
+ *
+ * @param {object} deps
+ * @param {object} deps.db            service-role client
+ * @param {object} deps.resend
+ * @param {object} deps.logger
+ * @param {object} deps.partnerAdmin  { grantPartnerAccess, findOrInviteAuthUser }
+ * @param {string} deps.applicationId
+ * @param {'approve'|'reject'} deps.action
+ * @param {string} [deps.note]
+ * @param {string|null} [deps.reviewerId]
+ * @returns {Promise<{ status: number, body: object }>}
+ */
+export async function reviewPartnerApplication({
+  db,
+  resend,
+  logger,
+  partnerAdmin,
+  applicationId,
+  action,
+  note = '',
+  reviewerId = null,
+}) {
+  if (!['approve', 'reject'].includes(action)) {
+    return { status: 400, body: { error: "action must be 'approve' or 'reject'" } };
+  }
+  const { data: app, error: loadErr } = await db
+    .from('partner_applications')
+    .select('id, email, full_name, partner_type, application_status')
+    .eq('id', applicationId)
+    .maybeSingle();
+  if (loadErr) return { status: 500, body: { error: 'Could not load the application' } };
+  if (!app) return { status: 404, body: { error: 'Application not found' } };
+  if (['approved', 'rejected'].includes(app.application_status)) {
+    return { status: 409, body: { error: `Application is already ${app.application_status}` } };
+  }
+  if (action === 'approve' && app.application_status !== 'under_review') {
+    return {
+      status: 409,
+      body: { error: 'Only applications with submitted documents (under review) can be approved' },
+    };
+  }
+
+  const signinUrl = `${appBaseUrl()}/auth/partner/signin`;
+  let userId = null;
+  let invited = false;
+  if (action === 'approve') {
+    const found = await partnerAdmin.findOrInviteAuthUser(db, app.email, signinUrl);
+    if (found.error || !found.id) {
+      logger.error('Partner approve: auth user', { applicationId, error: found.error });
+      return { status: 500, body: { error: 'Could not find or invite the applicant account' } };
+    }
+    userId = found.id;
+    invited = found.invited;
+    const granted = await partnerAdmin.grantPartnerAccess(db, {
+      userId,
+      partnerType: app.partner_type,
+      displayName: app.full_name,
+      markApproved: true,
+    });
+    if (granted.error) {
+      logger.error('Partner approve: grant', { applicationId, error: granted.error });
+      return { status: 500, body: { error: 'Could not grant partner access' } };
+    }
+  }
+
+  const decision = action === 'approve' ? 'approved' : 'rejected';
+  const now = new Date().toISOString();
+  const { error: updErr } = await db
+    .from('partner_applications')
+    .update({
+      application_status: decision,
+      reviewer_notes: note ? String(note).slice(0, 2000) : null,
+      reviewed_by: reviewerId,
+      reviewed_at: now,
+      verification_token: null,
+      verification_token_expires: null,
+      updated_at: now,
+    })
+    .eq('id', app.id);
+  if (updErr) {
+    logger.error('Partner review: status update', { applicationId, error: updErr.message });
+    return { status: 500, body: { error: 'Could not record the decision' } };
+  }
+
+  const sent = await sendDecisionEmail(resend, { to: app.email, decision, signinUrl });
+  if (!sent.ok) logger.error('Partner decision email failed', { applicationId, error: sent.error });
+
+  return {
+    status: 200,
+    body: {
+      success: true,
+      applicationId: app.id,
+      status: decision,
+      userId,
+      invited,
+      emailSent: sent.ok,
+      ...(sent.ok ? {} : { warning: 'Decision saved, but the applicant email could not be sent.' }),
+    },
+  };
+}

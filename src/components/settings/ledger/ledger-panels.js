@@ -5,6 +5,7 @@ import { NotificationsWithOrg } from '@/components/settings/org/NotificationsWit
 import { DataRequestPanel } from '@/components/settings/DataRequestPanel';
 import { PlatformChangelogPanel } from '@/components/settings/PlatformChangelogPanel';
 import { PartnerManagementPanel } from '@/components/settings/PartnerManagementPanel';
+import { PartnerApplicationsPanel } from '@/components/settings/PartnerApplicationsPanel';
 import { PayoutsPanel } from '@/components/settings/PayoutsPanel';
 import { ReferralsPanel } from '@/components/settings/ReferralsPanel';
 import { MyDetailsLedger } from './panels/MyDetailsLedger';
@@ -159,6 +160,19 @@ function PrivacyWithBlocks(props) {
   );
 }
 
+/* Partners tab (admin): the application review queue sits above the
+   partner toggle list (QA PAR-2). */
+const LegacyPartnerManagement = wrapLegacyPanel(PartnerManagementPanel);
+const LegacyPartnerApplications = wrapLegacyPanel(PartnerApplicationsPanel);
+function PartnersAdmin(props) {
+  return (
+    <>
+      <LegacyPartnerApplications />
+      <LegacyPartnerManagement {...props} />
+    </>
+  );
+}
+
 export const LEDGER_PANEL_MAP = {
   'my-details': MyDetailsLedger,
   appearance: AppearanceLedger,
@@ -173,7 +187,7 @@ export const LEDGER_PANEL_MAP = {
   api: ApiKeysLedger,
   'privacy-data': PrivacyWithBlocks,
   'platform-changelog': wrapLegacyPanel(PlatformChangelogPanel),
-  partners: wrapLegacyPanel(PartnerManagementPanel),
+  partners: PartnersAdmin,
   organization: wrapLegacyPanel(OrgAdminPanel),
   'my-role': wrapLegacyPanel(MyRoleAccessPanel),
   payouts: wrapLegacyPanel(PayoutsPanel),
