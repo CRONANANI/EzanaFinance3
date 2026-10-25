@@ -7,6 +7,8 @@ import {
   PARTNER_DASHBOARD_ROUTES,
   USER_DASHBOARD_ROUTES,
 } from '@/lib/auth/protected-routes';
+import { withTimeout } from '@/lib/with-timeout';
+import { logger } from '@/lib/logger';
 
 const ALLOWED_ORIGINS = ['https://ezana.world', 'http://localhost:3000', 'http://127.0.0.1:3000'];
 
@@ -19,6 +21,52 @@ const MFA_ENFORCED = process.env.MFA_ENFORCED !== 'false';
 // enrollment mandatory again (production hardening). Step-up challenge for users who HAVE a
 // factor is unaffected and still governed by MFA_ENFORCED above.
 const MFA_REQUIRE_ENROLLMENT = process.env.MFA_REQUIRE_ENROLLMENT === 'true';
+
+/* QA PLAT-1: every awaited network call here is bounded. Production saw the
+   platform kill this middleware 58 times for not answering within 25s when
+   the database was saturated; a hung call must never hang the request.
+   Per call: rate limit fails open, a session lookup that times out treats
+   protected pages as signed out (API routes pass through; withApiGuard
+   re-checks), profile / org gating reads fail open (the page's own server
+   gate still runs), and the MFA assurance check fails closed. */
+const T_RATE_LIMIT_MS = 800;
+const T_AUTH_MS = 1500;
+/* API routes re-authenticate in withApiGuard; here the session only feeds
+   the account-lock check, so it gets less time (rate limit + this < 2s). */
+const T_AUTH_API_MS = 1000;
+const T_DB_MS = 1200;
+
+function warnTimeout(res, pathname, requestId) {
+  logger.warn('[middleware] timeout', {
+    label: res.label,
+    timedOut: Boolean(res.timedOut),
+    error: res.error?.message,
+    pathname,
+    requestId,
+  });
+}
+
+/** Sign out on a redirect response, bounded so it can never hang. */
+async function signOutOn(request, target, pathname, requestId) {
+  const client = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            target.cookies.set(name, value, options);
+          });
+        },
+      },
+    },
+  );
+  const res = await withTimeout(client.auth.signOut(), T_DB_MS, 'auth.signOut');
+  if (!res.ok) warnTimeout(res, pathname, requestId);
+}
 
 /* Request IDs (reliability audit P3): reuse a well-formed incoming
    x-request-id, else Vercel's x-vercel-id, else a fresh UUID. Forwarded to
@@ -97,6 +145,8 @@ async function handle(request, requestId) {
       '/api/healthz',
       '/api/readyz',
       '/api/cron/',
+      /* Judges share venue Wi-Fi: limited per judge token in the routes. */
+      '/api/competitions/judge/',
     ];
     const shouldSkip = skipPaths.some((s) => pathname.startsWith(s));
 
@@ -104,15 +154,23 @@ async function handle(request, requestId) {
       try {
         const { checkRateLimit, logSecurityEvent } = await import('@/lib/persistent-rate-limit');
         const ip = getClientIp(request) || 'unknown';
-        const result = await checkRateLimit(`global:${ip}`, 100, 60 * 1000);
+        const limited = await withTimeout(
+          checkRateLimit(`global:${ip}`, 100, 60 * 1000),
+          T_RATE_LIMIT_MS,
+          'rate-limit',
+        );
+        /* Fail open: a slow limiter must not stall every API call. */
+        if (!limited.ok) warnTimeout(limited, pathname, requestId);
+        const result = limited.ok ? limited.value : { allowed: true };
 
         if (!result.allowed) {
-          await logSecurityEvent('global_rate_limit_hit', {
+          /* Fire and forget: the audit row never delays the 429. */
+          logSecurityEvent('global_rate_limit_hit', {
             severity: 'warning',
             ip,
             endpoint: pathname,
             details: { resetAt: result.resetAt.toISOString() },
-          });
+          }).catch(() => {});
 
           return NextResponse.json(
             { error: 'Too many requests. Please slow down.' },
@@ -228,9 +286,17 @@ async function handle(request, requestId) {
     },
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const authRes = await withTimeout(
+    supabase.auth.getUser(),
+    pathname.startsWith('/api/') ? T_AUTH_API_MS : T_AUTH_MS,
+    'auth.getUser',
+  );
+  /* A timed-out or failed lookup is "unknown", treated as signed out below:
+     protected pages send the visitor to sign in (reason=timeout), API routes
+     pass through to withApiGuard, which authenticates on its own. */
+  const authUnknown = !authRes.ok;
+  if (authUnknown) warnTimeout(authRes, pathname, requestId);
+  const user = authRes.ok ? (authRes.value?.data?.user ?? null) : null;
 
   /** OAuth / PKCE callback — session is established client-side; do not gate */
   if (pathname === '/auth/callback' || pathname.startsWith('/auth/callback/')) {
@@ -250,33 +316,20 @@ async function handle(request, requestId) {
     }
 
     if (user && !pathname.startsWith('/api/auth/')) {
-      const { data: apiProfile } = await supabase
-        .from('profiles')
-        .select('is_disabled')
-        .eq('id', user.id)
-        .maybeSingle();
+      const apiProfileRes = await withTimeout(
+        supabase.from('profiles').select('is_disabled').eq('id', user.id).maybeSingle(),
+        T_DB_MS,
+        'profiles.is_disabled',
+      );
+      /* Fail open: route handlers still authorise every request. */
+      if (!apiProfileRes.ok) warnTimeout(apiProfileRes, pathname, requestId);
+      const apiProfile = apiProfileRes.ok ? apiProfileRes.value?.data : null;
       if (apiProfile?.is_disabled === true) {
         const apiResponse = NextResponse.json(
           { error: 'Account locked', code: 'ACCOUNT_DISABLED' },
           { status: 403, headers: response.headers },
         );
-        const supabase = createServerClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-          {
-            cookies: {
-              getAll() {
-                return request.cookies.getAll();
-              },
-              setAll(cookiesToSet) {
-                cookiesToSet.forEach(({ name, value, options }) => {
-                  apiResponse.cookies.set(name, value, options);
-                });
-              },
-            },
-          },
-        );
-        await supabase.auth.signOut();
+        await signOutOn(request, apiResponse, pathname, requestId);
         return apiResponse;
       }
     }
@@ -288,13 +341,20 @@ async function handle(request, requestId) {
      member home. Redirect them server-side so /home never renders for an org
      user (avoids the regular-home flash before the client-side bounce). */
   if (user && pathname === '/home') {
-    const { data: orgMember } = await supabase
-      .from('org_members')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('is_active', true)
-      .limit(1)
-      .maybeSingle();
+    const orgRes = await withTimeout(
+      supabase
+        .from('org_members')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .limit(1)
+        .maybeSingle(),
+      T_DB_MS,
+      'org_members.home',
+    );
+    /* Fail open: /home renders; the client-side bounce still applies. */
+    if (!orgRes.ok) warnTimeout(orgRes, pathname, requestId);
+    const orgMember = orgRes.ok ? orgRes.value?.data : null;
     if (orgMember) {
       const url = request.nextUrl.clone();
       url.pathname = '/org-team-hub';
@@ -331,52 +391,54 @@ async function handle(request, requestId) {
     return response;
   }
 
+  /* QA PAR-9: the current partner sign-in card (lockout, ?redirect), not the
+     legacy /auth/partner-login page. */
   if (onPartnerProtectedRoute && !user) {
     const url = request.nextUrl.clone();
-    url.pathname = '/auth/partner-login';
+    url.pathname = '/auth/partner/signin';
+    url.search = '';
     url.searchParams.set('redirect', pathname);
+    if (authUnknown) url.searchParams.set('reason', 'timeout');
     return NextResponse.redirect(url);
   }
 
   if (onUserProtectedRoute && !user && !isTradingPublicPath) {
     const url = request.nextUrl.clone();
     url.pathname = '/auth/signin';
+    url.search = '';
     url.searchParams.set('redirect', pathname);
+    if (authUnknown) url.searchParams.set('reason', 'timeout');
     return NextResponse.redirect(url);
   }
 
   /** Dashboard / partner / trading (under USER_DASHBOARD_ROUTES): account lock, then verification + deletion */
+  let profileGate = null;
   if (user && (onPartnerProtectedRoute || onUserProtectedRoute)) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select(
-        'email_verified, deleted_at, deletion_scheduled_for, is_disabled, investor_questionnaire_completed',
-      )
-      .eq('id', user.id)
-      .maybeSingle();
+    profileGate = await withTimeout(
+      supabase
+        .from('profiles')
+        .select(
+          'email_verified, deleted_at, deletion_scheduled_for, is_disabled, investor_questionnaire_completed',
+        )
+        .eq('id', user.id)
+        .maybeSingle(),
+      T_DB_MS,
+      'profiles.gates',
+    );
+    /* Fail open: skip every profile gate below rather than guess (a missing
+       profile would otherwise send a verified user to /auth/verify-email).
+       The page's own server gate still runs. */
+    if (!profileGate.ok) warnTimeout(profileGate, pathname, requestId);
+  }
+  if (profileGate?.ok) {
+    const profile = profileGate.value?.data ?? null;
 
     if (profile?.is_disabled === true) {
       const url = request.nextUrl.clone();
       url.pathname = '/account-locked';
       url.search = '';
       const redirectResponse = NextResponse.redirect(url);
-      const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-        {
-          cookies: {
-            getAll() {
-              return request.cookies.getAll();
-            },
-            setAll(cookiesToSet) {
-              cookiesToSet.forEach(({ name, value, options }) => {
-                redirectResponse.cookies.set(name, value, options);
-              });
-            },
-          },
-        },
-      );
-      await supabase.auth.signOut();
+      await signOutOn(request, redirectResponse, pathname, requestId);
       return redirectResponse;
     }
 
@@ -422,23 +484,7 @@ async function handle(request, requestId) {
           url.search = '';
           url.searchParams.set('reason', 'account_deleted');
           const redirectResponse = NextResponse.redirect(url);
-          const supabaseSignOut = createServerClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-            {
-              cookies: {
-                getAll() {
-                  return request.cookies.getAll();
-                },
-                setAll(cookiesToSet) {
-                  cookiesToSet.forEach(({ name, value, options }) => {
-                    redirectResponse.cookies.set(name, value, options);
-                  });
-                },
-              },
-            },
-          );
-          await supabaseSignOut.auth.signOut();
+          await signOutOn(request, redirectResponse, pathname, requestId);
           return redirectResponse;
         }
       }
@@ -464,8 +510,23 @@ async function handle(request, requestId) {
     !pathname.startsWith('/auth') &&
     !pathname.startsWith('/api')
   ) {
+    const aalRes = await withTimeout(
+      supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
+      T_DB_MS,
+      'mfa.aal',
+    );
+    /* Fail closed: an unknown assurance level never skips the second
+       factor. The MFA page itself is exempt above, so this cannot loop. */
+    if (!aalRes.ok) {
+      warnTimeout(aalRes, pathname, requestId);
+      const url = request.nextUrl.clone();
+      url.pathname = '/auth/mfa';
+      url.search = '';
+      url.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(url);
+    }
     try {
-      const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      const aal = aalRes.value?.data;
       if (aal) {
         // Has a verified factor but hasn't stepped up this session → challenge.
         if (aal.currentLevel !== 'aal2' && aal.nextLevel === 'aal2') {
