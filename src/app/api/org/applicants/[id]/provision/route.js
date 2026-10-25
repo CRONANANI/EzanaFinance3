@@ -6,11 +6,11 @@ import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { logOrgAction } from '@/lib/org-audit';
 import { MANAGER_ROLES } from '../../ats-helpers';
 import { resend } from '@/lib/services/resend';
+import { resolveProvisionRoleTier } from '@/lib/org-provision';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const PROVISION_ROLES = ['executive', 'portfolio_manager', 'analyst'];
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ezana.world';
 
 const escapeHtml = (v) =>
@@ -116,7 +116,13 @@ export const POST = withApiGuard(
     } catch {
       /* optional body */
     }
-    const role = PROVISION_ROLES.includes(body?.role) ? body.role : 'analyst';
+    // ORG-3: only an executive provisions an executive; the tier must be one
+    // the caller may assign (assignableTiers).
+    const roleTier = resolveProvisionRoleTier(member, body);
+    if (!roleTier.ok) {
+      return NextResponse.json({ error: roleTier.error }, { status: roleTier.status });
+    }
+    const { role, tier } = roleTier;
 
     const service = getAdminClient();
 
@@ -189,7 +195,7 @@ export const POST = withApiGuard(
       is_active: true,
       mentor_member_id: body?.mentor_member_id || null,
     };
-    if (body?.tier) insert.tier = String(body.tier);
+    if (tier) insert.tier = tier;
 
     const { data: newMember, error: memErr } = await service
       .from('org_members')
