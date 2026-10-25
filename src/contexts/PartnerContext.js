@@ -31,18 +31,24 @@ export function PartnerProvider({ children }) {
       setVerified(false);
       setPartnerData(null);
 
-      const { data: partner, error: partnerErr } = await supabase
-        .from('partners')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .maybeSingle();
-
-      if (!partnerErr && partner) {
+      // One definition of "partner" (QA PAR-3): the server decides via
+      // isActivePartner in src/lib/partner-access.js.
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) return;
+      const res = await fetch('/api/partner/status', {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store',
+      });
+      if (!res.ok) return;
+      const status = await res.json();
+      if (status.isPartner) {
         setIsPartner(true);
-        setPartnerRole(partner.partner_role || partner.role || 'both');
-        setVerified(partner.verified ?? true);
-        setPartnerData(partner);
+        setPartnerRole(status.partnerRole || 'both');
+        setVerified(status.verified === true);
+        setPartnerData(status.partner || null);
       }
     } catch (err) {
       console.error('[Partner] Status check error:', err);

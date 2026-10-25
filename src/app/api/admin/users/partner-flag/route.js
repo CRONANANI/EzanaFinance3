@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient, requireUser } from '@/lib/supabase';
 import { isAdminUser } from '@/lib/admin-helpers';
+import { grantPartnerAccess, revokePartnerAccess } from '@/lib/partner-admin';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -43,23 +45,32 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid creatorTier' }, { status: 400 });
     }
 
-    const updates = { is_partner: isPartner };
-    if (!isPartner) {
-      updates.creator_tier = null;
-    } else {
-      updates.creator_tier = rawTier || 'creator';
+    // QA PAR-3: the toggle writes the real source of truth (`partners` row and
+    // app_metadata.partner_role) as well as the profiles display flag.
+    const result = isPartner
+      ? await grantPartnerAccess(supabaseAdmin, {
+          userId,
+          profileUpdates: { creator_tier: rawTier || 'creator' },
+        })
+      : await revokePartnerAccess(supabaseAdmin, {
+          userId,
+          profileUpdates: { creator_tier: null },
+        });
+    if (result.error) {
+      logger.error('Admin partner flag failed', { userId, error: result.error });
+      return NextResponse.json({ error: 'Failed to update partner access' }, { status: 500 });
     }
 
     const { data, error } = await supabaseAdmin
       .from('profiles')
-      .update(updates)
-      .eq('id', userId)
       .select('id, username, full_name, is_partner, creator_tier')
+      .eq('id', userId)
       .single();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return NextResponse.json({ error: 'Failed to load profile' }, { status: 500 });
     return NextResponse.json({ success: true, profile: data });
   } catch (e) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    logger.error('Admin partner flag error', { error: e?.message });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

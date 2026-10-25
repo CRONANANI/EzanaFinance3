@@ -4,16 +4,17 @@
  * Partners only (403 otherwise).
  */
 import { NextResponse } from 'next/server';
+import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
 import { plaidClient, PLAID_COUNTRY_CODES, PLAID_REDIRECT_URI } from '@/lib/plaid';
-import { isActivePartner } from '@/lib/partner-payouts';
+import { isPayoutPartner } from '@/lib/partner-payouts';
 
 export const dynamic = 'force-dynamic';
 
 export const POST = withApiGuard(
   async (request, user) => {
     try {
-      if (!(await isActivePartner(user.id))) {
+      if (!(await isPayoutPartner(getAdminClient(), user))) {
         return NextResponse.json({ error: 'Partner access required' }, { status: 403 });
       }
 

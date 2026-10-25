@@ -6,13 +6,13 @@ import { getAdminClient } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 
-import { isActivePartner } from '@/lib/partner-payouts';
+import { isPayoutPartner } from '@/lib/partner-payouts';
 
 export const dynamic = 'force-dynamic';
 
 export const GET = withApiGuard(
   async (request, user) => {
-    if (!(await isActivePartner(user.id))) {
+    if (!(await isPayoutPartner(getAdminClient(), user))) {
       return NextResponse.json({ error: 'Partner access required' }, { status: 403 });
     }
 

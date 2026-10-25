@@ -11,7 +11,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { plaidClient } from '@/lib/plaid';
 import { encryptToken } from '@/lib/crypto/token-cipher';
-import { isActivePartner } from '@/lib/partner-payouts';
+import { isPayoutPartner } from '@/lib/partner-payouts';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +27,7 @@ function isValidRouting(rn) {
 
 export const GET = withApiGuard(
   async (request, user) => {
-    if (!(await isActivePartner(user.id))) {
+    if (!(await isPayoutPartner(getAdminClient(), user))) {
       return NextResponse.json({ error: 'Partner access required' }, { status: 403 });
     }
     const { data } = await getAdminClient()
@@ -44,7 +44,7 @@ export const GET = withApiGuard(
 export const POST = withApiGuard(
   async (request, user) => {
     try {
-      if (!(await isActivePartner(user.id))) {
+      if (!(await isPayoutPartner(getAdminClient(), user))) {
         return NextResponse.json({ error: 'Partner access required' }, { status: 403 });
       }
 
@@ -146,7 +146,7 @@ export const POST = withApiGuard(
 
 export const DELETE = withApiGuard(
   async (request, user) => {
-    if (!(await isActivePartner(user.id))) {
+    if (!(await isPayoutPartner(getAdminClient(), user))) {
       return NextResponse.json({ error: 'Partner access required' }, { status: 403 });
     }
     const { error } = await getAdminClient()
