@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 /* Read at request time, not module load — same reasoning as stock-candles:
    capturing process.env at build bakes in a stale/empty key on Vercel. */
 function getFmpKey() {
-  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+  return process.env.FMP_API_KEY || '';
 }
 
 const BASE = 'https://financialmodelingprep.com/stable';

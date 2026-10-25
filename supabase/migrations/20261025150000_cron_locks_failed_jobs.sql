@@ -1,7 +1,7 @@
 -- Reliability audit P2-14: cron overlap locks and a dead-letter table.
 -- Used by src/lib/cron/with-cron-lock.js and src/lib/cron/failed-jobs.js.
 -- Additive and idempotent. Service role only. Apply by hand, BEFORE the
--- other 20261026* reliability migrations (the code runs without it, unlocked).
+-- other 202610251504xx reliability migrations (the code runs without it, unlocked).
 
 create table if not exists public.cron_locks (
   name text primary key,

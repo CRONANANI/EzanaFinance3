@@ -23,7 +23,7 @@ export const runtime = 'nodejs';
 // Read the FMP key at request time — module-level captures freeze the
 // build-container value and never see post-deploy env updates.
 function getFmpKey() {
-  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+  return process.env.FMP_API_KEY || '';
 }
 
 const FMP_BASE = 'https://financialmodelingprep.com/stable';

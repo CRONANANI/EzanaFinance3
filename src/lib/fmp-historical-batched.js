@@ -7,7 +7,7 @@
 import { fetchWithTimeout } from './http/fetch-json.js';
 
 export async function fetchBatchedHistoricalPrices(symbols, fromDate, toDate) {
-  const apiKey = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+  const apiKey = process.env.FMP_API_KEY || '';
   if (!apiKey || !symbols || symbols.length === 0) return {};
 
   const out = {};

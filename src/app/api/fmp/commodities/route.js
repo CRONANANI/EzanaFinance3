@@ -30,7 +30,7 @@ const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
 export const GET = withApiGuard(
   async (request, user) => {
-    const apiKey = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY;
+    const apiKey = process.env.FMP_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ quotes: [], error: 'FMP_API_KEY not set' }, { status: 500 });
     }

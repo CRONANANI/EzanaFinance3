@@ -13,8 +13,9 @@ This Ezana Finance app is configured for deployment on Vercel with:
 3. Click **Add New Project** and import your repository.
 4. Vercel auto-detects Next.js – no extra config needed.
 5. Add environment variables (if needed) in Project Settings → Environment Variables:
-   - `NEXT_PUBLIC_FMP_API_KEY` – Financial Modeling Prep API key
-   - `NEXT_PUBLIC_ALPHA_VANTAGE_KEY` – Alpha Vantage API key
+   - `FMP_API_KEY`: Financial Modeling Prep API key (server-only; Production scope, a separate key for Preview)
+   - `ALPHA_VANTAGE_API_KEY`: Alpha Vantage API key (server-only, same scoping)
+   - Never add a `NEXT_PUBLIC_` prefix to a provider key: Next.js inlines those into browser bundles.
    - Other API keys as used by your app
 6. Click **Deploy**.
 

@@ -195,7 +195,7 @@ function computeCashFromTrades(trades, startingCash) {
 async function fetchCurrentPrices(tickers) {
   if (!tickers || tickers.length === 0) return {};
 
-  const apiKey = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+  const apiKey = process.env.FMP_API_KEY || '';
   if (!apiKey) {
     console.warn('[mock-value-series] FMP_API_KEY missing — cannot fetch current prices');
     return {};

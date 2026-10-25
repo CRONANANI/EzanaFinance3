@@ -132,7 +132,7 @@ export default function MfaSetupGateCard({ redirectTo = '/home' }) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    const isPartner = !!user?.user_metadata?.partner_role;
+    const isPartner = !!user?.app_metadata?.partner_role;
     await supabase.auth.signOut();
     window.location.assign(isPartner ? '/auth/partner-login' : '/auth/signin');
   }

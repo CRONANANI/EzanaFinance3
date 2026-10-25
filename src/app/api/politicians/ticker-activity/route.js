@@ -16,7 +16,7 @@ import { BoundedMap } from '@/lib/bounded-map';
 export const dynamic = 'force-dynamic';
 
 const BASE = 'https://financialmodelingprep.com/stable';
-const getFmpKey = () => process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+const getFmpKey = () => process.env.FMP_API_KEY || '';
 const MAX_ROWS = 500;
 const CACHE_TTL = 12 * 60 * 1000;
 

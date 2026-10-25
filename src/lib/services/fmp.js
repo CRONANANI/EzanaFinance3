@@ -6,12 +6,10 @@ import { ApiCache } from '@/lib/api-cache';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 // Read the key at REQUEST time (not from a module-load snapshot, which broke
-// keys set or rotated after cold start) and accept either env var name:
-// FMP_API_KEY preferred; NEXT_PUBLIC_FMP_API_KEY is a legacy fallback for
-// older deploys and should not be set on new ones — provider keys must stay
-// server-only.
+// keys set or rotated after cold start). Server-only FMP_API_KEY; the old
+// public-prefixed fallback is gone (security assessment C-2).
 function fmpKey() {
-  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+  return process.env.FMP_API_KEY || '';
 }
 
 // FMP deprecated the /api/v3 endpoints on 2025-08-31; accounts that subscribed

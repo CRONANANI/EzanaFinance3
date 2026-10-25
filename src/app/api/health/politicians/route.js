@@ -15,7 +15,7 @@ export const revalidate = 0;
 
 // Request-time read — module-level captures freeze build-container env values.
 function getFmpKey() {
-  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+  return process.env.FMP_API_KEY || '';
 }
 
 export async function GET(request) {

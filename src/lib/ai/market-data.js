@@ -24,7 +24,7 @@ function setCache(key, data) {
  * Fetch from FMP stable API. Returns null on any failure — never throws.
  */
 async function fmpFetch(path) {
-  const apiKey = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+  const apiKey = process.env.FMP_API_KEY || '';
   if (!apiKey) return null;
 
   const cacheKey = `fmp:${path}`;

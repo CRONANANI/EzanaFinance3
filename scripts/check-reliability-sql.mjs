@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* Reliability audit: the SQL functions under real concurrency. Starts a
    throwaway local Postgres, loads a stub of the touched tables, applies the
-   20261026* reliability migrations and fires parallel calls from separate
+   reliability and security migrations (20261025150000 on) and fires parallel calls from separate
    connections. Skips when no Postgres binaries are installed (CI).
    Usage: node --test scripts/check-reliability-sql.mjs */
 import test from 'node:test';
@@ -12,7 +12,7 @@ import { startPg } from './lib/pg-harness.mjs';
 
 const MIG_DIR = new URL('../supabase/migrations/', import.meta.url).pathname;
 const MIGRATIONS = readdirSync(MIG_DIR)
-  .filter((f) => /^20261026\d{6}_.*\.sql$/.test(f) && !f.includes('concurrent'))
+  .filter((f) => f >= '20261025150000' && f.endsWith('.sql') && !f.includes('concurrent'))
   .sort()
   .map((f) => path.join(MIG_DIR, f));
 

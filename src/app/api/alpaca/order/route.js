@@ -6,6 +6,7 @@
 import { NextResponse } from 'next/server';
 import { alpacaRequest, alpaca } from '@/lib/alpaca';
 import { placeOrderOnce, readIdempotencyKey } from '@/lib/trading/idempotent';
+import { assertAlpacaAccountOwner } from '@/lib/trading/account-guard';
 import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
 
@@ -61,6 +62,9 @@ async function postOrder(request, user) {
     if (limitPrice) orderPayload.limit_price = limitPrice.toString();
     if (stopPrice) orderPayload.stop_price = stopPrice.toString();
     if (trailPercent) orderPayload.trail_percent = trailPercent.toString();
+
+    /* The stored account id must be this user's at Alpaca (F-03). */
+    await assertAlpacaAccountOwner(alpaca, accountId, user);
 
     const { order, row, replay } = await placeOrderOnce(
       { admin: supabaseAdmin, alpaca },

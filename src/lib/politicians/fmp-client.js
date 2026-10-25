@@ -13,7 +13,7 @@ import { fetchWithTimeout } from '../http/fetch-json.js';
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
 function getApiKey() {
-  const key = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY;
+  const key = process.env.FMP_API_KEY;
   if (!key) {
     throw new Error('FMP_API_KEY is not configured');
   }

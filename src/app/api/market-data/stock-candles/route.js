@@ -7,10 +7,10 @@ export const dynamic = 'force-dynamic';
 /* Read at request time, not module load. In serverless (Vercel) the module
    is evaluated during the build; capturing process.env.FMP_API_KEY then
    meant a stale/empty value got baked in if the key was missing or rotated
-   after the build. Falling back to NEXT_PUBLIC_FMP_API_KEY covers the case
-   where the deployment only has the public key configured. */
+   after the build. Server-only FMP_API_KEY (no public-prefixed fallback,
+   security assessment C-2). */
 function getFmpKey() {
-  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+  return process.env.FMP_API_KEY || '';
 }
 
 const BASE = 'https://financialmodelingprep.com/stable';

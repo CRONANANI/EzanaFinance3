@@ -7,6 +7,7 @@ import { withApiGuard } from '@/lib/api-guard';
 import { alpacaRequest, alpaca } from '@/lib/alpaca';
 import { getAdminClient } from '@/lib/supabase';
 import { createTransferOnce, readIdempotencyKey } from '@/lib/trading/idempotent';
+import { assertAlpacaAccountOwner } from '@/lib/trading/account-guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,6 +29,9 @@ export const POST = withApiGuard(
       const accountId = await getAlpacaAccountId(supabaseAdmin, user.id);
       if (!accountId)
         return NextResponse.json({ error: 'No brokerage account found' }, { status: 404 });
+
+      /* The stored account id must be this user's at Alpaca (F-03). */
+      await assertAlpacaAccountOwner(alpaca, accountId, user);
 
       const body = await request.json();
 

@@ -122,7 +122,7 @@ async function fetchQuiverTradesForPolitician(pol) {
 // Request-time read — module-level captures freeze build-container env
 // values, so an FMP key rotation never reaches running lambdas.
 function getFmpKey() {
-  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+  return process.env.FMP_API_KEY || '';
 }
 
 const BASE = 'https://financialmodelingprep.com/stable';

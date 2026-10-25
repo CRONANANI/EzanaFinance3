@@ -17,7 +17,7 @@ function normalizeSymbol(sym) {
 }
 
 function getFmpKey() {
-  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+  return process.env.FMP_API_KEY || '';
 }
 
 async function fetchFmpQuote(symbol) {

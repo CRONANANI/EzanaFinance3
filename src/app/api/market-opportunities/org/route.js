@@ -9,7 +9,7 @@ export const runtime = 'nodejs';
 // Request-time key read — module-level captures freeze build-container env
 // values, so a later FMP rotation never reaches running lambdas.
 function getFmpKey() {
-  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+  return process.env.FMP_API_KEY || '';
 }
 
 const FMP_BASE = 'https://financialmodelingprep.com/stable';

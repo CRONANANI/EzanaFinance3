@@ -30,7 +30,8 @@ export default function PartnerLoginPage() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (user?.user_metadata?.partner_role) return true;
+    /* app_metadata only: user_metadata is user-writable. */
+    if (user?.app_metadata?.partner_role) return true;
 
     const { data: partner } = await supabase
       .from('partners')

@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 const AV_BASE = 'https://www.alphavantage.co/query';
 
 function getAvKey() {
-  return process.env.ALPHA_VANTAGE_API_KEY || process.env.NEXT_PUBLIC_ALPHA_VANTAGE_API_KEY || '';
+  return process.env.ALPHA_VANTAGE_API_KEY || '';
 }
 
 function sortDataRowsByDateDesc(rows) {

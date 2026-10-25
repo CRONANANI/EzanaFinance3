@@ -16,7 +16,7 @@ const AV_BASE = 'https://www.alphavantage.co/query';
 
 /** Prefer the server-side key; accept the NEXT_PUBLIC_ alias for back-compat. */
 export function getFmpKey() {
-  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+  return process.env.FMP_API_KEY || '';
 }
 
 /**

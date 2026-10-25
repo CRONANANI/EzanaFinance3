@@ -9,7 +9,7 @@ export const runtime = 'nodejs';
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
 function getFmpKey() {
-  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+  return process.env.FMP_API_KEY || '';
 }
 
 function periodToDays(period) {

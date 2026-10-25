@@ -54,7 +54,7 @@ async function run(request) {
     const summary = await runCongressIngest({
       db,
       fallbackLegislators: LEGISLATORS,
-      fmpKey: process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '',
+      fmpKey: process.env.FMP_API_KEY || '',
       fmpEnabled: fmpEnabled(),
       chamber,
       skipMembers: searchParams.get('members') === '0',

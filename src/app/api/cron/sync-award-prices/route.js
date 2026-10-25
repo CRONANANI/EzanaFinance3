@@ -145,7 +145,7 @@ async function fetchWithFallback(apiKey, keys, ticker, from, to) {
 }
 
 async function run(request) {
-  const apiKey = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+  const apiKey = process.env.FMP_API_KEY || '';
   const keys = alpacaKeys();
   if (!apiKey && !keys) {
     return NextResponse.json({ error: 'price source not configured' }, { status: 500 });

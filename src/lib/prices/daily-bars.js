@@ -16,7 +16,7 @@ const FMP = 'https://financialmodelingprep.com/stable/historical-price-eod/full'
 const ALPACA = 'https://data.alpaca.markets/v2/stocks';
 const TIMEOUT_MS = 8000;
 
-const fmpKey = () => process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+const fmpKey = () => process.env.FMP_API_KEY || '';
 /* FMP writes class shares with a dash (BRK-B); Alpaca keeps the dot (BRK.B). */
 const fmpSymbol = (t) => String(t).replace(/\./g, '-');
 

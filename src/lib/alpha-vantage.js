@@ -12,7 +12,7 @@ const ALPHA_BASE = 'https://www.alphavantage.co/query';
 const cache = new BoundedMap(500);
 
 export function getAlphaVantageApiKey() {
-  return process.env.ALPHA_VANTAGE_API_KEY || process.env.NEXT_PUBLIC_ALPHA_VANTAGE_API_KEY || null;
+  return process.env.ALPHA_VANTAGE_API_KEY || null;
 }
 
 function alphaInfoOrLimitError(data) {

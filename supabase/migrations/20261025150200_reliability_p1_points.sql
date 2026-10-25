@@ -1,7 +1,7 @@
 -- Reliability audit P1 (items 5, 7, 8): atomic XP and ELO awards with
 -- idempotency keys, atomic competition scoring claim, Sonar ping
 -- reservation before the model call.
--- Additive and idempotent. Apply by hand after 20261026100000.
+-- Additive and idempotent. Apply by hand after 20261025150100.
 
 -- ── 5a. XP ────────────────────────────────────────────────────────────────
 alter table public.xp_transactions add column if not exists idempotency_key text;

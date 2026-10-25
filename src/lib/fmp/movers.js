@@ -8,7 +8,7 @@ import { fetchWithTimeout } from '../http/fetch-json.js';
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
 export async function getBiggestGainers(limit = 5) {
-  const apiKey = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY;
+  const apiKey = process.env.FMP_API_KEY;
   if (!apiKey) throw new Error('FMP_API_KEY not set');
 
   const res = await fetchWithTimeout(
@@ -25,7 +25,7 @@ export async function getBiggestGainers(limit = 5) {
 }
 
 export async function getBiggestLosers(limit = 5) {
-  const apiKey = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY;
+  const apiKey = process.env.FMP_API_KEY;
   if (!apiKey) throw new Error('FMP_API_KEY not set');
 
   const res = await fetchWithTimeout(

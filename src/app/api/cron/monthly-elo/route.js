@@ -46,7 +46,7 @@ export const maxDuration = 300;
 // picks up dashboard rotations. See src/app/api/fmp/test/route.js for the
 // diagnostic that surfaces this.
 function getFmpKey() {
-  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+  return process.env.FMP_API_KEY || '';
 }
 
 const FMP_BASE = 'https://financialmodelingprep.com/stable';

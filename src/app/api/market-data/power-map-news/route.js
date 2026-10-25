@@ -13,8 +13,7 @@ export const dynamic = 'force-dynamic';
 const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
 const FINNHUB_BASE = 'https://finnhub.io/api/v1';
 
-const ALPHA_VANTAGE_KEY =
-  process.env.ALPHA_VANTAGE_API_KEY || process.env.NEXT_PUBLIC_ALPHA_VANTAGE_KEY;
+const ALPHA_VANTAGE_KEY = process.env.ALPHA_VANTAGE_API_KEY;
 const ALPHA_VANTAGE_BASE = 'https://www.alphavantage.co/query';
 
 // Per-source latency caps so no single upstream can stall the response. Finnhub

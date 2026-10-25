@@ -40,7 +40,7 @@ async function routeAfterSession(supabase, router, type, redirectParam) {
       id: user.id,
       email: user.email,
       onboarding_completed: true,
-      email_verified: false,
+      /* email_verified defaults to false and is server-managed. */
       updated_at: new Date().toISOString(),
     });
     if (insErr) {

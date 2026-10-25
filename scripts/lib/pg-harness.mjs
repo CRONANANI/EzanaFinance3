@@ -50,13 +50,63 @@ do $$ begin
 create extension if not exists pgcrypto;
 create schema if not exists auth;
 create table auth.users (id uuid primary key default gen_random_uuid());
-create or replace function auth.uid() returns uuid language sql stable as $$ select null::uuid $$;
+create or replace function auth.jwt() returns jsonb language sql stable as $$
+  select coalesce(nullif(current_setting('request.jwt.claims', true), ''), '{}')::jsonb $$;
+create or replace function auth.uid() returns uuid language sql stable as $$
+  select nullif(auth.jwt() ->> 'sub', '')::uuid $$;
+create or replace function auth.role() returns text language sql stable as $$
+  select auth.jwt() ->> 'role' $$;
+alter role service_role bypassrls;
+grant usage on schema auth to anon, authenticated, service_role;
+grant usage on schema public to anon, authenticated, service_role;
+alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
+alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
+alter default privileges in schema public grant execute on functions to anon, authenticated, service_role;
 
 create table public.profiles (
-  id uuid primary key, email text, is_disabled boolean not null default false,
-  stripe_customer_id text, subscription_status text, subscription_plan text,
-  subscription_id text, current_period_end timestamptz, updated_at timestamptz
+  id uuid primary key, email text, full_name text, created_at timestamptz default now(),
+  updated_at timestamptz default now(), legacy_user boolean default false, legacy_number int,
+  plan text default 'free', onboarded boolean default false, preferences jsonb default '{}',
+  onboarding_completed boolean, stripe_customer_id text, subscription_status text default 'inactive',
+  subscription_plan text, subscription_id text, current_period_end timestamptz, one_time_plan text,
+  one_time_plan_purchased_at timestamptz, email_verified boolean default false,
+  pinned_cards jsonb default '{}', checklist_progress jsonb default '{}',
+  checklist_completed boolean default false, has_seen_tutorial boolean default false,
+  user_settings jsonb default '{}', privacy_show_portfolio boolean default true,
+  privacy_show_trades boolean default true, privacy_show_holdings boolean default false,
+  privacy_show_activity boolean default true, privacy_show_watchlist boolean default false,
+  privacy_show_on_leaderboard boolean default true, is_partner boolean default false,
+  partner_type text, partner_verified_at timestamptz, phone text, date_of_birth date, country text,
+  state text, city text, display_name text, bio text, investor_type text default 'retail',
+  experience_level text default 'intermediate', website text, twitter text, linkedin text,
+  onboarding_step int default 0, username text, avatar_url text, deleted_at timestamptz,
+  deletion_scheduled_for timestamptz, reactivation_token text, is_disabled boolean not null default false,
+  disabled_reason text, disabled_at timestamptz, investor_questionnaire jsonb default '{}',
+  investor_questionnaire_completed boolean default false, investor_profile jsonb, current_plan text,
+  subscription_period_end timestamptz, tours_seen jsonb not null default '{}', beginner_tips_pref text default 'auto',
+  beginner_seen jsonb default '[]', analyses_run int default 0, lessons_completed_count int default 0,
+  is_demo boolean not null default false, risk_score int, risk_category text,
+  partner_questionnaire jsonb default '{}', creator_tier text, subscription_source text,
+  community_terms_accepted_at timestamptz
 );
+alter table public.profiles enable row level security;
+create policy "Users can insert own profile" on public.profiles for insert with check (auth.uid() = id);
+create policy "Users can read own profile" on public.profiles for select using (auth.uid() = id);
+create policy "Users can update own profile" on public.profiles for update using (auth.uid() = id);
+create policy "Users can update own pinned cards" on public.profiles for update using (auth.uid() = id) with check (auth.uid() = id);
+create table public.partners (
+  id uuid primary key default gen_random_uuid(), user_id uuid not null, status text,
+  commission_rate numeric, total_earnings numeric, payout_email text,
+  echo_writer_approved boolean default false, username text, display_name text, avatar_url text
+);
+alter table public.partners enable row level security;
+create policy "Users see own partner record" on public.partners for all using (auth.uid() = user_id);
+create table public.alpaca_accounts (
+  id uuid primary key default gen_random_uuid(), user_id uuid not null, alpaca_account_id text not null,
+  account_status text, first_name text, last_name text, created_at timestamptz, updated_at timestamptz
+);
+alter table public.alpaca_accounts enable row level security;
+create policy "Users see own alpaca account" on public.alpaca_accounts for all using (auth.uid() = user_id);
 create table public.trade_history (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -120,8 +170,12 @@ create table public.rate_limit_buckets (
 );
 create table public.plaid_items (
   id uuid primary key default gen_random_uuid(), user_id uuid, item_id text,
-  access_token text, status text
+  access_token text, institution_id text, institution_name text, institution_logo text,
+  status text, error_code text, consent_expiration timestamptz, created_at timestamptz,
+  updated_at timestamptz
 );
+alter table public.plaid_items enable row level security;
+create policy "Users see own plaid_items" on public.plaid_items for all using (auth.uid() = user_id);
 create table public.sonar_queries (
   id uuid primary key default gen_random_uuid(), user_id uuid, query_text text not null,
   classification text, version text, plan_tier int, datasets_searched jsonb not null,
@@ -130,7 +184,7 @@ create table public.sonar_queries (
 );
 `;
 
-export async function startPg({ migrations = [] } = {}) {
+export async function startPg({ migrations = [], extraSchema = '' } = {}) {
   const bin = findBin();
   if (!bin) return null;
   const dir = mkdtempSync(path.join(tmpdir(), 'ezpg-'));
@@ -198,6 +252,7 @@ export async function startPg({ migrations = [] } = {}) {
     );
 
   sql(STUB_SCHEMA);
+  if (extraSchema) sql(extraSchema);
   for (const m of migrations) file(m);
 
   const stop = () => {

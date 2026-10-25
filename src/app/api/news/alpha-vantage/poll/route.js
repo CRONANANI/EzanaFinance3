@@ -18,7 +18,7 @@ function isCronAuthorized(request) {
 }
 
 function getAvKey() {
-  return process.env.ALPHA_VANTAGE_API_KEY || process.env.NEXT_PUBLIC_ALPHA_VANTAGE_API_KEY || '';
+  return process.env.ALPHA_VANTAGE_API_KEY || '';
 }
 
 function mapAvTopic(topics) {

@@ -6,7 +6,7 @@ const FMP_BASE = 'https://financialmodelingprep.com/stable';
 const MIN_TRANSCRIPT_CHARS = 500;
 
 function getFmpKey() {
-  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+  return process.env.FMP_API_KEY || '';
 }
 
 /**

@@ -7,11 +7,11 @@ import { fetchWithTimeout } from '@/lib/http/fetch-json';
 export const dynamic = 'force-dynamic';
 
 function getFmpKey() {
-  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+  return process.env.FMP_API_KEY || '';
 }
 
 function getAvKey() {
-  return process.env.ALPHA_VANTAGE_API_KEY || process.env.NEXT_PUBLIC_ALPHA_VANTAGE_API_KEY || '';
+  return process.env.ALPHA_VANTAGE_API_KEY || '';
 }
 
 /**

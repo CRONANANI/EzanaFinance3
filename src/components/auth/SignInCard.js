@@ -45,10 +45,11 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
   // { path } to navigate to, or { reject: true } for a non-partner trying to
   // use the dedicated partner login form.
   const resolveDestination = async (user) => {
-    // Partner status — metadata fast-path, then the partners table. The table
+    // Partner status: app_metadata fast-path (user_metadata is user-writable),
+    // then the partners table. The table
     // lookup is best-effort: on timeout/error treat as non-partner and proceed
     // rather than letting a hung query block the login.
-    let isPartner = !!user?.user_metadata?.partner_role;
+    let isPartner = !!user?.app_metadata?.partner_role;
     if (!isPartner && user?.id) {
       try {
         const { data: partner } = await withTimeout(

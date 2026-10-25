@@ -6,8 +6,10 @@
  *
  * Isomorphic: takes any Supabase client (browser or cookie-scoped server) plus
  * the already-resolved auth user, so it works from a client component and a
- * server component alike. A partner is either flagged in user metadata or has an
- * active row in `partners`.
+ * server component alike. A partner is flagged in app_metadata (set only with
+ * the service role) or has an active row in `partners`. user_metadata is NOT
+ * trusted: any user can write it with supabase.auth.updateUser() (security
+ * assessment F-02).
  *
  * @param {import('@supabase/supabase-js').SupabaseClient} supabase
  * @param {{ id: string, user_metadata?: Record<string, unknown> } | null | undefined} user
@@ -15,7 +17,7 @@
  */
 export async function isActivePartner(supabase, user) {
   if (!user) return false;
-  if (user.user_metadata?.partner_role) return true;
+  if (user.app_metadata?.partner_role) return true;
   const { data } = await supabase
     .from('partners')
     .select('id')

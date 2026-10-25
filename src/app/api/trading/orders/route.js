@@ -3,6 +3,7 @@ import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
 import { alpaca } from '@/lib/alpaca';
 import { placeOrderOnce, readIdempotencyKey } from '@/lib/trading/idempotent';
+import { assertAlpacaAccountOwner } from '@/lib/trading/account-guard';
 import { awardXP } from '@/lib/rewards';
 
 export const dynamic = 'force-dynamic';
@@ -61,6 +62,9 @@ export const POST = withApiGuard(
       else {
         return NextResponse.json({ error: 'Either qty or notional is required' }, { status: 400 });
       }
+
+      /* The stored account id must be this user's at Alpaca (F-03). */
+      await assertAlpacaAccountOwner(alpaca, account.alpaca_account_id, user);
 
       const { order, row, replay } = await placeOrderOnce(
         { admin, alpaca },
