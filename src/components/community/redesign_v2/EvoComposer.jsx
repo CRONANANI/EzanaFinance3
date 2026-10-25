@@ -3,7 +3,12 @@
 import { useState, useRef, useMemo, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase-browser';
-import { getInitials, extractTickerFromContent } from '@/lib/community-utils';
+import {
+  getInitials,
+  extractTickerFromContent,
+  buildCommunityImagePath,
+  COMMUNITY_IMAGE_UPLOAD_ERROR,
+} from '@/lib/community-utils';
 import { TICKER_SEARCH_DATA } from '@/lib/tickerSearchData';
 import { POST_TYPE_LIST, STANDARD_DISCLAIMER } from '@/lib/post-types';
 import { Avatar } from './Atoms';
@@ -266,6 +271,7 @@ export function EvoComposer({
   const [isPartner, setIsPartner] = useState(false);
   const [postType, setPostType] = useState(null);
   const [disclosure, setDisclosure] = useState('');
+  const [uploadError, setUploadError] = useState('');
 
   useEffect(() => {
     if (!user?.id) {
@@ -304,21 +310,23 @@ export function EvoComposer({
     if (!canPost) return;
     /* Community guidelines are agreed once, before the first post. */
     if (!(await ensureAccepted())) return;
+    setUploadError('');
     setPosting(true);
     try {
       let image_url = null;
       if (image?.source === 'device' && image?.file && user?.id) {
-        const ext = image.file.name.split('.').pop() || 'jpg';
-        const path = `community/${user.id}/${Date.now()}.${ext}`;
+        const path = buildCommunityImagePath(user.id, image.file.name);
         const { data: uploadData, error: uploadErr } = await supabase.storage
           .from('community-images')
           .upload(path, image.file, { upsert: false, contentType: image.file.type });
-        if (!uploadErr && uploadData?.path) {
-          const {
-            data: { publicUrl },
-          } = supabase.storage.from('community-images').getPublicUrl(uploadData.path);
-          image_url = publicUrl;
+        if (uploadErr || !uploadData?.path) {
+          setUploadError(COMMUNITY_IMAGE_UPLOAD_ERROR);
+          return;
         }
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from('community-images').getPublicUrl(uploadData.path);
+        image_url = publicUrl;
       } else if (image?.url && image.source !== 'device') {
         image_url = image.url;
       }
@@ -548,7 +556,31 @@ export function EvoComposer({
             </div>
           )}
 
-          {mode === 'image' && <ImageBody image={image} setImage={setImage} />}
+          {mode === 'image' && (
+            <ImageBody
+              image={image}
+              setImage={(next) => {
+                setUploadError('');
+                setImage(next);
+              }}
+            />
+          )}
+          {uploadError && (
+            <div
+              role="alert"
+              style={{
+                marginTop: 8,
+                padding: '8px 10px',
+                borderRadius: 8,
+                border: '1px solid var(--negative-border)',
+                background: 'var(--negative-bg)',
+                color: 'var(--negative)',
+                fontSize: 12,
+              }}
+            >
+              <i className="bi bi-exclamation-triangle" aria-hidden="true" /> {uploadError}
+            </div>
+          )}
           {mode === 'poll' && (
             <PollBody poll={poll ?? { question: '', options: ['', ''] }} setPoll={setPoll} />
           )}

@@ -3,7 +3,12 @@
 import { useState, useRef, useMemo } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase-browser';
-import { getInitials, extractTickerFromContent } from '@/lib/community-utils';
+import {
+  getInitials,
+  extractTickerFromContent,
+  buildCommunityImagePath,
+  COMMUNITY_IMAGE_UPLOAD_ERROR,
+} from '@/lib/community-utils';
 import { TICKER_SEARCH_DATA } from '@/lib/tickerSearchData';
 import { Avatar } from './Avatar';
 
@@ -547,20 +552,21 @@ export function Composer({ onPosted }) {
     try {
       let image_url = null;
       if (image?.source === 'device' && image?.file && user?.id) {
-        const ext = image.file.name.split('.').pop() || 'jpg';
-        const path = `community/${user.id}/${Date.now()}.${ext}`;
+        const path = buildCommunityImagePath(user.id, image.file.name);
         const { data: uploadData, error: uploadErr } = await supabase.storage
           .from('community-images')
           .upload(path, image.file, {
             upsert: false,
             contentType: image.file.type,
           });
-        if (!uploadErr && uploadData?.path) {
-          const {
-            data: { publicUrl },
-          } = supabase.storage.from('community-images').getPublicUrl(uploadData.path);
-          image_url = publicUrl;
+        if (uploadErr || !uploadData?.path) {
+          alert(COMMUNITY_IMAGE_UPLOAD_ERROR);
+          return;
         }
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from('community-images').getPublicUrl(uploadData.path);
+        image_url = publicUrl;
       } else if (image?.url && image.source !== 'device') {
         image_url = image.url;
       }

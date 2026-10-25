@@ -48,13 +48,13 @@ export function normalizeTickerEmbed(embed) {
         .trim();
       if (!sym) continue;
       const hp =
-        typeof s.highlight_price === 'number' && Number.isFinite(s.highlight_price) ? s.highlight_price : null;
+        typeof s.highlight_price === 'number' && Number.isFinite(s.highlight_price)
+          ? s.highlight_price
+          : null;
       symbols.push({ symbol: sym, highlight_price: hp });
     }
   } else if (embed.symbol) {
-    const sym = String(embed.symbol)
-      .toUpperCase()
-      .trim();
+    const sym = String(embed.symbol).toUpperCase().trim();
     const hp =
       typeof embed.highlight_price === 'number' && Number.isFinite(embed.highlight_price)
         ? embed.highlight_price
@@ -64,3 +64,26 @@ export function normalizeTickerEmbed(embed) {
   if (!symbols.length) return null;
   return { period, symbols };
 }
+
+/**
+ * Storage path for a community image upload. The `community-images` bucket's
+ * insert/delete policies require the first folder to be the uploader's uid
+ * (`(storage.foldername(name))[1] = auth.uid()::text`), so the path is always
+ * `<uid>/<timestamp>-<safe file name>`.
+ */
+export function buildCommunityImagePath(userId, fileName, now = Date.now()) {
+  if (!userId) throw new Error('userId required');
+  const raw = String(fileName || 'image')
+    .split(/[\\/]/)
+    .pop();
+  const safeName =
+    raw
+      .replace(/[^A-Za-z0-9._-]+/g, '-')
+      .replace(/^[-.]+/, '')
+      .slice(-80) || 'image';
+  return `${userId}/${now}-${safeName}`;
+}
+
+/** User-facing message when a community image upload fails. */
+export const COMMUNITY_IMAGE_UPLOAD_ERROR =
+  'Your image could not be uploaded, so nothing was posted. Try again, or remove the image to post without it.';

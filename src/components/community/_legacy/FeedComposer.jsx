@@ -18,9 +18,14 @@
  * /api/community/posts route already expects.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase-browser';
-import { getInitials, extractTickerFromContent } from '@/lib/community-utils';
+import {
+  getInitials,
+  extractTickerFromContent,
+  buildCommunityImagePath,
+  COMMUNITY_IMAGE_UPLOAD_ERROR,
+} from '@/lib/community-utils';
 import { TICKER_SEARCH_DATA } from '@/lib/tickerSearchData';
 
 export function FeedComposer({
@@ -52,6 +57,7 @@ export function FeedComposer({
   setTickerPeriod,
   onPosted,
 }) {
+  const [uploadError, setUploadError] = useState('');
   const filteredTickers = useMemo(() => {
     const q = tickerQuery.toUpperCase().trim();
     if (!q) return [];
@@ -70,25 +76,27 @@ export function FeedComposer({
 
   const handlePost = async () => {
     if (!canPost) return;
+    setUploadError('');
     setPosting(true);
     try {
       let image_url = null;
 
       if (composerImage?.source === 'device' && composerImage?.file) {
-        const ext = composerImage.file.name.split('.').pop() || 'jpg';
-        const path = `community/${user.id}/${Date.now()}.${ext}`;
+        const path = buildCommunityImagePath(user.id, composerImage.file.name);
         const { data: uploadData, error: uploadErr } = await supabase.storage
           .from('community-images')
           .upload(path, composerImage.file, {
             upsert: false,
             contentType: composerImage.file.type,
           });
-        if (!uploadErr && uploadData?.path) {
-          const {
-            data: { publicUrl },
-          } = supabase.storage.from('community-images').getPublicUrl(uploadData.path);
-          image_url = publicUrl;
+        if (uploadErr || !uploadData?.path) {
+          setUploadError(COMMUNITY_IMAGE_UPLOAD_ERROR);
+          return;
         }
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from('community-images').getPublicUrl(uploadData.path);
+        image_url = publicUrl;
       } else if (composerImage?.source === 'storage') {
         image_url = composerImage.url;
       }
@@ -190,6 +198,11 @@ export function FeedComposer({
         />
       </div>
 
+      {uploadError && (
+        <p role="alert" style={{ color: 'var(--negative)', fontSize: 12, margin: '6px 0 0' }}>
+          <i className="bi bi-exclamation-triangle" aria-hidden="true" /> {uploadError}
+        </p>
+      )}
       <div className="comm-composer-actions">
         <div className="comm-composer-tools">
           <div style={{ position: 'relative' }}>
