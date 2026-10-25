@@ -461,6 +461,8 @@ body.light-mode {
         layout useEffect when the MA route is active.
      2. `.force-dark-theme` — a reusable scoping class you can
         put on any wrapper to force dark vars in its subtree.
+   (The light counterpart, `.force-light-theme`, is the last block in this
+   file; the 404 page uses it.)
 
    The selector beats `body.light-mode` because it appears later
    in the cascade (equal specificity) and, for `.force-dark-theme`,
@@ -588,4 +590,72 @@ body.light-mode {
     #16a34a 75%,
     #0e9c74 100%
   );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FORCED LIGHT SCOPE — mirror of .force-dark-theme for pages that must
+   always render light, whatever the user's light/dark toggle.
+   Values match body.light-mode above; keep them in sync.
+
+   Applied two ways:
+     1. `.force-light-theme` — put it on any wrapper to force the light
+        tokens in its subtree.
+     2. `html:has(.ez-404)` / `body:has(.ez-404)` — the 404 page also needs
+        the viewport itself light (overscroll, the area behind the page), so
+        the document root gets the same tokens only while the 404 is mounted.
+        Scoped to .ez-404 on purpose: a small .force-light-theme wrapper
+        elsewhere must not repaint a whole dark page.
+   Last in the file so it wins over :root and the dark scopes.
+   ═══════════════════════════════════════════════════════════ */
+.force-light-theme,
+body.light-mode .force-light-theme,
+html:has(.ez-404),
+body:has(.ez-404) {
+  color-scheme: light;
+
+  /* Backgrounds and surfaces */
+  --bg-primary: #ffffff;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --bg-overlay: rgba(0, 0, 0, 0.4);
+  --surface-card: #ffffff;
+  --surface-card-hover: #f3f4f6;
+  --surface-tinted: #ecfdf5;
+
+  /* Borders */
+  --border-primary: rgba(0, 0, 0, 0.08);
+  --border-secondary: rgba(0, 0, 0, 0.05);
+  --border-strong: rgba(15, 32, 28, 0.14);
+  --border-hover: rgba(16, 185, 129, 0.25);
+  --border-focus: rgba(16, 185, 129, 0.5);
+
+  /* Text */
+  --text-primary: #0f172a;
+  --text-secondary: #1e293b;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --text-body: #334155;
+
+  /* Emerald, light-surface set */
+  --emerald: #059669;
+  --emerald-hover: #047857;
+  --emerald-dark: #065f46;
+  --emerald-bg: rgba(16, 185, 129, 0.06);
+  --emerald-bg-hover: rgba(16, 185, 129, 0.1);
+  --emerald-border: rgba(16, 185, 129, 0.2);
+  --emerald-text: #047857;
+
+  /* Nav and app background */
+  --nav-bg: rgba(255, 255, 255, 0.92);
+  --nav-bg-solid: #ffffff;
+  --nav-border: rgba(0, 0, 0, 0.06);
+  --app-bg: #ffffff;
+  --badge-ring: #ffffff;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.1);
+  --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.08);
 }
