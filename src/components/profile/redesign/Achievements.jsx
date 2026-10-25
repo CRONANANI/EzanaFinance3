@@ -11,11 +11,12 @@ export function Achievements({ achievements = [] }) {
       name: '—',
       category: 'TRADING',
       iconGlyph: '·',
+      earned: false,
       earnedAt: null,
       progress: 0,
     });
   }
-  const earnedCount = safeList.filter((a) => a.earnedAt).length;
+  const earnedCount = safeList.filter((a) => a.earned ?? a.earnedAt).length;
 
   return (
     <div

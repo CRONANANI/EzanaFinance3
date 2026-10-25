@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Trophy, Lock, X, ArrowLeft } from 'lucide-react';
 import { createPortal } from 'react-dom';
-import { useAchievements } from '@/hooks/useAchievements';
+import { useAchievements, isEarned } from '@/hooks/useAchievements';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import './badges-page.css';
 
@@ -41,7 +41,7 @@ function AchievementModal({ achievement, onClose }) {
   if (!achievement) return null;
   if (typeof document === 'undefined') return null;
 
-  const earned = Boolean(achievement.earnedAt);
+  const earned = isEarned(achievement);
 
   return createPortal(
     <div className="bp-overlay" role="dialog" aria-modal="true" onMouseDown={onClose}>
@@ -64,7 +64,9 @@ function AchievementModal({ achievement, onClose }) {
         </div>
         {earned ? (
           <div className="bp-modal-ok">
-            Earned on {new Date(achievement.earnedAt).toLocaleDateString()}
+            {achievement.earnedAt
+              ? `Earned on ${new Date(achievement.earnedAt).toLocaleDateString()}`
+              : 'Earned'}
           </div>
         ) : (
           <div className="bp-modal-prog">
@@ -97,10 +99,10 @@ export function BadgesPageClient() {
     let list = achievements;
 
     // Status filter
-    if (filter === 'Earned') list = list.filter((a) => a.earnedAt);
+    if (filter === 'Earned') list = list.filter((a) => isEarned(a));
     else if (filter === 'In Progress')
-      list = list.filter((a) => !a.earnedAt && (a.progress ?? 0) > 0);
-    else if (filter === 'Locked') list = list.filter((a) => !a.earnedAt && !(a.progress > 0));
+      list = list.filter((a) => !isEarned(a) && (a.progress ?? 0) > 0);
+    else if (filter === 'Locked') list = list.filter((a) => !isEarned(a) && !(a.progress > 0));
 
     // Category filter
     if (categoryFilter !== 'all') list = list.filter((a) => a.category === categoryFilter);
@@ -118,8 +120,8 @@ export function BadgesPageClient() {
 
     // Sort: earned first, then in-progress (highest first), then locked
     return [...list].sort((a, b) => {
-      const aEarned = Boolean(a.earnedAt);
-      const bEarned = Boolean(b.earnedAt);
+      const aEarned = isEarned(a);
+      const bEarned = isEarned(b);
       if (aEarned !== bEarned) return aEarned ? -1 : 1;
       const aProg = a.progress ?? 0;
       const bProg = b.progress ?? 0;
@@ -199,7 +201,7 @@ export function BadgesPageClient() {
       ) : (
         <div className="bp-grid">
           {visibleAchievements.map((a) => {
-            const earned = Boolean(a.earnedAt);
+            const earned = isEarned(a);
             const tier = TIER_TONE[a.tier] || 'bronze';
             const bi = a.icon && a.icon.startsWith('bi-') ? a.icon : null;
             return (
@@ -225,7 +227,9 @@ export function BadgesPageClient() {
                   <div className="bp-tile-desc">{a.description}</div>
                   <div className="bp-tile-meta">
                     {earned
-                      ? `Earned ${new Date(a.earnedAt).toLocaleDateString()}`
+                      ? a.earnedAt
+                        ? `Earned ${new Date(a.earnedAt).toLocaleDateString()}`
+                        : 'Earned'
                       : a.progress
                         ? `${a.progress}% progress`
                         : 'Locked'}

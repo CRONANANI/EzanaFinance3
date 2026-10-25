@@ -14,10 +14,19 @@ import { supabase } from '@/lib/supabase-browser';
  * @property {string} [icon]           bootstrap-icons class name (bi-*)
  * @property {'community'|'learning'|'trading'} category
  * @property {string} criteria
- * @property {string} [earnedAt]       ISO date — undefined/null if locked
+ * @property {boolean} earned          true once the criteria are met
+ * @property {string} [earnedAt]       ISO date it was earned, only when a record
+ *                                     of it exists (learning badges). Badges
+ *                                     derived live from counts have no date,
+ *                                     so none is shown (QA RET-17).
  * @property {number} [progress]       0-100 when in progress
  * @property {'bronze'|'silver'|'gold'|'platinum'|'diamond'} [tier]
  */
+
+/** Earned, whether or not a date is on record. */
+export function isEarned(a) {
+  return Boolean(a?.earned ?? a?.earnedAt);
+}
 
 /** Map learning community-badge tier_name → unified tier */
 const TIER_MAP = {
@@ -104,7 +113,8 @@ function buildTradingAchievements({
       icon: d.icon,
       category: 'trading',
       tier: d.tier,
-      earnedAt: earned ? new Date().toISOString() : undefined,
+      earned,
+      earnedAt: undefined,
       progress: earned ? 100 : prog,
     };
   });
@@ -178,7 +188,8 @@ async function fetchCommunityAchievements(userId) {
       icon: d.icon,
       category: 'community',
       tier: d.tier,
-      earnedAt: d.check ? new Date().toISOString() : undefined,
+      earned: Boolean(d.check),
+      earnedAt: undefined,
       progress: d.check ? 100 : Math.round(d.progress),
     }));
   } catch {
@@ -197,7 +208,8 @@ function mapLearningBadges(raw) {
     icon: b.badge_icon || 'bi-mortarboard',
     category: 'learning',
     tier: TIER_MAP[b.tier_name] || 'bronze',
-    earnedAt: b.earned ? b.earnedAt || new Date().toISOString() : undefined,
+    earned: Boolean(b.earned),
+    earnedAt: b.earned ? b.earnedAt || undefined : undefined,
     progress: b.earned ? 100 : 0,
   }));
 }
@@ -272,7 +284,7 @@ export function useAchievements({ positions = [], totalReturnPct = 0 } = {}) {
   return {
     loading,
     achievements: all,
-    earnedCount: all.filter((a) => Boolean(a.earnedAt)).length,
+    earnedCount: all.filter(isEarned).length,
     totalCount: all.length,
   };
 }

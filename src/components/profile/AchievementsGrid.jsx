@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import { Trophy, Lock, X, ArrowRight } from 'lucide-react';
-import { useAchievements } from '@/hooks/useAchievements';
+import { useAchievements, isEarned } from '@/hooks/useAchievements';
 import './achievements-grid.css';
 
 const CATEGORY_LABEL = {
@@ -38,7 +38,7 @@ function AchievementModal({ achievement, onClose }) {
   if (!achievement) return null;
   if (typeof document === 'undefined') return null;
 
-  const earned = Boolean(achievement.earnedAt);
+  const earned = isEarned(achievement);
 
   return createPortal(
     <div className="ag-overlay" role="dialog" aria-modal="true" onMouseDown={onClose}>
@@ -61,7 +61,9 @@ function AchievementModal({ achievement, onClose }) {
         </div>
         {earned ? (
           <div className="ag-modal-ok">
-            Earned on {new Date(achievement.earnedAt).toLocaleDateString()}
+            {achievement.earnedAt
+              ? `Earned on ${new Date(achievement.earnedAt).toLocaleDateString()}`
+              : 'Earned'}
           </div>
         ) : (
           <div className="ag-modal-prog">
@@ -84,11 +86,11 @@ export function AchievementsGrid({ positions = [], totalReturnPct = 0, variant =
   const gridClass = variant === 'compact' ? 'ag-grid ag-grid-compact' : 'ag-grid';
 
   const sorted = useMemo(() => {
-    const earned = achievements.filter((a) => a.earnedAt);
+    const earned = achievements.filter((a) => isEarned(a));
     const inProg = achievements
-      .filter((a) => !a.earnedAt && (a.progress ?? 0) > 0)
+      .filter((a) => !isEarned(a) && (a.progress ?? 0) > 0)
       .sort((a, b) => (b.progress ?? 0) - (a.progress ?? 0));
-    const locked = achievements.filter((a) => !a.earnedAt && !(a.progress > 0));
+    const locked = achievements.filter((a) => !isEarned(a) && !(a.progress > 0));
     return [...earned, ...inProg, ...locked];
   }, [achievements]);
 
@@ -115,7 +117,7 @@ export function AchievementsGrid({ positions = [], totalReturnPct = 0, variant =
       ) : (
         <div className={gridClass}>
           {sorted.map((a) => {
-            const earned = Boolean(a.earnedAt);
+            const earned = isEarned(a);
             const tier = TIER_TONE[a.tier] || 'bronze';
             const bi = a.icon && a.icon.startsWith('bi-') ? a.icon : null;
             return (
@@ -141,7 +143,9 @@ export function AchievementsGrid({ positions = [], totalReturnPct = 0, variant =
                 <div className="ag-tile-name">{a.name}</div>
                 <div className="ag-tile-meta">
                   {earned
-                    ? `Earned ${new Date(a.earnedAt).toLocaleDateString()}`
+                    ? a.earnedAt
+                      ? `Earned ${new Date(a.earnedAt).toLocaleDateString()}`
+                      : 'Earned'
                     : a.progress
                       ? `${a.progress}% progress`
                       : 'Locked'}

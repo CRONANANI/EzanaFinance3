@@ -138,6 +138,7 @@ export function mapAchievements(achievementsState) {
     name: a.name || a.title || 'Achievement',
     category: (a.category || 'TRADING').toUpperCase(),
     iconGlyph: a.iconGlyph || ACH_GLYPHS[(a.category || 'trading').toLowerCase()] || '★',
+    earned: Boolean(a.earned ?? a.earnedAt ?? a.earned_at),
     earnedAt: a.earnedAt ?? a.earned_at ?? null,
     progress: a.progress ?? 0,
   }));
@@ -215,7 +216,7 @@ export function generateHeuristicQuests({ metrics, achievementsState, activity }
     });
   }
 
-  const earnedAchievements = achList.filter((a) => a.earnedAt || a.earned_at).length;
+  const earnedAchievements = achList.filter((a) => a.earned || a.earnedAt || a.earned_at).length;
   if (earnedAchievements < 3) {
     quests.push({
       key: 'browse-learning',

@@ -9,7 +9,7 @@ import {
 } from './profile-design-tokens';
 
 export function AchievementCard({ achievement }) {
-  const earned = !!achievement.earnedAt;
+  const earned = Boolean(achievement.earned ?? achievement.earnedAt);
   const inProgress = !earned && (achievement.progress ?? 0) > 0;
   const accent = achievementCategoryAccents[achievement.category] || page.inkMuted;
 
@@ -21,12 +21,14 @@ export function AchievementCard({ achievement }) {
     }
   }, [inProgress, achievement.progress]);
 
-  const earnedDate = earned
-    ? new Date(achievement.earnedAt).toLocaleDateString('en-US', {
-        month: 'numeric',
-        day: 'numeric',
-      })
-    : '';
+  /* Only a recorded date is shown (QA RET-17); live-derived badges have none. */
+  const earnedDate =
+    earned && achievement.earnedAt
+      ? new Date(achievement.earnedAt).toLocaleDateString('en-US', {
+          month: 'numeric',
+          day: 'numeric',
+        })
+      : '';
 
   const surface = earned ? page.surface : page.surfaceMuted;
   const opacity = !earned && (achievement.progress ?? 0) === 0 ? 0.55 : 1;
@@ -83,7 +85,9 @@ export function AchievementCard({ achievement }) {
       </div>
       <div style={{ fontSize: 11, color: page.inkMuted }}>
         {earned
-          ? `Earned ${earnedDate}`
+          ? earnedDate
+            ? `Earned ${earnedDate}`
+            : 'Earned'
           : inProgress
             ? `${Math.round((achievement.progress ?? 0) * 100)}% progress`
             : 'Locked'}
