@@ -48,6 +48,31 @@ function avatarGradientFromId(id) {
   return [`hsl(${hue}, 55%, 45%)`, `hsl(${(hue + 40) % 360}, 50%, 32%)`];
 }
 
+/* The API embeds { id, author, excerpt, created_at } as `quotedPost` (QA RET-16). */
+function normalizeQuotedPost(q) {
+  if (!q || typeof q !== 'object') return null;
+  const a = q.author || {};
+  const displayName = (a.display_name || '').trim() || 'Member';
+  return {
+    id: q.id,
+    content: q.excerpt ?? q.content ?? '',
+    author: {
+      id: a.id,
+      display_name: displayName,
+      username: a.username || '',
+      avatar_url: a.avatar_url || '',
+      tier: a.tier || 'novice',
+      isPartner: !!a.isPartner,
+      partnerType: a.partnerType || null,
+      creatorTier: a.creatorTier || (a.isPartner ? 'creator' : null),
+      initials: getInitials(displayName, a.username),
+      gradient: avatarGradientFromId(a.id),
+    },
+    minsAgo: minsAgo(q.created_at),
+    timeAgo: formatRelativeTime(q.created_at),
+  };
+}
+
 /**
  * Map an API community post row to the PostCard prop shape.
  */
@@ -91,6 +116,6 @@ export function normalizePost(p) {
     skillRating: author.skill_rating ?? author.skillRating ?? null,
     title: p.title ?? null,
     hashtags: p.hashtags ?? null,
-    quotedPost: p.quoted_post ?? null,
+    quotedPost: normalizeQuotedPost(p.quotedPost ?? p.quoted_post),
   };
 }

@@ -72,6 +72,75 @@ function mapAuthor(prof, viewerId) {
   };
 }
 
+/* ── Quote posts (QA RET-16) ──────────────────────────────────────────
+   `community_posts.quoted_post_id` arrives with migration 20261026131000.
+   Until it is applied, PostgREST answers 42703 (select) / PGRST204 (insert)
+   for the column; both paths fall back to the pre-migration shape so the
+   feed and posting keep working. */
+const QUOTE_EXCERPT_LEN = 200;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isMissingColumnError(error, column) {
+  if (!error) return false;
+  if (error.code === '42703' || error.code === 'PGRST204') {
+    return !column || String(error.message || '').includes(column);
+  }
+  return false;
+}
+
+/* Run a select with `quoted_post_id`, retrying without it when the column
+   does not exist yet. `run(cols)` returns the supabase-js result. */
+async function selectWithQuote(run, cols) {
+  const res = await run(`${cols}, quoted_post_id`);
+  if (isMissingColumnError(res.error, 'quoted_post_id')) return run(cols);
+  return res;
+}
+
+/* Embed { id, author, excerpt, created_at } for each post's quoted post, or
+   null when the quoted post is gone, hidden, or across a block. */
+async function attachQuotedPosts(viewerId, posts, profileMap) {
+  const ids = [...new Set(posts.map((p) => p.quoted_post_id).filter(Boolean))];
+  if (!ids.length) return posts.map((p) => ({ ...p, quotedPost: null }));
+  const { data: rows, error } = await admin
+    .from('community_posts')
+    .select('id, user_id, content, created_at, moderation_hidden_at')
+    .in('id', ids);
+  if (error) {
+    console.error('[community posts] quoted posts', error.message);
+    return posts.map((p) => ({ ...p, quotedPost: null }));
+  }
+  const visible = await visibleTo(admin, viewerId, rows || []);
+  const missingAuthors = [...new Set(visible.map((r) => r.user_id))].filter(
+    (id) => !profileMap[id],
+  );
+  let extra = {};
+  if (missingAuthors.length) {
+    const { data: profs } = await admin
+      .from('profiles')
+      .select('id, username, user_settings, is_partner, partner_type, creator_tier')
+      .in('id', missingAuthors);
+    extra = Object.fromEntries((profs || []).map((pr) => [pr.id, pr]));
+  }
+  const byId = new Map(
+    visible.map((r) => {
+      const text = String(r.content || '');
+      return [
+        r.id,
+        {
+          id: r.id,
+          author: mapAuthor(profileMap[r.user_id] || extra[r.user_id], viewerId),
+          excerpt: text.length > QUOTE_EXCERPT_LEN ? `${text.slice(0, QUOTE_EXCERPT_LEN)}…` : text,
+          created_at: r.created_at,
+        },
+      ];
+    }),
+  );
+  return posts.map((p) => ({
+    ...p,
+    quotedPost: p.quoted_post_id ? byId.get(p.quoted_post_id) || null : null,
+  }));
+}
+
 function engagementScore(p) {
   return (p.likes_count || 0) + (p.comments_count || 0) + (p.reposts_count || 0);
 }
@@ -168,7 +237,8 @@ async function buildEnrichedResponse(supabase, user, rawList) {
     votedMap = Object.fromEntries((votes || []).map((v) => [v.post_id, v.option_id]));
   }
 
-  const enrichedPosts = list.map((post) => ({
+  const withQuotes = await attachQuotedPosts(user?.id, list, profileMap);
+  const enrichedPosts = withQuotes.map((post) => ({
     ...post,
     author: {
       ...(mapAuthor(profileMap[post.user_id], user?.id) || {}),
@@ -201,12 +271,16 @@ export async function GET(request) {
 
     if (tab === 'signal') {
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const { data: batch, error } = await supabase
-        .from('community_posts')
-        .select(selectCols)
-        .gt('created_at', sevenDaysAgo)
-        .is('parent_post_id', null)
-        .limit(200);
+      const { data: batch, error } = await selectWithQuote(
+        (cols) =>
+          supabase
+            .from('community_posts')
+            .select(cols)
+            .gt('created_at', sevenDaysAgo)
+            .is('parent_post_id', null)
+            .limit(200),
+        selectCols,
+      );
 
       if (error) {
         console.error('Fetch signal posts error:', error);
@@ -240,13 +314,17 @@ export async function GET(request) {
         return NextResponse.json({ posts: withDemoPosts(user, []) });
       }
 
-      const { data: posts, error } = await supabase
-        .from('community_posts')
-        .select(selectCols)
-        .in('user_id', ids)
-        .is('parent_post_id', null)
-        .order('created_at', { ascending: false })
-        .range(from, to);
+      const { data: posts, error } = await selectWithQuote(
+        (cols) =>
+          supabase
+            .from('community_posts')
+            .select(cols)
+            .in('user_id', ids)
+            .is('parent_post_id', null)
+            .order('created_at', { ascending: false })
+            .range(from, to),
+        selectCols,
+      );
 
       if (error) {
         console.error('Fetch legendary posts error:', error);
@@ -258,13 +336,17 @@ export async function GET(request) {
     }
 
     if (tab === 'discussions') {
-      const { data: posts, error } = await supabase
-        .from('community_posts')
-        .select(selectCols)
-        .is('parent_post_id', null)
-        .ilike('content', '%#discussion%')
-        .order('created_at', { ascending: false })
-        .range(from, to);
+      const { data: posts, error } = await selectWithQuote(
+        (cols) =>
+          supabase
+            .from('community_posts')
+            .select(cols)
+            .is('parent_post_id', null)
+            .ilike('content', '%#discussion%')
+            .order('created_at', { ascending: false })
+            .range(from, to),
+        selectCols,
+      );
 
       if (error) {
         console.error('Fetch discussions error:', error);
@@ -277,11 +359,11 @@ export async function GET(request) {
 
     /** Popular / trending: sort by likes + comments + reposts (batched then sliced) */
     if (tab === 'trending' || tab === 'popular') {
-      const { data: batch, error } = await supabase
-        .from('community_posts')
-        .select(selectCols)
-        .is('parent_post_id', null)
-        .limit(500);
+      const { data: batch, error } = await selectWithQuote(
+        (cols) =>
+          supabase.from('community_posts').select(cols).is('parent_post_id', null).limit(500),
+        selectCols,
+      );
 
       if (error) {
         console.error('Fetch posts error:', error);
@@ -294,7 +376,9 @@ export async function GET(request) {
       return await buildEnrichedResponse(supabase, user, filtered);
     }
 
-    let query = supabase.from('community_posts').select(selectCols).is('parent_post_id', null);
+    /* Filters are collected and applied per attempt so the quoted_post_id
+       fallback can rebuild the query (QA RET-16). */
+    const filters = [];
 
     if (tab === 'following' && user) {
       const { data: followingRows } = await supabase
@@ -309,7 +393,7 @@ export async function GET(request) {
         });
       }
       const authorIds = [...new Set([...followingIds, user.id])];
-      query = query.in('user_id', authorIds);
+      filters.push((q) => q.in('user_id', authorIds));
     } else if (tab === 'friends' && user) {
       const [{ data: outRows }, { data: inRows }] = await Promise.all([
         supabase.from('user_follows').select('following_id').eq('follower_id', user.id),
@@ -325,11 +409,11 @@ export async function GET(request) {
         });
       }
       const authorIds = [...new Set([...mutualIds, user.id])];
-      query = query.in('user_id', authorIds);
+      filters.push((q) => q.in('user_id', authorIds));
     } else if (tab === 'friends' && !user) {
       return NextResponse.json({ posts: [], message: "Sign in to see friends' posts" });
     } else if (tab === 'my-posts' && user) {
-      query = query.eq('user_id', user.id);
+      filters.push((q) => q.eq('user_id', user.id));
     } else if (tab === 'my-posts' && !user) {
       return NextResponse.json({ posts: [], message: 'Sign in to see your posts' });
     } else if (tab === 'following' && !user) {
@@ -339,9 +423,11 @@ export async function GET(request) {
       });
     }
 
-    query = query.order('created_at', { ascending: false }).range(from, to);
-
-    const { data: posts, error } = await query;
+    const { data: posts, error } = await selectWithQuote((cols) => {
+      let q = supabase.from('community_posts').select(cols).is('parent_post_id', null);
+      for (const f of filters) q = f(q);
+      return q.order('created_at', { ascending: false }).range(from, to);
+    }, selectCols);
 
     if (error) {
       console.error('Fetch posts error:', error);
@@ -442,6 +528,14 @@ export async function POST(request) {
       );
     }
 
+    const quoted_post_id =
+      !isComment && typeof body.quoted_post_id === 'string' && body.quoted_post_id
+        ? body.quoted_post_id
+        : null;
+    if (quoted_post_id && !UUID_RE.test(quoted_post_id)) {
+      return NextResponse.json({ error: 'Quoted post not found' }, { status: 400 });
+    }
+
     let parentPostForNotif = null;
     if (isComment) {
       const { data: parent, error: pErr } = await admin
@@ -461,6 +555,20 @@ export async function POST(request) {
     if (termsGate) return termsGate;
     if (parentPostForNotif && (await isBlockedPair(admin, user.id, parentPostForNotif.user_id))) {
       return NextResponse.json({ error: 'You cannot reply to this post.' }, { status: 403 });
+    }
+
+    /* The quoted post must exist and be visible to the poster (not
+       moderation-hidden, not across a block). */
+    if (quoted_post_id) {
+      const { data: quoted, error: qErr } = await admin
+        .from('community_posts')
+        .select('id, user_id, moderation_hidden_at')
+        .eq('id', quoted_post_id)
+        .maybeSingle();
+      const visibleQuoted = quoted && !qErr ? await visibleTo(admin, user.id, [quoted]) : [];
+      if (!visibleQuoted.length) {
+        return NextResponse.json({ error: 'Quoted post not found' }, { status: 400 });
+      }
     }
 
     // Partner-only post formats (Analyst Take / Trade Idea / Market Brief).
@@ -486,23 +594,33 @@ export async function POST(request) {
       }
     }
 
-    const { data: post, error } = await supabase
+    const insertRow = {
+      user_id: user.id,
+      content: content.trim(),
+      mentioned_ticker: isComment ? null : mentioned_ticker || null,
+      parent_post_id: parent_post_id || null,
+      image_url: isComment ? null : image_url,
+      poll_data: isComment ? null : poll_data,
+      ticker_embed: isComment ? null : ticker_embed,
+      post_type,
+      disclosure,
+    };
+    const returnCols =
+      'id, user_id, content, mentioned_ticker, image_url, poll_data, ticker_embed, post_type, disclosure, likes_count, comments_count, reposts_count, created_at, parent_post_id';
+    let { data: post, error } = await supabase
       .from('community_posts')
-      .insert({
-        user_id: user.id,
-        content: content.trim(),
-        mentioned_ticker: isComment ? null : mentioned_ticker || null,
-        parent_post_id: parent_post_id || null,
-        image_url: isComment ? null : image_url,
-        poll_data: isComment ? null : poll_data,
-        ticker_embed: isComment ? null : ticker_embed,
-        post_type,
-        disclosure,
-      })
-      .select(
-        'id, user_id, content, mentioned_ticker, image_url, poll_data, ticker_embed, post_type, disclosure, likes_count, comments_count, reposts_count, created_at, parent_post_id',
-      )
+      .insert(quoted_post_id ? { ...insertRow, quoted_post_id } : insertRow)
+      .select(quoted_post_id ? `${returnCols}, quoted_post_id` : returnCols)
       .single();
+    if (quoted_post_id && isMissingColumnError(error, 'quoted_post_id')) {
+      /* Migration 20261026131000 not applied yet: keep the post, drop the quote. */
+      console.warn('[community posts] quoted_post_id column missing; posting without the quote');
+      ({ data: post, error } = await supabase
+        .from('community_posts')
+        .insert(insertRow)
+        .select(returnCols)
+        .single());
+    }
 
     if (error) {
       console.error('Insert post error:', error);
@@ -572,9 +690,13 @@ export async function POST(request) {
       .eq('user_id', user.id)
       .maybeSingle();
 
+    const [postWithQuote] = await attachQuotedPosts(user.id, [post], {
+      [user.id]: prof,
+    });
+
     return NextResponse.json({
       post: {
-        ...post,
+        ...postWithQuote,
         author: {
           ...(mapAuthor(prof, user.id) || {}),
           tier: eloRow?.tier || 'novice',

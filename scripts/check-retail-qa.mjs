@@ -8,6 +8,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { buildCommunityImagePath } from '../src/lib/community-utils.js';
 import { createMockSupabase } from './lib/mock-supabase.mjs';
+import { normalizePost } from '../src/components/community/redesign_v2/normalizePost.js';
 import {
   executeMockTrade,
   resetMockPortfolio,
@@ -213,4 +214,36 @@ test('learning progress writes run on the admin client; no module-load admin', (
   );
   assert.match(src, /syncTrackAndBadges\(admin,/);
   assert.match(src, /updateBrokerageFlags\(admin,/);
+});
+
+/* ── RET-16 ──────────────────────────────────────────────────────────── */
+
+test('feed card shape carries the embedded quoted post', () => {
+  const card = normalizePost({
+    id: 'p2',
+    content: 'my take',
+    author: { id: UID, display_name: 'Ann' },
+    created_at: new Date().toISOString(),
+    quoted_post_id: 'p1',
+    quotedPost: {
+      id: 'p1',
+      author: { id: 'u2', display_name: 'Bo', username: 'bo' },
+      excerpt: 'original idea',
+      created_at: new Date().toISOString(),
+    },
+  });
+  assert.equal(card.quotedPost.id, 'p1');
+  assert.equal(card.quotedPost.content, 'original idea');
+  assert.equal(card.quotedPost.author.display_name, 'Bo');
+  assert.equal(normalizePost({ id: 'x', content: 'y' }).quotedPost, null);
+});
+
+test('community posts route validates, stores and embeds quoted posts', () => {
+  const src = read('src/app/api/community/posts/route.js');
+  assert.match(src, /body\.quoted_post_id/);
+  assert.match(src, /Quoted post not found/);
+  assert.match(src, /insertRow, quoted_post_id/);
+  assert.match(src, /attachQuotedPosts\(user\?\.id, list, profileMap\)/);
+  const composer = read('src/components/community/redesign_v2/EvoComposer.jsx');
+  assert.match(composer, /quoted_post_id: quoteMode && quotedPost\?\.id/);
 });
