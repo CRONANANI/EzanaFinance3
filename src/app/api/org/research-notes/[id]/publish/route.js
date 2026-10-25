@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { memberHasPermission } from '@/lib/org-permissions-server';
 import { embedViaSupabase, supaEmbedConfigured } from '@/lib/embeddings-gte';
 import { MANAGER_ROLES, buildEmbedText } from '../../_shared';
 
@@ -33,9 +34,21 @@ export const POST = withApiGuard(
       .maybeSingle();
     if (!note) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
+    // Publishing someone else's note is an approval: it needs a manager role
+    // (RLS "managers moderate notes") AND approve_deliverables, except for the
+    // executive tier, which owns the whole library (ORG-7).
     const isAuthor = note.author_id === member.user_id;
-    if (!isAuthor && !assertOrgRole(member, MANAGER_ROLES)) {
-      return NextResponse.json({ error: 'Not allowed' }, { status: 403 });
+    if (!isAuthor) {
+      const canApprove =
+        assertOrgRole(member, MANAGER_ROLES) &&
+        (member.role === 'executive' ||
+          (await memberHasPermission(supabase, member, 'approve_deliverables')));
+      if (!canApprove) {
+        return NextResponse.json(
+          { error: 'approve_deliverables permission required' },
+          { status: 403 },
+        );
+      }
     }
 
     const blockers = [];

@@ -1231,7 +1231,7 @@ export function MeetingMode({ initialData = null }) {
               {payload.recordersConnected && <span className="mt2-iconbtn__dot" />}
             </button>
           )}
-          {viewer.canManage && (
+          {(viewer.canCreateEvents ?? viewer.canManage) && (
             <button
               type="button"
               className="mt2-btn mt2-btn--primary"
@@ -1249,10 +1249,14 @@ export function MeetingMode({ initialData = null }) {
           <p style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.4rem' }}>
             No meetings yet
           </p>
-          <p style={{ marginBottom: viewer.canManage ? '1rem' : 0 }}>
+          <p
+            style={{
+              marginBottom: (viewer.canCreateEvents ?? viewer.canManage) ? '1rem' : 0,
+            }}
+          >
             Schedule a committee, sector or team session to start building the library.
           </p>
-          {viewer.canManage && (
+          {(viewer.canCreateEvents ?? viewer.canManage) && (
             <button
               type="button"
               className="mt2-btn mt2-btn--primary"

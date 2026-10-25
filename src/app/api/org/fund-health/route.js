@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
-import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { getCurrentOrgMember } from '@/lib/org-trading-server';
+import { memberHasPermission } from '@/lib/org-permissions-server';
 import { getOrgPositionBook } from '@/lib/org-position-book';
 import { getBenchmarkSymbol } from '@/lib/org-benchmark';
 
@@ -13,7 +14,7 @@ const DAY = 86400000;
 
 /**
  * GET /api/org/fund-health — the "are these numbers trustworthy?" signal for a
- * faculty advisor. EXECUTIVE ONLY (403 otherwise). Reads only real data:
+ * faculty advisor. view_analytics ONLY (executive default; 403 otherwise). Reads only real data:
  * price freshness, snapshot recency, unpriced/unclassified positions, and
  * benchmark provenance. Brokerage sync is null (no per-org sync record exists
  * in the schema — the card omits that row rather than inventing one).
@@ -23,8 +24,9 @@ export const GET = withApiGuard(
     const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
-    if (!assertOrgRole(member, ['executive'])) {
-      return NextResponse.json({ error: 'Executive access required' }, { status: 403 });
+    // ORG-7: gated on view_analytics (executive tier default, grantable).
+    if (!(await memberHasPermission(supabase, member, 'view_analytics'))) {
+      return NextResponse.json({ error: 'view_analytics permission required' }, { status: 403 });
     }
     const orgId = member.org_id;
 

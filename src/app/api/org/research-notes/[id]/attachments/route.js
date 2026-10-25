@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { memberHasPermission } from '@/lib/org-permissions-server';
 import { MANAGER_ROLES } from '../../_shared';
 
 export const dynamic = 'force-dynamic';
@@ -129,6 +130,12 @@ export const POST = withApiGuard(
     const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
+    if (!(await memberHasPermission(supabase, member, 'upload_deliverables'))) {
+      return NextResponse.json(
+        { error: 'upload_deliverables permission required' },
+        { status: 403 },
+      );
+    }
     const { id } = await context.params;
 
     const note = await loadNote(supabase, member.org_id, id);

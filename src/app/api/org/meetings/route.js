@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { memberHasPermission } from '@/lib/org-permissions-server';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -25,6 +26,10 @@ export const GET = withApiGuard(
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     const canManage = assertOrgRole(member, MANAGER_ROLES);
+    // Scheduling is gated on the create_events permission (ORG-7), on top of
+    // the manager role that RLS on org_meetings requires.
+    const canCreateEvents =
+      canManage && (await memberHasPermission(supabase, member, 'create_events'));
 
     const { data, error } = await supabase
       .from('org_meetings')
@@ -91,6 +96,7 @@ export const GET = withApiGuard(
         memberId: member.id,
         role: member.role,
         canManage,
+        canCreateEvents,
       },
     });
   },
@@ -106,6 +112,9 @@ export const POST = withApiGuard(
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!assertOrgRole(member, MANAGER_ROLES)) {
       return NextResponse.json({ error: 'Manager role required' }, { status: 403 });
+    }
+    if (!(await memberHasPermission(supabase, member, 'create_events'))) {
+      return NextResponse.json({ error: 'create_events permission required' }, { status: 403 });
     }
 
     let body;

@@ -4,7 +4,9 @@
    Usage: node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-qa.mjs */
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createMockSupabase } from './lib/mock-supabase.mjs';
 import { buildTeamCalendar, teamHubEyebrow } from '../src/lib/org-team-calendar.js';
+import { ASSIGNABLE_PERMISSIONS, memberHasPermission } from '../src/lib/org-permissions-server.js';
 
 const NOW = Date.parse('2026-10-25T12:00:00Z');
 
@@ -46,4 +48,40 @@ test('ORG-6: eyebrow derives the term from the current cohort', () => {
   assert.equal(teamHubEyebrow('Spring 2027'), 'Team Hub · Spring 2027');
   assert.equal(teamHubEyebrow(null), 'Team Hub');
   assert.equal(teamHubEyebrow('  '), 'Team Hub');
+});
+
+/* ── ORG-7: grantable permissions are enforced ───────────────────────── */
+
+test('ORG-7: tier defaults and overrides drive memberHasPermission', async () => {
+  const db = createMockSupabase({
+    seed: { org_member_permissions: [{ org_member_id: 'jr', permission_key: 'create_events' }] },
+  });
+  const exec = { id: 'ex', role: 'executive', is_active: true };
+  const pm = { id: 'pm', role: 'portfolio_manager', sub_role: 'PM', is_active: true };
+  const jr = { id: 'jr', role: 'portfolio_manager', sub_role: 'Junior PM', is_active: true };
+  assert.equal(await memberHasPermission(db, exec, 'create_events'), true);
+  assert.equal(await memberHasPermission(db, exec, 'view_analytics'), true);
+  assert.equal(await memberHasPermission(db, pm, 'create_events'), false);
+  assert.equal(await memberHasPermission(db, pm, 'view_team_analytics'), true);
+  assert.equal(await memberHasPermission(db, pm, 'approve_deliverables'), false);
+  assert.equal(await memberHasPermission(db, jr, 'create_events'), true, 'override grants it');
+  assert.equal(
+    await memberHasPermission(db, { ...exec, is_active: false }, 'view_analytics'),
+    false,
+  );
+  assert.equal(await memberHasPermission(db, null, 'view_analytics'), false);
+  assert.equal(await memberHasPermission(db, pm, ['view_analytics', 'view_team_analytics']), true);
+});
+
+test('ORG-7: mentor_juniors is hidden from the grant UI until it gates something', () => {
+  assert.equal(ASSIGNABLE_PERMISSIONS.includes('mentor_juniors'), false);
+  for (const k of [
+    'upload_deliverables',
+    'view_team_analytics',
+    'view_analytics',
+    'create_events',
+    'approve_deliverables',
+  ]) {
+    assert.ok(ASSIGNABLE_PERMISSIONS.includes(k), k);
+  }
 });

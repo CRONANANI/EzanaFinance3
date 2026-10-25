@@ -13,7 +13,9 @@ export const ASSIGNABLE_PERMISSIONS = [
   'create_events',
   'approve_deliverables',
   'send_to_team',
-  'mentor_juniors',
+  // 'mentor_juniors' is intentionally NOT assignable: no route or screen gates
+  // on it yet, so granting it would do nothing (QA ORG-7). Re-add it here once
+  // a feature actually checks it.
 ];
 
 const GRANTOR_PERMISSION = 'grant_permissions';
@@ -22,6 +24,40 @@ const GRANTOR_PERMISSION = 'grant_permissions';
 // getMemberPermissions reads it internally; keeping the import named documents
 // that the effective/default permission math is tier-driven.
 export const PERMISSION_TIER_KEYS = Object.keys(PERMISSION_TIERS);
+
+/**
+ * Per-member permission overrides (org_member_permissions.permission_key[]).
+ * Read with the caller's client; RLS lets a member read their own rows.
+ */
+export async function loadMemberOverrides(supabase, memberId) {
+  if (!memberId) return [];
+  const { data } = await supabase
+    .from('org_member_permissions')
+    .select('permission_key')
+    .eq('org_member_id', memberId);
+  return (data || []).map((r) => r.permission_key);
+}
+
+/**
+ * Server-side permission gate: does `member` hold ANY of `keys`, from its
+ * tier defaults (PERMISSION_TIERS via getMemberPermissions) plus per-member
+ * overrides? Pass `overrides` when already loaded to skip the read.
+ *
+ * Note: this is a NECESSARY check layered on top of each route's existing role
+ * check and RLS; a grant cannot widen what RLS allows a role to write.
+ *
+ * @param supabase caller-bound client
+ * @param {{ id: string, role: string, sub_role?: string, is_active?: boolean } | null} member
+ * @param {string | string[]} keys
+ * @param {string[]} [overrides]
+ */
+export async function memberHasPermission(supabase, member, keys, overrides) {
+  if (!member || member.is_active === false) return false;
+  const wanted = Array.isArray(keys) ? keys : [keys];
+  const ov = Array.isArray(overrides) ? overrides : await loadMemberOverrides(supabase, member.id);
+  const effective = getMemberPermissions(member, ov);
+  return wanted.some((k) => effective.includes(k));
+}
 
 /* Does `viewer` hold grant_permissions (via role/sub_role defaults)? */
 export function viewerCanGrant(viewer, viewerOverrides = []) {
@@ -35,7 +71,13 @@ export async function canGrantTo(supabase, viewer, memberId) {
     .from('org_member_permissions')
     .select('permission_key')
     .eq('org_member_id', viewer.id);
-  if (!viewerCanGrant(viewer, (myOverrides || []).map((r) => r.permission_key))) return false;
+  if (
+    !viewerCanGrant(
+      viewer,
+      (myOverrides || []).map((r) => r.permission_key),
+    )
+  )
+    return false;
 
   const { data: target } = await supabase
     .from('org_members')
