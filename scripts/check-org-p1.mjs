@@ -16,6 +16,7 @@ import { resolveProvisionRoleTier } from '../src/lib/org-provision.js';
 import { targetMatchesMember, submitAssignment } from '../src/lib/org-assignment-submit.js';
 import { submitJudgeScorecard, validateScores } from '../src/lib/competitions/judge-submit.js';
 import { judgeRateLimited } from '../src/lib/competitions/judge-rate-limit.js';
+import { computeResults } from '../src/lib/competitions/results.js';
 
 // ── ORG-1 ──────────────────────────────────────────────────────────────────
 test('ORG-1: invite link points at the org-login accept screen', () => {
@@ -335,4 +336,30 @@ test('ORG-5: judge rate limit is 120/min keyed by the token hash, never the raw 
   assert.equal(seen[0].windowMs, 60_000);
   assert.match(seen[0].key, /^judge:[0-9a-f]{64}$/);
   assert.ok(!seen[0].key.includes(token));
+});
+
+// ── ORG-16 ─────────────────────────────────────────────────────────────────
+test('ORG-16: computeResults throws when a write fails instead of reporting success', async () => {
+  const db = createMockSupabase({
+    seed: {
+      pitch_rubric_criteria: [{ id: 'c1', competition_id: 'comp-1', weight: 1, max_score: 10 }],
+      pitch_teams: [{ id: 't1', competition_id: 'comp-1' }],
+      pitch_score_summaries: [{ team_id: 't1', judge_id: 'j1', submitted: true }],
+      pitch_scores: [{ team_id: 't1', judge_id: 'j1', criterion_id: 'c1', score: 5 }],
+    },
+  });
+  const rows = await computeResults(db, 'comp-1');
+  assert.equal(rows[0].rank, 1);
+
+  const failing = {
+    ...db,
+    from: (t) =>
+      t === 'pitch_results'
+        ? {
+            delete: () => ({ eq: async () => ({ error: null }) }),
+            insert: async () => ({ error: { message: 'insert failed' } }),
+          }
+        : db.from(t),
+  };
+  await assert.rejects(() => computeResults(failing, 'comp-1'), /write results: insert failed/);
 });

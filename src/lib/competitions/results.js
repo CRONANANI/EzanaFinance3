@@ -9,14 +9,26 @@
  */
 import { weightedTotal } from './scoring';
 
-/** Recompute + upsert results for one competition. Returns the ranked rows. */
+/** Throw on a Supabase error so a caller can never publish half-computed results. */
+function must(res, what) {
+  if (res?.error) throw new Error(`${what}: ${res.error.message || 'database error'}`);
+  return res;
+}
+
+/** Recompute + upsert results for one competition. Returns the ranked rows.
+ *  Throws when any read or write fails (ORG-16). */
 export async function computeResults(admin, competitionId) {
-  const [{ data: criteria }, { data: teams }, { data: summaries }, { data: scores }] = await Promise.all([
-    admin.from('pitch_rubric_criteria').select('id, weight, max_score').eq('competition_id', competitionId),
+  const reads = await Promise.all([
+    admin
+      .from('pitch_rubric_criteria')
+      .select('id, weight, max_score')
+      .eq('competition_id', competitionId),
     admin.from('pitch_teams').select('id').eq('competition_id', competitionId),
     admin.from('pitch_score_summaries').select('team_id, judge_id, submitted'),
     admin.from('pitch_scores').select('team_id, judge_id, criterion_id, score'),
   ]);
+  ['rubric', 'teams', 'score summaries', 'scores'].forEach((what, i) => must(reads[i], what));
+  const [{ data: criteria }, { data: teams }, { data: summaries }, { data: scores }] = reads;
 
   const teamIds = new Set((teams || []).map((t) => t.id));
   // (team -> set of judges who submitted)
@@ -43,7 +55,12 @@ export async function computeResults(admin, competitionId) {
     const judges = submittedJudges.get(t.id);
     const judgeCount = judges ? judges.size : 0;
     if (!judgeCount) {
-      rows.push({ competition_id: competitionId, team_id: t.id, weighted_total: null, judge_count: 0 });
+      rows.push({
+        competition_id: competitionId,
+        team_id: t.id,
+        weighted_total: null,
+        judge_count: 0,
+      });
       continue;
     }
     // Average each criterion across submitted judges, then weight to 0..100.
@@ -51,11 +68,18 @@ export async function computeResults(admin, competitionId) {
     const crit = byTeamCrit.get(t.id) || new Map();
     for (const [cid, arr] of crit) avgByCrit[cid] = arr.reduce((a, b) => a + b, 0) / arr.length;
     const { total } = weightedTotal(criteria || [], avgByCrit);
-    rows.push({ competition_id: competitionId, team_id: t.id, weighted_total: total, judge_count: judgeCount });
+    rows.push({
+      competition_id: competitionId,
+      team_id: t.id,
+      weighted_total: total,
+      judge_count: judgeCount,
+    });
   }
 
   // Rank by weighted_total desc; teams with no scores rank null.
-  const scored = rows.filter((r) => r.weighted_total != null).sort((a, b) => b.weighted_total - a.weighted_total);
+  const scored = rows
+    .filter((r) => r.weighted_total != null)
+    .sort((a, b) => b.weighted_total - a.weighted_total);
   scored.forEach((r, i) => {
     r.rank = i + 1;
   });
@@ -63,8 +87,12 @@ export async function computeResults(admin, competitionId) {
   const now = new Date().toISOString();
   const upsertRows = rows.map((r) => ({ ...r, rank: r.rank ?? null, computed_at: now }));
   // Replace the competition's results wholesale (idempotent).
-  await admin.from('pitch_results').delete().eq('competition_id', competitionId);
-  if (upsertRows.length) await admin.from('pitch_results').insert(upsertRows);
+  must(
+    await admin.from('pitch_results').delete().eq('competition_id', competitionId),
+    'clear results',
+  );
+  if (upsertRows.length)
+    must(await admin.from('pitch_results').insert(upsertRows), 'write results');
   return upsertRows.sort((a, b) => (a.rank ?? 1e9) - (b.rank ?? 1e9));
 }
 
@@ -89,7 +117,14 @@ export async function teamCriterionBreakdown(admin, competitionId, teamId) {
   return (criteria || []).map((c) => {
     const arr = byCrit.get(c.id) || [];
     const avg = arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
-    return { id: c.id, label: c.label, max_score: c.max_score, weight: c.weight, avg, pct: avg == null ? null : Math.round((avg / c.max_score) * 100) };
+    return {
+      id: c.id,
+      label: c.label,
+      max_score: c.max_score,
+      weight: c.weight,
+      avg,
+      pct: avg == null ? null : Math.round((avg / c.max_score) * 100),
+    };
   });
 }
 
@@ -103,13 +138,19 @@ export async function teamFeedback(admin, teamId) {
   const rows = (summaries || []).filter((s) => s.submitted && s.comment && s.comment.trim());
   if (!rows.length) return [];
   const judgeIds = rows.map((r) => r.judge_id);
-  const { data: judges } = await admin.from('pitch_judges').select('id, full_name, firm').in('id', judgeIds);
+  const { data: judges } = await admin
+    .from('pitch_judges')
+    .select('id, full_name, firm')
+    .in('id', judgeIds);
   const byId = new Map((judges || []).map((j) => [j.id, j]));
   return rows.map((r) => {
     const j = byId.get(r.judge_id) || {};
     const firm = j.firm || 'a judging firm';
     return {
-      label: r.attribute_comment && j.full_name ? `${j.full_name}${j.firm ? `, ${j.firm}` : ''}` : `Judge from ${firm}`,
+      label:
+        r.attribute_comment && j.full_name
+          ? `${j.full_name}${j.firm ? `, ${j.firm}` : ''}`
+          : `Judge from ${firm}`,
       comment: r.comment.trim(),
     };
   });

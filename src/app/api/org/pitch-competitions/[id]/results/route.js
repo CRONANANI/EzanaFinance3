@@ -43,10 +43,16 @@ export const GET = withApiGuard(
     // Determine which teams the caller may see results for.
     let visibleTeamIds = null; // null = all (host)
     if (!isHost) {
-      if (!comp.results_visible) return NextResponse.json({ revealed: false, isHost: false, teams: [] });
-      const { data: myTeams } = await supabase.from('pitch_teams').select('id').eq('competition_id', comp.id).eq('org_id', member.org_id);
+      if (!comp.results_visible)
+        return NextResponse.json({ revealed: false, isHost: false, teams: [] });
+      const { data: myTeams } = await supabase
+        .from('pitch_teams')
+        .select('id')
+        .eq('competition_id', comp.id)
+        .eq('org_id', member.org_id);
       visibleTeamIds = new Set((myTeams || []).map((t) => t.id));
-      if (!visibleTeamIds.size) return NextResponse.json({ revealed: true, isHost: false, teams: [] });
+      if (!visibleTeamIds.size)
+        return NextResponse.json({ revealed: true, isHost: false, teams: [] });
     }
 
     // Detail for one team.
@@ -54,13 +60,29 @@ export const GET = withApiGuard(
       if (visibleTeamIds && !visibleTeamIds.has(teamId)) {
         return NextResponse.json({ error: 'Not allowed' }, { status: 403 });
       }
-      const { data: result } = await admin.from('pitch_results').select('rank, weighted_total, judge_count').eq('competition_id', comp.id).eq('team_id', teamId).maybeSingle();
+      const { data: result } = await admin
+        .from('pitch_results')
+        .select('rank, weighted_total, judge_count')
+        .eq('competition_id', comp.id)
+        .eq('team_id', teamId)
+        .maybeSingle();
       const [breakdown, feedback, { data: team }] = await Promise.all([
         teamCriterionBreakdown(admin, comp.id, teamId),
         teamFeedback(admin, teamId),
-        admin.from('pitch_teams').select('id, team_name, ticker, side').eq('id', teamId).maybeSingle(),
+        admin
+          .from('pitch_teams')
+          .select('id, team_name, ticker, side')
+          .eq('id', teamId)
+          .maybeSingle(),
       ]);
-      return NextResponse.json({ isHost, revealed: comp.results_visible, team, result: result || null, breakdown, feedback });
+      return NextResponse.json({
+        isHost,
+        revealed: comp.results_visible,
+        team,
+        result: result || null,
+        breakdown,
+        feedback,
+      });
     }
 
     // Summary list.
@@ -71,7 +93,14 @@ export const GET = withApiGuard(
       .order('rank', { ascending: true, nullsFirst: false });
     const rows = (results || [])
       .filter((r) => (visibleTeamIds ? visibleTeamIds.has(r.team_id) : true))
-      .map((r) => ({ team_id: r.team_id, team_name: r.pitch_teams?.team_name, ticker: r.pitch_teams?.ticker, rank: r.rank, weighted_total: r.weighted_total, judge_count: r.judge_count }));
+      .map((r) => ({
+        team_id: r.team_id,
+        team_name: r.pitch_teams?.team_name,
+        ticker: r.pitch_teams?.ticker,
+        rank: r.rank,
+        weighted_total: r.weighted_total,
+        judge_count: r.judge_count,
+      }));
     return NextResponse.json({ isHost, revealed: comp.results_visible, teams: rows });
   },
   { requireAuth: true },
@@ -100,23 +129,47 @@ export const POST = withApiGuard(
     const action = body?.action || 'compute';
     const admin = getAdminClient();
 
-    if (action === 'compute' || action === 'publish') {
-      await computeResults(admin, comp.id);
-    }
-    if (action === 'publish') {
-      await supabase.from('pitch_competitions').update({ results_visible: true }).eq('id', comp.id);
-      // Publishing grants the trophies + refreshes council ELO (both idempotent).
-      await awardCompetitionBadges(admin, comp.id);
-      try {
-        await recomputeCouncilElo(admin);
-      } catch {
-        /* ELO refresh is best-effort here; the daily cron reconciles it anyway */
+    // Every DB step is checked (ORG-16): a failure is a 500, never a silent ok.
+    const setVisible = async (visible) => {
+      const { data, error } = await supabase
+        .from('pitch_competitions')
+        .update({ results_visible: visible })
+        .eq('id', comp.id)
+        .select('id');
+      if (error) throw new Error(error.message);
+      if (!data?.length) throw new Error('Competition was not updated');
+    };
+    try {
+      if (action === 'compute' || action === 'publish') {
+        await computeResults(admin, comp.id);
       }
+      if (action === 'publish') {
+        // Trophies first (idempotent), then reveal: a failed badge write leaves
+        // the results hidden rather than revealed without their awards.
+        await awardCompetitionBadges(admin, comp.id);
+        await setVisible(true);
+        try {
+          await recomputeCouncilElo(admin);
+        } catch {
+          /* ELO refresh is best-effort here; the daily cron reconciles it anyway */
+        }
+      }
+      if (action === 'unpublish') {
+        await setVisible(false);
+      }
+    } catch (err) {
+      console.error('[pitch-competitions/results]', action, err?.message || err);
+      return NextResponse.json(
+        { error: `Could not ${action} results. Try again.` },
+        { status: 500 },
+      );
     }
-    if (action === 'unpublish') {
-      await supabase.from('pitch_competitions').update({ results_visible: false }).eq('id', comp.id);
-    }
-    return NextResponse.json({ ok: true, action, results_visible: action === 'publish' ? true : action === 'unpublish' ? false : comp.results_visible });
+    return NextResponse.json({
+      ok: true,
+      action,
+      results_visible:
+        action === 'publish' ? true : action === 'unpublish' ? false : comp.results_visible,
+    });
   },
   { requireAuth: true },
 );
