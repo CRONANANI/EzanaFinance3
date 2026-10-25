@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * GET /api/cron/sync-award-prices
@@ -23,17 +24,6 @@ export const maxDuration = 300;
 const CONCURRENCY = 5;
 const UPSERT_CHUNK = 1000;
 const BUDGET_MS = 240000;
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 const today = () => new Date().toISOString().slice(0, 10);
 const nextDay = (iso) => new Date(Date.parse(iso) + 86400000).toISOString().slice(0, 10);
@@ -154,10 +144,7 @@ async function fetchWithFallback(apiKey, keys, ticker, from, to) {
   };
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   const apiKey = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
   const keys = alpacaKeys();
   if (!apiKey && !keys) {
@@ -237,3 +224,5 @@ export async function GET(request) {
     errors,
   });
 }
+
+export const GET = cronRoute('sync-award-prices', run, { ttlSeconds: 360 });

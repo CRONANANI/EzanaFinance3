@@ -21,21 +21,12 @@
 
 import { NextResponse } from 'next/server';
 import { computeAllPoliticianPerformance } from '@/lib/politicians/compute-performance';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300; // Vercel Pro cap — historical price lookups are slow
 
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  const auth = request.headers.get('authorization') ?? '';
-  return auth === `Bearer ${secret}`;
-}
-
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
+async function runRefresh() {
   try {
     const currentYear = new Date().getFullYear();
     const result = await computeAllPoliticianPerformance({
@@ -46,16 +37,12 @@ export async function GET(request) {
     console.error('[cron/politician-performance] GET failed', err);
     return NextResponse.json(
       { ok: false, error: err instanceof Error ? err.message : String(err) },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
-export async function POST(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
-
+async function runBackfill(request) {
   let body = {};
   try {
     body = await request.json();
@@ -82,13 +69,16 @@ export async function POST(request) {
 
     return NextResponse.json(
       { error: 'Body must include {"backfill":true} or {"years":[...]}' },
-      { status: 400 }
+      { status: 400 },
     );
   } catch (err) {
     console.error('[cron/politician-performance] POST failed', err);
     return NextResponse.json(
       { ok: false, error: err instanceof Error ? err.message : String(err) },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
+
+export const GET = cronRoute('politician-performance', runRefresh, { ttlSeconds: 360 });
+export const POST = cronRoute('politician-performance', runBackfill, { ttlSeconds: 360 });

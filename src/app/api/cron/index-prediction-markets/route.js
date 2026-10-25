@@ -4,6 +4,7 @@ import { getAdminClient } from '@/lib/supabase';
 import { embedViaSupabase, supaEmbedConfigured } from '@/lib/embeddings-gte';
 import { scoreTrendingBatch, spreadOf, unitPrice } from '@/lib/prediction-markets/trending';
 import { attachWindowMetrics, writeSnapshots } from '@/lib/prediction-markets/snapshot-store';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Populate prediction_market_index (Polymarket rows) for the semantic matcher
@@ -16,7 +17,7 @@ import { attachWindowMetrics, writeSnapshots } from '@/lib/prediction-markets/sn
  * snapshot history, and a fresh snapshot (prediction_market_snapshots). Markets past their end date are closed; markets not refreshed in
  * STALE_DAYS are marked stale so old odds are never shown as current.
  *   GET /api/cron/index-prediction-markets?maxMarkets=2000&pageSize=100
- * Auth: CRON_SECRET as a Bearer header or ?key=.
+ * Auth: Bearer cron secret, checked by cronRoute.
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -48,17 +49,6 @@ function yesTokenId(m) {
     }
   }
   return Array.isArray(ids) && ids[0] ? String(ids[0]) : null;
-}
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
 }
 
 /** Tag ids from a Gamma market fetched with include_tag=true, as strings. */
@@ -230,10 +220,7 @@ async function upsertChunks(admin, rows, errors, label) {
   return n;
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   if (!supaEmbedConfigured()) {
     return NextResponse.json({ ok: false, error: 'Supabase not configured' }, { status: 503 });
   }
@@ -381,3 +368,5 @@ export async function GET(request) {
     errors: errors.slice(0, 10),
   });
 }
+
+export const GET = cronRoute('index-prediction-markets', run, { ttlSeconds: 360 });

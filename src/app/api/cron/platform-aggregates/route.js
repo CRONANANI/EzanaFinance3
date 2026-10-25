@@ -15,21 +15,12 @@
 
 import { NextResponse } from 'next/server';
 import { recomputeAggregates } from '@/lib/platform-aggregates/compute';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300; // 5 minutes — aggregation can scan YTD for every user
 
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  const auth = request.headers.get('authorization') ?? '';
-  return auth === `Bearer ${secret}`;
-}
-
 async function run(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
   try {
     const result = await recomputeAggregates();
     return NextResponse.json({ ok: true, ...result });
@@ -42,10 +33,5 @@ async function run(request) {
   }
 }
 
-export async function GET(request) {
-  return run(request);
-}
-
-export async function POST(request) {
-  return run(request);
-}
+export const GET = cronRoute('platform-aggregates', run, { ttlSeconds: 360 });
+export const POST = cronRoute('platform-aggregates', run, { ttlSeconds: 360 });

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { embedViaSupabase, supaEmbedConfigured } from '@/lib/embeddings-gte';
 import { chunkDocument } from '@/lib/rag/chunker';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Populate echo_articles.embedding for the research copilot's Echo retriever.
@@ -13,25 +14,15 @@ import { chunkDocument } from '@/lib/rag/chunker';
  * embedded, and the article's chunk rows are replaced (delete-then-insert so a
  * re-chunk after an edit never leaves stale trailing chunks). The article-level
  * pass is the fallback; the chunk pass is additive.
- * CRON_SECRET bearer (or ?key= fallback). Re-run after publishing new articles.
+ * Bearer cron secret (cronRoute). Re-run after publishing new articles.
  *   GET /api/cron/index-echo-articles?limit=500[&force=1]
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+export const maxDuration = 300;
 
 const EMBED_CONCURRENCY = 5;
 const DEFAULT_LIMIT = 500;
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 /** Build the text to embed from an article row (title carries the most signal). */
 function embedTextFor(a) {
@@ -56,10 +47,7 @@ async function embedAll(items) {
   return items;
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   if (!supaEmbedConfigured()) {
     return NextResponse.json({ ok: false, error: 'Supabase not configured' }, { status: 503 });
   }
@@ -166,3 +154,5 @@ export async function GET(request) {
     errors: errors.slice(0, 10),
   });
 }
+
+export const GET = cronRoute('index-echo-articles', run, { ttlSeconds: 360 });

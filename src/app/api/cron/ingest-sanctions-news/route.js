@@ -4,7 +4,7 @@ import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { fetchCityNews } from '@/lib/marketaux/client';
 import { countriesInText } from '@/lib/sanctions/fx';
-import { withIngestRun } from '@/lib/ingest-runs';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Recent sanctions news, by the countries each story names, into
@@ -13,7 +13,7 @@ import { withIngestRun } from '@/lib/ingest-runs';
  * only when its headline or summary names at least one OFAC country (see
  * NEWS_COUNTRY_ALIASES). Rows older than 60 days are pruned.
  *   GET /api/cron/ingest-sanctions-news
- * Auth: CRON_SECRET as a Bearer header or ?key=.
+ * Auth: CRON_SECRET as a Bearer header only (cronRoute).
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -26,21 +26,7 @@ const SEARCHES = [
 ];
 const SANCTION_WORD = /\b(sanction|ofac|embargo|export control|entity list|designat|blacklist)/i;
 
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
-
 async function handler(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
   const admin = getAdminClient();
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const stamp = new Date().toISOString();
@@ -89,5 +75,6 @@ async function handler(request) {
   return NextResponse.json({ ok: true, stored: list.length, errors });
 }
 
-/* Every run is logged to ingest_runs from this route's own JSON body. */
-export const GET = withIngestRun('sanctions-news', handler);
+/* cronRoute logs every run to ingest_runs (started, then finished from this
+   route's own JSON body) under the source name the Sanctions page reads. */
+export const GET = cronRoute('sanctions-news', handler, { ttlSeconds: 180 });

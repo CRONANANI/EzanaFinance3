@@ -6,9 +6,18 @@ import { buildUserProfile } from '@/lib/notifications/interest-profile';
 import { PERSONA_NOTIFICATION_CAPS } from '@/lib/ml/persona-assignment';
 import { insertNotificationAndPush } from '@/lib/push/fanout';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
+import {
+  claimDeliveries,
+  releaseDelivery,
+  mapLimit,
+  pairKey,
+} from '@/lib/notifications/delivery-claim';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 30;
+/* 500 profiles x 5 events plus one quote per distinct ticker (5 at a time):
+   30 s was not enough (reliability audit P2-14). */
+export const maxDuration = 300;
 export const runtime = 'nodejs';
 
 // Read the FMP key at request time — module-level captures freeze the
@@ -19,18 +28,7 @@ function getFmpKey() {
 
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  const auth = request.headers.get('authorization') ?? '';
-  return auth === `Bearer ${secret}`;
-}
-
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
+async function run() {
   const FMP_KEY = getFmpKey();
   if (!FMP_KEY) {
     return NextResponse.json({ ok: false, error: 'FMP_API_KEY not configured' }, { status: 500 });
@@ -121,58 +119,59 @@ export async function GET(request) {
 
     let totalSent = 0;
 
+    const capOf = (uid) =>
+      PERSONA_NOTIFICATION_CAPS[segmentMap[uid]?.persona || 'casual_tracker'] ?? 8;
+
     for (const event of significant.slice(0, 5)) {
-      for (const profile of profiles) {
-        const { score, shouldNotify } = scoreEventForUser(
+      const candidates = profiles.filter((profile) => {
+        const { shouldNotify } = scoreEventForUser(
           event,
           profile,
           segmentMap[profile.user_id] || null,
         );
+        return shouldNotify && (dayCounts[profile.user_id] || 0) < capOf(profile.user_id);
+      });
+      if (!candidates.length) continue;
 
-        if (!shouldNotify) continue;
+      /* One batched claim per event instead of one lookup per user. */
+      // eslint-disable-next-line no-await-in-loop
+      const claimed = await claimDeliveries(
+        admin,
+        candidates.map((p) => ({ user_id: p.user_id, event_fingerprint: event.fingerprint })),
+      );
 
-        const personaKey = segmentMap[profile.user_id]?.persona || 'casual_tracker';
-        const dailyCap = PERSONA_NOTIFICATION_CAPS[personaKey] ?? 8;
-        if ((dayCounts[profile.user_id] || 0) >= dailyCap) continue;
+      const e = event.originalEvent;
+      const symbol = (e.symbol && String(e.symbol).toUpperCase()) || event.tickers[0] || '';
+      const severityEmoji = event.severity === 'critical' ? '🔴' : '🟡';
+      const sentimentEmoji =
+        event.sentiment === 'bullish' ? '📈' : event.sentiment === 'bearish' ? '📉' : '📊';
+      const titleLabel =
+        event.eventType === 'earnings'
+          ? 'Earnings Alert'
+          : event.eventType === 'macro'
+            ? 'Macro Event'
+            : event.eventType === 'geopolitical'
+              ? 'Geopolitical Alert'
+              : 'Market Signal';
+      const title = `${severityEmoji} ${titleLabel}`;
+      const linkPath = symbol
+        ? `/company-research?q=${encodeURIComponent(symbol)}`
+        : '/market-analysis';
+      const content = `${sentimentEmoji} ${String(e.title).slice(0, 120)}${symbol ? ` ($${symbol})` : ''}\n↳ ${linkPath}`;
+      const notifType =
+        event.eventType === 'earnings'
+          ? 'portfolio_alerts'
+          : event.eventType === 'macro'
+            ? 'market_news'
+            : event.eventType === 'regulatory'
+              ? 'inside-the-capitol'
+              : 'market_news';
 
-        const { data: existing } = await admin
-          .from('notification_delivery_log')
-          .select('id')
-          .eq('user_id', profile.user_id)
-          .eq('event_fingerprint', event.fingerprint)
-          .maybeSingle();
-
-        if (existing) continue;
-
-        const e = event.originalEvent;
-        const symbol = (e.symbol && String(e.symbol).toUpperCase()) || event.tickers[0] || '';
-        const severityEmoji = event.severity === 'critical' ? '🔴' : '🟡';
-        const sentimentEmoji =
-          event.sentiment === 'bullish' ? '📈' : event.sentiment === 'bearish' ? '📉' : '📊';
-
-        const titleLabel =
-          event.eventType === 'earnings'
-            ? 'Earnings Alert'
-            : event.eventType === 'macro'
-              ? 'Macro Event'
-              : event.eventType === 'geopolitical'
-                ? 'Geopolitical Alert'
-                : 'Market Signal';
-        const title = `${severityEmoji} ${titleLabel}`;
-        const linkPath = symbol
-          ? `/company-research?q=${encodeURIComponent(symbol)}`
-          : '/market-analysis';
-        const content = `${sentimentEmoji} ${String(e.title).slice(0, 120)}${symbol ? ` ($${symbol})` : ''}\n↳ ${linkPath}`;
-
-        const notifType =
-          event.eventType === 'earnings'
-            ? 'portfolio_alerts'
-            : event.eventType === 'macro'
-              ? 'market_news'
-              : event.eventType === 'regulatory'
-                ? 'inside-the-capitol'
-                : 'market_news';
-
+      const recipients = candidates.filter((p) =>
+        claimed.has(pairKey(p.user_id, event.fingerprint)),
+      );
+      // eslint-disable-next-line no-await-in-loop
+      await mapLimit(recipients, 5, async (profile) => {
         const { error: insErr } = await insertNotificationAndPush(admin, {
           user_id: profile.user_id,
           type: notifType,
@@ -180,91 +179,91 @@ export async function GET(request) {
           content,
           read: false,
         });
-
         if (insErr) {
           console.error('[notification-generator] insert', insErr);
-          continue;
+          await releaseDelivery(admin, profile.user_id, event.fingerprint);
+          return;
         }
-
-        const { error: logErr } = await admin.from('notification_delivery_log').insert({
-          user_id: profile.user_id,
-          event_fingerprint: event.fingerprint,
-        });
-        if (logErr && !String(logErr.message || '').includes('duplicate')) {
-          console.warn('[notification-generator] delivery log', logErr);
-        }
-
         dayCounts[profile.user_id] = (dayCounts[profile.user_id] || 0) + 1;
         totalSent += 1;
-      }
+      });
     }
 
     // ── Portfolio movers: significant same-day moves on tracked holdings ──
+    /* Quotes are fetched ONCE for the union of tracked tickers, 5 at a
+       time, rather than 20 per user. */
     try {
-      for (const profile of profiles) {
-        const prefs = profile.notification_prefs || {};
-        if (prefs.portfolio_alerts === false) continue;
-
-        const rawKeys = Object.keys(profile.ticker_scores || {});
-        const tickers = rawKeys.slice(0, 20).map((s) => String(s).replace(/-/g, '').toUpperCase());
-        if (tickers.length === 0) continue;
-
-        const quotes = await Promise.all(
-          tickers.map(async (sym) => {
-            try {
-              const quoteRes = await fetchWithTimeout(
-                `${FMP_BASE}/quote?symbol=${encodeURIComponent(sym)}&apikey=${encodeURIComponent(FMP_KEY)}`,
-                { cache: 'no-store' },
-              );
-              if (!quoteRes.ok) return null;
-              const data = await quoteRes.json();
-              const q = Array.isArray(data) ? data[0] : data;
-              return q && typeof q === 'object' ? q : null;
-            } catch {
-              return null;
-            }
-          }),
-        );
-
-        for (const q of quotes) {
-          if (!q) continue;
-          const sym = String(q.symbol || '').toUpperCase();
-          const changePct = Number(q.changesPercentage);
-          if (!Number.isFinite(changePct) || Math.abs(changePct) < 5) continue;
-
-          const fp = `portfolio-mover-${sym}-${new Date().toISOString().slice(0, 10)}`;
-          const { data: dup } = await admin
-            .from('notification_delivery_log')
-            .select('id')
-            .eq('user_id', profile.user_id)
-            .eq('event_fingerprint', fp)
-            .maybeSingle();
-          if (dup) continue;
-
-          const personaKeyP = segmentMap[profile.user_id]?.persona || 'casual_tracker';
-          const dailyCapP = PERSONA_NOTIFICATION_CAPS[personaKeyP] ?? 8;
-          if ((dayCounts[profile.user_id] || 0) >= dailyCapP) continue;
-
-          const direction = changePct >= 0 ? '📈 up' : '📉 down';
-          const priceNum = Number(q.price || 0);
-          const { error: insPortErr } = await insertNotificationAndPush(admin, {
-            user_id: profile.user_id,
-            type: 'portfolio_alerts',
-            title: `${sym} ${direction} ${Math.abs(changePct).toFixed(1)}%`,
-            content: `Your holding ${sym} moved significantly. Price: $${Number.isFinite(priceNum) ? priceNum.toFixed(2) : '—'}.`,
-          });
-          if (insPortErr) continue;
-
-          /* Best-effort. Query builders have no .catch, so read the error. */
-          const { error: logErr } = await admin.from('notification_delivery_log').insert({
-            user_id: profile.user_id,
-            event_fingerprint: fp,
-          });
-          if (logErr) console.warn('[notification-generator] delivery log', logErr.message);
-
-          dayCounts[profile.user_id] = (dayCounts[profile.user_id] || 0) + 1;
-          totalSent += 1;
+      const tickersOf = (profile) =>
+        Object.keys(profile.ticker_scores || {})
+          .slice(0, 20)
+          .map((x) => String(x).replace(/-/g, '').toUpperCase());
+      const watchers = profiles.filter(
+        (p) => (p.notification_prefs || {}).portfolio_alerts !== false,
+      );
+      const universe = [...new Set(watchers.flatMap(tickersOf))].slice(0, 300);
+      const quoteList = await mapLimit(universe, 5, async (sym) => {
+        try {
+          const quoteRes = await fetchWithTimeout(
+            `${FMP_BASE}/quote?symbol=${encodeURIComponent(sym)}&apikey=${encodeURIComponent(FMP_KEY)}`,
+            { cache: 'no-store' },
+          );
+          if (!quoteRes.ok) return null;
+          const data = await quoteRes.json();
+          const q = Array.isArray(data) ? data[0] : data;
+          return q && typeof q === 'object' ? q : null;
+        } catch {
+          return null;
         }
+      });
+      const movers = new Map();
+      for (const q of quoteList) {
+        if (!q) continue;
+        const changePct = Number(q.changesPercentage);
+        if (Number.isFinite(changePct) && Math.abs(changePct) >= 5) {
+          movers.set(String(q.symbol || '').toUpperCase(), q);
+        }
+      }
+
+      const today = new Date().toISOString().slice(0, 10);
+      const pairs = [];
+      for (const profile of watchers) {
+        for (const sym of tickersOf(profile)) {
+          if (movers.has(sym)) {
+            pairs.push({
+              user_id: profile.user_id,
+              event_fingerprint: `portfolio-mover-${sym}-${today}`,
+              sym,
+            });
+          }
+        }
+      }
+      const claimed = pairs.length ? await claimDeliveries(admin, pairs) : new Set();
+
+      for (const pr of pairs) {
+        if (!claimed.has(pairKey(pr.user_id, pr.event_fingerprint))) continue;
+        if ((dayCounts[pr.user_id] || 0) >= capOf(pr.user_id)) {
+          // eslint-disable-next-line no-await-in-loop
+          await releaseDelivery(admin, pr.user_id, pr.event_fingerprint);
+          continue;
+        }
+        const q = movers.get(pr.sym);
+        const changePct = Number(q.changesPercentage);
+        const direction = changePct >= 0 ? '📈 up' : '📉 down';
+        const priceNum = Number(q.price || 0);
+        // eslint-disable-next-line no-await-in-loop
+        const { error: insPortErr } = await insertNotificationAndPush(admin, {
+          user_id: pr.user_id,
+          type: 'portfolio_alerts',
+          title: `${pr.sym} ${direction} ${Math.abs(changePct).toFixed(1)}%`,
+          content: `Your holding ${pr.sym} moved significantly. Price: $${Number.isFinite(priceNum) ? priceNum.toFixed(2) : '—'}.`,
+        });
+        if (insPortErr) {
+          // eslint-disable-next-line no-await-in-loop
+          await releaseDelivery(admin, pr.user_id, pr.event_fingerprint);
+          continue;
+        }
+        dayCounts[pr.user_id] = (dayCounts[pr.user_id] || 0) + 1;
+        totalSent += 1;
       }
     } catch (portfolioErr) {
       console.error('[notification-generator] portfolio movers:', portfolioErr);
@@ -279,3 +278,5 @@ export async function GET(request) {
     );
   }
 }
+
+export const GET = cronRoute('notifications-generate', run, { ttlSeconds: 360 });

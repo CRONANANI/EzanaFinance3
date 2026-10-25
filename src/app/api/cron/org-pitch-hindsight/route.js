@@ -1,21 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { FmpAPI } from '@/lib/services/fmp';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
 
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  return (request.headers.get('authorization') ?? '') === `Bearer ${secret}`;
-}
-
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
+async function run(request) {
   let supabase;
   try {
     supabase = getAdminClient();
@@ -80,3 +71,5 @@ export async function GET(request) {
 
   return NextResponse.json({ updated, total: (targets || []).length, errors });
 }
+
+export const GET = cronRoute('org-pitch-hindsight', run, { ttlSeconds: 180 });

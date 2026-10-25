@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { createFigiClient, CUSIP_RE } from '@/lib/openfigi';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Hourly CUSIP to ticker mapping via OpenFIGI into sec_cusip_map, then
@@ -14,7 +15,7 @@ import { createFigiClient, CUSIP_RE } from '@/lib/openfigi';
  * 'unmapped' and checked more than 30 days ago. Runs for about 240 seconds and
  * upserts as it goes, so a timeout never loses finished work.
  *
- * Auth: CRON_SECRET bearer (or ?key=).
+ * Auth: CRON_SECRET bearer only (cronRoute).
  *   curl https://ezana.world/api/cron/map-cusips -H "Authorization: Bearer $CRON_SECRET"
  */
 export const dynamic = 'force-dynamic';
@@ -25,17 +26,6 @@ const RUN_BUDGET_MS = 240_000;
 const PAGE = 1000;
 const IN_CHUNK = 300;
 const RECHECK_UNMAPPED_DAYS = 30;
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 const norm = (c) =>
   String(c || '')
@@ -113,10 +103,7 @@ async function needingLookup(admin, cusips) {
   return cusips.filter((c) => !settled.has(c));
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   const started = Date.now();
   const admin = getAdminClient();
   const errors = [];
@@ -187,3 +174,5 @@ export async function GET(request) {
     problems: errors.slice(0, 10),
   });
 }
+
+export const GET = cronRoute('map-cusips', run, { ttlSeconds: 360 });

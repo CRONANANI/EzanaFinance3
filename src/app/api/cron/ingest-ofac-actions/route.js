@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
-import { withIngestRun } from '@/lib/ingest-runs';
 import { parseRecentActions } from '@/lib/sanctions/actions';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * OFAC Recent Actions (Treasury's own dated notices) into ofac_actions, for
@@ -11,7 +11,7 @@ import { parseRecentActions } from '@/lib/sanctions/actions';
  * from its own URL. If the first page yields no notices the page layout has
  * changed: the run fails and writes nothing.
  *   GET /api/cron/ingest-ofac-actions
- * Auth: CRON_SECRET as a Bearer header or ?key=.
+ * Auth: CRON_SECRET as a Bearer header only (cronRoute).
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -19,17 +19,6 @@ export const maxDuration = 60;
 
 const LISTING = 'https://ofac.treasury.gov/recent-actions';
 const PAGES = 3;
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 async function fetchPage(n) {
   const res = await fetch(n ? `${LISTING}?page=${n}` : LISTING, {
@@ -43,9 +32,6 @@ async function fetchPage(n) {
 }
 
 async function handler(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
   const errors = [];
   const found = new Map();
   for (let n = 0; n < PAGES; n += 1) {
@@ -96,5 +82,6 @@ async function handler(request) {
   });
 }
 
-/* Every run is logged to ingest_runs from this route's own JSON body. */
-export const GET = withIngestRun('ofac-actions', handler);
+/* cronRoute logs every run to ingest_runs (started, then finished from this
+   route's own JSON body) under the source name the Sanctions page reads. */
+export const GET = cronRoute('ofac-actions', handler, { ttlSeconds: 120 });

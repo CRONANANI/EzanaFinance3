@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
-import { isCronAuthorized } from '@/lib/ingest/chips/cron-auth';
 import { MACRO_INDICATORS, fetchCountries, fetchIndicator } from '@/lib/ingest/macro/worldbank';
 import { rebuild } from '@/lib/datasets/build-snapshots';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Weekly: World Bank WDI GDP (nominal, PPP, per capita both ways), real
@@ -16,10 +16,7 @@ export const runtime = 'nodejs';
 export const maxDuration = 300;
 const CHUNK = 1000;
 
-export async function GET(request) {
-  if (!isCronAuthorized(request)) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   const admin = getAdminClient();
   const stamp = new Date().toISOString();
   const errors = [];
@@ -77,3 +74,5 @@ export async function GET(request) {
     errors,
   });
 }
+
+export const GET = cronRoute('macro-worldbank', run, { ttlSeconds: 360 });

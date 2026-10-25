@@ -9,6 +9,7 @@ import {
   cleanFilerName,
   secRequestCount,
 } from '@/lib/sec-edgar';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Rolling ingest of the newest SEC EDGAR filings into Supabase (Phase 1:
@@ -19,7 +20,7 @@ import {
  * EDGAR access rules live in @/lib/sec-edgar (mandatory User-Agent, <=6 req/s
  * throttle). Families are fetched SEQUENTIALLY so the throttle holds.
  *
- * Auth: CRON_SECRET bearer (or ?key=).
+ * Auth: CRON_SECRET bearer only (cronRoute).
  *   GET /api/cron/ingest-sec-filings?days=3[&pages=5][&families=insider]
  *
  * Schedule 13D/13G: since the SEC's structured-data rules (Dec 2024) these are
@@ -66,17 +67,6 @@ const FAMILY_FOR_FORM = (form) => {
 };
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 function isoDate(d) {
   return d.toISOString().slice(0, 10);
@@ -197,11 +187,7 @@ async function trackedInstitutionalCiks(admin) {
   return ciks;
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-  }
-
+async function run(request) {
   const { searchParams } = new URL(request.url);
   const fromParam = searchParams.get('from');
   const toParam = searchParams.get('to');
@@ -305,3 +291,5 @@ export async function GET(request) {
     errors: errors.slice(0, 20),
   });
 }
+
+export const GET = cronRoute('ingest-sec-filings', run, { ttlSeconds: 360 });

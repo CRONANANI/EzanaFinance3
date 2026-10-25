@@ -8,6 +8,7 @@ import {
   unitPrice,
 } from '@/lib/prediction-markets/trending';
 import { attachWindowMetrics, writeSnapshots } from '@/lib/prediction-markets/snapshot-store';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Kalshi open markets into prediction_market_index (platform=kalshi). Public
@@ -16,7 +17,7 @@ import { attachWindowMetrics, writeSnapshots } from '@/lib/prediction-markets/sn
  * Polymarket dollars. Rows carry no embedding, so the related-markets matcher
  * (labelled Polymarket) does not surface them yet.
  *   GET /api/cron/index-kalshi?maxMarkets=600
- * Auth: CRON_SECRET as a Bearer header or ?key=.
+ * Auth: Bearer cron secret, checked by cronRoute.
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -30,17 +31,6 @@ const UPSERT_CHUNK = 200;
 const STALE_DAYS = 3;
 // Also keep the markets most traded in the last 24h, beyond the lifetime-volume cut.
 const TRENDING_EXTRA = 200;
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 const fp = (v) => {
   if (v == null || v === '') return null;
@@ -134,10 +124,7 @@ async function fetchEvents(cursor) {
   };
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   const { searchParams } = new URL(request.url);
   const maxMarkets = Math.min(
     Math.max(Number(searchParams.get('maxMarkets')) || DEFAULT_MAX, 1),
@@ -253,3 +240,5 @@ export async function GET(request) {
     errors: errors.slice(0, 10),
   });
 }
+
+export const GET = cronRoute('index-kalshi', run, { ttlSeconds: 360 });

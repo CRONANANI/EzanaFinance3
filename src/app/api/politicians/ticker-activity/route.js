@@ -11,6 +11,7 @@ import { normalizeFmpTrade } from '@/lib/politicians/normalize-trade';
 import { enrichTrade } from '@/lib/politicians/member-directory';
 import { inferPositionStatus } from '@/lib/politicians/position-status';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
+import { BoundedMap } from '@/lib/bounded-map';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +21,7 @@ const MAX_ROWS = 500;
 const CACHE_TTL = 12 * 60 * 1000;
 
 // Per-symbol in-memory cache (best-effort; per-lambda).
-const cache = new Map();
+const cache = new BoundedMap(500); // keyed by user-supplied symbols
 
 async function fetchSymbol(chamber, symbol, key) {
   const endpoint = chamber === 'Senate' ? 'senate-trades' : 'house-trades';

@@ -3,6 +3,21 @@ import { checkRateLimit } from './persistent-rate-limit';
 import { getAuthUser } from './supabase';
 import { logger } from './logger';
 import { logSecurityEvent } from './security-audit';
+import { getClientIp } from './client-ip';
+import { routePattern } from './route-pattern';
+
+export { routePattern };
+
+/* Routes whose limiter must fail CLOSED when the limiter itself is down:
+   auth, AI, Sonar and the public API (reliability audit P2-12). */
+const FAIL_CLOSED = [
+  /^\/api\/auth\//,
+  /^\/api\/v1\//,
+  /^\/api\/sonar\//,
+  /^\/api\/(ai-|research\/|centaur\/|ezanaql\/generate|help-center\/ask|market-opportunities\/analyze|market-data\/analyze-event|market-data\/event-context|gov-contracts\/award-analysis)/,
+];
+/* Never rate limited: uptime monitors must always get an answer. */
+const EXEMPT = [/^\/api\/(health|healthz|readyz)(\/|$)/];
 
 /**
  * Build an error response without leaking internal details to the client.
@@ -30,10 +45,7 @@ export function withApiGuard(handler, options = {}) {
 
   return async (request, context) => {
     try {
-      const ip =
-        request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-        request.headers.get('x-real-ip') ||
-        'unknown';
+      const ip = getClientIp(request) || 'unknown';
 
       let path = '';
       try {
@@ -42,25 +54,36 @@ export function withApiGuard(handler, options = {}) {
         /* ignore */
       }
 
-      const limit = strict ? 10 : 30;
-      const windowMs = 60000;
-      const bucketKey = `api:${ip}:${path}`;
-      const { allowed, remaining, resetAt } = await checkRateLimit(bucketKey, limit, windowMs);
-
-      if (!allowed) {
-        void logSecurityEvent('rate_limit_hit', { ip, details: { path } });
-        const retryAfterSec = Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000));
-        return NextResponse.json(
-          { error: 'Too many requests. Please try again later.' },
-          {
-            status: 429,
-            headers: {
-              'Retry-After': String(retryAfterSec),
-              'X-RateLimit-Remaining': '0',
-              'X-RateLimit-Reset': resetAt.toISOString(),
+      let remaining = null;
+      if (!EXEMPT.some((re) => re.test(path))) {
+        const limit = strict ? 10 : 30;
+        const windowMs = 60000;
+        const pattern = routePattern(path, context?.params);
+        const failClosed = options.failClosed ?? FAIL_CLOSED.some((re) => re.test(path));
+        const rl = await checkRateLimit(`api:${ip}:${pattern}`, limit, windowMs, { failClosed });
+        remaining = rl.remaining;
+        if (!rl.allowed) {
+          if (rl.degraded) {
+            return NextResponse.json(
+              { error: 'Service temporarily unavailable. Please try again shortly.' },
+              { status: 503, headers: { 'Retry-After': '30' } },
+            );
+          }
+          const { resetAt } = rl;
+          void logSecurityEvent('rate_limit_hit', { ip, details: { path } });
+          const retryAfterSec = Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000));
+          return NextResponse.json(
+            { error: 'Too many requests. Please try again later.' },
+            {
+              status: 429,
+              headers: {
+                'Retry-After': String(retryAfterSec),
+                'X-RateLimit-Remaining': '0',
+                'X-RateLimit-Reset': resetAt.toISOString(),
+              },
             },
-          },
-        );
+          );
+        }
       }
 
       let user = null;
@@ -83,7 +106,7 @@ export function withApiGuard(handler, options = {}) {
 
       const response = await handler(request, user, context);
       const res = response instanceof NextResponse ? response : NextResponse.json(response);
-      res.headers.set('X-RateLimit-Remaining', String(remaining));
+      if (remaining != null) res.headers.set('X-RateLimit-Remaining', String(remaining));
       return res;
     } catch (error) {
       logger.error('API Error', { error: error?.message, stack: error?.stack });

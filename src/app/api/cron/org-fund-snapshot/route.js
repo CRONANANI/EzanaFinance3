@@ -7,6 +7,7 @@ import {
   attributionBySector,
   attributionByPitch,
 } from '@/lib/org-attribution';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Daily (weekday) org fund pipeline: refresh every active position's
@@ -17,28 +18,14 @@ import {
  * (that path remains as an on-demand refresh; same conflict key).
  *
  * Idempotent: safe to rerun — prices converge, snapshot upserts on
- * (org_id, snapshot_date). Auth: CRON_SECRET bearer (or ?key=).
+ * (org_id, snapshot_date). Auth: CRON_SECRET bearer only (cronRoute).
  *   GET /api/cron/org-fund-snapshot
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
-
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   try {
     const admin = getAdminClient();
 
@@ -99,3 +86,5 @@ export async function GET(request) {
     return NextResponse.json({ ok: false, error: e?.message || String(e) }, { status: 500 });
   }
 }
+
+export const GET = cronRoute('org-fund-snapshot', run, { ttlSeconds: 360 });

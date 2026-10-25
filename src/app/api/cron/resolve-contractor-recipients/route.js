@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Resolves contract recipients to their USAspending parent, then to a ticker.
@@ -18,7 +19,7 @@ import { getAdminClient } from '@/lib/supabase';
  * (error = 'http 404' / 'fetch') so the run moves on and the recipient is not
  * retried every hour; `?retry=1` clears errored rows first.
  *
- * Auth: CRON_SECRET bearer or ?key=. Weekly schedule in vercel.json; run by
+ * Auth: CRON_SECRET bearer only (cronRoute). Weekly schedule in vercel.json; run by
  * hand in a loop after a backfill until remaining = 0.
  *
  *   /api/cron/resolve-contractor-recipients?max=150
@@ -35,17 +36,6 @@ const POLITE_DELAY_MS = 200;
 const BUDGET_MS = 240000;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 /* recipient_id is a UUID plus -P / -C / -R; nothing else is ever put in a URL. */
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-[PCR]$/i;
@@ -92,10 +82,7 @@ function toRow(id, p, fallbackName) {
   };
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   const { searchParams } = new URL(request.url);
   const max = Math.min(Math.max(Number(searchParams.get('max')) || MAX_DEFAULT, 1), MAX_CAP);
   const admin = getAdminClient();
@@ -186,3 +173,5 @@ export async function GET(request) {
     errors,
   });
 }
+
+export const GET = cronRoute('resolve-contractor-recipients', run, { ttlSeconds: 360 });

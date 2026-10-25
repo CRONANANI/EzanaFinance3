@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { embedViaSupabase, supaEmbedConfigured } from '@/lib/embeddings-gte';
-import {
-  USER_ARTICLES,
-  PARTNER_ARTICLES,
-} from '@/lib/help-center-content';
+import { USER_ARTICLES, PARTNER_ARTICLES } from '@/lib/help-center-content';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Populate help_center_articles for the help-center RAG matcher. Reads the
@@ -14,25 +12,15 @@ import {
  *
  * /api/help-center/ask embeds the visitor's question and nearest-neighbour
  * queries this table via match_help_articles to ground a cited answer.
- * CRON_SECRET bearer (or ?key= fallback). Run after editing help-center-content.
+ * Bearer cron secret (cronRoute). Run after editing help-center-content.
  *   GET /api/cron/index-help-center
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+export const maxDuration = 300;
 
 const EMBED_CONCURRENCY = 5; // parallel embed requests
 const UPSERT_CHUNK = 100;
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 /** Strip HTML tags/entities to plain text for embedding + grounding context. */
 function htmlToText(html) {
@@ -87,18 +75,12 @@ async function embedAll(items) {
   return items;
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   if (!supaEmbedConfigured()) {
     return NextResponse.json({ ok: false, error: 'Supabase not configured' }, { status: 503 });
   }
 
-  const items = [
-    ...toItems(USER_ARTICLES, 'user'),
-    ...toItems(PARTNER_ARTICLES, 'partner'),
-  ];
+  const items = [...toItems(USER_ARTICLES, 'user'), ...toItems(PARTNER_ARTICLES, 'partner')];
   if (!items.length) {
     return NextResponse.json({ ok: true, articles: 0, embedded: 0, upserted: 0 });
   }
@@ -158,3 +140,5 @@ export async function GET(request) {
     errors: errors.slice(0, 10),
   });
 }
+
+export const GET = cronRoute('index-help-center', run, { ttlSeconds: 360 });

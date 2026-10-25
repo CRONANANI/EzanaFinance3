@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 import { pickTickerPairs } from '@/lib/lobbying/feed';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * One-off: harvest Quiver's client-to-ticker pairs into lobbying_client_tickers
@@ -9,7 +10,7 @@ import { fetchWithTimeout } from '@/lib/http/fetch-json';
  * dossier, ?onlyPublic=1, the feed's Ticker column) keep their coverage.
  *
  * Not scheduled. Run by hand after the migration, as many times as you like:
- *   curl ".../api/cron/harvest-lobbying-tickers?maxPages=40" -H "Authorization: Bearer $CRON_SECRET"
+ *   curl ".../api/cron/harvest-lobbying-tickers?maxPages=40" -H "Authorization: Bearer <cron secret>"
  *
  * Rows are inserted with source = 'quiver' and verified = false. Existing rows
  * (the curated ones included) are never overwritten, and a client Quiver maps
@@ -24,17 +25,6 @@ const BASE = 'https://api.quiverquant.com/beta/live/lobbying';
 const PAGE_SIZE = 500;
 const MAX_PAGES_CAP = 200;
 const DEADLINE_MS = 240_000;
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 async function fetchPage(key, page) {
   const qs = new URLSearchParams({ page: String(page), page_size: String(PAGE_SIZE) });
@@ -56,10 +46,7 @@ async function fetchPage(key, page) {
   }
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   const key = process.env.QUIVER_API_KEY;
   if (!key)
     return NextResponse.json({ ok: false, error: 'QUIVER_API_KEY not set' }, { status: 503 });
@@ -148,3 +135,5 @@ export async function GET(request) {
     ms: Date.now() - started,
   });
 }
+
+export const GET = cronRoute('harvest-lobbying-tickers', run, { ttlSeconds: 360 });

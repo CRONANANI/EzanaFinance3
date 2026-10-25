@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import Papa from 'papaparse';
 import { getAdminClient } from '@/lib/supabase';
-import { withIngestRun } from '@/lib/ingest-runs';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * OFAC Specially Designated Nationals list (US Treasury, public domain) into
@@ -12,7 +12,7 @@ import { withIngestRun } from '@/lib/ingest-runs';
  * get removed_on = today. A download with fewer than MIN_ENTRIES rows is treated
  * as broken and nothing is marked removed.
  *   GET /api/cron/ingest-ofac
- * Auth: CRON_SECRET as a Bearer header or ?key=.
+ * Auth: Bearer cron secret, checked by cronRoute.
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -31,17 +31,6 @@ const SOURCES = {
 const MIN_ENTRIES = 5000;
 const UPSERT_CHUNK = 1000;
 const EMPTY = '-0-';
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 const clean = (v) => {
   const s = String(v ?? '').trim();
@@ -88,9 +77,6 @@ const parse = (text) =>
   );
 
 async function handler(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
   const admin = getAdminClient();
   const errors = [];
   const today = new Date().toISOString().slice(0, 10);
@@ -182,4 +168,4 @@ async function handler(request) {
 }
 
 /* Every run is logged to ingest_runs from this route's own JSON body. */
-export const GET = withIngestRun('ofac-sdn', handler);
+export const GET = cronRoute('ofac-sdn', handler, { ttlSeconds: 360 });

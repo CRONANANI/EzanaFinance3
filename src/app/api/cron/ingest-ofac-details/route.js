@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import Papa from 'papaparse';
 import { getAdminClient } from '@/lib/supabase';
-import { withIngestRun } from '@/lib/ingest-runs';
 import {
   PARSER_VERSION,
   disambiguators,
@@ -10,6 +9,7 @@ import {
   normName,
   parseRemarks,
 } from '@/lib/sanctions/remarks';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * OFAC research details for the Sanctions page, after /api/cron/ingest-ofac
@@ -27,7 +27,7 @@ import {
  * landed, so a partial run never deletes good data. A file that fails to
  * download leaves its table as it was.
  *   GET /api/cron/ingest-ofac-details
- * Auth: CRON_SECRET as a Bearer header or ?key=.
+ * Auth: CRON_SECRET as a Bearer header only (cronRoute).
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -44,17 +44,6 @@ const MIN_ACTIVE = 5000;
 const MIN_ALT = 1000;
 const CHUNK = 1000;
 const EMPTY = '-0-';
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 const clean = (v) => {
   const s = String(v ?? '').trim();
@@ -131,9 +120,6 @@ async function prune(admin, table, stamp, errors, filter) {
 }
 
 async function handler(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
   const admin = getAdminClient();
   const stamp = new Date().toISOString();
   const errors = [];
@@ -333,5 +319,6 @@ async function handler(request) {
   });
 }
 
-/* Every run is logged to ingest_runs from this route's own JSON body. */
-export const GET = withIngestRun('ofac-details', handler);
+/* cronRoute logs every run to ingest_runs (started, then finished from this
+   route's own JSON body) under the source name the Sanctions page reads. */
+export const GET = cronRoute('ofac-details', handler, { ttlSeconds: 360 });

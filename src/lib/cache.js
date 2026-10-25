@@ -36,6 +36,16 @@ function getRedis() {
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) {
     redisClient = null;
+    /* Never silent in production: without Upstash every cache and the
+       Redis rate-limit layer are per instance (reliability audit P2-13). */
+    if (process.env.VERCEL_ENV === 'production') {
+      console.warn('[cache] UPSTASH_REDIS_REST_URL/TOKEN missing in production; memory-only cache');
+      import('@sentry/nextjs')
+        .then((Sentry) =>
+          Sentry.captureMessage('Upstash Redis not configured in production', { level: 'warning' }),
+        )
+        .catch(() => {});
+    }
     return null;
   }
   try {
@@ -98,10 +108,10 @@ export async function cacheGet(key, { memTtlSeconds = 30 } = {}) {
   const redis = getRedis();
   if (!redis) return undefined;
   try {
-    const v = await redis.get(k); // @upstash/redis auto-deserializes JSON
-    if (v === null || v === undefined) return undefined;
-    memSet(k, v, memTtlSeconds);
-    return v;
+    const hit = unwrap(await redis.get(k)); // @upstash/redis auto-deserializes JSON
+    if (!hit) return undefined;
+    memSet(k, hit.value, memTtlSeconds);
+    return hit.value;
   } catch (e) {
     console.warn('[cache] redis get error:', e?.message);
     return undefined;
@@ -143,28 +153,117 @@ export async function cacheDel(key) {
   }
 }
 
+/* ─────────────────────── cache-aside with stampede guard ───────────────── */
+/* In-flight producers per key in this instance: concurrent misses share one
+   producer call (single-flight). Across instances, a Redis lock
+   (SET key:lock NX PX) lets one request refresh while the others serve the
+   stale copy (soft TTL) or wait briefly for the fresh one. */
+const inflight = new Map();
+const ENVELOPE = '__ezc';
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+function wrap(value, ttlSeconds) {
+  return { [ENVELOPE]: 1, v: value, soft: Date.now() + ttlSeconds * 1000 };
+}
+function unwrap(raw) {
+  if (raw && typeof raw === 'object' && raw[ENVELOPE] === 1)
+    return { value: raw.v, soft: raw.soft };
+  return raw === null || raw === undefined ? null : { value: raw, soft: Infinity };
+}
+
+async function redisRead(redis, k) {
+  try {
+    return unwrap(await redis.get(k));
+  } catch (e) {
+    console.warn('[cache] redis get error:', e?.message);
+    return null;
+  }
+}
+
+async function produceAndStore(key, ttlSeconds, staleSeconds, producer, memTtlSeconds) {
+  const fresh = await producer();
+  if (fresh === undefined) return fresh;
+  const k = buildKey(key);
+  memSet(k, fresh, Math.min(memTtlSeconds ?? ttlSeconds, ttlSeconds));
+  const redis = getRedis();
+  if (redis) {
+    try {
+      await redis.set(k, wrap(fresh, ttlSeconds), {
+        ex: Math.max(1, Math.floor(ttlSeconds + staleSeconds)),
+      });
+    } catch (e) {
+      console.warn('[cache] redis set error:', e?.message);
+    }
+  }
+  return fresh;
+}
+
 /**
  * Cache-aside: return the cached value, or run `producer`, cache its result, and
  * return it. Failures are NOT cached (the producer error propagates so the
  * caller can decide how to respond). `undefined` results are not cached.
  *
+ * Stampede guard (reliability audit P2-13): one producer per key per
+ * instance; with Redis, one refresher across instances while the rest serve
+ * the stale value for up to `staleSeconds` past the TTL.
+ *
  * @template T
  * @param {string} key
  * @param {number} ttlSeconds
  * @param {() => Promise<T>} producer
- * @param {{ memTtlSeconds?: number }} [opts]
+ * @param {{ memTtlSeconds?: number, staleSeconds?: number, lockMs?: number }} [opts]
  * @returns {Promise<T>}
  */
 export async function cacheGetOrSet(key, ttlSeconds, producer, opts = {}) {
   const { memTtlSeconds } = opts;
-  const cached = await cacheGet(key, {
-    memTtlSeconds: memTtlSeconds ?? Math.min(ttlSeconds, 30),
-  });
-  if (cached !== undefined) return cached;
+  const staleSeconds = opts.staleSeconds ?? Math.min(ttlSeconds, 300);
+  const lockMs = opts.lockMs ?? 10_000;
+  const k = buildKey(key);
 
-  const fresh = await producer();
-  if (fresh !== undefined) {
-    await cacheSet(key, fresh, ttlSeconds, { memTtlSeconds });
+  const m = memGet(k);
+  if (m !== undefined) return m;
+  if (inflight.has(k)) return inflight.get(k);
+
+  const run = (async () => {
+    const redis = getRedis();
+    if (!redis) {
+      return produceAndStore(key, ttlSeconds, staleSeconds, producer, memTtlSeconds);
+    }
+    const hit = await redisRead(redis, k);
+    if (hit && Date.now() < hit.soft) {
+      memSet(k, hit.value, Math.min(memTtlSeconds ?? Math.min(ttlSeconds, 30), ttlSeconds));
+      return hit.value;
+    }
+    let locked = false;
+    try {
+      locked = (await redis.set(`${k}:lock`, '1', { nx: true, px: lockMs })) === 'OK';
+    } catch {
+      locked = true; // Redis trouble: just produce
+    }
+    if (locked) {
+      try {
+        return await produceAndStore(key, ttlSeconds, staleSeconds, producer, memTtlSeconds);
+      } finally {
+        redis.del(`${k}:lock`).catch(() => {});
+      }
+    }
+    /* Someone else is refreshing. Serve the stale copy if there is one,
+       otherwise wait briefly for theirs, then fall back to producing. */
+    if (hit) return hit.value;
+    for (let i = 0; i < 10; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await sleep(150);
+      // eslint-disable-next-line no-await-in-loop
+      const again = await redisRead(redis, k);
+      if (again) return again.value;
+    }
+    return produceAndStore(key, ttlSeconds, staleSeconds, producer, memTtlSeconds);
+  })();
+
+  inflight.set(k, run);
+  try {
+    return await run;
+  } finally {
+    inflight.delete(k);
   }
-  return fresh;
 }

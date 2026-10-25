@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Manifold open binary questions into crowd_forecasts. Public API, no auth,
@@ -8,7 +9,7 @@ import { getAdminClient } from '@/lib/supabase';
  * of prediction_market_index and ranked by how many people forecast, not by
  * volume. Questions with fewer than MIN_FORECASTERS are skipped.
  *   GET /api/cron/index-manifold?max=500
- * Auth: CRON_SECRET as a Bearer header or ?key=.
+ * Auth: Bearer cron secret, checked by cronRoute.
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -21,17 +22,6 @@ const MIN_FORECASTERS = 10;
 const UPSERT_CHUNK = 200;
 const STALE_DAYS = 3;
 const USER_AGENT = 'EzanaFinance/1.0 (+https://ezana.world)';
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 function toRow(m) {
   const id = String(m?.id || '');
@@ -77,10 +67,7 @@ async function fetchPage(offset) {
   return Array.isArray(json) ? json : [];
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   const { searchParams } = new URL(request.url);
   const max = Math.min(Math.max(Number(searchParams.get('max')) || DEFAULT_MAX, 1), 1000);
 
@@ -157,3 +144,5 @@ export async function GET(request) {
     errors: errors.slice(0, 10),
   });
 }
+
+export const GET = cronRoute('index-manifold', run, { ttlSeconds: 180 });

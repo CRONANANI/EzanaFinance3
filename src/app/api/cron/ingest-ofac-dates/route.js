@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { createEntryDateReader } from '@/lib/sanctions/sdn-advanced';
-import { withIngestRun } from '@/lib/ingest-runs';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * OFAC's own publication date for every SDN entry, into
@@ -17,7 +17,7 @@ import { withIngestRun } from '@/lib/ingest-runs';
  * sanctions_entries have a date, the file has changed shape and the run
  * stops without writing.
  *   GET /api/cron/ingest-ofac-dates
- * Auth: CRON_SECRET as a Bearer header or ?key=.
+ * Auth: CRON_SECRET as a Bearer header only (cronRoute).
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -30,17 +30,6 @@ const SOURCES = [
 const MIN_MATCH = 0.5;
 const UPSERT_CHUNK = 1000;
 const READ_CHUNK = 1000;
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 async function readDates() {
   let last = null;
@@ -90,9 +79,6 @@ async function activeEntNums(admin) {
 }
 
 async function handler(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
   const admin = getAdminClient();
 
   let parsed;
@@ -154,5 +140,6 @@ async function handler(request) {
   });
 }
 
-/* Every run is logged to ingest_runs from this route's own JSON body. */
-export const GET = withIngestRun('ofac-dates', handler);
+/* cronRoute logs every run to ingest_runs (started, then finished from this
+   route's own JSON body) under the source name the Sanctions page reads. */
+export const GET = cronRoute('ofac-dates', handler, { ttlSeconds: 360 });

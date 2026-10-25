@@ -6,6 +6,7 @@ import { buildMemberFinance } from '@/lib/fec/member-finance';
 import { normalizeCandidateTotals } from '@/lib/fec/normalize';
 import { pickFecCandidateId } from '@/lib/fec/join';
 import { allCurrentMembers, fecIdsForMember } from '@/lib/politicians/member-directory';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Scheduled refresh of per-member campaign-finance aggregates from the OpenFEC
@@ -20,10 +21,10 @@ import { allCurrentMembers, fecIdsForMember } from '@/lib/politicians/member-dir
  *      this pass writes (the totals pass refreshes every row each hour, so
  *      fec_candidate_totals.synced_at cannot order the rotation).
  *
- * Auth: CRON_SECRET bearer (same pattern as ingest-congress / ingest-usaspending).
+ * Auth: Bearer cron secret, checked by cronRoute.
  * No mock rows are ever written; a member without FEC filings is skipped.
  *
- *   curl https://ezana.world/api/cron/ingest-fec -H "Authorization: Bearer $CRON_SECRET"
+ *   curl https://ezana.world/api/cron/ingest-fec -H "Authorization: Bearer <cron secret>"
  * Optional: ?cycle=2026
  */
 export const dynamic = 'force-dynamic';
@@ -34,18 +35,9 @@ const DEFAULT_CYCLE = 2026;
 const BATCH = 50;
 const DETAIL_COST = 10; // worst case requests for one deep member build
 
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  return (request.headers.get('authorization') || '') === `Bearer ${secret}`;
-}
-
 const officeFor = (m) => (m.chamber === 'Senate' ? 'S' : m.chamber === 'House' ? 'H' : null);
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   if (!hasFecKey()) {
     return NextResponse.json(
       { ok: false, error: 'FEC key (campaigndatagov) not configured' },
@@ -227,7 +219,10 @@ export async function GET(request) {
   const remainingWithoutRow = members.filter((m) => !lastDetail.has(m.bioguideId)).length;
 
   // The dimension hubs summarise this table.
-  if (totalsUpdated || detailUpdated) revalidateTag('hubs');
+  if (totalsUpdated || detailUpdated) {
+    revalidateTag('hubs');
+    revalidateTag('campaign-finance');
+  }
 
   return NextResponse.json({
     ok: true,
@@ -239,3 +234,5 @@ export async function GET(request) {
     errors: errors.slice(0, 10),
   });
 }
+
+export const GET = cronRoute('ingest-fec', run, { ttlSeconds: 360 });

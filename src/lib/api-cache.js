@@ -3,7 +3,12 @@
  * Respects per-provider TTLs to stay within free-tier rate limits.
  */
 
-const mem = {};
+import { BoundedMap } from './bounded-map.js';
+
+/* Bounded (LRU) and single-flight: concurrent misses for one key share one
+   fetch (reliability audit P2-13). */
+const mem = new BoundedMap(300);
+const inflight = new Map();
 
 function storageKey(key) {
   return 'ezana_cache_' + key;
@@ -13,8 +18,9 @@ export const ApiCache = {
   async get(key, fetchFn, ttlSeconds) {
     const now = Date.now();
 
-    if (mem[key] && now - mem[key].ts < ttlSeconds * 1000) {
-      return mem[key].data;
+    const hit = mem.get(key);
+    if (hit && now - hit.ts < ttlSeconds * 1000) {
+      return hit.data;
     }
 
     if (typeof window !== 'undefined') {
@@ -23,17 +29,25 @@ export const ApiCache = {
         if (raw) {
           const parsed = JSON.parse(raw);
           if (now - parsed.ts < ttlSeconds * 1000) {
-            mem[key] = parsed;
+            mem.set(key, parsed);
             return parsed.data;
           }
         }
       } catch (_) {}
     }
 
-    const data = await fetchFn();
+    if (inflight.has(key)) return inflight.get(key);
+    const pending = fetchFn();
+    inflight.set(key, pending);
+    let data;
+    try {
+      data = await pending;
+    } finally {
+      inflight.delete(key);
+    }
     if (data != null) {
       const entry = { data, ts: now };
-      mem[key] = entry;
+      mem.set(key, entry);
       if (typeof window !== 'undefined') {
         try {
           sessionStorage.setItem(storageKey(key), JSON.stringify(entry));
@@ -44,7 +58,7 @@ export const ApiCache = {
   },
 
   invalidate(key) {
-    delete mem[key];
+    mem.delete(key);
     if (typeof window !== 'undefined') {
       try {
         sessionStorage.removeItem(storageKey(key));
@@ -53,7 +67,7 @@ export const ApiCache = {
   },
 
   clear() {
-    Object.keys(mem).forEach((k) => delete mem[k]);
+    mem.clear();
     if (typeof window !== 'undefined') {
       try {
         Object.keys(sessionStorage)

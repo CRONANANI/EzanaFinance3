@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { extractPdfText, parsePtrText, looksScanned } from '@/lib/house-disclosures/parse-ptr-pdf';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Phase 2: parse ELECTRONIC House PTR PDFs into public.house_trades.
@@ -16,7 +17,7 @@ import { fetchWithTimeout } from '@/lib/http/fetch-json';
  *
  * Amounts are stored as brackets (low/high/midpoint/label); the midpoint is a
  * labeled estimate only. Tickers come solely from a parenthesized symbol — a
- * non-security asset stays ticker=null. Auth: CRON_SECRET bearer (or ?key=).
+ * non-security asset stays ticker=null. Auth: CRON_SECRET bearer only (cronRoute).
  *   GET /api/cron/parse-house-ptrs?max=15
  */
 export const dynamic = 'force-dynamic';
@@ -27,22 +28,7 @@ const UA = 'EzanaFinance/1.0 (+https://ezana.world; datasets@ezana.world)';
 const THROTTLE_MS = 400; // a few requests/sec to a gov server
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
-
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-  }
-
+async function run(request) {
   const { searchParams } = new URL(request.url);
   const max = Math.min(Math.max(Number(searchParams.get('max')) || 15, 1), 40);
   const admin = getAdminClient();
@@ -157,3 +143,5 @@ export async function GET(request) {
     errors: errors.slice(0, 20),
   });
 }
+
+export const GET = cronRoute('parse-house-ptrs', run, { ttlSeconds: 360 });

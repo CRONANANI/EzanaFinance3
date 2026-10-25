@@ -7,6 +7,7 @@ import {
   tickerForRecipient,
   parseIsoYmd,
 } from '@/lib/usaspending';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Incremental sync of federal contract awards from USAspending into
@@ -42,17 +43,6 @@ const todayYmd = () => {
   const n = new Date();
   return `${n.getUTCFullYear()}-${pad2(n.getUTCMonth() + 1)}-${pad2(n.getUTCDate())}`;
 };
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 function buildBody(start_date, end_date, page) {
   return {
@@ -104,11 +94,7 @@ async function fetchPage(start_date, end_date, page) {
   }
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
-
+async function run(request) {
   try {
     const admin = getAdminClient();
     const syncedAt = new Date().toISOString();
@@ -241,3 +227,5 @@ export async function GET(request) {
     );
   }
 }
+
+export const GET = cronRoute('ingest-usaspending', run, { ttlSeconds: 360 });

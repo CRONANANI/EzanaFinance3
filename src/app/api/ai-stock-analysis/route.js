@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { enforceAiRateLimit } from '@/lib/ai-rate-limit';
 import { withApiGuard } from '@/lib/api-guard';
 import Anthropic from '@anthropic-ai/sdk';
 import { getModelConfig } from '@/lib/ai/analysis-prompts';
@@ -10,28 +11,11 @@ export const dynamic = 'force-dynamic';
 
 const MODEL = 'claude-sonnet-4-20250514';
 
-const aiRateMap = new Map();
-function checkAiRateLimit(ip) {
-  const now = Date.now();
-  const entry = aiRateMap.get(ip);
-  if (!entry || now - entry.ts > 60000) {
-    aiRateMap.set(ip, { ts: now, n: 1 });
-    return true;
-  }
-  entry.n++;
-  return entry.n <= 10;
-}
-
 export const POST = withApiGuard(
   async (request, user) => {
     try {
-      const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-      if (!checkAiRateLimit(ip)) {
-        return NextResponse.json(
-          { error: 'Rate limit exceeded. Try again in 60 seconds.' },
-          { status: 429 },
-        );
-      }
+      const blocked = await enforceAiRateLimit(user.id, 'ai-stock-analysis');
+      if (blocked) return blocked;
 
       const apiKey = process.env.ANTHROPIC_API_KEY;
       if (!apiKey) {

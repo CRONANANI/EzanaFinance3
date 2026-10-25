@@ -11,6 +11,7 @@ import {
 } from '@/lib/congress/client';
 import { deriveStage } from '@/lib/congress/stage';
 import { estimatePassage } from '@/lib/congress/passage-model';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Scheduled incremental ingest of Congress.gov legislative data into Supabase.
@@ -19,22 +20,17 @@ import { estimatePassage } from '@/lib/congress/passage-model';
  * meetings. Stage is derived (stage.js) and a structural passage probability is
  * computed (passage-model.js) at write time.
  *
- * Auth: CRON_SECRET bearer (same pattern as ingest-usaspending). The key
+ * Auth: Bearer cron secret, checked by cronRoute. The key
  * (datagovapi) is server-only. No mock rows are ever written.
  *
- *   curl https://ezana.world/api/cron/ingest-congress -H "Authorization: Bearer $CRON_SECRET"
+ *   curl https://ezana.world/api/cron/ingest-congress -H "Authorization: Bearer <cron secret>"
  * Optional: ?congress=119&limit=100  (defaults to current Congress).
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+export const maxDuration = 300;
 
 const DEFAULT_CONGRESS = 119; // current Congress; override via ?congress=
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  return (request.headers.get('authorization') || '') === `Bearer ${secret}`;
-}
 
 function partyLetter(p) {
   const s = String(p || '').toUpperCase();
@@ -44,10 +40,7 @@ function partyLetter(p) {
   return null;
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   if (!hasCongressKey()) {
     return NextResponse.json(
       { ok: false, error: 'Congress.gov key (datagovapi) not configured' },
@@ -188,3 +181,5 @@ export async function GET(request) {
     errors: errors.slice(0, 10),
   });
 }
+
+export const GET = cronRoute('ingest-congress', run, { ttlSeconds: 360 });

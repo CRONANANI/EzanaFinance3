@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { rebuildAll } from '@/lib/datasets/build-snapshots';
-import { isCronAuthorized } from '@/lib/ingest/chips/cron-auth';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Rebuild every dataset snapshot (or ?key=a,b), bust its tag and warm its
@@ -11,11 +11,10 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-export async function GET(request) {
-  if (!isCronAuthorized(request)) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   const keys = new URL(request.url).searchParams.get('key');
   const results = await rebuildAll(keys ? keys.split(',') : undefined);
   return NextResponse.json({ ok: !results.some((r) => r.error), results });
 }
+
+export const GET = cronRoute('rebuild-dataset-snapshots', run, { ttlSeconds: 360 });

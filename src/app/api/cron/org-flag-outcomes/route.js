@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { FmpAPI } from '@/lib/services/fmp';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -8,13 +9,6 @@ export const maxDuration = 300;
 // Score a flag at its 90-day horizon (or position exit, when that is tracked).
 const HORIZON_DAYS = 90;
 const CONVICTION_WEIGHT = { low: 1, med: 1.5, high: 2 };
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  const auth = request.headers.get('authorization') ?? '';
-  return auth === `Bearer ${secret}`;
-}
 
 /** Nearest daily close at or before a target date; falls back to the closest bar. */
 function closeAt(bars, targetMs) {
@@ -49,9 +43,6 @@ function latestClose(bars) {
 }
 
 async function run(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
   let supabase;
   try {
     supabase = getAdminClient();
@@ -163,9 +154,5 @@ async function run(request) {
   return NextResponse.json({ scored: rows.length });
 }
 
-export async function GET(request) {
-  return run(request);
-}
-export async function POST(request) {
-  return run(request);
-}
+export const GET = cronRoute('org-flag-outcomes', run, { ttlSeconds: 360 });
+export const POST = cronRoute('org-flag-outcomes', run, { ttlSeconds: 360 });

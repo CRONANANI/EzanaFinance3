@@ -1,24 +1,21 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
-import { isCronAuthorized } from '@/lib/ingest/chips/cron-auth';
 import { fetchNistPages } from '@/lib/ingest/chips/nist';
 import { bustIndustryCache, finishRun, startRun, upsertAndMatch } from '@/lib/ingest/chips/persist';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Monthly: the NIST CHIPS Program Office awards page (final vs proposed).
  * Honours robots.txt (a disallow logs status 'failed', error 'robots'),
  * 2 s between pages, at most 15 pages. A page that stops parsing fails the
  * run loudly and leaves the stored awards untouched.
- *   curl -H "Authorization: Bearer $CRON_SECRET" https://ezana.world/api/cron/chips-nist
+ *   curl -H "Authorization: Bearer <cron secret>" https://ezana.world/api/cron/chips-nist
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-export async function GET(request) {
-  if (!isCronAuthorized(request)) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   const admin = getAdminClient();
   const runId = await startRun(admin, 'chips_nist');
   try {
@@ -40,3 +37,5 @@ export async function GET(request) {
     return NextResponse.json({ ok: false, error: 'ingest failed' }, { status: 502 });
   }
 }
+
+export const GET = cronRoute('chips-nist', run, { ttlSeconds: 360 });

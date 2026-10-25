@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Compute a per-user interest vector (Echo gte-small 384-dim space) as the
@@ -11,7 +12,7 @@ import { getAdminClient } from '@/lib/supabase';
  * index-echo-articles), so cosine similarity between the two is meaningful.
  *
  *   GET /api/cron/compute-interest-vectors?days=45[&limit=1000]
- *   CRON_SECRET bearer (or ?key= fallback).
+ *   Bearer cron secret (cronRoute).
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -28,17 +29,6 @@ const EVENT_WEIGHT = {
 const CONSUMPTION_EVENTS = Object.keys(EVENT_WEIGHT);
 const EMBED_DIM = 384;
 
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
-
 /** pgvector columns come back as a JSON-ish string or an array; normalize. */
 function parseEmbedding(raw) {
   if (Array.isArray(raw)) return raw;
@@ -53,11 +43,7 @@ function parseEmbedding(raw) {
   return null;
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
-
+async function run(request) {
   const { searchParams } = new URL(request.url);
   const days = Math.min(Math.max(Number(searchParams.get('days')) || 45, 1), 180);
   const userLimit = Math.min(Math.max(Number(searchParams.get('limit')) || 1000, 1), 5000);
@@ -159,3 +145,5 @@ export async function GET(request) {
 
   return NextResponse.json({ ok: true, users: userIds.length, updated });
 }
+
+export const GET = cronRoute('compute-interest-vectors', run, { ttlSeconds: 120 });

@@ -1,46 +1,14 @@
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
-
-const rateLimit = new Map();
-
-export function rateLimiter({ interval = 60000, limit = 30 }) {
-  return {
-    check: (key) => {
-      const now = Date.now();
-      const record = rateLimit.get(key);
-
-      if (!record || now - record.start > interval) {
-        rateLimit.set(key, { start: now, count: 1 });
-        return { success: true, remaining: limit - 1 };
-      }
-
-      if (record.count >= limit) {
-        return { success: false, remaining: 0 };
-      }
-
-      record.count++;
-      return { success: true, remaining: limit - record.count };
-    },
-  };
-}
-
-// Cleanup old entries every 5 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, val] of rateLimit) {
-    if (now - val.start > 300000) rateLimit.delete(key);
-  }
-}, 300000);
+import { getClientIp as clientIp } from '@/lib/client-ip';
+import { checkRateLimit as checkDbRateLimit } from '@/lib/persistent-rate-limit';
 
 /* ═══════════════════════════════════════════════════════════════════════════
- * Layer 2b — Redis-backed, IP-level rate limiting (Upstash sliding window).
- *
- * An additional, faster layer in FRONT of the existing per-route logic (the
- * Supabase-backed auth lockout and the persistent global limiter). Deliberately
- * fail-OPEN: if Upstash isn't configured or a call errors, the request is
- * allowed and the failure is logged — a rate-limiter outage must never lock
- * users out. Auth routes keep their Supabase lockout as a backstop. Reuses the
- * same UPSTASH_REDIS_REST_URL / _TOKEN env vars as the cache layer.
+ * Redis-backed rate limiting (Upstash sliding window), the fast layer in
+ * front of the per-route logic. Without Upstash, or when it errors, checks
+ * fall back to the shared database limiter instead of passing everything;
+ * see checkRateLimit below. Reuses the UPSTASH_REDIS_REST_URL / _TOKEN env
+ * vars of the cache layer.
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 let redis;
@@ -84,35 +52,55 @@ function getLimiter(limit, windowStr) {
   return limiter;
 }
 
+/* Buckets that must never pass unmetered: auth, API keys, AI and Sonar. */
+const FAIL_CLOSED_PREFIX = /^(auth|api:key|ai|sonar)[:-]/;
+
+const UNIT_MS = { ms: 1, s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000 };
+export function windowToMs(windowStr) {
+  const m = /^\s*(\d+)\s*(ms|s|m|h|d)\s*$/.exec(String(windowStr || ''));
+  return m ? Number(m[1]) * UNIT_MS[m[2]] : 60_000;
+}
+
 /**
- * Check an IP/identifier against a sliding-window limit. Fails OPEN
- * (success:true) when Redis is unavailable or errors.
+ * Check an identifier against a sliding-window limit (Upstash Redis).
+ *
+ * When Redis is not configured or errors, the check falls back to the
+ * shared database limiter (src/lib/persistent-rate-limit.js) rather than
+ * silently allowing everything (reliability audit P2-12). Fail-closed
+ * buckets (auth:, api:key:, ai:, sonar:, or opts.failClosed) are refused if
+ * that also fails; the rest are allowed and the outage is reported.
  *
  * @param {string} identifier  e.g. `auth:send-verification:1.2.3.4`
- * @param {{limit?:number, window?:string}} [opts]  default 30 per '60 s'
+ * @param {{limit?:number, window?:string, failClosed?:boolean}} [opts]  default 30 per '60 s'
  * @returns {Promise<{success:boolean, remaining:number, reset:number, limit:number, degraded?:boolean}>}
  */
 export async function checkRateLimit(identifier, opts = {}) {
   const limit = opts.limit ?? 30;
   const window = opts.window ?? '60 s';
+  const id = String(identifier || 'unknown');
+  const failClosed = opts.failClosed ?? FAIL_CLOSED_PREFIX.test(id);
   const limiter = getLimiter(limit, window);
-  if (!limiter) {
-    return { success: true, remaining: limit, reset: 0, limit, degraded: true };
+  if (limiter) {
+    try {
+      const res = await limiter.limit(id);
+      return { success: res.success, remaining: res.remaining, reset: res.reset, limit: res.limit };
+    } catch (e) {
+      console.warn('[rate-limit] Redis check failed; using the database limiter:', e?.message);
+    }
   }
-  try {
-    const res = await limiter.limit(String(identifier || 'unknown'));
-    return { success: res.success, remaining: res.remaining, reset: res.reset, limit: res.limit };
-  } catch (e) {
-    console.warn('[rate-limit] check failed; failing open:', e?.message);
-    return { success: true, remaining: limit, reset: 0, limit, degraded: true };
-  }
+  const db = await checkDbRateLimit(`rl:${id}`, limit, windowToMs(window), { failClosed });
+  return {
+    success: db.allowed,
+    remaining: db.remaining,
+    reset: db.resetAt?.getTime?.() || 0,
+    limit,
+    degraded: true,
+  };
 }
 
-/** Best-effort client IP from Vercel / proxy headers. */
+/** The client IP (see src/lib/client-ip.js), or 'unknown'. */
 export function getClientIp(request) {
-  const xff = request.headers.get('x-forwarded-for');
-  if (xff) return xff.split(',')[0].trim();
-  return request.headers.get('x-real-ip') || 'unknown';
+  return clientIp(request) || 'unknown';
 }
 
 /** Build a standard 429 Response (with Retry-After) for a failed check. */

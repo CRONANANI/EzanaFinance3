@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { enforceAiRateLimit } from '@/lib/ai-rate-limit';
 import Anthropic from '@anthropic-ai/sdk';
 import { getUserClient } from '@/lib/supabase';
 import { sanitizeAIOutput } from '@/lib/sanitize';
@@ -8,18 +9,6 @@ import { OBSIDIAN_SYSTEM_PROMPT, buildObsidianUserPrompt } from '@/lib/ai/obsidi
 export const dynamic = 'force-dynamic';
 
 const MODEL = 'claude-sonnet-4-20250514';
-
-const obsidianRateMap = new Map();
-function checkRate(ip) {
-  const now = Date.now();
-  const e = obsidianRateMap.get(ip);
-  if (!e || now - e.ts > 60000) {
-    obsidianRateMap.set(ip, { ts: now, n: 1 });
-    return true;
-  }
-  e.n++;
-  return e.n <= 10;
-}
 
 export async function POST(request) {
   try {
@@ -31,13 +20,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-    if (!checkRate(ip)) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded. Try again in 60 seconds.' },
-        { status: 429 },
-      );
-    }
+    const blocked = await enforceAiRateLimit(user.id, 'obsidian');
+    if (blocked) return blocked;
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {

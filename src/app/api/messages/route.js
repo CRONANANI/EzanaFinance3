@@ -70,11 +70,22 @@ export const GET = withApiGuard(
 
       const convoIds = convos.map((c) => c.id);
 
-      const { data: lastMsgs } = await admin
-        .from('messages')
-        .select('id, conversation_id, sender_id, content, created_at, read_at')
-        .in('conversation_id', convoIds)
-        .order('created_at', { ascending: false });
+      /* Only the newest message per conversation (DISTINCT ON in the
+         latest_messages RPC), not every message ever sent; the old query
+         stays as the fallback until the migration is applied. */
+      let lastMsgs = null;
+      const latest = await admin.rpc('latest_messages', { p_conversation_ids: convoIds });
+      if (!latest.error) {
+        lastMsgs = latest.data;
+      } else {
+        const { data } = await admin
+          .from('messages')
+          .select('id, conversation_id, sender_id, content, created_at, read_at')
+          .in('conversation_id', convoIds)
+          .order('created_at', { ascending: false })
+          .limit(5000);
+        lastMsgs = data;
+      }
 
       const lastMsgMap = new Map();
       for (const msg of lastMsgs || []) {

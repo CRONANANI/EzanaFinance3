@@ -21,10 +21,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
     }
 
-    const ip =
-      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-      request.headers.get('x-real-ip') ||
-      'unknown';
+    const ip = getClientIp(request);
 
     const result = await recordLoginAttempt(email, ip, success);
     return NextResponse.json(result);

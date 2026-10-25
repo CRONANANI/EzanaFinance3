@@ -11,12 +11,10 @@ import { checkRateLimit, logSecurityEvent } from './persistent-rate-limit';
 const AUTH_LIMIT = 5;
 const AUTH_WINDOW_MS = 15 * 60 * 1000;
 
+import { getClientIp as clientIp } from './client-ip';
+
 function getClientIp(request) {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
+  return clientIp(request) || 'unknown';
 }
 
 /**
@@ -29,7 +27,8 @@ export async function enforceAuthRateLimit(request, options = {}) {
   const ip = getClientIp(request);
   const bucketKey = `auth:${ip}`;
 
-  const result = await checkRateLimit(bucketKey, AUTH_LIMIT, AUTH_WINDOW_MS);
+  /* Fail closed: a limiter outage must not open brute force on auth. */
+  const result = await checkRateLimit(bucketKey, AUTH_LIMIT, AUTH_WINDOW_MS, { failClosed: true });
 
   if (!result.allowed) {
     let endpoint = endpointLabel;

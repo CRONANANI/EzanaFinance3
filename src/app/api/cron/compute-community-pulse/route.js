@@ -1,20 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 120;
 
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  const auth = request.headers.get('authorization') ?? '';
-  return auth === `Bearer ${secret}`;
-}
-
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
-
+async function run(request) {
   try {
     const base =
       process.env.VERCEL_URL != null
@@ -37,3 +28,5 @@ export async function GET(request) {
     );
   }
 }
+
+export const GET = cronRoute('compute-community-pulse', run, { ttlSeconds: 180 });

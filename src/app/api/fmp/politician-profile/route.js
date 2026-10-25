@@ -6,11 +6,12 @@ import {
   US_STATE_FULL,
 } from '@/lib/capitol-politicians';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
+import { BoundedMap } from '@/lib/bounded-map';
 
 export const dynamic = 'force-dynamic';
 
 /** In-process cache for resolved BioGuideIDs (keyed by name+chamber). Expires on restart. */
-const bioGuideCache = new Map();
+const bioGuideCache = new BoundedMap(1000);
 
 function parseTradeSizeMidpoint(raw) {
   if (!raw || typeof raw !== 'string') return 0;

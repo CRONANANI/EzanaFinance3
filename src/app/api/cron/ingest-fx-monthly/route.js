@@ -3,7 +3,7 @@ import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { getFmpKey } from '@/lib/fmp/upcoming-events';
 import { floatingCurrencies, monthEnds } from '@/lib/sanctions/fx';
-import { withIngestRun } from '@/lib/ingest-runs';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Month-end FX rates against the dollar, into fx_monthly, for the Sanctions
@@ -13,7 +13,7 @@ import { withIngestRun } from '@/lib/ingest-runs';
  * skipped and reported; the card then shows "no FX data" for it. Pegged and
  * non-market currencies are not fetched (see src/lib/sanctions/fx.js).
  *   GET /api/cron/ingest-fx-monthly
- * Auth: CRON_SECRET as a Bearer header or ?key=.
+ * Auth: Bearer cron secret, checked by cronRoute.
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -22,21 +22,7 @@ export const maxDuration = 300;
 const FMP = 'https://financialmodelingprep.com/stable/historical-price-eod/light';
 const MONTHS = 26;
 
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
-
 async function handler(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
   const key = getFmpKey();
   if (!key) return NextResponse.json({ ok: false, error: 'no FMP key' }, { status: 500 });
   const admin = getAdminClient();
@@ -85,4 +71,4 @@ async function handler(request) {
 }
 
 /* Every run is logged to ingest_runs from this route's own JSON body. */
-export const GET = withIngestRun('fx-monthly', handler);
+export const GET = cronRoute('fx-monthly', handler, { ttlSeconds: 360 });

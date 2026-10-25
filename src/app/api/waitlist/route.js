@@ -24,6 +24,7 @@ import { senderAddress } from '@/lib/waitlist/invite';
 import { WAITLIST_HEARD_FROM, WAITLIST_ROLES } from '@/lib/waitlist/options';
 import { AGE_CONFIRM_TEXT, WAITLIST_MARKETING_CONSENT_TEXT, isTrue } from '@/lib/legal/consent';
 import { emailFooterHtml } from '@/lib/email/footer';
+import { getClientIp } from '@/lib/client-ip';
 
 export const dynamic = 'force-dynamic';
 
@@ -93,14 +94,13 @@ export const POST = withApiGuard(
         .maybeSingle();
       if (existing) return NextResponse.json(SUCCESS, { status: 200 });
 
-      const forwardedFor = request.headers.get('x-forwarded-for');
       const { data, error: insertError } = await supabase
         .from('waitlist')
         .insert({
           email,
           full_name: `${firstName} ${lastName}`,
           referral_source: 'signup_page',
-          ip_address: forwardedFor ? forwardedFor.split(',')[0].trim() : 'unknown',
+          ip_address: getClientIp(request) || 'unknown',
           user_agent: (request.headers.get('user-agent') || 'unknown').slice(0, 400),
           status: 'pending',
           metadata: {

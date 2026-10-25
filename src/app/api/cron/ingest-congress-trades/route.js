@@ -6,6 +6,7 @@ import { mirrorPhotos, runCongressIngest } from '@/lib/politicians/congress-inge
 import { readFeeds, readTrades } from '@/lib/politicians/congress-store';
 import { SNAPSHOT_ROWS, writeTradesSnapshot } from '@/lib/politicians/trades-snapshot';
 import LEGISLATORS from '@/lib/politicians/legislators-current.json';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Daily congressional-trades ingest into public.congress_members /
@@ -23,7 +24,7 @@ import LEGISLATORS from '@/lib/politicians/legislators-current.json';
  * After the ingest the newest rows are written to congress_trades_snapshot,
  * the route's fallback.
  *
- * Auth: CRON_SECRET bearer (or ?key=), like the other cron routes.
+ * Auth: Bearer cron secret, checked by cronRoute.
  *   GET /api/cron/ingest-congress-trades                 members + all trades
  *   GET /api/cron/ingest-congress-trades?chamber=house   one chamber's sources
  *   GET /api/cron/ingest-congress-trades?only=photos     mirror portraits (bounded)
@@ -33,24 +34,10 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
-
 const fmpEnabled = () =>
   String(process.env.FMP_CONGRESS_ENABLED ?? 'true').toLowerCase() !== 'false';
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   const { searchParams } = new URL(request.url);
   const db = getAdminClient();
 
@@ -104,3 +91,5 @@ export async function GET(request) {
     return NextResponse.json({ ok: false, error: err?.message }, { status: 500 });
   }
 }
+
+export const GET = cronRoute('ingest-congress-trades', run, { ttlSeconds: 360 });

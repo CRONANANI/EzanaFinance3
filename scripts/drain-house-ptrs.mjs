@@ -43,6 +43,12 @@ for (let run = 1; run <= maxRuns; run += 1) {
     if (errorStreak >= 3) break;
     continue;
   }
+  if (body?.skipped === 'locked') {
+    /* The scheduled run holds the cron lock; wait for it, then go on. */
+    console.log(`run ${run}: scheduled run in progress, waiting 30s`);
+    await new Promise((r) => setTimeout(r, 30_000));
+    continue;
+  }
   const parsed = body?.filings_parsed || 0;
   totalFilings += parsed;
   totalRows += body?.trade_rows || 0;

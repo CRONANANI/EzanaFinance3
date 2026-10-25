@@ -124,7 +124,8 @@ export const POST = withApiGuard(
 
       return NextResponse.json(
         { tickerA, tickerB, days: commonDates.length, ...stats },
-        { headers: { 'Cache-Control': 'public, s-maxage=600' } },
+        /* Signed-in, per-request data: never in a shared CDN cache. */
+        { headers: { 'Cache-Control': 'private, no-store' } },
       );
     } catch (err) {
       return NextResponse.json({ error: err?.message }, { status: 500 });

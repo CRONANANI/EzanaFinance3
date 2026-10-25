@@ -77,7 +77,7 @@ async function finishRun(admin, id, name, fields) {
   if (error) console.warn(`[cron-run] ${name}: ${error.message}`);
 }
 
-export async function withCronLock(name, ttlSeconds, fn) {
+export async function withCronLock(name, ttlSeconds, fn, { lockKey = name } = {}) {
   let admin;
   try {
     admin = getAdminClient();
@@ -85,7 +85,7 @@ export async function withCronLock(name, ttlSeconds, fn) {
     return NextResponse.json({ error: 'Server misconfigured' }, { status: 503 });
   }
   const holder = `${name}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
-  const lock = await tryLock(admin, name, ttlSeconds, holder);
+  const lock = await tryLock(admin, lockKey, ttlSeconds, holder);
   if (!lock.ok) return NextResponse.json({ ok: true, skipped: 'locked' }, { status: 200 });
 
   const runId = await startRun(admin, name);
@@ -106,7 +106,7 @@ export async function withCronLock(name, ttlSeconds, fn) {
     await recordFailedJob({ job: `cron:${name}`, error: message, payload: null });
     return NextResponse.json({ ok: false, error: message.slice(0, 300) }, { status: 500 });
   } finally {
-    if (lock.held) await release(admin, name, holder);
+    if (lock.held) await release(admin, lockKey, holder);
   }
 }
 
@@ -116,6 +116,18 @@ export function cronRoute(name, handler, { ttlSeconds = 900 } = {}) {
     if (!isCronAuthorized(request)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    return withCronLock(name, ttlSeconds, () => handler(request, context));
+    /* Scheduled variants of one route (different query strings, e.g.
+       ingest-sec-filings?families=insider vs ?families=institutional) lock
+       separately; the run log keeps the route name. */
+    let search = '';
+    try {
+      const u = new URL(request.url);
+      u.searchParams.sort();
+      search = u.searchParams.toString();
+    } catch {
+      search = '';
+    }
+    const lockKey = search ? `${name}?${search}` : name;
+    return withCronLock(name, ttlSeconds, () => handler(request, context), { lockKey });
   };
 }

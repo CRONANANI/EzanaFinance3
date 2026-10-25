@@ -4,6 +4,7 @@ import { downloadGcsText, isGcsConfigured } from '@/lib/house-disclosures/gcs';
 import { parseHouseIndexTxt } from '@/lib/house-disclosures/parse-index';
 import { dedupeByDocId } from '@/lib/house-disclosures/dedupe';
 import { writeWithOptionalColumn } from '@/lib/db/optional-column';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Ingest the U.S. House Clerk's yearly financial-disclosure INDEX into
@@ -22,7 +23,7 @@ import { writeWithOptionalColumn } from '@/lib/db/optional-column';
  * re-running never duplicates. Each year is wrapped in try/catch so one missing or
  * failed file doesn't abort the rest.
  *
- * Auth: CRON_SECRET bearer (or ?key=). Query:
+ * Auth: Bearer cron secret (cronRoute). Query:
  *   ?year=2026        — load a single year (use this to verify against known truth)
  *   ?years=2026,2025  — load a specific set
  *   (none)            — load all 19 years, 2008–2026
@@ -35,17 +36,6 @@ export const maxDuration = 300;
 const BUCKET = 'ezana-house-disclosures';
 const ALL_YEARS = Array.from({ length: 2026 - 2008 + 1 }, (_, i) => 2008 + i);
 const UPSERT_BATCH = 200;
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 function resolveYears(searchParams) {
   const one = searchParams.get('year');
@@ -163,10 +153,7 @@ async function ingestYear(admin, year, errors) {
   return { parsed, written, duplicates, complete: written === rows.length && coverage };
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   if (!isGcsConfigured()) {
     return NextResponse.json(
       { ok: false, error: 'GCP credentials not configured' },
@@ -219,3 +206,5 @@ export async function GET(request) {
     errors: errors.slice(0, 20),
   });
 }
+
+export const GET = cronRoute('ingest-house-disclosures', run, { ttlSeconds: 360 });

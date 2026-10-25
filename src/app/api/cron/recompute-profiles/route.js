@@ -1,19 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { buildUserProfile } from '@/lib/notifications/interest-profile';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-export async function GET(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return NextResponse.json({ error: 'Not configured' }, { status: 503 });
-
-  const auth = request.headers.get('authorization') ?? '';
-  if (auth !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
+async function run(request) {
   const admin = getAdminClient();
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
@@ -37,3 +30,5 @@ export async function GET(request) {
   console.log('[recompute-profiles]', { users_processed: processed });
   return NextResponse.json({ users_processed: processed, total_active: uniqueIds.length });
 }
+
+export const GET = cronRoute('recompute-profiles', run, { ttlSeconds: 120 });

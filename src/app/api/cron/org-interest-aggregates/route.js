@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Compute org-level "attention" aggregates from members' interest profiles, so
@@ -17,7 +18,7 @@ import { getAdminClient } from '@/lib/supabase';
  *     asset_class). Per-ticker scores are intentionally NOT aggregated.
  *
  *   GET /api/cron/org-interest-aggregates[?k=3&top=20]
- *   CRON_SECRET bearer (or ?key= fallback).
+ *   CRON_SECRET bearer only (cronRoute).
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -35,22 +36,7 @@ const DIMENSIONS = {
 const PROFILE_COLS = ['user_id', 'personalization_enabled', ...Object.keys(DIMENSIONS)].join(', ');
 const DEFAULT_K = 3;
 
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
-
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
-
+async function run(request) {
   const { searchParams } = new URL(request.url);
   // K floor never drops below the hard privacy minimum, whatever the query says.
   const K = Math.max(Number(searchParams.get('k')) || DEFAULT_K, DEFAULT_K);
@@ -147,3 +133,5 @@ export async function GET(request) {
 
   return NextResponse.json({ ok: true, orgs: orgUsers.size, orgsWritten, rowsWritten, k: K });
 }
+
+export const GET = cronRoute('org-interest-aggregates', run, { ttlSeconds: 120 });

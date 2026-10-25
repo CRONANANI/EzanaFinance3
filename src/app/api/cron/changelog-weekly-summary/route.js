@@ -1,21 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { fetchCommits, summarizeCommits, getIsoWeekRange } from '@/lib/changelog/git-summarizer';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 120;
 
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  return (request.headers.get('authorization') ?? '') === `Bearer ${secret}`;
-}
-
 async function run(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
   let supabaseAdmin;
   try {
     supabaseAdmin = getAdminClient();
@@ -104,10 +96,5 @@ async function run(request) {
   });
 }
 
-export async function GET(request) {
-  return run(request);
-}
-
-export async function POST(request) {
-  return run(request);
-}
+export const GET = cronRoute('changelog-weekly-summary', run, { ttlSeconds: 180 });
+export const POST = GET;

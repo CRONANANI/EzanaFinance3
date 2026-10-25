@@ -14,6 +14,7 @@ import { normalizeQuarter, QUARTERS, QUARTER_PERIOD_CODE } from '@/lib/lobbying/
 import { validateBatch, topCanonicalMerges } from '@/lib/lobbying/quality';
 import { bucketsForFiling, issueBucket } from '@/lib/lobbying/entities';
 import { writeWithOptionalColumn } from '@/lib/db/optional-column';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Resumable, per-quarter ingest of Senate LDA filings into Supabase.
@@ -25,8 +26,8 @@ import { writeWithOptionalColumn } from '@/lib/db/optional-column';
  * budget), records progress, then stops; the next run resumes where it left off.
  * Idempotent: filings upsert on filing_uuid, so re-runs never duplicate.
  *
- * Auth: CRON_SECRET bearer. Server-only LDA key.
- *   curl .../api/cron/ingest-lobbying -H "Authorization: Bearer $CRON_SECRET"
+ * Auth: Bearer cron secret (cronRoute). Server-only LDA key.
+ *   curl .../api/cron/ingest-lobbying -H "Authorization: Bearer <cron secret>"
  * Params: ?years=2025,2024,2026 ?quarters=q1,q2 ?pageSize=100 ?pagesPerQuarter=6
  */
 export const dynamic = 'force-dynamic';
@@ -58,21 +59,6 @@ function outOfTime(budget) {
 /** A failure that will repeat for every quarter this run (bad key, throttled). */
 function isRunFatal(res) {
   return Boolean(res?.authRejected || res?.rateLimited);
-}
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  // Primary: Vercel cron auto-injects `Authorization: Bearer $CRON_SECRET`.
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  // Fallback: `?key=$CRON_SECRET` for cron setups that can't send a custom
-  // header (e.g. some Vercel plans). Same secret; query params can appear in
-  // access logs, so the header path is preferred where available.
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
 }
 
 /** Normalized LDA filing → lobbying_filings row (incl. the quarter column). */
@@ -406,10 +392,7 @@ async function rescanQuarter(admin, budget, { year, quarter, state }, pages, err
   };
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   if (!hasLdaKey()) {
     return NextResponse.json(
       { ok: false, error: 'LDA key (Lobbyingdisclosuregov) not configured' },
@@ -544,7 +527,10 @@ export async function GET(request) {
   }
 
   // The dimension hubs summarise this table.
-  if (results.some((r) => r.delta)) revalidateTag('hubs');
+  if (results.some((r) => r.delta)) {
+    revalidateTag('hubs');
+    revalidateTag('lobbying-page');
+  }
 
   return NextResponse.json({
     ok: !stopReason,
@@ -560,3 +546,5 @@ export async function GET(request) {
     errors: errors.slice(0, 12),
   });
 }
+
+export const GET = cronRoute('ingest-lobbying', run, { ttlSeconds: 360 });

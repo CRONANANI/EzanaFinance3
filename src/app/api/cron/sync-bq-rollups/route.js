@@ -8,13 +8,14 @@ import {
   getRecentAwards,
 } from '@/lib/bigquery-contracts';
 import { normalizeAgency } from '@/lib/gov-agency-taxonomy';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Sync BigQuery contract rollups → Supabase (the page reads the small rollups,
  * never raw BigQuery). Refreshes gov_contract_coverage for every fiscal year,
  * then processes a BOUNDED number of fiscal years per invocation (resumable via
  * ingest_progress) so it can't time out. Keeps the top N recipients per FY.
- * CRON_SECRET bearer (or ?key=). Idempotent (upserts on the rollup PKs).
+ * CRON_SECRET bearer only (cronRoute). Idempotent (upserts on the rollup PKs).
  *   GET /api/cron/sync-bq-rollups?maxFys=2&topN=1000
  */
 export const dynamic = 'force-dynamic';
@@ -26,17 +27,6 @@ const JOB = 'sync-bq-rollups';
 const DEFAULT_MAX_FYS = 2;
 const DEFAULT_TOP_N = 1000;
 const UPSERT_CHUNK = 500;
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 /** BigQuery numeric/int cells come back as number | string | {value}. */
 function num(v) {
@@ -58,10 +48,7 @@ async function upsertChunked(admin, table, rows, onConflict) {
   return { count, errors };
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   if (!isBigQueryConfigured()) {
     return NextResponse.json({ ok: false, error: 'BigQuery not configured' }, { status: 503 });
   }
@@ -82,7 +69,11 @@ export async function GET(request) {
   }
   bytesBilled += cov.bytesBilled || 0;
   const coverageRows = cov.rows
-    .map((r) => ({ fiscal_year: Number(r.fiscal_year), awards: num(r.awards), total: num(r.total) }))
+    .map((r) => ({
+      fiscal_year: Number(r.fiscal_year),
+      awards: num(r.awards),
+      total: num(r.total),
+    }))
     .filter((r) => Number.isFinite(r.fiscal_year));
   if (coverageRows.length) {
     const { errors: e } = await upsertChunked(
@@ -129,7 +120,12 @@ export async function GET(request) {
       synced_at: syncedAt,
     }));
     // eslint-disable-next-line no-await-in-loop
-    const aRes = await upsertChunked(admin, 'gov_contract_agency_rollup', agencyUpserts, 'fiscal_year,awarding_agency');
+    const aRes = await upsertChunked(
+      admin,
+      'gov_contract_agency_rollup',
+      agencyUpserts,
+      'fiscal_year,awarding_agency',
+    );
     agencyRows += aRes.count;
     errors.push(...aRes.errors);
 
@@ -151,7 +147,12 @@ export async function GET(request) {
       synced_at: syncedAt,
     }));
     // eslint-disable-next-line no-await-in-loop
-    const rRes = await upsertChunked(admin, 'gov_contract_recipient_rollup', recipientUpserts, 'fiscal_year,recipient_name,awarding_agency');
+    const rRes = await upsertChunked(
+      admin,
+      'gov_contract_recipient_rollup',
+      recipientUpserts,
+      'fiscal_year,recipient_name,awarding_agency',
+    );
     recipientRows += rRes.count;
     errors.push(...rRes.errors);
 
@@ -218,7 +219,12 @@ export async function GET(request) {
       job: JOB,
       fiscal_year: done ? null : newLastFy, // reset when a full sweep completes
       status: done ? 'done' : 'running',
-      detail: { processed, recipient_rows: recipientRows, agency_rows: agencyRows, bytes_billed: bytesBilled },
+      detail: {
+        processed,
+        recipient_rows: recipientRows,
+        agency_rows: agencyRows,
+        bytes_billed: bytesBilled,
+      },
       updated_at: syncedAt,
     },
     { onConflict: 'job' },
@@ -236,3 +242,5 @@ export async function GET(request) {
     errors: errors.slice(0, 20),
   });
 }
+
+export const GET = cronRoute('sync-bq-rollups', run, { ttlSeconds: 360 });

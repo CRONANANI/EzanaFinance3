@@ -9,6 +9,7 @@ import {
   secRequestCount,
 } from '@/lib/sec-edgar';
 import { getCompanyFacts, pvpFromCompanyFacts, pvpFromInlineXbrl, ixDei } from '@/lib/sec/xbrl';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Pay versus performance (Item 402(v)) into sec_exec_comp, one row per company,
@@ -27,7 +28,7 @@ import { getCompanyFacts, pvpFromCompanyFacts, pvpFromInlineXbrl, ixDei } from '
  * watchlist, resolved to CIKs through company_tickers.json. Never-synced
  * companies first (rotating daily so none is starved), then the stalest.
  * Bounded by time; proxies are annual, so a monthly revisit is plenty.
- * Auth: CRON_SECRET bearer (or ?key=).   GET /api/cron/ingest-exec-comp[?max=60]
+ * Auth: Bearer cron secret (cronRoute).   GET /api/cron/ingest-exec-comp[?max=60]
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -35,17 +36,6 @@ export const maxDuration = 300;
 
 const RUN_BUDGET_MS = 230_000;
 const REVISIT_DAYS = 30;
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 async function pageAll(build, cap = 50) {
   const out = [];
@@ -121,10 +111,7 @@ async function latestDef14a(cik) {
   return null;
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   const started = Date.now();
   const outOfTime = () => Date.now() - started > RUN_BUDGET_MS;
   const { searchParams } = new URL(request.url);
@@ -256,3 +243,5 @@ export async function GET(request) {
     errors: errors.slice(0, 20),
   });
 }
+
+export const GET = cronRoute('ingest-exec-comp', run, { ttlSeconds: 360 });

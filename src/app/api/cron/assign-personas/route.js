@@ -1,19 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { assignPersona } from '@/lib/ml/persona-assignment';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-export async function GET(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return NextResponse.json({ error: 'Not configured' }, { status: 503 });
-
-  const auth = request.headers.get('authorization') ?? '';
-  if (auth !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
+async function run(request) {
   const admin = getAdminClient();
 
   const { data: profiles, error: profErr } = await admin
@@ -68,3 +61,5 @@ export async function GET(request) {
   console.log('[assign-personas]', { total_users: upserts.length, distribution });
   return NextResponse.json({ total_users: upserts.length, distribution });
 }
+
+export const GET = cronRoute('assign-personas', run, { ttlSeconds: 120 });

@@ -8,6 +8,7 @@ import {
   isLoaderConfigured,
   uploadNdjson,
 } from '@/lib/house-disclosures/bq-loader';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Mirror the House disclosure tables from Supabase into BigQuery.
@@ -22,8 +23,7 @@ import {
  * half-applied mixture, because WRITE_TRUNCATE swaps the table contents
  * atomically when the job succeeds and leaves them untouched when it fails.
  *
- * Auth: CRON_SECRET bearer (or ?key= for cron setups that cannot send a
- * header), matching the other cron routes here.
+ * Auth: CRON_SECRET bearer only (cronRoute), matching the other cron routes.
  *   GET /api/cron/sync-house-bq
  *   GET /api/cron/sync-house-bq?tables=trades
  */
@@ -99,17 +99,6 @@ const TABLES = {
     ],
   },
 };
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 /**
  * One NDJSON line per row.
@@ -293,10 +282,7 @@ async function countInBigQuery(bq, target, errors, key) {
   }
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   if (!isLoaderConfigured()) {
     /* Named explicitly rather than falling back to the reader account: the
        reader holds Storage Object Viewer only, so a fallback would fail
@@ -411,3 +397,5 @@ export async function GET(request) {
     warnings: warnings.slice(0, 20),
   });
 }
+
+export const GET = cronRoute('sync-house-bq', run, { ttlSeconds: 360 });

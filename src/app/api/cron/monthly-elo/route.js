@@ -35,6 +35,7 @@ import {
   applyPillarCOngoingCap,
 } from '@/lib/elo-portfolio-perf';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -49,13 +50,6 @@ function getFmpKey() {
 }
 
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  const auth = request.headers.get('authorization') ?? '';
-  return auth === `Bearer ${secret}`;
-}
 
 function getPriorMonthRange(now = new Date()) {
   const year = now.getFullYear();
@@ -393,9 +387,6 @@ async function processOnePortfolioType(supabase, userId, dateRange, spyReturn, i
 }
 
 async function run(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
   let supabase;
   try {
     supabase = getAdminClient();
@@ -480,10 +471,5 @@ async function run(request) {
   });
 }
 
-export async function GET(request) {
-  return run(request);
-}
-
-export async function POST(request) {
-  return run(request);
-}
+export const GET = cronRoute('monthly-elo', run, { ttlSeconds: 360 });
+export const POST = cronRoute('monthly-elo', run, { ttlSeconds: 360 });

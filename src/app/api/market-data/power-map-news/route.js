@@ -6,6 +6,7 @@ import {
   alphaVantageTopicForLayers,
   alphaVantageTickerForCountry,
 } from '@/lib/powerMapArticleQueries';
+import { BoundedMap } from '@/lib/bounded-map';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +34,7 @@ function fetchWithTimeout(url, opts = {}, ms = 2500) {
 // Best-effort in-memory cache keyed by country+layers so repeat chain selections
 // on a warm instance are instant (complements the CDN s-maxage/SWR headers).
 const MEM_TTL_MS = 10 * 60 * 1000;
-const memCache = new Map(); // key -> { at: number, payload: object }
+const memCache = new BoundedMap(200); // key -> { at: number, payload: object }
 
 /**
  * GET /api/market-data/power-map-news

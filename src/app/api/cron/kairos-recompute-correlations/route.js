@@ -9,22 +9,13 @@ import {
   LOOKAHEAD_WINDOWS,
   HISTORY_WINDOW,
 } from '@/lib/kairos/regions';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 600;
 
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  const auth = request.headers.get('authorization') ?? '';
-  return auth === `Bearer ${secret}`;
-}
-
 async function run(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
   let supabaseAdmin;
   try {
     supabaseAdmin = getAdminClient();
@@ -139,10 +130,5 @@ async function run(request) {
   });
 }
 
-export async function GET(request) {
-  return run(request);
-}
-
-export async function POST(request) {
-  return run(request);
-}
+export const GET = cronRoute('kairos-recompute-correlations', run, { ttlSeconds: 660 });
+export const POST = cronRoute('kairos-recompute-correlations', run, { ttlSeconds: 660 });

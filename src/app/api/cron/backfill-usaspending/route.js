@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { fyWindow, isPlausibleAward, tickerForRecipient, parseIsoYmd } from '@/lib/usaspending';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Resumable historical backfill of federal contract awards, FY2008-FY2026, from
  * USAspending into public.usaspending_contract_awards. Separate from the
- * incremental cron (ingest-usaspending). CRON_SECRET bearer (or ?key=).
+ * incremental cron (ingest-usaspending). Bearer cron secret (cronRoute).
  *
  *   Phase 0 — measure, NO writes:
  *     GET /api/cron/backfill-usaspending?mode=count
@@ -62,17 +63,6 @@ const pad2 = (n) => String(n).padStart(2, '0');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const generatedId = (r) =>
   r.generated_internal_id || (r.internal_id != null ? String(r.internal_id) : '');
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 /** POST with timeout + retry/backoff on 429/5xx/network. */
 async function postJson(url, body) {
@@ -191,11 +181,7 @@ function bump(reasons, key) {
   return null;
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
-
+async function run(request) {
   const { searchParams } = new URL(request.url);
   if (searchParams.get('mode') === 'count') {
     try {
@@ -337,3 +323,5 @@ export async function GET(request) {
     errors: errors.slice(0, 20),
   });
 }
+
+export const GET = cronRoute('backfill-usaspending', run, { ttlSeconds: 360 });

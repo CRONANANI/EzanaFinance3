@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { WB_INDICATORS, WB_FROM_YEAR } from '@/lib/lighthouse/indicators';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * World Bank Indicators API (v2, no key, CC BY 4.0) into
@@ -9,7 +10,7 @@ import { WB_INDICATORS, WB_FROM_YEAR } from '@/lib/lighthouse/indicators';
  * income-group aggregates are dropped. Annual values from WB_FROM_YEAR, one
  * request per indicator. Null values are not stored.
  *   GET /api/cron/ingest-worldbank
- * Auth: CRON_SECRET as a Bearer header or ?key=.
+ * Auth: CRON_SECRET as a Bearer header only (cronRoute).
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -21,17 +22,6 @@ const HEADERS = {
   Accept: 'application/json',
   'User-Agent': 'EzanaFinance/1.0 (+https://ezana.world)',
 };
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 async function getJson(url) {
   const res = await fetch(url, {
@@ -86,10 +76,7 @@ async function indicatorRows(ind, names, stamp) {
   return out;
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   const admin = getAdminClient();
   const stamp = new Date().toISOString();
   const errors = [];
@@ -137,3 +124,5 @@ export async function GET(request) {
     errors: errors.slice(0, 10),
   });
 }
+
+export const GET = cronRoute('ingest-worldbank', run, { ttlSeconds: 360 });

@@ -11,71 +11,71 @@
     },
     {
       "path": "/api/cron/platform-aggregates",
-      "schedule": "0 6 * * *"
+      "schedule": "31 6 * * *"
     },
     {
       "path": "/api/cron/sync-empire-data",
-      "schedule": "0 6 * * 1"
+      "schedule": "52 6 * * 1"
     },
     {
       "path": "/api/cron/politician-performance",
-      "schedule": "0 7 * * 1"
+      "schedule": "47 7 * * 1"
     },
     {
       "path": "/api/cron/hard-delete-accounts",
-      "schedule": "0 3 * * *"
+      "schedule": "8 3 * * *"
     },
     {
       "path": "/api/cron/portfolio-snapshot",
-      "schedule": "0 22 * * *"
+      "schedule": "7 22 * * *"
     },
     {
       "path": "/api/cron/monthly-elo",
-      "schedule": "0 2 1 * *"
+      "schedule": "13 2 1 * *"
     },
     {
       "path": "/api/cron/elo-decay",
-      "schedule": "0 4 * * *"
+      "schedule": "2 4 * * *"
     },
     {
       "path": "/api/cron/org-rating-decay",
-      "schedule": "0 4 * * *"
+      "schedule": "22 4 * * *"
     },
     {
       "path": "/api/cron/competition-scorer",
-      "schedule": "0 * * * *"
+      "schedule": "4 * * * *"
     },
     {
       "path": "/api/cron/kairos-recompute-correlations",
-      "schedule": "0 3 * * 0"
+      "schedule": "33 3 * * 0"
     },
     {
       "path": "/api/cron/changelog-daily-summary",
-      "schedule": "0 23 * * *"
+      "schedule": "9 23 * * *"
     },
     {
       "path": "/api/cron/index-help-center",
-      "schedule": "0 5 * * *"
+      "schedule": "23 5 * * *"
     },
     {
       "path": "/api/notifications/generate",
-      "schedule": "0 */2 * * *"
+      "schedule": "26 */2 * * *"
     },
     {
       "path": "/api/notifications/generate-capitol",
-      "schedule": "0 8,18 * * 1-5"
+      "schedule": "6 8,18 * * 1-5"
     },
     {
       "path": "/api/cron/assign-personas",
-      "schedule": "0 5 * * 0"
+      "schedule": "49 5 * * 0"
     },
     {
       "path": "/api/cron/recompute-profiles",
-      "schedule": "0 4 * * *"
+      "schedule": "34 4 * * *"
     },
     {
       "path": "/api/cron/compute-interest-vectors",
-      "schedule": "0 5 * * *"
+      "schedule": "3 5 * * *"
     },
     {
       "path": "/api/cron/org-interest-aggregates",
@@ -87,31 +87,31 @@
     },
     {
       "path": "/api/cron/prune-breadcrumbs",
-      "schedule": "0 3 1 * *"
+      "schedule": "47 3 1 * *"
     },
     {
       "path": "/api/news/alpha-vantage/poll",
-      "schedule": "*/5 * * * *"
+      "schedule": "4-59/5 * * * *"
     },
     {
       "path": "/api/cron/compute-community-pulse",
-      "schedule": "*/5 * * * *"
+      "schedule": "3-59/5 * * * *"
     },
     {
       "path": "/api/cron/refresh-materialized-views",
-      "schedule": "*/10 * * * *"
+      "schedule": "1-59/10 * * * *"
     },
     {
       "path": "/api/cron/ingest-usaspending",
-      "schedule": "0 7 * * *"
+      "schedule": "12 7 * * *"
     },
     {
       "path": "/api/cron/resolve-contractor-recipients",
-      "schedule": "40 7 * * *"
+      "schedule": "44 7 * * *"
     },
     {
       "path": "/api/cron/eyes-portwatch",
-      "schedule": "40 6 * * *"
+      "schedule": "43 6 * * *"
     },
     {
       "path": "/api/cron/eyes-fred",
@@ -127,7 +127,7 @@
     },
     {
       "path": "/api/cron/ingest-sec-filings?days=3",
-      "schedule": "0 8,20 * * *"
+      "schedule": "4 8,20 * * *"
     },
     {
       "path": "/api/cron/ingest-sec-holdings?max13f=40&maxActivist=40",
@@ -155,7 +155,7 @@
     },
     {
       "path": "/api/cron/ingest-exec-comp",
-      "schedule": "5 7 * * *"
+      "schedule": "8 7 * * *"
     },
     {
       "path": "/api/cron/ingest-etf-holdings",
@@ -167,7 +167,7 @@
     },
     {
       "path": "/api/cron/ingest-lobbying?years=2026,2025,2024&pagesPerQuarter=20",
-      "schedule": "0 * * * *"
+      "schedule": "6 * * * *"
     },
     {
       "path": "/api/cron/ingest-lobbying-contributions",
@@ -175,11 +175,11 @@
     },
     {
       "path": "/api/cron/ingest-house-disclosures?year=2026",
-      "schedule": "0 6 * * *"
+      "schedule": "3 6 * * *"
     },
     {
       "path": "/api/cron/parse-house-ptrs?max=60",
-      "schedule": "0 * * * *"
+      "schedule": "53 * * * *"
     },
     {
       "path": "/api/cron/ingest-senate-ptrs?max=40",
@@ -199,15 +199,15 @@
     },
     {
       "path": "/api/cron/recompute-council-elo",
-      "schedule": "0 10 * * *"
+      "schedule": "11 10 * * *"
     },
     {
       "path": "/api/cron/ingest-lobbying?years=2026,2025&mode=rescan&rescanPages=5",
-      "schedule": "0 5 * * 0"
+      "schedule": "27 5 * * 0"
     },
     {
       "path": "/api/cron/index-polymarket?maxMarkets=1500",
-      "schedule": "0 */2 * * *"
+      "schedule": "12 */2 * * *"
     },
     {
       "path": "/api/cron/index-prediction-markets?maxMarkets=2000",
@@ -243,19 +243,19 @@
     },
     {
       "path": "/api/cron/ingest-ofac-details",
-      "schedule": "40 6 * * *"
+      "schedule": "46 6 * * *"
     },
     {
       "path": "/api/cron/ingest-ofac-actions",
-      "schedule": "50 */6 * * *"
+      "schedule": "56 */6 * * *"
     },
     {
       "path": "/api/cron/org-flag-outcomes",
-      "schedule": "0 6 * * *"
+      "schedule": "14 6 * * *"
     },
     {
       "path": "/api/cron/index-echo-articles?limit=500",
-      "schedule": "0 5 * * *"
+      "schedule": "11 5 * * *"
     },
     {
       "path": "/api/cron/ingest-fec?cycle=2026",

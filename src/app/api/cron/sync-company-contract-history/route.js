@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { isBigQueryConfigured } from '@/lib/bigquery-client';
 import { companyTopAwards, companyYearTotals } from '@/lib/bigquery-company-contracts';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * GET /api/cron/sync-company-contract-history
@@ -16,7 +17,7 @@ import { companyTopAwards, companyYearTotals } from '@/lib/bigquery-company-cont
  *   ?dry=1      report the bytes each query would scan, write nothing
  *   ?fyTo=2026  last fiscal year (default: the latest in gov_contract_coverage)
  *
- * CRON_SECRET bearer (or ?key=).
+ * CRON_SECRET bearer only (cronRoute).
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -24,17 +25,6 @@ export const maxDuration = 300;
 
 const YEARS = 10;
 const CHUNK = 500;
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 /* BigQuery numeric and date cells come back as number | string | { value }. */
 const val = (v) => (v != null && typeof v === 'object' && 'value' in v ? v.value : v);
@@ -51,10 +41,7 @@ async function upsert(admin, table, rows, onConflict, errors) {
   return n;
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   if (!isBigQueryConfigured()) {
     return NextResponse.json({ ok: false, error: 'BigQuery not configured' }, { status: 503 });
   }
@@ -215,3 +202,5 @@ export async function GET(request) {
     errors: errors.slice(0, 10),
   });
 }
+
+export const GET = cronRoute('sync-company-contract-history', run, { ttlSeconds: 360 });

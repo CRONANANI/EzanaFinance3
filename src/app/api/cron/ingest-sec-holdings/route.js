@@ -22,6 +22,7 @@ import {
   parseSecHeader,
   buildActivistRow,
 } from '@/lib/sec/schedule13-meta';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Phase 2: parse holdings for filings already in sec_filings.
@@ -48,7 +49,7 @@ import {
  * Bounded per run so it stays within the function timeout and the SEC throttle
  * (each 13F costs two SEC requests, each 13D/13G one or two; at about 6 req/s
  * the default caps take well under a minute of SEC time). Idempotent.
- * Auth: CRON_SECRET bearer (or ?key=).
+ * Auth: CRON_SECRET bearer only (cronRoute).
  *   GET /api/cron/ingest-sec-holdings?max13f=40&maxActivist=40[&maxReparse=20]
  */
 export const dynamic = 'force-dynamic';
@@ -59,17 +60,6 @@ const RUN_BUDGET_MS = 230_000;
 const PROBE_BATCH = 40;
 const INSERT_CHUNK = 1000;
 const IN_CHUNK = 300;
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 /** Recent-period 13F filings with no holdings yet: newest period first. */
 async function unparsed13F(admin, periods, cap) {
@@ -249,11 +239,7 @@ async function applyRetention(admin, oldestKept, errors) {
   return removed;
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-  }
-
+async function run(request) {
   const started = Date.now();
   const outOfTime = () => Date.now() - started > RUN_BUDGET_MS;
   const { searchParams } = new URL(request.url);
@@ -418,6 +404,8 @@ export async function GET(request) {
   if (holdingsRows || positions || reparsed || removed) {
     revalidateTag('titans');
     revalidateTag('hubs');
+    /* The Burry watcher reads Scion's 13F (24 h cache otherwise). */
+    revalidateTag('burry');
   }
 
   return NextResponse.json({
@@ -435,3 +423,5 @@ export async function GET(request) {
     errors: errors.slice(0, 20),
   });
 }
+
+export const GET = cronRoute('ingest-sec-holdings', run, { ttlSeconds: 360 });

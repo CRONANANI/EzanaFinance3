@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache';
 import { refreshCapitolReadModels } from '@/lib/datasets/capitol-hub/read-models';
 import { getAdminClient } from '@/lib/supabase';
 import { fetchCommitteeSources, toCommitteeRows, toMemberRows } from '@/lib/congress/committees';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Daily sync of congressional committees and assignments from the public-domain
@@ -14,8 +15,8 @@ import { fetchCommitteeSources, toCommitteeRows, toMemberRows } from '@/lib/cong
  * write succeeds are rows from earlier runs (people who left a committee,
  * committees that no longer exist) deleted.
  *
- * Auth: CRON_SECRET bearer (same pattern as ingest-congress).
- *   curl https://ezana.world/api/cron/ingest-committees -H "Authorization: Bearer $CRON_SECRET"
+ * Auth: Bearer cron secret, checked by cronRoute.
+ *   curl https://ezana.world/api/cron/ingest-committees -H "Authorization: Bearer <cron secret>"
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -25,12 +26,6 @@ const MIN_COMMITTEES = 20;
 const MIN_MEMBERSHIPS = 400;
 const CHUNK = 500;
 
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  return (request.headers.get('authorization') || '') === `Bearer ${secret}`;
-}
-
 async function upsertChunks(admin, table, rows, onConflict) {
   for (let i = 0; i < rows.length; i += CHUNK) {
     const { error } = await admin.from(table).upsert(rows.slice(i, i + CHUNK), { onConflict });
@@ -38,11 +33,7 @@ async function upsertChunks(admin, table, rows, onConflict) {
   }
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
-
+async function run(request) {
   const runStart = new Date().toISOString();
 
   let sources;
@@ -107,7 +98,10 @@ export async function GET(request) {
   const readModels = members.length ? await refreshCapitolReadModels() : null;
 
   // The dimension hubs summarise this table.
-  if (members.length) revalidateTag('hubs');
+  if (members.length) {
+    revalidateTag('hubs');
+    revalidateTag('committees');
+  }
 
   return NextResponse.json({
     ok: errors.length === 0,
@@ -124,3 +118,5 @@ export async function GET(request) {
     errors,
   });
 }
+
+export const GET = cronRoute('ingest-committees', run, { ttlSeconds: 180 });

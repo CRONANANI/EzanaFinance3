@@ -2,30 +2,17 @@ import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { ingestFred } from '@/lib/eyes/ingest';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * GET /api/cron/eyes-fred  (FRED commercial real estate and freight series, daily)
- * Eyes Above ingest; see src/lib/eyes/ingest.js. Auth: CRON_SECRET as a
- * Bearer header or ?key=.
+ * Eyes Above ingest; see src/lib/eyes/ingest.js. Auth: Bearer cron secret,
+ * checked by cronRoute.
  */
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
-
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   const started = Date.now();
   try {
     const result = await ingestFred(getAdminClient());
@@ -39,3 +26,5 @@ export async function GET(request) {
     );
   }
 }
+
+export const GET = cronRoute('eyes-fred', run, { ttlSeconds: 360 });

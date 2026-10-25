@@ -2,9 +2,16 @@ import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { insertNotificationAndPush } from '@/lib/push/fanout';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
+import {
+  claimDeliveries,
+  releaseDelivery,
+  mapLimit,
+  pairKey,
+} from '@/lib/notifications/delivery-claim';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 30;
+export const maxDuration = 120;
 export const runtime = 'nodejs';
 
 function getFmpKey() {
@@ -12,13 +19,6 @@ function getFmpKey() {
 }
 
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  const auth = request.headers.get('authorization') ?? '';
-  return auth === `Bearer ${secret}`;
-}
 
 async function fetchChamberTrades(chamber, FMP_KEY) {
   const endpoint = chamber === 'senate' ? 'senate-trades' : 'house-trades';
@@ -41,11 +41,7 @@ function tradeRepresentative(trade) {
   return trade.representative || trade.senator || 'A Congress member';
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
+async function run() {
   const FMP_KEY = getFmpKey();
   const admin = getAdminClient();
   let totalSent = 0;
@@ -90,37 +86,34 @@ export async function GET(request) {
       const fpBase = `${trade.transactionDate || trade.disclosureDate || ''}-${symbol}-${representative}`;
       const fingerprint = `capitol-${fpBase}`.slice(0, 450);
 
-      for (const profile of subscribedUsers) {
+      const relevant = subscribedUsers.filter((profile) => {
         const userTickers = profile.ticker_scores || {};
-        const isRelevant = !!(symbol && userTickers[symbol]) || congressTrades.length <= 3;
+        return !!(symbol && userTickers[symbol]) || congressTrades.length <= 3;
+      });
+      if (!relevant.length) continue;
 
-        if (!isRelevant) continue;
-
-        const { data: existing } = await admin
-          .from('notification_delivery_log')
-          .select('id')
-          .eq('user_id', profile.user_id)
-          .eq('event_fingerprint', fingerprint)
-          .maybeSingle();
-        if (existing) continue;
-
-        const typeLabel = trade.type || trade.transactionType || 'Trade';
-        await insertNotificationAndPush(admin, {
+      /* One batched claim per trade instead of one lookup per user. */
+      // eslint-disable-next-line no-await-in-loop
+      const claimed = await claimDeliveries(
+        admin,
+        relevant.map((p) => ({ user_id: p.user_id, event_fingerprint: fingerprint })),
+      );
+      const typeLabel = trade.type || trade.transactionType || 'Trade';
+      const recipients = relevant.filter((p) => claimed.has(pairKey(p.user_id, fingerprint)));
+      // eslint-disable-next-line no-await-in-loop
+      await mapLimit(recipients, 5, async (profile) => {
+        const { error: insErr } = await insertNotificationAndPush(admin, {
           user_id: profile.user_id,
           type: 'inside-the-capitol',
           title: `${emoji} ${representative} · ${typeLabel}${symbol ? ` ($${symbol})` : ''}`,
           content: `Congressional trade disclosure${symbol ? ` for $${symbol}` : ''}. Check Inside the Capitol for details.`,
         });
-
-        /* Best-effort. Query builders have no .catch, so read the error. */
-        const { error: logErr } = await admin.from('notification_delivery_log').insert({
-          user_id: profile.user_id,
-          event_fingerprint: fingerprint,
-        });
-        if (logErr) console.warn('[notifications capitol] delivery log', logErr.message);
-
+        if (insErr) {
+          await releaseDelivery(admin, profile.user_id, fingerprint);
+          return;
+        }
         totalSent += 1;
-      }
+      });
     }
 
     return NextResponse.json({
@@ -136,3 +129,5 @@ export async function GET(request) {
     );
   }
 }
+
+export const GET = cronRoute('notifications-generate-capitol', run, { ttlSeconds: 180 });

@@ -15,6 +15,7 @@ import {
   buildMfIndex,
   nportSeriesIdFromHead,
 } from '@/lib/sec/nport';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * ETF holdings from Form N-PORT into sec_etf_funds / sec_etf_holdings.
@@ -33,7 +34,7 @@ import {
  *      mapped since with apply_cusip_tickers_etf(). New CUSIPs reach the
  *      OpenFIGI queue through /api/cron/map-cusips.
  *
- * Auth: CRON_SECRET bearer (or ?key=).   GET /api/cron/ingest-etf-holdings[?parse=4]
+ * Auth: Bearer cron secret (cronRoute).   GET /api/cron/ingest-etf-holdings[?parse=4]
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -43,17 +44,6 @@ const RUN_BUDGET_MS = 230_000;
 const CHUNK = 1000;
 const IN_CHUNK = 300;
 const SUBMISSION_PROBES = 12;
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 const primaryDocUrl = (cik, accessionNo) =>
   `${edgarUrls({ accessionNo, cik }).base}/primary_doc.xml`;
@@ -110,10 +100,7 @@ async function tickersFor(admin, cusips) {
   return out;
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   const started = Date.now();
   const outOfTime = () => Date.now() - started > RUN_BUDGET_MS;
   const { searchParams } = new URL(request.url);
@@ -335,3 +322,5 @@ export async function GET(request) {
     errors: errors.slice(0, 20),
   });
 }
+
+export const GET = cronRoute('ingest-etf-holdings', run, { ttlSeconds: 360 });

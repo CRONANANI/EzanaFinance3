@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { embedTexts, EMBED_MODEL, hasEmbeddingKey } from '@/lib/embeddings';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Rebuild the Polymarket semantic index (polymarket_market_index).
@@ -13,26 +14,16 @@ import { fetchWithTimeout } from '@/lib/http/fetch-json';
  * nearest-neighbour query against an article embedding. Market text is stable
  * enough to cache and re-index every couple hours. NO mock data.
  *
- * Auth: CRON_SECRET bearer (or ?key= fallback for header-less cron platforms).
+ * Auth: Bearer cron secret, checked by cronRoute.
  *   GET /api/cron/index-polymarket?maxMarkets=1500&pageSize=100
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+export const maxDuration = 300;
 
 const GAMMA_BASE = 'https://gamma-api.polymarket.com';
 const EMBED_BATCH = 100; // strings per OpenAI embeddings request
 const DEFAULT_MAX = 1500; // markets per run (bounds embedding cost)
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 const supaConfigured = () =>
   !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -124,10 +115,7 @@ async function fetchGammaPage(offset, pageSize) {
   }
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   if (!supaConfigured()) {
     return NextResponse.json({ ok: false, error: 'Supabase not configured' }, { status: 503 });
   }
@@ -221,3 +209,5 @@ export async function GET(request) {
     errors: errors.slice(0, 10),
   });
 }
+
+export const GET = cronRoute('index-polymarket', run, { ttlSeconds: 360 });

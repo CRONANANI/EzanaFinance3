@@ -50,6 +50,7 @@ import {
   columnSpecs,
   buildNewsColumns,
 } from '@/lib/sonar/landing-research';
+import { BoundedMap } from '@/lib/bounded-map';
 
 /**
  * The landing-page Sonar pipeline, shared by the two routes that run it:
@@ -149,7 +150,7 @@ const FLOOR_UNGROUNDED = 0.12;
    warm instance: a cache miss costs one cheap search call, never a wrong
    answer. */
 const RESOLVE_TTL_MS = 24 * 60 * 60 * 1000;
-const resolveCache = new Map();
+const resolveCache = new BoundedMap(1000);
 
 /* A bare all-caps token is a ticker only when it is not geography or a
    common acronym: "…industry in the USA" used to take the ticker branch and

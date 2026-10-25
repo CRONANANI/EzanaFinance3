@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import { isNativeRequest, isNativeBlockedApi, nativeRedirectFor } from '@/lib/native';
+import { getClientIp } from '@/lib/client-ip';
 import {
   matchesRoutePrefix,
   PARTNER_DASHBOARD_ROUTES,
@@ -63,16 +64,20 @@ export async function middleware(request) {
       '/api/revenuecat/webhook',
       '/api/alpaca/webhook',
       '/api/trading/webhook',
+      '/api/mux/webhook',
+      '/api/plaid/webhook',
+      /* Monitors and Vercel Cron (Bearer-authenticated) are never limited. */
+      '/api/health',
+      '/api/healthz',
+      '/api/readyz',
+      '/api/cron/',
     ];
     const shouldSkip = skipPaths.some((s) => pathname.startsWith(s));
 
     if (!shouldSkip) {
       try {
         const { checkRateLimit, logSecurityEvent } = await import('@/lib/persistent-rate-limit');
-        const ip =
-          request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-          request.headers.get('x-real-ip') ||
-          'unknown';
+        const ip = getClientIp(request) || 'unknown';
         const result = await checkRateLimit(`global:${ip}`, 100, 60 * 1000);
 
         if (!result.allowed) {

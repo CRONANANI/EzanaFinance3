@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 import { createLdaBudget, hasLdaKey, listContributions } from '@/lib/lobbying/client';
 import { normalizeContribution, planTargets, resumePoint } from '@/lib/lobbying/contributions';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Resumable ingest of LD-203 contribution reports from lda.gov into
@@ -18,7 +19,7 @@ import { normalizeContribution, planTargets, resumePoint } from '@/lib/lobbying/
  * Shares the LDA key and its 120 requests/minute with /api/cron/ingest-lobbying,
  * so it is scheduled at :30, after that job's 240s run at :00 has finished.
  *
- * Auth: CRON_SECRET bearer (or ?key=). Params: ?years=2026,2025,2024 ?maxPages=120
+ * Auth: Bearer cron secret (cronRoute). Params: ?years=2026,2025,2024 ?maxPages=120
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -27,17 +28,6 @@ export const maxDuration = 300;
 const REQUEST_BUDGET = 300;
 const RUN_DEADLINE_MS = 240_000;
 const MAX_PAGES_CAP = 400;
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 function defaultYears(nowMs) {
   const y = new Date(nowMs).getUTCFullYear();
@@ -171,10 +161,7 @@ async function advance(admin, budget, target, maxPages, deadlineAt) {
   };
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   if (!isServerSupabaseConfigured()) {
     return NextResponse.json({ ok: false, error: 'Database not configured' }, { status: 503 });
   }
@@ -227,3 +214,5 @@ export async function GET(request) {
     errors,
   });
 }
+
+export const GET = cronRoute('ingest-lobbying-contributions', run, { ttlSeconds: 360 });

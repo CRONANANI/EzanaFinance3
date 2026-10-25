@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { getTickerMap, buildCikTickerIndex, secRequestCount } from '@/lib/sec-edgar';
 import { METRICS, framePeriods, getFrame, pickFirstConcept, periodTypeOf } from '@/lib/sec/xbrl';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Daily company fundamentals from the SEC XBRL frames API into
@@ -16,7 +17,7 @@ import { METRICS, framePeriods, getFrame, pickFirstConcept, periodTypeOf } from 
  * About 100 requests at the shared 6 req/s throttle. The upserts dominate the
  * run, so metrics rotate their starting point by day and the run stops cleanly
  * at the time budget; every metric is refreshed at least every few days.
- * Auth: CRON_SECRET bearer (or ?key=).   GET /api/cron/ingest-fundamentals[?metrics=revenue,cash]
+ * Auth: Bearer cron secret (cronRoute).   GET /api/cron/ingest-fundamentals[?metrics=revenue,cash]
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -25,21 +26,7 @@ export const maxDuration = 300;
 const RUN_BUDGET_MS = 240_000;
 const CHUNK = 1000;
 
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
-
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   const started = Date.now();
   const outOfTime = () => Date.now() - started > RUN_BUDGET_MS;
   const { searchParams } = new URL(request.url);
@@ -137,3 +124,5 @@ export async function GET(request) {
     errors: errors.slice(0, 20),
   });
 }
+
+export const GET = cronRoute('ingest-fundamentals', run, { ttlSeconds: 360 });

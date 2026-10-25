@@ -15,16 +15,10 @@
 
 import { NextResponse } from 'next/server';
 import { syncAllSources } from '@/lib/empire/sync';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300; // 5 minutes — WB fetch for 60 countries × 25 metrics
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  const auth = request.headers.get('authorization') ?? '';
-  return auth === `Bearer ${secret}`;
-}
 
 function parseYear(value) {
   if (value == null) return undefined;
@@ -33,10 +27,6 @@ function parseYear(value) {
 }
 
 async function run(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
-
   const sp = new URL(request.url).searchParams;
   const yearStart = parseYear(sp.get('yearStart'));
   const yearEnd = parseYear(sp.get('yearEnd'));
@@ -53,10 +43,5 @@ async function run(request) {
   }
 }
 
-export async function GET(request) {
-  return run(request);
-}
-
-export async function POST(request) {
-  return run(request);
-}
+export const GET = cronRoute('sync-empire-data', run, { ttlSeconds: 360 });
+export const POST = cronRoute('sync-empire-data', run, { ttlSeconds: 360 });

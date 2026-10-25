@@ -1,24 +1,21 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
-import { isCronAuthorized } from '@/lib/ingest/chips/cron-auth';
 import { fetchAllChipsAwards, toAwardRow } from '@/lib/ingest/chips/usaspending';
 import { bustIndustryCache, finishRun, startRun, upsertAndMatch } from '@/lib/ingest/chips/persist';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Weekly: CHIPS Incentives awards (Assistance Listing 11.037) from
  * USAspending into public.chips_awards, matched to the industry registry.
  * Unmatched recipients and facilities wait in industry_review_queue;
  * nothing unreviewed reaches Sonar. Logged in public.ingest_runs.
- *   curl -H "Authorization: Bearer $CRON_SECRET" https://ezana.world/api/cron/chips-usaspending
+ *   curl -H "Authorization: Bearer <cron secret>" https://ezana.world/api/cron/chips-usaspending
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-export async function GET(request) {
-  if (!isCronAuthorized(request)) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   const admin = getAdminClient();
   const runId = await startRun(admin, 'chips_usaspending');
   try {
@@ -38,3 +35,5 @@ export async function GET(request) {
     return NextResponse.json({ ok: false, error: 'ingest failed' }, { status: 502 });
   }
 }
+
+export const GET = cronRoute('chips-usaspending', run, { ttlSeconds: 360 });

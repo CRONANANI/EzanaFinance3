@@ -19,6 +19,7 @@
  * and loans (07/08) are deliberately out of scope. USAspending is never wired
  * into Lobbying (LDA) or Patents (USPTO) — different systems entirely.
  */
+import { BoundedMap } from './bounded-map.js';
 
 const USA_SPENDING_URL = 'https://api.usaspending.gov/api/v2/search/spending_by_award/';
 
@@ -197,7 +198,7 @@ export function formatAmount(value) {
   return `$${Math.round(n).toLocaleString('en-US')}`;
 }
 
-const _memo = new Map(); // cacheKey -> { at, data }
+const _memo = new BoundedMap(300); // cacheKey -> { at, data }
 
 function buildRequestBody({ recipient, agency, limit }) {
   const fy = currentFederalFiscalYear();
@@ -366,7 +367,7 @@ const USA_SPENDING_AWARD_PAGE = 'https://www.usaspending.gov/award/';
 
 const NOT_DISCLOSED = 'Not disclosed';
 
-const _awardMemo = new Map(); // awardId -> { at, data }
+const _awardMemo = new BoundedMap(500); // awardId -> { at, data }
 
 function agencyNames(node) {
   return { top: node?.toptier_agency?.name || null, sub: node?.subtier_agency?.name || null };

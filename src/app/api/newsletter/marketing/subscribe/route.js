@@ -11,6 +11,7 @@ import {
   newsletterUnsubscribeUrl,
 } from '@/lib/newsletter/config';
 import { buildConfirmationEmail } from '@/lib/newsletter/emails';
+import { getClientIp } from '@/lib/client-ip';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -50,8 +51,7 @@ export const POST = withApiGuard(
     const normalizedEmail = email.toLowerCase().trim();
     const supabase = getAdminClient();
 
-    const forwardedFor = request.headers.get('x-forwarded-for');
-    const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : 'unknown';
+    const ip = getClientIp(request) || 'unknown';
     const userAgent = request.headers.get('user-agent') || 'unknown';
     const consentText =
       typeof consent_text === 'string' && consent_text.trim()

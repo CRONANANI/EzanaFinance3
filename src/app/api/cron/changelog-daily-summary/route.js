@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { fetchCommits, summarizeCommits, getDayRange } from '@/lib/changelog/git-summarizer';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -11,11 +12,6 @@ export const maxDuration = 120;
  * Runs at 23:00 UTC via vercel.json.
  */
 async function run(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return NextResponse.json({ error: 'Server misconfigured' }, { status: 503 });
-  if ((request.headers.get('authorization') || '') !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
   let supabaseAdmin;
   try {
     supabaseAdmin = getAdminClient();
@@ -100,9 +96,5 @@ async function run(request) {
   });
 }
 
-export async function GET(request) {
-  return run(request);
-}
-export async function POST(request) {
-  return run(request);
-}
+export const GET = cronRoute('changelog-daily-summary', run, { ttlSeconds: 180 });
+export const POST = GET;

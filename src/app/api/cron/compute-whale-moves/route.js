@@ -4,6 +4,7 @@ import { getAdminClient } from '@/lib/supabase';
 import { whaleScore, MIN_POSITION_USD } from '@/lib/whale-score';
 import { schedule13Kind } from '@/lib/sec-13f-parse';
 import { recentPeriods, priorQuarterEnd } from '@/lib/sec/quarters';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Materialize Whale Moves. DERIVED from the parsed SEC tables (sec_13f_holdings /
@@ -25,7 +26,7 @@ import { recentPeriods, priorQuarterEnd } from '@/lib/sec/quarters';
  * page cache at the end.
  *
  *   GET /api/cron/compute-whale-moves?maxFilings=60&maxActivist=60
- * Auth: CRON_SECRET bearer (or ?key=).
+ * Auth: Bearer cron secret (cronRoute).
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -35,17 +36,6 @@ export const maxDuration = 300;
 // mega-fund can still hold hundreds above it — keep only the highest-scoring
 // moves so one index-like filer can't flood the table.
 const PER_FILING_KEEP = 25;
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 /** period_of_report ('YYYY-MM-DD', quarter end) → 'CYyyyyQn'. */
 function quarterLabel(period) {
@@ -410,11 +400,7 @@ async function replaceRows(admin, accessionNo, rows, errors, label) {
   return rows.length;
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-  }
-
+async function run(request) {
   const started = Date.now();
   const outOfTime = () => Date.now() - started > 230_000;
   const { searchParams } = new URL(request.url);
@@ -485,3 +471,5 @@ export async function GET(request) {
     errors: errors.slice(0, 20),
   });
 }
+
+export const GET = cronRoute('compute-whale-moves', run, { ttlSeconds: 360 });

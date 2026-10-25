@@ -4,6 +4,7 @@ import { getAdminClient } from '@/lib/supabase';
 import { isBigQueryConfigured } from '@/lib/bigquery-client';
 import { getOecdSeriesCoverage, getOecdSeriesObservations } from '@/lib/bigquery-oecd';
 import { OECD_CURATED_SLUGS } from '@/lib/oecd-curated';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Sync OECD rollups BigQuery → Supabase (the page reads the small rollups,
@@ -11,7 +12,7 @@ import { OECD_CURATED_SLUGS } from '@/lib/oecd-curated';
  * rows are synced ONLY for the curated whitelist (~20 series → roughly 55K rows),
  * chunked so it stays inside maxDuration. `?slug=` targets one curated series.
  * Idempotent — upserts on the rollup PKs, so a re-run does not grow the tables.
- * CRON_SECRET bearer (or ?key=). NOT registered in vercel.json crons.
+ * CRON_SECRET bearer only (cronRoute). NOT registered in vercel.json crons.
  *   GET /api/cron/sync-oecd-rollups[?slug=eo-sratio]
  */
 export const dynamic = 'force-dynamic';
@@ -19,17 +20,6 @@ export const runtime = 'nodejs';
 export const maxDuration = 300;
 
 const UPSERT_CHUNK = 500;
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 /** BigQuery numeric/int cells come back as number | string | {value}. */
 function num(v) {
@@ -55,10 +45,7 @@ async function upsertChunked(admin, table, rows, onConflict) {
   return { count, errors };
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   if (!isBigQueryConfigured()) {
     return NextResponse.json({ ok: false, error: 'BigQuery not configured' }, { status: 503 });
   }
@@ -141,3 +128,5 @@ export async function GET(request) {
     errors: errors.slice(0, 20),
   });
 }
+
+export const GET = cronRoute('sync-oecd-rollups', run, { ttlSeconds: 360 });

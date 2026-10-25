@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -13,13 +14,7 @@ const LOG_RETENTION_DAYS = 30;
  *   - void claim links past their 7 days (the key stays pending_claim, unclaimable,
  *     until an admin re-approves or revokes it)
  */
-export async function GET(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return NextResponse.json({ error: 'Not configured' }, { status: 503 });
-  if ((request.headers.get('authorization') ?? '') !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
+async function run(request) {
   const admin = getAdminClient();
   const now = new Date().toISOString();
   const logCutoff = new Date(Date.now() - LOG_RETENTION_DAYS * 86400000).toISOString();
@@ -47,3 +42,5 @@ export async function GET(request) {
   if (failed) console.error('[api-housekeeping]', out);
   return NextResponse.json({ ok: !failed, ...out }, { status: failed ? 500 : 200 });
 }
+
+export const GET = cronRoute('api-housekeeping', run, { ttlSeconds: 120 });

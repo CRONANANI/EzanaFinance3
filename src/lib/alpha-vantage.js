@@ -4,11 +4,12 @@
 
 import { normalizeAlphaVantageMover } from '@/lib/fmp/movers';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
+import { BoundedMap } from '@/lib/bounded-map';
 
 const ALPHA_BASE = 'https://www.alphavantage.co/query';
 
 /** Simple in-memory cache (per server instance / cold start resets). */
-const cache = new Map();
+const cache = new BoundedMap(500);
 
 export function getAlphaVantageApiKey() {
   return process.env.ALPHA_VANTAGE_API_KEY || process.env.NEXT_PUBLIC_ALPHA_VANTAGE_API_KEY || null;
@@ -28,11 +29,27 @@ function alphaInfoOrLimitError(data) {
   return null;
 }
 
+/* Concurrent misses for one URL share one request (single-flight): Alpha
+   Vantage's free tier allows 5 calls a minute. */
+const inflight = new Map();
+
 /**
  * @param {Record<string, string>} params Query params (function, symbol, etc.)
  * @param {number} cacheTtlSeconds 0 = no cache
  */
 export async function fetchAV(params, cacheTtlSeconds = 0) {
+  const key = JSON.stringify([params, cacheTtlSeconds]);
+  if (inflight.has(key)) return inflight.get(key);
+  const p = fetchAVOnce(params, cacheTtlSeconds);
+  inflight.set(key, p);
+  try {
+    return await p;
+  } finally {
+    inflight.delete(key);
+  }
+}
+
+async function fetchAVOnce(params, cacheTtlSeconds) {
   const apiKey = getAlphaVantageApiKey();
   if (!apiKey) {
     throw new Error('ALPHA_VANTAGE_API_KEY not configured');

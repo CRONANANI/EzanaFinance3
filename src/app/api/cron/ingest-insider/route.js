@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { secFetchText, getFilingIndexJson, edgarUrls, secRequestCount } from '@/lib/sec-edgar';
 import { parseForm4Xml, form4ToRows, rawForm4Url } from '@/lib/sec/form4';
+import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
  * Parse Form 4 filings already indexed in sec_filings (form_family 'insider')
@@ -17,7 +18,7 @@ import { parseForm4Xml, form4ToRows, rawForm4Url } from '@/lib/sec/form4';
  *
  * One or two SEC requests per filing (raw XML, plus the filing index when the
  * indexed document is not the XML), through the shared throttle in
- * @/lib/sec-edgar. Auth: CRON_SECRET bearer (or ?key=).
+ * @/lib/sec-edgar. Auth: Bearer cron secret (cronRoute).
  *   GET /api/cron/ingest-insider?max=150
  */
 export const dynamic = 'force-dynamic';
@@ -27,17 +28,6 @@ export const maxDuration = 300;
 const RUN_BUDGET_MS = 230_000;
 const WINDOW_DAYS = 7;
 const IN_CHUNK = 100;
-
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
 
 async function unparsed(admin, cap) {
   const since = new Date(Date.now() - WINDOW_DAYS * 86400000).toISOString();
@@ -85,10 +75,7 @@ async function form4Xml(f) {
   return secFetchText(url);
 }
 
-export async function GET(request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-  }
+async function run(request) {
   const started = Date.now();
   const { searchParams } = new URL(request.url);
   const max = Math.min(Math.max(Number(searchParams.get('max')) || 150, 1), 300);
@@ -150,3 +137,5 @@ export async function GET(request) {
     errors: errors.slice(0, 20),
   });
 }
+
+export const GET = cronRoute('ingest-insider', run, { ttlSeconds: 360 });
