@@ -2525,13 +2525,10 @@ body.light-mode .dso-page--search .dso-sonar-title {
   padding-top: 4px;
 }
 
-/* ── Oct 25: /datasets results, guest rail, contrast floor, logo line ─────
-   1. The guest account card is a tall, narrow rail left of the research
-      brief. SonarSection budgets the three columns against the viewport
-      minus the rail (RAIL_W 280 + RAIL_GAP 32, from RAIL_MIN_VW 1360) and
-      publishes the strip as --snr-rail-l; .snr-inner grows by that strip and
-      pads it on the left, so the rail sits in it and the columns keep their
-      geometry. Below 1360 the rail hides and the sticky bottom bar returns.
+/* ── Oct 25: /datasets results, contrast floor, logo line ─────────────────
+   1. (Oct 25, later) The guest rail is gone: the account card is a popup
+      owned by SonarExperience (sonar-signup-cta.css), so the band keeps its
+      own geometry and the research brief its original place.
    2. Contrast floor for every line of text on the green ground: muted at
       92% white, faint at 85% (4.5:1 on the gradient's lightest stop), and
       the few labels that hardcode a lower white mix come up to faint.
@@ -2539,31 +2536,6 @@ body.light-mode .dso-page--search .dso-sonar-title {
       the right edge --snrp-nav-right, published on <body> by SonarSection).
    Scoped to .dso-page--search and .snr-band--page: the landing band is
    untouched. */
-
-/* 1. Guest rail */
-.dso-page--search .snr-band--page.snr-band--rail.snr-composed .snr-inner {
-  box-sizing: border-box;
-  width: calc(var(--snr-content) + var(--snr-rail-l, 0px));
-  padding-left: var(--snr-rail-l, 0px);
-}
-.dso-page--search .snr-band--page .snr-rail-l {
-  display: none;
-}
-@media (min-width: 1360px) {
-  .dso-page--search .snr-band--page .snr-rail-l {
-    display: block;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: 280px;
-    z-index: 4;
-  }
-  /* The bar is the narrow-screen fallback only. */
-  .dso-page--search .sonar-root--band > .ssc:not(.ssc--rail) {
-    display: none;
-  }
-}
 
 /* Matching dataset cards under the columns when a ping lands with no
    right-hand stack (the cards' own rail styling still applies). */

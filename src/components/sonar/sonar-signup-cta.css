@@ -190,83 +190,211 @@
   }
 }
 
-/* ── Oct 25: the rail variant (ssc--rail) ────────────────────────────────
-   The same card as a tall, narrow column left of the research brief on the
-   /datasets results (SonarSection places it; the column itself and its
-   breakpoint live in app/datasets/sonar/sonar.css). Copy, the three
-   benefits and the actions stack top to bottom; the card is sticky under the
-   nav so it stays beside the brief while the results scroll. */
-.ssc.ssc--rail {
-  --ssc-rail-top: 80px;
-  position: sticky;
-  top: var(--ssc-rail-top);
+/* ── Oct 25 (later): the popup (sscp-, ssc--popup) and widget (sscw-) ──────
+   The card is centred over a light scrim; minimize flies it (a WAAPI FLIP in
+   SonarSignupCta.jsx) into the widget at the bottom left, which expands it
+   again. Both are portaled to <body>, so they sit above the page shell and
+   outside the results band's animation pause. Same dark-glass surface and
+   emerald CTA as the bar; every line of copy left aligned. */
+.sscp {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+}
+.sscp-scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  cursor: default;
+  background: color-mix(in srgb, black 38%, transparent);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.ssc.ssc--popup {
+  position: relative;
+  width: min(440px, 100%);
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
   margin: 0;
-  padding: 20px 18px;
+  padding: 26px 26px 22px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 18px;
-  min-height: min(520px, calc(100vh - var(--ssc-rail-top) - 24px));
-  min-height: min(520px, calc(100dvh - var(--ssc-rail-top) - 24px));
+  text-align: left;
+  background: color-mix(in srgb, black 62%, transparent);
+  border-color: color-mix(in srgb, var(--brand-band-mint) 26%, transparent);
+  box-shadow: 0 24px 64px color-mix(in srgb, black 45%, transparent);
 }
-.ssc.ssc--rail .ssc-title {
+.ssc.ssc--popup:focus-visible {
+  outline: 2px solid var(--brand-band-mint);
+  outline-offset: 3px;
+}
+.ssc-min {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, white 22%, transparent);
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+}
+.ssc-min:hover {
+  border-color: var(--emerald);
+  color: var(--brand-band-mint);
+}
+.ssc-min:focus-visible {
+  outline: 2px solid var(--brand-band-mint);
+  outline-offset: 2px;
+}
+.ssc.ssc--popup .ssc-copy {
+  padding-right: 36px;
+}
+.ssc.ssc--popup .ssc-title {
   margin-top: 8px;
-  font-size: 18px;
+  font-size: 21px;
   line-height: 1.3;
 }
-.ssc.ssc--rail .ssc-sub {
+.ssc.ssc--popup .ssc-sub {
   margin-top: 8px;
 }
-.ssc.ssc--rail .ssc-list {
+.ssc.ssc--popup .ssc-list {
   display: grid;
   gap: 10px;
-  padding-top: 14px;
+  padding-top: 16px;
   border-top: 1px solid color-mix(in srgb, var(--brand-band-mint) 18%, transparent);
 }
-.ssc.ssc--rail .ssc-item {
+.ssc.ssc--popup .ssc-item {
   align-items: flex-start;
 }
-.ssc.ssc--rail .ssc-item i {
+.ssc.ssc--popup .ssc-item i {
   margin-top: 1px;
 }
-.ssc.ssc--rail .ssc-actions {
-  margin-top: auto;
+.ssc.ssc--popup .ssc-actions {
   align-items: flex-start;
   gap: 10px;
 }
-.ssc.ssc--rail .ssc-btns {
-  flex-direction: row;
+.ssc.ssc--popup .ssc-btns {
   flex-wrap: wrap;
   justify-content: flex-start;
-  align-items: center;
-  gap: 8px;
 }
-.ssc.ssc--rail .ssc-btn {
-  justify-content: flex-start;
-}
-/* Oct 25 (v2): everything in the rail reads from one left edge. */
-.ssc.ssc--rail,
-.ssc.ssc--rail .ssc-copy,
-.ssc.ssc--rail .ssc-note {
+.ssc.ssc--popup .ssc-note {
   text-align: left;
 }
-/* The plan footnote under the buttons. A <p>, so two classes and
-   !important beat the legacy `body.light-mode p` rule on the green ground. */
-.ssc.ssc--rail .ssc-plan-note {
+/* The plan footnote. A <p>, so two classes and !important beat the legacy
+   `body.light-mode p` rule on the dark glass. */
+.ssc.ssc--popup .ssc-plan-note {
   margin: 0;
   font-family: var(--font-sans);
   font-size: 12px;
   line-height: 1.45;
   color: color-mix(in srgb, white 85%, transparent) !important;
 }
-.ssc.ssc--rail .ssc-plan-note > span {
+.ssc.ssc--popup .ssc-plan-note > span {
   color: var(--brand-band-mint);
   font-weight: 700;
 }
+/* The popup always shows the benefits, whatever the bar's breakpoints say. */
+@media (max-width: 1180px) {
+  .ssc.ssc--popup .ssc-list {
+    display: grid;
+  }
+}
+@media (max-width: 720px) {
+  .ssc.ssc--popup {
+    padding: 22px 18px 18px;
+  }
+  .ssc.ssc--popup .ssc-sub,
+  .ssc.ssc--popup .ssc-kicker,
+  .ssc.ssc--popup .ssc-note {
+    display: block;
+  }
+  .ssc.ssc--popup .ssc-btn {
+    flex: 0 0 auto;
+  }
+}
+
+/* The minimized widget. */
+.sscw {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 1200;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px 10px 12px;
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--brand-band-mint) 30%, transparent);
+  background: color-mix(in srgb, black 62%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 10px 28px color-mix(in srgb, black 35%, transparent);
+  color: white;
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    transform 0.15s;
+}
+.sscw:hover {
+  border-color: var(--emerald);
+  transform: translateY(-1px);
+}
+.sscw:focus-visible {
+  outline: 2px solid var(--brand-band-mint);
+  outline-offset: 2px;
+}
+.sscw-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--emerald);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--emerald) 22%, transparent);
+}
+.sscw-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.sscw-kicker {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brand-band-mint);
+}
+.sscw-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: white;
+}
+.sscw-icon {
+  font-size: 13px;
+  color: color-mix(in srgb, white 80%, transparent);
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .ssc-btn {
+  .ssc-btn,
+  .ssc-min,
+  .sscw {
     transition: none;
+  }
+  .sscw:hover {
+    transform: none;
   }
   .ssc-btn--primary:hover {
     transform: none;

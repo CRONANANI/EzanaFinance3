@@ -1,0 +1,24 @@
+/* The /datasets overview's loading state (loading.js, prefix dsl-): the
+   Sonar ping loader centred on the green ground, nothing else. The loader's
+   palette is mixed against the emerald tokens here because the page sheet
+   that normally sets it (sonar/sonar.css) has not loaded yet. Tokens only. */
+.dsl-sonar {
+  min-height: calc(100dvh - 120px);
+  display: grid;
+  place-items: center;
+  padding: 48px 16px;
+  background: var(--brand-band-green);
+}
+.dsl-sonar .snrl-wrap {
+  --snrl-deep: color-mix(in srgb, var(--emerald) 55%, var(--emerald-dark));
+  --snrl-mid: color-mix(in srgb, var(--emerald) 40%, var(--emerald-dark));
+  --snrl-top: color-mix(in srgb, var(--emerald) 72%, var(--emerald-dark));
+  --snrl-bright: var(--brand-band-mint);
+  color: white;
+}
+.dsl-sonar .snrl-label {
+  color: white;
+}
+.dsl-sonar .snrl-sublabel {
+  color: color-mix(in srgb, white 85%, transparent);
+}

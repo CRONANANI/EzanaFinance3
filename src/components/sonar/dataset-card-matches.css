@@ -121,7 +121,11 @@
   margin: 0;
   padding: 0;
   gap: 10px;
-  animation: dcm-rail-in var(--snr-t-base, 420ms) var(--snr-ease-out, ease-out) both;
+  /* No entrance animation, on purpose: the results band pauses every
+     animation inside it once a ping is live (sonar-band.css,
+     .snr-band.snr-live *), which froze an entrance on its first keyframe,
+     opacity 0, and left this block an invisible 700px gap that pushed the
+     key chart and the news below it far down the page. */
 }
 .dcm.dcm--rail .dcm-grid {
   grid-template-columns: minmax(0, 1fr);
@@ -179,19 +183,4 @@
 .dcm.dcm--rail .hdc-searched {
   color: var(--brand-band-mint);
   background: color-mix(in srgb, var(--brand-band-mint) 18%, transparent);
-}
-@keyframes dcm-rail-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .dcm.dcm--rail {
-    animation: none;
-  }
 }

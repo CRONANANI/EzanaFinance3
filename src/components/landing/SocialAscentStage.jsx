@@ -242,7 +242,7 @@ export default function SocialAscentStage({
   }, [promoted, live, promo, prePct]);
 
   /* The stage is a viewport tall while it pins, but its content is not, so
-     the runway hands back the empty half below it (--sled-asc-slack, read as
+     the runway hands back the empty space below it (--sled-asc-slack, read as
      a negative bottom margin in social-ledger.css): the board starts right
      under the gauge instead of half a screen later. Zero when the stage is
      not pinned (stacked phones, reduced motion), where stage = content. */
@@ -252,7 +252,10 @@ export default function SocialAscentStage({
     const grid = gridRef.current;
     if (!root || !stage || !grid || typeof ResizeObserver === 'undefined') return undefined;
     const apply = () => {
-      const slack = Math.max(0, (stage.clientHeight - grid.offsetHeight) / 2);
+      /* Top-aligned stage (social-ledger.css): everything under the content
+         is empty, less the stage's own top padding. */
+      const padTop = parseFloat(getComputedStyle(stage).paddingTop) || 0;
+      const slack = Math.max(0, stage.clientHeight - padTop - grid.offsetHeight);
       root.style.setProperty('--sled-asc-slack', `${Math.round(slack)}px`);
     };
     apply();

@@ -1,11 +1,29 @@
+'use client';
+
+import { usePathname } from 'next/navigation';
 import { SkeletonRegion, Skeleton, SkeletonTable, token } from '@/components/ds';
+import { SonarLoader } from '@/components/sonar/SonarLoader';
+import './datasets-loading.css';
 
 /**
  * Route-segment loading UI for a dataset page. A header band, a category/filter
  * bar and a data-table silhouette — self-contained presentational chrome, no
  * fetch.
+ *
+ * Oct 25: the /datasets overview itself (where the landing page's Sonar pill
+ * hands off a ping, /datasets?q=...) is not a table page, so its loading
+ * state is the Sonar ping loader alone on the green ground, never the white
+ * table silhouette. Every dataset page under it keeps the skeleton.
  */
 export default function DatasetLoading() {
+  const pathname = usePathname();
+  if (pathname === '/datasets') {
+    return (
+      <div className="dsl-sonar">
+        <SonarLoader size="md" label="Sonar is pinging" sublabel="Sweeping every Ezana dataset" />
+      </div>
+    );
+  }
   return (
     <SkeletonRegion
       label="Loading dataset…"

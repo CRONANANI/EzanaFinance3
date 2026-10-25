@@ -130,6 +130,20 @@
   max-width: 62ch;
   color: var(--text-muted);
 }
+/* Oct 25: one line wherever it fits (about 780px at the 17px cap), so the
+   sentence never breaks with two words alone on a second line. Below that
+   it wraps, balanced. */
+@media (min-width: 1100px) {
+  .sled-sub {
+    max-width: none;
+    white-space: nowrap;
+  }
+}
+@media (max-width: 1099px) {
+  .sled-sub {
+    text-wrap: balance;
+  }
+}
 
 /* ── zone B, the record: 5fr rating | 7fr chart ────────────────────────── */
 .sled-record {
@@ -940,7 +954,7 @@
 .sled-asc {
   --sled-asc-nav: 80px;
   position: relative;
-  margin-top: clamp(20px, 2.4vw, 36px);
+  margin-top: clamp(12px, 1.6vw, 24px);
   /* One stage-height of pin plus a hold per step (same runway pattern as
      dimension-scroll.css). */
   height: calc(
@@ -957,7 +971,13 @@
   top: var(--sled-asc-nav);
   height: calc(100svh - var(--sled-asc-nav));
   display: flex;
-  align-items: center;
+  /* Oct 25: top-aligned, not centred, so the gauge sits right under the
+     section heading instead of half a screen below it. The empty space is
+     all below the content now, and the component hands it back to the
+     runway (--sled-asc-slack). */
+  align-items: flex-start;
+  padding-top: clamp(4px, 1.6vh, 20px);
+  box-sizing: border-box;
 }
 .sled-asc-grid {
   width: 100%;

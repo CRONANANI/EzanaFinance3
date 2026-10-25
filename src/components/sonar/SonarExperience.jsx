@@ -19,7 +19,6 @@ import {
   useLobbying,
 } from '@/components/sonar/SonarDossier';
 import { supabase } from '@/lib/supabase-browser';
-import { useAuth } from '@/components/AuthProvider';
 
 import '@/app/(dashboard)/sonar/sonar.css';
 import { SonarLoader } from '@/components/sonar/SonarLoader';
@@ -120,10 +119,6 @@ export function SonarExperience({ variant = 'app', heroAddon = null, initialQuer
   const [error, setError] = useState(null);
   const [elapsedSec, setElapsedSec] = useState(null);
   const [recent, setRecent] = useState([]);
-  /* Guests only, and never while auth resolves, so a member never sees the
-     rail flash in (and the band never reserves its column for nothing). */
-  const { isAuthenticated, loading: authLoading } = useAuth();
-  const showSignup = !authLoading && !isAuthenticated;
 
   useEffect(() => {
     (async () => {
@@ -331,25 +326,21 @@ export function SonarExperience({ variant = 'app', heroAddon = null, initialQuer
   if (onDatasets && bandQuery) {
     return (
       <div ref={bandRootRef} className="sonar-root sonar-root--datasets sonar-root--band">
-        {/* Oct 25: the guest account card is a narrow rail left of the
-            research brief, and the matching dataset cards sit at the top of
-            the right-hand stack, both placed by the band. The cards still
-            wait for the briefing to land (never the whole response) and only
-            show cards that pass the relevance rule. */}
+        {/* Oct 25: the matching dataset cards sit at the top of the
+            right-hand stack, placed by the band. They wait for the briefing
+            to land (never the whole response) and only show cards that pass
+            the relevance rule. */}
         <SonarBand
           variant="page"
           query={bandQuery}
           onPing={onBandPing}
-          leftRail={
-            showSignup ? <SonarSignupCta query={shownQuery || bandQuery} variant="rail" /> : null
-          }
           stackTop={
             answeredQuery ? <DatasetCardMatches query={answeredQuery} variant="rail" /> : null
           }
         />
-        {/* Below the rail's breakpoint the account pitch stays the sticky
-            bar at the bottom of the first screen (hidden in CSS above it). */}
-        {showSignup ? <SonarSignupCta query={shownQuery || bandQuery} /> : null}
+        {/* Guests only (the card checks auth itself): a centred popup once
+            the briefing lands, minimizable to a small widget bottom left. */}
+        <SonarSignupCta query={shownQuery || bandQuery} ready={Boolean(answeredQuery)} />
       </div>
     );
   }

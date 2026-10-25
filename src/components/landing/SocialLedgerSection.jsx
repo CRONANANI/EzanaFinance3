@@ -602,7 +602,7 @@ export function SocialLedgerSection() {
         <div className="sled-head">
           <p className="section-eyebrow lf-mono">Social investing</p>
           <h2 id="sled-heading" className="sled-heading">
-            Every move is on the record.
+            Every move is on the record
           </h2>
           <p className="sled-sub">
             Add a friend and your ratings start writing themselves: wins, streaks and research, each
