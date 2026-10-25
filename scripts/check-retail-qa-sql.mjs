@@ -10,6 +10,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { startPg } from './lib/pg-harness.mjs';
+import { RETAIL_STUB } from './lib/retail-qa-stub.mjs';
 
 const MIG_DIR = new URL('../supabase/migrations/', import.meta.url).pathname;
 const MIGRATIONS = [
@@ -20,61 +21,6 @@ const MIGRATIONS = [
 
 const U1 = '11111111-1111-4111-8111-111111111111';
 const U2 = '22222222-2222-4222-8222-222222222222';
-
-/* Live shapes (read-only catalog check, 2026-10-25) with the live policies
-   these migrations replace. The coordinator can fold this into STUB_SCHEMA. */
-export const RETAIL_STUB = `
-create schema if not exists storage;
-grant usage on schema storage to anon, authenticated, service_role;
-create table if not exists storage.buckets (
-  id text primary key, name text not null, public boolean default false,
-  file_size_limit bigint, allowed_mime_types text[]
-);
-create table if not exists storage.objects (
-  id uuid primary key default gen_random_uuid(), bucket_id text references storage.buckets(id),
-  name text, owner uuid, created_at timestamptz default now()
-);
-alter table storage.objects enable row level security;
-grant all on storage.objects, storage.buckets to anon, authenticated, service_role;
-create or replace function storage.foldername(name text) returns text[]
-  language sql immutable as $$
-  select (string_to_array(name, '/'))[1:array_length(string_to_array(name, '/'), 1) - 1] $$;
-
-create table if not exists public.mock_portfolios (
-  id uuid primary key default gen_random_uuid(), user_id uuid not null unique,
-  portfolio jsonb default '{}'::jsonb, updated_at timestamptz default now()
-);
-alter table public.mock_portfolios enable row level security;
-create policy "Users manage own mock portfolio" on public.mock_portfolios
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-alter table public.mock_trades enable row level security;
-create policy "Users insert own mock trades" on public.mock_trades
-  for insert with check (auth.uid() = user_id);
-create policy "Users read own mock trades" on public.mock_trades
-  for select using (auth.uid() = user_id);
-create table if not exists public.user_course_progress (
-  id uuid primary key default gen_random_uuid(), user_id uuid not null, course_id text,
-  status text default 'not_started', quiz_passed boolean, unique (user_id, course_id)
-);
-alter table public.user_course_progress enable row level security;
-create policy "Users own course progress" on public.user_course_progress
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-create table if not exists public.user_learning_badges (
-  id uuid primary key default gen_random_uuid(), user_id uuid not null, badge_key text,
-  earned_at timestamptz default now(), unique (user_id, badge_key)
-);
-alter table public.user_learning_badges enable row level security;
-create policy "Users own learning badges" on public.user_learning_badges
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-create table if not exists public.community_posts (
-  id uuid primary key default gen_random_uuid(), user_id uuid not null, content text,
-  parent_post_id uuid, created_at timestamptz default now()
-);
-alter table public.community_posts enable row level security;
-create policy "Anyone can read posts" on public.community_posts for select using (true);
-create policy "Users can create posts" on public.community_posts
-  for insert with check (auth.uid() = user_id);
-`;
 
 let pg = null;
 test.before(async () => {
