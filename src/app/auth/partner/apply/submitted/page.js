@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import '../partner-apply.css';
+import ResendVerification from './ResendVerification';
+import { VERIFICATION_TOKEN_TTL_HOURS } from '@/lib/partner-application';
 
 export default function PartnerApplySubmittedPage() {
   return (
@@ -22,12 +24,10 @@ export default function PartnerApplySubmittedPage() {
           complete your application.
         </p>
         <p style={{ color: '#64748b', fontSize: '0.875rem' }}>
-          Did not receive the email? Check your spam folder or{' '}
-          <Link href="/auth/partner/apply/form" style={{ color: '#059669', fontWeight: 600 }}>
-            resubmit your application
-          </Link>
-          .
+          Did not receive the email? Check your spam folder, or ask for a new link below. The link
+          expires after {VERIFICATION_TOKEN_TTL_HOURS} hours.
         </p>
+        <ResendVerification />
         <Link
           href="/"
           style={{
