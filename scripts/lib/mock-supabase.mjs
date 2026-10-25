@@ -49,8 +49,9 @@ export function createMockSupabase({ unique = {}, rpc = {}, seed = {} } = {}) {
         st.op = 'delete';
         return api;
       },
-      select() {
+      select(_cols, opts) {
         st.ret = true;
+        if (opts?.head) st.head = true;
         return api;
       },
       eq(c, v) {
@@ -67,6 +68,14 @@ export function createMockSupabase({ unique = {}, rpc = {}, seed = {} } = {}) {
       },
       gt(c, v) {
         st.filters.push((r) => r[c] > v);
+        return api;
+      },
+      gte(c, v) {
+        st.filters.push((r) => r[c] >= v);
+        return api;
+      },
+      lte(c, v) {
+        st.filters.push((r) => r[c] <= v);
         return api;
       },
       in(c, vs) {
@@ -126,6 +135,7 @@ export function createMockSupabase({ unique = {}, rpc = {}, seed = {} } = {}) {
       } else {
         out = rows(t).filter(match);
       }
+      if (st.head) return { data: null, count: out.length, error: null };
       if (st.limit != null) out = out.slice(0, st.limit);
       if (st.single === 'single') {
         if (out.length !== 1)

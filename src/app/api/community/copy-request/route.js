@@ -231,6 +231,7 @@ export async function POST(request) {
         'Copy request received',
         'social',
         { request_id: inserted.id, requester_id: user.id },
+        { key: `copy-request:${inserted.id}` },
       );
       if (!eloResult) {
         console.warn('copy-request awardELO returned null for target', targetUserId);

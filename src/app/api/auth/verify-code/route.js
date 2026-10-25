@@ -7,19 +7,14 @@ import { sanitizeText, sanitizeEmail } from '@/lib/sanitize';
 
 async function grantEmailVerifiedElo(supabaseAdmin, userId) {
   try {
-    const { data: existingActivity } = await supabaseAdmin
-      .from('elo_transactions')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('category', 'activity')
-      .eq('reason', 'Email verified + onboarding completed')
-      .maybeSingle();
-
-    if (!existingActivity) {
-      await awardELO(userId, 25, 'Email verified + onboarding completed', 'activity', {
-        event: 'email_verified',
-      });
-    }
+    await awardELO(
+      userId,
+      25,
+      'Email verified + onboarding completed',
+      'activity',
+      { event: 'email_verified' },
+      { key: 'activity:email-verified' },
+    );
   } catch (eloErr) {
     console.error('[verify-code] awardELO failed (non-fatal):', eloErr);
   }

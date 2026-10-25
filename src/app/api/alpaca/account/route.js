@@ -96,20 +96,15 @@ export const POST = withApiGuard(
       }
 
       try {
-        const { data: existing } = await supabaseAdmin
-          .from('elo_transactions')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('category', 'activity')
-          .eq('reason', 'Linked real brokerage account')
-          .maybeSingle();
-
-        if (!existing) {
-          await awardELO(user.id, 75, 'Linked real brokerage account', 'activity', {
-            event: 'alpaca_account_linked',
-            provider: 'alpaca',
-          });
-        }
+        /* Once per user: the key is unique (award_elo), not a read-then-write. */
+        await awardELO(
+          user.id,
+          75,
+          'Linked real brokerage account',
+          'activity',
+          { event: 'alpaca_account_linked', provider: 'alpaca' },
+          { key: 'activity:brokerage-linked' },
+        );
       } catch (eloErr) {
         console.error('[alpaca/account] awardELO failed (non-fatal):', eloErr);
       }

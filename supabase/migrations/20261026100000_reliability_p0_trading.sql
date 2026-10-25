@@ -22,6 +22,7 @@ create index if not exists trade_history_pending_idx
 -- policy let a signed-in user insert or edit their own trade rows directly.
 drop policy if exists "Users own trades" on public.trade_history;
 drop policy if exists "Users can view own trade history" on public.trade_history;
+drop policy if exists "Users read own trades" on public.trade_history;
 create policy "Users read own trades" on public.trade_history
   for select using (auth.uid() = user_id);
 

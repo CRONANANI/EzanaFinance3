@@ -66,23 +66,41 @@ export function clampRating(rating) {
   return Math.max(ELO_FLOOR, Math.min(ELO_CAP, Math.round(rating)));
 }
 
+const MISSING_FN = new Set(['PGRST202', '42883']);
+const VALID_CATEGORIES = [
+  'learning',
+  'activity',
+  'portfolio',
+  'social',
+  'competition',
+  'decay',
+  'admin',
+];
+
 /**
- * Award (or penalize) ELO. Records a transaction row with rating_before /
- * rating_after for the audit trail.
+ * Award (or penalize) ELO atomically through public.award_elo (reliability
+ * audit P1-5): the rating row is locked, the clamped delta applied and the
+ * transaction logged in one database transaction. `opts.key` makes it
+ * idempotent: a repeated (user, key) changes nothing and returns null, the
+ * same as "nothing awarded". Keys used: learning:<course>,
+ * competition:<id>, activity:brokerage-linked, activity:email-verified,
+ * decay:<YYYY-MM>, copiers:<YYYY-MM>, portfolio:<real|mock>:<YYYY-MM>,
+ * copy-request:<id>.
  *
  * @param {string} userId          - auth.users.id
  * @param {number} delta           - integer; positive=gain, negative=penalty
  * @param {string} reason          - human-readable description (shown to the user)
  * @param {string} category        - one of: learning|activity|portfolio|social|competition|decay|admin
  * @param {object} [metadata={}]   - JSON metadata for later analysis (e.g., {course_id, tier})
+ * @param {{ key?: string }} [opts]
  * @returns {Promise<{newRating: number, newTier: string, oldRating: number, oldTier: string} | null>}
  */
-export async function awardELO(userId, delta, reason, category, metadata = {}) {
+export async function awardELO(userId, delta, reason, category, metadata = {}, opts = {}) {
   if (!userId) {
     console.warn('[elo] awardELO: missing userId');
     return null;
   }
-  if (!Number.isFinite(delta) || delta === 0) {
+  if (!Number.isFinite(delta) || Math.round(delta) === 0) {
     console.warn('[elo] awardELO: delta must be nonzero finite number, got', delta);
     return null;
   }
@@ -90,95 +108,93 @@ export async function awardELO(userId, delta, reason, category, metadata = {}) {
     console.warn('[elo] awardELO: reason required');
     return null;
   }
-  const validCategories = [
-    'learning',
-    'activity',
-    'portfolio',
-    'social',
-    'competition',
-    'decay',
-    'admin',
-  ]; // 'learning','activity','portfolio','social','competition','decay','admin'
-  if (!validCategories.includes(category)) {
+  if (!VALID_CATEGORIES.includes(category)) {
     console.warn('[elo] awardELO: invalid category', category);
     return null;
   }
 
   try {
     const supabase = getAdminClient();
-
-    const { data: disabledRow } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', userId)
-      .eq('is_disabled', true)
-      .maybeSingle();
-
-    if (disabledRow) {
-      console.log('[elo] awardELO skipped — profile locked:', userId);
-      return null;
-    }
-
-    const { data: existing, error: fetchErr } = await supabase
-      .from('user_elo')
-      .select('current_rating, peak_rating, tier')
-      .eq('user_id', userId)
-      .maybeSingle();
-
-    if (fetchErr) {
-      console.error('[elo] awardELO: fetch failed:', fetchErr);
-      return null;
-    }
-
-    const oldRating = existing?.current_rating ?? 0;
-    const oldTier = existing?.tier || 'novice';
-    const oldPeak = existing?.peak_rating ?? 0;
-
-    const newRatingRaw = oldRating + Math.round(delta);
-    const newRating = clampRating(newRatingRaw);
-    const newTier = tierForRating(newRating);
-    const newPeak = Math.max(oldPeak, newRating);
-
-    const upsertRow = {
-      user_id: userId,
-      current_rating: newRating,
-      peak_rating: newPeak,
-      tier: newTier,
-      updated_at: new Date().toISOString(),
-    };
-
-    if (category !== 'decay') {
-      upsertRow.last_activity_at = new Date().toISOString();
-    }
-
-    const { error: upsertErr } = await supabase
-      .from('user_elo')
-      .upsert(upsertRow, { onConflict: 'user_id' });
-
-    if (upsertErr) {
-      console.error('[elo] awardELO: upsert failed:', upsertErr);
-      return null;
-    }
-
-    const { error: txErr } = await supabase.from('elo_transactions').insert({
-      user_id: userId,
-      delta: newRating - oldRating,
-      reason,
-      category,
-      metadata,
-      rating_before: oldRating,
-      rating_after: newRating,
+    const { data, error } = await supabase.rpc('award_elo', {
+      p_user: userId,
+      p_delta: Math.round(delta),
+      p_reason: reason,
+      p_category: category,
+      p_key: opts?.key || null,
+      p_metadata: metadata || {},
     });
-
-    if (txErr) {
-      console.error('[elo] awardELO: transaction log failed:', txErr);
+    if (error) {
+      if (MISSING_FN.has(error.code)) {
+        return legacyAwardELO(supabase, userId, delta, reason, category, metadata);
+      }
+      console.error('[elo] awardELO: rpc failed:', error);
+      return null;
     }
-
-    return { newRating, newTier, oldRating, oldTier };
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row?.awarded) return null;
+    return {
+      newRating: row.new_rating,
+      newTier: row.new_tier,
+      oldRating: row.old_rating,
+      oldTier: row.old_tier,
+    };
   } catch (err) {
     console.error('[elo] awardELO: unexpected error:', err);
     return null;
   }
+}
+
+/* Pre-migration path (read-modify-write); removed once award_elo exists. */
+async function legacyAwardELO(supabase, userId, delta, reason, category, metadata) {
+  const { data: disabledRow } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', userId)
+    .eq('is_disabled', true)
+    .maybeSingle();
+  if (disabledRow) return null;
+
+  const { data: existing, error: fetchErr } = await supabase
+    .from('user_elo')
+    .select('current_rating, peak_rating, tier')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (fetchErr) {
+    console.error('[elo] awardELO: fetch failed:', fetchErr);
+    return null;
+  }
+
+  const oldRating = existing?.current_rating ?? 0;
+  const oldTier = existing?.tier || 'novice';
+  const newRating = clampRating(oldRating + Math.round(delta));
+  const newTier = tierForRating(newRating);
+  const upsertRow = {
+    user_id: userId,
+    current_rating: newRating,
+    peak_rating: Math.max(existing?.peak_rating ?? 0, newRating),
+    tier: newTier,
+    updated_at: new Date().toISOString(),
+  };
+  if (category !== 'decay') upsertRow.last_activity_at = new Date().toISOString();
+
+  const { error: upsertErr } = await supabase
+    .from('user_elo')
+    .upsert(upsertRow, { onConflict: 'user_id' });
+  if (upsertErr) {
+    console.error('[elo] awardELO: upsert failed:', upsertErr);
+    return null;
+  }
+  const { error: txErr } = await supabase.from('elo_transactions').insert({
+    user_id: userId,
+    delta: newRating - oldRating,
+    reason,
+    category,
+    metadata,
+    rating_before: oldRating,
+    rating_after: newRating,
+  });
+  if (txErr) console.error('[elo] awardELO: transaction log failed:', txErr);
+  return { newRating, newTier, oldRating, oldTier };
 }
 
 /**
@@ -291,6 +307,7 @@ export async function reconcileLearningElo(userId) {
       `Completed ${tierName} course: ${course.title}`,
       'learning',
       { course_id: p.course_id, level: course.level, tier: tierName, reconciled: true },
+      { key: `learning:${p.course_id}` },
     );
     if (res) {
       credited += 1;

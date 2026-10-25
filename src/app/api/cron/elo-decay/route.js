@@ -73,6 +73,7 @@ async function run(request) {
         `Inactivity decay (${daysInactive} days)`,
         'decay',
         { days_inactive: daysInactive, applied_at: new Date().toISOString() },
+        { key: `decay:${new Date().toISOString().slice(0, 7)}` },
       );
 
       if (!awardResult) {

@@ -3,7 +3,13 @@ import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient, getAdminClient } from '@/lib/supabase';
 import { awardXP } from '@/lib/rewards';
 import { getCourseById, getCoursesByTrack, LEVEL_KEYS } from '@/lib/learning-curriculum';
-import { awardELO, ELO_PER_COURSE_LEVEL, LEVEL_TO_TIER_NAME, QUIZ_PASS_THRESHOLD } from '@/lib/elo';
+import {
+  awardELO,
+  reconcileLearningElo,
+  ELO_PER_COURSE_LEVEL,
+  LEVEL_TO_TIER_NAME,
+  QUIZ_PASS_THRESHOLD,
+} from '@/lib/elo';
 import { getCourseContent } from '@/lib/learning-content';
 import {
   buildProgressMap,
@@ -275,7 +281,13 @@ export const POST = withApiGuard(
 
           try {
             if (!existing?.quiz_passed) {
-              await awardXP(user.id, 50, `Completed course quiz: ${course.title}`, 'learning');
+              await awardXP(
+                user.id,
+                50,
+                `Completed course quiz: ${course.title}`,
+                'learning',
+                `quiz:${courseId}`,
+              );
 
               /* Best-effort. Query builders have no .catch, so read the error. */
               const { error: bcErr } = await admin.from('activity_breadcrumbs').insert({
@@ -293,6 +305,7 @@ export const POST = withApiGuard(
                 `Completed ${tierName} course: ${course.title}`,
                 'learning',
                 { course_id: courseId, level: course.level, tier: tierName },
+                { key: `learning:${courseId}` },
               );
               if (eloResult) {
                 eloChanged = true;
@@ -338,7 +351,13 @@ export const POST = withApiGuard(
             for (const b of badges) {
               const isLevelBadge = b.key && /_level_/.test(b.key);
               if (isLevelBadge) {
-                await awardXP(user.id, 200, `Completed track level: ${b.label}`, 'learning');
+                await awardXP(
+                  user.id,
+                  200,
+                  `Completed track level: ${b.label}`,
+                  'learning',
+                  `track-level:${b.key}`,
+                );
               }
               if (learningNotifPrefs.learning_progress === false) continue;
               try {
@@ -356,6 +375,16 @@ export const POST = withApiGuard(
             }
           } catch (e) {
             console.error('learning progress: awardXP/awardELO', e);
+          }
+        }
+
+        if (passed) {
+          /* Credit any earlier passed course that missed its ELO (own id
+             only; keyed learning:<course>, so a repeat is a no-op). */
+          try {
+            await reconcileLearningElo(user.id);
+          } catch (e) {
+            console.error('[learning progress] reconcile ELO:', e);
           }
         }
 

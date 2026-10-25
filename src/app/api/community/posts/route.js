@@ -511,9 +511,15 @@ export async function POST(request) {
 
     try {
       if (isComment) {
-        await awardXP(user.id, 10, 'Commented on a community post', 'community');
+        await awardXP(
+          user.id,
+          10,
+          'Commented on a community post',
+          'community',
+          `comment:${post.id}`,
+        );
       } else {
-        await awardXP(user.id, 15, 'Made a community post', 'community');
+        await awardXP(user.id, 15, 'Made a community post', 'community', `post:${post.id}`);
       }
     } catch (e) {
       console.error('posts POST: awardXP', e);

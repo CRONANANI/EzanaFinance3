@@ -34,7 +34,7 @@ async function run(request) {
   const { data: toScore } = await supabase
     .from('competitions')
     .select('*')
-    .in('status', ['active', 'ended'])
+    .in('status', ['active', 'ended', 'score_failed'])
     .lte('ends_at', now);
 
   let scoredCount = 0;
@@ -42,11 +42,10 @@ async function run(request) {
 
   for (const comp of toScore || []) {
     try {
-      if (comp.status === 'active') {
-        await supabase.from('competitions').update({ status: 'ended' }).eq('id', comp.id);
-      }
-      await scoreCompetition(supabase, { ...comp, status: 'ended' });
-      scoredCount++;
+      /* scoreCompetition claims the row itself (active/ended -> scoring);
+         a run that loses the claim to another skips. */
+      const res = await scoreCompetition(supabase, comp);
+      if (!res.skipped) scoredCount++;
     } catch (e) {
       scoringErrors.push({
         competitionId: comp.id,

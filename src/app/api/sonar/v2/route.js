@@ -18,6 +18,7 @@ import { getTemplate } from '@/lib/sonar/templates';
 import { runSweeps } from '@/lib/sonar/sweeps';
 import { getExemplars } from '@/lib/sonar/exemplars';
 import { composeBriefing } from '@/lib/sonar/composer';
+import { reservePing, completePing, failPing } from '@/lib/sonar/quota';
 
 /**
  * POST /api/sonar/v2 — template-driven Sonar briefings
@@ -40,12 +41,6 @@ export const maxDuration = 60;
 
 const DISCLAIMER =
   'Sonar synthesizes sourced research from Ezana datasets. Findings only, never financial advice.';
-
-function startOfUtcDayISO() {
-  const d = new Date();
-  d.setUTCHours(0, 0, 0, 0);
-  return d.toISOString();
-}
 
 /* ── chart + KPI resolution: numbers come from the sweep, never the model ── */
 
@@ -118,8 +113,8 @@ function resolveKpis(briefing, sweep) {
     .slice(0, 6);
 }
 
-export const POST = withApiGuard(
-  async (request, user) => {
+async function handlePing(request, user, ping) {
+  {
     const body = await request.json().catch(() => ({}));
     const query = String(body?.query || '')
       // eslint-disable-next-line no-control-regex
@@ -141,22 +136,16 @@ export const POST = withApiGuard(
 
     /* Quota and entitlements: the same ledger and matrix as Sonar v1, so a
        follow-up ping costs exactly one ping. */
-    const [{ data: profile }, member, isPartner, { count: usedToday }, referralPlan] =
-      await Promise.all([
-        admin
-          .from('profiles')
-          .select('subscription_plan, subscription_status, one_time_plan')
-          .eq('id', user.id)
-          .maybeSingle(),
-        getCurrentOrgMember(userClient).catch(() => null),
-        isActivePartner(userClient, user).catch(() => false),
-        admin
-          .from('sonar_queries')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', user.id)
-          .gte('created_at', startOfUtcDayISO()),
-        getReferralPlanOverride(admin, user.id),
-      ]);
+    const [{ data: profile }, member, isPartner, referralPlan] = await Promise.all([
+      admin
+        .from('profiles')
+        .select('subscription_plan, subscription_status, one_time_plan')
+        .eq('id', user.id)
+        .maybeSingle(),
+      getCurrentOrgMember(userClient).catch(() => null),
+      isActivePartner(userClient, user).catch(() => false),
+      getReferralPlanOverride(admin, user.id),
+    ]);
     const planTier = getPlanTier(getActivePlan(profile, referralPlan));
     const version = member ? 'org' : isPartner ? 'partner' : 'regular';
     const entitlements = getSonarEntitlements({
@@ -166,8 +155,24 @@ export const POST = withApiGuard(
       orgRole: member?.role || null,
     });
     const { locked } = describeDatasetAccess(entitlements);
-    const used = usedToday || 0;
-    if (used >= entitlements.dailyQueries) {
+    /* Reserve the ping before any sweep or model call (quota + global cap,
+       counted under a lock). */
+    const reservation = await reservePing(admin, {
+      userId: user.id,
+      limit: entitlements.dailyQueries,
+      query,
+      version,
+      planTier,
+    });
+    if (!reservation.ok && reservation.reason !== 'quota') {
+      return NextResponse.json(
+        { error: 'That ping did not land. Try again in a moment.' },
+        { status: reservation.reason === 'global' ? 429 : 503 },
+      );
+    }
+    ping.reservation = reservation.ok ? reservation : null;
+    const used = reservation.used || 0;
+    if (!reservation.ok) {
       return NextResponse.json({
         quotaExceeded: true,
         message: `You've used all ${entitlements.dailyQueries} Sonar pings for today.`,
@@ -283,22 +288,13 @@ export const POST = withApiGuard(
       pingId = null;
     }
 
-    /* Quota ledger (shared with v1). */
-    await admin
-      .from('sonar_queries')
-      .insert({
-        user_id: user.id,
-        query_text: query,
-        classification: `v2:${route.template}`,
-        version,
-        plan_tier: planTier,
-        datasets_searched: template.datasets,
-        grounded: Boolean(briefing),
-      })
-      .then(
-        () => {},
-        () => {},
-      );
+    /* Quota ledger (shared with v1): complete the reserved row. */
+    await completePing(admin, reservation, {
+      classification: `v2:${route.template}`,
+      datasets_searched: template.datasets,
+      grounded: Boolean(briefing),
+    });
+    ping.completed = true;
 
     console.log(`[timing] sonar:v2 ${route.template} sweep ${sweepMs}ms compose ${composeMs}ms`);
 
@@ -343,6 +339,24 @@ export const POST = withApiGuard(
       locked,
       disclaimer: DISCLAIMER,
     });
+  }
+}
+
+/* The reservation made inside handlePing is released if the ping fails
+   (throws or answers with an error), so a failed ping is not counted. */
+export const POST = withApiGuard(
+  async (request, user) => {
+    const ping = { reservation: null };
+    try {
+      const res = await handlePing(request, user, ping);
+      if (ping.reservation && !ping.completed && res.status >= 400) {
+        await failPing(getAdminClient(), ping.reservation);
+      }
+      return res;
+    } catch (e) {
+      if (ping.reservation && !ping.completed) await failPing(getAdminClient(), ping.reservation);
+      throw e;
+    }
   },
   { strict: true },
 );

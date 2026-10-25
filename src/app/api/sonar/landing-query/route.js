@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import { withApiGuard, safeErrorResponse } from '@/lib/api-guard';
 import { getAdminClient, getAuthUser } from '@/lib/supabase';
 import { runLandingPipeline, hashIp, DISCLAIMER } from '@/lib/sonar/landing-pipeline';
+import { reservePing, completePing, failPing } from '@/lib/sonar/quota';
+import { getClientIp } from '@/lib/client-ip';
 
 /**
  * POST /api/sonar/landing-query. The landing page's guest Sonar.
@@ -73,12 +75,6 @@ function setGuestCount(res, n) {
 
 const FORCE_KINDS = new Set(['ticker', 'country', 'industry', 'sector', 'state_province', 'theme']);
 
-function startOfUtcDayISO() {
-  const d = new Date();
-  d.setUTCHours(0, 0, 0, 0);
-  return d.toISOString();
-}
-
 export const POST = withApiGuard(
   async (request) => {
     const body = await request.json().catch(() => ({}));
@@ -98,20 +94,7 @@ export const POST = withApiGuard(
        not a guest: no 5-ping cookie cap and no sign-up gate. Their pings are
        capped per account per day instead, counted from the ledger. */
     const member = await getAuthUser(request).catch(() => null);
-    if (member) {
-      const memberCap = Math.max(1, Number(process.env.SONAR_MEMBER_DAILY_CAP) || 25);
-      const { count: mine } = await getAdminClient()
-        .from('sonar_queries')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', member.id)
-        .gte('created_at', startOfUtcDayISO());
-      if ((mine || 0) >= memberCap) {
-        return NextResponse.json(
-          { error: 'You have used today\u2019s pings. They reset at midnight UTC.' },
-          { status: 429 },
-        );
-      }
-    }
+    const memberCap = Math.max(1, Number(process.env.SONAR_MEMBER_DAILY_CAP) || 25);
 
     // Guest quota gate, before any retrieval or model spend.
     const used = member ? 0 : readGuestCount(request);
@@ -126,16 +109,33 @@ export const POST = withApiGuard(
 
     const admin = getAdminClient();
 
-    // Shared global circuit breaker, guests included via the shared ledger.
-    const globalCap = Math.max(0, Number(process.env.SONAR_GLOBAL_DAILY_CAP) || 500);
-    const { count: globalToday } = await admin
-      .from('sonar_queries')
-      .select('id', { count: 'exact', head: true })
-      .gte('created_at', startOfUtcDayISO());
-    if ((globalToday || 0) >= globalCap) {
+    /* Reserve the ping before any retrieval or model spend: the member's
+       daily cap (or, for a guest, a per-IP-hash cap behind the cookie) and
+       the shared global cap are counted and a 'reserved' ledger row inserted
+       under one lock, so parallel pings cannot all pass the same count.
+       Salted IP hash only, never a raw IP. */
+    const ipHash = hashIp(getClientIp(request) || 'unknown', guestSecret());
+    const reservation = await reservePing(admin, {
+      userId: member?.id || null,
+      limit: member ? memberCap : null,
+      ipHash: member ? null : ipHash,
+      ipLimit: member
+        ? null
+        : Math.max(GUEST_LIMIT, Number(process.env.SONAR_GUEST_IP_DAILY_CAP) || 20),
+      isGuest: !member,
+      query,
+      version: member ? 'member' : 'guest',
+      planTier: 0,
+    });
+    if (!reservation.ok) {
       return NextResponse.json(
-        { error: 'That ping did not land. Try again in a moment.' },
-        { status: 429 },
+        {
+          error:
+            reservation.reason === 'quota'
+              ? 'You have used today\u2019s pings. They reset at midnight UTC.'
+              : 'That ping did not land. Try again in a moment.',
+        },
+        { status: reservation.reason === 'error' ? 503 : 429 },
       );
     }
 
@@ -161,6 +161,7 @@ export const POST = withApiGuard(
     try {
       result = await runLandingPipeline(query, { admin, noCorrect, force });
     } catch (e) {
+      await failPing(admin, reservation);
       return safeErrorResponse(e);
     }
 
@@ -175,6 +176,7 @@ export const POST = withApiGuard(
     /* No answer at all means both the grounded and the general synthesis
        failed, which is our problem and not the visitor's. Nothing is spent. */
     if (!result.answer) {
+      await failPing(admin, reservation);
       return NextResponse.json(
         {
           answer: null,
@@ -191,38 +193,17 @@ export const POST = withApiGuard(
       );
     }
 
-    /* Ledger row: quota accounting for the global cap plus audit. Salted IP
-       hash only, never a raw IP. Non-fatal by design: failing here would
-       waste synthesis we have already paid for and show the visitor an error
-       for a working ping. */
-    const ip =
-      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-      request.headers.get('x-real-ip') ||
-      'unknown';
+    /* Complete the reserved ledger row. Non-fatal by design: the row is
+       already counted, and failing here would show the visitor an error for
+       a working ping whose synthesis we have already paid for. */
     try {
-      const { error: ledgerError } = await admin.from('sonar_queries').insert({
-        user_id: member?.id || null,
-        is_guest: !member,
-        ip_hash: hashIp(ip, guestSecret()),
-        query_text: query,
+      await completePing(admin, reservation, {
         classification: result.classification,
-        version: member ? 'member' : 'guest',
-        plan_tier: 0,
         datasets_searched: result.sources.map((s) => s.id),
         grounded: result.grounded,
       });
-      if (ledgerError) {
-        console.error(
-          '[sonar/landing] ledger insert failed (apply supabase/migrations/20260920120000_sonar_guest_queries.sql):',
-          ledgerError.message,
-        );
-      }
     } catch (e) {
-      /* The destructured error above covers Postgres-level failures, which are
-         returned rather than thrown. A transport failure still throws, and
-         letting it escape would 500 a ping whose synthesis we have already
-         paid for. Loud log, response proceeds. */
-      console.error('[sonar/landing] ledger insert threw:', e?.message);
+      console.error('[sonar/landing] ledger complete threw:', e?.message);
     }
 
     const nextUsed = used + 1;

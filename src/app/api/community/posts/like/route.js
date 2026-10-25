@@ -43,7 +43,13 @@ export async function POST(request) {
               event_data: { post_id, author_id: postRow.user_id },
             });
             if (bcErr) console.warn('[post like] breadcrumb', bcErr.message);
-            await awardXP(postRow.user_id, 5, 'Received a like on your post', 'community');
+            await awardXP(
+              postRow.user_id,
+              5,
+              'Received a like on your post',
+              'community',
+              `like:${post_id}:${user.id}`,
+            );
 
             // ── Notify post author of like ──
             try {

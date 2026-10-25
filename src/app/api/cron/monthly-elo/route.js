@@ -197,17 +197,24 @@ async function processActiveCopiesPhase(supabase, dateRange) {
 
       if (effectiveDelta !== 0) {
         const reasonStr = `Active copiers ${ymPrefix}: ${copierCount} copier${copierCount > 1 ? 's' : ''}`;
-        const awardResult = await awardELO(targetUserId, effectiveDelta, reasonStr, 'social', {
-          year: dateRange.year,
-          month: dateRange.month,
-          copier_count: copierCount,
-          target_monthly_score: Number(scoreForDelta.toFixed(4)),
-          base_delta: baseDelta,
-          profitability_delta: profitabilityDelta,
-          total_delta_raw: totalDelta,
-          effective_delta: effectiveDelta,
-          capped: totalDelta > 0 && effectiveDelta < totalDelta,
-        });
+        const awardResult = await awardELO(
+          targetUserId,
+          effectiveDelta,
+          reasonStr,
+          'social',
+          {
+            year: dateRange.year,
+            month: dateRange.month,
+            copier_count: copierCount,
+            target_monthly_score: Number(scoreForDelta.toFixed(4)),
+            base_delta: baseDelta,
+            profitability_delta: profitabilityDelta,
+            total_delta_raw: totalDelta,
+            effective_delta: effectiveDelta,
+            capped: totalDelta > 0 && effectiveDelta < totalDelta,
+          },
+          { key: `copiers:${ymPrefix}` },
+        );
         if (awardResult) {
           result.targetsAwarded++;
           result.totalEloAwarded += effectiveDelta;
@@ -365,7 +372,9 @@ async function processOnePortfolioType(supabase, userId, dateRange, spyReturn, i
   }
 
   if (eloAwarded !== 0) {
-    const awardResult = await awardELO(userId, eloAwarded, reason, 'portfolio', meta);
+    const awardResult = await awardELO(userId, eloAwarded, reason, 'portfolio', meta, {
+      key: `portfolio:${isReal ? 'real' : 'mock'}:${dateRange.year}-${String(dateRange.month).padStart(2, '0')}`,
+    });
     if (!awardResult) {
       await supabase.from('monthly_portfolio_perf').delete().eq('id', inserted.id);
       return { outcome: 'error', reason: 'awardELO_failed' };

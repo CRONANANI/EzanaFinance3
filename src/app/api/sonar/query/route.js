@@ -19,6 +19,7 @@ import {
 } from '@/lib/sonar/retrieval';
 import { synthesizeWithFallback } from '@/lib/sonar/llm-providers';
 import { logZeroResult } from '@/lib/rag/zero-results';
+import { reservePing, completePing, failPing } from '@/lib/sonar/quota';
 
 /**
  * POST /api/sonar/query — Ezana Sonar's cross-dataset intelligence surface.
@@ -68,12 +69,6 @@ const SYSTEM_PROMPT = `You are Ezana Sonar, a research/intelligence surface. A u
 - Never describe yourself as "AGI" or a general intelligence; you are a research surface over specific datasets plus live web.
 - Style: plain language, no hype, no em dashes. If the ping is not a finance-adjacent entity, answer briefly and suggest a better ping.`;
 
-function startOfUtcDayISO() {
-  const d = new Date();
-  d.setUTCHours(0, 0, 0, 0);
-  return d.toISOString();
-}
-
 function buildContext(items) {
   return items
     .map((it) => {
@@ -98,8 +93,8 @@ function looksLikeAdvice(text) {
   );
 }
 
-export const POST = withApiGuard(
-  async (request, user) => {
+async function handlePing(request, user, ping) {
+  {
     const body = await request.json().catch(() => ({}));
     // Strict input contract (cost control): control chars stripped, 2-300 chars
     // REJECTED rather than silently truncated, so an oversized paste never
@@ -127,47 +122,21 @@ export const POST = withApiGuard(
 
     const admin = getAdminClient();
 
-    // Budget circuit-breaker: a GLOBAL daily cap across all users, checked
-    // before any retrieval or model spend. The per-user quota below protects
-    // fairness; this protects the credit balance.
-    const globalCap = Math.max(0, Number(process.env.SONAR_GLOBAL_DAILY_CAP) || 500);
-    const { count: globalToday } = await admin
-      .from('sonar_queries')
-      .select('id', { count: 'exact', head: true })
-      .gte('created_at', startOfUtcDayISO());
-    if ((globalToday || 0) >= globalCap) {
-      console.warn('[sonar] global daily cap reached', { globalCap });
-      return NextResponse.json(
-        { error: 'That ping did not land. Try again in a moment.' },
-        { status: 429 },
-      );
-    }
     const userClient = getUserClient();
 
-    // 1. Resolve the user context: plan tier × version (regular/partner/org).
-    //    These four reads are mutually independent — the profile, the org
-    //    membership, the partner flag and today's usage count share no inputs
-    //    — so they go out together instead of as four sequential round trips.
-    //    The global circuit breaker above stays sequential and first on
-    //    purpose: its whole job is to return before any further work.
-    //    usedToday joins them because the QUERY is independent; only the
-    //    comparison below depends on the entitlements computed after.
-    const [{ data: profile }, member, isPartner, { count: usedToday }, referralPlan] =
-      await Promise.all([
-        admin
-          .from('profiles')
-          .select('subscription_plan, subscription_status, one_time_plan')
-          .eq('id', user.id)
-          .maybeSingle(),
-        getCurrentOrgMember(userClient).catch(() => null),
-        isActivePartner(userClient, user).catch(() => false),
-        admin
-          .from('sonar_queries')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', user.id)
-          .gte('created_at', startOfUtcDayISO()),
-        getReferralPlanOverride(admin, user.id),
-      ]);
+    // 1. Resolve the user context: plan tier x version (regular/partner/org).
+    //    The reads are independent, so they go out together. The quota and
+    //    the global cap are checked by the reservation in step 3.
+    const [{ data: profile }, member, isPartner, referralPlan] = await Promise.all([
+      admin
+        .from('profiles')
+        .select('subscription_plan, subscription_status, one_time_plan')
+        .eq('id', user.id)
+        .maybeSingle(),
+      getCurrentOrgMember(userClient).catch(() => null),
+      isActivePartner(userClient, user).catch(() => false),
+      getReferralPlanOverride(admin, user.id),
+    ]);
     const planTier = getPlanTier(getActivePlan(profile, referralPlan));
     const version = member ? 'org' : isPartner ? 'partner' : 'regular';
 
@@ -180,10 +149,27 @@ export const POST = withApiGuard(
     });
     const { available, locked } = describeDatasetAccess(entitlements);
 
-    // 3. Daily quota — enforced server-side. Over-limit is an upgrade surface,
-    //    not an error. The count was fetched alongside the user context above.
-    const used = usedToday || 0;
-    if (used >= entitlements.dailyQueries) {
+    // 3. Daily quota and the global cap, enforced server-side BEFORE any
+    //    retrieval or model spend: reserve_sonar_ping counts and inserts a
+    //    'reserved' ledger row under a lock, so parallel pings cannot all
+    //    pass the same count. Over-limit is an upgrade surface, not an error.
+    const reservation = await reservePing(admin, {
+      userId: user.id,
+      limit: entitlements.dailyQueries,
+      query,
+      version,
+      planTier,
+    });
+    if (!reservation.ok && reservation.reason !== 'quota') {
+      if (reservation.reason === 'global') console.warn('[sonar] global daily cap reached');
+      return NextResponse.json(
+        { error: 'That ping did not land. Try again in a moment.' },
+        { status: reservation.reason === 'global' ? 429 : 503 },
+      );
+    }
+    ping.reservation = reservation.ok ? reservation : null;
+    const used = reservation.used || 0;
+    if (!reservation.ok) {
       return NextResponse.json({
         quotaExceeded: true,
         message: `You've used all ${entitlements.dailyQueries} Sonar pings for today. Upgrade for a higher daily quota and deeper synthesis.`,
@@ -300,22 +286,13 @@ export const POST = withApiGuard(
     }
     const sections = [...sectionMap.values()];
 
-    // 7. Log the query (quota accounting + audit). Service-role insert.
-    await admin
-      .from('sonar_queries')
-      .insert({
-        user_id: user.id,
-        query_text: query,
-        classification,
-        version,
-        plan_tier: planTier,
-        datasets_searched: searched.map((d) => d.id),
-        grounded,
-      })
-      .then(
-        () => {},
-        () => {},
-      );
+    // 7. Complete the reserved ledger row (quota accounting + audit).
+    await completePing(admin, reservation, {
+      classification,
+      datasets_searched: searched.map((d) => d.id),
+      grounded,
+    });
+    ping.completed = true;
 
     return NextResponse.json({
       query,
@@ -344,6 +321,24 @@ export const POST = withApiGuard(
       available: available.map((d) => d.id),
       disclaimer: DISCLAIMER,
     });
+  }
+}
+
+/* The reservation made inside handlePing is released if the ping fails
+   (throws or answers with an error), so a failed ping is not counted. */
+export const POST = withApiGuard(
+  async (request, user) => {
+    const ping = { reservation: null };
+    try {
+      const res = await handlePing(request, user, ping);
+      if (ping.reservation && !ping.completed && res.status >= 400) {
+        await failPing(getAdminClient(), ping.reservation);
+      }
+      return res;
+    } catch (e) {
+      if (ping.reservation && !ping.completed) await failPing(getAdminClient(), ping.reservation);
+      throw e;
+    }
   },
   { strict: true },
 );

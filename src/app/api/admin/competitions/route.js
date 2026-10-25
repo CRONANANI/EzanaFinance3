@@ -117,13 +117,18 @@ export async function PATCH(request) {
   }
 
   if (action === 'score') {
-    if (comp.status !== 'active' && comp.status !== 'ended') {
+    if (!['active', 'ended', 'score_failed', 'scoring'].includes(comp.status)) {
       return NextResponse.json(
         { error: `Cannot score: status is ${comp.status}` },
         { status: 409 },
       );
     }
+    /* The claim inside scoreCompetition decides: a competition already
+       being scored (and not stale) is refused, never scored twice. */
     const result = await scoreCompetition(supabase, comp);
+    if (result.skipped) {
+      return NextResponse.json({ error: 'Scoring already in progress or done' }, { status: 409 });
+    }
     return NextResponse.json({ success: true, ...result });
   }
 

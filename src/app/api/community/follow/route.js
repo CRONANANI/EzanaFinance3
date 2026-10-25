@@ -157,7 +157,13 @@ export async function POST(request) {
           .maybeSingle();
 
         if (reciprocal) {
-          await awardXP(user.id, 25, 'Mutual follow (followed back)', 'community');
+          await awardXP(
+            user.id,
+            25,
+            'Mutual follow (followed back)',
+            'community',
+            `mutual-follow:${target_user_id}`,
+          );
         }
       }
     } else {
