@@ -97,30 +97,44 @@ export function PartnerQuestionnaire({ userId, onComplete, completeError = null 
   const [animating, setAnimating] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const [finalError, setFinalError] = useState(null);
+  const [finalizing, setFinalizing] = useState(false);
+  const pendingFinalRef = useRef(null);
+
+  // QA PAR-13: only show "all set" once the completion flags are saved. A
+  // failed write used to be swallowed, so the partner reached /partner-home
+  // with onboarding_completed still false and was bounced back here in a loop.
   const finalize = useCallback(
     async (finalAnswers) => {
-      if (userId) {
-        try {
-          // partner_questionnaire stores the answers; the shared
-          // investor_questionnaire_completed + onboarding_completed flags mark
-          // onboarding done so this never shows again (same gate the rest of
-          // the flow checks). Written defensively: a failure here is logged but
-          // never blocks the partner from continuing.
-          const { error } = await supabase
-            .from('profiles')
-            .update({
-              partner_questionnaire: finalAnswers,
-              investor_questionnaire_completed: true,
-              onboarding_completed: true,
-              onboarding_step: 99,
-            })
-            .eq('id', userId);
-          if (error) console.error('[PartnerQuestionnaire] finalize', error);
-        } catch (e) {
-          console.error('[PartnerQuestionnaire] finalize', e);
-        }
+      pendingFinalRef.current = finalAnswers;
+      setFinalError(null);
+      if (!userId) {
+        setDone(true);
+        return;
       }
-      setDone(true);
+      setFinalizing(true);
+      try {
+        // partner_questionnaire stores the answers; the shared
+        // investor_questionnaire_completed + onboarding_completed flags mark
+        // onboarding done so this never shows again (same gate the rest of
+        // the flow checks).
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            partner_questionnaire: finalAnswers,
+            investor_questionnaire_completed: true,
+            onboarding_completed: true,
+            onboarding_step: 99,
+          })
+          .eq('id', userId);
+        if (error) throw error;
+        setDone(true);
+      } catch (e) {
+        console.error('[PartnerQuestionnaire] finalize', e);
+        setFinalError('We could not save your answers. Check your connection and try again.');
+      } finally {
+        setFinalizing(false);
+      }
     },
     [userId],
   );
@@ -240,7 +254,7 @@ export function PartnerQuestionnaire({ userId, onComplete, completeError = null 
           <div className="iq-result-level-label">Welcome, Partner</div>
           <h1 className="iq-result-title">You&apos;re all set</h1>
           <p className="iq-result-desc">
-            Thanks — we&apos;ll use this to tailor your partner tools and surface the right audience
+            Thanks. We&apos;ll use this to tailor your partner tools and surface the right audience
             for the content you want to create.
           </p>
           <button type="button" className="iq-cta-btn" onClick={() => onCompleteRef.current?.()}>
@@ -335,8 +349,31 @@ export function PartnerQuestionnaire({ userId, onComplete, completeError = null 
               ← Back
             </button>
           )}
-          {saving && <span className="iq-saving-indicator">Saving…</span>}
+          {(saving || finalizing) && <span className="iq-saving-indicator">Saving…</span>}
         </div>
+        {finalError ? (
+          <div role="alert" className="iq-footer">
+            <p
+              style={{
+                margin: 0,
+                color: 'var(--negative)',
+                fontSize: 'var(--type-caption-size)',
+                fontWeight: 'var(--type-caption-weight)',
+                lineHeight: 1.5,
+              }}
+            >
+              {finalError}
+            </p>
+            <button
+              type="button"
+              className="iq-confirm-btn"
+              disabled={finalizing}
+              onClick={() => finalize(pendingFinalRef.current || answers)}
+            >
+              Try again
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );
