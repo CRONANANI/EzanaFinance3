@@ -58,5 +58,13 @@ export async function upsertImportedPositions(admin, rows) {
     .from('org_positions')
     .upsert(merged, { onConflict: POSITION_IMPORT_CONFLICT })
     .select('id');
+  /* Until 20261026140000 is applied there is no unique index to upsert on
+     (42P10). Fall back to the old plain insert so imports keep working in
+     the window between this deploy and the migration. */
+  if (error?.code === '42P10') {
+    console.warn('[org-position-import] unique index missing; plain insert until the migration');
+    const ins = await admin.from('org_positions').insert(merged).select('id');
+    return { data: ins.data, error: ins.error, merged: merged.length };
+  }
   return { data, error, merged: merged.length };
 }

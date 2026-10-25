@@ -53,12 +53,13 @@
 
 ## Org (university) surface
 
-- `src/lib/orgMockData.js` is dead demo data with no importers as of Phase D2
-  (its only remaining consumer is `getFundCalendar` in the Team Hub home page).
-  Real permission config lives in `src/lib/org-permissions-config.js`
-  (`PERMISSION_TIERS`, `getMemberPermissions`, `canFlagPositions`,
-  `getManageableOrgPeers`). Do not import from `orgMockData.js`; delete it once
-  the demo seed migration is no longer needed for pitches.
+- `src/lib/orgMockData.js` was deleted in the QA remediation (ORG-6): the Team
+  Hub calendar is built from real meetings, tasks and assignment due dates
+  (`src/lib/org-team-calendar.js`). Real permission config lives in
+  `src/lib/org-permissions-config.js` (`PERMISSION_TIERS`,
+  `getMemberPermissions`, `canFlagPositions`, `getManageableOrgPeers`); grants
+  are enforced server-side via `memberHasPermission` in
+  `src/lib/org-permissions-server.js`.
 - All org fund surfaces read one source of truth — `org_positions` via
   `getOrgPositionBook` (`src/lib/org-position-book.js`). Flag routing resolves
   from the real org chart (`resolveFlagRoutingDb` in `org-trading-server.js`).
