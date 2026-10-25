@@ -2,13 +2,15 @@
  * /api/echo/articles
  * GET — list published articles (public) or author's own articles (auth'd)
  * POST — create/save draft or submit for review (auth'd partner with writer approval)
- * PATCH — update article (auth'd, own articles only)
+ * PATCH — update article (auth'd approved writer, own articles only; a title/body
+ *   change on a published article sends it back to 'submitted' for review)
  */
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getCurrentUser, getLazyAdminClient } from '@/lib/supabase';
 import { revalidateTag } from 'next/cache';
 import { ECHO_HUB_TAG } from '@/lib/echo/hub-cache';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -162,6 +164,28 @@ export const PATCH = withApiGuard(
 
     if (!articleId) return NextResponse.json({ error: 'articleId required' }, { status: 400 });
 
+    // QA PAR-11: editing needs the same writer approval as submitting.
+    const { data: partner } = await admin
+      .from('partners')
+      .select('echo_writer_approved')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (!partner?.echo_writer_approved) {
+      return NextResponse.json(
+        { error: 'You must be an approved Echo writer to edit articles.' },
+        { status: 403 },
+      );
+    }
+
+    const { data: current, error: loadErr } = await admin
+      .from('echo_articles')
+      .select('id, article_status, article_title, article_body')
+      .eq('id', articleId)
+      .eq('author_id', user.id)
+      .maybeSingle();
+    if (loadErr) return NextResponse.json({ error: 'Update failed' }, { status: 500 });
+    if (!current) return NextResponse.json({ error: 'Article not found' }, { status: 404 });
+
     const updates = { updated_at: new Date().toISOString() };
     if (title) updates.article_title = title;
     if (excerpt) updates.article_excerpt = excerpt;
@@ -177,7 +201,14 @@ export const PATCH = withApiGuard(
       updates.series_order = Number.isInteger(body.seriesOrder) ? body.seriesOrder : null;
     }
 
-    if (action === 'submit') {
+    // QA PAR-11: a published article whose title or body changes goes back
+    // through review instead of changing live.
+    const contentChanged =
+      (updates.article_title !== undefined && updates.article_title !== current.article_title) ||
+      (updates.article_body !== undefined && updates.article_body !== current.article_body);
+    const reReview = current.article_status === 'published' && contentChanged;
+
+    if (action === 'submit' || reReview) {
       updates.article_status = 'submitted';
       updates.submitted_at = new Date().toISOString();
     }
@@ -192,8 +223,19 @@ export const PATCH = withApiGuard(
 
     if (updateErr) return NextResponse.json({ error: 'Update failed' }, { status: 500 });
 
+    if (reReview) {
+      // No editor-notification channel exists yet (no editor role or review
+      // queue in the app). Until one does, the re-review is logged so the
+      // editors can find it in the logs and in article_status = 'submitted'.
+      logger.warn('Echo article edited after publish: back to review', {
+        articleId,
+        authorId: user.id,
+        title: article?.article_title,
+      });
+    }
+
     revalidateTag(ECHO_HUB_TAG);
-    return NextResponse.json({ success: true, article });
+    return NextResponse.json({ success: true, article, resubmittedForReview: reReview });
   },
   { requireAuth: true },
 );
