@@ -14,6 +14,8 @@ import { PersonalizationPanel } from './PersonalizationPanel';
 import { useBeginnerLevelContext } from '@/contexts/BeginnerLevelContext';
 import { MfaSetupPanel } from './MfaSetupPanel';
 import { ApiKeysLedger } from '@/components/settings/ledger/panels/ApiKeysLedger';
+import { PLANS } from '@/config/pricing';
+import { getActivePlan } from '@/lib/subscription';
 
 /* ═══════════════════════════════════════════════════════════
    SETTINGS PANELS — 10 panels with full form fields
@@ -806,6 +808,55 @@ export function ProfilePanel({ onSave, settings, updateSetting, saveSettings, sa
   );
 }
 
+/* Revokes every refresh token for this user (all devices, this one too),
+   then returns to sign-in. Replaces a hardcoded sessions table. QA RET-6. */
+function SignOutEverywhere() {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const onClick = async () => {
+    if (busy) return;
+    if (
+      typeof window !== 'undefined' &&
+      !window.confirm('Sign out of Ezana on every device, including this one?')
+    ) {
+      return;
+    }
+    setBusy(true);
+    setErr('');
+    const { error } = await supabase.auth.signOut({ scope: 'global' });
+    if (error) {
+      setBusy(false);
+      setErr('Could not sign out of all devices. Please try again.');
+      return;
+    }
+    window.location.href = '/auth/signin';
+  };
+  return (
+    <>
+      <h3 className="settings-section-title">
+        <i className="bi bi-laptop" />
+        Sessions
+      </h3>
+      <div className="settings-toggle-row">
+        <div className="settings-toggle-info">
+          <span className="settings-toggle-label">Sign out of all devices</span>
+          <span className="settings-toggle-desc">
+            Ends every session on every device, including this one.
+          </span>
+        </div>
+        <button type="button" className="settings-btn-danger" onClick={onClick} disabled={busy}>
+          {busy ? 'Signing out...' : 'Sign out everywhere'}
+        </button>
+      </div>
+      {err ? (
+        <p className="settings-field-error" role="alert">
+          {err}
+        </p>
+      ) : null}
+    </>
+  );
+}
+
 function passwordStrength(pwd) {
   if (!pwd) return { score: 0, label: '', pct: 0 };
   let score = 0;
@@ -973,42 +1024,14 @@ export function PasswordPanel({ settings, updateSetting }) {
             aria-label="Toggle login alerts"
           />
         </div>
-        <h3 className="settings-section-title">
-          <i className="bi bi-laptop" />
-          Active sessions
-        </h3>
-        <table className="settings-table">
-          <thead>
-            <tr>
-              <th>Device</th>
-              <th>Location</th>
-              <th>Last active</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Chrome on Windows</td>
-              <td>New York, US</td>
-              <td>Just now</td>
-              <td>
-                <button
-                  type="button"
-                  className="settings-btn-danger"
-                  style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
-                >
-                  Revoke
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <SignOutEverywhere />
       </div>
     </div>
   );
 }
 
-export function FamilyPanel({ onSave }) {
+/* Family sharing is not built yet: no members, slots or invites to show (QA RET-6). */
+export function FamilyPanel() {
   return (
     <div className="settings-panel">
       <div className="settings-panel-header">
@@ -1016,141 +1039,100 @@ export function FamilyPanel({ onSave }) {
         <p className="settings-panel-desc">Manage linked family accounts and sharing.</p>
       </div>
       <div className="settings-section">
-        <div className="settings-info-card">
-          <strong>Member slots:</strong> 2 of 5 used
-        </div>
-        <h3 className="settings-section-title">
-          <i className="bi bi-people" />
-          Family members
-        </h3>
-        <table className="settings-table">
-          <thead>
-            <tr>
-              <th>Email</th>
-              <th>Role</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>jane@example.com</td>
-              <td>Viewer</td>
-              <td>
-                <button
-                  type="button"
-                  className="settings-btn-danger"
-                  style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
-                >
-                  Remove
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <h3 className="settings-section-title">
-          <i className="bi bi-person-plus" />
-          Invite member
-        </h3>
-        <div className="settings-row">
-          <div className="settings-field">
-            <label className="settings-label">Email</label>
-            <input type="email" className="settings-input" placeholder="family@example.com" />
-          </div>
-          <div className="settings-field">
-            <label className="settings-label">Role</label>
-            <select className="settings-input">
-              <option>Viewer</option>
-              <option>Editor</option>
-            </select>
-          </div>
-        </div>
-        <div className="settings-toggle-row">
-          <div className="settings-toggle-info">
-            <span className="settings-toggle-label">Share watchlist</span>
-            <span className="settings-toggle-desc">Allow family members to see your watchlist</span>
-          </div>
-          <button type="button" className="settings-switch on" aria-label="Toggle" />
-        </div>
-        <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>
-            Send invite
-          </button>
+        <div className="settings-info-card" role="status">
+          <i className="bi bi-people" aria-hidden="true" /> Family plans are coming soon.
         </div>
       </div>
     </div>
   );
 }
 
-export function PlanPanel({ onSave }) {
+const STATUS_LABELS = {
+  active: 'Active',
+  trialing: 'Free trial',
+  past_due: 'Payment past due',
+  canceled: 'Canceled',
+  free: 'Free',
+  incomplete: 'Incomplete',
+  unpaid: 'Unpaid',
+  paused: 'Paused',
+};
+
+/* Plan and status from the caller's own profiles row, which the Stripe
+   webhook keeps current. No usage meter: there is no per-user usage
+   number to show here (API usage lives on the API tab). QA RET-6. */
+export function PlanPanel() {
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        const uid = session?.user?.id;
+        if (!uid) return;
+        const { data, error } = await supabase
+          .from('profiles')
+          .select(
+            'subscription_plan, subscription_status, current_period_end, one_time_plan, one_time_plan_purchased_at',
+          )
+          .eq('id', uid)
+          .maybeSingle();
+        if (cancelled) return;
+        if (error) setLoadError('Could not load your plan. Please refresh to try again.');
+        else setProfile(data || null);
+      } catch {
+        if (!cancelled) setLoadError('Could not load your plan. Please refresh to try again.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const planKey = getActivePlan(profile);
+  const planName = planKey ? PLANS[planKey]?.name || planKey : null;
+  const status = profile?.subscription_status || null;
+  const periodEnd = profile?.current_period_end ? new Date(profile.current_period_end) : null;
+
   return (
     <div className="settings-panel">
       <div className="settings-panel-header">
         <h2 className="settings-panel-title">Plan</h2>
-        <p className="settings-panel-desc">Manage your subscription and usage.</p>
+        <p className="settings-panel-desc">Your current subscription.</p>
       </div>
       <div className="settings-section">
-        <div className="settings-info-card">
-          <span className="settings-badge green">Current plan</span>
-          <strong style={{ marginLeft: '0.5rem' }}>Pro</strong>
-        </div>
-        <h3 className="settings-section-title">
-          <i className="bi bi-pie-chart" />
-          Usage
-        </h3>
-        <div className="settings-field">
-          <span className="settings-label">API calls this month</span>
-          <div className="settings-usage-bar">
-            <div className="settings-usage-fill" style={{ width: '65%' }} />
+        {loading ? (
+          <div aria-hidden style={{ minHeight: 120, width: '100%' }} />
+        ) : loadError ? (
+          <p className="settings-field-error" role="alert">
+            {loadError}
+          </p>
+        ) : planName ? (
+          <div className="settings-info-card">
+            <span className="settings-badge green">Current plan</span>
+            <strong style={{ marginLeft: '0.5rem' }}>{planName}</strong>
+            {status && STATUS_LABELS[status] ? <span> · {STATUS_LABELS[status]}</span> : null}
+            {periodEnd && !Number.isNaN(periodEnd.getTime()) && status !== 'free' ? (
+              <span>
+                {' '}
+                · {status === 'trialing' ? 'Trial ends' : 'Renews'}{' '}
+                {fmtInvoiceDate(periodEnd.getTime())}
+              </span>
+            ) : null}
           </div>
-          <div className="settings-usage-text">
-            <span>6,500</span>
-            <span>10,000 limit</span>
+        ) : (
+          <div className="settings-info-card">
+            You don&apos;t have an active plan.
+            {status && STATUS_LABELS[status] ? ` Last status: ${STATUS_LABELS[status]}.` : ''}
           </div>
-        </div>
-        <div className="settings-plan-cards">
-          <div className="settings-plan-card">
-            <div className="settings-plan-name">Free</div>
-            <div className="settings-plan-price">
-              $0 <span>/month</span>
-            </div>
-            <div className="settings-plan-feature">
-              <i className="bi bi-check" />
-              Basic features
-            </div>
-            <div className="settings-plan-feature">
-              <i className="bi bi-check" />
-              1,000 API calls
-            </div>
-          </div>
-          <div className="settings-plan-card current">
-            <div className="settings-plan-name">Pro</div>
-            <div className="settings-plan-price">
-              $19 <span>/month</span>
-            </div>
-            <div className="settings-plan-feature">
-              <i className="bi bi-check" />
-              All features
-            </div>
-            <div className="settings-plan-feature">
-              <i className="bi bi-check" />
-              10,000 API calls
-            </div>
-          </div>
-          <div className="settings-plan-card">
-            <div className="settings-plan-name">Elite</div>
-            <div className="settings-plan-price">
-              $49 <span>/month</span>
-            </div>
-            <div className="settings-plan-feature">
-              <i className="bi bi-check" />
-              Priority support
-            </div>
-            <div className="settings-plan-feature">
-              <i className="bi bi-check" />
-              Unlimited API
-            </div>
-          </div>
-        </div>
+        )}
         <div className="settings-btn-row" style={{ flexWrap: 'wrap', gap: '0.5rem' }}>
           <Link
             href="/subscribe"
@@ -1166,9 +1148,6 @@ export function PlanPanel({ onSave }) {
             View plans &amp; checkout
           </Link>
           <ManageBillingButton className="settings-btn-secondary" label="Manage subscription" />
-          <button type="button" className="settings-btn-primary" onClick={onSave}>
-            Save
-          </button>
         </div>
       </div>
     </div>
@@ -1585,59 +1564,111 @@ export function NotificationsPanel({ onSave, settings, updateSetting }) {
   );
 }
 
-const INTEGRATIONS = [
-  { id: '1', name: 'Brokerage API', icon: 'bi-bank', status: 'connected' },
-  { id: '2', name: 'Google Sheets', icon: 'bi-file-earmark-spreadsheet', status: '' },
-  { id: '3', name: 'Slack', icon: 'bi-slack', status: '' },
-  { id: '4', name: 'Discord', icon: 'bi-discord', status: '' },
-  { id: '5', name: 'Zapier', icon: 'bi-lightning', status: '' },
-  { id: '6', name: 'Webhook', icon: 'bi-link-45deg', status: '' },
-  { id: '7', name: 'API', icon: 'bi-code-slash', status: 'connected' },
-  { id: '8', name: 'Excel', icon: 'bi-file-earmark-excel', status: '' },
-];
+/* Only integrations that exist, with their state read from real data:
+   linked brokerage accounts (unified across Plaid and SnapTrade) and the
+   user's Ezana API keys. QA RET-6. */
+export function IntegrationsPanel() {
+  const [state, setState] = useState({ loading: true, accounts: null, keys: null });
 
-export function IntegrationsPanel({ onSave }) {
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const headers = session?.access_token
+        ? { Authorization: `Bearer ${session.access_token}` }
+        : {};
+      const read = async (url, pick) => {
+        try {
+          const res = await fetch(url, { headers, credentials: 'include', cache: 'no-store' });
+          if (!res.ok) return null;
+          return pick(await res.json());
+        } catch {
+          return null;
+        }
+      };
+      const [accounts, keys] = await Promise.all([
+        read('/api/portfolio/holdings', (d) => (Array.isArray(d?.accounts) ? d.accounts : [])),
+        read('/api/ezana-api/keys', (d) =>
+          Array.isArray(d?.keys) ? d.keys.filter((k) => k.status === 'active') : [],
+        ),
+      ]);
+      if (!cancelled) setState({ loading: false, accounts, keys });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const rows = [
+    {
+      id: 'brokerage',
+      name: 'Brokerage accounts',
+      icon: 'bi-bank',
+      count: state.accounts?.length ?? null,
+      noun: 'account',
+      href: '/home',
+      cta: 'Link',
+    },
+    {
+      id: 'api',
+      name: 'Ezana API',
+      icon: 'bi-code-slash',
+      count: state.keys?.length ?? null,
+      noun: 'active key',
+      href: '/settings?tab=api',
+      cta: 'Set up',
+    },
+  ];
+
   return (
     <div className="settings-panel">
       <div className="settings-panel-header">
         <h2 className="settings-panel-title">Integrations</h2>
-        <p className="settings-panel-desc">Connect external services and tools.</p>
+        <p className="settings-panel-desc">Services connected to your Ezana account.</p>
       </div>
       <div className="settings-section">
         <div className="settings-integrations-grid">
-          {INTEGRATIONS.map((int) => (
-            <div
-              key={int.id}
-              className={`settings-integration-card ${int.status ? 'connected' : ''}`}
-            >
+          {rows.map((r) => {
+            const connected = (r.count ?? 0) > 0;
+            const statusText = state.loading
+              ? 'Checking...'
+              : r.count == null
+                ? 'Status unavailable'
+                : connected
+                  ? `${r.count} ${r.noun}${r.count === 1 ? '' : 's'} connected`
+                  : 'Not connected';
+            return (
               <div
-                className="settings-integration-icon"
-                style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}
+                key={r.id}
+                className={`settings-integration-card ${connected ? 'connected' : ''}`}
               >
-                <i className={`bi ${int.icon}`} />
-              </div>
-              <div className="settings-integration-body">
-                <span className="settings-integration-name">{int.name}</span>
-                <span
-                  className={`settings-integration-status ${int.status ? 'connected-text' : ''}`}
+                <div className="settings-integration-icon">
+                  <i className={`bi ${r.icon}`} aria-hidden="true" />
+                </div>
+                <div className="settings-integration-body">
+                  <span className="settings-integration-name">{r.name}</span>
+                  <span
+                    className={`settings-integration-status ${connected ? 'connected-text' : ''}`}
+                  >
+                    {statusText}
+                  </span>
+                </div>
+                <Link
+                  href={r.href}
+                  className="settings-btn-secondary"
+                  style={{
+                    padding: '0.375rem 0.75rem',
+                    fontSize: '0.75rem',
+                    textDecoration: 'none',
+                  }}
                 >
-                  {int.status || 'Not connected'}
-                </span>
+                  {connected ? 'Manage' : r.cta}
+                </Link>
               </div>
-              <button
-                type="button"
-                className="settings-btn-secondary"
-                style={{ padding: '0.375rem 0.75rem', fontSize: '0.75rem' }}
-              >
-                {int.status ? 'Manage' : 'Connect'}
-              </button>
-            </div>
-          ))}
-        </div>
-        <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>
-            Save changes
-          </button>
+            );
+          })}
         </div>
       </div>
     </div>
