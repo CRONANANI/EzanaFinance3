@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { checkRateLimit } from './persistent-rate-limit';
 import { getAuthUser } from './supabase';
-import { logger } from './logger';
+import * as Sentry from '@sentry/nextjs';
+import { logger, requestIdOf } from './logger';
 import { logSecurityEvent } from './security-audit';
 import { getClientIp } from './client-ip';
 import { routePattern } from './route-pattern';
@@ -44,6 +45,14 @@ export function withApiGuard(handler, options = {}) {
   const { requireAuth = true, strict = false, requiredRole = null } = options;
 
   return async (request, context) => {
+    const requestId = requestIdOf(request);
+    if (requestId) {
+      try {
+        Sentry.getIsolationScope().setTag('request_id', requestId);
+      } catch {
+        /* Sentry not initialised */
+      }
+    }
     try {
       const ip = getClientIp(request) || 'unknown';
 
@@ -109,7 +118,7 @@ export function withApiGuard(handler, options = {}) {
       if (remaining != null) res.headers.set('X-RateLimit-Remaining', String(remaining));
       return res;
     } catch (error) {
-      logger.error('API Error', { error: error?.message, stack: error?.stack });
+      logger.error('API Error', { requestId, error: error?.message, stack: error?.stack });
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
   };

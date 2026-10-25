@@ -24,6 +24,7 @@ import { getAdminClient } from '@/lib/supabase';
 import { isCronAuthorized } from '@/lib/cron/auth';
 import { recordFailedJob } from '@/lib/cron/failed-jobs';
 import { cronRunOutcome } from '@/lib/cron/outcome';
+import { logger } from '@/lib/logger';
 
 const MISSING_FN = new Set(['PGRST202', '42883', '42P01']);
 
@@ -90,6 +91,7 @@ export async function withCronLock(name, ttlSeconds, fn, { lockKey = name } = {}
 
   const runId = await startRun(admin, name);
   try {
+    const t0 = Date.now();
     const res = await fn();
     let body = null;
     try {
@@ -97,11 +99,18 @@ export async function withCronLock(name, ttlSeconds, fn, { lockKey = name } = {}
     } catch {
       body = null;
     }
-    await finishRun(admin, runId, name, cronRunOutcome(body, res.status));
+    const outcome = cronRunOutcome(body, res.status);
+    await finishRun(admin, runId, name, outcome);
+    logger.info('cron run', {
+      job: name,
+      status: outcome.status,
+      http: res.status,
+      ms: Date.now() - t0,
+    });
     return res;
   } catch (e) {
     const message = String(e?.message || e).slice(0, 2000);
-    console.error(`[cron] ${name} failed:`, e);
+    logger.error('cron failed', { job: name, error: message, stack: e?.stack });
     await finishRun(admin, runId, name, { status: 'failed', note: message.slice(0, 500) });
     await recordFailedJob({ job: `cron:${name}`, error: message, payload: null });
     return NextResponse.json({ ok: false, error: message.slice(0, 300) }, { status: 500 });

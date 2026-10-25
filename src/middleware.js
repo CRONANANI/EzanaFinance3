@@ -20,7 +20,31 @@ const MFA_ENFORCED = process.env.MFA_ENFORCED !== 'false';
 // factor is unaffected and still governed by MFA_ENFORCED above.
 const MFA_REQUIRE_ENROLLMENT = process.env.MFA_REQUIRE_ENROLLMENT === 'true';
 
+/* Request IDs (reliability audit P3): reuse a well-formed incoming
+   x-request-id, else Vercel's x-vercel-id, else a fresh UUID. Forwarded to
+   the route (request header) and returned to the client (response header);
+   api-guard tags the Sentry scope and logger lines with it. */
+const REQUEST_ID_RE = /^[A-Za-z0-9:_-]{8,128}$/;
+function requestIdFor(request) {
+  const incoming = request.headers.get('x-request-id');
+  if (incoming && REQUEST_ID_RE.test(incoming)) return incoming;
+  const vercel = request.headers.get('x-vercel-id');
+  if (vercel && REQUEST_ID_RE.test(vercel)) return vercel;
+  return crypto.randomUUID();
+}
+
 export async function middleware(request) {
+  const requestId = requestIdFor(request);
+  const response = await handle(request, requestId);
+  try {
+    response?.headers?.set('x-request-id', requestId);
+  } catch {
+    /* immutable redirect headers: nothing to add */
+  }
+  return response;
+}
+
+async function handle(request, requestId) {
   const pathname = request.nextUrl.pathname;
 
   /* App and Android link verification files: Apple and Google fetch these
@@ -31,7 +55,9 @@ export async function middleware(request) {
      skip the session lookup, profile gates, CSP nonce and per-IP limit here
      (next.config.js still adds the security headers). */
   if (pathname === '/v1' || pathname.startsWith('/v1/') || pathname.startsWith('/api/v1/')) {
-    return NextResponse.next();
+    const h = new Headers(request.headers);
+    h.set('x-request-id', requestId);
+    return NextResponse.next({ request: { headers: h } });
   }
 
   /* Inside the iOS and Android apps (user-agent suffix EzanaApp/): real-money
@@ -112,6 +138,7 @@ export async function middleware(request) {
      was causing the split-theme flash on Home / Dashboard. */
   const forwardedHeaders = new Headers(request.headers);
   forwardedHeaders.set('x-pathname', pathname);
+  forwardedHeaders.set('x-request-id', requestId);
 
   /* Layer 3 — per-request CSP with a nonce so we can drop script-src
      'unsafe-inline'. Next.js reads the nonce from the request's

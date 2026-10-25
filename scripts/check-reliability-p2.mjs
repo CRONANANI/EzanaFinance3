@@ -110,3 +110,18 @@ test('delivery claims: two parallel runs claim each (user, event) once', async (
   await mapLimit([1, 2, 3, 4, 5, 6], 2, async (x) => seen.push(x));
   assert.equal(seen.length, 6);
 });
+
+test('logger.child carries its fields on every line', async () => {
+  const { logger } = await import('../src/lib/logger.js');
+  const lines = [];
+  const orig = console.log;
+  console.log = (l) => lines.push(JSON.parse(l));
+  try {
+    logger.child({ requestId: 'req-1', job: 'x' }).info('hello', { n: 1 });
+  } finally {
+    console.log = orig;
+  }
+  assert.equal(lines[0].requestId, 'req-1');
+  assert.equal(lines[0].job, 'x');
+  assert.equal(lines[0].n, 1);
+});

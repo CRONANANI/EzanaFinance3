@@ -1,10 +1,30 @@
 """Minimal Supabase REST upsert for the Eyes Above workers (service role)."""
 import json
 import os
+import signal
 import urllib.request
 
 URL = os.environ["SUPABASE_URL"].rstrip("/")
 KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
+
+# Graceful shutdown (reliability audit P3): on SIGTERM (a cancelled or
+# timed-out GitHub Actions job) the worker stops starting new work, writes
+# what it has (every write is an idempotent upsert, so a partial run is safe
+# to repeat) and exits. Loops check stopping() between units of work.
+_STOP = {"flag": False}
+
+
+def _on_term(signum, _frame):
+    if not _STOP["flag"]:
+        print(f"signal {signum}: finishing the current batch, then exiting", flush=True)
+    _STOP["flag"] = True
+
+
+signal.signal(signal.SIGTERM, _on_term)
+
+
+def stopping():
+    return _STOP["flag"]
 
 
 def upsert(table, rows, on_conflict, chunk=500):

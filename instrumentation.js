@@ -6,6 +6,10 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     await import('./sentry.server.config');
+    /* Validate env once per server start, for API routes and crons too
+       (it used to run only as a side effect of the root layout). */
+    const { validateEnv } = await import('./src/lib/env');
+    validateEnv();
   }
 
   if (process.env.NEXT_RUNTIME === 'edge') {

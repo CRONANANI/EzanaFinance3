@@ -26,7 +26,7 @@ import pandas as pd
 from shapely.geometry import box
 
 from blackmarble.extract import bm_extract
-from supabase_rest import upsert
+from supabase_rest import stopping, upsert
 
 HERE = pathlib.Path(__file__).parent
 
@@ -71,6 +71,9 @@ def main():
     months = month_starts(args.months_back)
     rows = []
     for m in months:
+        if stopping():
+            print(f"stopping before {m}; writing the {len(rows)} rows collected")
+            break
         try:
             df = bm_extract(
                 gdf,

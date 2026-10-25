@@ -4,13 +4,14 @@
 
 import * as Sentry from '@sentry/nextjs';
 
-const DSN =
-  process.env.SENTRY_DSN ||
-  process.env.NEXT_PUBLIC_SENTRY_DSN ||
-  'https://9d6f1b87c81db45041bdd9c6d4136d0f@o4511379103809536.ingest.us.sentry.io/4511379115278336';
+/* No hard-coded fallback DSN (security assessment C-4): previews and forks
+   without SENTRY_DSN must not report into the production project. Events
+   carry the Vercel environment so production and preview never mix. */
+const DSN = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN || '';
 
 Sentry.init({
   dsn: DSN,
+  enabled: Boolean(DSN),
   environment:
     process.env.SENTRY_ENVIRONMENT ||
     process.env.VERCEL_ENV ||

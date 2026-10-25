@@ -8,6 +8,7 @@ import {
   handleStripeEvent,
 } from '@/lib/billing/stripe-webhook';
 import { recordFailedJob } from '@/lib/cron/failed-jobs';
+import { logger, requestIdOf } from '@/lib/logger';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -61,7 +62,12 @@ export async function POST(request) {
     console.log(`[Stripe Webhook] ${event.type} ${event.id}`, result);
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error('Webhook handler error:', error);
+    logger.error('webhook failed', {
+      webhook: 'stripe',
+      requestId: requestIdOf(request),
+      event: event.id,
+      error: error?.message,
+    });
     await finishStripeEvent(admin, event.id, { ok: false, error });
     await recordFailedJob({
       job: 'webhook:stripe',

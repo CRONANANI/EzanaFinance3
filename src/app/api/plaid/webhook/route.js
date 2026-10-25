@@ -12,6 +12,7 @@ import { NextResponse } from 'next/server';
 
 import { verifyPlaidWebhook } from '@/lib/plaid-webhook-verify';
 import { recordFailedJob } from '@/lib/cron/failed-jobs';
+import { logger, requestIdOf } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -106,7 +107,11 @@ export async function POST(request) {
 
     return NextResponse.json({ received: true });
   } catch (err) {
-    console.error('[Plaid] webhook error:', err?.message || err);
+    logger.error('webhook failed', {
+      webhook: 'plaid',
+      requestId: requestIdOf(request),
+      error: err?.message || String(err),
+    });
     await recordFailedJob({
       job: 'webhook:plaid',
       error: err,

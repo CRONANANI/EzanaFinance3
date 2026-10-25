@@ -7,6 +7,7 @@ import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { verifyMuxSignature, summarizeAsset } from '@/lib/mux';
 import { recordFailedJob } from '@/lib/cron/failed-jobs';
+import { logger, requestIdOf } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -81,7 +82,11 @@ export async function POST(request) {
       }
     }
   } catch (e) {
-    console.error('[mux] webhook handler:', e?.message || e);
+    logger.error('webhook failed', {
+      webhook: 'mux',
+      requestId: requestIdOf(request),
+      error: e?.message || String(e),
+    });
     await recordFailedJob({ job: 'webhook:mux', error: e, payload: { type, id: data.id || null } });
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
   }
