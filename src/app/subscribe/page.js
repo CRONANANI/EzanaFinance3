@@ -19,6 +19,7 @@ function SubscribeCheckoutContent() {
   const [billingPeriod, setBillingPeriod] = useState('monthly');
   const [loading, setLoading] = useState(null);
   const [checkoutError, setCheckoutError] = useState('');
+  const [checkoutNotice, setCheckoutNotice] = useState('');
   const [signedIn, setSignedIn] = useState(false);
   const [hasPaidSubscription, setHasPaidSubscription] = useState(false);
   const [trialStatus, setTrialStatus] = useState(null);
@@ -66,6 +67,7 @@ function SubscribeCheckoutContent() {
     if (!plan?.priceId) return;
     setLoading(planKey);
     setCheckoutError('');
+    setCheckoutNotice('');
     try {
       const session = await getSession();
       if (!session?.access_token) {
@@ -89,6 +91,15 @@ function SubscribeCheckoutContent() {
         return;
       }
 
+      /* A live subscription is switched in place, never a second Checkout. */
+      if (data.alreadySubscribed) {
+        setCheckoutNotice("You're already on this plan.");
+        return;
+      }
+      if (data.switched) {
+        window.location.href = data.url || '/home?checkout=switched';
+        return;
+      }
       if (data.url) window.location.href = data.url;
     } catch (err) {
       console.error('Checkout error:', err);
@@ -102,6 +113,12 @@ function SubscribeCheckoutContent() {
 
   return (
     <div className="pricing-page">
+      {checkoutNotice && (
+        <div className="pricing-free-banner" role="status">
+          <i className="bi bi-check-circle" aria-hidden="true" />
+          <span>{checkoutNotice}</span>
+        </div>
+      )}
       {checkoutError && (
         <div
           className="pricing-free-banner"

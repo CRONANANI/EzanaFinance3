@@ -18,6 +18,8 @@
  * Every profiles write is checked; an error throws (-> 500 -> retry).
  */
 
+import { getPlanKeyByPriceId } from '@/config/pricing';
+
 const UNIQUE_VIOLATION = '23505';
 const MISSING_TABLE = new Set(['42P01', 'PGRST205']);
 const STALE_PROCESSING_MS = 5 * 60_000;
@@ -116,8 +118,12 @@ export function subscriptionPatch(sub, { planKey = null } = {}) {
     patch.subscription_plan = null;
   } else {
     patch.subscription_id = sub.id;
-    patch.current_plan = sub.items?.data?.[0]?.price?.id ?? null;
-    const plan = planKey || sub.metadata?.plan_key || null;
+    const priceId = sub.items?.data?.[0]?.price?.id ?? null;
+    patch.current_plan = priceId;
+    /* The price is the source of truth (QA RET-4): a plan changed in the
+       Billing Portal or by an in-app switch keeps the old checkout metadata,
+       so metadata is only the fallback for a price not in the catalog. */
+    const plan = getPlanKeyByPriceId(priceId) || planKey || sub.metadata?.plan_key || null;
     if (plan) patch.subscription_plan = plan;
   }
   return patch;

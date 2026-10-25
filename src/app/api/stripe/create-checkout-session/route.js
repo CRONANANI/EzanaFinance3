@@ -6,6 +6,7 @@ import { stripe } from '@/lib/services/stripe';
 import { PLANS } from '@/config/pricing';
 import { TRIAL_DAYS, renewalText, trialEndDate } from '@/lib/billing/renewal-terms';
 import { getAdminClient } from '@/lib/supabase';
+import { startOrSwitchSubscription } from '@/lib/billing/plan-switch';
 
 /**
  * One Stripe customer per user: the create carries the idempotency key
@@ -98,7 +99,14 @@ export const POST = withApiGuard(
         .maybeSingle();
 
       if (profileErr) {
+        /* Fail closed: without the profile we can't tell whether the user
+           already has a live subscription, and guessing "no" would open a
+           second, double-billing Checkout. */
         console.error('create-checkout-session profile fetch:', profileErr.message);
+        return NextResponse.json(
+          { error: 'Could not start checkout. Please try again.' },
+          { status: 500 },
+        );
       }
 
       const hasExistingSubscription =
@@ -139,7 +147,7 @@ export const POST = withApiGuard(
       });
 
       /** All catalog plans use recurring Stripe Prices (monthly or yearly) in subscription mode. */
-      const sessionParams = {
+      const checkoutParams = () => ({
         customer: customerId,
         line_items: [{ price: plan.priceId, quantity: 1 }],
         mode: 'subscription',
@@ -163,14 +171,22 @@ export const POST = withApiGuard(
           supabase_user_id: user.id,
           plan_key: planKey,
         },
-      };
-
-      /* A double click within the same minute returns the same session. */
-      const session = await stripe.checkout.sessions.create(sessionParams, {
-        idempotencyKey: `cs:${user.id}:${plan.priceId}:${Math.floor(Date.now() / 60_000)}`,
       });
 
-      return NextResponse.json({ url: session.url });
+      /* A live subscription is switched in place (QA RET-3): a second
+         Checkout would create a second subscription and both would bill.
+         Only a user with no live subscription goes to Checkout, where a
+         double click within the same minute returns the same session. */
+      const { status, body } = await startOrSwitchSubscription({
+        stripe,
+        subscriptionId: profile?.subscription_id || null,
+        planKey,
+        priceId: plan.priceId,
+        origin,
+        checkoutParams,
+        checkoutIdempotencyKey: `cs:${user.id}:${plan.priceId}:${Math.floor(Date.now() / 60_000)}`,
+      });
+      return NextResponse.json(body, { status });
     } catch (error) {
       console.error('Stripe checkout session error:', {
         message: error?.message,

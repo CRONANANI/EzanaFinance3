@@ -572,6 +572,7 @@ export default function PricingPage() {
   const [billing, setBilling] = useState('yearly'); // Annual default for higher conversion
   const [pendingPlan, setPendingPlan] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [noticeMsg, setNoticeMsg] = useState('');
   const [openPlan, setOpenPlan] = useState(null); // mobile price list: one row open at a time
   const rootRef = useRef(null);
   useNavHeight(rootRef);
@@ -597,6 +598,7 @@ export default function PricingPage() {
 
     setPendingPlan(plan.id);
     setErrorMsg('');
+    setNoticeMsg('');
 
     try {
       const res = await fetch('/api/stripe/create-checkout-session', {
@@ -623,6 +625,17 @@ export default function PricingPage() {
         planKey,
         billing,
       });
+
+      /* A live subscription is switched in place, never a second Checkout. */
+      if (res.ok && data?.alreadySubscribed) {
+        setNoticeMsg("You're already on this plan.");
+        setPendingPlan(null);
+        return;
+      }
+      if (res.ok && data?.switched) {
+        window.location.assign(data.url || '/home?checkout=switched');
+        return;
+      }
 
       if (res.ok && data?.url) {
         window.location.assign(data.url);
@@ -732,6 +745,11 @@ export default function PricingPage() {
         </div>
       </header>
 
+      {noticeMsg && (
+        <div className="pricing-notice-banner" role="status">
+          {noticeMsg}
+        </div>
+      )}
       {errorMsg && (
         <div className="pricing-error-banner" role="alert">
           {errorMsg}

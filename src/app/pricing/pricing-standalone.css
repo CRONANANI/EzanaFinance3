@@ -143,6 +143,19 @@
   text-align: center;
 }
 
+/* ── Neutral notice banner (e.g. "already on this plan") ─────────────────── */
+.pricing-notice-banner {
+  max-width: 640px;
+  margin: 0 auto 1rem;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--emerald) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--emerald) 30%, transparent);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
 /* ── Plan card grid ─────────────────────────────────────────────────────── */
 .pricing-cards-section {
   max-width: 1280px;
