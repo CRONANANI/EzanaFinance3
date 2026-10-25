@@ -4,29 +4,37 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useOrg } from '@/contexts/OrgContext';
 
+/* Signed one-decimal percent, or null when the number is unknown. */
+function signedPct(n) {
+  if (n == null || !Number.isFinite(Number(n))) return null;
+  const v = Number(n);
+  return `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`;
+}
+
 function hindsightLine(pitch) {
   const h = pitch.hindsight;
   if (!h) return null;
+  const ret = signedPct(h.return_pct);
+  const bench = signedPct(h.benchmark_return_pct);
+  const alpha = signedPct(h.alpha_pct);
+  /* SPY over the same window, from the decision date (ORG-17). */
+  const vsSpy = bench ? ` (vs SPY ${bench} over the same period)` : ' (SPY benchmark unavailable)';
   if (pitch.decision === 'accepted') {
-    const sign = h.alpha_pct >= 0 ? '+' : '';
     return (
       <div
         className={`op-hindsight ${h.alpha_pct >= 0 ? 'op-hindsight--pos' : 'op-hindsight--neg'}`}
       >
-        Performance since accepted: {sign}
-        {h.return_pct?.toFixed(1)}% (vs SPY {h.benchmark_return_pct >= 0 ? '+' : ''}
-        {h.benchmark_return_pct?.toFixed(1)}%) — alpha {sign}
-        {h.alpha_pct?.toFixed(1)}%
+        Performance since accepted: {ret ?? 'n/a'}
+        {vsSpy}
+        {alpha ? `, alpha ${alpha}` : ''}
       </div>
     );
   }
   if (pitch.decision === 'rejected') {
     return (
       <div className="op-hindsight op-hindsight--neg">
-        What happened: {pitch.ticker} {h.return_pct >= 0 ? '+' : ''}
-        {h.return_pct?.toFixed(1)}% since rejection (vs SPY {h.benchmark_return_pct >= 0 ? '+' : ''}
-        {h.benchmark_return_pct?.toFixed(1)}%)
-        {h.alpha_pct > 5 ? ` — rejection cost ~${h.alpha_pct.toFixed(0)}%` : ''}
+        What happened: {pitch.ticker} {ret ?? 'n/a'} since rejection{vsSpy}
+        {h.alpha_pct > 5 ? `; rejection cost about ${Number(h.alpha_pct).toFixed(0)}%` : ''}
       </div>
     );
   }

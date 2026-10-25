@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { FmpAPI } from '@/lib/services/fmp';
 import { cronRoute } from '@/lib/cron/with-cron-lock';
+import { computeHindsight } from '@/lib/org-hindsight';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
@@ -29,36 +30,33 @@ async function run(request) {
   let updated = 0;
   const errors = [];
 
-  let spyBench = 12.1;
-  try {
-    const spy = await FmpAPI.getQuote('SPY');
-    if (spy?.changesPercentage != null) spyBench = spy.changesPercentage;
-  } catch {
-    /* use default */
-  }
+  /* Benchmark: SPY over each pitch's own window, from its close on
+     decision_at (ORG-17). One history read serves every pitch. */
+  const [spyHistory, spyQuote] = await Promise.all([
+    FmpAPI.getHistoricalPrice('SPY').catch(() => []),
+    FmpAPI.getQuote('SPY').catch(() => null),
+  ]);
 
   for (const pitch of targets || []) {
     try {
-      const quote = await FmpAPI.getQuote(pitch.ticker);
-      const priceAt = pitch.current_price_at_submission || quote?.price;
-      const current = quote?.price ?? priceAt;
-      if (!priceAt) continue;
-      const returnPct = ((current - priceAt) / priceAt) * 100;
-      const alpha = returnPct - spyBench;
-      const { error: upsertError } = await supabase.from('org_pitch_hindsight').upsert(
-        {
-          pitch_id: pitch.id,
-          computed_at: new Date().toISOString(),
-          current_price: current,
-          price_at_decision: priceAt,
-          return_pct: Math.round(returnPct * 10) / 10,
-          benchmark_return_pct: spyBench,
-          alpha_pct: Math.round(alpha * 10) / 10,
-          current_state:
-            alpha > 5 ? 'outperforming' : alpha < -5 ? 'underperforming' : 'roughly_inline',
-        },
-        { onConflict: 'pitch_id' },
-      );
+      const [quote, tickerHistory] = await Promise.all([
+        FmpAPI.getQuote(pitch.ticker).catch(() => null),
+        FmpAPI.getHistoricalPrice(pitch.ticker).catch(() => []),
+      ]);
+      const h = computeHindsight({
+        pitch,
+        tickerHistory,
+        spyHistory,
+        tickerQuote: quote?.price ?? null,
+        spyQuote: spyQuote?.price ?? null,
+      });
+      if (!h.price_at_decision || h.current_price == null) continue;
+      const { error: upsertError } = await supabase
+        .from('org_pitch_hindsight')
+        .upsert(
+          { pitch_id: pitch.id, computed_at: new Date().toISOString(), ...h },
+          { onConflict: 'pitch_id' },
+        );
       if (upsertError) {
         errors.push({ pitch_id: pitch.id, error: upsertError.message });
         continue;

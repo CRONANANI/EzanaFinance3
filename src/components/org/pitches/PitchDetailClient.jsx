@@ -161,96 +161,97 @@ export function PitchDetailClient({ pitchId, inModal = false }) {
         })}
 
         <div className="op-panel">
-        {tab === 'thesis' && (
-          <>
-            <h3>Short thesis</h3>
-            <p>{pitch.thesis_short}</p>
-            {pitch.thesis_full && (
-              <>
-                <h3>Full thesis</h3>
-                <p>{pitch.thesis_full}</p>
-              </>
-            )}
-            {pitch.why_now && (
-              <>
-                <h3>Why now</h3>
-                <p>{pitch.why_now}</p>
-              </>
-            )}
-            <h3>Target</h3>
-            <p>
-              ${pitch.target_price} ({pitch.expected_return_pct}% expected) · Submitted at $
-              {pitch.current_price_at_submission}
-            </p>
-            {pitch.catalysts?.length > 0 && (
-              <>
-                <h3>Catalysts</h3>
-                <ul>
-                  {pitch.catalysts.map((c) => (
-                    <li key={c}>{c}</li>
-                  ))}
-                </ul>
-              </>
-            )}
-            {pitch.risks?.length > 0 && (
-              <>
-                <h3>Risks</h3>
-                <ul>
-                  {pitch.risks.map((r) => (
-                    <li key={r}>{r}</li>
-                  ))}
-                </ul>
-              </>
-            )}
-          </>
-        )}
+          {tab === 'thesis' && (
+            <>
+              <h3>Short thesis</h3>
+              <p>{pitch.thesis_short}</p>
+              {pitch.thesis_full && (
+                <>
+                  <h3>Full thesis</h3>
+                  <p>{pitch.thesis_full}</p>
+                </>
+              )}
+              {pitch.why_now && (
+                <>
+                  <h3>Why now</h3>
+                  <p>{pitch.why_now}</p>
+                </>
+              )}
+              <h3>Target</h3>
+              <p>
+                ${pitch.target_price} ({pitch.expected_return_pct}% expected) · Submitted at $
+                {pitch.current_price_at_submission}
+              </p>
+              {pitch.catalysts?.length > 0 && (
+                <>
+                  <h3>Catalysts</h3>
+                  <ul>
+                    {pitch.catalysts.map((c) => (
+                      <li key={c}>{c}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              {pitch.risks?.length > 0 && (
+                <>
+                  <h3>Risks</h3>
+                  <ul>
+                    {pitch.risks.map((r) => (
+                      <li key={r}>{r}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </>
+          )}
 
-        {tab === 'data' && <PitchSupportingData pitchId={pitchId} />}
+          {tab === 'data' && <PitchSupportingData pitchId={pitchId} />}
 
-        {tab === 'deliverables' && <PitchDeliverablesPanel pitch={pitch} onRefresh={onRefresh} />}
+          {tab === 'deliverables' && <PitchDeliverablesPanel pitch={pitch} onRefresh={onRefresh} />}
 
-        {tab === 'discussion' && <PitchDiscussionPanel pitch={pitch} onRefresh={onRefresh} />}
+          {tab === 'discussion' && <PitchDiscussionPanel pitch={pitch} onRefresh={onRefresh} />}
 
-        {tab === 'voting' && <PitchVotingPanel pitch={pitch} onRefresh={onRefresh} />}
+          {tab === 'voting' && <PitchVotingPanel pitch={pitch} onRefresh={onRefresh} />}
 
-        {tab === 'decision' && (
-          <>
-            {pitch.decision ? (
-              <>
-                <h3>Outcome</h3>
-                <p>
-                  <strong>{pitch.status_label}</strong>
-                  {pitch.decision_rationale && ` — ${pitch.decision_rationale}`}
-                </p>
-                {pitch.position_size_pct && <p>Position size: {pitch.position_size_pct}%</p>}
-                {pitch.hindsight && (
-                  <>
-                    <h3>Hindsight</h3>
-                    <p>
-                      Return: {pitch.hindsight.return_pct >= 0 ? '+' : ''}
-                      {pitch.hindsight.return_pct}% · Alpha vs SPY:{' '}
-                      {pitch.hindsight.alpha_pct >= 0 ? '+' : ''}
-                      {pitch.hindsight.alpha_pct}%
-                    </p>
-                    {!pitch.is_archived && (
-                      <button
-                        type="button"
-                        className="op-btn op-btn--ghost"
-                        onClick={() =>
-                          fetch(`/api/org/archive/hindsight/${pitch.id}`).then(() => load())
-                        }
-                      >
-                        Refresh hindsight
-                      </button>
-                    )}
-                  </>
-                )}
-              </>
-            ) : (
-              <p>Decision pending.</p>
-            )}
-          </>
-        )}
+          {tab === 'decision' && (
+            <>
+              {pitch.decision ? (
+                <>
+                  <h3>Outcome</h3>
+                  <p>
+                    <strong>{pitch.status_label}</strong>
+                    {pitch.decision_rationale && ` — ${pitch.decision_rationale}`}
+                  </p>
+                  {pitch.position_size_pct && <p>Position size: {pitch.position_size_pct}%</p>}
+                  {pitch.hindsight && (
+                    <>
+                      <h3>Hindsight</h3>
+                      <p>
+                        Return: {pitch.hindsight.return_pct >= 0 ? '+' : ''}
+                        {pitch.hindsight.return_pct}% · Alpha vs SPY since decision:{' '}
+                        {pitch.hindsight.alpha_pct == null
+                          ? 'unavailable'
+                          : `${pitch.hindsight.alpha_pct >= 0 ? '+' : ''}${pitch.hindsight.alpha_pct}%`}
+                      </p>
+                      {!pitch.is_archived && (
+                        <button
+                          type="button"
+                          className="op-btn op-btn--ghost"
+                          onClick={() =>
+                            fetch(`/api/org/archive/hindsight/${pitch.id}`).then(() => load())
+                          }
+                        >
+                          Refresh hindsight
+                        </button>
+                      )}
+                    </>
+                  )}
+                </>
+              ) : (
+                <p>Decision pending.</p>
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>

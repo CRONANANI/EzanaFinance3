@@ -51,9 +51,9 @@ export function ArchiveCompare({ initialIds = [] }) {
             <p>
               Vote: {p.vote_yes_count}y / {p.vote_no_count}n
             </p>
-            {p.hindsight && (
+            {p.hindsight && p.hindsight.alpha_pct != null && (
               <p className={p.hindsight.alpha_pct >= 0 ? 'op-hindsight--pos' : 'op-hindsight--neg'}>
-                Alpha: {p.hindsight.alpha_pct}%
+                Alpha vs SPY: {p.hindsight.alpha_pct}%
               </p>
             )}
             <p style={{ fontSize: '0.7rem' }}>{p.decision_rationale}</p>
