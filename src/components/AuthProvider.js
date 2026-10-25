@@ -9,6 +9,38 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  /* QA RET-15: an API call from an aal1 session (when MFA is enforced and
+     the user has a verified factor) answers 401 { error: 'mfa_required' }.
+     One watcher on fetch sends the visitor to the MFA challenge instead of
+     every caller handling it. Only same-origin /api/ 401s are inspected. */
+  useEffect(() => {
+    if (typeof window === 'undefined' || window.__ezMfaFetchWatch) return undefined;
+    const original = window.fetch.bind(window);
+    window.__ezMfaFetchWatch = true;
+    window.fetch = async (input, init) => {
+      const res = await original(input, init);
+      if (res.status === 401) {
+        try {
+          const url = new URL(typeof input === 'string' ? input : input.url, window.location.href);
+          if (url.origin === window.location.origin && url.pathname.startsWith('/api/')) {
+            const body = await res.clone().json();
+            if (
+              body?.error === 'mfa_required' &&
+              !window.location.pathname.startsWith('/auth/mfa')
+            ) {
+              const back = window.location.pathname + window.location.search;
+              window.location.assign(`/auth/mfa?redirect=${encodeURIComponent(back)}`);
+            }
+          }
+        } catch {
+          /* not JSON or not ours: leave the response alone */
+        }
+      }
+      return res;
+    };
+    return undefined;
+  }, []);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);

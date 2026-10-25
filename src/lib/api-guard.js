@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { checkRateLimit } from './persistent-rate-limit';
-import { getAuthUser } from './supabase';
+import { getAuthContext, getAuthUser } from './supabase';
 import * as Sentry from '@sentry/nextjs';
 import { logger, requestIdOf } from './logger';
 import { logSecurityEvent } from './security-audit';
@@ -17,8 +17,41 @@ const FAIL_CLOSED = [
   /^\/api\/sonar\//,
   /^\/api\/(ai-|research\/|centaur\/|ezanaql\/generate|help-center\/ask|market-opportunities\/analyze|market-data\/analyze-event|market-data\/event-context|gov-contracts\/award-analysis)/,
 ];
-/* Never rate limited: uptime monitors must always get an answer. */
-const EXEMPT = [/^\/api\/(health|healthz|readyz)(\/|$)/];
+/* Never rate limited per IP: uptime monitors must always get an answer, and
+   judge routes are limited per judge token inside the route instead (QA
+   ORG-5: a room of judges on one Wi-Fi shares one IP). */
+const EXEMPT = [/^\/api\/(health|healthz|readyz)(\/|$)/, /^\/api\/competitions\/judge\//];
+
+/* QA RET-15: when MFA is enforced, a user who HAS a verified factor must call
+   the API from an aal2 session, the same rule the middleware applies to
+   pages. Opt-in (MFA_ENFORCED === 'true') so it can't lock anyone out by
+   default. The aal claim is read from the access token getUser() just
+   verified. */
+function jwtAal(token) {
+  try {
+    const part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const json = JSON.parse(atob(part + '='.repeat((4 - (part.length % 4)) % 4)));
+    return json?.aal || null;
+  } catch {
+    return null;
+  }
+}
+
+async function sessionAal(request) {
+  const header = request.headers.get('authorization') || '';
+  if (header.startsWith('Bearer ')) return jwtAal(header.slice(7));
+  const { supabase } = await getAuthContext(request);
+  if (!supabase) return null;
+  const { data } = await supabase.auth.getSession();
+  return data?.session?.access_token ? jwtAal(data.session.access_token) : null;
+}
+
+export async function mfaRequired(request, user) {
+  if (process.env.MFA_ENFORCED !== 'true' || !user) return false;
+  const hasFactor = (user.factors || []).some((f) => f?.status === 'verified');
+  if (!hasFactor) return false;
+  return (await sessionAal(request)) !== 'aal2';
+}
 
 /**
  * Build an error response without leaking internal details to the client.
@@ -100,6 +133,9 @@ export function withApiGuard(handler, options = {}) {
         user = await getAuthUser(request);
         if (!user) {
           return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        if (await mfaRequired(request, user)) {
+          return NextResponse.json({ error: 'mfa_required' }, { status: 401 });
         }
       }
 
