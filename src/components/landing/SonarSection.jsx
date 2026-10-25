@@ -484,10 +484,16 @@ function initialsOf(name) {
 
 /* The /datasets guest rail (Oct 25): its width, its gap to the research
    brief, and the narrowest viewport that keeps three readable columns
-   beside it. Mirrored in app/datasets/sonar/sonar.css. */
-const RAIL_W = 208;
-const RAIL_GAP = 24;
+   beside it. Mirrored in app/datasets/sonar/sonar.css.
+   Oct 25 (v2): wider (280), and the whole rail + columns block is drawn in
+   from the screen edges by railInset(), so the rail sits further right
+   instead of hugging the left edge on wide screens. */
+const RAIL_W = 280;
+const RAIL_GAP = 32;
 const RAIL_MIN_VW = 1360;
+/* Extra gutter on each side once the rail is on: 0 at 1360, growing with
+   the viewport, capped at 150 (about 187px of outer gutter at 1920). */
+const railInset = (vw) => Math.round(Math.min(150, Math.max(0, (vw - RAIL_MIN_VW) * 0.3)));
 
 const PARTY_CLASS = { D: 'snr-face--d', R: 'snr-face--r', I: 'snr-face--i' };
 
@@ -1784,12 +1790,16 @@ export function SonarSection({
          three columns are budgeted against what is left. Below RAIL_MIN_VW
          the rail is hidden in CSS and the sticky account bar shows instead. */
       const railPx = railOn && window.innerWidth >= RAIL_MIN_VW ? RAIL_W + RAIL_GAP : 0;
-      const base = geometryFor(window.innerWidth - railPx, budgetH, navPx);
+      const inset = railPx ? railInset(window.innerWidth) : 0;
+      const base = geometryFor(window.innerWidth - railPx - 2 * inset, budgetH, navPx);
       /* On the Datasets page the band has no header or exit arrow, so their
          tracks collapse and the cards start at the top. */
       const g = isPage
         ? { ...base, nav: 0, eyebrow: 0, g1: 0, head: 0, g2: 0, sub: 0, g3: 0, arrow: 0, padTop: 8 }
         : base;
+      /* The inset the columns were budgeted without goes back into the
+         band's side padding, so gutter + rail + content + gutter = viewport. */
+      if (inset) g.gutter += inset;
 
       if (process.env.NODE_ENV !== 'production' && g.work < 120) {
         console.warn('[sonar] budget collapsed', {

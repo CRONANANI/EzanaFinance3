@@ -231,19 +231,37 @@
 }
 .ssc.ssc--rail .ssc-actions {
   margin-top: auto;
-  align-items: stretch;
+  align-items: flex-start;
   gap: 10px;
 }
 .ssc.ssc--rail .ssc-btns {
-  flex-direction: column;
-  align-items: stretch;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
   gap: 8px;
 }
 .ssc.ssc--rail .ssc-btn {
-  justify-content: center;
+  justify-content: flex-start;
 }
+/* Oct 25 (v2): everything in the rail reads from one left edge. */
+.ssc.ssc--rail,
+.ssc.ssc--rail .ssc-copy,
 .ssc.ssc--rail .ssc-note {
-  text-align: center;
+  text-align: left;
+}
+/* The plan footnote under the buttons. A <p>, so two classes and
+   !important beat the legacy `body.light-mode p` rule on the green ground. */
+.ssc.ssc--rail .ssc-plan-note {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.45;
+  color: color-mix(in srgb, white 85%, transparent) !important;
+}
+.ssc.ssc--rail .ssc-plan-note > span {
+  color: var(--brand-band-mint);
+  font-weight: 700;
 }
 
 @media (prefers-reduced-motion: reduce) {

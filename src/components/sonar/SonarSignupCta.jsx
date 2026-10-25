@@ -74,6 +74,13 @@ export function SonarSignupCta({ query, variant = 'bar' }) {
             Log in
           </a>
         </div>
+        {rail ? (
+          <p className="ssc-plan-note">
+            <span aria-hidden="true">*</span> The Free plan gives you immediate access to the
+            platform. The Starter plan has a waitlist, and we will email you as soon as you can sign
+            up for it.
+          </p>
+        ) : null}
         <span className="ssc-note">Findings only, never financial advice.</span>
       </div>
     </section>

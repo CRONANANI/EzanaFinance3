@@ -2528,7 +2528,7 @@ body.light-mode .dso-page--search .dso-sonar-title {
 /* ── Oct 25: /datasets results, guest rail, contrast floor, logo line ─────
    1. The guest account card is a tall, narrow rail left of the research
       brief. SonarSection budgets the three columns against the viewport
-      minus the rail (RAIL_W 208 + RAIL_GAP 24, from RAIL_MIN_VW 1360) and
+      minus the rail (RAIL_W 280 + RAIL_GAP 32, from RAIL_MIN_VW 1360) and
       publishes the strip as --snr-rail-l; .snr-inner grows by that strip and
       pads it on the left, so the rail sits in it and the columns keep their
       geometry. Below 1360 the rail hides and the sticky bottom bar returns.
@@ -2556,7 +2556,7 @@ body.light-mode .dso-page--search .dso-sonar-title {
     top: 0;
     bottom: 0;
     left: 0;
-    width: 208px;
+    width: 280px;
     z-index: 4;
   }
   /* The bar is the narrow-screen fallback only. */
@@ -2593,11 +2593,14 @@ body.light-mode .dso-page--search .dso-sonar-title {
   color: var(--snr-text-faint) !important;
 }
 
-/* 3. Nav logo on the ping bar's text line */
-@media (min-width: 1024px) {
-  body:has(.dso-page--search .snr-band--page) .navbar .nav-container-centered,
-  body:has(.dso-page--search .snr-band--page) .main-nav .nav-container {
-    max-width: none;
+/* 3. Logo on the ping bar's text line. On /datasets the logo is the
+   category bar's (.dscat-bar--bare .dscat-logo, CategoryBar.jsx), not the
+   app navbar's, so the bar's own side padding takes the published lines.
+   Its base rule (category-bar.css, Oct 14) is (0,3,0) inside the same
+   breakpoint; this one outranks it. */
+@media (min-width: 901px) {
+  body:has(.dso-page--search .snr-band--page) .dscat-bar.dscat-bar--bare,
+  body:has(.dso-page--search .snr-band--page) .dscat-bar.dscat-bar--bare[data-density] {
     padding-left: var(--snrp-logo-x, var(--app-shell-pad));
     padding-right: var(--snrp-nav-right, var(--app-shell-pad));
   }
