@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
+import { judgeRateLimited } from '@/lib/competitions/judge-rate-limit';
 import { resolveJudge, tokenFromRequest, judgeRoomIds } from '@/lib/competitions/judge-token';
 import { weightedTotal } from '@/lib/competitions/scoring';
 
@@ -14,11 +15,21 @@ export const runtime = 'nodejs';
 export const GET = withApiGuard(
   async (request) => {
     const admin = getAdminClient();
-    const judge = await resolveJudge(admin, tokenFromRequest(request));
+    const rawToken = tokenFromRequest(request);
+    if (await judgeRateLimited(rawToken)) {
+      return NextResponse.json(
+        { error: 'Too many requests. Wait a minute and try again.' },
+        { status: 429, headers: { 'Retry-After': '60' } },
+      );
+    }
+    const judge = await resolveJudge(admin, rawToken);
     if (!judge) return NextResponse.json({ error: 'Invalid or expired link' }, { status: 401 });
 
     // Touch last_seen_at so an abused token is visible to the host.
-    await admin.from('pitch_judges').update({ last_seen_at: new Date().toISOString() }).eq('id', judge.id);
+    await admin
+      .from('pitch_judges')
+      .update({ last_seen_at: new Date().toISOString() })
+      .eq('id', judge.id);
 
     const { data: competition } = await admin
       .from('pitch_competitions')
@@ -34,7 +45,9 @@ export const GET = withApiGuard(
     const [{ data: rooms }, { data: teams }, { data: criteria }] = await Promise.all([
       admin
         .from('pitch_rooms')
-        .select('id, round_id, name, location, starts_at, ends_at, pitch_rounds!inner(name, sort_order)')
+        .select(
+          'id, round_id, name, location, starts_at, ends_at, pitch_rounds!inner(name, sort_order)',
+        )
         .in('id', roomIds),
       admin
         .from('pitch_teams')
@@ -51,10 +64,18 @@ export const GET = withApiGuard(
     const teamIds = (teams || []).map((t) => t.id);
     const [{ data: scores }, { data: summaries }] = await Promise.all([
       teamIds.length
-        ? admin.from('pitch_scores').select('team_id, criterion_id, score').eq('judge_id', judge.id).in('team_id', teamIds)
+        ? admin
+            .from('pitch_scores')
+            .select('team_id, criterion_id, score')
+            .eq('judge_id', judge.id)
+            .in('team_id', teamIds)
         : Promise.resolve({ data: [] }),
       teamIds.length
-        ? admin.from('pitch_score_summaries').select('team_id, submitted').eq('judge_id', judge.id).in('team_id', teamIds)
+        ? admin
+            .from('pitch_score_summaries')
+            .select('team_id, submitted')
+            .eq('judge_id', judge.id)
+            .in('team_id', teamIds)
         : Promise.resolve({ data: [] }),
     ]);
 
@@ -63,16 +84,27 @@ export const GET = withApiGuard(
       if (!scoresByTeam.has(s.team_id)) scoresByTeam.set(s.team_id, {});
       scoresByTeam.get(s.team_id)[s.criterion_id] = s.score;
     }
-    const submittedSet = new Set((summaries || []).filter((s) => s.submitted).map((s) => s.team_id));
+    const submittedSet = new Set(
+      (summaries || []).filter((s) => s.submitted).map((s) => s.team_id),
+    );
 
     const teamsOut = (teams || []).map((t) => {
       const my = scoresByTeam.get(t.id) || {};
       const { total } = weightedTotal(criteria || [], my);
-      const status = submittedSet.has(t.id) ? 'submitted' : Object.keys(my).length ? 'in_progress' : 'not_started';
+      const status = submittedSet.has(t.id)
+        ? 'submitted'
+        : Object.keys(my).length
+          ? 'in_progress'
+          : 'not_started';
       return { ...t, myTotal: total, status };
     });
 
-    return NextResponse.json({ judge: pubJudge(judge), competition, rooms: rooms || [], teams: teamsOut });
+    return NextResponse.json({
+      judge: pubJudge(judge),
+      competition,
+      rooms: rooms || [],
+      teams: teamsOut,
+    });
   },
   { requireAuth: false },
 );

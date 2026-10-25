@@ -382,6 +382,11 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+.jx-crit-error {
+  color: var(--danger, var(--warning));
+  font-size: 12px;
+  margin: 4px 0 0;
+}
 .jx-error {
   color: var(--danger, var(--warning));
   font-size: 13px;

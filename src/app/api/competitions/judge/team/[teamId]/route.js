@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
+import { judgeRateLimited } from '@/lib/competitions/judge-rate-limit';
 import { resolveJudge, tokenFromRequest, judgeCanAccessTeam } from '@/lib/competitions/judge-token';
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +18,14 @@ export const GET = withApiGuard(
   async (request, _user, context) => {
     const { teamId } = await context.params;
     const admin = getAdminClient();
-    const judge = await resolveJudge(admin, tokenFromRequest(request));
+    const rawToken = tokenFromRequest(request);
+    if (await judgeRateLimited(rawToken)) {
+      return NextResponse.json(
+        { error: 'Too many requests. Wait a minute and try again.' },
+        { status: 429, headers: { 'Retry-After': '60' } },
+      );
+    }
+    const judge = await resolveJudge(admin, rawToken);
     if (!judge) return NextResponse.json({ error: 'Invalid or expired link' }, { status: 401 });
 
     if (!(await judgeCanAccessTeam(admin, judge.id, teamId))) {
@@ -33,30 +41,48 @@ export const GET = withApiGuard(
 
     // Team members + the judge's own flags (Phase 7) — flags are private to the judge.
     const [{ data: members }, { data: myFlags }] = await Promise.all([
-      admin.from('pitch_team_members').select('id, full_name, role_on_team').eq('team_id', teamId).order('full_name', { ascending: true }),
-      admin.from('pitch_talent_flags').select('pitch_team_member_id, note').eq('judge_id', judge.id),
+      admin
+        .from('pitch_team_members')
+        .select('id, full_name, role_on_team')
+        .eq('team_id', teamId)
+        .order('full_name', { ascending: true }),
+      admin
+        .from('pitch_talent_flags')
+        .select('pitch_team_member_id, note')
+        .eq('judge_id', judge.id),
     ]);
     const flagByMember = new Map((myFlags || []).map((f) => [f.pitch_team_member_id, f.note]));
-    const teamMembers = (members || []).map((m) => ({ id: m.id, full_name: m.full_name, role_on_team: m.role_on_team, flagged: flagByMember.has(m.id), note: flagByMember.get(m.id) || '' }));
+    const teamMembers = (members || []).map((m) => ({
+      id: m.id,
+      full_name: m.full_name,
+      role_on_team: m.role_on_team,
+      flagged: flagByMember.has(m.id),
+      note: flagByMember.get(m.id) || '',
+    }));
 
-    const [{ data: criteria }, { data: rawDeliverables }, { data: scores }, { data: summary }] = await Promise.all([
-      admin
-        .from('pitch_rubric_criteria')
-        .select('id, label, description, weight, max_score, sort_order')
-        .eq('competition_id', team.competition_id)
-        .order('sort_order', { ascending: true }),
-      admin
-        .from('pitch_deliverables')
-        .select('id, kind, file_path, file_name, thesis_text')
-        .eq('team_id', teamId),
-      admin.from('pitch_scores').select('criterion_id, score').eq('judge_id', judge.id).eq('team_id', teamId),
-      admin
-        .from('pitch_score_summaries')
-        .select('comment, submitted, submitted_at')
-        .eq('judge_id', judge.id)
-        .eq('team_id', teamId)
-        .maybeSingle(),
-    ]);
+    const [{ data: criteria }, { data: rawDeliverables }, { data: scores }, { data: summary }] =
+      await Promise.all([
+        admin
+          .from('pitch_rubric_criteria')
+          .select('id, label, description, weight, max_score, sort_order')
+          .eq('competition_id', team.competition_id)
+          .order('sort_order', { ascending: true }),
+        admin
+          .from('pitch_deliverables')
+          .select('id, kind, file_path, file_name, thesis_text')
+          .eq('team_id', teamId),
+        admin
+          .from('pitch_scores')
+          .select('criterion_id, score')
+          .eq('judge_id', judge.id)
+          .eq('team_id', teamId),
+        admin
+          .from('pitch_score_summaries')
+          .select('comment, submitted, submitted_at')
+          .eq('judge_id', judge.id)
+          .eq('team_id', teamId)
+          .maybeSingle(),
+      ]);
 
     // Mint short-lived signed URLs for file deliverables (never expose the path).
     const deliverables = [];
@@ -69,7 +95,13 @@ export const GET = withApiGuard(
           .createSignedUrl(d.file_path, SIGNED_TTL);
         signedUrl = signed?.signedUrl || null;
       }
-      deliverables.push({ id: d.id, kind: d.kind, file_name: d.file_name, thesis_text: d.thesis_text, signedUrl });
+      deliverables.push({
+        id: d.id,
+        kind: d.kind,
+        file_name: d.file_name,
+        thesis_text: d.thesis_text,
+        signedUrl,
+      });
     }
 
     const myScores = {};

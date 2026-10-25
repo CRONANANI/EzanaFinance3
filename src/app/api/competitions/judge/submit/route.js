@@ -1,17 +1,29 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
-import { resolveJudge, tokenFromRequest, judgeCanAccessTeam } from '@/lib/competitions/judge-token';
+import { judgeRateLimited } from '@/lib/competitions/judge-rate-limit';
+import { resolveJudge, tokenFromRequest } from '@/lib/competitions/judge-token';
+import { submitJudgeScorecard } from '@/lib/competitions/judge-submit';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-/* POST /api/competitions/judge/submit — lock the judge's scorecard for a team and
-   save the overall comment. Re-validates room assignment. Idempotent. */
+/* POST /api/competitions/judge/submit — save every score in the body, then lock
+   the judge's scorecard for a team with the overall comment. Re-validates room
+   assignment, each criterion against the rubric and each score against its
+   range; 409 once the competition is complete or archived. Idempotent.
+   { team_id, comment?, attribute_comment?, scores: [{ criterion_id, score }] } */
 export const POST = withApiGuard(
   async (request) => {
     const admin = getAdminClient();
-    const judge = await resolveJudge(admin, tokenFromRequest(request));
+    const rawToken = tokenFromRequest(request);
+    if (await judgeRateLimited(rawToken)) {
+      return NextResponse.json(
+        { error: 'Too many requests. Wait a minute and try again.' },
+        { status: 429, headers: { 'Retry-After': '60' } },
+      );
+    }
+    const judge = await resolveJudge(admin, rawToken);
     if (!judge) return NextResponse.json({ error: 'Invalid or expired link' }, { status: 401 });
 
     let body;
@@ -20,27 +32,9 @@ export const POST = withApiGuard(
     } catch {
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
     }
-    const teamId = body?.team_id;
-    if (!teamId) return NextResponse.json({ error: 'team_id required' }, { status: 400 });
-    if (!(await judgeCanAccessTeam(admin, judge.id, teamId))) {
-      return NextResponse.json({ error: 'This team is not in your room.' }, { status: 403 });
-    }
 
-    const now = new Date().toISOString();
-    const { error } = await admin.from('pitch_score_summaries').upsert(
-      {
-        judge_id: judge.id,
-        team_id: teamId,
-        comment: body?.comment ? String(body.comment) : null,
-        attribute_comment: !!body?.attribute_comment,
-        submitted: true,
-        submitted_at: now,
-        updated_at: now,
-      },
-      { onConflict: 'judge_id,team_id' },
-    );
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ ok: true, submitted: true });
+    const result = await submitJudgeScorecard(admin, judge, body);
+    return NextResponse.json(result.body, { status: result.status });
   },
   { requireAuth: false },
 );

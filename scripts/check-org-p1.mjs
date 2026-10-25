@@ -14,6 +14,8 @@ import {
 } from '../src/lib/org-invites.js';
 import { resolveProvisionRoleTier } from '../src/lib/org-provision.js';
 import { targetMatchesMember, submitAssignment } from '../src/lib/org-assignment-submit.js';
+import { submitJudgeScorecard, validateScores } from '../src/lib/competitions/judge-submit.js';
+import { judgeRateLimited } from '../src/lib/competitions/judge-rate-limit.js';
 
 // ── ORG-1 ──────────────────────────────────────────────────────────────────
 test('ORG-1: invite link points at the org-login accept screen', () => {
@@ -207,4 +209,130 @@ test('ORG-4: the legacy assigned_to still submits; a missing assignment is 404',
     assignmentId: 'nope',
   });
   assert.equal(missing.status, 404);
+});
+
+// ── ORG-5 ──────────────────────────────────────────────────────────────────
+const JUDGE = { id: 'judge-1', competition_id: 'comp-1' };
+
+function judgeDb({ status = 'judging', submitted = false } = {}) {
+  return createMockSupabase({
+    seed: {
+      pitch_competitions: [{ id: 'comp-1', status }],
+      pitch_room_judges: [{ judge_id: 'judge-1', room_id: 'room-1' }],
+      pitch_teams: [{ id: 'team-1', room_id: 'room-1' }],
+      pitch_rubric_criteria: [
+        { id: 'c-thesis', competition_id: 'comp-1', label: 'Thesis', max_score: 10 },
+        { id: 'c-model', competition_id: 'comp-1', label: 'Model', max_score: 5 },
+        { id: 'c-other', competition_id: 'comp-2', label: 'Other comp', max_score: 10 },
+      ],
+      pitch_score_summaries: submitted
+        ? [{ judge_id: 'judge-1', team_id: 'team-1', submitted: true }]
+        : [],
+    },
+  });
+}
+
+test('ORG-5: submit persists every score, then locks the summary', async () => {
+  const db = judgeDb();
+  const res = await submitJudgeScorecard(db, JUDGE, {
+    team_id: 'team-1',
+    comment: 'Strong',
+    scores: [
+      { criterion_id: 'c-thesis', score: 8 },
+      { criterion_id: 'c-model', score: 4 },
+    ],
+  });
+  assert.equal(res.status, 200, JSON.stringify(res.body));
+  const saved = db.rows('pitch_scores');
+  assert.deepEqual(saved.map((r) => [r.judge_id, r.team_id, r.criterion_id, r.score]).sort(), [
+    ['judge-1', 'team-1', 'c-model', 4],
+    ['judge-1', 'team-1', 'c-thesis', 8],
+  ]);
+  const summary = db.rows('pitch_score_summaries')[0];
+  assert.equal(summary.submitted, true);
+  assert.equal(summary.comment, 'Strong');
+});
+
+test('ORG-5: a foreign criterion or out-of-range score is rejected and nothing locks', async () => {
+  for (const scores of [
+    [{ criterion_id: 'c-other', score: 3 }],
+    [{ criterion_id: 'c-model', score: 6 }],
+    [{ criterion_id: 'c-model', score: -1 }],
+    [{ criterion_id: 'c-model', score: 'abc' }],
+  ]) {
+    const db = judgeDb();
+    const res = await submitJudgeScorecard(db, JUDGE, { team_id: 'team-1', scores });
+    assert.equal(res.status, 400, JSON.stringify(scores));
+    assert.equal(db.rows('pitch_scores').length, 0);
+    assert.equal(db.rows('pitch_score_summaries').length, 0);
+  }
+});
+
+test('ORG-5: a failed score write is a 500 and the scorecard stays unlocked', async () => {
+  const db = judgeDb();
+  const failing = {
+    ...db,
+    from: (t) =>
+      t === 'pitch_scores'
+        ? { upsert: async () => ({ data: null, error: { message: 'write failed' } }) }
+        : db.from(t),
+  };
+  const res = await submitJudgeScorecard(failing, JUDGE, {
+    team_id: 'team-1',
+    scores: [{ criterion_id: 'c-thesis', score: 7 }],
+  });
+  assert.equal(res.status, 500);
+  assert.equal(db.rows('pitch_score_summaries').length, 0);
+});
+
+test('ORG-5/ORG-20: 409 once the competition is complete or archived; 403 outside the room', async () => {
+  for (const status of ['complete', 'archived']) {
+    const res = await submitJudgeScorecard(judgeDb({ status }), JUDGE, { team_id: 'team-1' });
+    assert.equal(res.status, 409);
+  }
+  const res = await submitJudgeScorecard(judgeDb(), JUDGE, { team_id: 'team-other' });
+  assert.equal(res.status, 403);
+});
+
+test('ORG-5: a retried submit after success is a no-op 200', async () => {
+  const db = judgeDb({ submitted: true });
+  const res = await submitJudgeScorecard(db, JUDGE, {
+    team_id: 'team-1',
+    scores: [{ criterion_id: 'c-thesis', score: 1 }],
+  });
+  assert.equal(res.status, 200);
+  assert.equal(db.rows('pitch_scores').length, 0);
+});
+
+test('ORG-5: validateScores keeps the last value per criterion', () => {
+  const crit = [{ id: 'a', max_score: 10 }];
+  assert.deepEqual(
+    validateScores(
+      [
+        { criterion_id: 'a', score: 2 },
+        { criterion_id: 'a', score: 9 },
+      ],
+      crit,
+    ),
+    { rows: [{ criterion_id: 'a', score: 9 }] },
+  );
+  assert.deepEqual(validateScores(undefined, crit), { rows: [] });
+  assert.ok(validateScores('x', crit).error);
+});
+
+test('ORG-5: judge rate limit is 120/min keyed by the token hash, never the raw token', async () => {
+  const seen = [];
+  const check = async (key, limit, windowMs) => {
+    seen.push({ key, limit, windowMs });
+    return { allowed: seen.length <= 1 };
+  };
+  const token = 'a'.repeat(43);
+  assert.equal(await judgeRateLimited(token, check), false);
+  assert.equal(await judgeRateLimited(token, check), true);
+  assert.equal(await judgeRateLimited(null, check), false);
+  assert.equal(seen.length, 2);
+  assert.equal(seen[0].limit, 120);
+  assert.equal(seen[0].windowMs, 60_000);
+  assert.match(seen[0].key, /^judge:[0-9a-f]{64}$/);
+  assert.ok(!seen[0].key.includes(token));
 });

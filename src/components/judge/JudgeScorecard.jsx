@@ -16,6 +16,8 @@ export function JudgeScorecard({ token, teamId }) {
   const [attribute, setAttribute] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [savingId, setSavingId] = useState(null);
+  // criterionId -> 'retrying' | 'failed' for autosaves the server did not accept.
+  const [saveErrors, setSaveErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const timers = useRef({});
@@ -24,7 +26,10 @@ export function JudgeScorecard({ token, teamId }) {
     let alive = true;
     (async () => {
       try {
-        const res = await fetch(`/api/competitions/judge/team/${teamId}?token=${encodeURIComponent(token)}`, { cache: 'no-store' });
+        const res = await fetch(
+          `/api/competitions/judge/team/${teamId}?token=${encodeURIComponent(token)}`,
+          { cache: 'no-store' },
+        );
         if (!alive) return;
         if (res.status === 401) return setState('denied');
         if (res.status === 403) return setState('denied');
@@ -48,17 +53,19 @@ export function JudgeScorecard({ token, teamId }) {
   const criteria = useMemo(() => data?.criteria || [], [data]);
   const { total } = useMemo(() => weightedTotal(criteria, scores), [criteria, scores]);
 
+  /** One autosave attempt. True only when the server accepted the score. */
   const saveScore = useCallback(
     async (criterionId, value) => {
       setSavingId(criterionId);
       try {
-        await fetch('/api/competitions/judge/score', {
+        const res = await fetch('/api/competitions/judge/score', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-judge-token': token },
           body: JSON.stringify({ team_id: teamId, criterion_id: criterionId, score: value }),
         });
+        return res.ok;
       } catch {
-        /* autosave is best-effort; Submit re-persists */
+        return false;
       } finally {
         setSavingId((s) => (s === criterionId ? null : s));
       }
@@ -66,32 +73,61 @@ export function JudgeScorecard({ token, teamId }) {
     [token, teamId],
   );
 
+  const setSaveError = (criterionId, status) =>
+    setSaveErrors((e) => {
+      const next = { ...e };
+      if (status) next[criterionId] = status;
+      else delete next[criterionId];
+      return next;
+    });
+
+  /* Autosave with one retry. A failure stays visible on the criterion; Submit
+     sends every score again, so nothing is lost as long as Submit succeeds. */
+  const autosave = async (criterionId, value) => {
+    if (await saveScore(criterionId, value)) return setSaveError(criterionId, null);
+    setSaveError(criterionId, 'retrying');
+    await new Promise((r) => setTimeout(r, 1200));
+    setSaveError(criterionId, (await saveScore(criterionId, value)) ? null : 'failed');
+  };
+
   const onScore = (criterionId, value) => {
     setScores((s) => ({ ...s, [criterionId]: value }));
     clearTimeout(timers.current[criterionId]);
-    timers.current[criterionId] = setTimeout(() => saveScore(criterionId, value), 450);
+    if (value == null) return setSaveError(criterionId, null);
+    timers.current[criterionId] = setTimeout(() => autosave(criterionId, value), 450);
   };
 
   const submit = async () => {
-    if (!window.confirm('Submit and lock your scorecard for this team? You won’t be able to edit it after.')) return;
+    if (
+      !window.confirm(
+        'Submit and lock your scorecard for this team? You won’t be able to edit it after.',
+      )
+    )
+      return;
     setSubmitting(true);
     setError('');
     try {
-      // Flush any pending autosaves first.
+      // Pending autosaves are superseded: Submit sends every score and the
+      // server saves them all before it locks the scorecard.
       Object.values(timers.current).forEach(clearTimeout);
-      await Promise.all(
-        criteria.filter((c) => scores[c.id] != null).map((c) => saveScore(c.id, scores[c.id])),
-      );
       const res = await fetch('/api/competitions/judge/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-judge-token': token },
-        body: JSON.stringify({ team_id: teamId, comment, attribute_comment: attribute }),
+        body: JSON.stringify({
+          team_id: teamId,
+          comment,
+          attribute_comment: attribute,
+          scores: criteria
+            .filter((c) => scores[c.id] != null)
+            .map((c) => ({ criterion_id: c.id, score: scores[c.id] })),
+        }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
         setError(json?.error || 'Could not submit.');
         return;
       }
+      setSaveErrors({});
       setSubmitted(true);
     } catch {
       setError('Could not connect.');
@@ -100,7 +136,12 @@ export function JudgeScorecard({ token, teamId }) {
     }
   };
 
-  if (state === 'loading') return <JudgeShell><div className="jx-loading">Loading materials…</div></JudgeShell>;
+  if (state === 'loading')
+    return (
+      <JudgeShell>
+        <div className="jx-loading">Loading materials…</div>
+      </JudgeShell>
+    );
   if (state === 'denied')
     return (
       <JudgeShell>
@@ -111,7 +152,14 @@ export function JudgeScorecard({ token, teamId }) {
         </div>
       </JudgeShell>
     );
-  if (state === 'error') return <JudgeShell><div className="jx-denied"><p>Something went wrong.</p></div></JudgeShell>;
+  if (state === 'error')
+    return (
+      <JudgeShell>
+        <div className="jx-denied">
+          <p>Something went wrong.</p>
+        </div>
+      </JudgeShell>
+    );
 
   const { team, deliverables } = data;
   const deck = deliverables.find((d) => d.kind === 'deck');
@@ -152,23 +200,32 @@ export function JudgeScorecard({ token, teamId }) {
       <section className="jx-materials">
         {deck?.signedUrl ? (
           <div className="jx-deck">
-            <div className="jx-material-label"><FileText size={14} aria-hidden="true" /> Pitch deck</div>
+            <div className="jx-material-label">
+              <FileText size={14} aria-hidden="true" /> Pitch deck
+            </div>
             <iframe className="jx-pdf" src={deck.signedUrl} title="Pitch deck" />
           </div>
         ) : null}
         {thesis ? (
           <div className="jx-thesis">
-            <div className="jx-material-label"><FileText size={14} aria-hidden="true" /> Thesis</div>
+            <div className="jx-material-label">
+              <FileText size={14} aria-hidden="true" /> Thesis
+            </div>
             {thesis.thesis_text ? (
               <p className="jx-thesis-text">{thesis.thesis_text}</p>
             ) : thesis.signedUrl ? (
-              <a className="jx-dl" href={thesis.signedUrl} target="_blank" rel="noopener noreferrer">
+              <a
+                className="jx-dl"
+                href={thesis.signedUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Download size={14} aria-hidden="true" /> {thesis.file_name || 'Download thesis'}
               </a>
             ) : null}
           </div>
         ) : null}
-        {(model || exhibits.length) ? (
+        {model || exhibits.length ? (
           <div className="jx-files">
             {model?.signedUrl ? (
               <a className="jx-dl" href={model.signedUrl} target="_blank" rel="noopener noreferrer">
@@ -177,7 +234,13 @@ export function JudgeScorecard({ token, teamId }) {
             ) : null}
             {exhibits.map((e) =>
               e.signedUrl ? (
-                <a key={e.id} className="jx-dl" href={e.signedUrl} target="_blank" rel="noopener noreferrer">
+                <a
+                  key={e.id}
+                  className="jx-dl"
+                  href={e.signedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <Download size={14} aria-hidden="true" /> {e.file_name || 'Exhibit'}
                 </a>
               ) : null,
@@ -215,13 +278,24 @@ export function JudgeScorecard({ token, teamId }) {
                   min="0"
                   max={c.max_score}
                   value={val ?? ''}
-                  onChange={(e) => onScore(c.id, e.target.value === '' ? null : Number(e.target.value))}
+                  onChange={(e) =>
+                    onScore(c.id, e.target.value === '' ? null : Number(e.target.value))
+                  }
                   disabled={ro}
                   aria-label={`${c.label} score value`}
                 />
                 <span className="jx-crit-max">/ {c.max_score}</span>
-                {savingId === c.id ? <Loader2 size={13} className="jx-spin" aria-hidden="true" /> : null}
+                {savingId === c.id ? (
+                  <Loader2 size={13} className="jx-spin" aria-hidden="true" />
+                ) : null}
               </div>
+              {!ro && saveErrors[c.id] ? (
+                <p className="jx-crit-error" role="status">
+                  {saveErrors[c.id] === 'retrying'
+                    ? 'Not saved, retrying…'
+                    : 'Not saved. Submitting will save this score.'}
+                </p>
+              ) : null}
             </div>
           );
         })}
@@ -243,9 +317,13 @@ export function JudgeScorecard({ token, teamId }) {
         />
         {!submitted ? (
           <label className="jx-attribute">
-            <input type="checkbox" checked={attribute} onChange={(e) => setAttribute(e.target.checked)} />
-            Share my name with this team. By default your feedback is shown anonymously as “Judge from
-            [your firm].”
+            <input
+              type="checkbox"
+              checked={attribute}
+              onChange={(e) => setAttribute(e.target.checked)}
+            />
+            Share my name with this team. By default your feedback is shown anonymously as “Judge
+            from [your firm].”
           </label>
         ) : null}
       </section>
@@ -253,13 +331,18 @@ export function JudgeScorecard({ token, teamId }) {
       {members.length ? (
         <section className="jx-talent">
           <h2 className="jx-section">Flag talent</h2>
-          <p className="jx-talent-note">Private to you. Shared with your firm only if the student later opts in to firm recruiting.</p>
+          <p className="jx-talent-note">
+            Private to you. Shared with your firm only if the student later opts in to firm
+            recruiting.
+          </p>
           <ul className="jx-talent-list">
             {members.map((m) => (
               <li key={m.id} className="jx-talent-row">
                 <span className="jx-talent-name">
                   {m.full_name}
-                  {m.role_on_team ? <span className="jx-talent-role"> · {m.role_on_team}</span> : null}
+                  {m.role_on_team ? (
+                    <span className="jx-talent-role"> · {m.role_on_team}</span>
+                  ) : null}
                 </span>
                 <button
                   type="button"
@@ -277,7 +360,8 @@ export function JudgeScorecard({ token, teamId }) {
       {error ? <p className="jx-error">{error}</p> : null}
       {!submitted ? (
         <button type="button" className="jx-submit" onClick={submit} disabled={submitting}>
-          {submitting ? <Loader2 size={16} className="jx-spin" /> : <CheckCircle2 size={16} />} Submit & lock scorecard
+          {submitting ? <Loader2 size={16} className="jx-spin" /> : <CheckCircle2 size={16} />}{' '}
+          Submit & lock scorecard
         </button>
       ) : null}
     </JudgeShell>
