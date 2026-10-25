@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard, safeErrorResponse } from '@/lib/api-guard';
+import { logger } from '@/lib/logger';
+import { isTokenExpired } from '@/lib/partner-application';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,54 +45,102 @@ export const POST = withApiGuard(
 
       if (!token) return NextResponse.json({ error: 'Token required' }, { status: 400 });
 
-      const { data: app } = await getAdminClient()
+      const db = getAdminClient();
+      const { data: app, error: lookupErr } = await db
         .from('partner_applications')
-        .select('*')
+        .select('id, application_status, verification_token_expires')
         .eq('verification_token', token)
         .eq('email_verified', true)
         .maybeSingle();
 
+      if (lookupErr) {
+        logger.error('Partner documents lookup failed', { error: lookupErr.message });
+        return NextResponse.json({ error: 'Could not look up this application' }, { status: 500 });
+      }
       if (!app)
         return NextResponse.json({ error: 'Invalid token or email not verified' }, { status: 404 });
-
-      const updates = {};
-
-      if (idDocument && idDocument.size > 0) {
-        const check = validateUpload(idDocument, 'ID document');
-        if (check.error) return NextResponse.json({ error: check.error }, { status: 400 });
-        const idPath = `partner-applications/${app.id}/id-document.${check.ext}`;
-        const { error: idErr } = await getAdminClient()
-          .storage.from('documents')
-          .upload(idPath, idDocument, { upsert: true, contentType: idDocument.type || undefined });
-        if (!idErr) updates.id_document_url = idPath;
+      // PAR-14: the link only opens the documents step, and only while it is fresh.
+      if (isTokenExpired(app)) {
+        return NextResponse.json(
+          { error: 'This link has expired. Request a new link to upload your documents.' },
+          { status: 410 },
+        );
+      }
+      if (app.application_status !== 'pending_documents') {
+        return NextResponse.json(
+          { error: 'Documents can no longer be uploaded for this application.' },
+          { status: 409 },
+        );
       }
 
-      if (financialDocument && financialDocument.size > 0) {
-        const check = validateUpload(financialDocument, 'Financial document');
-        if (check.error) return NextResponse.json({ error: check.error }, { status: 400 });
-        const finPath = `partner-applications/${app.id}/financial-document.${check.ext}`;
-        const { error: finErr } = await getAdminClient()
-          .storage.from('documents')
-          .upload(finPath, financialDocument, {
-            upsert: true,
-            contentType: financialDocument.type || undefined,
-          });
-        if (!finErr) updates.financial_document_url = finPath;
-      }
-
-      if (!updates.id_document_url || !updates.financial_document_url) {
+      if (!idDocument?.size || !financialDocument?.size) {
         return NextResponse.json(
           { error: 'Both ID document and financial document are required' },
           { status: 400 },
         );
       }
+      const idCheck = validateUpload(idDocument, 'ID document');
+      if (idCheck.error) return NextResponse.json({ error: idCheck.error }, { status: 400 });
+      const finCheck = validateUpload(financialDocument, 'Financial document');
+      if (finCheck.error) return NextResponse.json({ error: finCheck.error }, { status: 400 });
 
-      updates.documents_submitted = true;
-      updates.documents_submitted_at = new Date().toISOString();
-      updates.application_status = 'under_review';
-      updates.updated_at = new Date().toISOString();
+      const uploads = [
+        {
+          label: 'ID document',
+          file: idDocument,
+          path: `partner-applications/${app.id}/id-document.${idCheck.ext}`,
+        },
+        {
+          label: 'financial document',
+          file: financialDocument,
+          path: `partner-applications/${app.id}/financial-document.${finCheck.ext}`,
+        },
+      ];
+      for (const u of uploads) {
+        const { error: upErr } = await db.storage
+          .from('documents')
+          .upload(u.path, u.file, { upsert: true, contentType: u.file.type || undefined });
+        if (upErr) {
+          logger.error('Partner document upload failed', {
+            applicationId: app.id,
+            document: u.label,
+            error: upErr.message,
+          });
+          return NextResponse.json(
+            { error: `We could not store your ${u.label}. Try again shortly.` },
+            { status: 500 },
+          );
+        }
+      }
 
-      await getAdminClient().from('partner_applications').update(updates).eq('id', app.id);
+      const now = new Date().toISOString();
+      const { error: updErr } = await db
+        .from('partner_applications')
+        .update({
+          id_document_url: uploads[0].path,
+          financial_document_url: uploads[1].path,
+          documents_submitted: true,
+          documents_submitted_at: now,
+          application_status: 'under_review',
+          // PAR-14: the link is single-use once documents are in.
+          verification_token: null,
+          verification_token_expires: null,
+          updated_at: now,
+        })
+        .eq('id', app.id);
+      if (updErr) {
+        logger.error('Partner documents status update failed', {
+          applicationId: app.id,
+          error: updErr.message,
+        });
+        return NextResponse.json(
+          {
+            error:
+              'Your documents were stored but we could not update your application. Try again shortly.',
+          },
+          { status: 500 },
+        );
+      }
 
       return NextResponse.json({
         success: true,
