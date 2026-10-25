@@ -3,6 +3,9 @@
  *
  * @returns {Promise<Record<string, Record<string, number>>>} { TICKER: { 'YYYY-MM-DD': close } }
  */
+
+import { fetchWithTimeout } from './http/fetch-json.js';
+
 export async function fetchBatchedHistoricalPrices(symbols, fromDate, toDate) {
   const apiKey = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
   if (!apiKey || !symbols || symbols.length === 0) return {};
@@ -16,7 +19,7 @@ export async function fetchBatchedHistoricalPrices(symbols, fromDate, toDate) {
   async function fetchOne(symbol) {
     const url = `https://financialmodelingprep.com/stable/historical-price-eod/full?symbol=${encodeURIComponent(symbol)}&from=${fromDate}&to=${toDate}&apikey=${apiKey}`;
     try {
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetchWithTimeout(url, { cache: 'no-store' }, 8000);
       if (!res.ok) return;
       const json = await res.json();
       const bars = Array.isArray(json) ? json : json?.historical || [];

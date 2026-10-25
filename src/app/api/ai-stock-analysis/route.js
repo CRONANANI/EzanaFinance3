@@ -95,7 +95,7 @@ export const POST = withApiGuard(
           systemPrompt;
       }
 
-      const anthropic = new Anthropic({ apiKey });
+      const anthropic = new Anthropic({ apiKey, timeout: 60_000, maxRetries: 2 });
       const response = await anthropic.messages.create({
         model: MODEL,
         max_tokens: 4000,

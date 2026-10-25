@@ -5,6 +5,7 @@ import {
   getSimilarTraders,
   US_STATE_FULL,
 } from '@/lib/capitol-politicians';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,13 +39,17 @@ async function resolveBioGuideId(pol) {
     url.searchParams.set('page', '0');
     url.searchParams.set('page_size', '5');
 
-    const res = await fetch(url.toString(), {
-      headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${process.env.QUIVER_API_KEY}`,
+    const res = await fetchWithTimeout(
+      url.toString(),
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${process.env.QUIVER_API_KEY}`,
+        },
+        next: { revalidate: 86400 },
       },
-      next: { revalidate: 86400 },
-    });
+      8000,
+    );
     if (!res.ok) return null;
     const rows = await res.json();
     if (!Array.isArray(rows) || rows.length === 0) return null;
@@ -72,13 +77,17 @@ async function fetchQuiverTradesForPolitician(pol) {
     const all = [];
     for (let page = 0; page < 5; page += 1) {
       base.searchParams.set('page', String(page));
-      const res = await fetch(base.toString(), {
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${process.env.QUIVER_API_KEY}`,
+      const res = await fetchWithTimeout(
+        base.toString(),
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${process.env.QUIVER_API_KEY}`,
+          },
+          next: { revalidate: 300 },
         },
-        next: { revalidate: 300 },
-      });
+        8000,
+      );
       if (!res.ok) break;
       const rows = await res.json();
       if (!Array.isArray(rows) || rows.length === 0) break;
@@ -143,7 +152,7 @@ async function fetchTradesForMember(pol) {
       ? `${BASE}/senate-trades-by-name?name=${encodeURIComponent(pol.firstName)}&apikey=${encKey}`
       : `${BASE}/house-trades-by-name?name=${encodeURIComponent(pol.firstName)}&apikey=${encKey}`;
   try {
-    const res = await fetch(endpoint, { cache: 'no-store' });
+    const res = await fetchWithTimeout(endpoint, { cache: 'no-store' }, 8000);
     if (!res.ok) return [];
     const data = await res.json();
     if (!Array.isArray(data)) return [];

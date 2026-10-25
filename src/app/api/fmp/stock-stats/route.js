@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,10 +38,10 @@ function fmtDivYield(raw) {
 }
 
 async function fetchWithRetry(url) {
-  let res = await fetch(url, { cache: 'no-store' });
+  let res = await fetchWithTimeout(url, { cache: 'no-store' }, 8000);
   if (res.status === 429) {
     await new Promise((r) => setTimeout(r, 1500));
-    res = await fetch(url, { cache: 'no-store' });
+    res = await fetchWithTimeout(url, { cache: 'no-store' }, 8000);
   }
   return res;
 }

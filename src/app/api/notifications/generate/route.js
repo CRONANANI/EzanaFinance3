@@ -5,6 +5,7 @@ import { scoreEventForUser } from '@/lib/notifications/matching-engine';
 import { buildUserProfile } from '@/lib/notifications/interest-profile';
 import { PERSONA_NOTIFICATION_CAPS } from '@/lib/ml/persona-assignment';
 import { insertNotificationAndPush } from '@/lib/push/fanout';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -42,7 +43,7 @@ export async function GET(request) {
   const admin = getAdminClient();
 
   try {
-    const newsRes = await fetch(
+    const newsRes = await fetchWithTimeout(
       `${FMP_BASE}/news/stock-latest?page=0&limit=20&apikey=${encodeURIComponent(FMP_KEY)}`,
       { cache: 'no-store' },
     );
@@ -211,7 +212,7 @@ export async function GET(request) {
         const quotes = await Promise.all(
           tickers.map(async (sym) => {
             try {
-              const quoteRes = await fetch(
+              const quoteRes = await fetchWithTimeout(
                 `${FMP_BASE}/quote?symbol=${encodeURIComponent(sym)}&apikey=${encodeURIComponent(FMP_KEY)}`,
                 { cache: 'no-store' },
               );

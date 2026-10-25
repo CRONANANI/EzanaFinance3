@@ -17,6 +17,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getFmpKey } from '@/lib/fmp/upcoming-events';
 import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -48,7 +49,7 @@ async function fmpRange(path, t0, t1, extra = {}) {
   const lists = await Promise.all(
     chunks(t0, t1).map(async ([from, to]) => {
       const qs = new URLSearchParams({ from, to, apikey: key, ...extra });
-      const res = await fetch(`${FMP}${path}?${qs}`, { cache: 'no-store' });
+      const res = await fetchWithTimeout(`${FMP}${path}?${qs}`, { cache: 'no-store' }, 8000);
       if (!res.ok) throw new Error(`status ${res.status}`);
       const j = await res.json();
       return Array.isArray(j) ? j : [];

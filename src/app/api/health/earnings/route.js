@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
 import { requireAdminAccess } from '@/lib/admin-auth';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,7 +43,7 @@ export const GET = withApiGuard(
     if (fmpKey) {
       try {
         const url = `https://financialmodelingprep.com/stable/earning-call-transcript?symbol=AAPL&year=2024&quarter=4&apikey=${encodeURIComponent(fmpKey)}`;
-        const res = await fetch(url, { cache: 'no-store' });
+        const res = await fetchWithTimeout(url, { cache: 'no-store' }, 5000);
         checks.fmp_transcript_probe_status = res.status;
         checks.fmp_transcript_probe_ok = res.ok;
       } catch (e) {
@@ -53,7 +54,7 @@ export const GET = withApiGuard(
     if (avKey) {
       try {
         const url = `https://www.alphavantage.co/query?function=EARNINGS_CALL_TRANSCRIPT&symbol=AAPL&quarter=2024Q4&apikey=${avKey}`;
-        const res = await fetch(url, { cache: 'no-store' });
+        const res = await fetchWithTimeout(url, { cache: 'no-store' }, 5000);
         checks.av_transcript_probe_status = res.status;
         if (res.ok) {
           const data = await res.json();

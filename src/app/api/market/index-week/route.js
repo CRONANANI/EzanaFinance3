@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,7 +65,7 @@ async function fetchQuote(symbol) {
   const FMP_KEY = getFmpKey();
   const url = `${FMP_BASE}/quote?symbol=${encodeURIComponent(symbol)}&apikey=${encodeURIComponent(FMP_KEY)}`;
   try {
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetchWithTimeout(url, { cache: 'no-store' });
     if (!res.ok) {
       console.warn(`[index-week] quote ${symbol} HTTP ${res.status}`);
       return null;
@@ -97,7 +98,7 @@ async function fetchWeeklyBars(symbol, slots) {
   const closeMap = new Map();
   const openMap = new Map();
   try {
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetchWithTimeout(url, { cache: 'no-store' });
     if (!res.ok) {
       console.warn(`[index-week] historical ${symbol} HTTP ${res.status}`);
       return { closeMap, openMap };

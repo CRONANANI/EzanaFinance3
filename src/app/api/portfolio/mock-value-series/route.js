@@ -4,6 +4,7 @@ import { getAuthUser, getAdminClient } from '@/lib/supabase';
 
 import { replayTradesToValueSeries, clipPointsToRange } from '@/lib/portfolio-trade-replay';
 import { fetchBatchedHistoricalPrices } from '@/lib/fmp-historical-batched';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -203,7 +204,7 @@ async function fetchCurrentPrices(tickers) {
   try {
     const symbols = tickers.join(',');
     const url = `https://financialmodelingprep.com/stable/batch-quote?symbols=${encodeURIComponent(symbols)}&apikey=${apiKey}`;
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetchWithTimeout(url, { cache: 'no-store' }, 8000);
     if (!res.ok) {
       console.warn('[mock-value-series] FMP quote failed', { status: res.status });
       return {};

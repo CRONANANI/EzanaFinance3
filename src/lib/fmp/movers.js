@@ -3,15 +3,21 @@
  * Endpoint: /stable/biggest-gainers and /stable/biggest-losers
  */
 
+import { fetchWithTimeout } from '../http/fetch-json.js';
+
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
 export async function getBiggestGainers(limit = 5) {
   const apiKey = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY;
   if (!apiKey) throw new Error('FMP_API_KEY not set');
 
-  const res = await fetch(`${FMP_BASE}/biggest-gainers?apikey=${encodeURIComponent(apiKey)}`, {
-    next: { revalidate: 60 },
-  });
+  const res = await fetchWithTimeout(
+    `${FMP_BASE}/biggest-gainers?apikey=${encodeURIComponent(apiKey)}`,
+    {
+      next: { revalidate: 60 },
+    },
+    8000,
+  );
   if (!res.ok) throw new Error(`FMP gainers ${res.status}`);
   const data = await res.json();
   if (!Array.isArray(data)) return [];
@@ -22,9 +28,13 @@ export async function getBiggestLosers(limit = 5) {
   const apiKey = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY;
   if (!apiKey) throw new Error('FMP_API_KEY not set');
 
-  const res = await fetch(`${FMP_BASE}/biggest-losers?apikey=${encodeURIComponent(apiKey)}`, {
-    next: { revalidate: 60 },
-  });
+  const res = await fetchWithTimeout(
+    `${FMP_BASE}/biggest-losers?apikey=${encodeURIComponent(apiKey)}`,
+    {
+      next: { revalidate: 60 },
+    },
+    8000,
+  );
   if (!res.ok) throw new Error(`FMP losers ${res.status}`);
   const data = await res.json();
   if (!Array.isArray(data)) return [];

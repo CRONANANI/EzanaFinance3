@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { fetchAllBulkQuotesAlpha, getAlphaVantageApiKey, fetchAV } from '@/lib/alpha-vantage';
 import { cacheGetOrSet } from '@/lib/cache';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +35,7 @@ async function handleSymbolQuotes(symbols) {
 
 async function fetchFinnhubQuote(symbol, apiKey) {
   try {
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${apiKey}`,
       { next: { revalidate: 30 } },
     );

@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { fetchWithTimeout } from '../http/fetch-json.js';
 
 let _serverClient = null;
 
@@ -19,9 +20,12 @@ export function getServerSupabase() {
        response that survives deploys: /api/cron/parse-house-ptrs re-read the
        same 40 already-parsed filings on every run while 5,611 waited. Routes
        that want caching set it on their own response (Cache-Control /
-       s-maxage), not on the database read. */
+       s-maxage), not on the database read.
+       60 s cap: generous for heavy cron RPCs and storage uploads, but a hung
+       PostgREST hop no longer holds the function until maxDuration. A
+       caller's own .abortSignal() still applies. */
     global: {
-      fetch: (input, init = {}) => fetch(input, { ...init, cache: 'no-store' }),
+      fetch: (input, init = {}) => fetchWithTimeout(input, { ...init, cache: 'no-store' }, 60_000),
     },
   });
 

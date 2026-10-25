@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { extractPdfText, parsePtrText, looksScanned } from '@/lib/house-disclosures/parse-ptr-pdf';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 /**
  * Phase 2: parse ELECTRONIC House PTR PDFs into public.house_trades.
@@ -68,7 +69,11 @@ export async function GET(request) {
     try {
       if (!f.pdf_url) continue;
       // eslint-disable-next-line no-await-in-loop
-      const res = await fetch(f.pdf_url, { headers: { 'User-Agent': UA }, cache: 'no-store' });
+      const res = await fetchWithTimeout(
+        f.pdf_url,
+        { headers: { 'User-Agent': UA }, cache: 'no-store' },
+        15000,
+      );
       if (!res.ok) {
         errors.push(`${f.doc_id}: fetch ${res.status}`);
         // eslint-disable-next-line no-await-in-loop

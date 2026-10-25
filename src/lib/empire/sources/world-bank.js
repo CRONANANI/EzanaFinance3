@@ -17,6 +17,8 @@
  * row to `dimension_metric_map` in the database. No other code changes.
  */
 
+import { fetchWithTimeout } from '../../http/fetch-json.js';
+
 /** @typedef {import('./types.js').SourceFetcher} SourceFetcher */
 /** @typedef {import('./types.js').FetchRequest} FetchRequest */
 /** @typedef {import('./types.js').FetchedObservation} FetchedObservation */
@@ -100,13 +102,17 @@ async function fetchAllPages(baseUrl) {
   // us how many total pages exist; we walk them in order.
   do {
     const url = `${baseUrl}&page=${page}`;
-    const res = await fetch(url, {
-      headers: { accept: 'application/json' },
-      // Tag this for Next.js's fetch cache — these are weekly-refresh
-      // datasets, so a 1-day revalidate is fine even if multiple dev hits
-      // happen in a row.
-      next: { revalidate: 86400 },
-    });
+    const res = await fetchWithTimeout(
+      url,
+      {
+        headers: { accept: 'application/json' },
+        // Tag this for Next.js's fetch cache — these are weekly-refresh
+        // datasets, so a 1-day revalidate is fine even if multiple dev hits
+        // happen in a row.
+        next: { revalidate: 86400 },
+      },
+      15000,
+    );
     if (!res.ok) {
       console.warn(`[world_bank] ${res.status} for ${url}`);
       return all;

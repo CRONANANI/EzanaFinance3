@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,7 +40,7 @@ export const GET = withApiGuard(
 
       const path = STATEMENT_PATHS[statement];
       const fmpUrl = `${FMP_BASE}/${path}?symbol=${encodeURIComponent(symbol)}&period=${period}&limit=${limit}&apikey=${apiKey}`;
-      const res = await fetch(fmpUrl, { cache: 'no-store' });
+      const res = await fetchWithTimeout(fmpUrl, { cache: 'no-store' }, 8000);
       if (!res.ok) {
         return NextResponse.json({ error: `FMP HTTP ${res.status}` }, { status: res.status });
       }

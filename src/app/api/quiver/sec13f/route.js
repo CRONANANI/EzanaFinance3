@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,13 +18,17 @@ async function fetchPage(page, params) {
   });
 
   try {
-    const res = await fetch(`${BASE}?${qs.toString()}`, {
-      headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${QUIVER_KEY}`,
+    const res = await fetchWithTimeout(
+      `${BASE}?${qs.toString()}`,
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${QUIVER_KEY}`,
+        },
+        next: { revalidate: CACHE_SECONDS },
       },
-      next: { revalidate: CACHE_SECONDS },
-    });
+      10000,
+    );
 
     if (!res.ok) {
       if (res.status === 404) return [];
@@ -40,10 +45,7 @@ async function fetchPage(page, params) {
 
 export async function GET(request) {
   if (!QUIVER_KEY) {
-    return NextResponse.json(
-      { error: 'QUIVER_API_KEY not configured', data: [] },
-      { status: 503 }
-    );
+    return NextResponse.json({ error: 'QUIVER_API_KEY not configured', data: [] }, { status: 503 });
   }
 
   const { searchParams } = new URL(request.url);

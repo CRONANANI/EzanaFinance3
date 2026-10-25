@@ -1,4 +1,5 @@
 import { fetchAV, getAlphaVantageApiKey } from '@/lib/alpha-vantage';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 const CACHE_TTL_MS = 5 * 60 * 1000;
@@ -33,7 +34,7 @@ async function fmpFetch(path) {
   try {
     const sep = path.includes('?') ? '&' : '?';
     const url = `${FMP_BASE}/${path}${sep}apikey=${encodeURIComponent(apiKey)}`;
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetchWithTimeout(url, { cache: 'no-store' }, 8000);
     if (!res.ok) {
       console.warn(`[ai/market-data] FMP ${res.status} for ${path}`);
       return null;

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -96,13 +97,18 @@ export const GET = withApiGuard(
     }
 
     try {
-      const res = await fetch(`https://${RAPIDAPI_HOST}/api/Forbes/Billionaires`, {
-        headers: {
-          'x-rapidapi-key': apiKey,
-          'x-rapidapi-host': RAPIDAPI_HOST,
+      // 15s: the full Forbes list is a large payload.
+      const res = await fetchWithTimeout(
+        `https://${RAPIDAPI_HOST}/api/Forbes/Billionaires`,
+        {
+          headers: {
+            'x-rapidapi-key': apiKey,
+            'x-rapidapi-host': RAPIDAPI_HOST,
+          },
+          next: { revalidate: 3600 },
         },
-        next: { revalidate: 3600 },
-      });
+        15000,
+      );
 
       if (!res.ok) {
         console.error(`[billionaires] Forbes API returned ${res.status}`);

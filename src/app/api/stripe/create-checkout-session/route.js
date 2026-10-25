@@ -5,6 +5,33 @@ import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/services/stripe';
 import { PLANS } from '@/config/pricing';
 import { TRIAL_DAYS, renewalText, trialEndDate } from '@/lib/billing/renewal-terms';
+import { getAdminClient } from '@/lib/supabase';
+
+/**
+ * One Stripe customer per user: the create carries the idempotency key
+ * cust:<user id>, so racing checkouts get the same customer. Stripe refuses
+ * a reused key with different parameters (e.g. a renamed user within the
+ * key's 24 h window); then the existing customer is found by metadata.
+ */
+async function getOrCreateCustomer(user) {
+  const params = {
+    email: user.email,
+    name: user.user_metadata?.full_name || user.user_metadata?.name || '',
+    metadata: { supabase_user_id: user.id },
+  };
+  try {
+    const customer = await stripe.customers.create(params, { idempotencyKey: `cust:${user.id}` });
+    return customer.id;
+  } catch (e) {
+    if (e?.type !== 'StripeIdempotencyError') throw e;
+    const found = await stripe.customers.search({
+      query: `metadata['supabase_user_id']:'${user.id}'`,
+      limit: 1,
+    });
+    if (found.data?.[0]?.id) return found.data[0].id;
+    throw e;
+  }
+}
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -80,23 +107,19 @@ export const POST = withApiGuard(
       let customerId = profile?.stripe_customer_id;
 
       if (!customerId) {
-        const customer = await stripe.customers.create({
-          email: user.email,
-          name: user.user_metadata?.full_name || user.user_metadata?.name || '',
-          metadata: { supabase_user_id: user.id },
-        });
-        customerId = customer.id;
-
-        const { error: saveErr } = await supabase.from('profiles').upsert(
-          {
-            id: user.id,
-            stripe_customer_id: customerId,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'id' },
-        );
+        customerId = await getOrCreateCustomer(user);
+        /* Saved with the service role, and checked: a lost customer id
+           would make the next checkout create a second customer. */
+        const { error: saveErr } = await getAdminClient()
+          .from('profiles')
+          .update({ stripe_customer_id: customerId, updated_at: new Date().toISOString() })
+          .eq('id', user.id);
         if (saveErr) {
           console.error('Failed to save stripe_customer_id:', saveErr);
+          return NextResponse.json(
+            { error: 'Could not start checkout. Please try again.' },
+            { status: 500 },
+          );
         }
       }
 
@@ -142,7 +165,10 @@ export const POST = withApiGuard(
         },
       };
 
-      const session = await stripe.checkout.sessions.create(sessionParams);
+      /* A double click within the same minute returns the same session. */
+      const session = await stripe.checkout.sessions.create(sessionParams, {
+        idempotencyKey: `cs:${user.id}:${plan.priceId}:${Math.floor(Date.now() / 60_000)}`,
+      });
 
       return NextResponse.json({ url: session.url });
     } catch (error) {

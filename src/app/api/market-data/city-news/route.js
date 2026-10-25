@@ -6,6 +6,7 @@ import {
   buildSearchQuery,
   normalizeMarketauxArticle,
 } from '@/lib/marketaux/client';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -244,11 +245,11 @@ export const GET = withApiGuard(
       const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
 
       const [generalRes, ...companyResults] = await Promise.all([
-        fetch(`${BASE}/news?category=general&token=${FINNHUB_KEY}`),
+        fetchWithTimeout(`${BASE}/news?category=general&token=${FINNHUB_KEY}`),
         ...tickers
           .slice(0, 3)
           .map((ticker) =>
-            fetch(
+            fetchWithTimeout(
               `${BASE}/company-news?symbol=${ticker}&from=${weekAgo}&to=${today}&token=${FINNHUB_KEY}`,
             ),
           ),

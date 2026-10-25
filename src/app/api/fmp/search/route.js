@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +33,7 @@ export const GET = withApiGuard(
 
     try {
       const url = `${BASE}/search?query=${encodeURIComponent(q)}&limit=15&apikey=${key}`;
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetchWithTimeout(url, { cache: 'no-store' }, 8000);
 
       if (!res.ok) {
         const body = await res.text().catch(() => '');

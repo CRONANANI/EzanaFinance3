@@ -92,7 +92,11 @@ async function fetchTickerArticle(symbol) {
 async function generateBlurb(event) {
   if (!process.env.ANTHROPIC_API_KEY) return null;
   try {
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+      timeout: 30_000,
+      maxRetries: 2,
+    });
     const date = event.fullDate ? ` Date: ${String(event.fullDate).slice(0, 10)}.` : '';
     const userText = `Event: ${event.title || 'Upcoming market event'}. Category: ${
       event.category || event.type || 'general'
@@ -162,9 +166,7 @@ export const POST = withApiGuard(
     // One event's failure must never break the batch.
     const settled = await Promise.allSettled(events.map((ev) => enrichEvent(ev)));
     const results = settled.map((s, i) =>
-      s.status === 'fulfilled'
-        ? s.value
-        : { id: events[i]?.id, article: null, blurb: null },
+      s.status === 'fulfilled' ? s.value : { id: events[i]?.id, article: null, blurb: null },
     );
 
     return NextResponse.json(

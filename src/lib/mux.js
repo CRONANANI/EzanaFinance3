@@ -9,6 +9,7 @@
  *   MUX_WEBHOOK_SECRET                        (optional, to verify webhooks)
  */
 import crypto from 'crypto';
+import { fetchWithTimeout } from './http/fetch-json.js';
 
 const MUX_TOKEN_ID = process.env.MUX_TOKEN_ID;
 const MUX_TOKEN_SECRET = process.env.MUX_TOKEN_SECRET;
@@ -26,14 +27,18 @@ function authHeader() {
 
 async function muxFetch(path, options = {}) {
   if (!isMuxConfigured()) throw new Error('Mux is not configured');
-  const res = await fetch(`${MUX_API}${path}`, {
-    ...options,
-    headers: {
-      Authorization: authHeader(),
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
+  const res = await fetchWithTimeout(
+    `${MUX_API}${path}`,
+    {
+      ...options,
+      headers: {
+        Authorization: authHeader(),
+        'Content-Type': 'application/json',
+        ...(options.headers || {}),
+      },
     },
-  });
+    10000,
+  );
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
     const msg = json?.error?.messages?.join(', ') || json?.message || `Mux API ${res.status}`;

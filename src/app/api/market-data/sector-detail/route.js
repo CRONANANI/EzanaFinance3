@@ -6,6 +6,7 @@ import {
   resolveSectorQuery,
   CANONICAL_SECTORS,
 } from '@/lib/fmp/sector-performance';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -226,7 +227,7 @@ async function fetchSectorCandidates(canonicalSector) {
       apikey: FMP_KEY,
     });
     const url = `${FMP_BASE}/company-screener?${params.toString()}`;
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetchWithTimeout(url, { cache: 'no-store' });
     if (!res.ok) {
       console.warn(`[sector-detail] screener HTTP ${res.status} for sector="${canonicalSector}"`);
       return [];
@@ -258,7 +259,7 @@ async function fetch1DPerformance(candidates) {
   const symbolList = top60.map((c) => c.symbol).join(',');
   const url = `${FMP_BASE}/quote?symbol=${encodeURIComponent(symbolList)}&apikey=${encodeURIComponent(FMP_KEY)}`;
   try {
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetchWithTimeout(url, { cache: 'no-store' });
     if (!res.ok) {
       console.warn(`[sector-detail] quote HTTP ${res.status}`);
       return [];
@@ -291,7 +292,7 @@ async function fetchHistoricalPerformance(candidates, range) {
     top60.map(async (c) => {
       try {
         const url = `${FMP_BASE}/historical-price-eod/light?symbol=${encodeURIComponent(c.symbol)}&apikey=${encodeURIComponent(FMP_KEY)}`;
-        const res = await fetch(url, { cache: 'no-store' });
+        const res = await fetchWithTimeout(url, { cache: 'no-store' });
         if (!res.ok) return null;
         const data = await res.json();
         const seriesRaw = Array.isArray(data) ? data : data?.historical;
@@ -342,12 +343,18 @@ async function fetchSectorNews(rawSectorParam, canonicalSector) {
   try {
     const keywords = keywordsForNews(rawSectorParam, canonicalSector);
     const responses = await Promise.all([
-      fetch(`${FINNHUB_BASE}/news?category=general&token=${encodeURIComponent(FINNHUB_KEY)}`, {
-        next: { revalidate: 300 },
-      }).then((r) => (r.ok ? r.json() : [])),
-      fetch(`${FINNHUB_BASE}/news?category=forex&token=${encodeURIComponent(FINNHUB_KEY)}`, {
-        next: { revalidate: 300 },
-      }).then((r) => (r.ok ? r.json() : [])),
+      fetchWithTimeout(
+        `${FINNHUB_BASE}/news?category=general&token=${encodeURIComponent(FINNHUB_KEY)}`,
+        {
+          next: { revalidate: 300 },
+        },
+      ).then((r) => (r.ok ? r.json() : [])),
+      fetchWithTimeout(
+        `${FINNHUB_BASE}/news?category=forex&token=${encodeURIComponent(FINNHUB_KEY)}`,
+        {
+          next: { revalidate: 300 },
+        },
+      ).then((r) => (r.ok ? r.json() : [])),
     ]);
 
     const all = responses.flat().filter(Boolean);

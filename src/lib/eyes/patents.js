@@ -12,6 +12,9 @@
  * call the endpoint once with f=["assignees","cpc_current","application"] and
  * adjust `pick` below.
  */
+
+import { fetchWithTimeout } from '../http/fetch-json.js';
+
 const API = 'https://search.patentsview.org/api/v1/patent/';
 const SIZE = 1000;
 const MIN_GAP_MS = 1400; // 45 requests a minute
@@ -59,12 +62,16 @@ export async function patentsGranted(from, to, onPage, { log = () => {} } = {}) 
     let res;
     for (let attempt = 0; attempt < 5; attempt += 1) {
       // eslint-disable-next-line no-await-in-loop
-      res = await fetch(API, {
-        method: 'POST',
-        headers: { 'X-Api-Key': key, 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        cache: 'no-store',
-      });
+      res = await fetchWithTimeout(
+        API,
+        {
+          method: 'POST',
+          headers: { 'X-Api-Key': key, 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          cache: 'no-store',
+        },
+        15000,
+      );
       if (res.status !== 429) break;
       const wait = Number(res.headers.get('retry-after')) * 1000 || 30000;
       log(`rate limited, waiting ${wait / 1000}s`);

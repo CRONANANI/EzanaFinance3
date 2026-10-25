@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,9 +14,10 @@ export const GET = withApiGuard(
     }
 
     try {
-      const res = await fetch(
+      const res = await fetchWithTimeout(
         `https://gamma-api.polymarket.com/public-search?query=${encodeURIComponent(q)}&type=profiles`,
         { cache: 'no-store' },
+        8000,
       );
       if (!res.ok) {
         return NextResponse.json({ profiles: [] });

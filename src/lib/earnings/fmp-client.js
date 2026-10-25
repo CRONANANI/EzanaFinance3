@@ -1,4 +1,5 @@
 import { fetchAV, getAlphaVantageApiKey } from '@/lib/alpha-vantage';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
@@ -113,7 +114,7 @@ export async function fetchEarningsHistory(symbol, limit = 12) {
   if (!fmpKey) return [];
   const url = `${FMP_BASE}/earnings-surprises?symbol=${encodeURIComponent(symbol)}&limit=${limit}&apikey=${encodeURIComponent(fmpKey)}`;
   try {
-    const res = await fetch(url, { next: { revalidate: 3600 } });
+    const res = await fetchWithTimeout(url, { next: { revalidate: 3600 } }, 8000);
     if (!res.ok) return [];
     const data = await res.json().catch(() => null);
     if (!Array.isArray(data)) return [];

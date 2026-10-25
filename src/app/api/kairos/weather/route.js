@@ -15,6 +15,7 @@
  */
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,13 +61,15 @@ export const GET = withApiGuard(
       // One Call (current + daily + alerts + hourly) and the AI overview run in
       // parallel. Overview is best-effort — if it fails we still return the rest.
       const [oneCallRes, overviewRes] = await Promise.all([
-        fetch(
+        fetchWithTimeout(
           `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&units=metric&appid=${encodeURIComponent(OWM_KEY)}`,
           { cache: 'no-store' },
+          8000,
         ),
-        fetch(
+        fetchWithTimeout(
           `https://api.openweathermap.org/data/3.0/onecall/overview?lat=${lat}&lon=${lon}&units=metric&appid=${encodeURIComponent(OWM_KEY)}`,
           { cache: 'no-store' },
+          8000,
         ).catch(() => null),
       ]);
 

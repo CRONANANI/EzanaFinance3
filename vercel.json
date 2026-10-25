@@ -292,6 +292,14 @@
     {
       "path": "/api/cron/reconcile-learning-elo",
       "schedule": "41 4 * * *"
+    },
+    {
+      "path": "/api/cron/reconcile-stripe",
+      "schedule": "17 5 * * *"
+    },
+    {
+      "path": "/api/cron/plaid-sync-drain",
+      "schedule": "2-59/5 * * * *"
     }
   ]
 }

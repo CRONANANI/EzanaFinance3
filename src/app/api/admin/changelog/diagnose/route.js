@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { requireAdminAccess } from '@/lib/admin-auth';
 import { getAdminClient } from '@/lib/supabase';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -98,13 +99,17 @@ export const GET = withApiGuard(
 
     try {
       const repoUrl = `https://api.github.com/repos/${process.env.GITHUB_REPO}`;
-      const res = await fetch(repoUrl, {
-        headers: {
-          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-          Accept: 'application/vnd.github+json',
-          'X-GitHub-Api-Version': '2022-11-28',
+      const res = await fetchWithTimeout(
+        repoUrl,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+            Accept: 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28',
+          },
         },
-      });
+        8000,
+      );
       if (!res.ok) {
         const text = await res.text();
         report.github = {
@@ -126,19 +131,23 @@ export const GET = withApiGuard(
     }
 
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'x-api-key': process.env.ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json',
+      const res = await fetchWithTimeout(
+        'https://api.anthropic.com/v1/messages',
+        {
+          method: 'POST',
+          headers: {
+            'x-api-key': process.env.ANTHROPIC_API_KEY,
+            'anthropic-version': '2023-06-01',
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 8,
+            messages: [{ role: 'user', content: 'Say "ok" and nothing else.' }],
+          }),
         },
-        body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 8,
-          messages: [{ role: 'user', content: 'Say "ok" and nothing else.' }],
-        }),
-      });
+        15000,
+      );
       if (!res.ok) {
         const text = await res.text();
         report.anthropic = { ok: false, status: res.status, error: text.slice(0, 200) };

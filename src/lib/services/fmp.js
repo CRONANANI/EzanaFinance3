@@ -3,6 +3,7 @@
  */
 
 import { ApiCache } from '@/lib/api-cache';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 // Read the key at REQUEST time (not from a module-load snapshot, which broke
 // keys set or rotated after cold start) and accept either env var name:
@@ -32,7 +33,7 @@ async function fetchJson(path, params, cacheKey, ttl) {
   const url = buildUrl(path, params);
   if (!url) return null;
   const fetcher = async () => {
-    const res = await fetch(url);
+    const res = await fetchWithTimeout(url, {}, 8000);
     if (!res.ok) throw new Error(`FMP HTTP ${res.status}`);
     return res.json();
   };

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +19,7 @@ export const GET = withApiGuard(
       let profile = null;
 
       if (username && !wallet) {
-        const searchRes = await fetch(
+        const searchRes = await fetchWithTimeout(
           `https://gamma-api.polymarket.com/public-search?query=${encodeURIComponent(username)}&type=profiles`,
           { next: { revalidate: 60 } },
         );
@@ -42,20 +43,26 @@ export const GET = withApiGuard(
       }
 
       const [positionsRes, tradesRes, activityRes, valueRes, tradedRes] = await Promise.all([
-        fetch(
+        fetchWithTimeout(
           `https://data-api.polymarket.com/positions?user=${resolvedWallet}&sizeThreshold=0.1`,
           { next: { revalidate: 30 } },
         ),
-        fetch(`https://data-api.polymarket.com/trades?user=${resolvedWallet}&limit=100`, {
-          next: { revalidate: 30 },
-        }),
-        fetch(`https://data-api.polymarket.com/activity?user=${resolvedWallet}&limit=50`, {
-          next: { revalidate: 30 },
-        }),
-        fetch(`https://data-api.polymarket.com/value?user=${resolvedWallet}`, {
+        fetchWithTimeout(
+          `https://data-api.polymarket.com/trades?user=${resolvedWallet}&limit=100`,
+          {
+            next: { revalidate: 30 },
+          },
+        ),
+        fetchWithTimeout(
+          `https://data-api.polymarket.com/activity?user=${resolvedWallet}&limit=50`,
+          {
+            next: { revalidate: 30 },
+          },
+        ),
+        fetchWithTimeout(`https://data-api.polymarket.com/value?user=${resolvedWallet}`, {
           next: { revalidate: 60 },
         }),
-        fetch(`https://data-api.polymarket.com/traded?user=${resolvedWallet}`, {
+        fetchWithTimeout(`https://data-api.polymarket.com/traded?user=${resolvedWallet}`, {
           next: { revalidate: 300 },
         }),
       ]);

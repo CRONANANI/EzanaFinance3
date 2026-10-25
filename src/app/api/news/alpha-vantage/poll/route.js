@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -144,7 +145,7 @@ export const GET = withApiGuard(
 
     try {
       const url = `${AV_BASE}?function=NEWS_SENTIMENT&limit=50&sort=LATEST&apikey=${encodeURIComponent(AV_KEY)}`;
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetchWithTimeout(url, { cache: 'no-store' });
       if (!res.ok) {
         return NextResponse.json({ fetched: false, reason: `av_http_${res.status}` });
       }

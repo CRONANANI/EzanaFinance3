@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +19,7 @@ async function fetchLatest(chamber) {
   const endpoint = chamber === 'senate' ? 'senate-latest' : 'house-latest';
   try {
     const url = `${BASE}/${endpoint}?page=0&limit=100&apikey=${encodeURIComponent(FMP_KEY)}`;
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetchWithTimeout(url, { cache: 'no-store' }, 8000);
     if (!res.ok) {
       console.warn(`[congress-latest] ${endpoint} HTTP ${res.status}`);
       return [];

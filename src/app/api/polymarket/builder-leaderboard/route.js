@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -27,7 +28,7 @@ export const GET = withApiGuard(
       url.searchParams.set('limit', String(limit));
       url.searchParams.set('offset', String(offset));
 
-      const res = await fetch(url.toString(), {
+      const res = await fetchWithTimeout(url.toString(), {
         next: { revalidate: 120 },
         headers: { Accept: 'application/json' },
       });

@@ -5,6 +5,7 @@
 
 import { getAdminClient } from '@/lib/supabase';
 import { getArticleBySlug } from '@/lib/echo-data';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 const REDDIT_API_BASE = 'https://oauth.reddit.com';
 const REDDIT_AUTH_URL = 'https://www.reddit.com/api/v1/access_token';
@@ -31,15 +32,19 @@ export async function getRedditAccessToken() {
   const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
   const body = new URLSearchParams({ grant_type: 'password', username, password });
 
-  const res = await fetch(REDDIT_AUTH_URL, {
-    method: 'POST',
-    headers: {
-      Authorization: `Basic ${basicAuth}`,
-      'User-Agent': userAgent,
-      'Content-Type': 'application/x-www-form-urlencoded',
+  const res = await fetchWithTimeout(
+    REDDIT_AUTH_URL,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${basicAuth}`,
+        'User-Agent': userAgent,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: body.toString(),
     },
-    body: body.toString(),
-  });
+    8000,
+  );
 
   if (!res.ok) {
     const text = await res.text();
@@ -125,15 +130,19 @@ export async function submitRedditPost({ subreddit, title, url, body, submission
 
   if (flairId) params.set('flair_id', flairId);
 
-  const res = await fetch(`${REDDIT_API_BASE}/api/submit`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'User-Agent': userAgent,
-      'Content-Type': 'application/x-www-form-urlencoded',
+  const res = await fetchWithTimeout(
+    `${REDDIT_API_BASE}/api/submit`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'User-Agent': userAgent,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
     },
-    body: params.toString(),
-  });
+    15000,
+  );
 
   const data = await res.json().catch(() => null);
 

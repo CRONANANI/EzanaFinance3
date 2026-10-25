@@ -2,11 +2,13 @@
  * Historical daily weather from Open-Meteo archive (no API key).
  */
 
+import { fetchWithTimeout } from '../http/fetch-json.js';
+
 export async function fetchWeatherHistory(lat, lon, startDate, endDate, variables) {
   const dailyParam = variables.join(',');
   const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${startDate}&end_date=${endDate}&daily=${dailyParam}&timezone=auto`;
 
-  const res = await fetch(url);
+  const res = await fetchWithTimeout(url, {}, 15000);
   if (!res.ok) {
     throw new Error(`Open-Meteo archive HTTP ${res.status}`);
   }

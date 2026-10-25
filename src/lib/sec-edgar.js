@@ -13,6 +13,9 @@
  *      one). This is why these calls are server-side only, never from the browser.
  *   2. <= 10 requests/second. We throttle to ~6/s to leave headroom.
  */
+
+import { fetchWithTimeout } from './http/fetch-json.js';
+
 const UA = process.env.SEC_USER_AGENT || 'Ezana Finance admin@ezana.world';
 const EFTS = 'https://efts.sec.gov/LATEST/search-index';
 
@@ -37,9 +40,13 @@ export function secRequestCount() {
 async function secFetch(url) {
   await throttle();
   requestCount += 1;
-  const res = await fetch(url, {
-    headers: { 'User-Agent': UA, Accept: 'application/json' },
-  });
+  const res = await fetchWithTimeout(
+    url,
+    {
+      headers: { 'User-Agent': UA, Accept: 'application/json' },
+    },
+    15000,
+  );
   if (!res.ok) throw new Error(`SEC ${res.status} for ${url}`);
   return res.json();
 }
@@ -53,7 +60,7 @@ export function secFetchJson(url) {
 export async function secFetchText(url) {
   await throttle();
   requestCount += 1;
-  const res = await fetch(url, { headers: { 'User-Agent': UA } });
+  const res = await fetchWithTimeout(url, { headers: { 'User-Agent': UA } }, 30000);
   if (!res.ok) throw new Error(`SEC ${res.status} for ${url}`);
   return res.text();
 }

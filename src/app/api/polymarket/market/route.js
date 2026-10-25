@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +20,7 @@ export const GET = withApiGuard(
       if (slug) params.set('slug', slug);
       if (id) params.set('id', id);
 
-      const marketRes = await fetch(
+      const marketRes = await fetchWithTimeout(
         `https://gamma-api.polymarket.com/markets?${params.toString()}`,
         { next: { revalidate: 60 } },
       );
@@ -47,7 +48,7 @@ export const GET = withApiGuard(
       let price = null;
       if (tokenId) {
         try {
-          const priceRes = await fetch(
+          const priceRes = await fetchWithTimeout(
             `https://clob.polymarket.com/price?token_id=${encodeURIComponent(tokenId)}`,
             { next: { revalidate: 15 } },
           );

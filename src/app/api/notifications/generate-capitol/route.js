@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { insertNotificationAndPush } from '@/lib/push/fanout';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -23,7 +24,7 @@ async function fetchChamberTrades(chamber, FMP_KEY) {
   const endpoint = chamber === 'senate' ? 'senate-trades' : 'house-trades';
   try {
     const url = `${FMP_BASE}/${endpoint}?page=0&apikey=${encodeURIComponent(FMP_KEY)}`;
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetchWithTimeout(url, { cache: 'no-store' });
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data) ? data : [];

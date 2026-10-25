@@ -10,80 +10,77 @@
 import { getAdminClient } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 
-import { syncPlaidItem } from '@/lib/plaid-sync';
 import { verifyPlaidWebhook } from '@/lib/plaid-webhook-verify';
-import { decryptToken } from '@/lib/crypto/token-cipher';
+import { recordFailedJob } from '@/lib/cron/failed-jobs';
 
 export const dynamic = 'force-dynamic';
 
-const VERIFY_WEBHOOKS = process.env.NODE_ENV === 'production';
+/*
+ * Reliability audit P1-10:
+ *  - the JWT is verified in every environment (no NODE_ENV gate);
+ *  - holdings/transactions updates are QUEUED in pending_plaid_syncs (one
+ *    row per item) and drained by the plaid-sync-drain cron, so this answers
+ *    fast instead of syncing inline;
+ *  - a failed write answers 500 so Plaid retries; events we ignore on
+ *    purpose (unknown item, unparsable) still answer 200.
+ */
+async function write(query) {
+  const { error } = await query;
+  if (error) throw new Error(error.message);
+}
 
 export async function POST(request) {
+  const rawBody = await request.text();
+  const valid = await verifyPlaidWebhook(rawBody, request.headers.get('plaid-verification'));
+  if (!valid) {
+    console.warn('[Plaid] webhook verification failed');
+    return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401 });
+  }
+
+  let body;
   try {
-    const rawBody = await request.text();
-    const verificationHeader = request.headers.get('plaid-verification');
+    body = JSON.parse(rawBody);
+  } catch {
+    return NextResponse.json({ received: true, ignored: 'unparsable' });
+  }
 
-    if (VERIFY_WEBHOOKS) {
-      const valid = await verifyPlaidWebhook(rawBody, verificationHeader);
-      if (!valid) {
-        console.warn('[Plaid] webhook verification failed');
-        return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401 });
-      }
-    } else if (process.env.NODE_ENV === 'production') {
-      // TODO: enable PLAID_VERIFY_WEBHOOKS=true in production once Dashboard webhook URL is live.
-      console.warn('[Plaid] webhook verification bypassed — set PLAID_VERIFY_WEBHOOKS=true');
-    }
+  const { webhook_type: webhookType, webhook_code: webhookCode, item_id: itemId, error } = body;
+  if (!itemId) return NextResponse.json({ received: true, ignored: 'no item' });
 
-    let body;
-    try {
-      body = JSON.parse(rawBody);
-    } catch {
-      return NextResponse.json({ received: true });
-    }
-
-    const { webhook_type: webhookType, webhook_code: webhookCode, item_id: itemId, error } = body;
-
-    if (!itemId) {
-      return NextResponse.json({ received: true });
-    }
-
-    const { data: item } = await getAdminClient()
+  try {
+    const admin = getAdminClient();
+    const { data: item, error: readErr } = await admin
       .from('plaid_items')
-      .select('id, user_id, access_token, institution_id, institution_name, status')
+      .select('id, status')
       .eq('item_id', itemId)
       .maybeSingle();
+    if (readErr) throw new Error(readErr.message);
+    if (!item) return NextResponse.json({ received: true, ignored: 'unknown item' });
 
-    if (!item) {
-      return NextResponse.json({ received: true });
-    }
-
-    await getAdminClient()
+    /* Bookkeeping only: never fails the webhook. */
+    const { error: noteErr } = await admin
       .from('plaid_items')
-      .update({
-        last_webhook_code: webhookCode || null,
-        updated_at: new Date().toISOString(),
-      })
+      .update({ last_webhook_code: webhookCode || null, updated_at: new Date().toISOString() })
       .eq('id', item.id);
+    if (noteErr) console.warn('[Plaid] last_webhook_code:', noteErr.message);
 
-    const isHoldingsUpdate = webhookType === 'HOLDINGS' && webhookCode === 'DEFAULT_UPDATE';
-    const isInvestmentsTxnUpdate =
-      webhookType === 'INVESTMENTS_TRANSACTIONS' && webhookCode === 'DEFAULT_UPDATE';
-
-    if (isHoldingsUpdate || isInvestmentsTxnUpdate) {
-      if (item.status === 'active' && item.access_token) {
-        try {
-          await syncPlaidItem({
-            userId: item.user_id,
-            accessToken: decryptToken(item.access_token),
-            institutionId: item.institution_id,
-            institutionName: item.institution_name,
-            plaidItemDbId: item.id,
-          });
-        } catch (syncErr) {
-          console.error('[Plaid] webhook sync error:', syncErr?.message || syncErr);
-        }
+    const isDataUpdate =
+      (webhookType === 'HOLDINGS' || webhookType === 'INVESTMENTS_TRANSACTIONS') &&
+      webhookCode === 'DEFAULT_UPDATE';
+    if (isDataUpdate) {
+      if (item.status === 'active') {
+        await write(
+          admin.from('pending_plaid_syncs').upsert(
+            {
+              plaid_item_db_id: item.id,
+              webhook_code: `${webhookType}:${webhookCode}`,
+              requested_at: new Date().toISOString(),
+            },
+            { onConflict: 'plaid_item_db_id' },
+          ),
+        );
       }
-      return NextResponse.json({ received: true });
+      return NextResponse.json({ received: true, queued: item.status === 'active' });
     }
 
     const loginRequired =
@@ -95,19 +92,26 @@ export async function POST(request) {
 
     if (loginRequired) {
       const status = webhookCode === 'USER_PERMISSION_REVOKED' ? 'revoked' : 'login_required';
-      await getAdminClient()
-        .from('plaid_items')
-        .update({
-          status,
-          error_code: error?.error_code || webhookCode,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', item.id);
+      await write(
+        admin
+          .from('plaid_items')
+          .update({
+            status,
+            error_code: error?.error_code || webhookCode,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', item.id),
+      );
     }
 
     return NextResponse.json({ received: true });
   } catch (err) {
     console.error('[Plaid] webhook error:', err?.message || err);
-    return NextResponse.json({ received: true });
+    await recordFailedJob({
+      job: 'webhook:plaid',
+      error: err,
+      payload: { item_id: itemId, webhook_type: webhookType, webhook_code: webhookCode },
+    });
+    return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
   }
 }

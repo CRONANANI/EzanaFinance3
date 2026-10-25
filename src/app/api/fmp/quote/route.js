@@ -5,6 +5,7 @@ import {
   fetchAllBulkQuotesAlpha,
   getAlphaVantageApiKey,
 } from '@/lib/alpha-vantage';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,9 +26,10 @@ async function fetchFmpQuote(symbol) {
   const sym = normalizeSymbol(symbol);
   if (!sym) return null;
   try {
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `https://financialmodelingprep.com/stable/quote?symbol=${encodeURIComponent(sym)}&apikey=${encodeURIComponent(fmpKey)}`,
       { cache: 'no-store' },
+      8000,
     );
     if (!res.ok) return null;
     const data = await res.json();

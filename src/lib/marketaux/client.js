@@ -9,6 +9,8 @@
  * all `us`, differ only by keyword). No strict city-only geo filter exists.
  */
 
+import { fetchWithTimeout } from '../http/fetch-json.js';
+
 const BASE = 'https://api.marketaux.com/v1';
 
 export function getMarketauxToken() {
@@ -55,11 +57,15 @@ export async function fetchCityNews({ countries, search, limit = 25, publishedAf
   }
 
   try {
-    const res = await fetch(`${BASE}/news/all?${params.toString()}`, {
-      headers: { Accept: 'application/json' },
-      // cache the upstream ~10 min — Marketaux plans have finite daily caps
-      next: { revalidate: 600 },
-    });
+    const res = await fetchWithTimeout(
+      `${BASE}/news/all?${params.toString()}`,
+      {
+        headers: { Accept: 'application/json' },
+        // cache the upstream ~10 min — Marketaux plans have finite daily caps
+        next: { revalidate: 600 },
+      },
+      8000,
+    );
     const json = await res.json().catch(() => null);
     if (json && json.error)
       return { articles: [], error: errorCode(json, res.status), status: res.status };

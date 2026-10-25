@@ -141,7 +141,7 @@ export async function runRedditPosterAgent({ articleId, dryRun = false } = {}) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return { success: false, error: 'ANTHROPIC_API_KEY not configured' };
 
-  const client = new Anthropic({ apiKey });
+  const client = new Anthropic({ apiKey, timeout: 60_000, maxRetries: 2 });
   const messages = [
     {
       role: 'user',

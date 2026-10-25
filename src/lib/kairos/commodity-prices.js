@@ -1,5 +1,6 @@
 import { getAdminClient } from '@/lib/supabase';
 import { fetchAV, getAlphaVantageApiKey } from '@/lib/alpha-vantage';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 /** @typedef {{ date: string, open?: number, high?: number, low?: number, close: number, volume?: number }} PriceRow */
 
@@ -116,7 +117,7 @@ async function fetchFromFmp(symbol, fromDate, toDate) {
   if (!key) throw new Error('FMP_API_KEY not set');
 
   const url = `${FMP_BASE}/historical-price-eod/full?symbol=${encodeURIComponent(symbol)}&from=${fromDate}&to=${toDate}&apikey=${key}`;
-  const res = await fetch(url);
+  const res = await fetchWithTimeout(url, {}, 8000);
   if (!res.ok) throw new Error(`FMP HTTP ${res.status} for ${symbol}`);
 
   const json = await res.json();

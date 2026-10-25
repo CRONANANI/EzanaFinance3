@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -12,10 +13,14 @@ export const runtime = 'nodejs';
 export const GET = withApiGuard(
   async (request, user) => {
     try {
-      const res = await fetch('https://gamma-api.polymarket.com/tags', {
-        next: { revalidate: 3600 },
-        headers: { Accept: 'application/json' },
-      });
+      const res = await fetchWithTimeout(
+        'https://gamma-api.polymarket.com/tags',
+        {
+          next: { revalidate: 3600 },
+          headers: { Accept: 'application/json' },
+        },
+        8000,
+      );
 
       if (!res.ok) {
         return NextResponse.json(

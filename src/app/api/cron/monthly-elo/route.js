@@ -34,6 +34,7 @@ import {
   activeCopyDeltaForTarget,
   applyPillarCOngoingCap,
 } from '@/lib/elo-portfolio-perf';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -74,7 +75,7 @@ async function fetchSpyReturn(fromIso, toIso) {
   if (!FMP_KEY) return 0;
   try {
     const url = `${FMP_BASE}/historical-price-eod/full?symbol=SPY&from=${fromIso}&to=${toIso}&apikey=${encodeURIComponent(FMP_KEY)}`;
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetchWithTimeout(url, { cache: 'no-store' }, 8000);
     if (!res.ok) return 0;
     const data = await res.json();
     const series = Array.isArray(data) ? data : data?.historical || [];

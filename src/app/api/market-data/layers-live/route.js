@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +23,7 @@ async function avFetch(params) {
     if (v != null && v !== '') url.searchParams.set(k, v);
   }
   try {
-    const res = await fetch(url.toString(), { cache: 'no-store' });
+    const res = await fetchWithTimeout(url.toString(), { cache: 'no-store' });
     if (!res.ok) return null;
     const data = await res.json();
     if (data['Note'] || data['Information'] || data['Error Message']) return null;

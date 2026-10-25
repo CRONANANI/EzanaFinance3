@@ -17,6 +17,7 @@ import { catalogSchemaForPrompt, validateEzanaQL } from '@/lib/ezanaql';
 import { requireDimension } from '@/lib/ezanaql/request-scope';
 // Pure module so the ezanaql check script can validate the examples.
 import { fewShotFor } from './few-shots';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,21 +90,25 @@ export async function POST(request) {
 
   let query = '';
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
+    const resp = await fetchWithTimeout(
+      'https://api.anthropic.com/v1/messages',
+      {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: ANTHROPIC_MODEL,
+          max_tokens: 400,
+          temperature: 0,
+          system: buildSystemPrompt(dim.dimension, scope),
+          messages: [{ role: 'user', content: prompt }],
+        }),
       },
-      body: JSON.stringify({
-        model: ANTHROPIC_MODEL,
-        max_tokens: 400,
-        temperature: 0,
-        system: buildSystemPrompt(dim.dimension, scope),
-        messages: [{ role: 'user', content: prompt }],
-      }),
-    });
+      30000,
+    );
     if (!resp.ok) {
       const errBody = await resp.text().catch(() => '');
       // Server-side only — Vercel function logs. Never returned to the client:

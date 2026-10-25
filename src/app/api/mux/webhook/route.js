@@ -6,11 +6,18 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { verifyMuxSignature, summarizeAsset } from '@/lib/mux';
+import { recordFailedJob } from '@/lib/cron/failed-jobs';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const admin = getAdminClient();
+/* Every write is checked: a failed update answers 500 so Mux retries the
+   event (it retries non-2xx for up to 24 h). Events we ignore on purpose
+   still answer 200. */
+async function write(query) {
+  const { error } = await query;
+  if (error) throw new Error(error.message);
+}
 
 export async function POST(request) {
   let raw;
@@ -36,13 +43,16 @@ export async function POST(request) {
   const now = new Date().toISOString();
 
   try {
+    const admin = getAdminClient();
     if (type === 'video.upload.asset_created') {
       // data.id = upload id, data.asset_id = new asset id
       if (data.id) {
-        await admin
-          .from('course_videos')
-          .update({ mux_asset_id: data.asset_id || null, status: 'processing', updated_at: now })
-          .eq('mux_upload_id', data.id);
+        await write(
+          admin
+            .from('course_videos')
+            .update({ mux_asset_id: data.asset_id || null, status: 'processing', updated_at: now })
+            .eq('mux_upload_id', data.id),
+        );
       }
     } else if (type === 'video.asset.ready' || type === 'video.asset.updated') {
       const s = summarizeAsset(data);
@@ -54,20 +64,26 @@ export async function POST(request) {
         aspect_ratio: s.aspectRatio,
         updated_at: now,
       };
-      if (s.assetId) await admin.from('course_videos').update(patch).eq('mux_asset_id', s.assetId);
+      if (s.assetId) {
+        await write(admin.from('course_videos').update(patch).eq('mux_asset_id', s.assetId));
+      }
       if (data.upload_id) {
-        await admin.from('course_videos').update(patch).eq('mux_upload_id', data.upload_id);
+        await write(admin.from('course_videos').update(patch).eq('mux_upload_id', data.upload_id));
       }
     } else if (type === 'video.asset.errored') {
       if (data.id) {
-        await admin
-          .from('course_videos')
-          .update({ status: 'errored', updated_at: now })
-          .eq('mux_asset_id', data.id);
+        await write(
+          admin
+            .from('course_videos')
+            .update({ status: 'errored', updated_at: now })
+            .eq('mux_asset_id', data.id),
+        );
       }
     }
   } catch (e) {
     console.error('[mux] webhook handler:', e?.message || e);
+    await recordFailedJob({ job: 'webhook:mux', error: e, payload: { type, id: data.id || null } });
+    return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });

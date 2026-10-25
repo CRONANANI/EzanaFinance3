@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,7 +59,7 @@ async function fetchKalshiMarkets(search, limit = 6) {
 
 async function fetchPolymarkets(limit = 6) {
   try {
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `${POLYMARKET_GAMMA}/markets?limit=${limit}&active=true&closed=false&order=volume&ascending=false`,
       { cache: 'no-store' },
     );

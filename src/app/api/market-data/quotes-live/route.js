@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +18,7 @@ function sortDataRowsByDateDesc(rows) {
 async function fetchAvQuote(symbol, AV_KEY) {
   try {
     const url = `${AV_BASE}?function=GLOBAL_QUOTE&symbol=${encodeURIComponent(symbol)}&apikey=${encodeURIComponent(AV_KEY)}`;
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetchWithTimeout(url, { cache: 'no-store' });
     if (!res.ok) return null;
     const data = await res.json();
     if (data['Note'] || data['Information'] || data['Error Message']) return null;
@@ -36,7 +37,7 @@ async function fetchAvQuote(symbol, AV_KEY) {
 async function fetchAvIndex(symbol, AV_KEY) {
   try {
     const url = `${AV_BASE}?function=INDEX_DATA&symbol=${encodeURIComponent(symbol)}&interval=daily&apikey=${encodeURIComponent(AV_KEY)}`;
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetchWithTimeout(url, { cache: 'no-store' });
     if (!res.ok) return null;
     const data = await res.json();
     if (data['Note'] || data['Information'] || data['Error Message']) return null;
@@ -55,7 +56,7 @@ async function fetchAvIndex(symbol, AV_KEY) {
 async function fetchAvCommodity(fn, AV_KEY) {
   try {
     const url = `${AV_BASE}?function=${fn}&interval=daily&apikey=${encodeURIComponent(AV_KEY)}`;
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetchWithTimeout(url, { cache: 'no-store' });
     if (!res.ok) return null;
     const data = await res.json();
     if (data['Note'] || data['Information'] || data['Error Message']) return null;
@@ -76,7 +77,7 @@ async function fetchAvCommodity(fn, AV_KEY) {
 async function fetchAvMetal(symbol, AV_KEY) {
   try {
     const url = `${AV_BASE}?function=GOLD_SILVER_SPOT&symbol=${encodeURIComponent(symbol)}&apikey=${encodeURIComponent(AV_KEY)}`;
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetchWithTimeout(url, { cache: 'no-store' });
     if (!res.ok) return null;
     const data = await res.json();
     if (data['Note'] || data['Information'] || data['Error Message']) return null;
@@ -93,7 +94,7 @@ async function fetchAvMetal(symbol, AV_KEY) {
 async function fetchAvFx(from, to, AV_KEY) {
   try {
     const url = `${AV_BASE}?function=CURRENCY_EXCHANGE_RATE&from_currency=${from}&to_currency=${to}&apikey=${encodeURIComponent(AV_KEY)}`;
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetchWithTimeout(url, { cache: 'no-store' });
     if (!res.ok) return null;
     const data = await res.json();
     if (data['Note'] || data['Information'] || data['Error Message']) return null;

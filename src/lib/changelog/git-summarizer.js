@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { fetchWithTimeout } from '../http/fetch-json.js';
 
 const MODEL = 'claude-sonnet-4-20250514';
 const GITHUB_API = 'https://api.github.com';
@@ -26,7 +27,7 @@ export async function fetchCommits(sinceIso, untilIso) {
   const commits = [];
   for (let page = 1; page <= 5; page++) {
     const url = `${GITHUB_API}/repos/${repo}/commits?since=${sinceIso}&until=${untilIso}&per_page=100&page=${page}`;
-    const res = await fetch(url, { headers });
+    const res = await fetchWithTimeout(url, { headers }, 8000);
     if (!res.ok) {
       const body = await res.text();
       console.error(`[fetchCommits] GitHub API ${res.status} for ${url}: ${body.slice(0, 300)}`);
@@ -83,14 +84,20 @@ export async function summarizeCommits(commits, weekRange) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set');
 
-  const anthropic = new Anthropic({ apiKey });
+  const anthropic = new Anthropic({ apiKey, timeout: 30_000, maxRetries: 2 });
 
   const commitList = meaningful
     .map((c) => `- [${c.sha}] ${c.message.split('\n')[0]}`) // First line of each commit message
     .join('\n');
 
-  const rangeStart = new Date(weekRange.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  const rangeEnd = new Date(weekRange.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const rangeStart = new Date(weekRange.start).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
+  const rangeEnd = new Date(weekRange.end).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
   const ms = new Date(weekRange.end).getTime() - new Date(weekRange.start).getTime();
   const isSingleDay = ms <= 24 * 3600 * 1000 + 1000;
   const rangeLabel = isSingleDay ? rangeStart : `${rangeStart}–${rangeEnd}`;
@@ -121,7 +128,10 @@ Output ONLY the JSON object. No markdown fencing, no preamble, no explanation.`;
   const text = response.content?.[0]?.text?.trim() || '';
 
   // Strip any accidental markdown code fencing
-  const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+  const cleaned = text
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/, '')
+    .trim();
 
   let parsed;
   try {
@@ -136,8 +146,16 @@ Output ONLY the JSON object. No markdown fencing, no preamble, no explanation.`;
   if (!parsed.title || !parsed.body) return null;
 
   const VALID_CATEGORIES = [
-    'feature', 'improvement', 'fix', 'announcement', 'breaking',
-    'security', 'design', 'performance', 'data', 'content',
+    'feature',
+    'improvement',
+    'fix',
+    'announcement',
+    'breaking',
+    'security',
+    'design',
+    'performance',
+    'data',
+    'content',
   ];
   const category = VALID_CATEGORIES.includes(parsed.category) ? parsed.category : 'improvement';
 
@@ -169,7 +187,7 @@ export function getIsoWeekRange(date) {
 
   // Week number calculation
   const yearStart = new Date(Date.UTC(start.getUTCFullYear(), 0, 1));
-  const weekNum = Math.ceil((((start - yearStart) / 86400000) + yearStart.getUTCDay() + 1) / 7);
+  const weekNum = Math.ceil(((start - yearStart) / 86400000 + yearStart.getUTCDay() + 1) / 7);
   const weekKey = `${start.getUTCFullYear()}-W${String(weekNum).padStart(2, '0')}`;
 
   return { start, end, weekKey };

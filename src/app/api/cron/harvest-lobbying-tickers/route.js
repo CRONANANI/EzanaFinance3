@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 import { pickTickerPairs } from '@/lib/lobbying/feed';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 /**
  * One-off: harvest Quiver's client-to-ticker pairs into lobbying_client_tickers
@@ -38,10 +39,14 @@ function isAuthorized(request) {
 async function fetchPage(key, page) {
   const qs = new URLSearchParams({ page: String(page), page_size: String(PAGE_SIZE) });
   try {
-    const res = await fetch(`${BASE}?${qs}`, {
-      headers: { Accept: 'application/json', Authorization: `Bearer ${key}` },
-      cache: 'no-store',
-    });
+    const res = await fetchWithTimeout(
+      `${BASE}?${qs}`,
+      {
+        headers: { Accept: 'application/json', Authorization: `Bearer ${key}` },
+        cache: 'no-store',
+      },
+      8000,
+    );
     if (res.status === 404) return { rows: [] };
     if (!res.ok) return { error: `HTTP ${res.status}` };
     const data = await res.json();

@@ -3,6 +3,7 @@
  */
 
 import { normalizeAlphaVantageMover } from '@/lib/fmp/movers';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 const ALPHA_BASE = 'https://www.alphavantage.co/query';
 
@@ -53,7 +54,7 @@ export async function fetchAV(params, cacheTtlSeconds = 0) {
     }
   }
 
-  const res = await fetch(url, { cache: 'no-store' });
+  const res = await fetchWithTimeout(url, { cache: 'no-store' }, 15000);
   if (!res.ok) {
     throw new Error(`Alpha Vantage HTTP ${res.status}`);
   }

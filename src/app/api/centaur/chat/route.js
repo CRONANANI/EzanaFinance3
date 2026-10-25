@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { RAY_DALIO_SYSTEM_PROMPT } from '@/lib/rayDalioSystemPrompt';
 import { getAdminClient, requireUser } from '@/lib/supabase';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -266,20 +267,24 @@ export async function POST(request) {
       );
     }
 
-    const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
+    const anthropicResponse = await fetchWithTimeout(
+      'https://api.anthropic.com/v1/messages',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: ANTHROPIC_MODEL,
+          max_tokens: 1024,
+          system: systemPrompt,
+          messages: sanitisedMessages,
+        }),
       },
-      body: JSON.stringify({
-        model: ANTHROPIC_MODEL,
-        max_tokens: 1024,
-        system: systemPrompt,
-        messages: sanitisedMessages,
-      }),
-    });
+      30000,
+    );
 
     if (!anthropicResponse.ok) {
       const errorText = await anthropicResponse.text();

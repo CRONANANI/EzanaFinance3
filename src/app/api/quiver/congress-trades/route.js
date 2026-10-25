@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,13 +25,17 @@ async function fetchPage(page, params) {
   const url = `${BASE}?${qs.toString()}`;
 
   try {
-    const res = await fetch(url, {
-      headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${QUIVER_KEY}`,
+    const res = await fetchWithTimeout(
+      url,
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${QUIVER_KEY}`,
+        },
+        next: { revalidate: CACHE_SECONDS },
       },
-      next: { revalidate: CACHE_SECONDS },
-    });
+      15000,
+    );
 
     if (!res.ok) {
       // 404 on an empty page is normal at the end of pagination
@@ -51,7 +56,7 @@ export async function GET(request) {
   if (!QUIVER_KEY) {
     return NextResponse.json(
       { error: 'QUIVER_API_KEY not configured', trades: [] },
-      { status: 503 }
+      { status: 503 },
     );
   }
 

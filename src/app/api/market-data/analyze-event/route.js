@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAdminClient, requireUser } from '@/lib/supabase';
 import { assertPublicHttpUrl } from '@/lib/url-guard';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,7 +30,7 @@ async function tryFetchArticle(url) {
     let res = null;
     let currentUrl = url;
     for (let hop = 0; hop < 3; hop += 1) {
-      res = await fetch(currentUrl, {
+      res = await fetchWithTimeout(currentUrl, {
         method: 'GET',
         redirect: 'manual',
         // Set a UA so wire services / paywalls don't immediately 403 us
@@ -232,19 +233,23 @@ export async function POST(request) {
       holdingsBlock,
     });
 
-    const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
+    const anthropicResponse = await fetchWithTimeout(
+      'https://api.anthropic.com/v1/messages',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: ANTHROPIC_MODEL,
+          max_tokens: 900,
+          messages: [{ role: 'user', content: prompt }],
+        }),
       },
-      body: JSON.stringify({
-        model: ANTHROPIC_MODEL,
-        max_tokens: 900,
-        messages: [{ role: 'user', content: prompt }],
-      }),
-    });
+      30000,
+    );
 
     if (!anthropicResponse.ok) {
       const errorText = await anthropicResponse.text();

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,9 +20,12 @@ export const GET = withApiGuard(
       const params = new URLSearchParams({ user, limit, offset });
       if (side) params.set('side', side);
 
-      const res = await fetch(`https://data-api.polymarket.com/activity?${params.toString()}`, {
-        next: { revalidate: 30 },
-      });
+      const res = await fetchWithTimeout(
+        `https://data-api.polymarket.com/activity?${params.toString()}`,
+        {
+          next: { revalidate: 30 },
+        },
+      );
 
       if (!res.ok) {
         const text = await res.text();

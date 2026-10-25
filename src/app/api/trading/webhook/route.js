@@ -60,9 +60,26 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  try {
-    const supabaseAdmin = getAdminClient();
+  /* Replay guard: the HMAC has no timestamp, so a captured delivery could be
+     replayed. Each event id is recorded once (alpaca_events); a repeat is
+     acknowledged without processing. The id falls back to a hash of the
+     signed body for events that carry none. */
+  const eventId = String(
+    event.event_id ?? event.id ?? crypto.createHash('sha256').update(bodyText).digest('hex'),
+  );
+  const supabaseAdmin = getAdminClient();
+  const { error: seenErr } = await supabaseAdmin
+    .from('alpaca_events')
+    .insert({ id: eventId, account_id: event.account_id || null });
+  if (seenErr) {
+    if (seenErr.code === '23505') return NextResponse.json({ received: true, duplicate: true });
+    if (seenErr.code !== '42P01') {
+      console.error('[trading webhook] replay guard:', seenErr.message);
+      return NextResponse.json({ error: 'Storage unavailable' }, { status: 500 });
+    }
+  }
 
+  try {
     if (event.account_id && event.status_to) {
       const patch = {
         account_status: event.status_to,
@@ -72,15 +89,18 @@ export async function POST(request) {
         patch.approved_at = new Date().toISOString();
       }
 
-      await supabaseAdmin
+      const { error: upErr } = await supabaseAdmin
         .from('brokerage_accounts')
         .update(patch)
         .eq('alpaca_account_id', event.account_id);
+      if (upErr) throw new Error(upErr.message);
     }
 
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error('Alpaca webhook error:', error);
+    /* Forget the id so Alpaca's retry is processed, not dropped as a replay. */
+    await supabaseAdmin.from('alpaca_events').delete().eq('id', eventId);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

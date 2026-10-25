@@ -8,6 +8,8 @@
  * transaction dates are frequently non-trading days.
  */
 
+import { fetchWithTimeout } from '../http/fetch-json.js';
+
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
 function getApiKey() {
@@ -33,7 +35,7 @@ export async function fetchChamberTrades(chamber, fromDate, toDate, page = 0) {
   const endpoint = chamber === 'senate' ? 'senate-trades' : 'house-trades';
   const url = `${FMP_BASE}/${endpoint}?from=${fromDate}&to=${toDate}&page=${page}&apikey=${apiKey}`;
 
-  const res = await fetch(url, { next: { revalidate: 86400 } });
+  const res = await fetchWithTimeout(url, { next: { revalidate: 86400 } }, 8000);
   if (!res.ok) {
     throw new Error(`FMP ${chamber} trades request failed: ${res.status}`);
   }
@@ -55,14 +57,14 @@ export async function fetchHistoricalPriceOnDate(symbol, date) {
   const apiKey = getApiKey();
 
   const url = `${FMP_BASE}/historical-price-eod/full?symbol=${encodeURIComponent(
-    symbol
+    symbol,
   )}&from=${date}&to=${date}&apikey=${apiKey}`;
 
   try {
-    const res = await fetch(url, { next: { revalidate: 86400 * 7 } });
+    const res = await fetchWithTimeout(url, { next: { revalidate: 86400 * 7 } }, 8000);
     if (!res.ok) return null;
     const data = await res.json();
-    const rows = Array.isArray(data) ? data : data?.historical ?? [];
+    const rows = Array.isArray(data) ? data : (data?.historical ?? []);
     if (rows.length === 0) {
       return fetchNearestTradingDayPrice(symbol, date);
     }
@@ -95,19 +97,17 @@ export async function fetchNearestTradingDayPrice(symbol, date) {
   const toIso = to.toISOString().slice(0, 10);
 
   const url = `${FMP_BASE}/historical-price-eod/full?symbol=${encodeURIComponent(
-    symbol
+    symbol,
   )}&from=${fromIso}&to=${toIso}&apikey=${apiKey}`;
 
   try {
-    const res = await fetch(url, { next: { revalidate: 86400 * 7 } });
+    const res = await fetchWithTimeout(url, { next: { revalidate: 86400 * 7 } }, 8000);
     if (!res.ok) return null;
     const data = await res.json();
-    const rows = Array.isArray(data) ? data : data?.historical ?? [];
+    const rows = Array.isArray(data) ? data : (data?.historical ?? []);
     if (rows.length === 0) return null;
     rows.sort(
-      (a, b) =>
-        Math.abs(+new Date(a.date) - +target) -
-        Math.abs(+new Date(b.date) - +target)
+      (a, b) => Math.abs(+new Date(a.date) - +target) - Math.abs(+new Date(b.date) - +target),
     );
     const px = Number(rows[0]?.close ?? rows[0]?.adjClose);
     return Number.isFinite(px) && px > 0 ? px : null;

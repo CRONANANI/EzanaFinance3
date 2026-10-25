@@ -6,6 +6,7 @@ import {
   isCommoditySymbol,
   getAlphaVantageApiKey,
 } from '@/lib/alpha-vantage';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +14,7 @@ const FINNHUB_BASE = 'https://finnhub.io/api/v1';
 
 async function fetchFinnhubQuote(symbol, apiKey) {
   try {
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `${FINNHUB_BASE}/quote?symbol=${encodeURIComponent(symbol)}&token=${apiKey}`,
       { next: { revalidate: 30 } },
     );

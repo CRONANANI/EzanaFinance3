@@ -12,6 +12,8 @@
  * The pickers below are pure and unit tested by scripts/check-titans.mjs.
  */
 
+import { fetchWithTimeout } from './http/fetch-json.js';
+
 const URL_MAPPING = 'https://api.openfigi.com/v3/mapping';
 
 export const OPENFIGI_LIMITS = {
@@ -82,7 +84,11 @@ export function createFigiClient() {
     last = Date.now();
     const headers = { 'Content-Type': 'application/json' };
     if (key) headers['X-OPENFIGI-APIKEY'] = key;
-    const res = await fetch(URL_MAPPING, { method: 'POST', headers, body: JSON.stringify(jobs) });
+    const res = await fetchWithTimeout(
+      URL_MAPPING,
+      { method: 'POST', headers, body: JSON.stringify(jobs) },
+      15000,
+    );
     if (res.status === 429 && !retried) {
       const reset = Number(res.headers.get('ratelimit-reset'));
       await sleep((Number.isFinite(reset) && reset > 0 ? reset : limits.windowMs / 1000) * 1000);

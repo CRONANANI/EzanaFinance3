@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -153,16 +154,16 @@ export const GET = withApiGuard(
       const encKey = encodeURIComponent(FMP_KEY);
       const fmpRequests = FMP_KEY
         ? [
-            fetch(`${FMP_BASE}/news/general-latest?page=0&limit=50&apikey=${encKey}`, {
+            fetchWithTimeout(`${FMP_BASE}/news/general-latest?page=0&limit=50&apikey=${encKey}`, {
               cache: 'no-store',
             }),
-            fetch(`${FMP_BASE}/news/stock-latest?page=0&limit=50&apikey=${encKey}`, {
+            fetchWithTimeout(`${FMP_BASE}/news/stock-latest?page=0&limit=50&apikey=${encKey}`, {
               cache: 'no-store',
             }),
-            fetch(`${FMP_BASE}/news/crypto-latest?page=0&limit=50&apikey=${encKey}`, {
+            fetchWithTimeout(`${FMP_BASE}/news/crypto-latest?page=0&limit=50&apikey=${encKey}`, {
               cache: 'no-store',
             }),
-            fetch(`${FMP_BASE}/news/forex-latest?page=0&limit=50&apikey=${encKey}`, {
+            fetchWithTimeout(`${FMP_BASE}/news/forex-latest?page=0&limit=50&apikey=${encKey}`, {
               cache: 'no-store',
             }),
           ]
@@ -176,8 +177,10 @@ export const GET = withApiGuard(
       // EXISTING Finnhub calls — kept unchanged. New FMP calls added alongside.
       const [econRes, newsRes, fmpGeneralRes, fmpStockRes, fmpCryptoRes, fmpForexRes] =
         await Promise.all([
-          fetch(`${BASE}/calendar/economic?from=${weekAgo}&to=${today}&token=${FINNHUB_KEY}`),
-          fetch(`${BASE}/news?category=general&token=${FINNHUB_KEY}`),
+          fetchWithTimeout(
+            `${BASE}/calendar/economic?from=${weekAgo}&to=${today}&token=${FINNHUB_KEY}`,
+          ),
+          fetchWithTimeout(`${BASE}/news?category=general&token=${FINNHUB_KEY}`),
           ...fmpRequests,
         ]);
 

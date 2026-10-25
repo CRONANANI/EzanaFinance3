@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { fetchAV, getAlphaVantageApiKey } from '@/lib/alpha-vantage';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -77,7 +78,7 @@ async function fetchFmpDaily(fmpSymbol, startDate) {
   const toDate = toYmd(new Date());
   const url = `${FMP_BASE}/historical-price-eod/full?symbol=${encodeURIComponent(fmpSymbol)}&from=${startDate}&to=${toDate}&apikey=${encodeURIComponent(fmpKey)}`;
   try {
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetchWithTimeout(url, { cache: 'no-store' });
     if (!res.ok) return null;
     const data = await res.json();
     const hist = Array.isArray(data)

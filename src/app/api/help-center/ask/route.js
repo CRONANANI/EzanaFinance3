@@ -6,6 +6,7 @@ import { embedViaSupabaseCached } from '@/lib/rag/embed-cached';
 import { logZeroResult } from '@/lib/rag/zero-results';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { searchHelp } from '@/lib/help-center-search';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 /**
  * POST /api/help-center/ask: grounded help-center Q&A (RAG).
@@ -115,26 +116,30 @@ async function synthesize(query, sources) {
     .join('\n\n');
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
+    const res = await fetchWithTimeout(
+      'https://api.anthropic.com/v1/messages',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: ANTHROPIC_MODEL,
+          max_tokens: 220,
+          temperature: 0.2,
+          system: SYSTEM_PROMPT,
+          messages: [
+            {
+              role: 'user',
+              content: `Help-center excerpts:\n\n${context}\n\n---\nQuestion: ${query}`,
+            },
+          ],
+        }),
       },
-      body: JSON.stringify({
-        model: ANTHROPIC_MODEL,
-        max_tokens: 220,
-        temperature: 0.2,
-        system: SYSTEM_PROMPT,
-        messages: [
-          {
-            role: 'user',
-            content: `Help-center excerpts:\n\n${context}\n\n---\nQuestion: ${query}`,
-          },
-        ],
-      }),
-    });
+      30000,
+    );
     if (!res.ok) return { answer: null, degraded: `llm ${res.status}` };
     const data = await res.json();
     const answer = data?.content?.[0]?.text?.trim();

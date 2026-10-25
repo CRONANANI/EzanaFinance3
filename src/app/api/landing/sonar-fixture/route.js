@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 /**
  * Landing Sonar fixture. Assembles the sourced-matches rows for the landing
@@ -92,21 +93,25 @@ async function contractRowFromDb(admin) {
 
 async function contractRowFromApi() {
   try {
-    const res = await fetch('https://api.usaspending.gov/api/v2/search/spending_by_award/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        filters: {
-          recipient_search_text: ['LOCKHEED MARTIN'],
-          award_type_codes: ['A', 'B', 'C', 'D'],
-        },
-        fields: ['Award Amount', 'Awarding Agency'],
-        sort: 'Award Amount',
-        order: 'desc',
-        limit: 1,
-      }),
-      next: { revalidate: 86400 },
-    });
+    const res = await fetchWithTimeout(
+      'https://api.usaspending.gov/api/v2/search/spending_by_award/',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filters: {
+            recipient_search_text: ['LOCKHEED MARTIN'],
+            award_type_codes: ['A', 'B', 'C', 'D'],
+          },
+          fields: ['Award Amount', 'Awarding Agency'],
+          sort: 'Award Amount',
+          order: 'desc',
+          limit: 1,
+        }),
+        next: { revalidate: 86400 },
+      },
+      15000,
+    );
     if (!res.ok) return null;
     const json = await res.json();
     const a = json?.results?.[0];
@@ -129,10 +134,14 @@ async function contractRow(admin) {
 
 async function secRow() {
   try {
-    const res = await fetch(`https://data.sec.gov/submissions/CIK${LMT_CIK}.json`, {
-      headers: { 'User-Agent': UA },
-      next: { revalidate: 86400 },
-    });
+    const res = await fetchWithTimeout(
+      `https://data.sec.gov/submissions/CIK${LMT_CIK}.json`,
+      {
+        headers: { 'User-Agent': UA },
+        next: { revalidate: 86400 },
+      },
+      8000,
+    );
     if (!res.ok) return null;
     const json = await res.json();
     const recent = json?.filings?.recent;

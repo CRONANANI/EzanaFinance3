@@ -134,7 +134,7 @@ export const POST = withApiGuard(
       }
 
       // Run all persona analyses in parallel
-      const anthropic = new Anthropic({ apiKey });
+      const anthropic = new Anthropic({ apiKey, timeout: 30_000, maxRetries: 2 });
 
       const personaResults = await Promise.all(
         personas.map((persona) => runPersonaAnalysis(anthropic, persona, marketData, queryInput)),

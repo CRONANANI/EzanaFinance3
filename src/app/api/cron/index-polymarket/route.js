@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { embedTexts, EMBED_MODEL, hasEmbeddingKey } from '@/lib/embeddings';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 /**
  * Rebuild the Polymarket semantic index (polymarket_market_index).
@@ -106,10 +107,14 @@ async function fetchGammaPage(offset, pageSize) {
     ascending: 'false',
   });
   try {
-    const res = await fetch(`${GAMMA_BASE}/markets?${params}`, {
-      headers: { Accept: 'application/json' },
-      cache: 'no-store',
-    });
+    const res = await fetchWithTimeout(
+      `${GAMMA_BASE}/markets?${params}`,
+      {
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+      },
+      8000,
+    );
     if (!res.ok) return [];
     const payload = await res.json();
     const list = Array.isArray(payload) ? payload : payload?.data;

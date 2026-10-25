@@ -4,7 +4,11 @@ import { buildSynthesisPrompt } from './persona-engine';
 const MODEL = 'claude-sonnet-4-20250514';
 
 export async function synthesizeResponses(personaResults, marketData, query) {
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const anthropic = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+    timeout: 60_000,
+    maxRetries: 2,
+  });
 
   const prompt = buildSynthesisPrompt(personaResults, marketData, query);
 

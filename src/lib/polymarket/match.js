@@ -21,6 +21,7 @@
 import { getAdminClient } from '@/lib/supabase';
 import { embedText, hasEmbeddingKey } from '@/lib/embeddings';
 import { cacheGetOrSet } from '@/lib/cache';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 const GAMMA_BASE = 'https://gamma-api.polymarket.com';
 
@@ -562,10 +563,14 @@ async function fetchGammaMarkets(query, fetchLimit = 20, tagSlug = null) {
   if (tagSlug) params.set('tag_slug', tagSlug);
 
   try {
-    const res = await fetch(`${GAMMA_BASE}/markets?${params}`, {
-      next: { revalidate: 60 },
-      headers: { Accept: 'application/json' },
-    });
+    const res = await fetchWithTimeout(
+      `${GAMMA_BASE}/markets?${params}`,
+      {
+        next: { revalidate: 60 },
+        headers: { Accept: 'application/json' },
+      },
+      8000,
+    );
     if (!res.ok) return [];
     const payload = await res.json();
     const list = Array.isArray(payload) ? payload : payload?.data;

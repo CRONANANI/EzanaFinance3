@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,8 +31,14 @@ export const GET = withApiGuard(
       }
 
       const [quoteRes, profileRes] = await Promise.all([
-        fetch(`${FMP_BASE}/quote?symbol=${encodeURIComponent(symbol)}&apikey=${apiKey}`, { cache: 'no-store' }),
-        fetch(`${FMP_BASE}/profile?symbol=${encodeURIComponent(symbol)}&apikey=${apiKey}`, { cache: 'no-store' }),
+        fetchWithTimeout(
+          `${FMP_BASE}/quote?symbol=${encodeURIComponent(symbol)}&apikey=${apiKey}`,
+          { cache: 'no-store' },
+        ),
+        fetchWithTimeout(
+          `${FMP_BASE}/profile?symbol=${encodeURIComponent(symbol)}&apikey=${apiKey}`,
+          { cache: 'no-store' },
+        ),
       ]);
 
       const [quoteArr, profileArr] = await Promise.all([

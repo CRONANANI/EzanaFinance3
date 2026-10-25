@@ -6,6 +6,7 @@ import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit
 import { orchestrate } from '@/lib/research-copilot/orchestrate';
 import { CORPUS_LABELS } from '@/lib/research-copilot/retrievers';
 import { logZeroResult } from '@/lib/rag/zero-results';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 /**
  * POST /api/research/copilot — cross-corpus research copilot (auth required).
@@ -52,25 +53,29 @@ async function synthesize(query, items) {
   if (!apiKey) return { answer: null, degraded: 'no LLM key' };
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
+    const res = await fetchWithTimeout(
+      'https://api.anthropic.com/v1/messages',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: ANTHROPIC_MODEL,
+          max_tokens: 1024,
+          system: SYSTEM_PROMPT,
+          messages: [
+            {
+              role: 'user',
+              content: `Sources:\n\n${buildContext(items)}\n\n---\nQuestion: ${query}\n\nAnswer using only the sources above. Cite each claim with its [S#] marker and name the corpus.`,
+            },
+          ],
+        }),
       },
-      body: JSON.stringify({
-        model: ANTHROPIC_MODEL,
-        max_tokens: 1024,
-        system: SYSTEM_PROMPT,
-        messages: [
-          {
-            role: 'user',
-            content: `Sources:\n\n${buildContext(items)}\n\n---\nQuestion: ${query}\n\nAnswer using only the sources above. Cite each claim with its [S#] marker and name the corpus.`,
-          },
-        ],
-      }),
-    });
+      30000,
+    );
     if (!res.ok) return { answer: null, degraded: `llm ${res.status}` };
     const data = await res.json();
     const answer = data?.content?.[0]?.text?.trim();

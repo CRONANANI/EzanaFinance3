@@ -10,6 +10,7 @@ import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit
 import { normalizeFmpTrade } from '@/lib/politicians/normalize-trade';
 import { enrichTrade } from '@/lib/politicians/member-directory';
 import { inferPositionStatus } from '@/lib/politicians/position-status';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +28,7 @@ async function fetchSymbol(chamber, symbol, key) {
   for (let page = 0; page < 5; page++) {
     try {
       const url = `${BASE}/${endpoint}?symbol=${encodeURIComponent(symbol)}&page=${page}&limit=100&apikey=${encodeURIComponent(key)}`;
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetchWithTimeout(url, { cache: 'no-store' });
       if (!res.ok) break;
       const data = await res.json();
       if (!Array.isArray(data) || data.length === 0) break;

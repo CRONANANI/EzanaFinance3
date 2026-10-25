@@ -8,6 +8,8 @@
  * queries, so each region refreshes every 10 minutes.
  */
 
+import { fetchWithTimeout } from '../http/fetch-json.js';
+
 /**
  * Region → ticker proxies. Massive's news endpoint filters by ticker.
  * To get news with regional flavor, we query a representative ETF/ADR per region.
@@ -93,7 +95,7 @@ export async function fetchMassiveNews(tickers, limit = 50) {
   url.searchParams.set('sort', 'published_utc');
   url.searchParams.set('apiKey', apiKey);
 
-  const res = await fetch(url.toString(), { cache: 'no-store' });
+  const res = await fetchWithTimeout(url.toString(), { cache: 'no-store' }, 8000);
   if (!res.ok) {
     const body = await res.text();
     throw new Error(`Massive API ${res.status}: ${body.slice(0, 200)}`);

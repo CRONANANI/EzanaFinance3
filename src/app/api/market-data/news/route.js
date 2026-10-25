@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { fetchAV, getAlphaVantageApiKey } from '@/lib/alpha-vantage';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,7 +67,7 @@ export const GET = withApiGuard(
         }
       }
 
-      const res = await fetch(`${BASE}/news?category=${category}&token=${FINNHUB_KEY}`, {
+      const res = await fetchWithTimeout(`${BASE}/news?category=${category}&token=${FINNHUB_KEY}`, {
         next: { revalidate: 300 },
       });
       const data = await res.json();

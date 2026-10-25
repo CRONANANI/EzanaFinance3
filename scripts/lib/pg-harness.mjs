@@ -113,6 +113,15 @@ create table public.competitions (
     constraint competitions_status_check check (status in ('upcoming','active','ended','scored','cancelled')),
   scored_at timestamptz
 );
+create table public.rate_limit_buckets (
+  bucket_key text primary key, count int not null default 0,
+  window_start timestamptz not null default now(), expires_at timestamptz not null,
+  last_hit_at timestamptz not null default now()
+);
+create table public.plaid_items (
+  id uuid primary key default gen_random_uuid(), user_id uuid, item_id text,
+  access_token text, status text
+);
 create table public.sonar_queries (
   id uuid primary key default gen_random_uuid(), user_id uuid, query_text text not null,
   classification text, version text, plan_tier int, datasets_searched jsonb not null,

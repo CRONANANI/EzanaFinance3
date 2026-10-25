@@ -231,3 +231,35 @@ test('backfill keys only the earliest of existing duplicates, so the unique inde
     'f',
   );
 });
+
+test('stripe_events / alpaca_events: one row per event id', async (t) => {
+  if (skip(t)) return;
+  const r = await pg.parallel(
+    n(
+      () =>
+        `insert into stripe_events (id, type) values ('evt_x', 't') on conflict do nothing returning id`,
+    ),
+  );
+  assert.equal(r.filter((x) => x.out === 'evt_x').length, 1);
+  const a = await pg.parallel(
+    n(() => `insert into alpaca_events (id) values ('a1') on conflict do nothing returning id`),
+  );
+  assert.equal(a.filter((x) => x.out === 'a1').length, 1);
+});
+
+test('rate_limit_hit: 10 parallel hits against a limit of 3 allow exactly 3; the window restarts', async (t) => {
+  if (skip(t)) return;
+  const r = await pg.parallel(n(() => `select allowed from rate_limit_hit('k1', 3, 60000)`));
+  assert.ok(
+    r.every((x) => x.code === 0),
+    r.map((x) => x.err).join('\n'),
+  );
+  assert.equal(r.filter((x) => x.out === 't').length, 3);
+  pg.sql(
+    `update rate_limit_buckets set expires_at = now() - interval '1 second' where bucket_key='k1'`,
+  );
+  assert.equal(
+    pg.sql(`select allowed || ',' || hits from rate_limit_hit('k1', 3, 60000)`),
+    'true,1',
+  );
+});

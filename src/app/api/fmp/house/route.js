@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -111,7 +112,7 @@ async function fetchHouseByName(firstName) {
   if (!FMP_KEY) return [];
   try {
     const url = `${BASE}/house-trades-by-name?name=${encodeURIComponent(firstName)}&apikey=${encodeURIComponent(FMP_KEY)}`;
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetchWithTimeout(url, { cache: 'no-store' }, 8000);
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data) ? data : [];
@@ -125,7 +126,7 @@ async function fetchHouseBySymbol(symbol) {
   if (!FMP_KEY) return [];
   try {
     const url = `${BASE}/house-trades?symbol=${encodeURIComponent(symbol)}&apikey=${encodeURIComponent(FMP_KEY)}`;
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetchWithTimeout(url, { cache: 'no-store' }, 8000);
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data) ? data : [];

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,7 +30,7 @@ export const GET = withApiGuard(
       searchParams.set('token', apiKey);
 
       const url = `${FINNHUB_BASE}/${path}?${searchParams.toString()}`;
-      const res = await fetch(url);
+      const res = await fetchWithTimeout(url, {}, 8000);
 
       if (!res.ok) {
         // Don't echo upstream response bodies to the client (info disclosure).

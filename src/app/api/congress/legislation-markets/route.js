@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { matchBillsToMarkets, LEGISLATION_EDGE_DISCLAIMER } from '@/lib/congress/legislation-edge';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 /**
  * GET /api/congress/legislation-markets  — pairs tracked bills (Supabase) with
@@ -32,9 +33,13 @@ async function fetchPoliticsMarkets() {
     ascending: 'false',
     tag_id: POLYMARKET_POLITICS_TAG_ID,
   });
-  const res = await fetch(`https://gamma-api.polymarket.com/markets?${params.toString()}`, {
-    next: { revalidate: 120 },
-  });
+  const res = await fetchWithTimeout(
+    `https://gamma-api.polymarket.com/markets?${params.toString()}`,
+    {
+      next: { revalidate: 120 },
+    },
+    8000,
+  );
   if (!res.ok) return [];
   const data = await res.json();
   return (Array.isArray(data) ? data : []).map((m) => ({

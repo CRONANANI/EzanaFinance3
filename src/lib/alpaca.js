@@ -19,16 +19,12 @@ const LEGACY_BASE = {
 
 const envName = process.env.ALPACA_ENV || 'sandbox';
 
-const BASE_URL =
-  process.env.ALPACA_BROKER_BASE_URL ||
-  LEGACY_BASE[envName] ||
-  LEGACY_BASE.sandbox;
+const BASE_URL = process.env.ALPACA_BROKER_BASE_URL || LEGACY_BASE[envName] || LEGACY_BASE.sandbox;
 
 const API_KEY = process.env.ALPACA_BROKER_API_KEY || process.env.ALPACA_API_KEY || '';
 const API_SECRET = process.env.ALPACA_BROKER_API_SECRET || process.env.ALPACA_API_SECRET || '';
 
-const AUTH_HEADER =
-  'Basic ' + Buffer.from(`${API_KEY}:${API_SECRET}`).toString('base64');
+const AUTH_HEADER = 'Basic ' + Buffer.from(`${API_KEY}:${API_SECRET}`).toString('base64');
 
 const DATA_BASE = {
   sandbox: 'https://data.sandbox.alpaca.markets',
@@ -44,8 +40,13 @@ export async function alpacaRequest(endpoint, options = {}) {
   const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   const url = `${BASE_URL.replace(/\/$/, '')}${path}`;
 
+  /* 10 s: Alpaca order and account calls answer in well under a second.
+     A timeout here is ambiguous for a POST (the order may exist), which is
+     why orders and transfers go through src/lib/trading/idempotent.js
+     (claim row + client_order_id + reconcile) and are never retried. */
   const response = await fetch(url, {
     ...options,
+    signal: options.signal || AbortSignal.timeout(options.timeoutMs || 10_000),
     headers: {
       Authorization: AUTH_HEADER,
       'Content-Type': 'application/json',
@@ -91,6 +92,7 @@ export async function alpacaDataRequest(path) {
   const url = `${DATA_URL}${path.startsWith('/') ? path : `/${path}`}`;
   const res = await fetch(url, {
     headers: { Authorization: AUTH_HEADER },
+    signal: AbortSignal.timeout(8_000),
   });
   if (!res.ok) throw new Error(`Alpaca Data API error ${res.status}`);
   return res.json();

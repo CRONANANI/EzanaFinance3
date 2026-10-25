@@ -6,6 +6,8 @@
  * pgvector column. Never imported client-side.
  */
 
+import { fetchWithTimeout } from './http/fetch-json.js';
+
 export const EMBED_MODEL = 'text-embedding-3-small';
 export const EMBED_DIM = 1536;
 const OPENAI_EMBEDDINGS_URL = 'https://api.openai.com/v1/embeddings';
@@ -39,15 +41,19 @@ export async function embedTexts(inputs) {
   const arr = (Array.isArray(inputs) ? inputs : [inputs]).map(clip);
   if (!arr.length) return [];
   try {
-    const res = await fetch(OPENAI_EMBEDDINGS_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${key}`,
+    const res = await fetchWithTimeout(
+      OPENAI_EMBEDDINGS_URL,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${key}`,
+        },
+        body: JSON.stringify({ model: EMBED_MODEL, input: arr }),
+        cache: 'no-store',
       },
-      body: JSON.stringify({ model: EMBED_MODEL, input: arr }),
-      cache: 'no-store',
-    });
+      15000,
+    );
     if (!res.ok) return null;
     const json = await res.json();
     const data = Array.isArray(json?.data) ? json.data : null;

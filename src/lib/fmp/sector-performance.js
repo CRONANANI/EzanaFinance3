@@ -28,6 +28,8 @@
  * API key is server-only — never prefix with NEXT_PUBLIC_.
  */
 
+import { fetchWithTimeout } from '../http/fetch-json.js';
+
 const STABLE = 'https://financialmodelingprep.com/stable';
 
 export const CANONICAL_SECTORS = [
@@ -50,13 +52,13 @@ export const CANONICAL_TO_DISPLAY = {
   'Communication Services': 'Communication Services',
   'Consumer Cyclical': 'Consumer Discretionary',
   'Consumer Defensive': 'Consumer Staples',
-  'Energy': 'Energy',
+  Energy: 'Energy',
   'Financial Services': 'Financials',
-  'Healthcare': 'Health Care',
-  'Industrials': 'Industrials',
+  Healthcare: 'Health Care',
+  Industrials: 'Industrials',
   'Real Estate': 'Real Estate',
-  'Technology': 'Technology',
-  'Utilities': 'Utilities',
+  Technology: 'Technology',
+  Utilities: 'Utilities',
 };
 
 /** Display label (heatmap tile) → FMP canonical sector for screener/API. */
@@ -99,17 +101,23 @@ function normalizeSector(name) {
   const clean = name.trim();
   if (!clean) return null;
   const lower = clean.toLowerCase();
-  if (lower === 'communication services' || lower === 'communications' || lower === 'communication') {
+  if (
+    lower === 'communication services' ||
+    lower === 'communications' ||
+    lower === 'communication'
+  ) {
     return 'Communication Services';
   }
   if (lower === 'financial' || lower === 'financials' || lower === 'financial services') {
     return 'Financial Services';
   }
   if (lower === 'health care' || lower === 'healthcare') return 'Healthcare';
-  if (lower === 'consumer discretionary' || lower === 'consumer cyclical') return 'Consumer Cyclical';
+  if (lower === 'consumer discretionary' || lower === 'consumer cyclical')
+    return 'Consumer Cyclical';
   if (lower === 'consumer staples' || lower === 'consumer defensive') return 'Consumer Defensive';
   if (lower === 'basic materials' || lower === 'materials') return 'Basic Materials';
-  if (lower === 'information technology' || lower === 'technology' || lower === 'tech') return 'Technology';
+  if (lower === 'information technology' || lower === 'technology' || lower === 'tech')
+    return 'Technology';
   if (lower === 'real estate') return 'Real Estate';
   if (lower === 'energy') return 'Energy';
   if (lower === 'industrials' || lower === 'industrial') return 'Industrials';
@@ -129,9 +137,7 @@ function parsePercent(input) {
 function requireApiKey() {
   const key = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY;
   if (!key) {
-    throw new Error(
-      'FMP_API_KEY is not set. Add it to .env.local and restart the dev server.',
-    );
+    throw new Error('FMP_API_KEY is not set. Add it to .env.local and restart the dev server.');
   }
   return key;
 }
@@ -148,7 +154,7 @@ function requireApiKey() {
  *   "Premium"/"Exclusive" → 402 Payment Required
  */
 async function fetchJson(url, revalidate) {
-  const res = await fetch(url, { next: { revalidate } });
+  const res = await fetchWithTimeout(url, { next: { revalidate } }, 8000);
   const text = await res.text();
 
   if (text.trimStart().startsWith('{"Error Message"')) {

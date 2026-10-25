@@ -4,6 +4,7 @@
  * the repo). Access tokens are cached until shortly before they expire.
  */
 import { signJwt } from './jwt';
+import { fetchWithTimeout } from '../http/fetch-json.js';
 
 let cached = null; // { token, exp, projectId }
 
@@ -39,14 +40,18 @@ async function accessToken() {
       exp: now + 3600,
     },
   });
-  const res = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      assertion,
-    }),
-  });
+  const res = await fetchWithTimeout(
+    'https://oauth2.googleapis.com/token',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+        assertion,
+      }),
+    },
+    8000,
+  );
   if (!res.ok) throw new Error(`FCM token ${res.status}`);
   const j = await res.json();
   cached = { token: j.access_token, exp: now + (j.expires_in || 3600), projectId: sa.project_id };
@@ -59,18 +64,22 @@ async function accessToken() {
  */
 export async function sendFcm(token, { title, body, url }) {
   const { token: bearer, projectId } = await accessToken();
-  const res = await fetch(`https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${bearer}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      message: {
-        token,
-        notification: { title, body },
-        data: { url: url || '/home' },
-        android: { priority: 'high' },
-      },
-    }),
-  });
+  const res = await fetchWithTimeout(
+    `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${bearer}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: {
+          token,
+          notification: { title, body },
+          data: { url: url || '/home' },
+          android: { priority: 'high' },
+        },
+      }),
+    },
+    8000,
+  );
   if (res.ok) return { ok: true, unregistered: false };
   const j = await res.json().catch(() => ({}));
   const code = j?.error?.details?.find?.((d) => d.errorCode)?.errorCode || j?.error?.status;

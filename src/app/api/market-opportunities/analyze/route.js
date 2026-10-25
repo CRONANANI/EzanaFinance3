@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -57,7 +58,7 @@ async function fetchRelatedNews(ticker, headline) {
   const FMP_KEY = getFmpKey();
   if (!FMP_KEY) return [];
   try {
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `${FMP_BASE}/news/stock-latest?page=0&limit=10${ticker ? `&tickers=${encodeURIComponent(ticker)}` : ''}&apikey=${encodeURIComponent(FMP_KEY)}`,
       { cache: 'no-store' },
     );
@@ -83,11 +84,11 @@ async function fetchTickerStats(ticker) {
   if (!FMP_KEY || !ticker) return null;
   try {
     const [quoteRes, statsRes] = await Promise.all([
-      fetch(
+      fetchWithTimeout(
         `${FMP_BASE}/quote?symbol=${encodeURIComponent(ticker)}&apikey=${encodeURIComponent(FMP_KEY)}`,
         { cache: 'no-store' },
       ),
-      fetch(
+      fetchWithTimeout(
         `${FMP_BASE}/ratios-ttm?symbol=${encodeURIComponent(ticker)}&apikey=${encodeURIComponent(FMP_KEY)}`,
         { cache: 'no-store' },
       ),
@@ -130,20 +131,22 @@ async function generateAiAnalysis(event, riskProfile, tickerStats) {
       : '';
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 600,
-        messages: [
-          {
-            role: 'user',
-            content: `You are a financial analyst at Ezana Finance. Analyze this market event for a ${riskProfile} investor.
+    const res = await fetchWithTimeout(
+      'https://api.anthropic.com/v1/messages',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': ANTHROPIC_KEY,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 600,
+          messages: [
+            {
+              role: 'user',
+              content: `You are a financial analyst at Ezana Finance. Analyze this market event for a ${riskProfile} investor.
 
 Event: "${event.headline}"
 Summary: "${event.summary || ''}"
@@ -158,10 +161,12 @@ Respond ONLY with a JSON object (no markdown, no backticks):
   "confidence": "high" or "medium" or "low",
   "factors": ["factor 1", "factor 2", "factor 3"]
 }`,
-          },
-        ],
-      }),
-    });
+            },
+          ],
+        }),
+      },
+      30000,
+    );
 
     if (!res.ok) return buildFallbackAnalysis(event, riskProfile, tickerStats);
 

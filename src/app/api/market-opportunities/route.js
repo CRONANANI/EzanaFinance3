@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -164,7 +165,7 @@ export const GET = withApiGuard(
     let events = [];
     if (FMP_KEY) {
       try {
-        const res = await fetch(
+        const res = await fetchWithTimeout(
           `${FMP_BASE}/news/stock-latest?page=0&limit=40&apikey=${encodeURIComponent(FMP_KEY)}`,
           { cache: 'no-store' },
         );

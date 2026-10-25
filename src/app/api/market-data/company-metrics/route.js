@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,11 +15,11 @@ const BASE = 'https://financialmodelingprep.com/stable';
 /* Mirror stock-candles' resilience: 403 → retry with a header key,
    429 → one delayed retry. */
 async function fetchWithRetry(url, apiKey, opts = {}) {
-  let res = await fetch(url, opts);
+  let res = await fetchWithTimeout(url, opts);
 
   if (res.status === 403 && apiKey) {
     const urlWithoutKey = url.replace(/[&?]apikey=[^&]*/i, '');
-    res = await fetch(urlWithoutKey, {
+    res = await fetchWithTimeout(urlWithoutKey, {
       ...opts,
       headers: { ...opts.headers, apikey: apiKey },
     });
@@ -26,7 +27,7 @@ async function fetchWithRetry(url, apiKey, opts = {}) {
 
   if (res.status === 429) {
     await new Promise((r) => setTimeout(r, 1500));
-    res = await fetch(url, opts);
+    res = await fetchWithTimeout(url, opts);
   }
 
   return res;

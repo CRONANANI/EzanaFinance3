@@ -9,6 +9,7 @@
  */
 
 import { getAlphaVantageApiKey } from '@/lib/alpha-vantage';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 const FMP_STABLE = 'https://financialmodelingprep.com/stable';
 const AV_BASE = 'https://www.alphavantage.co/query';
@@ -44,7 +45,7 @@ export function todayAndEndOfMonth() {
 
 /** Internal: fetch + decode with a clear error surface. */
 async function fetchJson(url) {
-  const res = await fetch(url, { cache: 'no-store' });
+  const res = await fetchWithTimeout(url, { cache: 'no-store' }, 8000);
   if (!res.ok) {
     const body = await res.text().catch(() => '');
     throw new Error(`FMP ${res.status}${body ? `: ${body.slice(0, 160)}` : ''}`);
@@ -162,7 +163,7 @@ function splitCsvLine(line) {
  * Columns: symbol, name, reportDate, fiscalDateEnding, estimate, currency
  */
 async function fetchAndParseAvCsv(url) {
-  const res = await fetch(url, { cache: 'no-store' });
+  const res = await fetchWithTimeout(url, { cache: 'no-store' }, 8000);
   if (!res.ok) return [];
 
   const text = await res.text();
@@ -265,7 +266,7 @@ export async function getCongressTrades() {
   const fetchOne = async (endpoint, chamber) => {
     try {
       const url = `${FMP_STABLE}/${endpoint}?page=0&apikey=${key}`;
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetchWithTimeout(url, { cache: 'no-store' }, 8000);
       if (!res.ok) return [];
       const data = await res.json();
       if (!Array.isArray(data)) return [];

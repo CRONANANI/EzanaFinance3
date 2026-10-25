@@ -2,10 +2,22 @@ import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { getAdminClient } from '@/lib/supabase';
 import { stripe } from '@/lib/services/stripe';
+import {
+  claimStripeEvent,
+  finishStripeEvent,
+  handleStripeEvent,
+} from '@/lib/billing/stripe-webhook';
+import { recordFailedJob } from '@/lib/cron/failed-jobs';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+/**
+ * Stripe webhook. Verified with the raw body, de-duplicated by event id
+ * (stripe_events), processed against the re-fetched subscription, and
+ * answered 500 on any failure so Stripe retries. See
+ * src/lib/billing/stripe-webhook.js.
+ */
 export async function POST(request) {
   if (!stripe) {
     return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 });
@@ -18,8 +30,7 @@ export async function POST(request) {
   }
 
   const body = await request.text();
-  const headersList = headers();
-  const sig = headersList.get('stripe-signature');
+  const sig = headers().get('stripe-signature');
 
   let event;
   try {
@@ -29,125 +40,34 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
+  const admin = getAdminClient();
+  let claim;
   try {
-    const supabaseAdmin = getAdminClient();
-
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object;
-        const userId = session.metadata?.supabase_user_id;
-        const planKey = session.metadata?.plan_key;
-
-        if (!userId) {
-          console.error('No supabase_user_id in checkout session metadata');
-          break;
-        }
-
-        if (session.mode === 'subscription' && session.subscription) {
-          const subRef = session.subscription;
-          const subId = typeof subRef === 'string' ? subRef : subRef.id;
-          const subscription = await stripe.subscriptions.retrieve(subId);
-          const periodEnd = subscription.current_period_end
-            ? new Date(subscription.current_period_end * 1000).toISOString()
-            : null;
-
-          await supabaseAdmin.from('profiles').upsert(
-            {
-              id: userId,
-              stripe_customer_id: session.customer,
-              subscription_status: subscription.status,
-              subscription_id: subscription.id,
-              subscription_plan: planKey,
-              subscription_source: 'stripe',
-              current_period_end: periodEnd,
-              subscription_period_end: periodEnd,
-              current_plan: subscription.items?.data?.[0]?.price?.id ?? null,
-              onboarding_completed: true,
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: 'id' },
-          );
-          console.log(
-            `Subscription created for user ${userId}, plan: ${planKey}, status: ${subscription.status}`,
-          );
-        }
-        break;
-      }
-
-      case 'customer.subscription.updated': {
-        const subscription = event.data.object;
-        const userId = subscription.metadata?.supabase_user_id;
-
-        const updateData = {
-          subscription_status: subscription.status,
-          subscription_source: 'stripe',
-          current_period_end: subscription.current_period_end
-            ? new Date(subscription.current_period_end * 1000).toISOString()
-            : null,
-          subscription_period_end: subscription.current_period_end
-            ? new Date(subscription.current_period_end * 1000).toISOString()
-            : null,
-          updated_at: new Date().toISOString(),
-        };
-
-        if (userId) {
-          await supabaseAdmin.from('profiles').update(updateData).eq('id', userId);
-        } else {
-          const { data: profile } = await supabaseAdmin
-            .from('profiles')
-            .select('id')
-            .eq('stripe_customer_id', subscription.customer)
-            .maybeSingle();
-
-          if (profile) {
-            await supabaseAdmin.from('profiles').update(updateData).eq('id', profile.id);
-          }
-        }
-        console.log(`Subscription updated: ${subscription.id}, status: ${subscription.status}`);
-        break;
-      }
-
-      case 'customer.subscription.deleted': {
-        const subscription = event.data.object;
-
-        const { data: profile } = await supabaseAdmin
-          .from('profiles')
-          .select('id')
-          .eq('stripe_customer_id', subscription.customer)
-          .maybeSingle();
-
-        if (profile) {
-          await supabaseAdmin
-            .from('profiles')
-            .update({
-              subscription_status: 'canceled',
-              subscription_id: null,
-              subscription_plan: null,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', profile.id);
-        }
-        console.log(`Subscription canceled: ${subscription.id}`);
-        break;
-      }
-
-      case 'invoice.paid': {
-        console.log('Invoice paid:', event.data.object.id);
-        break;
-      }
-
-      case 'invoice.payment_failed': {
-        console.log('Invoice payment failed:', event.data.object.id);
-        break;
-      }
-
-      default:
-        console.log(`Unhandled event: ${event.type}`);
-    }
-  } catch (error) {
-    console.error('Webhook handler error:', error);
-    return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
+    claim = await claimStripeEvent(admin, event);
+  } catch (e) {
+    console.error('[Stripe Webhook] claim failed:', e.message);
+    return NextResponse.json({ error: 'Webhook storage unavailable' }, { status: 500 });
+  }
+  if (claim === 'duplicate') return NextResponse.json({ received: true, duplicate: true });
+  /* Another delivery of this event is mid-processing: ask Stripe to retry
+     later rather than acknowledge something that may yet fail. */
+  if (claim === 'in_flight') {
+    return NextResponse.json({ error: 'Event is being processed' }, { status: 409 });
   }
 
-  return NextResponse.json({ received: true });
+  try {
+    const result = await handleStripeEvent({ admin, stripe }, event);
+    await finishStripeEvent(admin, event.id, { ok: true });
+    console.log(`[Stripe Webhook] ${event.type} ${event.id}`, result);
+    return NextResponse.json({ received: true });
+  } catch (error) {
+    console.error('Webhook handler error:', error);
+    await finishStripeEvent(admin, event.id, { ok: false, error });
+    await recordFailedJob({
+      job: 'webhook:stripe',
+      error,
+      payload: { event_id: event.id, type: event.type },
+    });
+    return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
+  }
 }

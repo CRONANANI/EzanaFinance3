@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -36,9 +37,10 @@ export const GET = withApiGuard(
 
     try {
       const symbolList = COMMODITIES.map((c) => c.symbol).join(',');
-      const res = await fetch(
+      const res = await fetchWithTimeout(
         `${FMP_BASE}/quote?symbol=${encodeURIComponent(symbolList)}&apikey=${encodeURIComponent(apiKey)}`,
         { next: { revalidate: 60 } },
+        8000,
       );
       if (!res.ok) {
         console.error('[fmp/commodities] FMP returned', res.status);
