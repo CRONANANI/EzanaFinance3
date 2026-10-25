@@ -23,7 +23,9 @@ import { EducationTip } from '@/components/beginner/EducationTip';
 import '@/components/beginner/beginner.css';
 import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
 import { getCoursesByTrack } from '@/lib/learning-curriculum';
-import { MOCK_WATCHLISTS } from '@/lib/mockWatchlists';
+import { useWatchlists } from '@/hooks/useWatchlists';
+import { useAuth } from '@/components/AuthProvider';
+import { useToast } from '@/contexts/ToastContext';
 import { getTickerMeta } from '@/lib/tickerSearchData';
 import { MarketPortfolioView } from '@/components/research/market/MarketPortfolioView';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
@@ -144,7 +146,17 @@ function CompanyResearchPageInner() {
   const [activeModel, setActiveModel] = useState(null);
   const [wlModalOpen, setWlModalOpen] = useState(false);
   const [wlAddedMap, setWlAddedMap] = useState({});
-  const [userWatchlists, setUserWatchlists] = useState(() => MOCK_WATCHLISTS);
+  const [wlBusyId, setWlBusyId] = useState(null);
+  const [newListLabel, setNewListLabel] = useState('');
+  const [creatingList, setCreatingList] = useState(false);
+  const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
+  const {
+    watchlists: userWatchlists,
+    loading: watchlistsLoading,
+    addItem,
+    createList,
+  } = useWatchlists();
   const searchRef = useRef(null);
   const modelsCarouselScrollRef = useRef(null);
 
@@ -313,36 +325,55 @@ function CompanyResearchPageInner() {
     modelsCarouselScrollRef.current?.scrollBy({ left: dir * 320, behavior: 'smooth' });
   }, []);
 
+  /* QA RET-5: adds go to the user's saved lists (/api/watchlists), not demo
+     state, so the ticker is still there after a reload of /watchlist. */
   const handleAddToWatchlist = useCallback(
-    (watchlistId) => {
-      if (!selectedStock) return;
-      setUserWatchlists((prev) =>
-        prev.map((wl) => {
-          if (wl.id !== watchlistId) return wl;
-          if (wl.stocks.some((s) => s.ticker === selectedStock)) return wl;
-          const meta = getTickerMeta(selectedStock);
-          return {
-            ...wl,
-            stocks: [
-              ...wl.stocks,
-              {
-                ticker: selectedStock,
-                name: meta?.name || selectedStock,
-                price: 0,
-                change: 0,
-                changePct: 0,
-                marketCap: stats?.mcap || '—',
-                volume: '—',
-                sector: meta?.sector || '—',
-              },
-            ],
-          };
-        }),
-      );
-      setWlAddedMap((prev) => ({ ...prev, [watchlistId]: true }));
+    async (watchlistId) => {
+      if (!selectedStock || wlBusyId) return;
+      setWlBusyId(watchlistId);
+      const meta = getTickerMeta(selectedStock);
+      const res = await addItem(watchlistId, {
+        ticker: selectedStock,
+        type: 'stock',
+        name: meta?.name || selectedStock,
+        sector: meta?.sector || '',
+      });
+      setWlBusyId(null);
+      if (res?.ok) {
+        setWlAddedMap((prev) => ({ ...prev, [watchlistId]: true }));
+      } else {
+        toast.error(res?.reason || `Couldn't add ${selectedStock}. Please try again.`);
+      }
     },
-    [selectedStock, stats?.mcap],
+    [selectedStock, wlBusyId, addItem, toast],
   );
+
+  const handleCreateListAndAdd = useCallback(
+    async (e) => {
+      e?.preventDefault?.();
+      const label = newListLabel.trim();
+      if (!label || creatingList) return;
+      setCreatingList(true);
+      const res = await createList(label);
+      setCreatingList(false);
+      if (!res?.ok) {
+        toast.error(res?.reason || "Couldn't create the list. Please try again.");
+        return;
+      }
+      setNewListLabel('');
+      await handleAddToWatchlist(res.listId);
+    },
+    [newListLabel, creatingList, createList, toast, handleAddToWatchlist],
+  );
+
+  const openWatchlistModal = useCallback(() => {
+    if (!isAuthenticated) {
+      router.push(`/auth/signin?redirect=${encodeURIComponent(pathname || '/company-research')}`);
+      return;
+    }
+    setWlAddedMap({});
+    setWlModalOpen(true);
+  }, [isAuthenticated, router, pathname]);
 
   const handleStartAppleAnalysis = useCallback(() => {
     handleSelectStock('AAPL');
@@ -547,10 +578,7 @@ function CompanyResearchPageInner() {
                       )}
                       <button
                         type="button"
-                        onClick={() => {
-                          setWlAddedMap({});
-                          setWlModalOpen(true);
-                        }}
+                        onClick={openWatchlistModal}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -769,14 +797,32 @@ function CompanyResearchPageInner() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {watchlistsLoading && userWatchlists.length === 0 && (
+                <p
+                  role="status"
+                  style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--text-muted)' }}
+                >
+                  Loading your watchlists...
+                </p>
+              )}
+              {!watchlistsLoading && userWatchlists.length === 0 && (
+                <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                  You don&apos;t have a watchlist yet. Create one below.
+                </p>
+              )}
               {userWatchlists.map((wl) => {
-                const alreadyIn = wl.stocks.some((s) => s.ticker === selectedStock);
+                const alreadyIn = (wl.stocks || []).some(
+                  (s) => s.ticker === selectedStock && (s.type || 'stock') === 'stock',
+                );
                 const justAdded = wlAddedMap[wl.id];
                 const done = alreadyIn || justAdded;
+                const busy = wlBusyId === wl.id;
                 return (
                   <button
                     key={wl.id}
                     type="button"
+                    disabled={done || busy}
+                    aria-busy={busy || undefined}
                     onClick={() => !done && handleAddToWatchlist(wl.id)}
                     style={{
                       display: 'flex',
@@ -813,7 +859,7 @@ function CompanyResearchPageInner() {
                           color: 'var(--home-muted, #6b7280)',
                         }}
                       >
-                        {wl.stocks.length} stocks
+                        {(wl.stocks || []).length} stocks
                       </p>
                     </div>
 
@@ -854,6 +900,50 @@ function CompanyResearchPageInner() {
               })}
             </div>
 
+            <form
+              onSubmit={handleCreateListAndAdd}
+              style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}
+            >
+              <input
+                aria-label="New watchlist name"
+                type="text"
+                value={newListLabel}
+                onChange={(e) => setNewListLabel(e.target.value)}
+                placeholder="New list name"
+                maxLength={60}
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  padding: '0.6rem 0.75rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-primary)',
+                  background: 'transparent',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.8125rem',
+                  fontFamily: 'var(--font-sans)',
+                }}
+              />
+              <button
+                type="submit"
+                disabled={!newListLabel.trim() || creatingList}
+                style={{
+                  padding: '0.6rem 0.9rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid color-mix(in srgb, var(--emerald) 35%, transparent)',
+                  background: 'color-mix(in srgb, var(--emerald) 10%, transparent)',
+                  color: 'var(--emerald-text, var(--emerald))',
+                  fontSize: '0.8125rem',
+                  fontWeight: 700,
+                  cursor: newListLabel.trim() && !creatingList ? 'pointer' : 'default',
+                  fontFamily: 'var(--font-sans)',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <i className="bi bi-plus-lg" aria-hidden="true" />{' '}
+                {creatingList ? 'Creating...' : 'Create list'}
+              </button>
+            </form>
+
             <p
               style={{
                 margin: '1rem 0 0',
@@ -863,7 +953,7 @@ function CompanyResearchPageInner() {
                 lineHeight: 1.4,
               }}
             >
-              Your watchlists are saved locally. Visit the Watchlist page to manage them.
+              Your watchlists are saved to your account. Visit the Watchlist page to manage them.
             </p>
           </div>
         </>
