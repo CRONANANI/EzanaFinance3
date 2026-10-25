@@ -99,6 +99,7 @@ export const POST = withApiGuard(
       const resend = new Resend(process.env.RESEND_API_KEY);
       const topicLabel = TOPIC_LABELS[data.topic] || data.topic;
 
+      // email-category: internal (always sent: to our own inbox; see src/lib/email/preferences.js)
       const { error: sendError } = await resend.emails.send({
         from: fromEmail,
         to: [supportInbox],

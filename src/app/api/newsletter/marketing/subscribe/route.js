@@ -161,6 +161,7 @@ export const POST = withApiGuard(
           confirmUrl: newsletterConfirmUrl(confirmToken),
           unsubscribeUrl: newsletterUnsubscribeUrl(unsubscribeToken),
         });
+        // email-category: transactional (always sent: double opt-in confirmation the recipient requested; see src/lib/email/preferences.js)
         await resend.emails.send({
           from: NEWSLETTER_FROM,
           to: normalizedEmail,

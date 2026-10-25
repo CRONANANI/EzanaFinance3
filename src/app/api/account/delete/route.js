@@ -125,6 +125,7 @@ export async function POST(request) {
 
     if (process.env.RESEND_API_KEY && resend) {
       try {
+        // email-category: security (always sent: account deletion confirmation + reactivation link; see src/lib/email/preferences.js)
         await resend.emails.send({
           from: FROM_EMAIL,
           to: user.email,

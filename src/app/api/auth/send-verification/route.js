@@ -127,6 +127,7 @@ export async function POST(request) {
 
     const fromAddress = process.env.RESEND_FROM_EMAIL || 'Ezana Finance <noreply@ezana.world>';
 
+    // email-category: security (always sent: verification code; see src/lib/email/preferences.js)
     const { error: emailError } = await resend.emails.send({
       from: fromAddress,
       to: email,

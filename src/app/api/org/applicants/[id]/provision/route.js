@@ -36,6 +36,7 @@ async function sendWelcomeEmail(service, { email, fullName, orgName }) {
     const from = process.env.RESEND_FROM_EMAIL || 'Ezana Finance <noreply@ezana.world>';
     const first = escapeHtml(String(fullName || '').split(' ')[0] || 'there');
     const org = escapeHtml(orgName || 'your investment council');
+    // email-category: transactional (always sent: account provisioning invite; see src/lib/email/preferences.js)
     const { error: sendErr } = await resend.emails.send({
       from,
       to: email,

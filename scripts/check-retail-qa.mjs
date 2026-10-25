@@ -9,6 +9,7 @@ import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { buildCommunityImagePath } from '../src/lib/community-utils.js';
 import { createMockSupabase } from './lib/mock-supabase.mjs';
 import { normalizePost } from '../src/components/community/redesign_v2/normalizePost.js';
+import { shouldSendEmail, canEmailUser, EMAIL_CATEGORIES } from '../src/lib/email/preferences.js';
 import {
   executeMockTrade,
   resetMockPortfolio,
@@ -280,7 +281,10 @@ test('poll vote: option validated before the old vote is deleted; support inbox'
 
 test('login lockout cannot be driven by unauthenticated client-reported failures', () => {
   const route = read('src/app/api/auth/record-attempt/route.js');
-  assert.ok(!/request\.json\(/.test(route), 'record-attempt must not read email/success from the body');
+  assert.ok(
+    !/request\.json\(/.test(route),
+    'record-attempt must not read email/success from the body',
+  );
   assert.match(route, /getCurrentUser\(request\)/);
   assert.match(route, /status: 401/);
   assert.ok(!existsSync(new URL('../src/app/api/auth/check-lockout/route.js', import.meta.url)));
@@ -290,4 +294,77 @@ test('login lockout cannot be driven by unauthenticated client-reported failures
   const card = read('src/components/auth/SignInCard.js');
   assert.ok(!card.includes('check-lockout') && !card.includes('423'));
   assert.ok(!/success: !signInError/.test(card));
+});
+
+/* ── RET-7 ───────────────────────────────────────────────────────────── */
+
+test('email preferences: opt-out-able categories follow the Settings switches', () => {
+  assert.equal(shouldSendEmail({}, 'community'), false); // default off
+  assert.equal(shouldSendEmail({ notifications_email_community: true }, 'community'), true);
+  assert.equal(shouldSendEmail({}, 'marketing'), false); // email_marketing default off
+  assert.equal(shouldSendEmail({ email_marketing: true }, 'marketing'), true);
+  assert.equal(
+    shouldSendEmail({ email_marketing: true, notifications_email_newsletter: false }, 'marketing'),
+    false,
+  );
+  assert.equal(shouldSendEmail({}, 'security_alert'), true);
+  assert.equal(shouldSendEmail({ email_security_alerts: false }, 'security_alert'), false);
+  assert.equal(
+    shouldSendEmail({ email_transactional_confirmations: false }, 'confirmations'),
+    false,
+  );
+  assert.equal(shouldSendEmail({ notifications_email_alerts: false }, 'price_alert'), false);
+  assert.equal(shouldSendEmail({}, 'nope'), false);
+});
+
+test('email preferences: security/transactional mail is never suppressed', () => {
+  const allOff = {
+    email_marketing: false,
+    email_security_alerts: false,
+    email_transactional_confirmations: false,
+    notifications_email_community: false,
+    notifications_email_newsletter: false,
+  };
+  for (const c of ['security', 'transactional', 'internal']) {
+    assert.equal(shouldSendEmail(allOff, c), true, c);
+  }
+});
+
+test('canEmailUser reads profiles.user_settings and fails closed', async () => {
+  const db = createMockSupabase({
+    seed: { profiles: [{ id: UID, user_settings: { notifications_email_community: true } }] },
+  });
+  assert.equal(await canEmailUser(db, UID, 'community'), true);
+  assert.equal(await canEmailUser(db, 'someone-else', 'community'), false);
+  assert.equal(await canEmailUser(db, null, 'security'), true);
+  const broken = {
+    from: () => ({
+      select: () => ({
+        eq: () => ({ maybeSingle: async () => ({ data: null, error: { message: 'down' } }) }),
+      }),
+    }),
+  };
+  assert.equal(await canEmailUser(broken, UID, 'marketing'), false);
+});
+
+test('every Resend sender declares a category or checks preferences', () => {
+  let senders = 0;
+  for (const f of routeFiles('src/app/api')) {
+    const src = read(f);
+    const lines = src.split('\n');
+    lines.forEach((line, i) => {
+      if (!/emails\.send\(/.test(line)) return;
+      senders += 1;
+      const m = lines
+        .slice(Math.max(0, i - 3), i)
+        .join('\n')
+        .match(/email-category: (\w+)/);
+      assert.ok(m, `${f}:${i + 1} sends email without an email-category`);
+      assert.ok(EMAIL_CATEGORIES[m[1]], `${f}: unknown category ${m[1]}`);
+      if (EMAIL_CATEGORIES[m[1]].optOut) {
+        assert.match(src, /canEmailUser\(/, `${f}: opt-out-able mail must check preferences`);
+      }
+    });
+  }
+  assert.ok(senders >= 12, `found ${senders} senders`);
 });

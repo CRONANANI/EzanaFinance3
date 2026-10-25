@@ -67,6 +67,7 @@ export async function POST(request, { params }) {
   }
   try {
     const { firstName } = inviteNames(row);
+    // email-category: transactional (always sent: invite the applicant asked for; see src/lib/email/preferences.js)
     const { error: sendErr } = await new Resend(process.env.RESEND_API_KEY).emails.send({
       from: senderAddress(),
       to: row.email,

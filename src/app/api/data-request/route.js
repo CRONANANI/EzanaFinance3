@@ -114,6 +114,7 @@ export async function POST(request) {
     if (privacyInbox && process.env.RESEND_API_KEY) {
       const label = TYPE_LABELS[requestType] || requestType;
       try {
+        // email-category: internal (always sent: to the privacy inbox; see src/lib/email/preferences.js)
         await resend.emails.send({
           from:
             process.env.RESEND_FROM_EMAIL ||

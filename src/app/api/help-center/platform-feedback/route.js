@@ -106,6 +106,7 @@ export async function POST(request) {
         ? FEEDBACK_PRODUCTS.find((p) => p.value === product)?.label
         : null;
       const subject = `[Feedback · ${route.label}${productLabel ? ` · ${productLabel}` : ''}] ${message.slice(0, 60)}`;
+      // email-category: internal (always sent: to our own inbox; see src/lib/email/preferences.js)
       const { error } = await new Resend(process.env.RESEND_API_KEY).emails.send({
         from: process.env.RESEND_FROM_EMAIL || 'Ezana Feedback <noreply@ezana.world>',
         to: [inbox],

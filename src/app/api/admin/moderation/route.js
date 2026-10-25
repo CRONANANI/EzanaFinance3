@@ -35,6 +35,7 @@ async function emailCopyrightRemoval(admin, spec, contentId) {
   if (!to) return false;
   const contact = dmcaAgent()?.email || DMCA_FALLBACK_EMAIL;
   const policy = `${NEWSLETTER_SITE_URL}/copyright`;
+  // email-category: transactional (always sent: legally required copyright-removal notice; see src/lib/email/preferences.js)
   const { error } = await resend.emails.send({
     from: 'Ezana Finance <noreply@ezana.world>',
     to,

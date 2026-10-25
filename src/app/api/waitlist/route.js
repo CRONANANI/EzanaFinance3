@@ -138,6 +138,7 @@ export const POST = withApiGuard(
 
       if (process.env.RESEND_API_KEY) {
         try {
+          // email-category: transactional (always sent: confirms the signup the recipient just made; see src/lib/email/preferences.js)
           await new Resend(process.env.RESEND_API_KEY).emails.send({
             from: senderAddress(),
             to: email,

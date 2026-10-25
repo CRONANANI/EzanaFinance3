@@ -45,6 +45,7 @@ export async function POST(request, { params }) {
       .eq('id', id);
     if (body.notify && process.env.RESEND_API_KEY) {
       try {
+        // email-category: transactional (always sent: decision on the recipient's API request; see src/lib/email/preferences.js)
         await new Resend(process.env.RESEND_API_KEY).emails.send({
           from: senderAddress(),
           to: req.email,
@@ -82,6 +83,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ ok: true, emailed: false, claimUrl: url, key });
     }
     try {
+      // email-category: transactional (always sent: decision on the recipient's API request; see src/lib/email/preferences.js)
       const { error } = await new Resend(process.env.RESEND_API_KEY).emails.send({
         from: senderAddress(),
         to: req.email,

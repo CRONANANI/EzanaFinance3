@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireUser, getLazyAdminClient } from '@/lib/supabase';
 import { resend } from '@/lib/services/resend';
+import { canEmailUser } from '@/lib/email/preferences';
 import { escapeHtml } from '@/lib/sanitize';
 import { emailFooterHtml } from '@/lib/email/footer';
 import { listUnsubscribeHeaders, unsubscribeUrl } from '@/lib/email/unsubscribe';
@@ -98,15 +99,11 @@ export async function POST(request) {
           /* A notification email, not transactional: only when the person has
              community emails on in Settings (off by default), with a one-click
              unsubscribe that works signed out. */
-          const { data: targetProfile } = await admin
-            .from('profiles')
-            .select('user_settings')
-            .eq('id', target_user_id)
-            .maybeSingle();
-          const wantsEmail = targetProfile?.user_settings?.notifications_email_community === true;
+          const wantsEmail = await canEmailUser(admin, target_user_id, 'community');
           if (process.env.RESEND_API_KEY && toEmail && wantsEmail) {
             const unsub = unsubscribeUrl(target_user_id, 'community');
             const safeName = escapeHtml(followerName);
+            // email-category: community (gated by canEmailUser above)
             await resend.emails.send({
               from: 'Ezana Finance <noreply@ezana.world>',
               to: toEmail,
