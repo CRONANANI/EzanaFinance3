@@ -145,7 +145,8 @@ function MockTradingPageInner() {
         const res = await fetch('/api/mock-trades', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          /* client_request_id: a retried POST of this trade records it once. */
+          body: JSON.stringify({ ...payload, client_request_id: crypto.randomUUID() }),
         });
         if (!res.ok) return;
         const listRes = await fetch('/api/mock-trades');

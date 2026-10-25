@@ -1,59 +1,53 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import { alpaca } from '@/lib/alpaca';
-
+import { placeOrderOnce, readIdempotencyKey } from '@/lib/trading/idempotent';
 import { awardXP } from '@/lib/rewards';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * POST /api/trading/orders: place one real order per Idempotency-Key.
+ * See src/lib/trading/idempotent.js for the claim-then-submit pattern.
+ */
 export const POST = withApiGuard(
   async (request, user) => {
+    const idempotencyKey = readIdempotencyKey(request);
+    if (!idempotencyKey) {
+      return NextResponse.json(
+        { error: 'Idempotency-Key header (a UUID) is required' },
+        { status: 400 },
+      );
+    }
     try {
       const body = await request.json();
       const { symbol, qty, notional, side, type = 'market', time_in_force = 'day' } = body;
+      const admin = getAdminClient();
 
-      const cookieStore = cookies();
-      const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-        {
-          cookies: {
-            getAll() {
-              return cookieStore.getAll();
-            },
-            setAll(cookiesToSet) {
-              cookiesToSet.forEach(({ name, value, options }) => {
-                try {
-                  cookieStore.set(name, value, options);
-                } catch {
-                  /* ignore */
-                }
-              });
-            },
-          },
-        },
-      );
       let account = null;
-      const { data: br } = await getAdminClient()
+      const { data: br, error: brErr } = await admin
         .from('brokerage_accounts')
         .select('alpaca_account_id, account_status')
         .eq('user_id', user.id)
         .maybeSingle();
-      if (br) account = br;
+      if (brErr) throw brErr;
+      if (br?.alpaca_account_id) account = br;
       if (!account) {
-        const { data: leg } = await getAdminClient()
+        const { data: leg, error: legErr } = await admin
           .from('alpaca_accounts')
           .select('alpaca_account_id, account_status')
           .eq('user_id', user.id)
           .maybeSingle();
+        if (legErr) throw legErr;
         if (leg) account = leg;
       }
 
       if (!account || !['ACTIVE', 'APPROVED'].includes(account.account_status)) {
         return NextResponse.json({ error: 'No active brokerage account' }, { status: 400 });
+      }
+      if (!symbol || !['buy', 'sell'].includes(String(side).toLowerCase())) {
+        return NextResponse.json({ error: 'symbol and side are required' }, { status: 400 });
       }
 
       const orderBody = {
@@ -62,40 +56,32 @@ export const POST = withApiGuard(
         type,
         time_in_force,
       };
-
-      if (notional != null && notional !== '') {
-        orderBody.notional = String(notional);
-      } else if (qty != null && qty !== '') {
-        orderBody.qty = String(qty);
-      } else {
+      if (notional != null && notional !== '') orderBody.notional = String(notional);
+      else if (qty != null && qty !== '') orderBody.qty = String(qty);
+      else {
         return NextResponse.json({ error: 'Either qty or notional is required' }, { status: 400 });
       }
 
-      const order = await alpaca.post(
-        `/v1/trading/accounts/${account.alpaca_account_id}/orders`,
-        orderBody,
+      const { order, row, replay } = await placeOrderOnce(
+        { admin, alpaca },
+        { userId: user.id, accountId: account.alpaca_account_id, idempotencyKey, orderBody },
       );
 
-      await getAdminClient()
-        .from('trade_history')
-        .insert({
-          user_id: user.id,
-          alpaca_order_id: order.id,
-          symbol: order.symbol,
-          side: order.side,
-          qty: order.qty != null ? String(order.qty) : null,
-          notional: order.notional != null ? String(order.notional) : null,
-          order_type: order.type,
-          status: order.status,
-        });
-
-      try {
-        await awardXP(user.id, 30, 'Placed a trade', 'trading');
-      } catch (e) {
-        console.error('orders: awardXP', e);
+      if (!replay) {
+        try {
+          await awardXP(
+            user.id,
+            30,
+            'Placed a trade',
+            'trading',
+            `trade:${row?.id || idempotencyKey}`,
+          );
+        } catch (e) {
+          console.error('orders: awardXP', e);
+        }
       }
 
-      return NextResponse.json({ success: true, order });
+      return NextResponse.json({ success: true, replay, order, row });
     } catch (error) {
       console.error('Order error:', error);
       return NextResponse.json(
@@ -104,5 +90,5 @@ export const POST = withApiGuard(
       );
     }
   },
-  { requireAuth: true },
+  { requireAuth: true, strict: true },
 );

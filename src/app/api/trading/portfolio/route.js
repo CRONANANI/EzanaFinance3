@@ -37,7 +37,7 @@ export const GET = withApiGuard(
         .select('alpaca_account_id')
         .eq('user_id', user.id)
         .maybeSingle();
-      if (br) account = br;
+      if (br?.alpaca_account_id) account = br;
       if (!account) {
         const { data: leg } = await getAdminClient()
           .from('alpaca_accounts')

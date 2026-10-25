@@ -270,7 +270,7 @@ export const POST = withApiGuard(
         let oldRating;
         let newTier;
         if (passed) {
-          await updateBrokerageFlags(supabase, user.id, courseId);
+          await updateBrokerageFlags(getAdminClient(), user.id, courseId);
           badges = await syncTrackAndBadges(supabase, user.id, course);
 
           try {

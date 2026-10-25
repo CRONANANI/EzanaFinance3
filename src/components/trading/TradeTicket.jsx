@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import { getMarketStatus } from '@/utils/marketHours';
 import { Confetti } from '@/components/ui/Confetti';
@@ -17,6 +17,13 @@ export function TradeTicket({ getToken, onOrderPlaced }) {
   const [limitPrice, setLimitPrice] = useState('');
   const [timeInForce, setTimeInForce] = useState('day');
   const [loading, setLoading] = useState(false);
+  /* One Idempotency-Key per submit: a retry after a network error reuses it
+     (the server then returns the first result); a new submit gets a new one. */
+  const submitKeyRef = useRef(null);
+  /* A changed order is a new submit. */
+  useEffect(() => {
+    submitKeyRef.current = null;
+  }, [selectedAsset, side, qty, orderType, limitPrice, amountType, timeInForce]);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -73,12 +80,19 @@ export function TradeTicket({ getToken, onOrderPlaced }) {
       else payload.qty = parseFloat(qty);
       if (orderType === 'limit' && limitPrice) payload.limitPrice = parseFloat(limitPrice);
 
+      if (!submitKeyRef.current) submitKeyRef.current = crypto.randomUUID();
       const res = await fetch('/api/alpaca/order', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          'Idempotency-Key': submitKeyRef.current,
+        },
         body: JSON.stringify(payload),
       });
       const data = await res.json();
+      /* Answered (success or a definite refusal): the next submit is new. */
+      submitKeyRef.current = null;
       if (!res.ok) throw new Error(data.details || data.error);
 
       fetch('/api/notifications/track', {

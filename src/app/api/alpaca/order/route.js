@@ -4,22 +4,31 @@
  * DELETE /api/alpaca/order — Cancel order(s)
  */
 import { NextResponse } from 'next/server';
-import { alpacaRequest } from '@/lib/alpaca';
+import { alpacaRequest, alpaca } from '@/lib/alpaca';
+import { placeOrderOnce, readIdempotencyKey } from '@/lib/trading/idempotent';
 import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
 
 export const dynamic = 'force-dynamic';
 
 async function getAlpacaAccountId(supabaseAdmin, userId) {
-  const { data } = await supabaseAdmin
+  const { data, error } = await supabaseAdmin
     .from('alpaca_accounts')
     .select('alpaca_account_id')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
+  if (error) throw error;
   return data?.alpaca_account_id;
 }
 
 async function postOrder(request, user) {
+  const idempotencyKey = readIdempotencyKey(request);
+  if (!idempotencyKey) {
+    return NextResponse.json(
+      { error: 'Idempotency-Key header (a UUID) is required' },
+      { status: 400 },
+    );
+  }
   try {
     const supabaseAdmin = getAdminClient();
 
@@ -53,10 +62,24 @@ async function postOrder(request, user) {
     if (stopPrice) orderPayload.stop_price = stopPrice.toString();
     if (trailPercent) orderPayload.trail_percent = trailPercent.toString();
 
-    const order = await alpacaRequest(`/v1/trading/accounts/${accountId}/orders`, {
-      method: 'POST',
-      body: JSON.stringify(orderPayload),
-    });
+    const { order, row, replay } = await placeOrderOnce(
+      { admin: supabaseAdmin, alpaca },
+      { userId: user.id, accountId, idempotencyKey, orderBody: orderPayload },
+    );
+
+    if (replay) {
+      /* Same Idempotency-Key as an earlier submit: report that order. */
+      return NextResponse.json({
+        success: row?.status !== 'submit_failed',
+        replay: true,
+        orderId: row?.alpaca_order_id || null,
+        symbol: row?.symbol,
+        side: row?.side,
+        qty: row?.qty,
+        notional: row?.notional,
+        status: row?.status,
+      });
+    }
 
     return NextResponse.json({
       success: true,
