@@ -266,6 +266,9 @@ export async function startPg({ migrations = [], extraSchema = '' } = {}) {
     );
 
   sql(STUB_SCHEMA);
+  /* Tables the QA remediation migrations touch (buckets, mock portfolio,
+     learning, community posts). Idempotent. */
+  sql((await import('./retail-qa-stub.mjs')).RETAIL_STUB);
   if (extraSchema) sql(extraSchema);
   for (const m of migrations) file(m);
 
