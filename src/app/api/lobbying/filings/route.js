@@ -66,7 +66,9 @@ export async function GET(request) {
       }
       let q = admin
         .from('lobbying_filings')
-        .select('*', { count: 'exact' })
+        /* 'estimated': exact below PostgREST's row threshold, the planner's
+           estimate above it, so deep pages do not re-count the table. */
+        .select('*', { count: 'estimated' })
         .eq('filing_year', year);
       if (publicNames) q = q.in('client_name', publicNames);
       if (registrant) q = q.ilike('registrant_name', `%${registrant}%`);

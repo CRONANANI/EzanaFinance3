@@ -12,7 +12,13 @@ import { startPg } from './lib/pg-harness.mjs';
 
 const MIG_DIR = new URL('../supabase/migrations/', import.meta.url).pathname;
 const MIGRATIONS = readdirSync(MIG_DIR)
-  .filter((f) => f >= '20261025150000' && f.endsWith('.sql') && !f.includes('concurrent'))
+  .filter(
+    (f) =>
+      f >= '20261025150000' &&
+      f.endsWith('.sql') &&
+      !f.includes('concurrent') &&
+      !f.includes('live_only') /* a catalog copy of live tables; needs the whole live schema */,
+  )
   .sort()
   .map((f) => path.join(MIG_DIR, f));
 
@@ -261,5 +267,59 @@ test('rate_limit_hit: 10 parallel hits against a limit of 3 allow exactly 3; the
   assert.equal(
     pg.sql(`select allowed || ',' || hits from rate_limit_hit('k1', 3, 60000)`),
     'true,1',
+  );
+});
+
+test('submit_org_assignment: 10 parallel submits get versions 1..10 with no duplicate', async (t) => {
+  if (skip(t)) return;
+  const asg = '33333333-3333-4333-8333-333333333333';
+  const org = '44444444-4444-4444-8444-444444444444';
+  const claims = JSON.stringify({ sub: U1, role: 'authenticated' });
+  const r = await pg.parallel(
+    n(
+      () =>
+        `set request.jwt.claims = '${claims}'; select version from submit_org_assignment('${asg}', '${org}', 'x')`,
+    ),
+  );
+  assert.ok(
+    r.every((x) => x.code === 0),
+    r.map((x) => x.err).join('\n'),
+  );
+  assert.equal(
+    pg.sql(
+      `select string_agg(version::text, ',' order by version) from org_assignment_submissions where assignment_id='${asg}'`,
+    ),
+    '1,2,3,4,5,6,7,8,9,10',
+  );
+});
+
+test('replace_13f_holdings: a filing is replaced atomically, duplicates per CUSIP kept', (t) => {
+  if (skip(t)) return;
+  const rows = (k) =>
+    JSON.stringify(
+      Array.from({ length: k }, (_, i) => ({ cusip: i % 2 ? 'AAA' : 'BBB', value_usd: i })),
+    );
+  assert.equal(pg.sql(`select replace_13f_holdings('acc-1', '${rows(5)}')`), '5');
+  assert.equal(pg.sql(`select replace_13f_holdings('acc-1', '${rows(3)}')`), '3');
+  assert.equal(pg.sql(`select count(*) from sec_13f_holdings where accession_no='acc-1'`), '3');
+  /* A bad row rolls the whole replacement back: the previous 3 survive. */
+  assert.throws(() =>
+    pg.sql(`select replace_13f_holdings('acc-1', '[{"value_usd":"not-a-number"}]')`),
+  );
+  assert.equal(pg.sql(`select count(*) from sec_13f_holdings where accession_no='acc-1'`), '3');
+});
+
+test('latest_messages: one newest row per conversation', (t) => {
+  if (skip(t)) return;
+  const c1 = '55555555-5555-4555-8555-555555555555';
+  const c2 = '66666666-6666-4666-8666-666666666666';
+  pg.sql(`insert into messages (conversation_id, content, created_at) values
+    ('${c1}', 'old', now() - interval '2 hours'), ('${c1}', 'new', now()),
+    ('${c2}', 'only', now() - interval '1 hour')`);
+  assert.equal(
+    pg.sql(
+      `select string_agg(content, ',' order by content) from latest_messages(array['${c1}','${c2}']::uuid[])`,
+    ),
+    'new,only',
   );
 });

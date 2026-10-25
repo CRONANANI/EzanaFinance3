@@ -214,3 +214,34 @@ After reconciliation, maintain the workflow:
       exit 1
     fi
 ```
+
+## Migration file names (reliability audit P2-15, Oct 25, 2026)
+
+Not renamed. These migrations are applied by hand in the SQL editor, so
+`supabase_migrations.schema_migrations` does not record them and a rename
+cannot be checked against the history; renaming an applied file risks a
+`supabase db push` re-running it. Within each pair the files touch unrelated
+objects, so their relative order does not matter.
+
+**Same timestamp, two files (8):**
+
+| Timestamp      | Files                                                     |
+| -------------- | --------------------------------------------------------- |
+| 20260325120000 | brokerage_accounts_trade_history, profiles_user_settings  |
+| 20260327120000 | friend_requests_comment_trigger, learning_center_catalog  |
+| 20260416120000 | notifications_watchlist_and_capitol, watchlists_hardening |
+| 20260602000000 | beginner_experience, echo_public_cta_system               |
+| 20260616000000 | login_attempts_rls, plaid_oauth_webhook                   |
+| 20260726000000 | help_center_rag, org_flag_object                          |
+| 20260803000000 | oecd_series_rollups, sec_filings                          |
+| 20260920120000 | perf_candidate_indexes, sonar_guest_queries               |
+
+**No 14-digit prefix (4):** `20260331_org_sub_roles.sql`,
+`20260405_empire_ranking_schema.sql`, `20260428_account_lock.sql`,
+`20260807_echo_globe_rail.sql`. The Supabase CLI sorts these by string, so
+each runs before every file dated the same day.
+
+**Rule from now on:** one unique 14-digit timestamp per file, never in the
+future (`date -u +%Y%m%d%H%M%S`). New tables go into a migration in the same
+change that first writes them (see `20261025170000_schema_live_only_tables.sql`
+for the backfill of the ones that did not).

@@ -299,26 +299,39 @@ async function run(request) {
           put_call: p.put_call,
         };
       });
-      // Replace this filing's holdings (idempotent on re-parse).
+      // Replace this filing's holdings in ONE transaction
+      // (replace_13f_holdings): a failure can no longer leave it half
+      // written. Before that migration is applied, the old delete + chunked
+      // insert runs, with its own clean-up on failure.
       // eslint-disable-next-line no-await-in-loop
-      await admin.from('sec_13f_holdings').delete().eq('accession_no', f.accession_no);
-      let failed = false;
-      for (let i = 0; i < rows.length; i += INSERT_CHUNK) {
-        // eslint-disable-next-line no-await-in-loop
-        const { error } = await admin
-          .from('sec_13f_holdings')
-          .insert(rows.slice(i, i + INSERT_CHUNK));
-        if (error) {
-          errors.push(`13f ${f.accession_no}: ${error.message}`);
-          failed = true;
-          break;
-        }
+      const { error: rpcErr } = await admin.rpc('replace_13f_holdings', {
+        p_accession: f.accession_no,
+        p_rows: rows.map(({ accession_no: _a, ...r }) => r),
+      });
+      if (rpcErr && rpcErr.code !== 'PGRST202' && rpcErr.code !== '42883') {
+        errors.push(`13f ${f.accession_no}: ${rpcErr.message}`);
+        continue;
       }
-      if (failed) {
-        // Never leave a half-written filing: it would read as parsed.
+      if (rpcErr) {
         // eslint-disable-next-line no-await-in-loop
         await admin.from('sec_13f_holdings').delete().eq('accession_no', f.accession_no);
-        continue;
+        let failed = false;
+        for (let i = 0; i < rows.length; i += INSERT_CHUNK) {
+          // eslint-disable-next-line no-await-in-loop
+          const { error } = await admin
+            .from('sec_13f_holdings')
+            .insert(rows.slice(i, i + INSERT_CHUNK));
+          if (error) {
+            errors.push(`13f ${f.accession_no}: ${error.message}`);
+            failed = true;
+            break;
+          }
+        }
+        if (failed) {
+          // eslint-disable-next-line no-await-in-loop
+          await admin.from('sec_13f_holdings').delete().eq('accession_no', f.accession_no);
+          continue;
+        }
       }
       filings13f += 1;
       holdingsRows += rows.length;

@@ -167,7 +167,8 @@ export async function getTrades(chamber, opts = {}) {
   const limit = clampLimit(opts.limit);
   const from = (Math.max(1, Number(page) || 1) - 1) * limit;
   try {
-    let q = db.from(t.trades).select('*', { count: 'exact' });
+    /* 'estimated' on the big paginated lists (exact below the threshold). */
+    let q = db.from(t.trades).select('*', { count: 'estimated' });
     const code = txCode(type);
     if (code) q = q.eq('tx_type', code);
     if (bracket) q = q.eq('amount_bracket_label', bracket);
@@ -203,7 +204,7 @@ export async function getFilings(chamber, opts = {}) {
   const limit = clampLimit(opts.limit);
   const from = (Math.max(1, Number(page) || 1) - 1) * limit;
   try {
-    let q = db.from(t.filings).select('*', { count: 'exact' });
+    let q = db.from(t.filings).select('*', { count: 'estimated' });
     if (year) q = q.eq('filing_year', Number(year));
     if (type) q = q.eq('filing_type', String(type).toUpperCase());
     if (member) q = q.ilike('last_name', `%${member}%`);

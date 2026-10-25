@@ -163,6 +163,20 @@ create table public.competitions (
     constraint competitions_status_check check (status in ('upcoming','active','ended','scored','cancelled')),
   scored_at timestamptz
 );
+create table public.sec_13f_holdings (
+  id bigserial primary key, accession_no text not null, name_of_issuer text, cusip text,
+  ticker text, value_usd numeric not null default 0, shares numeric, share_type text,
+  put_call text, synced_at timestamptz not null default now()
+);
+create table public.messages (
+  id uuid primary key default gen_random_uuid(), conversation_id uuid not null,
+  sender_id uuid, content text, created_at timestamptz not null default now(), read_at timestamptz
+);
+create table public.org_assignment_submissions (
+  id uuid primary key default gen_random_uuid(), assignment_id uuid not null, org_id uuid not null,
+  submitted_by uuid not null, version int not null default 1, note text,
+  created_at timestamptz default now()
+);
 create table public.rate_limit_buckets (
   bucket_key text primary key, count int not null default 0,
   window_start timestamptz not null default now(), expires_at timestamptz not null,

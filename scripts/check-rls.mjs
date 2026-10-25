@@ -14,7 +14,13 @@ import { startPg } from './lib/pg-harness.mjs';
 
 const MIG_DIR = new URL('../supabase/migrations/', import.meta.url).pathname;
 const MIGRATIONS = readdirSync(MIG_DIR)
-  .filter((f) => f >= '20261025150000' && f.endsWith('.sql') && !f.includes('concurrent'))
+  .filter(
+    (f) =>
+      f >= '20261025150000' &&
+      f.endsWith('.sql') &&
+      !f.includes('concurrent') &&
+      !f.includes('live_only') /* a catalog copy of live tables; needs the whole live schema */,
+  )
   .sort()
   .map((f) => path.join(MIG_DIR, f));
 
