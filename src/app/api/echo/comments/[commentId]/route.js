@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { getAdminClient } from '@/lib/supabase';
+import { getLazyAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const admin = getAdminClient();
+const admin = getLazyAdminClient();
 
 /**
  * DELETE /api/echo/comments/<commentId> — soft-delete own comment

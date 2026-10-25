@@ -4,14 +4,14 @@
  * POST → start a Mux direct upload and create a pending video row
  */
 import { NextResponse } from 'next/server';
-import { requireUser, getAdminClient } from '@/lib/supabase';
+import { requireUser, getLazyAdminClient } from '@/lib/supabase';
 import { sanitizeInput } from '@/lib/sanitize';
 import { isMuxConfigured, createDirectUpload, mapVideoRow } from '@/lib/mux';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const admin = getAdminClient();
+const admin = getLazyAdminClient();
 
 export async function GET(request) {
   try {

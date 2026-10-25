@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireUser, getCurrentUser, getUserClient, getAdminClient } from '@/lib/supabase';
+import { requireUser, getCurrentUser, getUserClient, getLazyAdminClient } from '@/lib/supabase';
 import { awardXP } from '@/lib/rewards';
 import { sanitizeInput } from '@/lib/sanitize';
 import { withDemoPosts } from '@/lib/community/demo-data';
@@ -10,7 +10,7 @@ import { communityTermsGate } from '@/lib/moderation/terms';
 
 export const dynamic = 'force-dynamic';
 
-const admin = getAdminClient();
+const admin = getLazyAdminClient();
 
 const LIMIT = 20;
 
@@ -736,6 +736,11 @@ export async function PATCH(request) {
     if (!row?.poll_data) {
       return NextResponse.json({ error: 'Post has no poll' }, { status: 400 });
     }
+    /* Validate the option BEFORE touching the existing vote (QA RET-19): an
+       invalid option used to delete the caller's vote and then 400. */
+    if (!(row.poll_data.options || []).some((o) => o?.id === option_id)) {
+      return NextResponse.json({ error: 'Invalid option' }, { status: 400 });
+    }
 
     const { data: existingVote } = await admin
       .from('poll_votes')
@@ -753,11 +758,18 @@ export async function PATCH(request) {
       const oldOpt = pd.options.find((o) => o.id === existingVote.option_id);
       if (oldOpt) oldOpt.votes = Math.max(0, (oldOpt.votes || 0) - 1);
       pd.total_votes = Math.max(0, (pd.total_votes || 0) - 1);
-      await admin.from('poll_votes').delete().eq('post_id', post_id).eq('user_id', user.id);
+      const { error: delErr } = await admin
+        .from('poll_votes')
+        .delete()
+        .eq('post_id', post_id)
+        .eq('user_id', user.id);
+      if (delErr) {
+        console.error('poll_votes delete:', delErr);
+        return NextResponse.json({ error: 'Could not change your vote' }, { status: 500 });
+      }
     }
 
     const newOpt = pd.options.find((o) => o.id === option_id);
-    if (!newOpt) return NextResponse.json({ error: 'Invalid option' }, { status: 400 });
     newOpt.votes = (newOpt.votes || 0) + 1;
     pd.total_votes = (pd.total_votes || 0) + 1;
 

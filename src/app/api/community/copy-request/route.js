@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireUser, getAdminClient } from '@/lib/supabase';
+import { requireUser, getLazyAdminClient } from '@/lib/supabase';
 import { awardELO } from '@/lib/elo';
 import { isDemoViewer, DEMO_COPY_REQUESTS } from '@/lib/community/demo-data';
 import { insertNotificationAndPush } from '@/lib/push/fanout';
@@ -7,7 +7,7 @@ import { insertNotificationAndPush } from '@/lib/push/fanout';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const admin = getAdminClient();
+const admin = getLazyAdminClient();
 
 const COOLDOWN_DAYS = 30;
 const MIN_ACCOUNT_AGE_DAYS = 7;

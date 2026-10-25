@@ -3,14 +3,14 @@
  */
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { getCurrentUser, getAdminClient } from '@/lib/supabase';
+import { getCurrentUser, getLazyAdminClient } from '@/lib/supabase';
 import { sanitizeInput } from '@/lib/sanitize';
 import { insertNotificationAndPush } from '@/lib/push/fanout';
 import { isBlockedPair, blockedBothWays } from '@/lib/moderation/blocks';
 
 export const dynamic = 'force-dynamic';
 
-const admin = getAdminClient();
+const admin = getLazyAdminClient();
 
 async function areMutualFollows(userIdA, userIdB) {
   const { data: aToB } = await admin

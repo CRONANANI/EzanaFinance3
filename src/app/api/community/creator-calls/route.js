@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireUser, getCurrentUser, getAdminClient } from '@/lib/supabase';
+import { requireUser, getCurrentUser, getLazyAdminClient } from '@/lib/supabase';
 import { isAdminUser } from '@/lib/admin-helpers';
 import { sanitizeInput } from '@/lib/sanitize';
 import { computeTrackRecord, RESOLVABLE_STATUSES } from '@/lib/creator-calls';
@@ -7,7 +7,7 @@ import { computeTrackRecord, RESOLVABLE_STATUSES } from '@/lib/creator-calls';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const admin = getAdminClient();
+const admin = getLazyAdminClient();
 
 // Tally back/fade votes for a set of calls, plus the viewer's own side.
 async function attachVotes(calls, viewerId) {

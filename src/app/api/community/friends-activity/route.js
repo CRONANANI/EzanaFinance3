@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { getCurrentUser, getAdminClient } from '@/lib/supabase';
+import { getCurrentUser, getLazyAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const admin = getAdminClient();
+const admin = getLazyAdminClient();
 
 /**
  * GET /api/community/friends-activity

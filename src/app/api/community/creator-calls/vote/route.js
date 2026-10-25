@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { requireUser, getAdminClient } from '@/lib/supabase';
+import { requireUser, getLazyAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const admin = getAdminClient();
+const admin = getLazyAdminClient();
 
 async function tally(callId, viewerId) {
   const { data: votes } = await admin

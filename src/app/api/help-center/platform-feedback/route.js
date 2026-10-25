@@ -99,7 +99,7 @@ export async function POST(request) {
 
   /* 2. Notify the owning team. Best effort: the row is already saved. */
   const inbox =
-    process.env[route.inboxEnv] || process.env.SUPPORT_INBOX || 'support@ezanafinance.com';
+    process.env[route.inboxEnv] || process.env.SUPPORT_INBOX || 'support@ezana.world';
   if (process.env.RESEND_API_KEY) {
     try {
       const productLabel = product

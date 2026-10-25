@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { requireUser, getAdminClient } from '@/lib/supabase';
+import { requireUser, getLazyAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-const admin = getAdminClient();
+const admin = getLazyAdminClient();
 
 function displayNameFromProfile(row) {
   if (!row) return 'Someone';

@@ -77,7 +77,7 @@ export const POST = withApiGuard(
         return NextResponse.json({ error: 'Validation failed', errors }, { status: 400 });
       }
 
-      const supportInbox = process.env.SUPPORT_INBOX || 'support@ezanafinance.com';
+      const supportInbox = process.env.SUPPORT_INBOX || 'support@ezana.world';
       const fromEmail = process.env.RESEND_FROM_EMAIL || 'Ezana Contact <noreply@ezana.world>';
 
       if (!process.env.RESEND_API_KEY) {

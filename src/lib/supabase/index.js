@@ -51,6 +51,28 @@ export function getAdminClient() {
 }
 
 /**
+ * Module-scope stand-in for getAdminClient(): the service-role client is
+ * created on first use, not at import. A route module that keeps
+ * `const admin = getLazyAdminClient()` at the top level still loads when
+ * SUPABASE_SERVICE_ROLE_KEY is missing, and the error surfaces inside the
+ * handler (its try/catch → JSON 500/503) instead of failing the module load.
+ * Same authorization rules as getAdminClient(): it bypasses RLS.
+ */
+export function getLazyAdminClient() {
+  let client = null;
+  return new Proxy(
+    {},
+    {
+      get(_target, prop) {
+        if (!client) client = getAdminClient();
+        const value = client[prop];
+        return typeof value === 'function' ? value.bind(client) : value;
+      },
+    },
+  );
+}
+
+/**
  * Returns a cookie-scoped Supabase client bound to the current request's
  * auth context (App Router API routes / server components). Use for
  * user-scoped CRUD where RLS enforces ownership.

@@ -6,13 +6,13 @@
  */
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { getCurrentUser, getAdminClient } from '@/lib/supabase';
+import { getCurrentUser, getLazyAdminClient } from '@/lib/supabase';
 import { revalidateTag } from 'next/cache';
 import { ECHO_HUB_TAG } from '@/lib/echo/hub-cache';
 
 export const dynamic = 'force-dynamic';
 
-const admin = getAdminClient();
+const admin = getLazyAdminClient();
 
 function slugify(text) {
   return text

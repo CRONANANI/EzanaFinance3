@@ -5,7 +5,7 @@
    Usage: node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-retail-qa.mjs */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { buildCommunityImagePath } from '../src/lib/community-utils.js';
 import { createMockSupabase } from './lib/mock-supabase.mjs';
 import { normalizePost } from '../src/components/community/redesign_v2/normalizePost.js';
@@ -246,4 +246,32 @@ test('community posts route validates, stores and embeds quoted posts', () => {
   assert.match(src, /attachQuotedPosts\(user\?\.id, list, profileMap\)/);
   const composer = read('src/components/community/redesign_v2/EvoComposer.jsx');
   assert.match(composer, /quoted_post_id: quoteMode && quotedPost\?\.id/);
+});
+
+/* ── RET-19 ──────────────────────────────────────────────────────────── */
+
+function routeFiles(dir) {
+  const out = [];
+  for (const name of readdirSync(new URL(`../${dir}`, import.meta.url))) {
+    const rel = `${dir}/${name}`;
+    if (statSync(new URL(`../${rel}`, import.meta.url)).isDirectory()) out.push(...routeFiles(rel));
+    else if (name === 'route.js') out.push(rel);
+  }
+  return out;
+}
+
+test('no community/echo/messages route creates the admin client at module load', () => {
+  for (const dir of ['src/app/api/community', 'src/app/api/echo', 'src/app/api/messages']) {
+    for (const f of routeFiles(dir)) {
+      const src = read(f);
+      assert.ok(!/^(const|let) \w+ = getAdminClient\(\)/m.test(src), f);
+    }
+  }
+});
+
+test('poll vote: option validated before the old vote is deleted; support inbox', () => {
+  const src = read('src/app/api/community/posts/route.js');
+  const patch = src.slice(src.indexOf('export async function PATCH'));
+  assert.ok(patch.indexOf('Invalid option') < patch.indexOf(".from('poll_votes')"));
+  assert.match(read('src/app/api/support/contact/route.js'), /'support@ezana\.world'/);
 });

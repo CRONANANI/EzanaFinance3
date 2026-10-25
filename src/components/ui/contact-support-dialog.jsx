@@ -51,7 +51,7 @@ const TOPICS = [
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_MESSAGE = 1000;
-const FALLBACK_EMAIL = "support@ezanafinance.com";
+const FALLBACK_EMAIL = "support@ezana.world";
 
 // Every token that touches the modal surface goes through these style objects
 // rather than raw Tailwind color classes — because tailwind.config.js pins

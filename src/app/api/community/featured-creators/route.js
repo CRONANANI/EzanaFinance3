@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getAdminClient } from '@/lib/supabase';
+import { getLazyAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-const admin = getAdminClient();
+const admin = getLazyAdminClient();
 
 // Standing order — signature creators surface first, then featured, then the
 // baseline creator tier; ties broken by follower count.

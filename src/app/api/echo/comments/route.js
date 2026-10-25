@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { getAdminClient } from '@/lib/supabase';
+import { getLazyAdminClient } from '@/lib/supabase';
 import { sanitizeText } from '@/lib/sanitize';
 import { visibleTo } from '@/lib/moderation/blocks';
 import { communityTermsGate } from '@/lib/moderation/terms';
@@ -8,7 +8,7 @@ import { communityTermsGate } from '@/lib/moderation/terms';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const admin = getAdminClient();
+const admin = getLazyAdminClient();
 
 function parseArticleId(bodyOrSearch, fromSearch = false) {
   if (fromSearch) {

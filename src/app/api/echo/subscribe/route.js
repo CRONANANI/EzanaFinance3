@@ -5,11 +5,11 @@
  */
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { getCurrentUser, getAdminClient } from '@/lib/supabase';
+import { getCurrentUser, getLazyAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-const admin = getAdminClient();
+const admin = getLazyAdminClient();
 
 export const POST = withApiGuard(
   async (request, user) => {

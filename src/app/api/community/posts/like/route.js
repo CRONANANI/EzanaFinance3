@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { requireUser, getAdminClient } from '@/lib/supabase';
+import { requireUser, getLazyAdminClient } from '@/lib/supabase';
 import { awardXP } from '@/lib/rewards';
 import { insertNotificationAndPush } from '@/lib/push/fanout';
 
 export const dynamic = 'force-dynamic';
 
-const admin = getAdminClient();
+const admin = getLazyAdminClient();
 
 /** POST { post_id, action: 'like' | 'unlike' } */
 export async function POST(request) {

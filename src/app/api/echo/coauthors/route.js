@@ -5,13 +5,13 @@
  * DELETE { articleId, userId }   → remove a co-author (article author only)
  */
 import { NextResponse } from 'next/server';
-import { requireUser, getAdminClient } from '@/lib/supabase';
+import { requireUser, getLazyAdminClient } from '@/lib/supabase';
 import { getCoauthorsForArticle } from '@/lib/echo-data';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const admin = getAdminClient();
+const admin = getLazyAdminClient();
 
 // Confirm the caller authored the article (only the author manages credits).
 async function ownsArticle(articleId, userId) {

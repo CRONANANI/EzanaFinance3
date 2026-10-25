@@ -5,7 +5,7 @@
  * DELETE → owner removes the video (and the Mux asset)
  */
 import { NextResponse } from 'next/server';
-import { requireUser, getAdminClient } from '@/lib/supabase';
+import { requireUser, getLazyAdminClient } from '@/lib/supabase';
 import {
   isMuxConfigured,
   getUpload,
@@ -18,7 +18,7 @@ import {
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const admin = getAdminClient();
+const admin = getLazyAdminClient();
 
 export async function GET(request, { params }) {
   try {

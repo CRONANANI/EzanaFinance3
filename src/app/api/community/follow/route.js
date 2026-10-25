@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireUser, getAdminClient } from '@/lib/supabase';
+import { requireUser, getLazyAdminClient } from '@/lib/supabase';
 import { resend } from '@/lib/services/resend';
 import { escapeHtml } from '@/lib/sanitize';
 import { emailFooterHtml } from '@/lib/email/footer';
@@ -9,7 +9,7 @@ import { insertNotificationAndPush } from '@/lib/push/fanout';
 
 export const dynamic = 'force-dynamic';
 
-const admin = getAdminClient();
+const admin = getLazyAdminClient();
 
 const SITE_ORIGIN = process.env.NEXT_PUBLIC_SITE_URL || 'https://ezana.world';
 
