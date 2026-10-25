@@ -37,6 +37,7 @@ export async function sendOrgInviteEmail(resendClient, { email, orgName, role, l
     const org = escapeHtml(orgName || 'your investment council');
     const roleLabel = escapeHtml(ROLE_LABELS[role] || 'Member');
     const href = escapeHtml(link);
+    // email-category: transactional (an invite the org explicitly sent)
     const { error } = await resendClient.emails.send({
       from: sender,
       to: email,

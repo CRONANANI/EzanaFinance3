@@ -74,6 +74,7 @@ export function resubmitBlock(existing, now = Date.now()) {
  */
 async function sendEmail(resend, message) {
   try {
+    // email-category: transactional (partner application verification and decisions)
     const res = await resend.emails.send({ from: partnerFromAddress(), ...message });
     if (res?.error) return { ok: false, error: res.error.message || String(res.error) };
     return { ok: true, error: null };
