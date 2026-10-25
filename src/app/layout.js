@@ -34,6 +34,16 @@ export const revalidate = 0;
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ezana.world';
 
+/* A malformed NEXT_PUBLIC_SITE_URL (CI stubs, a typo in Vercel) must not
+   crash every page at build time: fall back to the canonical origin. */
+function safeUrl(value, fallback) {
+  try {
+    return new URL(value);
+  } catch {
+    return new URL(fallback);
+  }
+}
+
 /* The link-preview card every page inherits when it is shared by text
    message or on social media: 1200x630, the Walia ibex alone (no text),
    centred and sized so apps that crop to a square (WhatsApp, some SMS
@@ -55,7 +65,7 @@ const SHARE_IMAGE = {
    og:site_name / applicationName say the same. The home page is a client
    component, so this default title IS the home page's title. */
 const BASE_METADATA = {
-  metadataBase: new URL(SITE_URL),
+  metadataBase: safeUrl(SITE_URL, 'https://ezana.world'),
   title: 'Ezana | Congressional Trades, 13F and Market Intelligence',
   applicationName: BRAND.name,
   description:

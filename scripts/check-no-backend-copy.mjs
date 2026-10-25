@@ -57,6 +57,8 @@ const EXEMPT_PATHS = [
   // "set SUPABASE_SERVICE_ROLE_KEY") and naming the vendor is the whole point:
   // they tell whoever runs the deployment exactly what to go and do.
   'src/lib/api-errors.js',
+  // server-only cron wrapper: logger strings and job ids, never rendered
+  'src/lib/cron/with-cron-lock.js',
   'src/lib/supabase-browser.js',
   'src/lib/bigquery-client.js',
   'src/lib/cache.js',

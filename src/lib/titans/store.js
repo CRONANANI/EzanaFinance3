@@ -991,15 +991,9 @@ export function getFundHoldings(cik) {
   return cachedFund(String(cik || ''));
 }
 
-/* ── Activist page reads (campaign model, dossier, target, paths) ───── */
-export {
-  getActivistOverview,
-  getActivistFilings,
-  getInvestorDossier,
-  getTargetFile,
-  getEventPricePaths,
-  raisedFrom,
-} from './activist-store';
+/* Activist page reads live in ./activist-store and are imported from there
+   directly: re-exporting them here made a store <-> activist-store cycle
+   (activist-store imports this module's 13F helpers). */
 
 /* ── Titans Shadow steps 2 to 4 (each in its own module) ───────────── */
 export { getInsiderOverview, searchInsider } from './insider-store';

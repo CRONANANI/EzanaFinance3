@@ -154,7 +154,7 @@ jobs:
               RESEND_API_KEY: 're_stub',
             };
             const names = [...fs.readFileSync('.env.example', 'utf8').matchAll(/^([A-Z0-9_]+)=/gm)].map((m) => m[1]);
-            fs.writeFileSync('.env.local', [...new Set(names)].map((n) => n + '=' + (stub[n] || 'stub')).join('\n') + '\n');
+            fs.writeFileSync('.env.local', [...new Set(names)].map((n) => n + '=' + (stub[n] || (/_(URL|URI|ORIGIN|HOST)\$/.test(n) ? 'https://stub.example.com' : 'stub'))).join('\n') + '\n');
           "
 
       - name: Build
