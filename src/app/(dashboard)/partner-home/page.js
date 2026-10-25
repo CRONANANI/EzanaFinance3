@@ -6,6 +6,8 @@ import { usePartner } from '@/contexts/PartnerContext';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase-browser';
 import { PartnerBadges } from '@/components/partner/PartnerBadges';
+import { PartnerPreviewEmpty } from '@/components/partner/PartnerPreviewEmpty';
+import { usePartnerPayouts, fmtUsdCents } from '@/hooks/usePartnerPayouts';
 import '../partner.css';
 import '@/components/partner/badges.css';
 
@@ -40,51 +42,6 @@ const QUICK_LINKS = [
   },
 ];
 
-const ACTIVITY_FEED = [
-  {
-    type: 'copier',
-    text: 'Alex M. started copying your portfolio',
-    time: '12 min ago',
-    icon: 'bi-person-plus',
-    color: '#10b981',
-  },
-  {
-    type: 'commission',
-    text: 'Commission earned: $47.20 from copy trades',
-    time: '1 hour ago',
-    icon: 'bi-cash-coin',
-    color: '#fbbf24',
-  },
-  {
-    type: 'course',
-    text: '3 new enrollments in "Options Trading Basics"',
-    time: '3 hours ago',
-    icon: 'bi-mortarboard',
-    color: '#a78bfa',
-  },
-  {
-    type: 'follower',
-    text: 'Sarah K. followed your profile',
-    time: '5 hours ago',
-    icon: 'bi-heart',
-    color: '#f472b6',
-  },
-  {
-    type: 'copier',
-    text: 'Mark R. copied your NVDA position',
-    time: '8 hours ago',
-    icon: 'bi-arrow-repeat',
-    color: '#10b981',
-  },
-  {
-    type: 'payout',
-    text: 'Monthly payout of $2,340.00 processed',
-    time: '1 day ago',
-    icon: 'bi-bank',
-    color: '#3b82f6',
-  },
-];
-
 function getGreeting() {
   const h = new Date().getHours();
   if (h < 12) return 'Good Morning';
@@ -94,7 +51,8 @@ function getGreeting() {
 
 export default function PartnerHomePage() {
   const { user } = useAuth();
-  const { partnerRole } = usePartner();
+  const { partnerRole, verified } = usePartner();
+  const { loading: payoutsLoading, pendingCents, lifetimeCents } = usePartnerPayouts();
   const [profile, setProfile] = useState(null);
 
   const getToken = useCallback(async () => {
@@ -131,16 +89,19 @@ export default function PartnerHomePage() {
     <div className="ptr-page">
       <div className="ptr-hero">
         <div className="ptr-hero-left">
-          <div className="ptr-hero-badge-row">
-            <span className="ptr-verified-badge">
-              <i className="bi bi-patch-check-fill" /> Verified{' '}
-              {partnerRole === 'creator'
-                ? 'Creator'
-                : partnerRole === 'trader'
-                  ? 'Trader'
-                  : 'Partner'}
-            </span>
-          </div>
+          {/* QA PAR-7: "Verified" only when partners.verified is true. */}
+          {verified || profile?.verified === true ? (
+            <div className="ptr-hero-badge-row">
+              <span className="ptr-verified-badge">
+                <i className="bi bi-patch-check-fill" /> Verified{' '}
+                {partnerRole === 'creator'
+                  ? 'Creator'
+                  : partnerRole === 'trader'
+                    ? 'Trader'
+                    : 'Partner'}
+              </span>
+            </div>
+          ) : null}
           <h1 className="ptr-hero-title">
             {getGreeting()}, {displayName}
           </h1>
@@ -150,20 +111,16 @@ export default function PartnerHomePage() {
           </p>
           <div className="ptr-hero-stats">
             <div className="ptr-hero-stat">
-              <span className="ptr-hero-stat-value">$12,450</span>
-              <span className="ptr-hero-stat-label">Total Earnings</span>
+              <span className="ptr-hero-stat-value">
+                {payoutsLoading || lifetimeCents == null ? '-' : fmtUsdCents(lifetimeCents)}
+              </span>
+              <span className="ptr-hero-stat-label">Lifetime paid</span>
             </div>
             <div className="ptr-hero-stat">
-              <span className="ptr-hero-stat-value">847</span>
-              <span className="ptr-hero-stat-label">Followers</span>
-            </div>
-            <div className="ptr-hero-stat">
-              <span className="ptr-hero-stat-value">234</span>
-              <span className="ptr-hero-stat-label">Active Copiers</span>
-            </div>
-            <div className="ptr-hero-stat">
-              <span className="ptr-hero-stat-value">3</span>
-              <span className="ptr-hero-stat-label">Published Courses</span>
+              <span className="ptr-hero-stat-value">
+                {payoutsLoading || pendingCents == null ? '-' : fmtUsdCents(pendingCents)}
+              </span>
+              <span className="ptr-hero-stat-label">Pending payout</span>
             </div>
           </div>
         </div>
@@ -207,24 +164,10 @@ export default function PartnerHomePage() {
       <div className="ptr-card">
         <div className="ptr-card-header">
           <h3>Recent Activity</h3>
-          <span className="ptr-card-badge">Live</span>
         </div>
-        <div className="ptr-activity-list">
-          {ACTIVITY_FEED.map((item, i) => (
-            <div key={i} className="ptr-activity-item" style={{ animationDelay: `${i * 60}ms` }}>
-              <div
-                className="ptr-activity-icon"
-                style={{ background: `${item.color}15`, color: item.color }}
-              >
-                <i className={`bi ${item.icon}`} />
-              </div>
-              <div className="ptr-activity-body">
-                <span className="ptr-activity-text">{item.text}</span>
-                <span className="ptr-activity-time">{item.time}</span>
-              </div>
-            </div>
-          ))}
-        </div>
+        <PartnerPreviewEmpty icon="bi-activity">
+          New copiers, followers, enrollments and commissions will show up here.
+        </PartnerPreviewEmpty>
       </div>
     </div>
   );
