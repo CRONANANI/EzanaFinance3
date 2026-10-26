@@ -160,7 +160,7 @@ const COVERAGE_ROWS = [
     source: 'Ezana model over public indicators',
     cadence: 'Weekly',
   },
-  { dataset: 'OECD macro', source: 'OECD', cadence: 'Weekly' },
+  { dataset: 'OECD macro', source: 'OECD', cadence: 'Periodic (annual series and projections)' },
   { dataset: 'World Bank indicators', source: 'World Bank', cadence: 'Weekly' },
   { dataset: 'Geopolitical risk', source: 'Caldara and Iacoviello GPR index', cadence: 'Weekly' },
   { dataset: 'Sanctions', source: 'US Treasury OFAC', cadence: 'Daily' },
