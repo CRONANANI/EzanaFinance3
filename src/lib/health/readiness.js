@@ -5,6 +5,7 @@
  * Anonymous callers get the status only; operators get the breakdown.
  */
 import { getAdminClient } from '@/lib/supabase';
+import { empireStatus } from '@/lib/health/empire-status';
 
 const withTimeout = (p, ms) =>
   Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
@@ -38,15 +39,60 @@ async function checkFinnhub() {
   }
 }
 
+/* Informational: the Empire Rankings backbone (catalog seed + populated
+   materialized view). Never turns readiness into a 503. */
+async function checkEmpire() {
+  try {
+    const db = getAdminClient();
+    const count = async (table) => {
+      const { count: n, error } = await withTimeout(
+        db.from(table).select('*', { head: true, count: 'exact' }),
+        3000,
+      );
+      return error ? null : n;
+    };
+    const [dims, metricMap, countries, latest] = await Promise.all([
+      count('empire_dimensions'),
+      count('dimension_metric_map'),
+      count('empire_countries'),
+      withTimeout(
+        db
+          .from('country_dimension_scores_mat')
+          .select('year')
+          .order('year', { ascending: false })
+          .limit(1),
+        3000,
+      ),
+    ]);
+    /* An unpopulated materialized view errors on read (55000). */
+    const populated = !latest.error;
+    const latestYear = Number(latest.data?.[0]?.year);
+    return {
+      status: empireStatus({ dims, metricMap, countries, populated, latestYear }),
+      dims,
+      metricMap,
+      countries,
+      populated,
+      latestYear: Number.isFinite(latestYear) ? latestYear : null,
+    };
+  } catch (e) {
+    return { status: 'unknown', error: e.message };
+  }
+}
+
 export async function readiness() {
-  const [database, finnhub] = await Promise.all([checkDatabase(), checkFinnhub()]);
+  const [database, finnhub, empire] = await Promise.all([
+    checkDatabase(),
+    checkFinnhub(),
+    checkEmpire(),
+  ]);
   const ready = database.status === 'healthy';
   return {
     ready,
     body: {
       status: ready ? 'ok' : 'unavailable',
       timestamp: new Date().toISOString(),
-      services: { database, providers: { finnhub } },
+      services: { database, providers: { finnhub }, data: { empire } },
     },
   };
 }

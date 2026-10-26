@@ -235,6 +235,58 @@ export function collectMigrationObjects(files) {
 
 /* ---------- live catalog ---------- */
 
+/* Data-presence checks for catalog tables the app cannot work without. An
+   object-level diff cannot see an empty seed (the Empire backbone shipped
+   with 0 dimensions and an unpopulated materialized view, and every country
+   ping silently showed "No matches"). Each count is guarded so a missing
+   table reads null instead of failing the whole query. */
+export const SEED_CHECKS = [
+  { table: 'empire_dimensions', min: 18, seed: '20260419120100_empire_scores_seeds.sql' },
+  { table: 'dimension_metric_map', min: 1, seed: '20260419120100_empire_scores_seeds.sql' },
+  { table: 'empire_countries', min: 50, seed: '20260419120100_empire_scores_seeds.sql' },
+];
+export const SEED_MATVIEWS = [
+  {
+    name: 'country_dimension_scores_mat',
+    fill: 'run /api/cron/sync-empire-data once (it ends with refresh_empire_scores_mat)',
+  },
+];
+
+function seedsSql() {
+  const counts = SEED_CHECKS.map(
+    ({ table }) =>
+      `'${table}', case when to_regclass('public.${table}') is null then null else ` +
+      `(xpath('/row/c/text()', query_to_xml('select count(*) as c from public.${table}', false, true, '')))[1]::text::int end`,
+  );
+  const mats = SEED_MATVIEWS.map(
+    ({ name }) =>
+      `'${name}:populated', (select ispopulated from pg_matviews where schemaname = 'public' and matviewname = '${name}')`,
+  );
+  return `json_build_object(${[...counts, ...mats].join(',\n    ')})`;
+}
+
+/** Problems from the catalog's `seeds` object: [{ object, have, need, fix }]. */
+export function seedProblems(seeds) {
+  if (!seeds) return [];
+  const out = [];
+  for (const { table, min, seed } of SEED_CHECKS) {
+    const have = seeds[table];
+    if (have == null || have < min)
+      out.push({ object: table, have: have ?? 'missing', need: `>= ${min}`, fix: `apply ${seed}` });
+  }
+  for (const { name, fill } of SEED_MATVIEWS) {
+    const populated = seeds[`${name}:populated`];
+    if (populated !== true)
+      out.push({
+        object: name,
+        have: populated == null ? 'missing' : 'unpopulated',
+        need: 'populated',
+        fix: fill,
+      });
+  }
+  return out;
+}
+
 export const CATALOG_SQL = `select json_build_object(
   'relations', (select coalesce(json_agg(n.nspname || '.' || c.relname), '[]'::json)
                   from pg_class c join pg_namespace n on n.oid = c.relnamespace
@@ -249,7 +301,8 @@ export const CATALOG_SQL = `select json_build_object(
                  where not t.tgisinternal),
   'policies',  (select coalesce(json_agg(schemaname || '.' || tablename || ':' || policyname), '[]'::json)
                   from pg_policies),
-  'buckets',   (select coalesce(json_agg(id), '[]'::json) from storage.buckets)
+  'buckets',   (select coalesce(json_agg(id), '[]'::json) from storage.buckets),
+  'seeds', ${seedsSql()}
 ) as catalog`;
 
 /* One self-contained, read-only query that returns only what is missing
@@ -395,8 +448,9 @@ async function main() {
       if (!liveBuckets.has(b)) live.byFile.push(['(storage.buckets insert)', [`bucket ${b}`]]);
   }
 
+  const seeds = catalog ? seedProblems(catalog.seeds) : [];
   if (json) {
-    console.log(JSON.stringify({ static: stat.missing, live }, null, 2));
+    console.log(JSON.stringify({ static: stat.missing, live, seeds }, null, 2));
   } else {
     console.log(
       `schema-drift: ${refs.tables.size} tables, ${refs.rpcs.size} rpcs, ${refs.buckets.size} buckets referenced in src; ${objects.size} objects created by ${migFiles.length} migrations`,
@@ -418,11 +472,14 @@ async function main() {
       console.log(`\nLive: ${live.codeMissing.length} code reference(s) missing live`);
       for (const m of live.codeMissing)
         console.log(`  ${m.kind.padEnd(6)} ${m.name}  (${m.where[0]})`);
+      console.log(`\nLive: ${seeds.length} catalog seed problem(s)`);
+      for (const p of seeds) console.log(`  ${p.object}: have ${p.have}, need ${p.need}; ${p.fix}`);
     } else {
       console.log('\nLive: skipped (set SUPABASE_DB_URL_READONLY or pass --catalog <file.json>)');
     }
   }
-  const liveFail = live && (live.byFile.length > 0 || live.codeMissing.length > 0);
+  const liveFail =
+    live && (live.byFile.length > 0 || live.codeMissing.length > 0 || seeds.length > 0);
   const staticFail = argv.includes('--strict') && stat.missing.length > 0;
   process.exit(liveFail || staticFail ? 1 : 0);
 }
