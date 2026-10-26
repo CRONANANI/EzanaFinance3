@@ -82,6 +82,28 @@
   line-height: 1.6;
 }
 
+/* Oct 26: one line on desktop. 1296px at 15px (measured, icon included):
+   fits from 1366px; 14px fits 1280-1365; below that two balanced lines. */
+@media (min-width: 1366px) {
+  .bl-subheading {
+    max-width: none;
+    white-space: nowrap;
+  }
+}
+@media (min-width: 1280px) and (max-width: 1365.98px) {
+  .bl-subheading {
+    max-width: none;
+    white-space: nowrap;
+    font-size: 0.875rem; /* 14px */
+  }
+}
+@media (max-width: 1279.98px) {
+  .bl-subheading {
+    max-width: 820px;
+    text-wrap: balance;
+  }
+}
+
 .bl-status-pill {
   display: inline-flex;
   align-items: center;
