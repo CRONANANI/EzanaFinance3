@@ -84,6 +84,59 @@
      for this: it flips to #047857 in light mode, which is one of the gradient's
      own stops. The band is a constant, so its mint is too. */
   --brand-band-mint: #6ee7b7;
+  /* Oct 25: the Sonar grounds' metallic finish (/datasets overview and the
+     landing Sonar band). Same emerald family as --brand-band-green, finished
+     like polished, lightly brushed metal. Layers, top to bottom:
+       1. brushed grain: hairline horizontal lines, 1.2% white
+       2. top sheen: the glossy horizon
+       3. primary specular streak: a crisp diagonal highlight
+       4. secondary streak: softer, further right
+       5. mint glint, top left
+       6. dark falloff at the bottom (depth)
+       7. base metal: reflection bands, dark, bright, dark, bright
+     First stop stays #032a21 so html/body.snr-takeover (sonar-band.css)
+     still matches the canvas. The primary streak peaks at 8% (not 10%) so
+     the brightest point (base #086049 under the streak) keeps white text
+     above 6:1 and --brand-band-mint about 4:1, which the mint headings
+     (large bold text, 3:1 minimum) clear.
+     Static only: no animation, nothing that repaints on scroll. */
+  --brand-band-metal:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.012) 0 1px,
+      rgba(255, 255, 255, 0) 1px 3px
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(255, 255, 255, 0.015) 14%,
+      rgba(255, 255, 255, 0) 30%
+    ),
+    linear-gradient(
+      112deg,
+      rgba(255, 255, 255, 0) 34%,
+      rgba(255, 255, 255, 0.035) 40%,
+      rgba(255, 255, 255, 0.08) 43.5%,
+      rgba(255, 255, 255, 0.03) 46%,
+      rgba(255, 255, 255, 0) 54%
+    ),
+    linear-gradient(
+      112deg,
+      rgba(255, 255, 255, 0) 74%,
+      rgba(255, 255, 255, 0.045) 79%,
+      rgba(255, 255, 255, 0) 86%
+    ),
+    radial-gradient(90% 60% at 10% 0%, rgba(110, 231, 183, 0.1) 0%, rgba(110, 231, 183, 0) 60%),
+    radial-gradient(130% 80% at 50% 120%, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 62%),
+    linear-gradient(
+      112deg,
+      #032a21 0%,
+      #054334 24%,
+      #086049 42%,
+      #054435 58%,
+      #065f46 80%,
+      #047857 100%
+    );
 
   /* ── Dataset dimension hues ── */
   /* The seven fixed dot colours of the shared dataset chrome contract

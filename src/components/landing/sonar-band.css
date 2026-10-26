@@ -51,8 +51,10 @@
 
   /* ---- ground ---- */
   /* One declaration site: theme-variables.css owns the gradient, because the
-     dataset category bar paints the same ground. */
-  --snr-band-bg: var(--brand-band-green);
+     dataset category bar paints the same ground. Oct 25: the band wears the
+     metal finish (--brand-band-metal); it is one viewport tall, so a plain
+     scrolling background maps the reflections to the screen. */
+  --snr-band-bg: var(--brand-band-metal);
   --snr-grid: rgba(255, 255, 255, 0.16);
 
   /* ---- ink ---- */
@@ -4455,4 +4457,12 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
    .snr-live (the first ping) takes over from here as before. */
 .snr-band.snr-hold [class*='snr-anim-']:not(.snr-anim-caret) {
   animation-play-state: paused;
+}
+
+/* Oct 25: the metal finish falls back to the flat brand green when the user
+   asks for more contrast or a forced palette. */
+@media (prefers-contrast: more), (forced-colors: active) {
+  .snr-band {
+    --snr-band-bg: var(--brand-band-green);
+  }
 }

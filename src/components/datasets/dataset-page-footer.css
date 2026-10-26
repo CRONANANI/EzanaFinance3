@@ -88,3 +88,48 @@
     grid-column: 1 / -1;
   }
 }
+
+/* /datasets overview (Oct 25): the footer sits on the page's metal ground.
+   The shell paints that ground once, on a fixed layer behind everything
+   (sonar.css, .ds-shell--search::before), so the footer has no surface of its
+   own and therefore no seam. White ink, mint on hover, hairline dividers.
+   Two-class selectors on purpose: the global body.light-mode p/h4 rules are
+   (0,1,2) and would beat single-class rules, and this band is constant in
+   both themes. Every other /datasets page keeps the token footer above. */
+.ds-shell--search .dsx-foot {
+  margin-top: 0;
+  padding-top: 40px;
+  background: transparent;
+  border-top-color: color-mix(in srgb, white 14%, transparent);
+  color: color-mix(in srgb, white 82%, transparent);
+}
+.ds-shell--search .dsx-foot-wordmark {
+  color: white;
+}
+/* 88% / 94%, not lower: the metal's brightest stop (#047857, bottom right)
+   sits under the footer, and 76% white measured 3.97:1 there; 88% is 4.8:1. */
+.ds-shell--search .dsx-foot-tag,
+.ds-shell--search .dsx-foot-col h4,
+.ds-shell--search .dsx-foot-legal {
+  color: color-mix(in srgb, white 88%, transparent);
+}
+.ds-shell--search .dsx-foot-col a {
+  color: color-mix(in srgb, white 94%, transparent);
+}
+.ds-shell--search .dsx-foot-col a:hover {
+  color: var(--brand-band-mint);
+}
+.ds-shell--search .dsx-foot-col a:focus-visible,
+.ds-shell--search .dsx-foot-logo:focus-visible {
+  outline-color: var(--brand-band-mint);
+}
+.ds-shell--search .dsx-foot-legal {
+  border-top-color: color-mix(in srgb, white 14%, transparent);
+}
+/* The global body.light-mode .nav-logo-img rule blends the mark with
+   `darken`, which makes the ibex vanish on the dark metal (logged-out
+   visitors are in light mode). Natural colours here, as in the overview's
+   own nav (.dscat-logo-img--brand). (0,3,0) beats that (0,1,2) rule. */
+.ds-shell--search .dsx-foot-logo .nav-logo-img {
+  mix-blend-mode: normal;
+}

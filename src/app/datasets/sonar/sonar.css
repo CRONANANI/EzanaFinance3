@@ -2374,14 +2374,42 @@ body.light-mode .dso-page--search .dso-sonar-title {
    white so they read on the green, the search placeholder is white at 72%
    (emerald on green did not read), and the orbital scene keeps its dark
    slab, which is what separates it from the ground. */
-/* The shell paints the gradient once; the bar and the ground above the
-   globe stay transparent (Oct 12 rule), so there is no seam. */
+/* The shell paints the ground once; the bar and the ground above the
+   globe stay transparent (Oct 12 rule), so there is no seam.
+   Oct 25: the ground is the metal finish (--brand-band-metal), painted on a
+   fixed layer behind the whole shell so a tall results page never stretches
+   the reflections into smears, and nothing repaints at the footer's edge.
+   A position: fixed layer is composited once; background-attachment: fixed
+   is ignored on iOS and repaints on scroll. The flat green under it only
+   shows if the layer cannot render. */
 .ds-shell--search {
   --dso-black: var(--dso-radar-core);
+  position: relative;
+  isolation: isolate;
   background: var(--brand-band-green);
 }
-.ds-shell--search .dso-ground {
+.ds-shell--search::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--brand-band-metal);
+}
+/* The shell's fixed metal layer is the overview's only ground: every
+   full-width section that used to paint the flat green goes transparent.
+   Cards and panels keep their translucent dark fills. */
+.ds-shell--search .dso-ground,
+.ds-shell--search .dsl-sonar,
+.ds-shell--search .ind--band,
+.ds-shell--search .crk:not(.crk--app),
+.ds-shell--search .snrx {
   background: transparent;
+}
+@media (prefers-contrast: more), (forced-colors: active) {
+  .ds-shell--search::before {
+    background: var(--brand-band-green);
+  }
 }
 /* The landing band has no globe, and the globe layer starts under the bar,
    which left a lighter strip above it; for an exact match it is hidden. */

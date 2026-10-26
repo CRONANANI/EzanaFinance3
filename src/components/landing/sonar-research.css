@@ -395,3 +395,29 @@
   margin: 0;
   font-size: 12.5px;
 }
+
+/* Oct 25: below the landing Sonar band the deck wears the band's metal
+   finish. The band is a viewport-tall takeover section and the deck renders
+   as its sibling, so the deck paints its own metal; the gradient restarts at
+   its top edge, and a 1px white hairline makes that join read as an
+   intentional panel seam. The industry layout and country ranking that can
+   follow do the same in their own sheets. On /datasets the deck stays
+   transparent over the shell's fixed metal layer. */
+.snrx {
+  background: var(--brand-band-metal);
+  border-top: 1px solid color-mix(in srgb, white 10%, transparent);
+}
+.dso-page--search .snrx,
+.ds-shell--search .snrx {
+  background: transparent;
+  border-top: 0;
+}
+@media (prefers-contrast: more), (forced-colors: active) {
+  .snrx {
+    background: var(--brand-band-green);
+  }
+  .dso-page--search .snrx,
+  .ds-shell--search .snrx {
+    background: transparent;
+  }
+}

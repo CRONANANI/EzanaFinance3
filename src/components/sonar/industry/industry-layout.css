@@ -420,3 +420,25 @@
     order: 3;
   }
 }
+
+/* Oct 25: below the landing Sonar band this section wears the band's metal
+   finish (its gradient restarts at the top edge; a 1px hairline marks the
+   join). On /datasets it stays transparent over the shell's fixed metal. */
+.ind--band {
+  background: var(--brand-band-metal);
+  border-top: 1px solid color-mix(in srgb, white 10%, transparent);
+}
+.dso-page--search .ind--band,
+.ds-shell--search .ind--band {
+  background: transparent;
+  border-top: 0;
+}
+@media (prefers-contrast: more), (forced-colors: active) {
+  .ind--band {
+    background: var(--brand-band-green);
+  }
+  .dso-page--search .ind--band,
+  .ds-shell--search .ind--band {
+    background: transparent;
+  }
+}
