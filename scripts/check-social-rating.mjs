@@ -71,22 +71,15 @@ test('row states: completed below, current, one next, locked above', () => {
   assert.deepEqual(states, ['completed', 'current', 'next', 'locked', 'locked', 'locked']);
 });
 
-test('every ascent step is a real, positive ledger event and the climb ends on 2500, the Strategist line', () => {
+test('every ascent step is a real, positive ledger event and the climb ends on 2500, the Strategist line', async () => {
   const src = readFileSync(
     new URL('../src/components/landing/SocialLedgerSection.jsx', import.meta.url),
     'utf8',
   );
-  const pool = src.slice(
-    src.indexOf('const LEDGER_EVENTS'),
-    src.indexOf('];', src.indexOf('const LEDGER_EVENTS')),
-  );
-  const deltas = new Map(
-    [...pool.matchAll(/d:\s*(-?\d+),\s*event:\s*("([^"]+)"|'([^']+)')/g)].map((m) => [
-      m[3] ?? m[4],
-      Number(m[1]),
-    ]),
-  );
-  assert.ok(deltas.size >= 2, 'could not read LEDGER_EVENTS');
+  /* Oct 26: the points come from the board's one timeline module. */
+  const { EVENTS, youAt, DAYS } = await import('../src/components/landing/social-timeline.js');
+  const deltas = new Map(EVENTS.map((e) => [e.event, e.d]));
+  assert.ok(deltas.size >= 2, 'could not read the timeline EVENTS');
   const specs = src.slice(src.indexOf('const ASCENT_SPECS'), src.indexOf('const ASCENT_STEPS'));
   const events = [...specs.matchAll(/event:\s*("([^"]+)"|'([^']+)')/g)].map((m) => m[2] ?? m[3]);
   assert.equal(events.length, 7);
@@ -96,11 +89,7 @@ test('every ascent step is a real, positive ledger event and the climb ends on 2
     assert.ok(deltas.get(e) > 0, `ascent step ${e} does not earn rating`);
     sum += deltas.get(e);
   }
-  const you = src
-    .match(/const YOU_SERIES = \[([^\]]+)\]/)[1]
-    .split(',')
-    .map(Number);
-  const end = you[you.length - 1];
+  const end = youAt(DAYS);
   assert.equal(end, 2500);
   assert.equal(end - sum, 2448, 'the climb starts at 2448');
   /* The promotion the gauge plays is real: 2448 is Apprentice, 2500 Strategist. */

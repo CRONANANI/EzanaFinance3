@@ -543,6 +543,75 @@
   stroke: var(--border-primary);
   stroke-dasharray: 3 3;
 }
+/* A soft 6px halo round "You"'s dot. */
+.sled-pin-halo {
+  fill: color-mix(in srgb, var(--emerald) 18%, transparent);
+}
+/* Every day after the current date, ghosted. */
+.sled-future,
+.sled-future path {
+  fill: color-mix(in srgb, var(--bg-primary) 55%, transparent);
+  stroke: none;
+}
+
+/* The flip calendar (Oct 26): 56px wide card, month band, day, weekday. */
+.sled-cal {
+  position: absolute;
+  top: 10px;
+  left: 56px; /* clear of the 44px y-axis */
+  z-index: 2;
+  width: 56px;
+  display: grid;
+  justify-items: center;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-sm);
+  perspective: 240px;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.sled-cal-month {
+  width: 100%;
+  padding: 3px 0 2px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--bg-primary);
+  background: var(--emerald);
+  transform-origin: 50% 0;
+}
+.sled-cal-day {
+  padding-top: 3px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-primary);
+  transform-origin: 50% 0;
+}
+.sled-cal-wd {
+  padding: 2px 0 5px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.sled-cal-day.is-flip,
+.sled-cal-month.is-flip {
+  animation: sled-cal-flip 220ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes sled-cal-flip {
+  from {
+    transform: rotateX(-88deg);
+    opacity: 0.2;
+  }
+  to {
+    transform: rotateX(0deg);
+    opacity: 1;
+  }
+}
 .sled-chart-tooltip--pinned {
   width: max-content;
   pointer-events: none;
@@ -670,11 +739,80 @@
   min-height: 0;
   box-sizing: border-box;
 }
-.sled-tr--leaving {
-  opacity: clamp(0, calc(1 - var(--sled-shift) * 1.6), 1);
+/* Oct 26: the glide runs once per event the date reaches (the scroll is the
+   clock), as a CSS animation on the track: up exactly one row on the
+   compositor while the outgoing head row fades. The component drops the
+   head row and the class in the same render, so the settle is seamless. */
+.sled-track.is-gliding {
+  animation: sled-glide 700ms ease-in-out both;
 }
-.sled-tr--entering {
-  opacity: var(--sled-shift);
+.sled-track.is-gliding .sled-tr--leaving {
+  animation: sled-leave 700ms ease-in both;
+}
+@keyframes sled-glide {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, calc(-1 * var(--sled-lrow, var(--sled-row))), 0);
+  }
+}
+@keyframes sled-leave {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+/* The new row types itself over about 850ms: a stepped reveal of the text
+   with the caret riding its edge, then the caret goes. */
+.sled-type {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: bottom;
+}
+.sled-type-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sled-tr--typing .sled-type-text {
+  animation: sled-type 850ms steps(28, end) both;
+}
+.sled-tr--typing .sled-caret {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  margin: -0.5em 0 0;
+  animation: sled-caret 850ms steps(28, end) both;
+}
+@keyframes sled-type {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes sled-caret {
+  from {
+    left: 0;
+    opacity: 1;
+  }
+  99% {
+    opacity: 1;
+  }
+  to {
+    left: 100%;
+    opacity: 0;
+  }
+}
+.sled-tr--quiet .sled-row-body,
+.sled-tr--quiet .sled-rate {
+  color: var(--text-faint);
 }
 /* The newest row carries a hairline of the positive wash while it is the
    latest, so the eye finds the event that moved the rating. */
@@ -772,6 +910,26 @@
   color: var(--emerald);
   font-weight: 700;
 }
+/* Oct 26: standings re-rank as the date advances. Rows glide to their new
+   places (the component sets the inverse translate, this releases it), and
+   "You"'s rank cell pulses once when its rank changes. */
+.sled-tr--flip {
+  transition: transform 280ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  position: relative;
+  background: var(--bg-primary);
+}
+.sled-tile-rank.is-pulse {
+  animation: sled-rank-pulse 600ms ease-out;
+  border-radius: var(--radius-sm);
+}
+@keyframes sled-rank-pulse {
+  0% {
+    background: color-mix(in srgb, var(--emerald) 28%, transparent);
+  }
+  100% {
+    background: transparent;
+  }
+}
 .sled-tile-name {
   min-width: 0;
   white-space: nowrap;
@@ -810,6 +968,17 @@
 .sled-tr--you {
   background: var(--emerald-bg-subtle, color-mix(in srgb, var(--emerald) 5%, transparent));
   box-shadow: inset 3px 0 0 var(--emerald);
+}
+/* Oct 26: an opaque base under the tint, and above its neighbours, so a
+   re-rank glide passes cleanly in front of the row it overtakes. */
+.sled-tr--flip.sled-tr--you {
+  z-index: 1;
+  background:
+    linear-gradient(
+      var(--emerald-bg-subtle, color-mix(in srgb, var(--emerald) 5%, transparent)),
+      var(--emerald-bg-subtle, color-mix(in srgb, var(--emerald) 5%, transparent))
+    ),
+    var(--bg-primary);
 }
 .sled-tr--you > :first-child {
   padding-left: 10px;
@@ -1344,7 +1513,18 @@
   grid-area: ledger;
 }
 .sled-board .sled-chart-wide {
+  position: relative;
   min-height: clamp(170px, 15vw, 220px);
+}
+/* Oct 26: on desktop the board pins inside a runway while the date
+   advances. The component sets the runway's height (board + 22px a day) and
+   the .is-pinned class only where the board fits under the nav. */
+.sled-board-runway {
+  position: relative;
+}
+.sled-board-runway.is-pinned .sled-board {
+  position: sticky;
+  top: 88px; /* PIN_TOP in SocialLedgerSection.jsx: 64px nav + 24px */
 }
 .sled-board .sled-viewport {
   flex: 0 0 auto;
@@ -1411,5 +1591,19 @@
   .sled-asc.is-celebrating .sled-asc-badge,
   .sled-asc.is-celebrating .sled-asc-figure {
     animation: none;
+  }
+  .sled-cal-day.is-flip,
+  .sled-cal-month.is-flip,
+  .sled-track.is-gliding,
+  .sled-track.is-gliding .sled-tr--leaving,
+  .sled-tr--typing .sled-type-text,
+  .sled-tile-rank.is-pulse {
+    animation: none;
+  }
+  .sled-tr--typing .sled-caret {
+    display: none;
+  }
+  .sled-tr--flip {
+    transition: none;
   }
 }
