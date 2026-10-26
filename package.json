@@ -27,7 +27,7 @@
     "test:partner": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-partner-pipeline.mjs",
     "test:platform-qa": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-concurrency-limiter.mjs scripts/check-org-hindsight.mjs scripts/check-checklist-gate.mjs scripts/check-require-plan.mjs",
     "check:schema-drift": "node --no-warnings scripts/check-schema-drift.mjs",
-    "test:empire": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-empire-dossier.mjs scripts/check-empire-health.mjs",
+    "test:empire": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-empire-dossier.mjs scripts/check-empire-health.mjs scripts/check-empire-rankings-page.mjs",
     "test:middleware": "node --no-warnings scripts/check-middleware-timeouts.mjs",
     "test:rls": "node --test scripts/check-rls.mjs",
     "test:reliability": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-trading-idempotency.mjs scripts/check-reliability-p1.mjs scripts/check-fetch-json.mjs scripts/check-webhooks.mjs scripts/check-reliability-p2.mjs scripts/check-reliability-sql.mjs scripts/check-trading-validation.mjs",
