@@ -29,7 +29,7 @@ const TICKER_RE = /^[A-Z][A-Z0-9.-]{0,9}$/;
 const SECTION_MS = 2500;
 
 async function all() {
-  const mod = await import('../handlers');
+  const mod = await import('../handlers.js');
   return mod.HANDLERS;
 }
 
