@@ -7,12 +7,15 @@
  * the ledger full width beneath.
  *
  * Oct 26: scroll is the board's only clock. One daily timeline
- * (social-timeline.js, 50 days from the visitor's "today") drives everything
- * on the board, so nothing can disagree:
+ * (social-timeline.js, the 50 days ENDING on the visitor's "today") drives
+ * everything on the board, so nothing can disagree:
  *
- *  - A flip calendar in the chart's top-left shows today + day. Each step of
- *    scroll flips the day forward; the month band flips when the date crosses
- *    into the next month.
+ *  - A flip calendar at the left of the chart's header row shows the date for
+ *    the current day: day 0 is 49 days ago, day 49 (where the scroll stops)
+ *    is today. Each step of scroll flips the day forward; the month band
+ *    flips when the date crosses into the next month. It sits in the header
+ *    row, not on the plot, so the pinned rating readout (which rides the
+ *    line across the top of the plot) can never cover it.
  *  - The chart's pinned readout rides "You"'s line to that date, and every
  *    day after it is ghosted.
  *  - The standings re-rank live as the date advances. Ranks are derived from
@@ -339,7 +342,7 @@ const Y_TICKS = Array.from(
    anything else. The data is memoised on the cohort and the AreaChart is
    keyed on it, so the 400ms draw replays only when the visitor picks a
    cohort; a day change moves the readout and the ghosting only. */
-const RatingChart = memo(function RatingChart({ cohort, day, today }) {
+const RatingChart = memo(function RatingChart({ cohort, day, start }) {
   const active = COHORTS[cohort];
   const data = useMemo(
     () =>
@@ -351,8 +354,8 @@ const RatingChart = memo(function RatingChart({ cohort, day, today }) {
       })),
     [active],
   );
-  const tickFormatter = (d) => (today ? fmtTick.format(addDays(today, d)) : '');
-  const label = today ? fmtCard.format(addDays(today, day)) : '';
+  const tickFormatter = (d) => (start ? fmtTick.format(addDays(start, d)) : '');
+  const label = start ? fmtCard.format(addDays(start, day)) : '';
   return (
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart key={cohort} data={data}>
@@ -629,8 +632,11 @@ export function SocialLedgerSection() {
     });
   }
 
-  const date = useMemo(() => (today ? addDays(today, day) : null), [today, day]);
-  const whenOf = (d) => (today ? fmtTick.format(addDays(today, d)) : '');
+  /* The timeline ends on today: day 0 is DAYS days earlier, so the scroll
+     starts in the past and the calendar stops on the visitor's own date. */
+  const start = useMemo(() => (today ? addDays(today, -DAYS) : null), [today]);
+  const date = useMemo(() => (start ? addDays(start, day) : null), [start, day]);
+  const whenOf = (d) => (start ? fmtTick.format(addDays(start, d)) : '');
 
   const active = COHORTS[cohort];
   const visible = geom.visible;
@@ -675,6 +681,7 @@ export function SocialLedgerSection() {
           <div ref={boardRef} className="sled-board">
             <div className="sled-chartcol">
               <div className="sled-chart-head">
+                <SocialFlipCalendar date={date} still={!live} />
                 <div className="sled-chart-controls">
                   {Object.entries(COHORTS).map(([key, c]) => (
                     <button
@@ -691,8 +698,7 @@ export function SocialLedgerSection() {
                 </div>
               </div>
               <div className="sled-chart-wide" ref={chartRef}>
-                <SocialFlipCalendar date={date} still={!live} />
-                <RatingChart cohort={cohort} day={day} today={today} />
+                <RatingChart cohort={cohort} day={day} start={start} />
               </div>
             </div>
 
@@ -813,7 +819,7 @@ export function SocialLedgerSection() {
                     })
                   ) : (
                     <div className="sled-tr sled-tr--ledger sled-tr--roll sled-tr--quiet">
-                      <span className="sled-row-body">Season 4 starts today</span>
+                      <span className="sled-row-body">Season 4 starts</span>
                       <span className="sled-num sled-rate">{youAt(0)}</span>
                       <span className="sled-time sled-ta-r">{whenOf(0)}</span>
                     </div>

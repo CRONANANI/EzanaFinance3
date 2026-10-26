@@ -1,7 +1,8 @@
 /**
- * The Social investing board's one timeline: 50 days (0..49) from the
+ * The Social investing board's one timeline: 50 days (0..49) ending on the
  * visitor's "today". Illustrative fixture, labelled so in the section foot.
- * Day 0 is today; the calendar shows today + day.
+ * Day 49 is today and day 0 is 49 days earlier; the calendar shows
+ * today - (DAYS - day).
  *
  * Everything on the board (chart, dot, standings, ledger) and the climb's
  * step points derive from this one module, so they can never disagree.

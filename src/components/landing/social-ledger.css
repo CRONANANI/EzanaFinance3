@@ -472,11 +472,12 @@
 .sled-chart-head {
   display: flex;
   align-items: center;
-  /* The label is gone; the cohort controls hold the right edge on their own. */
-  justify-content: flex-end;
+  /* Oct 26: the flip calendar holds the left edge, the cohort controls the
+     right. */
+  justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 .sled-chart-controls {
   display: flex;
@@ -554,12 +555,14 @@
   stroke: none;
 }
 
-/* The flip calendar (Oct 26): 56px wide card, month band, day, weekday. */
+/* The flip calendar (Oct 26): 56px wide card, month band, day, weekday.
+   In flow at the left of the chart's header row, lined up with the plot's
+   left edge (past the 44px y-axis), so the pinned rating readout, which
+   rides the line across the top of the plot, never covers it. */
 .sled-cal {
-  position: absolute;
-  top: 10px;
-  left: 56px; /* clear of the 44px y-axis */
-  z-index: 2;
+  position: relative;
+  flex: none;
+  margin-left: 44px;
   width: 56px;
   display: grid;
   justify-items: center;
