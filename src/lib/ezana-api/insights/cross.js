@@ -19,7 +19,7 @@ export const CONFIRMATION_RULES = [
   },
   {
     dimension: 'institutional',
-    rule: 'More 13F holders added than trimmed or exited last quarter (bullish), or the reverse (bearish).',
+    rule: 'More 13F holders added than trimmed or exited last quarter (bullish), or the reverse (bearish), among at least 5 holders with a prior quarter on file.',
   },
   {
     dimension: 'contracts',
@@ -48,8 +48,12 @@ export function holderChangeSummary(holders) {
     else if (c === 'new' && now != null) out.net_share_change += now;
   }
   out.net_share_change = Math.round(out.net_share_change);
+  /* Holders whose change is known (a prior quarter on file). */
+  out.comparable = out.new + out.added + out.trimmed + out.exited + out.flat;
   return out;
 }
+
+export const MIN_COMPARABLE_HOLDERS = 5;
 
 const lean = (v) => (v > 0 ? 'bullish' : v < 0 ? 'bearish' : null);
 
@@ -72,8 +76,10 @@ export function confirmation(sections) {
   const net90 = n(s.insider?.days_90?.net_value);
   if (net90 != null) push('insider', net90, 'net open-market value, USD');
   const h = s.institutional?.holder_changes;
-  if (h && h.holders)
+  /* Too few holders with a prior quarter on file says nothing. */
+  if (h && (h.comparable ?? 0) >= MIN_COMPARABLE_HOLDERS) {
     push('institutional', h.new + h.added - (h.trimmed + h.exited), 'added minus trimmed holders');
+  }
   const yoy = n(s.contracts?.year_over_year?.change_usd);
   if (yoy != null) push('contracts', yoy, 'award change, USD');
   const pat = n(s.patents?.momentum?.change_pct);

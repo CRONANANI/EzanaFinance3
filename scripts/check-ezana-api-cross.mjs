@@ -39,6 +39,7 @@ test('cross: holder change summary counts classes and net shares', () => {
       exited: 1,
       flat: 0,
       net_share_change: 100 + 100 + 300 - 30 - 40,
+      comparable: 5,
     },
   );
   assert.equal(x.holderChangeSummary(null).holders, 0);
@@ -48,7 +49,17 @@ test('cross: confirmation counts stated rules only, never a call', () => {
   const c = x.confirmation({
     congress: { flow: { flow_score: 42 } },
     insider: { days_90: { net_value: -15000 } },
-    institutional: { holder_changes: { holders: 5, new: 1, added: 2, trimmed: 1, exited: 0 } },
+    institutional: {
+      holder_changes: {
+        holders: 5,
+        new: 1,
+        added: 2,
+        trimmed: 1,
+        exited: 0,
+        flat: 1,
+        comparable: 5,
+      },
+    },
     contracts: { year_over_year: { change_usd: 0 } },
     patents: null,
     etf: { funds_holding: 3 },
@@ -65,6 +76,20 @@ test('cross: confirmation counts stated rules only, never a call', () => {
   );
   for (const s of c.signals) assert.ok(s.rule.length > 20, 'each signal states its rule');
   assert.deepEqual(x.confirmation({}), { bullish: 0, bearish: 0, signals: [] });
+  const thin = x.confirmation({
+    institutional: {
+      holder_changes: {
+        holders: 25,
+        new: 0,
+        added: 0,
+        trimmed: 1,
+        exited: 0,
+        flat: 0,
+        comparable: 1,
+      },
+    },
+  });
+  assert.equal(thin.signals.length, 0, 'one comparable holder is not a signal');
   const text = JSON.stringify(x.CONFIRMATION_RULES).toLowerCase();
   assert.ok(!/\bbuy (signal|call)|\bsell (signal|call)|recommend/.test(text), 'no calls');
 });

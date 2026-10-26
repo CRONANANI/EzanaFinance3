@@ -28,10 +28,10 @@ if (!KEY) {
 /* Default sample per path placeholder. */
 const PLACEHOLDER = {
   ticker: 'LMT',
-  iso3: 'DNK',
+  country: 'DNK',
   cik: '0001067983',
   key: 'kalshi:CONTROLH-2026',
-  series: null, // resolved from the list route below when present
+  dimension: 'economic_output',
 };
 
 /* Per-route overrides: query string, explicit path values, or a list route
@@ -49,6 +49,29 @@ const SAMPLES = {
   'predictions.markets': { query: 'category=elections&sort=volume_24h&limit=5' },
   'predictions.movers': { query: 'window=24h&limit=5' },
   'predictions.events': { query: 'sort=volume_24h&limit=5' },
+  'congress.member_portfolio': { path: { id: 'P000197' } },
+  'congress.member_similar': { path: { id: 'P000197' } },
+  'congress.committee_holdings': { path: { id: 'HSAS' } },
+  'lobbying.client': { from: 'lobbying.filings', field: 'client.id', as: 'id' },
+  'lobbying.registrant': { from: 'lobbying.filings', field: 'registrant.id', as: 'id' },
+  'fec.candidate_donors': { path: { id: 'P000197' } },
+  'fec.candidate_outside': { path: { id: 'P000197' } },
+  'etf.holdings': { from: 'etf.funds', field: 'ticker', as: 'ticker' },
+  'etf.overlap': { query: 'a=SCHD&b=QUAL' },
+  'supply_chain.port_daily': { from: 'supply_chain.ports', field: 'portid', as: 'portid' },
+  'supply_chain.freight_history': { from: 'supply_chain.freight', field: 'id', as: 'series' },
+  'real_estate.history': { from: 'real_estate.indicators', field: 'id', as: 'series' },
+  'night_lights.region': { from: 'night_lights.regions', field: 'id', as: 'id' },
+  'macro.oecd_observations': {
+    from: 'macro.oecd_series',
+    field: 'slug',
+    as: 'slug',
+    query: 'iso3=DNK&limit=5',
+  },
+  'macro.oecd_ranking': { from: 'macro.oecd_series', field: 'slug', as: 'slug', query: 'limit=5' },
+  'empire.compare': { query: 'a=DNK&b=SWE' },
+  'sanctions.entity': { from: 'sanctions.entities', field: 'id', as: 'id' },
+  'cross.composite': { path: { ticker: 'LMT' } },
 };
 
 const get = (obj, dotted) => dotted.split('.').reduce((o, k) => (o == null ? o : o[k]), obj);
