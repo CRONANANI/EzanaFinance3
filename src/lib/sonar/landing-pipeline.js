@@ -52,6 +52,7 @@ import {
 } from '@/lib/sonar/landing-research';
 import { BoundedMap } from '@/lib/bounded-map';
 import { withTimeout } from '@/lib/with-timeout';
+import { usd } from '@/lib/research-copilot/retrievers/shared';
 
 /**
  * The landing-page Sonar pipeline, shared by the two routes that run it:
@@ -1147,6 +1148,63 @@ async function buildRankBlock(country, dossier, admin) {
   };
 }
 
+/**
+ * Dataset snippets for a company ping, from the dossier's Sourced matches, in
+ * the shape the retrievers emit. Only what the match cards show.
+ */
+export function companyEvidence(matches, resolved) {
+  const out = [];
+  const name = resolved?.name || resolved?.ticker || 'The company';
+  const c = matches?.contracts;
+  if (c?.total) {
+    const agencies = (c.agencies || [])
+      .filter((a) => a.name !== 'Other')
+      .map((a) => `${a.name} ${Math.round(a.share * 100)}%`)
+      .join(', ');
+    const yoy = c.yoy
+      ? ` Fiscal ${c.yoy.to} versus fiscal ${c.yoy.from}: ${c.yoy.value >= 0 ? 'up' : 'down'} ${Math.abs(Math.round(c.yoy.value * 100))}%.`
+      : '';
+    out.push({
+      corpus: 'contracts',
+      title: `${c.recipient} federal contract awards`,
+      snippet: `${c.recipient} received ${usd(c.total)} across ${c.awards} federal contract awards from fiscal ${c.coverage?.fromFy} to fiscal ${c.coverage?.toFy} (USAspending).${agencies ? ` Top awarding agencies by value: ${agencies}.` : ''}${yoy}`,
+      meta: { recipient: c.recipient },
+    });
+  }
+  const trades = matches?.congress;
+  if (trades?.length) {
+    out.push({
+      corpus: 'congress',
+      title: `Congressional trades in ${resolved?.ticker || name}`,
+      snippet: `Most recent STOCK Act disclosures in ${name} (${resolved?.ticker || ''}): ${trades
+        .map((t) => `${t.member}, ${String(t.type).toLowerCase()}${t.date ? ` on ${t.date}` : ''}`)
+        .join('; ')}.`,
+      meta: { ticker: resolved?.ticker || null },
+    });
+  }
+  const holders = matches?.thirteenF;
+  if (holders?.length) {
+    out.push({
+      corpus: '13f',
+      title: `13F holders of ${resolved?.ticker || name}`,
+      snippet: `Largest 13F holders of ${name}${holders[0]?.quarter ? ` as of ${holders[0].quarter}` : ''}: ${holders
+        .map((h) => `${h.filer}${h.valueUsd != null ? ` ${usd(h.valueUsd)}` : ''}`)
+        .join('; ')} (SEC 13F filings).`,
+      meta: { ticker: resolved?.ticker || null },
+    });
+  }
+  const l = matches?.lobbying;
+  if (l?.filings) {
+    out.push({
+      corpus: 'lobbying',
+      title: `${l.client} lobbying disclosures`,
+      snippet: `${l.client} appears in ${l.filings} federal lobbying disclosures${l.fromYear ? ` from ${l.fromYear} to ${l.toYear}` : ''}, filed by ${l.registrantCount} registrant firms${l.registrants?.length ? ` including ${l.registrants.join(', ')}` : ''}.${l.inHouse ? ` In-house lobbying spend in ${l.inHouse.year}: ${usd(l.inHouse.spend)}.` : ''} (Senate LDA filings)`,
+      meta: { client: l.client },
+    });
+  }
+  return out;
+}
+
 /* Per-leg ceilings for the landing ping. The route runs inside a 60s
    function; before these, every leg was unbounded and a slow database or
    upstream stacked them past the cap (prod Oct 26: resolve finished at 30s,
@@ -1157,12 +1215,18 @@ const LEG_MS = {
   industry: 5_000,
   politician: 5_000,
   resolve: 6_000,
-  retrieveCap: 14_000,
-  retriever: 9_000,
+  /* Oct 26 (v2): 9s per retriever cut the contracts scan off on every
+     ping in production (the raw awards table is slow under the current
+     disk IO), so every company brief went ungrounded. 15s with the trigram
+     indexes from the matching migration, and the dossier matches below as
+     a second evidence source when it still misses. */
+  retrieveCap: 18_000,
+  retriever: 15_000,
   embed: 3_000,
   rerank: 4_000,
   sanctions: 5_000,
   countryDossier: 8_000,
+  companyDossier: 18_000,
   macroRank: 5_000,
 };
 /* Time kept back after the brief for the dossier/news awaits and the JSON
@@ -1325,6 +1389,16 @@ export async function runLandingPipeline(
   const budget = depthBudget('standard');
   const intent = detectIntent(q);
 
+  /* The dossier and the news columns do not depend on the brief, so they run
+     beside it instead of after it. Started BEFORE retrieval (Oct 26 v2) so
+     a company's dataset matches are ready by the time the brief needs them:
+     a country's dossier is its evidence (OECD, Empire), and a company's
+     matches (contracts, Congress, 13F, lobbying) are too. */
+  const dossierP =
+    wantDossier || country || industry
+      ? buildDossierFor({ country, politician, resolved, industry, understood, admin, leg })
+      : null;
+
   const out = await leg(
     'retrieve',
     () =>
@@ -1389,18 +1463,27 @@ export async function runLandingPipeline(
       : null;
   if (sanctions) items.push(...sanctions.evidence);
 
+  /* A company ping cites its own dataset matches. Before this the brief saw
+     only the retrievers, so when the contracts scan missed its window the
+     brief said "Ezana's datasets do not cover this" directly above cards
+     showing Congress trades, 13F holders and lobbying for the same company.
+     The matches are what the cards render, so the brief cannot cite a figure
+     the page does not show. Bounded: a slow matches leg leaves the retrieved
+     items as the only evidence, as before. */
+  if (resolved && !country && !politician && !industryPing && dossierP) {
+    const early = await within(
+      dossierP,
+      Math.min(LEG_MS.companyDossier, left() - 25_000),
+      null,
+      'company-dossier',
+    ).catch(() => null);
+    if (early?.matches) items.push(...companyEvidence(early.matches, resolved));
+  }
+
   /* Recomputed from the survivors: a corpus that only contributed off-entity
      noise must not be shown as a match. */
   const corporaUsed = [...new Set(items.map((i) => i.corpus))];
 
-  /* The dossier and the news columns do not depend on the brief, so they run
-     beside it instead of after it. The exception is a country: its dossier is
-     also its evidence (the OECD and Empire snippets the brief cites), so it is
-     awaited first. Its legs are bounded DB reads, a fraction of the brief. */
-  const dossierP =
-    wantDossier || country || industry
-      ? buildDossierFor({ country, politician, resolved, industry, understood, admin, leg })
-      : null;
   let rankFactLines = [];
   if (country) {
     const countryDossier = await within(

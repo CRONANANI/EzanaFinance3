@@ -27,6 +27,13 @@ import { useSonarSelection, emit } from './SonarSelection';
 
 const REFRESH_MS = 5 * 60 * 1000;
 const WARM_RETRY_MS = 4000;
+/* Oct 26: the pulse comes back partial on every read while a slow reader
+   (lobbying) keeps missing its budget, so the old "retry while partial"
+   loop polled every 16s for as long as the tab stayed open, and each poll
+   re-ran the slow readers in the database (the same database Sonar pings
+   read from). Warm retries now stop after this many; then the normal
+   five-minute cadence. */
+const MAX_WARM_RETRIES = 2;
 
 const PulseContext = createContext({
   items: [],
@@ -71,12 +78,15 @@ export function PulseProvider({ initial, initialKey = null, children }) {
   useEffect(() => {
     alive.current = true;
     let timer = null;
+    let warmRetries = 0;
     const schedule = (ms) => {
       clearTimeout(timer);
       timer = setTimeout(async () => {
         if (document.visibilityState === 'visible') {
           const next = await refresh();
-          schedule(next?.partial ? WARM_RETRY_MS * 4 : REFRESH_MS);
+          const warm = next?.partial && warmRetries < MAX_WARM_RETRIES;
+          if (warm) warmRetries += 1;
+          schedule(warm ? WARM_RETRY_MS * 4 : REFRESH_MS);
         } else {
           schedule(REFRESH_MS);
         }
