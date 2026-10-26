@@ -83,7 +83,7 @@ function QuerySync({ onChange }) {
 }
 
 function SearchedTag() {
-  return <span className="gerx-searched">You searched</span>;
+  return <span className="hdc-you gerx-you">Your search</span>;
 }
 
 /* ── country panel ─────────────────────────────────────────────────────── */

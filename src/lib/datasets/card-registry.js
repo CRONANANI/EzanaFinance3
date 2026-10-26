@@ -121,7 +121,7 @@ export const CARD_REGISTRY = [
     datasetSlug: 'world-bank',
     dataset: 'World Bank Economic Indicators',
     href: '/datasets/world-bank',
-    title: 'Fastest-growing economies',
+    title: 'Fastest growing economies',
     keywords: [
       'gdp',
       'growth',

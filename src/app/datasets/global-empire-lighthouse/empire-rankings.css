@@ -32,31 +32,44 @@
 }
 
 /* ── searched-country highlight (composite and dimension tables) ── */
+/* The searched country (Oct 26): the same language as the dataset cards
+   and Sonar (dataset-cards.css .hdc-row.is-searched): a 2px accent bar, a
+   tint that fades across the row, and an inline "Your search" marker. */
 .mkt-ds-table tbody tr.gerx-row-searched {
-  background: color-mix(in srgb, var(--emerald) 10%, transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--emerald) 13%, transparent) 0%,
+    color-mix(in srgb, var(--emerald) 5%, transparent) 55%,
+    transparent 100%
+  );
 }
 .mkt-ds-table tbody tr.gerx-row-searched td:first-child {
-  box-shadow: inset 3px 0 0 var(--brand-band-mint);
+  box-shadow: inset 2px 0 0 var(--emerald);
 }
-body.light-mode .mkt-ds-table tbody tr.gerx-row-searched td:first-child {
-  box-shadow: inset 3px 0 0 var(--emerald);
+.mkt-ds-table tbody tr.gerx-row-searched td {
+  font-weight: 600;
 }
 .gerx-country {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
-.gerx-searched {
-  display: inline-block;
-  padding: 0 6px;
-  border-radius: var(--radius-sm);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.gerx-you {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   color: var(--emerald-text);
-  background: color-mix(in srgb, var(--emerald) 14%, transparent);
+}
+.gerx-you::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 /* ── dimension pills ── */

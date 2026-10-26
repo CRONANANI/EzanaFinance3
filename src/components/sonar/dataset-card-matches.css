@@ -175,12 +175,23 @@
   color: white;
 }
 .dcm.dcm--rail .hdc-row.is-searched {
-  background: color-mix(in srgb, var(--brand-band-mint) 16%, transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--brand-band-mint) 13%, transparent) 0%,
+    color-mix(in srgb, var(--brand-band-mint) 5%, transparent) 55%,
+    transparent 100%
+  );
+  box-shadow: inset 2px 0 0 var(--brand-band-mint);
+  /* The rail's rows are 7px 0; the searched row keeps its side padding so
+     the rank clears the accent bar. */
+  padding-left: 10px;
+  padding-right: 10px;
 }
-.dcm.dcm--rail .hdc-row.has-gap {
-  border-top-color: color-mix(in srgb, var(--brand-band-mint) 34%, transparent);
-}
-.dcm.dcm--rail .hdc-searched {
+.dcm.dcm--rail .hdc-row.is-searched .hdc-rank,
+.dcm.dcm--rail .hdc-row.is-searched .hdc-value,
+.dcm.dcm--rail .hdc-you {
   color: var(--brand-band-mint);
-  background: color-mix(in srgb, var(--brand-band-mint) 18%, transparent);
+}
+.dcm.dcm--rail .hdc-row.has-gap::before {
+  border-top-color: color-mix(in srgb, white 22%, transparent);
 }

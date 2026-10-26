@@ -41,6 +41,7 @@ export default function ListCard({
             <li
               key={r.key || i}
               className={`hdc-row${r.highlight ? ' is-searched' : ''}${r.gapBefore ? ' has-gap' : ''}`}
+              aria-current={r.highlight ? 'true' : undefined}
             >
               <span className="hdc-rank">{r.rank ?? i + 1}</span>
               <span className="hdc-main">
@@ -61,7 +62,7 @@ export default function ListCard({
                   <span className="hdc-meta">
                     {r.meta}
                     {r.territory ? ' · territory' : ''}
-                    {r.highlight ? <span className="hdc-searched">You searched</span> : null}
+                    {r.highlight ? <span className="hdc-you">Your search</span> : null}
                   </span>
                 ) : null}
               </span>

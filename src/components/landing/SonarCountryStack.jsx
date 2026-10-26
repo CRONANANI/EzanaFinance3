@@ -212,15 +212,42 @@ export function CountryEmpireRow({ data, name }) {
 
 /* ── the key chart ──────────────────────────────────────────────────────── */
 
-const PAD = { l: 6, r: 6, t: 14, b: 6 };
+/* Oct 26: the plot is full width with an HTML y-axis and legend, so no text
+   lives inside the stretched SVG (preserveAspectRatio="none" would distort
+   it, and the old in-plot median label collided with the line). */
+const PAD = { l: 0, r: 4, t: 8, b: 4 };
+
+/** 3-4 "nice" ticks spanning [min, max]: the step snaps to 1, 2, 2.5 or 5 x
+    10^n and the domain grows to the outer ticks, so the line never touches
+    the frame. */
+export function niceTicks(min, max, count = 4) {
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return { ticks: [0], lo: 0, hi: 1 };
+  if (min === max) {
+    const pad = Math.abs(min) * 0.1 || 1;
+    min -= pad;
+    max += pad;
+  }
+  const raw = (max - min) / Math.max(1, count - 1);
+  const pow = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * pow).find((st) => st >= raw) || 10 * pow;
+  const lo = Math.floor(min / step) * step;
+  const hi = Math.ceil(max / step) * step;
+  const ticks = [];
+  for (let t = lo; t <= hi + step / 2; t += step) ticks.push(Math.round(t / step) * step);
+  return { ticks, lo, hi };
+}
+
+/* A real minus sign (U+2212) for negative values. */
+const minus = (str) => str.replace(/^-/, '−');
 
 function StoryChart({ story, projectionFrom }) {
   const [box, setNode] = usePixelBox();
+  const [hover, setHover] = useState(null);
   const pts = story?.points || [];
   if (pts.length < 2) return null;
 
   const W = box?.w ?? 100;
-  const H = box?.h ?? 30;
+  const H = box?.h ?? 100;
   const values = pts.map((p) => p.value).concat(story.median);
   let min = Math.min(...values);
   let max = Math.max(...values);
@@ -228,11 +255,18 @@ function StoryChart({ story, projectionFrom }) {
     min = Math.min(min, 0);
     max = Math.max(max, 0);
   }
-  const span = max - min || 1;
+  const { ticks, lo, hi } = niceTicks(min, max, 4);
+  /* Tick labels carry only the decimals the step needs: 5%, not 5.0%. */
+  const step = ticks.length > 1 ? ticks[1] - ticks[0] : 1;
+  const tickDecimals = Math.min(
+    story.decimals,
+    (String(+step.toFixed(6)).split('.')[1] || '').length,
+  );
+  const span = hi - lo || 1;
   const y0 = pts[0].year;
   const yN = pts[pts.length - 1].year;
   const x = (yr) => PAD.l + ((yr - y0) / (yN - y0 || 1)) * (W - PAD.l - PAD.r);
-  const y = (v) => H - PAD.b - ((v - min) / span) * (H - PAD.t - PAD.b);
+  const y = (v) => H - PAD.b - ((v - lo) / span) * (H - PAD.t - PAD.b);
   const line = (list) =>
     list.map((p) => `${x(p.year).toFixed(2)},${y(p.value).toFixed(2)}`).join(' ');
 
@@ -242,50 +276,83 @@ function StoryChart({ story, projectionFrom }) {
      join without a gap, and only the projected years are dashed. */
   const proj = pts.filter((p) => p.proj);
   const projLine = proj.length && lastActual ? [lastActual, ...proj] : [];
-  const showZero = story.signed && min < 0 && max > 0;
+  const showZero = story.signed && lo < 0 && hi > 0;
   const bx = lastActual ? x(lastActual.year) : null;
+  const val = (v) => minus(fmt(v, story.decimals, story.unit));
+
+  const shown = hover ?? lastActual;
+  const onMove = (e) => {
+    if (!box) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    const frac = (e.clientX - r.left - PAD.l) / Math.max(1, r.width - PAD.l - PAD.r);
+    const yr = y0 + Math.round(Math.min(1, Math.max(0, frac)) * (yN - y0));
+    setHover(pts.reduce((a, b) => (Math.abs(b.year - yr) < Math.abs(a.year - yr) ? b : a)));
+  };
 
   return (
-    <div className="snr-spark snr-cty-plot" ref={setNode}>
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${story.label}, ${y0} to ${yN}`}>
-        {box && proj.length && bx != null ? (
-          <rect
-            x={bx}
-            y={0}
-            width={Math.max(0, W - PAD.r - bx)}
-            height={H}
-            className="snr-cty-projband"
-          />
+    <div className="snr-cty-chart">
+      <div className="snr-cty-legend" aria-hidden="true">
+        <span className="snr-cty-key snr-cty-key--actual">Actual</span>
+        <span className="snr-cty-key snr-cty-key--median">
+          {story.normYears}Y median {val(story.median)}
+        </span>
+        {proj.length ? <span className="snr-cty-key snr-cty-key--proj">OECD proj.</span> : null}
+        {shown ? (
+          <span className={`snr-cty-read${shown.proj ? ' is-proj' : ''}`}>
+            {shown.year} · {val(shown.value)}
+            {shown.proj ? ' (proj.)' : ''}
+          </span>
         ) : null}
-        {showZero ? (
-          <line x1={PAD.l} x2={W - PAD.r} y1={y(0)} y2={y(0)} className="snr-cty-zero" />
-        ) : null}
-        <line
-          x1={PAD.l}
-          x2={W - PAD.r}
-          y1={y(story.median)}
-          y2={y(story.median)}
-          className="snr-cty-median"
-        />
-        <polyline points={line(actual)} className="snr-cty-line" />
-        {projLine.length ? (
-          <polyline points={line(projLine)} className="snr-cty-line--proj" />
-        ) : null}
-        {box ? (
-          <>
-            <circle
-              cx={x(story.peak.year)}
-              cy={y(story.peak.value)}
-              r={2}
-              className="snr-cty-dot"
+      </div>
+      <div className="snr-cty-plotgrid">
+        <div className="snr-cty-yaxis" aria-hidden="true">
+          {box
+            ? ticks.map((t) => (
+                <span key={t} style={{ top: `${(y(t) / H) * 100}%` }}>
+                  {minus(fmt(t, tickDecimals, story.unit))}
+                </span>
+              ))
+            : null}
+        </div>
+        <div
+          className="snr-cty-svgbox"
+          ref={setNode}
+          onPointerMove={onMove}
+          onPointerLeave={() => setHover(null)}
+        >
+          <svg
+            viewBox={`0 0 ${W} ${H}`}
+            preserveAspectRatio="none"
+            role="img"
+            aria-label={`${story.label}, ${y0} to ${yN}; latest ${lastActual ? `${lastActual.year} ${val(lastActual.value)}` : 'n/a'}`}
+          >
+            {box
+              ? ticks.map((t) => (
+                  <line key={t} x1={0} x2={W} y1={y(t)} y2={y(t)} className="snr-cty-grid" />
+                ))
+              : null}
+            {box && proj.length && bx != null ? (
+              <rect
+                x={bx}
+                y={0}
+                width={Math.max(0, W - PAD.r - bx)}
+                height={H}
+                className="snr-cty-projband"
+              />
+            ) : null}
+            {showZero ? <line x1={0} x2={W} y1={y(0)} y2={y(0)} className="snr-cty-zero" /> : null}
+            <line
+              x1={0}
+              x2={W}
+              y1={y(story.median)}
+              y2={y(story.median)}
+              className="snr-cty-median"
             />
-            <circle
-              cx={x(story.trough.year)}
-              cy={y(story.trough.value)}
-              r={2}
-              className="snr-cty-dot"
-            />
-            {lastActual ? (
+            <polyline points={line(actual)} className="snr-cty-line" />
+            {projLine.length ? (
+              <polyline points={line(projLine)} className="snr-cty-line--proj" />
+            ) : null}
+            {box && lastActual ? (
               <circle
                 cx={x(lastActual.year)}
                 cy={y(lastActual.value)}
@@ -293,16 +360,26 @@ function StoryChart({ story, projectionFrom }) {
                 className="snr-cty-ring"
               />
             ) : null}
-            <text
-              x={W - PAD.r}
-              y={Math.max(10, y(story.median) - 4)}
-              className="snr-cty-median-label"
-            >
-              {story.normYears}Y MEDIAN {fmt(story.median, story.decimals, story.unit)}
-            </text>
-          </>
-        ) : null}
-      </svg>
+            {box && hover ? (
+              <>
+                <line
+                  x1={x(hover.year)}
+                  x2={x(hover.year)}
+                  y1={0}
+                  y2={H}
+                  className="snr-cty-guide"
+                />
+                <circle
+                  cx={x(hover.year)}
+                  cy={y(hover.value)}
+                  r={3}
+                  className={`snr-cty-hoverdot${hover.proj ? ' is-proj' : ''}`}
+                />
+              </>
+            ) : null}
+          </svg>
+        </div>
+      </div>
       <div className="snr-cty-axis" aria-hidden="true">
         <span>{y0}</span>
         {proj.length ? (
@@ -351,30 +428,35 @@ function StoryCard({ dossier }) {
           <div className="snr-stat">
             <span className="snr-stat-label">Latest</span>
             <span className="snr-stat-value">
-              {s.signed
-                ? fmtSigned(s.latest.value, s.decimals, s.unit)
-                : fmt(s.latest.value, s.decimals, s.unit)}
+              {minus(
+                s.signed
+                  ? fmtSigned(s.latest.value, s.decimals, s.unit)
+                  : fmt(s.latest.value, s.decimals, s.unit),
+              )}
             </span>
             <span className="snr-stat-cap">{s.latest.year}</span>
           </div>
           <div className="snr-stat">
             <span className="snr-stat-label">{s.normYears}Y median</span>
-            <span className="snr-stat-value">{fmt(s.median, s.decimals, s.unit)}</span>
+            <span className="snr-stat-value">{minus(fmt(s.median, s.decimals, s.unit))}</span>
             <span className="snr-stat-cap">{Math.abs(s.z).toFixed(1)} sd away</span>
           </div>
           <div className="snr-stat">
             <span className="snr-stat-label">Peak</span>
-            <span className="snr-stat-value">{fmt(s.peak.value, s.decimals, s.unit)}</span>
+            <span className="snr-stat-value">{minus(fmt(s.peak.value, s.decimals, s.unit))}</span>
             <span className="snr-stat-cap">{s.peak.year}</span>
           </div>
           <div className="snr-stat">
             <span className="snr-stat-label">Trough</span>
-            <span className="snr-stat-value">{fmt(s.trough.value, s.decimals, s.unit)}</span>
+            <span className="snr-stat-value">{minus(fmt(s.trough.value, s.decimals, s.unit))}</span>
             <span className="snr-stat-cap">{s.trough.year}</span>
           </div>
         </div>
       </div>
-      <p className="snr-pol-note">
+      <p
+        className="snr-pol-note snr-cty-note"
+        title={`${s.label}, ${s.unit}. Source: OECD Economic Outlook. Dashed years are OECD projections.`}
+      >
         {s.label}, {s.unit}. Source: OECD Economic Outlook. Dashed years are OECD projections.
       </p>
     </div>
@@ -423,12 +505,14 @@ export function CountryStack({ dossier, onGate, newsSlot = null, topSlot = null 
   }
   return (
     <div className="snr-stack">
-      {topSlot}
+      {/* Oct 26: the Key Chart leads the stack; the matching dataset cards
+          (topSlot) follow it. */}
       {hasStory ? (
         <StoryCard dossier={dossier} />
       ) : hasEmpire ? (
         <EmpireCard dossier={dossier} onGate={onGate} />
       ) : null}
+      {topSlot}
 
       {newsSlot ? (
         newsSlot

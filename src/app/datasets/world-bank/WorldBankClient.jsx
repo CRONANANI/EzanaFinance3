@@ -38,7 +38,7 @@ export default function WorldBankClient({ rows, indicatorCount, updated }) {
     highlight: {
       badge: 'Latest',
       icon: GrowthIcon,
-      title: 'Fastest-growing economies',
+      title: 'Fastest growing economies',
       desc: 'Countries with the highest real GDP growth in their latest reported year.',
       items: fastest,
       emptyText: 'Appears once the World Bank data is loaded.',

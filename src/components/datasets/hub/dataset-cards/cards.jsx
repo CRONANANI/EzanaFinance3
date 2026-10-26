@@ -150,7 +150,7 @@ async function InsiderBuys() {
 /* ── Global Empire Lighthouse ───────────────────────────────────────── */
 
 /**
- * Fastest-growing economies, on ONE common year for every country (the
+ * Fastest growing economies, on ONE common year for every country (the
  * newest year >= 85% of sovereign economies report), regional aggregates
  * excluded and territories left out (sonar-country-ranking-fix). It used to
  * rank each country's own latest year, mixing 2025 with 2011. `entityIso3`
@@ -176,7 +176,7 @@ export async function loadFastestGrowth({ entityIso3 = null } = {}) {
   if (me && !rows.some((r) => r.key === entityIso3)) rows.push(row(me, { gapBefore: true }));
   return {
     id: 'fastest-growth',
-    title: 'Fastest-growing economies',
+    title: 'Fastest growing economies',
     dataset: 'World Bank Economic Indicators',
     href: '/datasets/world-bank',
     desc: year
@@ -351,7 +351,7 @@ export const DATASET_CARDS = {
     card(
       'fastest-growth',
       'World Bank Economic Indicators',
-      'Fastest-growing economies',
+      'Fastest growing economies',
       'bi-graph-up-arrow',
       'Highest real GDP growth, latest reported year.',
       FastestGrowth,

@@ -156,17 +156,131 @@
   color: var(--snr-text-faint);
 }
 
-/* The plot reuses .snr-spark for its height at every breakpoint; the axis
-   sits under it inside the same box. */
-.snr-band .snr-cty-plot {
-  position: relative;
+/* ── Key Chart (Oct 26) ───────────────────────────────────────────────────
+   Stacked: legend, plot (HTML y-axis | full-width SVG), x-axis, then the
+   four stats in one row, then the note. No text inside the SVG: it stretches
+   (preserveAspectRatio none), and text there distorted and collided with
+   the line. The wide-card grid (chart beside a 2x2) is for the company
+   fundamentals card only. */
+.snr-band .snr-fund--cty .snr-fund-body {
   display: flex;
   flex-direction: column;
+  gap: 0;
+  align-items: stretch;
 }
-
-.snr-band .snr-cty-plot svg {
-  flex: 1 1 auto;
+.snr-band .snr-fund--cty .snr-fund-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  height: auto;
+  align-content: start;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--snr-hair);
+}
+@media (max-width: 480px) {
+  .snr-band .snr-fund--cty .snr-fund-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.snr-band .snr-cty-chart {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.snr-band .snr-cty-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  margin: 0 0 6px;
+  font-family: var(--snr-font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-cty-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.snr-band .snr-cty-key::before {
+  content: '';
+  width: 14px;
+  border-top: 1.5px solid var(--snr-mint);
+}
+.snr-band .snr-cty-key--median::before {
+  border-top: 1px dotted color-mix(in srgb, white 55%, transparent);
+}
+.snr-band .snr-cty-key--proj::before {
+  border-top: 1.5px dashed var(--warning);
+}
+.snr-band .snr-cty-read {
+  margin-left: auto;
+  white-space: nowrap;
+  color: var(--snr-text);
+}
+.snr-band .snr-cty-read.is-proj {
+  color: var(--warning);
+}
+.snr-band .snr-cty-plotgrid {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 6px;
+  height: 150px;
   min-height: 0;
+}
+.snr-band .snr-cty-yaxis {
+  position: relative;
+  min-height: 0;
+}
+.snr-band .snr-cty-yaxis span {
+  position: absolute;
+  right: 0;
+  transform: translateY(-50%);
+  font-family: var(--snr-font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-cty-svgbox {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  touch-action: pan-y;
+}
+.snr-band .snr-cty-svgbox svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.snr-band .snr-cty-grid {
+  stroke: color-mix(in srgb, white 8%, transparent);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.snr-band .snr-cty-guide {
+  stroke: color-mix(in srgb, white 40%, transparent);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.snr-band .snr-cty-hoverdot {
+  fill: var(--snr-mint);
+}
+.snr-band .snr-cty-hoverdot.is-proj {
+  fill: var(--warning);
+}
+.snr-band .snr-cty-note {
+  flex: 0 0 auto;
+  /* A <p>: the global body.light-mode p rule would paint it near-black on
+     the green (logged-out visitors are in light mode). */
+  color: var(--snr-text-faint) !important;
 }
 
 .snr-band .snr-cty-line,
@@ -203,18 +317,6 @@
   vector-effect: non-scaling-stroke;
 }
 
-.snr-band .snr-cty-median-label {
-  font-family: var(--snr-font-mono);
-  font-size: 8.5px;
-  letter-spacing: 0.08em;
-  fill: var(--snr-text-faint);
-  text-anchor: end;
-}
-
-.snr-band .snr-cty-dot {
-  fill: var(--snr-mint);
-}
-
 .snr-band .snr-cty-ring {
   fill: none;
   stroke: var(--snr-mint);
@@ -226,7 +328,10 @@
   display: flex;
   justify-content: space-between;
   gap: 6px;
-  padding-top: 2px;
+  padding-top: 4px;
+  /* The y-axis column (34px) plus its gap (6px): the axis edges line up
+     with the plot. */
+  padding-left: 40px;
   font-family: var(--snr-font-mono);
   font-size: 9px;
   letter-spacing: 0.06em;
@@ -376,5 +481,75 @@
   .snr-band .snr-emp-card:hover .snr-emp-go,
   .snr-band .snr-emp-card:focus-visible .snr-emp-go {
     transform: none;
+  }
+}
+
+/* ── Key Chart: never overflow (Oct 26) ──────────────────────────────────
+   /datasets: the right stack scrolls, so the country card takes its natural
+   height (the geometry height and its overflow clip are for the landing
+   band). The landing band's stage 2 has a fixed budget: there the plot takes
+   whatever is left, the legend, stats and note keep their size, and the
+   note holds to one line (full text in its title). */
+.dso-page--search .snr-band.snr-band--page.snr-composed .snr-fund.snr-fund--cty {
+  height: auto;
+  flex: none;
+  max-height: none;
+  overflow: visible;
+}
+.snr-band.snr-stage2:not(.snr-band--page) .snr-stack > .snr-fund--cty {
+  /* The stacked chart needs more than the geometry's chart slot: the card
+     takes its natural height and the news card under it takes what is left
+     (its list already drops whole items that do not fit). */
+  flex: 0 0 auto;
+  height: auto;
+  max-height: none;
+}
+.snr-band.snr-stage2:not(.snr-band--page) .snr-stack > .snr-fund--cty ~ .snr-news {
+  flex: 1 1 0;
+  height: auto;
+  min-height: 0;
+}
+.snr-band.snr-stage2:not(.snr-band--page) .snr-fund--cty .snr-cty-tabs {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.snr-band.snr-stage2:not(.snr-band--page) .snr-fund--cty .snr-cty-tabs::-webkit-scrollbar {
+  display: none;
+}
+.snr-band.snr-stage2:not(.snr-band--page) .snr-fund--cty .snr-cty-tab {
+  flex: 0 0 auto;
+}
+.snr-band.snr-stage2:not(.snr-band--page) .snr-fund--cty .snr-fund-body,
+.snr-band.snr-stage2:not(.snr-band--page) .snr-fund--cty .snr-cty-chart,
+.snr-band.snr-stage2:not(.snr-band--page) .snr-fund--cty .snr-cty-legend,
+.snr-band.snr-stage2:not(.snr-band--page) .snr-fund--cty .snr-cty-axis,
+.snr-band.snr-stage2:not(.snr-band--page) .snr-fund--cty .snr-fund-grid {
+  flex: 0 0 auto;
+}
+.snr-band.snr-stage2:not(.snr-band--page) .snr-fund--cty .snr-cty-plotgrid {
+  flex: 0 0 auto;
+  height: 104px;
+  min-height: 96px;
+}
+.snr-band.snr-stage2:not(.snr-band--page) .snr-fund--cty .snr-cty-note {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Phone: the cards are their natural height in the scroller; the plot keeps
+   the band's 16:9, stated as a height. */
+@media (max-width: 640px) {
+  .snr-band.snr-stage2 .snr-fund--cty .snr-cty-plotgrid,
+  .snr-band.snr-stage2:not(.snr-band--page) .snr-fund--cty .snr-cty-plotgrid {
+    flex: 0 0 auto;
+    height: calc((var(--snr-content, 358px) - 32px) * 0.5625);
+    min-height: 96px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .snr-band .snr-cty-guide,
+  .snr-band .snr-cty-hoverdot {
+    transition: none;
   }
 }
