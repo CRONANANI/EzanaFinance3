@@ -76,7 +76,20 @@ test('hive: compareOutcomes prefers a shared outcome, else the leaders', () => {
   );
   assert.equal(lead.matched_on, 'leader');
   assert.equal(lead.kalshi.id, 'k2');
+  assert.equal(lead.same_leader, false);
   assert.equal(h.compareOutcomes([], []), null);
+  const party = h.compareOutcomes(
+    [
+      { id: 'p1', outcome: 'Maura Healey (D)', probability: 0.96 },
+      { id: 'p2', outcome: 'Michael Minogue (R)', probability: 0.045 },
+    ],
+    [{ id: 'k1', outcome: 'Maura Healey', probability: 0.974 }],
+  );
+  assert.equal(party.matched_on, 'outcome', 'party suffixes do not block a match');
+  assert.equal(party.poly.id, 'p1');
+  assert.ok(h.sameOutcome('Healey', 'Maura Healey'));
+  assert.ok(!h.sameOutcome('Above 4%', 'Above 3%'));
+  assert.ok(!h.sameOutcome('Republican Party', 'Democratic Party'));
 });
 
 test('hive: cross-venue route is registered with its enums', () => {

@@ -65,6 +65,7 @@ async function crossVenue({ minSimilarity, category, sort, limit }) {
       similarity: p.similarity,
       matched_on: c.matched_on,
       outcome: c.matched_on === 'outcome' ? c.poly.outcome : null,
+      ...(c.matched_on === 'leader' ? { same_leader: c.same_leader } : {}),
       gap,
       abs_gap: Math.abs(gap),
       polymarket: side(p.poly, c.poly),
@@ -72,10 +73,13 @@ async function crossVenue({ minSimilarity, category, sort, limit }) {
       _updated: [p.poly.updated_at, p.kalshi.updated_at],
     });
   }
+  /* Same-outcome comparisons first: a gap between two different leaders
+     compares different outcomes, so those rank after every real match. */
+  const tier = (r) => (r.matched_on === 'outcome' ? 0 : 1);
   rows.sort((a, b) =>
     sort === 'similarity'
-      ? b.similarity - a.similarity || b.abs_gap - a.abs_gap
-      : b.abs_gap - a.abs_gap || b.similarity - a.similarity,
+      ? b.similarity - a.similarity || tier(a) - tier(b) || b.abs_gap - a.abs_gap
+      : tier(a) - tier(b) || b.abs_gap - a.abs_gap || b.similarity - a.similarity,
   );
   const kept = rows.slice(0, limit);
   return {

@@ -113,33 +113,56 @@ export function matchEvents(polyEvents, kalshiEvents, minSimilarity = 0.75) {
   return out;
 }
 
-const normLabel = (s) => normalizeTitle(s);
+/* Outcome labels: drop parentheticals ("(D)", "(R)"), the word "party",
+   punctuation and case, so "Maura Healey (D)" and "Maura Healey" match. */
+export function labelTokens(label) {
+  return String(label || '')
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\([^)]*\)/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .split(' ')
+    .filter((w) => w && w !== 'party' && w !== 'the');
+}
+
+/** Same outcome: equal token sets, or one set inside the other (3+ letters). */
+export function sameOutcome(a, b) {
+  const A = new Set(labelTokens(a));
+  const B = new Set(labelTokens(b));
+  if (!A.size || !B.size) return false;
+  const [small, big] = A.size <= B.size ? [A, B] : [B, A];
+  if (![...small].every((t) => big.has(t))) return false;
+  return small.size === big.size || [...small].some((t) => t.length >= 3 && !/^\d+$/.test(t));
+}
 
 /**
- * What to compare inside a matched pair. When both events list an outcome
- * with the same (normalized) label, compare that outcome on each venue,
- * picking the shared outcome the venues price highest; otherwise compare
- * each venue's leading outcome. Outcomes: [{ id, outcome, probability }].
+ * What to compare inside a matched pair. When both events list the same
+ * outcome (sameOutcome), compare it on each venue, picking the shared
+ * outcome the venues price highest: matched_on 'outcome'. Otherwise compare
+ * each venue's leading outcome: matched_on 'leader', with same_leader saying
+ * whether the two leaders are the same outcome. A gap between different
+ * leaders compares different outcomes, so callers should rank those last.
+ * Outcomes: [{ id, outcome, probability }].
  */
 export function compareOutcomes(polyOutcomes, kalshiOutcomes) {
-  const byLabel = new Map();
-  for (const o of kalshiOutcomes || []) {
-    const l = normLabel(o.outcome);
-    if (l && Number.isFinite(o.probability) && !byLabel.has(l)) byLabel.set(l, o);
-  }
+  const priced = (list) => (list || []).filter((o) => Number.isFinite(o.probability));
+  const P = priced(polyOutcomes);
+  const K = priced(kalshiOutcomes);
   let best = null;
-  for (const p of polyOutcomes || []) {
-    const k = byLabel.get(normLabel(p.outcome));
-    if (!k || !Number.isFinite(p.probability)) continue;
-    const weight = p.probability + k.probability;
-    if (!best || weight > best.weight) best = { poly: p, kalshi: k, weight };
+  for (const p of P) {
+    for (const k of K) {
+      if (!sameOutcome(p.outcome, k.outcome)) continue;
+      const weight = p.probability + k.probability;
+      if (!best || weight > best.weight) best = { poly: p, kalshi: k, weight };
+    }
   }
-  if (best) return { matched_on: 'outcome', poly: best.poly, kalshi: best.kalshi };
-  const lead = (list) =>
-    (list || [])
-      .filter((o) => Number.isFinite(o.probability))
-      .sort((a, b) => b.probability - a.probability)[0] || null;
-  const p = lead(polyOutcomes);
-  const k = lead(kalshiOutcomes);
-  return p && k ? { matched_on: 'leader', poly: p, kalshi: k } : null;
+  if (best)
+    return { matched_on: 'outcome', same_leader: null, poly: best.poly, kalshi: best.kalshi };
+  const lead = (list) => [...list].sort((a, b) => b.probability - a.probability)[0] || null;
+  const p = lead(P);
+  const k = lead(K);
+  return p && k
+    ? { matched_on: 'leader', same_leader: sameOutcome(p.outcome, k.outcome), poly: p, kalshi: k }
+    : null;
 }

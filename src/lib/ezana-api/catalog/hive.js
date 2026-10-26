@@ -30,6 +30,7 @@ export const ROUTES = {
       fields: {
         similarity: 'number',
         matched_on: 'string',
+        same_leader: 'boolean',
         outcome: 'string',
         gap: 'number',
         abs_gap: 'number',
@@ -37,7 +38,7 @@ export const ROUTES = {
         kalshi: 'object',
       },
       summary:
-        "The same question listed on both venues, with each venue's probability and the gap between them: venue disagreement. matched_on is outcome (the same outcome on both) or leader (each venue's leading outcome). Default min_similarity 0.75, sort gap (largest first).",
+        "The same question listed on both venues, with each venue's probability and the gap between them: venue disagreement. matched_on is outcome (the same outcome on both venues) or leader (each venue's favourite, with same_leader saying whether they are the same outcome). Same-outcome pairs rank first. Default min_similarity 0.75, sort gap (largest first).",
     },
   ],
 };
