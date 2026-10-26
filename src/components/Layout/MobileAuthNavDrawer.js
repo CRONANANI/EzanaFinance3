@@ -177,8 +177,8 @@ function buildNavGroups(isOrgUser) {
     label: 'Rankings & tools',
     items: [
       {
-        label: 'Empire rankings',
-        href: '/empire-ranking',
+        label: 'Global Empire Rankings',
+        href: '/datasets/global-empire-lighthouse',
         icon: Crown,
         description: 'Leaders & scores',
       },

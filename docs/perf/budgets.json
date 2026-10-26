@@ -23,8 +23,6 @@
     "/(dashboard)/council-rankings/[orgId]/page": 262,
     "/(dashboard)/council-rankings/layout": 326,
     "/(dashboard)/council-rankings/page": 263,
-    "/(dashboard)/empire-ranking/layout": 259,
-    "/(dashboard)/empire-ranking/page": 451,
     "/(dashboard)/error": 262,
     "/(dashboard)/ezana-echo/[articleId]/page": 749,
     "/(dashboard)/ezana-echo/archived/page": 321,

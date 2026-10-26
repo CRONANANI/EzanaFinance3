@@ -29,9 +29,16 @@ import { dimensionForSlug } from '@/lib/datasets/hubs';
    /datasets/government/contracts. Matching on an exact path or a true path
    segment, then keeping the longest hit, resolves to the real page. */
 function resolveActive(pathname) {
-  /* A hub lights its own dimension (no item: the hub is the dimension). */
+  /* A hub lights its own dimension. No item, since the hub is the dimension,
+     unless a taxonomy item IS the hub page (Global Empire Rankings is the
+     lighthouse hub's page), in which case that item lights too. */
   const hub = dimensionForSlug(pathname.replace(/^\/datasets\//, ''));
-  if (hub) return { href: pathname, active: hub, activeItem: null };
+  if (hub) {
+    const own = DATASET_TAXONOMY.find((d) => d.id === hub)?.items?.find(
+      (it) => it.href === pathname,
+    );
+    return { href: pathname, active: hub, activeItem: own?.label ?? null };
+  }
   let best = null;
   for (const cat of DATASET_TAXONOMY) {
     for (const item of cat.items || []) {

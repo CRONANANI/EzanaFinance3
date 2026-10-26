@@ -783,7 +783,7 @@ export const sovereignWealthLeagueTable2026 = {
       headline: 'Sovereign wealth is one column of national power',
       body: "Ezana's Empire Rankings score 30+ countries across all 18 Dalio power dimensions, from debt burden to reserve currency status, rank-normalized from World Bank source data, with head-to-head radar comparisons for every country in this table.",
       ctaLabel: 'Open the Empire Rankings',
-      ctaHref: '/empire-ranking',
+      ctaHref: '/datasets/global-empire-lighthouse',
       ctaAuthGate: true,
     },
   ],

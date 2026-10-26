@@ -551,7 +551,7 @@ export const empireRankings2026 = {
       headline: 'The live version of this table has 18 columns',
       body: "Ezana's Empire Rankings score 30+ countries across all 18 Dalio power dimensions — Debt Burden to Reserve Currency Status — rank-normalized from World Bank source data, with per-metric drill-downs and head-to-head radar comparisons.",
       ctaLabel: 'Open the Empire Rankings',
-      ctaHref: '/empire-ranking',
+      ctaHref: '/datasets/global-empire-lighthouse',
       ctaAuthGate: true,
     },
 

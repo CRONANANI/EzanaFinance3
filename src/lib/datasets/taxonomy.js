@@ -289,6 +289,17 @@ export const DATASET_TAXONOMY = [
     blurb:
       'Macro and geopolitical context: global indicators, geopolitical risk and sanctions today, with GDELT events ahead.',
     items: [
+      /* The dimension's own page (its hub slug): Ezana's ranking, scored from
+         the World Bank series below. */
+      {
+        label: 'Global Empire Rankings',
+        description:
+          "Ezana's composite of sourced power dimensions, with every dimension's full table",
+        href: '/datasets/global-empire-lighthouse',
+        live: true,
+        source: 'World Bank Indicators API (CC BY 4.0) · Ezana scoring',
+        sourceType: 'gov',
+      },
       {
         label: 'OECD Macro Data',
         description:

@@ -39,8 +39,13 @@ function shortBlurb(text, max = 110) {
 export const revalidate = 900;
 export const dynamicParams = false;
 
+/* The lighthouse slug has its own static route
+   (src/app/datasets/global-empire-lighthouse: the Global Empire Rankings
+   page), so this dynamic route never builds it and the two never compete. */
 export function generateStaticParams() {
-  return Object.values(HUB_SLUGS).map((hub) => ({ hub }));
+  return Object.entries(HUB_SLUGS)
+    .filter(([id]) => id !== 'lighthouse')
+    .map(([, hub]) => ({ hub }));
 }
 
 function dimensionFor(params) {

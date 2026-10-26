@@ -30,6 +30,9 @@ export function DatasetDashboard({ config, children }) {
     cta,
     onRowClick,
     getRowLabel,
+    isRowClickable, // optional: every row interactive, not only awardId rows
+    rowClassName, // optional: per-row class (e.g. a searched-country highlight)
+    queryHref, // optional: where the EzanaQL row points (default: the hub)
     activeCategory, // taxonomy dimension id, e.g. 'titans' — highlights the nav
     activeItem, // taxonomy item label, e.g. 'Institutional'
     ticker, // optional: { items, onSelect?, ariaLabel? } — omitted → no strip
@@ -38,6 +41,7 @@ export function DatasetDashboard({ config, children }) {
   const [terms, setTerms] = useState({});
 
   const filteredRows = useMemo(() => {
+    if (!table) return [];
     return table.rows.filter((row) =>
       searches.every((s) => {
         const term = (terms[s.id] || '').trim().toLowerCase();
@@ -49,7 +53,7 @@ export function DatasetDashboard({ config, children }) {
         );
       }),
     );
-  }, [table.rows, searches, terms]);
+  }, [table, searches, terms]);
 
   const HighlightIcon = highlight?.icon;
 
@@ -73,7 +77,7 @@ export function DatasetDashboard({ config, children }) {
         </div>
 
         {/* EzanaQL lives on the dimension hub, scoped to its datasets. */}
-        {activeCategory ? <HubQueryLink dimension={activeCategory} /> : null}
+        {activeCategory ? <HubQueryLink dimension={activeCategory} href={queryHref} /> : null}
 
         {searches.length > 0 && (
           <div className="mkt-ds-search-row" role="search">
@@ -158,25 +162,32 @@ export function DatasetDashboard({ config, children }) {
           </div>
         )}
 
-        <section className="mkt-ds-section">
-          {table.caption ? <h2 className="mkt-section-title">{table.caption}</h2> : null}
-          {sampleNote ? <p className="mkt-ds-sample-note">{sampleNote}</p> : null}
-          <DatasetTable
-            columns={table.columns}
-            rows={filteredRows}
-            emptyText={table.rows.length === 0 && table.emptyText ? table.emptyText : undefined}
-            onRowClick={onRowClick}
-            getRowLabel={getRowLabel}
-          />
-          {tableLink ? (
-            <p className="mkt-ds-table-link">
-              <Link href={tableLink.href}>
-                {tableLink.label}
-                <ArrowRight size={15} aria-hidden />
-              </Link>
-            </p>
-          ) : null}
-        </section>
+        {/* A page with nothing to tabulate yet (Global Empire Rankings before
+            its first load) passes no table and says so in its children. */}
+        {table ? (
+          <section className="mkt-ds-section" id={table.id || undefined}>
+            {table.caption ? <h2 className="mkt-section-title">{table.caption}</h2> : null}
+            {sampleNote ? <p className="mkt-ds-sample-note">{sampleNote}</p> : null}
+            <DatasetTable
+              columns={table.columns}
+              rows={filteredRows}
+              emptyText={table.rows.length === 0 && table.emptyText ? table.emptyText : undefined}
+              onRowClick={onRowClick}
+              getRowLabel={getRowLabel}
+              isRowClickable={isRowClickable}
+              rowClassName={rowClassName}
+              ariaLabel={table.ariaLabel}
+            />
+            {tableLink ? (
+              <p className="mkt-ds-table-link">
+                <Link href={tableLink.href}>
+                  {tableLink.label}
+                  <ArrowRight size={15} aria-hidden />
+                </Link>
+              </p>
+            ) : null}
+          </section>
+        ) : null}
 
         {children ? <section className="mkt-ds-section">{children}</section> : null}
 

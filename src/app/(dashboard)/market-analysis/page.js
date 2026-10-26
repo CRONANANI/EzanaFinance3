@@ -2171,9 +2171,12 @@ export default function MarketAnalysisPage() {
             THE CHAIN
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <Link href="/empire-ranking" className="ma-view-btn ma-view-btn--gold">
+            <Link
+              href="/datasets/global-empire-lighthouse"
+              className="ma-view-btn ma-view-btn--gold"
+            >
               <i className="bi bi-globe-americas" style={{ marginRight: 4 }} />
-              EMPIRE RANKING &amp; ANALYSIS
+              GLOBAL EMPIRE RANKINGS
             </Link>
             {view === 'map' && isPowerMapActive && <ShowMeDataButton />}
           </div>

@@ -62,6 +62,14 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      /* The in-app Empire Rankings page was rebuilt on live data as the
+         Global Empire Lighthouse dataset page. Query strings pass through, so
+         an old ?layers= link lands on its mapped dimension. */
+      {
+        source: '/empire-ranking',
+        destination: '/datasets/global-empire-lighthouse',
+        permanent: true,
+      },
       /* Inside the Capitol is no longer its own user help-centre category; its
          articles live under Research Tools. */
       {

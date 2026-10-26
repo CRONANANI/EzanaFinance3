@@ -1,4 +1,4 @@
-/* Page shell — cards use Empire Rankings .er-card* (see empire-ranking.css import on page) */
+/* Page shell — cards use the .er-card* shell in er-cards.css (moved here from the retired empire-ranking page) */
 .ci-page {
   display: flex;
   flex-direction: column;

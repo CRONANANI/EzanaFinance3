@@ -14,16 +14,27 @@
  *  - onRowClick(row): optional — when provided, rows that carry an `awardId`
  *      become keyboard-accessible buttons (Enter/Space) that call it.
  *  - getRowLabel(row): optional aria-label for a clickable row.
+ *  - isRowClickable(row): optional — overrides the `awardId` rule for pages
+ *      whose rows are all interactive (e.g. Global Empire Rankings).
+ *  - rowClassName(row): optional extra class for a row (e.g. a highlight).
+ *  - ariaLabel: the scroll region's label (default "Dataset table").
+ *  Rows with an `id` carry it as data-row-id, so a page can find and scroll
+ *  to one.
  */
+const hasAwardId = (row) => !!row.awardId;
+
 export function DatasetTable({
   columns,
   rows,
   emptyText = 'No matching records.',
   onRowClick,
   getRowLabel,
+  isRowClickable = hasAwardId,
+  rowClassName,
+  ariaLabel = 'Dataset table',
 }) {
   return (
-    <div className="mkt-ds-table-wrap" role="region" aria-label="Dataset table" tabIndex={0}>
+    <div className="mkt-ds-table-wrap" role="region" aria-label={ariaLabel} tabIndex={0}>
       <table className="mkt-ds-table">
         <thead>
           <tr>
@@ -47,13 +58,17 @@ export function DatasetTable({
             </tr>
           ) : (
             rows.map((row, i) => {
-              // Only rows with an awardId are interactive — the static sample
-              // fallback (no awardId) stays a plain, non-clickable row.
-              const clickable = typeof onRowClick === 'function' && !!row.awardId;
+              // By default only rows with an awardId are interactive — the
+              // static sample fallback (no awardId) stays a plain row.
+              const clickable = typeof onRowClick === 'function' && isRowClickable(row);
+              const cls = [clickable ? 'mkt-ds-row-clickable' : '', rowClassName?.(row) || '']
+                .filter(Boolean)
+                .join(' ');
               return (
                 <tr
                   key={row.id ?? i}
-                  className={clickable ? 'mkt-ds-row-clickable' : undefined}
+                  data-row-id={row.id ?? undefined}
+                  className={cls || undefined}
                   tabIndex={clickable ? 0 : undefined}
                   role={clickable ? 'button' : undefined}
                   aria-label={

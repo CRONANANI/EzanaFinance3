@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useGlobalPowerMap } from "@/hooks/useGlobalPowerMap";
+import { useRouter } from 'next/navigation';
+import { useGlobalPowerMap } from '@/hooks/useGlobalPowerMap';
 
 export function ShowMeDataButton() {
   const selectedLayers = useGlobalPowerMap((s) => s.selectedLayers);
@@ -9,7 +9,7 @@ export function ShowMeDataButton() {
 
   if (selectedLayers.length === 0) return null;
 
-  const href = `/empire-ranking?layers=${selectedLayers.join(",")}`;
+  const href = `/datasets/global-empire-lighthouse?layers=${selectedLayers.join(',')}`;
 
   return (
     <button

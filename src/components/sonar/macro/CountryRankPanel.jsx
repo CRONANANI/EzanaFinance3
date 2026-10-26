@@ -390,9 +390,13 @@ export function CountryRankPanel({ dossier, onFollowup = null, tone = 'band' }) 
           <div className="crk-card crk-card--wide">
             <h3 className="crk-h3">
               Global Empire Rankings pillars
-              {empire?.href ? (
-                <a className="crk-link" href={empire.href}>
-                  Open {name} on the explorer <i className="bi bi-arrow-right" aria-hidden="true" />
+              {empire && dossier.iso3 ? (
+                <a
+                  className="crk-link"
+                  href={`/datasets/global-empire-lighthouse?country=${encodeURIComponent(dossier.iso3)}`}
+                >
+                  Open {name} on Global Empire Rankings{' '}
+                  <i className="bi bi-arrow-right" aria-hidden="true" />
                 </a>
               ) : null}
             </h3>

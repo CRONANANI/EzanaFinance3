@@ -1,0 +1,408 @@
+/* gerx- : Global Empire Rankings (/datasets/global-empire-lighthouse).
+   Tokens only. The page is a DatasetDashboard, so the hero, highlight,
+   composite table and source block are mkt-ds-*; this file styles the
+   dimension tables, the country panel, the compare bars, the pending list and
+   the unavailable card. Cards are mkt-card, so ds-cards.css and ds-align.css
+   already treat them like every other /datasets card. */
+
+.gerx-section {
+  margin-bottom: 2.5rem;
+  scroll-margin-top: 96px;
+}
+.gerx-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.gerx-label {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.gerx-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ── searched-country highlight (composite and dimension tables) ── */
+.mkt-ds-table tbody tr.gerx-row-searched {
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
+}
+.mkt-ds-table tbody tr.gerx-row-searched td:first-child {
+  box-shadow: inset 3px 0 0 var(--brand-band-mint);
+}
+body.light-mode .mkt-ds-table tbody tr.gerx-row-searched td:first-child {
+  box-shadow: inset 3px 0 0 var(--emerald);
+}
+.gerx-country {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.gerx-searched {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--emerald-text);
+  background: color-mix(in srgb, var(--emerald) 14%, transparent);
+}
+
+/* ── dimension pills ── */
+.gerx-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin-bottom: 1rem;
+}
+.gerx-pill-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.gerx-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.gerx-pill {
+  appearance: none;
+  min-height: 32px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease-out,
+    background 160ms ease-out,
+    color 160ms ease-out;
+}
+.gerx-pill:hover {
+  border-color: var(--border-hover);
+  color: var(--text-secondary);
+}
+.gerx-pill:focus-visible {
+  outline: 2px solid var(--emerald-border);
+  outline-offset: 2px;
+}
+.gerx-pill.is-active {
+  border-color: var(--emerald-border);
+  background: color-mix(in srgb, var(--emerald) 12%, transparent);
+  color: var(--emerald-text);
+}
+
+/* The dimension table scrolls inside its own box, so a highlighted country
+   can be brought into view without moving the page. */
+.gerx-dimtable {
+  scroll-margin-top: 96px;
+}
+.gerx-dimtable .mkt-ds-table-wrap {
+  max-height: 560px;
+  overflow-y: auto;
+}
+.gerx-dimtable .mkt-ds-table {
+  min-width: 0;
+}
+
+/* ── country panel ── */
+.gerx-panel {
+  margin-bottom: 2.5rem;
+  scroll-margin-top: 96px;
+}
+.gerx-panel:focus {
+  outline: none;
+}
+.gerx-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-secondary);
+}
+.gerx-panel-title {
+  margin: 4px 0 4px;
+  font-size: var(--type-section-size);
+  font-weight: var(--type-section-weight);
+  letter-spacing: var(--type-section-tracking);
+  color: var(--text-primary);
+}
+.gerx-panel-lede {
+  margin: 0;
+  font-size: var(--type-body-size);
+  color: var(--text-secondary);
+}
+.gerx-close {
+  appearance: none;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-primary);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.gerx-close:hover {
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+.gerx-close:focus-visible {
+  outline: 2px solid var(--emerald-border);
+  outline-offset: 2px;
+}
+.gerx-panel-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  padding-top: 1rem;
+}
+.gerx-radar {
+  margin: 0;
+  min-width: 0;
+}
+.gerx-radar-box {
+  width: 100%;
+  height: 340px;
+  min-width: 0;
+}
+.gerx-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
+}
+.gerx-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.gerx-legend-note {
+  color: var(--text-faint);
+}
+.gerx-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+.gerx-swatch--a {
+  background: var(--emerald);
+}
+.gerx-swatch--b {
+  background: var(--gold-champagne);
+}
+.gerx-panel-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+}
+.gerx-dimlinks-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+.gerx-dimlinks-list li + li {
+  border-top: 1px solid var(--border-secondary);
+}
+.gerx-dimlinks-list a {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.gerx-dimlinks-list a:hover .gerx-dimlinks-name {
+  color: var(--emerald-text);
+  text-decoration: underline;
+}
+.gerx-dimlinks-list a:focus-visible {
+  outline: 2px solid var(--emerald-border);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.gerx-dimlinks-name {
+  font-size: var(--type-body-size);
+  font-weight: 600;
+  min-width: 0;
+}
+.gerx-dimlinks-meta {
+  flex: 0 0 auto;
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+.gerx-panel-out {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.gerx-panel-out a {
+  color: var(--emerald-text);
+  font-weight: 600;
+}
+
+/* ── compare ── */
+.gerx-compare-pick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+.gerx-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.gerx-select select {
+  min-height: 40px;
+  max-width: 100%;
+  padding: 0 10px;
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-md);
+  background: var(--surface-input);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+}
+.gerx-select select:focus-visible {
+  outline: 2px solid var(--emerald-border);
+  outline-offset: 1px;
+}
+.gerx-vs {
+  font-family: var(--font-mono);
+  font-size: var(--type-caption-size);
+  color: var(--text-faint);
+}
+.gerx-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.gerx-bar-row {
+  display: grid;
+  grid-template-columns: minmax(0, 200px) minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  border-top: 1px solid var(--border-secondary);
+}
+.gerx-bar-row:first-child {
+  border-top: none;
+}
+.gerx-bar-name {
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.gerx-bar-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3.5em;
+  align-items: center;
+  gap: 4px 8px;
+}
+.gerx-bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  overflow: hidden;
+}
+.gerx-bar {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+.gerx-bar--a {
+  background: var(--emerald);
+}
+.gerx-bar--b {
+  background: var(--gold-champagne);
+}
+.gerx-bar-val {
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+/* ── pending and unavailable ── */
+.gerx-pending {
+  margin: 0;
+  max-width: 72ch;
+  font-size: var(--type-body-size);
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+.gerx-unavailable {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 2.5rem;
+  padding: 16px 18px;
+  border: 1px dashed var(--border-primary);
+  border-radius: var(--radius-lg);
+}
+.gerx-unavailable p {
+  margin: 0;
+  font-size: var(--type-body-size);
+  color: var(--text-secondary);
+}
+.gerx-unavailable .bi {
+  font-size: 1.25rem;
+  color: var(--emerald-text);
+}
+
+/* The kept hub pieces sit in the dashboard column. */
+.gerx-hub .hub-section:first-child {
+  margin-top: 0;
+}
+
+@media (max-width: 900px) {
+  .gerx-panel-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .gerx-radar-box {
+    height: 280px;
+  }
+  .gerx-bar-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+  .gerx-pills {
+    gap: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gerx-pill {
+    transition: none;
+  }
+}

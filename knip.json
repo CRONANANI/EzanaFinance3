@@ -18,13 +18,7 @@
     "scripts/**/*.{js,mjs}"
   ],
   "project": ["src/**/*.{js,jsx}", "scripts/**/*.{js,mjs}"],
-  "ignore": [
-    "app-legacy/**",
-    "public/**",
-    "docs/**",
-    "src/lib/utils.d.ts",
-    "src/hooks/useCardConfig.d.ts"
-  ],
+  "ignore": ["app-legacy/**", "public/**", "docs/**", "src/lib/utils.d.ts"],
   "ignoreDependencies": [
     "@tailwindcss/typography",
     "tailwindcss-animate",

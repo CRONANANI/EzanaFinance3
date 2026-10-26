@@ -135,7 +135,7 @@ function SettingsInner() {
       '/partner-community': 'Partner Community',
       '/partner-learning': 'Creator Studio',
       '/real-estate': 'Real Estate',
-      '/empire-ranking': 'Empire Ranking',
+      '/datasets/global-empire-lighthouse': 'Global Empire Rankings',
       '/financial-analytics': 'Financial Analytics',
       '/badges': 'Badges',
       '/leaderboard/elo': 'ELO Leaderboard',

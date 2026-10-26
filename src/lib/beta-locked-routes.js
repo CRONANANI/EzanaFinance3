@@ -44,7 +44,6 @@ export const BETA_LOCKED_ROUTES = [
   '/for-the-quants',
   '/inside-the-capitol',
   '/real-estate',
-  '/empire-ranking',
   '/financial-analytics',
   '/terminal',
   '/leaderboard',
@@ -77,8 +76,6 @@ export const BETA_LOCK_DESCRIPTIONS = {
   '/inside-the-capitol':
     'Congressional trades, lobbying activity, and government contract intelligence — launching with v1.0.',
   '/real-estate': 'Fractional real estate investments and REIT analysis tools — coming in v1.0.',
-  '/empire-ranking':
-    'Geopolitical empire rankings and country-level investment intelligence — launching with v1.0.',
   '/financial-analytics':
     'Advanced portfolio analytics and risk attribution tools — coming in v1.0.',
   '/terminal': 'Bloomberg-style integrated terminal for power users — launching with v1.0.',

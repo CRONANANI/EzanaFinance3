@@ -223,7 +223,6 @@ export function Navbar() {
     pathname?.includes('/inside-the-capitol') ||
     pathname?.includes('/company-research') ||
     pathname?.includes('/market-analysis') ||
-    pathname?.includes('/empire-ranking') ||
     pathname?.includes('/for-the-quants') ||
     pathname?.includes('/betting-markets') ||
     pathname?.includes('/ezana-echo') ||
