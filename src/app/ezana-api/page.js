@@ -17,6 +17,7 @@ import { DIMENSIONS, GROUPS, LIVE_ENDPOINTS, PARAMS } from '@/lib/ezana-api/regi
 import { TIERS as API_TIERS, TIER_ORDER } from '@/lib/ezana-api/tiers';
 import { PM_EXAMPLES } from './prediction-examples';
 import { API_EXAMPLES } from './api-examples';
+import { EndpointArgs, ExampleButton, ExamplePanel } from './EndpointDocs';
 import './ezana-api.css';
 
 /* Bootstrap Icons in place of the old icon components; same props. */
@@ -694,6 +695,15 @@ function CoverageStrip() {
 export default function EzanaApiPage() {
   const [active, setActive] = useState('overview');
   const [reqOpen, setReqOpen] = useState(false);
+  /* The endpoint whose example the green panel shows. The first endpoint
+     fills the sticky panel on wide screens; on narrow screens the panel
+     opens inline only under an endpoint the visitor picked. */
+  const [exRoute, setExRoute] = useState(ENDPOINT_GROUPS[0]?.routes[0] || null);
+  const [exPicked, setExPicked] = useState(false);
+  const pickExample = (route) => {
+    setExRoute(route);
+    setExPicked(true);
+  };
 
   // Scroll-spy: highlight the legend entry for the section currently in view.
   useEffect(() => {
@@ -1001,100 +1011,100 @@ export default function EzanaApiPage() {
             <div className="ea-viz-frame">
               <RequestFlow />
             </div>
-            {DIMENSION_SECTIONS.map((dim) => (
-              <div key={dim.id} className="ea-dim" id={`dim-${dim.id}`}>
-                <div className="ea-dim-head">
-                  <span
-                    className="ea-dim-dot"
-                    style={{ background: dim.color }}
-                    aria-hidden="true"
-                  />
-                  <h3 className="ea-dim-title">{dim.label}</h3>
-                  <span className="ea-dim-sets">{dim.groups.map((g) => g.title).join(' · ')}</span>
-                </div>
-                {dim.groups.map((group) => {
-                  const GIcon = group.Icon;
-                  return (
-                    <div key={group.key} className="ea-ep-group">
-                      <div className="ea-ep-group-head">
-                        <h3>
-                          <GIcon size={15} aria-hidden /> {group.title}
-                        </h3>
-                        <code className="ea-ep-base">{group.base}</code>
-                      </div>
-                      {group.framing && <p className="ea-ep-framing">{group.framing}</p>}
-                      {group.guide?.length ? (
-                        <details className="ea-guide">
-                          <summary>
-                            <i className="bi bi-info-circle" aria-hidden="true" /> How the data
-                            works
-                          </summary>
-                          <dl className="ea-guide-list">
-                            {group.guide.map((g) => (
-                              <div key={g.h} className="ea-guide-item">
-                                <dt>{g.h}</dt>
-                                <dd>{g.p}</dd>
-                              </div>
-                            ))}
-                          </dl>
-                        </details>
-                      ) : null}
-                      <ul className="ea-ep-list">
-                        {group.routes.map((r) => (
-                          <li key={r.path} className="ea-ep">
-                            <div className="ea-ep-sig">
-                              <Method method="GET" />
-                              <code>{r.path}</code>
-                              <span className="ea-live">
-                                <i className="bi bi-check-circle-fill" aria-hidden="true" /> Live
-                              </span>
-                              {r.kind === 'insight' ? (
-                                <span className="ea-insight">
-                                  <i className="bi bi-stars" aria-hidden="true" /> Insight
-                                </span>
-                              ) : null}
-                            </div>
-                            <p>
-                              {r.desc}
-                              {r.scope ? (
-                                <span className="ea-ep-scope"> Scope: {r.scope}.</span>
-                              ) : null}
-                            </p>
-                            {r.kind === 'insight' && r.method ? (
-                              <p className="ea-ep-method">
-                                <span>Method:</span> {r.method}
-                              </p>
-                            ) : null}
-                            {r.params?.length ? (
-                              <p className="ea-ep-params">
-                                <span>Params:</span>{' '}
-                                {r.params.map((name, i) => (
-                                  <span key={name}>
-                                    {i ? ', ' : ''}
-                                    <code>{name}</code>
-                                  </span>
-                                ))}
-                                {Object.entries({
-                                  ...(r.sortValues ? { sort: r.sortValues } : {}),
-                                  ...(r.paramEnums || {}),
-                                }).map(([name, values]) => (
-                                  <span key={`e-${name}`}>
-                                    {' '}
-                                    <span className="ea-ep-sep">·</span> <span>{name}:</span>{' '}
-                                    {values.join(', ')}
-                                  </span>
-                                ))}
-                              </p>
-                            ) : null}
-                          </li>
-                        ))}
-                      </ul>
-                      {group.key === 'predictions' ? <PredictionExamples /> : null}
+            <div className="ea-ref-layout">
+              <div className="ea-ref-col">
+                {DIMENSION_SECTIONS.map((dim) => (
+                  <div key={dim.id} className="ea-dim" id={`dim-${dim.id}`}>
+                    <div className="ea-dim-head">
+                      <span
+                        className="ea-dim-dot"
+                        style={{ background: dim.color }}
+                        aria-hidden="true"
+                      />
+                      <h3 className="ea-dim-title">{dim.label}</h3>
+                      <span className="ea-dim-sets">
+                        {dim.groups.map((g) => g.title).join(' · ')}
+                      </span>
                     </div>
-                  );
-                })}
+                    {dim.groups.map((group) => {
+                      const GIcon = group.Icon;
+                      return (
+                        <div key={group.key} className="ea-ep-group">
+                          <div className="ea-ep-group-head">
+                            <h3>
+                              <GIcon size={15} aria-hidden /> {group.title}
+                            </h3>
+                            <code className="ea-ep-base">{group.base}</code>
+                          </div>
+                          {group.framing && <p className="ea-ep-framing">{group.framing}</p>}
+                          {group.guide?.length ? (
+                            <details className="ea-guide">
+                              <summary>
+                                <i className="bi bi-info-circle" aria-hidden="true" /> How the data
+                                works
+                              </summary>
+                              <dl className="ea-guide-list">
+                                {group.guide.map((g) => (
+                                  <div key={g.h} className="ea-guide-item">
+                                    <dt>{g.h}</dt>
+                                    <dd>{g.p}</dd>
+                                  </div>
+                                ))}
+                              </dl>
+                            </details>
+                          ) : null}
+                          <ul className="ea-ep-list">
+                            {group.routes.map((r) => (
+                              <li key={r.path} className="ea-ep">
+                                <div className="ea-ep-sig">
+                                  <Method method="GET" />
+                                  <code>{r.path}</code>
+                                  <span className="ea-live">
+                                    <i className="bi bi-check-circle-fill" aria-hidden="true" />{' '}
+                                    Live
+                                  </span>
+                                  {r.kind === 'insight' ? (
+                                    <span className="ea-insight">
+                                      <i className="bi bi-stars" aria-hidden="true" /> Insight
+                                    </span>
+                                  ) : null}
+                                  <ExampleButton
+                                    route={r}
+                                    active={exRoute?.path === r.path}
+                                    onSelect={pickExample}
+                                  />
+                                </div>
+                                <p>
+                                  {r.desc}
+                                  {r.scope ? (
+                                    <span className="ea-ep-scope"> Scope: {r.scope}.</span>
+                                  ) : null}
+                                </p>
+                                {r.kind === 'insight' && r.method ? (
+                                  <p className="ea-ep-method">
+                                    <span>Method:</span> {r.method}
+                                  </p>
+                                ) : null}
+                                <EndpointArgs route={r} />
+                                {exPicked && exRoute?.path === r.path ? (
+                                  <div className="ea-ref-inline">
+                                    <ExamplePanel route={r} />
+                                  </div>
+                                ) : null}
+                              </li>
+                            ))}
+                          </ul>
+                          {group.key === 'predictions' ? <PredictionExamples /> : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
-            ))}
+              <aside className="ea-ref-aside" aria-label="Endpoint example">
+                <ExamplePanel route={exRoute} />
+              </aside>
+            </div>
             <ApiExamples />
             <div className="ea-code">
               <div className="ea-code-head">

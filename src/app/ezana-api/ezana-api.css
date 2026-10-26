@@ -1560,3 +1560,407 @@
   font-weight: 600;
   color: var(--ea-ink);
 }
+
+/* ── Endpoint reference (Oct 26): Shopify-style arguments + example panel ──
+   EndpointDocs.jsx. Green toggles expand an endpoint's arguments and
+   response fields; the Example button beside each signature fills the green
+   code panel (sticky right column on wide screens, inline below the picked
+   endpoint on narrow ones). The panel ground is --brand-band-green with
+   --brand-band-mint accents, constants that hold their contrast in either
+   theme. */
+.ea-ref-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+.ea-ref-aside {
+  display: none;
+}
+@media (min-width: 1280px) {
+  .ea-ref-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+  }
+  .ea-ref-aside {
+    display: block;
+    position: sticky;
+    top: calc(var(--ea-nav) + 16px);
+    max-height: calc(100vh - var(--ea-nav) - 32px);
+    overflow-y: auto;
+    border-radius: var(--radius-lg);
+  }
+  .ea-ref-inline {
+    display: none;
+  }
+}
+
+/* Example button: beside the signature, pushed to the row's end. */
+.ea-ref-ex-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--emerald-border);
+  background: var(--emerald-bg);
+  color: var(--ea-emerald-text);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.ea-ref-ex-btn:hover {
+  background: var(--emerald-bg-hover);
+  border-color: color-mix(in srgb, var(--emerald) 45%, transparent);
+}
+.ea-ref-ex-btn.is-active {
+  background: var(--emerald);
+  border-color: var(--emerald);
+  color: white;
+}
+.ea-ref-ex-btn:focus-visible,
+.ea-ref-toggle:focus-visible,
+.ea-ref-lang:focus-visible,
+.ea-ref-copy:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+
+/* Green "Show input fields" / "Show response fields" toggles. */
+.ea-ref {
+  margin-top: 0.55rem;
+}
+.ea-ref-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.ea-ref-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--emerald);
+  background: transparent;
+  color: var(--ea-emerald-text);
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.ea-ref-toggle:hover {
+  background: var(--emerald-bg);
+}
+.ea-ref-toggle.is-open {
+  background: var(--emerald);
+  color: white;
+}
+.ea-ref-count {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.68rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--emerald) 14%, transparent);
+}
+.ea-ref-toggle.is-open .ea-ref-count {
+  background: color-mix(in srgb, white 22%, transparent);
+}
+.ea-ref-chev {
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+}
+.ea-ref-toggle.is-open .ea-ref-chev {
+  transform: rotate(180deg);
+}
+
+.ea-ref-panel {
+  margin-top: 0.6rem;
+  padding: 0.75rem 0.9rem;
+  border-left: 2px solid var(--emerald);
+  background: var(--emerald-bg-subtle);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.ea-ref-panel[hidden] {
+  display: none;
+}
+.ea-ref-panel.is-open {
+  animation: ea-ref-in 0.18s ease-out;
+}
+@keyframes ea-ref-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.ea-ref-h {
+  margin: 0 0 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ea-ink);
+}
+.ea-ref-h-sub {
+  margin-left: 0.35rem;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--ea-muted);
+}
+.ea-ref-list,
+.ea-ref-fields {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ea-ref-arg {
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--ea-border);
+}
+.ea-ref-arg:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+.ea-ref-sig {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+.ea-page .ea-ref-name {
+  padding: 0;
+  background: none;
+  color: var(--ea-emerald-text);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.ea-ref-type {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
+  color: var(--ea-ink);
+  text-decoration: underline dotted color-mix(in srgb, var(--ea-ink) 35%, transparent);
+  text-underline-offset: 3px;
+}
+.ea-ref-req,
+.ea-ref-opt,
+.ea-ref-in {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+}
+.ea-ref-req {
+  color: var(--ea-emerald-text);
+  font-weight: 700;
+}
+.ea-ref-opt,
+.ea-ref-in {
+  color: var(--ea-muted);
+}
+.ea-ref-in::before {
+  content: 'in ';
+}
+.ea-ep p.ea-ref-desc,
+.ea-ep p.ea-ref-limits {
+  margin: 0.25rem 0 0;
+  font-size: 0.78rem;
+}
+.ea-ep p.ea-ref-limits {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.7rem;
+}
+.ea-ref-values {
+  margin-top: 0.4rem;
+}
+.ea-ref-values-label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ea-muted);
+}
+.ea-ref-values ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+}
+.ea-page .ea-ref-values code {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--emerald-border);
+  background: var(--emerald-bg);
+  color: var(--ea-ink);
+  font-size: 0.7rem;
+}
+.ea-ref-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 0.35rem 1rem;
+}
+.ea-ref-fields li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+/* The green code panel. */
+.ea-ref-inline {
+  margin-top: 0.75rem;
+}
+.ea-ref-panelx {
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--brand-band-green);
+  color: white;
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--emerald-dark) 25%, transparent);
+}
+.ea-ref-panelx-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid color-mix(in srgb, white 14%, transparent);
+}
+.ea-ref-panelx-sig {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+.ea-ref-panelx-method {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius-sm);
+  background: var(--brand-band-mint);
+  color: var(--emerald-dark);
+}
+.ea-page .ea-ref-panelx-sig code {
+  padding: 0;
+  background: none;
+  color: white;
+  font-size: 0.76rem;
+  overflow-wrap: anywhere;
+}
+.ea-ref-langs {
+  display: inline-flex;
+  gap: 0.2rem;
+}
+.ea-ref-lang {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: color-mix(in srgb, white 78%, transparent);
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ea-ref-lang:hover {
+  color: white;
+}
+.ea-ref-lang.is-active {
+  border-color: var(--brand-band-mint);
+  background: color-mix(in srgb, white 10%, transparent);
+  color: white;
+}
+.ea-ref-block + .ea-ref-block {
+  border-top: 1px solid color-mix(in srgb, white 14%, transparent);
+}
+.ea-ref-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.85rem 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  /* White, not mint: mint on the gradient's light end is about 3:1, too low
+     for text this small. Mint stays on decorative accents only. */
+  color: color-mix(in srgb, white 88%, transparent);
+}
+.ea-ref-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid color-mix(in srgb, white 22%, transparent);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: color-mix(in srgb, white 85%, transparent);
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+.ea-ref-copy:hover {
+  color: white;
+  border-color: color-mix(in srgb, white 45%, transparent);
+}
+.ea-page .ea-ref-pre {
+  margin: 0;
+  padding: 0.5rem 0.85rem 0.85rem;
+  max-height: 420px;
+  overflow: auto;
+  background: none;
+}
+.ea-page .ea-ref-pre code {
+  display: block;
+  padding: 0;
+  background: none;
+  color: white;
+  font-size: 0.75rem;
+  line-height: 1.65;
+  white-space: pre;
+}
+.ea-ref-line {
+  display: flex;
+}
+.ea-ref-ln {
+  flex: 0 0 2.1em;
+  padding-right: 0.8em;
+  text-align: right;
+  color: color-mix(in srgb, var(--brand-band-mint) 55%, transparent);
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ea-ref-panel.is-open {
+    animation: none;
+  }
+  .ea-ref-chev,
+  .ea-ref-toggle,
+  .ea-ref-ex-btn {
+    transition: none;
+  }
+}
