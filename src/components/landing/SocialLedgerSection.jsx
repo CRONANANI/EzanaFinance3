@@ -56,7 +56,7 @@ import {
 } from 'recharts';
 import { CHART } from '@/lib/chart-theme';
 import SocialAscentStage from './SocialAscentStage';
-import { deriveTierState } from './social-rating';
+import { LADDER_TIERS, deriveTierState } from './social-rating';
 import './social-ledger.css';
 
 /* ────────────────────────── fixture ────────────────────────── */
@@ -147,8 +147,9 @@ const STANDINGS = [
 /* The climb at the top of the section. Each step IS a positive ledger event,
    so its points are read from the pool, never typed twice. The climb ends on
    the chart's last point (the same 1498 the standings show), the start is the
-   end minus the steps, and the gauge's right edge is the leader, so "to first"
-   matches the standings foot. */
+   end minus the steps, and the gauge's right edge is the next tier's line
+   (Strategist, 2500), so the gauge counts "to Strategist". The standings foot
+   keeps its own "to first", the gap to the leader. */
 const ASCENT_SPECS = [
   {
     id: 'course',
@@ -207,6 +208,11 @@ const ASCENT_STEPS = ASCENT_SPECS.map((s) => ({
 const ASCENT_END = YOU_SERIES[YOU_SERIES.length - 1];
 const ASCENT_START = ASCENT_END - ASCENT_STEPS.reduce((sum, s) => sum + s.points, 0);
 const ASCENT_FLOOR = 2400;
+/* The gauge's right edge is the tier line the climb is heading for (the first
+   tier above the start), read from the ladder so it cannot drift. */
+const ASCENT_GOAL = [...LADDER_TIERS]
+  .sort((a, b) => a.min - b.min)
+  .find((t) => t.min > ASCENT_START);
 
 /* What the next league asks for, shown once the gauge promotes the visitor.
    To-dos, not results: no points are claimed for them, and each one names a
@@ -261,7 +267,7 @@ if (process.env.NODE_ENV !== 'production') {
   if (ASCENT_STEPS.length !== ASCENT_SPECS.length) {
     console.warn('[sled] an ascent step no longer matches a ledger event');
   }
-  if (ASCENT_START < ASCENT_FLOOR || ASCENT_END > LEADER) {
+  if (ASCENT_START < ASCENT_FLOOR || !ASCENT_GOAL || ASCENT_END > ASCENT_GOAL.min) {
     console.warn('[sled] the climb leaves the gauge range');
   }
 }
@@ -615,8 +621,8 @@ export function SocialLedgerSection() {
           steps={ASCENT_STEPS}
           start={ASCENT_START}
           floor={ASCENT_FLOOR}
-          ceiling={LEADER}
-          ceilingLabel={`${LEADER} ${DOT} #1`}
+          ceiling={ASCENT_GOAL.min}
+          ceilingLabel={`${ASCENT_GOAL.min} ${DOT} ${ASCENT_GOAL.name}`}
           nextTasks={NEXT_LEAGUE_TASKS}
         />
 

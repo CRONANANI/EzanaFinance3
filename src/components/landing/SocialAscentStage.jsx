@@ -15,8 +15,15 @@
  *
  * Presentational. The section owns the fixture: steps (points read from the
  * ledger pool), the start rating, the gauge's floor and ceiling, and the
- * next league's tasks. The figure, arc, needle, tier and "to first" all
- * derive from one number, so they cannot disagree.
+ * next league's tasks. The figure, arc, needle, tier and "to {next tier}"
+ * all derive from one number, so they cannot disagree.
+ *
+ * Oct 26: the gauge measures the climb to the next tier, not to first place.
+ * Its ceiling is the tier line the climb is heading for (Strategist at 2500),
+ * so the meta reads "Apprentice · 52 to Strategist" at the start and the arc
+ * is full exactly when the climb reaches the line. The promotion therefore
+ * starts from a full arc: the fill phase holds it full (a pulse rather than a
+ * sweep) while the burst plays.
  *
  * Composed frame (SSR, no JS, prefers-reduced-motion): the end of the runway.
  * With a promotion that is the new tier, gauge at its start, every task
@@ -198,8 +205,9 @@ export default function SocialAscentStage({
     return () => window.cancelAnimationFrame(raf);
   }, [target, live]);
 
-  /* Where the arc sits at the end of the climb, in the first-place band:
-     the celebration fills from here. */
+  /* Where the arc sits at the end of the climb, in the climb's band: the
+     celebration fills from here (100 when the ceiling is the tier line, so
+     the fill phase is a held, full arc). */
   const prePct = clamp01((cum[n] - floor) / (ceiling - floor)) * 100;
 
   /* The celebration: only on a live, forward crossing. The composed state
@@ -265,7 +273,7 @@ export default function SocialAscentStage({
     return () => ro.disconnect();
   }, []);
 
-  /* The band the gauge is showing: first place before the promotion, the new
+  /* The band the gauge is showing: the climb's band before the promotion, the new
      tier's own band (its min to the next tier's min) after it. */
   const inNewTier = Boolean(promo && promoted);
   const tierState = deriveTierState(shown);
@@ -276,11 +284,13 @@ export default function SocialAscentStage({
   else bandPct = 100;
   const pct = sweep ?? bandPct;
   const tier = current.name;
-  const toFirst = Math.max(0, ceiling - shown);
+  /* Before the promotion the gauge is heading for the first tier above the
+     climb's start (the ceiling), whatever tier the figure is in right now. */
+  const goal = deriveTierState(cum[0]).next;
   const needleIn = pointAt(pct, R_RING - 2);
   const needleOut = pointAt(pct, R_ARC + 22);
   const latest = live && !inNewTier && reached > 0 ? steps[reached - 1] : null;
-  const nextName = next?.name || 'the top';
+  const nextName = (inNewTier ? next : goal)?.name || 'the top';
 
   let meta;
   let cap;
@@ -294,11 +304,14 @@ export default function SocialAscentStage({
     rangeR = next ? `${next.min} ${DOT} ${next.name}` : '';
     aria = `Promoted to ${tier} at ${shown}${next ? `, ${tierState.toGo} to ${next.name}` : ''}`;
   } else {
-    meta = `${tier} ${DOT} ${toFirst ? `${toFirst} to first` : 'First place'}`;
-    cap = `Season 4 climb ${DOT} you vs. first place`;
+    const toNext = goal ? Math.max(0, goal.min - shown) : 0;
+    meta = goal
+      ? `${tier} ${DOT} ${toNext ? `${toNext} to ${goal.name}` : 'Tier reached'}`
+      : `${tier} ${DOT} Top tier`;
+    cap = `Season 4 climb ${DOT} next, ${nextName}`;
     rangeL = floor;
     rangeR = ceilingLabel;
-    aria = `Season 4 rating ${shown}, ${toFirst} behind first place`;
+    aria = `Season 4 rating ${shown}${goal ? `, ${toNext} to ${goal.name}` : ''}`;
   }
 
   const stepCards = (which) =>

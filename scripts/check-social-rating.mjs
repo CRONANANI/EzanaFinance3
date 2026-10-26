@@ -109,3 +109,10 @@ test('every ascent step is a real, positive ledger event and the climb ends on 2
   assert.ok(!src.includes('SocialRatingPanel'), 'the old rating panel is no longer rendered');
   assert.ok(!/to\s*\{frame\.nextName/.test(src), 'the old ladder caption is gone');
 });
+
+test('the gauge counts to the next tier: 2448 reads 52 to Strategist', () => {
+  const s = deriveTierState(2448);
+  assert.equal(s.current.name, 'Apprentice');
+  assert.equal(s.next.name, 'Strategist');
+  assert.equal(s.toGo, 52);
+});
