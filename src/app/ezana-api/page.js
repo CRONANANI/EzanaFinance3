@@ -107,6 +107,11 @@ const ERROR_CODES = [
     meaning: 'The key is valid but not scoped for this dataset.',
   },
   {
+    code: '403',
+    name: 'not_in_tier',
+    meaning: "The endpoint cannot honour your key's data delay; it needs a no-delay tier.",
+  },
+  {
     code: '404',
     name: 'not_found',
     meaning: 'No endpoint at the path, or no record with that id.',

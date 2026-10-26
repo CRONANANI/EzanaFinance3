@@ -194,6 +194,7 @@ export function buildOpenApi() {
                     'out_of_range',
                     'invalid_key',
                     'not_in_scope',
+                    'not_in_tier',
                     'not_found',
                     'rate_limited',
                     'not_available',
