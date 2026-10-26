@@ -57,6 +57,7 @@ import { modernaCancerTrialTrump2026 } from './ezana-echo-article-moderna-cancer
 import { aiStackUpsideDown2026 } from './ezana-echo-article-ai-stack-upside-down-2026.js';
 import { grindrPinterestAppianLobbyingQ22026 } from './ezana-echo-article-grindr-pinterest-appian-lobbying-q2-2026.js';
 import { mcmasterDficPortfolioScorecard2026 } from './ezana-echo-article-mcmaster-dfic-portfolio-scorecard-2026.js';
+import { industryNetMargins2026 } from './ezana-echo-article-industry-net-margins-2026.js';
 
 const ARTICLES = [
   johnnyMnemonicConsolidation2026,
@@ -93,6 +94,7 @@ const ARTICLES = [
   aiStackUpsideDown2026,
   grindrPinterestAppianLobbyingQ22026,
   mcmasterDficPortfolioScorecard2026,
+  industryNetMargins2026,
 ];
 
 export { AOTM_HISTORY } from './echo/aotm.js';

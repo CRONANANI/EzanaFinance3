@@ -42,8 +42,10 @@ import { sovereignWealthLeagueTable2026 } from '@/lib/ezana-echo-article-soverei
 import { modernaCancerTrialTrump2026 } from '@/lib/ezana-echo-article-moderna-cancer-trial-trump-2026.js';
 import { aiStackUpsideDown2026 } from '@/lib/ezana-echo-article-ai-stack-upside-down-2026.js';
 import { mcmasterDficPortfolioScorecard2026 } from '@/lib/ezana-echo-article-mcmaster-dfic-portfolio-scorecard-2026.js';
+import { industryNetMargins2026 } from '@/lib/ezana-echo-article-industry-net-margins-2026.js';
 
 const SOURCE = [
+  industryNetMargins2026,
   aiStackUpsideDown2026,
   johnnyMnemonicConsolidation2026,
   tokenizationCollateral2026,
