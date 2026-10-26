@@ -18,6 +18,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { HOME_IMAGES_ENABLED } from '@/lib/echo/home-card-images';
 import { packTiles } from '@/lib/echo/bento-layout';
 import { SECTIONS, REGIONS, RANGES, DEFAULT_FILTERS, emptyMessage } from '@/lib/echo/home-feed';
 import { NEWSLETTER_CONSENT_TEXT } from '@/lib/newsletter/config';
@@ -320,7 +321,10 @@ function Hero({ hero, options, month, onChange }) {
 
 function HeroSkeleton() {
   return (
-    <div className="ech-aotm ech-aotm--skel" aria-hidden="true">
+    <div
+      className={`ech-aotm ech-aotm--skel${HOME_IMAGES_ENABLED ? '' : ' is-noimg'}`}
+      aria-hidden="true"
+    >
       <div className="ech-aotm__text">
         <span className="ech-skel ech-skel--line" style={{ width: '42%' }} />
         <span className="ech-skel ech-skel--head" />
@@ -332,7 +336,7 @@ function HeroSkeleton() {
           <span className="ech-skel ech-skel--dot" />
         </div>
       </div>
-      <span className="ech-aotm__img ech-skel" />
+      {HOME_IMAGES_ENABLED ? <span className="ech-aotm__img ech-skel" /> : null}
     </div>
   );
 }
@@ -826,8 +830,13 @@ function GridSkeleton() {
   return (
     <div className="ech-grid" aria-hidden="true">
       {kinds.map((k, i) => (
-        <div key={i} className={`ech-card ech-card--${k} has-img ech-card--skel`}>
-          {k !== 'chart' ? <span className="ech-card__img ech-skel" /> : null}
+        <div
+          key={i}
+          className={`ech-card ech-card--${k} ${HOME_IMAGES_ENABLED ? 'has-img' : 'is-noimg'} ech-card--skel`}
+        >
+          {HOME_IMAGES_ENABLED && k !== 'chart' ? (
+            <span className="ech-card__img ech-skel" />
+          ) : null}
           <span className="ech-card__body">
             <span className="ech-skel ech-skel--line" style={{ width: 70 }} />
             <span className="ech-skel ech-skel--line" />

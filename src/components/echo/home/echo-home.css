@@ -64,8 +64,8 @@
   --ech-danger: var(--negative);
   --ech-danger-tint: color-mix(in srgb, var(--negative) 8%, transparent);
 
-  /* The Evening Brief band: the deep band in the dark theme */
-  --ech-brief-bg: var(--ech-deep);
+  /* The Evening Brief: transparent on the page ground; light ink on dark */
+  --ech-brief-bg: transparent;
   --ech-brief-border: var(--ech-deep-border);
   --ech-brief-fg: var(--ech-deep-fg);
   --ech-brief-mute: var(--ech-deep-mute);
@@ -99,8 +99,8 @@ body.light-mode .ech-page {
   --ech-rank-n: color-mix(in srgb, var(--text-primary) 16%, transparent);
   /* 40px emerald text on white needs the darker emerald to clear 3:1 */
   --ech-emerald-display: var(--emerald-text);
-  /* light theme: the brief sits on the neutral ground with normal ink */
-  --ech-brief-bg: var(--ech-neutral);
+  /* light theme: the brief stays transparent, with normal ink */
+  --ech-brief-bg: transparent;
   --ech-brief-border: var(--ech-hair);
   --ech-brief-fg: var(--ech-ink);
   --ech-brief-mute: var(--ech-mute);
@@ -999,10 +999,13 @@ body.light-mode .ech-page {
   }
 }
 
-/* ---------- The Evening Brief ---------- */
+/* ---------- The Evening Brief ----------
+   Transparent band on the page ground (no fill in either theme), with no
+   horizontal padding so its text starts on the same left edge as the
+   leftmost bento card. */
 .ech-brief {
   margin-top: 56px;
-  padding: 40px 44px;
+  padding: 40px 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 48px;
@@ -1113,7 +1116,6 @@ body.light-mode .ech-page {
 .ech-footer {
   margin-top: 56px;
   padding: 24px 0 8px;
-  border-top: 1px solid var(--ech-hair);
 }
 .ech-footer__top {
   display: flex;
@@ -1200,7 +1202,7 @@ body.light-mode .ech-page {
     max-width: 320px;
   }
   .ech-brief {
-    padding: 32px;
+    padding: 32px 0;
     gap: 32px;
   }
 }
@@ -1310,7 +1312,7 @@ body.light-mode .ech-page {
   }
   .ech-brief {
     grid-template-columns: minmax(0, 1fr);
-    padding: 24px 20px;
+    padding: 24px 0;
     gap: 20px;
   }
   .ech-brief__title {

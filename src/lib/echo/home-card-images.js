@@ -21,8 +21,19 @@
  */
 export const HOME_CARD_IMAGES = {};
 
-/** The home override for a story, if one exists. */
+/**
+ * Master switch for photography on the Echo home (hero, bento cards and their
+ * loading skeletons). Off for now: every story reaches the home with no image,
+ * so the bento lays out its text tiles and the hero renders its no-image
+ * variant. Article pages are unaffected; they keep their own heroImage. Flip
+ * to true to bring home photos back (HOME_CARD_IMAGES overrides then apply).
+ */
+export const HOME_IMAGES_ENABLED = false;
+
+/** The home image for a story: none while disabled, else the override if one exists. */
 export function withHomeImage(story) {
-  const img = story && HOME_CARD_IMAGES[story.id];
+  if (!story) return story;
+  if (!HOME_IMAGES_ENABLED) return { ...story, image: null, imageAlt: '', imagePosition: null };
+  const img = HOME_CARD_IMAGES[story.id];
   return img ? { ...story, image: img.src, imageAlt: img.alt, imagePosition: null } : story;
 }
