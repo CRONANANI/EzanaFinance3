@@ -250,6 +250,9 @@ export const API_LIVE_ONLY_RPCS = [];
    ships in a hand-applied SQL file). */
 export const API_REQUIRED_RELATIONS = ['prediction_events_mat'];
 
+/* Functions the Ezana API needs live (hand-applied migrations). */
+export const API_REQUIRED_RPCS = ['api_congress_insider_flow', 'api_insider_clusters'];
+
 export const SEED_CHECKS = [
   { table: 'empire_dimensions', min: 18, seed: '20260419120100_empire_scores_seeds.sql' },
   { table: 'dimension_metric_map', min: 1, seed: '20260419120100_empire_scores_seeds.sql' },
@@ -403,6 +406,12 @@ export function diffLive(objects, refs, catalog) {
   }
   for (const [name, where] of refs.buckets) {
     if (!bkt.has(name)) codeMissing.push({ kind: 'bucket', name, where: [...where] });
+  }
+  for (const name of API_REQUIRED_RELATIONS) {
+    if (!rel.has(`public.${name}`)) codeMissing.push({ kind: 'table', name, where: ['ezana-api'] });
+  }
+  for (const name of API_REQUIRED_RPCS) {
+    if (!fn.has(`public.${name}`)) codeMissing.push({ kind: 'rpc', name, where: ['ezana-api'] });
   }
   return { byFile: [...byFile.entries()].sort(([a], [b]) => a.localeCompare(b)), codeMissing };
 }
