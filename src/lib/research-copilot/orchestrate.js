@@ -6,6 +6,7 @@ import { extractEntities } from './entities';
 import { recencyScore } from './retrievers/shared';
 import { rerank, rerankEnabled } from '@/lib/rag/rerank';
 import { rewriteQuery, rewriteEnabled } from '@/lib/rag/query-rewrite';
+import { withTimeout } from '@/lib/with-timeout';
 
 /**
  * Cross-corpus retrieval orchestrator.
@@ -55,6 +56,13 @@ export async function orchestrate(query, options = {}) {
     // Default false — existing callers unchanged. Used by the RAG eval harness's
     // naive mode (RAG_SYSTEM.md §3 Phase 2).
     semanticOnly = false,
+    // Optional time bounds (Sonar's guest ping runs inside a 60s function).
+    // null = unbounded, which keeps the research copilot exactly as it was.
+    // A retriever that misses its bound contributes nothing, like one that
+    // throws; a slow embed falls back to the lexical/structured path.
+    retrieverTimeoutMs = null,
+    embedTimeoutMs = null,
+    rerankTimeoutMs = null,
   } = options;
 
   const q = String(query || '').trim();
@@ -77,7 +85,10 @@ export async function orchestrate(query, options = {}) {
   let rewriteUsed = false;
   let corpusHints = [];
   if (rewriteEnabled()) {
-    const rw = await rewriteQuery(q);
+    const rwRes = embedTimeoutMs
+      ? await withTimeout(rewriteQuery(q), embedTimeoutMs, 'rewrite')
+      : { ok: true, value: await rewriteQuery(q) };
+    const rw = rwRes.ok ? rwRes.value : { used: false };
     if (rw.used) {
       effectiveQuery = rw.rewritten || q;
       corpusHints = rw.corpusHints || [];
@@ -88,7 +99,20 @@ export async function orchestrate(query, options = {}) {
 
   // Build the shared context ONCE: embed the query (semantic corpora reuse it)
   // and extract entities (structured corpora use them).
-  const queryEmbedding = supaEmbedConfigured() ? await embedViaSupabaseCached(effectiveQuery) : null;
+  let queryEmbedding = null;
+  if (supaEmbedConfigured()) {
+    if (embedTimeoutMs) {
+      const emb = await withTimeout(
+        embedViaSupabaseCached(effectiveQuery),
+        embedTimeoutMs,
+        'embed',
+      );
+      queryEmbedding = emb.ok ? emb.value : null;
+      if (!emb.ok) console.warn('[orchestrate] embed skipped', { timedOut: Boolean(emb.timedOut) });
+    } else {
+      queryEmbedding = await embedViaSupabaseCached(effectiveQuery);
+    }
+  }
   const entities = extractEntities(effectiveQuery);
   const ctx = { admin, supabaseUser, member, entities, queryEmbedding };
 
@@ -104,8 +128,17 @@ export async function orchestrate(query, options = {}) {
   const settled = await Promise.all(
     allowed.map(async (r) => {
       try {
-        const rows = await r.retrieve(effectiveQuery, ctx, { limit: perRetriever, semanticOnly });
-        return Array.isArray(rows) ? rows : [];
+        const call = r.retrieve(effectiveQuery, ctx, { limit: perRetriever, semanticOnly });
+        if (!retrieverTimeoutMs) {
+          const rows = await call;
+          return Array.isArray(rows) ? rows : [];
+        }
+        const res = await withTimeout(call, retrieverTimeoutMs, r.corpus);
+        if (!res.ok) {
+          if (res.timedOut) console.warn('[orchestrate] retriever timed out', { corpus: r.corpus });
+          return [];
+        }
+        return Array.isArray(res.value) ? res.value : [];
       } catch {
         return [];
       }
@@ -136,7 +169,11 @@ export async function orchestrate(query, options = {}) {
   let pool = ranked;
   let rerankUsed = false;
   if (rerankEnabled()) {
-    const { items: rr, reranked } = await rerank(effectiveQuery, ranked.slice(0, 20), { keep: topK });
+    const rrCall = rerank(effectiveQuery, ranked.slice(0, 20), { keep: topK });
+    const rrRes = rerankTimeoutMs
+      ? await withTimeout(rrCall, rerankTimeoutMs, 'rerank')
+      : { ok: true, value: await rrCall };
+    const { items: rr, reranked } = rrRes.ok ? rrRes.value : { items: null, reranked: false };
     if (reranked) {
       pool = rr;
       rerankUsed = true;

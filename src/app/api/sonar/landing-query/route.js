@@ -5,6 +5,7 @@ import { getAdminClient, getAuthUser } from '@/lib/supabase';
 import { runLandingPipeline, hashIp, DISCLAIMER } from '@/lib/sonar/landing-pipeline';
 import { reservePing, completePing, failPing } from '@/lib/sonar/quota';
 import { getClientIp } from '@/lib/client-ip';
+import { withTimeout } from '@/lib/with-timeout';
 
 /**
  * POST /api/sonar/landing-query. The landing page's guest Sonar.
@@ -32,9 +33,15 @@ import { getClientIp } from '@/lib/client-ip';
  */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-/* The brief (up to five web searches) and the news columns (up to four) run
-   side by side; 60s covers both with the chain's own 50s deadline inside. */
-export const maxDuration = 60;
+/* Oct 26: 60s was the whole budget AND the hard kill, so any slow leg turned
+   into a platform 504 with no body ("That ping did not land" on the landing
+   band and on /datasets). The pipeline now runs to its own deadline
+   (PIPELINE_BUDGET_MS from the handler's start, every leg bounded) and the
+   function cap sits above it, so the route always gets to answer. */
+export const maxDuration = 90;
+const PIPELINE_BUDGET_MS = 70_000;
+const AUTH_MS = 3_000;
+const RESERVE_MS = 6_000;
 
 const GUEST_LIMIT = 5;
 const COOKIE = 'snr_guest';
@@ -77,6 +84,7 @@ const FORCE_KINDS = new Set(['ticker', 'country', 'industry', 'sector', 'state_p
 
 export const POST = withApiGuard(
   async (request) => {
+    const startedAt = Date.now();
     const body = await request.json().catch(() => ({}));
     const query = String(body?.query || '')
       // eslint-disable-next-line no-control-regex
@@ -93,7 +101,11 @@ export const POST = withApiGuard(
     /* A signed-in visitor (the Datasets search page reuses this pipeline) is
        not a guest: no 5-ping cookie cap and no sign-up gate. Their pings are
        capped per account per day instead, counted from the ledger. */
-    const member = await getAuthUser(request).catch(() => null);
+    /* Bounded: a stalled session lookup reads as a guest ping (the cookie cap
+       still applies) instead of hanging the request. */
+    const memberRes = await withTimeout(getAuthUser(request), AUTH_MS, 'auth');
+    const member = memberRes.ok ? memberRes.value || null : null;
+    if (memberRes.timedOut) console.warn('[sonar/landing] auth lookup timed out');
     const memberCap = Math.max(1, Number(process.env.SONAR_MEMBER_DAILY_CAP) || 25);
 
     // Guest quota gate, before any retrieval or model spend.
@@ -115,7 +127,7 @@ export const POST = withApiGuard(
        under one lock, so parallel pings cannot all pass the same count.
        Salted IP hash only, never a raw IP. */
     const ipHash = hashIp(getClientIp(request) || 'unknown', guestSecret());
-    const reservation = await reservePing(admin, {
+    const reservationP = reservePing(admin, {
       userId: member?.id || null,
       limit: member ? memberCap : null,
       ipHash: member ? null : ipHash,
@@ -127,6 +139,16 @@ export const POST = withApiGuard(
       version: member ? 'member' : 'guest',
       planTier: 0,
     });
+    const reservationRes = await withTimeout(reservationP, RESERVE_MS, 'reserve');
+    /* A reservation that cannot be made in time is our outage, not the
+       visitor's quota: a clear 503 they can retry. If the insert lands after
+       we gave up, it is released the moment it does, so the late row never
+       counts against the visitor. */
+    if (!reservationRes.ok) {
+      reservationP.then((late) => (late?.ok ? failPing(admin, late) : null)).catch(() => {});
+    }
+    const reservation = reservationRes.ok ? reservationRes.value : { ok: false, reason: 'error' };
+    if (!reservationRes.ok) console.warn('[sonar/landing] reservePing timed out or threw');
     if (!reservation.ok) {
       return NextResponse.json(
         {
@@ -159,7 +181,12 @@ export const POST = withApiGuard(
 
     let result;
     try {
-      result = await runLandingPipeline(query, { admin, noCorrect, force });
+      result = await runLandingPipeline(query, {
+        admin,
+        noCorrect,
+        force,
+        deadlineAt: startedAt + PIPELINE_BUDGET_MS,
+      });
     } catch (e) {
       await failPing(admin, reservation);
       return safeErrorResponse(e);

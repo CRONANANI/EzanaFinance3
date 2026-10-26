@@ -145,6 +145,25 @@ function callAnthropic(body, apiKey, timeoutMs) {
    availability failure the fallback chain already understands. */
 const isAbort = (e) => e?.name === 'TimeoutError' || e?.name === 'AbortError';
 
+/* A hop's timeout, clipped to the caller's request deadline when one is
+   given. Without the clip a 38s web-search hop that STARTS 30s into a ping
+   runs past the route's 60s cap and the platform kills the function (a 504
+   the client can only read as "That ping did not land"). 1.5s is kept back
+   for the response itself. */
+function hopMs(ms, deadlineAt) {
+  if (!deadlineAt) return ms;
+  return Math.min(ms, deadlineAt - Date.now() - 1_500);
+}
+const MIN_HOP_MS = 4_000;
+/* Same clip, but a hop with under MIN_HOP_MS left is not started: it throws
+   the typed timeout the chain already handles, so the route can still answer
+   (or fail fast with a real status) inside its budget. */
+function guardHop(ms, deadlineAt) {
+  const t = hopMs(ms, deadlineAt);
+  if (t < MIN_HOP_MS) throw Object.assign(new Error('deadline'), { name: 'TimeoutError' });
+  return t;
+}
+
 /**
  * Parse Anthropic Messages content blocks. With web search the response interleaves
  * `text` (may carry web citations), `server_tool_use`, and `web_search_tool_result`.
@@ -194,7 +213,15 @@ export function parseAnthropicContent(content) {
  * deep-tier model that 400s retries once on Haiku. Only a genuinely non-recoverable
  * response (credit/rate/outage/bad-request) throws a typed error for the chain.
  */
-async function anthropicSynthesize({ system, user, maxTokens, model, fallbackModel, webSearch }) {
+async function anthropicSynthesize({
+  system,
+  user,
+  maxTokens,
+  model,
+  fallbackModel,
+  webSearch,
+  deadlineAt = null,
+}) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new ProviderUnavailableError('anthropic: no ANTHROPIC_API_KEY');
   const safeFallback = fallbackModel || HAIKU_MODEL;
@@ -209,7 +236,12 @@ async function anthropicSynthesize({ system, user, maxTokens, model, fallbackMod
   // Web search is ADDITIVE, never a hard dependency: only when the plan entitles it
   // AND SONAR_WEB_SEARCH=true for this deployment. NOTE (SOC 2 / Law 25): the ping
   // text is sent to Anthropic's web search — do not pass user PII beyond it.
-  const webOn = Boolean(webSearch?.enabled) && process.env.SONAR_WEB_SEARCH === 'true';
+  /* Web search is the slow hop (up to 38s). With less than 20s left on the
+     request, answer from the datasets alone rather than not at all. */
+  const webOn =
+    Boolean(webSearch?.enabled) &&
+    process.env.SONAR_WEB_SEARCH === 'true' &&
+    hopMs(38_000, deadlineAt) >= 20_000;
   const maxUses = Math.max(1, Number(webSearch?.maxUses) || 3);
 
   let res;
@@ -219,7 +251,7 @@ async function anthropicSynthesize({ system, user, maxTokens, model, fallbackMod
       tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: maxUses }],
     };
     try {
-      res = await callAnthropic(withTool, apiKey, 38_000);
+      res = await callAnthropic(withTool, apiKey, hopMs(38_000, deadlineAt));
     } catch (e) {
       if (isAbort(e)) throw new ProviderUnavailableError('anthropic: timed out');
       throw e;
@@ -228,7 +260,7 @@ async function anthropicSynthesize({ system, user, maxTokens, model, fallbackMod
       const detail = await readBody(res);
       console.warn('[sonar] web_search 400 — retrying without tool', { model, detail });
       try {
-        res = await callAnthropic(baseBody, apiKey, 20_000);
+        res = await callAnthropic(baseBody, apiKey, guardHop(20_000, deadlineAt));
       } catch (e) {
         if (isAbort(e)) throw new ProviderUnavailableError('anthropic: timed out');
         throw e;
@@ -236,7 +268,7 @@ async function anthropicSynthesize({ system, user, maxTokens, model, fallbackMod
     }
   } else {
     try {
-      res = await callAnthropic(baseBody, apiKey, 25_000);
+      res = await callAnthropic(baseBody, apiKey, guardHop(25_000, deadlineAt));
     } catch (e) {
       if (isAbort(e)) throw new ProviderUnavailableError('anthropic: timed out');
       throw e;
@@ -248,7 +280,11 @@ async function anthropicSynthesize({ system, user, maxTokens, model, fallbackMod
     const detail = await readBody(res);
     console.warn('[sonar] model 400 — retrying on Haiku', { model, detail });
     try {
-      res = await callAnthropic({ ...baseBody, model: safeFallback }, apiKey, 20_000);
+      res = await callAnthropic(
+        { ...baseBody, model: safeFallback },
+        apiKey,
+        guardHop(20_000, deadlineAt),
+      );
     } catch (e) {
       if (isAbort(e)) throw new ProviderUnavailableError('anthropic: timed out');
       throw e;
@@ -284,7 +320,7 @@ async function anthropicSynthesize({ system, user, maxTokens, model, fallbackMod
  * moat; web is an Anthropic-only bonus.
  */
 function openaiCompatSynthesize({ id, baseURL, apiKey, model }) {
-  return async ({ system, user, maxTokens }) => {
+  return async ({ system, user, maxTokens, deadlineAt = null }) => {
     const key = apiKey();
     if (!key) throw new ProviderUnavailableError(`${id}: no API key`);
     // Kimi and DeepSeek are tried SEQUENTIALLY, so an unbounded wait on one
@@ -302,7 +338,7 @@ function openaiCompatSynthesize({ id, baseURL, apiKey, model }) {
             { role: 'user', content: user },
           ],
         }),
-        signal: AbortSignal.timeout(12_000),
+        signal: AbortSignal.timeout(guardHop(12_000, deadlineAt)),
       });
     } catch (e) {
       if (isAbort(e)) throw new ProviderUnavailableError(`${id}: timed out`);
@@ -380,7 +416,10 @@ export async function synthesizeWithFallback(args) {
      bounded hops can still overrun: 38s Anthropic + 12s Kimi + 12s DeepSeek
      exceeds the route's 60s budget. 50s leaves headroom for retrieval and
      response serialization; 8s is the minimum worth starting a provider with. */
-  const deadline = Date.now() + 50_000;
+  /* A caller that knows its own request deadline (the landing ping, which has
+     already spent time on retrieval) passes deadlineAt; the chain never runs
+     past it. Callers that do not pass one keep the old 50s chain. */
+  const deadline = Math.min(Date.now() + 50_000, Number(args?.deadlineAt) || Infinity);
   if (!active.length) {
     console.error(
       '[sonar] no LLM provider configured (ANTHROPIC_API_KEY missing and no fallback enabled)',

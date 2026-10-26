@@ -51,6 +51,7 @@ import {
   buildNewsColumns,
 } from '@/lib/sonar/landing-research';
 import { BoundedMap } from '@/lib/bounded-map';
+import { withTimeout } from '@/lib/with-timeout';
 
 /**
  * The landing-page Sonar pipeline, shared by the two routes that run it:
@@ -1146,10 +1147,45 @@ async function buildRankBlock(country, dossier, admin) {
   };
 }
 
+/* Per-leg ceilings for the landing ping. The route runs inside a 60s
+   function; before these, every leg was unbounded and a slow database or
+   upstream stacked them past the cap (prod Oct 26: resolve finished at 30s,
+   retrieval was still running at 60s, Vercel killed the function, the
+   client got a bare 504). A leg that misses its ceiling degrades to the
+   same value it returns when it finds nothing, so the ping still answers. */
+const LEG_MS = {
+  industry: 5_000,
+  politician: 5_000,
+  resolve: 6_000,
+  retrieveCap: 14_000,
+  retriever: 9_000,
+  embed: 3_000,
+  rerank: 4_000,
+  sanctions: 5_000,
+  countryDossier: 8_000,
+  macroRank: 5_000,
+};
+/* Time kept back after the brief for the dossier/news awaits and the JSON
+   response. */
+const TAIL_MS = 3_000;
+const DEFAULT_BUDGET_MS = 52_000;
+
 export async function runLandingPipeline(
   query,
-  { admin, wantDossier = true, noCorrect = false, force = null } = {},
+  { admin, wantDossier = true, noCorrect = false, force = null, deadlineAt = null } = {},
 ) {
+  const deadline = Number(deadlineAt) || Date.now() + DEFAULT_BUDGET_MS;
+  const left = () => deadline - Date.now();
+  /* Resolve a leg's value within `ms` (clipped to what the request has left)
+     or fall back. A thrown error still throws, so the trace records it. */
+  const within = async (promise, ms, fallback, label) => {
+    const r = await withTimeout(promise, Math.max(0, Math.min(ms, left())), label);
+    if (r.ok) return r.value;
+    if (r.error) throw r.error;
+    console.warn('[sonar-pipeline] leg timed out', { label, ms, leftMs: left() });
+    return fallback;
+  };
+
   /* A run that ends without an answer has to say WHERE it broke, or the only
      signal in the logs is that it broke. Each leg records its name, outcome
      and duration; nothing from an error message goes in, so the leg names are
@@ -1198,9 +1234,14 @@ export async function runLandingPipeline(
     ? await leg(
         'industry',
         () =>
-          admin
-            ? getIndustryRegistryCached(industryEnt.id)
-            : getIndustryRegistry(null, industryEnt.id),
+          within(
+            admin
+              ? getIndustryRegistryCached(industryEnt.id)
+              : getIndustryRegistry(null, industryEnt.id),
+            LEG_MS.industry,
+            null,
+            'industry',
+          ),
         (v) => (v ? `${v.source} stages=${v.stages.length}` : 'none'),
       )
     : null;
@@ -1224,7 +1265,7 @@ export async function runLandingPipeline(
       ? null
       : await leg(
           'resolve-politician',
-          () => resolvePolitician(q, admin),
+          () => within(resolvePolitician(q, admin), LEG_MS.politician, null, 'politician'),
           (v) => (v ? v.bioguideId : 'none'),
         );
   /* A company: only from a chosen ticker entity, or a ping with no other
@@ -1239,7 +1280,13 @@ export async function runLandingPipeline(
   const resolved = companyAllowed
     ? await leg(
         'resolve',
-        () => resolveCompany(tickerEnt ? `$${tickerEnt.id}` : q),
+        () =>
+          within(
+            resolveCompany(tickerEnt ? `$${tickerEnt.id}` : q),
+            LEG_MS.resolve,
+            null,
+            'resolve',
+          ),
         (v) => (v ? v.ticker : 'none'),
       )
     : null;
@@ -1281,13 +1328,24 @@ export async function runLandingPipeline(
   const out = await leg(
     'retrieve',
     () =>
-      orchestrate(retrievalQuery, {
-        admin,
-        allowCorpora,
-        topK: budget.topK,
-        perCorpusCap: budget.perCorpusCap,
-        charBudget: budget.charBudget,
-      }),
+      within(
+        orchestrate(retrievalQuery, {
+          admin,
+          allowCorpora,
+          topK: budget.topK,
+          perCorpusCap: budget.perCorpusCap,
+          charBudget: budget.charBudget,
+          /* A slow corpus drops out instead of holding the whole fan-out. */
+          retrieverTimeoutMs: LEG_MS.retriever,
+          embedTimeoutMs: LEG_MS.embed,
+          rerankTimeoutMs: LEG_MS.rerank,
+        }),
+        /* Never let retrieval eat the brief's time: at least ~22s stays for
+           synthesis and the tail. */
+        Math.min(LEG_MS.retrieveCap, left() - 22_000),
+        { items: [], corporaSearched: allowCorpora || [] },
+        'retrieve',
+      ),
     (v) => `retrieved ${(v.items || []).length}`,
   );
   const retrieved = out.items || [];
@@ -1325,7 +1383,10 @@ export async function runLandingPipeline(
     : retrieved;
 
   /* A sanctions ping reads the OFAC aggregates as dataset evidence too. */
-  const sanctions = intent === 'sanctions' ? await sanctionsContext() : null;
+  const sanctions =
+    intent === 'sanctions'
+      ? await within(sanctionsContext(), LEG_MS.sanctions, null, 'sanctions').catch(() => null)
+      : null;
   if (sanctions) items.push(...sanctions.evidence);
 
   /* Recomputed from the survivors: a corpus that only contributed off-entity
@@ -1342,7 +1403,12 @@ export async function runLandingPipeline(
       : null;
   let rankFactLines = [];
   if (country) {
-    const countryDossier = await dossierP;
+    const countryDossier = await within(
+      dossierP,
+      LEG_MS.countryDossier,
+      null,
+      'country-dossier',
+    ).catch(() => null);
     if (countryDossier) items.push(...countryEvidence(countryDossier));
     /* A country_rank ping: the macro rankings (one snapshot row), the
        country basket's 13F and Congress matches, and the rank facts the
@@ -1350,7 +1416,13 @@ export async function runLandingPipeline(
     if (rankPing && countryDossier) {
       const rank = await leg(
         'macro-rank',
-        () => buildRankBlock(country, countryDossier, admin),
+        () =>
+          within(
+            buildRankBlock(country, countryDossier, admin),
+            LEG_MS.macroRank,
+            null,
+            'macro-rank',
+          ),
         (v) => (v ? `metrics=${Object.keys(v.view?.metrics || {}).length}` : 'none'),
       ).catch(() => null);
       if (rank) {
@@ -1371,7 +1443,12 @@ export async function runLandingPipeline(
   }
   /* The registry's structure is the industry brief's spine. */
   if (industry) {
-    const industryDossier = await dossierP;
+    const industryDossier = await within(
+      dossierP,
+      LEG_MS.countryDossier,
+      null,
+      'industry-dossier',
+    ).catch(() => null);
     if (industryDossier) items.push(...industryEvidence(industryDossier));
   }
   const columnsP = wantDossier
@@ -1448,6 +1525,7 @@ export async function runLandingPipeline(
           /* Inert until SONAR_WEB_SEARCH=true is set: anthropicSynthesize
              gates the tool on that env var as well as this flag. */
           webSearch: { enabled: true, maxUses: BRIEF_WEB_USES },
+          deadlineAt: deadline - TAIL_MS,
         }),
       (v) => (v.answer ? `answered${v.webUsed ? ' +web' : ''}` : v.degraded || 'no answer'),
       (v) => Boolean(v.answer),
@@ -1464,7 +1542,12 @@ export async function runLandingPipeline(
       const bad = unsupportedNumbers(answer, allowed);
       if (bad.length) {
         console.error('[sonar-pipeline] rank brief had unsupported numbers', bad.slice(0, 5));
-        const dossierNow = await dossierP;
+        const dossierNow = await within(
+          dossierP,
+          Math.max(0, left() - TAIL_MS),
+          null,
+          'dossier',
+        ).catch(() => null);
         answer = deterministicBrief(dossierNow?.rank?.view, dossierNow?.empire) || answer;
       }
     }
@@ -1474,7 +1557,10 @@ export async function runLandingPipeline(
     providerErrors = synth.providerErrors || [];
   }
 
-  if (!answer) {
+  /* The general brief only starts when there is time to finish it; a
+     provider hop under ~4s cannot. Running out here returns no answer, which
+     the route turns into a fast 502 that does not spend the visitor's ping. */
+  if (!answer && left() - TAIL_MS > 8_000) {
     const synth = await leg(
       'synthesize-general',
       () =>
@@ -1485,6 +1571,7 @@ export async function runLandingPipeline(
           model: BRIEF_MODEL,
           fallbackModel: HAIKU_MODEL,
           webSearch: { enabled: true, maxUses: BRIEF_WEB_USES },
+          deadlineAt: deadline - TAIL_MS,
         }),
       (v) => (v.answer ? `answered${v.webUsed ? ' +web' : ''}` : v.degraded || 'no answer'),
       (v) => Boolean(v.answer),
@@ -1505,8 +1592,17 @@ export async function runLandingPipeline(
     })
     .filter(Boolean);
 
-  const dossier = wantDossier && dossierP ? await dossierP : null;
-  const newsColumns = columnsP ? await columnsP : null;
+  /* The brief is the answer; the dossier and the news columns are extras.
+     Whatever has not landed by the tail is left off rather than holding the
+     response past the function cap. */
+  const tailMs = Math.max(0, left() - 1_500);
+  const dossier =
+    wantDossier && dossierP
+      ? await within(dossierP, tailMs, null, 'dossier-tail').catch(() => null)
+      : null;
+  const newsColumns = columnsP
+    ? await within(columnsP, Math.max(0, left() - 1_500), null, 'news-tail').catch(() => null)
+    : null;
   if (dossier) dossier.newsColumns = newsColumns;
 
   /* A sanctions brief carries its exposure table as a JSON block. */
