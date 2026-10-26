@@ -100,6 +100,8 @@ async function run(request) {
   // The dimension hubs summarise this table.
   if (members.length) {
     revalidateTag('hubs');
+    revalidateTag('api-v1-capitol');
+    revalidateTag('api-v1-cross');
     revalidateTag('committees');
   }
 

@@ -83,7 +83,11 @@ async function run(request) {
     summary.readModels = await refreshCapitolReadModels();
 
     // The dimension hubs summarise this table.
-    if (summary) revalidateTag('hubs');
+    if (summary) {
+      revalidateTag('hubs');
+      revalidateTag('api-v1-capitol');
+      revalidateTag('api-v1-cross');
+    }
 
     return NextResponse.json({ ok: summary.errors.length === 0, summary });
   } catch (err) {

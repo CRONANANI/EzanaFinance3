@@ -158,6 +158,8 @@ async function run(request) {
   const { error: mvErr } = await admin.rpc('refresh_contract_award_tickers');
   if (mvErr && errors.length < 10) errors.push(`refresh awards mv: ${mvErr.message}`);
   revalidateTag('hubs');
+  revalidateTag('api-v1-capitol');
+  revalidateTag('api-v1-cross');
 
   const { data: remainingRows } = await admin.rpc('contractor_recipients_todo', { p_limit: 1000 });
   const remaining = Array.isArray(remainingRows) ? remainingRows.length : null;

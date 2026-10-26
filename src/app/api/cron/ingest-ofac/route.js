@@ -154,6 +154,7 @@ async function handler(request) {
 
   if (upserted || removed) {
     revalidateTag('hubs');
+    revalidateTag('api-v1-lighthouse');
     revalidateTag('sanctions');
   }
   return NextResponse.json({

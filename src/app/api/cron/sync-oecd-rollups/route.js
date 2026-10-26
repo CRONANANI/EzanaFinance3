@@ -117,7 +117,10 @@ async function run(request) {
   }
 
   // The dimension hubs summarise this table.
-  if (observationRows) revalidateTag('hubs');
+  if (observationRows) {
+    revalidateTag('hubs');
+    revalidateTag('api-v1-lighthouse');
+  }
 
   return NextResponse.json({
     ok: errors.length === 0,

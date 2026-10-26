@@ -125,6 +125,8 @@ async function run(request) {
   if (rows) {
     revalidateTag('titans');
     revalidateTag('hubs');
+    revalidateTag('api-v1-titans');
+    revalidateTag('api-v1-cross');
   }
 
   return NextResponse.json({

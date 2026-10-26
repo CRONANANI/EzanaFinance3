@@ -462,6 +462,8 @@ async function run(request) {
   // hourly purge here (plus the 15-minute cache window) keeps them current.
   revalidateTag('titans');
   revalidateTag('hubs');
+  revalidateTag('api-v1-titans');
+  revalidateTag('api-v1-cross');
 
   return NextResponse.json({
     ok: errors.length === 0,

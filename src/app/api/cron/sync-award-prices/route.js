@@ -210,6 +210,8 @@ async function run(request) {
   const { error: mvErr } = await admin.rpc('refresh_award_window_trades');
   if (mvErr) errors.push(`refresh: ${mvErr.message}`);
   revalidateTag('hubs');
+  revalidateTag('api-v1-capitol');
+  revalidateTag('api-v1-cross');
 
   return NextResponse.json({
     tickers: todo.length,

@@ -529,6 +529,8 @@ async function run(request) {
   // The dimension hubs summarise this table.
   if (results.some((r) => r.delta)) {
     revalidateTag('hubs');
+    revalidateTag('api-v1-capitol');
+    revalidateTag('api-v1-cross');
     revalidateTag('lobbying-page');
   }
 

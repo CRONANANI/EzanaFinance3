@@ -355,7 +355,10 @@ async function run(request) {
   }
 
   // The dimension hubs summarise this table.
-  if (upserted || closed || stale || pruned) revalidateTag('hubs');
+  if (upserted || closed || stale || pruned) {
+    revalidateTag('hubs');
+    revalidateTag('api-v1-hive');
+  }
 
   // 5) refresh the API's events read model (prediction_events_mat). The
   // function ships in a hand-applied SQL file; until it exists this is a

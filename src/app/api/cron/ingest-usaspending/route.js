@@ -213,7 +213,11 @@ async function run(request) {
     }
 
     // The dimension hubs summarise this table.
-    if (ingested) revalidateTag('hubs');
+    if (ingested) {
+      revalidateTag('hubs');
+      revalidateTag('api-v1-capitol');
+      revalidateTag('api-v1-cross');
+    }
 
     return NextResponse.json(
       { ingested, skipped, cursor_from: cursor, cursor_to: maxSeen, errors },

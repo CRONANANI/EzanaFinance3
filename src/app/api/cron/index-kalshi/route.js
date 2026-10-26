@@ -225,7 +225,10 @@ async function run(request) {
     errors.push(`cleanup: ${e?.message || e}`);
   }
 
-  if (upserted || closed || stale || pruned) revalidateTag('hubs');
+  if (upserted || closed || stale || pruned) {
+    revalidateTag('hubs');
+    revalidateTag('api-v1-hive');
+  }
 
   return NextResponse.json({
     ok: errors.length === 0 || upserted > 0,

@@ -417,6 +417,8 @@ async function run(request) {
   if (holdingsRows || positions || reparsed || removed) {
     revalidateTag('titans');
     revalidateTag('hubs');
+    revalidateTag('api-v1-titans');
+    revalidateTag('api-v1-cross');
     /* The Burry watcher reads Scion's 13F (24 h cache otherwise). */
     revalidateTag('burry');
   }

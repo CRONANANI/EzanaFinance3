@@ -170,7 +170,11 @@ async function run(request) {
   }
 
   // The dimension hubs summarise this table.
-  if (billsUpserted || meetingsUpserted) revalidateTag('hubs');
+  if (billsUpserted || meetingsUpserted) {
+    revalidateTag('hubs');
+    revalidateTag('api-v1-capitol');
+    revalidateTag('api-v1-cross');
+  }
 
   return NextResponse.json({
     ok: true,

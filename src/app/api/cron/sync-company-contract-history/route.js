@@ -188,6 +188,8 @@ async function run(request) {
     if (b.error) errors.push(`prune top: ${b.error.message}`);
   }
   revalidateTag('hubs');
+  revalidateTag('api-v1-capitol');
+  revalidateTag('api-v1-cross');
 
   return NextResponse.json({
     ok: errors.length === 0,

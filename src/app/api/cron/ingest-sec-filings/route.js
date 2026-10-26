@@ -277,7 +277,11 @@ async function run(request) {
 
   // The dimension hubs summarise this table; new 13F filings move the
   // institutional page's filing-progress indicator.
-  if (Object.values(perFamily).some(Boolean)) revalidateTag('hubs');
+  if (Object.values(perFamily).some(Boolean)) {
+    revalidateTag('hubs');
+    revalidateTag('api-v1-titans');
+    revalidateTag('api-v1-cross');
+  }
   if (perFamily.institutional) {
     revalidateTag('dataset:13f');
     revalidateTag('titans');

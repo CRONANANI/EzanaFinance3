@@ -115,7 +115,10 @@ async function run(request) {
     perIndicator[ind.id] = rows.length;
   }
 
-  if (upserted) revalidateTag('hubs');
+  if (upserted) {
+    revalidateTag('hubs');
+    revalidateTag('api-v1-lighthouse');
+  }
   return NextResponse.json({
     ok: upserted > 0,
     countries: names.size,
