@@ -87,6 +87,9 @@
   overflow: hidden;
   z-index: 0; /* behind the iMac so fragments vanish "into" the screen */
   border-radius: var(--radius-lg);
+  /* Long fragments run past the box; fade them out rather than cut them. */
+  mask-image: linear-gradient(90deg, #000 78%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, #000 78%, transparent 100%);
 }
 .lpd-codefall-shade {
   position: absolute;
@@ -105,31 +108,69 @@
   mask-image: radial-gradient(62% 58% at 50% 52%, #000 40%, transparent 100%);
   -webkit-mask-image: radial-gradient(62% 58% at 50% 52%, #000 40%, transparent 100%);
 }
+/* Oct 26 codefall: per-lane opacity (--lpd-o) and sideways drift
+   (--lpd-drift, 0 for straight lanes). Transform and opacity only. */
 @keyframes lpd-fall {
   0% {
-    transform: translateY(-16px);
+    transform: translate(0, -16px);
     opacity: 0;
   }
   12% {
-    opacity: 0.9;
+    opacity: var(--lpd-o, 0.9);
   }
   82% {
-    opacity: 0.55;
+    opacity: calc(var(--lpd-o, 0.9) * 0.6);
   }
   100% {
-    transform: translateY(180px);
+    transform: translate(var(--lpd-drift, 0px), 180px);
     opacity: 0;
+  }
+}
+/* The typed reveal runs on every lane in lockstep with the fall (same
+   duration and delay), but only clips when the lane carries .is-typed, so a
+   lane can switch it on at an iteration boundary without restarting. */
+@keyframes lpd-type {
+  0% {
+    clip-path: inset(0 var(--lpd-clip, 0%) 0 0);
+  }
+  12%,
+  100% {
+    clip-path: inset(0 0 0 0);
   }
 }
 .lpd-fall {
   position: absolute;
   top: 0;
-  font-size: 8px;
+  font-size: 10px;
   letter-spacing: 0.02em;
-  color: var(--emerald);
+  color: var(--text-muted);
   opacity: 0;
   white-space: nowrap;
-  animation: lpd-fall 7s linear infinite;
+  animation-name: lpd-fall, lpd-type;
+  animation-duration: 7s;
+  animation-timing-function: linear, steps(14, end);
+  animation-iteration-count: infinite;
+}
+.lpd-fall.is-typed {
+  --lpd-clip: 100%;
+}
+/* Syntax colour, kept quiet: keys and prompts muted, values primary,
+   rises emerald, falls in the danger ink, system lines italic and faint. */
+.lpd-tk-key {
+  color: var(--text-muted);
+}
+.lpd-tk-str {
+  color: var(--text-primary);
+}
+.lpd-tk-up {
+  color: var(--emerald);
+}
+.lpd-tk-dn {
+  color: var(--danger);
+}
+.lpd-fall[data-k='s'] {
+  font-style: italic;
+  color: var(--text-faint);
 }
 
 /* ══════════════ iMac (dominant device, 510px) ══════════════ */
@@ -770,8 +811,28 @@
     opacity: 1;
     transform: none;
   }
+  /* Five fragments, still, at staggered heights; the other lanes hide. */
   .lpd-fall {
-    opacity: 0.6;
+    opacity: 0.4;
+    clip-path: none;
+  }
+  .lpd-fall:nth-of-type(n + 6) {
+    display: none;
+  }
+  .lpd-fall:nth-of-type(1) {
+    transform: translateY(18px);
+  }
+  .lpd-fall:nth-of-type(2) {
+    transform: translateY(50px);
+  }
+  .lpd-fall:nth-of-type(3) {
+    transform: translateY(84px);
+  }
+  .lpd-fall:nth-of-type(4) {
+    transform: translateY(116px);
+  }
+  .lpd-fall:nth-of-type(5) {
+    transform: translateY(146px);
   }
   .lpd-t {
     transition: none !important;

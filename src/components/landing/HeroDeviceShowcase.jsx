@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { HeroDashboardMock } from './hero-dashboard-mock';
+import { CODEFALL_POOL, tokenizeFragment } from './hero-codefall-pool';
 import './hero-device-showcase.css';
 
 /**
@@ -36,18 +37,121 @@ const PEOPLE = [
   { id: 'p2', name: 'Beth C.', cap: '$13.4K', copiers: '24K', hue: 'b' },
 ];
 
-/* Falling JSON fragments — same schema shape as PortfolioSignalCard's
-   SIGNALS (key: value pairs, signal/ticker/delta style). `x` px offset in
-   .lpd-codefall; `d` = negative delay so the stream is mid-flow on load;
-   `s` = fall duration for varied speeds. */
-const FALLING = [
-  { id: 'c1', text: '"signal": "consumer_spending"', x: 4, d: 0, s: 7 },
-  { id: 'c2', text: '"ticker": "PLTR", "value": "$27M"', x: 120, d: 1.2, s: 7.8 },
-  { id: 'c3', text: '"Δ30d": +6.2%', x: 66, d: 2.4, s: 6.6 },
-  { id: 'c4', text: '"signal": "government_contracts"', x: 150, d: 3.5, s: 7.4 },
-  { id: 'c5', text: '"sector": "discretionary"', x: 28, d: 4.6, s: 7 },
-  { id: 'c6', text: '"filer": "13F-HR", "positions": 214', x: 96, d: 5.8, s: 7.6 },
+/* The codefall (Oct 26): nine lanes falling through a 66-fragment pool of
+   Ezana's data plane (hero-codefall-pool.js). Each lane has a fixed x (no two
+   within 24px), its own speed (6 to 11s), a negative delay so the stream is
+   mid-flow on load, a size and an opacity. Three lanes drift a pixel or two
+   sideways as they fall.
+
+   Rotation: every time a lane finishes a fall (animationiteration) it takes
+   the next fragment from ONE shared counter, so the nine lanes interleave
+   through the pool in order and a fragment comes back only after the whole
+   pool has passed, about a minute. (Per-lane strides through the pool repeat
+   within 20s: lanes end up sharing orbits.) The text is written straight to
+   the DOM, never through React state, so the hero never re-renders for it.
+   Every ninth swap "types" its fragment in (a stepped clip over the first
+   12% of the fall). No Math.random: the first frame is the same on server
+   and client. */
+const LANES = [
+  { x: 6, s: 6.2, d: 0.9, size: 10, o: 0.85 },
+  { x: 178, s: 9.4, d: 4.9, size: 9.5, o: 0.55, drift: 1.5 },
+  { x: 62, s: 7.1, d: 6.3, size: 10.5, o: 0.75 },
+  { x: 238, s: 10.6, d: 2.8, size: 9.5, o: 0.45 },
+  { x: 120, s: 6.8, d: 4.3, size: 11, o: 0.9, drift: -2 },
+  { x: 34, s: 8.3, d: 7.4, size: 9.5, o: 0.6 },
+  { x: 208, s: 11, d: 4.1, size: 10, o: 0.5, drift: 2 },
+  { x: 92, s: 7.7, d: 5.7, size: 10, o: 0.7 },
+  { x: 150, s: 9, d: 1, size: 10.5, o: 0.65 },
 ];
+
+function FragmentText({ frag }) {
+  return tokenizeFragment(frag).map((tk, i) =>
+    tk.c ? (
+      <span key={i} className={`lpd-tk-${tk.c}`}>
+        {tk.t}
+      </span>
+    ) : (
+      tk.t
+    ),
+  );
+}
+
+/* Rebuild a lane's spans for a new fragment: one DOM write per swap. */
+function writeFragment(el, frag) {
+  const doc = el.ownerDocument;
+  const nodes = tokenizeFragment(frag).map((tk) => {
+    if (!tk.c) return doc.createTextNode(tk.t);
+    const span = doc.createElement('span');
+    span.className = `lpd-tk-${tk.c}`;
+    span.textContent = tk.t;
+    return span;
+  });
+  el.replaceChildren(...nodes);
+}
+
+/* Memoised with no props: it renders once and the lanes then live in the DOM. */
+const Codefall = memo(function Codefall() {
+  const laneRefs = useRef([]);
+  const textRefs = useRef([]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined;
+    const P = CODEFALL_POOL.length;
+    let counter = LANES.length;
+    const offs = laneRefs.current.map((lane, i) => {
+      if (!lane) return null;
+      const onIter = (e) => {
+        /* The typed reveal (lpd-type) iterates in lockstep; count falls only. */
+        if (e.animationName !== 'lpd-fall') return;
+        const frag = CODEFALL_POOL[counter % P];
+        const text = textRefs.current[i];
+        if (text) writeFragment(text, frag);
+        lane.dataset.k = frag.k;
+        lane.classList.toggle('is-typed', counter % LANES.length === 0);
+        counter += 1;
+      };
+      lane.addEventListener('animationiteration', onIter);
+      return () => lane.removeEventListener('animationiteration', onIter);
+    });
+    return () => offs.forEach((off) => off && off());
+  }, []);
+
+  return (
+    <div className="lpd-codefall">
+      <div className="lpd-codefall-shade" />
+      {LANES.map((l, i) => {
+        const frag = CODEFALL_POOL[i];
+        return (
+          <span
+            key={i}
+            ref={(el) => {
+              laneRefs.current[i] = el;
+            }}
+            className="lpd-fall lpd-mono"
+            data-k={frag.k}
+            style={{
+              left: `${l.x}px`,
+              fontSize: `${l.size}px`,
+              animationDelay: `-${l.d}s`,
+              animationDuration: `${l.s}s`,
+              '--lpd-o': l.o,
+              '--lpd-drift': `${l.drift || 0}px`,
+            }}
+          >
+            <span
+              ref={(el) => {
+                textRefs.current[i] = el;
+              }}
+            >
+              <FragmentText frag={frag} />
+            </span>
+          </span>
+        );
+      })}
+    </div>
+  );
+});
 
 export function HeroDeviceShowcase() {
   const [tick, setTick] = useState(0);
@@ -121,22 +225,7 @@ export function HeroDeviceShowcase() {
     <div className="lpd-stack" ref={stackRef} style={{ '--lpd-scale': scale }} aria-hidden="true">
       <div className="lpd-canvas">
         {/* ── Shaded feed zone + falling JSON, above the desktop only ── */}
-        <div className="lpd-codefall">
-          <div className="lpd-codefall-shade" />
-          {FALLING.map((c) => (
-            <span
-              key={c.id}
-              className="lpd-fall lpd-mono"
-              style={{
-                left: `${c.x}px`,
-                animationDelay: `-${c.d}s`,
-                animationDuration: `${c.s}s`,
-              }}
-            >
-              {c.text}
-            </span>
-          ))}
-        </div>
+        <Codefall />
 
         {/* ── Layer 1: iMac ── */}
         <div className="lpd-imac">
