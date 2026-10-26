@@ -495,7 +495,7 @@ const BASE_GROUPS = [
       },
       {
         h: 'Freshness',
-        p: 'Markets refresh about every 15 minutes. meta.updated_at is the newest refresh time in the response. status is active, closed (past its end date or resolved) or stale (the venue stopped listing it before it closed).',
+        p: 'Markets refresh about every two hours (Polymarket and Kalshi), crowd forecasts every six hours. meta.updated_at is the newest refresh time in the response. status is active, closed (past its end date or resolved) or stale (the venue stopped listing it before it closed).',
       },
       {
         h: 'Consensus',

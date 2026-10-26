@@ -651,7 +651,7 @@ const topSpenders = unstable_cache(
 const PM_TAG = 'pm-api';
 
 /* List reads without a cursor are cached for 60s per normalized params: the
-   index refreshes every 15 minutes, so this costs nothing in freshness. */
+   index refreshes every two hours, so this costs nothing in freshness. */
 function pmCached(name, params, fn, revalidate = 60) {
   if (params?.cursor) return fn();
   const key = JSON.stringify(

@@ -3,7 +3,7 @@
 /* ============================================================================
  *  EZANA API: documentation (/ezana-api)
  *  ----------------------------------------------------------------------------
- *  Endpoint groups, Live and Roadmap badges, tier cards and rate limits all
+ *  Endpoint groups by dimension, Insight chips, tier cards and rate limits all
  *  render from src/lib/ezana-api/registry.js and tiers.js, the same source the
  *  /v1 router and the OpenAPI spec use, so the docs cannot drift from what the
  *  API serves. All-white surfaces, a sticky legend with scroll-spy, Plus
@@ -13,9 +13,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { GROUPS, LIVE_ENDPOINTS, ENDPOINTS, PARAMS } from '@/lib/ezana-api/registry';
+import { DIMENSIONS, GROUPS, LIVE_ENDPOINTS, PARAMS } from '@/lib/ezana-api/registry';
 import { TIERS as API_TIERS, TIER_ORDER } from '@/lib/ezana-api/tiers';
 import { PM_EXAMPLES } from './prediction-examples';
+import { API_EXAMPLES } from './api-examples';
 import './ezana-api.css';
 
 /* Bootstrap Icons in place of the old icon components; same props. */
@@ -45,7 +46,6 @@ const Gauge = biIcon('bi-speedometer2');
 const Rocket = biIcon('bi-rocket-takeoff');
 const Filter = biIcon('bi-funnel');
 const AlertTriangle = biIcon('bi-exclamation-triangle');
-const Webhook = biIcon('bi-broadcast');
 const Database = biIcon('bi-database');
 const GitBranch = biIcon('bi-git');
 const ShieldCheck = biIcon('bi-shield-check');
@@ -60,13 +60,12 @@ const SECTIONS = [
   { id: 'endpoints', label: 'Endpoints' },
   { id: 'pagination', label: 'Pagination' },
   { id: 'errors', label: 'Errors' },
-  { id: 'webhooks', label: 'Webhooks' },
   { id: 'data-coverage', label: 'Data coverage' },
   { id: 'rate-limits', label: 'Rate limits & terms' },
   { id: 'versioning', label: 'Versioning' },
   { id: 'security', label: 'Security' },
   { id: 'faq', label: 'FAQ' },
-  { id: 'roadmap', label: 'How we build & ship' },
+  { id: 'how-we-ship', label: 'How we build & ship' },
 ];
 
 const ENDPOINT_GROUPS = GROUPS.map((g) => ({
@@ -74,6 +73,13 @@ const ENDPOINT_GROUPS = GROUPS.map((g) => ({
   Icon: biIcon(g.icon),
   routes: g.routes.map((r) => ({ ...r, desc: r.summary })),
 }));
+
+/* Endpoint sections in taxonomy order: each dimension with its groups. */
+const DIMENSION_SECTIONS = DIMENSIONS.map((d) => ({
+  ...d,
+  groups: ENDPOINT_GROUPS.filter((g) => g.dimension === d.id),
+})).filter((d) => d.groups.length);
+const INSIGHT_COUNT = LIVE_ENDPOINTS.filter((e) => e.kind === 'insight').length;
 
 const TIERS = TIER_ORDER.map((id) => API_TIERS[id]);
 
@@ -115,7 +121,6 @@ const ERROR_CODES = [
     name: 'internal_error',
     meaning: 'Unexpected error on our side. Safe to retry with backoff.',
   },
-  { code: '501', name: 'not_available', meaning: 'A Roadmap endpoint that is not built yet.' },
   {
     code: '503',
     name: 'not_available',
@@ -136,13 +141,36 @@ const COVERAGE_ROWS = [
   {
     dataset: 'Prediction markets',
     source: 'Polymarket, Kalshi (real money); Manifold (play money)',
-    cadence: 'Every 15 minutes; odds history every two hours, kept 35 days',
+    cadence: 'Every two hours (Manifold every six); odds history kept 35 days',
   },
   { dataset: '13F, activist stakes, whale moves', source: 'SEC EDGAR', cadence: 'Hourly' },
   { dataset: 'Insider transactions (Form 4)', source: 'SEC EDGAR', cadence: 'Twice an hour' },
+  { dataset: 'Executive compensation', source: 'SEC EDGAR (proxy filings)', cadence: 'Daily' },
+  { dataset: 'ETF holdings', source: 'SEC EDGAR (Form N-PORT)', cadence: 'Daily' },
+  { dataset: 'Patents', source: 'USPTO PatentsView', cadence: 'Weekly' },
+  { dataset: 'Ports and chokepoints', source: 'IMF PortWatch', cadence: 'Daily' },
+  {
+    dataset: 'Freight and real estate',
+    source: 'FRED (Cass, Federal Reserve, Census)',
+    cadence: 'Monthly',
+  },
+  { dataset: 'Night lights', source: 'NASA Black Marble', cadence: 'Monthly' },
+  {
+    dataset: 'Global Empire rankings',
+    source: 'Ezana model over public indicators',
+    cadence: 'Weekly',
+  },
+  { dataset: 'OECD macro', source: 'OECD', cadence: 'Weekly' },
+  { dataset: 'World Bank indicators', source: 'World Bank', cadence: 'Weekly' },
+  { dataset: 'Geopolitical risk', source: 'Caldara and Iacoviello GPR index', cadence: 'Weekly' },
+  { dataset: 'Sanctions', source: 'US Treasury OFAC', cadence: 'Daily' },
 ];
 
 const CHANGELOG = [
+  {
+    date: '2026-10-27',
+    text: `Every live Ezana dataset is now on the API: ${LIVE_ENDPOINTS.length} endpoints across Capitol Watch, Titans Shadow, Eyes Above, The Hive, Global Empire Lighthouse and cross-dimensional joins, ${INSIGHT_COUNT} of them insights that state their method. Endpoints that could not be built from data Ezana holds were removed from the documentation rather than listed as coming soon.`,
+  },
   {
     date: '2026-10-26',
     text: "Prediction markets: events, history, movers, trending, consensus, crowd forecasts and categories are live. Market objects add event, outcome, order-book, change and volume-window fields; platform is now the lower-case venue id (platform_name carries the display name); category is Ezana's cross-venue slug (venue_category keeps Kalshi's own). No keys had been issued when the market shape changed, so no client broke.",
@@ -180,7 +208,7 @@ const FAQ = [
   },
 ];
 
-const ROADMAP_STEPS = [
+const SHIP_STEPS = [
   {
     n: 1,
     title: 'Request, approval, claim (live)',
@@ -189,7 +217,7 @@ const ROADMAP_STEPS = [
   {
     n: 2,
     title: 'Versioned /v1 routes (live)',
-    body: 'Stable, versioned REST routes over the same sourced data that powers the product. Endpoints not built yet answer 501 and are marked Roadmap here.',
+    body: 'Stable, versioned REST routes over the same sourced data that powers the product. Every endpoint documented here is live.',
   },
   {
     n: 3,
@@ -198,7 +226,7 @@ const ROADMAP_STEPS = [
   },
   {
     n: 4,
-    title: 'Billing tie-in (roadmap)',
+    title: 'Billing',
     body: 'Metered usage feeding billing for the Trader and Quant Firm tiers. Until then, paid tiers are invoiced directly.',
   },
   {
@@ -271,16 +299,17 @@ function exampleSnippet(lang, path) {
   }
   return `curl -H "Authorization: Bearer $EZANA_API_KEY" \\\n  "${url}"`;
 }
-function PredictionExamples() {
-  const [exId, setExId] = useState(PM_EXAMPLES[0].id);
+function ExampleSwitcher({ examples, label }) {
+  const [exId, setExId] = useState(examples[0]?.id);
   const [lang, setLang] = useState('curl');
-  const ex = PM_EXAMPLES.find((e) => e.id === exId) || PM_EXAMPLES[0];
+  if (!examples.length) return null;
+  const ex = examples.find((e) => e.id === exId) || examples[0];
   return (
     <div className="ea-examples">
       <div className="ea-examples-head">
-        <span className="ea-examples-title">Worked examples</span>
-        <div className="ea-examples-tabs" role="tablist" aria-label="Prediction-market examples">
-          {PM_EXAMPLES.map((e) => (
+        <span className="ea-examples-title">{label}</span>
+        <div className="ea-examples-tabs" role="tablist" aria-label={label}>
+          {examples.map((e) => (
             <button
               key={e.id}
               type="button"
@@ -319,7 +348,7 @@ function PredictionExamples() {
       </div>
       <div className="ea-code">
         <div className="ea-code-head">
-          <Terminal size={13} aria-hidden /> 200 OK · two rows shown
+          <Terminal size={13} aria-hidden /> 200 OK · first rows shown
         </div>
         <pre className="ea-examples-pre">
           <code>{ex.response}</code>
@@ -327,6 +356,15 @@ function PredictionExamples() {
       </div>
     </div>
   );
+}
+
+function PredictionExamples() {
+  return <ExampleSwitcher examples={PM_EXAMPLES} label="Prediction-market examples" />;
+}
+
+/* One worked example per dimension, captured once from production. */
+function ApiExamples() {
+  return <ExampleSwitcher examples={API_EXAMPLES} label="Worked examples by dimension" />;
 }
 
 function Method({ method = 'GET' }) {
@@ -342,7 +380,12 @@ const REQ_DATASETS = [
   { key: 'committees', label: 'Committee activity' },
   { key: 'institutional', label: '13F, activist, whale moves' },
   { key: 'insider', label: 'Insider transactions' },
-  { key: 'news', label: 'News signals (roadmap)' },
+  { key: 'exec-comp', label: 'Executive compensation' },
+  { key: 'etf', label: 'ETF holdings' },
+  { key: 'eyes', label: 'Patents, supply chain, real estate' },
+  { key: 'macro', label: 'Empire rankings, OECD, World Bank' },
+  { key: 'sanctions', label: 'Sanctions' },
+  { key: 'cross', label: 'Cross-dimensional signals' },
 ];
 const REQ_ROLES = [
   { value: '', label: 'Select…' },
@@ -624,7 +667,7 @@ function RequestFlow() {
 
 /* ── Visual 3: data-coverage freshness strip (decorative ticks) ── */
 function CoverageStrip() {
-  const tiles = ['Congress', 'Committees', 'Lobbying', 'FEC', 'Contracts', 'Predictions', 'SEC'];
+  const tiles = ['Capitol', 'Titans', 'Eyes', 'Hive', 'Lighthouse', 'Cross'];
   return (
     <div className="ea-cov-strip" aria-hidden>
       {tiles.map((t, i) => (
@@ -709,9 +752,9 @@ export default function EzanaApiPage() {
             </a>
           </div>
           <p className="ea-hero-note">
-            Built for quant desks, systematic traders and research teams. {LIVE_ENDPOINTS.length} of{' '}
-            {ENDPOINTS.length} documented endpoints are live today; the rest are marked{' '}
-            <em>Roadmap</em> and answer 501 until they ship.
+            Built for quant desks, systematic traders and research teams. {LIVE_ENDPOINTS.length}{' '}
+            live endpoints across {DIMENSION_SECTIONS.length} sections, {INSIGHT_COUNT} of them
+            Ezana insights computed from the raw data.
           </p>
         </div>
       </header>
@@ -754,14 +797,17 @@ export default function EzanaApiPage() {
               where policy money goes, who funds whom, which companies win federal contracts, what
               the crowd is betting, and what large funds, activists and insiders do. Every field
               traces to a primary source (House and Senate disclosures, Senate LDA, FEC,
-              USAspending, Polymarket, SEC EDGAR), so a signal is auditable back to where it came
+              USAspending, SEC EDGAR, Polymarket, Kalshi, Manifold, PatentsView, IMF PortWatch,
+              FRED, OECD, the World Bank and OFAC), so a signal is auditable back to where it came
               from.
             </p>
             <p>
               It is built for traders, quant firms and research desks who want inputs, not opinions:
-              features you can drop into a model, backtest and trade around. News engineering,
-              cross-dimensional signals and lead-lag relationships are on the roadmap and marked as
-              such below.
+              features you can drop into a model, backtest and trade around. Every endpoint is
+              either <strong>data</strong> (the records, shaped and paginated) or an{' '}
+              <strong>insight</strong> (something Ezana computes that the raw records don&apos;t
+              contain: a score, a join across datasets, a ranking, a change). Insights state how
+              they are computed.
             </p>
             <div className="ea-feature-grid">
               <div className="ea-feature">
@@ -774,12 +820,10 @@ export default function EzanaApiPage() {
               </div>
               <div className="ea-feature">
                 <Newspaper size={18} aria-hidden />
-                <h3>
-                  News engineering <span className="ea-soon ea-soon--inline">Roadmap</span>
-                </h3>
+                <h3>Cross-dimensional joins</h3>
                 <p>
-                  Market-moving news structured, entity-tagged and linked to tickers, events and
-                  odds.
+                  One ticker across every dataset that touches it, and joins no single-source feed
+                  can make: contracts against insider buying, lobbying against fund flows.
                 </p>
               </div>
               <div className="ea-feature">
@@ -943,88 +987,110 @@ export default function EzanaApiPage() {
           <section id="endpoints" className="ea-section">
             <h2>Endpoints</h2>
             <p>
-              Endpoints are grouped by signal family under a versioned <code>/v1</code> prefix.
-              Responses are JSON and list endpoints are cursor-paginated. <strong>Live</strong>{' '}
-              endpoints serve data today; <strong>Roadmap</strong> endpoints answer{' '}
-              <code>501 not_available</code> until they ship. The full contract, with parameters and
-              response fields, is in the <a href="/v1/openapi.json">OpenAPI spec</a>.
+              Endpoints are grouped by dimension and dataset under a versioned <code>/v1</code>{' '}
+              prefix. Responses are JSON and list endpoints are cursor-paginated. Every endpoint is
+              live. <span className="ea-insight">Insight</span> endpoints are computed by Ezana and
+              say how. The full contract, with parameters and response fields, is in the{' '}
+              <a href="/v1/openapi.json">OpenAPI spec</a>.
             </p>
             <div className="ea-viz-frame">
               <RequestFlow />
             </div>
-            {ENDPOINT_GROUPS.map((group) => {
-              const GIcon = group.Icon;
-              return (
-                <div key={group.key} className="ea-ep-group">
-                  <div className="ea-ep-group-head">
-                    <h3>
-                      <GIcon size={15} aria-hidden /> {group.title}
-                    </h3>
-                    <code className="ea-ep-base">{group.base}</code>
-                  </div>
-                  {group.framing && <p className="ea-ep-framing">{group.framing}</p>}
-                  {group.guide?.length ? (
-                    <details className="ea-guide">
-                      <summary>
-                        <i className="bi bi-info-circle" aria-hidden="true" /> How the data works
-                      </summary>
-                      <dl className="ea-guide-list">
-                        {group.guide.map((g) => (
-                          <div key={g.h} className="ea-guide-item">
-                            <dt>{g.h}</dt>
-                            <dd>{g.p}</dd>
-                          </div>
-                        ))}
-                      </dl>
-                    </details>
-                  ) : null}
-                  <ul className="ea-ep-list">
-                    {group.routes.map((r) => (
-                      <li key={r.path} className="ea-ep">
-                        <div className="ea-ep-sig">
-                          <Method method="GET" />
-                          <code>{r.path}</code>
-                          {r.status === 'live' ? (
-                            <span className="ea-live">
-                              <i className="bi bi-check-circle-fill" aria-hidden="true" /> Live
-                            </span>
-                          ) : (
-                            <span className="ea-soon ea-soon--inline">
-                              <i className="bi bi-hourglass-split" aria-hidden="true" /> Roadmap
-                            </span>
-                          )}
-                        </div>
-                        <p>
-                          {r.desc}
-                          {r.status === 'live' && r.scope ? (
-                            <span className="ea-ep-scope"> Scope: {r.scope}.</span>
-                          ) : null}
-                        </p>
-                        {r.status === 'live' && r.params?.length ? (
-                          <p className="ea-ep-params">
-                            <span>Params:</span>{' '}
-                            {r.params.map((name, i) => (
-                              <span key={name}>
-                                {i ? ', ' : ''}
-                                <code>{name}</code>
-                              </span>
-                            ))}
-                            {r.sortValues ? (
-                              <>
-                                {' '}
-                                <span className="ea-ep-sep">·</span> <span>sort:</span>{' '}
-                                {r.sortValues.join(', ')}
-                              </>
-                            ) : null}
-                          </p>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                  {group.key === 'predictions' ? <PredictionExamples /> : null}
+            {DIMENSION_SECTIONS.map((dim) => (
+              <div key={dim.id} className="ea-dim" id={`dim-${dim.id}`}>
+                <div className="ea-dim-head">
+                  <span
+                    className="ea-dim-dot"
+                    style={{ background: dim.color }}
+                    aria-hidden="true"
+                  />
+                  <h3 className="ea-dim-title">{dim.label}</h3>
+                  <span className="ea-dim-sets">{dim.groups.map((g) => g.title).join(' · ')}</span>
                 </div>
-              );
-            })}
+                {dim.groups.map((group) => {
+                  const GIcon = group.Icon;
+                  return (
+                    <div key={group.key} className="ea-ep-group">
+                      <div className="ea-ep-group-head">
+                        <h3>
+                          <GIcon size={15} aria-hidden /> {group.title}
+                        </h3>
+                        <code className="ea-ep-base">{group.base}</code>
+                      </div>
+                      {group.framing && <p className="ea-ep-framing">{group.framing}</p>}
+                      {group.guide?.length ? (
+                        <details className="ea-guide">
+                          <summary>
+                            <i className="bi bi-info-circle" aria-hidden="true" /> How the data
+                            works
+                          </summary>
+                          <dl className="ea-guide-list">
+                            {group.guide.map((g) => (
+                              <div key={g.h} className="ea-guide-item">
+                                <dt>{g.h}</dt>
+                                <dd>{g.p}</dd>
+                              </div>
+                            ))}
+                          </dl>
+                        </details>
+                      ) : null}
+                      <ul className="ea-ep-list">
+                        {group.routes.map((r) => (
+                          <li key={r.path} className="ea-ep">
+                            <div className="ea-ep-sig">
+                              <Method method="GET" />
+                              <code>{r.path}</code>
+                              <span className="ea-live">
+                                <i className="bi bi-check-circle-fill" aria-hidden="true" /> Live
+                              </span>
+                              {r.kind === 'insight' ? (
+                                <span className="ea-insight">
+                                  <i className="bi bi-stars" aria-hidden="true" /> Insight
+                                </span>
+                              ) : null}
+                            </div>
+                            <p>
+                              {r.desc}
+                              {r.scope ? (
+                                <span className="ea-ep-scope"> Scope: {r.scope}.</span>
+                              ) : null}
+                            </p>
+                            {r.kind === 'insight' && r.method ? (
+                              <p className="ea-ep-method">
+                                <span>Method:</span> {r.method}
+                              </p>
+                            ) : null}
+                            {r.params?.length ? (
+                              <p className="ea-ep-params">
+                                <span>Params:</span>{' '}
+                                {r.params.map((name, i) => (
+                                  <span key={name}>
+                                    {i ? ', ' : ''}
+                                    <code>{name}</code>
+                                  </span>
+                                ))}
+                                {Object.entries({
+                                  ...(r.sortValues ? { sort: r.sortValues } : {}),
+                                  ...(r.paramEnums || {}),
+                                }).map(([name, values]) => (
+                                  <span key={`e-${name}`}>
+                                    {' '}
+                                    <span className="ea-ep-sep">·</span> <span>{name}:</span>{' '}
+                                    {values.join(', ')}
+                                  </span>
+                                ))}
+                              </p>
+                            ) : null}
+                          </li>
+                        ))}
+                      </ul>
+                      {group.key === 'predictions' ? <PredictionExamples /> : null}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+            <ApiExamples />
             <div className="ea-code">
               <div className="ea-code-head">
                 <Terminal size={13} aria-hidden />
@@ -1114,38 +1180,6 @@ export default function EzanaApiPage() {
             </div>
           </section>
 
-          {/* Webhooks */}
-          <section id="webhooks" className="ea-section">
-            <h2>
-              <Webhook size={18} aria-hidden className="ea-h2-icon" />
-              Webhooks
-              <span className="ea-soon ea-soon--inline">Roadmap</span>
-            </h2>
-            <p>
-              Rather than poll, subscribe to events and let Ezana push. Register a signed HTTPS
-              endpoint and choose event types: a new congressional filing for a watched ticker, a
-              large prediction-market odds move, or a fresh news match above a confidence threshold.
-              Deliveries are retried with backoff and signed with a per-subscription secret.
-            </p>
-            <div className="ea-code">
-              <div className="ea-code-head">
-                <Webhook size={13} aria-hidden />
-                Example event
-              </div>
-              <pre>
-                <code>{`{
-  "type": "congress.trade.created",
-  "created_at": "2026-06-02T14:05:00Z",
-  "data": { "ticker": "NVDA", "member": "Rep. Jane Doe", "transaction": "purchase" }
-}`}</code>
-              </pre>
-            </div>
-            <p className="ea-soon-note">
-              <span className="ea-soon">Roadmap</span> Webhook subscriptions are illustrative and
-              not yet live.
-            </p>
-          </section>
-
           {/* Data coverage */}
           <section id="data-coverage" className="ea-section">
             <h2>
@@ -1226,8 +1260,8 @@ export default function EzanaApiPage() {
               </li>
               <li>Signals are informational, not investment advice.</li>
             </ul>
-            <p className="ea-soon-note">
-              <span className="ea-soon">Coming soon</span> Full terms of use and a data-license
+            <p className="ea-note-line">
+              <span className="ea-note-chip">Coming soon</span> Full terms of use and a data-license
               agreement will accompany general availability.
             </p>
           </section>
@@ -1311,18 +1345,18 @@ export default function EzanaApiPage() {
             </div>
           </section>
 
-          {/* Roadmap / build & distribution */}
-          <section id="roadmap" className="ea-section">
+          {/* How we build & distribute */}
+          <section id="how-we-ship" className="ea-section">
             <h2>
               <Map size={18} aria-hidden className="ea-h2-icon" />
               How we build &amp; ship it
             </h2>
             <p>
               The outline below is how the Ezana API is built and distributed to users who request
-              it. It is a roadmap; items ship incrementally.
+              it. Items ship incrementally, and nothing is documented before it is live.
             </p>
             <ol className="ea-steps">
-              {ROADMAP_STEPS.map((s) => (
+              {SHIP_STEPS.map((s) => (
                 <li key={s.n} className="ea-step">
                   <span className="ea-step-num">{s.n}</span>
                   <div>

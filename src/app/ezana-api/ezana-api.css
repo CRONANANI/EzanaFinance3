@@ -356,14 +356,14 @@
   background: var(--ea-emerald);
 }
 
-/* "Coming soon / roadmap" chip (badge accent, allowed) */
-.ea-soon-note {
+/* "Coming soon" note chip (badge accent, allowed) */
+.ea-note-line {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.8125rem !important;
 }
-.ea-soon {
+.ea-note-chip {
   flex-shrink: 0;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -377,7 +377,7 @@
   padding: 0.12rem 0.4rem;
   border-radius: 9999px;
 }
-.ea-soon--inline {
+.ea-note-chip--inline {
   margin-left: 0.5rem;
 }
 
@@ -397,7 +397,7 @@
   padding: 0.12rem 0.45rem;
   border-radius: 9999px;
 }
-.ea-soon i,
+.ea-note-chip i,
 .ea-live i {
   font-size: 0.7rem;
 }
@@ -726,7 +726,7 @@
   color: var(--ea-muted);
 }
 
-/* Roadmap steps */
+/* How we build & ship: steps */
 .ea-steps {
   list-style: none;
   margin: 1.25rem 0;
@@ -1336,7 +1336,7 @@
 .ea-page .ea-btn--ghost:hover,
 .ea-page .ea-eyebrow,
 .ea-page .ea-tier--hl,
-.ea-page .ea-soon,
+.ea-page .ea-note-chip,
 .ea-page .ea-live,
 .ea-page .ea-qs-num,
 .ea-page .ea-cta,
@@ -1499,4 +1499,64 @@
 }
 .ea-examples-pre {
   max-height: 420px;
+}
+
+/* ── Oct 27: endpoints by dimension, Insight chip, method line ── */
+.ea-dim {
+  margin-top: 2rem;
+}
+.ea-dim-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.6rem;
+  margin-bottom: 0.75rem;
+}
+.ea-dim-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex: none;
+  align-self: center;
+}
+.ea-dim-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ea-ink);
+}
+.ea-dim-sets {
+  font-size: 0.8rem;
+  color: var(--ea-muted);
+}
+.ea-insight {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--ea-ink);
+  border: 1px solid var(--ea-border);
+  padding: 0.12rem 0.45rem;
+  border-radius: 9999px;
+}
+.ea-insight i {
+  font-size: 0.7rem;
+  color: var(--ea-emerald-text);
+}
+.ea-ep-sig .ea-insight {
+  margin-left: 0.35rem;
+}
+.ea-ep-method {
+  margin: 0.3rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--ea-muted);
+}
+.ea-ep-method > span {
+  font-weight: 600;
+  color: var(--ea-ink);
 }
