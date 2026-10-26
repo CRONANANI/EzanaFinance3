@@ -26,12 +26,8 @@ import {
   PROJECTION_FROM_YEAR,
 } from '@/lib/oecd-curated';
 import { getEmpireScoresForExplorer } from '@/lib/empire-public-store';
-import {
-  buildEmpireModel,
-  empireComposite,
-  empireRankWithin,
-  normScore,
-} from '@/app/datasets/oecd-macro/oecd-empire-model';
+import { empireDossier } from '@/lib/sonar/empire-dossier';
+import { buildEmpireModel } from '@/app/datasets/oecd-macro/oecd-empire-model';
 import { fetchIndustryNews } from '@/lib/sonar/industry-news';
 
 /* ── resolution ─────────────────────────────────────────────────────────── */
@@ -369,62 +365,7 @@ async function empireModel() {
 
 async function buildEmpire(country) {
   try {
-    const model = await empireModel();
-    if (!model || !model.scoreMap.has(country.iso3)) return null;
-
-    const composite = empireComposite(model, model.liveDims);
-    const at = composite.findIndex((c) => c.iso === country.iso3);
-    const me = at >= 0 ? composite[at] : null;
-
-    const dims = model.liveDims
-      .map((d) => {
-        const raw = model.scoreMap.get(country.iso3)?.get(d.id);
-        const n = normScore(d, raw);
-        if (n == null) return null;
-        const r = empireRankWithin(model, d, country.iso3);
-        return {
-          id: d.id,
-          name: d.name,
-          category: d.category || null,
-          score: Math.round(n * 1000) / 10,
-          rank: r?.rank ?? null,
-          of: r?.n ?? null,
-        };
-      })
-      .filter(Boolean);
-    if (!dims.length) return null;
-
-    const byStrength = [...dims].sort((a, b) => b.score - a.score);
-    /* The top three by composite, with their pillar scores on the same
-       0-100 scale, for the country_rank pillar comparison. */
-    const ranked = [...composite].sort((x, y) => y.composite - x.composite);
-    const leaders = ranked.slice(0, 3).map((c, i) => ({
-      iso: c.iso,
-      name: c.name,
-      rank: i + 1,
-      dims: Object.fromEntries(
-        model.liveDims
-          .map((d) => [d.id, normScore(d, model.scoreMap.get(c.iso)?.get(d.id))])
-          .filter(([, n]) => n != null)
-          .map(([id, n]) => [id, Math.round(n * 1000) / 10]),
-      ),
-    }));
-    return {
-      year: model.year,
-      leaders,
-      href: `/datasets/oecd-macro?a=${encodeURIComponent(country.iso3)}`,
-      rank: me ? at + 1 : null,
-      of: composite.length,
-      composite: me ? Math.round(me.composite * 10) / 10 : null,
-      coverage: { present: dims.length, total: model.liveDims.length },
-      strongest: byStrength.slice(0, 3).map((d) => d.name),
-      weakest: byStrength
-        .slice(-3)
-        .reverse()
-        .map((d) => d.name),
-      dims: byStrength,
-      source: 'Ezana Global Empire Rankings',
-    };
+    return empireDossier(await empireModel(), country);
   } catch (e) {
     console.error('[sonar-country] empire leg failed:', e?.message);
     return null;
@@ -561,14 +502,14 @@ export function countryEvidence(dossier) {
     const head = e.rank
       ? `${dossier.name} ranks ${ordinal(e.rank)} of ${e.of} countries on Ezana's Global Empire Rankings composite (${e.year} scores, score ${e.composite} of 100, ${e.coverage.present} of ${e.coverage.total} live dimensions).`
       : `${dossier.name} carries ${e.coverage.present} of ${e.coverage.total} live dimensions on Ezana's Global Empire Rankings (${e.year} scores), too few for a composite rank.`;
-    const top = e.dims
-      .slice(0, 4)
-      .map((d) => `${d.name} ${d.score}${d.rank ? ` (${ordinal(d.rank)} of ${d.of})` : ''}`)
+    /* The same three dimensions the card shows: where it ranks highest. */
+    const top = (e.top || [])
+      .map((d) => `${d.name}, ${ordinal(d.rank)} of ${d.of} (score ${d.score})`)
       .join('; ');
     out.push({
       corpus: 'empire',
       title: `Global Empire Rankings, ${dossier.name}`,
-      snippet: `${head} Strongest dimensions: ${top}. Weakest: ${e.weakest.join(', ')}.`,
+      snippet: `${head}${top ? ` Ranks highest in: ${top}.` : ''} Weakest: ${e.weakest.join(', ')}.`,
     });
   }
   return out;

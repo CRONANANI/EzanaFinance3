@@ -205,7 +205,7 @@ const SWEPT = [
    dry, so the visitor still sees everything Sonar swept. */
 const SWEPT_COUNTRY = [
   { id: 'oecd-macro', chip: 'OECD', name: 'OECD Economic Outlook' },
-  { id: 'empire', chip: 'EMPIRE', name: 'Global Empire Rankings' },
+  { id: 'empire', chip: 'EMPIRE RANKINGS', name: 'Global Empire Rankings' },
   ...SWEPT,
 ];
 
@@ -2750,11 +2750,7 @@ export function SonarSection({
                             ) : null}
 
                             {d.id === 'empire' && data ? (
-                              <CountryEmpireRow
-                                data={data}
-                                name={live.dossier.name}
-                                onGate={() => openGate()}
-                              />
+                              <CountryEmpireRow data={data} name={live.dossier.name} />
                             ) : null}
 
                             {d.id === 'gov-contracts' && data ? (

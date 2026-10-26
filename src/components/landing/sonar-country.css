@@ -254,3 +254,127 @@
     transition: none;
   }
 }
+
+/* ── EMPIRE RANKINGS row (Oct 26) ─────────────────────────────────────────
+   The composite line, then the three dimensions the country ranks highest
+   in, each a link card: rank, name, a strip of every country's score on that
+   dimension (faint ticks, the searched country in mint) and a caption.
+   Reads on the landing band and on the metallic /datasets ground. */
+.snr-band .snr-emp-lede {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--snr-text-muted) !important;
+}
+.snr-band .snr-emp-top {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+.snr-band .snr-emp-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, white 14%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, black 18%, transparent);
+  color: var(--snr-text);
+  text-decoration: none;
+  transition: border-color 0.15s ease;
+}
+.snr-band .snr-emp-card:hover,
+.snr-band .snr-emp-card:focus-visible {
+  border-color: var(--brand-band-mint);
+}
+.snr-band .snr-emp-card:focus-visible {
+  outline: 2px solid var(--brand-band-mint);
+  outline-offset: 2px;
+}
+.snr-band .snr-emp-rank {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-value-sm-size);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--brand-band-mint);
+  min-width: 2.4em;
+}
+.snr-band .snr-emp-body {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.snr-band .snr-emp-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--snr-text);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.snr-band .snr-emp-strip {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 14px;
+}
+.snr-band .snr-emp-tick {
+  position: absolute;
+  top: 2px;
+  width: 1px;
+  height: 10px;
+  margin-left: -0.5px;
+  background: color-mix(in srgb, white 28%, transparent);
+}
+.snr-band .snr-emp-tick--me {
+  top: 0;
+  width: 3px;
+  height: 14px;
+  margin-left: -1.5px;
+  border-radius: 1px;
+  background: var(--brand-band-mint);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--brand-band-mint) 55%, transparent);
+}
+.snr-band .snr-emp-cap {
+  font-family: var(--snr-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--snr-text-muted);
+}
+.snr-band .snr-emp-go {
+  font-size: 12px;
+  color: var(--snr-text-muted);
+  transition:
+    transform 0.15s ease,
+    color 0.15s ease;
+}
+.snr-band .snr-emp-card:hover .snr-emp-go,
+.snr-band .snr-emp-card:focus-visible .snr-emp-go {
+  color: var(--brand-band-mint);
+  transform: translate(2px, -2px);
+}
+/* The longer EMPIRE RANKINGS chip never truncates: it tightens instead. */
+.snr-band .snr-tag {
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .snr-band .snr-tag {
+    letter-spacing: 0.06em;
+  }
+  .snr-band .snr-emp-card {
+    gap: 10px;
+    padding: 9px 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .snr-band .snr-emp-card,
+  .snr-band .snr-emp-go {
+    transition: none;
+  }
+  .snr-band .snr-emp-card:hover .snr-emp-go,
+  .snr-band .snr-emp-card:focus-visible .snr-emp-go {
+    transform: none;
+  }
+}

@@ -23,6 +23,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import './sonar-country.css';
 
 /* ── shared helpers (the band's own are module-private) ─────────────────── */
@@ -147,39 +148,64 @@ function EmpireBars({ dims, limit = 5 }) {
   );
 }
 
-export function CountryEmpireRow({ data, name, onGate }) {
+/* Where one country sits among every ranked country on one dimension: a
+   strip of faint ticks (all countries, by score), the searched country's
+   tick in mint, rank and score beside it. The whole card is the link to
+   that dimension's table on the Global Empire Rankings page. */
+function EmpireRankCard({ dim, name }) {
+  const { dist = [], score, rank, of } = dim;
+  return (
+    <Link
+      href={dim.href}
+      className="snr-emp-card"
+      aria-label={`${dim.name}: ${name} ranks ${ordinal(rank)} of ${of}. Open the ${dim.name} table`}
+    >
+      <span className="snr-emp-rank">#{rank}</span>
+      <span className="snr-emp-body">
+        <span className="snr-emp-name">{dim.name}</span>
+        <span className="snr-emp-strip" aria-hidden="true">
+          {dist.map((v, i) => (
+            <span key={i} className="snr-emp-tick" style={{ left: `${v}%` }} />
+          ))}
+          <span className="snr-emp-tick snr-emp-tick--me" style={{ left: `${score}%` }} />
+        </span>
+        <span className="snr-emp-cap">
+          {ordinal(rank)} of {of} · score {score.toFixed(1)}
+          {dim.category ? ` · ${dim.category}` : ''}
+        </span>
+      </span>
+      <i className="bi bi-arrow-up-right snr-emp-go" aria-hidden="true" />
+    </Link>
+  );
+}
+
+/* The EMPIRE RANKINGS row: the composite line, then the three dimensions the
+   country ranks highest in. The rankings page is a public /datasets page, so
+   the link is not gated. */
+export function CountryEmpireRow({ data, name }) {
   if (!data) return null;
+  const top = data.top || [];
   return (
     <div className="snr-rich snr-cty-row">
       <span className="snr-rich-name">{name}</span>
-      <div className="snr-stat-strip snr-stat-strip--3">
-        <div className="snr-stat">
-          <span className="snr-stat-label">RANK</span>
-          <span className="snr-stat-value">{data.rank ? `#${data.rank}` : 'n/a'}</span>
-          <span className="snr-stat-cap">
-            {data.rank ? `of ${data.of} countries` : 'too few dimensions'}
-          </span>
+      <p className="snr-emp-lede">
+        {data.rank
+          ? `${ordinal(data.rank)} of ${data.of} on Ezana's composite`
+          : 'Too few live dimensions for a composite rank'}
+        {` · ${data.coverage.present} of ${data.coverage.total} dimensions · ${data.year}`}
+      </p>
+      {top.length ? (
+        <div className="snr-emp-top">
+          <span className="snr-stat-label">RANKS HIGHEST IN</span>
+          {top.map((d) => (
+            <EmpireRankCard key={d.id} dim={d} name={name} />
+          ))}
         </div>
-        <div className="snr-stat">
-          <span className="snr-stat-label">COMPOSITE</span>
-          <span className="snr-stat-value">
-            {typeof data.composite === 'number' ? data.composite.toFixed(1) : 'n/a'}
-          </span>
-          <span className="snr-stat-cap">score of 100</span>
-        </div>
-        <div className="snr-stat">
-          <span className="snr-stat-label">COVERAGE</span>
-          <span className="snr-stat-value">
-            {data.coverage.present}/{data.coverage.total}
-          </span>
-          <span className="snr-stat-cap">dimensions · {data.year}</span>
-        </div>
-      </div>
-      <EmpireBars dims={data.dims} />
-      <button type="button" className="snr-rich-link" onClick={onGate}>
-        Full Empire Rankings
+      ) : null}
+      <Link href={data.href} className="snr-rich-link">
+        Open Global Empire Rankings
         <i className="bi bi-arrow-up-right" aria-hidden="true" />
-      </button>
+      </Link>
     </div>
   );
 }
