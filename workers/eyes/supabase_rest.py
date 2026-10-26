@@ -4,8 +4,14 @@ import os
 import signal
 import urllib.request
 
-URL = os.environ["SUPABASE_URL"].rstrip("/")
-KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
+URL = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
+KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "").strip()
+
+# A repository secret that is not set reaches the job as an empty string, not
+# a missing variable; fail with the names instead of a urllib error later.
+_missing = [n for n, v in (("SUPABASE_URL", URL), ("SUPABASE_SERVICE_ROLE_KEY", KEY)) if not v]
+if _missing:
+    raise SystemExit(f"Missing repository secret(s): {', '.join(_missing)}")
 
 # Graceful shutdown (reliability audit P3): on SIGTERM (a cancelled or
 # timed-out GitHub Actions job) the worker stops starting new work, writes

@@ -15,13 +15,21 @@ export const maxDuration = 300;
 async function run(request) {
   const started = Date.now();
   try {
-    const result = await ingestPortWatch(getAdminClient());
+    /* Leave a minute of the 300s budget for the last write and the response;
+       each step checkpoints, so the next run picks up where this one stops. */
+    const result = await ingestPortWatch(getAdminClient(), { budgetMs: 230000 });
     revalidateTag('eyes');
+    revalidateTag('api-v1-eyes');
     return NextResponse.json({ ok: true, result, ms: Date.now() - started });
   } catch (e) {
     console.error('[cron/eyes-portwatch]', e?.message || e);
+    /* A partial run still wrote rows (chokepoints or ports). */
+    if (e?.result) {
+      revalidateTag('eyes');
+      revalidateTag('api-v1-eyes');
+    }
     return NextResponse.json(
-      { ok: false, error: String(e?.message || e), ms: Date.now() - started },
+      { ok: false, error: String(e?.message || e), result: e?.result, ms: Date.now() - started },
       { status: 500 },
     );
   }

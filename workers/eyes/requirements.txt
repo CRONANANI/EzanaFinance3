@@ -3,3 +3,5 @@ geopandas>=0.14
 shapely>=2.0
 pandas>=2.0
 openpyxl>=3.1
+# The NY Fed serves the GSCPI workbook as .xls, which pandas reads with xlrd.
+xlrd>=2.0.1

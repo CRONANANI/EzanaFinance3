@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       job:
-        description: 'night_lights | gscpi | patents_backfill | portwatch | fred | all (all = night_lights + gscpi)'
+        description: 'night_lights | gscpi | regions | patents_backfill | portwatch | fred | all (all = regions + gscpi + night_lights)'
         default: 'all'
         required: true
       months_back:
@@ -27,27 +27,46 @@ permissions:
 
 jobs:
   python:
-    if: github.event_name == 'schedule' || inputs.job == 'all' || inputs.job == 'night_lights' || inputs.job == 'gscpi'
+    if: github.event_name == 'schedule' || inputs.job == 'all' || inputs.job == 'night_lights' || inputs.job == 'gscpi' || inputs.job == 'regions'
     runs-on: ubuntu-latest
     timeout-minutes: 300
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       NASA_EARTHDATA_TOKEN: ${{ secrets.NASA_EARTHDATA_TOKEN }}
+      JOB: ${{ inputs.job || 'all' }}
+      MONTHS_BACK: ${{ inputs.months_back || '3' }}
     steps:
+      # An unset repository secret arrives as an empty string; name it.
+      - name: Check secrets
+        run: |
+          missing=""
+          [ -n "$SUPABASE_URL" ] || missing="$missing SUPABASE_URL"
+          [ -n "$SUPABASE_SERVICE_ROLE_KEY" ] || missing="$missing SUPABASE_SERVICE_ROLE_KEY"
+          if [ "$JOB" = "all" ] || [ "$JOB" = "night_lights" ]; then
+            [ -n "$NASA_EARTHDATA_TOKEN" ] || missing="$missing NASA_EARTHDATA_TOKEN"
+          fi
+          if [ -n "$missing" ]; then echo "::error::Missing repository secrets:$missing"; exit 1; fi
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - run: pip install -r workers/eyes/requirements.txt
+      # eyes_regions from regions.json first (standard library only), so the
+      # region list lands even if the night-lights download fails.
+      - name: Seed regions
+        if: github.event_name == 'schedule' || inputs.job == 'all' || inputs.job == 'night_lights' || inputs.job == 'regions'
+        working-directory: workers/eyes
+        run: python seed_regions.py
       - name: GSCPI
         if: github.event_name == 'schedule' || inputs.job == 'all' || inputs.job == 'gscpi'
         working-directory: workers/eyes
         run: python gscpi.py
+      # Runs even when GSCPI failed: the two sources are independent.
       - name: Night lights
-        if: github.event_name == 'schedule' || inputs.job == 'all' || inputs.job == 'night_lights'
+        if: ${{ !cancelled() && (github.event_name == 'schedule' || inputs.job == 'all' || inputs.job == 'night_lights') }}
         working-directory: workers/eyes
-        run: python night_lights.py --months-back "${{ inputs.months_back || '3' }}"
+        run: python night_lights.py --months-back "$MONTHS_BACK"
 
   node:
     if: github.event_name == 'workflow_dispatch' && (inputs.job == 'patents_backfill' || inputs.job == 'portwatch' || inputs.job == 'fred')
@@ -58,7 +77,18 @@ jobs:
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       PATENTSVIEW_API_KEY: ${{ secrets.PATENTSVIEW_API_KEY }}
       FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+      JOB: ${{ inputs.job }}
+      FROM: ${{ inputs.from }}
+      TO: ${{ inputs.to }}
     steps:
+      - name: Check secrets
+        run: |
+          missing=""
+          [ -n "$NEXT_PUBLIC_SUPABASE_URL" ] || missing="$missing SUPABASE_URL"
+          [ -n "$SUPABASE_SERVICE_ROLE_KEY" ] || missing="$missing SUPABASE_SERVICE_ROLE_KEY"
+          if [ "$JOB" = "patents_backfill" ]; then [ -n "$PATENTSVIEW_API_KEY" ] || missing="$missing PATENTSVIEW_API_KEY"; fi
+          if [ "$JOB" = "fred" ]; then [ -n "$FRED_API_KEY" ] || missing="$missing FRED_API_KEY"; fi
+          if [ -n "$missing" ]; then echo "::error::Missing repository secrets:$missing"; exit 1; fi
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -67,7 +97,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - name: Patents backfill
         if: inputs.job == 'patents_backfill'
-        run: node scripts/ingest-eyes.mjs patents --from="${{ inputs.from }}" ${{ inputs.to && format('--to={0}', inputs.to) || '' }}
+        run: node scripts/ingest-eyes.mjs patents --from="$FROM" ${TO:+--to="$TO"}
       - name: PortWatch
         if: inputs.job == 'portwatch'
         run: node scripts/ingest-eyes.mjs portwatch

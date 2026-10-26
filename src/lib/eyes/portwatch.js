@@ -3,7 +3,8 @@
  * volumes for ~1,700 ports, and daily transits through 28 maritime
  * chokepoints, estimated from AIS vessel positions. Public ArcGIS Feature
  * Services, no key. Data lags about 4 to 6 weeks and is revised, so each run
- * re-reads the last 21 days before its cursor. SERVER ONLY.
+ * re-reads the last 21 days before its cursor. Each request has a 30 second
+ * timeout and one retry. SERVER ONLY (chokepointRow and isoDay are pure).
  *
  * Services (services9.arcgis.com/weJ1QsnbMYJlCHdG):
  *   Daily_Ports_Data               date, portid, portname, country, ISO3, portcalls*, import*, export*
@@ -17,6 +18,37 @@ const BASE = 'https://services9.arcgis.com/weJ1QsnbMYJlCHdG/ArcGIS/rest/services
 const PAGE = 1000;
 const TIMEOUT_MS = 30000;
 
+/* One POST with a timeout, retried once on an abort, a network error or a
+   5xx: the ArcGIS services are slow on the first query of the day. The error
+   names the service so a cron log says which call failed. */
+async function fetchPage(service, body, attempts = 2) {
+  let last;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      const res = await fetch(`${BASE}/${service}/FeatureServer/0/query`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body,
+        signal: ctrl.signal,
+        cache: 'no-store',
+      });
+      if (res.status >= 500) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) throw Object.assign(new Error(`HTTP ${res.status}`), { final: true });
+      // eslint-disable-next-line no-await-in-loop
+      return await res.json();
+    } catch (e) {
+      last = e?.name === 'AbortError' ? new Error(`timed out after ${TIMEOUT_MS / 1000}s`) : e;
+      if (last.final) break;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  throw new Error(`${service}: ${last?.message || 'query failed'}`);
+}
+
 /** Every feature of one query, paging with resultOffset. POST keeps long IN() lists off the URL. */
 export async function arcQuery(service, params, { maxPages = 200 } = {}) {
   const out = [];
@@ -28,24 +60,8 @@ export async function arcQuery(service, params, { maxPages = 200 } = {}) {
       resultRecordCount: String(PAGE),
       ...params,
     });
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
-    let json;
-    try {
-      // eslint-disable-next-line no-await-in-loop
-      const res = await fetch(`${BASE}/${service}/FeatureServer/0/query`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body,
-        signal: ctrl.signal,
-        cache: 'no-store',
-      });
-      if (!res.ok) throw new Error(`${service}: HTTP ${res.status}`);
-      // eslint-disable-next-line no-await-in-loop
-      json = await res.json();
-    } finally {
-      clearTimeout(timer);
-    }
+    // eslint-disable-next-line no-await-in-loop
+    const json = await fetchPage(service, body);
     if (json.error) throw new Error(`${service}: ${json.error.message || 'query error'}`);
     const feats = json.features || [];
     for (const f of feats) out.push(f.attributes);
@@ -166,22 +182,59 @@ export async function portDays(portids, since) {
   return rows;
 }
 
-/** Daily transits for all 28 chokepoints since `since`. */
-export async function chokepointDays(since) {
+/**
+ * One Daily_Chokepoints_Data feature as an eyes_chokepoint_transits row (plus
+ * portname for the chokepoint list). Read by name with case fallbacks, never
+ * by a fixed outFields list: asking for a field the service does not carry
+ * (or has renamed) fails the whole query. Pure.
+ */
+export function chokepointRow(r) {
+  const n = (name) => int(attr(r, name));
+  return {
+    portid: attr(r, 'portid') ?? null,
+    portname: attr(r, 'portname') ?? null,
+    date: isoDay(attr(r, 'date')),
+    n_total: n('n_total'),
+    n_container: n('n_container'),
+    n_tanker: n('n_tanker'),
+    n_dry_bulk: n('n_dry_bulk'),
+    n_cargo: n('n_cargo'),
+    capacity: n('capacity'),
+  };
+}
+
+/**
+ * Daily transits for every chokepoint in [since, until] (until optional), so
+ * a backfill can walk the history in windows and checkpoint each one.
+ */
+export async function chokepointDays(since, until = null) {
+  const where = until
+    ? `date >= ${sqlDate(since)} AND date <= ${sqlDate(until)}`
+    : `date >= ${sqlDate(since)}`;
   const got = await arcQuery('Daily_Chokepoints_Data', {
-    where: `date >= ${sqlDate(since)}`,
-    outFields: 'date,portid,portname,n_total,n_container,n_tanker,n_dry_bulk,n_cargo,capacity',
+    where,
+    outFields: '*',
     orderByFields: 'date ASC, portid ASC',
   });
-  return got.map((r) => ({
-    portid: r.portid,
-    portname: r.portname,
-    date: isoDay(r.date),
-    n_total: int(r.n_total),
-    n_container: int(r.n_container),
-    n_tanker: int(r.n_tanker),
-    n_dry_bulk: int(r.n_dry_bulk),
-    n_cargo: int(r.n_cargo),
-    capacity: int(r.capacity),
-  }));
+  return got.map(chokepointRow).filter((r) => r.portid && r.date);
+}
+
+/**
+ * [from, to] windows of `days` days covering [since, until] in date order, so
+ * a backfill writes and checkpoints one window at a time. Pure.
+ */
+export function dateWindows(since, until, days = 90) {
+  const out = [];
+  const step = 86400000;
+  let start = Date.parse(`${since}T00:00:00Z`);
+  const end = Date.parse(`${until}T00:00:00Z`);
+  while (start <= end) {
+    const stop = Math.min(start + (days - 1) * step, end);
+    out.push([
+      new Date(start).toISOString().slice(0, 10),
+      new Date(stop).toISOString().slice(0, 10),
+    ]);
+    start = stop + step;
+  }
+  return out;
 }

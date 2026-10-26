@@ -17,6 +17,7 @@ async function run(request) {
   try {
     const result = await ingestPatents(getAdminClient());
     revalidateTag('eyes');
+    revalidateTag('api-v1-eyes');
     return NextResponse.json({ ok: true, result, ms: Date.now() - started });
   } catch (e) {
     console.error('[cron/eyes-patents]', e?.message || e);
