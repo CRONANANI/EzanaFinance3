@@ -691,7 +691,6 @@ export default function EzanaApiPage() {
           </p>
           <div className="ea-viz-frame ea-viz-frame--hero">
             <HeroSignal />
-            <span className="ea-viz-cap">Illustrative: noise resolving into signal</span>
           </div>
           <div className="ea-hero-actions">
             <a
