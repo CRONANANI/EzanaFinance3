@@ -2,7 +2,7 @@
  * Ezana API v1 router: GET /v1/... (rewritten to /api/v1/...).
  *
  * Per request: request id, bearer key (Authorization only), key lookup by
- * prefix with a timing-safe HMAC match, registry match, roadmap -> 501, scope,
+ * prefix with a timing-safe HMAC match, registry match, scope,
  * per-key rate limit, handler. Every response carries X-Request-Id, the
  * rate-limit headers and Cache-Control: no-store. Usage is metered per key,
  * day and endpoint template, and one request-log row is written with the IP
@@ -89,10 +89,6 @@ export async function GET(request, { params }) {
   const { endpoint, params: pathParams } = match;
   const template = endpoint.path;
 
-  if (endpoint.status !== 'live') {
-    await meter({ key, endpoint: template, rows: 0, status: 501, started, request, requestId });
-    return fail(501, 'not_available', 'This endpoint is on the roadmap and not available yet.');
-  }
   if (!(key.scopes || []).includes(endpoint.scope)) {
     await meter({ key, endpoint: template, rows: 0, status: 403, started, request, requestId });
     return fail(403, 'not_in_scope', `This key is not scoped for ${endpoint.scope} data.`);
@@ -131,6 +127,7 @@ export async function GET(request, { params }) {
         request_id: requestId,
         source: endpoint.source,
         delayed_days: endpoint.delayed ? key.delay_days : 0,
+        ...(endpoint.kind === 'insight' && endpoint.method ? { method: endpoint.method } : {}),
         ...(out.meta || {}),
       },
     };

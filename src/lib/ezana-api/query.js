@@ -99,13 +99,13 @@ export function parseParams(endpoint, searchParams) {
       throw new ApiError(400, 'invalid_param', `At most ${MAX_TICKERS} tickers per request.`);
     out.ticker = [...new Set(out.ticker.map((t) => t.toUpperCase()))];
   }
-  /* sort is one shared param; each endpoint accepts its own subset. */
-  if (out.sort != null && endpoint.sortValues && !endpoint.sortValues.includes(out.sort)) {
-    throw new ApiError(
-      400,
-      'invalid_param',
-      `"sort" must be one of ${endpoint.sortValues.join(', ')}.`,
-    );
+  /* Shared params (sort, dim, direction...) whose accepted values differ per
+     endpoint: the route narrows them with paramEnums (sortValues is the
+     older spelling for sort). */
+  for (const [name, values] of Object.entries(paramEnumsOf(endpoint))) {
+    if (out[name] != null && !values.includes(out[name])) {
+      throw new ApiError(400, 'invalid_param', `"${name}" must be one of ${values.join(', ')}.`);
+    }
   }
   if (out.ends_after && out.ends_before && out.ends_after > out.ends_before) {
     throw new ApiError(400, 'invalid_param', '"ends_after" is after "ends_before".');
@@ -116,6 +116,14 @@ export function parseParams(endpoint, searchParams) {
   if (allowed.has('limit')) out.limit = out.limit ?? DEFAULT_LIMIT;
   if (out.cursor != null) out.cursor = decodeCursor(out.cursor);
   return out;
+}
+
+/** Per-endpoint enum overrides for shared params. */
+export function paramEnumsOf(endpoint) {
+  return {
+    ...(endpoint.sortValues ? { sort: endpoint.sortValues } : {}),
+    ...(endpoint.paramEnums || {}),
+  };
 }
 
 /** Cursor: base64url JSON array of the last row's sort key values. */

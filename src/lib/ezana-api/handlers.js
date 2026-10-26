@@ -9,7 +9,14 @@
  */
 import { unstable_cache } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
-import { ApiError, keysetOr, pageOf, encodeCursor } from './query';
+import { ApiError, pageOf, encodeCursor } from './query';
+import { num, day, endOfDay, like, readPage, dbError } from './handler-kit';
+import { HANDLERS as CAPITOL } from './handlers/capitol';
+import { HANDLERS as TITANS } from './handlers/titans';
+import { HANDLERS as EYES } from './handlers/eyes';
+import { HANDLERS as HIVE } from './handlers/hive';
+import { HANDLERS as LIGHTHOUSE } from './handlers/lighthouse';
+import { HANDLERS as CROSS } from './handlers/cross';
 import { getTrendingMarkets } from '@/lib/prediction-markets/trending-store';
 import { PAGE_CATEGORIES } from '@/lib/prediction-markets/page-model';
 import {
@@ -31,36 +38,7 @@ import {
   venuesLabel,
 } from './predictions';
 
-const num = (v) => (v == null || v === '' || !Number.isFinite(Number(v)) ? null : Number(v));
-const day = (v) => (v ? String(v).slice(0, 10) : null);
-const endOfDay = (d) => `${d}T23:59:59.999Z`;
-/* Text for ilike: drop PostgREST and LIKE metacharacters. */
-const like = (s) =>
-  `%${String(s)
-    .replace(/[%_*,()"\\]/g, ' ')
-    .trim()}%`;
-
 const TRADE_SOURCE = { house_clerk: 'House Clerk', senate_efd: 'Senate Office of Public Records' };
-
-async function readPage(table, select, { keys, notNull = [], limit, cursor, dir = 'desc' }, apply) {
-  const admin = getAdminClient();
-  let qb = admin.from(table).select(select);
-  for (const k of notNull) qb = qb.not(k, 'is', null);
-  if (apply) qb = apply(qb);
-  if (cursor) qb = qb.or(keysetOr(keys, cursor, dir));
-  for (const k of keys) qb = qb.order(k, { ascending: dir === 'asc' });
-  const { data, error } = await qb.limit(limit + 1);
-  if (error) throw dbError(table, error);
-  return data || [];
-}
-
-/* A database error that keeps its code, so callers can tell a missing
-   relation (an unapplied migration) from a real failure. */
-function dbError(table, error) {
-  const e = new Error(`${table}: ${error.message}`);
-  e.code = error.code;
-  return e;
-}
 
 /* ── congress ───────────────────────────────────────────────────────── */
 
@@ -1075,5 +1053,7 @@ const PREDICTION_HANDLERS = {
   },
 };
 
-/* Declared after HANDLERS (they use helpers defined below it), so attached here. */
-Object.assign(HANDLERS, PREDICTION_HANDLERS);
+/* Declared after HANDLERS (they use helpers defined below it), so attached
+   here, with each dimension's own handler module. A duplicate id is a bug:
+   the test suite checks every id is registered exactly once. */
+Object.assign(HANDLERS, PREDICTION_HANDLERS, CAPITOL, TITANS, EYES, HIVE, LIGHTHOUSE, CROSS);

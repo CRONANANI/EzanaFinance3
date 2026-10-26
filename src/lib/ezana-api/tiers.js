@@ -14,9 +14,28 @@ export const ALL_SCOPES = [
   'predictions',
   'institutional',
   'insider',
+  'exec-comp',
+  'etf',
+  'eyes',
+  'macro',
+  'sanctions',
+  'cross',
 ];
 
-const DEVELOPER_SCOPES = ['congress', 'lobbying', 'fec', 'contracts', 'predictions'];
+/* The tier split below is a proposal for Axum to confirm. Public-domain
+   series (Eyes Above, macro, sanctions) are open to Developer keys; the
+   SEC-derived Titans sets and the cross-dimensional joins are paid tiers. */
+const DEVELOPER_SCOPES = [
+  'congress',
+  'lobbying',
+  'fec',
+  'contracts',
+  'predictions',
+  'eyes',
+  'macro',
+  'sanctions',
+];
+const TRADER_SCOPES = [...DEVELOPER_SCOPES, 'committees', 'exec-comp', 'etf'];
 
 export const TIERS = {
   developer: {
@@ -32,6 +51,7 @@ export const TIERS = {
       '60 requests / min',
       'Data delayed 30 days',
       'Congress, lobbying, FEC, contracts, prediction markets',
+      'Patents, supply chain, real estate, macro and sanctions',
       'Community support',
     ],
   },
@@ -42,11 +62,11 @@ export const TIERS = {
     detail: 'Per-seat monthly',
     ratePerMin: 600,
     delayDays: 0,
-    scopes: [...DEVELOPER_SCOPES, 'committees'],
+    scopes: TRADER_SCOPES,
     features: [
       '600 requests / min',
       'No delay',
-      'Everything in Developer, plus committee activity',
+      'Everything in Developer, plus committees, executive pay and ETF holdings',
       'Email support',
     ],
   },
@@ -62,7 +82,7 @@ export const TIERS = {
     features: [
       '1,500 requests / min',
       'No delay',
-      'Every live dataset, including 13F, activist, whale moves and insider trades',
+      'Every live dataset, including 13F, insider trades and cross-dimensional signals',
       'Priority support',
     ],
   },

@@ -1,9 +1,10 @@
 /**
  * OpenAPI 3.1 document generated from the registry. Pure.
- * Live endpoints carry parameters and a response schema; roadmap endpoints
- * are listed with x-status: roadmap and a 501 response.
+ * Every operation is tagged with its dimension, carries x-ezana-kind (data or
+ * insight) and, for insights, the method sentence in its description.
  */
-import { ENDPOINTS, GROUPS, PARAMS } from './registry';
+import { DIMENSIONS, ENDPOINTS, GROUPS, PARAMS } from './registry';
+import { paramEnumsOf } from './query';
 import { TIERS } from './tiers';
 
 const TYPE = {
@@ -19,8 +20,9 @@ const TYPE = {
 
 function paramSchema(name, e) {
   const p = PARAMS[name];
-  /* sort is shared; each operation advertises only the values it accepts. */
-  if (name === 'sort' && e?.sortValues) return { type: 'string', enum: e.sortValues };
+  /* Shared params narrowed per operation (sort, dim, direction...). */
+  const narrowed = e ? paramEnumsOf(e)[name] : null;
+  if (narrowed) return { type: 'string', enum: narrowed };
   const base =
     p.type === 'int'
       ? {
@@ -54,8 +56,11 @@ export function buildOpenApi() {
     const op = {
       operationId: (e.id || e.path).replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, ''),
       summary: e.summary,
-      tags: [GROUPS.find((g) => g.key === e.group)?.title || e.group],
+      description: e.method ? `${e.summary}\n\nMethod: ${e.method}` : e.summary,
+      tags: [e.dimensionLabel || e.group],
       'x-status': e.status,
+      'x-ezana-kind': e.kind,
+      'x-ezana-group': GROUPS.find((g) => g.key === e.group)?.title || e.group,
       ...(e.scope ? { 'x-scope': e.scope } : {}),
       parameters: [
         ...pathParams,
@@ -63,48 +68,44 @@ export function buildOpenApi() {
           name,
           in: 'query',
           required: false,
-          description:
-            name === 'sort' && e.sortValues
-              ? `Sort order: ${e.sortValues.join(', ')}. Default ${e.sortValues[0]}.`
-              : PARAMS[name].desc,
+          description: paramEnumsOf(e)[name]
+            ? `${PARAMS[name].desc} Accepted here: ${paramEnumsOf(e)[name].join(', ')}.`
+            : PARAMS[name].desc,
           schema: paramSchema(name, e),
           ...(PARAMS[name].repeatable ? { style: 'form', explode: true } : {}),
         })),
       ],
-      responses:
-        e.status === 'live'
-          ? {
-              200: {
-                description: 'OK',
-                content: {
-                  'application/json': {
-                    schema: {
-                      type: 'object',
-                      properties: {
-                        data:
-                          (e.params || []).includes('cursor') ||
-                          e.list ||
-                          e.id === 'lobbying.top_spenders' ||
-                          e.id === 'fec.candidate_funding'
-                            ? { type: 'array', items: rowSchema(e) }
-                            : rowSchema(e),
-                        page: { $ref: '#/components/schemas/Page' },
-                        meta: { $ref: '#/components/schemas/Meta' },
-                      },
-                      required: ['data', 'meta'],
-                    },
-                  },
+      responses: {
+        200: {
+          description: 'OK',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data:
+                    (e.params || []).includes('cursor') ||
+                    e.list ||
+                    e.id === 'lobbying.top_spenders' ||
+                    e.id === 'fec.candidate_funding'
+                      ? { type: 'array', items: rowSchema(e) }
+                      : rowSchema(e),
+                  page: { $ref: '#/components/schemas/Page' },
+                  meta: { $ref: '#/components/schemas/Meta' },
                 },
+                required: ['data', 'meta'],
               },
-              400: ERROR_REF,
-              401: ERROR_REF,
-              403: ERROR_REF,
-              404: ERROR_REF,
-              429: ERROR_REF,
-              500: ERROR_REF,
-              503: ERROR_REF,
-            }
-          : { 401: ERROR_REF, 501: ERROR_REF },
+            },
+          },
+        },
+        400: ERROR_REF,
+        401: ERROR_REF,
+        403: ERROR_REF,
+        404: ERROR_REF,
+        429: ERROR_REF,
+        500: ERROR_REF,
+        503: ERROR_REF,
+      },
     };
     if (op.parameters.length === 0) delete op.parameters;
     paths[e.path] = { get: op };
@@ -115,7 +116,7 @@ export function buildOpenApi() {
       title: 'Ezana API',
       version: '1.0.0',
       description:
-        'Signals from public disclosures and markets: congressional trades, committees, lobbying, campaign finance, federal contracts, prediction markets (Polymarket, Kalshi, Manifold) and SEC filings. Endpoints marked x-status: roadmap return 501.',
+        "Ezana's datasets across five dimensions (Capitol Watch, Titans Shadow, Eyes Above, The Hive, Global Empire Lighthouse) plus cross-dimensional joins. Each operation is x-ezana-kind data (the records, shaped) or insight (something Ezana computes: a score, a join, a ranking, a change).",
       contact: {
         name: 'Ezana API',
         email: 'api@ezana.world',
@@ -125,7 +126,12 @@ export function buildOpenApi() {
     },
     servers: [{ url: 'https://ezana.world' }],
     security: [{ bearer: [] }],
-    tags: GROUPS.map((g) => ({ name: g.title, description: tagDescription(g) })),
+    tags: DIMENSIONS.filter((d) => GROUPS.some((g) => g.dimension === d.id)).map((d) => ({
+      name: d.label,
+      description: GROUPS.filter((g) => g.dimension === d.id)
+        .map((g) => `### ${g.title}\n\n${tagDescription(g)}`)
+        .join('\n\n'),
+    })),
     paths,
     components: {
       securitySchemes: {
@@ -150,6 +156,23 @@ export function buildOpenApi() {
             request_id: { type: 'string' },
             source: { type: ['string', 'null'] },
             delayed_days: { type: 'integer' },
+            as_of: {
+              type: ['string', 'null'],
+              description: "Newest date in the result, or the source dataset's latest sync.",
+            },
+            method: {
+              type: 'string',
+              description: 'Insight endpoints: how the figure is computed, in one sentence.',
+            },
+            coverage: {
+              type: 'object',
+              description: 'Present when a dataset has no rows yet: { rows: 0, note }.',
+            },
+            partial: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Composite responses: sections that timed out and came back null.',
+            },
             updated_at: {
               type: ['string', 'null'],
               format: 'date-time',

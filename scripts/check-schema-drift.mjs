@@ -240,6 +240,16 @@ export function collectMigrationObjects(files) {
    with 0 dimensions and an unpopulated materialized view, and every country
    ping silently showed "No matches"). Each count is guarded so a missing
    table reads null instead of failing the whole query. */
+/* Functions the Ezana API calls that exist in production but predate the
+   migrations folder (created in the SQL editor). The API guard test
+   (scripts/check-ezana-api.mjs) accepts an RPC only if a migration creates
+   it or it is listed here, verified live. */
+export const API_LIVE_ONLY_RPCS = [];
+
+/* Relations the Ezana API reads that must exist live (the events read model
+   ships in a hand-applied SQL file). */
+export const API_REQUIRED_RELATIONS = ['prediction_events_mat'];
+
 export const SEED_CHECKS = [
   { table: 'empire_dimensions', min: 18, seed: '20260419120100_empire_scores_seeds.sql' },
   { table: 'dimension_metric_map', min: 1, seed: '20260419120100_empire_scores_seeds.sql' },

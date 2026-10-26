@@ -64,11 +64,14 @@ test('tiers match the docs', () => {
   assert.equal(TIERS.quant_firm.ratePerMin, 1500);
   assert.deepEqual([...TIERS.quant_firm.scopes].sort(), [...ALL_SCOPES].sort());
   assert.ok(!TIERS.developer.scopes.includes('committees'));
+  for (const s of ['exec-comp', 'etf', 'eyes', 'macro', 'sanctions', 'cross'])
+    assert.ok(ALL_SCOPES.includes(s), `scope ${s}`);
+  assert.ok(!TIERS.developer.scopes.includes('cross'));
 });
 
 test('registry: every live endpoint has a handler and every handler is registered', () => {
   const live = reg.LIVE_ENDPOINTS.map((e) => e.id);
-  assert.equal(live.length, 26);
+  assert.ok(live.length >= 26, `${live.length} live endpoints`);
   assert.equal(new Set(live).size, live.length, 'ids are unique');
   for (const id of live) assert.equal(typeof HANDLERS[id], 'function', `handler for ${id}`);
   for (const id of Object.keys(HANDLERS)) assert.ok(live.includes(id), `${id} is in the registry`);
@@ -84,8 +87,7 @@ test('matchEndpoint: literals beat placeholders, unknown is null', () => {
   assert.equal(m.params.id, 'A000360');
   assert.equal(reg.matchEndpoint('/v1/congress/trades').endpoint.id, 'congress.trades');
   assert.equal(reg.matchEndpoint('/v1/nope'), null);
-  const roadmap = reg.ENDPOINTS.find((e) => e.status !== 'live');
-  assert.ok(roadmap, 'there are roadmap endpoints');
+  assert.equal(reg.ENDPOINTS.length, reg.LIVE_ENDPOINTS.length, 'every endpoint is live');
 });
 
 test('parseParams: defaults, typing and errors', () => {
@@ -155,9 +157,6 @@ test('predictions: every live route has a handler, known params and valid sort v
     assert.equal(e.scope, 'predictions');
     assert.ok(!e.delayed, `${e.id} is not delayed`);
     for (const p of e.params || []) assert.ok(reg.PARAMS[p], `${e.id} param ${p}`);
-    for (const v of e.sortValues || []) {
-      assert.ok(reg.PARAMS.sort.enum.includes(v), `${e.id} sort ${v}`);
-    }
     if (e.sortValues) assert.ok(e.params.includes('sort'), `${e.id} lists sort`);
   }
   const g = reg.GROUPS.find((x) => x.key === 'predictions');
@@ -393,8 +392,87 @@ test('predictions: OpenAPI has every new path and a per-operation sort enum', ()
     doc.paths[path].get.parameters.find((p) => p.name === 'sort').schema.enum;
   assert.deepEqual(sortOf('/v1/predictions/events'), ['volume', 'volume_24h', 'ending']);
   assert.equal(sortOf('/v1/predictions/markets').length, 7);
-  const tag = doc.tags.find((t) => t.name === 'Prediction markets');
+  const tag = doc.tags.find((t) => t.name === 'The Hive');
   assert.match(tag.description, /\*\*Volume units\.\*\*/);
   const movers = doc.paths['/v1/predictions/movers'].get.responses[200];
   assert.equal(movers.content['application/json'].schema.properties.data.type, 'array');
+});
+
+/* ── Phase 1 guard: the registry documents only what it serves ───────── */
+
+const { readFileSync, readdirSync } = await import('node:fs');
+const drift = await import('./check-schema-drift.mjs');
+
+test('guard: every route is live, has a dimension, a kind and a handler', () => {
+  const dims = new Set(reg.DIMENSIONS.map((d) => d.id));
+  assert.deepEqual(reg.PARAM_COLLISIONS, [], 'param names are declared once');
+  for (const g of reg.GROUPS) {
+    assert.ok(dims.has(g.dimension), `${g.key} has a known dimension`);
+    assert.ok(g.dimensionLabel, `${g.key} has a dimension label`);
+  }
+  for (const e of reg.ENDPOINTS) {
+    assert.equal(e.status, 'live', `${e.path} is live`);
+    assert.ok(e.id, `${e.path} has an id`);
+    assert.ok(['data', 'insight'].includes(e.kind), `${e.id} kind`);
+    if (e.kind === 'insight') assert.ok(e.method, `${e.id} states its method`);
+    assert.equal(typeof HANDLERS[e.id], 'function', `handler for ${e.id}`);
+    assert.ok(e.summary, `${e.id} summary`);
+    for (const p of e.params || []) assert.ok(reg.PARAMS[p], `${e.id} param ${p}`);
+    const enums = q.paramEnumsOf(e);
+    for (const [name, values] of Object.entries(enums)) {
+      assert.ok(e.params.includes(name), `${e.id} lists ${name}`);
+      const base = reg.PARAMS[name].enum;
+      if (base) for (const v of values) assert.ok(base.includes(v), `${e.id} ${name}=${v}`);
+    }
+    /* Free-form shared params must be narrowed by every route that takes them. */
+    for (const name of ['sort', 'direction', 'dim']) {
+      if ((e.params || []).includes(name))
+        assert.ok(enums[name]?.length, `${e.id} declares ${name} values`);
+    }
+  }
+  assert.equal(
+    new Set(reg.ENDPOINTS.map((e) => e.path)).size,
+    reg.ENDPOINTS.length,
+    'unique paths',
+  );
+});
+
+test('guard: every function an API handler calls exists (migration or known live)', async () => {
+  const dir = new URL('../src/lib/ezana-api/', import.meta.url);
+  const files = [
+    ...readdirSync(dir)
+      .filter((f) => f.endsWith('.js'))
+      .map((f) => new URL(f, dir)),
+    ...readdirSync(new URL('handlers/', dir)).map((f) => new URL(`handlers/${f}`, dir)),
+  ];
+  const called = new Set();
+  for (const f of files) {
+    const text = readFileSync(f, 'utf8');
+    for (const m of text.matchAll(/(?:\.rpc|rpcRows|rpcDoc)\(\s*'([a-z0-9_]+)'/g)) called.add(m[1]);
+  }
+  const migDir = new URL('../supabase/migrations/', import.meta.url);
+  const objects = drift.collectMigrationObjects(
+    readdirSync(migDir)
+      .filter((f) => f.endsWith('.sql'))
+      .sort()
+      .map((f) => new URL(f, migDir).pathname),
+  );
+  const created = new Set(
+    [...objects.values()]
+      .filter((o) => o.kind === 'function')
+      .map((o) => o.key.replace(/^public\./, '')),
+  );
+  const liveOnly = [];
+  for (const d of ['capitol', 'titans', 'eyes', 'hive', 'lighthouse', 'cross']) {
+    // eslint-disable-next-line no-await-in-loop
+    const m = await import(`../src/lib/ezana-api/handlers/${d}.js`);
+    liveOnly.push(...(m.LIVE_ONLY_RPCS || []));
+  }
+  const known = new Set([...created, ...drift.API_LIVE_ONLY_RPCS, ...liveOnly]);
+  const missing = [...called].filter((n) => !known.has(n));
+  assert.deepEqual(
+    missing,
+    [],
+    'add new functions to a migration, or list live-only ones in API_LIVE_ONLY_RPCS',
+  );
 });

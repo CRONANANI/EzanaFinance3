@@ -1,15 +1,43 @@
 /**
  * Ezana API v1 endpoint registry: the one source for the /v1 router, the
  * /ezana-api docs page and the OpenAPI spec. Pure, client-safe (handlers live
- * in handlers.js and are looked up by `id`).
+ * in handlers.js and handlers/<dimension>.js and are looked up by `id`).
  *
- * status 'live'    the data exists and the router serves it.
- * status 'roadmap' documented, not built: the router answers 501
- *                  not_available and the docs label it Roadmap.
+ * Every route is live: the API documents only what it serves. Routes that
+ * cannot be built honestly from data Ezana holds live in
+ * docs/ezana-api-backlog.md, not here.
+ *
+ * Groups carry `dimension` (one of DIMENSIONS); routes carry `kind`:
+ *   'data'     the records as filed or published, shaped and paginated
+ *   'insight'  something Ezana computes that the raw records don't contain
+ *              (a score, a join across datasets, a ranking, a change, a
+ *              cluster); insight routes also carry `method`, one plain
+ *              sentence on how it is computed (shown in the docs and OpenAPI)
+ *
+ * The base groups below hold the original endpoints; each dimension's
+ * catalog module (catalog/<dimension>.js) adds params, routes for existing
+ * groups, and new groups.
  */
+import * as CAPITOL from './catalog/capitol';
+import * as TITANS from './catalog/titans';
+import * as EYES from './catalog/eyes';
+import * as HIVE from './catalog/hive';
+import * as LIGHTHOUSE from './catalog/lighthouse';
+import * as CROSS from './catalog/cross';
+
+/** Dimensions in taxonomy order (src/lib/datasets/taxonomy.js). */
+export const DIMENSIONS = [
+  { id: 'capitol', label: 'Capitol Watch', color: 'var(--emerald)' },
+  { id: 'titans', label: 'Titans Shadow', color: 'var(--info)' },
+  { id: 'eyes', label: 'Eyes Above', color: 'var(--cyan)' },
+  { id: 'hive', label: 'The Hive', color: 'var(--pink)' },
+  { id: 'lighthouse', label: 'Global Empire Lighthouse', color: 'var(--indigo)' },
+  { id: 'cross', label: 'Cross-dimensional', color: 'var(--text-muted)' },
+];
+const CATALOGS = [CAPITOL, TITANS, EYES, HIVE, LIGHTHOUSE, CROSS];
 
 /** Query parameters, defined once. Endpoints list the names they accept. */
-export const PARAMS = {
+const BASE_PARAMS = {
   ticker: {
     type: 'string',
     repeatable: true,
@@ -67,15 +95,37 @@ export const PARAMS = {
   },
   sort: {
     type: 'string',
-    enum: ['volume', 'volume_24h', 'trending', 'ending', 'change_24h', 'change_7d', 'probability'],
-    desc: 'Sort order. Each endpoint lists the values it accepts; default is volume.',
+    pattern: /^[a-z0-9_]{1,30}$/,
+    desc: 'Sort order. Each endpoint lists the values it accepts and its default.',
   },
   window: { type: 'string', enum: ['24h', '7d', '30d'], desc: 'Change window (default 24h).' },
   direction: {
     type: 'string',
-    enum: ['up', 'down', 'both'],
-    desc: 'Odds moved up, down, or either (default both).',
+    pattern: /^[a-z_]{1,20}$/,
+    desc: 'Direction filter. Each endpoint lists the values it accepts and its default.',
   },
+  dim: {
+    type: 'string',
+    pattern: /^[a-z_]{1,20}$/,
+    desc: 'The dimension to split by. Each endpoint lists the values it accepts.',
+  },
+  days: {
+    type: 'int',
+    min: 7,
+    max: 1825,
+    desc: 'Look-back window in days, 7 to 1825. Each endpoint states its default.',
+  },
+  a: {
+    type: 'string',
+    pattern: /^[A-Za-z0-9.-]{1,20}$/,
+    desc: 'First item to compare (a ticker or an ISO3 country code, per endpoint).',
+  },
+  b: {
+    type: 'string',
+    pattern: /^[A-Za-z0-9.-]{1,20}$/,
+    desc: 'Second item to compare (a ticker or an ISO3 country code, per endpoint).',
+  },
+  country: { type: 'string', max: 60, desc: 'Country name or ISO code, per endpoint.' },
   min_volume: {
     type: 'number',
     desc: "Minimum average daily volume, in the venue's unit (volume_unit).",
@@ -194,9 +244,10 @@ const FILING_FIELDS = {
 
 const LIST = ['limit', 'cursor'];
 
-export const GROUPS = [
+const BASE_GROUPS = [
   {
     key: 'congress',
+    dimension: 'capitol',
     title: 'Congressional trading',
     base: '/v1/congress',
     icon: 'bi-bank',
@@ -206,6 +257,7 @@ export const GROUPS = [
     routes: [
       {
         id: 'congress.trades',
+        kind: 'data',
         path: '/v1/congress/trades',
         scope: 'congress',
         status: 'live',
@@ -217,6 +269,7 @@ export const GROUPS = [
       },
       {
         id: 'congress.trade',
+        kind: 'data',
         path: '/v1/congress/trades/{id}',
         scope: 'congress',
         status: 'live',
@@ -227,6 +280,7 @@ export const GROUPS = [
       },
       {
         id: 'congress.members',
+        kind: 'data',
         path: '/v1/congress/members',
         scope: 'congress',
         status: 'live',
@@ -246,6 +300,7 @@ export const GROUPS = [
       },
       {
         id: 'congress.member_trades',
+        kind: 'data',
         path: '/v1/congress/members/{id}/trades',
         scope: 'congress',
         status: 'live',
@@ -256,12 +311,14 @@ export const GROUPS = [
       },
       {
         id: 'congress.committees',
+        kind: 'data',
         path: '/v1/congress/committees',
         scope: 'committees',
         status: 'live',
         params: ['chamber', ...LIST],
         fields: {
           id: 'string',
+          kind: 'data',
           name: 'string',
           chamber: 'string',
           parent_id: 'string',
@@ -273,6 +330,9 @@ export const GROUPS = [
       },
       {
         id: 'congress.committee_activity',
+        kind: 'insight',
+        method:
+          "A join: the committee's current members (from the committee rosters) against their disclosed trades in the last 12 months.",
         path: '/v1/congress/committees/{id}/activity',
         scope: 'committees',
         status: 'live',
@@ -282,17 +342,11 @@ export const GROUPS = [
         summary:
           "Trades in the last 12 months by the committee's members, newest first. The committee itself is in meta.committee.",
       },
-      {
-        path: '/v1/congress/signals/insider-flow',
-        scope: 'congress',
-        status: 'roadmap',
-        summary:
-          'Pre-computed insider-flow score per ticker, ranking names by informed-actor accumulation.',
-      },
     ],
   },
   {
     key: 'lobbying',
+    dimension: 'capitol',
     title: 'Lobbying & influence',
     base: '/v1/lobbying',
     icon: 'bi-diagram-3',
@@ -302,6 +356,7 @@ export const GROUPS = [
     routes: [
       {
         id: 'lobbying.filings',
+        kind: 'data',
         path: '/v1/lobbying/filings',
         scope: 'lobbying',
         status: 'live',
@@ -313,6 +368,7 @@ export const GROUPS = [
       },
       {
         id: 'lobbying.filing',
+        kind: 'data',
         path: '/v1/lobbying/filings/{uuid}',
         scope: 'lobbying',
         status: 'live',
@@ -323,6 +379,8 @@ export const GROUPS = [
       },
       {
         id: 'lobbying.top_spenders',
+        kind: 'insight',
+        method: 'Reported LD-1/LD-2 amounts summed per client for the calendar year, then ranked.',
         path: '/v1/lobbying/top-spenders',
         scope: 'lobbying',
         status: 'live',
@@ -331,34 +389,11 @@ export const GROUPS = [
         fields: { client: 'string', client_id: 'integer', filings: 'integer', amount: 'number' },
         summary: 'Clients ranked by reported lobbying spend in a calendar year.',
       },
-      {
-        path: '/v1/lobbying/clients/{id}',
-        scope: 'lobbying',
-        status: 'roadmap',
-        summary: 'Spend history and issue exposure for a single client.',
-      },
-      {
-        path: '/v1/lobbying/issues/mix',
-        scope: 'lobbying',
-        status: 'roadmap',
-        summary: 'Breakdown of spend by issue area.',
-      },
-      {
-        path: '/v1/lobbying/registrants/{id}',
-        scope: 'lobbying',
-        status: 'roadmap',
-        summary: 'Activity for a lobbying firm across its client book.',
-      },
-      {
-        path: '/v1/lobbying/signals/policy-exposure',
-        scope: 'lobbying',
-        status: 'roadmap',
-        summary: 'Per-ticker policy-exposure score blending spend, issues and contract adjacency.',
-      },
     ],
   },
   {
     key: 'fec',
+    dimension: 'capitol',
     title: 'Campaign finance (FEC)',
     base: '/v1/fec',
     icon: 'bi-cash-coin',
@@ -368,6 +403,7 @@ export const GROUPS = [
     routes: [
       {
         id: 'fec.candidate_funding',
+        kind: 'data',
         path: '/v1/fec/candidates/{id}/funding',
         scope: 'fec',
         status: 'live',
@@ -392,28 +428,11 @@ export const GROUPS = [
         summary:
           'Funding totals for a candidate by cycle. The id is a bioguide id or an FEC candidate id.',
       },
-      {
-        path: '/v1/fec/contributions',
-        scope: 'fec',
-        status: 'roadmap',
-        summary: 'Itemized contributions by contributor, committee, cycle and employer.',
-      },
-      {
-        path: '/v1/fec/committees/{id}',
-        scope: 'fec',
-        status: 'roadmap',
-        summary: "A committee's receipts, disbursements and affiliations over a cycle.",
-      },
-      {
-        path: '/v1/fec/signals/sector-giving',
-        scope: 'fec',
-        status: 'roadmap',
-        summary: 'Net political giving by sector as a directional signal.',
-      },
     ],
   },
   {
     key: 'contracts',
+    dimension: 'capitol',
     title: 'Government contracts (USAspending)',
     base: '/v1/contracts',
     icon: 'bi-building',
@@ -423,6 +442,7 @@ export const GROUPS = [
     routes: [
       {
         id: 'contracts.awards',
+        kind: 'data',
         path: '/v1/contracts/awards',
         scope: 'contracts',
         status: 'live',
@@ -433,6 +453,7 @@ export const GROUPS = [
       },
       {
         id: 'contracts.recipient',
+        kind: 'data',
         path: '/v1/contracts/recipients/{id}',
         scope: 'contracts',
         status: 'live',
@@ -440,22 +461,11 @@ export const GROUPS = [
         fields: AWARD_FIELDS,
         summary: 'Award history for one recipient (USAspending recipient id), newest first.',
       },
-      {
-        path: '/v1/contracts/agencies/{id}/spending',
-        scope: 'contracts',
-        status: 'roadmap',
-        summary: 'Spending by agency and program.',
-      },
-      {
-        path: '/v1/contracts/signals/award-momentum',
-        scope: 'contracts',
-        status: 'roadmap',
-        summary: 'Per-ticker award-momentum score.',
-      },
     ],
   },
   {
     key: 'predictions',
+    dimension: 'hive',
     title: 'Prediction markets',
     base: '/v1/predictions',
     icon: 'bi-speedometer2',
@@ -499,6 +509,7 @@ export const GROUPS = [
     routes: [
       {
         id: 'predictions.markets',
+        kind: 'data',
         path: '/v1/predictions/markets',
         scope: 'predictions',
         status: 'live',
@@ -527,6 +538,7 @@ export const GROUPS = [
       },
       {
         id: 'predictions.market',
+        kind: 'data',
         path: '/v1/predictions/markets/{id}',
         scope: 'predictions',
         status: 'live',
@@ -537,6 +549,7 @@ export const GROUPS = [
       },
       {
         id: 'predictions.market_history',
+        kind: 'data',
         path: '/v1/predictions/markets/{id}/history',
         scope: 'predictions',
         status: 'live',
@@ -555,6 +568,7 @@ export const GROUPS = [
       },
       {
         id: 'predictions.events',
+        kind: 'data',
         path: '/v1/predictions/events',
         scope: 'predictions',
         status: 'live',
@@ -566,6 +580,7 @@ export const GROUPS = [
       },
       {
         id: 'predictions.event',
+        kind: 'data',
         path: '/v1/predictions/events/{key}',
         scope: 'predictions',
         status: 'live',
@@ -576,17 +591,24 @@ export const GROUPS = [
       },
       {
         id: 'predictions.movers',
+        kind: 'insight',
+        method:
+          'Active markets ranked by the size of the probability change over the window, among markets above a daily-volume floor.',
         path: '/v1/predictions/movers',
         scope: 'predictions',
         status: 'live',
         list: true,
         params: ['window', 'direction', ...PM_LIST, 'min_volume', 'limit'],
+        paramEnums: { direction: ['up', 'down', 'both'] },
         fields: { ...MARKET_FIELDS, move: 'object' },
         summary:
           'Active markets with the largest odds moves over 24h, 7d or 30d. Markets under 1,000 a day of volume are left out unless you set min_volume. Top results only, no cursor.',
       },
       {
         id: 'predictions.trending',
+        kind: 'insight',
+        method:
+          "The trending rail's score: per-venue percentiles of recent volume, odds movement and closeness to resolution, one market per event.",
         path: '/v1/predictions/trending',
         scope: 'predictions',
         status: 'live',
@@ -598,6 +620,9 @@ export const GROUPS = [
       },
       {
         id: 'predictions.consensus',
+        kind: 'insight',
+        method:
+          'A volume-weighted and a simple mean of the probabilities you pass; venues with different volume units get equal weight.',
         path: '/v1/predictions/consensus',
         scope: 'predictions',
         status: 'live',
@@ -608,12 +633,14 @@ export const GROUPS = [
       },
       {
         id: 'predictions.forecasts',
+        kind: 'data',
         path: '/v1/predictions/forecasts',
         scope: 'predictions',
         status: 'live',
         params: ['q', 'forecast_status', ...LIST],
         fields: {
           id: 'string',
+          kind: 'data',
           platform: 'string',
           question: 'string',
           probability: 'number',
@@ -629,6 +656,7 @@ export const GROUPS = [
       },
       {
         id: 'predictions.categories',
+        kind: 'data',
         path: '/v1/predictions/categories',
         scope: 'predictions',
         status: 'live',
@@ -644,22 +672,11 @@ export const GROUPS = [
         summary:
           "Ezana's eight cross-venue categories with active market and event counts per venue.",
       },
-      {
-        path: '/v1/predictions/markets/{id}/related-securities',
-        scope: 'predictions',
-        status: 'roadmap',
-        summary: 'Tickers and sectors a market moves.',
-      },
-      {
-        path: '/v1/predictions/alerts',
-        scope: 'predictions',
-        status: 'roadmap',
-        summary: 'A webhook when a watched market moves more than a set number of points.',
-      },
     ],
   },
   {
     key: 'institutional',
+    dimension: 'titans',
     title: 'Institutional & insider (SEC)',
     base: '/v1/institutional',
     icon: 'bi-buildings',
@@ -669,6 +686,7 @@ export const GROUPS = [
     routes: [
       {
         id: 'institutional.holdings',
+        kind: 'data',
         path: '/v1/institutional/holdings',
         scope: 'institutional',
         status: 'live',
@@ -691,6 +709,7 @@ export const GROUPS = [
       },
       {
         id: 'institutional.activist_stakes',
+        kind: 'data',
         path: '/v1/institutional/activist-stakes',
         scope: 'institutional',
         status: 'live',
@@ -712,6 +731,9 @@ export const GROUPS = [
       },
       {
         id: 'institutional.whale_moves',
+        kind: 'insight',
+        method:
+          "Each 13F change scored on position size against the filer's own book, whether it is new, and how concentrated the book is.",
         path: '/v1/institutional/whale-moves',
         scope: 'institutional',
         status: 'live',
@@ -719,6 +741,7 @@ export const GROUPS = [
         params: ['ticker', 'quarter', ...LIST],
         fields: {
           id: 'integer',
+          kind: 'data',
           filer: 'object',
           ticker: 'string',
           issuer: 'string',
@@ -737,6 +760,7 @@ export const GROUPS = [
       },
       {
         id: 'insider.transactions',
+        kind: 'data',
         path: '/v1/insider/transactions',
         scope: 'insider',
         status: 'live',
@@ -744,6 +768,7 @@ export const GROUPS = [
         params: ['ticker', 'code', 'from', 'to', 'min_amount', ...LIST],
         fields: {
           id: 'string',
+          kind: 'data',
           filed_at: 'date',
           issuer: 'object',
           insider: 'object',
@@ -761,161 +786,50 @@ export const GROUPS = [
       },
     ],
   },
-  {
-    key: 'news',
-    title: 'News engineering',
-    base: '/v1/news',
-    icon: 'bi-newspaper',
-    framing:
-      'News structured, entity-tagged and linked to tickers, events and odds so headlines become machine-usable features.',
-    routes: [
-      {
-        path: '/v1/news/search',
-        status: 'roadmap',
-        summary: 'Semantic search over structured, deduplicated articles.',
-      },
-      {
-        path: '/v1/news/{id}/entities',
-        status: 'roadmap',
-        summary: 'Entities resolved from one article to tickers, people and issues.',
-      },
-      {
-        path: '/v1/news/{id}/related-markets',
-        status: 'roadmap',
-        summary: 'Prediction markets and securities an article is linked to.',
-      },
-      {
-        path: '/v1/news/signals/odds-moves',
-        status: 'roadmap',
-        summary: 'News items time-aligned to the odds moves they preceded.',
-      },
-      {
-        path: '/v1/news/sentiment/by-entity',
-        status: 'roadmap',
-        summary: 'Rolling entity-level sentiment from structured news flow.',
-      },
-    ],
-  },
-  {
-    key: 'markets',
-    title: 'Market data & signals',
-    base: '/v1/markets',
-    icon: 'bi-graph-up',
-    framing:
-      'The price layer and composite features. Prices stay on the roadmap until a licence allows redistribution.',
-    routes: [
-      {
-        path: '/v1/markets/quotes',
-        status: 'roadmap',
-        summary: 'Reference and end-of-day market data for a symbol universe.',
-      },
-      {
-        path: '/v1/markets/signals',
-        status: 'roadmap',
-        summary: 'Composite Ezana signals blending the datasets above into one score per name.',
-      },
-      {
-        path: '/v1/signals/correlations',
-        status: 'roadmap',
-        summary: 'Relationships between datasets and price.',
-      },
-      {
-        path: '/v1/signals/backtests/{id}',
-        status: 'roadmap',
-        summary: 'Point-in-time backtest results for a signal spec.',
-      },
-    ],
-  },
-  {
-    key: 'cross-signal',
-    title: 'Cross-dimensional signals',
-    base: '/v1/cross',
-    icon: 'bi-signpost-split',
-    framing:
-      'Joins across influence, capital and consensus that no single-vendor feed can reconstruct.',
-    routes: [
-      {
-        path: '/v1/cross/influence-to-capital',
-        status: 'roadmap',
-        summary:
-          'Lobbying and campaign-finance spend against later institutional accumulation per issuer.',
-      },
-      {
-        path: '/v1/cross/contract-to-insider',
-        status: 'roadmap',
-        summary: 'Federal contract momentum joined with insider buying on the awarded issuer.',
-      },
-      {
-        path: '/v1/cross/policy-to-price',
-        status: 'roadmap',
-        summary: 'Bill progression and agency rulings mapped onto the sector baskets they move.',
-      },
-      {
-        path: '/v1/cross/consensus-vs-fundamentals',
-        status: 'roadmap',
-        summary: 'Prediction-market odds against the fundamentals path for the same event.',
-      },
-      {
-        path: '/v1/cross/demand-to-guidance',
-        status: 'roadmap',
-        summary: 'Consumer demand signals against forward guidance and revisions.',
-      },
-      {
-        path: '/v1/cross/macro-regime-overlay',
-        status: 'roadmap',
-        summary: 'Every signal tagged with the prevailing macro and geopolitical regime.',
-      },
-      {
-        path: '/v1/cross/composite/{ticker}',
-        status: 'roadmap',
-        summary: 'A per-ticker rollup of the cross-dimensional signals.',
-      },
-    ],
-  },
-  {
-    key: 'relationships',
-    title: 'Trend relationships & lead-lag',
-    base: '/v1/relationships',
-    icon: 'bi-arrow-left-right',
-    framing: 'Which trend leads which, by how long, and when the usual link breaks.',
-    routes: [
-      {
-        path: '/v1/relationships/lead-lag',
-        status: 'roadmap',
-        summary: 'Estimated lead-lag between two dimension series for a ticker or sector.',
-      },
-      {
-        path: '/v1/relationships/divergence',
-        status: 'roadmap',
-        summary: 'Where two normally correlated dimensions have decoupled.',
-      },
-      {
-        path: '/v1/relationships/confirmation',
-        status: 'roadmap',
-        summary: 'How many independent dimensions currently agree on a name.',
-      },
-      {
-        path: '/v1/relationships/network/{entity}',
-        status: 'roadmap',
-        summary: 'The influence graph around an entity across dimensions.',
-      },
-      {
-        path: '/v1/relationships/regime-shift',
-        status: 'roadmap',
-        summary: 'When a cross-dimensional relationship structurally changes.',
-      },
-      {
-        path: '/v1/relationships/backtest',
-        status: 'roadmap',
-        summary: 'Point-in-time backtest of a relationship with disclosure lag preserved.',
-      },
-    ],
-  },
 ];
 
-/** Every endpoint, flattened, with method and group. */
+/** Every param: the base set plus each catalog's own (names must not collide). */
+export const PARAMS = Object.assign({}, BASE_PARAMS, ...CATALOGS.map((c) => c.PARAMS || {}));
+/** Param names declared by more than one module (the test asserts none). */
+export const PARAM_COLLISIONS = (() => {
+  const seen = new Map(Object.keys(BASE_PARAMS).map((k) => [k, 'base']));
+  const out = [];
+  CATALOGS.forEach((c, i) => {
+    for (const k of Object.keys(c.PARAMS || {})) {
+      if (seen.has(k)) out.push(`${k} (${seen.get(k)} and catalog ${i})`);
+      else seen.set(k, `catalog ${i}`);
+    }
+  });
+  return out;
+})();
+
+const DIM_ORDER = new Map(DIMENSIONS.map((d, i) => [d.id, i]));
+const DIM_LABEL = Object.fromEntries(DIMENSIONS.map((d) => [d.id, d.label]));
+
+/** Groups in dimension order, each with its catalog routes appended. */
+export const GROUPS = [...BASE_GROUPS, ...CATALOGS.flatMap((c) => c.GROUPS || [])]
+  .map((g, i) => ({
+    ...g,
+    dimensionLabel: DIM_LABEL[g.dimension] || g.dimension,
+    routes: [...g.routes, ...CATALOGS.flatMap((c) => (c.ROUTES || {})[g.key] || [])],
+    _i: i,
+  }))
+  .sort(
+    (a, b) =>
+      (DIM_ORDER.get(a.dimension) ?? 99) - (DIM_ORDER.get(b.dimension) ?? 99) || a._i - b._i,
+  )
+  .map(({ _i, ...g }) => g);
+
+/** Every endpoint, flattened, with method, group and dimension. */
 export const ENDPOINTS = GROUPS.flatMap((g) =>
-  g.routes.map((r) => ({ method: 'GET', group: g.key, source: g.source || null, ...r })),
+  g.routes.map((r) => ({
+    method: 'GET',
+    group: g.key,
+    dimension: g.dimension,
+    dimensionLabel: g.dimensionLabel,
+    source: g.source || null,
+    ...r,
+  })),
 );
 
 export const LIVE_ENDPOINTS = ENDPOINTS.filter((e) => e.status === 'live');

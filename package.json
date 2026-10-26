@@ -35,7 +35,7 @@
     "test:ezanaql-scope": "node scripts/check-ezanaql-scope.mjs",
     "test:ezanaql-like": "node --no-warnings scripts/check-ezanaql-like.mjs",
     "test:mobile": "node --no-warnings scripts/check-mobile.mjs",
-    "test:api": "node --no-warnings scripts/check-ezana-api.mjs",
+    "test:api": "node --no-warnings --test scripts/check-ezana-api.mjs scripts/check-ezana-api-capitol.mjs scripts/check-ezana-api-titans.mjs scripts/check-ezana-api-eyes.mjs scripts/check-ezana-api-hive.mjs scripts/check-ezana-api-lighthouse.mjs scripts/check-ezana-api-cross.mjs",
     "fonts:build": "node scripts/build-fonts.mjs",
     "test:support": "node scripts/check-support-center.mjs",
     "test:echo-home": "node scripts/check-echo-home.mjs",
