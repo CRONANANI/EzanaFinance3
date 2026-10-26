@@ -99,6 +99,17 @@ export function parseParams(endpoint, searchParams) {
       throw new ApiError(400, 'invalid_param', `At most ${MAX_TICKERS} tickers per request.`);
     out.ticker = [...new Set(out.ticker.map((t) => t.toUpperCase()))];
   }
+  /* sort is one shared param; each endpoint accepts its own subset. */
+  if (out.sort != null && endpoint.sortValues && !endpoint.sortValues.includes(out.sort)) {
+    throw new ApiError(
+      400,
+      'invalid_param',
+      `"sort" must be one of ${endpoint.sortValues.join(', ')}.`,
+    );
+  }
+  if (out.ends_after && out.ends_before && out.ends_after > out.ends_before) {
+    throw new ApiError(400, 'invalid_param', '"ends_after" is after "ends_before".');
+  }
   if (out.from && out.to && out.from > out.to) {
     throw new ApiError(400, 'invalid_param', '"from" is after "to".');
   }

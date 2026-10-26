@@ -10,6 +10,26 @@
 import { unstable_cache } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { ApiError, keysetOr, pageOf, encodeCursor } from './query';
+import { getTrendingMarkets } from '@/lib/prediction-markets/trending-store';
+import { PAGE_CATEGORIES } from '@/lib/prediction-markets/page-model';
+import {
+  EVENT_KEY_RE,
+  EVENT_SELECT,
+  HISTORY_CADENCE,
+  MARKET_ID_RE,
+  MARKET_SELECT,
+  MOVERS_MIN_VOLUME,
+  RETENTION_DAYS,
+  applyCategory,
+  bucketHistory,
+  consensusOf,
+  eventOut,
+  forecastOut,
+  historyWindow,
+  marketOut,
+  newest,
+  venuesLabel,
+} from './predictions';
 
 const num = (v) => (v == null || v === '' || !Number.isFinite(Number(v)) ? null : Number(v));
 const day = (v) => (v ? String(v).slice(0, 10) : null);
@@ -30,8 +50,16 @@ async function readPage(table, select, { keys, notNull = [], limit, cursor, dir 
   if (cursor) qb = qb.or(keysetOr(keys, cursor, dir));
   for (const k of keys) qb = qb.order(k, { ascending: dir === 'asc' });
   const { data, error } = await qb.limit(limit + 1);
-  if (error) throw new Error(`${table}: ${error.message}`);
+  if (error) throw dbError(table, error);
   return data || [];
+}
+
+/* A database error that keeps its code, so callers can tell a missing
+   relation (an unapplied migration) from a real failure. */
+function dbError(table, error) {
+  const e = new Error(`${table}: ${error.message}`);
+  e.code = error.code;
+  return e;
 }
 
 /* ── congress ───────────────────────────────────────────────────────── */
@@ -340,43 +368,6 @@ export const HANDLERS = {
     return out;
   },
 
-  /* ── prediction markets ───────────────────────────────────────────── */
-
-  'predictions.markets': async ({ params }) => {
-    const rows = await readPage(
-      'prediction_market_index',
-      MARKET_SELECT,
-      {
-        keys: ['volume', 'market_id'],
-        notNull: ['volume'],
-        limit: params.limit,
-        cursor: params.cursor,
-      },
-      (qb) => {
-        let x = qb;
-        if (params.q) x = x.ilike('question', like(params.q));
-        if (params.status) x = x.eq('status', params.status);
-        return x;
-      },
-    );
-    const { rows: kept, page } = pageOf(rows, params.limit, (m) => [Number(m.volume), m.market_id]);
-    return { data: kept.map(marketOut), page };
-  },
-
-  'predictions.market': async ({ path }) => {
-    const id = String(path.id);
-    if (!/^[A-Za-z0-9_:.-]{1,120}$/.test(id))
-      throw new ApiError(404, 'not_found', 'No market with that id.');
-    const { data, error } = await getAdminClient()
-      .from('prediction_market_index')
-      .select(MARKET_SELECT)
-      .eq('market_id', id)
-      .maybeSingle();
-    if (error) throw new Error(error.message);
-    if (!data) throw new ApiError(404, 'not_found', 'No market with that id.');
-    return { data: marketOut(data) };
-  },
-
   /* ── institutional and insider ────────────────────────────────────── */
 
   'institutional.holdings': async ({ params, cutoff }) => {
@@ -592,24 +583,6 @@ function filingOut(f) {
   };
 }
 
-const MARKET_SELECT =
-  'market_id, question, category, platform, probability, volume, liquidity, end_date, status, link';
-
-function marketOut(m) {
-  return {
-    id: m.market_id,
-    question: m.question,
-    category: m.category,
-    platform: m.platform === 'polymarket' ? 'Polymarket' : m.platform,
-    probability: num(m.probability),
-    volume: num(m.volume),
-    liquidity: num(m.liquidity),
-    ends_at: m.end_date,
-    status: m.status,
-    url: m.link,
-  };
-}
-
 const AWARD_SELECT =
   'generated_award_id, award_id_piid, recipient_id, recipient_name, parent_name, ticker, is_public, award_amount, awarding_agency, awarding_sub_agency, action_date, award_type, fiscal_year';
 
@@ -694,3 +667,413 @@ const topSpenders = unstable_cache(
   ['ezana-api-top-spenders-v1'],
   { revalidate: 3600 },
 );
+
+/* ── prediction markets ─────────────────────────────────────────────── */
+
+const PM_TAG = 'pm-api';
+
+/* List reads without a cursor are cached for 60s per normalized params: the
+   index refreshes every 15 minutes, so this costs nothing in freshness. */
+function pmCached(name, params, fn, revalidate = 60) {
+  if (params?.cursor) return fn();
+  const key = JSON.stringify(
+    Object.keys(params || {})
+      .sort()
+      .map((k) => [k, params[k]]),
+  );
+  return unstable_cache(fn, ['ezana-api-pm', name, key], { revalidate, tags: [PM_TAG] })();
+}
+
+/* prediction_events_mat ships in a hand-applied SQL file: until it exists
+   the events endpoints answer 503 rather than 500. */
+const MISSING_RELATION = new Set(['42P01', 'PGRST205', 'PGRST200']);
+function notAvailableIfMissing(e) {
+  if (MISSING_RELATION.has(e?.code)) {
+    throw new ApiError(503, 'not_available', 'Prediction-market events are not available yet.');
+  }
+  throw e;
+}
+
+/* Sort keys per sort value: [column, unique tiebreak], direction. */
+const MARKET_SORTS = {
+  volume: { col: 'volume', dir: 'desc' },
+  volume_24h: { col: 'volume_24h', dir: 'desc' },
+  trending: { col: 'trending_score', dir: 'desc' },
+  ending: { col: 'end_date', dir: 'asc', time: true },
+  change_24h: { col: 'price_change_24h', dir: 'desc' },
+  change_7d: { col: 'change_7d', dir: 'desc' },
+  probability: { col: 'probability', dir: 'desc' },
+};
+const EVENT_SORTS = {
+  volume: { col: 'volume', dir: 'desc' },
+  volume_24h: { col: 'volume_24h', dir: 'desc' },
+  ending: { col: 'ends_at', dir: 'asc', time: true },
+};
+const sortValue = (v, time) => (time ? v : Number(v));
+
+function pmMeta(rows, platformsOf = (r) => r.platform, timeOf = (r) => r.indexed_at) {
+  return {
+    source: venuesLabel(new Set(rows.map(platformsOf).filter(Boolean))) || 'Polymarket and Kalshi',
+    updated_at: newest(rows.map(timeOf)),
+  };
+}
+
+const WINDOW_COL = { '24h': 'price_change_24h', '7d': 'change_7d', '30d': 'change_30d' };
+
+async function marketsList(params) {
+  const sort = MARKET_SORTS[params.sort || 'volume'];
+  const nowIso = new Date().toISOString();
+  const rows = await readPage(
+    'prediction_market_index',
+    MARKET_SELECT,
+    {
+      keys: [sort.col, 'market_id'],
+      notNull: [sort.col],
+      limit: params.limit,
+      cursor: params.cursor,
+      dir: sort.dir,
+    },
+    (qb) => {
+      let x = qb.eq('status', params.status || 'active');
+      if (params.q) x = x.textSearch('tsv', params.q, { type: 'websearch', config: 'english' });
+      if (params.platform) x = x.eq('platform', params.platform);
+      if (params.category) x = applyCategory(x, params.category, params.platform);
+      if (params.ends_after) x = x.gte('end_date', params.ends_after);
+      if (params.ends_before) x = x.lte('end_date', endOfDay(params.ends_before));
+      if (params.min_volume != null) x = x.gte('volume_norm', params.min_volume);
+      if (params.sort === 'ending') x = x.gte('end_date', nowIso);
+      return x;
+    },
+  );
+  const { rows: kept, page } = pageOf(rows, params.limit, (m) => [
+    sortValue(m[sort.col], sort.time),
+    m.market_id,
+  ]);
+  return { data: kept.map(marketOut), page, meta: pmMeta(kept) };
+}
+
+async function eventsList(params) {
+  const sort = EVENT_SORTS[params.sort || 'volume'];
+  const nowIso = new Date().toISOString();
+  let rows;
+  try {
+    rows = await readPage(
+      'prediction_events_mat',
+      EVENT_SELECT,
+      {
+        keys: [sort.col, 'event_key'],
+        notNull: [sort.col],
+        limit: params.limit,
+        cursor: params.cursor,
+        dir: sort.dir,
+      },
+      (qb) => {
+        let x = qb.eq('status', params.status || 'active');
+        if (params.q) x = x.ilike('title', like(params.q));
+        if (params.platform) x = x.eq('platform', params.platform);
+        if (params.category) x = applyCategory(x, params.category, params.platform);
+        if (params.sort === 'ending') x = x.gte('ends_at', nowIso);
+        return x;
+      },
+    );
+  } catch (e) {
+    notAvailableIfMissing(e);
+  }
+  const { rows: kept, page } = pageOf(rows, params.limit, (e) => [
+    sortValue(e[sort.col], sort.time),
+    e.event_key,
+  ]);
+  const { data: fresh } = await getAdminClient()
+    .from('prediction_events_mat')
+    .select('updated_at')
+    .order('updated_at', { ascending: false, nullsFirst: false })
+    .limit(1);
+  return {
+    data: kept.map(eventOut),
+    page,
+    meta: {
+      ...pmMeta(kept),
+      updated_at: fresh?.[0]?.updated_at || newest(kept.map((e) => e.updated_at)),
+    },
+  };
+}
+
+async function moversList(params) {
+  const window = params.window || '24h';
+  const col = WINDOW_COL[window];
+  const direction = params.direction || 'both';
+  const floor = params.min_volume ?? MOVERS_MIN_VOLUME;
+  const limit = params.limit;
+  const admin = getAdminClient();
+  const side = async (up) => {
+    let x = admin
+      .from('prediction_market_index')
+      .select(MARKET_SELECT)
+      .eq('status', 'active')
+      .not(col, 'is', null)
+      .gte('volume_norm', floor);
+    x = up ? x.gt(col, 0) : x.lt(col, 0);
+    if (params.platform) x = x.eq('platform', params.platform);
+    if (params.category) x = applyCategory(x, params.category, params.platform);
+    const { data, error } = await x.order(col, { ascending: !up }).order('market_id').limit(limit);
+    if (error) throw dbError('prediction_market_index', error);
+    return data || [];
+  };
+  const lists = await Promise.all(
+    direction === 'both' ? [side(true), side(false)] : [side(direction === 'up')],
+  );
+  const rows = lists
+    .flat()
+    .sort((a, b) => Math.abs(Number(b[col])) - Math.abs(Number(a[col])))
+    .slice(0, limit);
+  return {
+    data: rows.map((m) => ({ ...marketOut(m), move: { window, change: Number(m[col]) } })),
+    page: { limit, has_more: false, next: null },
+    meta: { ...pmMeta(rows), window, direction, min_volume: floor },
+  };
+}
+
+async function categoriesList() {
+  const admin = getAdminClient();
+  const count = async (table, slug, platform) => {
+    let x = admin
+      .from(table)
+      .select(table === 'prediction_events_mat' ? 'event_key' : 'market_id', {
+        count: 'exact',
+        head: true,
+      })
+      .eq('status', 'active');
+    if (platform) x = x.eq('platform', platform);
+    x = applyCategory(x, slug, platform);
+    const { count: n, error } = await x;
+    if (error) throw dbError(table, error);
+    return n || 0;
+  };
+  const data = await Promise.all(
+    PAGE_CATEGORIES.map(async (c) => {
+      const [poly, kalshi, events] = await Promise.all([
+        count('prediction_market_index', c.slug, 'polymarket'),
+        count('prediction_market_index', c.slug, 'kalshi'),
+        count('prediction_events_mat', c.slug, null).catch(notAvailableIfMissing),
+      ]);
+      return {
+        slug: c.slug,
+        name: c.label,
+        active_markets: poly + kalshi,
+        active_events: events,
+        platforms: { polymarket: poly, kalshi },
+      };
+    }),
+  );
+  return { data, updated_at: new Date().toISOString() };
+}
+const categoriesCached = unstable_cache(categoriesList, ['ezana-api-pm-categories-v1'], {
+  revalidate: 900,
+  tags: [PM_TAG],
+});
+
+const PREDICTION_HANDLERS = {
+  'predictions.markets': ({ params }) => pmCached('markets', params, () => marketsList(params)),
+
+  'predictions.market': async ({ path }) => {
+    const id = String(path.id);
+    if (!MARKET_ID_RE.test(id)) throw new ApiError(404, 'not_found', 'No market with that id.');
+    const admin = getAdminClient();
+    const { data, error } = await admin
+      .from('prediction_market_index')
+      .select(MARKET_SELECT)
+      .eq('market_id', id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) throw new ApiError(404, 'not_found', 'No market with that id.');
+    let event = null;
+    if (data.event_key) {
+      const { data: outs } = await admin
+        .from('prediction_market_index')
+        .select('market_id, outcome_label, question, probability')
+        .eq('event_key', data.event_key)
+        .eq('status', 'active')
+        .order('probability', { ascending: false, nullsFirst: false })
+        .limit(30);
+      event = {
+        key: data.event_key,
+        title: data.event_title || null,
+        outcomes: (outs || []).map((o) => ({
+          id: o.market_id,
+          outcome: o.outcome_label || o.question,
+          probability: num(o.probability),
+        })),
+      };
+    }
+    return { data: marketOut(data), meta: { ...pmMeta([data]), event } };
+  },
+
+  'predictions.market_history': async ({ params, path }) => {
+    const id = String(path.id);
+    if (!MARKET_ID_RE.test(id)) throw new ApiError(404, 'not_found', 'No market with that id.');
+    const { fromIso, toIso } = historyWindow(params);
+    const admin = getAdminClient();
+    const { data: market, error: mErr } = await admin
+      .from('prediction_market_index')
+      .select('market_id, platform')
+      .eq('market_id', id)
+      .maybeSingle();
+    if (mErr) throw new Error(mErr.message);
+    if (!market) throw new ApiError(404, 'not_found', 'No market with that id.');
+    const { data, error } = await admin
+      .from('prediction_market_snapshots')
+      .select('captured_at, probability, best_bid, best_ask, volume, volume_24h, liquidity')
+      .eq('market_id', id)
+      .gte('captured_at', fromIso)
+      .lte('captured_at', toIso)
+      .order('captured_at', { ascending: true })
+      .limit(5000);
+    if (error) throw dbError('prediction_market_snapshots', error);
+    const interval = params.interval || '4h';
+    const points = bucketHistory(data, interval);
+    const after = params.cursor ? String(params.cursor[0]) : null;
+    const rest = after ? points.filter((pt) => pt.at > after) : points;
+    const { rows: kept, page } = pageOf(rest.slice(0, params.limit + 1), params.limit, (pt) => [
+      pt.at,
+    ]);
+    return {
+      data: kept,
+      page,
+      meta: {
+        source: venuesLabel(new Set([market.platform])),
+        updated_at: points.length ? points[points.length - 1].at : null,
+        interval,
+        from: fromIso,
+        to: toIso,
+        retention_days: RETENTION_DAYS,
+        cadence: HISTORY_CADENCE,
+      },
+    };
+  },
+
+  'predictions.events': ({ params }) => pmCached('events', params, () => eventsList(params)),
+
+  'predictions.event': async ({ path }) => {
+    const key = String(path.key);
+    if (!EVENT_KEY_RE.test(key)) throw new ApiError(404, 'not_found', 'No event with that key.');
+    const admin = getAdminClient();
+    const { data: ev, error } = await admin
+      .from('prediction_events_mat')
+      .select(EVENT_SELECT)
+      .eq('event_key', key)
+      .maybeSingle();
+    if (error) notAvailableIfMissing(dbError('prediction_events_mat', error));
+    if (!ev) throw new ApiError(404, 'not_found', 'No event with that key.');
+    const { data: outs, error: oErr } = await admin
+      .from('prediction_market_index')
+      .select(MARKET_SELECT)
+      .eq('event_key', key)
+      .order('status', { ascending: true })
+      .order('probability', { ascending: false, nullsFirst: false })
+      .limit(200);
+    if (oErr) throw new Error(oErr.message);
+    const outcomes = (outs || []).map(marketOut);
+    return {
+      data: { ...eventOut(ev), outcomes },
+      meta: { ...pmMeta(outs || []), updated_at: ev.updated_at },
+    };
+  },
+
+  'predictions.movers': ({ params }) => pmCached('movers', params, () => moversList(params)),
+
+  'predictions.trending': ({ params }) =>
+    pmCached('trending', params, async () => {
+      const limit = params.limit;
+      const { markets } = await getTrendingMarkets({
+        venue: params.platform || 'all',
+        limit: params.category ? 50 : limit,
+      });
+      const ids = markets.map((m) => m.id);
+      let rows = [];
+      if (ids.length) {
+        const { data, error } = await getAdminClient()
+          .from('prediction_market_index')
+          .select(MARKET_SELECT)
+          .in('market_id', ids);
+        if (error) throw new Error(error.message);
+        const byId = new Map((data || []).map((r) => [r.market_id, r]));
+        rows = ids.map((id) => byId.get(id)).filter(Boolean);
+      }
+      const out = rows
+        .map(marketOut)
+        .filter((m) => !params.category || m.category === params.category)
+        .slice(0, limit);
+      return {
+        data: out,
+        page: { limit, has_more: false, next: null },
+        meta: pmMeta(rows.filter((r) => out.some((m) => m.id === r.market_id))),
+      };
+    }),
+
+  'predictions.consensus': async ({ params }) => {
+    if (!params.ids) throw new ApiError(400, 'invalid_param', '"ids" is required (2 to 10 ids).');
+    const ids = [...new Set(params.ids.split(','))];
+    const { data, error } = await getAdminClient()
+      .from('prediction_market_index')
+      .select(MARKET_SELECT)
+      .in('market_id', ids);
+    if (error) throw new Error(error.message);
+    const found = new Map((data || []).map((r) => [r.market_id, r]));
+    const missing = ids.filter((id) => !found.has(id));
+    if (missing.length) {
+      throw new ApiError(404, 'not_found', `No market with id ${missing.join(', ')}.`);
+    }
+    const markets = ids.map((id) => marketOut(found.get(id)));
+    const { consensus, weights, weighting } = consensusOf(markets);
+    return {
+      data: { markets, consensus, weights },
+      meta: {
+        ...pmMeta(ids.map((id) => found.get(id))),
+        weighting:
+          weighting === 'venue_equal'
+            ? 'The markets report volume in different units (usd and contracts), so each venue is weighted equally, then by average daily volume within a venue.'
+            : 'Weighted by average daily volume.',
+        note: 'You chose these markets as asking the same question; Ezana does not match them.',
+      },
+    };
+  },
+
+  'predictions.forecasts': async ({ params }) => {
+    const rows = await readPage(
+      'crowd_forecasts',
+      'forecast_id, platform, question, probability, forecasters, volume, volume_unit, close_date, status, link, indexed_at',
+      {
+        keys: ['forecasters', 'forecast_id'],
+        notNull: ['forecasters'],
+        limit: params.limit,
+        cursor: params.cursor,
+      },
+      (qb) => {
+        let x = qb.eq('status', params.forecast_status || 'open');
+        if (params.q) x = x.ilike('question', like(params.q));
+        return x;
+      },
+    );
+    const { rows: kept, page } = pageOf(rows, params.limit, (f) => [
+      Number(f.forecasters),
+      f.forecast_id,
+    ]);
+    return {
+      data: kept.map(forecastOut),
+      page,
+      meta: {
+        source: 'Manifold',
+        updated_at: newest(kept.map((f) => f.indexed_at)),
+        note: 'Crowd forecasts in play money (mana), not real-money markets.',
+      },
+    };
+  },
+
+  'predictions.categories': async () => {
+    const { data, updated_at } = await categoriesCached();
+    return { data, meta: { source: 'Polymarket and Kalshi', updated_at } };
+  },
+};
+
+/* Declared after HANDLERS (they use helpers defined below it), so attached here. */
+Object.assign(HANDLERS, PREDICTION_HANDLERS);

@@ -1388,3 +1388,124 @@
     border-color: transparent;
   }
 }
+
+/* ── Oct 26: prediction markets. A group's "How the data works" guide, the
+   params line under each live route, and the worked-examples switcher. ── */
+.ea-guide {
+  margin: 0;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--ea-border);
+}
+.ea-guide > summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ea-emerald-text);
+  list-style: none;
+}
+.ea-guide > summary::-webkit-details-marker {
+  display: none;
+}
+.ea-guide > summary::after {
+  content: ' +';
+  font-family: var(--font-mono);
+}
+.ea-guide[open] > summary::after {
+  content: ' −';
+}
+.ea-guide-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem 1.5rem;
+  margin: 0.75rem 0 0.25rem;
+}
+.ea-guide-item dt {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ea-ink);
+}
+.ea-guide-item dd {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--ea-muted);
+}
+.ea-ep-params {
+  margin: 0.3rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--ea-muted);
+}
+.ea-ep-params code {
+  font-size: 0.74rem;
+}
+.ea-ep-sep {
+  padding: 0 0.15rem;
+}
+.ea-examples {
+  margin: 1rem 0 0.5rem;
+}
+.ea-examples-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+.ea-examples-title {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ea-muted);
+}
+.ea-examples-tabs,
+.ea-lang-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.ea-examples-tab,
+.ea-lang-tab {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--ea-border);
+  border-radius: 999px;
+  background: var(--ea-surface);
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--ea-muted);
+  cursor: pointer;
+}
+.ea-lang-tab {
+  padding: 0.15rem 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+.ea-examples-tab:hover,
+.ea-lang-tab:hover {
+  color: var(--ea-ink);
+}
+.ea-examples-tab.is-active,
+.ea-lang-tab.is-active {
+  border-color: var(--ea-emerald);
+  color: var(--ea-emerald-text);
+  font-weight: 600;
+}
+.ea-examples-tab:focus-visible,
+.ea-lang-tab:focus-visible,
+.ea-guide > summary:focus-visible {
+  outline: 2px solid var(--ea-emerald);
+  outline-offset: 2px;
+}
+.ea-code-head--tabs {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.ea-code-head--tabs > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.ea-examples-pre {
+  max-height: 420px;
+}

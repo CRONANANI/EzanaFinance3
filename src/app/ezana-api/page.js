@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { GROUPS, LIVE_ENDPOINTS, ENDPOINTS, PARAMS } from '@/lib/ezana-api/registry';
 import { TIERS as API_TIERS, TIER_ORDER } from '@/lib/ezana-api/tiers';
+import { PM_EXAMPLES } from './prediction-examples';
 import './ezana-api.css';
 
 /* Bootstrap Icons in place of the old icon components; same props. */
@@ -88,6 +89,11 @@ const ERROR_CODES = [
     name: 'invalid_param',
     meaning: 'An unknown, malformed or out-of-range parameter or cursor.',
   },
+  {
+    code: '400',
+    name: 'out_of_range',
+    meaning: 'A date outside the data kept (prediction-market history: 35 days).',
+  },
   { code: '401', name: 'invalid_key', meaning: 'Missing, unknown, revoked or expired key.' },
   {
     code: '403',
@@ -110,6 +116,11 @@ const ERROR_CODES = [
     meaning: 'Unexpected error on our side. Safe to retry with backoff.',
   },
   { code: '501', name: 'not_available', meaning: 'A Roadmap endpoint that is not built yet.' },
+  {
+    code: '503',
+    name: 'not_available',
+    meaning: 'A live endpoint whose data is temporarily unavailable. Retry later.',
+  },
 ];
 
 const COVERAGE_ROWS = [
@@ -122,12 +133,20 @@ const COVERAGE_ROWS = [
   { dataset: 'Lobbying', source: 'Senate LDA', cadence: 'Hourly' },
   { dataset: 'Campaign finance', source: 'FEC', cadence: 'Hourly' },
   { dataset: 'Government contracts', source: 'USAspending', cadence: 'Daily' },
-  { dataset: 'Prediction markets', source: 'Polymarket', cadence: 'Every two hours' },
+  {
+    dataset: 'Prediction markets',
+    source: 'Polymarket, Kalshi (real money); Manifold (play money)',
+    cadence: 'Every 15 minutes; odds history every two hours, kept 35 days',
+  },
   { dataset: '13F, activist stakes, whale moves', source: 'SEC EDGAR', cadence: 'Hourly' },
   { dataset: 'Insider transactions (Form 4)', source: 'SEC EDGAR', cadence: 'Twice an hour' },
 ];
 
 const CHANGELOG = [
+  {
+    date: '2026-10-26',
+    text: "Prediction markets: events, history, movers, trending, consensus, crowd forecasts and categories are live. Market objects add event, outcome, order-book, change and volume-window fields; platform is now the lower-case venue id (platform_name carries the display name); category is Ezana's cross-venue slug (venue_category keeps Kalshi's own). No keys had been issued when the market shape changed, so no client broke.",
+  },
   {
     date: '2026-10-06',
     text: `v1 is live: ${LIVE_ENDPOINTS.length} endpoints over congressional trades, committees, lobbying, campaign finance, contracts, prediction markets and SEC filings, with issued keys, per-key rate limits, usage metering and an OpenAPI spec.`,
@@ -153,7 +172,7 @@ const FAQ = [
   },
   {
     q: 'Do you offer backtest-ready history?',
-    a: 'Trades carry both the trade date and the disclosure date, and filings carry their filing dates, so you can backtest on what was public at the time. Point-in-time odds history is on the roadmap.',
+    a: 'Trades carry both the trade date and the disclosure date, and filings carry their filing dates, so you can backtest on what was public at the time. Prediction-market odds history is live for the last 35 days at /v1/predictions/markets/{id}/history.',
   },
   {
     q: 'Are the signals investment advice?',
@@ -235,6 +254,80 @@ const ERROR_ENVELOPE = `{
     "docs": "https://ezana.world/ezana-api#rate-limits"
   }
 }`;
+
+/* Worked prediction-market examples: pick a request, pick a language. */
+const EX_LANGS = [
+  { id: 'curl', label: 'curl' },
+  { id: 'js', label: 'JavaScript' },
+  { id: 'python', label: 'Python' },
+];
+function exampleSnippet(lang, path) {
+  const url = `https://ezana.world${path}`;
+  if (lang === 'js') {
+    return `const res = await fetch(\n  "${url}",\n  { headers: { Authorization: \`Bearer \${process.env.EZANA_API_KEY}\` } }\n);\nconst { data, meta } = await res.json();`;
+  }
+  if (lang === 'python') {
+    return `import os, requests\n\nres = requests.get(\n    "${url}",\n    headers={"Authorization": f"Bearer {os.environ['EZANA_API_KEY']}"},\n    timeout=10,\n)\nbody = res.json()`;
+  }
+  return `curl -H "Authorization: Bearer $EZANA_API_KEY" \\\n  "${url}"`;
+}
+function PredictionExamples() {
+  const [exId, setExId] = useState(PM_EXAMPLES[0].id);
+  const [lang, setLang] = useState('curl');
+  const ex = PM_EXAMPLES.find((e) => e.id === exId) || PM_EXAMPLES[0];
+  return (
+    <div className="ea-examples">
+      <div className="ea-examples-head">
+        <span className="ea-examples-title">Worked examples</span>
+        <div className="ea-examples-tabs" role="tablist" aria-label="Prediction-market examples">
+          {PM_EXAMPLES.map((e) => (
+            <button
+              key={e.id}
+              type="button"
+              role="tab"
+              aria-selected={e.id === ex.id}
+              className={`ea-examples-tab${e.id === ex.id ? ' is-active' : ''}`}
+              onClick={() => setExId(e.id)}
+            >
+              {e.title}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="ea-code">
+        <div className="ea-code-head ea-code-head--tabs">
+          <span>
+            <Terminal size={13} aria-hidden /> GET {ex.path}
+          </span>
+          <span className="ea-lang-tabs" role="group" aria-label="Language">
+            {EX_LANGS.map((l) => (
+              <button
+                key={l.id}
+                type="button"
+                aria-pressed={lang === l.id}
+                className={`ea-lang-tab${lang === l.id ? ' is-active' : ''}`}
+                onClick={() => setLang(l.id)}
+              >
+                {l.label}
+              </button>
+            ))}
+          </span>
+        </div>
+        <pre>
+          <code>{exampleSnippet(lang, ex.path)}</code>
+        </pre>
+      </div>
+      <div className="ea-code">
+        <div className="ea-code-head">
+          <Terminal size={13} aria-hidden /> 200 OK · two rows shown
+        </div>
+        <pre className="ea-examples-pre">
+          <code>{ex.response}</code>
+        </pre>
+      </div>
+    </div>
+  );
+}
 
 function Method({ method = 'GET' }) {
   return <span className={`ea-method ea-method--${method.toLowerCase()}`}>{method}</span>;
@@ -871,6 +964,21 @@ export default function EzanaApiPage() {
                     <code className="ea-ep-base">{group.base}</code>
                   </div>
                   {group.framing && <p className="ea-ep-framing">{group.framing}</p>}
+                  {group.guide?.length ? (
+                    <details className="ea-guide">
+                      <summary>
+                        <i className="bi bi-info-circle" aria-hidden="true" /> How the data works
+                      </summary>
+                      <dl className="ea-guide-list">
+                        {group.guide.map((g) => (
+                          <div key={g.h} className="ea-guide-item">
+                            <dt>{g.h}</dt>
+                            <dd>{g.p}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </details>
+                  ) : null}
                   <ul className="ea-ep-list">
                     {group.routes.map((r) => (
                       <li key={r.path} className="ea-ep">
@@ -893,9 +1001,28 @@ export default function EzanaApiPage() {
                             <span className="ea-ep-scope"> Scope: {r.scope}.</span>
                           ) : null}
                         </p>
+                        {r.status === 'live' && r.params?.length ? (
+                          <p className="ea-ep-params">
+                            <span>Params:</span>{' '}
+                            {r.params.map((name, i) => (
+                              <span key={name}>
+                                {i ? ', ' : ''}
+                                <code>{name}</code>
+                              </span>
+                            ))}
+                            {r.sortValues ? (
+                              <>
+                                {' '}
+                                <span className="ea-ep-sep">·</span> <span>sort:</span>{' '}
+                                {r.sortValues.join(', ')}
+                              </>
+                            ) : null}
+                          </p>
+                        ) : null}
                       </li>
                     ))}
                   </ul>
+                  {group.key === 'predictions' ? <PredictionExamples /> : null}
                 </div>
               );
             })}

@@ -17,8 +17,10 @@ const TYPE = {
   array: { type: 'array', items: { type: 'string' } },
 };
 
-function paramSchema(name) {
+function paramSchema(name, e) {
   const p = PARAMS[name];
+  /* sort is shared; each operation advertises only the values it accepts. */
+  if (name === 'sort' && e?.sortValues) return { type: 'string', enum: e.sortValues };
   const base =
     p.type === 'int'
       ? {
@@ -61,8 +63,11 @@ export function buildOpenApi() {
           name,
           in: 'query',
           required: false,
-          description: PARAMS[name].desc,
-          schema: paramSchema(name),
+          description:
+            name === 'sort' && e.sortValues
+              ? `Sort order: ${e.sortValues.join(', ')}. Default ${e.sortValues[0]}.`
+              : PARAMS[name].desc,
+          schema: paramSchema(name, e),
           ...(PARAMS[name].repeatable ? { style: 'form', explode: true } : {}),
         })),
       ],
@@ -78,6 +83,7 @@ export function buildOpenApi() {
                       properties: {
                         data:
                           (e.params || []).includes('cursor') ||
+                          e.list ||
                           e.id === 'lobbying.top_spenders' ||
                           e.id === 'fec.candidate_funding'
                             ? { type: 'array', items: rowSchema(e) }
@@ -96,6 +102,7 @@ export function buildOpenApi() {
               404: ERROR_REF,
               429: ERROR_REF,
               500: ERROR_REF,
+              503: ERROR_REF,
             }
           : { 401: ERROR_REF, 501: ERROR_REF },
     };
@@ -108,7 +115,7 @@ export function buildOpenApi() {
       title: 'Ezana API',
       version: '1.0.0',
       description:
-        'Signals from public disclosures: congressional trades, committees, lobbying, campaign finance, federal contracts, prediction markets and SEC filings. Endpoints marked x-status: roadmap return 501.',
+        'Signals from public disclosures and markets: congressional trades, committees, lobbying, campaign finance, federal contracts, prediction markets (Polymarket, Kalshi, Manifold) and SEC filings. Endpoints marked x-status: roadmap return 501.',
       contact: {
         name: 'Ezana API',
         email: 'api@ezana.world',
@@ -118,7 +125,7 @@ export function buildOpenApi() {
     },
     servers: [{ url: 'https://ezana.world' }],
     security: [{ bearer: [] }],
-    tags: GROUPS.map((g) => ({ name: g.title, description: g.framing })),
+    tags: GROUPS.map((g) => ({ name: g.title, description: tagDescription(g) })),
     paths,
     components: {
       securitySchemes: {
@@ -143,6 +150,12 @@ export function buildOpenApi() {
             request_id: { type: 'string' },
             source: { type: ['string', 'null'] },
             delayed_days: { type: 'integer' },
+            updated_at: {
+              type: ['string', 'null'],
+              format: 'date-time',
+              description:
+                'Newest refresh time of the data in this response, where the endpoint reports one.',
+            },
           },
         },
         Error: {
@@ -155,6 +168,7 @@ export function buildOpenApi() {
                   type: 'string',
                   enum: [
                     'invalid_param',
+                    'out_of_range',
                     'invalid_key',
                     'not_in_scope',
                     'not_found',
@@ -196,4 +210,10 @@ function rowSchema(e) {
       Object.entries(e.fields || {}).map(([k, t]) => [k, TYPE[t] || {}]),
     ),
   };
+}
+
+/* The group's framing, plus its "How the data works" guide where it has one. */
+function tagDescription(g) {
+  if (!g.guide?.length) return g.framing;
+  return [g.framing, ...g.guide.map((x) => `**${x.h}.** ${x.p}`)].filter(Boolean).join('\n\n');
 }

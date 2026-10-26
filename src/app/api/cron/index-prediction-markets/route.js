@@ -6,6 +6,9 @@ import { scoreTrendingBatch, spreadOf, unitPrice } from '@/lib/prediction-market
 import { attachWindowMetrics, writeSnapshots } from '@/lib/prediction-markets/snapshot-store';
 import { cronRoute } from '@/lib/cron/with-cron-lock';
 
+/* Logged once per instance when the events refresh function is missing. */
+let warnedEventsMissing = false;
+
 /**
  * Populate prediction_market_index (Polymarket rows) for the semantic matcher
  * and The Hive. Pulls open Polymarket markets from Gamma, highest dollar volume
@@ -354,6 +357,27 @@ async function run(request) {
   // The dimension hubs summarise this table.
   if (upserted || closed || stale || pruned) revalidateTag('hubs');
 
+  // 5) refresh the API's events read model (prediction_events_mat). The
+  // function ships in a hand-applied SQL file; until it exists this is a
+  // soft skip, logged once per instance.
+  let eventsRefreshed = false;
+  try {
+    const { error: refreshError } = await admin.rpc('refresh_prediction_events');
+    if (!refreshError) {
+      eventsRefreshed = true;
+      revalidateTag('pm-api');
+    } else if (refreshError.code === 'PGRST202' || refreshError.code === '42883') {
+      if (!warnedEventsMissing) {
+        warnedEventsMissing = true;
+        console.warn('[index-prediction-markets] refresh_prediction_events() is not installed yet');
+      }
+    } else {
+      errors.push(`events refresh: ${refreshError.message}`);
+    }
+  } catch (e) {
+    errors.push(`events refresh: ${e?.message || e}`);
+  }
+
   return NextResponse.json({
     ok: true,
     fetched: items.length,
@@ -365,6 +389,7 @@ async function run(request) {
     pruned,
     snapshots: snap.written,
     snapshotsPruned: snap.pruned,
+    eventsRefreshed,
     errors: errors.slice(0, 10),
   });
 }

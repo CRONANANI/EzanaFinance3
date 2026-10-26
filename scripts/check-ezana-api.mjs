@@ -18,6 +18,8 @@ const { TIERS, TIER_ORDER, ALL_SCOPES } = await import('../src/lib/ezana-api/tie
 const reg = await import('../src/lib/ezana-api/registry.js');
 const q = await import('../src/lib/ezana-api/query.js');
 const { HANDLERS } = await import('../src/lib/ezana-api/handlers.js');
+const pm = await import('../src/lib/ezana-api/predictions.js');
+const { buildOpenApi } = await import('../src/lib/ezana-api/openapi.js');
 
 test('keys: format, prefix, hash and compare', () => {
   const k = keys.generateKey('live');
@@ -66,7 +68,7 @@ test('tiers match the docs', () => {
 
 test('registry: every live endpoint has a handler and every handler is registered', () => {
   const live = reg.LIVE_ENDPOINTS.map((e) => e.id);
-  assert.equal(live.length, 18);
+  assert.equal(live.length, 26);
   assert.equal(new Set(live).size, live.length, 'ids are unique');
   for (const id of live) assert.equal(typeof HANDLERS[id], 'function', `handler for ${id}`);
   for (const id of Object.keys(HANDLERS)) assert.ok(live.includes(id), `${id} is in the registry`);
@@ -126,4 +128,273 @@ test('pageOf and delayCutoff', () => {
   assert.equal(q.pageOf(rows, 5, (r) => [r.id]).page.next, null);
   assert.equal(q.delayCutoff(0), null);
   assert.equal(q.delayCutoff(30, new Date('2026-03-31T12:00:00Z')), '2026-03-01');
+});
+
+/* ── prediction markets ─────────────────────────────────────────────── */
+
+const pmLive = () => reg.LIVE_ENDPOINTS.filter((e) => e.id.startsWith('predictions.'));
+
+test('predictions: every live route has a handler, known params and valid sort values', () => {
+  const ids = pmLive().map((e) => e.id);
+  for (const id of [
+    'predictions.markets',
+    'predictions.market',
+    'predictions.market_history',
+    'predictions.events',
+    'predictions.event',
+    'predictions.movers',
+    'predictions.trending',
+    'predictions.consensus',
+    'predictions.forecasts',
+    'predictions.categories',
+  ]) {
+    assert.ok(ids.includes(id), `${id} is live`);
+  }
+  for (const e of pmLive()) {
+    assert.equal(typeof HANDLERS[e.id], 'function', `handler for ${e.id}`);
+    assert.equal(e.scope, 'predictions');
+    assert.ok(!e.delayed, `${e.id} is not delayed`);
+    for (const p of e.params || []) assert.ok(reg.PARAMS[p], `${e.id} param ${p}`);
+    for (const v of e.sortValues || []) {
+      assert.ok(reg.PARAMS.sort.enum.includes(v), `${e.id} sort ${v}`);
+    }
+    if (e.sortValues) assert.ok(e.params.includes('sort'), `${e.id} lists sort`);
+  }
+  const g = reg.GROUPS.find((x) => x.key === 'predictions');
+  assert.equal(g.source, 'Polymarket, Kalshi and Manifold');
+  assert.ok(g.guide.length >= 8);
+  assert.deepEqual(reg.PARAMS.status.enum, ['active', 'closed', 'stale']);
+});
+
+test('predictions: parseParams rejects bad ids, interval, category and sort', () => {
+  const ep = (path) => reg.matchEndpoint(path).endpoint;
+  const sp = (s) => new URLSearchParams(s);
+  const bad = (path, s, re) =>
+    assert.throws(
+      () => q.parseParams(ep(path), sp(s)),
+      (e) => e.status === 400 && e.code === 'invalid_param' && re.test(e.message),
+    );
+  const ids = (n) => Array.from({ length: n }, (_, i) => `m${i}`).join(',');
+  bad('/v1/predictions/consensus', `ids=${ids(1)}`, /format/);
+  bad('/v1/predictions/consensus', `ids=${ids(11)}`, /format/);
+  assert.equal(q.parseParams(ep('/v1/predictions/consensus'), sp(`ids=${ids(10)}`)).ids, ids(10));
+  bad('/v1/predictions/markets/123/history', 'interval=1h', /interval/);
+  bad('/v1/predictions/markets', 'category=weather', /category/);
+  bad(
+    '/v1/predictions/events',
+    'sort=change_24h',
+    /"sort" must be one of volume, volume_24h, ending/,
+  );
+  assert.equal(q.parseParams(ep('/v1/predictions/markets'), sp('sort=trending')).sort, 'trending');
+  bad('/v1/predictions/forecasts', 'status=open', /Unknown parameter/);
+});
+
+test('predictions: event keys with a colon route; traversal does not validate', () => {
+  const m = reg.matchEndpoint('/v1/predictions/events/kalshi%3ACONTROLH-2026');
+  assert.equal(m.endpoint.id, 'predictions.event');
+  assert.equal(m.params.key, 'kalshi:CONTROLH-2026');
+  assert.ok(pm.EVENT_KEY_RE.test('polymarket:606422'));
+  assert.ok(!pm.EVENT_KEY_RE.test('polymarket:../x'));
+  assert.ok(!pm.EVENT_KEY_RE.test('manifold:abc'));
+  assert.equal(
+    reg.matchEndpoint('/v1/predictions/markets/2589812/history').endpoint.id,
+    'predictions.market_history',
+  );
+});
+
+test('predictions: marketOut on live-shaped rows', () => {
+  const kalshi = pm.marketOut({
+    market_id: 'kalshi:CONTROLH-2026-D',
+    platform: 'kalshi',
+    question: 'Which party will win the U.S. House?: Democratic Party',
+    outcome_label: 'Democratic Party',
+    event_key: 'kalshi:CONTROLH-2026',
+    event_title: 'Which party will win the U.S. House?',
+    category: 'Elections',
+    tag_ids: null,
+    probability: '0.903',
+    best_bid: '0.902',
+    best_ask: '0.903',
+    price_change_24h: '-0.002',
+    change_7d: '0.001',
+    volume: '22464071.77',
+    volume_norm: '331982',
+    volume_unit: 'contracts',
+    status: 'active',
+    indexed_at: '2026-10-26T14:45:50.615Z',
+    link: 'https://kalshi.com/markets/controlh',
+  });
+  assert.equal(kalshi.platform, 'kalshi');
+  assert.equal(kalshi.platform_name, 'Kalshi');
+  assert.equal(kalshi.category, 'elections');
+  assert.equal(kalshi.venue_category, 'Elections');
+  assert.equal(kalshi.change_24h, -0.002);
+  assert.equal(kalshi.avg_daily_volume, 331982);
+  assert.deepEqual(kalshi.event, {
+    key: 'kalshi:CONTROLH-2026',
+    title: 'Which party will win the U.S. House?',
+  });
+
+  const poly = pm.marketOut({
+    market_id: '2589812',
+    platform: 'polymarket',
+    question: 'Fed decision in October: no change?',
+    outcome_label: 'No change',
+    event_key: 'polymarket:606422',
+    event_title: 'Fed Decision in October?',
+    category: null,
+    tag_ids: ['101757', '100328', '159'],
+    probability: '0.9425',
+    price_change_24h: '0.0075',
+    volume_unit: 'usd',
+    status: 'active',
+  });
+  assert.equal(poly.platform, 'polymarket');
+  assert.equal(poly.platform_name, 'Polymarket');
+  assert.equal(poly.category, 'economy');
+  assert.equal(poly.venue_category, null);
+  assert.equal(poly.change_24h, 0.0075);
+  assert.equal(poly.best_bid, null);
+});
+
+test('predictions: history keeps the last snapshot per bucket, oldest first', () => {
+  const snap = (t, p) => ({ captured_at: t, probability: p });
+  const rows = [
+    snap('2026-10-25T22:30:00Z', 0.935),
+    snap('2026-10-25T02:30:00Z', 0.93),
+    snap('2026-10-26T14:30:00Z', 0.9425),
+    snap('2026-10-25T00:30:00Z', 0.92),
+    snap('2026-10-26T02:30:00Z', 0.94),
+  ];
+  const daily = pm.bucketHistory(rows, '1d');
+  assert.deepEqual(
+    daily.map((p) => [p.at.slice(0, 16), p.probability]),
+    [
+      ['2026-10-25T22:30', 0.935],
+      ['2026-10-26T14:30', 0.9425],
+    ],
+  );
+  const four = pm.bucketHistory(rows, '4h');
+  assert.equal(four.length, 4, '00:30 and 02:30 on the 25th share a 4h bucket');
+  assert.equal(four[0].probability, 0.93);
+  assert.equal(pm.bucketHistory(rows, 'raw').length, 5);
+  assert.deepEqual(pm.bucketHistory([], '1d'), []);
+});
+
+test('predictions: the history window clamps to retention', () => {
+  const now = new Date('2026-10-26T12:00:00Z');
+  const w = pm.historyWindow({}, now);
+  assert.equal(w.fromIso, '2026-09-21T12:00:00.000Z');
+  assert.equal(w.toIso, now.toISOString());
+  const d = pm.historyWindow({ from: '2026-09-21', to: '2026-10-01' }, now);
+  assert.equal(d.fromIso, '2026-09-21T12:00:00.000Z', 'clamped up to the retention edge');
+  assert.equal(d.toIso, '2026-10-01T23:59:59.999Z');
+  assert.throws(
+    () => pm.historyWindow({ from: '2026-09-20' }, now),
+    (e) => e.status === 400 && e.code === 'out_of_range',
+  );
+});
+
+test('predictions: consensus maths', () => {
+  const m = (id, platform, p, vol, unit) => ({
+    id,
+    platform,
+    probability: p,
+    avg_daily_volume: vol,
+    volume_unit: unit,
+  });
+  const same = pm.consensusOf([
+    m('a', 'polymarket', 0.6, 300, 'usd'),
+    m('b', 'polymarket', 0.8, 100, 'usd'),
+  ]);
+  assert.equal(same.weighting, 'volume');
+  assert.equal(same.consensus.volume_weighted, 0.65);
+  assert.equal(same.consensus.simple_mean, 0.7);
+  assert.equal(same.consensus.dispersion, 0.2);
+  assert.deepEqual(same.weights, [
+    { id: 'a', weight: 0.75 },
+    { id: 'b', weight: 0.25 },
+  ]);
+
+  const mixed = pm.consensusOf([
+    m('562802', 'polymarket', 0.915, 402134, 'usd'),
+    m('kalshi:CONTROLH-2026-D', 'kalshi', 0.903, 331982, 'contracts'),
+  ]);
+  assert.equal(mixed.weighting, 'venue_equal');
+  assert.deepEqual(
+    mixed.weights.map((w) => w.weight),
+    [0.5, 0.5],
+  );
+  assert.equal(mixed.consensus.volume_weighted, 0.909);
+  assert.equal(mixed.consensus.min, 0.903);
+  assert.equal(mixed.consensus.max, 0.915);
+  assert.equal(mixed.consensus.dispersion, 0.012);
+
+  const three = pm.consensusOf([
+    m('p1', 'polymarket', 0.5, 100, 'usd'),
+    m('p2', 'polymarket', 0.7, 300, 'usd'),
+    m('k1', 'kalshi', 0.6, 999, 'contracts'),
+  ]);
+  const w = Object.fromEntries(three.weights.map((x) => [x.id, x.weight]));
+  assert.equal(w.k1, 0.5);
+  assert.equal(w.p1, 0.125);
+  assert.equal(w.p2, 0.375);
+
+  assert.throws(
+    () => pm.consensusOf([m('a', 'polymarket', 0.5, 1, 'usd')]),
+    (e) => e.status === 400,
+  );
+});
+
+test('predictions: the category filter builds the exact PostgREST strings', () => {
+  const econ = pm.categoryFilter('economy');
+  assert.equal(
+    econ.or,
+    'and(platform.eq.kalshi,category.in.("Economics","Financials")),and(platform.eq.polymarket,tag_ids.ov.{"100328","120"})',
+  );
+  const tech = pm.categoryFilter('tech');
+  assert.match(tech.or, /category\.in\.\("Companies","Science and Technology"\)/);
+  assert.equal(pm.categoryFilter('weather'), null);
+
+  const calls = [];
+  const fake = {
+    in: (...a) => (calls.push(['in', ...a]), fake),
+    overlaps: (...a) => (calls.push(['ov', ...a]), fake),
+    or: (...a) => (calls.push(['or', ...a]), fake),
+  };
+  pm.applyCategory(fake, 'economy', 'kalshi');
+  pm.applyCategory(fake, 'economy', 'polymarket');
+  pm.applyCategory(fake, 'economy');
+  assert.deepEqual(calls, [
+    ['in', 'category', ['Economics', 'Financials']],
+    ['ov', 'tag_ids', ['100328', '120']],
+    ['or', econ.or],
+  ]);
+});
+
+test('predictions: OpenAPI has every new path and a per-operation sort enum', () => {
+  const doc = buildOpenApi();
+  for (const path of [
+    '/v1/predictions/markets',
+    '/v1/predictions/markets/{id}',
+    '/v1/predictions/markets/{id}/history',
+    '/v1/predictions/events',
+    '/v1/predictions/events/{key}',
+    '/v1/predictions/movers',
+    '/v1/predictions/trending',
+    '/v1/predictions/consensus',
+    '/v1/predictions/forecasts',
+    '/v1/predictions/categories',
+  ]) {
+    assert.ok(doc.paths[path], path);
+    assert.equal(doc.paths[path].get['x-status'], 'live', path);
+  }
+  const sortOf = (path) =>
+    doc.paths[path].get.parameters.find((p) => p.name === 'sort').schema.enum;
+  assert.deepEqual(sortOf('/v1/predictions/events'), ['volume', 'volume_24h', 'ending']);
+  assert.equal(sortOf('/v1/predictions/markets').length, 7);
+  const tag = doc.tags.find((t) => t.name === 'Prediction markets');
+  assert.match(tag.description, /\*\*Volume units\.\*\*/);
+  const movers = doc.paths['/v1/predictions/movers'].get.responses[200];
+  assert.equal(movers.content['application/json'].schema.properties.data.type, 'array');
 });
