@@ -2,9 +2,9 @@
  * Ezana API handlers: cross dimension (server only). Keyed by route id;
  * merged into HANDLERS by ../handlers.js. Built on ../handler-kit.js.
  *
- * The composite reuses the other dimensions' handlers as its section readers
- * (looked up at call time from the merged HANDLERS, so this module does not
- * import ../handlers.js at load and create a cycle).
+ * The composite reuses the other dimensions' handlers as its section readers,
+ * looked up from the merged map ../handlers.js binds in (bindAllHandlers),
+ * so this module never imports ../handlers.js.
  */
 import {
   ApiError,
@@ -28,9 +28,15 @@ import {
 const TICKER_RE = /^[A-Z][A-Z0-9.-]{0,9}$/;
 const SECTION_MS = 2500;
 
+/* The merged handler map, handed over by ../handlers.js once every dimension
+   is registered (an import here would be a cycle). */
+let ALL = null;
+export function bindAllHandlers(handlers) {
+  ALL = handlers;
+}
 async function all() {
-  const mod = await import('../handlers.js');
-  return mod.HANDLERS;
+  if (!ALL) throw new Error('cross: handlers not bound');
+  return ALL;
 }
 
 /* Run one section reader: null on not-found or empty, 'timeout'/'error' tags
