@@ -2210,6 +2210,9 @@ export function SonarSection({
       setPingError('That ping did not land. Try again.');
     } finally {
       setPinging(false);
+      /* Oct 27: answered or not, the ping is over: the /datasets host lifts
+         its hand-off loading screen on this. */
+      if (typeof onPing === 'function') onPing(q, { settled: true });
     }
   }
 

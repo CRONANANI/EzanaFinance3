@@ -1486,13 +1486,27 @@ export async function runLandingPipeline(
         : resolved
           ? [resolved.name, resolved.ticker].filter(Boolean).map((t) => t.toLowerCase())
           : null;
+  /* Oct 27: whole words, not substrings ("india" must not match Indiana),
+     and for a country, US domestic names that carry a demonym are removed
+     first: an India ping was citing federal awards to "The Friendship House
+     Association of American Indians" and American Indian health centers. */
+  const termRes = (entityTerms || []).map(
+    (t) =>
+      new RegExp(
+        `(^|[^\\p{L}\\p{N}])${t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?=[^\\p{L}\\p{N}]|$)`,
+        'u',
+      ),
+  );
+  const US_DOMESTIC =
+    /\b(?:american indians?|native americans?|alaska natives?|indian (?:health|affairs|tribes?|tribal|education|country|reservations?|nations?)|bureau of indian|tribal)\b/g;
   const items = entityTerms
     ? retrieved.filter((it) => {
-        const hay = [it.title, it.snippet, ...Object.values(it.meta || {})]
+        let hay = [it.title, it.snippet, ...Object.values(it.meta || {})]
           .filter((v) => typeof v === 'string')
           .join(' ')
           .toLowerCase();
-        return entityTerms.some((t) => hay.includes(t));
+        if (country) hay = hay.replace(US_DOMESTIC, ' ');
+        return termRes.some((re) => re.test(hay));
       })
     : retrieved;
 

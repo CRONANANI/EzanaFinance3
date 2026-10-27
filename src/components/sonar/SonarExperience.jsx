@@ -22,6 +22,7 @@ import { supabase } from '@/lib/supabase-browser';
 
 import '@/app/(dashboard)/sonar/sonar.css';
 import { SonarLoader } from '@/components/sonar/SonarLoader';
+import '@/app/datasets/datasets-loading.css';
 
 /* The landing Sonar band, loaded only once a Datasets search is sent. */
 import DatasetCardMatches from './DatasetCardMatches';
@@ -113,6 +114,11 @@ export function SonarExperience({ variant = 'app', heroAddon = null, initialQuer
      drives the sign-up CTA and the ?q= in the address. */
   const [shownQuery, setShownQuery] = useState(startQuery);
   const [answeredQuery, setAnsweredQuery] = useState(null);
+  /* Oct 27: a ping handed off from the landing pill (/datasets?q=...) keeps
+     the full green loading screen up until it settles, answered or not, so
+     the visitor goes from one loading page straight to the results. Follow-up
+     pings typed in the band keep the band's own loader. */
+  const [handoffPending, setHandoffPending] = useState(Boolean(startQuery));
   const [phase, setPhase] = useState('idle'); // idle | searching | streaming | complete | error
   const pingIdRef = useRef(0);
   const [result, setResult] = useState(null);
@@ -157,8 +163,15 @@ export function SonarExperience({ variant = 'app', heroAddon = null, initialQuer
   function onBandPing(query, meta = null) {
     /* The band reports twice: the raw words when the ping starts (for ?q=),
        then the understood display title once it lands, which is what the
-       sign-up CTA shows. The address keeps the raw words. */
+       sign-up CTA shows. The address keeps the raw words. It also reports
+       `settled` when the ping finishes either way, which lifts the hand-off
+       loading screen. */
+    if (meta?.settled) {
+      setHandoffPending(false);
+      return;
+    }
     if (meta?.display) {
+      setHandoffPending(false);
       setShownQuery(meta.display);
       /* The briefing has landed: only now may matching dataset cards show,
          so a card list is never the whole response. */
@@ -346,6 +359,11 @@ export function SonarExperience({ variant = 'app', heroAddon = null, initialQuer
         {/* Guests only (the card checks auth itself): a centred popup once
             the briefing lands, minimizable to a small widget bottom left. */}
         <SonarSignupCta query={shownQuery || bandQuery} ready={Boolean(answeredQuery)} />
+        {handoffPending ? (
+          <div className="dsl-handoff">
+            <SonarLoader size="md" label="Sonar is pinging" bare />
+          </div>
+        ) : null}
       </div>
     );
   }

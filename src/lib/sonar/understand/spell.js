@@ -7,6 +7,7 @@
  * with internal dots (U.S.).
  */
 import { BIGRAMS, FREQ, GEO_LEXICON, LEXICON, STOPWORDS } from '@/lib/sonar/understand/lexicons';
+import { REAL_WORDS } from '@/lib/sonar/understand/real-words';
 
 /** Damerau-Levenshtein, optimal string alignment. */
 export function dl(a, b) {
@@ -43,7 +44,8 @@ const protectedToken = (raw) =>
    the UI never offers "Search instead for" the words the visitor typed
    correctly. The stem drops one trailing vowel or y from the place name;
    what follows the stem must be a demonym ending. */
-const DEMONYM_TAIL = /^(?:n|an|ian|ese|ish|i)?$/;
+/* "e" covers Argentine (Argentina), added Oct 27. */
+const DEMONYM_TAIL = /^(?:n|an|ian|ese|ish|i|e)?$/;
 export function isDerivedPlaceWord(word, candidate) {
   if (!GEO_LEXICON.has(candidate)) return false;
   const stem = candidate.replace(/[aeiouy]$/, '');
@@ -58,10 +60,19 @@ export function correct(rawTokens) {
     if (protectedToken(raw)) return;
     const w = raw.toLowerCase().replace(/[^a-z]/g, '');
     if (w.length < 4 || STOPWORDS.has(w) || LEXICON.has(w)) return;
+    /* A real English word is not a typo (Oct 27): leave it as typed. The set
+       holds only the real words this pass would otherwise rewrite. */
+    if (REAL_WORDS.has(w)) return;
     const maxD = w.length <= 5 ? 1 : 2;
     let best = null;
     for (const cand of LEXICON) {
       if (Math.abs(cand.length - w.length) > maxD) continue;
+      /* Oct 27: a correction keeps the first letter. Real typos almost always
+         do ("lyout", "canda", "compnies"); without this, real words were
+         snapped to the nearest finance term (winning->mining, fourth->south,
+         running->ranking, hiring->mining), turning a question about India's
+         election into a mining-industry ping. */
+      if (cand[0] !== w[0]) continue;
       const dist = dl(w, cand);
       if (dist > maxD || dist === 0) continue;
       const prev = out[i - 1]?.toLowerCase();

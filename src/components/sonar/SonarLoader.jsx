@@ -11,12 +11,14 @@ import './sonar-loader.css';
  *   <SonarLoader size="sm" label="..." sublabel="Sweeping filings, trades and contracts" />
  *   <SonarLoader caption="Sweeping 8 datasets..." /> the landing band's
  *     original single mono caption, unchanged (size lg)
+ *   <SonarLoader size="md" bare />                 the stack alone (Oct 27);
+ *     the label is still read out, but not drawn
  *
  * role="status" + aria-live="polite" on the wrapper; the label is visible
  * text. Animation is transform/opacity only; under prefers-reduced-motion
  * the stack is static.
  */
-export function SonarLoader({ size = 'lg', label, sublabel, caption } = {}) {
+export function SonarLoader({ size = 'lg', label, sublabel, caption, bare = false } = {}) {
   const legacy = caption != null && label == null;
   const text = legacy ? caption : label || 'Sonar is analyzing';
   return (
@@ -150,7 +152,9 @@ export function SonarLoader({ size = 'lg', label, sublabel, caption } = {}) {
           </svg>
         </div>
       </div>
-      {legacy ? (
+      {bare ? (
+        <span className="snrl-sr">{text}</span>
+      ) : legacy ? (
         <p className="snrl-caption">{text}</p>
       ) : (
         <div className="snrl-text">

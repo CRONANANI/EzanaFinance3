@@ -20,7 +20,8 @@ export default function DatasetLoading() {
   if (pathname === '/datasets') {
     return (
       <div className="dsl-sonar">
-        <SonarLoader size="md" label="Sonar is pinging" sublabel="Sweeping every Ezana dataset" />
+        {/* Oct 27: the stack alone; no "Sonar is pinging" copy. */}
+        <SonarLoader size="md" label="Sonar is pinging" bare />
       </div>
     );
   }

@@ -22,3 +22,24 @@
 .dsl-sonar .snrl-sublabel {
   color: color-mix(in srgb, white 85%, transparent);
 }
+
+/* Oct 27: the landing hand-off keeps this exact screen up until the ping has
+   answered (SonarExperience, .dsl-handoff), so the visitor sees one loading
+   page and then the results, never the empty results band in between. Fixed
+   over the page, under the sticky navbar (z 2147483000) so the logo stays. */
+.dsl-handoff {
+  position: fixed;
+  inset: 0;
+  z-index: 2147482990;
+  display: grid;
+  place-items: center;
+  padding: 48px 16px;
+  background: var(--brand-band-green);
+}
+.dsl-handoff .snrl-wrap {
+  --snrl-deep: color-mix(in srgb, var(--emerald) 55%, var(--emerald-dark));
+  --snrl-mid: color-mix(in srgb, var(--emerald) 40%, var(--emerald-dark));
+  --snrl-top: color-mix(in srgb, var(--emerald) 72%, var(--emerald-dark));
+  --snrl-bright: var(--brand-band-mint);
+  color: white;
+}
