@@ -16,6 +16,36 @@
  */
 
 import { getAdminClient } from '@/lib/supabase';
+import { withTimeout } from '@/lib/with-timeout';
+import { BoundedMap } from '@/lib/bounded-map';
+
+/* Oct 26: the limiter's RPC had no bound of its own, so it inherited the
+   admin client's 60s fetch timeout. With the database IO-starved, every
+   fail-closed route (Sonar included) waited a full minute and then answered
+   503 "Service temporarily unavailable", before any of its own work ran.
+   The call is now bounded, and a short-window bucket that cannot reach the
+   database is counted in memory on this instance instead of refused. */
+const DB_TIMEOUT_MS = Math.max(250, Number(process.env.RATE_LIMIT_DB_TIMEOUT_MS) || 2000);
+/* Windows up to this length fall back to the in-memory count. Daily caps
+   (ai-day, ai-global, Sonar's daily quota) do not: a per-instance count
+   cannot hold a daily budget, so they stay fail-closed. */
+const MEMORY_FALLBACK_MAX_WINDOW_MS = 10 * 60_000;
+const memBuckets = new BoundedMap(5000);
+
+function memoryHit(bucketKey, limit, windowMs) {
+  const now = Date.now();
+  let b = memBuckets.get(bucketKey);
+  if (!b || b.resetAt <= now) b = { count: 0, resetAt: now + windowMs };
+  b.count += 1;
+  memBuckets.set(bucketKey, b);
+  return {
+    allowed: b.count <= limit,
+    remaining: Math.max(0, limit - b.count),
+    resetAt: new Date(b.resetAt),
+    degraded: true,
+    memory: true,
+  };
+}
 
 const MISSING_FN = new Set(['PGRST202', '42883']);
 let lastOutageReport = 0;
@@ -34,6 +64,14 @@ function reportOutage(bucketKey, message) {
 
 function degraded(bucketKey, limit, windowMs, failClosed, message) {
   reportOutage(bucketKey, message);
+  /* A fail-closed short window is still enforced while the database is
+     unreachable, counted per instance in memory, instead of refusing every
+     request. Going over that in-memory limit is reported as an ordinary
+     over-limit (degraded: false), so callers answer 429, not a 503 outage. */
+  if (failClosed && windowMs <= MEMORY_FALLBACK_MAX_WINDOW_MS) {
+    const m = memoryHit(bucketKey, limit, windowMs);
+    return m.allowed ? m : { ...m, degraded: false };
+  }
   const resetAt = new Date(Date.now() + windowMs);
   return failClosed
     ? { allowed: false, remaining: 0, resetAt, degraded: true }
@@ -53,11 +91,25 @@ export async function checkRateLimit(bucketKey, limit, windowMs, { failClosed = 
   if (!bucketKey) return { allowed: true, remaining: limit, resetAt: new Date() };
   try {
     const admin = getAdminClient();
-    const { data, error } = await admin.rpc('rate_limit_hit', {
-      p_key: bucketKey,
-      p_limit: limit,
-      p_window_ms: windowMs,
-    });
+    const call = await withTimeout(
+      admin.rpc('rate_limit_hit', {
+        p_key: bucketKey,
+        p_limit: limit,
+        p_window_ms: windowMs,
+      }),
+      DB_TIMEOUT_MS,
+      'rate_limit_hit',
+    );
+    if (!call.ok) {
+      return degraded(
+        bucketKey,
+        limit,
+        windowMs,
+        failClosed,
+        call.timedOut ? `timed out after ${DB_TIMEOUT_MS}ms` : call.error?.message || 'rpc failed',
+      );
+    }
+    const { data, error } = call.value;
     if (error) {
       if (MISSING_FN.has(error.code))
         return legacyCheck(admin, bucketKey, limit, windowMs, failClosed);

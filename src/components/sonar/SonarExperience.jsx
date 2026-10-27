@@ -256,6 +256,11 @@ export function SonarExperience({ variant = 'app', heroAddon = null, initialQuer
         setPhase('error');
         return;
       }
+      if (res.status === 503) {
+        setError('Sonar is busy right now. Nothing was spent; try again in a minute.');
+        setPhase('error');
+        return;
+      }
       if (!res.ok) {
         setError(data?.error || 'Sonar could not complete that ping.');
         setPhase('error');

@@ -2197,6 +2197,11 @@ export function SonarSection({
         /* The strict per-IP limiter, not a broken ping. Naming it stops a
            visitor retrying into the same wall. */
         setPingError('Too many pings too fast. Wait a minute and try again.');
+      } else if (res.status === 503) {
+        /* Our side is overloaded (the database or a limiter could not answer
+           in time). Nothing was spent; say so in Sonar's voice rather than
+           echoing the guard's generic line. */
+        setPingError('Sonar is busy right now. Nothing was spent; try again in a minute.');
       } else {
         setPingError(data?.error || 'That ping did not land. Try again.');
       }
