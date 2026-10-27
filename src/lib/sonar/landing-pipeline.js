@@ -38,6 +38,7 @@ import { industryProfile, industryNewsTitle, fetchIndustryNews } from '@/lib/son
 import { resolvePolitician, buildPoliticianDossier } from '@/lib/sonar/landing-politician';
 import {
   resolveCountry,
+  mentionedCountry,
   buildCountryDossier,
   countryEvidence,
   countryEntityTerms,
@@ -85,6 +86,30 @@ const BRIEF_WEB_USES = 5;
 
 export const DISCLAIMER =
   'Sonar synthesizes sourced research from Ezana datasets. Findings only, never financial advice.';
+
+/* Oct 26: briefs were telling visitors to "watch the October 2026
+   presidential election" after it had happened, and attributing facts to
+   Reuters and Bloomberg on runs where no web search ran. Every brief now
+   gets today's date in the ping and these two rule blocks. */
+const DATE_RULES = `
+Dates: today's date is the first line of the ping. Anything dated before today has already happened. Never describe a past election, vote, meeting, data release or deadline as upcoming, and never tell the reader to watch an event that has passed. If a past event's outcome is not in the sources or a web result, say it has taken place and that its result is not in the sources yet; never guess the result. A projection for a year that is already over is history, not a forecast.`;
+
+const NO_WEB_RULES = `
+Web search is not available for this brief. Never attribute a fact to an outlet, agency or report you did not read here (no "per Reuters", no "according to Bloomberg"). Anything you add beyond the sources is general background: say so, give the year it dates from, and never let it contradict the sources.`;
+
+/** Today in Toronto (the brief's reader), long form: "Monday, October 26, 2026". */
+function todayLine() {
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Toronto',
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(new Date());
+}
+
+/* The same switch anthropicSynthesize reads: without it no search runs. */
+const webSearchOn = () => process.env.SONAR_WEB_SEARCH === 'true';
 
 const GROUNDED_SYSTEM_PROMPT = `You are Ezana Sonar, a research analyst answering a ping. You have two kinds of evidence: numbered dataset snippets from Ezana's proprietary datasets (congressional trades, government contracts, SEC and 13F filings, lobbying, the OFAC sanctions list, prediction markets, Echo editorial), and live web search.
 Rules:
@@ -1313,7 +1338,7 @@ export async function runLandingPipeline(
 
   /* A country: the strict whole-string match, or a country-intent ping
      whose chosen country entity resolves by name. */
-  const country = industryPing
+  let country = industryPing
     ? null
     : resolveCountry(q) ||
       (['country', 'country_rank'].includes(understood.intent) && countryEnt
@@ -1354,15 +1379,28 @@ export async function runLandingPipeline(
         (v) => (v ? v.ticker : 'none'),
       )
     : null;
+  /* Oct 26: a country named anywhere in an otherwise unresolved ping
+     ("brazilian economy outlook for the next 4 years after the 2026 federal
+     election") brings that country's dossier: the OECD key chart, the Empire
+     rankings and the country news, and their figures as evidence. The ping's
+     own words still drive retrieval, and the country filter keeps off-topic
+     snippets (contracts for unrelated US firms) out of the brief. */
+  const countryMentioned =
+    !country && !politician && !resolved && !industryPing && !industryEnt
+      ? mentionedCountry(q)
+      : null;
+  if (countryMentioned) country = countryMentioned;
   const display = understood.display || q;
   /* Retrieval sees the enriched string; the ledger keeps the raw words, the
      UI shows the display title. */
   const retrievalQuery = industryPing
     ? display
     : country
-      ? rankPing
-        ? `${country.name} economy size, growth and world ranking`
-        : country.name
+      ? countryMentioned
+        ? q
+        : rankPing
+          ? `${country.name} economy size, growth and world ranking`
+          : country.name
       : politician
         ? politician.name
         : resolved
@@ -1372,9 +1410,11 @@ export async function runLandingPipeline(
   const resolvedNote = industryPing
     ? ` (understood as an industry layout: ${display}; describe structure, major players, where it operates, concentration, capital flows, key dependencies and what to watch, from the sources only)`
     : country
-      ? rankPing
-        ? ` (understood as ${display}: where ${country.name} ranks among the world's economies. Use ONLY the ranks, values, years and sources in the sources; name the measure, year and source for every rank; never state a rank or figure the sources do not give; projections only as "IMF projects" with the year. Sections: ${RANK_SECTIONS.join(' · ')}.)`
-        : ` (resolved to the country ${country.name}, ISO ${country.iso3})`
+      ? countryMentioned
+        ? ` (about ${country.name}, ISO ${country.iso3}; Ezana's OECD Economic Outlook and Global Empire Rankings figures for ${country.name} are among the sources; answer the question as asked)`
+        : rankPing
+          ? ` (understood as ${display}: where ${country.name} ranks among the world's economies. Use ONLY the ranks, values, years and sources in the sources; name the measure, year and source for every rank; never state a rank or figure the sources do not give; projections only as "IMF projects" with the year. Sections: ${RANK_SECTIONS.join(' · ')}.)`
+          : ` (resolved to the country ${country.name}, ISO ${country.iso3})`
       : politician
         ? ` (resolved to ${politician.name}, ${[politician.party, politician.state].filter(Boolean).join('-')}, U.S. ${politician.chamberLabel || 'Congress'})`
         : resolved
@@ -1598,8 +1638,10 @@ export async function runLandingPipeline(
           system:
             GROUNDED_SYSTEM_PROMPT +
             (sanctions ? SANCTIONS_ADDENDUM : '') +
-            (country ? COUNTRY_ADDENDUM : ''),
-          user: `Ping: ${display}${resolvedNote}\n\nSources:\n${sourcesBlock}`,
+            (country ? COUNTRY_ADDENDUM : '') +
+            DATE_RULES +
+            (webSearchOn() ? '' : NO_WEB_RULES),
+          user: `Today is ${todayLine()}.\nPing: ${display}${resolvedNote}\n\nSources:\n${sourcesBlock}`,
           /* Room for four paragraphs of dataset and web findings; the brief
              panel scrolls inside the locked viewport. */
           maxTokens: sanctions ? BRIEF_TOKENS + 400 : BRIEF_TOKENS,
@@ -1648,8 +1690,8 @@ export async function runLandingPipeline(
       'synthesize-general',
       () =>
         synthesizeWithFallback({
-          system: GENERAL_SYSTEM_PROMPT,
-          user: `Ping: ${display}${resolvedNote}`,
+          system: GENERAL_SYSTEM_PROMPT + DATE_RULES + (webSearchOn() ? '' : NO_WEB_RULES),
+          user: `Today is ${todayLine()}.\nPing: ${display}${resolvedNote}`,
           maxTokens: BRIEF_TOKENS,
           model: BRIEF_MODEL,
           fallbackModel: HAIKU_MODEL,
@@ -1744,6 +1786,19 @@ export async function runLandingPipeline(
       ambiguities: understood.ambiguities,
     },
     industry: industry ? industry.industry.id : null,
+    /* Oct 26: what each matched dataset actually contributed, for the
+       Sourced matches rows that have no dossier preview (an open question's
+       contracts or Echo hits). Same items the brief cites; trimmed. */
+    evidence: items
+      .filter((it) => CORPUS_TO_DATASET[it.corpus])
+      .slice(0, 12)
+      .map((it) => ({
+        dataset: CORPUS_TO_DATASET[it.corpus],
+        title: String(it.title || '').slice(0, 160),
+        snippet: String(it.snippet || it.text || '').slice(0, 220),
+        url: typeof it.url === 'string' ? it.url : null,
+        date: it.date || null,
+      })),
     itemCount: items.length,
     retrievedCount: retrieved.length,
     corporaSearched,

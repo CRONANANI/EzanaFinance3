@@ -2176,6 +2176,7 @@ export function SonarSection({
           query: data.understood?.display || q,
           rawQuery: q,
           understood: data.understood || null,
+          evidence: Array.isArray(data.evidence) ? data.evidence : [],
           remaining: data.remaining,
         });
         if (typeof onPing === 'function' && data.understood?.display) {
@@ -2701,19 +2702,8 @@ export function SonarSection({
                 <div className="snr-dossier-head">
                   <span className="snr-dossier-title">Sourced matches</span>
                   <span className="snr-rule" />
-                  {/* The pinged term in full, or its ticker when the full name
-                  will not fit. It used to be `slice(0, 14)`, which rendered
-                  "LOCKHEED MARTIN" as "LOCKHEED MARTI": a truncation that
-                  reads as a different company. A ticker is short and true,
-                  where half a name is neither. */}
-                  <span className="snr-meta snr-term">
-                    {(() => {
-                      const term = live?.query || lastQuery;
-                      return term.length > 16 && live?.dossier?.ticker
-                        ? live.dossier.ticker.toUpperCase()
-                        : term.toUpperCase();
-                    })()}
-                  </span>
+                  {/* Oct 26: the pinged term no longer repeats here; the brief
+                    and the search field already show it. */}
                 </div>
 
                 <div className="snr-dossier-body">
@@ -2757,11 +2747,27 @@ export function SonarSection({
                         return swept.indexOf(a) - swept.indexOf(b);
                       });
 
-                      return sorted.map((d, i) => {
-                        const data = live ? rich[d.id] : null;
+                      /* Oct 26: only datasets that found something are listed.
+                     A matched dataset with no dossier preview (an open
+                     question's contracts or Echo hits) shows the items it
+                     contributed, from live.evidence. */
+                      const evidenceFor = (id) =>
+                        (live?.evidence || []).filter((ev) => ev.dataset === id).slice(0, 3);
+                      const shown = sorted.filter((d) => {
                         const hit = live?.sources?.find((sc) => sc.id === d.id);
-                        const matched = Boolean(data) || Boolean(hit?.used);
-                        const cls = `snr-row${matched ? '' : ' snr-row--dry'}${data ? ' snr-row--rich' : ''} ${
+                        return Boolean(rich[d.id]) || (hit?.used && evidenceFor(d.id).length > 0);
+                      });
+                      if (!shown.length) {
+                        return (
+                          <span className="snr-row-line snr-row-none">
+                            No Ezana dataset matched this ping.
+                          </span>
+                        );
+                      }
+                      return shown.map((d, i) => {
+                        const data = live ? rich[d.id] : null;
+                        const evidence = data ? [] : evidenceFor(d.id);
+                        const cls = `snr-row${data ? ' snr-row--rich' : ''} ${
                           hasPinged || pingPulse > 0 ? 'snr-anim-rowpop' : `snr-anim-row${i}`
                         }`;
                         /* After a ping the rows fill in as the dossier lands
@@ -2779,7 +2785,7 @@ export function SonarSection({
                             <div className="snr-row-top">
                               <span className="snr-tag">{d.chip}</span>
                               <span className="snr-rule" />
-                              <span className="snr-src">{matched ? 'matched' : 'searched'}</span>
+                              <span className="snr-src">matched</span>
                             </div>
 
                             {d.id === 'oecd-macro' && data ? (
@@ -2985,10 +2991,30 @@ export function SonarSection({
                               </div>
                             ) : null}
 
-                            {!data ? (
-                              <span className="snr-row-line">
-                                {matched ? d.name : 'No matches for this ping'}
-                              </span>
+                            {!data && evidence.length ? (
+                              <ul className="snr-row-ev">
+                                {evidence.map((ev, k) => (
+                                  <li key={`${d.id}-${k}`}>
+                                    {ev.url ? (
+                                      <a
+                                        href={ev.url}
+                                        {...(/^https?:/.test(ev.url)
+                                          ? { target: '_blank', rel: 'noopener noreferrer' }
+                                          : {})}
+                                      >
+                                        {ev.title || d.name}
+                                      </a>
+                                    ) : (
+                                      <span>{ev.title || d.name}</span>
+                                    )}
+                                    {ev.date ? (
+                                      <span className="snr-row-ev-date">
+                                        {String(ev.date).slice(0, 10)}
+                                      </span>
+                                    ) : null}
+                                  </li>
+                                ))}
+                              </ul>
                             ) : null}
                           </div>
                         );

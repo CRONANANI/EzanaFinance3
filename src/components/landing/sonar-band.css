@@ -4483,3 +4483,50 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
     --snr-band-bg: var(--brand-band-green);
   }
 }
+
+/* Oct 26: Sourced matches lists only datasets that found something. A match
+   with no dossier preview (an open question's contracts or Echo hits) lists
+   the items it contributed to the brief: title (linked) and date. */
+.snr-row-ev {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.snr-row-ev li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--snr-text);
+}
+.snr-row-ev a,
+.snr-row-ev span:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--snr-text);
+  text-decoration: none;
+}
+.snr-row-ev a:hover,
+.snr-row-ev a:focus-visible {
+  color: var(--snr-mint);
+  text-decoration: underline;
+}
+.snr-row-ev-date {
+  flex: 0 0 auto;
+  font-family: var(--snr-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: color-mix(in srgb, var(--snr-text) 70%, transparent);
+}
+.snr-row-none {
+  display: block;
+  padding: 6px 0;
+  color: color-mix(in srgb, var(--snr-text) 75%, transparent);
+}

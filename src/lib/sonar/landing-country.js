@@ -159,6 +159,39 @@ export function resolveCountry(query) {
   return hit ? { ...hit } : null;
 }
 
+/* Oct 26: a country named anywhere in a longer ping ("brazilian economy
+   outlook for the next 4 years after the 2026 federal election"), for the
+   country's OECD and Empire charts. Looser than resolveCountry, so it uses
+   only full names, news terms (names and demonyms) and long aliases: short
+   aliases stay whole-query-only ("tell us ...", "Bank of America"), and four
+   demonyms that are everyday words are skipped. Whole words only. */
+const MENTION_SKIP = new Set(['turkey', 'polish', 'danish', 'swiss']);
+const escapeRe = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const MENTION = [];
+for (const [iso3, name, aliases, newsTerms, opts] of COUNTRIES) {
+  const entry = { iso3, name, newsTerms, oecdArea: opts?.oecd || iso3 };
+  const terms = new Set(
+    [name, ...newsTerms, ...aliases.filter((a) => a.length >= 6 && !/america/i.test(a))]
+      .map(norm)
+      .filter((t) => t && !MENTION_SKIP.has(t)),
+  );
+  for (const t of terms) {
+    MENTION.push({ entry, re: new RegExp(`(^|[^\\p{L}])${escapeRe(t)}(?=[^\\p{L}]|$)`, 'u') });
+  }
+}
+
+/** The first country named anywhere in the ping, or null. */
+export function mentionedCountry(query) {
+  const q = norm(query);
+  if (!q) return null;
+  let best = null;
+  for (const { entry, re } of MENTION) {
+    const m = re.exec(q);
+    if (m && (!best || m.index < best.at)) best = { entry, at: m.index };
+  }
+  return best ? { ...best.entry } : null;
+}
+
 /** Lowercased terms that mark a retrieved chunk as being about the country. */
 export function countryEntityTerms(country) {
   return [country.name, ...country.newsTerms].map((t) => t.toLowerCase());

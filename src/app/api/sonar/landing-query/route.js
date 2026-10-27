@@ -246,6 +246,7 @@ export const POST = withApiGuard(
       intent: result.intent,
       sanctions: result.sanctions,
       understood: result.understood,
+      evidence: result.evidence || [],
       remaining: member ? null : Math.max(0, GUEST_LIMIT - nextUsed),
       disclaimer: DISCLAIMER,
     });
