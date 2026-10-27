@@ -56,7 +56,8 @@
 
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Component, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import * as Sentry from '@sentry/nextjs';
 import { SonarOrbital } from './SonarOrbital';
 import { SonarLoader } from '@/components/sonar/SonarLoader';
 import { geometryFor } from './sonar-geometry';
@@ -610,6 +611,37 @@ function PoliticianStack({ dossier, onGate, topSlot = null }) {
       ) : null}
     </div>
   );
+}
+
+/* Oct 26: the results stack's own error boundary. A card that throws on an
+   unexpected payload used to climb to app/datasets/error.js and replace the
+   whole page with "This dataset could not be loaded", brief and all (prod:
+   "brazilian economy" returned news columns but dossier: null, and the stack
+   read live.dossier.fundamentals). Now only the stack's cards drop out; the
+   brief, the matches and the search stay. Keyed by the query so the next
+   ping renders fresh. Reported to Sentry so the bug is still seen. */
+class SonarStackBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { failed: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch(error, info) {
+    console.error('[SonarStackBoundary]', error);
+    try {
+      Sentry.captureException(error, { extra: { componentStack: info?.componentStack } });
+    } catch {
+      /* reporting is best-effort */
+    }
+  }
+
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
 }
 
 export function SonarSection({
@@ -2746,11 +2778,11 @@ export function SonarSection({
                             </div>
 
                             {d.id === 'oecd-macro' && data ? (
-                              <CountryOecdRow data={data} name={live.dossier.name} />
+                              <CountryOecdRow data={data} name={live?.dossier?.name} />
                             ) : null}
 
                             {d.id === 'empire' && data ? (
-                              <CountryEmpireRow data={data} name={live.dossier.name} />
+                              <CountryEmpireRow data={data} name={live?.dossier?.name} />
                             ) : null}
 
                             {d.id === 'gov-contracts' && data ? (
@@ -2975,152 +3007,157 @@ export function SonarSection({
               place of the price chart and the news list. Same .snr-fund /
               .snr-news shells, so the geometry budget, the card entrance and
               the orbital's "last card landed" signal all hold unchanged. */}
-            {stage2 && live?.dossier?.kind === 'politician' ? (
-              <PoliticianStack
-                dossier={live.dossier}
-                onGate={() => openGate()}
-                topSlot={stackTop}
-              />
-            ) : null}
+            <SonarStackBoundary key={live?.rawQuery || live?.query || 'none'}>
+              {stage2 && live?.dossier?.kind === 'politician' ? (
+                <PoliticianStack
+                  dossier={live.dossier}
+                  onGate={() => openGate()}
+                  topSlot={stackTop}
+                />
+              ) : null}
 
-            {/* A country: the key chart (the series furthest from its own
+              {/* A country: the key chart (the series furthest from its own
               20-year norm, switchable) in the price chart's slot, and the
               country's news in the news slot. Same shells again. */}
-            {stage2 && live?.dossier?.kind === 'country' ? (
-              <CountryStack
-                dossier={live.dossier}
-                onGate={() => openGate()}
-                newsSlot={railNews}
-                topSlot={stackTop}
-              />
-            ) : null}
+              {stage2 && live?.dossier?.kind === 'country' ? (
+                <CountryStack
+                  dossier={live.dossier}
+                  onGate={() => openGate()}
+                  newsSlot={railNews}
+                  topSlot={stackTop}
+                />
+              ) : null}
 
-            {/* An industry: the value-chain preview in the price chart's slot.
+              {/* An industry: the value-chain preview in the price chart's slot.
               The full Industry Layout renders below the deck on the page. */}
-            {stage2 && live?.dossier?.kind === 'industry' ? (
-              <IndustryStack dossier={live.dossier} newsSlot={railNews} topSlot={stackTop} />
-            ) : null}
+              {stage2 && live?.dossier?.kind === 'industry' ? (
+                <IndustryStack dossier={live.dossier} newsSlot={railNews} topSlot={stackTop} />
+              ) : null}
 
-            {stage2 &&
-            live?.dossier?.kind !== 'politician' &&
-            live?.dossier?.kind !== 'country' &&
-            live?.dossier?.kind !== 'industry' &&
-            (live?.dossier?.fundamentals ||
-              live?.dossier?.news?.length ||
-              live?.dossier?.echo?.length ||
-              railNews ||
-              stackTop) ? (
-              <div className="snr-stack">
-                {stackTop}
-                {live.dossier.fundamentals ? (
-                  <div className="snr-fund snr-fund--wide">
-                    <div className="snr-fund-head">
-                      <span className="snr-fund-ticker">{live.dossier.ticker}</span>
-                      {live.dossier.sparkLabel ? (
-                        <span className="snr-range-chip">{live.dossier.sparkLabel}</span>
-                      ) : null}
-                      <span className="snr-rule-soft" />
-                      <span className="snr-fund-name">{live.dossier.name}</span>
-                    </div>
-                    <div className="snr-fund-body">
-                      <Sparkline points={live.dossier.spark} />
-                      <div className="snr-fund-grid">
-                        <div className="snr-stat">
-                          <span className="snr-stat-label">P/E TTM</span>
-                          <span className="snr-stat-value">
-                            {typeof live.dossier.fundamentals.peTtm === 'number'
-                              ? live.dossier.fundamentals.peTtm.toFixed(2)
-                              : 'n/a'}
-                          </span>
-                        </div>
-                        <div className="snr-stat">
-                          <span className="snr-stat-label">EV/EBITDA TTM</span>
-                          <span className="snr-stat-value">
-                            {typeof live.dossier.fundamentals.evToEbitdaTtm === 'number'
-                              ? live.dossier.fundamentals.evToEbitdaTtm.toFixed(2)
-                              : 'n/a'}
-                          </span>
-                        </div>
-                        <div className="snr-stat">
-                          <span className="snr-stat-label">Market cap</span>
-                          <span className="snr-stat-value">
-                            {compactUsd(live.dossier.fundamentals.marketCap) || 'n/a'}
-                          </span>
-                        </div>
-                        <div className="snr-stat">
-                          <span className="snr-stat-label">
-                            {live.dossier.fundamentals.fourth?.label || 'Price'}
-                          </span>
-                          <span className="snr-stat-value">
-                            {statValue(live.dossier.fundamentals.fourth) ||
-                              (typeof live.dossier.fundamentals.price === 'number'
-                                ? `$${live.dossier.fundamentals.price.toFixed(2)}`
-                                : 'n/a')}
-                          </span>
+              {stage2 &&
+              live?.dossier?.kind !== 'politician' &&
+              live?.dossier?.kind !== 'country' &&
+              live?.dossier?.kind !== 'industry' &&
+              (live?.dossier?.fundamentals ||
+                live?.dossier?.news?.length ||
+                live?.dossier?.echo?.length ||
+                railNews ||
+                stackTop) ? (
+                <div className="snr-stack">
+                  {stackTop}
+                  {/* live.dossier can be null here: an open-question ping
+                  ("brazilian economy") returns news columns (railNews) but no
+                  dossier, and railNews alone opens this block. */}
+                  {live?.dossier?.fundamentals ? (
+                    <div className="snr-fund snr-fund--wide">
+                      <div className="snr-fund-head">
+                        <span className="snr-fund-ticker">{live.dossier.ticker}</span>
+                        {live.dossier.sparkLabel ? (
+                          <span className="snr-range-chip">{live.dossier.sparkLabel}</span>
+                        ) : null}
+                        <span className="snr-rule-soft" />
+                        <span className="snr-fund-name">{live.dossier.name}</span>
+                      </div>
+                      <div className="snr-fund-body">
+                        <Sparkline points={live.dossier.spark} />
+                        <div className="snr-fund-grid">
+                          <div className="snr-stat">
+                            <span className="snr-stat-label">P/E TTM</span>
+                            <span className="snr-stat-value">
+                              {typeof live.dossier.fundamentals.peTtm === 'number'
+                                ? live.dossier.fundamentals.peTtm.toFixed(2)
+                                : 'n/a'}
+                            </span>
+                          </div>
+                          <div className="snr-stat">
+                            <span className="snr-stat-label">EV/EBITDA TTM</span>
+                            <span className="snr-stat-value">
+                              {typeof live.dossier.fundamentals.evToEbitdaTtm === 'number'
+                                ? live.dossier.fundamentals.evToEbitdaTtm.toFixed(2)
+                                : 'n/a'}
+                            </span>
+                          </div>
+                          <div className="snr-stat">
+                            <span className="snr-stat-label">Market cap</span>
+                            <span className="snr-stat-value">
+                              {compactUsd(live.dossier.fundamentals.marketCap) || 'n/a'}
+                            </span>
+                          </div>
+                          <div className="snr-stat">
+                            <span className="snr-stat-label">
+                              {live.dossier.fundamentals.fourth?.label || 'Price'}
+                            </span>
+                            <span className="snr-stat-value">
+                              {statValue(live.dossier.fundamentals.fourth) ||
+                                (typeof live.dossier.fundamentals.price === 'number'
+                                  ? `$${live.dossier.fundamentals.price.toFixed(2)}`
+                                  : 'n/a')}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ) : null}
+                  ) : null}
 
-                {railNews ? (
-                  railNews
-                ) : live.dossier.news.length || live.dossier.echo.length ? (
-                  <div className="snr-news">
-                    <div className="snr-card-head">
-                      {/* Named for the company's industry ("Defense Industry
+                  {railNews ? (
+                    railNews
+                  ) : live?.dossier?.news?.length || live?.dossier?.echo?.length ? (
+                    <div className="snr-news">
+                      <div className="snr-card-head">
+                        {/* Named for the company's industry ("Defense Industry
                         Relevant News"): the list carries industry stories
                         that need not mention the company at all. */}
-                      <span className="snr-panel-title">
-                        {live.dossier.newsTitle || 'Relevant News'}
-                      </span>
-                      <span className="snr-rule-soft" aria-hidden="true" />
-                    </div>
-                    <div className="snr-news-list">
-                      {live.dossier.news.map((n) => (
-                        <a
-                          key={n.url}
-                          className="snr-news-item"
-                          href={n.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <span className="snr-news-title">{n.title}</span>
-                          <span className="snr-news-meta">
-                            {n.source}
-                            {relativeDay(n.publishedAt) ? ` · ${relativeDay(n.publishedAt)}` : ''}
-                          </span>
-                        </a>
-                      ))}
-                      {live.dossier.echo.map((e) => (
-                        <a key={e.slug} className="snr-news-item" href={`/echo/${e.slug}`}>
-                          <span className="snr-news-title">
-                            <span className="snr-echo-chip">
-                              <i className="bi bi-broadcast-pin" aria-hidden="true" />
-                              ECHO
+                        <span className="snr-panel-title">
+                          {live.dossier.newsTitle || 'Relevant News'}
+                        </span>
+                        <span className="snr-rule-soft" aria-hidden="true" />
+                      </div>
+                      <div className="snr-news-list">
+                        {(live.dossier.news || []).map((n) => (
+                          <a
+                            key={n.url}
+                            className="snr-news-item"
+                            href={n.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <span className="snr-news-title">{n.title}</span>
+                            <span className="snr-news-meta">
+                              {n.source}
+                              {relativeDay(n.publishedAt) ? ` · ${relativeDay(n.publishedAt)}` : ''}
                             </span>
-                            {e.title}
-                          </span>
-                          <span className="snr-news-meta">
-                            Ezana Echo
-                            {relativeDay(e.publishedAt) ? ` · ${relativeDay(e.publishedAt)}` : ''}
-                          </span>
-                        </a>
-                      ))}
-                    </div>
-                    {/* Pinned to the card bottom. It anchors the bottom edge
+                          </a>
+                        ))}
+                        {(live.dossier.echo || []).map((e) => (
+                          <a key={e.slug} className="snr-news-item" href={`/echo/${e.slug}`}>
+                            <span className="snr-news-title">
+                              <span className="snr-echo-chip">
+                                <i className="bi bi-broadcast-pin" aria-hidden="true" />
+                                ECHO
+                              </span>
+                              {e.title}
+                            </span>
+                            <span className="snr-news-meta">
+                              Ezana Echo
+                              {relativeDay(e.publishedAt) ? ` · ${relativeDay(e.publishedAt)}` : ''}
+                            </span>
+                          </a>
+                        ))}
+                      </div>
+                      {/* Pinned to the card bottom. It anchors the bottom edge
                       visually when only two items come back, which is what
                       left 123px of the card empty before. Gated like the other
                       dossier links: this one opens the app, it does not
                       navigate a signed-out visitor into a wall. */}
-                    <button type="button" className="snr-news-more" onClick={() => openGate()}>
-                      More coverage in Sonar
-                      <i className="bi bi-arrow-right" aria-hidden="true" />
-                    </button>
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
+                      <button type="button" className="snr-news-more" onClick={() => openGate()}>
+                        More coverage in Sonar
+                        <i className="bi bi-arrow-right" aria-hidden="true" />
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </SonarStackBoundary>
           </div>
 
           {/* A ping that lands without a dossier has no right-hand stack, so

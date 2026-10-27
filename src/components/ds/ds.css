@@ -794,10 +794,14 @@
   box-shadow: none !important;
   background: transparent !important;
 }
-.ds-search-input,
-.ds-search-input:hover,
-.ds-search-input:focus,
-.ds-search-input:focus-visible {
+/* Doubled class (0,2,0): the legacy light-mode sheet's `body.light-mode
+   input` (0,1,2) is also !important and, at equal importance, won on
+   specificity, painting every search pill white after a visit to a page that
+   imports it (Oct 26). */
+.ds-search-input.ds-search-input,
+.ds-search-input.ds-search-input:hover,
+.ds-search-input.ds-search-input:focus,
+.ds-search-input.ds-search-input:focus-visible {
   border-color: transparent !important;
   border-width: 0 !important;
   outline: none !important;

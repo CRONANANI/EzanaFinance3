@@ -1933,10 +1933,13 @@ body.light-mode .dso-page--search .dso-sonar-title {
 }
 .dso-page--search .sonar-qbar--ghost .sonar-qbar-input,
 .dso-page--search .sonar-qbar--ghost .sonar-qbar-input::placeholder {
-  color: color-mix(in srgb, white 78%, transparent);
+  /* !important: the legacy light-mode sheet forces input text and
+     placeholders to near-black / slate with !important (see ds.css, Oct 26),
+     which vanishes on the green ground. */
+  color: color-mix(in srgb, white 78%, transparent) !important;
 }
 .dso-page--search .sonar-qbar--ghost .sonar-qbar-input {
-  color: white;
+  color: white !important;
 }
 .dso-page--search .sonar-ds-loader .snrl-caption {
   color: color-mix(in srgb, white 88%, transparent);

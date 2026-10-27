@@ -475,6 +475,23 @@
   background-color: transparent;
   color-scheme: dark;
 }
+/* Oct 26: the "sometimes white" pill. app-legacy/assets/css/light-mode-fixes.css
+   sets `body.light-mode input { background: #ffffff !important; color: #111827
+   !important }` and a focus ring, all !important. Five dashboard pages import
+   it (watchlist, inside-the-capitol, betting-markets, learning-center), and
+   Next does not unload a page's CSS on client navigation, so after visiting
+   one of them the landing pill turned white with near-black text. Matching
+   !important at higher specificity (0,2,0 beats 0,1,2) keeps the pill clear
+   on the band's green in either theme. */
+.snr-band .snr-input,
+.snr-band .snr-input:hover,
+.snr-band .snr-input:focus,
+.snr-band .snr-input:focus-visible {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  color: var(--snr-text) !important;
+}
 .snr-band .snr-input::-webkit-search-decoration,
 .snr-band .snr-input::-webkit-search-cancel-button,
 .snr-band .snr-input::-webkit-search-results-button,
