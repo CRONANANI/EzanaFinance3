@@ -10,7 +10,7 @@ import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
 import './centaur-intelligence.css';
 import './chamber.css';
-import './er-cards.css';
+import '@/components/empire-ranking/er-cards.css';
 import { CentaurPromptBox } from '@/components/ui/chatgpt-prompt-input';
 import { ChamberCard, useAmbientSpeaker } from '@/components/centaur/chamber/ChamberCard';
 import { AdvisorModal } from '@/components/centaur/chamber/AdvisorModal';

@@ -258,3 +258,80 @@ test('/empire-ranking redirects here, and the hub route skips the lighthouse slu
   const hub = readFileSync(new URL('../src/app/datasets/[hub]/page.js', import.meta.url), 'utf8');
   assert.match(hub, /filter\(\(\[id\]\) => id !== 'lighthouse'\)/);
 });
+
+test('scopes are real memberships and filter by ISO3', () => {
+  assert.equal(M.SCOPE_MEMBERS.world, null);
+  assert.equal(M.SCOPE_MEMBERS.g7.length, 7);
+  assert.equal(M.SCOPE_MEMBERS.g20.length, 19, 'the 19 member countries; EU and AU are blocs');
+  assert.equal(M.SCOPE_MEMBERS.nato.length, 32);
+  for (const [k, list] of Object.entries(M.SCOPE_MEMBERS)) {
+    if (!list) continue;
+    assert.equal(new Set(list).size, list.length, `${k} has no duplicates`);
+    assert.ok(
+      list.every((c) => /^[A-Z]{3}$/.test(c)),
+      `${k} is ISO3`,
+    );
+  }
+  assert.ok(!M.SCOPE_MEMBERS.g20.includes('EUR'), 'no bloc pseudo-code from the old mock');
+  assert.deepEqual(
+    M.SCOPE_OPTIONS.map((o) => o.value),
+    Object.keys(M.SCOPE_MEMBERS),
+  );
+  const rows = [{ iso: 'USA' }, { iso: 'CHN' }, { iso: 'DNK' }];
+  assert.equal(M.applyScope(rows, 'world').length, 3);
+  assert.deepEqual(
+    M.applyScope(rows, 'g7').map((r) => r.iso),
+    ['USA'],
+  );
+  assert.deepEqual(
+    M.applyScope(rows, 'nato').map((r) => r.iso),
+    ['USA', 'DNK'],
+  );
+  assert.equal(M.applyScope(rows, 'nope').length, 3, 'unknown scope = no filter');
+  assert.deepEqual(M.applyScope(null, 'g7'), []);
+});
+
+test('rankedBars: scope, direction and cut over ranked rows only', () => {
+  const rows = M.compositeTableRows(model);
+  const ranked = rows.filter((r) => r.rank != null);
+  const top = M.rankedBars(rows, { topN: 2, valueKey: 'composite' });
+  assert.deepEqual(
+    top.map((b) => b.iso),
+    ranked.slice(0, 2).map((r) => r.iso),
+  );
+  assert.equal(top[0].fullName, ranked[0].country);
+  assert.equal(top[0].value, ranked[0].composite);
+  const weakest = M.rankedBars(rows, { topN: 1, direction: 'asc', valueKey: 'composite' });
+  assert.equal(weakest[0].iso, ranked.at(-1).iso);
+  const all = M.rankedBars(rows, { topN: 99, valueKey: 'composite' });
+  assert.ok(!all.some((b) => b.iso === 'ZZZ'), 'unranked rows (null composite) are dropped');
+  const dim = model.liveDims.find((d) => d.id === 'debt_burden');
+  const debt = M.rankedBars(M.dimensionTableRows(model, dim), { topN: 1, valueKey: 'score' });
+  assert.equal(debt[0].iso, 'DNK', 'dimension bars use the oriented score');
+});
+
+test('spotlights sit on the old section ids and only name real dimensions', () => {
+  const ids = M.SPOTLIGHTS.map((s) => s.section);
+  assert.equal(new Set(ids).size, ids.length);
+  for (const s of M.SPOTLIGHTS) {
+    assert.match(s.section, /^section-/);
+    assert.ok(
+      Object.values(M.LAYER_TO_DIM).includes(s.dimId) || s.dimId === 'innovation_technology',
+    );
+  }
+});
+
+test('the page wears the in-app Empire Rankings shell', () => {
+  const src = readFileSync(
+    new URL(
+      '../src/app/datasets/global-empire-lighthouse/EmpireRankingsClient.jsx',
+      import.meta.url,
+    ),
+    'utf8',
+  );
+  for (const cls of ['er-page', 'er-hero', 'er-grid', 'er-card', 'er-scorecard-grid']) {
+    assert.ok(src.includes(cls), cls);
+  }
+  assert.match(src, /@\/components\/empire-ranking\/er-cards\.css/);
+  assert.ok(!src.includes('DatasetDashboard'), 'not the generic dataset dashboard');
+});

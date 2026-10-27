@@ -267,3 +267,123 @@ export function pairRows(model, isoA, isoB) {
     })
     .filter(Boolean);
 }
+
+/**
+ * Country-group scopes for the rankings and scorecard cards, by ISO3. Real
+ * memberships (the old in-app page's scopes were guesses over its mock list):
+ *   G20   the 19 member countries (the EU and the African Union are blocs,
+ *         not countries, so they are not scored and not listed)
+ *   G7    the seven member countries
+ *   BRICS the full members as of 2026
+ *   NATO  the 32 member countries
+ * `world` is no filter.
+ */
+export const SCOPE_MEMBERS = {
+  world: null,
+  g20: [
+    'ARG',
+    'AUS',
+    'BRA',
+    'CAN',
+    'CHN',
+    'DEU',
+    'FRA',
+    'GBR',
+    'IDN',
+    'IND',
+    'ITA',
+    'JPN',
+    'KOR',
+    'MEX',
+    'RUS',
+    'SAU',
+    'TUR',
+    'USA',
+    'ZAF',
+  ],
+  g7: ['CAN', 'DEU', 'FRA', 'GBR', 'ITA', 'JPN', 'USA'],
+  brics: ['ARE', 'BRA', 'CHN', 'EGY', 'ETH', 'IDN', 'IND', 'IRN', 'RUS', 'ZAF'],
+  nato: [
+    'ALB',
+    'BEL',
+    'BGR',
+    'CAN',
+    'CZE',
+    'DEU',
+    'DNK',
+    'ESP',
+    'EST',
+    'FIN',
+    'FRA',
+    'GBR',
+    'GRC',
+    'HRV',
+    'HUN',
+    'ISL',
+    'ITA',
+    'LTU',
+    'LUX',
+    'LVA',
+    'MKD',
+    'MNE',
+    'NLD',
+    'NOR',
+    'POL',
+    'PRT',
+    'ROU',
+    'SVK',
+    'SVN',
+    'SWE',
+    'TUR',
+    'USA',
+  ],
+};
+
+export const SCOPE_OPTIONS = [
+  { value: 'world', label: 'World' },
+  { value: 'g20', label: 'G20' },
+  { value: 'g7', label: 'G7' },
+  { value: 'brics', label: 'BRICS' },
+  { value: 'nato', label: 'NATO' },
+];
+
+/** Rows (anything with an `iso`) inside a scope; unknown scope = no filter. */
+export function applyScope(rows, scope) {
+  const members = SCOPE_MEMBERS[scope];
+  if (!members) return rows || [];
+  const set = new Set(members);
+  return (rows || []).filter((r) => set.has(r.iso));
+}
+
+/**
+ * Top-N bar rows for a ranking card, from ranked table rows ({ iso, country,
+ * rank, <valueKey> }): scope, then strongest-first or weakest-first, then cut.
+ * Rows with a null value (unranked) are dropped. Ties keep table order.
+ */
+export function rankedBars(rows, { scope = 'world', topN = 10, direction = 'desc', valueKey }) {
+  const scoped = applyScope(rows, scope).filter((r) => Number.isFinite(r[valueKey]));
+  const ordered = direction === 'asc' ? [...scoped].reverse() : scoped;
+  return ordered.slice(0, topN).map((r) => ({
+    iso: r.iso,
+    name: r.iso,
+    fullName: r.country,
+    rank: r.rank,
+    value: r[valueKey],
+  }));
+}
+
+/**
+ * The live dimensions with a spotlight card of their own, each on the section
+ * id the old in-app page used for it, so ?layers= deep links from the Market
+ * Analysis "Show me data" button still land on a card. Only dimensions with
+ * live data render.
+ */
+export const SPOTLIGHTS = [
+  { dimId: 'debt_burden', section: 'section-interest-rates', icon: 'bi-bank' },
+  { dimId: 'military_strength', section: 'section-military-power', icon: 'bi-shield-shaded' },
+  { dimId: 'trade', section: 'section-trade-power', icon: 'bi-arrow-left-right' },
+  { dimId: 'innovation_technology', section: 'section-demographic-power', icon: 'bi-cpu' },
+  { dimId: 'infrastructure', section: 'section-infrastructure', icon: 'bi-building' },
+  { dimId: 'rule_of_law', section: 'section-governance', icon: 'bi-bank2' },
+  { dimId: 'internal_conflict', section: 'section-conflict-risk', icon: 'bi-exclamation-triangle' },
+];

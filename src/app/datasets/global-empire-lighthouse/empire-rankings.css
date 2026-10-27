@@ -1,14 +1,95 @@
 /* gerx- : Global Empire Rankings (/datasets/global-empire-lighthouse).
-   Tokens only. The page is a DatasetDashboard, so the hero, highlight,
-   composite table and source block are mkt-ds-*; this file styles the
-   dimension tables, the country panel, the compare bars, the pending list and
-   the unavailable card. Cards are mkt-card, so ds-cards.css and ds-align.css
-   already treat them like every other /datasets card. */
+   Tokens only. The page wears the in-app Empire Rankings look: the .er-page
+   shell, .er-hero, .er-grid and .er-card come from
+   src/components/empire-ranking/er-cards.css (shared with Centaur). This file
+   sizes the page column, styles what sits inside those cards (charts,
+   scorecard buttons, dimension and composite tables, the country panel, the
+   pending list, the method) and the unavailable card. */
 
-.gerx-section {
-  margin-bottom: 2.5rem;
+/* The in-app page ran the full width of the app column; give the cards the
+   same room rather than the 1100px dataset column. */
+.dsx-main.gerx-er {
+  max-width: 1320px;
+}
+.gerx-er .er-card {
   scroll-margin-top: 96px;
 }
+.gerx-er-bars {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+}
+.gerx-er-radar {
+  width: 100%;
+  min-width: 0;
+  height: 360px;
+  overflow: hidden;
+}
+
+/* The hero's emphasis and sub copy read from the card's text tokens, so they
+   hold contrast in both themes (er-cards.css pins them to dark-theme hex). */
+.gerx-er .er-hero-sub {
+  color: var(--er-text-muted);
+}
+.gerx-er .er-hero-sub em {
+  color: var(--er-text-body);
+}
+
+/* Scorecards are buttons (each opens its country); reset the button chrome
+   so they keep the .er-scorecard look. */
+button.gerx-er-scorecard {
+  appearance: none;
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+button.gerx-er-scorecard:focus-visible {
+  outline: 2px solid var(--emerald-border);
+  outline-offset: 2px;
+}
+.gerx-er-scorecard.is-searched {
+  border-color: var(--emerald-border);
+  box-shadow: inset 2px 0 0 var(--emerald);
+}
+/* The old cards carried emoji flags from mock data; the ISO code takes the
+   slot. */
+.er-scorecard .gerx-er-iso {
+  font-family: var(--font-mono);
+  font-size: var(--type-caption-size);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--er-accent);
+}
+
+/* Tables inside a card sit on the card surface. */
+.gerx-er .er-card .mkt-ds-table-wrap {
+  background: transparent;
+  border-color: var(--er-border-soft);
+}
+#composite .mkt-ds-table-wrap {
+  max-height: 560px;
+  overflow-y: auto;
+}
+
+.gerx-er-method p {
+  margin: 0 0 0.75rem;
+  max-width: 72ch;
+  font-size: var(--type-body-size);
+  line-height: 1.6;
+  color: var(--er-text-muted);
+}
+.gerx-er-method p:last-child {
+  margin-bottom: 0;
+}
+.gerx-er .gerx-pending {
+  color: var(--er-text-muted);
+}
+.gerx-er-panel .gerx-panel-body {
+  padding-top: 0;
+}
+
 .gerx-mono {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -21,14 +102,6 @@
   letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
-}
-.gerx-sr {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
 }
 
 /* ── searched-country highlight (composite and dimension tables) ── */
@@ -85,41 +158,6 @@
   gap: 6px;
   min-width: 0;
 }
-.gerx-pill-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.gerx-pill {
-  appearance: none;
-  min-height: 32px;
-  padding: 4px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--border-primary);
-  background: var(--surface-card);
-  color: var(--text-muted);
-  font-family: var(--font-sans);
-  font-size: var(--type-caption-size);
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    border-color 160ms ease-out,
-    background 160ms ease-out,
-    color 160ms ease-out;
-}
-.gerx-pill:hover {
-  border-color: var(--border-hover);
-  color: var(--text-secondary);
-}
-.gerx-pill:focus-visible {
-  outline: 2px solid var(--emerald-border);
-  outline-offset: 2px;
-}
-.gerx-pill.is-active {
-  border-color: var(--emerald-border);
-  background: color-mix(in srgb, var(--emerald) 12%, transparent);
-  color: var(--emerald-text);
-}
 
 /* The dimension table scrolls inside its own box, so a highlighted country
    can be brought into view without moving the page. */
@@ -134,34 +172,6 @@
   min-width: 0;
 }
 
-/* ── country panel ── */
-.gerx-panel {
-  margin-bottom: 2.5rem;
-  scroll-margin-top: 96px;
-}
-.gerx-panel:focus {
-  outline: none;
-}
-.gerx-panel-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border-secondary);
-}
-.gerx-panel-title {
-  margin: 4px 0 4px;
-  font-size: var(--type-section-size);
-  font-weight: var(--type-section-weight);
-  letter-spacing: var(--type-section-tracking);
-  color: var(--text-primary);
-}
-.gerx-panel-lede {
-  margin: 0;
-  font-size: var(--type-body-size);
-  color: var(--text-secondary);
-}
 .gerx-close {
   appearance: none;
   flex: 0 0 auto;
@@ -281,90 +291,6 @@
   font-weight: 600;
 }
 
-/* ── compare ── */
-.gerx-compare-pick {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 1rem;
-}
-.gerx-select {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-.gerx-select select {
-  min-height: 40px;
-  max-width: 100%;
-  padding: 0 10px;
-  border: 1px solid var(--border-input);
-  border-radius: var(--radius-md);
-  background: var(--surface-input);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 1rem;
-}
-.gerx-select select:focus-visible {
-  outline: 2px solid var(--emerald-border);
-  outline-offset: 1px;
-}
-.gerx-vs {
-  font-family: var(--font-mono);
-  font-size: var(--type-caption-size);
-  color: var(--text-faint);
-}
-.gerx-bars {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.gerx-bar-row {
-  display: grid;
-  grid-template-columns: minmax(0, 200px) minmax(0, 1fr);
-  align-items: center;
-  gap: 12px;
-  padding: 6px 0;
-  border-top: 1px solid var(--border-secondary);
-}
-.gerx-bar-row:first-child {
-  border-top: none;
-}
-.gerx-bar-name {
-  font-size: var(--type-caption-size);
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-.gerx-bar-pair {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 3.5em;
-  align-items: center;
-  gap: 4px 8px;
-}
-.gerx-bar-track {
-  height: 8px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
-  overflow: hidden;
-}
-.gerx-bar {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-}
-.gerx-bar--a {
-  background: var(--emerald);
-}
-.gerx-bar--b {
-  background: var(--gold-champagne);
-}
-.gerx-bar-val {
-  font-size: var(--type-caption-size);
-  color: var(--text-secondary);
-  text-align: right;
-}
-
 /* ── pending and unavailable ── */
 .gerx-pending {
   margin: 0;
@@ -406,16 +332,17 @@
   .gerx-radar-box {
     height: 280px;
   }
-  .gerx-bar-row {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 4px;
-  }
   .gerx-pills {
     gap: 10px;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .gerx-pill {
-    transition: none;
+/* Phone: scorecards one per row so the score never clips; the radar gets a
+   shorter box. */
+@media (max-width: 560px) {
+  .gerx-er .er-scorecard-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .gerx-er-radar {
+    height: 300px;
   }
 }
