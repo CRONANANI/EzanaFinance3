@@ -1503,14 +1503,124 @@
 
 /* ── Oct 27: endpoints by dimension, Insight chip, method line ── */
 .ea-dim {
-  margin-top: 2rem;
+  margin-top: 0;
+}
+/* Oct 27: the dimension title is the toggle for its endpoints (collapsed by
+   default). The whole row is one button; the h3 keeps the outline. */
+.ea-dim {
+  border-bottom: 1px solid var(--ea-border);
+}
+.ea-dim-h {
+  margin: 0;
+  font-size: inherit;
 }
 .ea-dim-head {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.35rem 0.6rem;
-  margin-bottom: 0.75rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.85rem 0.5rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.ea-dim-head:hover {
+  background: var(--emerald-bg-subtle);
+}
+.ea-dim-head:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.ea-dim-count {
+  margin-left: auto;
+  align-self: center;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
+  color: var(--ea-muted);
+}
+.ea-dim-chev {
+  align-self: center;
+  font-size: 0.8rem;
+  color: var(--ea-emerald-text);
+  transition: transform 0.2s ease;
+}
+.ea-dim.is-open .ea-dim-chev {
+  transform: rotate(180deg);
+}
+.ea-dim.is-open .ea-dim-head {
+  margin-bottom: 0.25rem;
+}
+.ea-dim-body {
+  padding-bottom: 1.25rem;
+}
+.ea-dim-body[hidden] {
+  display: none;
+}
+.ea-dim.is-open .ea-dim-body {
+  animation: ea-dim-in 0.18s ease-out;
+}
+@keyframes ea-dim-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.ea-dim-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--ea-border);
+}
+.ea-dim-bar-label {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+  color: var(--ea-muted);
+}
+.ea-dim-bar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--emerald);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ea-emerald-text);
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ea-dim-bar-btn:hover {
+  background: var(--emerald-bg);
+}
+.ea-dim-bar-btn:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ea-dim-chev,
+  .ea-dim-head {
+    transition: none;
+  }
+  .ea-dim.is-open .ea-dim-body {
+    animation: none;
+  }
 }
 .ea-dim-dot {
   width: 10px;
