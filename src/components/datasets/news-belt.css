@@ -2,14 +2,19 @@
    Ezana logo (NewsBelt.jsx). Oct 21 (Hub V1.1): one dark glass band with mint
    hairline dividers between items. No pills, no ring, no border, no shadow.
    Ink is white on the band green (the route is light-locked, so nothing here
-   reads a token that flips with the app theme). Tokens only. */
+   reads a token that flips with the app theme). Tokens only.
+   Oct 27: no band at all. The belt is transparent on the page's green; the
+   ink is full white, values mint, and the icons a light tint of their
+   dimension hue, each with a soft shadow so they hold contrast over the
+   ground's sheen without the dark glass behind them. */
 .dsnb-belt {
-  --dsnb-bg: rgba(2, 26, 20, 0.62);
-  --dsnb-divider: color-mix(in srgb, var(--brand-band-mint) 14%, transparent);
-  --dsnb-ink: color-mix(in srgb, white 92%, transparent);
-  --dsnb-icon: color-mix(in srgb, white 80%, transparent);
+  --dsnb-bg: transparent;
+  --dsnb-divider: color-mix(in srgb, var(--brand-band-mint) 24%, transparent);
+  --dsnb-ink: white;
+  --dsnb-icon: white;
   --dsnb-value: var(--brand-band-mint);
-  --dsnb-meta: color-mix(in srgb, var(--brand-band-mint) 75%, transparent);
+  --dsnb-meta: color-mix(in srgb, var(--brand-band-mint) 92%, white);
+  --dsnb-shadow: 0 1px 2px color-mix(in srgb, black 45%, transparent);
   position: relative;
   display: flex;
   align-items: center;
@@ -76,7 +81,10 @@
 .dsnb-icon {
   font-size: 13px;
   /* The dimension's hue when the card names one (set inline). */
-  color: var(--dsnb-hue, var(--dsnb-icon));
+  /* Light tint of the dimension's hue: still tells dimensions apart, but
+     dark hues (purple, deep blue) no longer sink into the green. */
+  color: color-mix(in srgb, var(--dsnb-hue, var(--dsnb-icon)) 40%, white);
+  text-shadow: var(--dsnb-shadow);
 }
 
 /* Oct 21: cards are buttons that open the signal's brief on the page. A
@@ -113,6 +121,7 @@
   font-weight: 500;
   letter-spacing: -0.01em;
   color: var(--dsnb-ink);
+  text-shadow: var(--dsnb-shadow);
 }
 
 .dsnb-value {
@@ -128,6 +137,7 @@
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
   color: var(--dsnb-meta);
+  text-shadow: var(--dsnb-shadow);
 }
 
 /* A perpetually moving strip is a vestibular trigger: stop it and let the

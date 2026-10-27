@@ -55,20 +55,6 @@ function tracePoints(cycles, share) {
 
 const FLAT = `0,${BASE} ${W},${BASE}`;
 
-/** Status line above the deck. Counts come from taxonomyCounts via the page. */
-export function RailStatus({ dims, live, total }) {
-  const streaming = dims.filter((d) => d.liveCount > 0).length;
-  return (
-    <p className="dcr-status">
-      {dims.length} dimensions ·{' '}
-      <span className="dcr-status-live">
-        {live} of {total} datasets live
-      </span>{' '}
-      · {streaming} streaming
-    </p>
-  );
-}
-
 function Card({ d, index, on, lead, onChoose }) {
   const pending = !Array.isArray(d.items);
   const total = pending ? 0 : d.items.length;

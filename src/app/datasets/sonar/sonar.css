@@ -1703,7 +1703,9 @@ body.light-mode .dso-page--search .sonar-h1 {
 }
 .dso-page--search .dso-sonar--solo {
   width: 100%;
-  margin-top: 28px;
+  /* Oct 27: 28px -> 8px; with the status line gone the device sits closer
+     to the search pill. */
+  margin-top: 8px;
   text-align: left;
 }
 .dso-page--search .sonar-sticky {

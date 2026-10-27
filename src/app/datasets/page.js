@@ -3,7 +3,7 @@ import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 import { resolveDimension, taxonomyCounts } from './sonar/derive';
 import { SonarSelectionProvider } from './sonar/SonarSelection';
 import OrbitalMap from './sonar/OrbitalMap';
-import ConsoleRail, { RailStatus } from './sonar/ConsoleRail';
+import ConsoleRail from './sonar/ConsoleRail';
 import OrbitalNewsTicker from './sonar/OrbitalNewsTicker';
 import { PulseProvider } from './sonar/PulseProvider';
 import { PulseStage } from './sonar/PulseBrief';
@@ -69,7 +69,6 @@ export default async function DatasetsIndexPage({ searchParams }) {
             className="dso-sonar dso-sonar--solo dcr-scope"
             aria-label="The seven dataset dimensions that feed Ezana Sonar"
           >
-            <RailStatus dims={ORBIT_DIMS} live={COUNTS.live} total={COUNTS.live + COUNTS.roadmap} />
             <PulseStage>
               <OrbitalMap dims={ORBIT_DIMS} pinging={COUNTS.live} silent={COUNTS.roadmap} />
             </PulseStage>
