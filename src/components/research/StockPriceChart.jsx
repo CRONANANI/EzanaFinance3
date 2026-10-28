@@ -15,6 +15,12 @@ import {
 import { CHART } from '@/lib/chart-theme';
 import { DateSelector } from '@/components/ui/DateSelector';
 
+/* Client-side candle cache: switching tickers or ranges back and forth
+   reuses data instead of re-hitting the API. */
+const CANDLE_CACHE = new Map(); // `${symbol}|${range}` -> { at, candles }
+const CANDLE_TTL_MS = 5 * 60 * 1000;
+const MAX_RATE_RETRIES = 3;
+
 const RANGES = ['1D', '1W', '1M', '3M', '6M', '1Y', '3Y', '5Y', '10Y', 'ALL'];
 
 function CustomTooltip({ active, payload, label }) {
@@ -182,37 +188,73 @@ export default function StockPriceChart({
       : null;
   const activeDollar = isDragging && dragStart && dragEnd ? dragEnd.price - dragStart.price : null;
 
-  const fetchCandles = useCallback(async (sym, rng) => {
+  const reqIdRef = useRef(0);
+  const retryTimerRef = useRef(null);
+
+  const fetchCandles = useCallback(async (sym, rng, attempt = 0, reqId = null) => {
     if (!sym) return;
+    clearTimeout(retryTimerRef.current);
+    const id = reqId ?? ++reqIdRef.current;
+    const key = `${sym}|${rng}`;
+
+    const hit = CANDLE_CACHE.get(key);
+    if (hit && Date.now() - hit.at < CANDLE_TTL_MS) {
+      setError(null);
+      setCandles(hit.candles);
+      setLoading(false);
+      setHasFetched(true);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setHasFetched(false);
-    setCandles([]);
+    if (attempt === 0) setCandles([]);
+
     try {
       const res = await fetch(
         `/api/market-data/stock-candles?symbol=${encodeURIComponent(sym)}&range=${rng}`,
       );
-      const data = await res.json();
-      if (data.error && !data.candles?.length) {
-        setError(data.error);
-      } else {
-        setCandles(data.candles ?? []);
+      const data = await res.json().catch(() => ({}));
+      if (id !== reqIdRef.current) return; // a newer ticker/range superseded this
+
+      /* 429 from our middleware / api-guard, or FMP's own limit (200 + flag). */
+      const limited = res.status === 429 || data?.rateLimited === true;
+      if (limited && attempt < MAX_RATE_RETRIES) {
+        const secs = Math.min(Math.max(Number(res.headers.get('Retry-After')) || 5, 2), 20);
+        retryTimerRef.current = setTimeout(() => {
+          if (id === reqIdRef.current) fetchCandles(sym, rng, attempt + 1, id);
+        }, secs * 1000);
+        return; // stay in the loading state while we wait
       }
+
+      if (limited) {
+        setError('Rate limit reached. Please wait a moment and try again.');
+      } else if (!res.ok || (data?.error && !data?.candles?.length)) {
+        setError(data?.error || `Request failed (HTTP ${res.status}).`);
+      } else {
+        const c = data.candles ?? [];
+        if (c.length) CANDLE_CACHE.set(key, { at: Date.now(), candles: c });
+        setCandles(c);
+      }
+      setLoading(false);
+      setHasFetched(true);
     } catch (err) {
-      setError(err.message);
-    } finally {
+      if (id !== reqIdRef.current) return;
+      setError(err?.message || 'Network error.');
       setLoading(false);
       setHasFetched(true);
     }
   }, []);
 
   useEffect(() => {
-    if (!symbol) return;
+    if (!symbol) return undefined;
     setDragStart(null);
     setDragEnd(null);
     setIsDragging(false);
     setMeasurement(null);
     fetchCandles(symbol, range);
+    return () => clearTimeout(retryTimerRef.current);
   }, [symbol, range, fetchCandles]);
 
   const firstPrice = candles[0]?.price;
@@ -365,10 +407,17 @@ export default function StockPriceChart({
                     strokeLinecap="round"
                   />
                 </svg>
-                <span>Too many requests — please wait a moment</span>
+                <span>Market data is busy. Please wait a moment.</span>
                 <span style={{ color: 'var(--muted-foreground, #6b7280)', fontSize: '0.65rem' }}>
-                  Chart data will load automatically on retry
+                  We retried a few times. Try again in a minute.
                 </span>
+                <button
+                  type="button"
+                  className="ez-retry-btn"
+                  onClick={() => fetchCandles(symbol, range)}
+                >
+                  Try again
+                </button>
               </>
             ) : (
               <>
@@ -376,6 +425,13 @@ export default function StockPriceChart({
                 <span style={{ color: 'var(--muted-foreground, #6b7280)', fontSize: '0.65rem' }}>
                   {error}
                 </span>
+                <button
+                  type="button"
+                  className="ez-retry-btn"
+                  onClick={() => fetchCandles(symbol, range)}
+                >
+                  Try again
+                </button>
               </>
             )}
           </div>

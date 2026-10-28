@@ -401,26 +401,30 @@ export function useMockPortfolio() {
   const fetchPrices = useCallback(async (positions) => {
     const symbols = Object.keys(positions || {});
     if (!symbols.length) return;
+    if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
     setQuotesLoading(true);
     try {
-      const results = await Promise.allSettled(
-        symbols.map((sym) =>
-          fetch(`/api/fmp/quote?symbol=${encodeURIComponent(sym)}`)
-            .then((r) => (r.ok ? r.json() : null))
-            .catch(() => null),
-        ),
-      );
       const quotes = {};
-      symbols.forEach((sym, i) => {
-        const d = results[i].status === 'fulfilled' ? results[i].value : null;
-        if (d?.price != null) {
-          quotes[sym] = {
-            price: Number(d.price),
-            change: Number(d.change ?? 0),
-            changePercent: Number(d.changesPercentage ?? d.changePercentage ?? 0),
-          };
+      for (let i = 0; i < symbols.length; i += 45) {
+        const group = symbols.slice(i, i + 45);
+        const r = await fetch(`/api/fmp/quote?symbols=${encodeURIComponent(group.join(','))}`, {
+          cache: 'no-store',
+        });
+        if (!r.ok) continue;
+        const d = await r.json().catch(() => null);
+        const map = d?.priceMap || {};
+        for (const sym of group) {
+          const key = String(sym).toUpperCase().replace(/-/g, '');
+          const q = map[key] ?? map[sym];
+          if (q?.price != null) {
+            quotes[sym] = {
+              price: Number(q.price),
+              change: Number(q.change ?? 0),
+              changePercent: Number(q.changesPercentage ?? q.changePercentage ?? 0),
+            };
+          }
         }
-      });
+      }
       setLiveQuotes(quotes);
     } catch {
       /* ignore */
@@ -429,13 +433,21 @@ export function useMockPortfolio() {
     }
   }, []);
 
+  /* Re-poll only when the SET of held tickers changes, not on every
+     positions object update (price writes used to re-trigger a full fetch). */
+  const positionsRef = useRef(portfolio?.positions);
+  positionsRef.current = portfolio?.positions;
+  const positionsKey = Object.keys(portfolio?.positions || {})
+    .sort()
+    .join(',');
+
   useEffect(() => {
-    if (!portfolio?.positions) return undefined;
-    fetchPrices(portfolio.positions);
+    if (!positionsKey) return undefined;
+    fetchPrices(positionsRef.current);
     clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(() => fetchPrices(portfolio.positions), 60_000);
+    intervalRef.current = setInterval(() => fetchPrices(positionsRef.current), 60_000);
     return () => clearInterval(intervalRef.current);
-  }, [portfolio?.positions, fetchPrices]);
+  }, [positionsKey, fetchPrices]);
 
   const hasMockPortfolio = serverLoaded && portfolio != null;
   const positions = portfolio?.positions ?? {};

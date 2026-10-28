@@ -225,21 +225,37 @@ function MockTradingPageInner() {
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const toastRef = useRef(null);
   const [livePrices, setLivePrices] = useState({});
+  /* Latest table prices, readable from fetchQuote without re-creating it. */
+  const livePricesRef = useRef({});
+  livePricesRef.current = livePrices;
   const [priceFetchError, setPriceFetchError] = useState(null);
 
   const [posSort, setPosSort] = useState({ key: null, dir: 'desc' });
 
   const fetchQuote = useCallback(async (sym) => {
     if (!sym) return;
+    /* The positions table already has a live price for held tickers: show it
+       immediately so Place Order never says "No price data" for a holding,
+       then refresh from the quote API below. */
+    const seeded = livePricesRef.current?.[String(sym).toUpperCase()];
+    if (seeded?.price != null && Number(seeded.price) > 0) {
+      setQuoteData({
+        symbol: String(sym).toUpperCase(),
+        price: Number(seeded.price),
+        change: Number(seeded.change ?? 0),
+        changesPercentage: Number(seeded.changesPercentage ?? seeded.changePercentage ?? 0),
+      });
+    }
     setQuoteLoading(true);
     try {
       const r = await fetch(`/api/fmp/quote?symbol=${encodeURIComponent(sym)}`, {
         cache: 'no-store',
       });
       const d = await r.json();
-      setQuoteData(d?.price != null && !d.error ? d : null);
+      if (d?.price != null && !d.error) setQuoteData(d);
+      else if (!seeded?.price) setQuoteData(null);
     } catch {
-      setQuoteData(null);
+      if (!seeded?.price) setQuoteData(null);
     } finally {
       setQuoteLoading(false);
     }
@@ -655,6 +671,11 @@ function MockTradingPageInner() {
           setPriceFetchError(
             `No live price for: ${stillMissing.join(', ')} (showing cost basis as fallback)`,
           );
+          if (stillMissing.length > 0 && !retryTimeout && !cancelled) {
+            retryTimeout = setTimeout(() => {
+              if (!cancelled) fetchQuotes();
+            }, 5000);
+          }
         } else {
           setPriceFetchError(null);
         }
@@ -664,10 +685,6 @@ function MockTradingPageInner() {
     };
 
     fetchQuotes();
-
-    retryTimeout = setTimeout(() => {
-      if (!cancelled) fetchQuotes();
-    }, 2500);
 
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') fetchQuotes();

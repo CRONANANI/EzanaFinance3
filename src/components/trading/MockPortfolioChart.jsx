@@ -54,9 +54,11 @@ export default function MockPortfolioChart() {
   const [data, setData] = useState({ points: [], source: 'loading' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    let retryTimer = null;
     setLoading(true);
     setError(null);
 
@@ -67,12 +69,30 @@ export default function MockPortfolioChart() {
           )}&to=${encodeURIComponent(customRange.end.toISOString())}`
         : `/api/portfolio/mock-value-series?range=${range}`;
 
-    fetch(url, { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
+    const load = async (attempt) => {
+      try {
+        const r = await fetch(url, { cache: 'no-store' });
         if (cancelled) return;
-        if (d.error) {
-          setError(d.error);
+
+        /* Rate limited: wait the server's Retry-After (capped) and retry
+           up to twice before surfacing anything. */
+        if (r.status === 429 && attempt < 2) {
+          const secs = Math.min(Math.max(Number(r.headers.get('Retry-After')) || 5, 2), 15);
+          retryTimer = setTimeout(() => {
+            if (!cancelled) load(attempt + 1);
+          }, secs * 1000);
+          return;
+        }
+
+        const d = await r.json().catch(() => ({}));
+        if (cancelled) return;
+
+        if (!r.ok || d.error) {
+          setError(
+            r.status === 429
+              ? 'Market data is busy right now. Try again in a minute.'
+              : d.error || `Request failed (HTTP ${r.status}).`,
+          );
           setData({ points: [], source: 'error', note: null });
         } else {
           setData({
@@ -82,19 +102,22 @@ export default function MockPortfolioChart() {
             startedAt: d.startedAt || null,
           });
         }
-      })
-      .catch((e) => {
+        setLoading(false);
+      } catch (e) {
         if (cancelled) return;
-        setError(e.message);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+        setError(e?.message || 'Network error.');
+        setData({ points: [], source: 'error', note: null });
+        setLoading(false);
+      }
+    };
+
+    load(0);
 
     return () => {
       cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
     };
-  }, [range, customRange]);
+  }, [range, customRange, reloadKey]);
 
   const chartData = useMemo(() => {
     return (data.points || []).map((p) => ({
@@ -160,8 +183,7 @@ export default function MockPortfolioChart() {
               'Your portfolio has cash but no trades yet. Place a trade to see performance over time.'}
             {data.source === 'empty-portfolio' &&
               'Your portfolio is empty. Add some starting cash to begin.'}
-            {data.source === 'error' &&
-              'Unable to load portfolio history. Please refresh the page.'}
+            {data.source === 'error' && 'Unable to load portfolio history.'}
             {!['no-portfolio', 'no-trades', 'empty-portfolio', 'error'].includes(data.source) &&
               'Start trading to see your portfolio performance over time.'}
           </p>
@@ -229,7 +251,14 @@ export default function MockPortfolioChart() {
         </>
       )}
 
-      {error && <div className="mpc-error">Failed to load: {error}</div>}
+      {error && (
+        <div className="mpc-error" role="status">
+          <span>{error}</span>
+          <button type="button" className="ez-retry-btn" onClick={() => setReloadKey((k) => k + 1)}>
+            Try again
+          </button>
+        </div>
+      )}
     </div>
   );
 }

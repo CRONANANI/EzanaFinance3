@@ -3227,3 +3227,25 @@ html:has(.landing-page) .landing-footer button {
 .main-nav .nav-action-tap:has(.nav-logout-btn):focus-visible {
   background: color-mix(in srgb, var(--negative) 8%, transparent);
 }
+
+/* Shared "Try again" pill for chart error states. */
+.ez-retry-btn {
+  margin-top: 0.25rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--emerald-border);
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.ez-retry-btn:hover {
+  background: color-mix(in srgb, var(--emerald) 14%, transparent);
+}
+.ez-retry-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--emerald-glow);
+}
