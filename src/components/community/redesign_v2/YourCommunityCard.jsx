@@ -102,7 +102,13 @@ export function YourCommunityCard({ skillTier, convictionWins, followers }) {
               {stat.value}
               {stat.suffix || ''}
             </div>
-            <div style={{ fontSize: 10, color: 'var(--text-faint)', marginTop: 2 }}>
+            <div
+              style={{
+                fontSize: 'var(--type-micro-size)',
+                color: 'var(--text-faint)',
+                marginTop: 2,
+              }}
+            >
               {stat.label}
             </div>
           </div>

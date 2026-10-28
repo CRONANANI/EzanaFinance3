@@ -991,7 +991,9 @@ function MockTradingPageInner() {
                                 {pnl >= 0 ? '+' : ''}
                                 {fmtUSD(pnl)}
                                 <br />
-                                <span style={{ fontSize: '0.65rem', fontWeight: 500 }}>
+                                <span
+                                  style={{ fontSize: 'var(--type-micro-size)', fontWeight: 500 }}
+                                >
                                   {pnlPct >= 0 ? '+' : ''}
                                   {pnlPct.toFixed(2)}%
                                 </span>
@@ -1282,7 +1284,7 @@ function MockTradingPageInner() {
             <p
               style={{
                 textAlign: 'center',
-                fontSize: '0.65rem',
+                fontSize: 'var(--type-micro-size)',
                 color: '#4b5563',
                 margin: 0,
                 lineHeight: 1.5,

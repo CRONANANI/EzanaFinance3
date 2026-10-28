@@ -38,7 +38,9 @@ export function PerfStatCard({ stat }) {
       >
         <Caps>{stat.label}</Caps>
         {stat.topPercentile != null && (
-          <span style={{ fontSize: 10, fontWeight: 500, color: page.inkMuted }}>
+          <span
+            style={{ fontSize: 'var(--type-micro-size)', fontWeight: 500, color: page.inkMuted }}
+          >
             Top {Math.max(1, 100 - Math.round(stat.topPercentile))}%
           </span>
         )}

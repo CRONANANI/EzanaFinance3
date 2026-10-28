@@ -91,7 +91,7 @@ export function PairsTradingCard() {
                 border: `1px solid ${sig.color}40`,
               }}
             >
-              <div style={{ fontSize: '1rem', fontWeight: 800, color: sig.color }}>{sig.label}</div>
+              <div style={{ fontSize: '1rem', fontWeight: 700, color: sig.color }}>{sig.label}</div>
               <div style={{ fontSize: '0.7rem', color: '#9ca3af' }}>{sig.desc}</div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
@@ -122,11 +122,13 @@ export function PairsTradingCard() {
                     border: '1px solid rgba(255,255,255,0.06)',
                   }}
                 >
-                  <div style={{ fontSize: '0.65rem', color: '#6b7280' }}>{m.label}</div>
+                  <div style={{ fontSize: 'var(--type-micro-size)', color: '#6b7280' }}>
+                    {m.label}
+                  </div>
                   <div
                     style={{
                       fontSize: '1rem',
-                      fontWeight: 800,
+                      fontWeight: 700,
                       fontFamily: 'monospace',
                       color: m.color,
                     }}
@@ -136,7 +138,7 @@ export function PairsTradingCard() {
                 </div>
               ))}
             </div>
-            <p style={{ fontSize: '0.65rem', color: '#6b7280', margin: 0 }}>
+            <p style={{ fontSize: 'var(--type-micro-size)', color: '#6b7280', margin: 0 }}>
               {data.dataPoints} trading days analyzed. Entry at |z| {'>'} 2, exit at |z| {'<'} 0.5.
               Half-life = estimated days for spread to revert halfway to mean.
             </p>

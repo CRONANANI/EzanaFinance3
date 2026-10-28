@@ -41,7 +41,7 @@
 }
 .hcs-mono-label {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: var(--type-micro-size);
   letter-spacing: 0.16em;
   color: var(--hcs-faint);
   display: inline-flex;
@@ -769,7 +769,7 @@
   font-size: 12px;
 }
 .hcs-answer-label .hcs-mono {
-  font-size: 10px;
+  font-size: var(--type-micro-size);
   letter-spacing: 0.16em;
 }
 .hcs-answer-label .hcs-cap {
@@ -1057,7 +1057,7 @@
   border-radius: var(--radius-sm);
   background: var(--hcs-tint-strong);
   color: var(--hcs-positive);
-  font-size: 9px;
+  font-size: var(--type-micro-size);
   letter-spacing: 0.1em;
 }
 .hcs-rel-row .hcs-chev {
@@ -1203,7 +1203,7 @@
 }
 .hcs-fb-count {
   align-self: flex-end;
-  font-size: 10.5px;
+  font-size: var(--type-micro-size);
   color: var(--hcs-faint);
 }
 .hcs-fb-err {

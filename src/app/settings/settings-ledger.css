@@ -124,7 +124,7 @@ html.dark .settings-ledger {
   margin-left: auto;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 9.5px;
+  font-size: var(--type-micro-size);
   letter-spacing: 0.12em;
   color: var(--em-ink);
   background: var(--em-tint);

@@ -172,7 +172,7 @@ export function StrategyComparisonCard() {
                   background: '#161b22',
                   border: '1px solid rgba(255,255,255,0.08)',
                   borderRadius: 8,
-                  fontSize: '0.65rem',
+                  fontSize: 'var(--type-micro-size)',
                   padding: '6px 10px',
                 }}
                 formatter={(v) => [`$${Number(v).toFixed(2)}`]}
@@ -213,7 +213,7 @@ export function StrategyComparisonCard() {
           {winsA !== winsB && (
             <span
               style={{
-                fontSize: '0.6rem',
+                fontSize: 'var(--type-micro-size)',
                 fontWeight: 700,
                 padding: '2px 8px',
                 borderRadius: 4,
@@ -249,9 +249,9 @@ export function StrategyComparisonCard() {
                     <span
                       style={{
                         marginLeft: 4,
-                        fontSize: '0.55rem',
+                        fontSize: 'var(--type-micro-size)',
                         color: stratA.color,
-                        fontWeight: 800,
+                        fontWeight: 700,
                       }}
                     >
                       ★
@@ -264,9 +264,9 @@ export function StrategyComparisonCard() {
                     <span
                       style={{
                         marginLeft: 4,
-                        fontSize: '0.55rem',
+                        fontSize: 'var(--type-micro-size)',
                         color: stratB.color,
-                        fontWeight: 800,
+                        fontWeight: 700,
                       }}
                     >
                       ★

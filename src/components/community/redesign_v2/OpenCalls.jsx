@@ -65,7 +65,7 @@ export function OpenCalls() {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                  <span style={{ fontWeight: 800, fontSize: 13, color: 'var(--text-primary)' }}>
+                  <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--text-primary)' }}>
                     ${c.ticker}
                   </span>
                   <span
@@ -81,7 +81,9 @@ export function OpenCalls() {
                     <i className={`bi ${dir.icon}`} /> {dir.label}
                   </span>
                   {c.target_price != null && (
-                    <span style={{ fontSize: 10, color: 'var(--text-faint)' }}>
+                    <span
+                      style={{ fontSize: 'var(--type-micro-size)', color: 'var(--text-faint)' }}
+                    >
                       → ${Number(c.target_price).toFixed(2)}
                     </span>
                   )}
@@ -129,7 +131,13 @@ export function OpenCalls() {
                       <CreatorBadge tierKey={creator.creator_tier} showLabel={false} size={11} />
                     )}
                   </Link>
-                  <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-faint)' }}>
+                  <span
+                    style={{
+                      marginLeft: 'auto',
+                      fontSize: 'var(--type-micro-size)',
+                      color: 'var(--text-faint)',
+                    }}
+                  >
                     <i className="bi bi-hand-thumbs-up" /> {c.back_count || 0} ·{' '}
                     <i className="bi bi-hand-thumbs-down" /> {c.fade_count || 0}
                   </span>

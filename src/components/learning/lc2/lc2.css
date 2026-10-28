@@ -42,14 +42,14 @@
 .lc3-shell .lc3-sec-meta {
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--lc3-text-label);
 }
 .lc3-shell .lc3-label {
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--lc3-text-label);
 }

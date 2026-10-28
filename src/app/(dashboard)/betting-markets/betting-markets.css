@@ -111,7 +111,7 @@ body.light-mode .bm-page {
 
 .bm-lb-tab {
   padding: 0.25rem 0.5rem;
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   border-radius: var(--radius-md);
   border: 1px solid rgba(212, 175, 55, 0.12);
@@ -232,7 +232,7 @@ body.light-mode .bm-page {
 }
 
 .bm-ev-meta {
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   color: var(--bm-muted);
   margin-top: 0.15rem;
 }
@@ -416,7 +416,7 @@ body.light-mode .bm-lm-footer {
   align-items: center;
   gap: 0.3rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 .bm-modal-text {

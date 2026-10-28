@@ -637,7 +637,13 @@ export default function CentaurIntelligencePage() {
                         </p>
                       </div>
                     </div>
-                    <span style={{ fontSize: '0.6rem', color: '#6b7280', fontStyle: 'italic' }}>
+                    <span
+                      style={{
+                        fontSize: 'var(--type-micro-size)',
+                        color: '#6b7280',
+                        fontStyle: 'italic',
+                      }}
+                    >
                       Coming soon
                     </span>
                   </div>

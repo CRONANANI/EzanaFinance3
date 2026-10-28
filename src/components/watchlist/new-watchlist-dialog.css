@@ -357,7 +357,7 @@ body.light-mode .nwd-color.on {
 
 /* Exchange badges */
 .nwd-badge {
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;

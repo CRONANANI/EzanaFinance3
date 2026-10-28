@@ -116,7 +116,7 @@ export function FilterBar({
             border: `1px solid ${page.border}`,
             borderRadius: 3,
             padding: '1px 5px',
-            fontSize: 10,
+            fontSize: 'var(--type-micro-size)',
             fontFamily: typeTokens.mono,
             color: page.inkMuted,
             lineHeight: 1,

@@ -239,7 +239,7 @@ function TickerBody({ tickers, setTickers, period, setPeriod }) {
               type="button"
               onClick={() => setPeriod(p)}
               className={period === p ? 'ez-pill' : 'ez-pill ez-pill--ghost'}
-              style={{ padding: '2px 8px', fontSize: 10, cursor: 'pointer' }}
+              style={{ padding: '2px 8px', fontSize: 'var(--type-micro-size)', cursor: 'pointer' }}
             >
               {p}
             </button>
@@ -457,7 +457,7 @@ export function EvoComposer({
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
                 <span
                   style={{
-                    fontSize: 10,
+                    fontSize: 'var(--type-micro-size)',
                     color: 'var(--text-faint)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
@@ -530,7 +530,13 @@ export function EvoComposer({
                       fontSize: 12,
                     }}
                   />
-                  <div style={{ fontSize: 10, color: 'var(--text-faint)', marginTop: 4 }}>
+                  <div
+                    style={{
+                      fontSize: 'var(--type-micro-size)',
+                      color: 'var(--text-faint)',
+                      marginTop: 4,
+                    }}
+                  >
                     <i className="bi bi-info-circle" /> {STANDARD_DISCLAIMER} is shown
                     automatically.
                   </div>
@@ -613,7 +619,7 @@ export function EvoComposer({
               </span>
               <span
                 className="ez-mono"
-                style={{ fontSize: 16, fontWeight: 800, color: 'var(--emerald)' }}
+                style={{ fontSize: 16, fontWeight: 700, color: 'var(--emerald)' }}
               >
                 {postConviction}%
               </span>

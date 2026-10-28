@@ -123,7 +123,7 @@ export function AnalystRecommendations({ symbol }) {
           style={{
             margin: 0,
             fontSize: '0.8125rem',
-            fontWeight: 800,
+            fontWeight: 700,
             fontFamily: 'var(--font-mono, monospace)',
             color: 'var(--home-heading, #f0f6fc)',
             textTransform: 'uppercase',
@@ -153,7 +153,7 @@ export function AnalystRecommendations({ symbol }) {
               />
               <span
                 style={{
-                  fontWeight: 800,
+                  fontWeight: 700,
                   fontSize: '0.875rem',
                   fontFamily: 'var(--font-mono, monospace)',
                   color: consensusColor,
@@ -163,7 +163,7 @@ export function AnalystRecommendations({ symbol }) {
               </span>
               <span
                 style={{
-                  fontSize: '0.5rem',
+                  fontSize: 'var(--type-micro-size)',
                   fontFamily: 'var(--font-mono, monospace)',
                   color: '#6b7280',
                   marginTop: 1,
@@ -188,7 +188,7 @@ export function AnalystRecommendations({ symbol }) {
               <div key={rec.label} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span
                   style={{
-                    fontSize: '0.5625rem',
+                    fontSize: 'var(--type-micro-size)',
                     fontFamily: 'var(--font-mono, monospace)',
                     color: '#6b7280',
                     width: 65,
@@ -218,9 +218,9 @@ export function AnalystRecommendations({ symbol }) {
                 </div>
                 <span
                   style={{
-                    fontSize: '0.625rem',
+                    fontSize: 'var(--type-micro-size)',
                     fontFamily: 'var(--font-mono, monospace)',
-                    fontWeight: 800,
+                    fontWeight: 700,
                     color: '#f0f6fc',
                     width: 16,
                     textAlign: 'right',
@@ -237,7 +237,7 @@ export function AnalystRecommendations({ symbol }) {
           <div style={{ paddingTop: '0.5rem', borderTop: '1px solid rgba(16, 185, 129, 0.06)' }}>
             <h4
               style={{
-                fontSize: '0.5625rem',
+                fontSize: 'var(--type-micro-size)',
                 fontWeight: 700,
                 fontFamily: 'var(--font-mono, monospace)',
                 color: '#6b7280',
@@ -260,7 +260,7 @@ export function AnalystRecommendations({ symbol }) {
               >
                 <p
                   style={{
-                    fontSize: '0.5rem',
+                    fontSize: 'var(--type-micro-size)',
                     fontFamily: 'var(--font-mono, monospace)',
                     color: '#6b7280',
                     margin: '0 0 0.15rem 0',
@@ -272,7 +272,7 @@ export function AnalystRecommendations({ symbol }) {
                   style={{
                     fontSize: '0.6875rem',
                     fontFamily: 'var(--font-mono, monospace)',
-                    fontWeight: 800,
+                    fontWeight: 700,
                     color: '#f87171',
                     margin: 0,
                   }}
@@ -291,7 +291,7 @@ export function AnalystRecommendations({ symbol }) {
               >
                 <p
                   style={{
-                    fontSize: '0.5rem',
+                    fontSize: 'var(--type-micro-size)',
                     fontFamily: 'var(--font-mono, monospace)',
                     color: '#10b981',
                     margin: '0 0 0.15rem 0',
@@ -303,7 +303,7 @@ export function AnalystRecommendations({ symbol }) {
                   style={{
                     fontSize: '0.75rem',
                     fontFamily: 'var(--font-mono, monospace)',
-                    fontWeight: 800,
+                    fontWeight: 700,
                     color: '#10b981',
                     margin: 0,
                   }}
@@ -322,7 +322,7 @@ export function AnalystRecommendations({ symbol }) {
               >
                 <p
                   style={{
-                    fontSize: '0.5rem',
+                    fontSize: 'var(--type-micro-size)',
                     fontFamily: 'var(--font-mono, monospace)',
                     color: '#6b7280',
                     margin: '0 0 0.15rem 0',
@@ -334,7 +334,7 @@ export function AnalystRecommendations({ symbol }) {
                   style={{
                     fontSize: '0.6875rem',
                     fontFamily: 'var(--font-mono, monospace)',
-                    fontWeight: 800,
+                    fontWeight: 700,
                     color: '#10b981',
                     margin: 0,
                   }}
@@ -349,7 +349,7 @@ export function AnalystRecommendations({ symbol }) {
         {latest && (
           <p
             style={{
-              fontSize: '0.5rem',
+              fontSize: 'var(--type-micro-size)',
               fontFamily: 'var(--font-mono, monospace)',
               color: '#4b5563',
               textAlign: 'center',

@@ -21,7 +21,7 @@ export function SkillBadge({ tier }) {
         gap: 3,
         padding: '1px 7px',
         borderRadius: 999,
-        fontSize: 10,
+        fontSize: 'var(--type-micro-size)',
         fontWeight: 600,
         background: c.bg,
         border: `1px solid ${c.border}`,

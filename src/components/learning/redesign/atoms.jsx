@@ -21,7 +21,7 @@ export function Pill({ children, tone = 'default', className = '' }) {
         gap: 4,
         padding: '3px 8px',
         borderRadius: 999,
-        fontSize: 10,
+        fontSize: 'var(--type-micro-size)',
         fontWeight: 700,
         letterSpacing: '0.06em',
         textTransform: 'uppercase',

@@ -364,7 +364,7 @@ export default function ForTheQuantsPage() {
               Value at Risk (95%)
             </p>
             <p
-              style={{ fontSize: '1rem', fontWeight: 800, color: '#f87171', margin: '0 0 0.25rem' }}
+              style={{ fontSize: '1rem', fontWeight: 700, color: '#f87171', margin: '0 0 0.25rem' }}
             >
               {RISK_ANALYTICS.var95}
             </p>

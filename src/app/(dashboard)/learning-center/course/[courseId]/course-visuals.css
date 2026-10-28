@@ -116,7 +116,7 @@ body.dark-mode .course-visual-legend-label,
   border-bottom-width: 2px;
   font-size: 0.8125rem;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 body.dark-mode .course-visual-table th,
@@ -285,7 +285,7 @@ body.dark-mode .lc3-feedback.wrong,
   font-size: 0.8125rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--type-label-tracking);
   color: #374151;
   margin-bottom: 0.75rem;
 }

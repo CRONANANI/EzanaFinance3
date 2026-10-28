@@ -81,7 +81,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: transparent;
   color: #8b949e;
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -180,7 +180,7 @@
 }
 
 .re-card-location {
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   color: #8b949e;
   margin: 0 0 0.5rem;
   display: flex;
@@ -223,7 +223,7 @@
 }
 
 .re-card-sponsor {
-  font-size: 0.55rem;
+  font-size: var(--type-micro-size);
   color: #6b7280;
 }
 
@@ -233,7 +233,7 @@
   border: 1px solid rgba(212, 175, 55, 0.3);
   background: rgba(212, 175, 55, 0.08);
   color: var(--gold-champagne);
-  font-size: 0.55rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
@@ -286,7 +286,7 @@
 }
 
 .re-partner-cta p {
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   color: #c9d1d9;
   margin: 0 0 0.75rem;
   line-height: 1.5;

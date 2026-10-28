@@ -756,7 +756,7 @@ function CompanyResearchPageInner() {
                   style={{
                     margin: 0,
                     fontSize: '1rem',
-                    fontWeight: 800,
+                    fontWeight: 700,
                     color: 'var(--home-heading, #111827)',
                   }}
                 >

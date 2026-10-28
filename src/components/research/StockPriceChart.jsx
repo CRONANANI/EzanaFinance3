@@ -43,7 +43,7 @@ function CustomTooltip({ active, payload, label }) {
         style={{
           color: 'var(--muted-foreground, #6b7280)',
           margin: '0 0 4px',
-          fontSize: '0.65rem',
+          fontSize: 'var(--type-micro-size)',
         }}
       >
         {label}
@@ -57,10 +57,16 @@ function CustomTooltip({ active, payload, label }) {
       </p>
       {d.high != null && d.low != null && (
         <>
-          <p style={{ color: 'var(--emerald)', margin: '2px 0 0', fontSize: '0.65rem' }}>
+          <p
+            style={{
+              color: 'var(--emerald)',
+              margin: '2px 0 0',
+              fontSize: 'var(--type-micro-size)',
+            }}
+          >
             H: ${Number(d.high).toFixed(2)}
           </p>
-          <p style={{ color: 'var(--negative)', margin: 0, fontSize: '0.65rem' }}>
+          <p style={{ color: 'var(--negative)', margin: 0, fontSize: 'var(--type-micro-size)' }}>
             L: ${Number(d.low).toFixed(2)}
           </p>
         </>
@@ -70,7 +76,7 @@ function CustomTooltip({ active, payload, label }) {
           style={{
             color: 'var(--muted-foreground, #6b7280)',
             margin: '2px 0 0',
-            fontSize: '0.6rem',
+            fontSize: 'var(--type-micro-size)',
           }}
         >
           Vol: {Number(d.volume).toLocaleString()}
@@ -293,7 +299,7 @@ export default function StockPriceChart({
           <span
             style={{
               fontSize: '1.1rem',
-              fontWeight: 800,
+              fontWeight: 700,
               color: 'var(--foreground, #f0f6fc)',
               letterSpacing: '0.02em',
             }}
@@ -408,7 +414,12 @@ export default function StockPriceChart({
                   />
                 </svg>
                 <span>Market data is busy. Please wait a moment.</span>
-                <span style={{ color: 'var(--muted-foreground, #6b7280)', fontSize: '0.65rem' }}>
+                <span
+                  style={{
+                    color: 'var(--muted-foreground, #6b7280)',
+                    fontSize: 'var(--type-micro-size)',
+                  }}
+                >
                   We retried a few times. Try again in a minute.
                 </span>
                 <button
@@ -422,7 +433,12 @@ export default function StockPriceChart({
             ) : (
               <>
                 Could not load chart data.
-                <span style={{ color: 'var(--muted-foreground, #6b7280)', fontSize: '0.65rem' }}>
+                <span
+                  style={{
+                    color: 'var(--muted-foreground, #6b7280)',
+                    fontSize: 'var(--type-micro-size)',
+                  }}
+                >
                   {error}
                 </span>
                 <button
@@ -566,7 +582,7 @@ export default function StockPriceChart({
                   <span
                     style={{
                       fontSize: '0.95rem',
-                      fontWeight: 800,
+                      fontWeight: 700,
                       fontFamily: 'var(--font-mono, monospace)',
                       color: activePct >= 0 ? 'var(--emerald)' : 'var(--negative)',
                     }}
@@ -593,7 +609,7 @@ export default function StockPriceChart({
                     {activePct >= 0 ? '↑' : '↓'}
                   </span>
                 </div>
-                <div style={{ fontSize: '0.6rem', color: '#8b949e', marginTop: 3 }}>
+                <div style={{ fontSize: 'var(--type-micro-size)', color: '#8b949e', marginTop: 3 }}>
                   {dragStart.label} – {dragEnd.label}
                 </div>
               </div>
@@ -628,7 +644,7 @@ export default function StockPriceChart({
                   <span
                     style={{
                       fontSize: '1.05rem',
-                      fontWeight: 800,
+                      fontWeight: 700,
                       fontFamily: 'var(--font-mono, monospace)',
                       color: measurement.pct >= 0 ? 'var(--emerald)' : 'var(--negative)',
                     }}
@@ -655,10 +671,10 @@ export default function StockPriceChart({
                     {measurement.pct >= 0 ? '↑' : '↓'}
                   </span>
                 </div>
-                <div style={{ fontSize: '0.625rem', color: '#8b949e', marginTop: 4 }}>
+                <div style={{ fontSize: 'var(--type-micro-size)', color: '#8b949e', marginTop: 4 }}>
                   {measurement.dateRange}
                 </div>
-                <div style={{ fontSize: '0.5rem', color: '#6b7280', marginTop: 2 }}>
+                <div style={{ fontSize: 'var(--type-micro-size)', color: '#6b7280', marginTop: 2 }}>
                   Click anywhere to clear
                 </div>
               </div>
@@ -693,7 +709,7 @@ export default function StockPriceChart({
             >
               <span
                 style={{
-                  fontSize: '0.6rem',
+                  fontSize: 'var(--type-micro-size)',
                   fontWeight: 700,
                   color: 'var(--muted-foreground, #6b7280)',
                   textTransform: 'uppercase',
@@ -705,7 +721,7 @@ export default function StockPriceChart({
               <span
                 style={{
                   fontSize: '1rem',
-                  fontWeight: 800,
+                  fontWeight: 700,
                   color: 'var(--foreground, #f0f6fc)',
                   fontVariantNumeric: 'tabular-nums',
                   lineHeight: 1.2,
@@ -716,7 +732,7 @@ export default function StockPriceChart({
               {sub && sub !== '--' && (
                 <span
                   style={{
-                    fontSize: '0.6rem',
+                    fontSize: 'var(--type-micro-size)',
                     color: 'var(--muted-foreground, #6b7280)',
                     fontWeight: 500,
                   }}

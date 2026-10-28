@@ -126,7 +126,7 @@ body.light-mode .home-terminal-body {
 
 /* —— Caption: .db-holding-qty / .db-chart-axis —— */
 .hts-caption {
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   color: var(--home-muted-ink);
   margin: 0;
@@ -150,7 +150,7 @@ body.light-mode .home-terminal-body {
 }
 
 .hts-footnote {
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   color: var(--home-muted);
   font-weight: 600;
   margin: 0.5rem 0 0;
@@ -236,7 +236,7 @@ body.light-mode .home-terminal-body {
 .hts-week-dot-wrap {
   flex: 1;
   text-align: center;
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   color: var(--home-muted);
 }
@@ -327,7 +327,7 @@ body.light-mode .home-terminal-body {
 }
 
 .hts-capitol-ago {
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   color: var(--home-muted-ink);
 }
@@ -338,7 +338,7 @@ body.light-mode .home-terminal-body {
   font-weight: 700;
   color: var(--home-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   margin: 0.75rem 0 0.5rem;
 }
 .hts-subsection-title:first-of-type {
@@ -484,11 +484,11 @@ body.light-mode .home-terminal-body {
   margin-bottom: 0.75rem;
 }
 .hts-event-group-title {
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   color: var(--home-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   margin-bottom: 0.35rem;
 }
 .hts-event-line {
@@ -505,7 +505,7 @@ body.light-mode .home-terminal-body {
 .hts-events-footer {
   margin-top: auto;
   padding-top: 0.75rem;
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   color: var(--home-muted-ink);
 }
@@ -601,7 +601,7 @@ body.light-mode .home-terminal-body {
   align-items: center;
   gap: 0.35rem;
   padding: 0.25rem 0.5rem;
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   color: var(--home-muted-soft);
   background: var(--bg-tertiary);
@@ -701,11 +701,11 @@ body.light-mode .hts-week-index-legend-btn.is-active {
 }
 
 .hts-week-metric-label {
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   color: var(--home-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   margin: 0 0 0.2rem;
 }
 
@@ -764,7 +764,7 @@ body.light-mode .hts-week-index-legend-btn.is-active {
   grid-template-columns: repeat(5, 1fr);
   gap: 0.25rem;
   text-align: center;
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   color: var(--home-muted);
 }
@@ -789,7 +789,7 @@ body.light-mode .hts-week-index-legend-btn.is-active {
 }
 
 .hts-week-day-caption {
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   color: var(--home-muted-ink);
   margin: 0.25rem 0 0;
   text-align: center;
@@ -832,7 +832,7 @@ body.light-mode .hts-week-index-legend-btn.is-active {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem 1rem;
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   color: var(--home-muted);
   margin-top: 0.25rem;
@@ -873,10 +873,10 @@ body.light-mode .hts-week-index-legend-btn.is-active {
 }
 
 .hts-week-activity-cat {
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--home-muted);
 }
 
@@ -887,7 +887,7 @@ body.light-mode .hts-week-index-legend-btn.is-active {
 }
 
 .hts-week-activity-ago {
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   color: var(--home-muted-ink);
   white-space: nowrap;
@@ -1240,7 +1240,7 @@ body.light-mode .hts-week-standing-row {
   letter-spacing: 0.04em;
 }
 .hts-chain-severity {
-  font-size: 0.4375rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -1261,14 +1261,14 @@ body.light-mode .hts-week-standing-row {
   color: #6ee7b7;
 }
 .hts-chain-ago {
-  font-size: 0.5rem;
+  font-size: var(--type-micro-size);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--home-muted-ink);
   margin-left: auto;
 }
 .hts-chain-time {
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -1489,10 +1489,10 @@ body.light-mode .home-top-movers-card .hts-mover-row:hover {
 }
 
 .home-portfolio-gain-label {
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--home-muted);
 }
 
@@ -1545,7 +1545,7 @@ body.light-mode .home-top-movers-card .hts-mover-row:hover {
 }
 
 .hts-events-grid-date {
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   letter-spacing: 0.03em;
 }
@@ -1564,7 +1564,7 @@ body.light-mode .home-top-movers-card .hts-mover-row:hover {
 
 .hts-events-grid-time {
   margin: 0.2rem 0 0;
-  font-size: 0.58rem;
+  font-size: var(--type-micro-size);
   color: var(--home-muted);
 }
 
@@ -1581,7 +1581,7 @@ body.light-mode .home-top-movers-card .hts-mover-row:hover {
   font-size: 0.7rem;
   font-weight: 700;
   color: var(--home-heading);
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
 }
 
@@ -1593,7 +1593,7 @@ body.light-mode .home-top-movers-card .hts-mover-row:hover {
 
 .hts-events-cal-dow-cell {
   text-align: center;
-  font-size: 0.5rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   color: var(--home-muted);
   padding-bottom: 0.2rem;
@@ -1661,7 +1661,7 @@ body.light-mode .home-top-movers-card .hts-mover-row:hover {
 }
 
 .hts-events-cal-legend-label {
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   color: var(--home-muted);
   font-weight: 500;
 }
@@ -1697,7 +1697,7 @@ body.light-mode .home-top-movers-card .hts-mover-row:hover {
   color: var(--home-muted);
   padding: 0.2rem 0.55rem;
   border-radius: 999px;
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   letter-spacing: 0.02em;
   cursor: pointer;
@@ -1738,7 +1738,7 @@ body.light-mode .hts-events-filter-chip.is-active {
   background: rgba(245, 158, 11, 0.08);
   border: 1px solid rgba(245, 158, 11, 0.2);
   color: var(--amber);
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   line-height: 1.3;
 }
 
@@ -1767,10 +1767,10 @@ body.light-mode .hts-events-warn {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--home-muted);
 }
 
@@ -1794,11 +1794,11 @@ body.light-mode .hts-events-warn {
 /* High-impact pill on economic cells */
 .hts-events-impact-pill {
   margin-left: auto;
-  font-size: 0.5rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   padding: 0.05rem 0.3rem;
   border-radius: 999px;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
 }
 .hts-events-impact-pill.high {
@@ -1885,17 +1885,17 @@ body.light-mode .hts-events-warn {
 }
 
 .home-events-compact .hts-chain-title {
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   padding: 0.08rem 0.3rem;
 }
 
 .home-events-compact .hts-chain-body {
-  font-size: 0.58rem;
+  font-size: var(--type-micro-size);
   line-height: 1.45;
 }
 
 .home-events-compact .hts-chain-time {
-  font-size: 0.5rem;
+  font-size: var(--type-micro-size);
 }
 
 .home-snapshot-col {
@@ -1995,7 +1995,7 @@ body.light-mode .hts-events-warn {
 
 .hts-week-corr-label {
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   font-weight: 700;
   color: var(--home-muted);
 }
@@ -2193,7 +2193,7 @@ body.light-mode .hts-week-legend-item.is-off .hts-week-legend-label {
   color: var(--text-secondary, var(--home-muted-soft));
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 .streak-card__subtitle {

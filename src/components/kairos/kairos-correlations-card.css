@@ -142,7 +142,7 @@ body.light-mode .kcc-empty p {
   display: flex;
   justify-content: space-between;
   margin-top: 0.2rem;
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
@@ -198,7 +198,7 @@ body.light-mode .kcc-empty p {
 
 .kcc-detail-sub {
   margin-top: 0.2rem;
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
 }
 
@@ -213,7 +213,7 @@ body.light-mode .kcc-empty p {
 }
 
 .kcc-disclaimer {
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
   text-align: center;
   padding-top: 0.5rem;

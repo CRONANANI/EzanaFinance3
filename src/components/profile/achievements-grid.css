@@ -195,7 +195,7 @@ body.light-mode .ag-card {
 }
 
 .ag-tile-meta {
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   color: var(--text-faint);
   min-width: 0;
   overflow: hidden;

@@ -236,7 +236,7 @@
   font-weight: 700;
   color: var(--foreground);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   margin: 0 0 0.75rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--emerald-bg);
@@ -320,7 +320,7 @@
 }
 
 .po-summary-btn {
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   color: #4b5563;
   background: transparent;
@@ -437,7 +437,7 @@
 }
 
 .po-secondary-sub {
-  font-size: 0.5rem;
+  font-size: var(--type-micro-size);
   color: #4b5563;
 }
 
@@ -656,7 +656,7 @@
   padding: 0.375rem 0.5rem 0;
 }
 .perf-chart-xlabel {
-  font-size: 0.5rem;
+  font-size: var(--type-micro-size);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: #4b5563;

@@ -191,13 +191,19 @@ export function BacktestResultsCard() {
                 textAlign: 'center',
               }}
             >
-              <div style={{ fontSize: '0.6rem', color: '#6b7280', marginBottom: '0.15rem' }}>
+              <div
+                style={{
+                  fontSize: 'var(--type-micro-size)',
+                  color: '#6b7280',
+                  marginBottom: '0.15rem',
+                }}
+              >
                 {m.label}
               </div>
               <div
                 style={{
                   fontSize: '0.85rem',
-                  fontWeight: 800,
+                  fontWeight: 700,
                   fontFamily: 'monospace',
                   color:
                     m.tone === 'positive'
@@ -255,7 +261,7 @@ export function BacktestResultsCard() {
                   background: '#161b22',
                   border: '1px solid rgba(255,255,255,0.08)',
                   borderRadius: 8,
-                  fontSize: '0.65rem',
+                  fontSize: 'var(--type-micro-size)',
                 }}
                 formatter={(v, name) => [
                   `$${Number(v).toFixed(2)}`,
@@ -312,7 +318,7 @@ export function BacktestResultsCard() {
                     background: '#161b22',
                     border: '1px solid rgba(255,255,255,0.08)',
                     borderRadius: 8,
-                    fontSize: '0.65rem',
+                    fontSize: 'var(--type-micro-size)',
                   }}
                   formatter={(v) => [`${Number(v).toFixed(2)}%`, 'Drawdown']}
                 />

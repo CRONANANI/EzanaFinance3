@@ -40,7 +40,7 @@
 
 .mkt-opps-risk-badge {
   display: inline-block;
-  font-size: 0.55rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   color: var(--gold-champagne);
   background: rgba(212, 175, 55, 0.08);
@@ -49,7 +49,7 @@
   padding: 1px 8px;
   margin-top: 2px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 .mkt-opps-tabs {
@@ -66,7 +66,7 @@
   border: 1px solid rgba(212, 175, 55, 0.15);
   background: transparent;
   color: rgba(212, 175, 55, 0.5);
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -178,7 +178,7 @@
   align-items: center;
   gap: 0.4rem;
   margin-top: 0.2rem;
-  font-size: 0.575rem;
+  font-size: var(--type-micro-size);
   color: var(--home-muted);
 }
 
@@ -201,7 +201,7 @@
 .mkt-opps-footer {
   padding: 0.5rem 1.1rem;
   border-top: 1px solid rgba(212, 175, 55, 0.08);
-  font-size: 0.55rem;
+  font-size: var(--type-micro-size);
   color: rgba(212, 175, 55, 0.35);
   display: flex;
   align-items: center;
@@ -289,10 +289,10 @@ body.light-mode .mkt-opps-footer {
   padding: 0.25rem 0.6rem;
   border-radius: var(--radius-md);
   border: 1px solid;
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -310,7 +310,7 @@ body.light-mode .mkt-opps-footer {
   align-items: center;
   gap: 0.5rem;
   margin-top: 0.3rem;
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   color: var(--home-muted);
 }
 
@@ -409,10 +409,10 @@ body.light-mode .mkt-opps-footer {
   padding: 0.2rem 0.55rem;
   border-radius: var(--radius-sm);
   border: 1px solid;
-  font-size: 0.575rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 .mkt-modal-profile-badge {
@@ -430,7 +430,7 @@ body.light-mode .mkt-opps-footer {
   align-items: center;
   gap: 0.3rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 .mkt-modal-context {
@@ -478,11 +478,11 @@ body.light-mode .mkt-opps-footer {
 }
 
 .mkt-modal-kpi-label {
-  font-size: 0.5rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   color: var(--gold-champagne);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 .mkt-modal-kpi-value {
@@ -494,7 +494,7 @@ body.light-mode .mkt-opps-footer {
 }
 
 .mkt-modal-kpi-sub {
-  font-size: 0.55rem;
+  font-size: var(--type-micro-size);
   color: var(--home-muted);
 }
 
@@ -558,7 +558,7 @@ body.light-mode .mkt-opps-footer {
 }
 
 .mkt-modal-news-source {
-  font-size: 0.55rem;
+  font-size: var(--type-micro-size);
   color: var(--home-muted);
 }
 
@@ -576,11 +576,11 @@ body.light-mode .mkt-opps-footer {
 }
 
 .mkt-modal-insight-label {
-  font-size: 0.575rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   color: var(--gold-champagne);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   display: flex;
   align-items: center;
   gap: 0.25rem;

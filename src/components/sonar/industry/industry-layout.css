@@ -196,7 +196,7 @@
   font-family: var(--font-mono);
   font-size: var(--type-micro-size);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--ind-faint);
   margin-right: 4px;
 }

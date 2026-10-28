@@ -38,7 +38,7 @@
 .bl-group-label {
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-secondary);
 }

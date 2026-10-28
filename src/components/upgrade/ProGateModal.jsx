@@ -57,8 +57,7 @@ export function ProGateModal({ isOpen, onClose }) {
           border: '1px solid rgba(212, 175, 55, 0.55)',
           borderRadius: '14px',
           padding: '1.75rem 1.75rem 1.5rem',
-          boxShadow:
-            '0 24px 64px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(212, 175, 55, 0.2) inset',
+          boxShadow: '0 24px 64px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(212, 175, 55, 0.2) inset',
           fontFamily: 'var(--font-sans, sans-serif)',
           color: '#f0f6fc',
         }}
@@ -112,7 +111,7 @@ export function ProGateModal({ isOpen, onClose }) {
           style={{
             margin: 0,
             fontSize: '1.15rem',
-            fontWeight: 800,
+            fontWeight: 700,
             color: '#D4AF37',
             letterSpacing: '0.01em',
           }}
@@ -128,8 +127,8 @@ export function ProGateModal({ isOpen, onClose }) {
             color: '#e5e7eb',
           }}
         >
-          This feature is currently only available to advanced pro users.
-          Upgrade your plan to gain access.
+          This feature is currently only available to advanced pro users. Upgrade your plan to gain
+          access.
         </p>
 
         <div style={{ display: 'flex', gap: '0.625rem' }}>

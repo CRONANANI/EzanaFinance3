@@ -35,7 +35,7 @@ export function ZoneDivider({ kind, count }) {
       <span
         style={{
           color: z.text,
-          fontSize: 10,
+          fontSize: 'var(--type-micro-size)',
           fontWeight: 600,
           letterSpacing: 0.4,
           textTransform: 'uppercase',

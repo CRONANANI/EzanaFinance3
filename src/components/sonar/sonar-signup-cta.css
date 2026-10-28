@@ -147,7 +147,7 @@
 
 .ssc .ssc-note {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: var(--type-micro-size);
   color: color-mix(in srgb, white 62%, transparent);
 }
 

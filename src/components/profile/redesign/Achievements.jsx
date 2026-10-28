@@ -63,7 +63,7 @@ export function Achievements({ achievements = [] }) {
           <span
             style={{
               padding: '1px 7px',
-              fontSize: 10,
+              fontSize: 'var(--type-micro-size)',
               fontWeight: 600,
               letterSpacing: 0.4,
               color: page.inkSoft,

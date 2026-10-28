@@ -101,7 +101,7 @@
 .vms-inputs dt {
   font-size: var(--type-micro-size);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
 }
 .vms-inputs dd {
@@ -319,7 +319,7 @@
 .vms-table thead th {
   font-size: var(--type-micro-size);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
   background: var(--bg-tertiary);
 }

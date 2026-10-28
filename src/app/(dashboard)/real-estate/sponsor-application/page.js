@@ -392,7 +392,7 @@ export default function SponsorApplicationPage() {
                 <div className="sa-review-label">Property Description</div>
                 <p
                   style={{
-                    fontSize: '0.65rem',
+                    fontSize: 'var(--type-micro-size)',
                     color: '#c9d1d9',
                     lineHeight: 1.5,
                     margin: '0.2rem 0 0',
@@ -408,7 +408,7 @@ export default function SponsorApplicationPage() {
                 <div className="sa-review-label">Why Ezana</div>
                 <p
                   style={{
-                    fontSize: '0.65rem',
+                    fontSize: 'var(--type-micro-size)',
                     color: '#c9d1d9',
                     lineHeight: 1.5,
                     margin: '0.2rem 0 0',

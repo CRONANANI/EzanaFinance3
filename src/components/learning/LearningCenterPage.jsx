@@ -114,7 +114,7 @@ function OrgAssignedCard() {
           <div
             style={{
               color: 'var(--info)',
-              fontWeight: 800,
+              fontWeight: 700,
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
               fontSize: '0.7rem',
@@ -173,10 +173,10 @@ function OrgAssignedCard() {
               {a.title}
             </CardPrimary>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.35rem' }}>
-              <CardMuted as="span" style={{ fontSize: '0.65rem' }}>
+              <CardMuted as="span" style={{ fontSize: 'var(--type-micro-size)' }}>
                 {a.status.replace('_', ' ')}
               </CardMuted>
-              <CardMuted as="span" style={{ fontSize: '0.65rem' }}>
+              <CardMuted as="span" style={{ fontSize: 'var(--type-micro-size)' }}>
                 Due {a.due}
               </CardMuted>
             </div>

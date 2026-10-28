@@ -165,7 +165,7 @@
   color: var(--gold-champagne);
   font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
 }
 
@@ -274,7 +274,7 @@
 
 .kairos-pill-btn {
   font-family: inherit;
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   padding: 0.25rem 0.5rem;
   border-radius: var(--radius-md);
@@ -312,7 +312,7 @@
   font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 .kairos-signal-region {
@@ -360,7 +360,7 @@
 
 .kairos-signal-item small {
   display: block;
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   color: #6b7280;
   margin-top: 1px;
 }
@@ -395,12 +395,12 @@
 
 .kairos-windows-crop small {
   color: #6b7280;
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
 }
 
 .kairos-windows-month {
   text-align: center;
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   color: #6b7280;
   padding: 0.25rem 0;
@@ -440,7 +440,7 @@
   display: flex;
   gap: 1.25rem;
   margin-top: 0.75rem;
-  font-size: 0.62rem;
+  font-size: var(--type-micro-size);
   color: #6b7280;
 }
 

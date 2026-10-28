@@ -401,7 +401,7 @@ export function CommunityFeedPost({
               <p
                 style={{
                   margin: '0.5rem 0 0',
-                  fontSize: '0.625rem',
+                  fontSize: 'var(--type-micro-size)',
                   color: 'var(--text-muted, #6b7280)',
                 }}
               >
@@ -442,7 +442,12 @@ export function CommunityFeedPost({
                 >
                   {tickerNorm.symbols.map((s) => `$${s.symbol}`).join(' · ')}
                 </span>
-                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted, #6b7280)' }}>
+                <span
+                  style={{
+                    fontSize: 'var(--type-micro-size)',
+                    color: 'var(--text-muted, #6b7280)',
+                  }}
+                >
                   {tickerNorm.period}
                 </span>
               </div>
@@ -581,7 +586,7 @@ export function CommunityFeedPost({
                                 value: `$${hp}`,
                                 position: 'insideTopRight',
                                 fill: '#f59e0b',
-                                fontSize: 10,
+                                fontSize: 'var(--type-micro-size)',
                               }}
                             />
                           )}
@@ -597,7 +602,7 @@ export function CommunityFeedPost({
                                 value: `$${chartData[hlIdx].price.toFixed(2)}`,
                                 position: 'top',
                                 fill: '#f59e0b',
-                                fontSize: 10,
+                                fontSize: 'var(--type-micro-size)',
                               }}
                             />
                           )}
@@ -744,7 +749,7 @@ export function CommunityFeedPost({
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
-                    fontSize: '0.625rem',
+                    fontSize: 'var(--type-micro-size)',
                     color: 'var(--home-muted, #6b7280)',
                   }}
                 >

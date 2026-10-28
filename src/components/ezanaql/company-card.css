@@ -56,7 +56,7 @@
 .ccd-eyebrow {
   margin: 0 0 4px;
   font-size: 0.7rem;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -110,7 +110,7 @@
 }
 .ccd-stat-label {
   font-size: 0.7rem;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }

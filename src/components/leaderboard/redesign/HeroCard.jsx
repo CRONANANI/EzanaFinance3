@@ -89,7 +89,7 @@ export function HeroCard({ user, weeklyDelta, streakDays }) {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 marginBottom: 4,
-                fontSize: 10,
+                fontSize: 'var(--type-micro-size)',
                 fontWeight: 600,
                 letterSpacing: 0.4,
                 textTransform: 'uppercase',
@@ -152,7 +152,7 @@ function StatTile({ label, number, unit, numberColor }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 70 }}>
       <div
         style={{
-          fontSize: 10,
+          fontSize: 'var(--type-micro-size)',
           fontWeight: 600,
           letterSpacing: 0.4,
           textTransform: 'uppercase',

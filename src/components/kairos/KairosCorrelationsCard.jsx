@@ -208,7 +208,7 @@ export function KairosCorrelationsCard({ regionId }) {
               commodity prices. Trigger manually via{' '}
               <code
                 style={{
-                  fontSize: '0.6rem',
+                  fontSize: 'var(--type-micro-size)',
                   background: 'rgba(255,255,255,0.06)',
                   padding: '1px 4px',
                   borderRadius: 3,

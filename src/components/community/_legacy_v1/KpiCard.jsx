@@ -43,7 +43,7 @@ export function KpiCard({ icon, label, value, sub, tone = 'emerald', chevron = '
       <div style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
-            fontSize: 10,
+            fontSize: 'var(--type-micro-size)',
             fontWeight: 600,
             color: 'var(--text-muted)',
             textTransform: 'uppercase',

@@ -47,7 +47,7 @@ export function PulseBar({ compact = false, pulse = DEFAULT_PULSE }) {
         />
         <span
           style={{
-            fontSize: 10,
+            fontSize: 'var(--type-micro-size)',
             fontWeight: 700,
             letterSpacing: '0.08em',
             color: 'var(--emerald)',
@@ -196,7 +196,7 @@ export function PulseBar({ compact = false, pulse = DEFAULT_PULSE }) {
                   >
                     <div
                       style={{
-                        fontSize: 10,
+                        fontSize: 'var(--type-micro-size)',
                         fontWeight: 600,
                         color: 'var(--text-muted)',
                         whiteSpace: 'nowrap',
@@ -206,7 +206,10 @@ export function PulseBar({ compact = false, pulse = DEFAULT_PULSE }) {
                     >
                       {s.name}
                     </div>
-                    <div className="ez-mono" style={{ fontSize: 10, fontWeight: 700, color: c }}>
+                    <div
+                      className="ez-mono"
+                      style={{ fontSize: 'var(--type-micro-size)', fontWeight: 700, color: c }}
+                    >
                       {s.sentiment > 0 ? '+' : ''}
                       {s.sentiment}
                     </div>

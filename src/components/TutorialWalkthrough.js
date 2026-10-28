@@ -355,7 +355,7 @@ export function TutorialWalkthrough() {
         >
           <span
             style={{
-              fontSize: '0.65rem',
+              fontSize: 'var(--type-micro-size)',
               color: '#6b7280',
               fontFamily: 'monospace',
               fontWeight: 700,

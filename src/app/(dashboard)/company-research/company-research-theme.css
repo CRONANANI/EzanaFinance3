@@ -253,7 +253,7 @@ body:not(.light-mode) .cr-model-premium-star {
 }
 
 .cr-news-chain-source {
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: #6b7280;
@@ -261,7 +261,7 @@ body:not(.light-mode) .cr-model-premium-star {
 }
 
 .cr-news-chain-severity {
-  font-size: 0.4375rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -289,7 +289,7 @@ body:not(.light-mode) .cr-model-premium-star {
 }
 
 .cr-news-chain-ago {
-  font-size: 0.5rem;
+  font-size: var(--type-micro-size);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: #4b5563;
@@ -298,7 +298,7 @@ body:not(.light-mode) .cr-model-premium-star {
 }
 
 .cr-news-chain-time {
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -323,7 +323,7 @@ body:not(.light-mode) .cr-model-premium-star {
 }
 
 .cr-news-chain-link {
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   color: var(--emerald);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -336,7 +336,7 @@ body:not(.light-mode) .cr-model-premium-star {
 }
 
 .cr-news-chain-sentiment {
-  font-size: 0.5rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;

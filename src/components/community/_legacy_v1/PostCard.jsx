@@ -110,7 +110,7 @@ export function ConvictionLike({ post, onChange, compact = false }) {
           onClick={handleOpen}
           onKeyDown={(e) => e.key === 'Enter' && handleOpen(e)}
           style={{
-            fontSize: 10,
+            fontSize: 'var(--type-micro-size)',
             padding: '0 5px',
             borderRadius: 999,
             background: 'var(--bg-tertiary)',
@@ -163,7 +163,7 @@ export function ConvictionLike({ post, onChange, compact = false }) {
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
               <span
                 className="ez-mono"
-                style={{ fontSize: 24, fontWeight: 800, color: 'var(--emerald)' }}
+                style={{ fontSize: 24, fontWeight: 700, color: 'var(--emerald)' }}
               >
                 {conviction}%
               </span>
@@ -571,7 +571,7 @@ export function TickerEmbed({ embed }) {
           {embed.change != null && (
             <span
               className={dir === 'up' ? 'ez-pill ez-pill--pos' : 'ez-pill ez-pill--neg'}
-              style={{ padding: '1px 6px', fontSize: 10 }}
+              style={{ padding: '1px 6px', fontSize: 'var(--type-micro-size)' }}
             >
               {dir === 'up' ? '↑' : '↓'} {Math.abs(embed.change).toFixed(2)}%
             </span>
@@ -582,7 +582,7 @@ export function TickerEmbed({ embed }) {
             <span
               key={p}
               style={{
-                fontSize: 10,
+                fontSize: 'var(--type-micro-size)',
                 fontWeight: 600,
                 padding: '2px 6px',
                 borderRadius: 4,
@@ -645,7 +645,10 @@ export function PostHeader({ post, showSkill = true }) {
           </span>
           {u.isVerified && <VerifiedTick size={13} gold={u.isLegendary} />}
           {u.isPartner && (
-            <span className="ez-pill ez-pill--gold" style={{ padding: '1px 7px', fontSize: 9 }}>
+            <span
+              className="ez-pill ez-pill--gold"
+              style={{ padding: '1px 7px', fontSize: 'var(--type-micro-size)' }}
+            >
               Partner
             </span>
           )}
@@ -716,7 +719,7 @@ export function PostCard({ post, variant = 'default', onConvictionChange }) {
             padding: '2px 8px',
             borderRadius: 999,
             background: 'var(--emerald-bg)',
-            fontSize: 9,
+            fontSize: 'var(--type-micro-size)',
             fontWeight: 700,
             color: 'var(--emerald)',
             letterSpacing: '0.08em',
@@ -788,7 +791,7 @@ export function PostCard({ post, variant = 'default', onConvictionChange }) {
         >
           <span
             style={{
-              fontSize: 10,
+              fontSize: 'var(--type-micro-size)',
               fontWeight: 700,
               color: 'var(--text-muted)',
               textTransform: 'uppercase',
@@ -827,7 +830,10 @@ export function PostCard({ post, variant = 'default', onConvictionChange }) {
             {convictionPct}%
           </span>
           {(post.conviction_count ?? 0) > 0 && (
-            <span style={{ fontSize: 10, color: 'var(--text-faint)' }} className="ez-mono">
+            <span
+              style={{ fontSize: 'var(--type-micro-size)', color: 'var(--text-faint)' }}
+              className="ez-mono"
+            >
               ({post.conviction_count})
             </span>
           )}

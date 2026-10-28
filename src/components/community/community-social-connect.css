@@ -85,7 +85,7 @@
 
 .comm-social-connect .comm-social-connect__hint {
   display: block;
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   color: var(--text-faint);
   margin: 0.1rem 0 0;
 }
@@ -141,7 +141,7 @@
 
 .comm-social-connect .comm-social-connect__footer p {
   margin: 0;
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   color: var(--text-faint);
   line-height: 1.4;
 }

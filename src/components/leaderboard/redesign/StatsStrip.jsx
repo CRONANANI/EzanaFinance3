@@ -90,7 +90,7 @@ function StatCell({ cell }) {
     <div style={{ flex: 1, minWidth: 0 }}>
       <div
         style={{
-          fontSize: 9.5,
+          fontSize: 'var(--type-micro-size)',
           fontWeight: 600,
           letterSpacing: 0.8,
           color: page.inkMuted,
@@ -108,7 +108,7 @@ function StatCell({ cell }) {
           <span
             style={{
               fontFamily: 'inherit',
-              fontSize: 10.5,
+              fontSize: 'var(--type-micro-size)',
               fontWeight: 500,
               color: cell.deltaNeutral ? page.inkMuted : deltaTokens.pos,
             }}

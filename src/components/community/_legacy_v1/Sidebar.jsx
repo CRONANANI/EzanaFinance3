@@ -122,7 +122,7 @@ export function SidebarTrendingTopics({ topics = [] }) {
         {topics.length > PAGE_SIZE && (
           <span
             style={{
-              fontSize: 10,
+              fontSize: 'var(--type-micro-size)',
               fontWeight: 600,
               color: 'var(--text-faint)',
               fontFamily: 'var(--font-mono)',
@@ -171,7 +171,7 @@ export function SidebarTrendingTopics({ topics = [] }) {
             {t.trend && (
               <span
                 className={t.trend === 'up' ? 'ez-pill ez-pill--pos' : 'ez-pill ez-pill--neg'}
-                style={{ padding: '1px 6px', fontSize: 10 }}
+                style={{ padding: '1px 6px', fontSize: 'var(--type-micro-size)' }}
               >
                 {t.trend === 'up' ? '↑' : '↓'}
               </span>

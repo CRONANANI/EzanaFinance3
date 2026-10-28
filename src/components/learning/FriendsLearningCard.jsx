@@ -5,11 +5,7 @@ import Link from 'next/link';
 import { getInitials } from '@/lib/community-utils';
 import { LearningTrackBadgeChips } from '@/components/learning/LearningTrackBadgeChips';
 import { learningTrackBiClass } from '@/lib/dashboard-bi-icons';
-import {
-  LearningCard,
-  CardPrimary,
-  CardMuted,
-} from '@/components/learning/LearningCard';
+import { LearningCard, CardPrimary, CardMuted } from '@/components/learning/LearningCard';
 
 /** When `friends` is omitted, loads from `/api/learning/friends-activity`. */
 export function FriendsLearningCard({ friends: friendsProp, loading: loadingProp }) {
@@ -67,17 +63,11 @@ export function FriendsLearningCard({ friends: friendsProp, loading: loadingProp
       </div>
       <div style={{ padding: '0 1.25rem 1rem' }}>
         {loading ? (
-          <CardMuted
-            as="p"
-            style={{ fontSize: '.8125rem', padding: '.75rem 0', margin: 0 }}
-          >
+          <CardMuted as="p" style={{ fontSize: '.8125rem', padding: '.75rem 0', margin: 0 }}>
             Loading…
           </CardMuted>
         ) : !friends?.length ? (
-          <CardMuted
-            as="p"
-            style={{ fontSize: '.8125rem', padding: '.75rem 0', margin: 0 }}
-          >
+          <CardMuted as="p" style={{ fontSize: '.8125rem', padding: '.75rem 0', margin: 0 }}>
             Follow people in Community to see what they&apos;re learning.
           </CardMuted>
         ) : (
@@ -136,26 +126,20 @@ export function FriendsLearningCard({ friends: friendsProp, loading: loadingProp
                     {f.progressPct}%
                   </span>
                 </div>
-                <CardMuted
-                  as="p"
-                  style={{ fontSize: '.6875rem', margin: '.2rem 0 0' }}
-                >
+                <CardMuted as="p" style={{ fontSize: '.6875rem', margin: '.2rem 0 0' }}>
                   Taking: &quot;{f.currentCourseTitle}&quot;
                 </CardMuted>
                 <CardMuted
                   as="p"
                   style={{
-                    fontSize: '.625rem',
+                    fontSize: 'var(--type-micro-size)',
                     margin: '.15rem 0 0',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '.25rem',
                   }}
                 >
-                  <i
-                    className={`bi ${learningTrackBiClass(f.trackId)}`}
-                    aria-hidden
-                  />
+                  <i className={`bi ${learningTrackBiClass(f.trackId)}`} aria-hidden />
                   {f.trackLabel}
                 </CardMuted>
                 {f.badgeKeys?.length ? (

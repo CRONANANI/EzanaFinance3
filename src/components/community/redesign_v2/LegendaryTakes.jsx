@@ -60,7 +60,7 @@ export function LegendaryTakes({ takes = [] }) {
                 {take.ticker && (
                   <span
                     className="ez-pill ez-pill--gold"
-                    style={{ padding: '1px 6px', fontSize: 9 }}
+                    style={{ padding: '1px 6px', fontSize: 'var(--type-micro-size)' }}
                   >
                     <span className="ez-mono">${take.ticker}</span>
                   </span>

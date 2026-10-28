@@ -71,7 +71,7 @@ function QuestRow({ quest, isFirst }) {
 
       <span
         style={{
-          fontSize: 10,
+          fontSize: 'var(--type-micro-size)',
           fontWeight: 600,
           letterSpacing: 0.4,
           color: accentColor,

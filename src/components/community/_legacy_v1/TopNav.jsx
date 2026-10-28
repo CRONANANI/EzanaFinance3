@@ -115,7 +115,7 @@ export function PageTabs({ active, onChange, messageBadge }) {
                 height: 16,
                 padding: '0 5px',
                 borderRadius: 999,
-                fontSize: 10,
+                fontSize: 'var(--type-micro-size)',
                 fontWeight: 700,
                 background: 'var(--negative)',
                 color: 'white',

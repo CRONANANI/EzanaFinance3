@@ -522,7 +522,7 @@ html.light-mode .ezana-theme .lpill.on {
   margin-top: 6px;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 10px;
+  font-size: var(--type-micro-size);
 }
 
 .ezana-theme .ledger-post {
@@ -574,7 +574,7 @@ html.light-mode .ezana-theme .lpill.on {
 .ezana-theme .conv-hint {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 10px;
+  font-size: var(--type-micro-size);
   color: var(--text-faint);
 }
 .ezana-theme .eng {

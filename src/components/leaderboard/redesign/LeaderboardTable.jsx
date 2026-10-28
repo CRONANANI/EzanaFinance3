@@ -88,7 +88,7 @@ export function LeaderboardTable({
                 border: 'none',
                 padding: 0,
                 textAlign: h.align,
-                fontSize: 10,
+                fontSize: 'var(--type-micro-size)',
                 fontWeight: 600,
                 letterSpacing: 0.6,
                 textTransform: 'uppercase',
@@ -102,7 +102,7 @@ export function LeaderboardTable({
               }}
             >
               {h.label}
-              {arrow && <span style={{ fontSize: 10 }}>{arrow}</span>}
+              {arrow && <span style={{ fontSize: 'var(--type-micro-size)' }}>{arrow}</span>}
             </Tag>
           );
         })}
@@ -162,7 +162,7 @@ export function LeaderboardTable({
           padding: '8px 16px',
           background: page.surfaceAlt,
           borderTop: `1px solid ${page.border}`,
-          fontSize: 10,
+          fontSize: 'var(--type-micro-size)',
           fontWeight: 600,
           letterSpacing: 0.4,
           textTransform: 'uppercase',

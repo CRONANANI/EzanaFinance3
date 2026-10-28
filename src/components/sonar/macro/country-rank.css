@@ -286,7 +286,7 @@
   stroke-width: 1.5;
 }
 .crk-lab {
-  font-size: 10px;
+  font-size: var(--type-micro-size);
   fill: var(--crk-dim);
 }
 .crk-lab.is-me {

@@ -5,39 +5,62 @@ import { useState, useMemo } from 'react';
 /* ── Static sector data — tickers with YTD change % ─────────────────── */
 const SECTOR_DATA = {
   Technology: [
-    { t: 'MSFT', ch: 39.92 }, { t: 'AAPL', ch: 47.82 },
-    { t: 'NVDA', ch: 184.01 }, { t: 'GOOGL', ch: 34.42 },
-    { t: 'META', ch: 134.23 }, { t: 'AVGO', ch: 53.55 },
-    { t: 'ADBE', ch: 44.12 }, { t: 'CRM', ch: 57.16 },
-    { t: 'ORCL', ch: 45.33 }, { t: 'AMD', ch: -72.94 },
-    { t: 'INTC', ch: -5.30 }, { t: 'CSCO', ch: 7.98 },
+    { t: 'MSFT', ch: 39.92 },
+    { t: 'AAPL', ch: 47.82 },
+    { t: 'NVDA', ch: 184.01 },
+    { t: 'GOOGL', ch: 34.42 },
+    { t: 'META', ch: 134.23 },
+    { t: 'AVGO', ch: 53.55 },
+    { t: 'ADBE', ch: 44.12 },
+    { t: 'CRM', ch: 57.16 },
+    { t: 'ORCL', ch: 45.33 },
+    { t: 'AMD', ch: -72.94 },
+    { t: 'INTC', ch: -5.3 },
+    { t: 'CSCO', ch: 7.98 },
   ],
   Finance: [
-    { t: 'BRK.B', ch: 9.89 }, { t: 'JPM', ch: 7.46 },
-    { t: 'V', ch: 13.40 }, { t: 'MA', ch: 11.83 },
-    { t: 'BAC', ch: -13.20 }, { t: 'WFC', ch: -2.80 },
-    { t: 'GS', ch: 16.19 }, { t: 'MS', ch: 0.19 },
+    { t: 'BRK.B', ch: 9.89 },
+    { t: 'JPM', ch: 7.46 },
+    { t: 'V', ch: 13.4 },
+    { t: 'MA', ch: 11.83 },
+    { t: 'BAC', ch: -13.2 },
+    { t: 'WFC', ch: -2.8 },
+    { t: 'GS', ch: 16.19 },
+    { t: 'MS', ch: 0.19 },
   ],
   Healthcare: [
-    { t: 'LLY', ch: 28.06 }, { t: 'UNH', ch: -8.59 },
-    { t: 'JNJ', ch: -6.28 }, { t: 'MRK', ch: 3.99 },
-    { t: 'ABBV', ch: -16.82 }, { t: 'PFE', ch: -28.13 },
-    { t: 'TMO', ch: -5.71 }, { t: 'ABT', ch: -1.47 },
+    { t: 'LLY', ch: 28.06 },
+    { t: 'UNH', ch: -8.59 },
+    { t: 'JNJ', ch: -6.28 },
+    { t: 'MRK', ch: 3.99 },
+    { t: 'ABBV', ch: -16.82 },
+    { t: 'PFE', ch: -28.13 },
+    { t: 'TMO', ch: -5.71 },
+    { t: 'ABT', ch: -1.47 },
   ],
   Consumer: [
-    { t: 'AMZN', ch: 52.38 }, { t: 'TSLA', ch: 122.59 },
-    { t: 'WMT', ch: 9.72 }, { t: 'HD', ch: -2.43 },
-    { t: 'COST', ch: 17.19 }, { t: 'MCD', ch: 12.78 },
-    { t: 'NKE', ch: -6.62 }, { t: 'SBUX', ch: -0.11 },
-    { t: 'DIS', ch: -0.11 }, { t: 'NFLX', ch: 80.91 },
+    { t: 'AMZN', ch: 52.38 },
+    { t: 'TSLA', ch: 122.59 },
+    { t: 'WMT', ch: 9.72 },
+    { t: 'HD', ch: -2.43 },
+    { t: 'COST', ch: 17.19 },
+    { t: 'MCD', ch: 12.78 },
+    { t: 'NKE', ch: -6.62 },
+    { t: 'SBUX', ch: -0.11 },
+    { t: 'DIS', ch: -0.11 },
+    { t: 'NFLX', ch: 80.91 },
   ],
   Energy: [
-    { t: 'XOM', ch: -1.99 }, { t: 'CVX', ch: -8.22 },
-    { t: 'COP', ch: -12.51 }, { t: 'SLB', ch: -18.40 },
+    { t: 'XOM', ch: -1.99 },
+    { t: 'CVX', ch: -8.22 },
+    { t: 'COP', ch: -12.51 },
+    { t: 'SLB', ch: -18.4 },
   ],
   Industrials: [
-    { t: 'CAT', ch: 2.24 }, { t: 'BA', ch: -67.09 },
-    { t: 'UPS', ch: 1.52 }, { t: 'LMT', ch: -4.87 },
+    { t: 'CAT', ch: 2.24 },
+    { t: 'BA', ch: -67.09 },
+    { t: 'UPS', ch: 1.52 },
+    { t: 'LMT', ch: -4.87 },
     { t: 'GE', ch: 44.44 },
   ],
 };
@@ -139,9 +162,10 @@ export function StockHeatmap({ onSelectStock }) {
               <div className="heatmap-sector-stocks">
                 {stocks.map((stock) => {
                   /* Tile size proportional to absolute YTD return within its sector */
-                  const returnPct = totalAbsReturn > 0
-                    ? (stock.absReturn / totalAbsReturn) * 100
-                    : 100 / stocks.length;
+                  const returnPct =
+                    totalAbsReturn > 0
+                      ? (stock.absReturn / totalAbsReturn) * 100
+                      : 100 / stocks.length;
 
                   const cls = sizeClass(stock.absReturn);
                   const bg = heatmapColor(stock.ch);
@@ -170,7 +194,10 @@ export function StockHeatmap({ onSelectStock }) {
                       onKeyDown={(e) => e.key === 'Enter' && onSelectStock?.(stock.t)}
                     >
                       <span className="heatmap-cell-ticker">{stock.t}</span>
-                      <span className="heatmap-cell-change">{sign}{stock.ch.toFixed(1)}%</span>
+                      <span className="heatmap-cell-change">
+                        {sign}
+                        {stock.ch.toFixed(1)}%
+                      </span>
 
                       {hoveredTicker === stock.t && (
                         <div
@@ -193,7 +220,9 @@ export function StockHeatmap({ onSelectStock }) {
                           }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#f0f6fc' }}>{stock.t}</span>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#f0f6fc' }}>
+                              {stock.t}
+                            </span>
                             <span
                               style={{
                                 fontSize: '0.75rem',
@@ -201,10 +230,11 @@ export function StockHeatmap({ onSelectStock }) {
                                 color: stock.ch >= 0 ? '#10b981' : '#ef4444',
                               }}
                             >
-                              {sign}{stock.ch.toFixed(2)}%
+                              {sign}
+                              {stock.ch.toFixed(2)}%
                             </span>
                           </div>
-                          <span style={{ fontSize: '0.6rem', color: '#8b949e' }}>
+                          <span style={{ fontSize: 'var(--type-micro-size)', color: '#8b949e' }}>
                             {sectorName} · YTD Return
                           </span>
                         </div>

@@ -21,10 +21,10 @@ const EMPTY_FORM = {
 function StatChip({ label, value, color }) {
   return (
     <div style={{ textAlign: 'center', minWidth: 56 }}>
-      <div style={{ fontSize: 18, fontWeight: 800, color: color || page.ink }}>{value}</div>
+      <div style={{ fontSize: 18, fontWeight: 700, color: color || page.ink }}>{value}</div>
       <div
         style={{
-          fontSize: 10,
+          fontSize: 'var(--type-micro-size)',
           color: page.inkMuted,
           textTransform: 'uppercase',
           letterSpacing: '0.05em',
@@ -76,7 +76,7 @@ function CallRow({ call, isOwner, onVote, onResolve, busy }) {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        <span style={{ fontWeight: 800, fontSize: 14, color: page.ink }}>${call.ticker}</span>
+        <span style={{ fontWeight: 700, fontSize: 14, color: page.ink }}>${call.ticker}</span>
         <span
           style={{
             display: 'inline-flex',
@@ -99,8 +99,8 @@ function CallRow({ call, isOwner, onVote, onResolve, busy }) {
             marginLeft: 'auto',
             padding: '2px 8px',
             borderRadius: 999,
-            fontSize: 10,
-            fontWeight: 800,
+            fontSize: 'var(--type-micro-size)',
+            fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
             color: status.color,
@@ -137,7 +137,7 @@ function CallRow({ call, isOwner, onVote, onResolve, busy }) {
           onClick={() => onVote(call.id, call.my_vote === 'fade' ? 'none' : 'fade')}
         />
         {call.resolves_at && isOpen && (
-          <span style={{ fontSize: 10, color: page.inkMuted, marginLeft: 4 }}>
+          <span style={{ fontSize: 'var(--type-micro-size)', color: page.inkMuted, marginLeft: 4 }}>
             by {new Date(call.resolves_at).toLocaleDateString()}
           </span>
         )}
@@ -155,7 +155,7 @@ function CallRow({ call, isOwner, onVote, onResolve, busy }) {
                   style={{
                     padding: '3px 8px',
                     borderRadius: 8,
-                    fontSize: 10,
+                    fontSize: 'var(--type-micro-size)',
                     fontWeight: 700,
                     cursor: busy ? 'default' : 'pointer',
                     background: 'transparent',

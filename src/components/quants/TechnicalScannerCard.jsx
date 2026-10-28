@@ -58,7 +58,7 @@ export function TechnicalScannerCard() {
               <div
                 style={{
                   fontSize: '1.25rem',
-                  fontWeight: 800,
+                  fontWeight: 700,
                   color: data.aggregate.includes('Buy')
                     ? '#10b981'
                     : data.aggregate.includes('Sell')
@@ -108,7 +108,7 @@ export function TechnicalScannerCard() {
                       </div>
                       <span
                         style={{
-                          fontSize: '0.65rem',
+                          fontSize: 'var(--type-micro-size)',
                           fontWeight: 700,
                           padding: '2px 6px',
                           borderRadius: 4,

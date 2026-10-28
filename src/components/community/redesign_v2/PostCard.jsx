@@ -123,7 +123,7 @@ export const ConvictionLike = forwardRef(function ConvictionLike(
           onClick={handleOpen}
           onKeyDown={(e) => e.key === 'Enter' && handleOpen(e)}
           style={{
-            fontSize: 10,
+            fontSize: 'var(--type-micro-size)',
             padding: '0 5px',
             borderRadius: 999,
             background: 'var(--bg-tertiary)',
@@ -176,7 +176,7 @@ export const ConvictionLike = forwardRef(function ConvictionLike(
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
               <span
                 className="ez-mono"
-                style={{ fontSize: 24, fontWeight: 800, color: 'var(--emerald)' }}
+                style={{ fontSize: 24, fontWeight: 700, color: 'var(--emerald)' }}
               >
                 {conviction}%
               </span>
@@ -588,7 +588,7 @@ export function TickerEmbed({ embed }) {
           {embed.change != null && (
             <span
               className={dir === 'up' ? 'ez-pill ez-pill--pos' : 'ez-pill ez-pill--neg'}
-              style={{ padding: '1px 6px', fontSize: 10 }}
+              style={{ padding: '1px 6px', fontSize: 'var(--type-micro-size)' }}
             >
               {dir === 'up' ? '↑' : '↓'} {Math.abs(embed.change).toFixed(2)}%
             </span>
@@ -599,7 +599,7 @@ export function TickerEmbed({ embed }) {
             <span
               key={p}
               style={{
-                fontSize: 10,
+                fontSize: 'var(--type-micro-size)',
                 fontWeight: 600,
                 padding: '2px 6px',
                 borderRadius: 4,
@@ -857,7 +857,7 @@ export function PostCard({ post, variant = 'conviction-bar', onConvictionChange,
             padding: '2px 8px',
             borderRadius: 999,
             background: 'var(--emerald-bg)',
-            fontSize: 9,
+            fontSize: 'var(--type-micro-size)',
             fontWeight: 700,
             color: 'var(--emerald)',
             letterSpacing: '0.08em',
@@ -882,8 +882,8 @@ export function PostCard({ post, variant = 'conviction-bar', onConvictionChange,
             borderRadius: 999,
             background: postType.soft,
             color: postType.color,
-            fontSize: 10,
-            fontWeight: 800,
+            fontSize: 'var(--type-micro-size)',
+            fontWeight: 700,
             letterSpacing: '0.05em',
             textTransform: 'uppercase',
           }}
@@ -957,7 +957,7 @@ export function PostCard({ post, variant = 'conviction-bar', onConvictionChange,
             marginTop: 10,
             paddingTop: 8,
             borderTop: '1px dashed var(--border-secondary)',
-            fontSize: 10.5,
+            fontSize: 'var(--type-micro-size)',
             color: 'var(--text-faint)',
             display: 'flex',
             alignItems: 'center',

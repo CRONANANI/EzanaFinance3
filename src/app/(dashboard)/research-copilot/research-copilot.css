@@ -169,7 +169,7 @@
   font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-faint);
   margin: 0 0 10px;
 }

@@ -810,7 +810,11 @@ export default function HomeDashboardPage() {
                           </span>
                           <span
                             className="db-hero-tf-pill"
-                            style={{ fontSize: '0.65rem', marginLeft: 6, opacity: 0.75 }}
+                            style={{
+                              fontSize: 'var(--type-micro-size)',
+                              marginLeft: 6,
+                              opacity: 0.75,
+                            }}
                           >
                             {timeframe}
                           </span>
@@ -833,7 +837,11 @@ export default function HomeDashboardPage() {
                           </span>
                           <span
                             className="db-hero-tf-pill"
-                            style={{ fontSize: '0.65rem', marginLeft: 6, opacity: 0.75 }}
+                            style={{
+                              fontSize: 'var(--type-micro-size)',
+                              marginLeft: 6,
+                              opacity: 0.75,
+                            }}
                           >
                             vs cost basis
                           </span>

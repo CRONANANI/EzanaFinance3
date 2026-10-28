@@ -24,7 +24,7 @@
 }
 
 .cl-subtitle {
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   color: var(--db-muted);
   margin: 0.15rem 0 0;
 }
@@ -222,13 +222,13 @@
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
-  font-size: 0.5rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   color: var(--gold-champagne);
 }
 
 .cl-entry-ago {
-  font-size: 0.55rem;
+  font-size: var(--type-micro-size);
   color: var(--db-muted);
   margin-left: auto;
   font-variant-numeric: tabular-nums;
@@ -243,7 +243,7 @@
 }
 
 .cl-entry-body {
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   color: var(--db-muted);
   line-height: 1.45;
   margin: 0 0 0.2rem;
@@ -257,7 +257,7 @@
   background: none;
   border: none;
   color: var(--emerald);
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   cursor: pointer;
   padding: 0;
@@ -268,7 +268,7 @@
 }
 
 .cl-entry-time {
-  font-size: 0.5rem;
+  font-size: var(--type-micro-size);
   color: var(--db-muted);
   display: flex;
   align-items: center;

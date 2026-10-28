@@ -348,7 +348,7 @@ function parseYesProb(m) {
 function chipStyle(isActive) {
   return {
     padding: '0.25rem 0.6rem',
-    fontSize: '0.65rem',
+    fontSize: 'var(--type-micro-size)',
     fontWeight: 700,
     borderRadius: 5,
     border: isActive ? '1px solid #6366f1' : '1px solid var(--bm-border)',
@@ -356,7 +356,7 @@ function chipStyle(isActive) {
     color: isActive ? '#6366f1' : 'var(--bm-muted)',
     cursor: 'pointer',
     textTransform: 'uppercase',
-    letterSpacing: '0.04em',
+    letterSpacing: 'var(--type-label-tracking)',
     fontFamily: 'var(--font-sans)',
   };
 }
@@ -554,7 +554,7 @@ function PolymarketSection() {
                     <span
                       style={{
                         fontSize: '0.875rem',
-                        fontWeight: 800,
+                        fontWeight: 700,
                         color: yesProb > 60 ? '#10b981' : yesProb > 40 ? '#f59e0b' : '#ef4444',
                       }}
                     >
@@ -562,7 +562,7 @@ function PolymarketSection() {
                     </span>
                     <p
                       style={{
-                        fontSize: '0.5625rem',
+                        fontSize: 'var(--type-micro-size)',
                         color: 'var(--bm-muted)',
                         margin: 0,
                       }}
@@ -881,7 +881,7 @@ function KalshiSection() {
                     <span
                       style={{
                         fontSize: '0.875rem',
-                        fontWeight: 800,
+                        fontWeight: 700,
                         color: prob > 60 ? '#10b981' : prob > 40 ? '#f59e0b' : '#ef4444',
                       }}
                     >
@@ -889,7 +889,7 @@ function KalshiSection() {
                     </span>
                     <p
                       style={{
-                        fontSize: '0.5625rem',
+                        fontSize: 'var(--type-micro-size)',
                         color: 'var(--bm-muted)',
                         margin: 0,
                       }}
@@ -1061,7 +1061,7 @@ export default function BettingMarketsPage() {
           <h1
             style={{
               fontSize: '1.125rem',
-              fontWeight: 800,
+              fontWeight: 700,
               color: 'var(--bm-heading)',
               margin: 0,
             }}
@@ -1138,7 +1138,7 @@ export default function BettingMarketsPage() {
               <span
                 style={{
                   fontSize: '0.8125rem',
-                  fontWeight: 800,
+                  fontWeight: 700,
                   color: 'var(--bm-heading)',
                   display: 'flex',
                   alignItems: 'center',
@@ -1171,7 +1171,7 @@ export default function BettingMarketsPage() {
                     onClick={() => setLeaderboardPeriod(p)}
                     style={{
                       padding: '3px 9px',
-                      fontSize: '0.65rem',
+                      fontSize: 'var(--type-micro-size)',
                       fontWeight: 700,
                       borderRadius: 5,
                       border:

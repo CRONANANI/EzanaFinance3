@@ -70,7 +70,7 @@ export function LeaderRow({ user, isYou, zone }) {
         {user.delta7d !== 0 && (
           <span
             style={{
-              fontSize: 9,
+              fontSize: 'var(--type-micro-size)',
               color: user.delta7d > 0 ? deltaTokens.posDot : deltaTokens.negDot,
               lineHeight: 1,
             }}
@@ -103,7 +103,7 @@ export function LeaderRow({ user, isYou, zone }) {
                   color: brand.dark,
                   border: `1px solid ${brand.ring}`,
                   fontFamily: typeTokens.mono,
-                  fontSize: 9,
+                  fontSize: 'var(--type-micro-size)',
                   fontWeight: 600,
                   letterSpacing: 0.4,
                   padding: '1px 5px',

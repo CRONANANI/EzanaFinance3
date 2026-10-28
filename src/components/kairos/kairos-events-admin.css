@@ -25,7 +25,7 @@
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--emerald);
 }
 
@@ -69,7 +69,7 @@
   border-radius: 50%;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -85,7 +85,7 @@
 }
 
 .kea-quickactions-more {
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
   font-style: italic;
 }
@@ -171,7 +171,7 @@
   color: var(--emerald);
   padding: 0.2rem 0.5rem;
   border-radius: var(--radius-sm);
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   cursor: pointer;
 }
 
@@ -185,7 +185,7 @@
 .kea-impact-row input,
 .kea-impact-row select {
   padding: 0.3rem 0.4rem;
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   border-radius: var(--radius-sm);
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--surface-input);

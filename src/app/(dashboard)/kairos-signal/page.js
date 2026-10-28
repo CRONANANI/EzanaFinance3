@@ -397,7 +397,7 @@ function GrowingDegreeDaysCard({ weatherData }) {
                 value: '🌽 Pollination (~630 GDD)',
                 position: 'right',
                 fill: 'var(--gold-champagne)',
-                fontSize: 9,
+                fontSize: 11,
                 fontWeight: 600,
               }}
             />
@@ -1152,11 +1152,11 @@ function CommoditySensitivityCard() {
             <div style={{ flex: '1 1 280px', minWidth: 240 }}>
               <div
                 style={{
-                  fontSize: '0.6rem',
+                  fontSize: 'var(--type-micro-size)',
                   fontWeight: 700,
                   color: 'var(--gold-champagne)',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
+                  letterSpacing: 'var(--type-label-tracking)',
                   marginBottom: '0.5rem',
                   display: 'flex',
                   alignItems: 'center',
@@ -1215,20 +1215,22 @@ function CommoditySensitivityCard() {
                       >
                         <span
                           style={{
-                            fontSize: '0.5rem',
+                            fontSize: 'var(--type-micro-size)',
                             color: SEVERITY_COLORS[evt.severity],
                             fontWeight: 700,
                             textTransform: 'uppercase',
-                            letterSpacing: '0.04em',
+                            letterSpacing: 'var(--type-label-tracking)',
                           }}
                         >
                           {evt.severity}
                         </span>
-                        <span style={{ fontSize: '0.5rem', color: '#6b7280' }}>{evt.region}</span>
+                        <span style={{ fontSize: 'var(--type-micro-size)', color: '#6b7280' }}>
+                          {evt.region}
+                        </span>
                       </div>
                       <p
                         style={{
-                          fontSize: '0.65rem',
+                          fontSize: 'var(--type-micro-size)',
                           color: '#e2e8f0',
                           lineHeight: 1.45,
                           margin: 0,
@@ -1238,7 +1240,7 @@ function CommoditySensitivityCard() {
                       </p>
                       <span
                         style={{
-                          fontSize: '0.475rem',
+                          fontSize: 'var(--type-micro-size)',
                           color: '#6b7280',
                           marginTop: '0.2rem',
                           display: 'block',
@@ -1268,11 +1270,11 @@ function CommoditySensitivityCard() {
               >
                 <div
                   style={{
-                    fontSize: '0.6rem',
+                    fontSize: 'var(--type-micro-size)',
                     fontWeight: 700,
                     color: 'var(--gold-champagne)',
                     textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
+                    letterSpacing: 'var(--type-label-tracking)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.3rem',
@@ -1312,7 +1314,7 @@ function CommoditySensitivityCard() {
                 <span
                   style={{
                     fontSize: '0.85rem',
-                    fontWeight: 800,
+                    fontWeight: 700,
                     color: 'var(--gold-champagne)',
                     fontVariantNumeric: 'tabular-nums',
                   }}
@@ -1320,7 +1322,11 @@ function CommoditySensitivityCard() {
                   {currentImpact.score}
                 </span>
                 <span
-                  style={{ fontSize: '0.5rem', color: 'var(--gold-champagne)', fontWeight: 600 }}
+                  style={{
+                    fontSize: 'var(--type-micro-size)',
+                    color: 'var(--gold-champagne)',
+                    fontWeight: 600,
+                  }}
                 >
                   /100 SENSITIVITY
                 </span>
@@ -1329,7 +1335,7 @@ function CommoditySensitivityCard() {
               {/* Summary */}
               <p
                 style={{
-                  fontSize: '0.65rem',
+                  fontSize: 'var(--type-micro-size)',
                   color: '#c9d1d9',
                   lineHeight: 1.65,
                   margin: '0 0 0.5rem',
@@ -1341,11 +1347,11 @@ function CommoditySensitivityCard() {
               {/* Key risks */}
               <div
                 style={{
-                  fontSize: '0.55rem',
+                  fontSize: 'var(--type-micro-size)',
                   fontWeight: 700,
                   color: '#8b949e',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.04em',
+                  letterSpacing: 'var(--type-label-tracking)',
                   marginBottom: '0.25rem',
                 }}
               >
@@ -1359,7 +1365,7 @@ function CommoditySensitivityCard() {
                       display: 'flex',
                       alignItems: 'flex-start',
                       gap: '0.35rem',
-                      fontSize: '0.6rem',
+                      fontSize: 'var(--type-micro-size)',
                       color: '#e2e8f0',
                     }}
                   >
@@ -1645,12 +1651,12 @@ function WeatherMarketImpactCard({ weatherData, region }) {
                   style={{
                     padding: '1px 8px',
                     borderRadius: '999px',
-                    fontSize: '0.625rem',
+                    fontSize: 'var(--type-micro-size)',
                     fontWeight: 700,
                     background: directionColor[item.direction] + '20',
                     color: directionColor[item.direction],
                     textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
+                    letterSpacing: 'var(--type-label-tracking)',
                   }}
                 >
                   {item.direction}
@@ -1659,7 +1665,7 @@ function WeatherMarketImpactCard({ weatherData, region }) {
                   style={{
                     padding: '1px 8px',
                     borderRadius: '999px',
-                    fontSize: '0.625rem',
+                    fontSize: 'var(--type-micro-size)',
                     fontWeight: 700,
                     background: (magnitudeColor[item.magnitude] || '#6b7280') + '20',
                     color: magnitudeColor[item.magnitude] || '#6b7280',
@@ -1836,7 +1842,7 @@ function BehaviouralSignalsCard() {
                   </span>
                   <span
                     style={{
-                      fontSize: '0.5625rem',
+                      fontSize: 'var(--type-micro-size)',
                       padding: '1px 6px',
                       borderRadius: '999px',
                       background: directionColor[p.direction] + '20',
@@ -1879,7 +1885,7 @@ function BehaviouralSignalsCard() {
                   </div>
                   <span
                     style={{
-                      fontSize: '0.5625rem',
+                      fontSize: 'var(--type-micro-size)',
                       color: 'var(--gold-champagne)',
                       fontWeight: 700,
                     }}
@@ -1927,7 +1933,7 @@ function BehaviouralSignalsCard() {
               <p
                 style={{
                   color: 'var(--home-muted, #6b7280)',
-                  fontSize: '0.6rem',
+                  fontSize: 'var(--type-micro-size)',
                   margin: '2px 0 0',
                 }}
               >
@@ -2053,13 +2059,28 @@ function ForecastOutlookCard({ weatherData, region }) {
                   {row.note}
                 </p>
                 <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.3rem' }}>
-                  <span style={{ fontSize: '0.5625rem', color: 'var(--home-muted, #6b7280)' }}>
+                  <span
+                    style={{
+                      fontSize: 'var(--type-micro-size)',
+                      color: 'var(--home-muted, #6b7280)',
+                    }}
+                  >
                     🌡 {row.avgTemp.toFixed(1)}°C avg
                   </span>
-                  <span style={{ fontSize: '0.5625rem', color: 'var(--home-muted, #6b7280)' }}>
+                  <span
+                    style={{
+                      fontSize: 'var(--type-micro-size)',
+                      color: 'var(--home-muted, #6b7280)',
+                    }}
+                  >
                     💧 {row.totPrecp.toFixed(0)}mm rain
                   </span>
-                  <span style={{ fontSize: '0.5625rem', color: 'var(--home-muted, #6b7280)' }}>
+                  <span
+                    style={{
+                      fontSize: 'var(--type-micro-size)',
+                      color: 'var(--home-muted, #6b7280)',
+                    }}
+                  >
                     💨 {row.peakWind.toFixed(0)} km/h
                   </span>
                 </div>
@@ -2211,15 +2232,15 @@ function SignalDashboardCard({ weatherData, region, owmCurrent }) {
                   marginBottom: '0.15rem',
                 }}
               />
-              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#f0f6fc' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f0f6fc' }}>
                 {item.value}
               </div>
               <div
                 style={{
-                  fontSize: '0.45rem',
+                  fontSize: 'var(--type-micro-size)',
                   color: '#6b7280',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.04em',
+                  letterSpacing: 'var(--type-label-tracking)',
                 }}
               >
                 {item.label}
@@ -2345,11 +2366,11 @@ export default function KairosSignalPage() {
             >
               <div
                 style={{
-                  fontSize: '0.5rem',
+                  fontSize: 'var(--type-micro-size)',
                   fontWeight: 700,
                   color: 'var(--gold-champagne)',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
+                  letterSpacing: 'var(--type-label-tracking)',
                   marginBottom: '0.2rem',
                   display: 'flex',
                   alignItems: 'center',
@@ -2360,7 +2381,7 @@ export default function KairosSignalPage() {
               </div>
               <p
                 style={{
-                  fontSize: '0.65rem',
+                  fontSize: 'var(--type-micro-size)',
                   color: '#c9d1d9',
                   lineHeight: 1.6,
                   margin: 0,

@@ -31,7 +31,7 @@
 .ppo-stat-label {
   font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-secondary);
 }
 

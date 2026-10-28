@@ -161,7 +161,7 @@ body.dark-mode .dcf-toolbar-section-label,
   padding: 0.3rem 0.55rem;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-sm);
@@ -228,7 +228,7 @@ body.dark-mode .dcf-chip-value,
 }
 
 .dcf-chip-label {
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
 }
 
 .dcf-chip-value {
@@ -349,7 +349,7 @@ body.dark-mode .dcf-slider::-webkit-slider-thumb,
   justify-content: space-between;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   color: var(--text-faint);
 }
 
@@ -408,7 +408,7 @@ body.dark-mode .dcf-chart-area,
   }
 
   .dcf-chip {
-    font-size: 0.65rem;
+    font-size: var(--type-micro-size);
     padding: 0.35rem 0.55rem;
   }
 
@@ -633,7 +633,7 @@ body.dark-mode .dcf-chart-area,
 .dcf-modal-key {
   font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   color: #9ca3af;
   font-weight: 600;
 }
@@ -682,7 +682,7 @@ body.dark-mode .dcf-delta-axis-label,
   color: #94a3b8;
 }
 .dcf-delta-axis-label.dcf-delta-axis-zero {
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   font-style: italic;
 }
 
@@ -960,7 +960,7 @@ body.light-mode .dcf-mode-btn.is-active {
 }
 
 .rdcf-input-hint {
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   color: var(--text-faint);
 }
 

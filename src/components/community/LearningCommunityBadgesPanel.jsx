@@ -81,7 +81,10 @@ export function LearningCommunityBadgesPanel() {
     );
   }
 
-  const filterTabs = ['All', ...LEARNING_COMMUNITY_CATEGORY_ORDER.filter((c) => categories[c]?.length)];
+  const filterTabs = [
+    'All',
+    ...LEARNING_COMMUNITY_CATEGORY_ORDER.filter((c) => categories[c]?.length),
+  ];
 
   const visibleBadges =
     badgeFilter === 'All'
@@ -100,18 +103,35 @@ export function LearningCommunityBadgesPanel() {
               Same tier style as partner achievements — earn by completing Learning Center tracks
             </p>
           </div>
-          <Link href="/learning-center" style={{ color: '#10b981', fontSize: '0.6875rem', fontWeight: 600, textDecoration: 'none' }}>
+          <Link
+            href="/learning-center"
+            style={{
+              color: '#10b981',
+              fontSize: '0.6875rem',
+              fontWeight: 600,
+              textDecoration: 'none',
+            }}
+          >
             Learning Center →
           </Link>
         </div>
         <div style={{ padding: '0 1.25rem 1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '0.75rem',
+            }}
+          >
             <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#8b949e' }}>
               {totalEarned} of {totalAvailable} earned
             </span>
             <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#d4a853' }}>{pct}%</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+          <div
+            style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}
+          >
             <div
               style={{
                 flex: 1,
@@ -140,7 +160,7 @@ export function LearningCommunityBadgesPanel() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.375rem',
-                  fontSize: '0.5625rem',
+                  fontSize: 'var(--type-micro-size)',
                   color: '#6b7280',
                   fontWeight: 600,
                 }}
@@ -169,7 +189,18 @@ export function LearningCommunityBadgesPanel() {
       {err && (
         <div className="db-card" style={{ padding: '1rem', marginBottom: '1rem' }}>
           <p style={{ color: '#f87171', fontSize: '0.8125rem', margin: 0 }}>{err}</p>
-          <button type="button" onClick={load} style={{ marginTop: '0.5rem', color: '#10b981', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>
+          <button
+            type="button"
+            onClick={load}
+            style={{
+              marginTop: '0.5rem',
+              color: '#10b981',
+              fontWeight: 600,
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
             Retry
           </button>
         </div>
@@ -213,12 +244,15 @@ export function LearningCommunityBadgesPanel() {
                     marginBottom: '0.75rem',
                   }}
                 >
-                  <i className={`bi ${badge.badge_icon}`} style={{ color: badge.earned ? badge.tier_color : '#4b5563' }} />
+                  <i
+                    className={`bi ${badge.badge_icon}`}
+                    style={{ color: badge.earned ? badge.tier_color : '#4b5563' }}
+                  />
                 </div>
                 <div
                   style={{
-                    fontSize: '0.5rem',
-                    fontWeight: 800,
+                    fontSize: 'var(--type-micro-size)',
+                    fontWeight: 700,
                     textTransform: 'uppercase',
                     letterSpacing: '0.1em',
                     marginBottom: '0.25rem',
@@ -227,14 +261,34 @@ export function LearningCommunityBadgesPanel() {
                 >
                   {badge.tier_name}
                 </div>
-                <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#e2e8f0', marginBottom: '0.25rem' }}>{badge.badge_name}</div>
-                <div style={{ fontSize: '0.625rem', color: '#6b7280', lineHeight: 1.4, marginBottom: '0.375rem' }}>{badge.badge_description}</div>
+                <div
+                  style={{
+                    fontSize: '0.8125rem',
+                    fontWeight: 700,
+                    color: '#e2e8f0',
+                    marginBottom: '0.25rem',
+                  }}
+                >
+                  {badge.badge_name}
+                </div>
+                <div
+                  style={{
+                    fontSize: 'var(--type-micro-size)',
+                    color: '#6b7280',
+                    lineHeight: 1.4,
+                    marginBottom: '0.375rem',
+                  }}
+                >
+                  {badge.badge_description}
+                </div>
                 {badge.earned && badge.earnedAt ? (
-                  <div style={{ fontSize: '0.5rem', color: '#4b5563' }}>Earned {new Date(badge.earnedAt).toLocaleDateString()}</div>
+                  <div style={{ fontSize: 'var(--type-micro-size)', color: '#4b5563' }}>
+                    Earned {new Date(badge.earnedAt).toLocaleDateString()}
+                  </div>
                 ) : (
                   <div
                     style={{
-                      fontSize: '0.5625rem',
+                      fontSize: 'var(--type-micro-size)',
                       color: '#4b5563',
                       display: 'flex',
                       alignItems: 'center',

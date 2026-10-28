@@ -81,7 +81,7 @@
 .ftq-sim-live {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   letter-spacing: 0.08em;
 }
 

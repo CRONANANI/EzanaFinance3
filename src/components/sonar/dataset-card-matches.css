@@ -32,7 +32,7 @@
 .dcm-meta {
   font-family: var(--font-mono);
   font-size: var(--type-micro-size);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: color-mix(in srgb, white 55%, transparent);
   white-space: nowrap;
@@ -55,7 +55,7 @@
   padding: 0 2px;
   font-family: var(--font-mono);
   font-size: var(--type-micro-size);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
 }
 .dcm-from-label {

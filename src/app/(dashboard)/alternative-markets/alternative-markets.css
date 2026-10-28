@@ -91,7 +91,7 @@
   font-size: 0.6875rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   color: #6b7280;
   margin-bottom: 0.35rem;
 }
@@ -221,7 +221,7 @@
 }
 
 .am-page .am-td-sub {
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   color: #6b7280;
   font-weight: 600;
 }
@@ -309,7 +309,7 @@
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--emerald);
   margin: 0 0 0.65rem;
 }

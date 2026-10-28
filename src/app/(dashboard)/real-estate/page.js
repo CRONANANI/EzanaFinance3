@@ -217,7 +217,7 @@ export default function RealEstateMarketplacePage() {
             border: '1px solid rgba(212, 175, 55, 0.12)',
             borderRadius: 6,
             color: '#D4AF37',
-            fontSize: '0.6rem',
+            fontSize: 'var(--type-micro-size)',
             padding: '0.3rem 0.5rem',
             cursor: 'pointer',
           }}
@@ -277,7 +277,7 @@ export default function RealEstateMarketplacePage() {
                   style={{
                     display: 'flex',
                     justifyContent: 'space-between',
-                    fontSize: '0.5rem',
+                    fontSize: 'var(--type-micro-size)',
                     color: '#8b949e',
                     marginBottom: '0.2rem',
                   }}
@@ -300,7 +300,7 @@ export default function RealEstateMarketplacePage() {
 
               <p
                 style={{
-                  fontSize: '0.6rem',
+                  fontSize: 'var(--type-micro-size)',
                   color: '#c9d1d9',
                   lineHeight: 1.5,
                   margin: '0 0 0.5rem',
@@ -344,7 +344,7 @@ export default function RealEstateMarketplacePage() {
         <button
           type="button"
           className="re-card-btn"
-          style={{ fontSize: '0.65rem', padding: '0.4rem 1rem' }}
+          style={{ fontSize: 'var(--type-micro-size)', padding: '0.4rem 1rem' }}
           onClick={() => router.push('/real-estate/sponsor-application')}
         >
           Apply as a Sponsor

@@ -50,7 +50,7 @@
 }
 
 .cc-quorum-label {
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   letter-spacing: 0.12em;
   color: rgba(212, 175, 55, 0.75);

@@ -20,7 +20,7 @@
 .comp-section h3 {
   font-size: 12px;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
   margin: 16px 0 8px;
 }

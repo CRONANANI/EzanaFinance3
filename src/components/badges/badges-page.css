@@ -254,7 +254,7 @@
 }
 
 .bp-tile-meta {
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   color: var(--text-faint);
 }

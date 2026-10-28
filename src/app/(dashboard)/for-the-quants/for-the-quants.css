@@ -68,7 +68,7 @@
 }
 
 .ftq-stat-sub {
-  font-size: 0.55rem;
+  font-size: var(--type-micro-size);
   color: #8b949e;
   margin-top: 0.1rem;
 }
@@ -393,7 +393,7 @@
 
 .ftq-lb-side {
   padding: 0.25rem 0.5rem;
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
 }
 
 .ftq-link-btn {
@@ -714,7 +714,7 @@ body.light-mode .ftq-pm-input {
 }
 
 .ftq-vb-keyword {
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   color: #a78bfa;
   min-width: 28px;
@@ -740,7 +740,7 @@ body.light-mode .ftq-pm-input {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   color: #8b949e;
 }
 
@@ -912,7 +912,7 @@ body.light-mode .ftq-pm-input {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
 }
 .ftq-template-cat {
   color: #6366f1;
@@ -927,7 +927,7 @@ body.light-mode .ftq-pm-input {
 }
 
 .ftq-template-datasets {
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   color: #6b7280;
   margin-top: 0.25rem;
   font-style: italic;
@@ -945,7 +945,7 @@ body.light-mode .ftq-pm-input {
   border-radius: var(--radius-sm);
   background: rgba(99, 102, 241, 0.12);
   color: #818cf8;
-  font-size: 0.55rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
 }
 
@@ -994,12 +994,12 @@ body.light-mode .ftq-pm-input {
   color: #f0f6fc;
 }
 .ftq-ds-desc {
-  font-size: 0.675rem;
+  font-size: var(--type-micro-size);
   color: #8b949e;
   margin-top: 0.15rem;
 }
 .ftq-ds-meta {
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   color: #6b7280;
   margin-top: 0.2rem;
 }
@@ -1013,7 +1013,7 @@ body.light-mode .ftq-pm-input {
 }
 
 .ftq-ds-plan-pill {
-  font-size: 0.5rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   padding: 1px 5px;
   border-radius: var(--radius-sm);
@@ -1059,7 +1059,7 @@ body.light-mode .ftq-pm-input {
 .ftq-cmp-legend {
   display: flex;
   gap: 1rem;
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   margin-top: 0.3rem;
 }
@@ -1095,7 +1095,7 @@ body.light-mode .ftq-pm-input {
 }
 .ftq-cmp-cell--label {
   color: #8b949e;
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
 }
 
@@ -1114,7 +1114,7 @@ body.light-mode .ftq-pm-input {
   gap: 0.3rem;
 }
 .ftq-expl-sub {
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   color: #6b7280;
   margin: 0.2rem 0 0.5rem;
 }
@@ -1145,7 +1145,7 @@ body.light-mode .ftq-pm-input {
 
 .ftq-expl-action {
   font-weight: 700;
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   padding: 1px 5px;
   border-radius: var(--radius-sm);
 }
@@ -1167,7 +1167,7 @@ body.light-mode .ftq-pm-input {
 }
 .ftq-expl-date {
   color: #6b7280;
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
 }
 .ftq-expl-pnl {
   margin-left: auto;
@@ -1214,7 +1214,7 @@ body.light-mode .ftq-pm-input {
   color: #c9d1d9;
 }
 .ftq-expl-detail-text {
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   color: #8b949e;
   margin-top: 1px;
 }
@@ -1225,7 +1225,7 @@ body.light-mode .ftq-pm-input {
   background: color-mix(in srgb, var(--emerald) 6%, transparent);
   border-left: 3px solid var(--emerald);
   border-radius: var(--radius-sm);
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   color: #c9d1d9;
 }
 

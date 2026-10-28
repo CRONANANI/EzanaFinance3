@@ -19,7 +19,7 @@ function RoleBadge({ role }) {
   return (
     <span
       style={{
-        fontSize: '0.65rem',
+        fontSize: 'var(--type-micro-size)',
         fontWeight: 700,
         letterSpacing: '0.04em',
         textTransform: 'uppercase',
@@ -212,7 +212,7 @@ function Field({ label, children }) {
     <div>
       <div
         style={{
-          fontSize: '0.6rem',
+          fontSize: 'var(--type-micro-size)',
           fontWeight: 700,
           letterSpacing: '0.1em',
           textTransform: 'uppercase',

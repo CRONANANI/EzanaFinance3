@@ -522,7 +522,12 @@ function MarketPerformanceTab({
                         {SERIES_NAMES[k]}
                       </p>
                       <p
-                        style={{ margin: 0, fontSize: '0.6rem', lineHeight: 1.5, color: '#c9d1d9' }}
+                        style={{
+                          margin: 0,
+                          fontSize: 'var(--type-micro-size)',
+                          lineHeight: 1.5,
+                          color: '#c9d1d9',
+                        }}
                       >
                         {desc}
                       </p>
@@ -659,7 +664,7 @@ function PlatformActivityTab() {
           <span
             style={{
               fontSize: '0.75rem',
-              fontWeight: 800,
+              fontWeight: 700,
               color: row.color,
               whiteSpace: 'nowrap',
             }}
@@ -672,7 +677,7 @@ function PlatformActivityTab() {
       <div style={{ marginTop: '0.35rem' }}>
         <p
           style={{
-            fontSize: '0.625rem',
+            fontSize: 'var(--type-micro-size)',
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
@@ -821,7 +826,7 @@ export function LatelyOnEzana({ compact = false, marketChartOnly = false }) {
               border: `1px solid ${showPortfolio ? 'rgba(16,185,129,0.4)' : 'var(--border-primary, rgba(128,128,128,0.2))'}`,
               background: showPortfolio ? 'rgba(16,185,129,0.1)' : 'transparent',
               color: showPortfolio ? 'var(--emerald)' : 'var(--text-muted, #8b949e)',
-              fontSize: '0.55rem',
+              fontSize: 'var(--type-micro-size)',
               fontWeight: 600,
               cursor: 'pointer',
               transition: 'all 0.15s',

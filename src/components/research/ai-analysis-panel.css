@@ -459,7 +459,7 @@
   font-weight: 700;
   color: var(--emerald);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   background: var(--emerald-bg-subtle);
   border-bottom: 1px solid var(--emerald-bg-hover);
   white-space: nowrap;

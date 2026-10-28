@@ -410,7 +410,7 @@
   font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   border-radius: var(--radius-md);
 }
 
@@ -495,7 +495,7 @@
   font-weight: 700;
   color: var(--emerald);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   margin-bottom: 0.5rem;
 }
 
@@ -624,7 +624,7 @@ body.light-mode .onboarding-org-role-badge {
   }
 
   .onboarding-step-label {
-    font-size: 0.65rem;
+    font-size: var(--type-micro-size);
   }
 
   .onboarding-plans-grid {
@@ -735,7 +735,7 @@ body.light-mode .onboarding-org-role-badge {
   border: 1px solid color-mix(in srgb, var(--emerald) 20%, transparent);
   border-radius: 20px;
   padding: 4px 14px;
-  letter-spacing: 1px;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   margin-bottom: 16px;
 }
@@ -883,7 +883,7 @@ body.light-mode .onboarding-org-role-badge {
   color: var(--emerald-hover);
   text-align: center;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: var(--type-label-tracking);
   margin-bottom: 8px;
 }
 
@@ -917,7 +917,7 @@ body.light-mode .onboarding-org-role-badge {
   font-size: 11px;
   color: #6b7280;
   font-weight: 600;
-  letter-spacing: 1px;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
 }
 

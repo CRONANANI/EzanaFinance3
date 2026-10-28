@@ -76,7 +76,14 @@ export function AchievementCard({ achievement }) {
         >
           {achievement.iconGlyph}
         </span>
-        <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: 0.5, color: accent }}>
+        <span
+          style={{
+            fontSize: 'var(--type-micro-size)',
+            fontWeight: 600,
+            letterSpacing: 0.5,
+            color: accent,
+          }}
+        >
           {achievement.category}
         </span>
       </div>

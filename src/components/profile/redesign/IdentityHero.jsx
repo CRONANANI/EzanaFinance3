@@ -104,7 +104,12 @@ export function IdentityHero({ user }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
             <Caps>Next · {next.label}</Caps>
             <span
-              style={{ color: page.inkMuted, fontSize: 10, fontWeight: 600, letterSpacing: 0.6 }}
+              style={{
+                color: page.inkMuted,
+                fontSize: 'var(--type-micro-size)',
+                fontWeight: 600,
+                letterSpacing: 0.6,
+              }}
             >
               <NumberText size={10} weight={600} color={page.inkMuted}>
                 {(user.rating - t.min).toLocaleString()}
@@ -157,14 +162,16 @@ export function IdentityHero({ user }) {
                   border: `1px solid ${brand.ring}`,
                   borderRadius: shape.radius.pill,
                   padding: '2px 8px',
-                  fontSize: 10,
+                  fontSize: 'var(--type-micro-size)',
                   fontWeight: 600,
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 4,
                 }}
               >
-                <span style={{ fontSize: 9 }}>{user.weeklyDelta > 0 ? '▲' : '▼'}</span>
+                <span style={{ fontSize: 'var(--type-micro-size)' }}>
+                  {user.weeklyDelta > 0 ? '▲' : '▼'}
+                </span>
                 <NumberText size={10} weight={600} color={brand.dark}>
                   {user.weeklyDelta > 0 ? '+' : ''}
                   {user.weeklyDelta}

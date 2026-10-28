@@ -30,7 +30,7 @@ body.light-mode .mg-card {
   font-size: 0.6875rem;
   font-weight: 600;
   color: var(--text-muted);
-  letter-spacing: 0.02em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
 }
 
@@ -71,7 +71,7 @@ body.light-mode .mg-card {
 
 .mg-rank {
   color: var(--text-faint);
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
 }
 
@@ -110,7 +110,7 @@ body.light-mode .mg-card {
 }
 
 .mg-grid-compact .mg-label {
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
 }
 
 .mg-grid-compact .mg-value {
@@ -121,11 +121,11 @@ body.light-mode .mg-card {
 }
 
 .mg-grid-compact .mg-row {
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
 }
 
 .mg-grid-compact .mg-rank {
-  font-size: 0.5625rem;
+  font-size: var(--type-micro-size);
 }
 
 .mg-grid-compact .mg-bar {

@@ -270,7 +270,7 @@ export function SentinelReportModal({ open, onClose, report }) {
                   >
                     {article.title}
                   </p>
-                  <p style={{ color: '#6b7280', fontSize: '0.65rem', margin: 0 }}>
+                  <p style={{ color: '#6b7280', fontSize: 'var(--type-micro-size)', margin: 0 }}>
                     {article.source} · {article.ago}
                   </p>
                 </div>

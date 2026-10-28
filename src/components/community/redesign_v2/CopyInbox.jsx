@@ -37,7 +37,7 @@ export function CopyInbox({ requests = [], onAction }) {
       >
         <span>Copy requests</span>
         {pending.length > 0 && (
-          <span className="ez-pill ez-pill--warn" style={{ fontSize: 10 }}>
+          <span className="ez-pill ez-pill--warn" style={{ fontSize: 'var(--type-micro-size)' }}>
             <span className="ez-mono">{pending.length}</span> pending
           </span>
         )}

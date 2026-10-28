@@ -85,12 +85,12 @@
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-primary);
 }
 .snb-cite {
   color: var(--emerald);
-  font-size: 9.5px;
+  font-size: var(--type-micro-size);
   margin-left: 1px;
   cursor: help;
 }
@@ -283,7 +283,7 @@
   text-decoration: underline;
 }
 .snb-news .snb-mono {
-  font-size: 10.5px;
+  font-size: var(--type-micro-size);
 }
 
 /* follow-ups */

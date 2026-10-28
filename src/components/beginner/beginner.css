@@ -15,7 +15,7 @@
   border: 1px solid var(--emerald-border, color-mix(in srgb, var(--emerald) 35%, transparent));
   background: var(--emerald-bg, color-mix(in srgb, var(--emerald) 10%, transparent));
   color: var(--emerald, var(--emerald));
-  font-size: 10px;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   cursor: pointer;
   padding: 0;
@@ -109,7 +109,7 @@ body.light-mode .beginner-edu-card__body {
 }
 
 .beginner-edu-card__disclaimer {
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
   margin: 0 0 10px;
 }
@@ -272,7 +272,7 @@ body.light-mode .beginner-first-analysis p {
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   margin: 0;
 }
 
@@ -305,7 +305,7 @@ body.light-mode .beginner-first-analysis p {
 }
 
 .checklist-reward-badge {
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   color: var(--emerald);
   background: var(--emerald-bg-hover);

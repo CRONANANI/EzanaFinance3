@@ -117,7 +117,7 @@ export function PerfChart({ performance, range, onRangeChange, isLive = false, s
               border: `1px solid ${brand.ring}`,
               borderRadius: shape.radius.pill,
               padding: '2px 8px',
-              fontSize: 10,
+              fontSize: 'var(--type-micro-size)',
               fontWeight: 600,
               letterSpacing: 0.4,
               display: 'inline-flex',

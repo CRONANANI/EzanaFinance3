@@ -132,7 +132,7 @@ export function FriendsLearningCard({ friends: friendsProp, loading: loadingProp
                 <CardMuted
                   as="p"
                   style={{
-                    fontSize: '.625rem',
+                    fontSize: 'var(--type-micro-size)',
                     margin: '.15rem 0 0',
                     display: 'flex',
                     alignItems: 'center',

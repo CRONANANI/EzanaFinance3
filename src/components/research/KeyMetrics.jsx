@@ -79,7 +79,7 @@ export function KeyMetrics({ symbol }) {
           style={{
             margin: 0,
             fontSize: '0.8125rem',
-            fontWeight: 800,
+            fontWeight: 700,
             fontFamily: 'var(--font-mono, monospace)',
             color: 'var(--text-primary, #f0f6fc)',
             textTransform: 'uppercase',
@@ -105,7 +105,7 @@ export function KeyMetrics({ symbol }) {
               <span
                 style={{
                   display: 'block',
-                  fontSize: '0.5625rem',
+                  fontSize: 'var(--type-micro-size)',
                   fontFamily: 'var(--font-mono, monospace)',
                   fontWeight: 700,
                   color: '#6b7280',
@@ -119,7 +119,7 @@ export function KeyMetrics({ symbol }) {
                 style={{
                   margin: 0,
                   fontSize: '0.75rem',
-                  fontWeight: 800,
+                  fontWeight: 700,
                   fontFamily: 'var(--font-mono, monospace)',
                   color: 'var(--text-primary, #f0f6fc)',
                   letterSpacing: '0.02em',

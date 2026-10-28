@@ -1307,7 +1307,7 @@ export default function WatchlistPage() {
               {!isOrgUser && (
                 <p
                   style={{
-                    fontSize: '0.6rem',
+                    fontSize: 'var(--type-micro-size)',
                     color: 'var(--muted-foreground, #6b7280)',
                     margin: '1px 0 0',
                     fontWeight: 500,

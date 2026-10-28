@@ -629,7 +629,7 @@ export function HomeTerminalSummary({
                             className="db-hero-card-title"
                             style={{
                               fontSize: '0.9375rem',
-                              fontWeight: 800,
+                              fontWeight: 700,
                               color: 'var(--home-heading)',
                               margin: 0,
                             }}
@@ -712,7 +712,7 @@ export function HomeTerminalSummary({
 
                     <p
                       style={{
-                        fontSize: '0.5625rem',
+                        fontSize: 'var(--type-micro-size)',
                         fontWeight: 700,
                         letterSpacing: '0.07em',
                         textTransform: 'uppercase',
@@ -798,7 +798,7 @@ export function HomeTerminalSummary({
                               </span>
                               <span
                                 style={{
-                                  fontSize: '0.5625rem',
+                                  fontSize: 'var(--type-micro-size)',
                                   color: 'var(--home-muted)',
                                   flexShrink: 0,
                                   minWidth: 44,
@@ -1113,7 +1113,7 @@ export function HomeTerminalSummary({
                     <div>
                       <p
                         style={{
-                          fontSize: '0.625rem',
+                          fontSize: 'var(--type-micro-size)',
                           fontWeight: 700,
                           textTransform: 'uppercase',
                           letterSpacing: '0.05em',
@@ -1160,7 +1160,7 @@ export function HomeTerminalSummary({
                     <div>
                       <p
                         style={{
-                          fontSize: '0.625rem',
+                          fontSize: 'var(--type-micro-size)',
                           fontWeight: 700,
                           textTransform: 'uppercase',
                           letterSpacing: '0.05em',
@@ -1273,7 +1273,11 @@ export function HomeTerminalSummary({
                   >
                     <h3>Congressional Tracker</h3>
                     <span
-                      style={{ fontSize: '0.625rem', color: 'var(--home-muted)', fontWeight: 500 }}
+                      style={{
+                        fontSize: 'var(--type-micro-size)',
+                        color: 'var(--home-muted)',
+                        fontWeight: 500,
+                      }}
                     >
                       Latest disclosures
                     </span>
@@ -1338,8 +1342,8 @@ export function HomeTerminalSummary({
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                fontSize: '0.6rem',
-                                fontWeight: 800,
+                                fontSize: 'var(--type-micro-size)',
+                                fontWeight: 700,
                                 color: '#10b981',
                                 flexShrink: 0,
                               }}
@@ -1364,7 +1368,7 @@ export function HomeTerminalSummary({
                               <p
                                 style={{
                                   color: 'var(--home-muted)',
-                                  fontSize: '0.625rem',
+                                  fontSize: 'var(--type-micro-size)',
                                   margin: 0,
                                 }}
                               >
@@ -1377,7 +1381,7 @@ export function HomeTerminalSummary({
                                 style={{
                                   padding: '0.15rem 0.4rem',
                                   borderRadius: '4px',
-                                  fontSize: '0.625rem',
+                                  fontSize: 'var(--type-micro-size)',
                                   fontWeight: 700,
                                   background: row.isSell
                                     ? 'rgba(239, 68, 68, 0.1)'
@@ -1404,7 +1408,7 @@ export function HomeTerminalSummary({
                               <p
                                 style={{
                                   margin: 0,
-                                  fontSize: '0.5625rem',
+                                  fontSize: 'var(--type-micro-size)',
                                   color: 'var(--home-muted)',
                                 }}
                               >
@@ -1486,7 +1490,7 @@ export function HomeTerminalSummary({
                     <div className="hts-movers-section">
                       <p
                         style={{
-                          fontSize: '0.625rem',
+                          fontSize: 'var(--type-micro-size)',
                           fontWeight: 700,
                           letterSpacing: '0.08em',
                           color: 'var(--home-muted)',
@@ -1551,7 +1555,7 @@ export function HomeTerminalSummary({
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   fontSize: '0.7rem',
-                                  fontWeight: 800,
+                                  fontWeight: 700,
                                   color: '#fff',
                                 }}
                               >
@@ -1559,7 +1563,7 @@ export function HomeTerminalSummary({
                               </div>
                               <span
                                 style={{
-                                  fontWeight: 800,
+                                  fontWeight: 700,
                                   color: 'var(--home-heading)',
                                   fontSize: '0.8125rem',
                                   minWidth: 44,
@@ -1588,7 +1592,7 @@ export function HomeTerminalSummary({
                               <span
                                 style={{
                                   marginLeft: 'auto',
-                                  fontSize: '0.575rem',
+                                  fontSize: 'var(--type-micro-size)',
                                   color: 'var(--home-muted)',
                                   fontVariantNumeric: 'tabular-nums',
                                   whiteSpace: 'nowrap',
@@ -1605,7 +1609,7 @@ export function HomeTerminalSummary({
                     <div className="hts-movers-section">
                       <p
                         style={{
-                          fontSize: '0.625rem',
+                          fontSize: 'var(--type-micro-size)',
                           fontWeight: 700,
                           letterSpacing: '0.08em',
                           color: 'var(--home-muted)',
@@ -1670,7 +1674,7 @@ export function HomeTerminalSummary({
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   fontSize: '0.7rem',
-                                  fontWeight: 800,
+                                  fontWeight: 700,
                                   color: '#fff',
                                 }}
                               >
@@ -1678,7 +1682,7 @@ export function HomeTerminalSummary({
                               </div>
                               <span
                                 style={{
-                                  fontWeight: 800,
+                                  fontWeight: 700,
                                   color: 'var(--home-heading)',
                                   fontSize: '0.8125rem',
                                   minWidth: 44,
@@ -1707,7 +1711,7 @@ export function HomeTerminalSummary({
                               <span
                                 style={{
                                   marginLeft: 'auto',
-                                  fontSize: '0.575rem',
+                                  fontSize: 'var(--type-micro-size)',
                                   color: 'var(--home-muted)',
                                   fontVariantNumeric: 'tabular-nums',
                                   whiteSpace: 'nowrap',

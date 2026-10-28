@@ -29,7 +29,7 @@ export function DailyQuest({ primary, bonus = [], resetsInLabel = '—' }) {
       <div className="lc-dq-header">
         <div>
           <div className="lc-eyebrow">Daily Quest</div>
-          <div style={{ fontSize: 18, fontWeight: 800, marginTop: 4 }}>Earn bonus ELO today</div>
+          <div style={{ fontSize: 18, fontWeight: 700, marginTop: 4 }}>Earn bonus ELO today</div>
         </div>
         <Pill tone="amber">Resets in {resetsInLabel}</Pill>
       </div>

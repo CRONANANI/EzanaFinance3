@@ -63,7 +63,7 @@
 }
 
 .sa-banner-text p {
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   color: #c9d1d9;
   margin: 0;
   line-height: 1.5;
@@ -81,7 +81,7 @@
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.55rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   color: #6b7280;
   padding: 0.3rem 0.6rem;
@@ -141,7 +141,7 @@
 }
 
 .sa-card-desc {
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   color: #8b949e;
   margin: 0 0 1rem;
   line-height: 1.5;
@@ -154,7 +154,7 @@
 
 .sa-label {
   display: block;
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   color: #e2e8f0;
   margin-bottom: 0.25rem;
@@ -226,7 +226,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--surface-input);
   color: #c9d1d9;
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -258,7 +258,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: transparent;
   color: #8b949e;
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   cursor: pointer;
 }
@@ -274,7 +274,7 @@
   border: 1px solid rgba(212, 175, 55, 0.3);
   background: rgba(212, 175, 55, 0.08);
   color: var(--gold-champagne);
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;

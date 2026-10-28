@@ -175,7 +175,13 @@ export function OrgSettingsPanel() {
                         <td style={{ padding: '0.6rem 0.5rem', color: '#f0f6fc', fontWeight: 600 }}>
                           {m.display_name || 'Member'}
                           {msg?.ok && (
-                            <span style={{ color: '#10b981', fontSize: '0.6rem', marginLeft: 6 }}>
+                            <span
+                              style={{
+                                color: '#10b981',
+                                fontSize: 'var(--type-micro-size)',
+                                marginLeft: 6,
+                              }}
+                            >
                               ✓ {msg.ok}
                             </span>
                           )}
@@ -183,7 +189,11 @@ export function OrgSettingsPanel() {
                             <>
                               <br />
                               <span
-                                style={{ color: '#f87171', fontSize: '0.6rem', fontWeight: 400 }}
+                                style={{
+                                  color: '#f87171',
+                                  fontSize: 'var(--type-micro-size)',
+                                  fontWeight: 400,
+                                }}
                               >
                                 {msg.err}
                               </span>
@@ -207,7 +217,7 @@ export function OrgSettingsPanel() {
                           ) : (
                             <span
                               style={{
-                                fontSize: '0.625rem',
+                                fontSize: 'var(--type-micro-size)',
                                 fontWeight: 700,
                                 padding: '2px 6px',
                                 borderRadius: 4,
@@ -271,7 +281,7 @@ export function OrgSettingsPanel() {
                               onClick={() => patchMember(m.id, { is_active: !m.is_active })}
                               style={{
                                 cursor: 'pointer',
-                                fontSize: '0.625rem',
+                                fontSize: 'var(--type-micro-size)',
                                 fontWeight: 700,
                                 padding: '2px 8px',
                                 borderRadius: 999,
@@ -302,7 +312,7 @@ export function OrgSettingsPanel() {
                               <span
                                 key={p}
                                 style={{
-                                  fontSize: '0.5625rem',
+                                  fontSize: 'var(--type-micro-size)',
                                   padding: '1px 4px',
                                   borderRadius: 3,
                                   background: 'rgba(99,102,241,0.08)',
@@ -313,7 +323,9 @@ export function OrgSettingsPanel() {
                               </span>
                             ))}
                             {perms.length > 3 && (
-                              <span style={{ fontSize: '0.5625rem', color: '#6b7280' }}>
+                              <span
+                                style={{ fontSize: 'var(--type-micro-size)', color: '#6b7280' }}
+                              >
                                 +{perms.length - 3} more
                               </span>
                             )}
