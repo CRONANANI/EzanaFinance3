@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react';
 
+import { PERMISSION_TIERS } from '@/lib/org-permissions-config';
+
 const ROLES = [
   { v: 'analyst', l: 'Analyst' },
   { v: 'portfolio_manager', l: 'Portfolio Manager' },
@@ -162,7 +164,7 @@ export function InviteOnboarding() {
               <select
                 className="settings-input"
                 value={form.role}
-                onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
+                onChange={(e) => setForm((f) => ({ ...f, role: e.target.value, sub_role: '' }))}
               >
                 {ROLES.filter((r) => canGrantInvite || r.v !== 'executive').map((r) => (
                   <option key={r.v} value={r.v}>
@@ -174,13 +176,32 @@ export function InviteOnboarding() {
           </div>
           <div className="settings-row">
             <div className="settings-field">
-              <label className="settings-label">Sub-role (optional)</label>
-              <input
-                className="settings-input"
-                value={form.sub_role}
-                placeholder="e.g. Faculty Advisor"
-                onChange={(e) => setForm((f) => ({ ...f, sub_role: e.target.value }))}
-              />
+              <label className="settings-label" htmlFor="invite-sub-role">
+                Sub-role (optional)
+              </label>
+              {form.role === 'executive' ? (
+                <input
+                  id="invite-sub-role"
+                  className="settings-input"
+                  value={form.sub_role}
+                  placeholder="e.g. Faculty Advisor"
+                  onChange={(e) => setForm((f) => ({ ...f, sub_role: e.target.value }))}
+                />
+              ) : (
+                <select
+                  id="invite-sub-role"
+                  className="settings-input"
+                  value={form.sub_role}
+                  onChange={(e) => setForm((f) => ({ ...f, sub_role: e.target.value }))}
+                >
+                  <option value="">Default for tier</option>
+                  {PERMISSION_TIERS[form.role].sub_roles.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
             <div className="settings-field">
               <label className="settings-label">Team (optional)</label>

@@ -3,6 +3,7 @@ import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient, getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
+import { defaultSubRole, normalizeSubRole } from '@/lib/org-permissions-config';
 import {
   tierOf,
   roleForTier,
@@ -90,6 +91,18 @@ export const PATCH = withApiGuard(
 
     // Keep custom titles ("Head of Research"); refresh default ones.
     const update = { tier: newTier, role: newRole };
+    // Keep the permission sub-role in step with the new tier when it was unset,
+    // invalid for the new role, or still the old tier's default.
+    const oldDefault = defaultSubRole(target.role, target.tier);
+    const validForNewRole = normalizeSubRole(newRole, target.sub_role, newTier);
+    if (
+      !target.sub_role ||
+      target.sub_role === oldDefault ||
+      !validForNewRole.ok ||
+      target.role !== newRole
+    ) {
+      update.sub_role = defaultSubRole(newRole, newTier);
+    }
     if (!target.title || target.title === tierOf(target).label) {
       update.title = tierOf({ tier: newTier }).label;
     }

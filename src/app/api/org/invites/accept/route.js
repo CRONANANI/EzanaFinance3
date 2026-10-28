@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient, getAuthUser, isServerSupabaseConfigured } from '@/lib/supabase';
 import { validatePassword } from '@/lib/auth/password-rules';
+import { defaultSubRole } from '@/lib/org-permissions-config';
 import { logOrgAction } from '@/lib/org-audit';
 
 export const dynamic = 'force-dynamic';
@@ -193,7 +194,7 @@ export const POST = withApiGuard(
     // Join (or rejoin) the org with what the invite grants.
     const membership = {
       role: invite.role,
-      sub_role: invite.sub_role || null,
+      sub_role: invite.sub_role || defaultSubRole(invite.role),
       team_id: invite.team_id || null,
       cohort_id: invite.cohort_id || null,
       can_invite: invite.can_invite === true,

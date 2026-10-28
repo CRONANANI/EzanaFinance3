@@ -86,6 +86,54 @@ export const PERMISSION_TIERS = {
 };
 
 /**
+ * Default PM / analyst sub-role, derived from the fine-grained org-chart tier
+ * (src/lib/org-hierarchy.js) and falling back to the middle sub-role of the
+ * coarse role. Executives have flat permissions and a free-text title, so they
+ * get null.
+ */
+const DEFAULT_SUB_ROLE_BY_TIER = {
+  senior_portfolio_manager: 'Senior PM',
+  portfolio_manager: 'PM',
+  junior_portfolio_manager: 'Junior PM',
+  senior_analyst: 'Senior Analyst',
+  analyst: 'Analyst',
+  junior_analyst: 'Junior Analyst',
+  quant_analyst: 'Quantitative Analyst',
+};
+const DEFAULT_SUB_ROLE_BY_ROLE = { portfolio_manager: 'PM', analyst: 'Analyst' };
+
+export function defaultSubRole(role, tier = null) {
+  const def = PERMISSION_TIERS[role];
+  if (!def || Array.isArray(def.permissions)) return null;
+  const byTier = DEFAULT_SUB_ROLE_BY_TIER[tier];
+  if (byTier && def.sub_roles.includes(byTier)) return byTier;
+  return DEFAULT_SUB_ROLE_BY_ROLE[role] || null;
+}
+
+/**
+ * Canonical sub_role for a write.
+ *  - executive: optional free-text title, trimmed, max 80 chars.
+ *  - portfolio_manager / analyst: must be one of PERMISSION_TIERS[role].sub_roles
+ *    (case-insensitive); empty means "use the tier default".
+ * @returns {{ ok: true, value: string|null } | { ok: false, error: string }}
+ */
+export function normalizeSubRole(role, subRole, tier = null) {
+  const def = PERMISSION_TIERS[role];
+  if (!def) return { ok: false, error: 'Invalid role' };
+  const raw = typeof subRole === 'string' ? subRole.trim() : '';
+  if (Array.isArray(def.permissions)) {
+    if (raw.length > 80) return { ok: false, error: 'Sub-role must be 80 characters or fewer' };
+    return { ok: true, value: raw || null };
+  }
+  if (!raw) return { ok: true, value: defaultSubRole(role, tier) };
+  const match = def.sub_roles.find((s) => s.toLowerCase() === raw.toLowerCase());
+  if (!match) {
+    return { ok: false, error: `Sub-role must be one of: ${def.sub_roles.join(', ')}` };
+  }
+  return { ok: true, value: match };
+}
+
+/**
  * Who a supervisor can manage, using real `org_members` rows (UUID ids):
  * exec → PMs; PM → analysts on their team. Excludes the supervisor themselves.
  * @param {{ id: string, role: string, team_id: string | null } | null} supervisor
@@ -116,8 +164,13 @@ export function getMemberPermissions(member, overridePerms = []) {
   let basePerms = [];
   if (Array.isArray(tier.permissions)) {
     basePerms = [...tier.permissions];
-  } else if (tier.permissions && member.sub_role) {
-    basePerms = [...(tier.permissions[member.sub_role] || [])];
+  } else if (tier.permissions) {
+    // Unknown or missing sub_role falls back to the tier default so a PM or
+    // analyst is never left with zero permissions.
+    const sub = tier.permissions[member.sub_role]
+      ? member.sub_role
+      : defaultSubRole(member.role, member.tier);
+    basePerms = [...(tier.permissions[sub] || [])];
   }
 
   const all = new Set([...basePerms, ...overridePerms]);

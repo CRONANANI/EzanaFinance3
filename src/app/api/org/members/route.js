@@ -3,6 +3,7 @@ import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient, getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { normalizeSubRole } from '@/lib/org-permissions-config';
 import { logOrgAction } from '@/lib/org-audit';
 
 export const dynamic = 'force-dynamic';
@@ -68,7 +69,7 @@ export const PATCH = withApiGuard(
     // Target must belong to the caller's org.
     const { data: target } = await supabase
       .from('org_members')
-      .select('id, role, is_active, org_id')
+      .select('id, role, sub_role, tier, is_active, org_id')
       .eq('id', targetId)
       .eq('org_id', member.org_id)
       .maybeSingle();
@@ -84,7 +85,17 @@ export const PATCH = withApiGuard(
       update.role = body.role;
       update.tier = body.role; // coarse roles are valid tiers — keep the org chart in sync
     }
-    if ('sub_role' in body) update.sub_role = body.sub_role || null;
+    const nextRole = update.role ?? target.role;
+    const roleChanged = Boolean(update.role) && update.role !== target.role;
+    if ('sub_role' in body || roleChanged) {
+      const sub = normalizeSubRole(
+        nextRole,
+        'sub_role' in body ? body.sub_role : null,
+        update.tier ?? target.tier,
+      );
+      if (!sub.ok) return NextResponse.json({ error: sub.error }, { status: 400 });
+      update.sub_role = sub.value;
+    }
     if ('team_id' in body) update.team_id = body.team_id || null;
     if ('is_active' in body) update.is_active = !!body.is_active;
 

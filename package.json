@@ -22,7 +22,7 @@
     "test:security": "node scripts/check-security-guards.mjs",
     "test:retail-a": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-plaid-columns.mjs scripts/check-plan-switch.mjs scripts/check-mock-portfolio-csv.mjs",
     "test:org-b": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-qa.mjs && node --no-warnings --test scripts/check-org-positions-sql.mjs",
-    "test:org-a": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-p1.mjs && node --no-warnings --test scripts/check-org-guards.mjs",
+    "test:org-a": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-p1.mjs && node --no-warnings --test scripts/check-org-guards.mjs && node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-subrole.mjs",
     "test:retail-b": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-retail-qa.mjs && node --no-warnings --test scripts/check-retail-qa-sql.mjs",
     "test:partner": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-partner-pipeline.mjs",
     "test:platform-qa": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-concurrency-limiter.mjs scripts/check-org-hindsight.mjs scripts/check-checklist-gate.mjs scripts/check-require-plan.mjs",

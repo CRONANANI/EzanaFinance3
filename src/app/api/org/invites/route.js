@@ -3,6 +3,7 @@ import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient, getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { normalizeSubRole } from '@/lib/org-permissions-config';
 import { logOrgAction } from '@/lib/org-audit';
 import { resend } from '@/lib/services/resend';
 import { inviteLink, sendOrgInviteEmail, validateInviteScope } from '@/lib/org-invites';
@@ -99,6 +100,9 @@ export const POST = withApiGuard(
     }
     const canInvite = scope === 'all' && body?.can_invite === true;
 
+    const sub = normalizeSubRole(role, body?.sub_role);
+    if (!sub.ok) return NextResponse.json({ error: sub.error }, { status: 400 });
+
     const { data: org } = await getAdminClient()
       .from('organizations')
       .select('name, email_domain')
@@ -125,7 +129,7 @@ export const POST = withApiGuard(
         org_id: member.org_id,
         email,
         role,
-        sub_role: body?.sub_role || null,
+        sub_role: sub.value,
         team_id: body?.team_id || null,
         cohort_id: body?.cohort_id || null,
         status: 'pending',

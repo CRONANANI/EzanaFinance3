@@ -7,6 +7,7 @@ import { logOrgAction } from '@/lib/org-audit';
 import { MANAGER_ROLES } from '../../ats-helpers';
 import { resend } from '@/lib/services/resend';
 import { resolveProvisionRoleTier } from '@/lib/org-provision';
+import { defaultSubRole } from '@/lib/org-permissions-config';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -187,6 +188,7 @@ export const POST = withApiGuard(
       user_id: newUserId,
       display_name: applicant.full_name,
       role,
+      sub_role: defaultSubRole(role, tier),
       title: body?.title ? String(body.title).slice(0, 120) : null,
       team_id: body?.team_id || null,
       reports_to: body?.reports_to || null,
