@@ -210,10 +210,10 @@
   position: absolute;
   left: 0;
   top: 0;
-  font-size: 0.625rem;
+  font-size: var(--type-label-size);
   font-weight: 600;
   color: var(--muted-foreground);
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   z-index: 1;
 }
@@ -283,12 +283,12 @@
   font-weight: 700;
 }
 .wl-bc-tag {
-  font-size: 0.5rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   padding: 1px 6px;
   border-radius: var(--radius-sm);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   margin-left: 0.3rem;
 }
 .wl-bc-tag.politician {
@@ -573,11 +573,11 @@
   border-bottom: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 .wl-cmp-hdr span {
-  font-size: 0.5625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   color: var(--muted-foreground);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
 }
 .wl-cmp-row {
   border: none;
@@ -615,12 +615,12 @@
   color: var(--negative);
 }
 .wl-cmp-type {
-  font-size: 0.5rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   padding: 2px 6px;
   border-radius: var(--radius-sm);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   display: inline-block;
 }
 .wl-cmp-type.index {
@@ -746,7 +746,7 @@
 .wl-st {
   flex: 1;
   padding: 0.3rem 0.25rem;
-  font-size: 0.5625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   color: var(--muted-foreground);
   background: transparent;
@@ -755,7 +755,7 @@
   cursor: pointer;
   transition: all 0.2s;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
 }
 .wl-st:hover {
   color: var(--foreground);

@@ -71,9 +71,9 @@ body.light-mode .beginner-metric-popover {
 }
 
 .beginner-edu-card__eyebrow {
-  font-size: 0.65rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--emerald, var(--emerald));
   margin-bottom: 6px;
@@ -237,9 +237,9 @@ body.light-mode .beginner-first-analysis p {
   margin-left: 6px;
   padding: 2px 6px;
   border-radius: var(--radius-sm);
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   background: color-mix(in srgb, var(--emerald) 20%, transparent);
   color: var(--emerald, var(--emerald));
@@ -251,9 +251,9 @@ body.light-mode .beginner-first-analysis p {
   margin-left: 6px;
   padding: 2px 6px;
   border-radius: var(--radius-sm);
-  font-size: 0.55rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   background: var(--bg-tertiary);
   color: var(--text-muted);

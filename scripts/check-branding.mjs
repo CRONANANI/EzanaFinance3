@@ -15,6 +15,12 @@
  *   6. A second declaration of the --radius-sm/md/lg/xl scale anywhere in
  *      src/ or app-legacy/. This one always runs, whatever paths are passed,
  *      because it is a whole-repo invariant rather than a per-file rule.
+ *   7. A declaration of --font-sans or --font-mono anywhere but
+ *      src/app/theme-variables.css (and the generated src/app/fonts.css).
+ *      Whole-repo invariant, like rule 6. A theme-scoped redeclaration in
+ *      app-legacy/assets/css/theme-variables.css once swapped the mono stack
+ *      for Plus Jakarta Sans in dark mode, so no numeral, ticker or eyebrow
+ *      in the dark app rendered mono. Fonts never change with the theme.
  *
  * Rule 5 reads the scale out of src/app/theme-variables.css rather than
  * hardcoding it, so the guard can never enforce a scale the app does not
@@ -164,6 +170,26 @@ for (const f of ['src', 'app-legacy'].flatMap((t) => walk(t))) {
       'radius-redeclared',
       `--radius-${m[1]} — only ${RADIUS_SCALE_FILE} declares the scale ` +
         `(app-legacy/ has its own --legacy-radius-*)`,
+    );
+  }
+}
+
+// Rule 7. Only the legacy theme file is imported from app-legacy/ (via
+// globals.css); the other legacy stylesheets are dead and not scanned.
+const FONT_DECL = /--font-(sans|mono)\s*:/g;
+const FONT_SCAN = [
+  ...walk('src'),
+  path.join('app-legacy', 'assets', 'css', 'theme-variables.css'),
+].filter((f) => f.endsWith('.css') && fs.existsSync(f));
+for (const f of FONT_SCAN) {
+  if (f === RADIUS_SCALE_FILE || /[\\/]app[\\/]fonts\.css$/.test(f)) continue;
+  const src = stripComments(fs.readFileSync(f, 'utf8'));
+  for (const m of src.matchAll(FONT_DECL)) {
+    add(
+      f,
+      lineOf(src, m.index),
+      'font-redeclared',
+      `--font-${m[1]}: only ${RADIUS_SCALE_FILE} declares the font stacks`,
     );
   }
 }

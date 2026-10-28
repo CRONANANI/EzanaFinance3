@@ -1,0 +1,826 @@
+{
+  "src/app/(dashboard)/alternative-markets/alternative-markets.css": {
+    "sub-floor": 1,
+    "caps-tracking": 2
+  },
+  "src/app/(dashboard)/alternative-markets/am2.css": {
+    "sub-floor": 6,
+    "caps-tracking": 2
+  },
+  "src/app/(dashboard)/betting-markets/betting-markets.css": {
+    "sub-floor": 3,
+    "caps-tracking": 1
+  },
+  "src/app/(dashboard)/betting-markets/page.js": {
+    "sub-floor": 4,
+    "heavy-weight": 4
+  },
+  "src/app/(dashboard)/centaur-intelligence/centaur-intelligence.css": {
+    "sub-floor": 2
+  },
+  "src/app/(dashboard)/centaur-intelligence/chamber.css": {
+    "sub-floor": 1
+  },
+  "src/app/(dashboard)/centaur-intelligence/page.js": {
+    "sub-floor": 1
+  },
+  "src/app/(dashboard)/changelog/changelog.css": {
+    "sub-floor": 6
+  },
+  "src/app/(dashboard)/community/community.css": {
+    "sub-floor": 2
+  },
+  "src/app/(dashboard)/community/legendary/[investorId]/page.js": {
+    "sub-floor": 2
+  },
+  "src/app/(dashboard)/community/messages/messages.css": {
+    "sub-floor": 6,
+    "caps-tracking": 1
+  },
+  "src/app/(dashboard)/company-research/company-research-theme.css": {
+    "sub-floor": 7
+  },
+  "src/app/(dashboard)/company-research/page.js": {
+    "heavy-weight": 1
+  },
+  "src/app/(dashboard)/council-rankings/council-rankings.css": {
+    "sub-floor": 2,
+    "caps-tracking": 3
+  },
+  "src/app/(dashboard)/for-the-quants/for-the-quants.css": {
+    "sub-floor": 17
+  },
+  "src/app/(dashboard)/for-the-quants/page.js": {
+    "heavy-weight": 1
+  },
+  "src/app/(dashboard)/for-the-quants/simulation-visuals.css": {
+    "sub-floor": 1
+  },
+  "src/app/(dashboard)/home-dashboard/home-dashboard.css": {
+    "sub-floor": 12,
+    "caps-tracking": 1
+  },
+  "src/app/(dashboard)/home-dashboard/page.js": {
+    "sub-floor": 3
+  },
+  "src/app/(dashboard)/home/broadsheet.css": {
+    "sub-floor": 17,
+    "caps-tracking": 18
+  },
+  "src/app/(dashboard)/home/terminal.css": {
+    "sub-floor": 9,
+    "caps-tracking": 7
+  },
+  "src/app/(dashboard)/inside-the-capitol/[slug]/politician-profile.css": {
+    "sub-floor": 3,
+    "caps-tracking": 1
+  },
+  "src/app/(dashboard)/inside-the-capitol/inside-the-capitol.css": {
+    "sub-floor": 26,
+    "caps-tracking": 3
+  },
+  "src/app/(dashboard)/kairos-signal/kairos-signal.css": {
+    "sub-floor": 5,
+    "caps-tracking": 2
+  },
+  "src/app/(dashboard)/kairos-signal/page.js": {
+    "sub-floor": 22,
+    "heavy-weight": 2
+  },
+  "src/app/(dashboard)/learning-center/course/[courseId]/course-visuals.css": {
+    "caps-tracking": 2
+  },
+  "src/app/(dashboard)/learning-center/course/[courseId]/learning-course.css": {
+    "sub-floor": 2,
+    "caps-tracking": 9
+  },
+  "src/app/(dashboard)/learning-center/learning-center.css": {
+    "sub-floor": 12,
+    "caps-tracking": 2
+  },
+  "src/app/(dashboard)/market-analysis/market-analysis-monitor.css": {
+    "sub-floor": 21
+  },
+  "src/app/(dashboard)/market-analysis/market-analysis-world-monitor.css": {
+    "sub-floor": 38
+  },
+  "src/app/(dashboard)/market-analysis/page.js": {
+    "sub-floor": 28
+  },
+  "src/app/(dashboard)/onboarding/onboarding.css": {
+    "sub-floor": 1,
+    "caps-tracking": 5
+  },
+  "src/app/(dashboard)/org-team-hub/org-chart/OrgChartViews.jsx": {
+    "sub-floor": 2
+  },
+  "src/app/(dashboard)/org-team-hub/org-chart/org-final.css": {
+    "sub-floor": 13
+  },
+  "src/app/(dashboard)/org-team-hub/org-pitches.css": {
+    "sub-floor": 4,
+    "caps-tracking": 1
+  },
+  "src/app/(dashboard)/org-team-hub/pitches/pitch-workspace.css": {
+    "sub-floor": 13,
+    "caps-tracking": 11
+  },
+  "src/app/(dashboard)/org-team-hub/team-hub-wire.css": {
+    "sub-floor": 9,
+    "caps-tracking": 1
+  },
+  "src/app/(dashboard)/org-trading/org-trading.css": {
+    "sub-floor": 12,
+    "caps-tracking": 2
+  },
+  "src/app/(dashboard)/partner-community/page.js": {
+    "sub-floor": 5,
+    "heavy-weight": 1
+  },
+  "src/app/(dashboard)/partner.css": {
+    "sub-floor": 22
+  },
+  "src/app/(dashboard)/pricing/pricing.css": {
+    "sub-floor": 3,
+    "caps-tracking": 1
+  },
+  "src/app/(dashboard)/real-estate/page.js": {
+    "sub-floor": 4
+  },
+  "src/app/(dashboard)/real-estate/real-estate.css": {
+    "sub-floor": 5
+  },
+  "src/app/(dashboard)/real-estate/sponsor-application/page.js": {
+    "sub-floor": 2
+  },
+  "src/app/(dashboard)/real-estate/sponsor-application/sponsor-application.css": {
+    "sub-floor": 7
+  },
+  "src/app/(dashboard)/research-copilot/research-copilot.css": {
+    "caps-tracking": 1
+  },
+  "src/app/(dashboard)/sonar/sonar.css": {
+    "sub-floor": 12
+  },
+  "src/app/(dashboard)/terminal/page.js": {
+    "sub-floor": 4
+  },
+  "src/app/(dashboard)/trading/mock/mock-trading.css": {
+    "sub-floor": 1
+  },
+  "src/app/(dashboard)/trading/mock/page.js": {
+    "sub-floor": 3
+  },
+  "src/app/(dashboard)/trading/trading.css": {
+    "sub-floor": 11,
+    "caps-tracking": 1
+  },
+  "src/app/(dashboard)/watchlist/page.js": {
+    "sub-floor": 1
+  },
+  "src/app/(dashboard)/watchlist/watchlist.css": {
+    "sub-floor": 22,
+    "caps-tracking": 2
+  },
+  "src/app/account-locked/account-locked.css": {
+    "caps-tracking": 1
+  },
+  "src/app/admin/industries/industries-admin.css": {
+    "sub-floor": 1
+  },
+  "src/app/admin/waitlist/waitlist-admin.css": {
+    "caps-tracking": 1
+  },
+  "src/app/auth/login/login.css": {
+    "caps-tracking": 1
+  },
+  "src/app/auth/partner/apply/partner-apply.css": {
+    "sub-floor": 3,
+    "caps-tracking": 2
+  },
+  "src/app/auth/partner/apply/verify/page.js": {
+    "sub-floor": 2
+  },
+  "src/app/competitions/[slug]/public.css": {
+    "caps-tracking": 3
+  },
+  "src/app/datasets/[hub]/capitol/capitol-hub.css": {
+    "sub-floor": 45,
+    "caps-tracking": 4
+  },
+  "src/app/datasets/[hub]/hub.css": {
+    "sub-floor": 3,
+    "caps-tracking": 4
+  },
+  "src/app/datasets/campaignfinancerecords/campaign-finance-records.css": {
+    "sub-floor": 9,
+    "caps-tracking": 5
+  },
+  "src/app/datasets/commercial-real-estate/commercial-real-estate.css": {
+    "caps-tracking": 4
+  },
+  "src/app/datasets/committees/committees.css": {
+    "sub-floor": 17,
+    "caps-tracking": 6
+  },
+  "src/app/datasets/etf-holdings/etf-holdings.css": {
+    "caps-tracking": 2
+  },
+  "src/app/datasets/executive-compensation/exec-comp.css": {
+    "caps-tracking": 2
+  },
+  "src/app/datasets/government/contracts/contractor-quick-view.css": {
+    "sub-floor": 4,
+    "caps-tracking": 2
+  },
+  "src/app/datasets/government/contracts/dossier/[slug]/contractor-dossier.css": {
+    "sub-floor": 11,
+    "caps-tracking": 4
+  },
+  "src/app/datasets/government/contracts/gov-contracts.css": {
+    "sub-floor": 2
+  },
+  "src/app/datasets/government/lobbying/lobbying.css": {
+    "sub-floor": 18,
+    "caps-tracking": 5
+  },
+  "src/app/datasets/insider/insider.css": {
+    "caps-tracking": 2
+  },
+  "src/app/datasets/institutional/institutional.css": {
+    "sub-floor": 16,
+    "caps-tracking": 5
+  },
+  "src/app/datasets/night-lights/night-lights.css": {
+    "caps-tracking": 4
+  },
+  "src/app/datasets/oecd-macro/oecd-explorer.css": {
+    "sub-floor": 19
+  },
+  "src/app/datasets/patents/patents.css": {
+    "caps-tracking": 4
+  },
+  "src/app/datasets/political/pol-trades.css": {
+    "sub-floor": 2
+  },
+  "src/app/datasets/sanctions/sanctions.css": {
+    "sub-floor": 29,
+    "caps-tracking": 10
+  },
+  "src/app/datasets/sonar/console-rail.css": {
+    "sub-floor": 3,
+    "caps-tracking": 1
+  },
+  "src/app/datasets/sonar/orbital-map.css": {
+    "sub-floor": 2,
+    "caps-tracking": 4
+  },
+  "src/app/datasets/sonar/pulse-brief.css": {
+    "sub-floor": 5,
+    "caps-tracking": 4
+  },
+  "src/app/datasets/supply-chain/supply-chain.css": {
+    "caps-tracking": 4
+  },
+  "src/app/ezana-api/ezana-api.css": {
+    "sub-floor": 4,
+    "caps-tracking": 1
+  },
+  "src/app/globals.css": {
+    "sub-floor": 7,
+    "caps-tracking": 1
+  },
+  "src/app/marketing-explore.css": {
+    "sub-floor": 1,
+    "caps-tracking": 4
+  },
+  "src/app/mobile-responsive.css": {
+    "sub-floor": 2,
+    "caps-tracking": 2
+  },
+  "src/app/nav-notifications.css": {
+    "sub-floor": 7
+  },
+  "src/app/not-found.css": {
+    "heavy-weight": 1
+  },
+  "src/app/pricing/pricing-standalone.css": {
+    "sub-floor": 5,
+    "caps-tracking": 6
+  },
+  "src/app/responsive-system.css": {
+    "sub-floor": 1
+  },
+  "src/app/settings/settings-ledger.css": {
+    "sub-floor": 1
+  },
+  "src/app/settings/settings.css": {
+    "sub-floor": 2,
+    "caps-tracking": 5
+  },
+  "src/app/subscribe/subscribe.css": {
+    "sub-floor": 2
+  },
+  "src/components/Layout/mobile-bottom-nav.css": {
+    "sub-floor": 1
+  },
+  "src/components/Layout/nav-datasets-light.css": {
+    "caps-tracking": 1
+  },
+  "src/components/TutorialWalkthrough.js": {
+    "sub-floor": 1
+  },
+  "src/components/auth/org-invite-accept.css": {
+    "caps-tracking": 1
+  },
+  "src/components/badges/badges-page.css": {
+    "sub-floor": 1
+  },
+  "src/components/beginner/beginner.css": {
+    "sub-floor": 3,
+    "caps-tracking": 1
+  },
+  "src/components/beta/beta-lock-gate.css": {
+    "caps-tracking": 1
+  },
+  "src/components/brokerage-logos.css": {
+    "caps-tracking": 1
+  },
+  "src/components/centaur/SentinelReportModal.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/community/LearningCommunityBadgesPanel.jsx": {
+    "sub-floor": 5,
+    "heavy-weight": 1
+  },
+  "src/components/community/_legacy/CommunityFeedPost.jsx": {
+    "sub-floor": 5
+  },
+  "src/components/community/_legacy_v1/KpiCard.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/community/_legacy_v1/NotificationsPanel.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/community/_legacy_v1/PostCard.jsx": {
+    "sub-floor": 8,
+    "heavy-weight": 1
+  },
+  "src/components/community/_legacy_v1/PulseBar.jsx": {
+    "sub-floor": 3
+  },
+  "src/components/community/_legacy_v1/Sidebar.jsx": {
+    "sub-floor": 3
+  },
+  "src/components/community/_legacy_v1/SkillBadge.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/community/_legacy_v1/TopNav.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/community/community-social-connect.css": {
+    "sub-floor": 2
+  },
+  "src/components/community/competitions/competitions.css": {
+    "caps-tracking": 1
+  },
+  "src/components/community/copy-request-inbox.css": {
+    "sub-floor": 1,
+    "caps-tracking": 1
+  },
+  "src/components/community/redesign_v2/CopyInbox.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/community/redesign_v2/CreatorBadge.jsx": {
+    "sub-floor": 1,
+    "heavy-weight": 1
+  },
+  "src/components/community/redesign_v2/EvoComposer.jsx": {
+    "sub-floor": 2,
+    "heavy-weight": 1
+  },
+  "src/components/community/redesign_v2/LegendaryTakes.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/community/redesign_v2/OpenCalls.jsx": {
+    "sub-floor": 2,
+    "heavy-weight": 1
+  },
+  "src/components/community/redesign_v2/PostCard.jsx": {
+    "sub-floor": 7,
+    "heavy-weight": 2
+  },
+  "src/components/community/redesign_v2/YourCommunityCard.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/community/user-search.css": {
+    "caps-tracking": 1
+  },
+  "src/components/company-research/StockHeatmap.jsx": {
+    "sub-floor": 1,
+    "heavy-weight": 1
+  },
+  "src/components/datasets/category-bar.css": {
+    "sub-floor": 1,
+    "caps-tracking": 1
+  },
+  "src/components/datasets/dataset-page-footer.css": {
+    "sub-floor": 1,
+    "caps-tracking": 1
+  },
+  "src/components/datasets/disclosures/disclosures.css": {
+    "sub-floor": 17,
+    "caps-tracking": 2
+  },
+  "src/components/datasets/hub/canvas/hub-canvas.css": {
+    "sub-floor": 1,
+    "caps-tracking": 3
+  },
+  "src/components/datasets/hub/state-map.css": {
+    "sub-floor": 3,
+    "caps-tracking": 1
+  },
+  "src/components/datasets/news-belt.css": {
+    "sub-floor": 1,
+    "caps-tracking": 1
+  },
+  "src/components/datasets/politician-tracker/politician-tracker.css": {
+    "sub-floor": 22,
+    "caps-tracking": 1
+  },
+  "src/components/datasets/prediction-markets/prediction-markets.css": {
+    "sub-floor": 6,
+    "caps-tracking": 8
+  },
+  "src/components/ds/ds.css": {
+    "caps-tracking": 1
+  },
+  "src/components/empire-ranking/er-cards.css": {
+    "sub-floor": 12,
+    "caps-tracking": 1
+  },
+  "src/components/ezanaql/company-card.css": {
+    "sub-floor": 2,
+    "caps-tracking": 2
+  },
+  "src/components/ezanaql/ezanaql-bar.css": {
+    "sub-floor": 3
+  },
+  "src/components/file-preview/file-preview.css": {
+    "sub-floor": 2
+  },
+  "src/components/help-center/support-center.css": {
+    "sub-floor": 9
+  },
+  "src/components/home/HomeTerminalSummary.jsx": {
+    "sub-floor": 13,
+    "heavy-weight": 6
+  },
+  "src/components/home/LatelyOnEzana.jsx": {
+    "sub-floor": 3,
+    "heavy-weight": 1
+  },
+  "src/components/home/add-portfolio-modal.css": {
+    "sub-floor": 2,
+    "caps-tracking": 3
+  },
+  "src/components/home/elo-widget.css": {
+    "sub-floor": 1,
+    "caps-tracking": 2
+  },
+  "src/components/home/home-terminal-summary.css": {
+    "sub-floor": 28,
+    "caps-tracking": 10
+  },
+  "src/components/home/market-opportunities.css": {
+    "sub-floor": 12,
+    "caps-tracking": 6
+  },
+  "src/components/judge/judge.css": {
+    "caps-tracking": 3
+  },
+  "src/components/kairos/KairosCorrelationsCard.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/kairos/kairos-correlations-card.css": {
+    "sub-floor": 3
+  },
+  "src/components/kairos/kairos-events-admin.css": {
+    "sub-floor": 4,
+    "caps-tracking": 1
+  },
+  "src/components/kairos/kairos-events-card.css": {
+    "sub-floor": 1
+  },
+  "src/components/landing/dimension-scroll.css": {
+    "sub-floor": 7,
+    "caps-tracking": 2
+  },
+  "src/components/landing/hero-dashboard-mock.css": {
+    "sub-floor": 17
+  },
+  "src/components/landing/hero-device-showcase.css": {
+    "sub-floor": 28,
+    "caps-tracking": 2
+  },
+  "src/components/landing/portfolio-signal-card.css": {
+    "sub-floor": 1
+  },
+  "src/components/landing/social-ledger.css": {
+    "sub-floor": 5,
+    "caps-tracking": 6
+  },
+  "src/components/landing/sonar-band.css": {
+    "sub-floor": 23,
+    "heavy-weight": 1,
+    "caps-tracking": 1
+  },
+  "src/components/landing/sonar-country.css": {
+    "sub-floor": 8
+  },
+  "src/components/landing/sonar-research.css": {
+    "sub-floor": 4,
+    "caps-tracking": 2
+  },
+  "src/components/leaderboard/elo-leaderboard.css": {
+    "caps-tracking": 1
+  },
+  "src/components/leaderboard/redesign/DailyQuests.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/leaderboard/redesign/FilterBar.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/leaderboard/redesign/HeroCard.jsx": {
+    "sub-floor": 2
+  },
+  "src/components/leaderboard/redesign/LeaderRow.jsx": {
+    "sub-floor": 2
+  },
+  "src/components/leaderboard/redesign/LeaderboardTable.jsx": {
+    "sub-floor": 3
+  },
+  "src/components/leaderboard/redesign/StatsStrip.jsx": {
+    "sub-floor": 2
+  },
+  "src/components/leaderboard/redesign/ZoneDivider.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/learning/FriendsLearningCard.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/learning/LearningCenterPage.jsx": {
+    "sub-floor": 2,
+    "heavy-weight": 1
+  },
+  "src/components/learning/_legacy/FriendsLearningCard.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/learning/lc2/lc2.css": {
+    "caps-tracking": 2
+  },
+  "src/components/learning/redesign/ActivePath.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/learning/redesign/DailyQuest.jsx": {
+    "heavy-weight": 1
+  },
+  "src/components/learning/redesign/atoms.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/org/OrgHomeCards.jsx": {
+    "sub-floor": 5
+  },
+  "src/components/org/OrgMemberProfileModal.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/org/OrgSendToTeamModal.jsx": {
+    "sub-floor": 3,
+    "heavy-weight": 1
+  },
+  "src/components/org/academic2/AssignmentCard.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/org/academic2/assignments2.css": {
+    "sub-floor": 8
+  },
+  "src/components/org/academic2/cohort2.css": {
+    "caps-tracking": 6
+  },
+  "src/components/org/academic2/compliance2.css": {
+    "sub-floor": 1
+  },
+  "src/components/org/analytics2/CashTile.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/org/analytics2/FundVsBenchmarkChart.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/org/analytics2/analytics.css": {
+    "sub-floor": 13
+  },
+  "src/components/org/competitions/competition-trophies.css": {
+    "caps-tracking": 1
+  },
+  "src/components/org/competitions/competitions.css": {
+    "sub-floor": 1,
+    "caps-tracking": 4
+  },
+  "src/components/org/orgchart2/org-chart.css": {
+    "sub-floor": 5,
+    "caps-tracking": 1
+  },
+  "src/components/org/pitches/PitchWorkspace.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/org/social2/meetings2.css": {
+    "sub-floor": 8,
+    "caps-tracking": 3
+  },
+  "src/components/org/social2/recognition2.css": {
+    "sub-floor": 6,
+    "caps-tracking": 2
+  },
+  "src/components/org/social2/research2.css": {
+    "sub-floor": 1,
+    "caps-tracking": 5
+  },
+  "src/components/org/social2/social.css": {
+    "sub-floor": 5,
+    "caps-tracking": 1
+  },
+  "src/components/partner/badges.css": {
+    "sub-floor": 6,
+    "caps-tracking": 1
+  },
+  "src/components/polymarket/trader-profile-modal.css": {
+    "sub-floor": 2,
+    "caps-tracking": 1
+  },
+  "src/components/profile/achievements-grid.css": {
+    "sub-floor": 1
+  },
+  "src/components/profile/metrics-grid.css": {
+    "sub-floor": 4,
+    "caps-tracking": 1
+  },
+  "src/components/profile/profile-elo-card.css": {
+    "caps-tracking": 2
+  },
+  "src/components/profile/profile-trade-notes.css": {
+    "sub-floor": 2,
+    "caps-tracking": 1
+  },
+  "src/components/profile/redesign/AchievementCard.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/profile/redesign/Achievements.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/profile/redesign/CreatorTrackRecord.jsx": {
+    "sub-floor": 4,
+    "heavy-weight": 3
+  },
+  "src/components/profile/redesign/IdentityHero.jsx": {
+    "sub-floor": 3
+  },
+  "src/components/profile/redesign/PerfChart.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/profile/redesign/PerfStatCard.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/quants/BacktestResultsCard.jsx": {
+    "sub-floor": 3,
+    "heavy-weight": 1
+  },
+  "src/components/quants/PairsTradingCard.jsx": {
+    "sub-floor": 2,
+    "heavy-weight": 2
+  },
+  "src/components/quants/StrategyComparisonCard.jsx": {
+    "sub-floor": 4,
+    "heavy-weight": 2
+  },
+  "src/components/quants/TechnicalScannerCard.jsx": {
+    "sub-floor": 1,
+    "heavy-weight": 1
+  },
+  "src/components/research/AnalystRecommendations.jsx": {
+    "sub-floor": 8,
+    "heavy-weight": 6
+  },
+  "src/components/research/KeyMetrics.jsx": {
+    "sub-floor": 1,
+    "heavy-weight": 2
+  },
+  "src/components/research/StockPriceChart.jsx": {
+    "sub-floor": 11,
+    "heavy-weight": 4
+  },
+  "src/components/research/ai-analysis-panel.css": {
+    "caps-tracking": 1
+  },
+  "src/components/research/dcf/dcf-interactive.css": {
+    "sub-floor": 7,
+    "caps-tracking": 1
+  },
+  "src/components/research/dcf/dcf-v5.css": {
+    "sub-floor": 3,
+    "caps-tracking": 2
+  },
+  "src/components/research/market/market-portfolio.css": {
+    "sub-floor": 2,
+    "caps-tracking": 3
+  },
+  "src/components/research/market/sector-detail-modal.css": {
+    "caps-tracking": 3
+  },
+  "src/components/research/models/valuation-method-selector.css": {
+    "caps-tracking": 2
+  },
+  "src/components/sanctions/sanctions-map.css": {
+    "sub-floor": 2,
+    "caps-tracking": 1
+  },
+  "src/components/settings/MyRoleAccessPanel.jsx": {
+    "sub-floor": 2
+  },
+  "src/components/settings/OrgSettingsPanel.jsx": {
+    "sub-floor": 6
+  },
+  "src/components/settings/org/AuditLog.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/settings/org/CohortSettings.jsx": {
+    "sub-floor": 2
+  },
+  "src/components/settings/org/OrgBranding.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/settings/partner-applications-panel.css": {
+    "caps-tracking": 1
+  },
+  "src/components/settings/payouts-panel.css": {
+    "caps-tracking": 1
+  },
+  "src/components/settings/platform-changelog-panel.css": {
+    "sub-floor": 1,
+    "caps-tracking": 1
+  },
+  "src/components/settings/referrals-panel.css": {
+    "caps-tracking": 1
+  },
+  "src/components/sonar/dataset-card-matches.css": {
+    "caps-tracking": 2
+  },
+  "src/components/sonar/industry/industry-layout.css": {
+    "sub-floor": 1,
+    "caps-tracking": 1
+  },
+  "src/components/sonar/macro/country-rank.css": {
+    "sub-floor": 1
+  },
+  "src/components/sonar/sonar-briefing.css": {
+    "sub-floor": 2,
+    "caps-tracking": 1
+  },
+  "src/components/sonar/sonar-signup-cta.css": {
+    "sub-floor": 1
+  },
+  "src/components/trading/mock-portfolio-chart.css": {
+    "caps-tracking": 1
+  },
+  "src/components/ui/DateSelector.jsx": {
+    "sub-floor": 4
+  },
+  "src/components/ui/SortableTable.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/ui/StatCard.jsx": {
+    "sub-floor": 2,
+    "heavy-weight": 1
+  },
+  "src/components/ui/animated-nav.css": {
+    "sub-floor": 3,
+    "caps-tracking": 1
+  },
+  "src/components/ui/custom-date-calendar.css": {
+    "sub-floor": 1
+  },
+  "src/components/ui/interactive-animated-arrow-icon.jsx": {
+    "sub-floor": 1
+  },
+  "src/components/upgrade/ProGateModal.jsx": {
+    "heavy-weight": 1
+  },
+  "src/components/watchlist/holder-popup.css": {
+    "caps-tracking": 1
+  },
+  "src/components/watchlist/new-watchlist-dialog.css": {
+    "sub-floor": 1
+  },
+  "src/lightswind.css": {
+    "caps-tracking": 1
+  }
+}

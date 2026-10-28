@@ -60,10 +60,10 @@ body.light-mode .lc-ticker-popup {
 }
 
 .lc-ticker-popup-eyebrow {
-  font-size: 0.625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--emerald);
   margin-bottom: 0.35rem;
 }
@@ -187,10 +187,10 @@ body.light-mode .lc-ticker-popup {
   min-width: 0;
 }
 .lc-ticker-popup-research-eyebrow {
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--emerald);
 }
 .lc-ticker-popup-research-title {

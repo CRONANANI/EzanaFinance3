@@ -16,10 +16,12 @@
 }
 
 .re-hero-title {
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
   color: #f0f6fc;
   margin: 0 0 0.3rem;
+  letter-spacing: var(--type-page-title-tracking);
+  line-height: var(--type-page-title-leading);
 }
 
 .re-hero-title .re-gold {
@@ -58,10 +60,10 @@
 }
 
 .re-kpi-label {
-  font-size: 0.5rem;
+  font-size: var(--type-label-size);
   color: #8b949e;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   margin-top: 0.1rem;
 }
 
@@ -134,10 +136,10 @@
 
 .re-card-type {
   display: inline-block;
-  font-size: 0.475rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   padding: 0.15rem 0.45rem;
   border-radius: var(--radius-sm);
   margin-bottom: 0.4rem;
@@ -206,10 +208,10 @@
 }
 
 .re-card-stat-label {
-  font-size: 0.45rem;
+  font-size: var(--type-label-size);
   color: #6b7280;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 .re-card-footer {

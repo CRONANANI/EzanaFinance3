@@ -44,11 +44,12 @@ body.light-mode .db-page {
 }
 
 .db-greeting {
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
   color: #f0f6fc;
   margin: 0;
-  letter-spacing: -0.02em;
+  letter-spacing: var(--type-page-title-tracking);
+  line-height: var(--type-page-title-leading);
 }
 
 .db-greeting-waving {
@@ -415,7 +416,7 @@ a.db-icon-btn {
   position: absolute;
   top: 1.6rem;
   right: 0.65rem;
-  font-size: 0.5rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   color: var(--negative);
   background: rgba(239, 68, 68, 0.08);
@@ -423,7 +424,7 @@ a.db-icon-btn {
   padding: 0.15rem 0.5rem;
   border-radius: 100px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 .db-holding-title-row {
@@ -961,11 +962,11 @@ body.light-mode .db-profits-legend-scroll .db-profits-legend-item {
   display: grid;
   grid-template-columns: 1fr 0.7fr 0.8fr;
   padding: 0.5rem 1.25rem;
-  font-size: 0.5625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   color: var(--db-muted-ink);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   border-bottom: 1px solid color-mix(in srgb, var(--emerald) 5%, transparent);
   flex-shrink: 0;
 }

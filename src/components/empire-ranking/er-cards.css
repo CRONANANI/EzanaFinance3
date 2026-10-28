@@ -112,12 +112,13 @@ body.light-mode .er-page {
 }
 
 .er-hero h1 {
-  font-size: 1.45rem;
-  font-weight: 700;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
   color: var(--gold-champagne);
   margin: 0 0 0.35rem;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--type-page-title-tracking);
   text-align: center;
+  line-height: var(--type-page-title-leading);
 }
 
 .er-hero-sub {
@@ -412,11 +413,11 @@ body.light-mode .er-select {
 }
 
 .er-cycle-stat-label {
-  font-size: 0.62rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   color: var(--er-text-label);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 .er-cycle-stat-value {
@@ -714,9 +715,9 @@ body.light-mode .er-hero {
 }
 
 .er-control-label {
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--er-text-label);
   white-space: nowrap;

@@ -5,9 +5,8 @@
 
 :root {
     /* Typography - Plus Jakarta Sans (Envato-style modern font) */
-    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    /* --font-sans and --font-mono are declared once, in src/app/theme-variables.css. */
     --font-serif: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, "Cascadia Code", monospace;
 
     /* Font Weights */
     --font-weight-light: 300;
@@ -193,12 +192,10 @@ body.light-mode {
   --text-tertiary: #64748b;
 }
 
-/* .dark - Plus Jakarta Sans font stack (fonts consistent in dark mode) */
-.dark {
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-serif: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: 'Plus Jakarta Sans', "SF Mono", Monaco, "Cascadia Code", monospace;
-}
+/* Oct 28: the .dark block that lived here redeclared --font-mono as Plus
+   Jakarta Sans, so every mono numeral, eyebrow and ticker in the dark app
+   rendered in the sans face. Fonts do not change with the theme; the stacks
+   are declared once in src/app/theme-variables.css. */
 
 /* App-wide default typography */
 html, body {

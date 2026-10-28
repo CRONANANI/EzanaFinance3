@@ -213,7 +213,7 @@
   font-size: var(--type-page-title-size);
   font-weight: var(--type-page-title-weight);
   letter-spacing: var(--type-page-title-tracking);
-  line-height: 1.1;
+  line-height: var(--type-page-title-leading);
   color: var(--text-primary);
   margin: 0;
 }
@@ -539,9 +539,9 @@
   background: var(--bg-tertiary);
   border-bottom: 1px solid var(--border-primary);
   font-family: var(--font-sans);
-  font-size: 10px;
+  font-size: var(--type-label-size);
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }

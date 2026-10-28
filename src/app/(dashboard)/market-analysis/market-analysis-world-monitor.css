@@ -1760,9 +1760,9 @@ body.light-mode .ma-ticker-sep {
   margin-bottom: 0.35rem;
 }
 .mat-step-counter {
-  font-size: 0.625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: #94a3b8;
 }
@@ -1961,9 +1961,9 @@ body.light-mode .ma-ticker-sep {
   gap: 0.55rem;
 }
 .isr-filter-label {
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: #64748b;
 }
@@ -2003,10 +2003,10 @@ body.light-mode .ma-ticker-sep {
   gap: 0.2rem;
 }
 .isr-select > span {
-  font-size: 0.55rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   color: #64748b;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
 }
 .isr-select select {
@@ -2099,10 +2099,10 @@ body.light-mode .ma-ticker-sep {
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.56rem;
+  font-size: var(--type-label-size);
   color: #64748b;
   font-weight: 600;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   flex-wrap: wrap;
 }
@@ -2122,10 +2122,10 @@ body.light-mode .ma-ticker-sep {
   border-radius: var(--radius-sm);
   background: rgba(245, 158, 11, 0.15);
   color: var(--amber);
-  font-size: 0.55rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   font-family: var(--font-sans);
 }
 .isr-feed-row {
@@ -2148,10 +2148,10 @@ body.light-mode .ma-ticker-sep {
 }
 .isr-sev {
   flex-shrink: 0;
-  font-size: 0.55rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   padding: 0.18rem 0.45rem;
   border-radius: 999px;
   border: 1px solid currentColor;
@@ -2205,9 +2205,9 @@ body.light-mode .ma-ticker-sep {
 .isr-polymarket-label {
   font-weight: 700;
   color: #93c5fd;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
-  font-size: 0.58rem;
+  font-size: var(--type-label-size);
 }
 .isr-polymarket-title {
   flex: 1;
@@ -2277,9 +2277,9 @@ body.light-mode .ma-ticker-sep {
   min-width: 0;
 }
 .isr-polymarket-banner-kicker {
-  font-size: 0.58rem;
+  font-size: var(--type-label-size);
   color: #93c5fd;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   font-weight: 700;
 }

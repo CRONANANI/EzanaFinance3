@@ -31,11 +31,12 @@
   margin: 0 0 0.35rem;
 }
 .an4-title {
-  font-size: clamp(1.35rem, 2.6vw, 1.9rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
+  letter-spacing: var(--type-page-title-tracking);
   margin: 0;
   color: var(--text-primary);
+  line-height: var(--type-page-title-leading);
 }
 .an4-sub {
   font-size: 0.8rem;
@@ -57,9 +58,9 @@
   padding: 0.9rem 1.1rem;
 }
 .an4-stat-lbl {
-  font-size: 0.66rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -116,9 +117,9 @@
 }
 .an4-table th {
   text-align: left;
-  font-size: 0.64rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   padding: 0.5rem 0.6rem;
@@ -386,9 +387,9 @@
   font-weight: 700;
 }
 .fa-slm-lead .d {
-  font-size: 0.62rem;
+  font-size: var(--type-label-size);
   color: var(--text-muted);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
 }
 .fa-slm-cell {
@@ -401,9 +402,9 @@
   gap: 2px;
 }
 .fa-slm-cell .l {
-  font-size: 0.62rem;
+  font-size: var(--type-label-size);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
 }
 .fa-slm-cell .v {
@@ -439,9 +440,9 @@
   margin-bottom: 0.9rem;
 }
 .fa-stat .l {
-  font-size: 0.62rem;
+  font-size: var(--type-label-size);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
 }
 .fa-stat .v {
@@ -490,9 +491,9 @@
 }
 .fa-lb th {
   text-align: left;
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   padding: 0.4rem 0.8rem;
@@ -921,10 +922,10 @@
   gap: 0.75rem 1.5rem;
 }
 .am-dim-t {
-  font-size: 0.68rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
   margin-bottom: 0.3rem;
 }

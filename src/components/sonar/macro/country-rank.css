@@ -308,9 +308,9 @@
 }
 .crk-pillars thead th {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: var(--type-eyebrow-size);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-eyebrow-tracking);
   color: var(--crk-faint);
 }
 .crk-pillars td:nth-child(2) {

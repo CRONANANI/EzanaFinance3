@@ -155,9 +155,9 @@
 /* ── Role tags ──────────────────────────────────────────────────────────── */
 .rec2-roletag {
   display: inline-block;
-  font-size: 0.62rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   padding: 0.08rem 0.35rem;
   border-radius: var(--radius-sm);
@@ -262,8 +262,8 @@
   color: var(--text-primary);
 }
 .rec2-hero-rating-label {
-  font-size: 0.64rem;
-  letter-spacing: 0.14em;
+  font-size: var(--type-label-size);
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   margin-top: 0.2rem;
@@ -285,9 +285,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.62rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--warning);
   background: var(--warning-bg);
@@ -303,8 +303,8 @@
   flex-wrap: wrap;
 }
 .rec2-stat-label {
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
+  font-size: var(--type-label-size);
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -461,8 +461,8 @@
 }
 .rec2-table th {
   text-align: left;
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
+  font-size: var(--type-label-size);
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   font-weight: 700;

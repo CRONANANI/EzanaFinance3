@@ -182,10 +182,10 @@ body.light-mode .pricing-card.professional h3 {
   position: absolute;
   top: -0.5rem;
   right: 1rem;
-  font-size: 0.5rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   padding: 0.25rem 0.5rem;
   border-radius: var(--radius-md);
   background: linear-gradient(135deg, var(--emerald), var(--emerald-hover));

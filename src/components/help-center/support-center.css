@@ -1466,8 +1466,8 @@
   gap: 4px;
   font-family: var(--font-mono);
   font-style: normal;
-  font-size: 10px;
-  letter-spacing: 0.08em;
+  font-size: var(--type-eyebrow-size);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--hcs-positive);
 }

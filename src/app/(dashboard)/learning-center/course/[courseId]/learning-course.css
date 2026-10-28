@@ -20,11 +20,12 @@
 }
 
 .lc3-title {
-  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
-  font-weight: 700;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
   color: #f0f6fc;
   margin: 0 0 0.5rem;
-  line-height: 1.2;
+  line-height: var(--type-page-title-leading);
+  letter-spacing: var(--type-page-title-tracking);
 }
 
 .lc3-meta {
@@ -1048,10 +1049,10 @@ body.light-mode .lc-edit-tickerchart {
   color: var(--text-muted);
 }
 .lc-edit-ticker-risk {
-  font-size: 10.5px;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   border-radius: var(--radius-sm);
   padding: 3px 7px;
   white-space: nowrap;
@@ -1455,10 +1456,10 @@ body.light-mode .lc-edit-finstmt {
   background: color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 .lc-edit-finstmt-section td {
-  font-size: 10.5px;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
   padding: 14px 12px 4px;
   background: transparent;

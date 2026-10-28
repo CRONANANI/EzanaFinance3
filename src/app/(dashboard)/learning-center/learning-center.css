@@ -52,11 +52,12 @@
   font-size: 24px;
 }
 .lc-greeting {
-  font-size: 36px;
-  font-weight: 700;
-  letter-spacing: -0.025em;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
+  letter-spacing: var(--type-page-title-tracking);
   margin: 4px 0 0;
   color: var(--fg);
+  line-height: var(--type-page-title-leading);
 }
 
 .lc-hero-grid {
@@ -167,10 +168,10 @@
   line-height: 1;
 }
 .lc-streak-label {
-  font-size: 9px;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--amber);
 }
 
@@ -180,10 +181,10 @@
 .lc-elo-ladder-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 10px;
+  font-size: var(--type-label-size);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--fg-muted);
   margin-bottom: 12px;
 }

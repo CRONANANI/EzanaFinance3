@@ -60,12 +60,12 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: transparent;
   color: var(--db-muted);
-  font-size: 0.575rem;
+  font-size: var(--type-label-size);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 .cl-filter-pill:hover {
@@ -212,10 +212,10 @@
   padding: 0.1rem 0.4rem;
   border-radius: var(--radius-sm);
   border: 1px solid;
-  font-size: 0.4375rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 .cl-entry-pinned {

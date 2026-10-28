@@ -123,12 +123,12 @@ body.light-mode .ox-root {
   font-weight: 600;
 }
 .ox-h1 {
-  font-size: 40px;
-  font-weight: 700;
-  letter-spacing: -0.025em;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
+  letter-spacing: var(--type-page-title-tracking);
   color: var(--ox-text);
   margin: 14px 0 0;
-  line-height: 1.05;
+  line-height: var(--type-page-title-leading);
 }
 /* ── Stats line ────────────────────────────────────────────── */
 .ox2-statsline {
@@ -211,11 +211,12 @@ body.light-mode .ox-root {
   letter-spacing: 0.1em;
 }
 .ox-sec-title {
-  font-size: 23px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: var(--type-section-size);
+  font-weight: var(--type-section-weight);
+  letter-spacing: var(--type-section-tracking);
   color: var(--ox-text);
   margin: 0;
+  line-height: var(--type-section-leading);
 }
 .ox-sec-meta {
   margin-left: auto;

@@ -14,10 +14,12 @@
 }
 
 .sa-hero-title {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
   color: #f0f6fc;
   margin: 0 0 0.3rem;
+  letter-spacing: var(--type-page-title-tracking);
+  line-height: var(--type-page-title-leading);
 }
 
 .sa-hero-title .sa-gold {
@@ -313,10 +315,10 @@
 }
 
 .sa-review-label {
-  font-size: 0.5rem;
+  font-size: var(--type-label-size);
   color: #6b7280;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 .sa-review-value {

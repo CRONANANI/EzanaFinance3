@@ -8,17 +8,17 @@
   --dash-page-title-size: var(--type-page-title-size);
   --dash-page-title-weight: var(--type-page-title-weight);
   --dash-page-title-color: var(--text-primary);
-  --dash-section-header-size: 0.9375rem;
+  --dash-section-header-size: var(--type-card-title-size);
   --dash-section-header-weight: var(--type-card-title-weight);
-  --dash-body-size: 0.8125rem;
-  --dash-body-muted: #8b949e;
-  --dash-label-size: 0.5rem;
-  --dash-label-color: #4b5563;
+  --dash-body-size: var(--type-body-size);
+  --dash-body-muted: var(--text-muted);
+  --dash-label-size: var(--type-label-size);
+  --dash-label-color: var(--text-faint);
   --dash-positive: var(--emerald);
   --dash-negative: var(--negative);
   --dash-card-bg: var(--surface-card);
   --dash-card-border: var(--border-primary);
-  --dash-card-radius: 16px;
+  --dash-card-radius: var(--radius-xl);
 }
 .dashboard-page .dash-surface-card {
   background: var(--dash-card-bg);
@@ -48,14 +48,15 @@
   font-size: var(--dash-page-title-size);
   font-weight: var(--dash-page-title-weight);
   color: var(--dash-page-title-color);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--type-page-title-tracking);
+  line-height: var(--type-page-title-leading);
   margin: 0 0 1rem;
 }
 .dashboard-page .dash-label-caps {
   font-size: var(--dash-label-size);
-  font-weight: 700;
+  font-weight: var(--type-label-weight);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--dash-label-color);
 }
 .dashboard-page .dash-mono-value {

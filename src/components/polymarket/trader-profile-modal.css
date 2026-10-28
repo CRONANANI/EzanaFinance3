@@ -197,10 +197,10 @@
 }
 
 .tpm-stat-label {
-  font-size: 0.625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-faint);
   margin-bottom: 0.3rem;
 }
@@ -362,9 +362,9 @@
 
 .tpm-pos-side {
   font-weight: 700;
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   padding: 0.1rem 0.4rem;
   border-radius: var(--radius-sm);
 }
@@ -397,7 +397,8 @@
 }
 
 .tpm-trade-side {
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
+  letter-spacing: var(--type-label-tracking);
   font-weight: 700;
   text-transform: uppercase;
   text-align: center;

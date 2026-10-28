@@ -10,6 +10,7 @@ export { Select } from './Select';
 export { Checkbox, Toggle } from './Checkbox';
 export { Badge } from './Badge';
 export { Card, CardHeader } from './Card';
+export { Eyebrow, Heading, PageHeader } from './Typography';
 export { NumericValue, Ticker } from './NumericValue';
 export { Modal } from './Modal';
 export { Tabs } from './Tabs';

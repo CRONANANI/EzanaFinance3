@@ -14,6 +14,10 @@ import { Button, Card, CardHeader, Input, NumericValue, Badge } from '@/componen
   Dark mode is the default; tokens flip under `body.light-mode`.
 - **Typography:** `--font-sans` (Plus Jakarta Sans) for text; `--font-mono`
   (JetBrains Mono) + `tabular-nums` for **all** numeric values — use `<NumericValue>`.
+- **Type roles:** the landing page's type system, as components. `<PageHeader eyebrow title
+lead actions>` for the top of every page, `<Heading level="page|section|card">` for
+  titles, `<Eyebrow>` for the mono caps kicker. Sizes come from the `--type-*` ramp; nothing
+  renders under 11px or heavier than 700 (`npm run lint:type` ratchets both).
 - **Icons:** Bootstrap Icons only (`<i className="bi bi-..." />`).
 - **CSS prefix:** `.ds-*`, component-scoped. **Zero new global tokens** are introduced.
 

@@ -18,8 +18,8 @@
 }
 .snv2-eyebrow {
   margin: 0;
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
+  font-size: var(--type-label-size);
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--emerald);
 }

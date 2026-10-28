@@ -33,7 +33,7 @@
   font-weight: var(--type-page-title-weight);
   letter-spacing: var(--type-page-title-tracking);
   color: var(--text-primary);
-  line-height: 1.15;
+  line-height: var(--type-page-title-leading);
 }
 
 .cpr-page-subtitle {
@@ -428,9 +428,9 @@ body.light-mode .shm-tile {
   min-width: 0;
 }
 .shm-summary-label {
-  font-size: 0.58rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--home-body-muted);
 }

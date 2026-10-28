@@ -55,11 +55,11 @@
   line-height: 1.1;
 }
 .itc-stat-lbl {
-  font-size: 0.5625rem;
+  font-size: var(--type-label-size);
   font-weight: 600;
   color: #6b7280;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   margin-top: 1px;
 }
 .itc-stat-chg {
@@ -431,11 +431,11 @@ a.itc-sf {
 .itc-sf-label {
   margin-left: 0.5rem;
   margin-right: 0.25rem;
-  font-size: 0.5625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   color: #4b5563;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   align-self: center;
 }
 .itc-filter-clear {
@@ -639,12 +639,12 @@ a.itc-sf {
   color: var(--muted-foreground);
 }
 .itc-ins-cat {
-  font-size: 0.55rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   padding: 1px 6px;
   border-radius: var(--radius-sm);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
 }
 .itc-ins-cat.defense {
   background: rgba(239, 68, 68, 0.12);
@@ -813,11 +813,11 @@ a.itc-sf {
   display: block;
 }
 .itc-pol-num-l {
-  font-size: 0.5625rem;
+  font-size: var(--type-label-size);
   font-weight: 600;
   color: var(--muted-foreground);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
 }
 .itc-pol-chart {
   position: relative;
@@ -831,11 +831,11 @@ a.itc-sf {
   position: absolute;
   top: 5px;
   left: 8px;
-  font-size: 0.5625rem;
+  font-size: var(--type-label-size);
   font-weight: 600;
   color: var(--muted-foreground);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   z-index: 1;
 }
 .itc-spark {
@@ -1444,9 +1444,9 @@ body.light-mode .itc-13f-filed {
   gap: 0.4rem;
 }
 .itc-top-perf-year-lbl {
-  font-size: 0.65rem;
+  font-size: var(--type-label-size);
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: #8b949e;
 }

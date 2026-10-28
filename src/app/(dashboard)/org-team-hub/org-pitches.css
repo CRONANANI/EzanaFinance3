@@ -134,10 +134,10 @@
 
 .op-column-header {
   padding: 0.55rem 0.65rem;
-  font-size: 0.62rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
   border-bottom: 1px solid var(--border-secondary);
   flex-shrink: 0;
@@ -229,7 +229,8 @@
 }
 
 .op-decision {
-  font-size: 0.65rem;
+  font-size: var(--type-label-size);
+  letter-spacing: var(--type-label-tracking);
   font-weight: 700;
   padding: 0.2rem 0.5rem;
   border-radius: var(--radius-sm);

@@ -34,11 +34,12 @@
   font-weight: 600;
 }
 .rl2-title {
-  font-size: 1.6rem;
-  font-weight: 700;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
   color: var(--text-primary);
   margin: 0;
-  line-height: 1.1;
+  line-height: var(--type-page-title-leading);
+  letter-spacing: var(--type-page-title-tracking);
 }
 .rl2-sub {
   color: var(--text-muted);
@@ -202,9 +203,9 @@
   align-items: center;
   gap: 5px;
   flex-shrink: 0;
-  font-size: 0.68rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--emerald-text);
   background: var(--emerald-bg);
@@ -217,9 +218,9 @@
   align-items: center;
   gap: 5px;
   flex-shrink: 0;
-  font-size: 0.68rem;
+  font-size: var(--type-label-size);
   font-weight: 600;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-faint);
   border: 1px solid var(--border-primary);
@@ -454,9 +455,9 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.68rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   padding: 2px 7px;
   border-radius: var(--radius-md);

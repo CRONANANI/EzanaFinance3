@@ -25,9 +25,7 @@
   --text-faint: #6b7280;
   --text-ghost: #4b5563;
 
-  --font-sans:
-    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  /* --font-sans / --font-mono come from src/app/theme-variables.css. */
 
   /* Brand */
   --emerald: var(--emerald);
@@ -180,10 +178,11 @@ html.light-mode .ezana-theme {
 }
 .ezana-theme .phead h1 {
   margin: 4px 0 0;
-  font-size: 30px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
+  letter-spacing: var(--type-page-title-tracking);
   color: var(--text-primary);
+  line-height: var(--type-page-title-leading);
 }
 .ezana-theme .phead .sub {
   margin: 6px 0 0;

@@ -128,9 +128,9 @@ body.dark-mode .dcf-assumptions-toolbar,
 }
 
 .dcf-toolbar-section-label {
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-faint);
   white-space: nowrap;
@@ -775,11 +775,11 @@ body.dark-mode .dcf-delta-row-track,
   margin-top: 0.25rem;
 }
 .dcf-delta-divider span {
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   color: #94a3b8;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
 }
 .dcf-delta-divider::before,
 .dcf-delta-divider::after {
@@ -846,10 +846,10 @@ body.dark-mode .dcf-delta-row-track,
 }
 
 .dcf-mode-sub {
-  font-size: 0.575rem;
+  font-size: var(--type-label-size);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
   margin-top: 0;
 }
@@ -936,10 +936,10 @@ body.light-mode .dcf-mode-btn.is-active {
 }
 
 .rdcf-input-label {
-  font-size: 0.625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-faint);
   margin-bottom: 0.25rem;
 }
@@ -982,10 +982,10 @@ body.light-mode .dcf-mode-btn.is-active {
 }
 
 .rdcf-fixed-label {
-  font-size: 0.625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   color: #d97706;
   margin-bottom: 0.25rem;
 }

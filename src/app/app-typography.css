@@ -1,0 +1,97 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   App typography: the landing type system inside the logged-in app.
+
+   Loaded from src/app/layout.js AFTER globals.css, so it lands after
+   Tailwind Preflight. Preflight resets every heading to
+   `font-size: inherit; font-weight: inherit`, which is why a bare <h1> in
+   the app rendered at 16px/400 while the landing's rendered at 48px/500.
+
+   Every selector here is scoped to body.dashboard-page (all three shells:
+   Retail, Partner, Org) and wrapped in :where(), so the specificity is
+   (0,0,1) for headings and (0,0,0) for the role classes. Any page rule with
+   a class still wins. This file only fills in what nothing else sets.
+
+   Sizes, weights and tracking come from the --type-* ramp in
+   src/app/theme-variables.css. Colours come from the theme tokens, so
+   light and dark both work. No raw values live here.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:where(body.dashboard-page) h1 {
+  font-family: var(--font-sans);
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
+  letter-spacing: var(--type-page-title-tracking);
+  line-height: var(--type-page-title-leading);
+}
+
+:where(body.dashboard-page) h2 {
+  font-family: var(--font-sans);
+  font-size: var(--type-section-size);
+  font-weight: var(--type-section-weight);
+  letter-spacing: var(--type-section-tracking);
+  line-height: var(--type-section-leading);
+}
+
+:where(body.dashboard-page) h3 {
+  font-family: var(--font-sans);
+  font-size: var(--type-card-title-size);
+  font-weight: var(--type-card-title-weight);
+  letter-spacing: var(--type-card-title-tracking);
+  line-height: var(--type-card-title-leading);
+}
+
+:where(body.dashboard-page) h4 {
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  font-weight: var(--type-card-title-weight);
+  letter-spacing: var(--type-body-tracking);
+  line-height: var(--type-card-title-leading);
+}
+
+:where(body.dashboard-page) :is(h5, h6) {
+  font-family: var(--font-sans);
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-label-weight);
+  letter-spacing: var(--type-body-tracking);
+}
+
+/* Numerals in code-ish elements and the mono role use tabular figures, as
+   the landing metric strip does. */
+:where(body.dashboard-page) :is(code, kbd, samp, .ds-mono) {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Role classes ────────────────────────────────────────────────────────
+   For markup that is not a ds component yet. Prefer <Eyebrow>, <Heading>
+   and <PageHeader> from @/components/ds in new code. */
+
+:where(body.dashboard-page) :where(.app-eyebrow) {
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--emerald-text);
+}
+
+:where(body.dashboard-page) :where(.app-label) {
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+:where(body.dashboard-page) :where(.app-lead) {
+  font-size: var(--type-lead-size);
+  line-height: var(--type-lead-leading);
+  letter-spacing: var(--type-body-tracking);
+  color: var(--text-secondary);
+}
+
+:where(body.dashboard-page) :where(.app-prose) {
+  font-size: var(--type-prose-size);
+  line-height: var(--type-prose-leading);
+  letter-spacing: var(--type-body-tracking);
+}

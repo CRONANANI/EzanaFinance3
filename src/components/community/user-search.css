@@ -253,9 +253,9 @@ body.light-mode .us-panel {
 
 .us-badge {
   flex-shrink: 0;
-  font-size: 0.625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--type-label-tracking);
   padding: 3px 7px;
   border-radius: 999px;
   border: 1px solid transparent;

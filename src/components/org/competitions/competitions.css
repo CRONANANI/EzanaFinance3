@@ -36,9 +36,11 @@
 }
 .pcx-h1 {
   margin: 0;
-  font-size: 24px;
-  font-weight: 700;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
   color: var(--text-primary);
+  letter-spacing: var(--type-page-title-tracking);
+  line-height: var(--type-page-title-leading);
 }
 .pcx-joinable {
   margin-top: 2rem;

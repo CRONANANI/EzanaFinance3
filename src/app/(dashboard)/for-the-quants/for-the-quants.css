@@ -9,11 +9,12 @@
 }
 
 .ftq-title {
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
   color: #f0f6fc;
   margin: 0;
-  letter-spacing: -0.02em;
+  letter-spacing: var(--type-page-title-tracking);
+  line-height: var(--type-page-title-leading);
 }
 
 .ftq-subtitle {
@@ -48,10 +49,10 @@
 }
 
 .ftq-stat-label {
-  font-size: 0.5rem;
+  font-size: var(--type-label-size);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   color: #6b7280;
   margin-bottom: 0.1rem;
 }
@@ -200,10 +201,10 @@
 
 .ftq-status {
   display: inline-block;
-  font-size: 0.625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   padding: 0.2rem 0.5rem;
   border-radius: var(--radius-md);
 }
@@ -690,10 +691,10 @@ body.light-mode .ftq-pm-input {
 }
 
 .ftq-vb-section-label {
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--type-label-tracking);
   color: #6366f1;
   display: flex;
   align-items: center;
@@ -815,10 +816,10 @@ body.light-mode .ftq-pm-input {
 }
 
 .ftq-vb-config-label {
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   color: #8b949e;
 }
 
@@ -831,10 +832,10 @@ body.light-mode .ftq-pm-input {
 }
 
 .ftq-vb-summary-label {
-  font-size: 0.55rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--emerald);
   margin-bottom: 0.25rem;
 }
@@ -1042,10 +1043,10 @@ body.light-mode .ftq-pm-input {
   min-width: 120px;
 }
 .ftq-cmp-label {
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
 }
 .ftq-cmp-vs {
   font-size: 0.7rem;
@@ -1080,11 +1081,11 @@ body.light-mode .ftq-pm-input {
 
 .ftq-cmp-header-row {
   background: rgba(99, 102, 241, 0.06);
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   color: #8b949e;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 .ftq-cmp-row {

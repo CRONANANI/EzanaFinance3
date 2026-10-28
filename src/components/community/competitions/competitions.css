@@ -112,10 +112,10 @@
 }
 .comp-slim-live {
   padding: 2px 8px;
-  font-size: 10px;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--amber, var(--amber));
   background: rgba(245, 158, 11, 0.12);
   border: 1px solid rgba(245, 158, 11, 0.28);

@@ -41,8 +41,11 @@
 
 .ot-hero h1 {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: var(--type-page-title-size);
   color: var(--text-primary);
+  font-weight: var(--type-page-title-weight);
+  letter-spacing: var(--type-page-title-tracking);
+  line-height: var(--type-page-title-leading);
 }
 
 .ot-hero-sub {
@@ -59,10 +62,10 @@
   color: var(--emerald);
   border: 1px solid var(--emerald-border);
   border-radius: 999px;
-  font-size: 0.65rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 .ot-inbox-link {
@@ -429,9 +432,9 @@
 }
 
 .ot-attachment-kind-pill {
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   padding: 1px 6px;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -689,10 +692,11 @@ html.light-mode .ctd-card {
   flex-wrap: wrap;
   gap: 0.6rem;
   margin: 0.35rem 0 0.25rem;
-  font-size: 1.6rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
+  letter-spacing: var(--type-page-title-tracking);
   color: var(--text-primary);
+  line-height: var(--type-page-title-leading);
 }
 .ctd-role-pill {
   display: inline-flex;
@@ -788,9 +792,9 @@ html.light-mode .ctd-card {
   align-items: center;
 }
 .ctd-zone-label {
-  font-size: 0.65rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -825,9 +829,9 @@ html.light-mode .ctd-card {
   color: var(--text-primary);
 }
 .ctd-donut-label {
-  font-size: 0.62rem;
+  font-size: var(--type-label-size);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
 }
 
@@ -956,9 +960,9 @@ html.light-mode .ctd-kpi {
   white-space: nowrap;
 }
 .ctd-kpi-label {
-  font-size: 0.66rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -1014,10 +1018,10 @@ html.light-mode .ctd-kpi {
 .ctd-table th {
   text-align: left;
   padding: 0.7rem 1rem;
-  font-size: 0.62rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
   border-bottom: 1px solid var(--ctd-border);
   white-space: nowrap;
@@ -1365,9 +1369,9 @@ html.light-mode .ctd-kpi {
 }
 .ot-dossier-stat-label {
   display: block;
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
 }
 .ot-dossier-stat-value {

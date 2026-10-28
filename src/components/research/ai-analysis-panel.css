@@ -358,10 +358,11 @@
 }
 
 .ai-h1 {
-  font-size: 1.375rem;
-  font-weight: 700;
+  font-size: var(--type-section-size);
+  font-weight: var(--type-section-weight);
   margin: 2rem 0 0.75rem;
-  letter-spacing: -0.02em;
+  letter-spacing: var(--type-section-tracking);
+  line-height: var(--type-section-leading);
 }
 
 .ai-h1:first-child {
@@ -528,10 +529,10 @@
 }
 
 .ai-model-badge {
-  font-size: 0.5rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   padding: 1px 6px;
   border-radius: var(--radius-sm);
   background: var(--emerald-bg-hover);

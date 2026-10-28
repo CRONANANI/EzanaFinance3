@@ -33,11 +33,12 @@
   margin: 0 0 0.25rem;
 }
 .c2-title {
-  font-size: 1.7rem;
-  font-weight: 700;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
   color: var(--text-primary);
   margin: 0;
-  line-height: 1.1;
+  line-height: var(--type-page-title-leading);
+  letter-spacing: var(--type-page-title-tracking);
 }
 .c2-sub {
   color: var(--text-muted);

@@ -67,6 +67,11 @@ jobs:
         # script.
         run: npm run lint:branding
 
+      - name: Type scale ratchet
+        # Per-file counts of sub-11px text, 800/900 weights and raw caps
+        # tracking may only go down. Baseline: scripts/type-scale-baseline.json.
+        run: npm run lint:type
+
       - name: No backend names in user-visible copy
         # User-facing copy names the PUBLIC data source (USAspending.gov, SEC
         # EDGAR, the OECD, the Treasury), never the pipeline, warehouse,

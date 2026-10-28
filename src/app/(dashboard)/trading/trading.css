@@ -405,7 +405,8 @@ select.trd-input {
   white-space: nowrap;
 }
 .trd-search-frac {
-  font-size: 0.5rem;
+  font-size: var(--type-label-size);
+  letter-spacing: var(--type-label-tracking);
   font-weight: 700;
   color: var(--emerald);
   background: var(--emerald-bg-hover);
@@ -569,11 +570,11 @@ select.trd-input {
   border-radius: var(--radius-xl);
 }
 .trd-account-label {
-  font-size: 0.625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   color: #6b7280;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   display: block;
   margin-bottom: 0.25rem;
 }
@@ -653,11 +654,11 @@ select.trd-input {
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   border-bottom: 1px solid var(--emerald-bg);
-  font-size: 0.5625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   color: #6b7280;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
 }
 .trd-sort-col {
   display: flex;
@@ -812,12 +813,12 @@ select.trd-input {
   gap: 0.5rem;
 }
 .trd-order-side {
-  font-size: 0.5rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   padding: 2px 6px;
   border-radius: var(--radius-sm);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
 }
 .trd-order-side.buy {
   background: var(--emerald-bg-hover);
@@ -870,7 +871,8 @@ select.trd-input {
 }
 
 .trd-status {
-  font-size: 0.5625rem;
+  font-size: var(--type-label-size);
+  letter-spacing: var(--type-label-tracking);
   font-weight: 700;
   padding: 0.2rem 0.5rem;
   border-radius: var(--radius-sm);
@@ -908,11 +910,11 @@ select.trd-input {
 }
 .trd-table th {
   text-align: left;
-  font-size: 0.5625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   color: #4b5563;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   padding: 0.625rem 0.75rem;
   border-bottom: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
 }
@@ -1133,10 +1135,11 @@ body.light-mode .trd-search-symbol {
 }
 .trd-hero-title {
   color: var(--emerald);
-  font-size: 2.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
+  letter-spacing: var(--type-page-title-tracking);
   margin: 0 0 1rem;
+  line-height: var(--type-page-title-leading);
 }
 .trd-hero-sub {
   color: #6b7280;
@@ -1444,10 +1447,11 @@ body.light-mode .trd-search-symbol {
 }
 .trd-dash-title {
   color: #f0f6fc;
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
+  letter-spacing: var(--type-page-title-tracking);
   margin: 0 0 0.5rem;
+  line-height: var(--type-page-title-leading);
 }
 .trd-dash-lead {
   color: #6b7280;
@@ -1476,11 +1480,11 @@ body.light-mode .trd-search-symbol {
 }
 .trd-dash-metric-label {
   display: block;
-  font-size: 0.5625rem;
+  font-size: var(--type-label-size);
   font-weight: 600;
   color: #6b7280;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   margin-bottom: 0.25rem;
 }
 .trd-dash-metric-val {

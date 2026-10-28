@@ -33,11 +33,12 @@
   margin: 0 0 0.35rem;
 }
 .mt2-title {
-  font-size: clamp(1.35rem, 2.6vw, 1.9rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
+  letter-spacing: var(--type-page-title-tracking);
   margin: 0;
   color: var(--text-primary);
+  line-height: var(--type-page-title-leading);
 }
 .mt2-sub {
   font-size: 0.8rem;
@@ -151,9 +152,9 @@
   padding: 0.8rem 0.85rem;
 }
 .mt2-card__title {
-  font-size: 0.62rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.11em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   margin: 0 0 0.6rem;
@@ -312,9 +313,9 @@
   text-transform: capitalize;
 }
 .mt2-chip {
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   padding: 0.14rem 0.45rem;
   border-radius: 9999px;
@@ -467,9 +468,9 @@
 
 /* Pills */
 .mt2-pill {
-  font-size: 0.58rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   padding: 0.12rem 0.42rem;
   border-radius: 9999px;
@@ -713,11 +714,11 @@
   border-color: var(--warning);
 }
 .mt2-att-absent {
-  font-size: 0.62rem;
+  font-size: var(--type-label-size);
   color: var(--negative, var(--negative));
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 /* Vote pill */
@@ -992,10 +993,10 @@
   font-weight: 600;
 }
 .mt2-prov__state {
-  font-size: 0.66rem;
+  font-size: var(--type-label-size);
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   font-weight: 700;
 }
 
@@ -1065,9 +1066,9 @@
 }
 .mt2-field__label {
   display: block;
-  font-size: 0.68rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 0.3rem;

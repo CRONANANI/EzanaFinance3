@@ -386,9 +386,76 @@
   gap: 8px;
   margin-bottom: 14px;
   font-family: var(--font-sans);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--type-card-title-size);
+  font-weight: var(--type-card-title-weight);
+  letter-spacing: var(--type-card-title-tracking);
   color: var(--text-primary);
+}
+
+/* ═══ Typography ═══════════════════════════════════════════════
+   The landing type system as components. See Typography.jsx. */
+.ds-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: var(--emerald-text);
+}
+.ds-eyebrow--muted {
+  color: var(--text-muted);
+}
+.ds-heading {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+}
+.ds-heading--page {
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
+  letter-spacing: var(--type-page-title-tracking);
+  line-height: var(--type-page-title-leading);
+}
+.ds-heading--section {
+  font-size: var(--type-section-size);
+  font-weight: var(--type-section-weight);
+  letter-spacing: var(--type-section-tracking);
+  line-height: var(--type-section-leading);
+}
+.ds-heading--card {
+  font-size: var(--type-card-title-size);
+  font-weight: var(--type-card-title-weight);
+  letter-spacing: var(--type-card-title-tracking);
+  line-height: var(--type-card-title-leading);
+}
+.ds-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 24px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.ds-page-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.ds-page-header-lead {
+  margin: 0;
+  max-width: 64ch;
+  font-size: var(--type-lead-size);
+  line-height: var(--type-lead-leading);
+  letter-spacing: var(--type-body-tracking);
+  color: var(--text-muted);
+}
+.ds-page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 /* ═══ Numeric value ════════════════════════════════════════════ */

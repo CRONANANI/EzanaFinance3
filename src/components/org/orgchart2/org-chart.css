@@ -29,10 +29,10 @@
   margin: 0 0 0.35rem;
 }
 .oc2-title {
-  font-size: clamp(1.4rem, 2.6vw, 2rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
+  letter-spacing: var(--type-page-title-tracking);
+  line-height: var(--type-page-title-leading);
   margin: 0;
   color: var(--text-primary);
 }
@@ -157,9 +157,9 @@
   position: absolute;
   top: -9px;
   left: 12px;
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   padding: 0.12rem 0.5rem;
   border-radius: 9999px;
@@ -296,9 +296,9 @@
   line-height: 1.3;
 }
 .oc2-node-pill {
-  font-size: 0.625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   padding: 0.12rem 0.5rem;
   border-radius: 9999px;
@@ -377,9 +377,9 @@
   color: var(--text-primary);
 }
 .oc2-gap-badge {
-  font-size: 0.62rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   padding: 0.12rem 0.5rem;
   border-radius: 9999px;

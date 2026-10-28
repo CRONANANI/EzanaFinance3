@@ -43,11 +43,12 @@
   margin: 0 0 0.35rem;
 }
 .asg2-title {
-  font-size: clamp(1.35rem, 2.6vw, 1.9rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
+  letter-spacing: var(--type-page-title-tracking);
   margin: 0;
   color: var(--text-primary);
+  line-height: var(--type-page-title-leading);
 }
 .asg2-header-actions {
   display: flex;
@@ -170,9 +171,9 @@ html.light-mode .asg2-metric {
     0 1px 3px rgba(0, 0, 0, 0.05);
 }
 .asg2-metric-label {
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   margin: 0 0 0.15rem;
@@ -564,9 +565,9 @@ html.light-mode .asg2-metric {
 .asg2-status {
   display: inline-flex;
   align-items: center;
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   padding: 0.14rem 0.5rem;
   border-radius: 9999px;
@@ -772,9 +773,9 @@ html.light-mode .asg2-metric {
 }
 .asg2-label {
   display: block;
-  font-size: 0.68rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 0.35rem;
@@ -1021,9 +1022,9 @@ html.light-mode .asg2-metric {
   gap: 1rem;
 }
 .asg2-section-label {
-  font-size: 0.66rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   margin: 0 0 0.5rem;
@@ -1089,10 +1090,10 @@ html.light-mode .asg2-metric {
   white-space: pre-wrap;
 }
 .asg2-return-flag {
-  font-size: 0.58rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--negative);
   border: 1px solid color-mix(in srgb, var(--negative) 40%, transparent);
   border-radius: var(--radius-md);

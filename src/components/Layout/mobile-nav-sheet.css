@@ -168,8 +168,8 @@ body.light-mode .mnav-all {
   flex-shrink: 0;
   font-style: normal;
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
+  font-size: var(--type-eyebrow-size);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--text-faint);
   padding: 2px 8px;

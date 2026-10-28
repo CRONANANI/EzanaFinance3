@@ -141,10 +141,10 @@
 .hp-partner-tag {
   display: inline-block;
   padding: 0.15rem 0.5rem;
-  font-size: 0.625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   background: linear-gradient(135deg, var(--gold-champagne), #b8941f);
   color: #0a0e13;
   border-radius: 999px;
@@ -179,10 +179,10 @@
 }
 
 .hp-stat-label {
-  font-size: 0.625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
   margin-bottom: 0.25rem;
 }

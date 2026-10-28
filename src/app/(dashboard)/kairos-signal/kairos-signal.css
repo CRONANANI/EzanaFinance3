@@ -35,20 +35,21 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--gold-champagne);
   margin-bottom: 0.4rem;
 }
 
 .kairos-hero h1 {
-  font-size: clamp(1.25rem, 2.5vw, 1.6rem);
-  font-weight: 700;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
   color: var(--gold-champagne);
   margin: 0 0 0.35rem;
-  line-height: 1.2;
+  line-height: var(--type-page-title-leading);
+  letter-spacing: var(--type-page-title-tracking);
 }
 
 .kairos-hero-lead {
@@ -220,10 +221,10 @@
 }
 
 .kairos-mini-stat-label {
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   color: #6b7280;
 }
 

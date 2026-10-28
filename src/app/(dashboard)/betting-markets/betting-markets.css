@@ -349,10 +349,10 @@ body.light-mode .bm-lm-footer {
   padding: 0.25rem 0.6rem;
   border-radius: var(--radius-md);
   border: 1px solid;
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -367,7 +367,7 @@ body.light-mode .bm-lm-footer {
 
 .bm-modal-ev-badge {
   display: inline-block;
-  font-size: 0.55rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   color: var(--gold-champagne);
   background: rgba(212, 175, 55, 0.08);
@@ -376,7 +376,7 @@ body.light-mode .bm-lm-footer {
   padding: 1px 8px;
   margin-top: 4px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 .bm-modal-close {
@@ -443,11 +443,11 @@ body.light-mode .bm-lm-footer {
 }
 
 .bm-modal-kpi-label {
-  font-size: 0.5rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   color: var(--gold-champagne);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 .bm-modal-kpi-value {
@@ -466,11 +466,11 @@ body.light-mode .bm-lm-footer {
 }
 
 .bm-modal-insight-label {
-  font-size: 0.575rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   color: var(--gold-champagne);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   display: flex;
   align-items: center;
   gap: 0.25rem;

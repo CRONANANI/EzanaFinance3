@@ -54,9 +54,9 @@
   color: var(--lc3-text-label);
 }
 .lc3-shell .lc3-kicker {
-  font-size: 9.5px;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--lc3-text-label);
 }
@@ -114,9 +114,9 @@
 .lc3-shell .lc3-th {
   padding: 0 8px 6px;
   text-align: left;
-  font-size: 10px;
+  font-size: var(--type-label-size);
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--lc3-text-label);
   border-bottom: 1px solid var(--lc3-text-dark);
@@ -215,10 +215,10 @@
 }
 .lc3-shell .lc3-hero-greet {
   margin: 6px 0 8px;
-  font-size: clamp(24px, 2.6vw, 30px);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
+  letter-spacing: var(--type-page-title-tracking);
+  line-height: var(--type-page-title-leading);
   color: var(--lc3-text-dark);
 }
 .lc3-shell .lc3-hero-lede {
@@ -278,9 +278,9 @@
   padding: 2px 9px;
   border-radius: 999px;
   border: 1px solid var(--lc3-border-rule);
-  font-size: 9.5px;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--lc3-text-label);
 }
@@ -458,9 +458,9 @@
   padding: 1px 7px;
   border-radius: 999px;
   border: 1px solid var(--lc3-green);
-  font-size: 9.5px;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--lc3-green);
 }

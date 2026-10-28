@@ -37,10 +37,11 @@
 
 .bp-title {
   margin: 0 0 0.15rem;
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
   color: var(--text-primary);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--type-page-title-tracking);
+  line-height: var(--type-page-title-leading);
 }
 
 .bp-subtitle {
@@ -226,10 +227,10 @@
 }
 
 .bp-tile-cat {
-  font-size: 0.5625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
   margin-bottom: 0.3rem;
 }
@@ -395,10 +396,10 @@
 }
 
 .bp-modal-cat {
-  font-size: 0.625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--emerald);
   margin-bottom: 0.85rem;
 }

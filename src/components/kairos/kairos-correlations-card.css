@@ -180,10 +180,10 @@ body.light-mode .kcc-empty p {
 }
 
 .kcc-detail-label {
-  font-size: 0.625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
   margin-bottom: 0.25rem;
 }

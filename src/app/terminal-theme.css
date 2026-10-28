@@ -64,41 +64,50 @@ h6 {
   color: var(--negative) !important;
 }
 
-/* Section titles — consistent across all pages */
-[class*='section-title'],
-[class*='card-header'] h3,
-[class*='form-header'] h2,
-[class*='page-title'],
-.t-panel-title {
-  font-size: 0.9375rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+/* Section titles. Oct 28: these attribute selectors used to force every
+   page title and card header in the app to 15px at (0,1,0), which flattened
+   the landing hierarchy into one size. They are now zero-specificity
+   defaults on the type ramp: any page rule that sets its own size wins. */
+:where([class*='page-title']) {
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
+  letter-spacing: var(--type-page-title-tracking);
+  line-height: var(--type-page-title-leading);
+}
+:where(
+  [class*='section-title'],
+  [class*='card-header'] h3,
+  [class*='form-header'] h2,
+  .t-panel-title
+) {
+  font-size: var(--type-card-title-size);
+  font-weight: var(--type-card-title-weight);
+  letter-spacing: var(--type-card-title-tracking);
 }
 
-/* Small uppercase labels — consistent everywhere */
-[class*='stat-label'],
-[class*='field'] label,
-.t-pv-label,
-.t-perf-stat-label,
-.t-risk-metric-label,
-.t-index-name,
-.lc-stat-label {
-  font-size: 0.625rem;
-  font-weight: 700;
+/* Small uppercase labels: one caps role, never below 11px. */
+:where(
+  [class*='stat-label'],
+  [class*='field'] label,
+  .t-pv-label,
+  .t-perf-stat-label,
+  .t-risk-metric-label,
+  .t-index-name,
+  .lc-stat-label
+) {
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #6b7280;
+  letter-spacing: var(--type-label-tracking);
+  color: var(--text-faint);
 }
 
-table th,
-.table th,
-.lc-table th,
-.t-holdings-table th {
-  font-size: 0.5625rem;
-  font-weight: 700;
+:where(table th, .table th, .lc-table th, .t-holdings-table th) {
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #4b5563;
+  letter-spacing: var(--type-label-tracking);
+  color: var(--text-muted);
 }
 
 /* Component cards — match terminal panel style */

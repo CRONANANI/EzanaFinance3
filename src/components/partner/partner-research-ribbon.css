@@ -31,8 +31,8 @@ body.light-mode .partner-research-ribbon {
   gap: 0.35rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: 0.625rem;
+  letter-spacing: var(--type-label-tracking);
+  font-size: var(--type-label-size);
   color: var(--gold);
   background: rgba(212, 168, 83, 0.12);
   border: 1px solid rgba(212, 168, 83, 0.25);

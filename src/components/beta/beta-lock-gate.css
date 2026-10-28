@@ -86,12 +86,12 @@ body.light-mode .beta-lock-modal {
 }
 
 .beta-lock-title {
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
   color: #f0f6fc;
   margin: 0 0 0.75rem;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+  letter-spacing: var(--type-page-title-tracking);
+  line-height: var(--type-page-title-leading);
 }
 body.light-mode .beta-lock-title {
   color: #0f172a;

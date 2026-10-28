@@ -382,10 +382,10 @@
 }
 
 .nn-item-badge {
-  font-size: 0.5625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   color: #6b7280;
 }
 

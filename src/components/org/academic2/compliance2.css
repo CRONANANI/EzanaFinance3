@@ -130,9 +130,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.28rem;
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   padding: 0.16rem 0.5rem;
   border-radius: 9999px;
@@ -251,9 +251,9 @@
   align-items: center;
   gap: 0.5rem;
   margin: 1.1rem 0 0.55rem;
-  font-size: 0.66rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }

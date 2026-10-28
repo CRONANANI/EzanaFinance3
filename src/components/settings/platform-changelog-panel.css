@@ -335,10 +335,10 @@ body.light-mode .pcl-empty {
 
 .pcl-day-range {
   margin: 0;
-  font-size: 0.625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--emerald);
 }
 

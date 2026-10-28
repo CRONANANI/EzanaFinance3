@@ -1900,9 +1900,9 @@
 .ea-ref-values-label {
   display: block;
   margin-bottom: 0.25rem;
-  font-size: 0.68rem;
+  font-size: var(--type-label-size);
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--ea-muted);
 }
@@ -2010,9 +2010,9 @@
   padding: 0.45rem 0.85rem 0;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.66rem;
+  font-size: var(--type-eyebrow-size);
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   /* White, not mint: mint on the gradient's light end is about 3:1, too low
      for text this small. Mint stays on decorative accents only. */

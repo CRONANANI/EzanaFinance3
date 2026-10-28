@@ -32,9 +32,9 @@
   gap: 0.15rem;
 }
 .pw-stat-label {
-  font-size: 0.66rem;
+  font-size: var(--type-label-size);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-faint);
 }
 .pw-stat-value {
@@ -171,10 +171,10 @@
   flex: 0 0 auto;
 }
 .pw-col-title {
-  font-size: 0.68rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
@@ -434,9 +434,9 @@
 .pw-table th {
   text-align: right;
   padding: 0.55rem 0.7rem;
-  font-size: 0.64rem;
+  font-size: var(--type-label-size);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-faint);
   border-bottom: 1px solid var(--border-primary);
   white-space: nowrap;
@@ -507,7 +507,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.64rem;
+  font-size: var(--type-label-size);
+  letter-spacing: var(--type-label-tracking);
   font-weight: 700;
   color: var(--emerald-text);
   text-transform: uppercase;
@@ -534,7 +535,8 @@
   font-weight: 700;
 }
 .pw-tally-cell .l {
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-faint);
 }
@@ -584,7 +586,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  font-size: 0.62rem;
+  font-size: var(--type-label-size);
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-faint);
   text-transform: uppercase;
 }
@@ -1161,9 +1164,9 @@
   padding: 0.15rem 0.5rem;
   border-radius: 999px;
   border: 1px solid var(--border-primary);
-  font-size: 0.65rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -1444,10 +1447,10 @@
 .psignoff-tag {
   padding: 0.05rem 0.35rem;
   border-radius: 999px;
-  font-size: 0.62rem;
+  font-size: var(--type-label-size);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--type-label-tracking);
 }
 .psignoff-tag.in {
   color: var(--emerald, var(--emerald));
@@ -1677,10 +1680,10 @@
 .pdmeet-decision {
   display: inline-flex;
   align-items: center;
-  font-size: 0.68rem;
+  font-size: var(--type-label-size);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   padding: 0.15rem 0.5rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
@@ -1735,9 +1738,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.68rem;
+  font-size: var(--type-label-size);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-faint, var(--text-muted));
 }
 .pdmeet-field-value {
@@ -1833,9 +1836,9 @@
 }
 .pdmeet-pick-role {
   margin-left: auto;
-  font-size: 0.66rem;
+  font-size: var(--type-label-size);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-faint, var(--text-muted));
 }
 
@@ -1927,10 +1930,10 @@
 }
 .pvote-quorum-state {
   margin-left: auto;
-  font-size: 0.68rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   padding: 2px 8px;
   border-radius: 999px;
 }
@@ -2090,10 +2093,10 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.68rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--type-label-tracking);
   padding: 2px 8px;
   border-radius: 999px;
 }
@@ -2183,9 +2186,9 @@
 .pvote-req {
   color: var(--warning, var(--amber));
   font-weight: 700;
-  font-size: 0.66rem;
+  font-size: var(--type-label-size);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
 }
 .pvote-rationale-input {
   width: 100%;
@@ -2321,9 +2324,9 @@
   gap: 0.25rem;
 }
 .pperf-price-label {
-  font-size: 0.68rem;
+  font-size: var(--type-label-size);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
 }
 .pperf-price-val {

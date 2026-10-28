@@ -34,9 +34,11 @@
 }
 .crx-title {
   margin: 0;
-  font-size: 32px;
-  font-weight: 700;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
   color: var(--text-primary);
+  letter-spacing: var(--type-page-title-tracking);
+  line-height: var(--type-page-title-leading);
 }
 .crx-sub {
   margin: 12px auto 0;
@@ -389,9 +391,9 @@
   margin-left: 6px;
   padding: 1px 6px;
   border-radius: 999px;
-  font-size: 9.5px;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--emerald);
   background: color-mix(in srgb, var(--emerald) 14%, transparent);
@@ -404,10 +406,10 @@
 
 /* ── Component badge in rating history ──────────────────────────────────── */
 .crx-hcomp {
-  font-size: 10px;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--type-label-tracking);
   padding: 1px 7px;
   border-radius: 999px;
   color: var(--text-faint);

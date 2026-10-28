@@ -611,10 +611,10 @@ body.sidebar-open .ma-fullscreen {
   gap: 0.2rem;
   padding: 0.1rem 0.35rem;
   border-radius: var(--radius-sm);
-  font-size: 0.4375rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
 }
 
 .ma-bottom-cards .intel-badge i {

@@ -360,9 +360,9 @@
   white-space: nowrap;
 }
 .ccd-table th {
-  font-size: 0.65rem;
+  font-size: var(--type-label-size);
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   background: var(--bg-tertiary);

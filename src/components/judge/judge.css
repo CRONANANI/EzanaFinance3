@@ -59,10 +59,11 @@
 }
 .jx-title {
   margin: 10px 0 2px;
-  font-size: 24px;
-  font-weight: 700;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
   color: var(--text-primary);
-  line-height: 1.15;
+  line-height: var(--type-page-title-leading);
+  letter-spacing: var(--type-page-title-tracking);
 }
 .jx-sub {
   margin: 0;

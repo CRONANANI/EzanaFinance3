@@ -10,11 +10,12 @@
 }
 
 .am-page .am-title-block h1 {
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
   color: #f0f6fc;
   margin: 0;
-  letter-spacing: -0.02em;
+  letter-spacing: var(--type-page-title-tracking);
+  line-height: var(--type-page-title-leading);
 }
 
 .am-page .am-title-block p {
@@ -173,10 +174,10 @@
   gap: 0.5rem;
   align-items: center;
   padding: 0.5rem 0.75rem;
-  font-size: 0.65rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   color: #6b7280;
   background: color-mix(in srgb, var(--emerald) 6%, transparent);
   border-bottom: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
@@ -337,10 +338,10 @@
   align-items: center;
   padding: 0.35rem 0 0.45rem;
   margin-bottom: 0.15rem;
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   color: #6b7280;
   border-bottom: 1px solid var(--emerald-bg-hover);
 }

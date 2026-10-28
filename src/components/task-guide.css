@@ -36,9 +36,9 @@
 
 .task-guide-eyebrow {
   display: block;
-  font-size: 0.625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--emerald, var(--emerald));
   margin-bottom: 6px;

@@ -86,10 +86,10 @@ body:not(.light-mode) .mcs-card {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   padding: 0.125rem 0.4rem;
   border-radius: 999px;
   color: var(--warning);

@@ -347,11 +347,11 @@
 }
 
 .po-primary-label {
-  font-size: 0.5rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   color: #4b5563;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   display: block;
   margin-bottom: 0.25rem;
 }
@@ -410,11 +410,11 @@
 }
 
 .po-secondary-label {
-  font-size: 0.4375rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   color: #4b5563;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   display: block;
   margin-bottom: 0.375rem;
 }
@@ -467,11 +467,11 @@
 }
 
 .po-traders-label {
-  font-size: 0.5625rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   color: #4b5563;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   white-space: nowrap;
   flex-shrink: 0;
   align-self: center;
@@ -798,11 +798,11 @@
   border-bottom: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
 }
 .pp-trades-hdr span {
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   font-weight: 700;
   color: var(--muted-foreground);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
 }
 .pp-trade-row {
   display: grid;
