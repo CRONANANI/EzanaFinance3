@@ -43,12 +43,17 @@ export function SonarSelectionProvider({ initial, ids, children }) {
       } catch {
         /* ignore */
       }
-      if (id !== null && window.matchMedia?.('(max-width: 1000px)').matches) {
+      /* Below 1280px the cards sit under the stage, often below the fold:
+         a dot chosen on the stage brings its card (and dataset list) into
+         view. A card chosen by hand is already in view. */
+      if (id !== null && from === 'stage' && window.matchMedia?.('(max-width: 1279px)').matches) {
         const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         requestAnimationFrame(() =>
-          document
-            .getElementById('dso-detail')
-            ?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }),
+          document.getElementById(`dsi-card-${id}`)?.scrollIntoView({
+            behavior: reduce ? 'auto' : 'smooth',
+            block: 'nearest',
+            inline: 'start',
+          }),
         );
       }
     },

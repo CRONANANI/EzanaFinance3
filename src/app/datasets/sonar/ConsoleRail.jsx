@@ -1,123 +1,149 @@
 'use client';
 
 /**
- * Console rail, "continuum" design (Oct 21, replaces the Hub V1.1 channel
- * strips). The seven dataset dimensions still sit under the Sonar deck, wired
- * to it by the bus, one card per dimension in taxonomy order. What changed is
- * what the cards say about the platform:
+ * The seven dimension cards under the Sonar stage (Oct 28 redesign,
+ * datasets-index-handoff). A bus line with a chevron where the stage's beam
+ * lands feeds one card per dimension, in taxonomy order.
  *
- *   Continuity. One trace runs through all seven cards. Every card's segment
- *   starts and ends on the same baseline and a joint carries it across the gap
- *   to the next card, so the row reads as a single unbroken signal. A relay
- *   pulse travels it left to right, handed from card to card. A roadmap
- *   dimension keeps the thread (dotted, dormant) rather than breaking it.
+ * What is real (all from src/lib/datasets/taxonomy.js via page.js): the name,
+ * Bootstrap icon, tagline, live/total count, status (Live, Partial, Soon:
+ * text and icon, never colour alone) and, when a card is selected, its dataset
+ * list with each dataset's own live or soon state.
  *
- *   Adaptability. Each segment's shape follows its dimension: one wave cycle
- *   per dataset, amplitude by live share. The row reflows on hover and on
- *   selection (the chosen card widens, its neighbours give way), and each card
- *   carries its dimension's freshest live signal from the pulse.
- *
- * What is real: the dimension, its live and total dataset counts, one meter
- * cell per dataset (filled live, hollow roadmap), LIVE / ROADMAP, and the
- * latest signal (a real pulse row). What is decorative (aria-hidden): the
- * trace, the joints, the pulse and the bus. Trace points are deterministic
- * (sin of index), so SSR and client agree. No outer outline on the cards.
+ * The activity line renders only from a real series (`d.series`, an array of
+ * numbers). No dimension has one today, so every card draws the dashed
+ * baseline. Never generate or smooth a series for decoration.
  *
  * Selecting a card drives the shared SonarSelection (and ?dimension=). While a
  * signal brief is open, choosing a card opens that dimension's freshest signal
- * instead, or closes the brief when the dimension has none. Selecting the
+ * instead, or closes the brief when the dimension has none. Choosing the
  * selected card again, or Escape inside the rail, clears the selection.
  */
+import Link from 'next/link';
 import { useSonarSelection } from './SonarSelection';
 import { usePulse } from './PulseProvider';
+import { hubHref } from '@/lib/datasets/hubs';
 import './console-rail.css';
 
-const W = 160;
-const H = 34;
-const BASE = H / 2;
-const MAX_AMP = 12;
-const STEPS = 64;
+const STATUS = {
+  live: { label: 'Live', icon: 'bi-circle-fill' },
+  partial: { label: 'Partial', icon: 'bi-circle-half' },
+  soon: { label: 'Soon', icon: 'bi-circle' },
+};
 
-/* A segment that starts and ends on the baseline: integer half-cycles of sin
-   are zero at both ends, so neighbouring segments meet the joint exactly. */
-function tracePoints(cycles, share) {
-  const k = Math.max(2, cycles);
-  const amp = MAX_AMP * (0.35 + 0.65 * share);
-  const pts = [];
-  for (let i = 0; i <= STEPS; i += 1) {
-    const x = (i / STEPS) * W;
-    const t = (x / W) * Math.PI;
-    const y = BASE - amp * (0.78 * Math.sin(k * t) + 0.22 * Math.sin(2 * k * t));
-    pts.push(`${Math.round(x * 10) / 10},${Math.round(y * 10) / 10}`);
-  }
-  return pts.join(' ');
+export function dimensionStatus(live, total) {
+  if (total > 0 && live === total) return 'live';
+  if (live === 0) return 'soon';
+  return 'partial';
 }
 
-const FLAT = `0,${BASE} ${W},${BASE}`;
+const SW = 140;
+const SH = 22;
 
-function Card({ d, index, on, lead, onChoose }) {
-  const pending = !Array.isArray(d.items);
-  const total = pending ? 0 : d.items.length;
-  const live = d.liveCount > 0;
-  const share = total ? d.liveCount / total : 0;
-  const cells = pending ? [] : [...d.items].sort((a, b) => Number(b.live) - Number(a.live));
-
-  return (
-    <button
-      type="button"
-      className={`dcr-strip${live ? ' is-live' : ' is-road'}${on ? ' is-on' : ''}`}
-      style={{ '--dim': `var(--dcr-dim-${d.id}, var(--dcr-mint))`, '--i': index }}
-      aria-pressed={on}
-      aria-label={`${d.label}, ${d.liveCount} of ${total} datasets live${lead ? `. Latest: ${lead.headline}` : ''}`}
-      onClick={onChoose}
-    >
-      {index > 0 ? <span className="dcr-joint" aria-hidden="true" /> : null}
-
-      <span className="dcr-head">
-        <span className="dcr-dot" aria-hidden="true" />
-        <span className="dcr-name">{d.label}</span>
-      </span>
-
+function ActivityLine({ series }) {
+  const ok =
+    Array.isArray(series) && series.length > 1 && series.every((v) => Number.isFinite(Number(v)));
+  if (!ok) {
+    return (
       <svg
-        className="dcr-trace"
-        viewBox={`0 0 ${W} ${H}`}
+        className="dsi-card__spark"
+        viewBox={`0 0 ${SW} ${SH}`}
         preserveAspectRatio="none"
         aria-hidden="true"
         focusable="false"
       >
-        <polyline className="dcr-trace-line" points={live ? tracePoints(total, share) : FLAT} />
-        <polyline
-          className="dcr-trace-pulse"
-          pathLength="100"
-          points={live ? tracePoints(total, share) : FLAT}
-        />
+        <path className="dsi-card__spark-base" d={`M0 ${SH / 2}H${SW}`} />
       </svg>
+    );
+  }
+  const nums = series.map(Number);
+  const min = Math.min(...nums);
+  const span = Math.max(...nums) - min || 1;
+  const d = nums
+    .map((v, i) => {
+      const x = (i / (nums.length - 1)) * SW;
+      const y = SH - 2 - ((v - min) / span) * (SH - 4);
+      return `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`;
+    })
+    .join('');
+  return (
+    <svg
+      className="dsi-card__spark"
+      viewBox={`0 0 ${SW} ${SH}`}
+      preserveAspectRatio="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path className="dsi-card__spark-line" d={d} />
+    </svg>
+  );
+}
 
-      {pending ? (
-        <span className="dcr-cells dcr-shimmer" aria-hidden="true" />
-      ) : (
-        <span className="dcr-cells" aria-hidden="true">
-          {cells.map((it, k) => (
-            <span key={`${it.label}-${k}`} className={`dcr-cell${it.live ? ' is-live' : ''}`} />
-          ))}
-        </span>
-      )}
+function Card({ d, on, onChoose }) {
+  const total = d.items.length;
+  const live = d.liveCount;
+  const st = dimensionStatus(live, total);
+  const listId = `dsi-list-${d.id}`;
 
-      <span className="dcr-latest" aria-hidden="true">
-        {lead ? lead.headline : live ? 'Listening' : 'On the roadmap'}
-      </span>
+  return (
+    <article id={`dsi-card-${d.id}`} className={`dsi-card${on ? ' is-selected' : ''}`}>
+      <h3 className="dsi-card__title">
+        <button
+          type="button"
+          className="dsi-card__head"
+          aria-pressed={on}
+          aria-expanded={on}
+          aria-controls={listId}
+          onClick={onChoose}
+        >
+          <i className={`bi ${d.icon} dsi-card__icon`} aria-hidden="true" />
+          <span>{d.label}</span>
+        </button>
+      </h3>
 
-      <span className="dcr-foot">
-        {pending ? (
-          <span className="dcr-count dcr-shimmer" aria-hidden="true" />
-        ) : (
-          <span className="dcr-count">
-            {d.liveCount}/{total}
+      <ActivityLine series={d.series} />
+
+      {d.tagline ? <p className="dsi-card__desc">{d.tagline}</p> : null}
+
+      <div className="dsi-card__foot">
+        <span className="dsi-card__count">
+          <span aria-hidden="true">
+            {live}/{total}
           </span>
-        )}
-        <span className="dcr-state">{live ? 'LIVE' : 'ROADMAP'}</span>
-      </span>
-    </button>
+          <span className="dsi-vh">
+            {live} of {total} datasets live
+          </span>
+        </span>
+        <span className={`dsi-status dsi-status--${st}`}>
+          <i className={`bi ${STATUS[st].icon}`} aria-hidden="true" />
+          {STATUS[st].label}
+        </span>
+      </div>
+
+      <div id={listId} className="dsi-card__more" hidden={!on}>
+        <ul className="dsi-card__list">
+          {d.items.map((it) => (
+            <li key={it.label} className="dsi-card__ds">
+              {it.live && it.href ? (
+                <Link href={it.href}>{it.label}</Link>
+              ) : (
+                <span className="dsi-card__ds-soon">{it.label}</span>
+              )}
+              <span className={`dsi-status dsi-status--${it.live ? 'live' : 'soon'}`}>
+                <i
+                  className={`bi ${it.live ? 'bi-circle-fill' : 'bi-circle'}`}
+                  aria-hidden="true"
+                />
+                {it.live ? 'Live' : 'Soon'}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <Link className="dsi-card__open" href={hubHref(d.id)}>
+          Open dimension <i className="bi bi-arrow-right" aria-hidden="true" />
+        </Link>
+      </div>
+    </article>
   );
 }
 
@@ -146,29 +172,20 @@ export default function ConsoleRail({ dims }) {
   };
 
   return (
-    <div className="dcr-rail">
-      <div className="dcr-bus" aria-hidden="true">
-        <span className="dcr-feed" />
-        <span className="dcr-node" />
-        <span className="dcr-hair" />
+    <section className="dsi-rail" aria-labelledby="dsi-rail-title" onKeyDown={onKeyDown}>
+      <h2 id="dsi-rail-title" className="dsi-vh">
+        Dimensions
+      </h2>
+      <div className="dsi-bus" aria-hidden="true">
+        <span className="dsi-bus__chev">
+          <i className="bi bi-chevron-down" />
+        </span>
       </div>
-      <div
-        className={`dcr-strips${selected ? ' has-on' : ''}`}
-        role="group"
-        aria-label="Dataset dimensions"
-        onKeyDown={onKeyDown}
-      >
-        {dims.map((d, i) => (
-          <Card
-            key={d.id}
-            d={d}
-            index={i}
-            on={selected === d.id}
-            lead={leadFor(d.id)}
-            onChoose={() => choose(d.id)}
-          />
+      <div className="dsi-rail__grid">
+        {dims.map((d) => (
+          <Card key={d.id} d={d} on={selected === d.id} onChoose={() => choose(d.id)} />
         ))}
       </div>
-    </div>
+    </section>
   );
 }

@@ -331,9 +331,20 @@ export default function CategoryBar({ active, activeItem, showDimensions = true,
           /* Oct 21: the overview leads with the same mark as the landing
              nav over the Ezana Sonar band (EzanaNavLogo, natural emerald),
              no longer a white knock-out (category-bar.css). */
-          <Link href="/" className="dscat-logo" aria-label="Ezana Finance home">
-            <EzanaNavLogo priority className="dscat-logo-img dscat-logo-img--brand" />
-          </Link>
+          <>
+            <Link href="/" className="dscat-logo" aria-label="Ezana Finance home">
+              <EzanaNavLogo priority className="dscat-logo-img dscat-logo-img--brand" />
+              {/* Oct 28 redesign: wordmark beside the mark (styles in
+                  app/datasets/sonar/orbital-map.css, prefix dsi-). */}
+              <span className="dsi-wordmark" aria-hidden="true">
+                Ezana Finance
+              </span>
+            </Link>
+            <span className="dsi-live">
+              <span className="dsi-live__dot" aria-hidden="true" />
+              <span>Live intelligence</span>
+            </span>
+          </>
         )}
       </div>
 
@@ -377,7 +388,28 @@ export default function CategoryBar({ active, activeItem, showDimensions = true,
           ))}
         </div>
       ) : (
-        <div className="dscat-belt-slot">{belt}</div>
+        <>
+          <div className="dscat-belt-slot">{belt}</div>
+          {/* Overview only (Oct 28): search jumps to the Ping field; the
+              account control goes to the dashboard or to sign-in. */}
+          <div className="dscat-side dscat-side--end dsi-bar-actions">
+            <button
+              type="button"
+              className="dsi-iconbtn"
+              aria-label="Search the datasets with Sonar"
+              onClick={() => document.getElementById('dsi-ping-input')?.focus()}
+            >
+              <i className="bi bi-search" aria-hidden="true" />
+            </button>
+            <Link
+              href={isAuthenticated ? '/home' : signInHref}
+              className="dsi-iconbtn dsi-iconbtn--account"
+              aria-label={isAuthenticated ? 'Go to your dashboard' : 'Log in'}
+            >
+              <i className="bi bi-person" aria-hidden="true" />
+            </Link>
+          </div>
+        </>
       )}
 
       {showDimensions ? (

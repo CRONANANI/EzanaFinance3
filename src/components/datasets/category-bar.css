@@ -646,7 +646,8 @@
    transparent in the artwork) and reads at full contrast. */
 .dscat-bar.dscat-bar--bare,
 .dscat-bar.dscat-bar--bare[data-density] {
-  grid-template-columns: auto minmax(0, 1fr);
+  /* Oct 28: brand + Live pill, the belt, then search and account. */
+  grid-template-columns: auto minmax(0, 1fr) auto;
   column-gap: 20px;
 }
 .dscat-logo {

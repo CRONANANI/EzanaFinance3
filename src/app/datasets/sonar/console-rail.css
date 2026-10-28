@@ -1,555 +1,295 @@
-/* Console rail under the Sonar deck on /datasets (dcr-). Hub V1.1, cards
-   redesigned Oct 21 as the "continuum" rail (see ConsoleRail.jsx).
-   Spec: docs/design/hub-console-handoff/04-SPEC.md. Tokens:
-   docs/design/hub-console-handoff/03-TOKENS.css, mapped onto the band tokens.
-   The route is light-locked green, so nothing here reads a token that flips
-   with the app theme (no --bg-primary, no --emerald). */
+/* The seven dimension cards under the Sonar stage on /datasets (Oct 28
+   redesign, prefix dsi-, datasets-index-handoff). Tokens come from
+   orbital-map.css (.ds-shell--search). No outer outline on the cards: the
+   gradient fill, the gaps and the bus drops carry their shape. */
 
-.dcr-scope {
-  --dcr-mint: var(--brand-band-mint);
-  --dcr-ink-soft: color-mix(in srgb, white 92%, transparent);
-  --dcr-ink-mute: color-mix(in srgb, white 50%, transparent);
-
-  --dcr-strip-bg: rgba(2, 22, 17, 0.42);
-  --dcr-strip-bg-hover: rgba(2, 22, 17, 0.58);
-  --dcr-strip-radius: var(--radius-md);
-  --dcr-tick-hollow: color-mix(in srgb, white 30%, transparent);
-  --dcr-road-opacity: 0.62;
-
-  --dcr-bus: color-mix(in srgb, var(--dcr-mint) 35%, transparent);
-  --dcr-node: var(--dcr-mint);
-  --dcr-live: var(--dcr-mint);
-  --dcr-road: color-mix(in srgb, white 45%, transparent);
-  --dcr-focus: var(--dcr-mint);
-
-  --dcr-sans: var(--font-sans);
-  --dcr-mono: var(--font-mono);
-  --dcr-t-hover: 0.15s;
-  --dcr-t-select: 0.2s;
-
-  /* The seven dimension hues: the fixed dot colours of the shared chrome
-     contract (docs/design/tracker-handoff/06-SHARED-CHROME.md), keyed by
-     taxonomy id. Declared once as --dim-hue-* in theme-variables.css (the
-     sonar guard allows no hex in this directory); never reassigned. */
-  --dcr-dim-capitol: var(--dim-hue-capitol);
-  --dcr-dim-titans: var(--dim-hue-titans);
-  --dcr-dim-eyes: var(--dim-hue-eyes);
-  --dcr-dim-whispers: var(--dim-hue-whispers);
-  --dcr-dim-hive: var(--dim-hue-hive);
-  --dcr-dim-lighthouse: var(--dim-hue-lighthouse);
-  --dcr-dim-regulatory: var(--dim-hue-regulatory);
-}
-
-/* ── the rail: breaks out of the 720px deck column to 1240 ────────────── */
-.dcr-rail {
-  --dcr-rail-w: min(100vw - 48px, 1240px);
-  /* Tuck the bus under the deck's base: the deck's stage keeps a band of
-     empty ground under the slab, so the feed node would float without this. */
-  --dcr-tuck: 20px;
+.dsi-rail {
   position: relative;
-  width: var(--dcr-rail-w);
-  margin-top: calc(var(--dcr-tuck) * -1);
-  margin-inline: calc((100% - var(--dcr-rail-w)) / 2);
-  text-align: left;
+  width: min(1440px, 100%);
+  margin: 0 auto;
+  padding: 0 32px;
 }
 
-/* ── the bus ──────────────────────────────────────────────────────────── */
-.dcr-bus {
+/* Bus: one line from the first card's centre to the last, the chevron where
+   the stage's beam lands. Seven columns with 16px gaps put each centre at
+   (100% - 6 * 16px) / 14 in from the edge. */
+.dsi-bus {
   position: relative;
-  height: 64px;
-  pointer-events: none;
+  height: 30px;
+  margin: 0 calc((100% - 6 * 16px) / 14);
 }
-.dcr-hair {
+.dsi-bus::before {
+  content: '';
   position: absolute;
-  top: 37px;
-  right: 0;
   left: 0;
+  right: 0;
+  top: 0;
   height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    var(--dcr-bus) 18%,
-    var(--dcr-bus) 82%,
-    transparent
-  );
+  background: var(--dsi-line);
 }
-.dcr-feed {
+.dsi-bus__chev {
   position: absolute;
-  top: -10px;
   left: 50%;
-  width: 1px;
-  height: 47px;
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--dcr-mint) 10%, transparent),
-    color-mix(in srgb, var(--dcr-mint) 50%, transparent)
-  );
-}
-.dcr-node {
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  width: 7px;
-  height: 7px;
-  margin-left: -3px;
-  border-radius: 50%;
-  background: var(--dcr-node);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--dcr-mint) 80%, transparent);
+  top: -9px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 16px;
+  transform: translateX(-50%);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  border: 1px solid var(--emerald);
+  border-top: 0;
+  background: color-mix(in srgb, var(--emerald) 30%, var(--dsi-base));
+  color: var(--dsi-ping-text);
+  font-size: 10px;
 }
 
-/* ── the continuum cards (Oct 21) ─────────────────────────────────────── */
-/* One row of seven. --dcr-gap is shared by the row and the joints so the
-   trace crosses each gap exactly. --dcr-trace-top pins every card's trace to
-   the same y (the head row has a fixed height), which is what lets one line
-   run through all seven. */
-.dcr-scope {
-  --dcr-gap: 12px;
-  --dcr-pad: 12px;
-  --dcr-trace-top: 40px;
-  --dcr-trace-h: 34px;
-  --dcr-card-bg: color-mix(in srgb, black 40%, transparent);
-  --dcr-card-bg-hover: color-mix(in srgb, black 54%, transparent);
-  --dcr-thread: color-mix(in srgb, var(--dcr-mint) 30%, transparent);
-  --dcr-t-flex: 0.35s;
-  --dcr-relay: 9.8s;
+.dsi-rail__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
 }
 
-.dcr-strips {
-  display: flex;
-  align-items: stretch;
-  gap: var(--dcr-gap);
-}
-
-.dcr-strip {
-  --dcr-stem: color-mix(in srgb, var(--dim) 55%, transparent);
+.dsi-card {
   position: relative;
   display: flex;
-  flex: 1 1 0;
   flex-direction: column;
-  min-width: 0;
-  margin: 0;
-  padding: 12px var(--dcr-pad) 11px;
-  border: 0;
+  min-height: 166px;
+  padding: 16px 16px 14px;
   border-radius: var(--radius-lg);
-  background: var(--dcr-card-bg);
-  box-shadow: inset 0 1px 0 color-mix(in srgb, white 5%, transparent);
-  color: var(--dcr-ink-soft);
-  font: inherit;
-  font-family: var(--dcr-sans);
-  text-align: left;
-  cursor: pointer;
-  /* No flex-grow transition: widths are fixed (Oct 27). */
-  transition:
-    background-color var(--dcr-t-hover) ease,
-    transform var(--dcr-t-select) ease,
-    box-shadow var(--dcr-t-select) ease,
-    opacity var(--dcr-t-select) ease;
+  background: var(--dsi-card);
+  color: var(--dsi-ink);
+  transition: transform 0.2s ease;
 }
-
-/* Stem: rises from the card's top edge into the bus hairline. */
-.dcr-strip::before {
-  content: '';
-  position: absolute;
-  top: -27px;
-  left: 50%;
-  width: 1px;
-  height: 27px;
-  background: linear-gradient(
-    to top,
-    var(--dcr-stem),
-    color-mix(in srgb, var(--dcr-mint) 12%, transparent)
-  );
-  transition: background var(--dcr-t-select) ease;
-}
-
-/* Stem pulse: a 2px dot travels a live stem toward the deck. */
-.dcr-strip.is-live::after {
-  content: '';
-  position: absolute;
-  top: -3px;
-  left: 50%;
-  width: 2px;
-  height: 2px;
-  margin-left: -0.5px;
-  border-radius: 50%;
-  background: var(--dim);
-  opacity: 0;
-  animation: dcr-pulse 4.2s ease-in infinite;
-  animation-delay: calc(var(--i, 0) * 0.6s);
-}
-
-/* Oct 27: every card is the same width in every state. Hover and selection
-   still lift and tint the card; they no longer widen it or squeeze its
-   neighbours. */
-@media (hover: hover) {
-  .dcr-strip:hover {
-    background: var(--dcr-card-bg-hover);
-  }
-}
-.dcr-strip.is-on {
-  --dcr-stem: color-mix(in srgb, var(--dim) 85%, transparent);
-  background:
-    linear-gradient(to bottom, color-mix(in srgb, var(--dim) 16%, transparent), transparent 70%),
-    var(--dcr-card-bg-hover);
-  box-shadow:
-    inset 0 2px 0 color-mix(in srgb, var(--dim) 70%, transparent),
-    0 14px 30px color-mix(in srgb, black 30%, transparent);
+.dsi-card:hover {
+  background: var(--dsi-card-hover);
   transform: translateY(-2px);
 }
-.dcr-strips.has-on .dcr-strip:not(.is-on) {
-  opacity: 0.72;
+.dsi-card.is-selected,
+.dsi-card.is-selected:hover {
+  background: var(--dsi-card-selected);
 }
-.dcr-strip.is-road {
-  opacity: var(--dcr-road-opacity);
-}
-.dcr-strip:focus-visible {
-  outline: 2px solid var(--dcr-focus);
-  outline-offset: 2px;
-}
-
-/* head: fixed height so every trace lands at --dcr-trace-top */
-.dcr-head {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  height: 18px;
-  min-width: 0;
-}
-.dcr-dot {
-  flex: none;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--dim);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--dim) 70%, transparent);
-}
-.dcr-name {
-  overflow: hidden;
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  color: var(--dcr-ink-soft);
-}
-
-/* The trace segment (decorative). */
-.dcr-trace {
-  display: block;
-  width: 100%;
-  height: var(--dcr-trace-h);
-  margin-top: calc(var(--dcr-trace-top) - 12px - 18px);
-  overflow: visible;
-}
-.dcr-trace-line {
-  fill: none;
-  stroke: color-mix(in srgb, var(--dim) 70%, transparent);
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-  transform-box: view-box;
-  transform-origin: center;
-  transition:
-    transform var(--dcr-t-flex) ease,
-    stroke var(--dcr-t-select) ease;
-}
-.dcr-strip.is-road .dcr-trace-line {
-  stroke: var(--dcr-thread);
-  stroke-dasharray: 2 5;
-}
-@media (hover: hover) {
-  .dcr-strip.is-live:hover .dcr-trace-line {
-    transform: scaleY(1.2);
-  }
-}
-.dcr-strip.is-on .dcr-trace-line {
-  stroke: var(--dim);
-  transform: scaleY(1.3);
-}
-
-/* The relay: a bright dash crosses each card in turn, one seventh of the
-   cycle each, so the pulse is handed left to right through the whole row. */
-.dcr-trace-pulse {
-  fill: none;
-  stroke: var(--dim);
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-  /* 14 on, 200 off (pathLength 100): the dash starts just before the path
-     and ends just past it, so it is never visible outside its slot. */
-  stroke-dasharray: 14 200;
-  stroke-dashoffset: 14;
-  filter: drop-shadow(0 0 4px var(--dim));
-  opacity: 0;
-  animation: dcr-relay var(--dcr-relay) linear infinite;
-  animation-delay: calc(var(--i, 0) * var(--dcr-relay) / 7);
-}
-.dcr-strip.is-road .dcr-trace-pulse {
-  stroke: var(--dcr-thread);
-  filter: none;
-}
-
-/* Joint: carries the trace from the end of the previous card's segment to
-   the start of this one (both cards' side padding plus the gap), at the
-   baseline (trace top plus half its height). */
-.dcr-joint {
-  position: absolute;
-  top: calc(var(--dcr-trace-top) + var(--dcr-trace-h) / 2);
-  left: calc((var(--dcr-gap) + var(--dcr-pad)) * -1);
-  width: calc(var(--dcr-gap) + var(--dcr-pad) * 2);
-  height: 1px;
-  background: var(--dcr-thread);
-  pointer-events: none;
-}
-.dcr-joint::after {
+/* drop from the bus, and its dot */
+.dsi-card::before {
   content: '';
   position: absolute;
-  top: -2px;
-  left: calc(var(--dcr-pad) + var(--dcr-gap) / 2);
-  width: 5px;
-  height: 5px;
+  left: 50%;
+  top: -30px;
+  width: 1px;
+  height: 30px;
+  background: var(--dsi-line);
+}
+.dsi-card::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -33px;
+  width: 6px;
+  height: 6px;
   margin-left: -2.5px;
   border-radius: 50%;
-  background: var(--dcr-mint);
-  opacity: 0.55;
+  background: var(--emerald);
+}
+.dsi-card.is-selected::before {
+  width: 2px;
+  margin-left: -0.5px;
+  background: var(--emerald);
+  box-shadow: 0 0 8px var(--emerald);
 }
 
-/* Meter: one cell per dataset, the cells share the width so a dimension with
-   more datasets reads denser, not longer. */
-.dcr-cells {
-  display: flex;
-  gap: 3px;
-  min-height: 4px;
-  margin-top: 10px;
-}
-.dcr-cell {
-  flex: 1 1 0;
-  max-width: 18px;
-  height: 4px;
-  border-radius: 999px;
-  background: transparent;
-  box-shadow: inset 0 0 0 1px var(--dcr-tick-hollow);
-}
-.dcr-cell.is-live {
-  background: var(--dim);
-  box-shadow: none;
-}
-
-/* The dimension's freshest live signal (a real pulse row). */
-.dcr-latest {
-  display: block;
-  overflow: hidden;
-  margin-top: 9px;
-  font-size: 11px;
-  line-height: 1.3;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  color: var(--dcr-ink-mute);
-  transition: color var(--dcr-t-select) ease;
-}
-.dcr-strip.is-on .dcr-latest,
-.dcr-strip:hover .dcr-latest {
-  color: var(--dcr-ink-soft);
-}
-
-/* foot */
-.dcr-foot {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 6px;
-  margin-top: 8px;
-}
-.dcr-count {
-  font-family: var(--dcr-mono);
-  font-size: 12px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--dcr-ink-soft);
-}
-.dcr-state {
-  font-family: var(--dcr-mono);
-  font-size: 9px;
+.dsi-card__title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 14px;
   font-weight: 600;
-  letter-spacing: 0.14em;
-  color: var(--dcr-live);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
 }
-.dcr-strip.is-road .dcr-state {
-  color: var(--dcr-road);
+.dsi-card__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.dsi-card__icon {
+  flex: 0 0 auto;
+  color: var(--emerald);
+  font-size: 21px;
+  line-height: 1;
 }
 
-/* loading: shimmer blocks where cells and count sit; never a spinner */
-.dcr-shimmer {
+.dsi-card__spark {
   display: block;
-  height: 4px;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, white 8%, transparent) 0%,
-    color-mix(in srgb, white 18%, transparent) 50%,
-    color-mix(in srgb, white 8%, transparent) 100%
-  );
-  background-size: 200% 100%;
-  animation: dcr-shimmer 1.4s linear infinite;
+  width: 100%;
+  height: 22px;
+  margin: 10px 0;
 }
-.dcr-count.dcr-shimmer {
-  width: 28px;
-  height: 12px;
+.dsi-card__spark-line {
+  fill: none;
+  stroke: var(--emerald);
+  stroke-width: 1.3;
+  vector-effect: non-scaling-stroke;
 }
-
-@keyframes dcr-relay {
-  0% {
-    stroke-dashoffset: 14;
-    opacity: 1;
-  }
-  14.2857% {
-    stroke-dashoffset: -100;
-    opacity: 1;
-  }
-  14.2858%,
-  100% {
-    stroke-dashoffset: -100;
-    opacity: 0;
-  }
-}
-@keyframes dcr-pulse {
-  0% {
-    transform: translateY(0);
-    opacity: 0;
-  }
-  6% {
-    opacity: 1;
-  }
-  34% {
-    opacity: 1;
-  }
-  40%,
-  100% {
-    transform: translateY(-25px);
-    opacity: 0;
-  }
-}
-@keyframes dcr-shimmer {
-  to {
-    background-position: -200% 0;
-  }
+.dsi-card__spark-base {
+  fill: none;
+  stroke: var(--dsi-line-faint);
+  stroke-dasharray: 3 4;
+  vector-effect: non-scaling-stroke;
 }
 
-/* ── responsive ───────────────────────────────────────────────────────── */
-@media (max-width: 1199px) {
-  .dcr-scope {
-    --dcr-gap: 10px;
-    --dcr-pad: 10px;
-  }
+.dsi-card__desc {
+  margin: 0;
+  color: var(--dsi-ink-2);
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.85;
 }
 
-/* 640 to 899: two rows (4 + 3). The thread still runs along each row; the
-   first card of row two has no joint (nothing to its left). Stems only on
-   row one. No flex reflow here: the rows would jump. */
-@media (max-width: 899px) {
-  .dcr-rail {
-    width: 100%;
-    margin-inline: 0;
+.dsi-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 14px;
+}
+.dsi-card__count {
+  color: var(--dsi-ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dsi-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.dsi-status i {
+  font-size: 8px;
+}
+.dsi-status--live {
+  color: var(--emerald);
+}
+.dsi-status--partial {
+  color: var(--dsi-ink-2);
+}
+.dsi-status--partial i {
+  color: var(--emerald);
+}
+.dsi-status--soon {
+  color: var(--dsi-ink-muted);
+}
+
+.dsi-card__more[hidden] {
+  display: none;
+}
+.dsi-card__list {
+  display: flex;
+  flex-direction: column;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--dsi-line-faint);
+}
+.dsi-card__ds {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 38px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--dsi-line-faint);
+  font-size: 12px;
+}
+.dsi-card__ds a {
+  color: var(--dsi-ink);
+  font-weight: 500;
+  text-decoration: none;
+}
+.dsi-card__ds a:hover {
+  color: var(--emerald);
+}
+.dsi-card__ds-soon {
+  color: var(--dsi-ink-muted);
+}
+.dsi-card__open {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  color: var(--emerald);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media (max-width: 1279px) {
+  .dsi-rail__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
-  .dcr-strips {
-    flex-wrap: wrap;
+  .dsi-bus {
+    height: 24px;
+    margin: 0 calc((100% - 3 * 16px) / 8);
   }
-  .dcr-strip,
-  .dcr-strip:hover,
-  .dcr-strip.is-on {
-    flex: 1 1 calc((100% - var(--dcr-gap) * 3) / 4);
-  }
-  .dcr-strip:nth-child(5) .dcr-joint {
+  .dsi-card::before,
+  .dsi-card::after {
     display: none;
   }
-  .dcr-strip:nth-child(n + 5)::before,
-  .dcr-strip:nth-child(n + 5)::after {
+}
+@media (max-width: 960px) {
+  .dsi-rail__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .dsi-bus {
     display: none;
   }
 }
-
-/* Under 640: one column. The thread turns vertical: a hairline in the hue
-   down each row's left edge, joined row to row across the gap. */
-@media (max-width: 639px) {
-  .dcr-rail {
-    margin-top: 16px;
+@media (max-width: 640px) {
+  .dsi-rail {
+    padding: 16px 16px 0;
   }
-  .dcr-bus,
-  .dcr-trace,
-  .dcr-strip::before,
-  .dcr-strip::after,
-  .dcr-joint {
+  .dsi-rail__grid {
+    display: flex;
+    gap: 12px;
+    margin: 0 -16px;
+    padding: 0 16px 8px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 16px;
+    scrollbar-width: none;
+  }
+  .dsi-rail__grid::-webkit-scrollbar {
     display: none;
   }
-  .dcr-strips {
-    flex-direction: column;
-    flex-wrap: nowrap;
-    gap: 8px;
-  }
-  .dcr-strip,
-  .dcr-strip:hover,
-  .dcr-strip.is-on {
-    display: grid;
-    flex: none;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      'head foot'
-      'latest cells';
-    align-items: center;
-    column-gap: 12px;
-    row-gap: 6px;
-    padding: 10px 12px 10px 16px;
-    transform: none;
-    box-shadow: inset 3px 0 0 var(--dim);
-  }
-  .dcr-strip + .dcr-strip .dcr-head::before {
-    content: '';
-    position: absolute;
-    top: -8px;
-    left: 1px;
-    width: 1px;
-    height: 8px;
-    background: var(--dcr-thread);
-  }
-  .dcr-head {
-    grid-area: head;
-  }
-  .dcr-foot {
-    grid-area: foot;
-    margin-top: 0;
-    gap: 8px;
-  }
-  .dcr-latest {
-    grid-area: latest;
-    margin-top: 0;
-  }
-  .dcr-cells {
-    grid-area: cells;
-    justify-content: flex-end;
-    margin-top: 0;
-  }
-  .dcr-cell {
-    flex: none;
-    width: 10px;
+  .dsi-card {
+    flex: 0 0 78%;
+    scroll-snap-align: start;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dcr-scope {
-    --dcr-t-hover: 0s;
-    --dcr-t-select: 0s;
-    --dcr-t-flex: 0s;
+  .dsi-card {
+    transition: none;
   }
-  .dcr-trace-pulse,
-  .dcr-strip.is-live::after,
-  .dcr-shimmer {
-    animation: none;
-  }
-  .dcr-trace-pulse,
-  .dcr-strip.is-live::after {
-    display: none;
+  .dsi-card:hover {
+    transform: none;
   }
 }

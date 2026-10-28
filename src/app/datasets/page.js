@@ -1,6 +1,6 @@
 import { timed } from '@/lib/perf/timed';
 import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
-import { resolveDimension, taxonomyCounts } from './sonar/derive';
+import { taxonomyCounts } from './sonar/derive';
 import { SonarSelectionProvider } from './sonar/SonarSelection';
 import OrbitalMap from './sonar/OrbitalMap';
 import ConsoleRail from './sonar/ConsoleRail';
@@ -13,17 +13,18 @@ import { SonarExperience } from '@/components/sonar/SonarExperience';
 import './sonar/sonar.css';
 
 /**
- * Datasets index: the Sonar search on the landing Sonar band's green ground,
- * over a green-tinted globe of flickering city lights.
- * The orbital map card ("Everything below feeds Ezana Sonar") sits under the
- * search bar; sending a ping hides it, shows the stacked-block loader, then
- * the results. Every mark on the map is derived from taxonomy.js.
+ * Datasets index (Oct 28 redesign, docs/design/datasets-index-handoff).
  *
- * Oct 21: the top-bar belt carries the live pulse, the freshest signals from
- * every live dataset (src/lib/datasets/pulse), refreshed on the client every
- * five minutes. Clicking a signal opens its brief (findings, stats, chart) in
- * the deck's place (PulseStage); ?signal= reopens it. The console rail under
- * the deck is the "continuum" design: one trace through all seven dimensions.
+ * Top to bottom: the bar with the live pulse belt, the hero and the Ping field
+ * in its bracket frame, the Sonar stage (an isometric slab with the seven
+ * dimension dots on its ring, OrbitalMap), and the seven dimension cards on a
+ * bus (ConsoleRail). Clicking a belt signal opens its brief in the stage's
+ * place (PulseStage, ?signal=). Choosing a dot or a card selects that
+ * dimension (?dimension=) and expands its card's dataset list. A ping hides
+ * the hero and shows Sonar's results (SonarExperience).
+ *
+ * Every count, status and dataset name comes from taxonomy.js; the pulse from
+ * src/lib/datasets/pulse, refreshed on the client every five minutes.
  */
 export const dynamic = 'force-dynamic';
 
@@ -35,17 +36,22 @@ export const metadata = {
 
 const COUNTS = taxonomyCounts(DATASET_TAXONOMY);
 const DIM_IDS = DATASET_TAXONOMY.map((d) => d.id);
-/* What the scene draws: each dimension, its live count and its datasets. */
+/* What the stage and the cards draw: each dimension, its icon and tagline,
+   its live count and its datasets. No dimension has an activity series yet,
+   so `series` is absent and every card draws the dashed baseline. */
 const ORBIT_DIMS = DATASET_TAXONOMY.map((d) => {
   const liveCount = d.items.filter((it) => it.live).length;
   return {
     id: d.id,
     label: d.label,
+    icon: d.biIcon,
+    tagline: d.tagline,
     live: liveCount > 0,
     liveCount,
     items: d.items.map((it) => ({ label: it.label, href: it.href, live: Boolean(it.live) })),
   };
 });
+const TOTAL = COUNTS.live + COUNTS.roadmap;
 
 const EMPTY_PULSE = { items: [], datasets: {}, partial: true };
 
@@ -56,24 +62,21 @@ export default async function DatasetsIndexPage({ searchParams }) {
   try {
     pulse = await timed('/datasets', readPulse, 'readPulse')({ budgetMs: 1800 });
   } catch {
-    /* No pulse, no belt: the map still renders. */
+    /* No pulse, no belt: the page is still complete. */
   }
-  const selected = resolveDimension(DATASET_TAXONOMY, searchParams?.dimension);
+  /* Nothing is selected unless the URL names a real dimension. */
+  const rawDim = typeof searchParams?.dimension === 'string' ? searchParams.dimension : null;
+  const selected = rawDim && DIM_IDS.includes(rawDim) ? rawDim : null;
   const signal = typeof searchParams?.signal === 'string' ? searchParams.signal : null;
 
   const map = (
     <SonarSelectionProvider initial={selected} ids={DIM_IDS}>
       <PulseProvider initial={pulse} initialKey={signal}>
         <OrbitalNewsTicker>
-          <section
-            className="dso-sonar dso-sonar--solo dcr-scope"
-            aria-label="The seven dataset dimensions that feed Ezana Sonar"
-          >
-            <PulseStage>
-              <OrbitalMap dims={ORBIT_DIMS} pinging={COUNTS.live} silent={COUNTS.roadmap} />
-            </PulseStage>
-            <ConsoleRail dims={ORBIT_DIMS} />
-          </section>
+          <PulseStage>
+            <OrbitalMap dims={ORBIT_DIMS} pinging={COUNTS.live} silent={COUNTS.roadmap} />
+          </PulseStage>
+          <ConsoleRail dims={ORBIT_DIMS} />
         </OrbitalNewsTicker>
       </PulseProvider>
     </SonarSelectionProvider>
@@ -90,6 +93,9 @@ export default async function DatasetsIndexPage({ searchParams }) {
           heroAddon={map}
           initialQuery={typeof searchParams?.q === 'string' ? searchParams.q : null}
         />
+        <p className="dsi-totals">
+          {TOTAL} datasets · {COUNTS.live} live · {COUNTS.dimensions} dimensions
+        </p>
       </div>
     </div>
   );

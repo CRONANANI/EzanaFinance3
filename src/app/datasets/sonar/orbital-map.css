@@ -1,411 +1,682 @@
-/* The Sonar device scene on /datasets (prefix dso-sc): the Claude Design
-   "SIGNAL FOUND" scene, 1:1 (docs/design/ezana-sonar-orbital-map-handoff.md).
-   The handoff's palette (Part A1) mapped to theme tokens: emerald, its
-   highlight and hot core as mixes of --emerald and white; charcoals as mixes
-   of black and white; the mint accent from --brand-band-mint. No hex.
+/* /datasets overview, Oct 28 redesign (prefix dsi-, datasets-index-handoff).
+   Holds the page tokens, the backdrop, the hero and Ping frame, the top-bar
+   additions, the Sonar stage and the belt and brief restyle. The cards live in
+   console-rail.css.
 
-   No card chrome: the scene paints no background, border, outline, shadow or
-   rounded clip, so the device floats on the page's own ground. */
-.dso-sc {
-  --sc-em: var(--emerald);
-  --sc-hi: color-mix(in srgb, var(--emerald) 72%, white);
-  --sc-mint: var(--brand-band-mint);
-  --sc-mint-pale: color-mix(in srgb, var(--brand-band-mint) 60%, white);
-  --sc-core: color-mix(in srgb, var(--emerald) 18%, white);
-  --sc-core-hot: color-mix(in srgb, var(--emerald) 8%, white);
-  --sc-face-t: var(--sc-hi);
-  --sc-face-r: color-mix(in srgb, var(--emerald) 84%, black);
-  --sc-face-l: color-mix(in srgb, var(--emerald) 70%, black);
-  --sc-slab-a: color-mix(in srgb, white 14%, black);
-  --sc-slab-b: color-mix(in srgb, white 9%, black);
-  --sc-bezel: color-mix(in srgb, white 18%, black);
-  --sc-side: color-mix(in srgb, white 7%, black);
-  --sc-rec-a: color-mix(in srgb, white 5%, black);
-  --sc-rec-b: color-mix(in srgb, white 7%, black);
-  --sc-ink-shadow: color-mix(in srgb, white 3%, black);
-  --sc-field-dot: color-mix(in srgb, white 16%, black);
-  --sc-map-dot: color-mix(in srgb, white 28%, black);
-  --sc-fog: color-mix(in srgb, white 62%, black);
-  --sc-warm: color-mix(in srgb, var(--danger) 55%, white);
-  --sc-text: var(--sc-mint);
-  position: relative;
-  width: 100%;
-  font-family: var(--font-sans);
-  color: color-mix(in srgb, white 92%, transparent);
+   /datasets is brand-locked light at the DOM level (ThemeProvider), but this
+   page paints its own dark evergreen ground. So the page does not read the
+   global surface and ink tokens, whose light values would apply here; it
+   defines its own scoped --dsi-* set from --emerald and the black/white
+   keywords. Raw colour values: none (the sonar test forbids hex in this
+   folder). */
+
+/* ── Tokens ────────────────────────────────────────────────────────────── */
+.ds-shell--search {
+  --dsi-base: color-mix(in srgb, white 3%, black);
+  --dsi-ink: color-mix(in srgb, white 94%, var(--emerald));
+  --dsi-ink-2: color-mix(in srgb, white 84%, var(--emerald));
+  --dsi-ink-muted: color-mix(in srgb, white 56%, black);
+  --dsi-focus: color-mix(in srgb, var(--emerald) 70%, white);
+
+  --dsi-ground: color-mix(in srgb, var(--emerald) 9%, var(--dsi-base));
+  --dsi-ground-deep: color-mix(in srgb, var(--emerald) 5%, var(--dsi-base));
+  --dsi-map: color-mix(in srgb, var(--emerald) 26%, transparent);
+  --dsi-glow: color-mix(in srgb, var(--emerald) 22%, transparent);
+  --dsi-line: color-mix(in srgb, var(--emerald) 45%, transparent);
+  --dsi-line-faint: color-mix(in srgb, var(--emerald) 22%, transparent);
+  --dsi-beam: var(--emerald);
+  --dsi-ring: var(--emerald);
+  --dsi-slab-top: color-mix(in srgb, var(--emerald) 7%, var(--dsi-base));
+  --dsi-slab-side: color-mix(in srgb, var(--emerald) 4%, var(--dsi-base));
+  --dsi-slab-screen: color-mix(in srgb, var(--emerald) 10%, var(--dsi-base));
+  --dsi-slab-edge: color-mix(in srgb, var(--emerald) 35%, transparent);
+  --dsi-panel: color-mix(in srgb, var(--emerald) 10%, var(--dsi-base));
+  --dsi-panel-border: color-mix(in srgb, var(--emerald) 35%, transparent);
+  --dsi-card: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--emerald) 11%, var(--dsi-base)),
+    color-mix(in srgb, var(--emerald) 6%, var(--dsi-base))
+  );
+  --dsi-card-hover: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--emerald) 14%, var(--dsi-base)),
+    color-mix(in srgb, var(--emerald) 8%, var(--dsi-base))
+  );
+  --dsi-card-selected: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--emerald) 20%, var(--dsi-base)),
+    color-mix(in srgb, var(--emerald) 10%, var(--dsi-base))
+  );
+  --dsi-field: color-mix(in srgb, var(--emerald) 5%, var(--dsi-base));
+  --dsi-ping-bg: color-mix(in srgb, var(--emerald) 16%, var(--dsi-base));
+  --dsi-ping-text: color-mix(in srgb, var(--emerald) 35%, var(--dsi-ink));
+  --dsi-skeleton: color-mix(in srgb, var(--emerald) 10%, transparent);
+
+  background: radial-gradient(
+    ellipse 90% 70% at 50% 30%,
+    var(--dsi-ground),
+    var(--dsi-ground-deep) 80%
+  );
+  color: var(--dsi-ink);
 }
-.dso-sc,
-.dso-sc-stage,
-.dso-sc-scene {
-  background: none;
+
+.dsi-vh {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.ds-shell--search
+  :is(.dsi-hero, .dsi-pingframe, .dsi-stage, .dsi-rail, .dsi-iconbtn, .dsi-live)
+  :focus-visible,
+.ds-shell--search :is(.dsi-iconbtn, .dsi-dimdot, .dsi-card__head):focus-visible {
+  outline: 2px solid var(--dsi-focus);
+  outline-offset: 3px;
+}
+
+/* ── Backdrop (GlobeBackground) ───────────────────────────────────────── */
+.dsi-backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: radial-gradient(ellipse 55% 34% at 50% 44%, var(--dsi-glow), transparent 70%);
+}
+.dsi-worldmap {
+  position: absolute;
+  left: 50%;
+  top: 60px;
+  width: 1600px;
+  height: 760px;
+  transform: translateX(-50%);
+  background: var(--dsi-map);
+  -webkit-mask: url('/images/datasets/worldmap-bg.svg') center / 100% 100% no-repeat;
+  mask: url('/images/datasets/worldmap-bg.svg') center / 100% 100% no-repeat;
+  opacity: 0.9;
+}
+.dsi-floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 500px;
+  height: 420px;
+  opacity: 0.35;
+  background-image:
+    linear-gradient(var(--dsi-line-faint) 1px, transparent 1px),
+    linear-gradient(90deg, var(--dsi-line-faint) 1px, transparent 1px);
+  background-size: 64px 64px;
+  transform: perspective(600px) rotateX(62deg);
+  transform-origin: top center;
+  -webkit-mask-image: radial-gradient(ellipse 60% 70% at 50% 0%, black, transparent 75%);
+  mask-image: radial-gradient(ellipse 60% 70% at 50% 0%, black, transparent 75%);
+}
+
+/* ── Top bar additions (CategoryBar, overview only) ───────────────────── */
+.dsi-wordmark {
+  margin-left: 12px;
+  color: var(--dsi-ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.dsi-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  height: 26px;
+  margin-left: 20px;
+  padding-left: 20px;
+  border-left: 1px solid var(--dsi-line-faint);
+  color: var(--dsi-ink);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.dsi-live__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--emerald);
+  box-shadow: 0 0 8px var(--emerald);
+}
+.dsi-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dsi-iconbtn {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--dsi-ink);
+  font-size: 19px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.dsi-iconbtn:hover {
+  background: var(--dsi-skeleton);
+  color: var(--emerald);
+}
+.dsi-iconbtn--account {
+  border: 1.5px solid var(--dsi-line);
+  font-size: 17px;
+}
+
+/* ── Belt restyle (NewsBelt on the overview) ──────────────────────────── */
+.ds-shell--search .dsnb-card {
+  gap: 10px;
+  color: var(--dsi-ink);
+  font-size: 11.5px;
+}
+.ds-shell--search .dsnb-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--dsi-line);
+  border-radius: var(--radius-sm);
+  color: var(--emerald);
+  font-size: 12px;
+}
+.ds-shell--search .dsnb-meta,
+.ds-shell--search .dsnb-value {
+  color: var(--emerald);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.ds-shell--search .dsnb-card--btn:hover,
+.ds-shell--search .dsnb-card--btn.is-active {
+  background: var(--dsi-skeleton);
+}
+
+/* ── Hero (SonarHero, datasets variant) ───────────────────────────────── */
+.dsi-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 60px 0 0;
+}
+.dsi-hero__eyebrow {
+  margin: 0 0 14px;
+  color: var(--emerald);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+.dsi-hero__title {
+  margin: 0;
+  color: var(--dsi-ink);
+  font-family: var(--font-sans);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+.dsi-hero__lede {
+  margin: 12px 0 0;
+  color: var(--dsi-ink-2);
+  font-size: 13.5px;
+}
+
+/* ── Ping field in its bracket frame (SonarQueryBar ghost) ─────────────── */
+.dsi-pingframe {
+  position: relative;
+  width: min(760px, 100%);
+  margin: 30px auto 0;
+  padding: 9px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--dsi-line-faint);
+  background: color-mix(in srgb, var(--emerald) 4%, transparent);
+  box-shadow: 0 0 40px var(--dsi-glow);
+}
+.dsi-pingframe__c {
+  position: absolute;
+  width: 44px;
+  height: 14px;
+  border: 2px solid var(--emerald);
+  pointer-events: none;
+}
+.dsi-pingframe__c--tl {
+  left: -2px;
+  top: -2px;
+  border-right: 0;
+  border-bottom: 0;
+  border-top-left-radius: var(--radius-xl);
+}
+.dsi-pingframe__c--tr {
+  right: -2px;
+  top: -2px;
+  border-left: 0;
+  border-bottom: 0;
+  border-top-right-radius: var(--radius-xl);
+}
+.dsi-pingframe__c--bl {
+  left: -2px;
+  bottom: -2px;
+  border-right: 0;
+  border-top: 0;
+  border-bottom-left-radius: var(--radius-xl);
+}
+.dsi-pingframe__c--br {
+  right: -2px;
+  bottom: -2px;
+  border-left: 0;
+  border-top: 0;
+  border-bottom-right-radius: var(--radius-xl);
+}
+.dsi-ping {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 50px;
+  margin: 0;
+  padding: 0 6px 0 16px;
+  border-radius: var(--radius-md);
+  background: var(--dsi-field);
+  border: 1px solid var(--dsi-line-faint);
+  transition: border-color 0.15s ease;
+}
+.dsi-ping:focus-within {
+  border-color: var(--emerald);
+}
+.dsi-ping__icon {
+  color: var(--dsi-ink-2);
+  font-size: 18px;
+}
+.dsi-ping__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
   border: 0;
   outline: 0;
-  box-shadow: none;
+  background: transparent;
+  color: var(--dsi-ink);
+  font-family: var(--font-sans);
+  font-size: 13.5px;
 }
-.dso-sc-stage {
+.dsi-ping__input::placeholder {
+  color: var(--dsi-ink-muted);
+}
+.dsi-ping__div {
+  width: 1px;
+  height: 28px;
+  background: var(--dsi-line-faint);
+}
+.dsi-ping__btn {
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
+  padding: 0;
+  border: 1px solid var(--dsi-line);
+  border-radius: var(--radius-md);
+  background: var(--dsi-ping-bg);
+  color: var(--dsi-ping-text);
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.dsi-ping__btn:hover:not(:disabled) {
+  border-color: var(--emerald);
+  background: color-mix(in srgb, var(--emerald) 24%, var(--dsi-base));
+}
+.dsi-ping__btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.dsi-ping__btn:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+.dsi-ping__main {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px 0 14px;
+}
+.dsi-ping__main i {
+  color: var(--emerald);
+}
+.dsi-ping__arrow {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 100%;
+  border-left: 1px solid var(--dsi-line-faint);
+}
+
+/* ── Stage (OrbitalMap) ───────────────────────────────────────────────── */
+.dsi-stage {
   position: relative;
-  width: 100%;
-  /* Glows and fog bleed past the stage edge, as on the canvas. */
-  overflow: visible;
+  height: 362px;
 }
-.dso-sc-scene {
-  display: block;
+.dsi-stage__inner {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 800px;
+  height: 362px;
+  transform: translateX(-50%);
+  transform-origin: top center;
+}
+.dsi-stage__svg {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   overflow: visible;
 }
-
-/* ── gradient stops and fills (SVG attributes can't take color-mix) ──── */
-.dso-sc-em {
-  stop-color: var(--sc-em);
+.dsi-globe {
+  position: absolute;
+  left: 272px;
+  top: 116px;
+  width: 256px;
+  height: 108px;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 50% 50% at 50% 50%,
+    color-mix(in srgb, var(--emerald) 90%, white),
+    var(--emerald) 45%,
+    color-mix(in srgb, var(--emerald) 60%, transparent) 80%
+  );
+  -webkit-mask:
+    url('/images/datasets/worldmap-globe.svg') center / 100% 100% no-repeat,
+    radial-gradient(ellipse 50% 50% at 50% 50%, black 70%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask:
+    url('/images/datasets/worldmap-globe.svg') center / 100% 100% no-repeat intersect,
+    radial-gradient(ellipse 50% 50% at 50% 50%, black 70%, transparent 100%);
+  filter: drop-shadow(0 0 6px var(--emerald-glow));
 }
-.dso-sc-hi {
-  stop-color: var(--sc-hi);
-}
-.dso-sc-white {
-  stop-color: white;
-}
-.dso-sc-slab-a {
-  stop-color: var(--sc-slab-a);
-}
-.dso-sc-slab-b {
-  stop-color: var(--sc-slab-b);
-}
-.dso-sc-rec-a {
-  stop-color: var(--sc-rec-a);
-}
-.dso-sc-rec-b {
-  stop-color: var(--sc-rec-b);
-}
-.dso-sc-dot {
-  fill: var(--sc-field-dot);
-}
-.dso-sc-dot-map {
-  fill: var(--sc-map-dot);
-}
-
-/* ── device ──────────────────────────────────────────────────────────── */
-.dso-sc-base-ext {
-  fill: color-mix(in srgb, white 3%, black);
-}
-.dso-sc-base {
-  fill: color-mix(in srgb, white 5%, black);
-  stroke: color-mix(in srgb, white 7%, transparent);
-  stroke-width: 1;
-}
-.dso-sc-mintline {
-  fill: none;
-  stroke: var(--sc-mint-pale);
-  stroke-opacity: 0.75;
-  stroke-width: 1.5;
-  stroke-linecap: round;
-}
-.dso-sc-slab-ext {
-  fill: var(--sc-side);
-}
-.dso-sc-slab-rail {
-  fill: none;
-  stroke: color-mix(in srgb, white 6%, transparent);
-  stroke-width: 1;
-}
-.dso-sc-slab-top {
-  stroke: var(--sc-bezel);
-  stroke-width: 1;
-}
-.dso-sc-recess {
-  stroke: var(--sc-ink-shadow);
-  stroke-width: 3;
-}
-.dso-sc-recess-edge {
-  fill: none;
-  stroke: color-mix(in srgb, white 5%, transparent);
-  stroke-width: 1;
-}
-.dso-sc-grid {
-  fill: none;
-  stroke: color-mix(in srgb, white 3.5%, transparent);
-  stroke-width: 1;
-}
-
-/* ── radar ───────────────────────────────────────────────────────────── */
-.dso-sc-sweep-edge {
-  stroke: var(--sc-mint-pale);
-  stroke-opacity: 0.95;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-}
-.dso-sc-ring {
-  fill: none;
-  stroke: var(--sc-em);
-}
-.dso-sc-ring--3 {
-  stroke-opacity: 0.85;
-  stroke-width: 1.4;
-}
-.dso-sc-ring--tick {
-  stroke-opacity: 0.55;
-  stroke-width: 6;
-  stroke-dasharray: 1.2 10.6;
-}
-.dso-sc-ring--2 {
-  stroke-opacity: 0.55;
-  stroke-width: 1.1;
-}
-.dso-sc-ring--1 {
-  stroke-opacity: 0.45;
-  stroke-width: 1;
-}
-.dso-sc-centre {
-  fill: var(--sc-core);
-}
-
-/* ── links and nodes ─────────────────────────────────────────────────── */
-.dso-sc-link {
-  fill: none;
-  stroke: color-mix(in srgb, white 42%, transparent);
-  stroke-width: 1;
-  stroke-linecap: round;
-  transition:
-    stroke 160ms ease-out,
-    opacity 160ms ease-out;
-}
-.dso-sc-link.is-on {
-  stroke: color-mix(in srgb, var(--sc-em) 95%, transparent);
-  stroke-width: 1.4;
-}
-.dso-sc-link.is-quiet {
-  opacity: 0.28;
-}
-.dso-sc-marker {
-  fill: color-mix(in srgb, white 5%, black);
-  stroke: color-mix(in srgb, white 90%, transparent);
-  stroke-width: 1.2;
-}
-.dso-sc-node {
-  cursor: pointer;
-  outline: none;
-  transition: opacity 160ms ease-out;
-}
-.dso-sc-node.is-quiet {
-  opacity: 0.28;
-}
-.dso-sc-hit {
-  fill: transparent;
-  pointer-events: all;
-}
-.dso-sc-focus {
-  fill: none;
-  stroke: var(--sc-mint);
-  stroke-width: 2;
-  opacity: 0;
-  transition: opacity 120ms ease-out;
-}
-.dso-sc-node:focus-visible .dso-sc-focus {
-  opacity: 1;
-}
-.dso-sc-sel {
-  fill: none;
-  stroke: var(--sc-em);
-  stroke-opacity: 0.9;
-  stroke-width: 1.4;
-}
-.dso-sc-cube {
-  filter: url(#dso-sc-glow);
-}
-.dso-sc-cube-l {
-  fill: var(--sc-face-l);
-}
-.dso-sc-cube-r {
-  fill: var(--sc-face-r);
-}
-.dso-sc-cube-t {
-  fill: var(--sc-face-t);
-}
-.dso-sc-node.is-on .dso-sc-cube-t,
-.dso-sc-node:hover .dso-sc-cube-t {
-  fill: var(--sc-core);
-}
-.dso-sc-blip {
-  fill: var(--sc-hi);
-}
-.dso-sc-node.is-mint .dso-sc-blip {
-  fill: var(--sc-mint);
-}
-.dso-sc-blip-ring {
-  fill: none;
-  stroke: var(--sc-em);
-  stroke-opacity: 0.6;
-  stroke-width: 1;
-}
-.dso-sc-hot {
-  fill: var(--sc-core-hot);
-}
-.dso-sc-hot-halo {
-  fill: var(--sc-core-hot);
-  fill-opacity: 0.35;
-}
-
-/* ── atmosphere, bars, plaque ────────────────────────────────────────── */
-.dso-sc-fog {
-  fill: var(--sc-fog);
-}
-.dso-sc-bar-channel {
-  fill: none;
-  stroke: var(--sc-ink-shadow);
-  stroke-width: 16;
-}
-.dso-sc-bar {
-  fill: none;
-  stroke-width: 6;
-}
-.dso-sc-plaque-shadow {
-  fill: color-mix(in srgb, white 4%, black);
-}
-.dso-sc-plaque {
-  fill: color-mix(in srgb, white 12%, black);
-  stroke: color-mix(in srgb, white 20%, black);
-  stroke-width: 1;
-}
-.dso-sc-plaque-face {
-  fill: color-mix(in srgb, var(--sc-em) 10%, transparent);
-  stroke: var(--sc-em);
-  stroke-opacity: 0.75;
-  stroke-width: 1.2;
-}
-.dso-sc-plaque-text {
-  fill: var(--sc-hi);
-  font-family: var(--font-sans);
-  font-size: 15.5px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-}
-.dso-sc-key-l {
-  fill: color-mix(in srgb, white 8%, black);
-}
-.dso-sc-key-r {
-  fill: color-mix(in srgb, white 11%, black);
-}
-.dso-sc-key-t {
-  fill: color-mix(in srgb, white 16%, black);
-  stroke: color-mix(in srgb, white 24%, black);
-  stroke-width: 1;
-}
-.dso-sc-port {
-  fill: color-mix(in srgb, white 5%, black);
-  stroke: color-mix(in srgb, white 13%, black);
-}
-.dso-sc-port-light {
-  fill: var(--sc-hi);
-}
-
-/* ── glass panels ────────────────────────────────────────────────────── */
-.dso-sc-glass {
-  stroke: color-mix(in srgb, white 28%, transparent);
-  stroke-width: 1;
-}
-.dso-sc-glass-edge {
-  fill: color-mix(in srgb, white 25%, transparent);
-}
-.dso-sc-blob {
-  fill: var(--sc-em);
-}
-.dso-sc-blob-warm {
-  fill: var(--sc-warm);
-}
-/* Readouts always render, as on the canvas. They are aria-hidden texture;
-   the accessible copy is the .dso-sr list. */
-.dso-sc-text {
-  font-family: var(--font-mono);
-  fill: var(--sc-text);
-  fill-opacity: 0.9;
-  font-variant-numeric: tabular-nums;
-  white-space: pre;
+.dsi-core {
+  position: absolute;
+  left: 400px;
+  top: 170px;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--emerald) 40%, white);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--emerald) 35%, transparent),
+    0 0 30px 8px var(--emerald-glow);
+  animation: dsi-core 1.5s ease-in-out infinite;
   pointer-events: none;
 }
-.dso-sc-pool {
-  fill: var(--sc-em);
+@keyframes dsi-core {
+  50% {
+    box-shadow:
+      0 0 0 7px color-mix(in srgb, var(--emerald) 18%, transparent),
+      0 0 40px 10px var(--emerald-glow);
+  }
 }
-
-/* ── upright layer: hub target and tooltip only ──────────────────────── */
-.dso-sc-hub {
+.dsi-panel {
   position: absolute;
-  z-index: 3;
-  width: 28px;
-  height: 28px;
+  padding: 9px 11px 10px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--dsi-panel) 88%, transparent);
+  border: 1px solid var(--dsi-panel-border);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--emerald) 10%, transparent);
+}
+.dsi-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 7px;
+  color: var(--dsi-ink-2);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.dsi-panel__dots {
+  display: inline-flex;
+  gap: 2px;
+}
+.dsi-panel__dots i {
+  width: 3px;
+  height: 3px;
+  border-radius: 1px;
+  background: var(--dsi-line);
+}
+.dsi-panel svg {
+  display: block;
+}
+.dsi-dimdot {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: none;
-  transform: translate(-50%, -50%);
+  background: transparent;
   cursor: pointer;
 }
-.dso-sc-hub:focus-visible {
-  outline: 2px solid var(--sc-mint);
-  outline-offset: 2px;
+.dsi-dimdot::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dsi-slab-screen);
+  border: 1.5px solid var(--emerald);
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
 }
-.dso-sc-tip {
+.dsi-dimdot:hover::before,
+.dsi-dimdot:focus-visible::before {
+  transform: scale(1.4);
+}
+.dsi-dimdot[aria-pressed='true']::before {
+  background: var(--emerald);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--emerald) 25%, transparent),
+    0 0 14px var(--emerald);
+  transform: scale(1.3);
+}
+.dsi-dimdot__tip {
   position: absolute;
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 150px;
-  padding: 7px 10px;
-  border: 1px solid color-mix(in srgb, var(--sc-em) 20%, transparent);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, black 82%, transparent);
-  transform: translate(-50%, calc(-100% - 14px));
-  white-space: nowrap;
-  pointer-events: none;
-}
-.dso-sc-tip small {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  color: var(--sc-mint);
-}
-.dso-sc-tip b {
-  font-size: 12.5px;
-  font-weight: 600;
-}
-.dso-sc-tip em {
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--dsi-panel);
+  border: 1px solid var(--dsi-panel-border);
+  color: var(--dsi-ink);
+  font-family: var(--font-sans);
   font-size: 11px;
-  font-style: normal;
-  color: color-mix(in srgb, white 60%, transparent);
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+.dsi-dimdot:hover .dsi-dimdot__tip,
+.dsi-dimdot:focus-visible .dsi-dimdot__tip,
+.dsi-dimdot[aria-pressed='true'] .dsi-dimdot__tip {
+  opacity: 1;
 }
 
-/* ── responsive (Part A6) ────────────────────────────────────────────── */
-.dso-sc.is-narrow .dso-sc-panel--b,
-.dso-sc.is-narrow .dso-sc-panel--d,
-.dso-sc.is-narrow .dso-sc-ring--3,
-.dso-sc.is-narrow .dso-sc-ring--tick {
-  display: none;
+/* ── Brief restyle (PulseBrief takes the stage's place) ───────────────── */
+.ds-shell--search .dpb-brief {
+  width: min(720px, 100%);
+  margin: 40px auto 0;
+  padding: 26px 30px;
+  border-radius: var(--radius-xl);
+  background: var(--dsi-panel);
+  border: 1px solid var(--dsi-panel-border);
+  box-shadow: 0 0 40px var(--dsi-glow);
+  color: var(--dsi-ink);
+  animation: dsi-enter 0.35s ease-out;
 }
-@media (prefers-reduced-motion: reduce) {
-  .dso-sc-link,
-  .dso-sc-node,
-  .dso-sc-focus {
-    transition: none;
-  }
-}
-
-/* ── Oct 14: panel A's parser log ──────────────────────────────────────
-   The log drawn under panel A's sub-line scrolls down through the glass at
-   about a line a second. Two copies sit one block apart, so moving by one
-   block height loops without a seam. The mask fades it in and out at the
-   window's top and bottom edges. Reduced motion holds it still. */
-.dso-sc-code {
-  animation: dso-sc-code-scroll calc(var(--dso-sc-code-n, 12) * 1.1s) linear infinite;
-}
-@keyframes dso-sc-code-scroll {
+@keyframes dsi-enter {
   from {
-    transform: translateY(0);
+    opacity: 0;
+    transform: translateY(8px);
   }
   to {
-    transform: translateY(var(--dso-sc-code-h, 132px));
+    opacity: 1;
+    transform: none;
   }
 }
+
+/* ── Totals line ──────────────────────────────────────────────────────── */
+.dsi-totals {
+  display: flex;
+  justify-content: flex-end;
+  width: min(1440px, 100%);
+  margin: 56px auto 0;
+  padding: 18px 32px 0;
+  border-top: 1px solid var(--dsi-line-faint);
+  color: var(--dsi-ink-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .ds-shell--search .dscat-belt-slot,
+  .dsi-live {
+    display: none;
+  }
+  .dsi-stage {
+    height: 300px;
+  }
+  .dsi-stage__inner {
+    transform: translateX(-50%) scale(0.82);
+  }
+}
+@media (max-width: 640px) {
+  .dsi-wordmark {
+    display: none;
+  }
+  .dsi-hero {
+    padding-top: 36px;
+  }
+  .dsi-hero__title {
+    font-size: 26px;
+  }
+  .dsi-ping__main span,
+  .dsi-ping__div {
+    display: none;
+  }
+  .dsi-stage {
+    height: 196px;
+  }
+  .dsi-stage__inner {
+    transform: translateX(-50%) scale(0.5);
+  }
+  .dsi-panels,
+  .dsi-leaders {
+    display: none;
+  }
+  .dsi-dimdot {
+    width: 44px;
+    height: 44px;
+    margin: -22px 0 0 -22px;
+  }
+  .dsi-dimdot::before {
+    width: 12px;
+    height: 12px;
+  }
+  .dsi-dimdot__tip {
+    display: none;
+  }
+  .dsi-totals {
+    justify-content: flex-start;
+    padding: 18px 16px 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .dso-sc-code {
+  .dsi-core,
+  .ds-shell--search .dpb-brief {
     animation: none;
   }
+  .dsi-dimdot::before,
+  .dsi-dimdot__tip,
+  .dsi-ping,
+  .dsi-ping__btn,
+  .dsi-iconbtn {
+    transition: none;
+  }
+  .dsi-ping__btn:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* ── Bar frame on the overview ─────────────────────────────────────────── */
+.ds-shell--search .dscat-bar.dscat-bar--bare {
+  min-height: 62px;
+  border-bottom: 1px solid var(--dsi-line-faint);
+}
+.ds-shell--search .dscat-bar--bare .dscat-side--start {
+  display: flex;
+  align-items: center;
+}
+.ds-shell--search .dscat-bar--bare .dscat-logo {
+  gap: 0;
+}
+.ds-shell--search .dscat-bar--bare .dscat-logo-img {
+  height: 34px;
+  width: auto;
+}
+
+/* ── Ink on a light-locked route ──────────────────────────────────────────
+   light-mode.css paints h1-h4 and p with dark ink at (0,1,1) and (0,1,2);
+   these page-scoped selectors (0,2,0) keep the overview's own ink. */
+.ds-shell--search .dsi-hero__title,
+.ds-shell--search .dsi-card__title {
+  color: var(--dsi-ink);
+}
+.ds-shell--search .dsi-hero__eyebrow {
+  color: var(--emerald);
+}
+.ds-shell--search .dsi-hero__lede,
+.ds-shell--search .dsi-card__desc {
+  color: var(--dsi-ink-2);
+}
+.ds-shell--search .dsi-totals {
+  color: var(--dsi-ink-muted);
+}
+.ds-shell--search .dsi-rail {
+  text-align: left;
+}
+.ds-shell--search .dsi-ping__input,
+.ds-shell--search .dsi-ping__input:hover,
+.ds-shell--search .dsi-ping__input:focus {
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
 }

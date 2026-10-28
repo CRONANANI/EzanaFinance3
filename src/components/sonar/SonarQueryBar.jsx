@@ -23,6 +23,58 @@ export function SonarQueryBar({
   ghost = false,
 }) {
   const empty = !value;
+  const canSubmit = !loading && !disabled && Boolean(value.trim());
+  const submit = (e) => {
+    e.preventDefault();
+    if (canSubmit) onSubmit(value);
+  };
+
+  /* Datasets overview hero (Oct 28 redesign, prefix dsi-; styles in
+     app/datasets/sonar/orbital-map.css): the Ping field in a bracket frame
+     with a split Ping button. Bootstrap Icons only. The sticky results bar
+     (compact) keeps the shared pill below. */
+  if (ghost && !compact) {
+    return (
+      <div className="dsi-pingframe">
+        <span className="dsi-pingframe__c dsi-pingframe__c--tl" aria-hidden="true" />
+        <span className="dsi-pingframe__c dsi-pingframe__c--tr" aria-hidden="true" />
+        <span className="dsi-pingframe__c dsi-pingframe__c--bl" aria-hidden="true" />
+        <span className="dsi-pingframe__c dsi-pingframe__c--br" aria-hidden="true" />
+        <form className="dsi-ping" role="search" onSubmit={submit}>
+          <i className="bi bi-search dsi-ping__icon" aria-hidden="true" />
+          {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
+          <input
+            id="dsi-ping-input"
+            className="dsi-ping__input"
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="Try a person, a bank, a policy, a company, or a trend..."
+            aria-label="Sonar query"
+            maxLength={300}
+            autoFocus={autoFocus}
+            disabled={disabled}
+          />
+          <span className="dsi-ping__div" aria-hidden="true" />
+          <button
+            className="dsi-ping__btn"
+            type="submit"
+            disabled={!canSubmit}
+            aria-label={loading ? 'Sweeping' : 'Ping Sonar'}
+          >
+            <span className="dsi-ping__main">
+              <i className="bi bi-activity" aria-hidden="true" />
+              <span>{loading ? 'Sweeping...' : 'Ping'}</span>
+            </span>
+            <span className="dsi-ping__arrow" aria-hidden="true">
+              <i className="bi bi-arrow-right" />
+            </span>
+          </button>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <form
       className={`sonar-qbar ds-search${ghost ? ' sonar-qbar--ghost' : ''}${ghost && empty ? ' is-empty' : ''}`}

@@ -30,9 +30,15 @@ export function SonarHero({
   return (
     <div className={`sonar-hero${bare ? ' sonar-hero--bare' : ''}`}>
       {bare ? (
-        /* The datasets overview drops the visible header; the page keeps one
-           h1 for screen readers and search. */
-        <h1 className="dso-sr-only">Ezana datasets</h1>
+        /* The datasets overview's header (Oct 28 redesign, prefix dsi-;
+           styles in app/datasets/sonar/orbital-map.css). */
+        <div className="dsi-hero">
+          <p className="dsi-hero__eyebrow">AI-powered financial intelligence</p>
+          <h1 className="dsi-hero__title">Smarter insights. Better decisions.</h1>
+          <p className="dsi-hero__lede">
+            Real-time intelligence on markets, policy, companies and the global economy.
+          </p>
+        </div>
       ) : (
         <>
           <div className="sonar-eyebrow">Ezana Sonar</div>
