@@ -127,7 +127,7 @@
   gap: 0.4rem;
   font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--emerald-text, var(--emerald));
   margin-bottom: 0.6rem;
@@ -173,7 +173,7 @@
   gap: 0.35rem;
 }
 .oc2-supervise-chip {
-  font-size: 0.66rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
   padding: 0.12rem 0.45rem;
   border: 1px dotted var(--emerald-border, color-mix(in srgb, var(--emerald) 45%, transparent));
@@ -325,7 +325,7 @@
   gap: 0.25rem;
 }
 .oc2-sector-tag {
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   padding: 0.08rem 0.4rem;
   border-radius: var(--radius-md);
   background: var(--surface-input);
@@ -336,7 +336,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   padding: 0.1rem 0.45rem;
   border-radius: 9999px;
@@ -400,7 +400,7 @@
   color: var(--text-body, var(--text-secondary));
 }
 .oc2-sector-member-role {
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   color: var(--text-faint);
 }
 .oc2-sector-empty {
@@ -411,7 +411,7 @@
 .oc2-assign-btn {
   align-self: flex-start;
   margin-top: auto;
-  font-size: 0.68rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   padding: 0.3rem 0.65rem;
   border-radius: var(--radius-md);

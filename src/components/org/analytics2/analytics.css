@@ -143,7 +143,7 @@
   background: var(--surface-card-hover);
 }
 .an4-state-chip {
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   padding: 0.1rem 0.45rem;
   border-radius: 9999px;
@@ -351,7 +351,7 @@
   padding: 0.85rem 1rem 0.5rem;
 }
 .fa-card-mut {
-  font-size: 0.68rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
 }
 .fa-card-t svg,
@@ -467,7 +467,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.68rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
 }
 .fa-legend i {
@@ -533,7 +533,7 @@
   border-radius: 9999px;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.66rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   background: var(--surface-input);
   color: var(--text-muted);
@@ -564,7 +564,7 @@
   justify-content: center;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   background: var(--emerald-bg, color-mix(in srgb, var(--emerald) 14%, transparent));
   color: var(--emerald-text, var(--emerald));
@@ -575,7 +575,7 @@
   color: var(--text-primary);
 }
 .fa-who .sl {
-  font-size: 0.64rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
 }
 .fa-contrib {
@@ -631,7 +631,7 @@
   font-size: 0.8rem;
 }
 .fa-cd .meta {
-  font-size: 0.64rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
 }
 .fa-cd .amt {
@@ -677,7 +677,7 @@
   color: var(--text-primary);
 }
 .fa-cbanner .bd {
-  font-size: 0.68rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -783,7 +783,7 @@
   color: var(--warning, var(--amber));
 }
 .fa-svt-pm {
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   color: var(--text-faint, var(--text-muted));
 }
 
@@ -820,7 +820,7 @@
   text-align: right;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.66rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
 }
 
@@ -844,12 +844,12 @@
   font-size: 0.78rem;
 }
 .fa-gap .gs {
-  font-size: 0.62rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
 }
 .fa-assign {
   font-family: inherit;
-  font-size: 0.68rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   padding: 0.28rem 0.6rem;
   border-radius: var(--radius-md);
@@ -912,7 +912,7 @@
   margin-bottom: 0.75rem;
 }
 .am-note {
-  font-size: 0.62rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }

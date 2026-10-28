@@ -322,7 +322,9 @@ function IcView({ data, canManage, onScheduled }) {
                     <span className="pw-dot" /> Voting live
                   </span>
                 ) : (
-                  <span style={{ fontSize: '0.64rem', color: 'var(--text-faint)' }}>Scheduled</span>
+                  <span style={{ fontSize: 'var(--type-micro-size)', color: 'var(--text-faint)' }}>
+                    Scheduled
+                  </span>
                 )}
               </div>
               <div className="pw-company">

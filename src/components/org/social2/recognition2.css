@@ -39,7 +39,7 @@
 .rec2-card-title {
   font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   margin: 0 0 0.75rem;
@@ -209,7 +209,7 @@
   line-height: 1.2;
 }
 .rec2-recent-name {
-  font-size: 0.68rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
 }
 
@@ -274,7 +274,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.68rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   padding: 0.15rem 0.5rem;
   border-radius: var(--radius-md);
@@ -382,7 +382,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.66rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   padding: 0.15rem 0.5rem;
   border-radius: var(--radius-md);
@@ -407,7 +407,7 @@
 .rec2-cat-weight {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.66rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
 }
 .rec2-cat-score {
@@ -418,7 +418,7 @@
   color: var(--text-primary);
 }
 .rec2-cat-pending {
-  font-size: 0.68rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   font-style: italic;
   color: var(--text-muted);
@@ -444,7 +444,7 @@
   );
 }
 .rec2-caveat {
-  font-size: 0.68rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
   margin-top: 0.5rem;
   font-style: italic;
@@ -550,7 +550,7 @@
 .rec2-section-title {
   font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   margin: 0 0 0.6rem;

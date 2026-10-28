@@ -130,7 +130,7 @@ export function FundVsBenchmarkChart({ series, benchmarkLabel = 'Benchmark' }) {
             position: 'absolute',
             top: 4,
             right: 8,
-            fontSize: '0.66rem',
+            fontSize: 'var(--type-micro-size)',
             color: 'var(--text-muted)',
             textAlign: 'right',
             pointerEvents: 'none',

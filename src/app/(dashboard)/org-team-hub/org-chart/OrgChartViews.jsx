@@ -138,7 +138,10 @@ export function RadialView({
             style={{ left: x, top: y }}
             onClick={() => onOpen(m)}
           >
-            <span className={`ox-av ${clsOf(m)}`} style={{ width: 30, height: 30, fontSize: 9.5 }}>
+            <span
+              className={`ox-av ${clsOf(m)}`}
+              style={{ width: 30, height: 30, fontSize: 'var(--type-micro-size)' }}
+            >
               {initials(m.display_name)}
             </span>
             <span className="oxrad-nm">{m.display_name}</span>
@@ -164,7 +167,7 @@ export function RadialView({
                 <>
                   <span
                     className={`ox-av ${clsOf(head)}`}
-                    style={{ width: 26, height: 26, fontSize: 8.5 }}
+                    style={{ width: 26, height: 26, fontSize: 'var(--type-micro-size)' }}
                   >
                     {initials(head.display_name)}
                   </span>

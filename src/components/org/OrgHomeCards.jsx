@@ -407,7 +407,7 @@ function PMHomeCards({ summary, tasks, meetings, orgData }) {
                       <p
                         style={{
                           color: 'var(--text-muted)',
-                          fontSize: '0.625rem',
+                          fontSize: 'var(--type-micro-size)',
                           margin: '2px 0 0',
                         }}
                       >
@@ -417,7 +417,7 @@ function PMHomeCards({ summary, tasks, meetings, orgData }) {
                   </div>
                   <span
                     style={{
-                      fontSize: '0.5625rem',
+                      fontSize: 'var(--type-micro-size)',
                       fontWeight: 700,
                       padding: '2px 8px',
                       borderRadius: '4px',
@@ -519,7 +519,7 @@ function AnalystHomeCards({ summary, tasks, meetings, orgData }) {
                     <p
                       style={{
                         color: 'var(--text-muted)',
-                        fontSize: '0.625rem',
+                        fontSize: 'var(--type-micro-size)',
                         margin: '2px 0 0',
                       }}
                     >
@@ -528,7 +528,7 @@ function AnalystHomeCards({ summary, tasks, meetings, orgData }) {
                   </div>
                   <span
                     style={{
-                      fontSize: '0.5625rem',
+                      fontSize: 'var(--type-micro-size)',
                       fontWeight: 700,
                       padding: '2px 8px',
                       borderRadius: '4px',
@@ -578,7 +578,13 @@ function AnalystHomeCards({ summary, tasks, meetings, orgData }) {
                   >
                     {ev.title}
                   </p>
-                  <p style={{ color: 'var(--info)', fontSize: '0.625rem', margin: '2px 0 0' }}>
+                  <p
+                    style={{
+                      color: 'var(--info)',
+                      fontSize: 'var(--type-micro-size)',
+                      margin: '2px 0 0',
+                    }}
+                  >
                     {formatDate(ev.scheduled_at)}
                   </p>
                 </div>

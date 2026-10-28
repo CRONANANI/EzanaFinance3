@@ -136,7 +136,7 @@ export function AssignmentCard({ a, viewer, variant = 'compact', onOpen, onVerb 
           )}
           {verb && (
             <div className="asg2-card-foot">
-              <span className="asg2-card-meta" style={{ fontSize: '0.68rem' }}>
+              <span className="asg2-card-meta" style={{ fontSize: 'var(--type-micro-size)' }}>
                 {a.assignee_name &&
                   `${a.assignees?.length || 1} assignee${(a.assignees?.length || 1) === 1 ? '' : 's'}`}
               </span>

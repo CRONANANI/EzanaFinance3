@@ -99,7 +99,7 @@
 .thw-tkr {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 9.5px;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   letter-spacing: 0.04em;
   padding: 1px 5px;
@@ -330,7 +330,7 @@ html.light-mode .thw-card {
 .thw-org-switch-label {
   font-size: var(--type-micro-size);
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -392,7 +392,7 @@ html.light-mode .thw-card {
   flex-shrink: 0;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 10px;
+  font-size: var(--type-micro-size);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-sm);
   padding: 1px 6px;
@@ -504,7 +504,7 @@ html.light-mode .thw-cal-card {
 .thw-cal-date {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 10.5px;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--emerald);
@@ -670,7 +670,7 @@ html.light-mode .thw-cal-card {
   flex-shrink: 0;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 10px;
+  font-size: var(--type-micro-size);
   color: var(--text-faint);
 }
 .thw-hero-cta {
@@ -752,7 +752,7 @@ html.light-mode .thw-cal-card {
   justify-content: flex-end;
 }
 .thw-sector-tkrs .thw-tkr {
-  font-size: 8.5px;
+  font-size: var(--type-micro-size);
   padding: 1px 4px;
 }
 
@@ -931,7 +931,7 @@ html.light-mode .thw-chart-card {
 .thw-range {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 10.5px;
+  font-size: var(--type-micro-size);
   padding: 5px 11px;
   border-radius: var(--radius-md);
   background: transparent;
@@ -1010,7 +1010,7 @@ html.light-mode .thw-chart-card {
 .thw-chart-tip-date {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 9px;
+  font-size: var(--type-micro-size);
   letter-spacing: 0.04em;
   color: var(--text-faint);
 }
@@ -1020,7 +1020,7 @@ html.light-mode .thw-chart-card {
   margin: 8px 2px 6px;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 9.5px;
+  font-size: var(--type-micro-size);
   color: var(--text-ghost);
 }
 .thw-tick {
@@ -1211,7 +1211,7 @@ html.light-mode .thw-cal-card {
 }
 .thw-health-sub {
   color: var(--text-faint);
-  font-size: 0.68rem;
+  font-size: var(--type-micro-size);
 }
 .thw-health-link {
   color: var(--warning);

@@ -92,7 +92,7 @@ body.light-mode .ox-root {
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--ox-muted);
-  font-size: 10px;
+  font-size: var(--type-micro-size);
 }
 .ox-tape-val {
   color: var(--ox-text);
@@ -345,7 +345,7 @@ body.light-mode .ox-root {
   font-size: 13.5px;
 }
 .ox-node-rl {
-  font-size: 9.5px;
+  font-size: var(--type-micro-size);
   color: var(--ox-faint);
   margin-top: 1px;
   white-space: nowrap;
@@ -407,7 +407,7 @@ body.light-mode .ox-root {
 .ox-teamtag b {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 9.5px;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   color: var(--emerald);
   flex-shrink: 0;
@@ -418,7 +418,7 @@ body.light-mode .ox-root {
 .ox2-execchip {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 8px;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   letter-spacing: 0.08em;
   color: var(--ox-faint);
@@ -449,7 +449,7 @@ body.light-mode .ox-root {
   text-overflow: ellipsis;
 }
 .ox2-lead-rl {
-  font-size: 9px;
+  font-size: var(--type-micro-size);
   color: var(--ox-faint);
   margin-top: 1px;
   white-space: nowrap;
@@ -457,7 +457,7 @@ body.light-mode .ox-root {
   text-overflow: ellipsis;
 }
 .ox2-lead-empty {
-  font-size: 10.5px;
+  font-size: var(--type-micro-size);
   color: var(--ox-ghost);
   font-style: italic;
   padding: 3px 0;
@@ -483,7 +483,7 @@ body.light-mode .ox-root {
   width: 100%;
 }
 .ox2-member-nm {
-  font-size: 10.5px;
+  font-size: var(--type-micro-size);
   font-weight: 500;
   color: var(--ox-text);
   white-space: nowrap;
@@ -497,7 +497,7 @@ body.light-mode .ox-root {
   margin-left: auto;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 7.5px;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   letter-spacing: 0.1em;
   color: var(--ox-faint);
@@ -693,7 +693,7 @@ body.light-mode .ox-root {
   justify-self: end;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 9px;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   letter-spacing: 0.1em;
   background: none;
@@ -776,7 +776,7 @@ body.light-mode .ox-root {
   margin-left: auto;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 8px;
+  font-size: var(--type-micro-size);
   letter-spacing: 0.1em;
   color: var(--ox-ghost);
 }
@@ -960,7 +960,7 @@ body.light-mode .ox-root {
   margin-left: auto;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 8px;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   letter-spacing: 0.1em;
   padding: 1px 5px;
@@ -1185,7 +1185,7 @@ body.light-mode .ox-root {
   font-weight: 500;
 }
 .oxrad-rl {
-  font-size: 9px;
+  font-size: var(--type-micro-size);
   color: var(--ox-faint);
   white-space: nowrap;
   overflow: hidden;
@@ -1210,7 +1210,7 @@ body.light-mode .ox-root {
   align-items: center;
   gap: 8px;
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: var(--type-micro-size);
   font-variant-numeric: tabular-nums;
 }
 .oxrad-roi {

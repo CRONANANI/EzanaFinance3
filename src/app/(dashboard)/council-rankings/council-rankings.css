@@ -28,7 +28,7 @@
   margin: 0 0 8px;
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--emerald);
 }
@@ -80,7 +80,7 @@
 .crx-table th {
   font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-faint);
   background: var(--bg-secondary);
 }
@@ -112,7 +112,7 @@
   margin-left: 8px;
   padding: 1px 7px;
   border-radius: 999px;
-  font-size: 10px;
+  font-size: var(--type-micro-size);
   color: var(--warning);
   background: color-mix(in srgb, var(--warning) 12%, transparent);
 }
@@ -271,7 +271,7 @@
 .crx-toolbar-label {
   font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-faint);
   margin-right: 2px;
 }
@@ -432,6 +432,6 @@
     display: none;
   }
   .crx-contrib-inner {
-    font-size: 10px;
+    font-size: var(--type-micro-size);
   }
 }

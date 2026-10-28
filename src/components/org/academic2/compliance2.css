@@ -51,7 +51,7 @@
   border-radius: 9999px;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.66rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   background: var(--surface-card);
   color: var(--text-muted);

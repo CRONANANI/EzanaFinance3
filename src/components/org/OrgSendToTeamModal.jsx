@@ -188,10 +188,10 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
                   </div>
                   <div
                     style={{
-                      fontSize: '0.65rem',
+                      fontSize: 'var(--type-label-size)',
                       color: 'var(--text-muted)',
                       textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
+                      letterSpacing: 'var(--type-label-tracking)',
                     }}
                   >
                     {(attachment.kind || '').replace(/_/g, ' ')}
@@ -252,8 +252,8 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          fontSize: '0.65rem',
-                          fontWeight: 800,
+                          fontSize: 'var(--type-micro-size)',
+                          fontWeight: 700,
                           color: 'var(--emerald)',
                         }}
                       >
@@ -273,7 +273,9 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
                         >
                           {label}
                         </div>
-                        <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)' }}>
+                        <div
+                          style={{ fontSize: 'var(--type-micro-size)', color: 'var(--text-muted)' }}
+                        >
                           {m.sub_role || m.role?.replace('_', ' ')}
                         </div>
                       </div>

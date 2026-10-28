@@ -43,10 +43,6 @@
   "src/app/(dashboard)/company-research/page.js": {
     "heavy-weight": 1
   },
-  "src/app/(dashboard)/council-rankings/council-rankings.css": {
-    "sub-floor": 2,
-    "caps-tracking": 3
-  },
   "src/app/(dashboard)/for-the-quants/for-the-quants.css": {
     "sub-floor": 17
   },
@@ -110,28 +106,6 @@
   "src/app/(dashboard)/onboarding/onboarding.css": {
     "sub-floor": 1,
     "caps-tracking": 5
-  },
-  "src/app/(dashboard)/org-team-hub/org-chart/OrgChartViews.jsx": {
-    "sub-floor": 2
-  },
-  "src/app/(dashboard)/org-team-hub/org-chart/org-final.css": {
-    "sub-floor": 13
-  },
-  "src/app/(dashboard)/org-team-hub/org-pitches.css": {
-    "sub-floor": 4,
-    "caps-tracking": 1
-  },
-  "src/app/(dashboard)/org-team-hub/pitches/pitch-workspace.css": {
-    "sub-floor": 13,
-    "caps-tracking": 11
-  },
-  "src/app/(dashboard)/org-team-hub/team-hub-wire.css": {
-    "sub-floor": 9,
-    "caps-tracking": 1
-  },
-  "src/app/(dashboard)/org-trading/org-trading.css": {
-    "sub-floor": 12,
-    "caps-tracking": 2
   },
   "src/app/(dashboard)/partner-community/page.js": {
     "sub-floor": 5,
@@ -587,67 +561,6 @@
   },
   "src/components/learning/redesign/atoms.jsx": {
     "sub-floor": 1
-  },
-  "src/components/org/OrgHomeCards.jsx": {
-    "sub-floor": 5
-  },
-  "src/components/org/OrgMemberProfileModal.jsx": {
-    "sub-floor": 1
-  },
-  "src/components/org/OrgSendToTeamModal.jsx": {
-    "sub-floor": 3,
-    "heavy-weight": 1
-  },
-  "src/components/org/academic2/AssignmentCard.jsx": {
-    "sub-floor": 1
-  },
-  "src/components/org/academic2/assignments2.css": {
-    "sub-floor": 8
-  },
-  "src/components/org/academic2/cohort2.css": {
-    "caps-tracking": 6
-  },
-  "src/components/org/academic2/compliance2.css": {
-    "sub-floor": 1
-  },
-  "src/components/org/analytics2/CashTile.jsx": {
-    "sub-floor": 1
-  },
-  "src/components/org/analytics2/FundVsBenchmarkChart.jsx": {
-    "sub-floor": 1
-  },
-  "src/components/org/analytics2/analytics.css": {
-    "sub-floor": 13
-  },
-  "src/components/org/competitions/competition-trophies.css": {
-    "caps-tracking": 1
-  },
-  "src/components/org/competitions/competitions.css": {
-    "sub-floor": 1,
-    "caps-tracking": 4
-  },
-  "src/components/org/orgchart2/org-chart.css": {
-    "sub-floor": 5,
-    "caps-tracking": 1
-  },
-  "src/components/org/pitches/PitchWorkspace.jsx": {
-    "sub-floor": 1
-  },
-  "src/components/org/social2/meetings2.css": {
-    "sub-floor": 8,
-    "caps-tracking": 3
-  },
-  "src/components/org/social2/recognition2.css": {
-    "sub-floor": 6,
-    "caps-tracking": 2
-  },
-  "src/components/org/social2/research2.css": {
-    "sub-floor": 1,
-    "caps-tracking": 5
-  },
-  "src/components/org/social2/social.css": {
-    "sub-floor": 5,
-    "caps-tracking": 1
   },
   "src/components/partner/badges.css": {
     "sub-floor": 6,

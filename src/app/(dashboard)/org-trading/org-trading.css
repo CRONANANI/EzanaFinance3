@@ -210,7 +210,7 @@
   border: 1px solid var(--border-secondary);
   border-radius: 999px;
   color: var(--text-secondary);
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -233,7 +233,7 @@
   gap: 0.25rem;
   padding: 1px 6px;
   border-radius: var(--radius-sm);
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
 }
 
@@ -339,7 +339,7 @@
   font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
   margin-bottom: 0.4rem;
 }
@@ -529,7 +529,7 @@
 }
 
 .ot-inbox-item-meta {
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
   margin-bottom: 0.2rem;
 }
@@ -682,7 +682,7 @@ html.light-mode .ctd-card {
   display: inline-block;
   font-size: 0.6875rem;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--emerald-text, var(--positive-bright));
 }
@@ -765,7 +765,7 @@ html.light-mode .ctd-card {
   border-radius: 9999px;
   background: var(--amber, var(--amber));
   color: #fff;
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
 }
 
@@ -1351,7 +1351,7 @@ html.light-mode .ctd-kpi {
   margin-top: 0.15rem;
 }
 .ot-dossier-pl-bench {
-  font-size: 0.68rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
   margin-top: 0.35rem;
 }
@@ -1449,7 +1449,7 @@ html.light-mode .ctd-kpi {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-size: 0.62rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   color: #fff;
   background: var(--org-primary, var(--emerald));
@@ -1461,7 +1461,7 @@ html.light-mode .ctd-kpi {
   color: var(--text-primary);
 }
 .ot-routed-role {
-  font-size: 0.64rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
 }
 
@@ -1475,7 +1475,7 @@ html.light-mode .ctd-kpi {
   line-height: 1.2;
 }
 .ot-flag-color-btn span small {
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   font-weight: 500;
   opacity: 0.8;
 }
@@ -1508,7 +1508,7 @@ html.light-mode .ctd-kpi {
 }
 
 .ot-char-hint {
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
   margin-top: 0.25rem;
   text-align: right;
@@ -1541,7 +1541,7 @@ html.light-mode .ctd-kpi {
   justify-content: space-between;
 }
 .ot-dossier-footnote {
-  font-size: 0.68rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
 }
 .ot-dossier-footer-actions {
@@ -1563,7 +1563,7 @@ html.light-mode .ctd-kpi {
   flex-wrap: wrap;
 }
 .ot-status-pill {
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   letter-spacing: 0.05em;
   padding: 2px 7px;
@@ -1610,7 +1610,7 @@ html.light-mode .ctd-kpi {
   gap: 0.35rem;
 }
 .ot-evidence-chip {
-  font-size: 0.66rem;
+  font-size: var(--type-micro-size);
   padding: 2px 8px;
   border-radius: 999px;
   background: transparent;

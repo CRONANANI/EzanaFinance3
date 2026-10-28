@@ -30,7 +30,7 @@
   margin: 0 0 6px;
   font-size: 11.5px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--org-ink, var(--emerald));
 }
@@ -534,7 +534,7 @@
   gap: 5px;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-faint);
 }
@@ -617,7 +617,7 @@
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-faint);
 }
 .pcx-rubric-row {
@@ -1019,7 +1019,7 @@
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-faint);
   margin: 18px 0 10px;
 }
@@ -1197,7 +1197,7 @@
 .pcx-you {
   padding: 1px 7px;
   border-radius: 999px;
-  font-size: 10px;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   background: var(--org-primary, var(--emerald));
   color: var(--org-on-primary, #fff);

@@ -52,10 +52,10 @@ function SectionTitle({ children }) {
     <p
       className="org-profile-section-title"
       style={{
-        fontSize: '0.5625rem',
+        fontSize: 'var(--type-label-size)',
         fontWeight: 700,
         textTransform: 'uppercase',
-        letterSpacing: '0.08em',
+        letterSpacing: 'var(--type-label-tracking)',
         margin: '0 0 0.5rem',
       }}
     >

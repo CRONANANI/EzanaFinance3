@@ -26,7 +26,7 @@
 }
 .c2-eyebrow {
   font-size: 0.7rem;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--emerald-text);
   font-weight: 700;
@@ -197,7 +197,7 @@
 .c2-stat-label {
   font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
   margin-top: 0.2rem;
 }
@@ -230,7 +230,7 @@
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-secondary);
 }
 .c2-col-count {
@@ -333,7 +333,7 @@
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
 }
 .c2-lane-item {
   border-top: 1px solid var(--border-primary);
@@ -451,7 +451,7 @@
 .c2-table th {
   font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
   cursor: pointer;
   user-select: none;
@@ -549,7 +549,7 @@
 .c2-label {
   font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-label-tracking);
   color: var(--text-muted);
   font-weight: 700;
   margin: 1rem 0 0.4rem;

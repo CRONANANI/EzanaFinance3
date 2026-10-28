@@ -308,7 +308,7 @@ html.light-mode .asg2-metric {
   border: none;
   cursor: pointer;
   font-family: inherit;
-  font-size: 0.64rem;
+  font-size: var(--type-micro-size);
   font-weight: 600;
   line-height: 1.2;
   padding: 2px 5px;
@@ -329,7 +329,7 @@ html.light-mode .asg2-metric {
 .asg2-event-more {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.62rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   color: var(--text-muted);
   background: none;
@@ -350,7 +350,7 @@ html.light-mode .asg2-metric {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.68rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
 }
 .asg2-legend i {
@@ -463,7 +463,7 @@ html.light-mode .asg2-metric {
   align-items: center;
   gap: 0.6rem;
   flex-wrap: wrap;
-  font-size: 0.68rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
 }
 .asg2-card-meta .asg2-due {
@@ -488,7 +488,7 @@ html.light-mode .asg2-metric {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.63rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: capitalize;
@@ -615,7 +615,7 @@ html.light-mode .asg2-metric {
   justify-content: center;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.58rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   color: var(--text-primary);
   background: color-mix(in srgb, var(--emerald) 20%, var(--surface-card, transparent));
@@ -1080,7 +1080,7 @@ html.light-mode .asg2-metric {
 .asg2-comment-time {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
 }
 .asg2-comment-body {
@@ -1128,7 +1128,7 @@ html.light-mode .asg2-metric {
 .asg2-attach-size {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.66rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
   margin-left: auto;
   flex-shrink: 0;

@@ -184,7 +184,7 @@
   font-weight: 700;
 }
 .mt2-mode__desc {
-  font-size: 0.68rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
   margin-top: 0.1rem;
 }
@@ -308,7 +308,7 @@
   white-space: nowrap;
 }
 .mt2-queue-meta {
-  font-size: 0.65rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
   text-transform: capitalize;
 }
@@ -386,7 +386,7 @@
 .mt2-strip-title {
   font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -459,7 +459,7 @@
   white-space: nowrap;
 }
 .mt2-mcard__meta {
-  font-size: 0.64rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -555,7 +555,7 @@
 .mt2-section__title {
   font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   margin: 0 0 0.6rem;
@@ -592,7 +592,7 @@
   font-weight: 600;
 }
 .mt2-agenda-sub {
-  font-size: 0.68rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
   margin-top: 0.1rem;
 }
@@ -678,7 +678,7 @@
   font-weight: 600;
 }
 .mt2-att-role {
-  font-size: 0.66rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
   text-transform: capitalize;
 }
@@ -688,7 +688,7 @@
   flex: none;
 }
 .mt2-rsvp__btn {
-  font-size: 0.64rem;
+  font-size: var(--type-micro-size);
   font-weight: 700;
   padding: 0.2rem 0.5rem;
   border-radius: 9999px;
@@ -785,7 +785,7 @@
 .mt2-tally-legend {
   display: flex;
   gap: 0.8rem;
-  font-size: 0.68rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
 }
 
@@ -799,7 +799,7 @@
 .mt2-ai__title {
   font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--emerald-text);
   margin: 0 0 0.55rem;
@@ -951,7 +951,7 @@
   font-weight: 600;
 }
 .mt2-preread__note {
-  font-size: 0.68rem;
+  font-size: var(--type-micro-size);
   color: var(--text-muted);
   margin-top: 0.15rem;
 }

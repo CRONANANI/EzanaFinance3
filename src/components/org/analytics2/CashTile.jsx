@@ -25,7 +25,12 @@ export function CashTile({ cash }) {
           {cash.pct_of_book == null ? NA : `${Number(cash.pct_of_book).toFixed(1)}%`}
         </div>
         {cash.ips_min_pct != null && (
-          <div style={{ fontSize: '0.62rem', color: 'var(--text-faint, var(--text-muted))' }}>
+          <div
+            style={{
+              fontSize: 'var(--type-micro-size)',
+              color: 'var(--text-faint, var(--text-muted))',
+            }}
+          >
             min {Number(cash.ips_min_pct).toFixed(0)}%
           </div>
         )}
