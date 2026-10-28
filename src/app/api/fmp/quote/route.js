@@ -5,92 +5,79 @@ import {
   fetchAllBulkQuotesAlpha,
   getAlphaVantageApiKey,
 } from '@/lib/alpha-vantage';
-import { fetchFmpQuote, normalizeQuoteSymbol } from '@/lib/trading/server-quote';
+import {
+  fetchFmpQuote,
+  fetchFmpBatchQuotes,
+  normalizeQuoteSymbol,
+} from '@/lib/trading/server-quote';
 
 export const dynamic = 'force-dynamic';
 
-const normalizeSymbol = normalizeQuoteSymbol;
+function fromAv(avQ) {
+  return {
+    symbol: avQ.symbol,
+    price: avQ.price,
+    change: avQ.change,
+    changesPercentage: avQ.changePercent,
+    previousClose: avQ.prevClose,
+    open: avQ.open,
+    _source: 'alpha_vantage',
+  };
+}
 
 export const GET = withApiGuard(
   async (request) => {
     const { searchParams } = new URL(request.url);
-    const single = normalizeSymbol(searchParams.get('symbol') || '');
+    const single = normalizeQuoteSymbol(searchParams.get('symbol') || '');
     const manyRaw = (searchParams.get('symbols') || '').trim();
 
     if (!single && !manyRaw) {
       return NextResponse.json({ error: 'symbol(s) required' }, { status: 400 });
     }
 
+    /* Single symbol: FMP, then Alpha Vantage. */
     if (single && !manyRaw) {
-      if (getAlphaVantageApiKey()) {
-        try {
-          const avQuote = await fetchSingleGlobalQuote(single);
-          if (avQuote && avQuote.price > 0) {
-            return NextResponse.json({
-              symbol: avQuote.symbol,
-              price: avQuote.price,
-              change: avQuote.change,
-              changesPercentage: avQuote.changePercent,
-              previousClose: avQuote.prevClose,
-              open: avQuote.open,
-              _source: 'alpha_vantage',
-            });
-          }
-        } catch (err) {
-          console.warn(`[quote] AV failed for ${single}:`, err?.message);
-        }
-      }
-
       const fmpResult = await fetchFmpQuote(single);
       if (fmpResult) return NextResponse.json(fmpResult);
 
+      if (getAlphaVantageApiKey()) {
+        try {
+          const avQuote = await fetchSingleGlobalQuote(single);
+          if (avQuote && avQuote.price > 0) return NextResponse.json(fromAv(avQuote));
+        } catch (err) {
+          console.warn(`[quote] AV fallback failed for ${single}:`, err?.message);
+        }
+      }
       return NextResponse.json({ symbol: single, error: 'no price available' });
     }
 
-    const symbols = manyRaw
-      .split(',')
-      .map((s) => normalizeSymbol(s))
-      .filter(Boolean);
+    /* Many symbols: one FMP batch call, AV bulk only for what FMP missed. */
+    const symbols = [...new Set(manyRaw.split(',').map(normalizeQuoteSymbol).filter(Boolean))];
+    const fmpMap = await fetchFmpBatchQuotes(symbols);
 
+    const missing = symbols.filter((s) => !fmpMap[s]);
     let avQuotes = {};
-    if (getAlphaVantageApiKey()) {
+    if (missing.length && getAlphaVantageApiKey()) {
       try {
-        avQuotes = await fetchAllBulkQuotesAlpha(symbols);
+        avQuotes = await fetchAllBulkQuotesAlpha(missing);
       } catch (err) {
-        console.warn('[quote] AV bulk quotes failed:', err?.message);
+        console.warn('[quote] AV bulk fallback failed:', err?.message);
       }
     }
 
     const quotes = [];
     const priceMap = {};
-
     for (const sym of symbols) {
-      const avQ = avQuotes[sym];
-      if (avQ && avQ.price > 0) {
-        quotes.push({
-          symbol: sym,
-          price: avQ.price,
-          change: avQ.change,
-          changesPercentage: avQ.changePercent,
-          previousClose: avQ.prevClose,
-          open: avQ.open,
-        });
-        priceMap[sym] = {
-          price: avQ.price,
-          change: avQ.change,
-          changesPercentage: avQ.changePercent,
-        };
-      } else {
-        const fmpQ = await fetchFmpQuote(sym);
-        if (fmpQ) {
-          quotes.push(fmpQ);
-          priceMap[sym] = {
-            price: fmpQ.price,
-            change: fmpQ.change,
-            changesPercentage: fmpQ.changesPercentage,
-          };
-        }
-      }
+      const q =
+        fmpMap[sym] ||
+        (avQuotes[sym]?.price > 0 ? fromAv({ ...avQuotes[sym], symbol: sym }) : null);
+      if (!q) continue;
+      quotes.push(q);
+      priceMap[sym] = {
+        price: q.price,
+        change: q.change,
+        changesPercentage: q.changesPercentage,
+      };
     }
 
     return NextResponse.json({ quotes, priceMap });
