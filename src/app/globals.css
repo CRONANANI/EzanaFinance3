@@ -3193,3 +3193,37 @@ html:has(.landing-page) .landing-footer button {
   padding: 0.05rem 0.35rem;
   margin-left: 0.4rem;
 }
+
+/* ── Main nav sizing ─────────────────────────────────────────────
+   One icon size across both clusters: profile / settings / logout render
+   as bare glyphs at the bell + checklist size (1.35rem in a 44px tap box,
+   hover tint on the box). The logo sits just above that size. Scoped to
+   .main-nav so the landing, Echo and partner navs are unchanged. */
+.main-nav .nav-brand .nav-logo-img--wing {
+  max-height: 30px !important;
+}
+.main-nav .nav-action-inner,
+.main-nav .nav-action-tap:hover .nav-action-inner {
+  width: 36px;
+  height: 36px;
+  border: none !important;
+  background: transparent !important;
+}
+.main-nav .nav-action-inner i {
+  font-size: 1.35rem !important;
+  line-height: 1;
+}
+.main-nav .nav-action-inner.nav-profile-icon,
+.main-nav .nav-action-inner.nav-profile-icon i,
+.main-nav .nav-action-inner.nav-settings-gear,
+.main-nav .nav-action-inner.nav-settings-gear i {
+  color: var(--emerald-text) !important;
+}
+.main-nav .nav-action-inner.nav-logout-btn,
+.main-nav .nav-action-inner.nav-logout-btn i {
+  color: var(--negative) !important;
+}
+.main-nav .nav-action-tap:has(.nav-logout-btn):hover,
+.main-nav .nav-action-tap:has(.nav-logout-btn):focus-visible {
+  background: color-mix(in srgb, var(--negative) 8%, transparent);
+}
