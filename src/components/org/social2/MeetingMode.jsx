@@ -938,8 +938,8 @@ function RecorderPopover({ onClose }) {
     <div className="mt2-popover" onClick={(e) => e.stopPropagation()}>
       <p className="mt2-popover__title">Recorder integrations</p>
       <p className="mt2-popover__desc">
-        No meeting recorders are connected yet. Connecting Zoom, Otter.ai, Fireflies or Read.ai
-        requires an account-level OAuth setup that isn&apos;t wired in this build.
+        No meeting recorders are connected yet. Recorder integrations are not available for your
+        council yet.
       </p>
       {(integrations || []).map((it) => (
         <div className="mt2-prov" key={it.provider}>

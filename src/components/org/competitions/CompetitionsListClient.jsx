@@ -54,7 +54,12 @@ function CreateModal({ onClose, onCreated }) {
       const res = await fetch('/api/org/pitch-competitions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim(), format, theme: theme.trim() || null, description: description.trim() || null }),
+        body: JSON.stringify({
+          name: name.trim(),
+          format,
+          theme: theme.trim() || null,
+          description: description.trim() || null,
+        }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -80,7 +85,13 @@ function CreateModal({ onClose, onCreated }) {
         </div>
         <label className="pcx-field">
           <span className="pcx-field-label">Name</span>
-          <input className="pcx-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Spring Stock Pitch Invitational" autoFocus />
+          <input
+            className="pcx-input"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Spring Stock Pitch Invitational"
+            autoFocus
+          />
         </label>
         <label className="pcx-field">
           <span className="pcx-field-label">Format</span>
@@ -94,18 +105,32 @@ function CreateModal({ onClose, onCreated }) {
         </label>
         <label className="pcx-field">
           <span className="pcx-field-label">Theme (optional)</span>
-          <input className="pcx-input" value={theme} onChange={(e) => setTheme(e.target.value)} placeholder="Long thesis, consumer staples" />
+          <input
+            className="pcx-input"
+            value={theme}
+            onChange={(e) => setTheme(e.target.value)}
+            placeholder="Long thesis, consumer staples"
+          />
         </label>
         <label className="pcx-field">
           <span className="pcx-field-label">Description (optional)</span>
-          <textarea className="pcx-input pcx-textarea" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+          <textarea
+            className="pcx-input pcx-textarea"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+          />
         </label>
         {error ? <p className="pcx-error">{error}</p> : null}
         <div className="pcx-modal-foot">
           <button type="button" className="pcx-btn" onClick={onClose}>
             Cancel
           </button>
-          <button type="submit" className="pcx-btn pcx-btn--primary" disabled={busy || !name.trim()}>
+          <button
+            type="submit"
+            className="pcx-btn pcx-btn--primary"
+            disabled={busy || !name.trim()}
+          >
             {busy ? <Loader2 size={15} className="pcx-spin" /> : null} Create competition
           </button>
         </div>
@@ -114,7 +139,7 @@ function CreateModal({ onClose, onCreated }) {
   );
 }
 
-export function CompetitionsListClient({ initial, canManage }) {
+export function CompetitionsListClient({ initial, joinable = [], canManage }) {
   const router = useRouter();
   const [competitions, setCompetitions] = useState(initial || []);
   const [creating, setCreating] = useState(false);
@@ -134,7 +159,7 @@ export function CompetitionsListClient({ initial, canManage }) {
           <h1 className="pcx-h1">Pitch competitions</h1>
           <p className="pcx-lead">
             Stand up an inter-university stock-pitch competition, build its rounds and rooms, invite
-            councils, line up judges, and set the rubric — all from one place.
+            councils, line up judges, and set the rubric, all from one place.
           </p>
         </div>
         <div className="pcx-cc-links" style={{ marginBottom: 0 }}>
@@ -142,7 +167,11 @@ export function CompetitionsListClient({ initial, canManage }) {
             <Trophy size={15} /> Council ranking
           </Link>
           {canManage ? (
-            <button type="button" className="pcx-btn pcx-btn--primary" onClick={() => setCreating(true)}>
+            <button
+              type="button"
+              className="pcx-btn pcx-btn--primary"
+              onClick={() => setCreating(true)}
+            >
               <Plus size={16} /> New competition
             </button>
           ) : null}
@@ -154,11 +183,17 @@ export function CompetitionsListClient({ initial, canManage }) {
           <Trophy size={26} aria-hidden="true" />
           <p>No competitions yet.</p>
           {canManage ? (
-            <button type="button" className="pcx-btn pcx-btn--primary" onClick={() => setCreating(true)}>
+            <button
+              type="button"
+              className="pcx-btn pcx-btn--primary"
+              onClick={() => setCreating(true)}
+            >
               <Plus size={16} /> Create your first competition
             </button>
           ) : (
-            <p className="pcx-muted">Your org isn’t hosting or entered in any competitions yet.</p>
+            <p className="pcx-muted">
+              Your council is not hosting or entered in any competitions yet.
+            </p>
           )}
         </div>
       ) : (
@@ -167,7 +202,11 @@ export function CompetitionsListClient({ initial, canManage }) {
             <Link key={c.id} href={`/org-competitions/${c.slug}`} className="pcx-card">
               <div className="pcx-card-top">
                 <StatusPill status={c.status} />
-                {c.isHost ? <span className="pcx-tag">Host</span> : <span className="pcx-tag pcx-tag--muted">Participant</span>}
+                {c.isHost ? (
+                  <span className="pcx-tag">Host</span>
+                ) : (
+                  <span className="pcx-tag pcx-tag--muted">Participant</span>
+                )}
               </div>
               <h2 className="pcx-card-name">{c.name}</h2>
               {c.theme ? <p className="pcx-card-theme">{c.theme}</p> : null}
@@ -183,6 +222,36 @@ export function CompetitionsListClient({ initial, canManage }) {
           ))}
         </div>
       )}
+
+      {joinable.length > 0 ? (
+        <section className="pcx-joinable">
+          <h2 className="pcx-h2">Open to join</h2>
+          <div className="pcx-grid">
+            {joinable.map((c) => (
+              <Link key={c.id} href={`/org-competitions/${c.slug}/join`} className="pcx-card">
+                <div className="pcx-card-top">
+                  <StatusPill status={c.status} />
+                </div>
+                <h3 className="pcx-card-name">{c.name}</h3>
+                {c.theme ? <p className="pcx-card-theme">{c.theme}</p> : null}
+                <div className="pcx-card-foot">
+                  <span className="pcx-card-meta">
+                    <Users size={13} aria-hidden="true" /> {c.format.replace('_', ' ')}
+                  </span>
+                  {c.starts_at ? (
+                    <span
+                      className="pcx-card-meta"
+                      style={{ fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums' }}
+                    >
+                      {new Date(c.starts_at).toLocaleDateString()}
+                    </span>
+                  ) : null}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {creating ? <CreateModal onClose={() => setCreating(false)} onCreated={onCreated} /> : null}
     </div>

@@ -50,7 +50,9 @@ export async function loadStructure(supabase, competitionId) {
       .order('starts_at', { ascending: true, nullsFirst: true }),
     supabase
       .from('pitch_teams')
-      .select('id, competition_id, org_id, team_name, ticker, side, status, room_id, invite_email, created_at')
+      .select(
+        'id, competition_id, org_id, team_name, ticker, side, status, room_id, invite_email, created_at',
+      )
       .eq('competition_id', competitionId)
       .order('created_at', { ascending: true }),
     supabase
@@ -113,10 +115,30 @@ export async function loadStructure(supabase, competitionId) {
       rounds: rounds.length,
       rooms: rooms.length,
       teams: teams.length,
-      teamsRegistered: teams.filter((t) => t.status === 'registered' || t.status === 'submitted').length,
+      teamsRegistered: teams.filter((t) => t.status === 'registered' || t.status === 'submitted')
+        .length,
       teamsSubmitted: teams.filter((t) => t.status === 'submitted').length,
       judges: judges.length,
       unassignedTeams: teams.filter((t) => !t.room_id).length,
     },
   };
+}
+
+/**
+ * Open competitions hosted by OTHER organizations that the caller's org has not
+ * entered yet: the "open to join" list on the index. Takes the service-role
+ * client because RLS hides competitions an org is not part of; returns only
+ * the public shape (no rosters, no scores). Never throws.
+ */
+export async function loadJoinableCompetitions(admin, orgId, visibleIds = []) {
+  const { data, error } = await admin
+    .from('pitch_competitions')
+    .select('id, host_org_id, name, slug, format, theme, status, starts_at, ends_at, public_blurb')
+    .eq('status', 'open')
+    .neq('host_org_id', orgId)
+    .order('starts_at', { ascending: true, nullsFirst: false })
+    .limit(50);
+  if (error || !data) return [];
+  const seen = new Set(visibleIds);
+  return data.filter((c) => !seen.has(c.id));
 }

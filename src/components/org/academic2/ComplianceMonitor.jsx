@@ -536,24 +536,12 @@ export function PersonalTradingPanel() {
       <div className="cmp2-flag">
         <Users aria-hidden />
         <div>
-          <h3>Personal trading disclosures — not configured</h3>
+          <h3>Personal trading disclosures</h3>
           <p>
-            There is no personal-trade disclosure table in this workspace yet, so there is nothing
-            to display. This tab is intentionally empty rather than showing placeholder data.
+            Pre-clearance and disclosure of members&apos; personal trades is coming to Ezana. Your
+            council&apos;s IPS rules and blackout list already apply to fund trades on the Trading
+            Desk.
           </p>
-          <p>To ship this feature, a backing store and endpoint would be needed, e.g.:</p>
-          <ul>
-            <li>
-              <code>org_personal_trades</code> — member, ticker, side, size, trade date, status
-            </li>
-            <li>
-              A pre-clearance workflow tied to the <code>prohibited_ticker</code> / blackout rules
-            </li>
-            <li>
-              An API route under <code>/api/org/compliance/personal-trades</code>
-            </li>
-          </ul>
-          <p>Flagged as not buildable with current schema — no data has been fabricated.</p>
         </div>
       </div>
     </div>
@@ -561,7 +549,7 @@ export function PersonalTradingPanel() {
 }
 
 /* ========================================================================= */
-/* Attestations — no backing table (honest-empty + flag)                     */
+/* Attestations — not yet available (product empty state)                    */
 /* ========================================================================= */
 export function AttestationsPanel() {
   return (
@@ -569,22 +557,11 @@ export function AttestationsPanel() {
       <div className="cmp2-flag">
         <BadgeCheck aria-hidden />
         <div>
-          <h3>Compliance attestations — not configured</h3>
+          <h3>Compliance attestations</h3>
           <p>
-            There is no attestations / sign-off table in this workspace yet. Rather than fabricate
-            sign-off records, this tab honestly reports that the feature is not wired up.
+            Periodic code-of-conduct and IPS sign-offs are coming to Ezana. Until then, record
+            attestations in your council&apos;s existing process.
           </p>
-          <p>To ship this feature, the following would be needed:</p>
-          <ul>
-            <li>
-              <code>org_attestations</code> — member, attestation type, period, signed_at, status
-            </li>
-            <li>A periodic (e.g. quarterly) sign-off cycle with reminders</li>
-            <li>
-              An API route under <code>/api/org/compliance/attestations</code>
-            </li>
-          </ul>
-          <p>Flagged as not buildable with current schema — no data has been fabricated.</p>
         </div>
       </div>
     </div>

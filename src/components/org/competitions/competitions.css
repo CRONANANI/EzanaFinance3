@@ -40,6 +40,16 @@
   font-weight: 700;
   color: var(--text-primary);
 }
+.pcx-joinable {
+  margin-top: 2rem;
+}
+.pcx-h2 {
+  margin: 0 0 1rem;
+  font-size: var(--type-section-size);
+  font-weight: var(--type-section-weight);
+  letter-spacing: var(--type-section-tracking);
+  color: var(--text-primary);
+}
 .pcx-lead {
   margin: 8px 0 0;
   max-width: 620px;
