@@ -447,25 +447,8 @@ export default function PartnerCommunityPage() {
                   { name: 'Platinum', color: '#e5e4e2' },
                   { name: 'Diamond', color: '#b9f2ff' },
                 ].map((t) => (
-                  <div
-                    key={t.name}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.375rem',
-                      fontSize: '0.5625rem',
-                      color: '#6b7280',
-                      fontWeight: 600,
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: '8px',
-                        height: '8px',
-                        borderRadius: '50%',
-                        background: t.color,
-                      }}
-                    />
+                  <div key={t.name} className="badges-legend-item">
+                    <div className="badges-legend-dot" style={{ background: t.color }} />
                     <span>{t.name}</span>
                   </div>
                 ))}
@@ -567,52 +550,19 @@ export default function PartnerCommunityPage() {
                       />
                     </div>
                     <div
-                      style={{
-                        fontSize: '0.5rem',
-                        fontWeight: 800,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.1em',
-                        marginBottom: '0.25rem',
-                        color: badge.earned ? badge.tier_color : '#4b5563',
-                      }}
+                      className="badge-card-tier"
+                      style={{ color: badge.earned ? badge.tier_color : '#4b5563' }}
                     >
                       {badge.tier_name}
                     </div>
-                    <div
-                      style={{
-                        fontSize: '0.8125rem',
-                        fontWeight: 700,
-                        color: '#e2e8f0',
-                        marginBottom: '0.25rem',
-                      }}
-                    >
-                      {badge.badge_name}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '0.625rem',
-                        color: '#6b7280',
-                        lineHeight: 1.4,
-                        marginBottom: '0.375rem',
-                      }}
-                    >
-                      {badge.badge_description}
-                    </div>
+                    <div className="badge-card-name">{badge.badge_name}</div>
+                    <div className="badge-card-desc">{badge.badge_description}</div>
                     {badge.earned && badge.earnedAt ? (
-                      <div style={{ fontSize: '0.5rem', color: '#4b5563' }}>
+                      <div className="badge-card-date">
                         Earned {new Date(badge.earnedAt).toLocaleDateString()}
                       </div>
                     ) : (
-                      <div
-                        style={{
-                          fontSize: '0.5625rem',
-                          color: '#4b5563',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.25rem',
-                          justifyContent: 'center',
-                        }}
-                      >
+                      <div className="badge-card-locked" style={{ justifyContent: 'center' }}>
                         <i className="bi bi-lock-fill" /> Locked
                       </div>
                     )}

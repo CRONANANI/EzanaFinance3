@@ -107,12 +107,8 @@
     "sub-floor": 1,
     "caps-tracking": 5
   },
-  "src/app/(dashboard)/partner-community/page.js": {
-    "sub-floor": 5,
-    "heavy-weight": 1
-  },
   "src/app/(dashboard)/partner.css": {
-    "sub-floor": 22
+    "sub-floor": 1
   },
   "src/app/(dashboard)/pricing/pricing.css": {
     "sub-floor": 3,
@@ -562,10 +558,6 @@
   "src/components/learning/redesign/atoms.jsx": {
     "sub-floor": 1
   },
-  "src/components/partner/badges.css": {
-    "sub-floor": 6,
-    "caps-tracking": 1
-  },
   "src/components/polymarket/trader-profile-modal.css": {
     "sub-floor": 2,
     "caps-tracking": 1
@@ -670,9 +662,6 @@
   },
   "src/components/settings/org/OrgBranding.jsx": {
     "sub-floor": 1
-  },
-  "src/components/settings/partner-applications-panel.css": {
-    "caps-tracking": 1
   },
   "src/components/settings/payouts-panel.css": {
     "caps-tracking": 1
