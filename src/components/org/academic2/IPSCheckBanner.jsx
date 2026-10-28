@@ -1,6 +1,5 @@
 'use client';
 
-import { ShieldAlert, TriangleAlert } from 'lucide-react';
 import './academic.css';
 import './compliance2.css';
 
@@ -20,7 +19,11 @@ export function IPSCheckBanner({ result }) {
   return (
     <div className={`ac3-ips-banner ${cls} ac3-root`} role="alert">
       <strong style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-        {blocked ? <ShieldAlert size={16} aria-hidden /> : <TriangleAlert size={16} aria-hidden />}
+        {blocked ? (
+          <i className="bi bi-shield-exclamation" aria-hidden="true" />
+        ) : (
+          <i className="bi bi-exclamation-triangle" aria-hidden="true" />
+        )}
         {blocked
           ? 'IPS violation — this would breach a HARD policy limit and is blocked.'
           : 'IPS warning — allowed, but flagged against a SOFT policy limit.'}

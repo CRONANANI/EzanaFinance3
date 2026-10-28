@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Download } from 'lucide-react';
 import { useOrg } from '@/contexts/OrgContext';
 import { PeriodSelector } from './PeriodSelector';
 import { SinceLastMeetingStrip } from './SinceLastMeetingStrip';
@@ -140,7 +139,8 @@ export function FundDashboard({ initialData = null }) {
           <PeriodSelector value={period} onChange={onPeriod} disabled={refetching} />
           {canReport && (
             <button type="button" className="an4-btn" onClick={onExport} disabled={exporting}>
-              <Download size={15} aria-hidden /> {exporting ? 'Exporting…' : 'Export'}
+              <i className="bi bi-download" aria-hidden="true" />{' '}
+              {exporting ? 'Exporting…' : 'Export'}
             </button>
           )}
         </div>

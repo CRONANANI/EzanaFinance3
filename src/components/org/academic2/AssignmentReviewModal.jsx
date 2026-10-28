@@ -2,20 +2,6 @@
 
 import { stripDemoLabel } from '@/lib/org-display';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  X,
-  Send,
-  Check,
-  RotateCcw,
-  Play,
-  Upload,
-  Paperclip,
-  History,
-  Award,
-  Download,
-  Trash2,
-  FileText,
-} from 'lucide-react';
 import { typeMeta, STATUS_LABEL, fmtDue } from './AssignmentCard';
 
 function ts(iso) {
@@ -224,7 +210,7 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
 
   const a = detail?.assignment;
   const viewer = detail?.viewer || {};
-  const { label, Icon } = a ? typeMeta(a.type) : { label: '', Icon: () => null };
+  const { label, icon } = a ? typeMeta(a.type) : { label: '', icon: '' };
   const status = a?.overdue ? 'overdue' : a?.status;
 
   return (
@@ -241,7 +227,7 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
             {a && (
               <div className="asg2-card-top" style={{ marginBottom: '0.5rem' }}>
                 <span className="asg2-type" data-type={a.type}>
-                  <Icon size={12} aria-hidden="true" /> {label}
+                  <i className={`bi ${icon}`} aria-hidden="true" /> {label}
                 </span>
                 <span className="asg2-status" data-status={status}>
                   {STATUS_LABEL[status] || status}
@@ -259,7 +245,7 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
             )}
           </div>
           <button type="button" className="asg2-icon-btn" onClick={onClose} aria-label="Close">
-            <X size={16} />
+            <i className="bi bi-x-lg" aria-hidden="true" />
           </button>
         </div>
 
@@ -288,8 +274,8 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
             {/* Attachments — real upload/list/download/delete via signed URLs. */}
             <div>
               <p className="asg2-section-label">
-                <Paperclip
-                  size={12}
+                <i
+                  className="bi bi-paperclip"
                   aria-hidden="true"
                   style={{ verticalAlign: '-2px', marginRight: 4 }}
                 />
@@ -301,7 +287,10 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
                     const canDelete = attViewer.canManage || att.uploaded_by === attViewer.userId;
                     return (
                       <div key={att.id} className="asg2-attach-row">
-                        <FileText size={14} aria-hidden="true" className="asg2-attach-icon" />
+                        <i
+                          className="bi bi-file-earmark-text asg2-attach-icon"
+                          aria-hidden="true"
+                        />
                         <span className="asg2-attach-name">{att.file_name}</span>
                         <span className="asg2-attach-size asg2-num">
                           {fmtBytes(att.size_bytes)}
@@ -315,7 +304,7 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
                             download={att.file_name}
                             aria-label={`Download ${att.file_name}`}
                           >
-                            <Download size={14} aria-hidden="true" />
+                            <i className="bi bi-download" aria-hidden="true" />
                           </a>
                         )}
                         {canDelete && (
@@ -326,7 +315,7 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
                             disabled={attBusy}
                             aria-label={`Delete ${att.file_name}`}
                           >
-                            <Trash2 size={14} aria-hidden="true" />
+                            <i className="bi bi-trash3" aria-hidden="true" />
                           </button>
                         )}
                       </div>
@@ -351,7 +340,8 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
                 onClick={() => fileRef.current?.click()}
                 disabled={attBusy}
               >
-                <Upload size={13} aria-hidden="true" /> {attBusy ? 'Uploading…' : 'Upload file'}
+                <i className="bi bi-upload" aria-hidden="true" />{' '}
+                {attBusy ? 'Uploading…' : 'Upload file'}
               </button>
               <span className="asg2-hint" style={{ marginLeft: '0.5rem' }}>
                 PDF, Office, CSV, or image · up to 25 MB
@@ -362,8 +352,8 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
             {/* Version history */}
             <div>
               <p className="asg2-section-label">
-                <History
-                  size={12}
+                <i
+                  className="bi bi-clock-history"
                   aria-hidden="true"
                   style={{ verticalAlign: '-2px', marginRight: 4 }}
                 />
@@ -427,8 +417,8 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
             {viewer.canReview && (
               <div>
                 <p className="asg2-section-label">
-                  <Award
-                    size={12}
+                  <i
+                    className="bi bi-award"
                     aria-hidden="true"
                     style={{ verticalAlign: '-2px', marginRight: 4 }}
                   />
@@ -481,7 +471,7 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
                 onClick={addComment}
                 disabled={busy || !comment.trim()}
               >
-                <Send size={13} aria-hidden="true" /> Comment
+                <i className="bi bi-send" aria-hidden="true" /> Comment
               </button>
 
               {/* Assignee actions */}
@@ -492,7 +482,7 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
                   onClick={() => patch({ status: 'in_progress' })}
                   disabled={busy}
                 >
-                  <Play size={13} aria-hidden="true" /> Start
+                  <i className="bi bi-play-fill" aria-hidden="true" /> Start
                 </button>
               )}
               {viewer.isAssignee && ['in_progress', 'returned'].includes(a.status) && (
@@ -502,7 +492,7 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
                   onClick={submitVersion}
                   disabled={busy}
                 >
-                  <Upload size={13} aria-hidden="true" /> Submit
+                  <i className="bi bi-upload" aria-hidden="true" /> Submit
                 </button>
               )}
 
@@ -520,7 +510,8 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
               {viewer.canReview && ['submitted', 'under_review'].includes(a.status) && (
                 <>
                   <button type="button" className="asg2-btn" onClick={doReturn} disabled={busy}>
-                    <RotateCcw size={13} aria-hidden="true" /> Return for revision
+                    <i className="bi bi-arrow-counterclockwise" aria-hidden="true" /> Return for
+                    revision
                   </button>
                   <button
                     type="button"
@@ -528,7 +519,7 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
                     onClick={() => patch({ status: 'complete' })}
                     disabled={busy}
                   >
-                    <Check size={13} aria-hidden="true" /> Approve
+                    <i className="bi bi-check-lg" aria-hidden="true" /> Approve
                   </button>
                 </>
               )}
@@ -539,7 +530,7 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
                   onClick={saveGrade}
                   disabled={busy}
                 >
-                  <Award size={13} aria-hidden="true" /> Save grade
+                  <i className="bi bi-award" aria-hidden="true" /> Save grade
                 </button>
               )}
             </div>

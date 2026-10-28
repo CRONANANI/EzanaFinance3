@@ -5,14 +5,12 @@
    avatar and callback is passed down so committee/role styling stays in one
    place. Classes: oxc-* (Columns) · oxrad-* (Radial). */
 
-import { UserPlus } from 'lucide-react';
-
 /* A single unfilled seat — honest placeholder, never a fabricated person. */
 export function VacantSeat({ label = 'Open role' }) {
   return (
     <div className="ox-vacant" role="note" aria-label={`${label} — vacant`}>
       <span className="ox-vacant-ic">
-        <UserPlus size={13} strokeWidth={1.8} />
+        <i className="bi bi-person-plus" aria-hidden="true" />
       </span>
       <span className="ox-vacant-tx">
         <span className="ox-vacant-nm">{label}</span>

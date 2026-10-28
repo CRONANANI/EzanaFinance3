@@ -1,6 +1,5 @@
 'use client';
 
-import { Wallet } from 'lucide-react';
 import { money } from './format';
 
 /**

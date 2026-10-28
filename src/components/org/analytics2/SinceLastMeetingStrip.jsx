@@ -1,6 +1,5 @@
 'use client';
 
-import { History } from 'lucide-react';
 import { money, pct, signClass } from './format';
 
 /** Full-width delta strip. Renders nothing when `data` is null (no meetings). */
@@ -38,7 +37,7 @@ export function SinceLastMeetingStrip({ data }) {
   return (
     <div className="fa-slm">
       <div className="fa-slm-lead">
-        <History size={16} aria-hidden />
+        <i className="bi bi-clock-history" aria-hidden="true" />
         <div>
           <div className="t">Since last meeting</div>
           <div className="d">

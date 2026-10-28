@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Trophy, ExternalLink, Loader2, ShieldAlert } from 'lucide-react';
 import { orgRequest } from '@/lib/org-request';
 import './competitions.css';
 
@@ -81,7 +80,7 @@ export function CouncilFundClient() {
     return (
       <div className="pcx-page">
         <div className="pcx-empty pcx-empty--sm">
-          <Loader2 size={18} className="pcx-spin" /> Loading…
+          <i className="bi bi-arrow-repeat pcx-spin" aria-hidden="true" /> Loading…
         </div>
       </div>
     );
@@ -96,7 +95,7 @@ export function CouncilFundClient() {
     <div className="pcx-page">
       <header className="pcx-cc-head">
         <div className="pcx-cc-title-row">
-          <Trophy size={18} aria-hidden="true" />
+          <i className="bi bi-trophy" aria-hidden="true" />
           <h1 className="pcx-h1">Council ranking</h1>
         </div>
         <p className="pcx-lead">
@@ -108,7 +107,7 @@ export function CouncilFundClient() {
 
       <div className="pcx-cc-links">
         <Link href="/council-rankings" className="pcx-btn" target="_blank">
-          View public leaderboard <ExternalLink size={13} aria-hidden="true" />
+          View public leaderboard <i className="bi bi-box-arrow-up-right" aria-hidden="true" />
         </Link>
       </div>
 
@@ -149,8 +148,8 @@ export function CouncilFundClient() {
         </p>
         {!canManage ? (
           <div className="pcx-error--banner pcx-lock">
-            <ShieldAlert size={15} aria-hidden="true" /> Only executives and VPs can edit fund
-            metrics.
+            <i className="bi bi-shield-exclamation" aria-hidden="true" /> Only executives and VPs
+            can edit fund metrics.
           </div>
         ) : null}
         <div className="pcx-form-grid">
@@ -187,7 +186,8 @@ export function CouncilFundClient() {
               onClick={save}
               disabled={busy}
             >
-              {busy ? <Loader2 size={14} className="pcx-spin" /> : null} Save fund ratios
+              {busy ? <i className="bi bi-arrow-repeat pcx-spin" aria-hidden="true" /> : null} Save
+              fund ratios
             </button>
             {saved ? (
               <span className="pcx-saved">Saved. The ranking recomputes on the next cycle.</span>

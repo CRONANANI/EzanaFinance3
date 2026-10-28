@@ -1,6 +1,5 @@
 'use client';
 
-import { TrendingUp, TrendingDown } from 'lucide-react';
 import { money, pct } from './format';
 
 function List({ rows, positive }) {
@@ -31,7 +30,7 @@ export function ContributorsDetractors({ data }) {
       <div className="fa-card" style={{ overflow: 'hidden', paddingBottom: '0.4rem' }}>
         <div className="fa-card-head">
           <h3 className="fa-card-t">
-            <TrendingUp size={15} aria-hidden /> Top contributors
+            <i className="bi bi-graph-up-arrow" aria-hidden="true" /> Top contributors
           </h3>
         </div>
         <List rows={data?.top} positive />
@@ -39,7 +38,7 @@ export function ContributorsDetractors({ data }) {
       <div className="fa-card" style={{ overflow: 'hidden', paddingBottom: '0.4rem' }}>
         <div className="fa-card-head">
           <h3 className="fa-card-t">
-            <TrendingDown size={15} aria-hidden /> Top detractors
+            <i className="bi bi-graph-down-arrow" aria-hidden="true" /> Top detractors
           </h3>
         </div>
         <List rows={data?.bottom} positive={false} />

@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowRight, Check, CircleDashed, X, ChevronRight, ShieldAlert } from 'lucide-react';
 
 /**
  * The Gate Panel — "this panel is the product". It tells the user exactly what
@@ -72,11 +71,11 @@ export function PitchGatePanel({ pitch, onSelectTab, onAdvanced }) {
 
   const StatusIcon = ({ status }) =>
     status === 'pass' ? (
-      <Check size={14} className="pgate-ic pass" aria-hidden />
+      <i className="bi bi-check-lg pgate-ic pass" aria-hidden="true" />
     ) : status === 'partial' ? (
-      <CircleDashed size={14} className="pgate-ic partial" aria-hidden />
+      <i className="bi bi-circle pgate-ic partial" aria-hidden="true" />
     ) : (
-      <X size={14} className="pgate-ic fail" aria-hidden />
+      <i className="bi bi-x-lg pgate-ic fail" aria-hidden="true" />
     );
 
   return (
@@ -96,7 +95,7 @@ export function PitchGatePanel({ pitch, onSelectTab, onAdvanced }) {
             <span className="pgate-row-detail ot-num">{g.detail}</span>
             {g.status !== 'pass' && g.action?.tab && onSelectTab && (
               <button type="button" className="pgate-fix" onClick={() => onSelectTab(g.action.tab)}>
-                Fix <ChevronRight size={12} aria-hidden />
+                Fix <i className="bi bi-chevron-right" aria-hidden="true" />
               </button>
             )}
           </li>
@@ -116,7 +115,7 @@ export function PitchGatePanel({ pitch, onSelectTab, onAdvanced }) {
             >
               {allPass ? (
                 <>
-                  Advance to {nextStageLabel} <ArrowRight size={14} aria-hidden />
+                  Advance to {nextStageLabel} <i className="bi bi-arrow-right" aria-hidden="true" />
                 </>
               ) : (
                 `${failing} gate${failing === 1 ? '' : 's'} failing`
@@ -129,7 +128,7 @@ export function PitchGatePanel({ pitch, onSelectTab, onAdvanced }) {
                 disabled={busy}
                 onClick={() => setOverriding(true)}
               >
-                <ShieldAlert size={13} aria-hidden /> Override
+                <i className="bi bi-shield-exclamation" aria-hidden="true" /> Override
               </button>
             )}
           </>

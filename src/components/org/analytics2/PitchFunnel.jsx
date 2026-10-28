@@ -1,7 +1,5 @@
 'use client';
 
-import { Filter } from 'lucide-react';
-
 /** Submitted → Approved → Executed with counts + conversion %. */
 export function PitchFunnel({ data }) {
   const submitted = data?.submitted ?? 0;
@@ -18,7 +16,7 @@ export function PitchFunnel({ data }) {
   return (
     <div className="fa-card fa-card-pad">
       <h3 className="fa-card-t" style={{ marginBottom: '0.7rem' }}>
-        <Filter size={15} aria-hidden /> Pitch funnel
+        <i className="bi bi-funnel" aria-hidden="true" /> Pitch funnel
       </h3>
       {submitted === 0 ? (
         <div className="fa-empty">No pitches submitted yet.</div>

@@ -136,6 +136,11 @@
     transform: rotate(360deg);
   }
 }
+@media (prefers-reduced-motion: reduce) {
+  .pcx-spin {
+    animation: none;
+  }
+}
 
 /* ── status pill ── */
 .pcx-pill {

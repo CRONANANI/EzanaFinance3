@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
 import { PitchDetailClient } from './PitchDetailClient';
 
 /**
@@ -59,7 +58,7 @@ export function PitchModal({ pitchId, onClose }) {
         onMouseDown={(e) => e.stopPropagation()}
       >
         <button type="button" className="pmodal-close" aria-label="Close" onClick={onClose}>
-          <X size={18} aria-hidden />
+          <i className="bi bi-x-lg" aria-hidden="true" />
         </button>
         <div className="pmodal-body">
           <PitchDetailClient pitchId={pitchId} inModal onClose={onClose} />

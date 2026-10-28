@@ -3,28 +3,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { stripDemoLabel } from '@/lib/org-display';
 import { useRouter } from 'next/navigation';
-import {
-  Users,
-  Presentation,
-  LineChart,
-  TrendingUp,
-  ClipboardList,
-  BookOpen,
-  Video,
-  Award,
-  Star,
-  Trophy,
-  Shield,
-  FileText,
-  KeyRound,
-  GraduationCap,
-  Command,
-  Search,
-  Clock,
-  ChevronLeft,
-  ChevronRight,
-  ArrowRight,
-} from 'lucide-react';
 import { useOrg } from '@/contexts/OrgContext';
 import { buildTeamCalendar, teamHubEyebrow } from '@/lib/org-team-calendar';
 import { FundDataHealthCard } from '@/components/org/FundDataHealthCard';
@@ -36,43 +14,43 @@ import './team-hub-wire.css';
    The `archive` slot is repurposed as "Team Permissions" (highlighted at the
    foot of the Tools group). The rest are split into two nav groups by id. */
 const ACTIONS = [
-  { id: 'org', label: 'Org Chart', Icon: Users, href: '/org-team-hub/org-chart' },
-  { id: 'pitch', label: 'Pitch Pipeline', Icon: Presentation, href: '/org-team-hub/pitches' },
-  { id: 'trading', label: 'Trading Desk', Icon: LineChart, href: '/org-trading' },
+  { id: 'org', label: 'Org Chart', icon: 'bi-people', href: '/org-team-hub/org-chart' },
+  { id: 'pitch', label: 'Pitch Pipeline', icon: 'bi-easel', href: '/org-team-hub/pitches' },
+  { id: 'trading', label: 'Trading Desk', icon: 'bi-graph-up', href: '/org-trading' },
   {
     id: 'analytics',
     label: 'Fund Analytics',
-    Icon: TrendingUp,
+    icon: 'bi-graph-up-arrow',
     href: '/org-team-hub/fund-analytics',
   },
   {
     id: 'assignments',
     label: 'Assignments',
-    Icon: ClipboardList,
+    icon: 'bi-clipboard-data',
     href: '/org-team-hub/assignments',
   },
   {
     id: 'research',
     label: 'Research Library',
-    Icon: BookOpen,
+    icon: 'bi-book',
     href: '/org-team-hub/research-library',
   },
-  { id: 'meetings', label: 'Meetings', Icon: Video, href: '/org-team-hub/meetings' },
-  { id: 'recognition', label: 'Recognition', Icon: Award, href: '/org-team-hub/recognition' },
-  { id: 'grades', label: 'Grades', Icon: Star, href: '/org-team-hub/grades' },
+  { id: 'meetings', label: 'Meetings', icon: 'bi-camera-video', href: '/org-team-hub/meetings' },
+  { id: 'recognition', label: 'Recognition', icon: 'bi-award', href: '/org-team-hub/recognition' },
+  { id: 'grades', label: 'Grades', icon: 'bi-star', href: '/org-team-hub/grades' },
   {
     id: 'competitions',
     label: 'Trading Competitions',
-    Icon: Trophy,
+    icon: 'bi-trophy',
     href: '/org-team-hub/competitions',
   },
-  { id: 'cohorts', label: 'Cohorts', Icon: GraduationCap, href: '/org-team-hub/cohorts' },
-  { id: 'compliance', label: 'Compliance', Icon: Shield, href: '/org-team-hub/compliance' },
-  { id: 'reports', label: 'Reports', Icon: FileText, href: '/org-team-hub/reports' },
+  { id: 'cohorts', label: 'Cohorts', icon: 'bi-mortarboard', href: '/org-team-hub/cohorts' },
+  { id: 'compliance', label: 'Compliance', icon: 'bi-shield', href: '/org-team-hub/compliance' },
+  { id: 'reports', label: 'Reports', icon: 'bi-file-earmark-text', href: '/org-team-hub/reports' },
   {
     id: 'permissions',
     label: 'Team Permissions',
-    Icon: KeyRound,
+    icon: 'bi-key',
     href: '/org-team-hub/permissions',
   },
 ];
@@ -82,7 +60,7 @@ const ACTION_BY_ID = Object.fromEntries(ACTIONS.map((a) => [a.id, a]));
 const NAV_CURRENT = {
   id: '__cc',
   label: 'Command Center',
-  Icon: Command,
+  icon: 'bi-command',
   href: '/org-team-hub',
 };
 const NAV_COMMAND_IDS = ['trading', 'analytics', 'assignments'];
@@ -479,7 +457,6 @@ function FundChart({ snapshots, loading, showLabel = true }) {
 /* ── Left sidebar — VP identity + Command / Tools nav ─────────── */
 function SidebarNav({ identityName, identityTitle, onGo }) {
   const renderItem = (item) => {
-    const Icon = item.Icon;
     const cls = [
       'thw-nav-item',
       item.id === NAV_CURRENT.id ? 'active' : '',
@@ -495,7 +472,7 @@ function SidebarNav({ identityName, identityTitle, onGo }) {
         aria-current={item.id === NAV_CURRENT.id ? 'page' : undefined}
         onClick={() => onGo(item.href)}
       >
-        <Icon size={15} strokeWidth={1.8} />
+        <i className={`bi ${item.icon}`} aria-hidden="true" />
         <span>{item.label}</span>
       </button>
     );
@@ -552,7 +529,7 @@ function CalendarStrip({ items, loading, onOpen, onOpenAll }) {
             disabled={clamped === 0}
             aria-label="Previous week"
           >
-            <ChevronLeft size={16} strokeWidth={2} />
+            <i className="bi bi-chevron-left" aria-hidden="true" />
           </button>
           <button
             type="button"
@@ -561,12 +538,12 @@ function CalendarStrip({ items, loading, onOpen, onOpenAll }) {
             disabled={clamped >= lastPage}
             aria-label="Next week"
           >
-            <ChevronRight size={16} strokeWidth={2} />
+            <i className="bi bi-chevron-right" aria-hidden="true" />
           </button>
           <span className="thw-cal-title">This week in the fund</span>
         </div>
         <button type="button" className="thw-link" onClick={onOpenAll}>
-          Fund calendar <ArrowRight size={13} strokeWidth={2} />
+          Fund calendar <i className="bi bi-arrow-right" aria-hidden="true" />
         </button>
       </div>
 
@@ -671,7 +648,7 @@ function CommandHero({ fund, snapshots, tasksData, loading, onOpenTrading }) {
 
       <div className="thw-hero-right">
         <div className="thw-col-label">
-          <ClipboardList size={12} strokeWidth={1.8} /> My assignments · due
+          <i className="bi bi-clipboard-data" aria-hidden="true" /> My assignments · due
         </div>
         <div className="thw-assign-list">
           {assignments.length === 0 ? (
@@ -694,7 +671,7 @@ function CommandHero({ fund, snapshots, tasksData, loading, onOpenTrading }) {
           )}
         </div>
         <button type="button" className="thw-link thw-hero-cta" onClick={onOpenTrading}>
-          Open Trading Desk <ArrowRight size={13} strokeWidth={2} />
+          Open Trading Desk <i className="bi bi-arrow-right" aria-hidden="true" />
         </button>
       </div>
     </section>
@@ -710,7 +687,7 @@ function SectorDesk({ sectors, loading, onOpen }) {
     <section className="thw-card thw-sectors" aria-label="Sector desk">
       <div className="thw-card-head">
         <span className="thw-card-title">
-          <TrendingUp size={15} strokeWidth={1.8} /> Sector desk
+          <i className="bi bi-graph-up-arrow" aria-hidden="true" /> Sector desk
         </span>
         <span className="thw-section-meta">RANKED BY ROI</span>
       </div>
@@ -790,7 +767,7 @@ function TaskManagement({ tasksData, loading, onStatusChange }) {
     <section className="thw-card thw-tasks" aria-label="Tasks">
       <div className="thw-card-head">
         <span className="thw-card-title">
-          <ClipboardList size={15} strokeWidth={1.8} /> Task management
+          <i className="bi bi-clipboard-data" aria-hidden="true" /> Task management
         </span>
         <span className="thw-section-meta">
           {loading ? <Skel w={44} h={10} /> : `${openCount} OPEN`}
@@ -872,7 +849,7 @@ function Deadlines({ tasksData, loading, onOpenBoard }) {
     <section className="thw-card thw-deadlines" aria-label="Deadlines">
       <div className="thw-card-head">
         <span className="thw-card-title">
-          <Clock size={15} strokeWidth={1.8} /> Deadlines
+          <i className="bi bi-clock" aria-hidden="true" /> Deadlines
         </span>
         {loading ? (
           <Skel w={70} h={20} style={{ borderRadius: 999 }} />
@@ -898,7 +875,7 @@ function Deadlines({ tasksData, loading, onOpenBoard }) {
               <div className="thw-deadline-body">
                 <div className="thw-deadline-title">{d.title}</div>
                 <div className="thw-deadline-meta">
-                  <Clock size={11} strokeWidth={1.8} />{' '}
+                  <i className="bi bi-clock" aria-hidden="true" />{' '}
                   <span style={{ textTransform: 'capitalize' }}>{d.meta}</span>
                 </div>
               </div>
@@ -913,7 +890,7 @@ function Deadlines({ tasksData, loading, onOpenBoard }) {
       </div>
       <div className="thw-card-foot">
         <button type="button" className="thw-link" onClick={onOpenBoard}>
-          Open task board <ArrowRight size={12} strokeWidth={1.8} />
+          Open task board <i className="bi bi-arrow-right" aria-hidden="true" />
         </button>
       </div>
     </section>
@@ -1052,7 +1029,7 @@ export default function OrgTeamHubPage() {
           <div className="thw-header-tools">
             <OrgSwitcher />
             <div className="thw-search" onClick={() => searchRef.current?.focus()}>
-              <Search size={15} strokeWidth={1.8} />
+              <i className="bi bi-search" aria-hidden="true" />
               <input
                 ref={searchRef}
                 type="text"

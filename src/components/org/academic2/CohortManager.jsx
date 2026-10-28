@@ -1,17 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  Plus,
-  GraduationCap,
-  Archive,
-  ChevronDown,
-  Check,
-  Users,
-  ClipboardList,
-  ListChecks,
-  Award,
-} from 'lucide-react';
 import { ApplicantPipeline } from './ApplicantPipeline';
 import { CohortRoster } from './CohortRoster';
 import { OnboardingChecklist } from './OnboardingChecklist';
@@ -20,10 +9,10 @@ import { CohortArchiveView } from './CohortArchiveView';
 import './cohort2.css';
 
 const TABS = [
-  { key: 'roster', label: 'Roster', icon: Users },
-  { key: 'recruitment', label: 'Recruitment', icon: ClipboardList },
-  { key: 'onboarding', label: 'Onboarding', icon: ListChecks },
-  { key: 'alumni', label: 'Alumni', icon: Award },
+  { key: 'roster', label: 'Roster', icon: 'bi-people' },
+  { key: 'recruitment', label: 'Recruitment', icon: 'bi-clipboard-data' },
+  { key: 'onboarding', label: 'Onboarding', icon: 'bi-list-check' },
+  { key: 'alumni', label: 'Alumni', icon: 'bi-award' },
 ];
 
 const STATUS_SUFFIX = {
@@ -158,7 +147,7 @@ export function CohortManager({ initialData = null }) {
                     {STATUS_SUFFIX[selected.status] || selected.status}
                   </span>
                 )}
-                <ChevronDown size={15} className="c2-cohort-chev" />
+                <i className="bi bi-chevron-down c2-cohort-chev" aria-hidden="true" />
               </button>
               {menuOpen && (
                 <>
@@ -185,7 +174,7 @@ export function CohortManager({ initialData = null }) {
                             </span>
                           )}
                           {c.id === selectedId && (
-                            <Check size={14} className="c2-cohort-menu-check" />
+                            <i className="bi bi-check-lg c2-cohort-menu-check" aria-hidden="true" />
                           )}
                         </button>
                       ))}
@@ -201,7 +190,7 @@ export function CohortManager({ initialData = null }) {
                               setCreating(true);
                             }}
                           >
-                            <Plus size={15} /> New cohort
+                            <i className="bi bi-plus-lg" aria-hidden="true" /> New cohort
                           </button>
                         )}
                         {viewer.isExecutive && selected && !selected.archived && (
@@ -213,7 +202,8 @@ export function CohortManager({ initialData = null }) {
                               setGraduating(true);
                             }}
                           >
-                            <GraduationCap size={15} /> Graduate {selected.name}
+                            <i className="bi bi-mortarboard" aria-hidden="true" /> Graduate{' '}
+                            {selected.name}
                           </button>
                         )}
                         {selected?.archived && (
@@ -225,7 +215,7 @@ export function CohortManager({ initialData = null }) {
                               setViewArchive(selected);
                             }}
                           >
-                            <Archive size={15} /> Track record
+                            <i className="bi bi-archive" aria-hidden="true" /> Track record
                           </button>
                         )}
                       </div>
@@ -240,7 +230,7 @@ export function CohortManager({ initialData = null }) {
 
       {cohorts.length === 0 ? (
         <div className="c2-empty">
-          <Users size={30} />
+          <i className="bi bi-people" aria-hidden="true" />
           <p>No cohorts yet.</p>
           {viewer.isExecutive ? (
             <button
@@ -248,7 +238,7 @@ export function CohortManager({ initialData = null }) {
               className="c2-btn c2-btn--primary"
               onClick={() => setCreating(true)}
             >
-              <Plus size={15} /> Create the first cohort
+              <i className="bi bi-plus-lg" aria-hidden="true" /> Create the first cohort
             </button>
           ) : (
             <p style={{ fontSize: '0.82rem' }}>An executive needs to create a cohort first.</p>
@@ -258,7 +248,6 @@ export function CohortManager({ initialData = null }) {
         <>
           <div className="c2-tabs" role="tablist">
             {TABS.map((t) => {
-              const Icon = t.icon;
               return (
                 <button
                   key={t.key}
@@ -267,7 +256,7 @@ export function CohortManager({ initialData = null }) {
                   className={`c2-tab ${tab === t.key ? 'c2-tab--active' : ''}`}
                   onClick={() => setTab(t.key)}
                 >
-                  <Icon size={15} /> {t.label}
+                  <i className={`bi ${t.icon}`} aria-hidden="true" /> {t.label}
                   {counts[t.key] != null && <span className="c2-tab-count">{counts[t.key]}</span>}
                 </button>
               );
@@ -473,7 +462,7 @@ function GraduateModal({ cohort, onClose, onDone }) {
     <div className="c2-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="c2-modal" role="dialog" aria-modal="true" style={{ maxWidth: 500 }}>
         <h2 className="c2-modal-title">
-          <GraduationCap size={18} /> Graduate {cohort.name}
+          <i className="bi bi-mortarboard" aria-hidden="true" /> Graduate {cohort.name}
         </h2>
         <p className="c2-sub" style={{ marginTop: 0 }}>
           Snapshots the fund track record, freezes graduating members into the alumni record (final

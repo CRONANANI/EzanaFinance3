@@ -2,7 +2,6 @@
 
 import { stripDemoLabel } from '@/lib/org-display';
 import { useCallback, useEffect, useState } from 'react';
-import { Award, RefreshCw, Sliders, Sparkles } from 'lucide-react';
 import { AwardModal, badgeIcon } from './AwardModal';
 import { RatingLeaderboard } from './RatingLeaderboard';
 import { EzanaRatingScorecard } from './EzanaRatingScorecard';
@@ -114,7 +113,7 @@ export function RecognitionWall({ initialData = null }) {
               onClick={() => runAction('recompute')}
               disabled={busy === 'recompute'}
             >
-              <RefreshCw size={13} aria-hidden />{' '}
+              <i className="bi bi-arrow-clockwise" aria-hidden="true" />{' '}
               {busy === 'recompute' ? 'Recomputing…' : 'Recompute ratings'}
             </button>
             <button
@@ -123,17 +122,18 @@ export function RecognitionWall({ initialData = null }) {
               onClick={() => runAction('auto')}
               disabled={busy === 'auto'}
             >
-              <Sparkles size={13} aria-hidden /> {busy === 'auto' ? 'Computing…' : 'Auto-award'}
+              <i className="bi bi-stars" aria-hidden="true" />{' '}
+              {busy === 'auto' ? 'Computing…' : 'Auto-award'}
             </button>
             <button type="button" className="rec2-btn" onClick={() => setWeightsOpen(true)}>
-              <Sliders size={13} aria-hidden /> Weights
+              <i className="bi bi-sliders2-vertical" aria-hidden="true" /> Weights
             </button>
             <button
               type="button"
               className="rec2-btn rec2-btn--primary"
               onClick={() => setModalOpen(true)}
             >
-              <Award size={13} aria-hidden /> Award
+              <i className="bi bi-award" aria-hidden="true" /> Award
             </button>
           </div>
         )}

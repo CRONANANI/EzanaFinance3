@@ -1,21 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  ShieldCheck,
-  ShieldAlert,
-  ShieldX,
-  CircleCheck,
-  CircleX,
-  MinusCircle,
-  Gauge,
-  ScrollText,
-  BadgeCheck,
-  Users,
-  Info,
-  ListChecks,
-  RefreshCw,
-} from 'lucide-react';
 import './academic.css';
 import './compliance2.css';
 import { IPSCheckBanner } from './IPSCheckBanner';
@@ -42,11 +27,11 @@ export const ruleLabel = (rule) =>
 function SevPill({ hard }) {
   return hard ? (
     <span className="cmp2-sev cmp2-sev--hard">
-      <ShieldX aria-hidden /> Hard
+      <i className="bi bi-shield-x" aria-hidden="true" /> Hard
     </span>
   ) : (
     <span className="cmp2-sev cmp2-sev--soft">
-      <ShieldAlert aria-hidden /> Soft
+      <i className="bi bi-shield-exclamation" aria-hidden="true" /> Soft
     </span>
   );
 }
@@ -127,11 +112,11 @@ export function PreTradeGate({ rules }) {
       <div key={rule.id} className={`cmp2-check-row${failed ? ' cmp2-check-row--fail' : ''}`}>
         <span className={`cmp2-result-icon ${iconCls}`}>
           {!result ? (
-            <MinusCircle aria-hidden />
+            <i className="bi bi-dash-circle" aria-hidden="true" />
           ) : failed ? (
-            <CircleX aria-hidden />
+            <i className="bi bi-x-circle" aria-hidden="true" />
           ) : (
-            <CircleCheck aria-hidden />
+            <i className="bi bi-check-circle" aria-hidden="true" />
           )}
         </span>
         <div className="cmp2-check-main">
@@ -210,7 +195,8 @@ export function PreTradeGate({ rules }) {
           onClick={run}
           disabled={busy || !form.ticker.trim()}
         >
-          <ShieldCheck size={15} aria-hidden /> {busy ? 'Checking…' : 'Run pre-trade check'}
+          <i className="bi bi-shield-check" aria-hidden="true" />{' '}
+          {busy ? 'Checking…' : 'Run pre-trade check'}
         </button>
         {result && (
           <button
@@ -237,17 +223,20 @@ export function PreTradeGate({ rules }) {
           <div className={`cmp2-verdict cmp2-verdict--${verdict}`}>
             {verdict === 'clear' && (
               <>
-                <ShieldCheck aria-hidden /> Clear — no policy limits breached.
+                <i className="bi bi-shield-check" aria-hidden="true" /> Clear — no policy limits
+                breached.
               </>
             )}
             {verdict === 'soft' && (
               <>
-                <ShieldAlert aria-hidden /> Allowed with flags — SOFT limits triggered.
+                <i className="bi bi-shield-exclamation" aria-hidden="true" /> Allowed with flags —
+                SOFT limits triggered.
               </>
             )}
             {verdict === 'hard' && (
               <>
-                <ShieldX aria-hidden /> Blocked — a HARD limit would be breached.
+                <i className="bi bi-shield-x" aria-hidden="true" /> Blocked — a HARD limit would be
+                breached.
               </>
             )}
           </div>
@@ -263,7 +252,7 @@ export function PreTradeGate({ rules }) {
               {hard.length > 0 && (
                 <>
                   <div className="cmp2-group-head">
-                    <ShieldX size={13} aria-hidden /> Hard limits
+                    <i className="bi bi-shield-x" aria-hidden="true" /> Hard limits
                   </div>
                   {hard.map(renderRow)}
                 </>
@@ -271,7 +260,7 @@ export function PreTradeGate({ rules }) {
               {soft.length > 0 && (
                 <>
                   <div className="cmp2-group-head">
-                    <ShieldAlert size={13} aria-hidden /> Soft limits
+                    <i className="bi bi-shield-exclamation" aria-hidden="true" /> Soft limits
                   </div>
                   {soft.map(renderRow)}
                 </>
@@ -279,12 +268,13 @@ export function PreTradeGate({ rules }) {
               {portfolioOnly.length > 0 && (
                 <>
                   <div className="cmp2-group-head">
-                    <MinusCircle size={13} aria-hidden /> Portfolio-level (not evaluated pre-trade)
+                    <i className="bi bi-dash-circle" aria-hidden="true" /> Portfolio-level (not
+                    evaluated pre-trade)
                   </div>
                   {portfolioOnly.map((rule) => (
                     <div key={rule.id} className="cmp2-check-row">
                       <span className="cmp2-result-icon cmp2-result-icon--na">
-                        <MinusCircle aria-hidden />
+                        <i className="bi bi-dash-circle" aria-hidden="true" />
                       </span>
                       <div className="cmp2-check-main">
                         <span className="cmp2-check-label">{ruleLabel(rule)}</span>
@@ -301,7 +291,7 @@ export function PreTradeGate({ rules }) {
           )}
 
           <div className="cmp2-inline-note">
-            <Info aria-hidden />
+            <i className="bi bi-info-circle" aria-hidden="true" />
             <span>
               A pass means no breach was detected for the inputs provided; sector and size checks
               only fire when those fields are filled in.
@@ -325,7 +315,7 @@ export function RulesInForcePanel({ rules }) {
     <div className="cmp2-panel">
       <div className="cmp2-panel-head">
         <h3 className="cmp2-panel-title">
-          <ListChecks aria-hidden /> Rules in force
+          <i className="bi bi-list-check" aria-hidden="true" /> Rules in force
         </h3>
         <span className="cmp2-num" style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
           {active.length}
@@ -340,7 +330,7 @@ export function RulesInForcePanel({ rules }) {
           {hard.length > 0 && (
             <>
               <div className="cmp2-group-head">
-                <ShieldX size={13} aria-hidden /> Hard
+                <i className="bi bi-shield-x" aria-hidden="true" /> Hard
               </div>
               {hard.map((r) => (
                 <div key={r.id} className="cmp2-rule-line">
@@ -353,7 +343,7 @@ export function RulesInForcePanel({ rules }) {
           {soft.length > 0 && (
             <>
               <div className="cmp2-group-head">
-                <ShieldAlert size={13} aria-hidden /> Soft
+                <i className="bi bi-shield-exclamation" aria-hidden="true" /> Soft
               </div>
               {soft.map((r) => (
                 <div key={r.id} className="cmp2-rule-line">
@@ -401,7 +391,7 @@ export function SectorCapacityPlanner({ positions, rules }) {
     <div className="cmp2-panel">
       <div className="cmp2-panel-head">
         <h3 className="cmp2-panel-title">
-          <Gauge aria-hidden /> Sector capacity planner
+          <i className="bi bi-speedometer" aria-hidden="true" /> Sector capacity planner
         </h3>
         {cap != null && <span className="cmp2-num cmp2-sev cmp2-sev--soft">cap {cap}%</span>}
       </div>
@@ -445,7 +435,7 @@ export function SectorCapacityPlanner({ positions, rules }) {
             );
           })}
           <div className="cmp2-inline-note">
-            <Info aria-hidden />
+            <i className="bi bi-info-circle" aria-hidden="true" />
             <span>
               Exposure computed client-side by cost basis (shares × avg cost) from org positions.
               The IPS engine enforces sector caps on live market value, so figures may differ.
@@ -468,7 +458,7 @@ export function OpenBreaches({ violations, canResolve, onResolve }) {
     <div className="cmp2-panel">
       <div className="cmp2-panel-head">
         <h3 className="cmp2-panel-title">
-          <ShieldAlert aria-hidden /> Open breaches
+          <i className="bi bi-shield-exclamation" aria-hidden="true" /> Open breaches
         </h3>
         {list.length > 0 && (
           <span
@@ -489,7 +479,11 @@ export function OpenBreaches({ violations, canResolve, onResolve }) {
             gap: '0.4rem',
           }}
         >
-          <ShieldCheck size={22} aria-hidden style={{ color: 'var(--emerald-text)' }} />
+          <i
+            className="bi bi-shield-check"
+            aria-hidden="true"
+            style={{ color: 'var(--emerald-text)' }}
+          />
           No open breaches.
         </div>
       ) : (
@@ -502,9 +496,13 @@ export function OpenBreaches({ violations, canResolve, onResolve }) {
               className={`cmp2-result-icon ${v.severity === 'block' ? 'cmp2-result-icon--fail' : ''}`}
             >
               {v.severity === 'block' ? (
-                <ShieldX aria-hidden />
+                <i className="bi bi-shield-x" aria-hidden="true" />
               ) : (
-                <ShieldAlert aria-hidden style={{ color: 'var(--warning)' }} />
+                <i
+                  className="bi bi-shield-exclamation"
+                  aria-hidden="true"
+                  style={{ color: 'var(--warning)' }}
+                />
               )}
             </span>
             <div className="cmp2-check-main">
@@ -534,7 +532,7 @@ export function PersonalTradingPanel() {
   return (
     <div className="ac3-root">
       <div className="cmp2-flag">
-        <Users aria-hidden />
+        <i className="bi bi-people" aria-hidden="true" />
         <div>
           <h3>Personal trading disclosures</h3>
           <p>
@@ -555,7 +553,7 @@ export function AttestationsPanel() {
   return (
     <div className="ac3-root">
       <div className="cmp2-flag">
-        <BadgeCheck aria-hidden />
+        <i className="bi bi-patch-check" aria-hidden="true" />
         <div>
           <h3>Compliance attestations</h3>
           <p>
@@ -638,7 +636,7 @@ export function AuditLog() {
   if (forbidden) {
     return (
       <div className="cmp2-flag">
-        <Info aria-hidden />
+        <i className="bi bi-info-circle" aria-hidden="true" />
         <div>
           <h3>Executive access required</h3>
           <p>
@@ -655,7 +653,7 @@ export function AuditLog() {
       <div className="cmp2-panel">
         <div className="cmp2-panel-head">
           <h3 className="cmp2-panel-title">
-            <ScrollText aria-hidden /> Audit trail
+            <i className="bi bi-journal-text" aria-hidden="true" /> Audit trail
           </h3>
           <button
             type="button"
@@ -663,7 +661,7 @@ export function AuditLog() {
             onClick={() => load(0, action, false)}
             disabled={loading}
           >
-            <RefreshCw size={14} aria-hidden /> Refresh
+            <i className="bi bi-arrow-clockwise" aria-hidden="true" /> Refresh
           </button>
         </div>
 

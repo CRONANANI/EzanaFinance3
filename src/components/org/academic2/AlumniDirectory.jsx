@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Award, Star, X, Download, GraduationCap, Briefcase } from 'lucide-react';
 import { orgRequest } from '@/lib/org-request';
 import './cohort2.css';
 
@@ -100,7 +99,12 @@ export function AlumniDirectory({ cohortId, canManage, onCount }) {
             <div className="c2-banner-head">
               <div>
                 <div className="c2-eyebrow" style={{ color: 'var(--gold-text)' }}>
-                  <Award size={13} style={{ verticalAlign: 'middle' }} /> Placement outcomes
+                  <i
+                    className="bi bi-award"
+                    style={{ verticalAlign: 'middle' }}
+                    aria-hidden="true"
+                  />{' '}
+                  Placement outcomes
                 </div>
                 <div className="c2-banner-headline">
                   {placement.placement_rate_pct == null ? '—' : `${placement.placement_rate_pct}%`}{' '}
@@ -112,7 +116,7 @@ export function AlumniDirectory({ cohortId, canManage, onCount }) {
                 className="c2-btn c2-btn--gold c2-no-print"
                 onClick={() => window.print()}
               >
-                <Download size={14} /> Export PDF
+                <i className="bi bi-download" aria-hidden="true" /> Export PDF
               </button>
             </div>
             <div className="c2-banner-grid">
@@ -152,7 +156,7 @@ export function AlumniDirectory({ cohortId, canManage, onCount }) {
 
       {alumni.length === 0 ? (
         <div className="c2-empty">
-          <GraduationCap size={28} />
+          <i className="bi bi-mortarboard c2-empty-icon" aria-hidden="true" />
           <p>No alumni yet.</p>
           <p style={{ fontSize: '0.82rem' }}>
             When a cohort graduates, members are frozen into the alumni record here.
@@ -183,12 +187,16 @@ export function AlumniDirectory({ cohortId, canManage, onCount }) {
               <div
                 style={{ marginTop: '0.25rem', fontSize: '0.85rem', color: 'var(--text-primary)' }}
               >
-                <Briefcase size={12} style={{ verticalAlign: 'middle' }} /> Now:{' '}
-                {a.role_title || '—'}
+                <i
+                  className="bi bi-briefcase"
+                  style={{ verticalAlign: 'middle' }}
+                  aria-hidden="true"
+                />{' '}
+                Now: {a.role_title || '—'}
                 {a.employer ? ` @ ${a.employer}` : ''}
               </div>
               <div className="c2-frozen" style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}>
-                <Star size={12} fill="currentColor" style={{ verticalAlign: 'middle' }} />{' '}
+                <i className="bi bi-star" style={{ verticalAlign: 'middle' }} aria-hidden="true" />{' '}
                 <span className="c2-num">{a.final_rating ?? 'pending'}</span> ·{' '}
                 <span className="c2-num">{a.final_pitch_count ?? 0}</span> pitches
                 <span style={{ fontSize: '0.7rem', display: 'block', opacity: 0.8 }}>
@@ -276,7 +284,7 @@ function AlumDetail({ alum, canManage, onClose, onChanged }) {
             </div>
           </div>
           <button type="button" className="c2-btn c2-btn--sm" onClick={onClose} aria-label="Close">
-            <X size={15} />
+            <i className="bi bi-x-lg" aria-hidden="true" />
           </button>
         </div>
 

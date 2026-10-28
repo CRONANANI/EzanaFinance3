@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { CalendarDays, List, Plus } from 'lucide-react';
 import './assignments2.css';
 import { AssignmentMetricsStrip } from './AssignmentMetricsStrip';
 import { AssignmentCalendar } from './AssignmentCalendar';
@@ -106,7 +105,7 @@ export function AssignmentBoard({ initialData = null }) {
               onClick={() => setView('list')}
               aria-pressed={view === 'list'}
             >
-              <List size={14} aria-hidden="true" /> List
+              <i className="bi bi-list-ul" aria-hidden="true" /> List
             </button>
             <button
               type="button"
@@ -114,7 +113,7 @@ export function AssignmentBoard({ initialData = null }) {
               onClick={() => setView('calendar')}
               aria-pressed={view === 'calendar'}
             >
-              <CalendarDays size={14} aria-hidden="true" /> Calendar
+              <i className="bi bi-calendar3" aria-hidden="true" /> Calendar
             </button>
           </div>
           <AssignmentExport assignments={data.assignments} />
@@ -124,7 +123,7 @@ export function AssignmentBoard({ initialData = null }) {
               className="asg2-btn asg2-btn--primary"
               onClick={() => setDrawerOpen(true)}
             >
-              <Plus size={15} aria-hidden="true" /> New assignment
+              <i className="bi bi-plus-lg" aria-hidden="true" /> New assignment
             </button>
           )}
         </div>

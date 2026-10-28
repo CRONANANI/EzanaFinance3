@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AlertTriangle, Check, CheckCheck, ShieldAlert, X } from 'lucide-react';
 import { actionLabel, reasonLabel } from '@/lib/org-flag-taxonomy';
 import { orgRequest } from '@/lib/org-request';
 
@@ -124,7 +123,7 @@ export function FlagDetailPanel({ flagId, currentMemberId, onClose, onChange }) 
           </p>
         </div>
         <button type="button" className="ot-modal-close" aria-label="Close" onClick={onClose}>
-          <X size={18} aria-hidden />
+          <i className="bi bi-x-lg" aria-hidden="true" />
         </button>
       </div>
 
@@ -137,7 +136,7 @@ export function FlagDetailPanel({ flagId, currentMemberId, onClose, onChange }) 
 
       {flag.conflict_disclosed && (
         <div className="ot-banner amber" style={{ marginBottom: '0.75rem' }}>
-          <AlertTriangle size={13} aria-hidden />
+          <i className="bi bi-exclamation-triangle" aria-hidden="true" />
           <span>The raiser disclosed a personal holding in {flag.ticker}.</span>
         </div>
       )}
@@ -210,7 +209,7 @@ export function FlagDetailPanel({ flagId, currentMemberId, onClose, onChange }) 
                 disabled={submitting}
                 onClick={() => respond('accepted')}
               >
-                <Check size={14} aria-hidden /> Accept
+                <i className="bi bi-check-lg" aria-hidden="true" /> Accept
               </button>
               <button
                 type="button"
@@ -218,7 +217,7 @@ export function FlagDetailPanel({ flagId, currentMemberId, onClose, onChange }) 
                 disabled={submitting}
                 onClick={() => respond('acknowledged')}
               >
-                <CheckCheck size={14} aria-hidden /> Acknowledge
+                <i className="bi bi-check2-all" aria-hidden="true" /> Acknowledge
               </button>
               <button
                 type="button"
@@ -226,7 +225,7 @@ export function FlagDetailPanel({ flagId, currentMemberId, onClose, onChange }) 
                 disabled={submitting}
                 onClick={() => setRejecting(true)}
               >
-                <X size={14} aria-hidden /> Reject with rebuttal
+                <i className="bi bi-x-lg" aria-hidden="true" /> Reject with rebuttal
               </button>
               <button
                 type="button"
@@ -234,7 +233,7 @@ export function FlagDetailPanel({ flagId, currentMemberId, onClose, onChange }) 
                 disabled={submitting}
                 onClick={() => respond('escalated')}
               >
-                <ShieldAlert size={14} aria-hidden /> → IC
+                <i className="bi bi-shield-exclamation" aria-hidden="true" /> → IC
               </button>
             </div>
           ) : (

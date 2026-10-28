@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, Columns3, Gavel, Network, Plus, Radar, UserCog } from 'lucide-react';
 import { useOrg } from '@/contexts/OrgContext';
 import { useToast } from '@/contexts/ToastContext';
 import { OrgMemberProfileModal } from '@/components/org/OrgMemberProfileModal';
@@ -317,7 +316,7 @@ export function OrgFinalClient({ initialData = null }) {
         >
           <span className={`ox-dot ${t.cls}`} />
           {t.short}
-          <UserCog size={11} strokeWidth={1.8} />
+          <i className="bi bi-person-gear" aria-hidden="true" />
         </button>
         {open && (
           <div className="oxr-rolepop" onClick={(e) => e.stopPropagation()}>
@@ -339,9 +338,9 @@ export function OrgFinalClient({ initialData = null }) {
                     {t2.label}
                     {t2.id === m.tier && <span className="oxr-roleopt-now">CURRENT</span>}
                     {checked && t2.id !== m.tier && (
-                      <Check
-                        size={12}
-                        strokeWidth={2}
+                      <i
+                        className="bi bi-check-lg"
+                        aria-hidden="true"
                         style={{ marginLeft: 'auto', color: 'var(--emerald)' }}
                       />
                     )}
@@ -562,7 +561,7 @@ export function OrgFinalClient({ initialData = null }) {
                 className="ox-ghostpill"
                 onClick={() => router.push('/org-team-hub/assignments')}
               >
-                <Plus size={13} strokeWidth={2} /> Add member
+                <i className="bi bi-plus-lg" aria-hidden="true" /> Add member
               </button>
             </div>
           )}
@@ -596,10 +595,10 @@ export function OrgFinalClient({ initialData = null }) {
           <div className="ox-viewbar">
             <div className="ox-seg" role="tablist" aria-label="Chart layout">
               {[
-                { id: 'tiers', label: 'Tiers', Icon: Network },
-                { id: 'radial', label: 'Radial', Icon: Radar },
-                { id: 'columns', label: 'Columns', Icon: Columns3 },
-              ].map(({ id, label, Icon }) => (
+                { id: 'tiers', label: 'Tiers', icon: 'bi-diagram-3' },
+                { id: 'radial', label: 'Radial', icon: 'bi-radar' },
+                { id: 'columns', label: 'Columns', icon: 'bi-layout-three-columns' },
+              ].map(({ id, label, icon }) => (
                 <button
                   key={id}
                   type="button"
@@ -608,7 +607,7 @@ export function OrgFinalClient({ initialData = null }) {
                   className={`ox-segbtn${layout === id ? ' active' : ''}`}
                   onClick={() => setLayout(id)}
                 >
-                  <Icon size={13} strokeWidth={1.9} />
+                  <i className={`bi ${icon}`} aria-hidden="true" />
                   {label}
                 </button>
               ))}
@@ -620,7 +619,7 @@ export function OrgFinalClient({ initialData = null }) {
               onClick={() => setCommittee((v) => !v)}
               disabled={loading || committeeCount === 0}
             >
-              <Gavel size={13} strokeWidth={1.9} />
+              <i className="bi bi-hammer" aria-hidden="true" />
               Committee overlay
               {committeeCount > 0 && <span className="ox-committee-count">{committeeCount}</span>}
             </button>

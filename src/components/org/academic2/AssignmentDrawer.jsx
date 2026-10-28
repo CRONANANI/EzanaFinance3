@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { X, Search, Paperclip, Check } from 'lucide-react';
 import { DateSelector } from '@/components/ui/DateSelector';
 import { TYPE_META } from './AssignmentCard';
 
@@ -192,7 +191,7 @@ export function AssignmentDrawer({
         <div className="asg2-drawer-head">
           <h2 className="asg2-modal-title">New assignment</h2>
           <button type="button" className="asg2-icon-btn" onClick={onClose} aria-label="Close">
-            <X size={16} />
+            <i className="bi bi-x-lg" aria-hidden="true" />
           </button>
         </div>
 
@@ -201,7 +200,7 @@ export function AssignmentDrawer({
           <span className="asg2-label">Type</span>
           <div className="asg2-presets">
             {TYPE_ORDER.map((t) => {
-              const { label, Icon } = TYPE_META[t];
+              const { label, icon } = TYPE_META[t];
               return (
                 <button
                   key={t}
@@ -210,7 +209,7 @@ export function AssignmentDrawer({
                   className={`asg2-preset${form.type === t ? ' is-active' : ''}`}
                   onClick={() => set({ type: t })}
                 >
-                  <Icon size={13} aria-hidden="true" /> {label}
+                  <i className={`bi ${icon}`} aria-hidden="true" /> {label}
                 </button>
               );
             })}
@@ -330,8 +329,8 @@ export function AssignmentDrawer({
           {mode === 'member' && (
             <>
               <div style={{ position: 'relative', marginBottom: '0.4rem' }}>
-                <Search
-                  size={14}
+                <i
+                  className="bi bi-search"
                   style={{ position: 'absolute', left: 10, top: 10, color: 'var(--text-muted)' }}
                   aria-hidden="true"
                 />
@@ -371,7 +370,7 @@ export function AssignmentDrawer({
                             · {(m.role || '').replace('_', ' ')}
                           </span>
                         </span>
-                        {sel && <Check size={14} aria-hidden="true" />}
+                        {sel && <i className="bi bi-check-lg" aria-hidden="true" />}
                       </button>
                     );
                   })
@@ -403,7 +402,7 @@ export function AssignmentDrawer({
                       onClick={() => toggleTarget(tgt)}
                     >
                       <span>{t.name}</span>
-                      {sel && <Check size={14} aria-hidden="true" />}
+                      {sel && <i className="bi bi-check-lg" aria-hidden="true" />}
                     </button>
                   );
                 })
@@ -439,7 +438,7 @@ export function AssignmentDrawer({
                           <span style={{ color: 'var(--emerald-text)' }}> · current</span>
                         )}
                       </span>
-                      {sel && <Check size={14} aria-hidden="true" />}
+                      {sel && <i className="bi bi-check-lg" aria-hidden="true" />}
                     </button>
                   );
                 })
@@ -465,7 +464,7 @@ export function AssignmentDrawer({
                       onClick={() => toggleTarget(tgt)}
                     >
                       <span>{r}</span>
-                      {sel && <Check size={14} aria-hidden="true" />}
+                      {sel && <i className="bi bi-check-lg" aria-hidden="true" />}
                     </button>
                   );
                 })
@@ -501,7 +500,7 @@ export function AssignmentDrawer({
                     onClick={() => removeTarget(t)}
                     aria-label={`Remove ${t.label}`}
                   >
-                    <X size={12} />
+                    <i className="bi bi-x-lg" aria-hidden="true" />
                   </button>
                 </span>
               ))}
@@ -517,8 +516,8 @@ export function AssignmentDrawer({
         />
         {form.require_upload && (
           <div className="asg2-hint asg2-hint--disabled">
-            <Paperclip size={13} aria-hidden="true" /> Assignees attach their deliverable from the
-            assignment view after it&apos;s created.
+            <i className="bi bi-paperclip" aria-hidden="true" /> Assignees attach their deliverable
+            from the assignment view after it&apos;s created.
           </div>
         )}
 

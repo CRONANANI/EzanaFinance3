@@ -9,7 +9,7 @@
  * - One flat, unlabelled list. Command Center is a permanent pill in the
  *   university's primary color; the active page is a translucent pill in the
  *   same hue (both from the --org-* variables, Ezana emerald fallback).
- * - Lucide icons only. Active state route-matched via usePathname.
+ * - Bootstrap Icons only. Active state route-matched via usePathname.
  * - Badges are REAL: Assignments shows {completed}/{total} from
  *   /api/org/assignments; Compliance shows an open-breach count from
  *   /api/org/ips/violations. If a count can't be fetched, NO badge renders.
@@ -25,24 +25,6 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useOrg } from '@/contexts/OrgContext';
-import {
-  LayoutDashboard,
-  Landmark,
-  LineChart,
-  ClipboardCheck,
-  Network,
-  KanbanSquare,
-  Library,
-  Video,
-  Award,
-  ClipboardList,
-  Trophy,
-  Medal,
-  GraduationCap,
-  ShieldCheck,
-  FileBarChart2,
-  KeyRound,
-} from 'lucide-react';
 import './org-shell.css';
 
 const ROLE_LABEL = {
@@ -56,52 +38,68 @@ const ROLE_LABEL = {
 // color only when active. `badge` keys map 1:1 to /api/org/nav-counts response
 // keys. Role gating (roles: [...]) is unchanged and still applied in renderItem.
 const NAV_ITEMS = [
-  { href: '/org-team-hub', label: 'Command Center', Icon: LayoutDashboard, exact: true, anchor: true },
-  { href: '/org-trading', label: 'Trading Desk', Icon: Landmark, badge: 'tradingDesk' },
-  { href: '/org-team-hub/fund-analytics', label: 'Fund Analytics', Icon: LineChart },
-  { href: '/org-team-hub/assignments', label: 'Assignments', Icon: ClipboardCheck, badge: 'assignments' },
-  { href: '/org-team-hub/org-chart', label: 'Org Chart', Icon: Network, badge: 'orgChart' },
+  {
+    href: '/org-team-hub',
+    label: 'Command Center',
+    icon: 'bi-speedometer2',
+    exact: true,
+    anchor: true,
+  },
+  { href: '/org-trading', label: 'Trading Desk', icon: 'bi-bank2', badge: 'tradingDesk' },
+  { href: '/org-team-hub/fund-analytics', label: 'Fund Analytics', icon: 'bi-graph-up' },
+  {
+    href: '/org-team-hub/assignments',
+    label: 'Assignments',
+    icon: 'bi-clipboard-check',
+    badge: 'assignments',
+  },
+  { href: '/org-team-hub/org-chart', label: 'Org Chart', icon: 'bi-diagram-3', badge: 'orgChart' },
   {
     href: '/org-team-hub/pitches',
     label: 'Pitch Pipeline',
-    Icon: KanbanSquare,
+    icon: 'bi-kanban',
     match: '/org-team-hub/pitch',
     badge: 'pitchPipeline',
   },
   {
     href: '/org-team-hub/research-library',
     label: 'Research Library',
-    Icon: Library,
+    icon: 'bi-collection',
     badge: 'researchLibrary',
   },
-  { href: '/org-team-hub/meetings', label: 'Meetings', Icon: Video, badge: 'meetings' },
-  { href: '/org-team-hub/recognition', label: 'Recognition', Icon: Award, badge: 'recognition' },
-  { href: '/org-team-hub/grades', label: 'Grades', Icon: ClipboardList, badge: 'grades' },
-  { href: '/org-competitions', label: 'Competitions', Icon: Trophy, badge: 'competitions' },
+  { href: '/org-team-hub/meetings', label: 'Meetings', icon: 'bi-camera-video', badge: 'meetings' },
+  {
+    href: '/org-team-hub/recognition',
+    label: 'Recognition',
+    icon: 'bi-award',
+    badge: 'recognition',
+  },
+  { href: '/org-team-hub/grades', label: 'Grades', icon: 'bi-clipboard-data', badge: 'grades' },
+  { href: '/org-competitions', label: 'Competitions', icon: 'bi-trophy', badge: 'competitions' },
   // Cross-university leaderboard (public route, admin-read). A normal internal
   // link — it renders outside per-org scoping by design.
-  { href: '/council-rankings', label: 'Council Rankings', Icon: Medal },
+  { href: '/council-rankings', label: 'Council Rankings', icon: 'bi-award-fill' },
   {
     href: '/org-team-hub/cohorts',
     label: 'Cohorts',
-    Icon: GraduationCap,
+    icon: 'bi-mortarboard',
     roles: ['executive'],
     badge: 'cohorts',
   },
   {
     href: '/org-team-hub/compliance',
     label: 'Compliance',
-    Icon: ShieldCheck,
+    icon: 'bi-shield-check',
     roles: ['executive', 'portfolio_manager'],
     badge: 'compliance',
   },
   {
     href: '/org-team-hub/reports',
     label: 'Reports',
-    Icon: FileBarChart2,
+    icon: 'bi-file-earmark-bar-graph',
     roles: ['executive', 'portfolio_manager'],
   },
-  { href: '/org-team-hub/permissions', label: 'Team Permissions', Icon: KeyRound, highlight: true },
+  { href: '/org-team-hub/permissions', label: 'Team Permissions', icon: 'bi-key', highlight: true },
 ];
 
 function initials(name) {
@@ -190,7 +188,6 @@ export function OrgHubNav() {
 
   const renderItem = (item) => {
     if (item.roles && !item.roles.includes(orgRole)) return null;
-    const { Icon } = item;
     // While an optimistic click is pending, ONLY the clicked item reads active
     // (single highlight); otherwise fall back to the route-matched state.
     const active = optimisticHref ? optimisticHref === item.href : itemActive(pathname, item);
@@ -212,7 +209,7 @@ export function OrgHubNav() {
         aria-current={active ? 'page' : undefined}
         onClick={() => setOptimisticHref(item.href)}
       >
-        <Icon size={15} strokeWidth={1.8} />
+        <i className={`bi ${item.icon}`} aria-hidden="true" />
         <span>{item.label}</span>
         {badge && <span className={`ohn-badge ohn-badge--${badge.tone}`}>{badge.value}</span>}
       </Link>

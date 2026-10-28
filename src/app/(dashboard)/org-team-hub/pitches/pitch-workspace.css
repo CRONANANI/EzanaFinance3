@@ -1624,6 +1624,11 @@
     transform: rotate(360deg);
   }
 }
+@media (prefers-reduced-motion: reduce) {
+  .pdmeet-spin {
+    animation: none;
+  }
+}
 
 /* ── Header ──────────────────────────────────────────────────────────────── */
 .pdmeet-head {

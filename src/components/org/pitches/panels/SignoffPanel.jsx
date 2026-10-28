@@ -1,15 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import {
-  Check,
-  X,
-  CircleDashed,
-  Calculator,
-  MessageSquareText,
-  ShieldCheck,
-  Info,
-} from 'lucide-react';
 
 /**
  * SignoffPanel (spec §5.2) — screening-stage sign-off record.
@@ -82,19 +73,19 @@ export function SignoffPanel({ pitch, viewer, onRefresh }) {
   const viewerRow = members.find((m) => m.member_id === (viewer?.id || state.viewer?.id));
   const pct = required > 0 ? Math.min(100, Math.round((approvedCount / required) * 100)) : 0;
 
-  const ScopeState = ({ entry, label, Icon }) => {
+  const ScopeState = ({ entry, label, icon }) => {
     let status = 'pending';
     if (entry?.decision === 'approve') status = 'approve';
     else if (entry?.decision === 'request_changes') status = 'changes';
     return (
       <span className={`psignoff-scope ${status}`} title={entry?.comment || label}>
-        <Icon size={12} aria-hidden />
+        <i className={`bi ${icon}`} aria-hidden="true" />
         {status === 'approve' ? (
-          <Check size={12} aria-hidden />
+          <i className="bi bi-check-lg" aria-hidden="true" />
         ) : status === 'changes' ? (
-          <X size={12} aria-hidden />
+          <i className="bi bi-x-lg" aria-hidden="true" />
         ) : (
-          <CircleDashed size={12} aria-hidden />
+          <i className="bi bi-circle" aria-hidden="true" />
         )}
         <span className="psignoff-scope-label">{label}</span>
       </span>
@@ -105,7 +96,7 @@ export function SignoffPanel({ pitch, viewer, onRefresh }) {
     <section className="pspanel psignoff" aria-label="Screening sign-offs">
       <header className="psignoff-head">
         <div className="psignoff-title">
-          <ShieldCheck size={15} aria-hidden />
+          <i className="bi bi-shield-check" aria-hidden="true" />
           <span>Sign-offs</span>
         </div>
         <div className="psignoff-progress-wrap">
@@ -129,7 +120,7 @@ export function SignoffPanel({ pitch, viewer, onRefresh }) {
       </header>
 
       <p className="psignoff-hint">
-        <Info size={12} aria-hidden />
+        <i className="bi bi-info-circle" aria-hidden="true" />
         ≥1 in-desk sign-off required
         {inDeskApproved >= 1 ? (
           <span className="psignoff-hint-ok"> · {inDeskApproved} in-desk</span>
@@ -165,8 +156,8 @@ export function SignoffPanel({ pitch, viewer, onRefresh }) {
                   </span>
                 </div>
                 <div className="psignoff-scopes">
-                  <ScopeState entry={m.model} label="Model" Icon={Calculator} />
-                  <ScopeState entry={m.qualitative} label="Qual." Icon={MessageSquareText} />
+                  <ScopeState entry={m.model} label="Model" icon="bi-calculator" />
+                  <ScopeState entry={m.qualitative} label="Qual." icon="bi-chat-square-text" />
                 </div>
               </li>
             );
@@ -194,7 +185,7 @@ export function SignoffPanel({ pitch, viewer, onRefresh }) {
               disabled={!!busy}
               onClick={() => submit('model', 'approve')}
             >
-              <Calculator size={13} aria-hidden />
+              <i className="bi bi-calculator" aria-hidden="true" />
               {viewerRow?.model?.decision === 'approve' ? 'Model approved' : 'Approve (model)'}
             </button>
             <button
@@ -203,7 +194,7 @@ export function SignoffPanel({ pitch, viewer, onRefresh }) {
               disabled={!!busy}
               onClick={() => submit('qualitative', 'approve')}
             >
-              <MessageSquareText size={13} aria-hidden />
+              <i className="bi bi-chat-square-text" aria-hidden="true" />
               {viewerRow?.qualitative?.decision === 'approve'
                 ? 'Qual. approved'
                 : 'Approve (qualitative)'}
@@ -214,7 +205,7 @@ export function SignoffPanel({ pitch, viewer, onRefresh }) {
               disabled={!!busy}
               onClick={() => submit('qualitative', 'request_changes')}
             >
-              <X size={13} aria-hidden />
+              <i className="bi bi-x-lg" aria-hidden="true" />
               Request changes
             </button>
           </div>

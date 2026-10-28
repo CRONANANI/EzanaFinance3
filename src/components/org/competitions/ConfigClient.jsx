@@ -2,14 +2,29 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Lock, Loader2, Save, Globe, Plus, Trash2, ExternalLink } from 'lucide-react';
 import './competitions.css';
 
 const ADMISSION = [
-  { id: 'invite_only', label: 'Invite only', hint: 'You invite specific councils; no public sign-up.' },
-  { id: 'open_signup', label: 'Open sign-up', hint: 'Any council can register and is in automatically.' },
-  { id: 'request_approval', label: 'Request to join', hint: 'Councils ask; you approve or decline each.' },
-  { id: 'application', label: 'Application', hint: 'Councils submit a preliminary pitch; you review and admit.' },
+  {
+    id: 'invite_only',
+    label: 'Invite only',
+    hint: 'You invite specific councils; no public sign-up.',
+  },
+  {
+    id: 'open_signup',
+    label: 'Open sign-up',
+    hint: 'Any council can register and is in automatically.',
+  },
+  {
+    id: 'request_approval',
+    label: 'Request to join',
+    hint: 'Councils ask; you approve or decline each.',
+  },
+  {
+    id: 'application',
+    label: 'Application',
+    hint: 'Councils submit a preliminary pitch; you review and admit.',
+  },
 ];
 
 // datetime-local wants 'YYYY-MM-DDTHH:mm'; DB gives ISO — trim to minutes.
@@ -42,7 +57,10 @@ export function ConfigClient({ competition, initialConfig, canManage }) {
         registration_closes_at: fromLocal(toLocal(form.registration_closes_at)),
         requires_ticker_at_signup: form.requires_ticker_at_signup,
         ticker_assignment: form.ticker_assignment,
-        ticker_pool: (form.ticker_pool_text || '').split(',').map((t) => t.trim()).filter(Boolean),
+        ticker_pool: (form.ticker_pool_text || '')
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
         side_constraint: form.side_constraint,
         application_requires_deck: form.application_requires_deck,
         application_requires_thesis: form.application_requires_thesis,
@@ -78,16 +96,19 @@ export function ConfigClient({ competition, initialConfig, canManage }) {
   return (
     <div className="pcx-page">
       <Link href={`/org-competitions/${competition.slug}`} className="pcx-back">
-        <ArrowLeft size={15} /> {competition.name}
+        <i className="bi bi-arrow-left" aria-hidden="true" /> {competition.name}
       </Link>
       <header className="pcx-cc-head">
         <h1 className="pcx-h1">Onboarding configuration</h1>
-        <p className="pcx-lead">How councils get into this competition, what they must provide, and when.</p>
+        <p className="pcx-lead">
+          How councils get into this competition, what they must provide, and when.
+        </p>
       </header>
 
       {ro ? (
         <div className="pcx-error--banner pcx-lock">
-          <Lock size={15} aria-hidden="true" /> Only the host org’s executives and VPs can edit the configuration. You have read-only access.
+          <i className="bi bi-lock" aria-hidden="true" /> Only the host org’s executives and VPs can
+          edit the configuration. You have read-only access.
         </div>
       ) : null}
 
@@ -96,8 +117,18 @@ export function ConfigClient({ competition, initialConfig, canManage }) {
         <h2 className="pcx-block-title">Admission</h2>
         <div className="pcx-radio-grid">
           {ADMISSION.map((m) => (
-            <label key={m.id} className={`pcx-radio ${form.admission_mode === m.id ? 'is-active' : ''}`}>
-              <input type="radio" name="admission" value={m.id} checked={form.admission_mode === m.id} onChange={() => set('admission_mode', m.id)} disabled={ro} />
+            <label
+              key={m.id}
+              className={`pcx-radio ${form.admission_mode === m.id ? 'is-active' : ''}`}
+            >
+              <input
+                type="radio"
+                name="admission"
+                value={m.id}
+                checked={form.admission_mode === m.id}
+                onChange={() => set('admission_mode', m.id)}
+                disabled={ro}
+              />
               <span className="pcx-radio-label">{m.label}</span>
               <span className="pcx-radio-hint">{m.hint}</span>
             </label>
@@ -105,23 +136,44 @@ export function ConfigClient({ competition, initialConfig, canManage }) {
         </div>
         {form.admission_mode === 'open_signup' ? (
           <label className="pcx-check-row">
-            <input type="checkbox" checked={!!form.requires_host_approval_after_signup} onChange={(e) => set('requires_host_approval_after_signup', e.target.checked)} disabled={ro} />
+            <input
+              type="checkbox"
+              checked={!!form.requires_host_approval_after_signup}
+              onChange={(e) => set('requires_host_approval_after_signup', e.target.checked)}
+              disabled={ro}
+            />
             Require host approval even after sign-up (teams land as “invited” until you confirm)
           </label>
         ) : null}
         {form.admission_mode === 'application' ? (
           <div className="pcx-subgroup">
             <label className="pcx-check-row">
-              <input type="checkbox" checked={!!form.application_requires_deck} onChange={(e) => set('application_requires_deck', e.target.checked)} disabled={ro} />
+              <input
+                type="checkbox"
+                checked={!!form.application_requires_deck}
+                onChange={(e) => set('application_requires_deck', e.target.checked)}
+                disabled={ro}
+              />
               Application requires a preliminary deck link
             </label>
             <label className="pcx-check-row">
-              <input type="checkbox" checked={!!form.application_requires_thesis} onChange={(e) => set('application_requires_thesis', e.target.checked)} disabled={ro} />
+              <input
+                type="checkbox"
+                checked={!!form.application_requires_thesis}
+                onChange={(e) => set('application_requires_thesis', e.target.checked)}
+                disabled={ro}
+              />
               Application requires a written thesis
             </label>
             <label className="pcx-field">
               <span className="pcx-field-label">Instructions shown to applicants</span>
-              <textarea className="pcx-input pcx-textarea" rows={2} value={form.application_prompt || ''} onChange={(e) => set('application_prompt', e.target.value)} disabled={ro} />
+              <textarea
+                className="pcx-input pcx-textarea"
+                rows={2}
+                value={form.application_prompt || ''}
+                onChange={(e) => set('application_prompt', e.target.value)}
+                disabled={ro}
+              />
             </label>
           </div>
         ) : null}
@@ -133,19 +185,47 @@ export function ConfigClient({ competition, initialConfig, canManage }) {
         <div className="pcx-form-grid">
           <label className="pcx-field">
             <span className="pcx-field-label">Max teams (blank = unlimited)</span>
-            <input className="pcx-input" type="number" min="1" value={form.max_teams ?? ''} onChange={(e) => set('max_teams', e.target.value === '' ? '' : Number(e.target.value))} disabled={ro} />
+            <input
+              className="pcx-input"
+              type="number"
+              min="1"
+              value={form.max_teams ?? ''}
+              onChange={(e) =>
+                set('max_teams', e.target.value === '' ? '' : Number(e.target.value))
+              }
+              disabled={ro}
+            />
           </label>
           <label className="pcx-field">
             <span className="pcx-field-label">Max teams per org</span>
-            <input className="pcx-input" type="number" min="1" value={form.max_teams_per_org} onChange={(e) => set('max_teams_per_org', Number(e.target.value))} disabled={ro} />
+            <input
+              className="pcx-input"
+              type="number"
+              min="1"
+              value={form.max_teams_per_org}
+              onChange={(e) => set('max_teams_per_org', Number(e.target.value))}
+              disabled={ro}
+            />
           </label>
           <label className="pcx-field">
             <span className="pcx-field-label">Registration opens</span>
-            <input className="pcx-input" type="datetime-local" value={toLocal(form.registration_opens_at)} onChange={(e) => set('registration_opens_at', e.target.value)} disabled={ro} />
+            <input
+              className="pcx-input"
+              type="datetime-local"
+              value={toLocal(form.registration_opens_at)}
+              onChange={(e) => set('registration_opens_at', e.target.value)}
+              disabled={ro}
+            />
           </label>
           <label className="pcx-field">
             <span className="pcx-field-label">Registration closes</span>
-            <input className="pcx-input" type="datetime-local" value={toLocal(form.registration_closes_at)} onChange={(e) => set('registration_closes_at', e.target.value)} disabled={ro} />
+            <input
+              className="pcx-input"
+              type="datetime-local"
+              value={toLocal(form.registration_closes_at)}
+              onChange={(e) => set('registration_closes_at', e.target.value)}
+              disabled={ro}
+            />
           </label>
         </div>
       </section>
@@ -156,7 +236,12 @@ export function ConfigClient({ competition, initialConfig, canManage }) {
         <div className="pcx-form-grid">
           <label className="pcx-field">
             <span className="pcx-field-label">Ticker assignment</span>
-            <select className="pcx-input" value={form.ticker_assignment} onChange={(e) => set('ticker_assignment', e.target.value)} disabled={ro}>
+            <select
+              className="pcx-input"
+              value={form.ticker_assignment}
+              onChange={(e) => set('ticker_assignment', e.target.value)}
+              disabled={ro}
+            >
               <option value="team_choice">Team chooses</option>
               <option value="host_assigns">Host assigns</option>
               <option value="from_pool">From a pool</option>
@@ -164,7 +249,12 @@ export function ConfigClient({ competition, initialConfig, canManage }) {
           </label>
           <label className="pcx-field">
             <span className="pcx-field-label">Side constraint</span>
-            <select className="pcx-input" value={form.side_constraint} onChange={(e) => set('side_constraint', e.target.value)} disabled={ro}>
+            <select
+              className="pcx-input"
+              value={form.side_constraint}
+              onChange={(e) => set('side_constraint', e.target.value)}
+              disabled={ro}
+            >
               <option value="either">Either (long or short)</option>
               <option value="long_only">Long only</option>
               <option value="short_only">Short only</option>
@@ -174,11 +264,22 @@ export function ConfigClient({ competition, initialConfig, canManage }) {
           {form.ticker_assignment === 'from_pool' ? (
             <label className="pcx-field pcx-field--wide">
               <span className="pcx-field-label">Ticker pool (comma-separated)</span>
-              <input className="pcx-input" value={form.ticker_pool_text} onChange={(e) => set('ticker_pool_text', e.target.value)} placeholder="AAPL, MSFT, NVDA" disabled={ro} />
+              <input
+                className="pcx-input"
+                value={form.ticker_pool_text}
+                onChange={(e) => set('ticker_pool_text', e.target.value)}
+                placeholder="AAPL, MSFT, NVDA"
+                disabled={ro}
+              />
             </label>
           ) : null}
           <label className="pcx-check-row pcx-field--wide">
-            <input type="checkbox" checked={!!form.requires_ticker_at_signup} onChange={(e) => set('requires_ticker_at_signup', e.target.checked)} disabled={ro} />
+            <input
+              type="checkbox"
+              checked={!!form.requires_ticker_at_signup}
+              onChange={(e) => set('requires_ticker_at_signup', e.target.checked)}
+              disabled={ro}
+            />
             Require a ticker at sign-up
           </label>
         </div>
@@ -189,23 +290,53 @@ export function ConfigClient({ competition, initialConfig, canManage }) {
         <h2 className="pcx-block-title">Deliverables</h2>
         <div className="pcx-check-list">
           <label className="pcx-check-row">
-            <input type="checkbox" checked={!!form.deliverable_deck} onChange={(e) => set('deliverable_deck', e.target.checked)} disabled={ro} /> Pitch deck
+            <input
+              type="checkbox"
+              checked={!!form.deliverable_deck}
+              onChange={(e) => set('deliverable_deck', e.target.checked)}
+              disabled={ro}
+            />{' '}
+            Pitch deck
           </label>
           <label className="pcx-check-row">
-            <input type="checkbox" checked={!!form.deliverable_thesis} onChange={(e) => set('deliverable_thesis', e.target.checked)} disabled={ro} /> Written thesis
+            <input
+              type="checkbox"
+              checked={!!form.deliverable_thesis}
+              onChange={(e) => set('deliverable_thesis', e.target.checked)}
+              disabled={ro}
+            />{' '}
+            Written thesis
           </label>
           <label className="pcx-check-row">
-            <input type="checkbox" checked={!!form.deliverable_model} onChange={(e) => set('deliverable_model', e.target.checked)} disabled={ro} /> Valuation model
+            <input
+              type="checkbox"
+              checked={!!form.deliverable_model}
+              onChange={(e) => set('deliverable_model', e.target.checked)}
+              disabled={ro}
+            />{' '}
+            Valuation model
           </label>
         </div>
         <div className="pcx-form-grid">
           <label className="pcx-field">
             <span className="pcx-field-label">Due date</span>
-            <input className="pcx-input" type="datetime-local" value={toLocal(form.deliverable_due_at)} onChange={(e) => set('deliverable_due_at', e.target.value)} disabled={ro} />
+            <input
+              className="pcx-input"
+              type="datetime-local"
+              value={toLocal(form.deliverable_due_at)}
+              onChange={(e) => set('deliverable_due_at', e.target.value)}
+              disabled={ro}
+            />
           </label>
           <label className="pcx-field pcx-field--wide">
             <span className="pcx-field-label">Instructions (optional)</span>
-            <textarea className="pcx-input pcx-textarea" rows={2} value={form.deliverable_notes || ''} onChange={(e) => set('deliverable_notes', e.target.value)} disabled={ro} />
+            <textarea
+              className="pcx-input pcx-textarea"
+              rows={2}
+              value={form.deliverable_notes || ''}
+              onChange={(e) => set('deliverable_notes', e.target.value)}
+              disabled={ro}
+            />
           </label>
         </div>
       </section>
@@ -215,7 +346,13 @@ export function ConfigClient({ competition, initialConfig, canManage }) {
         <h2 className="pcx-block-title">Eligibility</h2>
         <label className="pcx-field">
           <span className="pcx-field-label">Eligibility note (optional)</span>
-          <input className="pcx-input" value={form.eligibility_note || ''} onChange={(e) => set('eligibility_note', e.target.value)} placeholder="Undergraduate students only" disabled={ro} />
+          <input
+            className="pcx-input"
+            value={form.eligibility_note || ''}
+            onChange={(e) => set('eligibility_note', e.target.value)}
+            placeholder="Undergraduate students only"
+            disabled={ro}
+          />
         </label>
       </section>
 
@@ -223,7 +360,12 @@ export function ConfigClient({ competition, initialConfig, canManage }) {
       {canManage ? (
         <div className="pcx-rubric-actions">
           <button type="button" className="pcx-btn pcx-btn--primary" onClick={save} disabled={busy}>
-            {busy ? <Loader2 size={15} className="pcx-spin" /> : <Save size={15} />} Save configuration
+            {busy ? (
+              <i className="bi bi-arrow-repeat pcx-spin" aria-hidden="true" />
+            ) : (
+              <i className="bi bi-floppy" aria-hidden="true" />
+            )}{' '}
+            Save configuration
           </button>
           {saved ? <span className="pcx-saved">Saved</span> : null}
         </div>
@@ -247,7 +389,9 @@ function PublicSponsorsSection({ competition, canManage }) {
   useEffect(() => {
     let alive = true;
     (async () => {
-      const res = await fetch(`/api/org/pitch-competitions/${competition.id}/sponsors`, { cache: 'no-store' });
+      const res = await fetch(`/api/org/pitch-competitions/${competition.id}/sponsors`, {
+        cache: 'no-store',
+      });
       if (alive && res.ok) {
         const json = await res.json();
         setSponsors(json.sponsors || []);
@@ -299,30 +443,57 @@ function PublicSponsorsSection({ competition, canManage }) {
 
   return (
     <section className="pcx-card-block">
-      <h2 className="pcx-block-title"><Globe size={15} aria-hidden="true" /> Public page & sponsors</h2>
+      <h2 className="pcx-block-title">
+        <i className="bi bi-globe2" aria-hidden="true" /> Public page & sponsors
+      </h2>
       <label className="pcx-check-row">
-        <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} disabled={!canManage} />
+        <input
+          type="checkbox"
+          checked={isPublic}
+          onChange={(e) => setIsPublic(e.target.checked)}
+          disabled={!canManage}
+        />
         List this competition on a public page (any council that shares the link markets it)
       </label>
       {isPublic ? (
-        <Link href={`/competitions/${competition.slug}`} className="pcx-link" target="_blank" style={{ marginTop: 6 }}>
-          View public page <ExternalLink size={12} aria-hidden="true" />
+        <Link
+          href={`/competitions/${competition.slug}`}
+          className="pcx-link"
+          target="_blank"
+          style={{ marginTop: 6 }}
+        >
+          View public page <i className="bi bi-box-arrow-up-right" aria-hidden="true" />
         </Link>
       ) : null}
       <label className="pcx-field" style={{ marginTop: 10 }}>
         <span className="pcx-field-label">Public blurb</span>
-        <textarea className="pcx-input pcx-textarea" rows={2} value={blurb} onChange={(e) => setBlurb(e.target.value)} disabled={!canManage} placeholder="A one-paragraph pitch for prospective teams." />
+        <textarea
+          className="pcx-input pcx-textarea"
+          rows={2}
+          value={blurb}
+          onChange={(e) => setBlurb(e.target.value)}
+          disabled={!canManage}
+          placeholder="A one-paragraph pitch for prospective teams."
+        />
       </label>
       {canManage ? (
         <div className="pcx-rubric-actions">
-          <button type="button" className="pcx-btn pcx-btn--primary" onClick={savePublic} disabled={busy}>
-            {busy ? <Loader2 size={14} className="pcx-spin" /> : null} Save public page
+          <button
+            type="button"
+            className="pcx-btn pcx-btn--primary"
+            onClick={savePublic}
+            disabled={busy}
+          >
+            {busy ? <i className="bi bi-arrow-repeat pcx-spin" aria-hidden="true" /> : null} Save
+            public page
           </button>
           {saved ? <span className="pcx-saved">Saved</span> : null}
         </div>
       ) : null}
 
-      <h3 className="pcx-mini-title" style={{ marginTop: 18 }}>Sponsors</h3>
+      <h3 className="pcx-mini-title" style={{ marginTop: 18 }}>
+        Sponsors
+      </h3>
       <ul className="pcx-roster">
         {sponsors.length === 0 ? <li className="pcx-muted">No sponsors yet.</li> : null}
         {sponsors.map((s) => (
@@ -330,8 +501,13 @@ function PublicSponsorsSection({ competition, canManage }) {
             <span className="pcx-roster-main">{s.name}</span>
             <span className="pcx-roster-meta">{s.tier || s.url || ''}</span>
             {canManage ? (
-              <button type="button" className="pcx-iconbtn pcx-danger" onClick={() => removeSponsor(s.id)} aria-label={`Remove ${s.name}`}>
-                <Trash2 size={14} />
+              <button
+                type="button"
+                className="pcx-iconbtn pcx-danger"
+                onClick={() => removeSponsor(s.id)}
+                aria-label={`Remove ${s.name}`}
+              >
+                <i className="bi bi-trash3" aria-hidden="true" />
               </button>
             ) : null}
           </li>
@@ -339,11 +515,26 @@ function PublicSponsorsSection({ competition, canManage }) {
       </ul>
       {canManage ? (
         <form className="pcx-inline-form pcx-inline-form--sm" onSubmit={addSponsor}>
-          <input className="pcx-input" placeholder="Sponsor name" value={newSponsor.name} onChange={(e) => setNewSponsor({ ...newSponsor, name: e.target.value })} />
-          <input className="pcx-input" placeholder="URL (optional)" value={newSponsor.url} onChange={(e) => setNewSponsor({ ...newSponsor, url: e.target.value })} />
-          <input className="pcx-input" placeholder="Tier (optional)" value={newSponsor.tier} onChange={(e) => setNewSponsor({ ...newSponsor, tier: e.target.value })} />
+          <input
+            className="pcx-input"
+            placeholder="Sponsor name"
+            value={newSponsor.name}
+            onChange={(e) => setNewSponsor({ ...newSponsor, name: e.target.value })}
+          />
+          <input
+            className="pcx-input"
+            placeholder="URL (optional)"
+            value={newSponsor.url}
+            onChange={(e) => setNewSponsor({ ...newSponsor, url: e.target.value })}
+          />
+          <input
+            className="pcx-input"
+            placeholder="Tier (optional)"
+            value={newSponsor.tier}
+            onChange={(e) => setNewSponsor({ ...newSponsor, tier: e.target.value })}
+          />
           <button type="submit" className="pcx-btn" disabled={!newSponsor.name.trim()}>
-            <Plus size={14} /> Add
+            <i className="bi bi-plus-lg" aria-hidden="true" /> Add
           </button>
         </form>
       ) : null}

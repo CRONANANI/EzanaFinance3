@@ -2,17 +2,34 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle2, Circle, Upload, FileText, Loader2, Info, Plus, Trash2, ShieldCheck } from 'lucide-react';
 import { createClient } from '@/lib/supabase-browser';
 import { requiredDeliverableKinds } from '@/lib/competitions/onboarding';
 import './competitions.css';
 
-const KIND_LABEL = { deck: 'Pitch deck', thesis: 'Written thesis', model: 'Valuation model', exhibit: 'Exhibit' };
+const KIND_LABEL = {
+  deck: 'Pitch deck',
+  thesis: 'Written thesis',
+  model: 'Valuation model',
+  exhibit: 'Exhibit',
+};
 
 function fmtDue(iso) {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ''));
   if (!m) return null;
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
   return `${months[Number(m[2]) - 1]} ${Number(m[3])}, ${m[1]}`;
 }
 
@@ -21,7 +38,9 @@ export function DeliverablesClient({ competition, team, config, initialDeliverab
   const [status, setStatus] = useState(team?.status);
   const [busyKind, setBusyKind] = useState(null);
   const [error, setError] = useState('');
-  const [thesis, setThesis] = useState(() => (initialDeliverables || []).find((d) => d.kind === 'thesis')?.thesis_text || '');
+  const [thesis, setThesis] = useState(
+    () => (initialDeliverables || []).find((d) => d.kind === 'thesis')?.thesis_text || '',
+  );
   const fileRefs = useRef({});
 
   const required = useMemo(() => requiredDeliverableKinds(config), [config]);
@@ -33,13 +52,16 @@ export function DeliverablesClient({ competition, team, config, initialDeliverab
     return (
       <div className="pcx-page">
         <Link href={`/org-competitions/${competition.slug}`} className="pcx-back">
-          <ArrowLeft size={15} /> {competition.name}
+          <i className="bi bi-arrow-left" aria-hidden="true" /> {competition.name}
         </Link>
         <div className="pcx-card-block pcx-center">
-          <Info size={22} aria-hidden="true" />
+          <i className="bi bi-info-circle" aria-hidden="true" />
           <h1 className="pcx-h1">No team registered</h1>
           <p className="pcx-lead">Your organization isn’t registered in this competition yet.</p>
-          <Link href={`/org-competitions/${competition.slug}/join`} className="pcx-btn pcx-btn--primary">
+          <Link
+            href={`/org-competitions/${competition.slug}/join`}
+            className="pcx-btn pcx-btn--primary"
+          >
             Join the competition
           </Link>
         </div>
@@ -100,7 +122,7 @@ export function DeliverablesClient({ competition, team, config, initialDeliverab
   return (
     <div className="pcx-page pcx-narrow">
       <Link href={`/org-competitions/${competition.slug}`} className="pcx-back">
-        <ArrowLeft size={15} /> {competition.name}
+        <i className="bi bi-arrow-left" aria-hidden="true" /> {competition.name}
       </Link>
       <header className="pcx-cc-head">
         <div className="pcx-cc-title-row">
@@ -115,13 +137,18 @@ export function DeliverablesClient({ competition, team, config, initialDeliverab
         </p>
       </header>
 
-      {config.deliverable_notes ? <p className="pcx-muted pcx-note">{config.deliverable_notes}</p> : null}
+      {config.deliverable_notes ? (
+        <p className="pcx-muted pcx-note">{config.deliverable_notes}</p>
+      ) : null}
       {pastDue ? (
         <div className="pcx-error--banner pcx-lock">
-          <Info size={14} aria-hidden="true" /> The deadline has passed — submissions are closed.
+          <i className="bi bi-info-circle" aria-hidden="true" /> The deadline has passed —
+          submissions are closed.
         </div>
       ) : null}
-      {required.length === 0 ? <p className="pcx-muted">No deliverables are required for this competition.</p> : null}
+      {required.length === 0 ? (
+        <p className="pcx-muted">No deliverables are required for this competition.</p>
+      ) : null}
       {error ? <p className="pcx-error pcx-error--banner">{error}</p> : null}
 
       <div className="pcx-deliverables">
@@ -130,7 +157,11 @@ export function DeliverablesClient({ competition, team, config, initialDeliverab
           return (
             <section className="pcx-card-block pcx-deliv" key={kind}>
               <div className="pcx-deliv-head">
-                {have ? <CheckCircle2 size={18} className="pcx-deliv-ok" aria-hidden="true" /> : <Circle size={18} aria-hidden="true" />}
+                {have ? (
+                  <i className="bi bi-check-circle pcx-deliv-ok" aria-hidden="true" />
+                ) : (
+                  <i className="bi bi-circle" aria-hidden="true" />
+                )}
                 <h2 className="pcx-block-title pcx-deliv-title">{KIND_LABEL[kind]}</h2>
                 {have ? <span className="pcx-muted">Submitted</span> : null}
               </div>
@@ -145,13 +176,25 @@ export function DeliverablesClient({ competition, team, config, initialDeliverab
                     placeholder="Paste your written thesis…"
                     disabled={pastDue}
                   />
-                  <button type="button" className="pcx-btn pcx-btn--primary" onClick={saveThesis} disabled={busyKind === 'thesis' || pastDue || !thesis.trim()}>
-                    {busyKind === 'thesis' ? <Loader2 size={14} className="pcx-spin" /> : <FileText size={14} />} Save thesis
+                  <button
+                    type="button"
+                    className="pcx-btn pcx-btn--primary"
+                    onClick={saveThesis}
+                    disabled={busyKind === 'thesis' || pastDue || !thesis.trim()}
+                  >
+                    {busyKind === 'thesis' ? (
+                      <i className="bi bi-arrow-repeat pcx-spin" aria-hidden="true" />
+                    ) : (
+                      <i className="bi bi-file-earmark-text" aria-hidden="true" />
+                    )}{' '}
+                    Save thesis
                   </button>
                 </>
               ) : (
                 <div className="pcx-deliv-file">
-                  {have?.file_name ? <span className="pcx-deliv-filename">{have.file_name}</span> : null}
+                  {have?.file_name ? (
+                    <span className="pcx-deliv-filename">{have.file_name}</span>
+                  ) : null}
                   <input
                     ref={(el) => (fileRefs.current[kind] = el)}
                     type="file"
@@ -159,8 +202,18 @@ export function DeliverablesClient({ competition, team, config, initialDeliverab
                     onChange={(e) => uploadFile(kind, e.target.files?.[0])}
                     disabled={pastDue}
                   />
-                  <button type="button" className="pcx-btn" onClick={() => fileRefs.current[kind]?.click()} disabled={busyKind === kind || pastDue}>
-                    {busyKind === kind ? <Loader2 size={14} className="pcx-spin" /> : <Upload size={14} />} {have ? 'Replace file' : 'Upload file'}
+                  <button
+                    type="button"
+                    className="pcx-btn"
+                    onClick={() => fileRefs.current[kind]?.click()}
+                    disabled={busyKind === kind || pastDue}
+                  >
+                    {busyKind === kind ? (
+                      <i className="bi bi-arrow-repeat pcx-spin" aria-hidden="true" />
+                    ) : (
+                      <i className="bi bi-upload" aria-hidden="true" />
+                    )}{' '}
+                    {have ? 'Replace file' : 'Upload file'}
                   </button>
                 </div>
               )}
@@ -221,21 +274,32 @@ function TalentPanel({ teamId }) {
     }
   };
   const removeMember = async (id) => {
-    if (await call({ action: 'remove', member_id: id })) setMembers((m) => m.filter((x) => x.id !== id));
+    if (await call({ action: 'remove', member_id: id }))
+      setMembers((m) => m.filter((x) => x.id !== id));
   };
   const setConsent = async (m, consented, scope) => {
     const json = await call({ action: 'consent', member_id: m.id, consented, scope });
-    if (json) setMembers((ms) => ms.map((x) => (x.id === m.id ? { ...x, optin: { consented, consent_scope: consented ? scope : 'none' } } : x)));
+    if (json)
+      setMembers((ms) =>
+        ms.map((x) =>
+          x.id === m.id
+            ? { ...x, optin: { consented, consent_scope: consented ? scope : 'none' } }
+            : x,
+        ),
+      );
   };
 
   if (!loaded) return null;
 
   return (
     <section className="pcx-card-block" style={{ marginTop: 20 }}>
-      <h2 className="pcx-block-title"><ShieldCheck size={15} aria-hidden="true" /> Team & recruiting consent</h2>
+      <h2 className="pcx-block-title">
+        <i className="bi bi-shield-check" aria-hidden="true" /> Team & recruiting consent
+      </h2>
       <p className="pcx-muted pcx-note">
-        Opt-in only. By default nothing about a member is shared. A member can allow judges (or judges
-        and sponsoring firms) to see their pitch as a recruiting signal — and can revoke it any time.
+        Opt-in only. By default nothing about a member is shared. A member can allow judges (or
+        judges and sponsoring firms) to see their pitch as a recruiting signal — and can revoke it
+        any time.
       </p>
       <ul className="pcx-roster">
         {members.length === 0 ? <li className="pcx-muted">No team members added yet.</li> : null}
@@ -246,26 +310,50 @@ function TalentPanel({ teamId }) {
             <li key={m.id} className="pcx-talent-row">
               <span className="pcx-roster-main">{m.full_name}</span>
               <label className="pcx-check-row" style={{ margin: 0 }}>
-                <input type="checkbox" checked={!!on} disabled={busy} onChange={(e) => setConsent(m, e.target.checked, e.target.checked ? 'judges_only' : 'none')} />
+                <input
+                  type="checkbox"
+                  checked={!!on}
+                  disabled={busy}
+                  onChange={(e) =>
+                    setConsent(m, e.target.checked, e.target.checked ? 'judges_only' : 'none')
+                  }
+                />
                 Recruiting opt-in
               </label>
               {on ? (
-                <select className="pcx-input pcx-input--sm" value={scope} disabled={busy} onChange={(e) => setConsent(m, true, e.target.value)} aria-label="Consent scope">
+                <select
+                  className="pcx-input pcx-input--sm"
+                  value={scope}
+                  disabled={busy}
+                  onChange={(e) => setConsent(m, true, e.target.value)}
+                  aria-label="Consent scope"
+                >
                   <option value="judges_only">Judges only</option>
                   <option value="sponsoring_firms">Judges & sponsoring firms</option>
                 </select>
               ) : null}
-              <button type="button" className="pcx-iconbtn pcx-danger" onClick={() => removeMember(m.id)} disabled={busy} aria-label={`Remove ${m.full_name}`}>
-                <Trash2 size={14} />
+              <button
+                type="button"
+                className="pcx-iconbtn pcx-danger"
+                onClick={() => removeMember(m.id)}
+                disabled={busy}
+                aria-label={`Remove ${m.full_name}`}
+              >
+                <i className="bi bi-trash3" aria-hidden="true" />
               </button>
             </li>
           );
         })}
       </ul>
       <form className="pcx-inline-form pcx-inline-form--sm" onSubmit={addMember}>
-        <input className="pcx-input" placeholder="Add team member name" value={name} onChange={(e) => setName(e.target.value)} />
+        <input
+          className="pcx-input"
+          placeholder="Add team member name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
         <button type="submit" className="pcx-btn" disabled={busy || !name.trim()}>
-          <Plus size={14} /> Add
+          <i className="bi bi-plus-lg" aria-hidden="true" /> Add
         </button>
       </form>
     </section>

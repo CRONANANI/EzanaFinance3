@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Check, X, ExternalLink, Loader2 } from 'lucide-react';
 import './competitions.css';
 
 const REQ_TONE = { pending: 'warn', approved: 'pos', rejected: 'mut', withdrawn: 'mut' };
@@ -30,7 +29,9 @@ export function RequestsClient({ competition, initialRequests, canManage }) {
         setError(json?.error || 'Could not record the decision.');
         return;
       }
-      setRequests((rs) => rs.map((r) => (r.id === req.id ? { ...r, status: decision, decision_note: note } : r)));
+      setRequests((rs) =>
+        rs.map((r) => (r.id === req.id ? { ...r, status: decision, decision_note: note } : r)),
+      );
     } catch {
       setError('Could not connect.');
     } finally {
@@ -44,11 +45,13 @@ export function RequestsClient({ competition, initialRequests, canManage }) {
   return (
     <div className="pcx-page">
       <Link href={`/org-competitions/${competition.slug}`} className="pcx-back">
-        <ArrowLeft size={15} /> {competition.name}
+        <i className="bi bi-arrow-left" aria-hidden="true" /> {competition.name}
       </Link>
       <header className="pcx-cc-head">
         <h1 className="pcx-h1">Join requests</h1>
-        <p className="pcx-lead">Review councils requesting or applying to enter. Approving provisions their team.</p>
+        <p className="pcx-lead">
+          Review councils requesting or applying to enter. Approving provisions their team.
+        </p>
       </header>
 
       {error ? <p className="pcx-error pcx-error--banner">{error}</p> : null}
@@ -64,21 +67,43 @@ export function RequestsClient({ competition, initialRequests, canManage }) {
                 <div className="pcx-req-main">
                   <div className="pcx-req-name">{r.team_name}</div>
                   <div className="pcx-req-meta">{r.contact_email || '—'}</div>
-                  {r.application_thesis ? <p className="pcx-req-thesis">{r.application_thesis}</p> : null}
+                  {r.application_thesis ? (
+                    <p className="pcx-req-thesis">{r.application_thesis}</p>
+                  ) : null}
                   {r.application_deck_url ? (
-                    <a className="pcx-link" href={r.application_deck_url} target="_blank" rel="noopener noreferrer">
-                      Application deck <ExternalLink size={12} aria-hidden="true" />
+                    <a
+                      className="pcx-link"
+                      href={r.application_deck_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Application deck <i className="bi bi-box-arrow-up-right" aria-hidden="true" />
                     </a>
                   ) : null}
                   {r.application_note ? <p className="pcx-muted">{r.application_note}</p> : null}
                 </div>
                 {canManage ? (
                   <div className="pcx-req-actions">
-                    <button type="button" className="pcx-btn pcx-btn--primary" onClick={() => decide(r, 'approved')} disabled={busyId === r.id}>
-                      {busyId === r.id ? <Loader2 size={14} className="pcx-spin" /> : <Check size={14} />} Approve
+                    <button
+                      type="button"
+                      className="pcx-btn pcx-btn--primary"
+                      onClick={() => decide(r, 'approved')}
+                      disabled={busyId === r.id}
+                    >
+                      {busyId === r.id ? (
+                        <i className="bi bi-arrow-repeat pcx-spin" aria-hidden="true" />
+                      ) : (
+                        <i className="bi bi-check-lg" aria-hidden="true" />
+                      )}{' '}
+                      Approve
                     </button>
-                    <button type="button" className="pcx-btn" onClick={() => decide(r, 'rejected')} disabled={busyId === r.id}>
-                      <X size={14} /> Decline
+                    <button
+                      type="button"
+                      className="pcx-btn"
+                      onClick={() => decide(r, 'rejected')}
+                      disabled={busyId === r.id}
+                    >
+                      <i className="bi bi-x-lg" aria-hidden="true" /> Decline
                     </button>
                   </div>
                 ) : (

@@ -684,6 +684,7 @@ html.light-mode .asg2-metric {
 }
 .asg2-empty-icon {
   color: color-mix(in srgb, var(--emerald) 60%, var(--text-muted));
+  font-size: 1.625rem;
 }
 .asg2-empty-title {
   font-weight: 700;

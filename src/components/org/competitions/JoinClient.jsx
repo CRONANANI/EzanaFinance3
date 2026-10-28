@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle2, Info, Loader2 } from 'lucide-react';
 import './competitions.css';
 
 const MODE_COPY = {
@@ -29,10 +28,10 @@ export function JoinClient({ competition, config, isHost, alreadyEntered, hasPen
   const notice = (title, body) => (
     <div className="pcx-page">
       <Link href="/org-competitions" className="pcx-back">
-        <ArrowLeft size={15} /> Competitions
+        <i className="bi bi-arrow-left" aria-hidden="true" /> Competitions
       </Link>
       <div className="pcx-card-block pcx-center">
-        <Info size={22} aria-hidden="true" />
+        <i className="bi bi-info-circle" aria-hidden="true" />
         <h1 className="pcx-h1">{title}</h1>
         <p className="pcx-lead">{body}</p>
         <Link href={`/org-competitions/${competition.slug}`} className="pcx-btn pcx-btn--primary">
@@ -113,7 +112,7 @@ export function JoinClient({ competition, config, isHost, alreadyEntered, hasPen
   return (
     <div className="pcx-page pcx-narrow">
       <Link href="/org-competitions" className="pcx-back">
-        <ArrowLeft size={15} /> Competitions
+        <i className="bi bi-arrow-left" aria-hidden="true" /> Competitions
       </Link>
       <header className="pcx-cc-head">
         <h1 className="pcx-h1">{copy.title}</h1>
@@ -125,7 +124,7 @@ export function JoinClient({ competition, config, isHost, alreadyEntered, hasPen
 
       {config.eligibility_note ? (
         <div className="pcx-error--banner pcx-lock">
-          <Info size={14} aria-hidden="true" /> {config.eligibility_note}
+          <i className="bi bi-info-circle" aria-hidden="true" /> {config.eligibility_note}
         </div>
       ) : null}
 
@@ -238,7 +237,11 @@ export function JoinClient({ competition, config, isHost, alreadyEntered, hasPen
           className="pcx-btn pcx-btn--primary"
           disabled={busy || !form.team_name.trim()}
         >
-          {busy ? <Loader2 size={15} className="pcx-spin" /> : <CheckCircle2 size={15} />}{' '}
+          {busy ? (
+            <i className="bi bi-arrow-repeat pcx-spin" aria-hidden="true" />
+          ) : (
+            <i className="bi bi-check-circle" aria-hidden="true" />
+          )}{' '}
           {copy.cta}
         </button>
       </form>

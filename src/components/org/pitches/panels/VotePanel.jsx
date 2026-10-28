@@ -1,16 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Check,
-  X,
-  MinusCircle,
-  ThumbsUp,
-  ThumbsDown,
-  UserX,
-  Users,
-  Vote as VoteIcon,
-} from 'lucide-react';
 
 /**
  * VotePanel (spec §5.2) — the IC ballot at the `ic_vote` stage.
@@ -31,15 +21,15 @@ import {
  */
 
 const CHOICES = [
-  { value: 'yes', label: 'Buy', icon: ThumbsUp, cls: 'buy' },
-  { value: 'no', label: 'Pass', icon: ThumbsDown, cls: 'pass' },
-  { value: 'abstain', label: 'Abstain', icon: MinusCircle, cls: 'abstain' },
+  { value: 'yes', label: 'Buy', icon: 'bi-hand-thumbs-up', cls: 'buy' },
+  { value: 'no', label: 'Pass', icon: 'bi-hand-thumbs-down', cls: 'pass' },
+  { value: 'abstain', label: 'Abstain', icon: 'bi-dash-circle', cls: 'abstain' },
 ];
 
 const VOTE_META = {
-  yes: { label: 'Buy', cls: 'buy', Icon: Check },
-  no: { label: 'Pass', cls: 'pass', Icon: X },
-  abstain: { label: 'Abstain', cls: 'abstain', Icon: MinusCircle },
+  yes: { label: 'Buy', cls: 'buy', icon: 'bi-check-lg' },
+  no: { label: 'Pass', cls: 'pass', icon: 'bi-x-lg' },
+  abstain: { label: 'Abstain', cls: 'abstain', icon: 'bi-dash-circle' },
 };
 
 export function VotePanel({ pitch, viewer, onRefresh }) {
@@ -110,7 +100,7 @@ export function VotePanel({ pitch, viewer, onRefresh }) {
       {/* Quorum progress */}
       <header className="pvote-quorum">
         <div className="pvote-quorum-head">
-          <Users size={14} aria-hidden />
+          <i className="bi bi-people" aria-hidden="true" />
           <span className="pvote-quorum-title">Quorum</span>
           <span className={`pvote-quorum-state ${quorumMet ? 'is-met' : 'is-short'}`}>
             {quorumMet ? 'met' : 'not yet met'}
@@ -147,7 +137,7 @@ export function VotePanel({ pitch, viewer, onRefresh }) {
       {recused.length > 0 ? (
         <div className="pvote-recusal">
           <div className="pvote-recusal-head">
-            <UserX size={13} aria-hidden />
+            <i className="bi bi-person-x" aria-hidden="true" />
             <span>Recused — excluded from quorum</span>
           </div>
           <ul className="pvote-recusal-list">
@@ -170,7 +160,7 @@ export function VotePanel({ pitch, viewer, onRefresh }) {
         <h4 className="pvote-subhead">Ballots</h4>
         {votes.length === 0 ? (
           <div className="pvote-empty">
-            <VoteIcon size={20} aria-hidden />
+            <i className="bi bi-check2-square" aria-hidden="true" />
             <p>No votes cast yet.</p>
             <span>The IC ballot opens when the pitch reaches committee vote.</span>
           </div>
@@ -189,7 +179,7 @@ export function VotePanel({ pitch, viewer, onRefresh }) {
                       <span className="pvote-badge recused">Recused</span>
                     ) : meta ? (
                       <span className={`pvote-badge ${meta.cls}`}>
-                        <meta.Icon size={12} aria-hidden /> {meta.label}
+                        <i className={`bi ${meta.icon}`} aria-hidden="true" /> {meta.label}
                       </span>
                     ) : (
                       <span className="pvote-badge sealed">Sealed</span>
@@ -217,7 +207,7 @@ export function VotePanel({ pitch, viewer, onRefresh }) {
                 className={`pvote-choice ${c.cls} ${choice === c.value ? 'is-active' : ''}`}
                 onClick={() => setChoice(c.value)}
               >
-                <c.icon size={15} aria-hidden />
+                <i className={`bi ${c.icon}`} aria-hidden="true" />
                 {c.label}
               </button>
             ))}
@@ -248,7 +238,8 @@ export function VotePanel({ pitch, viewer, onRefresh }) {
 
       {votingOpen && isEligibleRole && myVote && (
         <p className="pvote-voted-note">
-          <Check size={13} aria-hidden /> Your ballot is recorded. Re-submitting overwrites it.
+          <i className="bi bi-check-lg" aria-hidden="true" /> Your ballot is recorded. Re-submitting
+          overwrites it.
         </p>
       )}
       {!votingOpen && <p className="pvote-closed-note">Voting is closed for this pitch.</p>}

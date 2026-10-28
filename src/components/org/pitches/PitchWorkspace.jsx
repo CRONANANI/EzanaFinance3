@@ -2,26 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import {
-  LayoutGrid,
-  LineChart,
-  Vote,
-  Clock,
-  AlertTriangle,
-  Lock,
-  Archive,
-  CircleDot,
-  Inbox,
-  CheckCircle2,
-  CalendarClock,
-  ArrowRight,
-} from 'lucide-react';
 import { useOrg } from '@/contexts/OrgContext';
 
 const VIEWS = [
-  { id: 'kanban', label: 'Kanban', Icon: LayoutGrid },
-  { id: 'tracker', label: 'Tracker', Icon: LineChart },
-  { id: 'ic', label: 'IC Vote', Icon: Vote },
+  { id: 'kanban', label: 'Kanban', icon: 'bi-speedometer2' },
+  { id: 'tracker', label: 'Tracker', icon: 'bi-graph-up' },
+  { id: 'ic', label: 'IC Vote', icon: 'bi-check2-square' },
 ];
 
 const MANAGER_ROLES = ['executive', 'portfolio_manager'];
@@ -66,7 +52,7 @@ function PitchCard({ p }) {
         <span className="pw-chip">{p.analyst_name?.split(' ')[0] || 'Unassigned'}</span>
         <ConvictionDots level={p.conviction_level} />
         <span className={`pw-chip${p.is_aging ? ' is-amber' : ''}`}>
-          <Clock size={11} />
+          <i className="bi bi-clock" aria-hidden="true" />
           <span className="pw-num">{p.days_in_stage}d</span>
         </span>
         <span className="pw-chip">
@@ -75,7 +61,7 @@ function PitchCard({ p }) {
         </span>
         {p.catalyst_date && (
           <span className="pw-chip">
-            <CalendarClock size={11} />
+            <i className="bi bi-calendar-event" aria-hidden="true" />
             {new Date(p.catalyst_date).toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric',
@@ -85,7 +71,7 @@ function PitchCard({ p }) {
       </div>
       {p.gate_block && (
         <div className="pw-badge-block">
-          <Lock size={11} /> {p.gate_block}
+          <i className="bi bi-lock" aria-hidden="true" /> {p.gate_block}
         </div>
       )}
     </Link>
@@ -120,7 +106,7 @@ function KanbanView({ board }) {
       <div className="pw-archive">
         <div className="pw-archive-head">
           <div className="pw-archive-head-l">
-            <Archive size={13} />
+            <i className="bi bi-archive" aria-hidden="true" />
             <span className="pw-archive-title">Archive</span>
             <span className="pw-archive-counts">
               <span className="pw-arc-count is-rejected">
@@ -132,7 +118,7 @@ function KanbanView({ board }) {
             </span>
           </div>
           <Link href="/org-team-hub/pitch-archive" className="pw-archive-link">
-            Open archive <ArrowRight size={13} />
+            Open archive <i className="bi bi-arrow-right" aria-hidden="true" />
           </Link>
         </div>
         {archive.length === 0 ? (
@@ -165,7 +151,7 @@ function TrackerView({ data }) {
   if (!data.rows?.length) {
     return (
       <div className="pw-empty">
-        <Inbox size={26} />
+        <i className="bi bi-inbox" aria-hidden="true" />
         <div>No live or portfolio pitches to track yet.</div>
       </div>
     );
@@ -207,7 +193,7 @@ function TrackerView({ data }) {
               <td>
                 {p.review_due ? (
                   <span className="pw-flag">
-                    <AlertTriangle size={12} /> Due
+                    <i className="bi bi-exclamation-triangle" aria-hidden="true" /> Due
                   </span>
                 ) : (
                   <span style={{ color: 'var(--text-ghost)' }}>—</span>
@@ -225,7 +211,7 @@ function Quorum({ q }) {
   const fill = q.needed ? Math.min(100, (q.castCount / q.needed) * 100) : 0;
   return (
     <div className={`pw-quorum${q.met ? ' met' : ''}`}>
-      <CircleDot size={12} />
+      <i className="bi bi-record-circle" aria-hidden="true" />
       <span className="pw-num">
         {q.castCount}/{q.needed}
       </span>
@@ -307,7 +293,7 @@ function IcView({ data, canManage, onScheduled }) {
             />
           </label>
           <button type="button" className="pw-btn" disabled={busy} onClick={schedule}>
-            <CalendarClock size={14} /> Schedule IC meeting
+            <i className="bi bi-calendar-event" aria-hidden="true" /> Schedule IC meeting
           </button>
         </div>
       )}
@@ -319,7 +305,7 @@ function IcView({ data, canManage, onScheduled }) {
 
       {!data.agenda?.length ? (
         <div className="pw-empty">
-          <Vote size={26} />
+          <i className="bi bi-check2-square" aria-hidden="true" />
           <div>No pitches scheduled for the Investment Committee.</div>
         </div>
       ) : (
@@ -474,7 +460,7 @@ export function PitchWorkspace({ refreshKey = 0, initialData = null }) {
 
       <div className="pw-toolbar">
         <div className="pw-toggle" role="tablist" aria-label="Pipeline view">
-          {VIEWS.map(({ id, label, Icon }) => (
+          {VIEWS.map(({ id, label, icon }) => (
             <button
               key={id}
               type="button"
@@ -483,7 +469,7 @@ export function PitchWorkspace({ refreshKey = 0, initialData = null }) {
               className={view === id ? 'is-active' : ''}
               onClick={() => setView(id)}
             >
-              <Icon size={14} /> {label}
+              <i className={`bi ${icon}`} aria-hidden="true" /> {label}
             </button>
           ))}
         </div>
@@ -493,7 +479,8 @@ export function PitchWorkspace({ refreshKey = 0, initialData = null }) {
             <div className="pw-filters">
               {data?.stale && (
                 <span className="pw-stale">
-                  <AlertTriangle size={12} /> Prices stale (FMP unavailable)
+                  <i className="bi bi-exclamation-triangle" aria-hidden="true" /> Prices stale (FMP
+                  unavailable)
                 </span>
               )}
               <select
@@ -560,13 +547,13 @@ export function PitchWorkspace({ refreshKey = 0, initialData = null }) {
         </div>
       ) : !data ? (
         <div className="pw-empty">
-          <AlertTriangle size={26} />
+          <i className="bi bi-exclamation-triangle" aria-hidden="true" />
           <div>Could not load the pipeline.</div>
         </div>
       ) : view === 'kanban' ? (
         (filteredBoard?.total_active ?? 0) === 0 && (filteredBoard?.archive?.length ?? 0) === 0 ? (
           <div className="pw-empty">
-            <CheckCircle2 size={26} />
+            <i className="bi bi-check-circle" aria-hidden="true" />
             <div>No pitches yet. Submit the first idea to seed the pipeline.</div>
           </div>
         ) : (

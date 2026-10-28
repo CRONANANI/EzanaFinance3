@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { KeyRound, Check, Loader2, Lock } from 'lucide-react';
 import { useOrg } from '@/contexts/OrgContext';
 import './team-permissions.css';
 
@@ -94,7 +93,7 @@ export function TeamPermissionsClient({ initialData }) {
         <h1 className="tpm-title">
           Team Permissions
           <span className="tpm-role-pill">
-            <KeyRound size={12} aria-hidden />
+            <i className="bi bi-key" aria-hidden="true" />
             {viewer.canGrant ? 'You can grant permissions' : 'View only'}
           </span>
         </h1>
@@ -137,11 +136,11 @@ export function TeamPermissionsClient({ initialData }) {
                     >
                       <span className="tpm-perm-check" aria-hidden>
                         {saving ? (
-                          <Loader2 size={13} className="tpm-spin" />
+                          <i className="bi bi-arrow-repeat tpm-spin" aria-hidden="true" />
                         ) : locked ? (
-                          <Lock size={12} />
+                          <i className="bi bi-lock" aria-hidden="true" />
                         ) : p.on ? (
-                          <Check size={13} />
+                          <i className="bi bi-check-lg" aria-hidden="true" />
                         ) : null}
                       </span>
                       <span className="tpm-perm-label">{PERMISSION_LABELS[p.key] || p.key}</span>

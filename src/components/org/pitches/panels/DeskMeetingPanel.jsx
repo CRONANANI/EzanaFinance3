@@ -1,17 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Users,
-  ShieldCheck,
-  Scale,
-  TrendingDown,
-  TrendingUp,
-  Percent,
-  CalendarDays,
-  ClipboardCheck,
-  Loader2,
-} from 'lucide-react';
 
 /**
  * DeskMeetingPanel (spec §5.2, §2.4) — the deep_dive desk meeting artifact.
@@ -134,7 +123,7 @@ export function DeskMeetingPanel({ pitch, viewer, onRefresh }) {
   if (loading) {
     return (
       <div className="pdmeet pdmeet--loading">
-        <Loader2 size={14} className="pdmeet-spin" aria-hidden /> Loading desk meeting…
+        <i className="bi bi-arrow-repeat pdmeet-spin" aria-hidden="true" /> Loading desk meeting…
       </div>
     );
   }
@@ -153,21 +142,22 @@ export function DeskMeetingPanel({ pitch, viewer, onRefresh }) {
       <section className="pdmeet" aria-label="Desk meeting">
         <header className="pdmeet-head">
           <h3 className="pdmeet-title">
-            <ClipboardCheck size={15} aria-hidden /> Desk meeting logged
+            <i className="bi bi-clipboard-check" aria-hidden="true" /> Desk meeting logged
           </h3>
           <span className="pdmeet-badge">
-            <CalendarDays size={12} aria-hidden /> <span className="pdmeet-num">{fmtDate}</span>
+            <i className="bi bi-calendar3" aria-hidden="true" />{' '}
+            <span className="pdmeet-num">{fmtDate}</span>
           </span>
         </header>
 
         <div className="pdmeet-meta">
           <span className="pdmeet-metaitem">
-            <Users size={13} aria-hidden />
+            <i className="bi bi-people" aria-hidden="true" />
             <span className="pdmeet-num">{attendees.length}</span> attendees
           </span>
           {meeting.proposed_sizing_pct != null && (
             <span className="pdmeet-metaitem">
-              <Percent size={13} aria-hidden />
+              <i className="bi bi-percent" aria-hidden="true" />
               Proposed sizing{' '}
               <span className="pdmeet-num">{Number(meeting.proposed_sizing_pct)}%</span>
             </span>
@@ -190,11 +180,11 @@ export function DeskMeetingPanel({ pitch, viewer, onRefresh }) {
         )}
 
         <dl className="pdmeet-fields">
-          <Field icon={ShieldCheck} label="Compliance notes" value={meeting.compliance_notes} />
-          <Field icon={Scale} label="Sector weight" value={meeting.sector_weight_notes} />
-          <Field icon={TrendingDown} label="Headwinds" value={meeting.headwinds} />
-          <Field icon={TrendingUp} label="Tailwinds" value={meeting.tailwinds} />
-          {meeting.notes && <Field icon={ClipboardCheck} label="Notes" value={meeting.notes} />}
+          <Field icon="bi-shield-check" label="Compliance notes" value={meeting.compliance_notes} />
+          <Field icon="bi-bank" label="Sector weight" value={meeting.sector_weight_notes} />
+          <Field icon="bi-graph-down-arrow" label="Headwinds" value={meeting.headwinds} />
+          <Field icon="bi-graph-up-arrow" label="Tailwinds" value={meeting.tailwinds} />
+          {meeting.notes && <Field icon="bi-clipboard-check" label="Notes" value={meeting.notes} />}
         </dl>
       </section>
     );
@@ -204,7 +194,7 @@ export function DeskMeetingPanel({ pitch, viewer, onRefresh }) {
   if (!eligible && !showForm) {
     return (
       <section className="pdmeet pdmeet--empty" aria-label="Desk meeting">
-        <ClipboardCheck size={16} aria-hidden />
+        <i className="bi bi-clipboard-check" aria-hidden="true" />
         <p>
           No desk meeting logged yet. A desk PM or executive must record it before this pitch can
           advance.
@@ -217,7 +207,7 @@ export function DeskMeetingPanel({ pitch, viewer, onRefresh }) {
   if (!showForm) {
     return (
       <section className="pdmeet pdmeet--empty" aria-label="Desk meeting">
-        <ClipboardCheck size={16} aria-hidden />
+        <i className="bi bi-clipboard-check" aria-hidden="true" />
         <p>
           No desk meeting logged yet. Record the structured meeting to clear the deep-dive gate.
         </p>
@@ -232,14 +222,14 @@ export function DeskMeetingPanel({ pitch, viewer, onRefresh }) {
     <section className="pdmeet" aria-label="Log desk meeting">
       <header className="pdmeet-head">
         <h3 className="pdmeet-title">
-          <ClipboardCheck size={15} aria-hidden /> Log desk meeting
+          <i className="bi bi-clipboard-check" aria-hidden="true" /> Log desk meeting
         </h3>
       </header>
 
       <div className="pdmeet-form">
         <label className="pdmeet-label">
           <span>
-            <CalendarDays size={12} aria-hidden /> Meeting date &amp; time
+            <i className="bi bi-calendar3" aria-hidden="true" /> Meeting date &amp; time
           </span>
           <input
             type="datetime-local"
@@ -251,7 +241,8 @@ export function DeskMeetingPanel({ pitch, viewer, onRefresh }) {
 
         <div className="pdmeet-label">
           <span>
-            <Users size={12} aria-hidden /> Attendees (need <span className="pdmeet-num">≥3</span> ·{' '}
+            <i className="bi bi-people" aria-hidden="true" /> Attendees (need{' '}
+            <span className="pdmeet-num">≥3</span> ·{' '}
             <span className="pdmeet-num">{attendeeIds.length}</span> selected)
           </span>
           {hasMemberList ? (
@@ -283,7 +274,7 @@ export function DeskMeetingPanel({ pitch, viewer, onRefresh }) {
 
         <label className="pdmeet-label">
           <span>
-            <ShieldCheck size={12} aria-hidden /> Compliance notes
+            <i className="bi bi-shield-check" aria-hidden="true" /> Compliance notes
           </span>
           <textarea
             className="pdmeet-input"
@@ -296,7 +287,7 @@ export function DeskMeetingPanel({ pitch, viewer, onRefresh }) {
 
         <label className="pdmeet-label">
           <span>
-            <Scale size={12} aria-hidden /> Sector weight
+            <i className="bi bi-bank" aria-hidden="true" /> Sector weight
           </span>
           <textarea
             className="pdmeet-input"
@@ -310,7 +301,7 @@ export function DeskMeetingPanel({ pitch, viewer, onRefresh }) {
         <div className="pdmeet-row2">
           <label className="pdmeet-label">
             <span>
-              <TrendingDown size={12} aria-hidden /> Headwinds
+              <i className="bi bi-graph-down-arrow" aria-hidden="true" /> Headwinds
             </span>
             <textarea
               className="pdmeet-input"
@@ -321,7 +312,7 @@ export function DeskMeetingPanel({ pitch, viewer, onRefresh }) {
           </label>
           <label className="pdmeet-label">
             <span>
-              <TrendingUp size={12} aria-hidden /> Tailwinds
+              <i className="bi bi-graph-up-arrow" aria-hidden="true" /> Tailwinds
             </span>
             <textarea
               className="pdmeet-input"
@@ -335,7 +326,7 @@ export function DeskMeetingPanel({ pitch, viewer, onRefresh }) {
         <div className="pdmeet-row2">
           <label className="pdmeet-label">
             <span>
-              <Percent size={12} aria-hidden /> Proposed sizing %
+              <i className="bi bi-percent" aria-hidden="true" /> Proposed sizing %
             </span>
             <input
               type="number"
@@ -381,7 +372,7 @@ export function DeskMeetingPanel({ pitch, viewer, onRefresh }) {
           >
             {saving ? (
               <>
-                <Loader2 size={13} className="pdmeet-spin" aria-hidden /> Saving…
+                <i className="bi bi-arrow-repeat pdmeet-spin" aria-hidden="true" /> Saving…
               </>
             ) : (
               'Log Desk Meeting'
@@ -393,11 +384,11 @@ export function DeskMeetingPanel({ pitch, viewer, onRefresh }) {
   );
 }
 
-function Field({ icon: Icon, label, value }) {
+function Field({ icon, label, value }) {
   return (
     <div className="pdmeet-field">
       <dt className="pdmeet-field-label">
-        <Icon size={12} aria-hidden /> {label}
+        <i className={`bi ${icon}`} aria-hidden="true" /> {label}
       </dt>
       <dd className="pdmeet-field-value">{value}</dd>
     </div>

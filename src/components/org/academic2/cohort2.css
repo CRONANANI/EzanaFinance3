@@ -706,9 +706,14 @@
   border-radius: var(--c2-radius);
   color: var(--text-muted);
 }
-.c2-empty svg {
+.c2-empty svg,
+.c2-empty-icon {
   opacity: 0.5;
   margin-bottom: 0.5rem;
+}
+.c2-empty-icon {
+  display: inline-block;
+  font-size: 1.75rem;
 }
 .c2-state {
   padding: 2rem;

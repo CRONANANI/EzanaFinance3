@@ -1,22 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Star,
-  FileText,
-  Plus,
-  X,
-  EyeOff,
-  Eye,
-  Lock,
-  UserPlus,
-  TrendingUp,
-  Link2,
-  ClipboardList,
-  Check,
-  Ban,
-  Clock,
-} from 'lucide-react';
 import { orgRequest } from '@/lib/org-request';
 import './cohort2.css';
 
@@ -173,8 +157,12 @@ export function ApplicantPipeline({ cohortId, canManage, onCount }) {
           />
           <div className="c2-blind-text">
             <span className="c2-blind-title">
-              {data?.blind ? <EyeOff size={14} /> : <Eye size={14} />} Blind screening{' '}
-              {data?.blind ? 'ON' : 'OFF'}
+              {data?.blind ? (
+                <i className="bi bi-eye-slash" aria-hidden="true" />
+              ) : (
+                <i className="bi bi-eye" aria-hidden="true" />
+              )}{' '}
+              Blind screening {data?.blind ? 'ON' : 'OFF'}
             </span>
             <span className="c2-blind-sub">Names, schools &amp; photos hidden until Interview</span>
             {blindError && (
@@ -186,21 +174,21 @@ export function ApplicantPipeline({ cohortId, canManage, onCount }) {
         </div>
         <div className="c2-spacer" />
         <button type="button" className="c2-btn" onClick={() => reveal(funnelRef, setFunnelOpen)}>
-          <TrendingUp size={15} /> Funnel
+          <i className="bi bi-graph-up-arrow" aria-hidden="true" /> Funnel
         </button>
         <button type="button" className="c2-btn" onClick={() => reveal(formRef, setFormOpen)}>
-          <ClipboardList size={15} /> Form builder
+          <i className="bi bi-clipboard-data" aria-hidden="true" /> Form builder
         </button>
         {canManage && (
           <button type="button" className="c2-btn c2-btn--primary" onClick={() => setAdding(true)}>
-            <Plus size={15} /> Add applicant
+            <i className="bi bi-plus-lg" aria-hidden="true" /> Add applicant
           </button>
         )}
       </div>
 
       {applicants.length === 0 ? (
         <div className="c2-empty">
-          <ClipboardList size={28} />
+          <i className="bi bi-clipboard-data c2-empty-icon" aria-hidden="true" />
           <p>No applicants yet.</p>
           <p style={{ fontSize: '0.82rem' }}>
             Open an application form below, or add applicants manually to start the pipeline.
@@ -291,17 +279,17 @@ function ApplicantCard({ a, onOpen }) {
       <div className="c2-card-row">
         {a.aggregate_star != null && (
           <span className="c2-star">
-            <Star size={13} fill="currentColor" /> {a.aggregate_star.toFixed(2)}
+            <i className="bi bi-star" aria-hidden="true" /> {a.aggregate_star.toFixed(2)}
           </span>
         )}
         {a.has_resume && (
           <span className="c2-chip">
-            <FileText size={11} /> Resume
+            <i className="bi bi-file-earmark-text" aria-hidden="true" /> Resume
           </span>
         )}
         {a.has_sample_pitch && (
           <span className="c2-chip">
-            <FileText size={11} /> Pitch
+            <i className="bi bi-file-earmark-text" aria-hidden="true" /> Pitch
           </span>
         )}
         {a.interviewer_count > 0 && (
@@ -436,7 +424,8 @@ function ApplicantModal({ applicant, canManage, onClose, onChanged }) {
               {a.blinded ? `Applicant ${a.initials}` : a.full_name}
               {scoreData?.aggregate_star != null && (
                 <span className="c2-star">
-                  <Star size={15} fill="currentColor" /> {scoreData.aggregate_star.toFixed(2)}
+                  <i className="bi bi-star" aria-hidden="true" />{' '}
+                  {scoreData.aggregate_star.toFixed(2)}
                 </span>
               )}
             </h2>
@@ -446,14 +435,15 @@ function ApplicantModal({ applicant, canManage, onClose, onChanged }) {
             </p>
           </div>
           <button type="button" className="c2-btn c2-btn--sm" onClick={onClose} aria-label="Close">
-            <X size={15} />
+            <i className="bi bi-x-lg" aria-hidden="true" />
           </button>
         </div>
 
         {a.blinded && (
           <div className="c2-note">
-            <EyeOff size={14} style={{ verticalAlign: 'middle' }} /> Blind screening on — identity
-            is hidden until the interview stage (redacted server-side).
+            <i className="bi bi-eye-slash" style={{ verticalAlign: 'middle' }} aria-hidden="true" />{' '}
+            Blind screening on — identity is hidden until the interview stage (redacted
+            server-side).
           </div>
         )}
 
@@ -461,12 +451,12 @@ function ApplicantModal({ applicant, canManage, onClose, onChanged }) {
           <div className="c2-card-row">
             {a.resume_url && (
               <a className="c2-chip" href={a.resume_url} target="_blank" rel="noreferrer">
-                <FileText size={12} /> Resume
+                <i className="bi bi-file-earmark-text" aria-hidden="true" /> Resume
               </a>
             )}
             {a.sample_pitch_url && (
               <a className="c2-chip" href={a.sample_pitch_url} target="_blank" rel="noreferrer">
-                <FileText size={12} /> Sample pitch
+                <i className="bi bi-file-earmark-text" aria-hidden="true" /> Sample pitch
               </a>
             )}
           </div>
@@ -518,7 +508,8 @@ function ApplicantModal({ applicant, canManage, onClose, onChanged }) {
         ))}
         {scoreData?.my?.submitted ? (
           <div className="c2-note" style={{ marginTop: '0.6rem' }}>
-            <Check size={14} style={{ verticalAlign: 'middle' }} /> Your scores are submitted.
+            <i className="bi bi-check-lg" style={{ verticalAlign: 'middle' }} aria-hidden="true" />{' '}
+            Your scores are submitted.
           </div>
         ) : (
           <div className="c2-modal-actions" style={{ justifyContent: 'flex-start' }}>
@@ -564,13 +555,14 @@ function ApplicantModal({ applicant, canManage, onClose, onChanged }) {
               </div>
               {o.locked ? (
                 <div className="c2-locked" style={{ marginTop: '0.35rem' }}>
-                  <Lock size={13} /> Notes hidden until you submit your own scores.
+                  <i className="bi bi-lock" aria-hidden="true" /> Notes hidden until you submit your
+                  own scores.
                 </div>
               ) : (
                 o.rows.map((r) => (
                   <div key={r.criterion} style={{ marginTop: '0.35rem', fontSize: '0.82rem' }}>
                     <span className="c2-star">
-                      <Star size={11} fill="currentColor" /> {r.score}
+                      <i className="bi bi-star" aria-hidden="true" /> {r.score}
                     </span>{' '}
                     <span style={{ color: 'var(--text-muted)' }}>
                       {CRITERION_LABEL[r.criterion]}
@@ -594,7 +586,7 @@ function ApplicantModal({ applicant, canManage, onClose, onChanged }) {
                   onClick={reject}
                   disabled={saving}
                 >
-                  <Ban size={14} /> Reject
+                  <i className="bi bi-slash-circle" aria-hidden="true" /> Reject
                 </button>
                 <button type="button" className="c2-btn" onClick={decline} disabled={saving}>
                   Declined
@@ -606,7 +598,7 @@ function ApplicantModal({ applicant, canManage, onClose, onChanged }) {
                     onClick={() => advance('interview')}
                     disabled={saving}
                   >
-                    <Clock size={14} /> Schedule interview
+                    <i className="bi bi-clock" aria-hidden="true" /> Schedule interview
                   </button>
                 )}
                 {NEXT_STAGE[a.stage] && a.stage !== 'offer' && a.stage !== 'pitch' && (
@@ -636,14 +628,14 @@ function ApplicantModal({ applicant, canManage, onClose, onChanged }) {
                     onClick={() => setProvisioning(true)}
                     disabled={saving}
                   >
-                    <UserPlus size={14} /> Accept &amp; provision
+                    <i className="bi bi-person-plus" aria-hidden="true" /> Accept &amp; provision
                   </button>
                 )}
               </>
             )}
             {a.stage === 'accepted' && a.provisioned_member_id && (
               <span className="c2-pill c2-pill--active">
-                <Check size={12} /> Provisioned
+                <i className="bi bi-check-lg" aria-hidden="true" /> Provisioned
               </span>
             )}
           </div>
@@ -716,7 +708,7 @@ function ProvisionModal({ applicant, onClose, onDone }) {
     <div className="c2-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="c2-modal" role="dialog" aria-modal="true" style={{ maxWidth: 460 }}>
         <h2 className="c2-modal-title">
-          <UserPlus size={18} /> Provision member
+          <i className="bi bi-person-plus" aria-hidden="true" /> Provision member
         </h2>
         <p className="c2-sub" style={{ marginTop: 0 }}>
           Creates the account, the org-chart row (onboarding), pairs a mentor, and links it back to{' '}
@@ -875,8 +867,12 @@ function FunnelSection({ cohortId, open, onToggle }) {
   return (
     <details className="c2-panel" open={open} onToggle={(e) => onToggle?.(e.currentTarget.open)}>
       <summary style={{ cursor: 'pointer', fontWeight: 700, color: 'var(--text-primary)' }}>
-        <TrendingUp size={15} style={{ verticalAlign: 'middle' }} /> Funnel &amp; sources ·{' '}
-        {f.conversion_pct == null ? '—' : `${f.conversion_pct}%`} accepted
+        <i
+          className="bi bi-graph-up-arrow"
+          style={{ verticalAlign: 'middle' }}
+          aria-hidden="true"
+        />{' '}
+        Funnel &amp; sources · {f.conversion_pct == null ? '—' : `${f.conversion_pct}%`} accepted
       </summary>
       <div style={{ marginTop: '0.8rem' }}>
         {f.funnel.map((row) => (
@@ -990,14 +986,14 @@ function RubricSummaryCard({ applicant }) {
       <div className="c2-rubric-sum-head">
         <div>
           <div className="c2-rubric-sum-title">
-            <ClipboardList size={15} /> Rubric summary
+            <i className="bi bi-clipboard-data" aria-hidden="true" /> Rubric summary
           </div>
           <div className="c2-card-meta">
             {applicant ? `${name} · ${meta}` : 'No scored applicant yet.'}
           </div>
         </div>
         <span className="c2-star">
-          <Star size={14} fill="currentColor" />{' '}
+          <i className="bi bi-star" aria-hidden="true" />{' '}
           {scoreData?.aggregate_star != null ? scoreData.aggregate_star.toFixed(2) : '—'}
         </span>
       </div>
@@ -1132,7 +1128,12 @@ function FormBuilder({ cohortId, canManage, open, onToggle }) {
       onToggle={(e) => onToggle?.(e.currentTarget.open)}
     >
       <summary style={{ cursor: 'pointer', fontWeight: 700, color: 'var(--text-primary)' }}>
-        <ClipboardList size={15} style={{ verticalAlign: 'middle' }} /> Application form builder
+        <i
+          className="bi bi-clipboard-data"
+          style={{ verticalAlign: 'middle' }}
+          aria-hidden="true"
+        />{' '}
+        Application form builder
       </summary>
       {err && (
         <p className="org-inline-error" role="alert">
@@ -1151,7 +1152,7 @@ function FormBuilder({ cohortId, canManage, open, onToggle }) {
               onClick={createForm}
               disabled={busy}
             >
-              <Plus size={14} /> Create form
+              <i className="bi bi-plus-lg" aria-hidden="true" /> Create form
             </button>
           )}
         </div>
@@ -1172,14 +1173,23 @@ function FormBuilder({ cohortId, canManage, open, onToggle }) {
               onClick={() => patch({ blind_screening: !form.blind_screening })}
               disabled={!canManage || busy}
             >
-              {form.blind_screening ? <EyeOff size={14} /> : <Eye size={14} />} Blind screening
+              {form.blind_screening ? (
+                <i className="bi bi-eye-slash" aria-hidden="true" />
+              ) : (
+                <i className="bi bi-eye" aria-hidden="true" />
+              )}{' '}
+              Blind screening
             </button>
           </div>
 
           {form.public_slug && (
             <div className="c2-note">
-              <Link2 size={14} style={{ verticalAlign: 'middle' }} /> Public link (informational):{' '}
-              <code className="c2-num">/apply/{form.public_slug}</code>
+              <i
+                className="bi bi-link-45deg"
+                style={{ verticalAlign: 'middle' }}
+                aria-hidden="true"
+              />{' '}
+              Public link (informational): <code className="c2-num">/apply/{form.public_slug}</code>
               {!form.is_open && ' — currently closed'}
             </div>
           )}
@@ -1208,8 +1218,9 @@ function FormBuilder({ cohortId, canManage, open, onToggle }) {
                   className="c2-btn c2-btn--sm"
                   onClick={() => removeField(i)}
                   disabled={busy}
+                  aria-label={`Remove ${fl.label} field`}
                 >
-                  <X size={13} />
+                  <i className="bi bi-x-lg" aria-hidden="true" />
                 </button>
               )}
             </div>
@@ -1225,7 +1236,7 @@ function FormBuilder({ cohortId, canManage, open, onToggle }) {
                   onClick={() => addField(k.kind)}
                   disabled={busy}
                 >
-                  <Plus size={12} /> {k.label}
+                  <i className="bi bi-plus-lg" aria-hidden="true" /> {k.label}
                 </button>
               ))}
             </div>

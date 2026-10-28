@@ -2,23 +2,6 @@
 
 import { stripDemoLabel } from '@/lib/org-display';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Settings,
-  Plus,
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  ArrowUp,
-  ArrowDown,
-  X,
-  Video,
-  Sparkles,
-  FileText,
-  Link2,
-  Users,
-  CalendarClock,
-  MapPin,
-} from 'lucide-react';
 import { useOrg } from '@/contexts/OrgContext';
 import './meetings2.css';
 
@@ -127,7 +110,7 @@ function MeetingStrip({ meetings, mode, catLabelText, selectedId, onSelect, hpag
             disabled={atStart}
             onClick={() => setHpage(Math.max(0, start - visible))}
           >
-            <ChevronLeft size={15} />
+            <i className="bi bi-chevron-left" aria-hidden="true" />
           </button>
           <button
             type="button"
@@ -136,7 +119,7 @@ function MeetingStrip({ meetings, mode, catLabelText, selectedId, onSelect, hpag
             disabled={atEnd}
             onClick={() => setHpage(Math.min(maxStart, start + visible))}
           >
-            <ChevronRight size={15} />
+            <i className="bi bi-chevron-right" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -202,7 +185,7 @@ function AgendaBuilder({ agenda, canManage, onSave, busy }) {
   return (
     <div className="mt2-section">
       <h3 className="mt2-section__title">
-        <FileText size={13} /> Agenda
+        <i className="bi bi-file-earmark-text" aria-hidden="true" /> Agenda
       </h3>
       {items.length === 0 ? (
         <div className="mt2-empty">No agenda items yet.</div>
@@ -227,7 +210,7 @@ function AgendaBuilder({ agenda, canManage, onSave, busy }) {
                   disabled={busy || i === 0}
                   onClick={() => move(i, -1)}
                 >
-                  <ArrowUp size={13} />
+                  <i className="bi bi-arrow-up" aria-hidden="true" />
                 </button>
                 <button
                   type="button"
@@ -236,7 +219,7 @@ function AgendaBuilder({ agenda, canManage, onSave, busy }) {
                   disabled={busy || i === items.length - 1}
                   onClick={() => move(i, 1)}
                 >
-                  <ArrowDown size={13} />
+                  <i className="bi bi-arrow-down" aria-hidden="true" />
                 </button>
                 <button
                   type="button"
@@ -245,7 +228,7 @@ function AgendaBuilder({ agenda, canManage, onSave, busy }) {
                   disabled={busy}
                   onClick={() => remove(i)}
                 >
-                  <X size={13} />
+                  <i className="bi bi-x-lg" aria-hidden="true" />
                 </button>
               </div>
             )}
@@ -298,7 +281,7 @@ function AgendaBuilder({ agenda, canManage, onSave, busy }) {
               disabled={busy || !draft.label.trim()}
               onClick={add}
             >
-              <Plus size={14} /> Add
+              <i className="bi bi-plus-lg" aria-hidden="true" /> Add
             </button>
           </div>
         </div>
@@ -317,7 +300,7 @@ function AttendeesSection({ detail, viewer, onRsvp, onAddAttendees, busy, past }
   return (
     <div className="mt2-section">
       <h3 className="mt2-section__title">
-        <Users size={13} /> Attendees
+        <i className="bi bi-people" aria-hidden="true" /> Attendees
       </h3>
       {attendees.length === 0 ? (
         <div className="mt2-empty">No attendees added yet.</div>
@@ -389,7 +372,7 @@ function AttendeesSection({ detail, viewer, onRsvp, onAddAttendees, busy, past }
               setPick('');
             }}
           >
-            <Plus size={14} /> Add
+            <i className="bi bi-plus-lg" aria-hidden="true" /> Add
           </button>
         </div>
       )}
@@ -453,7 +436,7 @@ function AnalysisSection({ detail }) {
     <div className="mt2-section">
       <div className="mt2-ai">
         <h3 className="mt2-ai__title">
-          <Sparkles size={13} /> AI meeting analysis
+          <i className="bi bi-stars" aria-hidden="true" /> AI meeting analysis
         </h3>
         {hasSummary ? (
           <p className="mt2-ai__summary">{m.ai_summary}</p>
@@ -523,7 +506,7 @@ function DeliverablesSection({ detail, viewer, onAdd, onRemove, busy }) {
                   disabled={busy}
                   onClick={() => onRemove(d.id)}
                 >
-                  <X size={12} />
+                  <i className="bi bi-x-lg" aria-hidden="true" />
                 </button>
               )}
             </span>
@@ -560,7 +543,7 @@ function DeliverablesSection({ detail, viewer, onAdd, onRemove, busy }) {
               setDraft({ kind: 'memo', label: '' });
             }}
           >
-            <Plus size={14} /> Add
+            <i className="bi bi-plus-lg" aria-hidden="true" /> Add
           </button>
         </div>
       )}
@@ -577,7 +560,7 @@ function RecordingSection({ detail, viewer, onLink, busy }) {
   return (
     <div className="mt2-section">
       <h3 className="mt2-section__title">
-        <Video size={13} /> Recording
+        <i className="bi bi-camera-video" aria-hidden="true" /> Recording
       </h3>
       {viewer.canManage ? (
         <>
@@ -607,7 +590,7 @@ function RecordingSection({ detail, viewer, onLink, busy }) {
               disabled={busy || !url.trim()}
               onClick={() => onLink(url.trim(), source)}
             >
-              <Link2 size={14} /> Link
+              <i className="bi bi-link-45deg" aria-hidden="true" /> Link
             </button>
           </div>
           <div className="mt2-note" style={{ marginTop: '0.4rem' }}>
@@ -717,12 +700,21 @@ function MeetingDetail({ meetingId, onChanged }) {
           </div>
           <h2 className="mt2-detail-title">{stripDemoLabel(m.title)}</h2>
           <div className="mt2-detail-meta mt2-num">
-            <CalendarClock size={12} style={{ verticalAlign: '-2px' }} />{' '}
+            <i
+              className="bi bi-calendar-event"
+              style={{ verticalAlign: '-2px' }}
+              aria-hidden="true"
+            />{' '}
             {fmtDateTime(m.scheduled_at || m.ended_at)}
             {m.location ? (
               <>
                 {' · '}
-                <MapPin size={12} style={{ verticalAlign: '-2px' }} /> {m.location}
+                <i
+                  className="bi bi-geo-alt"
+                  style={{ verticalAlign: '-2px' }}
+                  aria-hidden="true"
+                />{' '}
+                {m.location}
               </>
             ) : null}
           </div>
@@ -730,7 +722,7 @@ function MeetingDetail({ meetingId, onChanged }) {
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           {past && m.recording_url && (
             <a className="mt2-btn" href={m.recording_url} target="_blank" rel="noopener noreferrer">
-              <Video size={14} /> Recording
+              <i className="bi bi-camera-video" aria-hidden="true" /> Recording
             </a>
           )}
           {!past && viewer.canManage && (
@@ -796,9 +788,10 @@ function MeetingDetail({ meetingId, onChanged }) {
               <h3 className="mt2-section__title">Pre-read pack</h3>
               {detail.preRead.map((p) => (
                 <div className="mt2-preread" key={p.id}>
-                  <FileText
-                    size={15}
+                  <i
+                    className="bi bi-file-earmark-text"
                     style={{ color: 'var(--emerald-text)', flex: 'none', marginTop: 2 }}
+                    aria-hidden="true"
                   />
                   <div>
                     <div className="mt2-preread__label">{p.label}</div>
@@ -985,7 +978,7 @@ function Rail({
               {modeCounts[mode]} · {modeDesc[mode]}
             </span>
           </span>
-          <ChevronDown size={15} />
+          <i className="bi bi-chevron-down" aria-hidden="true" />
         </button>
         {menuOpen && (
           <div className="mt2-mode__menu">
@@ -1227,7 +1220,7 @@ export function MeetingMode({ initialData = null }) {
               aria-label="Recorder integrations"
               onClick={() => setPopoverOpen((o) => !o)}
             >
-              <Settings size={17} />
+              <i className="bi bi-gear" aria-hidden="true" />
               {payload.recordersConnected && <span className="mt2-iconbtn__dot" />}
             </button>
           )}
@@ -1237,7 +1230,7 @@ export function MeetingMode({ initialData = null }) {
               className="mt2-btn mt2-btn--primary"
               onClick={() => setNewOpen(true)}
             >
-              <Plus size={15} /> New meeting
+              <i className="bi bi-plus-lg" aria-hidden="true" /> New meeting
             </button>
           )}
           {popoverOpen && <RecorderPopover onClose={() => setPopoverOpen(false)} />}
@@ -1262,7 +1255,7 @@ export function MeetingMode({ initialData = null }) {
               className="mt2-btn mt2-btn--primary"
               onClick={() => setNewOpen(true)}
             >
-              <Plus size={15} /> New meeting
+              <i className="bi bi-plus-lg" aria-hidden="true" /> New meeting
             </button>
           )}
         </div>

@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Trophy } from 'lucide-react';
 import { money, pct } from './format';
 import { sectorColor } from './sectorColors';
 
@@ -42,7 +41,7 @@ export function AnalystLeaderboard({ data = [], onSelect }) {
     <div className="fa-card" style={{ overflow: 'hidden' }}>
       <div className="fa-card-head">
         <h3 className="fa-card-t">
-          <Trophy size={15} aria-hidden /> Analyst leaderboard
+          <i className="bi bi-trophy" aria-hidden="true" /> Analyst leaderboard
         </h3>
         <span className="fa-card-mut">click a row for the scorecard</span>
       </div>

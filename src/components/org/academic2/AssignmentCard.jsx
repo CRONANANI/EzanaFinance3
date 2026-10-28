@@ -1,32 +1,18 @@
 'use client';
 
 import { stripDemoLabel } from '@/lib/org-display';
-import {
-  TrendingUp,
-  FileSearch,
-  Eye,
-  BookOpen,
-  Calculator,
-  Presentation,
-  FileText,
-  Paperclip,
-  MessageSquare,
-  Clock,
-  Play,
-  Send,
-  RotateCcw,
-  CheckCircle2,
-} from 'lucide-react';
 
-/* Shared type + status metadata (single source of truth for the surface). */
+/* Shared type + status metadata (single source of truth for the surface).
+   `icon` is a Bootstrap Icons class name; consumers render it as
+   <i className={`bi ${icon}`} aria-hidden="true" />. */
 export const TYPE_META = {
-  pitch: { label: 'Pitch', Icon: TrendingUp },
-  research: { label: 'Research', Icon: FileSearch },
-  coverage: { label: 'Coverage', Icon: Eye },
-  reading: { label: 'Reading', Icon: BookOpen },
-  model: { label: 'Model', Icon: Calculator },
-  meeting_prep: { label: 'Meeting prep', Icon: Presentation },
-  other: { label: 'Other', Icon: FileText },
+  pitch: { label: 'Pitch', icon: 'bi-graph-up-arrow' },
+  research: { label: 'Research', icon: 'bi-binoculars' },
+  coverage: { label: 'Coverage', icon: 'bi-eye' },
+  reading: { label: 'Reading', icon: 'bi-book' },
+  model: { label: 'Model', icon: 'bi-calculator' },
+  meeting_prep: { label: 'Meeting prep', icon: 'bi-easel' },
+  other: { label: 'Other', icon: 'bi-file-earmark-text' },
 };
 
 export const STATUS_LABEL = {
@@ -82,20 +68,25 @@ export function verbFor(a, viewer) {
   const isAssignee = a.mine;
   const canReview = viewer?.canAssign;
   if (isAssignee && a.status === 'assigned')
-    return { key: 'start', label: 'Start', Icon: Play, next: 'in_progress' };
+    return { key: 'start', label: 'Start', icon: 'bi-play-fill', next: 'in_progress' };
   if (isAssignee && (a.status === 'in_progress' || a.status === 'returned'))
-    return { key: 'submit', label: 'Submit', Icon: Send, submit: true };
+    return { key: 'submit', label: 'Submit', icon: 'bi-send', submit: true };
   if (canReview && a.status === 'submitted')
-    return { key: 'review', label: 'Review', Icon: Eye, review: true };
+    return { key: 'review', label: 'Review', icon: 'bi-eye', review: true };
   if (canReview && a.status === 'under_review')
-    return { key: 'review', label: 'Review', Icon: Eye, review: true };
+    return { key: 'review', label: 'Review', icon: 'bi-eye', review: true };
   if (canReview && a.status === 'returned')
-    return { key: 'revise', label: 'Awaiting revision', Icon: RotateCcw, review: true };
+    return {
+      key: 'revise',
+      label: 'Awaiting revision',
+      icon: 'bi-arrow-counterclockwise',
+      review: true,
+    };
   return null;
 }
 
 export function AssignmentCard({ a, viewer, variant = 'compact', onOpen, onVerb }) {
-  const { label, Icon } = typeMeta(a.type || a.assignment_type);
+  const { label, icon } = typeMeta(a.type || a.assignment_type);
   const status = a.overdue ? 'overdue' : a.status;
   const verb = variant === 'full' ? verbFor(a, viewer) : null;
 
@@ -107,7 +98,7 @@ export function AssignmentCard({ a, viewer, variant = 'compact', onOpen, onVerb 
     >
       <div className="asg2-card-top">
         <span className="asg2-type" data-type={a.type || a.assignment_type}>
-          <Icon size={12} aria-hidden="true" /> {label}
+          <i className={`bi ${icon}`} aria-hidden="true" /> {label}
         </span>
         <span className="asg2-status" data-status={status}>
           {STATUS_LABEL[status] || status}
@@ -119,18 +110,18 @@ export function AssignmentCard({ a, viewer, variant = 'compact', onOpen, onVerb 
       <div className="asg2-card-meta">
         <AvatarStack assignees={a.assignees} />
         <span className={`asg2-due${a.overdue ? '' : ''}`}>
-          <Clock size={12} aria-hidden="true" />
+          <i className="bi bi-clock" aria-hidden="true" />
           <span className="asg2-num">{fmtDue(a.due_date, a.overdue)}</span>
         </span>
         {a.attachment_count > 0 && (
           <span className="asg2-due" title={`${a.attachment_count} attachment(s)`}>
-            <Paperclip size={12} aria-hidden="true" />
+            <i className="bi bi-paperclip" aria-hidden="true" />
             <span className="asg2-num">{a.attachment_count}</span>
           </span>
         )}
         {a.comment_count > 0 && (
           <span className="asg2-due" title={`${a.comment_count} comment(s)`}>
-            <MessageSquare size={12} aria-hidden="true" />
+            <i className="bi bi-chat-square" aria-hidden="true" />
             <span className="asg2-num">{a.comment_count}</span>
           </span>
         )}
@@ -165,14 +156,19 @@ export function AssignmentCard({ a, viewer, variant = 'compact', onOpen, onVerb 
                   }
                 }}
               >
-                <verb.Icon size={13} aria-hidden="true" /> {verb.label}
+                <i className={`bi ${verb.icon}`} aria-hidden="true" /> {verb.label}
               </span>
             </div>
           )}
           {!verb && a.status === 'graded' && a.rubric_score != null && a.rubric_max != null && (
             <div className="asg2-card-foot">
               <span className="asg2-card-meta">
-                <CheckCircle2 size={13} aria-hidden="true" style={{ color: 'var(--gold)' }} /> Grade
+                <i
+                  className="bi bi-check-circle"
+                  aria-hidden="true"
+                  style={{ color: 'var(--gold)' }}
+                />{' '}
+                Grade
               </span>
               <span className="asg2-num asg2-status" data-status="graded">
                 {a.rubric_score}/{a.rubric_max}

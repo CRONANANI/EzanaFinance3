@@ -2,7 +2,6 @@
 
 import { stripDemoLabel } from '@/lib/org-display';
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { typeMeta } from './AssignmentCard';
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -71,7 +70,7 @@ export function AssignmentCalendar({ assignments, onOpen }) {
             onClick={() => go(-1)}
             aria-label="Previous month"
           >
-            <ChevronLeft size={16} />
+            <i className="bi bi-chevron-left" aria-hidden="true" />
           </button>
           <button type="button" className="asg2-btn asg2-btn--sm" onClick={today}>
             Today
@@ -82,7 +81,7 @@ export function AssignmentCalendar({ assignments, onOpen }) {
             onClick={() => go(1)}
             aria-label="Next month"
           >
-            <ChevronRight size={16} />
+            <i className="bi bi-chevron-right" aria-hidden="true" />
           </button>
         </div>
       </div>

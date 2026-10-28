@@ -1,6 +1,5 @@
 'use client';
 
-import { ShieldAlert, ShieldCheck } from 'lucide-react';
 import { pct } from './format';
 
 /**
@@ -15,7 +14,7 @@ export function ConcentrationBanner({ data }) {
     return (
       <div className="fa-cbanner flag" role="status">
         <span className="bi">
-          <ShieldAlert size={18} aria-hidden />
+          <i className="bi bi-shield-exclamation" aria-hidden="true" />
         </span>
         <div>
           <div className="bt">Concentration breach · {data.sector}</div>
@@ -32,7 +31,7 @@ export function ConcentrationBanner({ data }) {
   return (
     <div className="fa-cbanner ok" role="status">
       <span className="bi">
-        <ShieldCheck size={18} aria-hidden />
+        <i className="bi bi-shield-check" aria-hidden="true" />
       </span>
       <div>
         <div className="bt">All sectors within IPS limits</div>

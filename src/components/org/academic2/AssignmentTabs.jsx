@@ -1,6 +1,5 @@
 'use client';
 
-import { Inbox, CalendarClock } from 'lucide-react';
 import { AssignmentCard } from './AssignmentCard';
 
 const TABS = [
@@ -66,7 +65,7 @@ export function AssignmentTabs({
 
       {list.length === 0 ? (
         <div className="asg2-empty">
-          <Inbox size={26} className="asg2-empty-icon" aria-hidden="true" />
+          <i className="bi bi-inbox asg2-empty-icon" aria-hidden="true" />
           <div className="asg2-empty-title">
             {activeTab === 'archive' ? 'Nothing archived yet' : 'Nothing here'}
           </div>
@@ -77,7 +76,7 @@ export function AssignmentTabs({
           </div>
           {activeTab === 'archive' ? (
             <button type="button" className="asg2-btn asg2-btn--sm" onClick={() => onTab('all')}>
-              <CalendarClock size={13} aria-hidden="true" /> View upcoming
+              <i className="bi bi-calendar-event" aria-hidden="true" /> View upcoming
             </button>
           ) : (
             activeTab !== 'all' && (

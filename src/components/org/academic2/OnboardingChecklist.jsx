@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Plus, X, Lock, ListChecks, GitBranch, Check } from 'lucide-react';
 import { orgRequest } from '@/lib/org-request';
 import './cohort2.css';
 
@@ -159,8 +158,8 @@ export function OnboardingChecklist({ cohortId, canManage, onCount }) {
 
       {data?.gateEnabled && (
         <div className="c2-note c2-note--warn">
-          <Lock size={14} style={{ verticalAlign: 'middle' }} /> Onboarding gate is ON — members
-          must complete gate tasks before submitting a live pitch.
+          <i className="bi bi-lock" aria-hidden="true" style={{ verticalAlign: 'middle' }} />{' '}
+          Onboarding gate is ON — members must complete gate tasks before submitting a live pitch.
         </div>
       )}
 
@@ -174,7 +173,12 @@ export function OnboardingChecklist({ cohortId, canManage, onCount }) {
         {/* Left — cohort task progress */}
         <div className="c2-panel">
           <div className="c2-label" style={{ marginTop: 0 }}>
-            <ListChecks size={14} style={{ verticalAlign: 'middle' }} /> Task progress
+            <i
+              className="bi bi-list-check"
+              aria-hidden="true"
+              style={{ verticalAlign: 'middle' }}
+            />{' '}
+            Task progress
           </div>
           {tasks.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
@@ -224,8 +228,9 @@ export function OnboardingChecklist({ cohortId, canManage, onCount }) {
                     className="c2-btn c2-btn--sm c2-btn--ghost"
                     onClick={() => deleteTask(t.id)}
                     disabled={busy}
+                    aria-label="Remove task"
                   >
-                    <X size={12} />
+                    <i className="bi bi-x-lg" aria-hidden="true" />
                   </button>
                 )}
                 {openTask === t.id && (
@@ -278,7 +283,7 @@ export function OnboardingChecklist({ cohortId, canManage, onCount }) {
                 onClick={addTask}
                 disabled={busy}
               >
-                <Plus size={14} /> Add task
+                <i className="bi bi-plus-lg" aria-hidden="true" /> Add task
               </button>
             </div>
           )}
@@ -319,7 +324,7 @@ export function OnboardingChecklist({ cohortId, canManage, onCount }) {
                 >
                   {m.blocked && (
                     <span className="c2-pill c2-pill--blocked">
-                      <Lock size={11} /> blocked
+                      <i className="bi bi-lock" aria-hidden="true" /> blocked
                     </span>
                   )}
                   <span className="c2-chip">mentor: {m.mentor_name || 'none'}</span>
@@ -347,7 +352,7 @@ export function OnboardingChecklist({ cohortId, canManage, onCount }) {
                             disabled={!canToggle}
                             onChange={() => toggleComplete(t.assignment_id, m.id, done)}
                           />
-                          {done ? <Check size={12} color="var(--emerald-text)" /> : null}
+                          {done ? <i className="bi bi-check-lg" aria-hidden="true" /> : null}
                           {t.title}
                           {t.is_gate ? ' (gate)' : ''}
                         </label>
@@ -364,7 +369,8 @@ export function OnboardingChecklist({ cohortId, canManage, onCount }) {
       {/* Mentor pairing */}
       <div className="c2-panel" style={{ marginTop: '1rem' }}>
         <div className="c2-label" style={{ marginTop: 0 }}>
-          <GitBranch size={14} style={{ verticalAlign: 'middle' }} /> Mentor pairing
+          <i className="bi bi-diagram-2" aria-hidden="true" style={{ verticalAlign: 'middle' }} />{' '}
+          Mentor pairing
         </div>
         <div className="c2-mentor-cols">
           <div>

@@ -3,35 +3,6 @@
 import { stripDemoLabel } from '@/lib/org-display';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  Search,
-  Plus,
-  X,
-  Sparkles,
-  Loader2,
-  Eye,
-  Download,
-  FileText,
-  ChevronDown,
-  Check,
-  Library,
-  LineChart,
-  GitBranch,
-  Clock,
-  Star,
-  AlertTriangle,
-  ArrowRight,
-  ExternalLink,
-  History,
-  MessageSquare,
-  ShieldCheck,
-  Pencil,
-  Award,
-  Users,
-  Paperclip,
-  Upload,
-  Trash2,
-} from 'lucide-react';
 import { NoteComposer, DOC_TYPES } from './NoteComposer';
 import './research2.css';
 
@@ -113,7 +84,7 @@ function FilterDropdown({ dim, facet, selected, authorNames, onToggle }) {
       >
         {dim.label}
         {selected.length > 0 && <span className="rl2-dropdown-badge">{selected.length}</span>}
-        <ChevronDown size={13} />
+        <i className="bi bi-chevron-down" aria-hidden="true" />
       </button>
       {open && (
         <div className="rl2-menu" role="menu">
@@ -132,7 +103,9 @@ function FilterDropdown({ dim, facet, selected, authorNames, onToggle }) {
                   <span
                     style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minWidth: 0 }}
                   >
-                    <span className="rl2-menu-check">{isSel && <Check size={14} />}</span>
+                    <span className="rl2-menu-check">
+                      {isSel && <i className="bi bi-check-lg" aria-hidden="true" />}
+                    </span>
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {labelFor(val)}
                     </span>
@@ -163,14 +136,14 @@ function DocCard({ note, onOpen }) {
         )}
         {note.is_exemplar && (
           <span className="rl2-pill rl2-badge-exemplar">
-            <Award size={11} /> Exemplar
+            <i className="bi bi-award" aria-hidden="true" /> Exemplar
           </span>
         )}
         {note.pinned && (
-          <Star
-            size={13}
+          <i
+            className="bi bi-star-fill"
             style={{ color: 'var(--gold-text)', marginLeft: 'auto' }}
-            fill="currentColor"
+            aria-hidden="true"
           />
         )}
       </div>
@@ -190,7 +163,7 @@ function DocCard({ note, onOpen }) {
         </span>
         <span style={{ display: 'inline-flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
           <span className="rl2-card-views">
-            <Eye size={12} /> {note.view_count || 0}
+            <i className="bi bi-eye" aria-hidden="true" /> {note.view_count || 0}
           </span>
           <span className="rl2-num">{timeAgo(note.published_at || note.created_at)}</span>
         </span>
@@ -535,7 +508,7 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                 </span>
                 {note.is_exemplar && (
                   <span className="rl2-pill rl2-badge-exemplar">
-                    <Award size={11} /> Exemplar
+                    <i className="bi bi-award" aria-hidden="true" /> Exemplar
                   </span>
                 )}
               </div>
@@ -543,7 +516,7 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
             <h2 className="rl2-drawer-title">{note ? stripDemoLabel(note.title) : 'Loading…'}</h2>
           </div>
           <button type="button" className="rl2-close" onClick={onClose} aria-label="Close">
-            <X size={16} />
+            <i className="bi bi-x-lg" aria-hidden="true" />
           </button>
         </div>
 
@@ -562,7 +535,7 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
               {/* AI summary */}
               <div className="rl2-section">
                 <div className="rl2-section-title">
-                  <Sparkles size={13} /> AI summary
+                  <i className="bi bi-stars" aria-hidden="true" /> AI summary
                 </div>
                 {summary ? (
                   <div className="rl2-ai-box">{summary}</div>
@@ -574,9 +547,9 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                     disabled={summaryLoading}
                   >
                     {summaryLoading ? (
-                      <Loader2 size={13} className="rl2-spin" />
+                      <i className="bi bi-arrow-repeat rl2-spin" aria-hidden="true" />
                     ) : (
-                      <Sparkles size={13} />
+                      <i className="bi bi-stars" aria-hidden="true" />
                     )}
                     {summaryLoading ? 'Summarizing…' : 'Generate summary'}
                   </button>
@@ -641,7 +614,7 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                       <div className="k">Linked pitch</div>
                       <div className="v">
                         <a href="/org-team-hub/pitches" style={{ color: 'var(--emerald-text)' }}>
-                          View pitch <ExternalLink size={10} />
+                          View pitch <i className="bi bi-box-arrow-up-right" aria-hidden="true" />
                         </a>
                       </div>
                     </div>
@@ -669,7 +642,7 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
               {/* Attachments — real upload/list/download/delete via signed URLs. */}
               <div className="rl2-section">
                 <div className="rl2-section-title">
-                  <Paperclip size={13} /> Attachments
+                  <i className="bi bi-paperclip" aria-hidden="true" /> Attachments
                 </div>
                 {attachments.length === 0 ? (
                   <div className="rl2-hint">No attachments yet.</div>
@@ -679,7 +652,10 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                       const canDelete = canManage || att.uploaded_by === viewer?.userId;
                       return (
                         <div key={att.id} className="rl2-attach-row">
-                          <FileText size={14} className="rl2-attach-icon" />
+                          <i
+                            className="bi bi-file-earmark-text rl2-attach-icon"
+                            aria-hidden="true"
+                          />
                           <span className="rl2-attach-name">{att.file_name}</span>
                           <span className="rl2-attach-size rl2-num">
                             {fmtBytes(att.size_bytes)}
@@ -693,7 +669,7 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                               download={att.file_name}
                               aria-label={`Download ${att.file_name}`}
                             >
-                              <Download size={14} />
+                              <i className="bi bi-download" aria-hidden="true" />
                             </a>
                           )}
                           {canDelete && (
@@ -704,7 +680,7 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                               disabled={attBusy}
                               aria-label={`Delete ${att.file_name}`}
                             >
-                              <Trash2 size={14} />
+                              <i className="bi bi-trash3" aria-hidden="true" />
                             </button>
                           )}
                         </div>
@@ -727,7 +703,11 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                       onClick={() => attFileRef.current?.click()}
                       disabled={attBusy}
                     >
-                      {attBusy ? <Loader2 size={13} className="rl2-spin" /> : <Upload size={13} />}
+                      {attBusy ? (
+                        <i className="bi bi-arrow-repeat rl2-spin" aria-hidden="true" />
+                      ) : (
+                        <i className="bi bi-upload" aria-hidden="true" />
+                      )}
                       {attBusy ? 'Uploading…' : 'Attach file'}
                     </button>
                     <span className="rl2-hint" style={{ marginLeft: 8 }}>
@@ -750,10 +730,10 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                     className="rl2-btn rl2-btn--sm"
                     onClick={() => openDoc(note, false)}
                   >
-                    <ExternalLink size={13} /> Open
+                    <i className="bi bi-box-arrow-up-right" aria-hidden="true" /> Open
                   </button>
                   <button type="button" className="rl2-btn rl2-btn--sm" onClick={exportPdf}>
-                    <Download size={13} /> Export PDF
+                    <i className="bi bi-download" aria-hidden="true" /> Export PDF
                   </button>
                   {canEdit && note.status !== 'superseded' && (
                     <button
@@ -761,7 +741,7 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                       className="rl2-btn rl2-btn--sm"
                       onClick={() => onEdit(note)}
                     >
-                      <Pencil size={13} /> Edit
+                      <i className="bi bi-pencil" aria-hidden="true" /> Edit
                     </button>
                   )}
                   {canEdit && note.status === 'draft' && (
@@ -771,7 +751,7 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                       onClick={() => setStatus('under_review')}
                       disabled={busy}
                     >
-                      <MessageSquare size={13} /> Submit for review
+                      <i className="bi bi-chat-square" aria-hidden="true" /> Submit for review
                     </button>
                   )}
                   {canEdit && note.status === 'under_review' && (
@@ -791,7 +771,7 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                       onClick={publish}
                       disabled={busy}
                     >
-                      <ShieldCheck size={13} /> Publish
+                      <i className="bi bi-shield-check" aria-hidden="true" /> Publish
                     </button>
                   )}
                   {canEdit && note.status === 'published' && (
@@ -801,7 +781,7 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                       onClick={supersede}
                       disabled={busy}
                     >
-                      <Clock size={13} /> Supersede
+                      <i className="bi bi-clock" aria-hidden="true" /> Supersede
                     </button>
                   )}
                   {canManage && (
@@ -811,7 +791,8 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                       onClick={toggleExemplar}
                       disabled={busy}
                     >
-                      <Award size={13} /> {note.is_exemplar ? 'Unset exemplar' : 'Mark exemplar'}
+                      <i className="bi bi-award" aria-hidden="true" />{' '}
+                      {note.is_exemplar ? 'Unset exemplar' : 'Mark exemplar'}
                     </button>
                   )}
                   {canManage && (
@@ -821,7 +802,8 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                       onClick={togglePin}
                       disabled={busy}
                     >
-                      <Star size={13} /> {note.pinned ? 'Unpin' : 'Pin'}
+                      <i className="bi bi-star" aria-hidden="true" />{' '}
+                      {note.pinned ? 'Unpin' : 'Pin'}
                     </button>
                   )}
                 </div>
@@ -840,7 +822,7 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
               {/* Version history */}
               <div className="rl2-section">
                 <div className="rl2-section-title">
-                  <History size={13} /> Version history
+                  <i className="bi bi-clock-history" aria-hidden="true" /> Version history
                 </div>
                 {versions.length === 0 ? (
                   <div className="rl2-hint">No prior versions — this is the original.</div>
@@ -860,7 +842,7 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
               {/* Review / comments */}
               <div className="rl2-section">
                 <div className="rl2-section-title">
-                  <MessageSquare size={13} /> Review thread
+                  <i className="bi bi-chat-square" aria-hidden="true" /> Review thread
                   {openBlocks > 0 && (
                     <span className="rl2-pill rl2-status-under_review" style={{ marginLeft: 6 }}>
                       {openBlocks} open block{openBlocks > 1 ? 's' : ''}
@@ -1013,7 +995,7 @@ function DossierView({ initialTicker, knownTickers, onOpenNote }) {
     <div>
       <form className="rl2-searchbar ds-search" onSubmit={submit} style={{ marginBottom: 16 }}>
         <span className="rl2-search-icon">
-          <Search size={16} />
+          <i className="bi bi-search" aria-hidden="true" />
         </span>
         <input
           className="rl2-search-input ds-search-input"
@@ -1037,7 +1019,7 @@ function DossierView({ initialTicker, knownTickers, onOpenNote }) {
 
       {!ticker && !loading && (
         <div className="rl2-state">
-          <LineChart size={28} style={{ color: 'var(--text-muted)' }} />
+          <i className="bi bi-graph-up" style={{ color: 'var(--text-muted)' }} aria-hidden="true" />
           <h3>Ticker dossier</h3>
           <p>
             Enter a ticker to see every memo, model and note written on it — chronologically — plus
@@ -1060,9 +1042,9 @@ function DossierView({ initialTicker, knownTickers, onOpenNote }) {
                 disabled={summaryLoading || !data.docs.length}
               >
                 {summaryLoading ? (
-                  <Loader2 size={13} className="rl2-spin" />
+                  <i className="bi bi-arrow-repeat rl2-spin" aria-hidden="true" />
                 ) : (
-                  <Sparkles size={13} />
+                  <i className="bi bi-stars" aria-hidden="true" />
                 )}{' '}
                 Summarize all
               </button>
@@ -1206,7 +1188,8 @@ function LineageView({ knownTickers, onOpenNote }) {
             <span className="rl2-dossier-ticker">{chain.ticker}</span>
             {chain.stale && (
               <span className="rl2-stale">
-                <AlertTriangle size={12} /> Stale &gt;{chain.staleDays}d
+                <i className="bi bi-exclamation-triangle" aria-hidden="true" /> Stale &gt;
+                {chain.staleDays}d
               </span>
             )}
             {chain.lastDocAt && (
@@ -1243,13 +1226,14 @@ function LineageView({ knownTickers, onOpenNote }) {
                 >
                   <div className="rl2-chain">
                     <span className="rl2-chain-node">
-                      <Users size={13} /> {h.from?.name || 'Unassigned'}
+                      <i className="bi bi-people" aria-hidden="true" />{' '}
+                      {h.from?.name || 'Unassigned'}
                     </span>
                     <span className="rl2-chain-arrow">
-                      <ArrowRight size={15} />
+                      <i className="bi bi-arrow-right" aria-hidden="true" />
                     </span>
                     <span className="rl2-chain-node">
-                      <Users size={13} /> {h.to?.name || 'Unassigned'}
+                      <i className="bi bi-people" aria-hidden="true" /> {h.to?.name || 'Unassigned'}
                     </span>
                   </div>
                   {h.term && <span className="rl2-tag">{h.term}</span>}
@@ -1261,7 +1245,8 @@ function LineageView({ knownTickers, onOpenNote }) {
                     style={{ alignSelf: 'flex-start', marginTop: 8 }}
                     onClick={() => onOpenNote(h.handoff.id)}
                   >
-                    <FileText size={13} /> Handoff packet: {h.handoff.title || 'Open'}
+                    <i className="bi bi-file-earmark-text" aria-hidden="true" /> Handoff packet:{' '}
+                    {h.handoff.title || 'Open'}
                   </button>
                 )}
               </div>
@@ -1276,7 +1261,11 @@ function LineageView({ knownTickers, onOpenNote }) {
     <div>
       {!overview || overview.length === 0 ? (
         <div className="rl2-state">
-          <GitBranch size={28} style={{ color: 'var(--text-muted)' }} />
+          <i
+            className="bi bi-diagram-2"
+            style={{ color: 'var(--text-muted)' }}
+            aria-hidden="true"
+          />
           <h3>No coverage lineage yet</h3>
           <p>
             Once tickers accumulate research, coverage and handoff chains appear here. Tickers
@@ -1318,10 +1307,14 @@ function LineageView({ knownTickers, onOpenNote }) {
                 )}
                 {r.stale && (
                   <span className="rl2-stale">
-                    <AlertTriangle size={12} /> Stale
+                    <i className="bi bi-exclamation-triangle" aria-hidden="true" /> Stale
                   </span>
                 )}
-                <ArrowRight size={15} style={{ color: 'var(--text-faint)' }} />
+                <i
+                  className="bi bi-arrow-right"
+                  style={{ color: 'var(--text-faint)' }}
+                  aria-hidden="true"
+                />
               </span>
             </button>
           ))}
@@ -1519,21 +1512,21 @@ export function ResearchLibrary({ initialData = null }) {
               className={view === 'library' ? 'is-active' : ''}
               onClick={() => setView('library')}
             >
-              <Library size={15} /> Library
+              <i className="bi bi-collection" aria-hidden="true" /> Library
             </button>
             <button
               type="button"
               className={view === 'ticker' ? 'is-active' : ''}
               onClick={() => setView('ticker')}
             >
-              <LineChart size={15} /> Ticker
+              <i className="bi bi-graph-up" aria-hidden="true" /> Ticker
             </button>
             <button
               type="button"
               className={view === 'lineage' ? 'is-active' : ''}
               onClick={() => setView('lineage')}
             >
-              <GitBranch size={15} /> Lineage
+              <i className="bi bi-diagram-2" aria-hidden="true" /> Lineage
             </button>
           </div>
           <button
@@ -1544,7 +1537,7 @@ export function ResearchLibrary({ initialData = null }) {
               setComposerOpen(true);
             }}
           >
-            <Plus size={15} /> New note
+            <i className="bi bi-plus-lg" aria-hidden="true" /> New note
           </button>
         </div>
       </div>
@@ -1555,7 +1548,7 @@ export function ResearchLibrary({ initialData = null }) {
         <>
           <div className="rl2-searchbar ds-search">
             <span className="rl2-search-icon">
-              <Search size={16} />
+              <i className="bi bi-search" aria-hidden="true" />
             </span>
             {activeChips.map((c) => (
               <span key={`${c.key}:${c.val}`} className="rl2-chip">
@@ -1565,7 +1558,7 @@ export function ResearchLibrary({ initialData = null }) {
                   onClick={() => clearFilter(c.key, c.val)}
                   aria-label={`Remove ${c.label}`}
                 >
-                  <X size={12} />
+                  <i className="bi bi-x-lg" aria-hidden="true" />
                 </button>
               </span>
             ))}
@@ -1580,14 +1573,14 @@ export function ResearchLibrary({ initialData = null }) {
                 className="rl2-semantic-pill"
                 title="Vector embeddings are configured — search blends keyword matching with semantic (AI) ranking."
               >
-                <Sparkles size={12} /> Semantic + AI
+                <i className="bi bi-stars" aria-hidden="true" /> Semantic + AI
               </span>
             ) : (
               <span
                 className="rl2-keyword-hint"
                 title="Vector embeddings are not configured on this deployment; search runs keyword-only."
               >
-                <Search size={12} /> Keyword
+                <i className="bi bi-search" aria-hidden="true" /> Keyword
               </span>
             )}
           </div>
@@ -1610,7 +1603,7 @@ export function ResearchLibrary({ initialData = null }) {
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <strong style={{ color: 'var(--text-primary)' }}>Summary of current view</strong>
                 <button type="button" className="rl2-close" onClick={() => setViewSummary('')}>
-                  <X size={14} />
+                  <i className="bi bi-x-lg" aria-hidden="true" />
                 </button>
               </div>
               <div style={{ marginTop: 8 }}>{viewSummary}</div>
@@ -1632,9 +1625,9 @@ export function ResearchLibrary({ initialData = null }) {
                 title="AI summary of the current filtered set"
               >
                 {viewSummaryLoading ? (
-                  <Loader2 size={13} className="rl2-spin" />
+                  <i className="bi bi-arrow-repeat rl2-spin" aria-hidden="true" />
                 ) : (
-                  <Sparkles size={13} />
+                  <i className="bi bi-stars" aria-hidden="true" />
                 )}{' '}
                 Summarize this set
               </button>
@@ -1650,13 +1643,21 @@ export function ResearchLibrary({ initialData = null }) {
           ) : notes.length === 0 ? (
             activeChips.length || debouncedQ ? (
               <div className="rl2-state">
-                <Search size={26} style={{ color: 'var(--text-muted)' }} />
+                <i
+                  className="bi bi-search"
+                  style={{ color: 'var(--text-muted)' }}
+                  aria-hidden="true"
+                />
                 <h3>No documents match</h3>
                 <p>Try removing a filter chip or broadening your search.</p>
               </div>
             ) : (
               <div className="rl2-state">
-                <Library size={28} style={{ color: 'var(--text-muted)' }} />
+                <i
+                  className="bi bi-collection"
+                  style={{ color: 'var(--text-muted)' }}
+                  aria-hidden="true"
+                />
                 <h3>The library is empty</h3>
                 <p>
                   Publish the first thesis. Notes are typed, versioned, and survive cohort rollover.
@@ -1669,7 +1670,7 @@ export function ResearchLibrary({ initialData = null }) {
                     setComposerOpen(true);
                   }}
                 >
-                  <Plus size={15} /> New note
+                  <i className="bi bi-plus-lg" aria-hidden="true" /> New note
                 </button>
               </div>
             )

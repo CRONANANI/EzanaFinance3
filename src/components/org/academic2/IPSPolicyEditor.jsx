@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Power, Trash2, ShieldX, ShieldAlert, Lock } from 'lucide-react';
 import './academic.css';
 import './compliance2.css';
 import { isHardRule, ruleLabel } from './ComplianceMonitor';
@@ -33,11 +32,11 @@ const FORM_META = {
 function SevPill({ hard }) {
   return hard ? (
     <span className="cmp2-sev cmp2-sev--hard">
-      <ShieldX aria-hidden /> Hard
+      <i className="bi bi-shield-x" aria-hidden="true" /> Hard
     </span>
   ) : (
     <span className="cmp2-sev cmp2-sev--soft">
-      <ShieldAlert aria-hidden /> Soft
+      <i className="bi bi-shield-exclamation" aria-hidden="true" /> Soft
     </span>
   );
 }
@@ -139,7 +138,7 @@ export function IPSPolicyEditor({ rules = [], ruleTypes = [], canEdit = false, o
             onClick={() => toggle(r)}
             disabled={pendingId === r.id}
           >
-            <Power size={14} aria-hidden /> {r.is_active ? 'Disable' : 'Enable'}
+            <i className="bi bi-power" aria-hidden="true" /> {r.is_active ? 'Disable' : 'Enable'}
           </button>
           <button
             type="button"
@@ -147,7 +146,7 @@ export function IPSPolicyEditor({ rules = [], ruleTypes = [], canEdit = false, o
             onClick={() => remove(r)}
             disabled={pendingId === r.id}
           >
-            <Trash2 size={14} aria-hidden /> Delete
+            <i className="bi bi-trash3" aria-hidden="true" /> Delete
           </button>
         </div>
       )}
@@ -207,13 +206,13 @@ export function IPSPolicyEditor({ rules = [], ruleTypes = [], canEdit = false, o
               onClick={add}
               disabled={busy || !form.value}
             >
-              <Plus size={15} aria-hidden /> Add rule
+              <i className="bi bi-plus-lg" aria-hidden="true" /> Add rule
             </button>
           </div>
         </div>
       ) : (
         <div className="cmp2-inline-note" style={{ marginBottom: '1rem' }}>
-          <Lock size={13} aria-hidden />
+          <i className="bi bi-lock" aria-hidden="true" />
           <span>Mandate rules are read-only for your role. Executives can add or change them.</span>
         </div>
       )}
@@ -225,7 +224,7 @@ export function IPSPolicyEditor({ rules = [], ruleTypes = [], canEdit = false, o
           {hard.length > 0 && (
             <>
               <div className="cmp2-group-head">
-                <ShieldX size={13} aria-hidden /> Hard limits
+                <i className="bi bi-shield-x" aria-hidden="true" /> Hard limits
               </div>
               {hard.map(row)}
             </>
@@ -233,7 +232,7 @@ export function IPSPolicyEditor({ rules = [], ruleTypes = [], canEdit = false, o
           {soft.length > 0 && (
             <>
               <div className="cmp2-group-head">
-                <ShieldAlert size={13} aria-hidden /> Soft limits
+                <i className="bi bi-shield-exclamation" aria-hidden="true" /> Soft limits
               </div>
               {soft.map(row)}
             </>
@@ -241,7 +240,7 @@ export function IPSPolicyEditor({ rules = [], ruleTypes = [], canEdit = false, o
           {inactive.length > 0 && (
             <>
               <div className="cmp2-group-head">
-                <Power size={13} aria-hidden /> Disabled
+                <i className="bi bi-power" aria-hidden="true" /> Disabled
               </div>
               {inactive.map(row)}
             </>

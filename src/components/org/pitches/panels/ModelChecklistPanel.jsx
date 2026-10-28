@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Check, CircleDashed, Circle, FileUp, ExternalLink, ShieldCheck } from 'lucide-react';
 
 /**
  * ModelChecklistPanel — the deep-dive Deliverables-tab panel that renders the
@@ -123,11 +122,11 @@ export function ModelChecklistPanel({ pitch, viewer, onRefresh }) {
               <div className="pmodel-row-main">
                 <span className="pmodel-ic" aria-hidden>
                   {status === 'complete' ? (
-                    <Check size={14} className="pmodel-ic-pass" />
+                    <i className="bi bi-check-lg pmodel-ic-pass" aria-hidden="true" />
                   ) : status === 'pending' ? (
-                    <CircleDashed size={14} className="pmodel-ic-partial" />
+                    <i className="bi bi-circle pmodel-ic-partial" aria-hidden="true" />
                   ) : (
-                    <Circle size={14} className="pmodel-ic-fail" />
+                    <i className="bi bi-circle pmodel-ic-fail" aria-hidden="true" />
                   )}
                 </span>
                 <span className="pmodel-name">{labelFor(m.model_type)}</span>
@@ -149,7 +148,7 @@ export function ModelChecklistPanel({ pitch, viewer, onRefresh }) {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <ExternalLink size={12} aria-hidden />
+                    <i className="bi bi-box-arrow-up-right" aria-hidden="true" />
                     <span className="pmodel-file-text">{m.file_url}</span>
                   </a>
                 ) : null}
@@ -174,7 +173,7 @@ export function ModelChecklistPanel({ pitch, viewer, onRefresh }) {
                       );
                     }}
                   >
-                    <FileUp size={12} aria-hidden />
+                    <i className="bi bi-file-earmark-arrow-up" aria-hidden="true" />
                     {busy === uploadKey ? 'Attaching…' : 'Attach'}
                   </button>
                 </div>
@@ -186,7 +185,7 @@ export function ModelChecklistPanel({ pitch, viewer, onRefresh }) {
                     disabled={busy === reviewKey}
                     onClick={() => post({ model_type: m.model_type, reviewed: true }, reviewKey)}
                   >
-                    <ShieldCheck size={12} aria-hidden />
+                    <i className="bi bi-shield-check" aria-hidden="true" />
                     {busy === reviewKey ? 'Marking…' : 'Mark reviewed'}
                   </button>
                 ) : null}

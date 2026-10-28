@@ -2,15 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  AlertTriangle,
-  Camera,
-  ChevronDown,
-  Flag,
-  TrendingDown,
-  TrendingUp,
-  X,
-} from 'lucide-react';
-import {
   CONVICTIONS,
   MIN_MESSAGE_CHARS,
   RESPONSE_WINDOWS,
@@ -140,7 +131,7 @@ function PositionSwitcher({ current, book, onSwitch }) {
             </span>
           )}
         </span>
-        <ChevronDown size={14} aria-hidden />
+        <i className="bi bi-chevron-down" aria-hidden="true" />
       </button>
 
       {open && (
@@ -405,7 +396,7 @@ export function FlagComposerModal({
           <div className="ot-modal-header">
             <h2 className="ot-modal-title">{ticker} already has an open flag</h2>
             <button type="button" aria-label="Close" className="ot-modal-close" onClick={onClose}>
-              <X size={18} aria-hidden />
+              <i className="bi bi-x-lg" aria-hidden="true" />
             </button>
           </div>
           <p className="ot-dossier-muted" style={{ marginBottom: '1rem' }}>
@@ -439,7 +430,7 @@ export function FlagComposerModal({
       <div className="ot-modal ot-modal-dossier">
         <div className="ot-modal-header">
           <div className="ot-dossier-title">
-            <Flag size={16} className={`ot-flag-icon ${accentClass}`} aria-hidden />
+            <i className={`bi bi-flag ot-flag-icon ${accentClass}`} aria-hidden="true" />
             <h2 className="ot-modal-title">{isThesisUpdate ? 'Thesis Update' : 'Flag Position'}</h2>
             {book.length > 1 ? (
               <PositionSwitcher
@@ -457,7 +448,7 @@ export function FlagComposerModal({
             )}
           </div>
           <button type="button" aria-label="Close" className="ot-modal-close" onClick={onClose}>
-            <X size={18} aria-hidden />
+            <i className="bi bi-x-lg" aria-hidden="true" />
           </button>
         </div>
 
@@ -467,9 +458,9 @@ export function FlagComposerModal({
             <div className={`ot-dossier-pl ${positive ? 'pos' : 'neg'}`}>
               <div className="ot-dossier-pl-head">
                 {positive ? (
-                  <TrendingUp size={16} aria-hidden />
+                  <i className="bi bi-graph-up-arrow" aria-hidden="true" />
                 ) : (
-                  <TrendingDown size={16} aria-hidden />
+                  <i className="bi bi-graph-down-arrow" aria-hidden="true" />
                 )}
                 <span className="ot-num">
                   {plPct == null ? '—' : `${positive ? '▲' : '▼'} ${num(Math.abs(plPct), 1)}%`}
@@ -521,7 +512,7 @@ export function FlagComposerModal({
 
             {conflict && (
               <div className="ot-banner amber">
-                <AlertTriangle size={13} aria-hidden />
+                <i className="bi bi-exclamation-triangle" aria-hidden="true" />
                 <span>
                   Conflict disclosed — you hold {ticker} personally. This is recorded on the flag.
                 </span>
@@ -541,7 +532,7 @@ export function FlagComposerModal({
                 onClick={addChartSnapshot}
                 disabled={evidence.some((e) => e.type === 'chart')}
               >
-                <Camera size={13} aria-hidden />
+                <i className="bi bi-camera" aria-hidden="true" />
                 {evidence.some((e) => e.type === 'chart')
                   ? 'Chart snapshot attached'
                   : 'Chart snapshot'}
@@ -569,7 +560,7 @@ export function FlagComposerModal({
                   className={`ot-flag-color-btn ${flagColor === 'green' ? 'is-selected green' : ''}`}
                   onClick={() => pickColor('green')}
                 >
-                  <Flag size={14} aria-hidden />
+                  <i className="bi bi-flag" aria-hidden="true" />
                   <span>
                     Green
                     <small>Thesis strengthening</small>
@@ -580,7 +571,7 @@ export function FlagComposerModal({
                   className={`ot-flag-color-btn ${flagColor === 'red' ? 'is-selected red' : ''}`}
                   onClick={() => pickColor('red')}
                 >
-                  <Flag size={14} aria-hidden />
+                  <i className="bi bi-flag" aria-hidden="true" />
                   <span>
                     Red
                     <small>Thesis at risk</small>
@@ -703,7 +694,7 @@ export function FlagComposerModal({
 
             {softNudge && (
               <div className="ot-banner amber" style={{ marginTop: '0.75rem' }}>
-                <AlertTriangle size={13} aria-hidden />
+                <i className="bi bi-exclamation-triangle" aria-hidden="true" />
                 <span>
                   Red flags at high conviction are taken seriously. Can you attach something?
                 </span>

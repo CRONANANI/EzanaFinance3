@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ShieldCheck, ShieldX, ShieldAlert } from 'lucide-react';
 import { orgRequest } from '@/lib/org-request';
 import { IPSPolicyEditor } from '@/components/org/academic2/IPSPolicyEditor';
 import {
@@ -138,19 +137,19 @@ export function ComplianceClient({ initialData = null }) {
           !error &&
           (hardBreaches > 0 ? (
             <div className="cmp2-breach-chip cmp2-breach-chip--hard">
-              <ShieldX size={16} aria-hidden />
+              <i className="bi bi-shield-x" aria-hidden="true" />
               <span className="cmp2-num">{hardBreaches}</span> hard{' '}
               {hardBreaches === 1 ? 'breach' : 'breaches'} open
             </div>
           ) : openBreaches > 0 ? (
             <div className="cmp2-breach-chip">
-              <ShieldAlert size={16} aria-hidden />
+              <i className="bi bi-shield-exclamation" aria-hidden="true" />
               <span className="cmp2-num">{openBreaches}</span> open{' '}
               {openBreaches === 1 ? 'flag' : 'flags'}
             </div>
           ) : (
             <div className="cmp2-breach-chip cmp2-breach-chip--clear">
-              <ShieldCheck size={16} aria-hidden /> All clear
+              <i className="bi bi-shield-check" aria-hidden="true" /> All clear
             </div>
           ))}
       </div>
@@ -188,7 +187,7 @@ export function ComplianceClient({ initialData = null }) {
                 <div className="cmp2-panel">
                   <div className="cmp2-panel-head">
                     <h3 className="cmp2-panel-title">
-                      <ShieldCheck aria-hidden /> Pre-trade gate
+                      <i className="bi bi-shield-check" aria-hidden="true" /> Pre-trade gate
                     </h3>
                   </div>
                   <PreTradeGate rules={rules} />

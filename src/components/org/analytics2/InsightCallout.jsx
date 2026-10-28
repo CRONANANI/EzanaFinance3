@@ -1,6 +1,5 @@
 'use client';
 
-import { Info, AlertTriangle } from 'lucide-react';
 import { pct } from './format';
 
 /**
@@ -34,10 +33,10 @@ export function composeInsight(latest, concentration) {
 
 /** Reusable icon + one-sentence callout. `variant`: 'neutral' | 'warning'. */
 export function InsightCallout({ variant = 'neutral', children }) {
-  const Icon = variant === 'warning' ? AlertTriangle : Info;
+  const icon = variant === 'warning' ? 'bi-exclamation-triangle' : 'bi-info-circle';
   return (
     <div className={`fa-callout ${variant}`}>
-      <Icon size={16} aria-hidden />
+      <i className={`bi ${icon}`} aria-hidden="true" />
       <div>{children}</div>
     </div>
   );

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Download, FileText, FileSpreadsheet } from 'lucide-react';
 import { STATUS_LABEL, typeMeta } from './AssignmentCard';
 
 function rows(assignments) {
@@ -101,15 +100,15 @@ export function AssignmentExport({ assignments }) {
         aria-haspopup="menu"
         aria-expanded={open}
       >
-        <Download size={14} aria-hidden="true" /> Export
+        <i className="bi bi-download" aria-hidden="true" /> Export
       </button>
       {open && (
         <div className="asg2-menu" role="menu">
           <button type="button" role="menuitem" onClick={downloadCsv}>
-            <FileSpreadsheet size={14} aria-hidden="true" /> Download CSV
+            <i className="bi bi-file-earmark-spreadsheet" aria-hidden="true" /> Download CSV
           </button>
           <button type="button" role="menuitem" onClick={printPdf}>
-            <FileText size={14} aria-hidden="true" /> Print / Save as PDF
+            <i className="bi bi-file-earmark-text" aria-hidden="true" /> Print / Save as PDF
           </button>
         </div>
       )}

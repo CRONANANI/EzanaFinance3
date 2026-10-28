@@ -169,6 +169,11 @@ html.light-mode .tpm-card {
     transform: rotate(360deg);
   }
 }
+@media (prefers-reduced-motion: reduce) {
+  .tpm-spin {
+    animation: none;
+  }
+}
 
 @media (max-width: 640px) {
   .tpm-grid {

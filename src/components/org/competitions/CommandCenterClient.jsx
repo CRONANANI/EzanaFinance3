@@ -2,21 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import {
-  ArrowLeft,
-  CheckCircle2,
-  Circle,
-  Plus,
-  Trash2,
-  Layers,
-  DoorOpen,
-  Users,
-  Gavel,
-  SlidersHorizontal,
-  LayoutDashboard,
-  Megaphone,
-  Loader2,
-} from 'lucide-react';
 import { StatusPill } from './CompetitionsListClient';
 import './competitions.css';
 
@@ -29,10 +14,10 @@ const NEXT_STATUS_LABEL = {
 };
 
 const TABS = [
-  { id: 'overview', label: 'Overview', Icon: LayoutDashboard },
-  { id: 'structure', label: 'Structure', Icon: Layers },
-  { id: 'invitations', label: 'Invitations', Icon: Users },
-  { id: 'rubric', label: 'Rubric', Icon: SlidersHorizontal },
+  { id: 'overview', label: 'Overview', icon: 'bi-speedometer2' },
+  { id: 'structure', label: 'Structure', icon: 'bi-layers' },
+  { id: 'invitations', label: 'Invitations', icon: 'bi-people' },
+  { id: 'rubric', label: 'Rubric', icon: 'bi-sliders' },
 ];
 
 export function CommandCenterClient({ initialCompetition, initialStructure, canManage }) {
@@ -111,7 +96,7 @@ export function CommandCenterClient({ initialCompetition, initialStructure, canM
   return (
     <div className="pcx-page">
       <Link href="/org-competitions" className="pcx-back">
-        <ArrowLeft size={15} /> All competitions
+        <i className="bi bi-arrow-left" aria-hidden="true" /> All competitions
       </Link>
 
       <header className="pcx-cc-head">
@@ -119,7 +104,9 @@ export function CommandCenterClient({ initialCompetition, initialStructure, canM
           <div className="pcx-cc-title-row">
             <h1 className="pcx-h1">{competition.name}</h1>
             <StatusPill status={competition.status} />
-            {!competition.isHost ? <span className="pcx-tag pcx-tag--muted">Participant view</span> : null}
+            {!competition.isHost ? (
+              <span className="pcx-tag pcx-tag--muted">Participant view</span>
+            ) : null}
           </div>
           {competition.theme ? <p className="pcx-lead">{competition.theme}</p> : null}
         </div>
@@ -166,7 +153,7 @@ export function CommandCenterClient({ initialCompetition, initialStructure, canM
             className={`pcx-tab ${tab === t.id ? 'is-active' : ''}`}
             onClick={() => setTab(t.id)}
           >
-            <t.Icon size={15} aria-hidden="true" /> {t.label}
+            <i className={`bi ${t.icon}`} aria-hidden="true" /> {t.label}
           </button>
         ))}
       </nav>
@@ -188,10 +175,21 @@ export function CommandCenterClient({ initialCompetition, initialStructure, canM
         <StructureTab structure={structure} canManage={canManage} busy={busy} act={act} />
       )}
       {tab === 'invitations' && (
-        <InvitationsTab structure={structure} canManage={canManage} busy={busy} act={act} compId={compId} />
+        <InvitationsTab
+          structure={structure}
+          canManage={canManage}
+          busy={busy}
+          act={act}
+          compId={compId}
+        />
       )}
       {tab === 'rubric' && (
-        <RubricTab compId={compId} rubric={structure.rubric} canManage={canManage} onSaved={refetch} />
+        <RubricTab
+          compId={compId}
+          rubric={structure.rubric}
+          canManage={canManage}
+          onSaved={refetch}
+        />
       )}
     </div>
   );
@@ -205,7 +203,11 @@ function OverviewTab({ competition, counts, readiness, canManage, busy, onAdvanc
   return (
     <div className="pcx-tabpanel">
       <div className="pcx-stat-row">
-        <Stat label="Teams" value={counts.teams || 0} sub={`${counts.teamsRegistered || 0} registered`} />
+        <Stat
+          label="Teams"
+          value={counts.teams || 0}
+          sub={`${counts.teamsRegistered || 0} registered`}
+        />
         <Stat label="Submitted" value={counts.teamsSubmitted || 0} sub="deliverables in" />
         <Stat label="Judges" value={counts.judges || 0} sub="confirmed" />
         <Stat label="Rooms" value={counts.rooms || 0} sub={`${counts.rounds || 0} rounds`} />
@@ -216,7 +218,11 @@ function OverviewTab({ competition, counts, readiness, canManage, busy, onAdvanc
         <ul className="pcx-check">
           {readiness.items.map((it) => (
             <li key={it.key} className={it.met ? 'is-met' : ''}>
-              {it.met ? <CheckCircle2 size={16} aria-hidden="true" /> : <Circle size={16} aria-hidden="true" />}
+              {it.met ? (
+                <i className="bi bi-check-circle" aria-hidden="true" />
+              ) : (
+                <i className="bi bi-circle" aria-hidden="true" />
+              )}
               <span>{it.label}</span>
             </li>
           ))}
@@ -228,7 +234,11 @@ function OverviewTab({ competition, counts, readiness, canManage, busy, onAdvanc
               className="pcx-btn pcx-btn--primary"
               disabled={busy || (competition.status === 'draft' && !canOpen)}
               onClick={() => onAdvance({ status: nextStatus })}
-              title={competition.status === 'draft' && !canOpen ? 'Complete the checklist first' : undefined}
+              title={
+                competition.status === 'draft' && !canOpen
+                  ? 'Complete the checklist first'
+                  : undefined
+              }
             >
               {NEXT_STATUS_LABEL[competition.status]}
             </button>
@@ -261,7 +271,9 @@ function AnnouncementsPanel({ compId, canManage }) {
   useEffect(() => {
     let alive = true;
     (async () => {
-      const res = await fetch(`/api/org/pitch-competitions/${compId}/announcements`, { cache: 'no-store' });
+      const res = await fetch(`/api/org/pitch-competitions/${compId}/announcements`, {
+        cache: 'no-store',
+      });
       if (alive && res.ok) {
         const json = await res.json();
         setItems(json.announcements || []);
@@ -294,13 +306,30 @@ function AnnouncementsPanel({ compId, canManage }) {
 
   return (
     <section className="pcx-card-block">
-      <h2 className="pcx-block-title"><Megaphone size={15} aria-hidden="true" /> Announcements</h2>
+      <h2 className="pcx-block-title">
+        <i className="bi bi-megaphone" aria-hidden="true" /> Announcements
+      </h2>
       {canManage ? (
         <form className="pcx-stack-form" onSubmit={post}>
-          <input className="pcx-input" placeholder="Announcement title (e.g. Room 2 moved to 3pm)" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-          <textarea className="pcx-input pcx-textarea" rows={2} placeholder="Details (optional)" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} />
-          <button type="submit" className="pcx-btn pcx-btn--primary" disabled={busy || !form.title.trim()}>
-            <Plus size={15} /> Post to all registered teams
+          <input
+            className="pcx-input"
+            placeholder="Announcement title (e.g. Room 2 moved to 3pm)"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+          />
+          <textarea
+            className="pcx-input pcx-textarea"
+            rows={2}
+            placeholder="Details (optional)"
+            value={form.body}
+            onChange={(e) => setForm({ ...form, body: e.target.value })}
+          />
+          <button
+            type="submit"
+            className="pcx-btn pcx-btn--primary"
+            disabled={busy || !form.title.trim()}
+          >
+            <i className="bi bi-plus-lg" aria-hidden="true" /> Post to all registered teams
           </button>
         </form>
       ) : null}
@@ -333,24 +362,44 @@ function StructureTab({ structure, canManage, busy, act }) {
           className="pcx-inline-form"
           onSubmit={(e) => {
             e.preventDefault();
-            if (roundName.trim()) act({ action: 'add_round', name: roundName.trim() }).then((okd) => okd && setRoundName(''));
+            if (roundName.trim())
+              act({ action: 'add_round', name: roundName.trim() }).then(
+                (okd) => okd && setRoundName(''),
+              );
           }}
         >
-          <input className="pcx-input" placeholder="Round name (e.g. Semifinal)" value={roundName} onChange={(e) => setRoundName(e.target.value)} />
-          <button type="submit" className="pcx-btn pcx-btn--primary" disabled={busy || !roundName.trim()}>
-            <Plus size={15} /> Add round
+          <input
+            className="pcx-input"
+            placeholder="Round name (e.g. Semifinal)"
+            value={roundName}
+            onChange={(e) => setRoundName(e.target.value)}
+          />
+          <button
+            type="submit"
+            className="pcx-btn pcx-btn--primary"
+            disabled={busy || !roundName.trim()}
+          >
+            <i className="bi bi-plus-lg" aria-hidden="true" /> Add round
           </button>
         </form>
       ) : null}
 
       {(structure.rounds || []).length === 0 ? (
         <div className="pcx-empty pcx-empty--sm">
-          <Layers size={22} aria-hidden="true" />
+          <i className="bi bi-layers" aria-hidden="true" />
           <p>No rounds yet.</p>
         </div>
       ) : (
         (structure.rounds || []).map((round) => (
-          <RoundBlock key={round.id} round={round} teams={teams} judges={judges} canManage={canManage} busy={busy} act={act} />
+          <RoundBlock
+            key={round.id}
+            round={round}
+            teams={teams}
+            judges={judges}
+            canManage={canManage}
+            busy={busy}
+            act={act}
+          />
         ))
       )}
     </div>
@@ -366,11 +415,17 @@ function RoundBlock({ round, teams, judges, canManage, busy, act }) {
     <section className="pcx-round">
       <div className="pcx-round-head">
         <h3 className="pcx-round-name">
-          <Layers size={15} aria-hidden="true" /> {round.name}
+          <i className="bi bi-layers" aria-hidden="true" /> {round.name}
         </h3>
         {canManage ? (
-          <button type="button" className="pcx-iconbtn pcx-danger" onClick={() => act({ action: 'remove_round', round_id: round.id })} disabled={busy} aria-label={`Remove ${round.name}`}>
-            <Trash2 size={15} />
+          <button
+            type="button"
+            className="pcx-iconbtn pcx-danger"
+            onClick={() => act({ action: 'remove_round', round_id: round.id })}
+            disabled={busy}
+            aria-label={`Remove ${round.name}`}
+          >
+            <i className="bi bi-trash3" aria-hidden="true" />
           </button>
         ) : null}
       </div>
@@ -381,7 +436,12 @@ function RoundBlock({ round, teams, judges, canManage, busy, act }) {
           onSubmit={(e) => {
             e.preventDefault();
             if (roomName.trim())
-              act({ action: 'add_room', round_id: round.id, name: roomName.trim(), location: roomLoc.trim() || null }).then((okd) => {
+              act({
+                action: 'add_room',
+                round_id: round.id,
+                name: roomName.trim(),
+                location: roomLoc.trim() || null,
+              }).then((okd) => {
                 if (okd) {
                   setRoomName('');
                   setRoomLoc('');
@@ -389,10 +449,20 @@ function RoundBlock({ round, teams, judges, canManage, busy, act }) {
               });
           }}
         >
-          <input className="pcx-input" placeholder="Room name (Room A)" value={roomName} onChange={(e) => setRoomName(e.target.value)} />
-          <input className="pcx-input" placeholder="Location / link (optional)" value={roomLoc} onChange={(e) => setRoomLoc(e.target.value)} />
+          <input
+            className="pcx-input"
+            placeholder="Room name (Room A)"
+            value={roomName}
+            onChange={(e) => setRoomName(e.target.value)}
+          />
+          <input
+            className="pcx-input"
+            placeholder="Location / link (optional)"
+            value={roomLoc}
+            onChange={(e) => setRoomLoc(e.target.value)}
+          />
           <button type="submit" className="pcx-btn" disabled={busy || !roomName.trim()}>
-            <Plus size={14} /> Room
+            <i className="bi bi-plus-lg" aria-hidden="true" /> Room
           </button>
         </form>
       ) : null}
@@ -402,7 +472,15 @@ function RoundBlock({ round, teams, judges, canManage, busy, act }) {
       ) : (
         <div className="pcx-rooms">
           {round.rooms.map((room) => (
-            <RoomCard key={room.id} room={room} unassigned={unassigned} judges={judges} canManage={canManage} busy={busy} act={act} />
+            <RoomCard
+              key={room.id}
+              room={room}
+              unassigned={unassigned}
+              judges={judges}
+              canManage={canManage}
+              busy={busy}
+              act={act}
+            />
           ))}
         </div>
       )}
@@ -418,18 +496,26 @@ function RoomCard({ room, unassigned, judges, canManage, busy, act }) {
     <div className="pcx-room">
       <div className="pcx-room-head">
         <span className="pcx-room-name">
-          <DoorOpen size={14} aria-hidden="true" /> {room.name}
+          <i className="bi bi-door-open" aria-hidden="true" /> {room.name}
         </span>
         {room.location ? <span className="pcx-muted">{room.location}</span> : null}
         {canManage ? (
-          <button type="button" className="pcx-iconbtn pcx-danger" onClick={() => act({ action: 'remove_room', room_id: room.id })} disabled={busy} aria-label={`Remove ${room.name}`}>
-            <Trash2 size={13} />
+          <button
+            type="button"
+            className="pcx-iconbtn pcx-danger"
+            onClick={() => act({ action: 'remove_room', room_id: room.id })}
+            disabled={busy}
+            aria-label={`Remove ${room.name}`}
+          >
+            <i className="bi bi-trash3" aria-hidden="true" />
           </button>
         ) : null}
       </div>
 
       <div className="pcx-room-section">
-        <span className="pcx-room-sub"><Users size={12} aria-hidden="true" /> Teams</span>
+        <span className="pcx-room-sub">
+          <i className="bi bi-people" aria-hidden="true" /> Teams
+        </span>
         {(room.teams || []).length === 0 ? (
           <span className="pcx-muted">None assigned</span>
         ) : (
@@ -439,7 +525,13 @@ function RoomCard({ room, unassigned, judges, canManage, busy, act }) {
                 {t.team_name}
                 {t.ticker ? <span className="pcx-chip-meta"> {t.ticker}</span> : null}
                 {canManage ? (
-                  <button type="button" className="pcx-chip-x" onClick={() => act({ action: 'assign_team', team_id: t.id, room_id: null })} disabled={busy} aria-label={`Remove ${t.team_name} from room`}>
+                  <button
+                    type="button"
+                    className="pcx-chip-x"
+                    onClick={() => act({ action: 'assign_team', team_id: t.id, room_id: null })}
+                    disabled={busy}
+                    aria-label={`Remove ${t.team_name} from room`}
+                  >
                     ×
                   </button>
                 ) : null}
@@ -451,7 +543,10 @@ function RoomCard({ room, unassigned, judges, canManage, busy, act }) {
           <select
             className="pcx-input pcx-input--sm"
             value=""
-            onChange={(e) => e.target.value && act({ action: 'assign_team', team_id: e.target.value, room_id: room.id })}
+            onChange={(e) =>
+              e.target.value &&
+              act({ action: 'assign_team', team_id: e.target.value, room_id: room.id })
+            }
             disabled={busy}
             aria-label={`Assign a team to ${room.name}`}
           >
@@ -466,7 +561,9 @@ function RoomCard({ room, unassigned, judges, canManage, busy, act }) {
       </div>
 
       <div className="pcx-room-section">
-        <span className="pcx-room-sub"><Gavel size={12} aria-hidden="true" /> Judges</span>
+        <span className="pcx-room-sub">
+          <i className="bi bi-hammer" aria-hidden="true" /> Judges
+        </span>
         {(room.judges || []).length === 0 ? (
           <span className="pcx-muted">None assigned</span>
         ) : (
@@ -476,7 +573,15 @@ function RoomCard({ room, unassigned, judges, canManage, busy, act }) {
                 {j.full_name}
                 {j.firm ? <span className="pcx-chip-meta"> {j.firm}</span> : null}
                 {canManage ? (
-                  <button type="button" className="pcx-chip-x" onClick={() => act({ action: 'unassign_judge', room_id: room.id, judge_id: j.id })} disabled={busy} aria-label={`Remove ${j.full_name} from room`}>
+                  <button
+                    type="button"
+                    className="pcx-chip-x"
+                    onClick={() =>
+                      act({ action: 'unassign_judge', room_id: room.id, judge_id: j.id })
+                    }
+                    disabled={busy}
+                    aria-label={`Remove ${j.full_name} from room`}
+                  >
                     ×
                   </button>
                 ) : null}
@@ -488,7 +593,10 @@ function RoomCard({ room, unassigned, judges, canManage, busy, act }) {
           <select
             className="pcx-input pcx-input--sm"
             value=""
-            onChange={(e) => e.target.value && act({ action: 'assign_judge', room_id: room.id, judge_id: e.target.value })}
+            onChange={(e) =>
+              e.target.value &&
+              act({ action: 'assign_judge', room_id: room.id, judge_id: e.target.value })
+            }
             disabled={busy}
             aria-label={`Assign a judge to ${room.name}`}
           >
@@ -560,21 +668,47 @@ function InvitationsTab({ structure, canManage, busy, act, compId }) {
   return (
     <div className="pcx-tabpanel pcx-two-col">
       <section className="pcx-card-block">
-        <h2 className="pcx-block-title"><Users size={15} aria-hidden="true" /> Councils & teams</h2>
+        <h2 className="pcx-block-title">
+          <i className="bi bi-people" aria-hidden="true" /> Councils & teams
+        </h2>
         {canManage ? (
           <form className="pcx-stack-form" onSubmit={submitTeam}>
-            <input className="pcx-input" placeholder="Team name (e.g. McMaster A)" value={team.team_name} onChange={(e) => setTeam({ ...team, team_name: e.target.value })} />
-            <input className="pcx-input" placeholder="Invite email (optional)" value={team.invite_email} onChange={(e) => setTeam({ ...team, invite_email: e.target.value })} />
+            <input
+              className="pcx-input"
+              placeholder="Team name (e.g. McMaster A)"
+              value={team.team_name}
+              onChange={(e) => setTeam({ ...team, team_name: e.target.value })}
+            />
+            <input
+              className="pcx-input"
+              placeholder="Invite email (optional)"
+              value={team.invite_email}
+              onChange={(e) => setTeam({ ...team, invite_email: e.target.value })}
+            />
             <div className="pcx-form-row">
-              <input className="pcx-input" placeholder="Ticker (optional)" value={team.ticker} onChange={(e) => setTeam({ ...team, ticker: e.target.value })} />
-              <select className="pcx-input" value={team.side} onChange={(e) => setTeam({ ...team, side: e.target.value })} aria-label="Side">
+              <input
+                className="pcx-input"
+                placeholder="Ticker (optional)"
+                value={team.ticker}
+                onChange={(e) => setTeam({ ...team, ticker: e.target.value })}
+              />
+              <select
+                className="pcx-input"
+                value={team.side}
+                onChange={(e) => setTeam({ ...team, side: e.target.value })}
+                aria-label="Side"
+              >
                 <option value="">Side…</option>
                 <option value="long">Long</option>
                 <option value="short">Short</option>
               </select>
             </div>
-            <button type="submit" className="pcx-btn pcx-btn--primary" disabled={busy || !team.team_name.trim()}>
-              <Plus size={15} /> Invite team
+            <button
+              type="submit"
+              className="pcx-btn pcx-btn--primary"
+              disabled={busy || !team.team_name.trim()}
+            >
+              <i className="bi bi-plus-lg" aria-hidden="true" /> Invite team
             </button>
           </form>
         ) : null}
@@ -590,8 +724,14 @@ function InvitationsTab({ structure, canManage, busy, act, compId }) {
                 {TEAM_LABEL[t.status] || t.status}
               </span>
               {canManage ? (
-                <button type="button" className="pcx-iconbtn pcx-danger" onClick={() => act({ action: 'remove_team', team_id: t.id })} disabled={busy} aria-label={`Remove ${t.team_name}`}>
-                  <Trash2 size={14} />
+                <button
+                  type="button"
+                  className="pcx-iconbtn pcx-danger"
+                  onClick={() => act({ action: 'remove_team', team_id: t.id })}
+                  disabled={busy}
+                  aria-label={`Remove ${t.team_name}`}
+                >
+                  <i className="bi bi-trash3" aria-hidden="true" />
                 </button>
               ) : null}
             </li>
@@ -600,20 +740,46 @@ function InvitationsTab({ structure, canManage, busy, act, compId }) {
       </section>
 
       <section className="pcx-card-block">
-        <h2 className="pcx-block-title"><Gavel size={15} aria-hidden="true" /> Judges</h2>
+        <h2 className="pcx-block-title">
+          <i className="bi bi-hammer" aria-hidden="true" /> Judges
+        </h2>
         <p className="pcx-muted pcx-note">
           Magic-link access is generated in Phase 3 — for now this just captures the roster.
         </p>
         {canManage ? (
           <form className="pcx-stack-form" onSubmit={submitJudge}>
-            <input className="pcx-input" placeholder="Full name" value={judge.full_name} onChange={(e) => setJudge({ ...judge, full_name: e.target.value })} />
-            <input className="pcx-input" placeholder="Email" value={judge.email} onChange={(e) => setJudge({ ...judge, email: e.target.value })} />
+            <input
+              className="pcx-input"
+              placeholder="Full name"
+              value={judge.full_name}
+              onChange={(e) => setJudge({ ...judge, full_name: e.target.value })}
+            />
+            <input
+              className="pcx-input"
+              placeholder="Email"
+              value={judge.email}
+              onChange={(e) => setJudge({ ...judge, email: e.target.value })}
+            />
             <div className="pcx-form-row">
-              <input className="pcx-input" placeholder="Firm (optional)" value={judge.firm} onChange={(e) => setJudge({ ...judge, firm: e.target.value })} />
-              <input className="pcx-input" placeholder="Title (optional)" value={judge.title} onChange={(e) => setJudge({ ...judge, title: e.target.value })} />
+              <input
+                className="pcx-input"
+                placeholder="Firm (optional)"
+                value={judge.firm}
+                onChange={(e) => setJudge({ ...judge, firm: e.target.value })}
+              />
+              <input
+                className="pcx-input"
+                placeholder="Title (optional)"
+                value={judge.title}
+                onChange={(e) => setJudge({ ...judge, title: e.target.value })}
+              />
             </div>
-            <button type="submit" className="pcx-btn pcx-btn--primary" disabled={busy || !judge.full_name.trim() || !judge.email.trim()}>
-              <Plus size={15} /> Add judge
+            <button
+              type="submit"
+              className="pcx-btn pcx-btn--primary"
+              disabled={busy || !judge.full_name.trim() || !judge.email.trim()}
+            >
+              <i className="bi bi-plus-lg" aria-hidden="true" /> Add judge
             </button>
           </form>
         ) : null}
@@ -623,27 +789,62 @@ function InvitationsTab({ structure, canManage, busy, act, compId }) {
             <li key={j.id} className="pcx-judge">
               <div className="pcx-roster-row pcx-judge-row">
                 <span className="pcx-roster-main">{j.full_name}</span>
-                <span className="pcx-roster-meta">{[j.title, j.firm].filter(Boolean).join(', ') || j.email}</span>
+                <span className="pcx-roster-meta">
+                  {[j.title, j.firm].filter(Boolean).join(', ') || j.email}
+                </span>
                 {canManage ? (
                   <div className="pcx-judge-actions">
-                    <button type="button" className="pcx-btn pcx-btn--sm" onClick={() => manageToken(j.id, 'generate')} disabled={tokenBusy === j.id}>
-                      {tokenBusy === j.id ? <Loader2 size={13} className="pcx-spin" /> : null} {links[j.id] && links[j.id] !== '__revoked__' ? 'Regenerate' : 'Generate link'}
+                    <button
+                      type="button"
+                      className="pcx-btn pcx-btn--sm"
+                      onClick={() => manageToken(j.id, 'generate')}
+                      disabled={tokenBusy === j.id}
+                    >
+                      {tokenBusy === j.id ? (
+                        <i className="bi bi-arrow-repeat pcx-spin" aria-hidden="true" />
+                      ) : null}{' '}
+                      {links[j.id] && links[j.id] !== '__revoked__'
+                        ? 'Regenerate'
+                        : 'Generate link'}
                     </button>
-                    <button type="button" className="pcx-btn pcx-btn--sm" onClick={() => manageToken(j.id, 'revoke')} disabled={tokenBusy === j.id}>
+                    <button
+                      type="button"
+                      className="pcx-btn pcx-btn--sm"
+                      onClick={() => manageToken(j.id, 'revoke')}
+                      disabled={tokenBusy === j.id}
+                    >
                       Revoke
                     </button>
-                    <button type="button" className="pcx-iconbtn pcx-danger" onClick={() => act({ action: 'remove_judge', judge_id: j.id })} disabled={busy} aria-label={`Remove ${j.full_name}`}>
-                      <Trash2 size={14} />
+                    <button
+                      type="button"
+                      className="pcx-iconbtn pcx-danger"
+                      onClick={() => act({ action: 'remove_judge', judge_id: j.id })}
+                      disabled={busy}
+                      aria-label={`Remove ${j.full_name}`}
+                    >
+                      <i className="bi bi-trash3" aria-hidden="true" />
                     </button>
                   </div>
                 ) : null}
               </div>
               {links[j.id] === '__revoked__' ? (
-                <p className="pcx-muted pcx-judge-link">Link revoked — the judge can no longer access their scorecard.</p>
+                <p className="pcx-muted pcx-judge-link">
+                  Link revoked — the judge can no longer access their scorecard.
+                </p>
               ) : links[j.id] ? (
                 <div className="pcx-judge-link">
-                  <input className="pcx-input pcx-input--sm" readOnly value={links[j.id]} onFocus={(e) => e.target.select()} aria-label="Judge magic link" />
-                  <button type="button" className="pcx-btn pcx-btn--sm" onClick={() => navigator.clipboard?.writeText(links[j.id])}>
+                  <input
+                    className="pcx-input pcx-input--sm"
+                    readOnly
+                    value={links[j.id]}
+                    onFocus={(e) => e.target.select()}
+                    aria-label="Judge magic link"
+                  />
+                  <button
+                    type="button"
+                    className="pcx-btn pcx-btn--sm"
+                    onClick={() => navigator.clipboard?.writeText(links[j.id])}
+                  >
                     Copy
                   </button>
                   <span className="pcx-muted">Shown once — copy it now.</span>
@@ -660,14 +861,21 @@ function InvitationsTab({ structure, canManage, busy, act, compId }) {
 /* ─────────────── Rubric ─────────────── */
 function RubricTab({ compId, rubric, canManage, onSaved }) {
   const [rows, setRows] = useState(() =>
-    (rubric || []).map((r) => ({ label: r.label, description: r.description || '', weight: r.weight, max_score: r.max_score })),
+    (rubric || []).map((r) => ({
+      label: r.label,
+      description: r.description || '',
+      weight: r.weight,
+      max_score: r.max_score,
+    })),
   );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
 
-  const update = (i, key, val) => setRows((rs) => rs.map((r, idx) => (idx === i ? { ...r, [key]: val } : r)));
-  const addRow = () => setRows((rs) => [...rs, { label: '', description: '', weight: 1, max_score: 10 }]);
+  const update = (i, key, val) =>
+    setRows((rs) => rs.map((r, idx) => (idx === i ? { ...r, [key]: val } : r)));
+  const addRow = () =>
+    setRows((rs) => [...rs, { label: '', description: '', weight: 1, max_score: 10 }]);
   const removeRow = (i) => setRows((rs) => rs.filter((_, idx) => idx !== i));
 
   const save = async () => {
@@ -697,10 +905,12 @@ function RubricTab({ compId, rubric, canManage, onSaved }) {
   return (
     <div className="pcx-tabpanel">
       <section className="pcx-card-block">
-        <h2 className="pcx-block-title"><SlidersHorizontal size={15} aria-hidden="true" /> Scoring rubric</h2>
+        <h2 className="pcx-block-title">
+          <i className="bi bi-sliders" aria-hidden="true" /> Scoring rubric
+        </h2>
         <p className="pcx-muted pcx-note">
-          Weights are relative — a criterion at 1.25 counts 25% more than one at 1.0. Judges score each
-          out of its max in Phase 3.
+          Weights are relative — a criterion at 1.25 counts 25% more than one at 1.0. Judges score
+          each out of its max in Phase 3.
         </p>
         <div className="pcx-rubric">
           <div className="pcx-rubric-head">
@@ -712,14 +922,49 @@ function RubricTab({ compId, rubric, canManage, onSaved }) {
           {rows.map((r, i) => (
             <div className="pcx-rubric-row" key={i}>
               <div className="pcx-rubric-crit">
-                <input className="pcx-input" placeholder="Criterion" value={r.label} onChange={(e) => update(i, 'label', e.target.value)} disabled={!canManage} />
-                <input className="pcx-input pcx-input--sub" placeholder="Description (optional)" value={r.description} onChange={(e) => update(i, 'description', e.target.value)} disabled={!canManage} />
+                <input
+                  className="pcx-input"
+                  placeholder="Criterion"
+                  value={r.label}
+                  onChange={(e) => update(i, 'label', e.target.value)}
+                  disabled={!canManage}
+                />
+                <input
+                  className="pcx-input pcx-input--sub"
+                  placeholder="Description (optional)"
+                  value={r.description}
+                  onChange={(e) => update(i, 'description', e.target.value)}
+                  disabled={!canManage}
+                />
               </div>
-              <input className="pcx-input pcx-input--num" type="number" step="0.25" min="0.25" value={r.weight} onChange={(e) => update(i, 'weight', Number(e.target.value))} disabled={!canManage} aria-label="Weight" />
-              <input className="pcx-input pcx-input--num" type="number" step="1" min="1" value={r.max_score} onChange={(e) => update(i, 'max_score', Number(e.target.value))} disabled={!canManage} aria-label="Max score" />
+              <input
+                className="pcx-input pcx-input--num"
+                type="number"
+                step="0.25"
+                min="0.25"
+                value={r.weight}
+                onChange={(e) => update(i, 'weight', Number(e.target.value))}
+                disabled={!canManage}
+                aria-label="Weight"
+              />
+              <input
+                className="pcx-input pcx-input--num"
+                type="number"
+                step="1"
+                min="1"
+                value={r.max_score}
+                onChange={(e) => update(i, 'max_score', Number(e.target.value))}
+                disabled={!canManage}
+                aria-label="Max score"
+              />
               {canManage ? (
-                <button type="button" className="pcx-iconbtn pcx-danger" onClick={() => removeRow(i)} aria-label="Remove criterion">
-                  <Trash2 size={14} />
+                <button
+                  type="button"
+                  className="pcx-iconbtn pcx-danger"
+                  onClick={() => removeRow(i)}
+                  aria-label="Remove criterion"
+                >
+                  <i className="bi bi-trash3" aria-hidden="true" />
                 </button>
               ) : (
                 <span />
@@ -730,10 +975,16 @@ function RubricTab({ compId, rubric, canManage, onSaved }) {
         {canManage ? (
           <div className="pcx-rubric-actions">
             <button type="button" className="pcx-btn" onClick={addRow}>
-              <Plus size={15} /> Add criterion
+              <i className="bi bi-plus-lg" aria-hidden="true" /> Add criterion
             </button>
-            <button type="button" className="pcx-btn pcx-btn--primary" onClick={save} disabled={busy}>
-              {busy ? <Loader2 size={15} className="pcx-spin" /> : null} Save rubric
+            <button
+              type="button"
+              className="pcx-btn pcx-btn--primary"
+              onClick={save}
+              disabled={busy}
+            >
+              {busy ? <i className="bi bi-arrow-repeat pcx-spin" aria-hidden="true" /> : null} Save
+              rubric
             </button>
             {saved ? <span className="pcx-saved">Saved</span> : null}
           </div>
@@ -746,7 +997,12 @@ function RubricTab({ compId, rubric, canManage, onSaved }) {
 
 /* ─────────────── helpers ─────────────── */
 const TEAM_TONE = { invited: 'mut', registered: 'pos', submitted: 'done', withdrawn: 'mut' };
-const TEAM_LABEL = { invited: 'Invited', registered: 'Registered', submitted: 'Submitted', withdrawn: 'Withdrawn' };
+const TEAM_LABEL = {
+  invited: 'Invited',
+  registered: 'Registered',
+  submitted: 'Submitted',
+  withdrawn: 'Withdrawn',
+};
 
 function emptyStructure() {
   return { rounds: [], teams: [], judges: [], rubric: [], counts: {} };

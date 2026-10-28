@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Check, X, MinusCircle, CircleDashed, Users, ShieldAlert } from 'lucide-react';
 
 const MIN_OBJECTION_REASON = 10;
 
@@ -87,7 +86,7 @@ export function CrossDeskPanel({ pitch, viewer, onRefresh }) {
     <section className="pxdesk" aria-label="Cross-desk review">
       <header className="pxdesk-head">
         <div className="pxdesk-title">
-          <Users size={14} aria-hidden />
+          <i className="bi bi-people" aria-hidden="true" />
           <span>Cross-Desk Review</span>
         </div>
         <p className="pxdesk-summary">
@@ -118,13 +117,13 @@ export function CrossDeskPanel({ pitch, viewer, onRefresh }) {
           <li key={d.team_id} className={`pxdesk-row is-${d.decision || 'pending'}`}>
             <span className="pxdesk-row-ic" aria-hidden>
               {d.decision === 'approve' ? (
-                <Check size={14} />
+                <i className="bi bi-check-lg" aria-hidden="true" />
               ) : d.decision === 'object' ? (
-                <X size={14} />
+                <i className="bi bi-x-lg" aria-hidden="true" />
               ) : d.decision === 'abstain' ? (
-                <MinusCircle size={14} />
+                <i className="bi bi-dash-circle" aria-hidden="true" />
               ) : (
-                <CircleDashed size={14} />
+                <i className="bi bi-circle" aria-hidden="true" />
               )}
             </span>
             <div className="pxdesk-row-main">
@@ -132,7 +131,7 @@ export function CrossDeskPanel({ pitch, viewer, onRefresh }) {
               <span className="pxdesk-row-pm">{d.pm_name || 'No senior PM assigned'}</span>
               {d.decision === 'object' && d.reason ? (
                 <p className="pxdesk-row-reason">
-                  <ShieldAlert size={12} aria-hidden /> {d.reason}
+                  <i className="bi bi-shield-exclamation" aria-hidden="true" /> {d.reason}
                 </p>
               ) : null}
             </div>
@@ -175,7 +174,7 @@ export function CrossDeskPanel({ pitch, viewer, onRefresh }) {
                 disabled={busy}
                 onClick={() => submit('approve')}
               >
-                <Check size={14} aria-hidden /> Approve
+                <i className="bi bi-check-lg" aria-hidden="true" /> Approve
               </button>
               <button
                 type="button"
@@ -186,7 +185,7 @@ export function CrossDeskPanel({ pitch, viewer, onRefresh }) {
                   setObjecting(true);
                 }}
               >
-                <X size={14} aria-hidden /> Object
+                <i className="bi bi-x-lg" aria-hidden="true" /> Object
               </button>
             </div>
           ) : (

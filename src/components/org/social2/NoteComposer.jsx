@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { X, Loader2, FileText, Sparkles, Paperclip, Upload, Download, Trash2 } from 'lucide-react';
 import './research2.css';
 
 function fmtBytes(n) {
@@ -285,7 +284,7 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
             </p>
           </div>
           <button type="button" className="rl2-close" onClick={onClose} aria-label="Close">
-            <X size={16} />
+            <i className="bi bi-x-lg" aria-hidden="true" />
           </button>
         </div>
 
@@ -306,7 +305,11 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
           </div>
           <div className="rl2-field">
             <label className="rl2-label">
-              <FileText size={12} style={{ verticalAlign: '-2px', marginRight: 4 }} />
+              <i
+                className="bi bi-file-earmark-text"
+                style={{ verticalAlign: '-2px', marginRight: 4 }}
+                aria-hidden="true"
+              />
               Template (optional)
             </label>
             <select
@@ -457,7 +460,11 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
         {/* Attachments — available once the document exists (edit mode). */}
         <div className="rl2-field">
           <label className="rl2-label">
-            <Paperclip size={12} style={{ verticalAlign: '-2px', marginRight: 4 }} />
+            <i
+              className="bi bi-paperclip"
+              style={{ verticalAlign: '-2px', marginRight: 4 }}
+              aria-hidden="true"
+            />
             Attachments
           </label>
           {!editing ? (
@@ -472,7 +479,7 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
                 <div className="rl2-attach-list">
                   {attachments.map((att) => (
                     <div key={att.id} className="rl2-attach-row">
-                      <FileText size={14} className="rl2-attach-icon" />
+                      <i className="bi bi-file-earmark-text rl2-attach-icon" aria-hidden="true" />
                       <span className="rl2-attach-name">{att.file_name}</span>
                       <span className="rl2-attach-size rl2-num">{fmtBytes(att.size_bytes)}</span>
                       {att.signed_url && (
@@ -484,7 +491,7 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
                           download={att.file_name}
                           aria-label={`Download ${att.file_name}`}
                         >
-                          <Download size={14} />
+                          <i className="bi bi-download" aria-hidden="true" />
                         </a>
                       )}
                       <button
@@ -494,7 +501,7 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
                         disabled={attBusy}
                         aria-label={`Delete ${att.file_name}`}
                       >
-                        <Trash2 size={14} />
+                        <i className="bi bi-trash3" aria-hidden="true" />
                       </button>
                     </div>
                   ))}
@@ -514,7 +521,11 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
                   onClick={() => attFileRef.current?.click()}
                   disabled={attBusy}
                 >
-                  {attBusy ? <Loader2 size={13} className="rl2-spin" /> : <Upload size={13} />}
+                  {attBusy ? (
+                    <i className="bi bi-arrow-repeat rl2-spin" aria-hidden="true" />
+                  ) : (
+                    <i className="bi bi-upload" aria-hidden="true" />
+                  )}
                   {attBusy ? 'Uploading…' : 'Attach file'}
                 </button>
                 <span className="rl2-hint" style={{ marginLeft: 8 }}>
@@ -552,7 +563,8 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
             Cancel
           </button>
           <button type="button" className="rl2-btn" onClick={() => submit(false)} disabled={saving}>
-            {saving ? <Loader2 size={14} className="rl2-spin" /> : null} Save draft
+            {saving ? <i className="bi bi-arrow-repeat rl2-spin" aria-hidden="true" /> : null} Save
+            draft
           </button>
           <button
             type="button"
@@ -560,8 +572,12 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
             onClick={() => submit(true)}
             disabled={saving}
           >
-            {saving ? <Loader2 size={14} className="rl2-spin" /> : <Sparkles size={14} />} Save
-            &amp; publish
+            {saving ? (
+              <i className="bi bi-arrow-repeat rl2-spin" aria-hidden="true" />
+            ) : (
+              <i className="bi bi-stars" aria-hidden="true" />
+            )}{' '}
+            Save &amp; publish
           </button>
         </div>
       </div>

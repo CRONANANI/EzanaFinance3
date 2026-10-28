@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Plus, Trophy, Users, ArrowRight, X, Loader2 } from 'lucide-react';
 import './competitions.css';
 
 const STATUS_TONE = {
@@ -80,7 +79,7 @@ function CreateModal({ onClose, onCreated }) {
         <div className="pcx-modal-head">
           <h2 className="pcx-modal-title">New competition</h2>
           <button type="button" className="pcx-iconbtn" onClick={onClose} aria-label="Close">
-            <X size={18} />
+            <i className="bi bi-x-lg" aria-hidden="true" />
           </button>
         </div>
         <label className="pcx-field">
@@ -131,7 +130,8 @@ function CreateModal({ onClose, onCreated }) {
             className="pcx-btn pcx-btn--primary"
             disabled={busy || !name.trim()}
           >
-            {busy ? <Loader2 size={15} className="pcx-spin" /> : null} Create competition
+            {busy ? <i className="bi bi-arrow-repeat pcx-spin" aria-hidden="true" /> : null} Create
+            competition
           </button>
         </div>
       </form>
@@ -154,7 +154,7 @@ export function CompetitionsListClient({ initial, joinable = [], canManage }) {
       <header className="pcx-page-head">
         <div>
           <p className="pcx-eyebrow">
-            <Trophy size={13} aria-hidden="true" /> Host Command Center
+            <i className="bi bi-trophy" aria-hidden="true" /> Host Command Center
           </p>
           <h1 className="pcx-h1">Pitch competitions</h1>
           <p className="pcx-lead">
@@ -164,7 +164,7 @@ export function CompetitionsListClient({ initial, joinable = [], canManage }) {
         </div>
         <div className="pcx-cc-links" style={{ marginBottom: 0 }}>
           <Link href="/org-competitions/council" className="pcx-btn">
-            <Trophy size={15} /> Council ranking
+            <i className="bi bi-trophy" aria-hidden="true" /> Council ranking
           </Link>
           {canManage ? (
             <button
@@ -172,7 +172,7 @@ export function CompetitionsListClient({ initial, joinable = [], canManage }) {
               className="pcx-btn pcx-btn--primary"
               onClick={() => setCreating(true)}
             >
-              <Plus size={16} /> New competition
+              <i className="bi bi-plus-lg" aria-hidden="true" /> New competition
             </button>
           ) : null}
         </div>
@@ -180,7 +180,7 @@ export function CompetitionsListClient({ initial, joinable = [], canManage }) {
 
       {competitions.length === 0 ? (
         <div className="pcx-empty">
-          <Trophy size={26} aria-hidden="true" />
+          <i className="bi bi-trophy" aria-hidden="true" />
           <p>No competitions yet.</p>
           {canManage ? (
             <button
@@ -188,7 +188,7 @@ export function CompetitionsListClient({ initial, joinable = [], canManage }) {
               className="pcx-btn pcx-btn--primary"
               onClick={() => setCreating(true)}
             >
-              <Plus size={16} /> Create your first competition
+              <i className="bi bi-plus-lg" aria-hidden="true" /> Create your first competition
             </button>
           ) : (
             <p className="pcx-muted">
@@ -212,10 +212,10 @@ export function CompetitionsListClient({ initial, joinable = [], canManage }) {
               {c.theme ? <p className="pcx-card-theme">{c.theme}</p> : null}
               <div className="pcx-card-foot">
                 <span className="pcx-card-meta">
-                  <Users size={13} aria-hidden="true" /> {c.format.replace('_', ' ')}
+                  <i className="bi bi-people" aria-hidden="true" /> {c.format.replace('_', ' ')}
                 </span>
                 <span className="pcx-card-open">
-                  Open <ArrowRight size={14} aria-hidden="true" />
+                  Open <i className="bi bi-arrow-right" aria-hidden="true" />
                 </span>
               </div>
             </Link>
@@ -236,7 +236,7 @@ export function CompetitionsListClient({ initial, joinable = [], canManage }) {
                 {c.theme ? <p className="pcx-card-theme">{c.theme}</p> : null}
                 <div className="pcx-card-foot">
                   <span className="pcx-card-meta">
-                    <Users size={13} aria-hidden="true" /> {c.format.replace('_', ' ')}
+                    <i className="bi bi-people" aria-hidden="true" /> {c.format.replace('_', ' ')}
                   </span>
                   {c.starts_at ? (
                     <span

@@ -1,18 +1,6 @@
 'use client';
 
 import { useMemo } from 'react';
-import {
-  Target,
-  TrendingUp,
-  TrendingDown,
-  ShieldQuestion,
-  CalendarClock,
-  Flag,
-  CircleCheck,
-  CircleAlert,
-  Zap,
-  AlertTriangle,
-} from 'lucide-react';
 
 /**
  * PerformancePanel (spec §5.2 / §5.3) — read-only monitoring surface for a live
@@ -108,7 +96,7 @@ export function PerformancePanel({ pitch }) {
         <div className="pperf-flags">
           {flags.map((f) => (
             <span key={f.label} className={`pperf-flag ${f.tone}`}>
-              <Flag size={12} aria-hidden />
+              <i className="bi bi-flag" aria-hidden="true" />
               {f.label}
             </span>
           ))}
@@ -146,9 +134,9 @@ export function PerformancePanel({ pitch }) {
             {returnPct != null && (
               <span className={`pperf-stat ${Number(returnPct) >= 0 ? 'pos' : 'neg'}`}>
                 {Number(returnPct) >= 0 ? (
-                  <TrendingUp size={13} aria-hidden />
+                  <i className="bi bi-graph-up-arrow" aria-hidden="true" />
                 ) : (
-                  <TrendingDown size={13} aria-hidden />
+                  <i className="bi bi-graph-down-arrow" aria-hidden="true" />
                 )}
                 <span className="pperf-stat-label">Return</span>
                 <span className="pperf-num">{fmtPct(returnPct)}</span>
@@ -156,14 +144,14 @@ export function PerformancePanel({ pitch }) {
             )}
             {alphaPct != null && (
               <span className={`pperf-stat ${Number(alphaPct) >= 0 ? 'pos' : 'neg'}`}>
-                <Target size={13} aria-hidden />
+                <i className="bi bi-bullseye" aria-hidden="true" />
                 <span className="pperf-stat-label">Alpha{benchmark ? ` vs ${benchmark}` : ''}</span>
                 <span className="pperf-num">{fmtPct(alphaPct)}</span>
               </span>
             )}
             {maxDrawdown != null && (
               <span className="pperf-stat neg">
-                <TrendingDown size={13} aria-hidden />
+                <i className="bi bi-graph-down-arrow" aria-hidden="true" />
                 <span className="pperf-stat-label">Max DD</span>
                 <span className="pperf-num">{fmtPct(maxDrawdown)}</span>
               </span>
@@ -177,16 +165,16 @@ export function PerformancePanel({ pitch }) {
       {/* §5.3 Falsification check — surfaced prominently */}
       <div className={`pperf-fals ${tripped ? 'is-tripped' : 'is-intact'}`}>
         <div className="pperf-fals-head">
-          <ShieldQuestion size={15} aria-hidden />
+          <i className="bi bi-shield" aria-hidden="true" />
           <span className="pperf-fals-title">Falsification check</span>
           <span className={`pperf-fals-state ${tripped ? 'tripped' : 'intact'}`}>
             {tripped ? (
               <>
-                <CircleAlert size={13} aria-hidden /> Tripped
+                <i className="bi bi-exclamation-circle" aria-hidden="true" /> Tripped
               </>
             ) : (
               <>
-                <CircleCheck size={13} aria-hidden /> Intact
+                <i className="bi bi-check-circle" aria-hidden="true" /> Intact
               </>
             )}
           </span>
@@ -199,7 +187,7 @@ export function PerformancePanel({ pitch }) {
           </p>
         )}
         <div className="pperf-fals-clock">
-          <CalendarClock size={13} aria-hidden />
+          <i className="bi bi-calendar-event" aria-hidden="true" />
           {review.known ? (
             review.overdue ? (
               <span className="pperf-review overdue">
@@ -221,7 +209,7 @@ export function PerformancePanel({ pitch }) {
       {/* Catalyst tracker */}
       <div className="pperf-block">
         <h4 className="pperf-subhead">
-          <Zap size={13} aria-hidden /> Catalyst tracker
+          <i className="bi bi-lightning-charge" aria-hidden="true" /> Catalyst tracker
         </h4>
         {catalysts.length > 0 ? (
           <ul className="pperf-track">
@@ -240,7 +228,7 @@ export function PerformancePanel({ pitch }) {
       {/* Risk register */}
       <div className="pperf-block">
         <h4 className="pperf-subhead">
-          <AlertTriangle size={13} aria-hidden /> Risk register
+          <i className="bi bi-exclamation-triangle" aria-hidden="true" /> Risk register
         </h4>
         {risks.length > 0 ? (
           <ul className="pperf-track">

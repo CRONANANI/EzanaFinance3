@@ -1,16 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Search,
-  LayoutGrid,
-  Table as TableIcon,
-  X,
-  Star,
-  GraduationCap,
-  UserMinus,
-  Users,
-} from 'lucide-react';
 import './cohort2.css';
 
 const STATUS_LABEL = {
@@ -119,8 +109,9 @@ export function CohortRoster({ cohortId, canManage, onCount, onGoRecruit }) {
 
       <div className="c2-toolbar">
         <div style={{ position: 'relative' }}>
-          <Search
-            size={15}
+          <i
+            className="bi bi-search"
+            aria-hidden="true"
             style={{ position: 'absolute', left: 10, top: 10, color: 'var(--text-muted)' }}
           />
           <input
@@ -162,21 +153,21 @@ export function CohortRoster({ cohortId, canManage, onCount, onGoRecruit }) {
             onClick={() => setView('grid')}
             aria-label="Grid view"
           >
-            <LayoutGrid size={15} />
+            <i className="bi bi-grid" aria-hidden="true" />
           </button>
           <button
             className={view === 'table' ? 'is-on' : ''}
             onClick={() => setView('table')}
             aria-label="Table view"
           >
-            <TableIcon size={15} />
+            <i className="bi bi-table" aria-hidden="true" />
           </button>
         </div>
       </div>
 
       {members.length === 0 ? (
         <div className="c2-empty">
-          <Users size={28} />
+          <i className="bi bi-people" aria-hidden="true" />
           <p>No members in this cohort yet.</p>
           <button type="button" className="c2-btn c2-btn--primary" onClick={onGoRecruit}>
             Go to Recruitment
@@ -333,7 +324,7 @@ function MemberSlideOver({ member, canManage, cohortId, onClose, onChanged }) {
             </div>
           </div>
           <button type="button" className="c2-btn c2-btn--sm" onClick={onClose} aria-label="Close">
-            <X size={15} />
+            <i className="bi bi-x-lg" aria-hidden="true" />
           </button>
         </div>
 
@@ -344,7 +335,8 @@ function MemberSlideOver({ member, canManage, cohortId, onClose, onChanged }) {
         <div className="c2-mcard-stats" style={{ marginTop: '0.9rem' }}>
           <div>
             <b>
-              <Star size={12} style={{ verticalAlign: 'middle' }} /> {m.rating ?? '—'}
+              <i className="bi bi-star" aria-hidden="true" style={{ verticalAlign: 'middle' }} />{' '}
+              {m.rating ?? '—'}
             </b>
             rating {m.rating_provisional ? '(prov.)' : ''}
           </div>
@@ -417,7 +409,7 @@ function MemberSlideOver({ member, canManage, cohortId, onClose, onChanged }) {
                 onClick={() => setLifecycle('graduating')}
                 disabled={busy}
               >
-                <GraduationCap size={14} /> Begin graduation
+                <i className="bi bi-mortarboard" aria-hidden="true" /> Begin graduation
               </button>
               <button
                 type="button"
@@ -425,7 +417,7 @@ function MemberSlideOver({ member, canManage, cohortId, onClose, onChanged }) {
                 onClick={depart}
                 disabled={busy}
               >
-                <UserMinus size={14} /> Depart
+                <i className="bi bi-person-dash" aria-hidden="true" /> Depart
               </button>
             </div>
             <p className="c2-sub" style={{ marginTop: '0.5rem' }}>

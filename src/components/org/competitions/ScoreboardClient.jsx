@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Eye, EyeOff, RefreshCw, Trophy, Loader2 } from 'lucide-react';
 import { orgRequest } from '@/lib/org-request';
 import './competitions.css';
 
@@ -73,7 +72,7 @@ export function ScoreboardClient({ competition }) {
   return (
     <div className="pcx-page">
       <Link href={`/org-competitions/${competition.slug}`} className="pcx-back">
-        <ArrowLeft size={15} /> {competition.name}
+        <i className="bi bi-arrow-left" aria-hidden="true" /> {competition.name}
       </Link>
       <header className="pcx-cc-head pcx-cc-title-row" style={{ justifyContent: 'space-between' }}>
         <div>
@@ -84,7 +83,7 @@ export function ScoreboardClient({ competition }) {
         </div>
         <div className="pcx-cc-links">
           <button type="button" className="pcx-btn" onClick={load} disabled={busy}>
-            <RefreshCw size={14} /> Refresh
+            <i className="bi bi-arrow-clockwise" aria-hidden="true" /> Refresh
           </button>
           <button type="button" className="pcx-btn" onClick={recompute} disabled={busy}>
             Recompute
@@ -98,7 +97,11 @@ export function ScoreboardClient({ competition }) {
             onClick={toggleReveal}
             disabled={busy}
           >
-            {resultsVisible ? <EyeOff size={14} /> : <Eye size={14} />}{' '}
+            {resultsVisible ? (
+              <i className="bi bi-eye-slash" aria-hidden="true" />
+            ) : (
+              <i className="bi bi-eye" aria-hidden="true" />
+            )}{' '}
             {resultsVisible ? 'Hide results' : 'Reveal results'}
           </button>
         </div>
@@ -118,13 +121,13 @@ export function ScoreboardClient({ competition }) {
 
       {state === 'loading' ? (
         <div className="pcx-empty pcx-empty--sm">
-          <Loader2 size={18} className="pcx-spin" /> Loading scores…
+          <i className="bi bi-arrow-repeat pcx-spin" aria-hidden="true" /> Loading scores…
         </div>
       ) : state === 'error' ? (
         <div className="pcx-empty pcx-empty--sm">Could not load the scoreboard.</div>
       ) : rows.length === 0 ? (
         <div className="pcx-empty pcx-empty--sm">
-          <Trophy size={22} aria-hidden="true" />
+          <i className="bi bi-trophy" aria-hidden="true" />
           <p>No teams yet.</p>
         </div>
       ) : (

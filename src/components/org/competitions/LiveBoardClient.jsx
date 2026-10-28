@@ -2,15 +2,29 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Monitor, Radio, Clock, MapPin } from 'lucide-react';
 import './competitions.css';
 
 const POLL_MS = 15000;
 
 const ROOM_TONE = { scheduled: 'mut', in_progress: 'pos', running_late: 'warn', done: 'done' };
-const ROOM_LABEL = { scheduled: 'Scheduled', in_progress: 'In progress', running_late: 'Running late', done: 'Done' };
-const TEAM_NEXT = { upcoming: 'on_deck', on_deck: 'presenting', presenting: 'complete', complete: 'complete' };
-const TEAM_LABEL = { upcoming: 'Upcoming', on_deck: 'On deck', presenting: 'Presenting', complete: 'Complete' };
+const ROOM_LABEL = {
+  scheduled: 'Scheduled',
+  in_progress: 'In progress',
+  running_late: 'Running late',
+  done: 'Done',
+};
+const TEAM_NEXT = {
+  upcoming: 'on_deck',
+  on_deck: 'presenting',
+  presenting: 'complete',
+  complete: 'complete',
+};
+const TEAM_LABEL = {
+  upcoming: 'Upcoming',
+  on_deck: 'On deck',
+  presenting: 'Presenting',
+  complete: 'Complete',
+};
 const TEAM_TONE = { upcoming: 'mut', on_deck: 'warn', presenting: 'pos', complete: 'done' };
 
 function fmtTime(iso, offsetMin = 0) {
@@ -35,7 +49,9 @@ export function LiveBoardClient({ competition }) {
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch(`/api/org/pitch-competitions/${competition.id}/live`, { cache: 'no-store' });
+      const res = await fetch(`/api/org/pitch-competitions/${competition.id}/live`, {
+        cache: 'no-store',
+      });
       if (!res.ok) {
         setState('error');
         return;
@@ -76,7 +92,10 @@ export function LiveBoardClient({ competition }) {
     for (const rd of data.board || []) {
       for (const rm of rd.rooms || []) {
         for (const t of rm.teams || []) {
-          if (t.org_id === myOrgId && (t.presentation_status === 'on_deck' || t.presentation_status === 'presenting')) {
+          if (
+            t.org_id === myOrgId &&
+            (t.presentation_status === 'on_deck' || t.presentation_status === 'presenting')
+          ) {
             return { team: t, room: rm };
           }
         }
@@ -89,29 +108,33 @@ export function LiveBoardClient({ competition }) {
     <div className={`pcx-page ${projector ? 'pcx-projector' : ''}`}>
       {!projector ? (
         <Link href={`/org-competitions/${competition.slug}`} className="pcx-back">
-          <ArrowLeft size={15} /> {competition.name}
+          <i className="bi bi-arrow-left" aria-hidden="true" /> {competition.name}
         </Link>
       ) : null}
 
       <header className="pcx-cc-head pcx-cc-title-row" style={{ justifyContent: 'space-between' }}>
         <div className="pcx-cc-title-row">
-          <Radio size={18} aria-hidden="true" className="pcx-live-dot" />
+          <i className="bi bi-broadcast pcx-live-dot" aria-hidden="true" />
           <h1 className="pcx-h1">Live board</h1>
           <span className="pcx-muted">updates every 15s</span>
         </div>
         <button type="button" className="pcx-btn" onClick={() => setProjector((p) => !p)}>
-          <Monitor size={14} /> {projector ? 'Exit projector' : 'Projector mode'}
+          <i className="bi bi-display" aria-hidden="true" />{' '}
+          {projector ? 'Exit projector' : 'Projector mode'}
         </button>
       </header>
 
       {myAlert ? (
         <div className="pcx-live-alert">
-          You’re {myAlert.team.presentation_status === 'presenting' ? 'presenting now' : 'on deck'} — {myAlert.team.team_name} in {myAlert.room.name}
+          You’re {myAlert.team.presentation_status === 'presenting' ? 'presenting now' : 'on deck'}{' '}
+          — {myAlert.team.team_name} in {myAlert.room.name}
         </div>
       ) : null}
 
       {state === 'loading' && <div className="pcx-empty pcx-empty--sm">Loading the board…</div>}
-      {state === 'error' && <div className="pcx-empty pcx-empty--sm">Could not load the board.</div>}
+      {state === 'error' && (
+        <div className="pcx-empty pcx-empty--sm">Could not load the board.</div>
+      )}
 
       {state === 'ready' &&
         (data.board || []).map((rd) => (
@@ -122,29 +145,60 @@ export function LiveBoardClient({ competition }) {
             ) : (
               <div className="pcx-live-rooms">
                 {rd.rooms.map((rm) => (
-                  <div key={rm.id} className={`pcx-live-room ${rm.live_status === 'done' ? 'is-done' : ''}`}>
+                  <div
+                    key={rm.id}
+                    className={`pcx-live-room ${rm.live_status === 'done' ? 'is-done' : ''}`}
+                  >
                     <div className="pcx-live-room-head">
                       <span className="pcx-live-room-name">{rm.name}</span>
-                      <span className={`pcx-pill pcx-pill--${ROOM_TONE[rm.live_status]}`}>{ROOM_LABEL[rm.live_status]}</span>
+                      <span className={`pcx-pill pcx-pill--${ROOM_TONE[rm.live_status]}`}>
+                        {ROOM_LABEL[rm.live_status]}
+                      </span>
                     </div>
                     <div className="pcx-live-room-meta">
                       {rm.starts_at ? (
-                        <span><Clock size={12} aria-hidden="true" /> {fmtTime(rm.starts_at, rm.running_offset_min)}{rm.running_offset_min ? ` (+${rm.running_offset_min}m)` : ''}</span>
+                        <span>
+                          <i className="bi bi-clock" aria-hidden="true" />{' '}
+                          {fmtTime(rm.starts_at, rm.running_offset_min)}
+                          {rm.running_offset_min ? ` (+${rm.running_offset_min}m)` : ''}
+                        </span>
                       ) : null}
-                      {rm.location ? <span><MapPin size={12} aria-hidden="true" /> {rm.location}</span> : null}
+                      {rm.location ? (
+                        <span>
+                          <i className="bi bi-geo-alt" aria-hidden="true" /> {rm.location}
+                        </span>
+                      ) : null}
                     </div>
 
                     <ul className="pcx-live-teams">
                       {rm.teams.length === 0 ? <li className="pcx-muted">No teams</li> : null}
                       {rm.teams.map((t) => (
-                        <li key={t.id} className={`pcx-live-team is-${t.presentation_status} ${t.org_id === myOrgId ? 'is-mine' : ''}`}>
+                        <li
+                          key={t.id}
+                          className={`pcx-live-team is-${t.presentation_status} ${t.org_id === myOrgId ? 'is-mine' : ''}`}
+                        >
                           <span className="pcx-live-team-name">
                             {t.team_name}
                             {t.org_id === myOrgId ? <span className="pcx-you">You</span> : null}
                           </span>
-                          <span className={`pcx-live-team-status pcx-${TEAM_TONE[t.presentation_status]}`}>{TEAM_LABEL[t.presentation_status]}</span>
+                          <span
+                            className={`pcx-live-team-status pcx-${TEAM_TONE[t.presentation_status]}`}
+                          >
+                            {TEAM_LABEL[t.presentation_status]}
+                          </span>
                           {canManage && t.presentation_status !== 'complete' ? (
-                            <button type="button" className="pcx-btn pcx-btn--sm" disabled={busy} onClick={() => control({ action: 'team', team_id: t.id, presentation_status: TEAM_NEXT[t.presentation_status] })}>
+                            <button
+                              type="button"
+                              className="pcx-btn pcx-btn--sm"
+                              disabled={busy}
+                              onClick={() =>
+                                control({
+                                  action: 'team',
+                                  team_id: t.id,
+                                  presentation_status: TEAM_NEXT[t.presentation_status],
+                                })
+                              }
+                            >
                               → {TEAM_LABEL[TEAM_NEXT[t.presentation_status]]}
                             </button>
                           ) : null}
@@ -155,7 +209,15 @@ export function LiveBoardClient({ competition }) {
                     {canManage ? (
                       <div className="pcx-live-controls">
                         {['scheduled', 'in_progress', 'running_late', 'done'].map((s) => (
-                          <button key={s} type="button" className={`pcx-btn pcx-btn--sm ${rm.live_status === s ? 'pcx-btn--primary' : ''}`} disabled={busy} onClick={() => control({ action: 'room', room_id: rm.id, live_status: s })}>
+                          <button
+                            key={s}
+                            type="button"
+                            className={`pcx-btn pcx-btn--sm ${rm.live_status === s ? 'pcx-btn--primary' : ''}`}
+                            disabled={busy}
+                            onClick={() =>
+                              control({ action: 'room', room_id: rm.id, live_status: s })
+                            }
+                          >
                             {ROOM_LABEL[s]}
                           </button>
                         ))}
@@ -167,7 +229,13 @@ export function LiveBoardClient({ competition }) {
                               min="0"
                               className="pcx-input pcx-input--num"
                               defaultValue={rm.running_offset_min}
-                              onBlur={(e) => control({ action: 'room', room_id: rm.id, running_offset_min: Number(e.target.value) })}
+                              onBlur={(e) =>
+                                control({
+                                  action: 'room',
+                                  room_id: rm.id,
+                                  running_offset_min: Number(e.target.value),
+                                })
+                              }
                             />
                           </label>
                         ) : null}

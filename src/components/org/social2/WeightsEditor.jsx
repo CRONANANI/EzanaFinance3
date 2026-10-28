@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { X } from 'lucide-react';
 import './recognition2.css';
 
 const CATEGORY_LABELS = {
@@ -132,7 +131,7 @@ export function WeightsEditor({ open, onClose, onSaved }) {
             Rating weights
           </h2>
           <button type="button" className="rec2-btn" onClick={onClose} aria-label="Close">
-            <X size={14} aria-hidden />
+            <i className="bi bi-x-lg" aria-hidden="true" />
           </button>
         </div>
         <p className="rec2-caveat" style={{ marginTop: 0 }}>

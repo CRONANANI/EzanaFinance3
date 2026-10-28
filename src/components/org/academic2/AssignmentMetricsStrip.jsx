@@ -1,14 +1,5 @@
 'use client';
 
-import {
-  ClipboardList,
-  AlertTriangle,
-  Eye,
-  CheckCircle2,
-  TrendingUp,
-  TrendingDown,
-} from 'lucide-react';
-
 /* Full-width metrics row: Open · Overdue (amber) · Awaiting review · Completion. */
 export function AssignmentMetricsStrip({ metrics }) {
   const m = metrics || {};
@@ -19,8 +10,8 @@ export function AssignmentMetricsStrip({ metrics }) {
     <div className="asg2-metrics">
       <div className="asg2-metric">
         <p className="asg2-metric-label">
-          <ClipboardList
-            size={12}
+          <i
+            className="bi bi-clipboard-data"
             aria-hidden="true"
             style={{ verticalAlign: '-2px', marginRight: 4 }}
           />
@@ -31,8 +22,8 @@ export function AssignmentMetricsStrip({ metrics }) {
 
       <div className="asg2-metric asg2-metric--overdue">
         <p className="asg2-metric-label">
-          <AlertTriangle
-            size={12}
+          <i
+            className="bi bi-exclamation-triangle"
             aria-hidden="true"
             style={{ verticalAlign: '-2px', marginRight: 4 }}
           />
@@ -43,7 +34,11 @@ export function AssignmentMetricsStrip({ metrics }) {
 
       <div className="asg2-metric">
         <p className="asg2-metric-label">
-          <Eye size={12} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 4 }} />
+          <i
+            className="bi bi-eye"
+            aria-hidden="true"
+            style={{ verticalAlign: '-2px', marginRight: 4 }}
+          />
           Awaiting review
         </p>
         <div className="asg2-metric-value">{m.awaiting_review ?? 0}</div>
@@ -51,8 +46,8 @@ export function AssignmentMetricsStrip({ metrics }) {
 
       <div className="asg2-metric">
         <p className="asg2-metric-label">
-          <CheckCircle2
-            size={12}
+          <i
+            className="bi bi-check-circle"
             aria-hidden="true"
             style={{ verticalAlign: '-2px', marginRight: 4 }}
           />
@@ -63,9 +58,9 @@ export function AssignmentMetricsStrip({ metrics }) {
           <div className="asg2-metric-sub">
             <span className={`asg2-delta ${delta >= 0 ? 'asg2-delta--up' : 'asg2-delta--down'}`}>
               {delta >= 0 ? (
-                <TrendingUp size={11} aria-hidden="true" />
+                <i className="bi bi-graph-up-arrow" aria-hidden="true" />
               ) : (
-                <TrendingDown size={11} aria-hidden="true" />
+                <i className="bi bi-graph-down-arrow" aria-hidden="true" />
               )}{' '}
               {delta >= 0 ? '+' : ''}
               {delta}%

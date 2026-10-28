@@ -2,7 +2,6 @@
 
 import { stripDemoLabel } from '@/lib/org-display';
 import { useCallback, useEffect, useState } from 'react';
-import { Award, Sparkles, Target, TrendingUp, ClipboardList, Printer } from 'lucide-react';
 import { badgeIcon } from './AwardModal';
 import './recognition2.css';
 
@@ -183,7 +182,7 @@ export function EzanaRatingScorecard({ memberId }) {
           onClick={() => window.print()}
           title="Export this scorecard to PDF via your browser's print dialog"
         >
-          <Printer size={14} aria-hidden /> Export
+          <i className="bi bi-printer" aria-hidden="true" /> Export
         </button>
       </div>
       {/* ── Hero ── */}
@@ -196,7 +195,7 @@ export function EzanaRatingScorecard({ memberId }) {
             {member.name}
             {provisional && (
               <span className="rec2-provisional-chip">
-                <Sparkles size={11} aria-hidden /> Provisional
+                <i className="bi bi-stars" aria-hidden="true" /> Provisional
               </span>
             )}
           </h2>
@@ -208,7 +207,7 @@ export function EzanaRatingScorecard({ memberId }) {
             className="rec2-tier"
             style={{ color: TIER_TOKEN[rating.tier] || 'var(--text-muted)' }}
           >
-            <Award size={12} aria-hidden /> {rating.tier_label}
+            <i className="bi bi-award" aria-hidden="true" /> {rating.tier_label}
           </span>
           <div className="rec2-hero-stats">
             <div>
@@ -241,7 +240,7 @@ export function EzanaRatingScorecard({ memberId }) {
       {/* ── Rating breakdown ── */}
       <div className="rec2-section">
         <div className="rec2-section-title">
-          <TrendingUp size={13} aria-hidden /> Rating breakdown
+          <i className="bi bi-graph-up-arrow" aria-hidden="true" /> Rating breakdown
           <span className="rec2-evalpill" style={{ marginLeft: 'auto' }}>
             Evaluated as {roleLabel}
           </span>
@@ -281,7 +280,7 @@ export function EzanaRatingScorecard({ memberId }) {
       {/* ── Resolved theses receipts ── */}
       <div className="rec2-section">
         <div className="rec2-section-title">
-          <Target size={13} aria-hidden /> Resolved theses
+          <i className="bi bi-bullseye" aria-hidden="true" /> Resolved theses
         </div>
         {receipts?.length ? (
           <div className="rec2-tablewrap">
@@ -343,7 +342,7 @@ export function EzanaRatingScorecard({ memberId }) {
       {/* ── Calibration chart ── */}
       <div className="rec2-section">
         <div className="rec2-section-title">
-          <Sparkles size={13} aria-hidden /> Calibration
+          <i className="bi bi-stars" aria-hidden="true" /> Calibration
         </div>
         {calibration_series ? (
           <>
@@ -366,7 +365,7 @@ export function EzanaRatingScorecard({ memberId }) {
       {/* ── Badges & awards ── */}
       <div className="rec2-section">
         <div className="rec2-section-title">
-          <ClipboardList size={13} aria-hidden /> Badges & awards
+          <i className="bi bi-clipboard-data" aria-hidden="true" /> Badges & awards
         </div>
         {badges?.length || awards?.length ? (
           <div className="rec2-chips">

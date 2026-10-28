@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { Flag, Inbox, Plus } from 'lucide-react';
 import { useOrg } from '@/contexts/OrgContext';
 import { stripDemoLabel } from '@/lib/org-display';
 import { AddPositionModal } from './add-position/AddPositionModal';
@@ -260,7 +259,7 @@ export function CouncilTradingDesk() {
             Council Trading
             {canFlagPositions && (
               <span className="ctd-role-pill">
-                <Flag size={12} aria-hidden />
+                <i className="bi bi-flag" aria-hidden="true" />
                 Executive · can flag positions
               </span>
             )}
@@ -272,7 +271,7 @@ export function CouncilTradingDesk() {
         </div>
         <div className="ctd-header-actions">
           <Link href="/org-trading/inbox" className="ctd-btn ctd-btn-outline">
-            <Inbox size={16} aria-hidden />
+            <i className="bi bi-inbox" aria-hidden="true" />
             <span>Flag inbox</span>
             {flaggedCount > 0 && <span className="ctd-badge ctd-num">{flaggedCount}</span>}
           </Link>
@@ -282,7 +281,7 @@ export function CouncilTradingDesk() {
               className="ctd-btn ctd-btn-primary"
               onClick={() => setShowAddPosition(true)}
             >
-              <Plus size={16} aria-hidden />
+              <i className="bi bi-plus-lg" aria-hidden="true" />
               <span>Add position</span>
             </button>
           )}
@@ -301,7 +300,7 @@ export function CouncilTradingDesk() {
                 className="ctd-btn ctd-btn-primary"
                 onClick={() => setShowAddPosition(true)}
               >
-                <Plus size={16} aria-hidden />
+                <i className="bi bi-plus-lg" aria-hidden="true" />
                 <span>Add position</span>
               </button>
             )}
@@ -472,7 +471,7 @@ export function CouncilTradingDesk() {
                               })
                             }
                           >
-                            <Flag size={13} aria-hidden />
+                            <i className="bi bi-flag" aria-hidden="true" />
                             {flagged
                               ? `Flagged${flagged.count > 1 ? ` ${flagged.count}` : ''}`
                               : 'Flag'}
