@@ -1028,7 +1028,7 @@ export default function OrgTeamHubPage() {
           </div>
           <div className="thw-header-tools">
             <OrgSwitcher />
-            <div className="thw-search" onClick={() => searchRef.current?.focus()}>
+            <label className="thw-search" onClick={() => searchRef.current?.focus()}>
               <i className="bi bi-search" aria-hidden="true" />
               <input
                 ref={searchRef}
@@ -1038,7 +1038,7 @@ export default function OrgTeamHubPage() {
                 aria-label="Jump to anything"
               />
               <span className="thw-kbd">⌘K</span>
-            </div>
+            </label>
           </div>
         </header>
 

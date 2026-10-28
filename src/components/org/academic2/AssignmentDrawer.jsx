@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { DateSelector } from '@/components/ui/DateSelector';
+import { useDialogA11y } from '@/hooks/useDialogA11y';
 import { TYPE_META } from './AssignmentCard';
 
 const TYPE_ORDER = ['pitch', 'research', 'coverage', 'reading', 'model', 'meeting_prep', 'other'];
@@ -55,6 +56,8 @@ export function AssignmentDrawer({
   templates,
   viewer,
 }) {
+  const titleId = useId();
+  const dialogRef = useDialogA11y(open, onClose);
   const [form, setForm] = useState(emptyForm);
   const [targets, setTargets] = useState([]); // {target_type, target_id?, target_role?, label}
   const [mode, setMode] = useState('member');
@@ -180,16 +183,20 @@ export function AssignmentDrawer({
   const showTicker = form.type === 'pitch';
 
   return (
-    <div
-      className="asg2-overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-label="New assignment"
-      onClick={onClose}
-    >
-      <div className="asg2-drawer" onClick={(e) => e.stopPropagation()}>
+    <div className="asg2-overlay" onClick={onClose}>
+      <div
+        ref={dialogRef}
+        className="asg2-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="asg2-drawer-head">
-          <h2 className="asg2-modal-title">New assignment</h2>
+          <h2 id={titleId} className="asg2-modal-title">
+            New assignment
+          </h2>
           <button type="button" className="asg2-icon-btn" onClick={onClose} aria-label="Close">
             <i className="bi bi-x-lg" aria-hidden="true" />
           </button>
@@ -337,6 +344,7 @@ export function AssignmentDrawer({
                 <input
                   className="asg2-input ds-search-input"
                   style={{ paddingLeft: 30 }}
+                  aria-label="Search members"
                   placeholder="Search members…"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
@@ -549,6 +557,7 @@ export function AssignmentDrawer({
           <div className="asg2-field">
             <input
               className="asg2-input"
+              aria-label="Template name"
               placeholder="Template name"
               value={form.template_name}
               onChange={(e) => set({ template_name: e.target.value })}

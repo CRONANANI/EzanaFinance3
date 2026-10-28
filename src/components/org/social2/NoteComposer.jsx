@@ -1,7 +1,8 @@
 'use client';
 
 import { NA } from '@/lib/org-display';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useDialogA11y } from '@/hooks/useDialogA11y';
 import './research2.css';
 
 function fmtBytes(n) {
@@ -65,6 +66,8 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
   const [attError, setAttError] = useState('');
   const attFileRef = useRef(null);
   const noteId = note?.id || null;
+  const uid = useId();
+  const dialogRef = useDialogA11y(open, () => !saving && onClose?.());
 
   const loadAttachments = useCallback(async () => {
     if (!noteId) {
@@ -270,13 +273,15 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
     >
       <div
         className="rl2-modal rl2-root"
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Research document editor"
+        aria-labelledby={`${uid}-title`}
+        tabIndex={-1}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <h2 className="rl2-modal-title">
+            <h2 className="rl2-modal-title" id={`${uid}-title`}>
               {editing ? 'Edit document' : 'New research document'}
             </h2>
             <p className="rl2-modal-sub">
@@ -291,9 +296,12 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
 
         <div className="rl2-row2">
           <div className="rl2-field">
-            <label className="rl2-label">Document type</label>
+            <label className="rl2-label" htmlFor={`${uid}-doctype`}>
+              Document type
+            </label>
             <select
               className="rl2-select"
+              id={`${uid}-doctype`}
               value={docType}
               onChange={(e) => setDocType(e.target.value)}
             >
@@ -305,7 +313,7 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
             </select>
           </div>
           <div className="rl2-field">
-            <label className="rl2-label">
+            <label className="rl2-label" htmlFor={`${uid}-template`}>
               <i
                 className="bi bi-file-earmark-text"
                 style={{ verticalAlign: '-2px', marginRight: 4 }}
@@ -315,6 +323,7 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
             </label>
             <select
               className="rl2-select"
+              id={`${uid}-template`}
               value={templateId}
               onChange={(e) => applyTemplate(e.target.value)}
             >
@@ -329,9 +338,12 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
         </div>
 
         <div className="rl2-field">
-          <label className="rl2-label">Title</label>
+          <label className="rl2-label" htmlFor={`${uid}-doc-title`}>
+            Title
+          </label>
           <input
             className="rl2-input"
+            id={`${uid}-doc-title`}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. NVDA: datacenter demand still underappreciated"
@@ -340,11 +352,12 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
         </div>
 
         <div className="rl2-field">
-          <label className="rl2-label">
+          <label className="rl2-label" htmlFor={`${uid}-abstract`}>
             Abstract / TL;DR <span className="rl2-req">(required to publish)</span>
           </label>
           <textarea
             className="rl2-textarea"
+            id={`${uid}-abstract`}
             value={abstract}
             onChange={(e) => setAbstract(e.target.value)}
             placeholder="Two or three sentences: the call, the why, the risk."
@@ -354,9 +367,12 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
         </div>
 
         <div className="rl2-field">
-          <label className="rl2-label">Body</label>
+          <label className="rl2-label" htmlFor={`${uid}-body`}>
+            Body
+          </label>
           <textarea
             className="rl2-textarea"
+            id={`${uid}-body`}
             value={body}
             onChange={(e) => setBody(e.target.value)}
             placeholder="Markdown welcome. Lay out the thesis, valuation, catalysts, risks…"
@@ -366,9 +382,12 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
 
         <div className="rl2-row2">
           <div className="rl2-field rl2-ac">
-            <label className="rl2-label">Ticker</label>
+            <label className="rl2-label" htmlFor={`${uid}-ticker`}>
+              Ticker
+            </label>
             <input
               className="rl2-input"
+              id={`${uid}-ticker`}
               value={ticker}
               onChange={(e) => setTicker(e.target.value.toUpperCase())}
               onFocus={() => setTickerFocus(true)}
@@ -396,9 +415,12 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
             <div className="rl2-hint">Auto-added as a tag and linked to the ticker dossier.</div>
           </div>
           <div className="rl2-field">
-            <label className="rl2-label">Sector</label>
+            <label className="rl2-label" htmlFor={`${uid}-sector`}>
+              Sector
+            </label>
             <select
               className="rl2-select"
+              id={`${uid}-sector`}
               value={sector}
               onChange={(e) => setSector(e.target.value)}
             >
@@ -414,9 +436,12 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
 
         <div className="rl2-row2">
           <div className="rl2-field">
-            <label className="rl2-label">Term</label>
+            <label className="rl2-label" htmlFor={`${uid}-term`}>
+              Term
+            </label>
             <input
               className="rl2-input"
+              id={`${uid}-term`}
               value={term}
               onChange={(e) => setTerm(e.target.value)}
               placeholder="e.g. Fall 2026"
@@ -424,9 +449,12 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
             />
           </div>
           <div className="rl2-field">
-            <label className="rl2-label">Visibility</label>
+            <label className="rl2-label" htmlFor={`${uid}-visibility`}>
+              Visibility
+            </label>
             <select
               className="rl2-select"
+              id={`${uid}-visibility`}
               value={visibility}
               onChange={(e) => setVisibility(e.target.value)}
             >
@@ -439,18 +467,24 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
 
         <div className="rl2-row2">
           <div className="rl2-field">
-            <label className="rl2-label">Tags (comma-separated)</label>
+            <label className="rl2-label" htmlFor={`${uid}-tags`}>
+              Tags (comma-separated)
+            </label>
             <input
               className="rl2-input"
+              id={`${uid}-tags`}
               value={tagsRaw}
               onChange={(e) => setTagsRaw(e.target.value)}
               placeholder="ai, moat, long"
             />
           </div>
           <div className="rl2-field">
-            <label className="rl2-label">Citations / sources (optional)</label>
+            <label className="rl2-label" htmlFor={`${uid}-citations`}>
+              Citations / sources (optional)
+            </label>
             <input
               className="rl2-input"
+              id={`${uid}-citations`}
               value={citations}
               onChange={(e) => setCitations(e.target.value)}
               placeholder="10-K FY25, sell-side notes…"
@@ -512,6 +546,7 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
                 <input
                   ref={attFileRef}
                   type="file"
+                  aria-label="Attach a file"
                   className="rl2-visually-hidden"
                   accept=".pdf,.xlsx,.xls,.docx,.doc,.csv,.png,.jpg,.jpeg,.pptx"
                   onChange={(e) => uploadAttachment(e.target.files?.[0])}

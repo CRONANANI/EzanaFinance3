@@ -315,6 +315,7 @@ function AnnouncementsPanel({ compId, canManage }) {
           <input
             className="pcx-input"
             placeholder="Announcement title (e.g. Room 2 moved to 3pm)"
+            aria-label="Announcement title"
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
           />
@@ -322,6 +323,7 @@ function AnnouncementsPanel({ compId, canManage }) {
             className="pcx-input pcx-textarea"
             rows={2}
             placeholder="Details (optional)"
+            aria-label="Announcement details"
             value={form.body}
             onChange={(e) => setForm({ ...form, body: e.target.value })}
           />
@@ -372,6 +374,7 @@ function StructureTab({ structure, canManage, busy, act }) {
           <input
             className="pcx-input"
             placeholder="Round name (e.g. Semifinal)"
+            aria-label="Round name"
             value={roundName}
             onChange={(e) => setRoundName(e.target.value)}
           />
@@ -453,12 +456,14 @@ function RoundBlock({ round, teams, judges, canManage, busy, act }) {
           <input
             className="pcx-input"
             placeholder="Room name (Room A)"
+            aria-label="Room name"
             value={roomName}
             onChange={(e) => setRoomName(e.target.value)}
           />
           <input
             className="pcx-input"
             placeholder="Location / link (optional)"
+            aria-label="Room location or link"
             value={roomLoc}
             onChange={(e) => setRoomLoc(e.target.value)}
           />
@@ -677,12 +682,14 @@ function InvitationsTab({ structure, canManage, busy, act, compId }) {
             <input
               className="pcx-input"
               placeholder="Team name (e.g. McMaster A)"
+              aria-label="Team name"
               value={team.team_name}
               onChange={(e) => setTeam({ ...team, team_name: e.target.value })}
             />
             <input
               className="pcx-input"
               placeholder="Invite email (optional)"
+              aria-label="Invite email"
               value={team.invite_email}
               onChange={(e) => setTeam({ ...team, invite_email: e.target.value })}
             />
@@ -690,6 +697,7 @@ function InvitationsTab({ structure, canManage, busy, act, compId }) {
               <input
                 className="pcx-input"
                 placeholder="Ticker (optional)"
+                aria-label="Ticker"
                 value={team.ticker}
                 onChange={(e) => setTeam({ ...team, ticker: e.target.value })}
               />
@@ -752,12 +760,14 @@ function InvitationsTab({ structure, canManage, busy, act, compId }) {
             <input
               className="pcx-input"
               placeholder="Full name"
+              aria-label="Judge full name"
               value={judge.full_name}
               onChange={(e) => setJudge({ ...judge, full_name: e.target.value })}
             />
             <input
               className="pcx-input"
               placeholder="Email"
+              aria-label="Judge email"
               value={judge.email}
               onChange={(e) => setJudge({ ...judge, email: e.target.value })}
             />
@@ -765,12 +775,14 @@ function InvitationsTab({ structure, canManage, busy, act, compId }) {
               <input
                 className="pcx-input"
                 placeholder="Firm (optional)"
+                aria-label="Firm"
                 value={judge.firm}
                 onChange={(e) => setJudge({ ...judge, firm: e.target.value })}
               />
               <input
                 className="pcx-input"
                 placeholder="Title (optional)"
+                aria-label="Title"
                 value={judge.title}
                 onChange={(e) => setJudge({ ...judge, title: e.target.value })}
               />
@@ -926,6 +938,7 @@ function RubricTab({ compId, rubric, canManage, onSaved }) {
                 <input
                   className="pcx-input"
                   placeholder="Criterion"
+                  aria-label="Criterion"
                   value={r.label}
                   onChange={(e) => update(i, 'label', e.target.value)}
                   disabled={!canManage}
@@ -933,6 +946,7 @@ function RubricTab({ compId, rubric, canManage, onSaved }) {
                 <input
                   className="pcx-input pcx-input--sub"
                   placeholder="Description (optional)"
+                  aria-label="Criterion description"
                   value={r.description}
                   onChange={(e) => update(i, 'description', e.target.value)}
                   disabled={!canManage}

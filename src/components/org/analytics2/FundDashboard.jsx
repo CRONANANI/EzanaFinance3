@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useDialogA11y } from '@/hooks/useDialogA11y';
 import { useOrg } from '@/contexts/OrgContext';
 import { PeriodSelector } from './PeriodSelector';
 import { SinceLastMeetingStrip } from './SinceLastMeetingStrip';
@@ -59,6 +60,7 @@ export function FundDashboard({ initialData = null }) {
   const [exporting, setExporting] = useState(false);
   // When seeded, skip exactly the initial mount fetch; period changes still refetch.
   const skipInitialFetch = useRef(!!initialData);
+  const scorecardDialogRef = useDialogA11y(!!scorecardFor, () => setScorecardFor(null));
 
   const load = useCallback(async (p, isRefetch) => {
     if (isRefetch) setRefetching(true);
@@ -203,6 +205,11 @@ export function FundDashboard({ initialData = null }) {
           onClick={(e) => e.target === e.currentTarget && setScorecardFor(null)}
         >
           <div
+            ref={scorecardDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Analyst scorecard"
+            tabIndex={-1}
             style={{
               width: '100%',
               maxWidth: 640,

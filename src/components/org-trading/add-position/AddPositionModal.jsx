@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
+import { useDialogA11y } from '@/hooks/useDialogA11y';
 import { ManualEntryForm } from './ManualEntryForm';
 import { CsvUploadForm } from './CsvUploadForm';
 import { BrokerageConnectForm } from './BrokerageConnectForm';
@@ -14,8 +15,18 @@ const MODES = [
     icon: 'bi-pencil-square',
     desc: 'Enter a single position by hand',
   },
-  { key: 'csv', label: 'Upload CSV', icon: 'bi-filetype-csv', desc: 'Bulk import from a spreadsheet' },
-  { key: 'brokerage', label: 'Connect Brokerage', icon: 'bi-bank2', desc: 'Sync from Plaid or SnapTrade' },
+  {
+    key: 'csv',
+    label: 'Upload CSV',
+    icon: 'bi-filetype-csv',
+    desc: 'Bulk import from a spreadsheet',
+  },
+  {
+    key: 'brokerage',
+    label: 'Connect Brokerage',
+    icon: 'bi-bank2',
+    desc: 'Sync from Plaid or SnapTrade',
+  },
 ];
 
 export function AddPositionModal({ open, onClose, teamId, onAdded }) {
@@ -35,14 +46,24 @@ export function AddPositionModal({ open, onClose, teamId, onAdded }) {
     onClose?.();
   }, [submitting, onClose]);
 
+  const dialogRef = useDialogA11y(open, handleClose);
+
   if (!open) return null;
 
   if (!canManagePositions) {
     return (
       <div className="apm-org-overlay" onClick={handleClose}>
-        <div className="apm-org-card" onClick={(e) => e.stopPropagation()}>
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="apm-perm-title"
+          tabIndex={-1}
+          className="apm-org-card"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="apm-org-header">
-            <h2>Permission required</h2>
+            <h2 id="apm-perm-title">Permission required</h2>
             <button className="apm-org-close" onClick={handleClose} aria-label="Close">
               <i className="bi bi-x-lg" />
             </button>
@@ -60,10 +81,18 @@ export function AddPositionModal({ open, onClose, teamId, onAdded }) {
 
   return (
     <div className="apm-org-overlay" onClick={handleClose}>
-      <div className="apm-org-card" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="apm-title"
+        tabIndex={-1}
+        className="apm-org-card"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="apm-org-header">
           <div>
-            <h2>Add Position</h2>
+            <h2 id="apm-title">Add Position</h2>
             {mode && (
               <button
                 className="apm-org-back"

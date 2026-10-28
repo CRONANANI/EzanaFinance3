@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useDialogA11y } from '@/hooks/useDialogA11y';
 import './competitions.css';
 
 const STATUS_TONE = {
@@ -37,6 +38,7 @@ const FORMATS = [
 ];
 
 function CreateModal({ onClose, onCreated }) {
+  const dialogRef = useDialogA11y(true, onClose);
   const [name, setName] = useState('');
   const [format, setFormat] = useState('showcase');
   const [theme, setTheme] = useState('');
@@ -75,9 +77,20 @@ function CreateModal({ onClose, onCreated }) {
 
   return (
     <div className="pcx-modal-backdrop" onClick={onClose}>
-      <form className="pcx-modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
+      <form
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pcx-create-title"
+        tabIndex={-1}
+        className="pcx-modal"
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={submit}
+      >
         <div className="pcx-modal-head">
-          <h2 className="pcx-modal-title">New competition</h2>
+          <h2 id="pcx-create-title" className="pcx-modal-title">
+            New competition
+          </h2>
           <button type="button" className="pcx-iconbtn" onClick={onClose} aria-label="Close">
             <i className="bi bi-x-lg" aria-hidden="true" />
           </button>

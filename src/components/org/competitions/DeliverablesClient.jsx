@@ -198,6 +198,7 @@ export function DeliverablesClient({ competition, team, config, initialDeliverab
                   <input
                     ref={(el) => (fileRefs.current[kind] = el)}
                     type="file"
+                    aria-label={`Upload ${kind} file`}
                     className="pcx-hidden-file"
                     onChange={(e) => uploadFile(kind, e.target.files?.[0])}
                     disabled={pastDue}

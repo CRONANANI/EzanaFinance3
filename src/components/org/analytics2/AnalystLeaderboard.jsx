@@ -75,6 +75,7 @@ export function AnalystLeaderboard({ data = [], onSelect }) {
                 <tr
                   key={a.member_id}
                   className={muted ? 'is-muted' : ''}
+                  role="button"
                   onClick={() => onSelect?.(a.member_id)}
                   tabIndex={0}
                   onKeyDown={(e) =>

@@ -73,7 +73,15 @@ export function AttributionByAnalyst({ data = [], onSelect }) {
               <tr
                 key={a.member_id}
                 className="an4-row-click"
+                role="button"
+                tabIndex={0}
                 onClick={() => onSelect?.(a.member_id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onSelect?.(a.member_id);
+                  }
+                }}
               >
                 <td style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{a.name}</td>
                 <td className="r an4-num">{a.pitches}</td>

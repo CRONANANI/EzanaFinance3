@@ -149,8 +149,11 @@ export function InviteOnboarding() {
         <form onSubmit={submit}>
           <div className="settings-row">
             <div className="settings-field">
-              <label className="settings-label">Email</label>
+              <label className="settings-label" htmlFor="invite-email">
+                Email
+              </label>
               <input
+                id="invite-email"
                 className="settings-input"
                 type="email"
                 required
@@ -160,8 +163,11 @@ export function InviteOnboarding() {
               />
             </div>
             <div className="settings-field">
-              <label className="settings-label">Role</label>
+              <label className="settings-label" htmlFor="invite-role">
+                Role
+              </label>
               <select
+                id="invite-role"
                 className="settings-input"
                 value={form.role}
                 onChange={(e) => setForm((f) => ({ ...f, role: e.target.value, sub_role: '' }))}
@@ -204,8 +210,11 @@ export function InviteOnboarding() {
               )}
             </div>
             <div className="settings-field">
-              <label className="settings-label">Team (optional)</label>
+              <label className="settings-label" htmlFor="invite-team">
+                Team (optional)
+              </label>
               <select
+                id="invite-team"
                 className="settings-input"
                 value={form.team_id}
                 onChange={(e) => setForm((f) => ({ ...f, team_id: e.target.value }))}
@@ -219,8 +228,11 @@ export function InviteOnboarding() {
               </select>
             </div>
             <div className="settings-field">
-              <label className="settings-label">Cohort (optional)</label>
+              <label className="settings-label" htmlFor="invite-cohort">
+                Cohort (optional)
+              </label>
               <select
+                id="invite-cohort"
                 className="settings-input"
                 value={form.cohort_id}
                 onChange={(e) => setForm((f) => ({ ...f, cohort_id: e.target.value }))}

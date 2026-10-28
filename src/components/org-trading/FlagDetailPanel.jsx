@@ -45,7 +45,12 @@ export function FlagDetailPanel({ flagId, currentMemberId, onClose, onChange }) 
     load();
   }, [flagId]);
 
-  if (!flag) return <div className="ot-flag-detail">Loading…</div>;
+  if (!flag)
+    return (
+      <div className="ot-flag-detail" role="region" aria-label="Flag detail">
+        Loading…
+      </div>
+    );
 
   const raiserName = nameFromRow(flag.raiser);
   const isRoutedRecipient =
@@ -105,7 +110,7 @@ export function FlagDetailPanel({ flagId, currentMemberId, onClose, onChange }) 
   };
 
   return (
-    <div className="ot-flag-detail">
+    <div className="ot-flag-detail" role="region" aria-label={`Flag detail for ${flag.ticker}`}>
       <div className="ot-flag-detail-header">
         <div>
           <div className="ot-flag-detail-toprow">

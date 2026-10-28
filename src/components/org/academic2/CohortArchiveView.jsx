@@ -1,6 +1,8 @@
 'use client';
 
+import { useId } from 'react';
 import { NA } from '@/lib/org-display';
+import { useDialogA11y } from '@/hooks/useDialogA11y';
 import './academic.css';
 
 function pct(n) {
@@ -10,6 +12,8 @@ function pct(n) {
 
 /** Read-only historical view of an archived cohort's preserved snapshot. */
 export function CohortArchiveView({ cohort, onClose }) {
+  const titleId = useId();
+  const dialogRef = useDialogA11y(true, onClose);
   const snap = cohort?.archived_snapshot || {};
   const fund = snap.fund || {};
   const roster = snap.roster || [];
@@ -17,8 +21,16 @@ export function CohortArchiveView({ cohort, onClose }) {
 
   return (
     <div className="ac3-overlay" onClick={(e) => e.target === e.currentTarget && onClose?.()}>
-      <div className="ac3-modal ac3-root" role="dialog" aria-modal="true" style={{ maxWidth: 640 }}>
-        <h2 className="ac3-modal-title">
+      <div
+        ref={dialogRef}
+        className="ac3-modal ac3-root"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        style={{ maxWidth: 640 }}
+      >
+        <h2 id={titleId} className="ac3-modal-title">
           {cohort.name} <span className="ac3-pill ac3-pill--archived">archived</span>
         </h2>
         <p className="ac3-sub" style={{ marginTop: '-0.5rem' }}>

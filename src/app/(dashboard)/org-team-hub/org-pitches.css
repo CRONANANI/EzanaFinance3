@@ -709,3 +709,10 @@ body.light-mode .op-inline-form textarea {
   color: var(--text-secondary);
   border-color: var(--border-input);
 }
+
+/* Keyboard focus ring, matching .org-btn:focus-visible. */
+.op-btn:focus-visible,
+.op-tab:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}

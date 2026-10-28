@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
+import { useDialogA11y } from '@/hooks/useDialogA11y';
 import { supabase } from '@/lib/supabase-browser';
 
 const ATTACHMENT_ICONS = {
@@ -17,6 +18,7 @@ const ATTACHMENT_ICONS = {
 
 export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }) {
   const { orgData, hasPermission } = useOrg();
+  const dialogRef = useDialogA11y(true, onClose);
   const [recipientId, setRecipientId] = useState('');
   const [note, setNote] = useState('');
   const [sending, setSending] = useState(false);
@@ -100,9 +102,19 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
   if (!hasPermission('send_to_team')) {
     return (
       <div className="ot-modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-        <div className="ot-modal" style={{ maxWidth: 420 }}>
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="ot-send-perm-title"
+          tabIndex={-1}
+          className="ot-modal"
+          style={{ maxWidth: 420 }}
+        >
           <div className="ot-modal-header">
-            <h2 className="ot-modal-title">Permission Required</h2>
+            <h2 id="ot-send-perm-title" className="ot-modal-title">
+              Permission Required
+            </h2>
             <button type="button" className="ot-modal-close" onClick={onClose} aria-label="Close">
               <i className="bi bi-x-lg" />
             </button>
@@ -118,9 +130,17 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
 
   return (
     <div className="ot-modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="ot-modal" style={{ maxWidth: 560 }}>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ot-send-title"
+        tabIndex={-1}
+        className="ot-modal"
+        style={{ maxWidth: 560 }}
+      >
         <div className="ot-modal-header">
-          <h2 className="ot-modal-title">
+          <h2 id="ot-send-title" className="ot-modal-title">
             <i className="bi bi-send" style={{ marginRight: '0.5rem', color: 'var(--emerald)' }} />
             Send to Team Member
           </h2>
@@ -185,6 +205,7 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
               <input
                 className="ot-form-input ds-search-input"
                 placeholder="Search members…"
+                aria-label="Search members"
                 value={searchFilter}
                 onChange={(e) => setSearchFilter(e.target.value)}
                 style={{ marginBottom: '0.5rem' }}
@@ -275,6 +296,7 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="Any context or action items for the recipient…"
+                aria-label="Add a note"
                 style={{ minHeight: 80 }}
               />
             </div>

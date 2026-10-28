@@ -269,6 +269,7 @@ export function DeskMeetingPanel({ pitch, viewer, onRefresh }) {
               value={idText}
               onChange={(e) => setIdText(e.target.value)}
               placeholder="Attendee member IDs, comma or space separated"
+              aria-label="Attendee member IDs"
             />
           )}
         </div>

@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useDialogA11y } from '@/hooks/useDialogA11y';
 import { ApplicantPipeline } from './ApplicantPipeline';
 import { CohortRoster } from './CohortRoster';
 import { OnboardingChecklist } from './OnboardingChecklist';
@@ -325,6 +326,9 @@ export function CohortManager({ initialData = null }) {
 }
 
 function CreateCohortModal({ onClose, onCreated }) {
+  const titleId = useId();
+  const uid = useId();
+  const dialogRef = useDialogA11y(true, onClose);
   const [f, setF] = useState({
     name: '',
     term_type: 'year',
@@ -362,18 +366,34 @@ function CreateCohortModal({ onClose, onCreated }) {
 
   return (
     <div className="c2-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="c2-modal" role="dialog" aria-modal="true" style={{ maxWidth: 460 }}>
-        <h2 className="c2-modal-title">New cohort</h2>
-        <div className="c2-label">Name</div>
+      <div
+        ref={dialogRef}
+        className="c2-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        style={{ maxWidth: 460 }}
+      >
+        <h2 id={titleId} className="c2-modal-title">
+          New cohort
+        </h2>
+        <label className="c2-label" htmlFor={`${uid}-name`} style={{ display: 'block' }}>
+          Name
+        </label>
         <input
+          id={`${uid}-name`}
           className="c2-input"
           style={{ width: '100%' }}
           placeholder="Class of 2028"
           value={f.name}
           onChange={(e) => set('name', e.target.value)}
         />
-        <div className="c2-label">Term type</div>
+        <label className="c2-label" htmlFor={`${uid}-term`} style={{ display: 'block' }}>
+          Term type
+        </label>
         <select
+          id={`${uid}-term`}
           className="c2-select"
           style={{ width: '100%' }}
           value={f.term_type}
@@ -383,16 +403,22 @@ function CreateCohortModal({ onClose, onCreated }) {
           <option value="quarter">Quarter</option>
           <option value="year">Year</option>
         </select>
-        <div className="c2-label">Entry term</div>
+        <label className="c2-label" htmlFor={`${uid}-entry`} style={{ display: 'block' }}>
+          Entry term
+        </label>
         <input
+          id={`${uid}-entry`}
           className="c2-input"
           style={{ width: '100%' }}
           placeholder="Fall 2026"
           value={f.entry_term}
           onChange={(e) => set('entry_term', e.target.value)}
         />
-        <div className="c2-label">Expected graduation</div>
+        <label className="c2-label" htmlFor={`${uid}-grad`} style={{ display: 'block' }}>
+          Expected graduation
+        </label>
         <input
+          id={`${uid}-grad`}
           className="c2-input"
           style={{ width: '100%' }}
           placeholder="Spring 2028"
@@ -430,6 +456,8 @@ function CreateCohortModal({ onClose, onCreated }) {
 }
 
 function GraduateModal({ cohort, onClose, onDone }) {
+  const titleId = useId();
+  const dialogRef = useDialogA11y(true, onClose);
   const [busy, setBusy] = useState(false);
   const [gate, setGate] = useState(null); // {required, published, missing[]}
   const [err, setErr] = useState('');
@@ -460,8 +488,16 @@ function GraduateModal({ cohort, onClose, onDone }) {
 
   return (
     <div className="c2-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="c2-modal" role="dialog" aria-modal="true" style={{ maxWidth: 500 }}>
-        <h2 className="c2-modal-title">
+      <div
+        ref={dialogRef}
+        className="c2-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        style={{ maxWidth: 500 }}
+      >
+        <h2 id={titleId} className="c2-modal-title">
           <i className="bi bi-mortarboard" aria-hidden="true" /> Graduate {cohort.name}
         </h2>
         <p className="c2-sub" style={{ marginTop: 0 }}>

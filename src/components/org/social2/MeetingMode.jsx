@@ -1,8 +1,9 @@
 'use client';
 
 import { stripDemoLabel } from '@/lib/org-display';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
+import { useDialogA11y } from '@/hooks/useDialogA11y';
 import './meetings2.css';
 
 /* ── Static metadata (theme-token dots live in the CSS) ───────────────────── */
@@ -241,6 +242,7 @@ function AgendaBuilder({ agenda, canManage, onSave, busy }) {
             <input
               className="mt2-input"
               style={{ flex: '2 1 180px' }}
+              aria-label="Agenda item"
               placeholder="Agenda item…"
               value={draft.label}
               onChange={(e) => setDraft((d) => ({ ...d, label: e.target.value }))}
@@ -248,6 +250,7 @@ function AgendaBuilder({ agenda, canManage, onSave, busy }) {
             <select
               className="mt2-select"
               style={{ flex: '1 1 110px' }}
+              aria-label="Agenda item type"
               value={draft.kind}
               onChange={(e) => setDraft((d) => ({ ...d, kind: e.target.value }))}
             >
@@ -262,6 +265,7 @@ function AgendaBuilder({ agenda, canManage, onSave, busy }) {
             <input
               className="mt2-input"
               style={{ flex: '2 1 160px' }}
+              aria-label="Agenda item owner"
               placeholder="Owner (optional)"
               value={draft.owner}
               onChange={(e) => setDraft((d) => ({ ...d, owner: e.target.value }))}
@@ -271,6 +275,7 @@ function AgendaBuilder({ agenda, canManage, onSave, busy }) {
               style={{ flex: '1 1 90px' }}
               type="number"
               min="0"
+              aria-label="Agenda item minutes"
               placeholder="Min"
               value={draft.minutes}
               onChange={(e) => setDraft((d) => ({ ...d, minutes: e.target.value }))}
@@ -353,6 +358,7 @@ function AttendeesSection({ detail, viewer, onRsvp, onAddAttendees, busy, past }
           <select
             className="mt2-select"
             style={{ flex: 1 }}
+            aria-label="Add attendee from org chart"
             value={pick}
             onChange={(e) => setPick(e.target.value)}
           >
@@ -518,6 +524,7 @@ function DeliverablesSection({ detail, viewer, onAdd, onRemove, busy }) {
           <select
             className="mt2-select"
             style={{ flex: '0 0 130px' }}
+            aria-label="Deliverable type"
             value={draft.kind}
             onChange={(e) => setDraft((d) => ({ ...d, kind: e.target.value }))}
           >
@@ -530,6 +537,7 @@ function DeliverablesSection({ detail, viewer, onAdd, onRemove, busy }) {
           <input
             className="mt2-input"
             style={{ flex: 1 }}
+            aria-label="Deliverable label"
             placeholder="Deliverable label…"
             value={draft.label}
             onChange={(e) => setDraft((d) => ({ ...d, label: e.target.value }))}
@@ -568,6 +576,7 @@ function RecordingSection({ detail, viewer, onLink, busy }) {
             <input
               className="mt2-input"
               style={{ flex: 1 }}
+              aria-label="Recording link"
               placeholder="Paste recording link (Zoom / Otter / Fireflies / Read.ai)…"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
@@ -575,6 +584,7 @@ function RecordingSection({ detail, viewer, onLink, busy }) {
             <select
               className="mt2-select"
               style={{ flex: '0 0 140px' }}
+              aria-label="Recording source"
               value={source}
               onChange={(e) => setSource(e.target.value)}
             >
@@ -824,6 +834,8 @@ function NewMeetingModal({ onClose, onCreated }) {
     location: '',
   });
   const [busy, setBusy] = useState(false);
+  const uid = useId();
+  const dialogRef = useDialogA11y(true, onClose);
 
   const submit = async () => {
     if (!form.title.trim() || busy) return;
@@ -850,21 +862,37 @@ function NewMeetingModal({ onClose, onCreated }) {
 
   return (
     <div className="mt2-modal-backdrop" onClick={onClose}>
-      <div className="mt2-modal" onClick={(e) => e.stopPropagation()}>
-        <h3 className="mt2-modal__title">New meeting</h3>
+      <div
+        className="mt2-modal"
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`${uid}-title`}
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="mt2-modal__title" id={`${uid}-title`}>
+          New meeting
+        </h3>
         <div className="mt2-field">
-          <label className="mt2-field__label">Title</label>
+          <label className="mt2-field__label" htmlFor={`${uid}-meeting-title`}>
+            Title
+          </label>
           <input
             className="mt2-input"
+            id={`${uid}-meeting-title`}
             placeholder="e.g. Q3 Investment Committee"
             value={form.title}
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
           />
         </div>
         <div className="mt2-field">
-          <label className="mt2-field__label">Category</label>
+          <label className="mt2-field__label" htmlFor={`${uid}-category`}>
+            Category
+          </label>
           <select
             className="mt2-select"
+            id={`${uid}-category`}
             value={form.category}
             onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
           >
@@ -876,18 +904,24 @@ function NewMeetingModal({ onClose, onCreated }) {
           </select>
         </div>
         <div className="mt2-field">
-          <label className="mt2-field__label">Scheduled time</label>
+          <label className="mt2-field__label" htmlFor={`${uid}-scheduled`}>
+            Scheduled time
+          </label>
           <input
             className="mt2-input"
+            id={`${uid}-scheduled`}
             type="datetime-local"
             value={form.scheduled_at}
             onChange={(e) => setForm((f) => ({ ...f, scheduled_at: e.target.value }))}
           />
         </div>
         <div className="mt2-field">
-          <label className="mt2-field__label">Location</label>
+          <label className="mt2-field__label" htmlFor={`${uid}-location`}>
+            Location
+          </label>
           <input
             className="mt2-input"
+            id={`${uid}-location`}
             placeholder="Room / video link"
             value={form.location}
             onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
@@ -1217,7 +1251,11 @@ export function MeetingMode({ initialData = null }) {
             <button
               type="button"
               className="mt2-iconbtn"
-              aria-label="Recorder integrations"
+              aria-label={
+                payload.recordersConnected
+                  ? 'Recorder integrations, recorder connected'
+                  : 'Recorder integrations, no recorder'
+              }
               onClick={() => setPopoverOpen((o) => !o)}
             >
               <i className="bi bi-gear" aria-hidden="true" />

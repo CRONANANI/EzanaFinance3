@@ -173,3 +173,10 @@
   color: var(--emerald);
   text-decoration: none;
 }
+
+/* Keyboard focus ring, matching .org-btn:focus-visible. */
+.sorg-tab:focus-visible,
+.sorg-pill:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}

@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { orgRequest } from '@/lib/org-request';
 import { NA } from '@/lib/org-display';
+import { useDialogA11y } from '@/hooks/useDialogA11y';
 import './cohort2.css';
 
 const BOARD_STAGES = [
@@ -322,6 +323,12 @@ function ArchiveLane({ title, items, onOpen }) {
             role="button"
             tabIndex={0}
             onClick={() => onOpen(a.id)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onOpen(a.id);
+              }
+            }}
           >
             <div className="c2-card-name" style={{ fontSize: '0.85rem' }}>
               {a.blinded ? `Applicant ${a.initials}` : a.full_name}
@@ -337,6 +344,8 @@ function ArchiveLane({ title, items, onOpen }) {
 /* ── Applicant modal with rubric ─────────────────────────────────────────── */
 function ApplicantModal({ applicant, canManage, onClose, onChanged }) {
   const a = applicant;
+  const titleId = useId();
+  const dialogRef = useDialogA11y(true, onClose);
   const [scoreData, setScoreData] = useState(null);
   const [myScores, setMyScores] = useState({});
   const [saving, setSaving] = useState(false);
@@ -419,10 +428,17 @@ function ApplicantModal({ applicant, canManage, onClose, onChanged }) {
 
   return (
     <div className="c2-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="c2-modal" role="dialog" aria-modal="true" aria-label="Applicant detail">
+      <div
+        ref={dialogRef}
+        className="c2-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
           <div>
-            <h2 className="c2-modal-title">
+            <h2 id={titleId} className="c2-modal-title">
               {a.blinded ? `Applicant ${a.initials}` : a.full_name}
               {scoreData?.aggregate_star != null && (
                 <span className="c2-star">
@@ -499,6 +515,7 @@ function ApplicantModal({ applicant, canManage, onClose, onChanged }) {
             <textarea
               className="c2-input"
               rows={2}
+              aria-label={`Notes for ${CRITERION_LABEL[crit] || crit}`}
               placeholder="Private notes (hidden from peers until you submit)"
               value={myScores[crit]?.notes || ''}
               disabled={scoreData?.my?.submitted}
@@ -659,6 +676,9 @@ function ApplicantModal({ applicant, canManage, onClose, onChanged }) {
 
 /* ── Accept → provision (the payoff): one confirmation. ─────────────────── */
 function ProvisionModal({ applicant, onClose, onDone }) {
+  const titleId = useId();
+  const uid = useId();
+  const dialogRef = useDialogA11y(true, onClose);
   const [members, setMembers] = useState([]);
   const [title, setTitle] = useState('Junior Analyst');
   const [reportsTo, setReportsTo] = useState('');
@@ -706,23 +726,37 @@ function ProvisionModal({ applicant, onClose, onDone }) {
 
   return (
     <div className="c2-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="c2-modal" role="dialog" aria-modal="true" style={{ maxWidth: 460 }}>
-        <h2 className="c2-modal-title">
+      <div
+        ref={dialogRef}
+        className="c2-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        style={{ maxWidth: 460 }}
+      >
+        <h2 id={titleId} className="c2-modal-title">
           <i className="bi bi-person-plus" aria-hidden="true" /> Provision member
         </h2>
         <p className="c2-sub" style={{ marginTop: 0 }}>
           Creates the account, the org-chart row (onboarding), pairs a mentor, and links it back to{' '}
           {applicant.full_name}. One step.
         </p>
-        <div className="c2-label">Title in the chart</div>
+        <label className="c2-label" htmlFor={`${uid}-title`} style={{ display: 'block' }}>
+          Title in the chart
+        </label>
         <input
+          id={`${uid}-title`}
           className="c2-input"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           style={{ width: '100%' }}
         />
-        <div className="c2-label">Reports to</div>
+        <label className="c2-label" htmlFor={`${uid}-reports`} style={{ display: 'block' }}>
+          Reports to
+        </label>
         <select
+          id={`${uid}-reports`}
           className="c2-select"
           value={reportsTo}
           onChange={(e) => setReportsTo(e.target.value)}
@@ -735,8 +769,11 @@ function ProvisionModal({ applicant, onClose, onDone }) {
             </option>
           ))}
         </select>
-        <div className="c2-label">Mentor</div>
+        <label className="c2-label" htmlFor={`${uid}-mentor`} style={{ display: 'block' }}>
+          Mentor
+        </label>
         <select
+          id={`${uid}-mentor`}
           className="c2-select"
           value={mentor}
           onChange={(e) => setMentor(e.target.value)}
@@ -791,6 +828,9 @@ function ProvisionModal({ applicant, onClose, onDone }) {
 }
 
 function AddApplicantModal({ cohortId, onClose, onAdded }) {
+  const titleId = useId();
+  const uid = useId();
+  const dialogRef = useDialogA11y(true, onClose);
   const [f, setF] = useState({ full_name: '', email: '', program: '', year: '', source: '' });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -821,8 +861,18 @@ function AddApplicantModal({ cohortId, onClose, onAdded }) {
 
   return (
     <div className="c2-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="c2-modal" role="dialog" aria-modal="true" style={{ maxWidth: 460 }}>
-        <h2 className="c2-modal-title">Add applicant</h2>
+      <div
+        ref={dialogRef}
+        className="c2-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        style={{ maxWidth: 460 }}
+      >
+        <h2 id={titleId} className="c2-modal-title">
+          Add applicant
+        </h2>
         {[
           ['full_name', 'Full name'],
           ['email', 'Email'],
@@ -831,8 +881,11 @@ function AddApplicantModal({ cohortId, onClose, onAdded }) {
           ['source', 'Source (e.g. Info session, Referral)'],
         ].map(([k, label]) => (
           <div key={k}>
-            <div className="c2-label">{label}</div>
+            <label className="c2-label" htmlFor={`${uid}-${k}`} style={{ display: 'block' }}>
+              {label}
+            </label>
             <input
+              id={`${uid}-${k}`}
               className="c2-input"
               style={{ width: '100%' }}
               value={f[k]}

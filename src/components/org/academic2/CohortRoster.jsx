@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { NA } from '@/lib/org-display';
+import { useDialogA11y } from '@/hooks/useDialogA11y';
 import './cohort2.css';
 
 const STATUS_LABEL = {
@@ -117,13 +118,19 @@ export function CohortRoster({ cohortId, canManage, onCount, onGoRecruit }) {
           />
           <input
             className="c2-input ds-search-input"
+            aria-label="Search members"
             placeholder="Search members"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             style={{ paddingLeft: 30 }}
           />
         </div>
-        <select className="c2-select" value={status} onChange={(e) => setStatus(e.target.value)}>
+        <select
+          className="c2-select"
+          aria-label="Filter by status"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+        >
           <option value="">All statuses</option>
           {Object.keys(STATUS_LABEL).map((s) => (
             <option key={s} value={s}>
@@ -131,7 +138,12 @@ export function CohortRoster({ cohortId, canManage, onCount, onGoRecruit }) {
             </option>
           ))}
         </select>
-        <select className="c2-select" value={sector} onChange={(e) => setSector(e.target.value)}>
+        <select
+          className="c2-select"
+          aria-label="Filter by sector"
+          value={sector}
+          onChange={(e) => setSector(e.target.value)}
+        >
           <option value="">All sectors</option>
           {sectors.map((s) => (
             <option key={s} value={s}>
@@ -139,7 +151,12 @@ export function CohortRoster({ cohortId, canManage, onCount, onGoRecruit }) {
             </option>
           ))}
         </select>
-        <select className="c2-select" value={role} onChange={(e) => setRole(e.target.value)}>
+        <select
+          className="c2-select"
+          aria-label="Filter by role"
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+        >
           <option value="">All roles</option>
           {roles.map((r) => (
             <option key={r} value={r}>
@@ -183,7 +200,12 @@ export function CohortRoster({ cohortId, canManage, onCount, onGoRecruit }) {
               role="button"
               tabIndex={0}
               onClick={() => setOpenId(m.id)}
-              onKeyDown={(e) => e.key === 'Enter' && setOpenId(m.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setOpenId(m.id);
+                }
+              }}
             >
               <div className="c2-mcard-head">
                 <span className="c2-avatar">{initials(m.display_name)}</span>
@@ -238,8 +260,15 @@ export function CohortRoster({ cohortId, canManage, onCount, onGoRecruit }) {
               {filtered.map((m) => (
                 <tr
                   key={m.id}
+                  role="button"
                   tabIndex={0}
                   onClick={() => setOpenId(m.id)}
+                  onKeyDown={(e) => {
+                    if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                      e.preventDefault();
+                      setOpenId(m.id);
+                    }
+                  }}
                   style={{ cursor: 'pointer' }}
                 >
                   <td style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
@@ -285,6 +314,8 @@ export function CohortRoster({ cohortId, canManage, onCount, onGoRecruit }) {
 
 function MemberSlideOver({ member, canManage, cohortId, onClose, onChanged }) {
   const m = member;
+  const titleId = useId();
+  const dialogRef = useDialogA11y(true, onClose);
   const [busy, setBusy] = useState(false);
 
   const setLifecycle = async (lifecycle_status, extra = {}) => {
@@ -315,12 +346,19 @@ function MemberSlideOver({ member, canManage, cohortId, onClose, onChanged }) {
 
   return (
     <div className="c2-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="c2-slideover" role="dialog" aria-modal="true" aria-label="Member detail">
+      <div
+        ref={dialogRef}
+        className="c2-slideover"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
           <div className="c2-mcard-head">
             <span className="c2-avatar">{initials(m.display_name)}</span>
             <div>
-              <div className="c2-modal-title" style={{ fontSize: '1.05rem' }}>
+              <div id={titleId} className="c2-modal-title" style={{ fontSize: '1.05rem' }}>
                 {m.display_name}
               </div>
               <div className="c2-card-meta">{m.title || m.role?.replace('_', ' ')}</div>

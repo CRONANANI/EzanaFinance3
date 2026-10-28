@@ -115,7 +115,7 @@ export function RatingLeaderboard({ selectedMemberId, onSelect }) {
                 key={r.member_id}
                 type="button"
                 className={`rec2-row${r.is_provisional ? ' rec2-row--provisional' : ''}`}
-                aria-selected={r.member_id === selectedMemberId}
+                aria-pressed={r.member_id === selectedMemberId}
                 onClick={() => onSelect?.(r.member_id)}
               >
                 <span className="rec2-avatar" aria-hidden>

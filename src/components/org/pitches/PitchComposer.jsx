@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
+import { useDialogA11y } from '@/hooks/useDialogA11y';
 import { IPSCheckBanner } from '@/components/org/academic2/IPSCheckBanner';
 
 const STEPS = ['Identity', 'Thesis', 'Attachments', 'Review'];
@@ -31,6 +32,7 @@ export function PitchComposer({ open, onClose, onCreated }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [ipsResult, setIpsResult] = useState(null);
+  const dialogRef = useDialogA11y(open, onClose);
 
   useEffect(() => {
     if (!open) {
@@ -149,9 +151,17 @@ export function PitchComposer({ open, onClose, onCreated }) {
 
   return (
     <div className="op-modal-overlay" onClick={onClose} role="presentation">
-      <div className="op-modal" onClick={(e) => e.stopPropagation()} role="dialog">
+      <div
+        className="op-modal"
+        onClick={(e) => e.stopPropagation()}
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pitch-composer-title"
+        tabIndex={-1}
+      >
         <div className="op-modal-header">
-          <h2>Submit New Pitch</h2>
+          <h2 id="pitch-composer-title">Submit New Pitch</h2>
           <button type="button" className="op-modal-close" onClick={onClose} aria-label="Close">
             <i className="bi bi-x-lg" />
           </button>
@@ -301,6 +311,7 @@ export function PitchComposer({ open, onClose, onCreated }) {
                   setCatalysts(next);
                 }}
                 placeholder={`Catalyst ${i + 1}`}
+                aria-label={`Catalyst ${i + 1}`}
               />
             ))}
             <button
@@ -321,6 +332,7 @@ export function PitchComposer({ open, onClose, onCreated }) {
                   setRisks(next);
                 }}
                 placeholder={`Risk ${i + 1}`}
+                aria-label={`Risk ${i + 1}`}
               />
             ))}
             <button

@@ -73,6 +73,7 @@ export function CsvUploadForm({ orgId, teamId, onSubmitting, onError, onSuccess 
         <input
           ref={inputRef}
           type="file"
+          aria-label="Choose a CSV file"
           accept=".csv,text/csv"
           onChange={(e) => {
             setFile(e.target.files?.[0] || null);

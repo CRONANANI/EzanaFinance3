@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import { orgRequest } from '@/lib/org-request';
 import { NA } from '@/lib/org-display';
+import { useDialogA11y } from '@/hooks/useDialogA11y';
 import './cohort2.css';
 
 const INDUSTRY_LABEL = {
@@ -135,6 +136,7 @@ export function AlumniDirectory({ cohortId, canManage, onCount }) {
       <div className="c2-toolbar">
         <select
           className="c2-select"
+          aria-label="Filter by industry"
           value={industry}
           onChange={(e) => setIndustry(e.target.value)}
         >
@@ -145,7 +147,12 @@ export function AlumniDirectory({ cohortId, canManage, onCount }) {
             </option>
           ))}
         </select>
-        <select className="c2-select" value={flag} onChange={(e) => setFlag(e.target.value)}>
+        <select
+          className="c2-select"
+          aria-label="Filter by engagement"
+          value={flag}
+          onChange={(e) => setFlag(e.target.value)}
+        >
           <option value="">All engagement</option>
           {Object.entries(FLAG_LABEL).map(([k, v]) => (
             <option key={k} value={k}>
@@ -172,7 +179,12 @@ export function AlumniDirectory({ cohortId, canManage, onCount }) {
               role="button"
               tabIndex={0}
               onClick={() => setOpenId(a.id)}
-              onKeyDown={(e) => e.key === 'Enter' && setOpenId(a.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setOpenId(a.id);
+                }
+              }}
             >
               <div className="c2-mcard-head">
                 <span className="c2-avatar">{initials(a.display_name)}</span>
@@ -232,6 +244,9 @@ export function AlumniDirectory({ cohortId, canManage, onCount }) {
 
 function AlumDetail({ alum, canManage, onClose, onChanged }) {
   const a = alum;
+  const titleId = useId();
+  const dialogRef = useDialogA11y(true, onClose);
+  const uid = useId();
   const [edit, setEdit] = useState({
     employer: a.employer || '',
     employer_industry: a.employer_industry || '',
@@ -273,12 +288,19 @@ function AlumDetail({ alum, canManage, onClose, onChanged }) {
 
   return (
     <div className="c2-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="c2-slideover" role="dialog" aria-modal="true" aria-label="Alumni detail">
+      <div
+        ref={dialogRef}
+        className="c2-slideover"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
           <div className="c2-mcard-head">
             <span className="c2-avatar">{initials(a.display_name)}</span>
             <div>
-              <div className="c2-modal-title" style={{ fontSize: '1.05rem' }}>
+              <div id={titleId} className="c2-modal-title" style={{ fontSize: '1.05rem' }}>
                 {a.display_name}
               </div>
               <div className="c2-card-meta">{a.grad_term || NA}</div>
@@ -330,17 +352,25 @@ function AlumDetail({ alum, canManage, onClose, onChanged }) {
         {canManage ? (
           <>
             <div className="c2-label">Placement</div>
-            <div className="c2-label" style={{ marginTop: '0.4rem' }}>
+            <label
+              className="c2-label"
+              htmlFor={`${uid}-employer`}
+              style={{ display: 'block', marginTop: '0.4rem' }}
+            >
               Employer
-            </div>
+            </label>
             <input
+              id={`${uid}-employer`}
               className="c2-input"
               style={{ width: '100%' }}
               value={edit.employer}
               onChange={(e) => set('employer', e.target.value)}
             />
-            <div className="c2-label">Industry</div>
+            <label className="c2-label" htmlFor={`${uid}-industry`} style={{ display: 'block' }}>
+              Industry
+            </label>
             <select
+              id={`${uid}-industry`}
               className="c2-select"
               style={{ width: '100%' }}
               value={edit.employer_industry}
@@ -353,15 +383,21 @@ function AlumDetail({ alum, canManage, onClose, onChanged }) {
                 </option>
               ))}
             </select>
-            <div className="c2-label">Role title</div>
+            <label className="c2-label" htmlFor={`${uid}-role`} style={{ display: 'block' }}>
+              Role title
+            </label>
             <input
+              id={`${uid}-role`}
               className="c2-input"
               style={{ width: '100%' }}
               value={edit.role_title}
               onChange={(e) => set('role_title', e.target.value)}
             />
-            <div className="c2-label">LinkedIn</div>
+            <label className="c2-label" htmlFor={`${uid}-linkedin`} style={{ display: 'block' }}>
+              LinkedIn
+            </label>
             <input
+              id={`${uid}-linkedin`}
               className="c2-input"
               style={{ width: '100%' }}
               value={edit.linkedin_url}

@@ -1,7 +1,7 @@
 'use client';
 
 import { NA, stripDemoLabel } from '@/lib/org-display';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { NoteComposer, DOC_TYPES } from './NoteComposer';
 import './research2.css';
@@ -226,6 +226,7 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
   const [attBusy, setAttBusy] = useState(false);
   const [attError, setAttError] = useState('');
   const attFileRef = useRef(null);
+  const titleId = useId();
 
   const canManage = viewer?.canManage;
 
@@ -494,6 +495,7 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
         className="rl2-drawer rl2-root"
         role="dialog"
         aria-modal="true"
+        aria-labelledby={titleId}
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="rl2-drawer-head">
@@ -513,7 +515,9 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                 )}
               </div>
             )}
-            <h2 className="rl2-drawer-title">{note ? stripDemoLabel(note.title) : 'Loading…'}</h2>
+            <h2 className="rl2-drawer-title" id={titleId}>
+              {note ? stripDemoLabel(note.title) : 'Loading…'}
+            </h2>
           </div>
           <button type="button" className="rl2-close" onClick={onClose} aria-label="Close">
             <i className="bi bi-x-lg" aria-hidden="true" />
@@ -693,6 +697,7 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                     <input
                       ref={attFileRef}
                       type="file"
+                      aria-label="Attach a file"
                       className="rl2-visually-hidden"
                       accept=".pdf,.xlsx,.xls,.docx,.doc,.csv,.png,.jpg,.jpeg,.pptx"
                       onChange={(e) => uploadAttachment(e.target.files?.[0])}

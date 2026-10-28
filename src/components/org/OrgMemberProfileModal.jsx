@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useDialogA11y } from '@/hooks/useDialogA11y';
 import { useToast } from '@/contexts/ToastContext';
 import { useTheme } from '@/components/ThemeProvider';
 import { useOrg } from '@/contexts/OrgContext';
@@ -98,19 +99,17 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
     onClose();
   }, [onClose]);
 
+  // Escape-to-close, focus into the dialog, Tab trap and focus restore.
+  const dialogRef = useDialogA11y(isOpen, handleClose);
+
   useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (e) => {
-      if (e.key === 'Escape') handleClose();
-    };
-    window.addEventListener('keydown', onKey);
+    if (!isOpen) return undefined;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
-      window.removeEventListener('keydown', onKey);
       document.body.style.overflow = prev;
     };
-  }, [isOpen, handleClose]);
+  }, [isOpen]);
 
   if (!isOpen || !member) return null;
 
@@ -162,9 +161,11 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-labelledby="org-member-profile-title"
+      tabIndex={-1}
       style={{
         position: 'fixed',
         inset: 0,

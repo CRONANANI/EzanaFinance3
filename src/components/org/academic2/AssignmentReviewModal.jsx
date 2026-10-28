@@ -1,7 +1,8 @@
 'use client';
 
 import { stripDemoLabel } from '@/lib/org-display';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useDialogA11y } from '@/hooks/useDialogA11y';
 import { typeMeta, STATUS_LABEL, fmtDue } from './AssignmentCard';
 
 function ts(iso) {
@@ -22,6 +23,10 @@ function fmtBytes(n) {
 
 /* Drill-in review: version history, threaded comments, approve/return, rubric. */
 export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
+  const titleId = useId();
+  const scoreId = useId();
+  const maxId = useId();
+  const dialogRef = useDialogA11y(true, onClose);
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -214,14 +219,16 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
   const status = a?.overdue ? 'overdue' : a?.status;
 
   return (
-    <div
-      className="asg2-overlay asg2-overlay--center"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Assignment review"
-      onClick={onClose}
-    >
-      <div className="asg2-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="asg2-overlay asg2-overlay--center" onClick={onClose}>
+      <div
+        ref={dialogRef}
+        className="asg2-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="asg2-modal-head">
           <div>
             {a && (
@@ -234,7 +241,9 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
                 </span>
               </div>
             )}
-            <h2 className="asg2-modal-title">{stripDemoLabel(a?.title) || 'Assignment'}</h2>
+            <h2 id={titleId} className="asg2-modal-title">
+              {stripDemoLabel(a?.title) || 'Assignment'}
+            </h2>
             {a && (
               <div className="asg2-card-meta" style={{ marginTop: '0.4rem' }}>
                 <span className="asg2-num">{fmtDue(a.due_date, a.overdue)}</span>
@@ -329,6 +338,7 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
               <input
                 ref={fileRef}
                 type="file"
+                aria-label="Attach a file"
                 className="asg2-visually-hidden"
                 accept=".pdf,.xlsx,.xls,.docx,.doc,.csv,.png,.jpg,.jpeg,.pptx"
                 onChange={(e) => uploadAttachment(e.target.files?.[0])}
@@ -406,6 +416,7 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
                 <textarea
                   className="asg2-textarea"
                   style={{ minHeight: 60 }}
+                  aria-label="Add a comment or feedback"
                   placeholder="Add a comment, or feedback when returning for revision…"
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
@@ -426,8 +437,11 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
                 </p>
                 <div className="asg2-rubric">
                   <div>
-                    <span className="asg2-label">Score</span>
+                    <label className="asg2-label" htmlFor={scoreId}>
+                      Score
+                    </label>
                     <input
+                      id={scoreId}
                       className="asg2-input asg2-rubric-score asg2-num"
                       inputMode="numeric"
                       value={rubric.score}
@@ -438,8 +452,11 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
                   </div>
                   <span style={{ paddingBottom: '0.6rem', color: 'var(--text-muted)' }}>/</span>
                   <div>
-                    <span className="asg2-label">Out of</span>
+                    <label className="asg2-label" htmlFor={maxId}>
+                      Out of
+                    </label>
                     <input
+                      id={maxId}
                       className="asg2-input asg2-rubric-score asg2-num"
                       inputMode="numeric"
                       value={rubric.max}
@@ -453,6 +470,7 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
                   <textarea
                     className="asg2-textarea"
                     style={{ minHeight: 50 }}
+                    aria-label="Rubric comment"
                     placeholder="Rubric comment (optional)"
                     value={rubric.comment}
                     onChange={(e) => setRubric((r) => ({ ...r, comment: e.target.value }))}

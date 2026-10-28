@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
+import { useDialogA11y } from '@/hooks/useDialogA11y';
 import './social.css';
 
 export const BADGE_TYPES = [
@@ -26,6 +27,8 @@ export function AwardModal({ open, onClose, members = [], onAwarded }) {
   const [isAward, setIsAward] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const dialogRef = useDialogA11y(open, onClose);
+  const uid = useId();
 
   if (!open) return null;
 
@@ -67,16 +70,23 @@ export function AwardModal({ open, onClose, members = [], onAwarded }) {
     <div className="sc2-overlay" onClick={(e) => e.target === e.currentTarget && onClose?.()}>
       <div
         className="sc2-modal sc2-root"
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Award recognition"
+        aria-labelledby={`${uid}-title`}
+        tabIndex={-1}
       >
-        <h2 className="sc2-modal-title">Award recognition</h2>
+        <h2 className="sc2-modal-title" id={`${uid}-title`}>
+          Award recognition
+        </h2>
 
         <div className="sc2-field">
-          <label className="sc2-label">Recipient</label>
+          <label className="sc2-label" htmlFor={`${uid}-recipient`}>
+            Recipient
+          </label>
           <select
             className="sc2-select"
+            id={`${uid}-recipient`}
             value={recipient}
             onChange={(e) => setRecipient(e.target.value)}
           >
@@ -91,9 +101,12 @@ export function AwardModal({ open, onClose, members = [], onAwarded }) {
 
         <div className="sc2-row">
           <div className="sc2-field">
-            <label className="sc2-label">Badge</label>
+            <label className="sc2-label" htmlFor={`${uid}-badge`}>
+              Badge
+            </label>
             <select
               className="sc2-select"
+              id={`${uid}-badge`}
               value={badgeType}
               onChange={(e) => setBadgeType(e.target.value)}
             >
@@ -105,9 +118,12 @@ export function AwardModal({ open, onClose, members = [], onAwarded }) {
             </select>
           </div>
           <div className="sc2-field">
-            <label className="sc2-label">Period</label>
+            <label className="sc2-label" htmlFor={`${uid}-period`}>
+              Period
+            </label>
             <input
               className="sc2-input"
+              id={`${uid}-period`}
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
               placeholder="e.g. 2026-Q2"
@@ -116,9 +132,12 @@ export function AwardModal({ open, onClose, members = [], onAwarded }) {
         </div>
 
         <div className="sc2-field">
-          <label className="sc2-label">Title</label>
+          <label className="sc2-label" htmlFor={`${uid}-award-title`}>
+            Title
+          </label>
           <input
             className="sc2-input"
+            id={`${uid}-award-title`}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Best Call: NVDA"
@@ -126,9 +145,12 @@ export function AwardModal({ open, onClose, members = [], onAwarded }) {
         </div>
 
         <div className="sc2-field">
-          <label className="sc2-label">Reason</label>
+          <label className="sc2-label" htmlFor={`${uid}-reason`}>
+            Reason
+          </label>
           <textarea
             className="sc2-textarea"
+            id={`${uid}-reason`}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder="Why are they getting this?"

@@ -518,18 +518,21 @@ function PublicSponsorsSection({ competition, canManage }) {
           <input
             className="pcx-input"
             placeholder="Sponsor name"
+            aria-label="Sponsor name"
             value={newSponsor.name}
             onChange={(e) => setNewSponsor({ ...newSponsor, name: e.target.value })}
           />
           <input
             className="pcx-input"
             placeholder="URL (optional)"
+            aria-label="Sponsor URL"
             value={newSponsor.url}
             onChange={(e) => setNewSponsor({ ...newSponsor, url: e.target.value })}
           />
           <input
             className="pcx-input"
             placeholder="Tier (optional)"
+            aria-label="Sponsor tier"
             value={newSponsor.tier}
             onChange={(e) => setNewSponsor({ ...newSponsor, tier: e.target.value })}
           />

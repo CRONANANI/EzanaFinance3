@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
+import { useDialogA11y } from '@/hooks/useDialogA11y';
 import './recognition2.css';
 
 const CATEGORY_LABELS = {
@@ -35,6 +36,8 @@ export function WeightsEditor({ open, onClose, onSaved }) {
   const [saving, setSaving] = useState('');
   const [error, setError] = useState('');
   const [flash, setFlash] = useState('');
+  const dialogRef = useDialogA11y(open, onClose);
+  const uid = useId();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -114,9 +117,11 @@ export function WeightsEditor({ open, onClose, onSaved }) {
     >
       <div
         className="rec2-card sc2-root"
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Rating weights"
+        aria-labelledby={`${uid}-title`}
+        tabIndex={-1}
         style={{ maxWidth: 520, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}
       >
         <div
@@ -127,7 +132,7 @@ export function WeightsEditor({ open, onClose, onSaved }) {
             marginBottom: '0.5rem',
           }}
         >
-          <h2 className="rec2-hero-name" style={{ fontSize: '1.05rem' }}>
+          <h2 className="rec2-hero-name" id={`${uid}-title`} style={{ fontSize: '1.05rem' }}>
             Rating weights
           </h2>
           <button type="button" className="rec2-btn" onClick={onClose} aria-label="Close">
@@ -161,6 +166,9 @@ export function WeightsEditor({ open, onClose, onSaved }) {
                       type="number"
                       min={0}
                       max={100}
+                      aria-label={`${ROLE_LABELS[r.role] || r.role} · ${
+                        CATEGORY_LABELS[c.category] || c.category
+                      } weight`}
                       value={draft[r.role]?.[c.category] ?? ''}
                       onChange={(e) => setWeight(r.role, c.category, e.target.value)}
                     />

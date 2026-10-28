@@ -393,9 +393,17 @@ export function FlagComposerModal({
   if (duplicate) {
     return (
       <div className="ot-modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-        <div className="ot-modal" style={{ maxWidth: 460 }}>
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="ot-flag-dup-title"
+          className="ot-modal"
+          style={{ maxWidth: 460 }}
+        >
           <div className="ot-modal-header">
-            <h2 className="ot-modal-title">{ticker} already has an open flag</h2>
+            <h2 id="ot-flag-dup-title" className="ot-modal-title">
+              {ticker} already has an open flag
+            </h2>
             <button type="button" aria-label="Close" className="ot-modal-close" onClick={onClose}>
               <i className="bi bi-x-lg" aria-hidden="true" />
             </button>
@@ -428,11 +436,18 @@ export function FlagComposerModal({
 
   return (
     <div className="ot-modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="ot-modal ot-modal-dossier">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ot-flag-composer-title"
+        className="ot-modal ot-modal-dossier"
+      >
         <div className="ot-modal-header">
           <div className="ot-dossier-title">
             <i className={`bi bi-flag ot-flag-icon ${accentClass}`} aria-hidden="true" />
-            <h2 className="ot-modal-title">{isThesisUpdate ? 'Thesis Update' : 'Flag Position'}</h2>
+            <h2 id="ot-flag-composer-title" className="ot-modal-title">
+              {isThesisUpdate ? 'Thesis Update' : 'Flag Position'}
+            </h2>
             {book.length > 1 ? (
               <PositionSwitcher
                 current={{ ticker, teamDbId, sector, analyst: analystName, plPct }}
