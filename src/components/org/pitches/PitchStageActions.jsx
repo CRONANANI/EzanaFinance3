@@ -2,8 +2,12 @@
 
 import { useState } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
-import { DateSelector } from '@/components/ui/DateSelector';
 
+/**
+ * Pitch action bar. Advancement is the gate panel's job (PitchGatePanel); this
+ * bar carries only the actions the gate panel does not cover: rejecting a pitch
+ * and marking a live-portfolio holding exited. PM or executive only.
+ */
 export function PitchStageActions({ pitch, onRefresh }) {
   const { orgData } = useOrg();
   const member = orgData?.member;
@@ -13,9 +17,8 @@ export function PitchStageActions({ pitch, onRefresh }) {
     team_id: member?.team_id || null,
   };
   const [note, setNote] = useState('');
-  const [meetingAt, setMeetingAt] = useState('');
-  const [dueAt, setDueAt] = useState('');
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
 
   // In-portfolio holdings are "accepted" (is_archived) but still act-on-able:
   // managers can mark them exited with a post-mortem. Truly archived
@@ -23,46 +26,23 @@ export function PitchStageActions({ pitch, onRefresh }) {
   const isLivePortfolio = pitch?.stage === 'in_portfolio';
   if (!pitch || (pitch.is_archived && !isLivePortfolio)) return null;
 
-  const transition = async (to_stage, extra = {}) => {
+  const isManager = ['portfolio_manager', 'executive'].includes(viewer.role);
+
+  const post = async (url, body) => {
     setBusy(true);
+    setError('');
     try {
-      const res = await fetch(`/api/org/pitches/${pitch.id}/stage`, {
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to_stage,
-          note,
-          committee_meeting_at: meetingAt || undefined,
-          research_due_at: dueAt || undefined,
-          ...extra,
-        }),
+        body: JSON.stringify(body),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Request failed');
       onRefresh?.(data.pitch);
       setNote('');
     } catch (e) {
-      alert(e.message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const recordDecision = async (decision) => {
-    const rationale = note.trim() || window.prompt('Decision rationale (required):');
-    if (!rationale) return;
-    setBusy(true);
-    try {
-      const res = await fetch(`/api/org/pitches/${pitch.id}/decision`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ decision, decision_rationale: rationale }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      onRefresh?.(data.pitch);
-    } catch (e) {
-      alert(e.message);
+      setError(e.message);
     } finally {
       setBusy(false);
     }
@@ -70,120 +50,40 @@ export function PitchStageActions({ pitch, onRefresh }) {
 
   const actions = [];
 
-  if (pitch.stage === 'idea' && ['portfolio_manager', 'executive'].includes(viewer.role)) {
+  if (pitch.status === 'active' && isManager && pitch.stage === 'idea') {
     actions.push(
       <button
-        key="approve"
-        type="button"
-        className="op-btn"
-        disabled={busy}
-        onClick={() => transition('research_approved', { research_due_at: dueAt || undefined })}
-      >
-        Approve research
-      </button>,
-      <button
-        key="reject"
+        key="reject-idea"
         type="button"
         className="op-btn op-btn--ghost"
-        disabled={busy}
-        onClick={() => transition('rejected')}
+        disabled={busy || !note.trim()}
+        onClick={() => post(`/api/org/pitches/${pitch.id}/stage`, { to_stage: 'rejected', note })}
       >
         Reject idea
       </button>,
     );
-  }
-
-  if (pitch.stage === 'research_in_progress' && pitch.analyst_member_id === viewer.id) {
+  } else if (pitch.status === 'active' && isManager && !isLivePortfolio) {
     actions.push(
       <button
-        key="pm"
-        type="button"
-        className="op-btn"
-        disabled={busy || pitch.deliverable_count < 1}
-        onClick={() => transition('pm_review')}
-      >
-        Submit for PM review
-      </button>,
-    );
-  }
-
-  if (pitch.stage === 'pm_review' && ['portfolio_manager', 'executive'].includes(viewer.role)) {
-    actions.push(
-      <button
-        key="rev"
+        key="reject-pitch"
         type="button"
         className="op-btn op-btn--ghost"
-        disabled={busy}
-        onClick={() => transition('research_in_progress')}
+        disabled={busy || !note.trim()}
+        onClick={() => post(`/api/org/pitches/${pitch.id}/advance`, { reject: true, note })}
       >
-        Request revisions
-      </button>,
-      <button
-        key="sched"
-        type="button"
-        className="op-btn"
-        disabled={busy || !meetingAt}
-        onClick={() => transition('committee_scheduled')}
-      >
-        Schedule committee
+        Reject pitch
       </button>,
     );
   }
 
-  if (pitch.stage === 'committee_scheduled' && viewer.role === 'executive') {
-    actions.push(
-      <button
-        key="vote"
-        type="button"
-        className="op-btn"
-        disabled={busy}
-        onClick={() => transition('committee_vote')}
-      >
-        Open voting
-      </button>,
-    );
-  }
-
-  if (pitch.stage === 'committee_vote' && viewer.role === 'executive') {
-    actions.push(
-      <button
-        key="acc"
-        type="button"
-        className="op-btn"
-        disabled={busy}
-        onClick={() => recordDecision('accepted')}
-      >
-        Accept
-      </button>,
-      <button
-        key="rej"
-        type="button"
-        className="op-btn op-btn--ghost"
-        disabled={busy}
-        onClick={() => recordDecision('rejected')}
-      >
-        Reject
-      </button>,
-      <button
-        key="watch"
-        type="button"
-        className="op-btn op-btn--ghost"
-        disabled={busy}
-        onClick={() => recordDecision('watchlist')}
-      >
-        Watchlist
-      </button>,
-    );
-  }
-
-  if (isLivePortfolio && ['portfolio_manager', 'executive'].includes(viewer.role)) {
+  if (isLivePortfolio && isManager) {
     actions.push(
       <button
         key="exit"
         type="button"
         className="op-btn op-btn--ghost"
         disabled={busy || !note.trim()}
-        onClick={() => transition('exited', { note })}
+        onClick={() => post(`/api/org/pitches/${pitch.id}/stage`, { to_stage: 'exited', note })}
         title="Requires a post-mortem note"
       >
         Mark exited (post-mortem)
@@ -196,38 +96,20 @@ export function PitchStageActions({ pitch, onRefresh }) {
   return (
     <div className="op-stage-actions">
       <h3>Actions</h3>
-      {(pitch.stage === 'pm_review' ||
-        pitch.stage === 'idea' ||
-        pitch.stage === 'in_portfolio') && (
-        <>
-          <input
-            className="op-search"
-            placeholder="Note / rationale"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            style={{ marginBottom: 8, width: '100%' }}
-          />
-          {pitch.stage === 'idea' && (
-            <DateSelector
-              mode="single"
-              value={dueAt ? dueAt.slice(0, 10) : ''}
-              onChange={(iso) => setDueAt(iso ? `${iso}T23:59:00Z` : '')}
-              placeholder="Research due date"
-              style={{ marginBottom: 8 }}
-            />
-          )}
-        </>
-      )}
-      {pitch.stage === 'pm_review' && (
-        <input
-          type="datetime-local"
-          className="op-search"
-          value={meetingAt}
-          onChange={(e) => setMeetingAt(e.target.value)}
-          style={{ marginBottom: 8, width: '100%' }}
-        />
-      )}
+      <input
+        className="op-search"
+        aria-label="Rationale"
+        placeholder="Rationale (required)"
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        style={{ marginBottom: 8, width: '100%' }}
+      />
       <div className="op-action-row">{actions}</div>
+      {error && (
+        <p className="op-error" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

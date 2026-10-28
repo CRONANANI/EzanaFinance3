@@ -6,6 +6,7 @@ import { useOrg } from '@/contexts/OrgContext';
 import { PitchSupportingData } from './PitchSupportingData';
 import { PitchStageActions } from './PitchStageActions';
 import { PitchGatePanel } from './PitchGatePanel';
+import { IcMeetingControl } from './IcMeetingControl';
 import {
   PitchDeliverablesPanel,
   PitchDiscussionPanel,
@@ -49,13 +50,24 @@ export function PitchDetailClient({ pitchId, inModal = false }) {
   const [pitch, setPitch] = useState(null);
   const [tab, setTab] = useState('thesis');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [hindsightError, setHindsightError] = useState('');
 
   const load = useCallback(() => {
     return fetch(`/api/org/pitches/${pitchId}`)
-      .then((r) => r.json())
-      .then((data) => {
+      .then(async (r) => {
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          setLoadError(data.error || 'Could not load this pitch.');
+          return null;
+        }
+        setLoadError('');
         setPitch(data.pitch || null);
         return data.pitch;
+      })
+      .catch(() => {
+        setLoadError('Could not load this pitch.');
+        return null;
       });
   }, [pitchId]);
 
@@ -73,10 +85,27 @@ export function PitchDetailClient({ pitchId, inModal = false }) {
   const onRefresh = (p) => setPitch(p || pitch);
 
   if (loading) return <div className="op-loading">Loading pitch…</div>;
+  if (loadError)
+    return (
+      <div className="op-empty" role="alert">
+        <p>{loadError}</p>
+        <button
+          type="button"
+          className="op-btn op-btn--ghost"
+          onClick={() => {
+            setLoading(true);
+            load().finally(() => setLoading(false));
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    );
   if (!pitch) return <div className="op-empty">Pitch not found.</div>;
 
   const visibleTabs = TABS.filter((t) => {
-    if (t.id === 'voting') return pitch.stage === 'ic_vote' || pitch.votes?.length > 0;
+    if (t.id === 'voting')
+      return ['pitch_scheduled', 'ic_vote'].includes(pitch.stage) || pitch.votes?.length > 0;
     if (t.id === 'decision')
       return pitch.status !== 'active' || pitch.stage === 'approved' || pitch.stage === 'rejected';
     return true;
@@ -211,7 +240,12 @@ export function PitchDetailClient({ pitchId, inModal = false }) {
 
           {tab === 'discussion' && <PitchDiscussionPanel pitch={pitch} onRefresh={onRefresh} />}
 
-          {tab === 'voting' && <PitchVotingPanel pitch={pitch} onRefresh={onRefresh} />}
+          {tab === 'voting' && (
+            <>
+              <IcMeetingControl pitch={pitch} viewer={viewer} onRefresh={() => load()} />
+              <PitchVotingPanel pitch={pitch} onRefresh={onRefresh} />
+            </>
+          )}
 
           {tab === 'decision' && (
             <>
@@ -234,15 +268,32 @@ export function PitchDetailClient({ pitchId, inModal = false }) {
                           : `${pitch.hindsight.alpha_pct >= 0 ? '+' : ''}${pitch.hindsight.alpha_pct}%`}
                       </p>
                       {!pitch.is_archived && (
-                        <button
-                          type="button"
-                          className="op-btn op-btn--ghost"
-                          onClick={() =>
-                            fetch(`/api/org/archive/hindsight/${pitch.id}`).then(() => load())
-                          }
-                        >
-                          Refresh hindsight
-                        </button>
+                        <>
+                          <button
+                            type="button"
+                            className="op-btn op-btn--ghost"
+                            onClick={async () => {
+                              setHindsightError('');
+                              try {
+                                const r = await fetch(`/api/org/archive/hindsight/${pitch.id}`);
+                                if (!r.ok) {
+                                  const d = await r.json().catch(() => ({}));
+                                  throw new Error(d.error || 'Could not refresh hindsight.');
+                                }
+                                await load();
+                              } catch (e) {
+                                setHindsightError(e.message);
+                              }
+                            }}
+                          >
+                            Refresh hindsight
+                          </button>
+                          {hindsightError && (
+                            <p className="op-error" role="alert">
+                              {hindsightError}
+                            </p>
+                          )}
+                        </>
                       )}
                     </>
                   )}

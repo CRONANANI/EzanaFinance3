@@ -24,9 +24,7 @@ export const GET = withApiGuard(
       icEligibleVoters(supabase, orgId),
     ]);
     // Agenda auto-assembles from Pitch-Scheduled + open-vote pitches.
-    const agenda = board.active.filter((p) =>
-      ['committee_scheduled', 'committee_vote'].includes(p.stage),
-    );
+    const agenda = board.active.filter((p) => ['pitch_scheduled', 'ic_vote'].includes(p.stage));
     return NextResponse.json({ meetings, agenda, eligible_voters: eligible.length });
   },
   { requireAuth: true },

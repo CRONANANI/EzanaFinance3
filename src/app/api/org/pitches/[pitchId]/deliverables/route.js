@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { getAdminClient } from '@/lib/supabase';
 import {
   getPitchContext,
   fetchPitchRaw,
   fetchPitchDetail,
   addDeliverableDb,
-  MANAGER_ROLES,
 } from '@/lib/org-pitch-api-helpers';
 
 export const dynamic = 'force-dynamic';
@@ -42,10 +40,6 @@ export const POST = withApiGuard(
       return NextResponse.json({ error: 'kind and title required' }, { status: 400 });
     }
 
-    // The first deliverable auto-advances research_approved -> research_in_progress.
-    // Stage is DB-guarded (ORG-8), so that one write runs on the service-role
-    // client, and only for the pitch's author or a manager.
-    const mayAdvance = pitch.analyst_member_id === viewer.id || MANAGER_ROLES.includes(viewer.role);
     const result = await addDeliverableDb(supabase, orgId, pitch, {
       kind: body.kind,
       title: body.title,
@@ -54,7 +48,6 @@ export const POST = withApiGuard(
       file_size: body.file_size,
       uploaded_by_member_id: viewer.id,
       pinned_attachment_ref: body.pinned_attachment_ref,
-      workflowClient: mayAdvance ? getAdminClient() : null,
     });
     if (result.error) return NextResponse.json({ error: result.error }, { status: 400 });
 

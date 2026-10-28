@@ -66,7 +66,7 @@ export const STAGE_CONFIG = {
   ic_vote: {
     label: 'IC Vote',
     ownerRoles: ['president'],
-    gates: ['quorum_met', 'vote_closed', 'conflicts_recused'],
+    gates: ['quorum_met', 'vote_closed', 'vote_passed', 'conflicts_recused'],
     advancedBy: 'auto',
     overrideRoles: [], // NEVER overridable — the vote is the vote.
     next: 'approved',

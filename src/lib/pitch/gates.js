@@ -134,7 +134,8 @@ const GATE_FNS = {
   },
 
   senior_analyst_signoffs: (pitch, ctx) => {
-    const need = ctx.deskConfig?.min_senior_signoffs ?? 3;
+    const need =
+      ctx.deskConfig?.min_senior_signoffs ?? Math.max(1, Math.min(3, ctx.eligibleSeniorCount ?? 3));
     const approvals = (ctx.signoffs || []).filter((s) => s.decision === 'approve');
     const inDesk = approvals.filter((s) => s.in_desk).length;
     const total = approvals.length;
@@ -296,6 +297,12 @@ const GATE_FNS = {
       'hard',
       { action: { tab: 'voting' } },
     );
+  },
+  vote_passed: (pitch, ctx) => {
+    const ok = !!ctx.votePassed;
+    const status = ok ? 'pass' : ctx.voteClosed ? 'fail' : 'pending';
+    const detail = ok ? 'Carried' : ctx.voteClosed ? 'Did not carry' : 'Awaiting result';
+    return g('vote_passed', 'Vote carried', status, detail, 'hard', { action: { tab: 'voting' } });
   },
   conflicts_recused: (pitch, ctx) => {
     const unrecused = ctx.unrecusedConflicts ?? 0;

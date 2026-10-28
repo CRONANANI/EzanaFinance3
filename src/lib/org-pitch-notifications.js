@@ -6,12 +6,12 @@
  */
 
 const STAGE_NOTIFY = {
-  research_approved: { title: 'Research approved', audience: 'analyst' },
-  research_in_progress: { title: 'Research started', audience: 'pm' },
-  pm_review: { title: 'Ready for PM review', audience: 'pm' },
-  committee_scheduled: { title: 'Committee meeting scheduled', audience: 'voters' },
-  committee_vote: { title: 'Committee vote open', audience: 'voters' },
-  decision: { title: 'Pitch decided', audience: 'all' },
+  screening: { title: 'Moved to screening', audience: 'analyst' },
+  cross_desk_review: { title: 'Cross-desk review', audience: 'pm' },
+  pitch_scheduled: { title: 'Pitch scheduled for the IC', audience: 'voters' },
+  ic_vote: { title: 'IC vote open', audience: 'voters' },
+  approved: { title: 'Pitch approved', audience: 'analyst' },
+  rejected: { title: 'Pitch rejected', audience: 'analyst' },
 };
 
 async function memberLabel(supabase, orgId, memberId) {
@@ -43,17 +43,16 @@ async function notifyMember(supabase, orgId, recipientId, subject, body) {
   }
 }
 
+// Every executive and every portfolio manager may vote on the IC (see the vote
+// route), so all of them are notified.
 async function voterMemberIds(supabase, orgId) {
   const { data } = await supabase
     .from('org_members')
-    .select('id, role, sub_role')
+    .select('id, role')
     .eq('org_id', orgId)
     .eq('is_active', true);
   return (data || [])
-    .filter(
-      (m) =>
-        m.role === 'executive' || (m.role === 'portfolio_manager' && m.sub_role === 'Senior PM'),
-    )
+    .filter((m) => m.role === 'executive' || m.role === 'portfolio_manager')
     .map((m) => m.id);
 }
 
@@ -69,53 +68,57 @@ export async function notifyStageChange(supabase, orgId, pitchId, toStage, actor
   if (!pitch) return;
 
   const cfg = STAGE_NOTIFY[toStage];
+  if (!cfg) return;
   const ticker = pitch.ticker;
   const actor = await memberLabel(supabase, orgId, actorId);
 
-  if (toStage === 'research_approved') {
+  if (toStage === 'screening') {
     await notifyMember(
       supabase,
       orgId,
       pitch.analyst_member_id,
-      `${ticker} pitch approved for research`,
-      `${actor} approved your ${ticker} pitch for research.`,
+      `${ticker} pitch moved to screening`,
+      `${actor} moved your ${ticker} pitch to screening.`,
     );
-  } else if (toStage === 'pm_review') {
-    const { data: pm } = await supabase
+  } else if (toStage === 'cross_desk_review') {
+    const { data: pms } = await supabase
       .from('org_members')
       .select('id')
       .eq('org_id', orgId)
       .eq('role', 'portfolio_manager')
       .eq('team_id', pitch.team_id)
       .eq('is_active', true)
-      .maybeSingle();
-    if (pm?.id) {
-      const analyst = await memberLabel(supabase, orgId, pitch.analyst_member_id);
+      .limit(5);
+    const analyst = await memberLabel(supabase, orgId, pitch.analyst_member_id);
+    for (const pm of pms || []) {
       await notifyMember(
         supabase,
         orgId,
         pm.id,
-        `${ticker} pitch submitted for PM review`,
-        `${analyst} submitted ${ticker} for your review.`,
+        `${ticker} is in cross-desk review`,
+        `${analyst}'s ${ticker} pitch has reached cross-desk review.`,
       );
     }
-  } else if (toStage === 'committee_scheduled' || toStage === 'committee_vote') {
+  } else if (toStage === 'pitch_scheduled' || toStage === 'ic_vote') {
+    const subject =
+      toStage === 'ic_vote' ? `${ticker}: IC vote open` : `${ticker}: pitch scheduled for the IC`;
     for (const vid of await voterMemberIds(supabase, orgId)) {
       await notifyMember(
         supabase,
         orgId,
         vid,
-        `${ticker} — ${cfg?.title || 'Committee update'}`,
+        subject,
         `${ticker} pitch is at stage: ${toStage.replace(/_/g, ' ')}.`,
       );
     }
-  } else if (toStage === 'decision' && pitch.decision) {
+  } else if (toStage === 'approved' || toStage === 'rejected') {
+    const decision = pitch.decision || toStage;
     await notifyMember(
       supabase,
       orgId,
       pitch.analyst_member_id,
-      `${ticker} pitch DECIDED: ${pitch.decision.toUpperCase()}`,
-      `Committee decision on ${ticker}: ${pitch.decision}. ${pitch.decision_rationale || ''}`,
+      `${ticker} pitch ${toStage}`,
+      `Decision on ${ticker}: ${decision}. ${pitch.decision_rationale || ''}`.trim(),
     );
   }
 }

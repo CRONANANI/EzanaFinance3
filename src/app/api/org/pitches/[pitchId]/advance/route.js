@@ -6,6 +6,7 @@ import { STAGE_CONFIG, canAdvanceStage, canOverrideStage } from '@/lib/pitch/sta
 import { evaluateGates, allGatesPass } from '@/lib/pitch/gates';
 import { buildGateContext } from '@/lib/pitch/gate-context';
 import { applyTransitionSideEffects } from '@/lib/pitch/side-effects';
+import { notifyStageChange } from '@/lib/org-pitch-notifications';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -44,6 +45,7 @@ export const POST = withApiGuard(
       if (!canAdvanceStage(fromStage, actor)) {
         return NextResponse.json({ error: 'Your role cannot move this pitch.' }, { status: 403 });
       }
+      const nowIso = new Date().toISOString();
       await supabase.from('org_pitch_stage_transition').insert({
         pitch_id: pitch.id,
         org_id: orgId,
@@ -54,15 +56,20 @@ export const POST = withApiGuard(
       });
       // canAdvanceStage above authorizes this (tier-based, so the actor may not
       // be a manager); workflow columns are DB-guarded (ORG-8) -> service role.
-      await getAdminClient()
+      const { error: rejErr } = await getAdminClient()
         .from('org_pitches')
         .update({
           stage: 'rejected',
+          status: 'rejected',
           decision: 'rejected',
-          stage_entered_at: new Date().toISOString(),
+          decision_at: nowIso,
+          stage_entered_at: nowIso,
+          archived_at: nowIso,
+          archive_reason: (body.note || '').trim() || null,
         })
         .eq('org_id', orgId)
         .eq('id', pitch.id);
+      if (rejErr) return NextResponse.json({ error: rejErr.message }, { status: 500 });
       const detail = await fetchPitchDetail(supabase, orgId, pitch.id);
       return NextResponse.json({ pitch: detail });
     }
@@ -122,7 +129,11 @@ export const POST = withApiGuard(
 
     // Side effects on transition (spec §3.3, minimal set).
     const updates = { stage: toStage, stage_entered_at: new Date().toISOString() };
-    if (toStage === 'approved') updates.decision = 'accepted';
+    if (toStage === 'approved') {
+      updates.decision = 'accepted';
+      updates.decision_at = new Date().toISOString();
+    }
+    if (toStage === 'in_portfolio') updates.status = 'accepted';
 
     // Authorized by canAdvanceStage + the recomputed gates above; the actor may
     // hold an advancing tier without a manager role, and workflow columns are
@@ -137,6 +148,13 @@ export const POST = withApiGuard(
 
     // Side effects (spec §3.3) — best-effort, never rolls back the transition.
     await applyTransitionSideEffects(admin, orgId, pitch, fromStage, toStage, actor);
+
+    // Notify the stage's audience (best-effort; never fails the request).
+    try {
+      await notifyStageChange(admin, orgId, pitch.id, toStage, viewer.id);
+    } catch {
+      /* notifications are best-effort */
+    }
 
     const detail = await fetchPitchDetail(supabase, orgId, pitch.id);
     return NextResponse.json({ pitch: detail, from: fromStage, to: toStage, override });

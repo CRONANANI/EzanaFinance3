@@ -34,16 +34,20 @@ export const GET = withApiGuard(
       .eq('pitch_id', pitch.id)
       .order('created_at');
 
-    // Blind ballot: if a blind IC meeting is attached and voting is still open,
-    // hide individual choices/rationale until the vote closes.
+    // Blind ballot + quorum both derive from the attached IC meeting.
     let blind = false;
-    if (pitch.ic_meeting_id && pitch.stage === 'committee_vote') {
+    let quorumPct = 50;
+    if (pitch.ic_meeting_id) {
       const { data: mtg } = await supabase
         .from('org_ic_meetings')
-        .select('ballot_type, status')
+        .select('ballot_type, status, quorum_pct')
         .eq('id', pitch.ic_meeting_id)
+        .eq('org_id', orgId)
         .maybeSingle();
-      blind = mtg?.ballot_type === 'blind' && mtg?.status !== 'closed';
+      if (mtg) {
+        blind = mtg.ballot_type === 'blind' && mtg.status !== 'closed' && pitch.stage === 'ic_vote';
+        quorumPct = mtg.quorum_pct ?? 50;
+      }
     }
 
     const votes = (rawVotes || []).map((v) => ({
@@ -62,7 +66,7 @@ export const GET = withApiGuard(
     return NextResponse.json({
       votes,
       blind,
-      quorum: computeQuorum(eligible.length, cast, 50),
+      quorum: computeQuorum(eligible.length, cast, quorumPct),
     });
   },
   { requireAuth: true },
@@ -81,8 +85,19 @@ export const POST = withApiGuard(
 
     const pitch = await fetchPitchRaw(supabase, orgId, params.pitchId);
     if (!pitch) return NextResponse.json({ error: 'Pitch not found' }, { status: 404 });
-    if (pitch.stage !== 'committee_vote') {
-      return NextResponse.json({ error: 'Voting not open' }, { status: 400 });
+    if (pitch.stage !== 'ic_vote') {
+      return NextResponse.json({ error: 'Voting is not open' }, { status: 400 });
+    }
+    if (pitch.ic_meeting_id) {
+      const { data: mtg } = await supabase
+        .from('org_ic_meetings')
+        .select('status')
+        .eq('id', pitch.ic_meeting_id)
+        .eq('org_id', orgId)
+        .maybeSingle();
+      if (mtg?.status === 'closed') {
+        return NextResponse.json({ error: 'Voting is closed' }, { status: 400 });
+      }
     }
 
     const body = await request.json();

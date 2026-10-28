@@ -18,17 +18,6 @@ import {
 // consumers keep importing them from '@/lib/org-pitches'.
 export { PITCH_PERMISSIONS, hasPitchPermission } from '@/lib/org-pitch-permissions';
 
-// Kanban column definitions (moved out of the mock module — a live constant the
-// board uses to bucket the 7 active stages into visual columns).
-export const PIPELINE_COLUMNS = [
-  { id: 'ideas', label: 'Ideas', stages: ['idea'] },
-  { id: 'research', label: 'Research', stages: ['research_approved', 'research_in_progress'] },
-  { id: 'pm_review', label: 'PM Review', stages: ['pm_review'] },
-  { id: 'committee', label: 'Committee', stages: ['committee_scheduled'] },
-  { id: 'voting', label: 'Voting', stages: ['committee_vote'] },
-  { id: 'decided', label: 'Decided', stages: ['decision'] },
-];
-
 /** Build the lightweight viewer used for archive scoping from an org member. */
 export function viewerFromMember(member) {
   if (!member) return null;

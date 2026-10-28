@@ -258,6 +258,10 @@
       "schedule": "14 6 * * *"
     },
     {
+      "path": "/api/cron/org-pitch-hindsight",
+      "schedule": "37 6 * * 1-5"
+    },
+    {
       "path": "/api/cron/index-echo-articles?limit=500",
       "schedule": "11 5 * * *"
     },

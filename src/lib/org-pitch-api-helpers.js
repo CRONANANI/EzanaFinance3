@@ -208,16 +208,15 @@ export async function fetchPitchDetail(supabase, orgId, pitchId) {
 }
 
 export function buildPitchPermissions(pitch) {
+  const active = pitch.status === 'active';
   return {
-    can_edit_thesis:
-      pitch.status === 'active' &&
-      ['idea', 'research_approved', 'research_in_progress'].includes(pitch.stage),
+    can_edit_thesis: active && ['idea', 'screening', 'deep_dive'].includes(pitch.stage),
     can_upload_deliverable:
-      pitch.status === 'active' &&
-      ['research_in_progress', 'research_approved', 'pm_review'].includes(pitch.stage),
-    can_discuss: pitch.status === 'active',
-    can_vote: pitch.stage === 'committee_vote',
-    can_decide: pitch.stage === 'committee_vote' || pitch.stage === 'decision',
+      active &&
+      ['screening', 'deep_dive', 'cross_desk_review', 'pitch_scheduled'].includes(pitch.stage),
+    can_discuss: active,
+    can_vote: active && pitch.stage === 'ic_vote',
+    can_decide: active && pitch.stage === 'ic_vote',
   };
 }
 
@@ -293,15 +292,15 @@ export async function applyStageTransitionDb(supabase, orgId, pitch, toStage, ct
   const from = pitch.stage;
   const patch = { stage: toStage, stage_entered_at: now };
 
-  if (toStage === 'research_approved') {
+  if (toStage === 'screening') {
     patch.approving_pm_member_id = ctx.actorId;
     if (ctx.research_due_at) patch.research_due_at = ctx.research_due_at;
   }
-  if (toStage === 'committee_scheduled' && ctx.committee_meeting_at) {
+  if (toStage === 'pitch_scheduled' && ctx.committee_meeting_at) {
     patch.committee_meeting_at = ctx.committee_meeting_at;
     patch.ic_meeting_at = ctx.committee_meeting_at;
   }
-  if (toStage === 'committee_vote') {
+  if (toStage === 'ic_vote') {
     patch.vote_yes_count = 0;
     patch.vote_no_count = 0;
     patch.vote_abstain_count = 0;
@@ -318,13 +317,13 @@ export async function applyStageTransitionDb(supabase, orgId, pitch, toStage, ct
   }
 
   if (ctx.terminalStatus) {
-    // rejected from idea → decision stage, archived.
+    // rejected → terminal 'rejected' stage, archived.
     patch.status = ctx.terminalStatus;
     patch.decision = ctx.terminalStatus === 'rejected' ? 'rejected' : ctx.terminalStatus;
     patch.decision_at = now;
     patch.decision_rationale = ctx.note || '';
     patch.archive_reason = ctx.note || '';
-    patch.stage = 'decision';
+    patch.stage = 'rejected';
     patch.archived_at = now;
   }
 
@@ -351,12 +350,14 @@ export async function recordDecisionDb(supabase, orgId, pitch, payload) {
   if (!status) return { error: 'Invalid decision' };
   const now = new Date().toISOString();
 
-  // Approved pitches roll forward into the portfolio lifecycle; others archive.
-  const nextStage = status === 'accepted' ? 'in_portfolio' : 'decision';
+  // An accepted decision lands on 'approved' and stays active: the trading desk
+  // books the position and the gate engine moves it to in_portfolio. Anything
+  // else is terminal and archives.
+  const nextStage = status === 'accepted' ? 'approved' : 'rejected';
 
   const patch = {
     stage: nextStage,
-    status,
+    status: status === 'accepted' ? 'active' : status,
     decision: payload.decision,
     decision_at: now,
     decision_rationale: payload.decision_rationale || '',
@@ -406,15 +407,6 @@ export async function addDeliverableDb(supabase, orgId, pitch, payload) {
     .single();
   if (error) return { error: error.message };
 
-  // Auto-advance research_approved → research_in_progress on first deliverable.
-  // The stage column is DB-guarded (ORG-8): the route passes a service-role
-  // `workflowClient` only after authorizing the uploader (author or manager).
-  if (pitch.stage === 'research_approved' && payload.workflowClient) {
-    await applyStageTransitionDb(payload.workflowClient, orgId, pitch, 'research_in_progress', {
-      actorId: payload.uploaded_by_member_id,
-      note: 'First deliverable uploaded',
-    });
-  }
   return { deliverable: data };
 }
 
@@ -469,7 +461,7 @@ export async function recalcVoteTally(supabase, orgId, pitchId) {
     .select('vote, recused')
     .eq('pitch_id', pitchId);
   const active = (data || []).filter((v) => !v.recused);
-  await supabase
+  const { error } = await supabase
     .from('org_pitches')
     .update({
       vote_yes_count: active.filter((v) => v.vote === 'yes').length,
@@ -479,6 +471,7 @@ export async function recalcVoteTally(supabase, orgId, pitchId) {
     })
     .eq('org_id', orgId)
     .eq('id', pitchId);
+  if (error) console.error('[pitch-vote-tally]', error.message);
 }
 
 // ── Board assembly ──────────────────────────────────────────────────────────
@@ -556,12 +549,15 @@ export async function createIcMeeting(supabase, orgId, viewer, payload) {
 // Stage → design dot color token (light + dark safe theme tokens).
 const STAGE_TOKENS = {
   idea: 'var(--info)',
-  research_approved: 'var(--cyan)',
-  research_in_progress: 'var(--purple)',
-  pm_review: 'var(--warning)',
-  committee_scheduled: 'var(--gold)',
-  committee_vote: 'var(--pink)',
-  decision: 'var(--emerald)',
+  screening: 'var(--cyan)',
+  deep_dive: 'var(--purple)',
+  cross_desk_review: 'var(--warning)',
+  pitch_scheduled: 'var(--gold)',
+  ic_vote: 'var(--amber)',
+  approved: 'var(--emerald)',
+  in_portfolio: 'var(--positive)',
+  exited: 'var(--text-muted)',
+  rejected: 'var(--negative)',
 };
 
 /** Batch-fetch current prices from FMP; degrade gracefully (stale/null). */
@@ -629,18 +625,18 @@ export async function loadPitchBoard(supabase, orgId, { view = 'kanban', teamId 
 
   // ── IC vote: agenda auto-assembles from Pitch-Scheduled + IC-Vote ────
   if (view === 'ic') {
-    const agendaPitches = active.filter((p) =>
-      ['committee_scheduled', 'committee_vote'].includes(p.stage),
-    );
+    const agendaPitches = active.filter((p) => ['pitch_scheduled', 'ic_vote'].includes(p.stage));
     const { decorated } = await attachQuotes(agendaPitches);
     const eligible = await icEligibleVoters(supabase, orgId);
     const meetings = await listIcMeetings(supabase, orgId);
+    const meetingById = new Map(meetings.map((m) => [m.id, m]));
     const agenda = decorated.map((p) => {
       const cast = (p.vote_yes_count || 0) + (p.vote_no_count || 0) + (p.vote_abstain_count || 0);
+      const quorumPct = (p.ic_meeting_id && meetingById.get(p.ic_meeting_id)?.quorum_pct) ?? 50;
       return {
         ...p,
-        quorum: computeQuorum(eligible.length, cast, 50),
-        voting_open: p.stage === 'committee_vote',
+        quorum: computeQuorum(eligible.length, cast, quorumPct),
+        voting_open: p.stage === 'ic_vote',
       };
     });
     return {

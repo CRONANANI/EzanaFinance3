@@ -23,8 +23,8 @@ export const POST = withApiGuard(
 
     const pitch = await fetchPitchRaw(supabase, orgId, params.pitchId);
     if (!pitch) return NextResponse.json({ error: 'Pitch not found' }, { status: 404 });
-    if (!['committee_vote', 'decision'].includes(pitch.stage)) {
-      return NextResponse.json({ error: 'Pitch not ready for final decision' }, { status: 400 });
+    if (pitch.stage !== 'ic_vote') {
+      return NextResponse.json({ error: 'Pitch is not at the IC vote' }, { status: 400 });
     }
 
     const body = await request.json();

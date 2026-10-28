@@ -125,7 +125,7 @@ export function PitchVotingPanel({ pitch, onRefresh }) {
           <p>{v.rationale}</p>
         </div>
       ))}
-      {pitch.stage === 'committee_vote' && !myVote && !pitch.is_archived && (
+      {pitch.stage === 'ic_vote' && !myVote && !pitch.is_archived && (
         <div className="op-vote-form">
           <select value={vote} onChange={(e) => setVote(e.target.value)}>
             <option value="yes">Yes</option>

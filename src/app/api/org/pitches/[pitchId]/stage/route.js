@@ -25,6 +25,15 @@ export const POST = withApiGuard(
     const toStage = body.to_stage;
     if (!toStage) return NextResponse.json({ error: 'to_stage required' }, { status: 400 });
 
+    // validateTransition returns ok for 'rejected' before any role check, so gate
+    // rejection here: only a PM or executive may reject a pitch.
+    if (toStage === 'rejected' && !['portfolio_manager', 'executive'].includes(viewer.role)) {
+      return NextResponse.json(
+        { error: 'Only a PM or executive can reject a pitch' },
+        { status: 403 },
+      );
+    }
+
     // Gate context: deliverable count + kinds for the model+memo gate.
     const { data: dels } = await supabase
       .from('org_pitch_deliverables')
@@ -47,7 +56,7 @@ export const POST = withApiGuard(
       return NextResponse.json({ error: validation.error, gate: validation.gate }, { status: 400 });
     }
 
-    const targetStage = toStage === 'rejected' ? 'decision' : toStage;
+    const targetStage = toStage;
     // validateTransition above is the authorization (role + state machine). Analysts
     // may move their own pitch, but org_pitches' workflow columns are guarded in
     // the DB (ORG-8), so the validated write runs on the service-role client,
