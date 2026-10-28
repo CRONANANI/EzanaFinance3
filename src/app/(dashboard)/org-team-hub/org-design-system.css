@@ -178,3 +178,11 @@
   font-variant-numeric: tabular-nums;
   font-weight: 600;
 }
+
+/* Inline failure message for an org action. Pair with role="alert". */
+.org-inline-error {
+  margin: 0.5rem 0 0;
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  color: var(--negative);
+}

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { AlertTriangle, Check, CheckCheck, ShieldAlert, X } from 'lucide-react';
 import { actionLabel, reasonLabel } from '@/lib/org-flag-taxonomy';
+import { orgRequest } from '@/lib/org-request';
 
 function nameFromRow(row) {
   return row?.display_name || 'Member';
@@ -87,16 +88,18 @@ export function FlagDetailPanel({ flagId, currentMemberId, onClose, onChange }) 
 
   const sendReply = async () => {
     if (!reply.trim()) return;
+    setError(null);
     setSubmitting(true);
     try {
-      await fetch(`/api/org-trading/flags/${flagId}/messages`, {
+      await orgRequest(`/api/org-trading/flags/${flagId}/messages`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body: reply }),
+        json: { body: reply },
       });
       setReply('');
       load();
       onChange?.();
+    } catch (e) {
+      setError(e.message);
     } finally {
       setSubmitting(false);
     }
@@ -182,8 +185,7 @@ export function FlagDetailPanel({ flagId, currentMemberId, onClose, onChange }) 
           {flag.messages.map((m) => (
             <div key={m.id} className="ot-flag-message">
               <div className="ot-flag-message-author">
-                {m.author?.display_name || 'Member'} ·{' '}
-                {new Date(m.created_at).toLocaleString()}
+                {m.author?.display_name || 'Member'} · {new Date(m.created_at).toLocaleString()}
               </div>
               <p className="ot-flag-message-body">{m.body}</p>
             </div>
@@ -192,7 +194,7 @@ export function FlagDetailPanel({ flagId, currentMemberId, onClose, onChange }) 
       )}
 
       {error && (
-        <div className="ot-banner red" style={{ marginTop: '0.75rem' }}>
+        <div className="ot-banner red" role="alert" style={{ marginTop: '0.75rem' }}>
           {error}
         </div>
       )}

@@ -1,5 +1,6 @@
 'use client';
 
+import '../org-team-hub/org-design-system.css';
 import { OrgHubNav } from '@/components/org/OrgHubNav';
 
 /**

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { orgRequest } from '@/lib/org-request';
 import './academic.css';
 
 const WORK_LABEL = {
@@ -17,8 +18,15 @@ export function GradeBook() {
   const [workTypes, setWorkTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [form, setForm] = useState({ student_id: '', work_type: 'pitch', score: '', max_score: '100', feedback: '' });
+  const [form, setForm] = useState({
+    student_id: '',
+    work_type: 'pitch',
+    score: '',
+    max_score: '100',
+    feedback: '',
+  });
   const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState('');
 
   const load = useCallback(async () => {
     try {
@@ -50,22 +58,23 @@ export function GradeBook() {
   const submit = async () => {
     if (!form.student_id || form.score === '' || busy) return;
     setBusy(true);
+    setActionError('');
     try {
-      const res = await fetch('/api/org/grades', {
+      await orgRequest('/api/org/grades', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        json: {
           student_id: form.student_id,
           work_type: form.work_type,
           score: Number(form.score),
           max_score: Number(form.max_score) || 100,
           feedback: form.feedback || null,
-        }),
+        },
       });
-      if (res.ok) {
-        setForm({ student_id: '', work_type: 'pitch', score: '', max_score: '100', feedback: '' });
-        await load();
-      }
+      // Only reset the form once the grade actually saved.
+      setForm({ student_id: '', work_type: 'pitch', score: '', max_score: '100', feedback: '' });
+      await load();
+    } catch (e) {
+      setActionError(e.message);
     } finally {
       setBusy(false);
     }
@@ -80,7 +89,9 @@ export function GradeBook() {
         <div>
           <p className="ac3-eyebrow">Academic</p>
           <h1 className="ac3-title">Grade Book</h1>
-          <p className="ac3-sub">Score analyst work and leave feedback. Students see only their own.</p>
+          <p className="ac3-sub">
+            Score analyst work and leave feedback. Students see only their own.
+          </p>
         </div>
       </div>
 
@@ -135,8 +146,18 @@ export function GradeBook() {
           onChange={(e) => setForm((f) => ({ ...f, feedback: e.target.value }))}
           rows={2}
         />
+        {actionError && (
+          <p className="org-inline-error" role="alert" style={{ marginTop: '0.6rem' }}>
+            {actionError}
+          </p>
+        )}
         <div style={{ marginTop: '0.7rem', textAlign: 'right' }}>
-          <button type="button" className="ac3-btn ac3-btn--primary" onClick={submit} disabled={busy}>
+          <button
+            type="button"
+            className="ac3-btn ac3-btn--primary"
+            onClick={submit}
+            disabled={busy}
+          >
             Save grade
           </button>
         </div>
@@ -155,7 +176,9 @@ export function GradeBook() {
           <tbody>
             {grades.length === 0 ? (
               <tr>
-                <td colSpan={4} className="ac3-meta">No grades yet.</td>
+                <td colSpan={4} className="ac3-meta">
+                  No grades yet.
+                </td>
               </tr>
             ) : (
               grades.map((g) => (

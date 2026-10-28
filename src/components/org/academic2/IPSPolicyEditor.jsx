@@ -5,6 +5,7 @@ import { Plus, Power, Trash2, ShieldX, ShieldAlert, Lock } from 'lucide-react';
 import './academic.css';
 import './compliance2.css';
 import { isHardRule, ruleLabel } from './ComplianceMonitor';
+import { orgRequest } from '@/lib/org-request';
 
 /* Form metadata — which input a rule type needs. */
 const FORM_META = {
@@ -54,6 +55,8 @@ export function IPSPolicyEditor({ rules = [], ruleTypes = [], canEdit = false, o
     severity: 'warning',
   });
   const [busy, setBusy] = useState(false);
+  const [pendingId, setPendingId] = useState(null);
+  const [error, setError] = useState('');
 
   const meta = FORM_META[form.rule_type];
 
@@ -65,37 +68,54 @@ export function IPSPolicyEditor({ rules = [], ruleTypes = [], canEdit = false, o
       severity: form.severity,
     };
     setBusy(true);
+    setError('');
     try {
-      const res = await fetch('/api/org/ips/rules', {
+      await orgRequest('/api/org/ips/rules', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        json: {
           rule_type: form.rule_type,
           rule_value,
           label: `${meta.label} ${form.value}${meta.unit}`,
-        }),
+        },
       });
-      if (res.ok) {
-        setForm({ rule_type: 'max_position_pct', value: '', severity: 'warning' });
-        onChanged?.();
-      }
+      setForm({ rule_type: 'max_position_pct', value: '', severity: 'warning' });
+      onChanged?.();
+    } catch (e) {
+      setError(e.message);
     } finally {
       setBusy(false);
     }
   };
 
   const toggle = async (rule) => {
-    await fetch('/api/org/ips/rules', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: rule.id, is_active: !rule.is_active }),
-    });
-    onChanged?.();
+    setPendingId(rule.id);
+    setError('');
+    try {
+      await orgRequest('/api/org/ips/rules', {
+        method: 'POST',
+        json: { id: rule.id, is_active: !rule.is_active },
+      });
+      onChanged?.();
+    } catch (e) {
+      setError(e.message);
+      onChanged?.();
+    } finally {
+      setPendingId(null);
+    }
   };
 
   const remove = async (rule) => {
-    await fetch(`/api/org/ips/rules?id=${rule.id}`, { method: 'DELETE' });
-    onChanged?.();
+    setPendingId(rule.id);
+    setError('');
+    try {
+      await orgRequest(`/api/org/ips/rules?id=${rule.id}`, { method: 'DELETE' });
+      onChanged?.();
+    } catch (e) {
+      setError(e.message);
+      onChanged?.();
+    } finally {
+      setPendingId(null);
+    }
   };
 
   const active = rules.filter((r) => r.is_active);
@@ -113,10 +133,20 @@ export function IPSPolicyEditor({ rules = [], ruleTypes = [], canEdit = false, o
       </div>
       {canEdit && (
         <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
-          <button type="button" className="ac3-btn ac3-btn--ghost" onClick={() => toggle(r)}>
+          <button
+            type="button"
+            className="ac3-btn ac3-btn--ghost"
+            onClick={() => toggle(r)}
+            disabled={pendingId === r.id}
+          >
             <Power size={14} aria-hidden /> {r.is_active ? 'Disable' : 'Enable'}
           </button>
-          <button type="button" className="ac3-btn ac3-btn--danger" onClick={() => remove(r)}>
+          <button
+            type="button"
+            className="ac3-btn ac3-btn--danger"
+            onClick={() => remove(r)}
+            disabled={pendingId === r.id}
+          >
             <Trash2 size={14} aria-hidden /> Delete
           </button>
         </div>
@@ -130,6 +160,12 @@ export function IPSPolicyEditor({ rules = [], ruleTypes = [], canEdit = false, o
         The mandate limits in force. HARD limits block a trade at the gate; SOFT limits allow it but
         log a flag. Managers set these; the server enforces the executive gate.
       </p>
+
+      {error && (
+        <p className="org-inline-error" role="alert">
+          {error}
+        </p>
+      )}
 
       {canEdit ? (
         <div className="ac3-card" style={{ marginBottom: '1.25rem' }}>

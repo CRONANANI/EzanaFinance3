@@ -12,23 +12,28 @@ export default function FlagInboxPage() {
   const [flags, setFlags] = useState([]);
   const [selectedFlagId, setSelectedFlagId] = useState(null);
   const [filter, setFilter] = useState('inbox');
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!isOrgUser) return;
     let url = '/api/org-trading/flags?';
     if (filter === 'inbox') url += 'asRecipient=true&status=open';
     else if (filter === 'sent') url += 'asRaiser=true';
-    else if (filter === 'resolved') url += 'asRaiser=true&asRecipient=true&status=resolved';
+    else if (filter === 'resolved') url += 'asRaiser=true&asRecipient=true&status=closed';
 
     fetch(url)
       .then((r) => (r.ok ? r.json() : { flags: [] }))
       .then((d) => setFlags(d.flags || []))
       .catch(() => setFlags([]));
-  }, [isOrgUser, filter, selectedFlagId]);
+  }, [isOrgUser, filter, refreshKey]);
 
-  if (isLoading) return <div style={{ padding: '2rem' }}>Loading…</div>;
+  if (isLoading) return <div className="dashboard-page-inset ot-inbox-note">Loading…</div>;
   if (!isOrgUser)
-    return <div style={{ padding: '2rem' }}>This page is for organizational members only.</div>;
+    return (
+      <div className="dashboard-page-inset ot-inbox-note">
+        This page is for organizational members only.
+      </div>
+    );
 
   return (
     <div className="dashboard-page-inset org-trading-page">
@@ -53,12 +58,8 @@ export default function FlagInboxPage() {
           <button
             key={f}
             type="button"
-            className="ot-btn-secondary"
-            style={
-              filter === f
-                ? { background: 'rgba(99,102,241,0.18)', borderColor: 'rgba(99,102,241,0.4)', color: '#f0f6fc' }
-                : {}
-            }
+            className={`ot-btn-secondary${filter === f ? ' is-active' : ''}`}
+            aria-pressed={filter === f}
             onClick={() => {
               setFilter(f);
               setSelectedFlagId(null);
@@ -87,7 +88,7 @@ export default function FlagInboxPage() {
             flagId={selectedFlagId}
             currentMemberId={orgData?.member?.id}
             onClose={() => setSelectedFlagId(null)}
-            onChange={() => setSelectedFlagId(selectedFlagId)}
+            onChange={() => setRefreshKey((k) => k + 1)}
           />
         )}
       </div>

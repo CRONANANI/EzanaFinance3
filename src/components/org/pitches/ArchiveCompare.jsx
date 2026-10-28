@@ -2,27 +2,36 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { orgRequest } from '@/lib/org-request';
 
 export function ArchiveCompare({ initialIds = [] }) {
   const [ids, setIds] = useState(initialIds.join(','));
   const [pitches, setPitches] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const compare = async () => {
     const pitch_ids = ids
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean);
-    if (pitch_ids.length < 2) return alert('Enter at least 2 pitch IDs');
+    if (pitch_ids.length < 2) {
+      setError('Enter at least 2 pitch IDs to compare.');
+      return;
+    }
     setLoading(true);
-    const res = await fetch('/api/org/archive/compare', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pitch_ids }),
-    });
-    const data = await res.json();
-    setPitches(data.pitches || []);
-    setLoading(false);
+    setError('');
+    try {
+      const data = await orgRequest('/api/org/archive/compare', {
+        method: 'POST',
+        json: { pitch_ids },
+      });
+      setPitches(data.pitches || []);
+    } catch (err) {
+      setError(err.message || 'Could not compare those pitches.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -34,12 +43,17 @@ export function ArchiveCompare({ initialIds = [] }) {
           style={{ flex: 1 }}
           value={ids}
           onChange={(e) => setIds(e.target.value)}
-          placeholder="pitch-nvda-arch-1, pitch-amd-arch-1"
+          placeholder="Pitch IDs (UUIDs), comma separated"
         />
         <button type="button" className="op-btn" onClick={compare} disabled={loading}>
           Compare
         </button>
       </div>
+      {error ? (
+        <p className="org-inline-error" role="alert">
+          {error}
+        </p>
+      ) : null}
       <div className="op-compare-grid">
         {pitches.map((p) => (
           <div key={p.id} className="op-compare-col">

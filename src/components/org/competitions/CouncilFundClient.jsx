@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Trophy, ExternalLink, Loader2, ShieldAlert } from 'lucide-react';
+import { orgRequest } from '@/lib/org-request';
 import './competitions.css';
 
 const FIELDS = [
@@ -13,7 +14,13 @@ const FIELDS = [
   { key: 'benchmark_alpha_pct', label: 'Alpha %', hint: 'vs benchmark' },
 ];
 
-const TIER_LABEL = { emerging: 'Emerging', competitive: 'Competitive', established: 'Established', elite: 'Elite', dynasty: 'Dynasty' };
+const TIER_LABEL = {
+  emerging: 'Emerging',
+  competitive: 'Competitive',
+  established: 'Established',
+  elite: 'Elite',
+  dynasty: 'Dynasty',
+};
 
 export function CouncilFundClient() {
   const [state, setState] = useState('loading');
@@ -22,6 +29,7 @@ export function CouncilFundClient() {
   const [form, setForm] = useState({});
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   useEffect(() => {
     let alive = true;
@@ -55,20 +63,34 @@ export function CouncilFundClient() {
   const save = async () => {
     setBusy(true);
     setSaved(false);
+    setSaveError('');
     try {
-      const res = await fetch('/api/org/council/fund-metrics', {
+      await orgRequest('/api/org/council/fund-metrics', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        json: form,
       });
-      if (res.ok) setSaved(true);
+      setSaved(true);
+    } catch (err) {
+      setSaveError(err.message || 'Could not save fund ratios.');
     } finally {
       setBusy(false);
     }
   };
 
-  if (state === 'loading') return <div className="pcx-page"><div className="pcx-empty pcx-empty--sm"><Loader2 size={18} className="pcx-spin" /> Loading…</div></div>;
-  if (state === 'error') return <div className="pcx-page"><div className="pcx-empty pcx-empty--sm">Could not load your council ranking.</div></div>;
+  if (state === 'loading')
+    return (
+      <div className="pcx-page">
+        <div className="pcx-empty pcx-empty--sm">
+          <Loader2 size={18} className="pcx-spin" /> Loading…
+        </div>
+      </div>
+    );
+  if (state === 'error')
+    return (
+      <div className="pcx-page">
+        <div className="pcx-empty pcx-empty--sm">Could not load your council ranking.</div>
+      </div>
+    );
 
   return (
     <div className="pcx-page">
@@ -79,8 +101,8 @@ export function CouncilFundClient() {
         </div>
         <p className="pcx-lead">
           Your council&apos;s public standing blends judged competition results with your fund
-          performance ratios. <strong>Dollar amounts are never shown</strong> — only ROI, Sharpe, and
-          other ratios.
+          performance ratios. <strong>Dollar amounts are never shown</strong> — only ROI, Sharpe,
+          and other ratios.
         </p>
       </header>
 
@@ -113,39 +135,68 @@ export function CouncilFundClient() {
           </div>
         </div>
       ) : (
-        <p className="pcx-muted pcx-note">No rating yet — it appears after your teams compete or you report fund ratios.</p>
+        <p className="pcx-muted pcx-note">
+          No rating yet — it appears after your teams compete or you report fund ratios.
+        </p>
       )}
 
       <section className="pcx-card-block">
         <h2 className="pcx-block-title">Fund ratios</h2>
         <p className="pcx-muted pcx-note">
-          These feed your council&apos;s public ranking. Sharpe (risk-adjusted) is weighted more than raw
-          ROI. Enter ratios and percentages only — never dollar amounts. Numbers are flagged
-          self-reported on the leaderboard.
+          These feed your council&apos;s public ranking. Sharpe (risk-adjusted) is weighted more
+          than raw ROI. Enter ratios and percentages only — never dollar amounts. Numbers are
+          flagged self-reported on the leaderboard.
         </p>
         {!canManage ? (
           <div className="pcx-error--banner pcx-lock">
-            <ShieldAlert size={15} aria-hidden="true" /> Only executives and VPs can edit fund metrics.
+            <ShieldAlert size={15} aria-hidden="true" /> Only executives and VPs can edit fund
+            metrics.
           </div>
         ) : null}
         <div className="pcx-form-grid">
           <label className="pcx-field">
             <span className="pcx-field-label">Period label</span>
-            <input className="pcx-input" value={form.period_label} disabled={!canManage} onChange={(e) => setForm({ ...form, period_label: e.target.value })} placeholder="CY2025" />
+            <input
+              className="pcx-input"
+              value={form.period_label}
+              disabled={!canManage}
+              onChange={(e) => setForm({ ...form, period_label: e.target.value })}
+              placeholder="CY2025"
+            />
           </label>
           {FIELDS.map((f) => (
             <label className="pcx-field" key={f.key}>
               <span className="pcx-field-label">{f.label}</span>
-              <input className="pcx-input" type="number" step="0.01" value={form[f.key]} disabled={!canManage} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} placeholder={f.hint} />
+              <input
+                className="pcx-input"
+                type="number"
+                step="0.01"
+                value={form[f.key]}
+                disabled={!canManage}
+                onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
+                placeholder={f.hint}
+              />
             </label>
           ))}
         </div>
         {canManage ? (
           <div className="pcx-rubric-actions">
-            <button type="button" className="pcx-btn pcx-btn--primary" onClick={save} disabled={busy}>
+            <button
+              type="button"
+              className="pcx-btn pcx-btn--primary"
+              onClick={save}
+              disabled={busy}
+            >
               {busy ? <Loader2 size={14} className="pcx-spin" /> : null} Save fund ratios
             </button>
-            {saved ? <span className="pcx-saved">Saved — the ranking recomputes on the next cycle.</span> : null}
+            {saved ? (
+              <span className="pcx-saved">Saved. The ranking recomputes on the next cycle.</span>
+            ) : null}
+            {saveError ? (
+              <span className="pcx-error" role="alert">
+                {saveError}
+              </span>
+            ) : null}
           </div>
         ) : null}
       </section>

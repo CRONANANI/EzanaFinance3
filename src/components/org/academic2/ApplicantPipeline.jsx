@@ -17,6 +17,7 @@ import {
   Ban,
   Clock,
 } from 'lucide-react';
+import { orgRequest } from '@/lib/org-request';
 import './cohort2.css';
 
 const BOARD_STAGES = [
@@ -69,6 +70,7 @@ export function ApplicantPipeline({ cohortId, canManage, onCount }) {
   const [busy, setBusy] = useState(false);
   const [funnelOpen, setFunnelOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
+  const [blindError, setBlindError] = useState('');
   const funnelRef = useRef(null);
   const formRef = useRef(null);
 
@@ -107,25 +109,28 @@ export function ApplicantPipeline({ cohortId, canManage, onCount }) {
 
   const toggleBlind = async () => {
     // Blind screening is a property of the cohort's application form.
+    if (busy) return;
     setBusy(true);
+    setBlindError('');
     try {
-      const fres = await fetch(`/api/org/cohorts/${cohortId}/forms`, { cache: 'no-store' });
-      const fjson = await fres.json().catch(() => ({}));
+      const fjson = await orgRequest(`/api/org/cohorts/${cohortId}/forms`, { cache: 'no-store' });
       const form = (fjson.forms || [])[0];
       const next = !data?.blind;
       if (form) {
-        await fetch(`/api/org/cohorts/${cohortId}/forms`, {
+        await orgRequest(`/api/org/cohorts/${cohortId}/forms`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ form_id: form.id, blind_screening: next }),
+          json: { form_id: form.id, blind_screening: next },
         });
       } else {
-        await fetch(`/api/org/cohorts/${cohortId}/forms`, {
+        await orgRequest(`/api/org/cohorts/${cohortId}/forms`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ blind_screening: next }),
+          json: { blind_screening: next },
         });
       }
+      await load();
+    } catch (e) {
+      setBlindError(e.message);
+      // Switch reflects server data (data.blind); refetch so it matches reality.
       await load();
     } finally {
       setBusy(false);
@@ -172,6 +177,11 @@ export function ApplicantPipeline({ cohortId, canManage, onCount }) {
               {data?.blind ? 'ON' : 'OFF'}
             </span>
             <span className="c2-blind-sub">Names, schools &amp; photos hidden until Interview</span>
+            {blindError && (
+              <p className="org-inline-error" role="alert">
+                {blindError}
+              </p>
+            )}
           </div>
         </div>
         <div className="c2-spacer" />
@@ -341,6 +351,7 @@ function ApplicantModal({ applicant, canManage, onClose, onChanged }) {
   const [myScores, setMyScores] = useState({});
   const [saving, setSaving] = useState(false);
   const [provisioning, setProvisioning] = useState(false);
+  const [actionError, setActionError] = useState('');
 
   const loadScores = useCallback(async () => {
     const res = await fetch(`/api/org/applicants/${a.id}/scores`, { cache: 'no-store' });
@@ -366,38 +377,40 @@ function ApplicantModal({ applicant, canManage, onClose, onChanged }) {
     const scores = criteria
       .filter((c) => myScores[c] && myScores[c].score != null)
       .map((c) => ({ criterion: c, score: myScores[c].score, notes: myScores[c].notes }));
-    if (scores.length === 0) return;
+    if (scores.length === 0 || saving) return;
     setSaving(true);
+    setActionError('');
     try {
-      await fetch(`/api/org/applicants/${a.id}/scores`, {
+      await orgRequest(`/api/org/applicants/${a.id}/scores`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scores, submit }),
+        json: { scores, submit },
       });
       await loadScores();
       onChanged?.();
+    } catch (e) {
+      setActionError(e.message);
+      // Rubric reflects server data; refetch so it matches what persisted.
+      await loadScores();
     } finally {
       setSaving(false);
     }
   };
 
   const advance = async (stage, reason) => {
+    if (saving) return;
     setSaving(true);
+    setActionError('');
     try {
       const body = { stage };
       if (reason != null) body.rejected_reason = reason;
-      const res = await fetch(`/api/org/applicants/${a.id}`, {
+      await orgRequest(`/api/org/applicants/${a.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        json: body,
       });
-      if (res.ok) {
-        await onChanged?.();
-        onClose();
-      } else {
-        const j = await res.json().catch(() => ({}));
-        alert(j?.error || 'Failed');
-      }
+      await onChanged?.();
+      onClose();
+    } catch (e) {
+      setActionError(e.message);
     } finally {
       setSaving(false);
     }
@@ -528,6 +541,12 @@ function ApplicantModal({ applicant, canManage, onClose, onChanged }) {
           </div>
         )}
 
+        {actionError && (
+          <p className="org-inline-error" role="alert">
+            {actionError}
+          </p>
+        )}
+
         {/* ── Other interviewers (anti-anchoring) ── */}
         <div className="c2-label">
           Panel · {scoreData?.scores_in ?? 0} of {scoreData?.interviewer_count ?? 0} submitted
@@ -654,6 +673,7 @@ function ProvisionModal({ applicant, onClose, onDone }) {
   const [mentor, setMentor] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  const [notice, setNotice] = useState('');
 
   useEffect(() => {
     fetch('/api/org/chart', { cache: 'no-store' })
@@ -663,25 +683,30 @@ function ProvisionModal({ applicant, onClose, onDone }) {
   }, []);
 
   const submit = async () => {
+    if (busy) return;
     setBusy(true);
     setErr('');
     try {
-      const res = await fetch(`/api/org/applicants/${applicant.id}/provision`, {
+      const j = await orgRequest(`/api/org/applicants/${applicant.id}/provision`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        json: {
           title,
           reports_to: reportsTo || null,
           mentor_member_id: mentor || null,
           role: 'analyst',
-        }),
+        },
       });
-      const j = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setErr(j?.error || 'Provisioning failed');
+      if (j && j.emailSent === false) {
+        // Account was created, but the welcome email failed. Keep the drawer
+        // open with a notice so the manager can share the sign-in link by hand.
+        setNotice(
+          'Account created. The welcome email could not be sent; share the sign-in link manually.',
+        );
         return;
       }
       onDone();
+    } catch (e) {
+      setErr(e.message);
     } finally {
       setBusy(false);
     }
@@ -735,15 +760,39 @@ function ProvisionModal({ applicant, onClose, onDone }) {
         <div className="c2-note" style={{ marginTop: '0.6rem' }}>
           Team assignment happens in the Org Chart after provisioning.
         </div>
-        {err && <div className="c2-note c2-note--warn">{err}</div>}
-        <div className="c2-modal-actions">
-          <button type="button" className="c2-btn" onClick={onClose} disabled={busy}>
-            Cancel
-          </button>
-          <button type="button" className="c2-btn c2-btn--primary" onClick={submit} disabled={busy}>
-            {busy ? 'Provisioning…' : 'Confirm & provision'}
-          </button>
-        </div>
+        {notice ? (
+          <>
+            <div className="c2-note c2-note--warn" role="alert">
+              {notice}
+            </div>
+            <div className="c2-modal-actions">
+              <button type="button" className="c2-btn c2-btn--primary" onClick={onDone}>
+                Done
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            {err && (
+              <div className="c2-note c2-note--warn" role="alert">
+                {err}
+              </div>
+            )}
+            <div className="c2-modal-actions">
+              <button type="button" className="c2-btn" onClick={onClose} disabled={busy}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="c2-btn c2-btn--primary"
+                onClick={submit}
+                disabled={busy}
+              >
+                {busy ? 'Provisioning…' : 'Confirm & provision'}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -1014,6 +1063,7 @@ function FormBuilder({ cohortId, canManage, open, onToggle }) {
   const [forms, setForms] = useState([]);
   const [form, setForm] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/org/cohorts/${cohortId}/forms`, { cache: 'no-store' });
@@ -1027,28 +1077,35 @@ function FormBuilder({ cohortId, canManage, open, onToggle }) {
   }, [load]);
 
   const createForm = async () => {
+    if (busy) return;
     setBusy(true);
+    setErr('');
     try {
-      await fetch(`/api/org/cohorts/${cohortId}/forms`, {
+      await orgRequest(`/api/org/cohorts/${cohortId}/forms`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fields: [], is_open: false }),
+        json: { fields: [], is_open: false },
       });
       await load();
+    } catch (e) {
+      setErr(e.message);
     } finally {
       setBusy(false);
     }
   };
 
   const patch = async (payload) => {
-    if (!form) return;
+    if (!form || busy) return;
     setBusy(true);
+    setErr('');
     try {
-      await fetch(`/api/org/cohorts/${cohortId}/forms`, {
+      await orgRequest(`/api/org/cohorts/${cohortId}/forms`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ form_id: form.id, ...payload }),
+        json: { form_id: form.id, ...payload },
       });
+      await load();
+    } catch (e) {
+      setErr(e.message);
+      // Toggles and the field list are driven by server data; refetch to sync.
       await load();
     } finally {
       setBusy(false);
@@ -1077,6 +1134,11 @@ function FormBuilder({ cohortId, canManage, open, onToggle }) {
       <summary style={{ cursor: 'pointer', fontWeight: 700, color: 'var(--text-primary)' }}>
         <ClipboardList size={15} style={{ verticalAlign: 'middle' }} /> Application form builder
       </summary>
+      {err && (
+        <p className="org-inline-error" role="alert">
+          {err}
+        </p>
+      )}
       {!form ? (
         <div style={{ marginTop: '0.8rem' }}>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
@@ -1141,7 +1203,12 @@ function FormBuilder({ cohortId, canManage, open, onToggle }) {
                 {fl.required ? ' *' : ''}
               </span>
               {canManage && (
-                <button type="button" className="c2-btn c2-btn--sm" onClick={() => removeField(i)}>
+                <button
+                  type="button"
+                  className="c2-btn c2-btn--sm"
+                  onClick={() => removeField(i)}
+                  disabled={busy}
+                >
                   <X size={13} />
                 </button>
               )}

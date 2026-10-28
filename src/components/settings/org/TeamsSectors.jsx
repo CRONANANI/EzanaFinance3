@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { orgRequest } from '@/lib/org-request';
 
 const GICS_SECTORS = [
   'Energy',
@@ -23,6 +24,7 @@ export function TeamsSectors() {
   const [msg, setMsg] = useState(null);
   const [newName, setNewName] = useState('');
   const [busy, setBusy] = useState(false);
+  const [removingId, setRemovingId] = useState(null);
 
   const load = useCallback(async () => {
     try {
@@ -81,8 +83,16 @@ export function TeamsSectors() {
 
   const remove = async (team) => {
     if (!window.confirm(`Delete team "${team.name}"? Members are detached, not removed.`)) return;
-    setTeams((prev) => prev.filter((t) => t.id !== team.id));
-    await fetch(`/api/org/teams?id=${team.id}`, { method: 'DELETE' }).catch(() => {});
+    setRemovingId(team.id);
+    setMsg(null);
+    try {
+      await orgRequest(`/api/org/teams?id=${team.id}`, { method: 'DELETE' });
+      setTeams((prev) => prev.filter((t) => t.id !== team.id));
+    } catch (err) {
+      setMsg({ err: err.message });
+    } finally {
+      setRemovingId(null);
+    }
   };
 
   return (
@@ -161,8 +171,9 @@ export function TeamsSectors() {
                 <button
                   type="button"
                   onClick={() => remove(t)}
+                  disabled={removingId === t.id}
                   style={{
-                    cursor: 'pointer',
+                    cursor: removingId === t.id ? 'default' : 'pointer',
                     fontSize: '0.72rem',
                     fontWeight: 600,
                     padding: '5px 11px',
@@ -171,9 +182,10 @@ export function TeamsSectors() {
                     background: 'rgba(239,68,68,0.08)',
                     border: '1px solid rgba(239,68,68,0.25)',
                     flexShrink: 0,
+                    opacity: removingId === t.id ? 0.6 : 1,
                   }}
                 >
-                  Delete
+                  {removingId === t.id ? 'Deleting…' : 'Delete'}
                 </button>
               </div>
             ))}

@@ -10,6 +10,7 @@ import {
 } from '@/lib/org-trading-server';
 import {
   MIN_MESSAGE_CHARS,
+  RESPONSE_STATUSES,
   benchmarkForSector,
   defaultResponseHoursForConviction,
   isReasonValidForColor,
@@ -62,7 +63,13 @@ export const GET = withApiGuard(
     } else if (asRecipient) {
       q = q.or(`recipient_member_id.eq.${member.id},sector_head_member_id.eq.${member.id}`);
     }
-    if (status) q = q.eq('status', status);
+    // "closed" is the Resolved filter: a flag that has been responded to. No
+    // flag ever literally has status 'resolved', so map it to the response set.
+    if (status === 'closed') {
+      q = q.in('status', RESPONSE_STATUSES);
+    } else if (status) {
+      q = q.eq('status', status);
+    }
 
     const { data, error } = await q;
     if (error) {

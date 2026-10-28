@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Award, Star, X, Download, GraduationCap, Briefcase } from 'lucide-react';
+import { orgRequest } from '@/lib/org-request';
 import './cohort2.css';
 
 const INDUSTRY_LABEL = {
@@ -231,6 +232,7 @@ function AlumDetail({ alum, canManage, onClose, onChanged }) {
     engagement_flags: a.engagement_flags || [],
   });
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
   const set = (k, v) => setEdit((s) => ({ ...s, [k]: v }));
   const toggleFlag = (f) =>
     setEdit((s) => ({
@@ -241,15 +243,20 @@ function AlumDetail({ alum, canManage, onClose, onChanged }) {
     }));
 
   const save = async () => {
+    if (busy) return;
     setBusy(true);
+    setErr('');
     try {
-      await fetch('/api/org/alumni', {
+      await orgRequest('/api/org/alumni', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: a.id, ...edit }),
+        json: { id: a.id, ...edit },
       });
       await onChanged?.();
+      // Only close once the write persisted; on failure the form stays open
+      // with the user's edits intact.
       onClose();
+    } catch (e) {
+      setErr(e.message);
     } finally {
       setBusy(false);
     }
@@ -380,6 +387,11 @@ function AlumDetail({ alum, canManage, onClose, onChanged }) {
                 </button>
               ))}
             </div>
+            {err && (
+              <p className="org-inline-error" role="alert">
+                {err}
+              </p>
+            )}
             <div className="c2-modal-actions">
               <button type="button" className="c2-btn" onClick={onClose} disabled={busy}>
                 Cancel

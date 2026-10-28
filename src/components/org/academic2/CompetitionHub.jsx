@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { orgRequest } from '@/lib/org-request';
 import './academic.css';
 
 function pct(n) {
@@ -16,6 +17,7 @@ export function CompetitionHub() {
   const [openId, setOpenId] = useState(null);
   const [board, setBoard] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState('');
 
   const load = useCallback(async () => {
     try {
@@ -51,17 +53,18 @@ export function CompetitionHub() {
   };
 
   const enter = async (id) => {
+    if (busy) return;
     setBusy(true);
+    setActionError('');
     try {
-      const res = await fetch('/api/org/competitions', {
+      await orgRequest('/api/org/competitions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ competition_id: id }),
+        json: { competition_id: id },
       });
-      if (res.ok) {
-        await load();
-        openBoard(id);
-      }
+      await load();
+      openBoard(id);
+    } catch (e) {
+      setActionError(e.message);
     } finally {
       setBusy(false);
     }
@@ -80,6 +83,12 @@ export function CompetitionHub() {
         </div>
       </div>
 
+      {actionError && (
+        <p className="org-inline-error" role="alert">
+          {actionError}
+        </p>
+      )}
+
       {competitions.length === 0 ? (
         <div className="ac3-state">No inter-university competitions open right now.</div>
       ) : (
@@ -87,7 +96,11 @@ export function CompetitionHub() {
           <div key={c.id} className="ac3-row">
             <div>
               <span className="ac3-strong">{c.name}</span>
-              {c.myEntry && <span className="ac3-pill ac3-pill--current" style={{ marginLeft: 6 }}>entered</span>}
+              {c.myEntry && (
+                <span className="ac3-pill ac3-pill--current" style={{ marginLeft: 6 }}>
+                  entered
+                </span>
+              )}
               <div className="ac3-meta">{c.description || c.status}</div>
             </div>
             <div style={{ display: 'flex', gap: '0.4rem' }}>
@@ -95,7 +108,12 @@ export function CompetitionHub() {
                 Leaderboard
               </button>
               {viewer.canEnter && !c.myEntry && (
-                <button type="button" className="ac3-btn ac3-btn--primary" onClick={() => enter(c.id)} disabled={busy}>
+                <button
+                  type="button"
+                  className="ac3-btn ac3-btn--primary"
+                  onClick={() => enter(c.id)}
+                  disabled={busy}
+                >
                   Enter
                 </button>
               )}
@@ -120,7 +138,9 @@ export function CompetitionHub() {
               <tbody>
                 {board.standings.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="ac3-meta">No entries yet.</td>
+                    <td colSpan={4} className="ac3-meta">
+                      No entries yet.
+                    </td>
                   </tr>
                 ) : (
                   board.standings.map((s) => (
@@ -128,13 +148,19 @@ export function CompetitionHub() {
                       <td className="ac3-rank">{s.rank}</td>
                       <td className="ac3-strong">
                         {s.university}
-                        {s.isMine && <span className="ac3-pill ac3-pill--current" style={{ marginLeft: 6 }}>you</span>}
+                        {s.isMine && (
+                          <span className="ac3-pill ac3-pill--current" style={{ marginLeft: 6 }}>
+                            you
+                          </span>
+                        )}
                       </td>
                       <td className={`ac3-num ${(s.return_pct ?? 0) >= 0 ? 'ac3-pos' : 'ac3-neg'}`}>
                         {pct(s.return_pct)}
                       </td>
                       <td className="ac3-num">
-                        {s.current_value == null ? '—' : `$${Math.round(s.current_value).toLocaleString()}`}
+                        {s.current_value == null
+                          ? '—'
+                          : `$${Math.round(s.current_value).toLocaleString()}`}
                       </td>
                     </tr>
                   ))

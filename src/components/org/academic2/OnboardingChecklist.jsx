@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, X, Lock, ListChecks, GitBranch, Check } from 'lucide-react';
+import { orgRequest } from '@/lib/org-request';
 import './cohort2.css';
 
 function StatStrip({ stats }) {
@@ -34,6 +35,7 @@ export function OnboardingChecklist({ cohortId, canManage, onCount }) {
   const [newTitle, setNewTitle] = useState('');
   const [newGate, setNewGate] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState('');
 
   const load = useCallback(async () => {
     if (!cohortId) return;
@@ -60,48 +62,84 @@ export function OnboardingChecklist({ cohortId, canManage, onCount }) {
   }, [load]);
 
   const addTask = async () => {
-    if (!newTitle.trim()) return;
+    if (!newTitle.trim() || busy) return;
     setBusy(true);
+    setActionError('');
     try {
-      await fetch(`/api/org/cohorts/${cohortId}/onboarding`, {
+      await orgRequest(`/api/org/cohorts/${cohortId}/onboarding`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newTitle, is_gate: newGate }),
+        json: { title: newTitle, is_gate: newGate },
       });
+      // Only clear the inputs once the write actually persisted.
       setNewTitle('');
       setNewGate(false);
       await load();
+    } catch (e) {
+      setActionError(e.message);
     } finally {
       setBusy(false);
     }
   };
 
   const deleteTask = async (taskId) => {
+    if (busy) return;
     if (!window.confirm('Remove this onboarding task?')) return;
-    await fetch(`/api/org/cohorts/${cohortId}/onboarding?task_id=${taskId}`, { method: 'DELETE' });
-    load();
+    setBusy(true);
+    setActionError('');
+    try {
+      await orgRequest(`/api/org/cohorts/${cohortId}/onboarding?task_id=${taskId}`, {
+        method: 'DELETE',
+      });
+      await load();
+    } catch (e) {
+      setActionError(e.message);
+      // Refetch so the task list matches what actually persisted.
+      await load();
+    } finally {
+      setBusy(false);
+    }
   };
 
   const toggleComplete = async (assignmentId, memberId, done) => {
-    await fetch(`/api/org/cohorts/${cohortId}/onboarding`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: done ? 'uncomplete' : 'complete',
-        assignment_id: assignmentId,
-        member_id: memberId,
-      }),
-    });
-    load();
+    if (busy) return;
+    setBusy(true);
+    setActionError('');
+    try {
+      await orgRequest(`/api/org/cohorts/${cohortId}/onboarding`, {
+        method: 'POST',
+        json: {
+          action: done ? 'uncomplete' : 'complete',
+          assignment_id: assignmentId,
+          member_id: memberId,
+        },
+      });
+      await load();
+    } catch (e) {
+      setActionError(e.message);
+      // Checkbox is driven by server data; refetch to roll it back on failure.
+      await load();
+    } finally {
+      setBusy(false);
+    }
   };
 
   const setMentor = async (memberId, mentorId) => {
-    await fetch(`/api/org/cohorts/${cohortId}/lifecycle`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ member_id: memberId, mentor_member_id: mentorId || null }),
-    });
-    load();
+    if (busy) return;
+    setBusy(true);
+    setActionError('');
+    try {
+      await orgRequest(`/api/org/cohorts/${cohortId}/lifecycle`, {
+        method: 'PATCH',
+        json: { member_id: memberId, mentor_member_id: mentorId || null },
+      });
+      await load();
+    } catch (e) {
+      setActionError(e.message);
+      // Select value is driven by server data; refetch to roll it back on failure.
+      await load();
+    } finally {
+      setBusy(false);
+    }
   };
 
   if (loading) return <div className="c2-state">Loading onboarding…</div>;
@@ -112,6 +150,12 @@ export function OnboardingChecklist({ cohortId, canManage, onCount }) {
   return (
     <div>
       <StatStrip stats={data?.stats} />
+
+      {actionError && (
+        <p className="org-inline-error" role="alert">
+          {actionError}
+        </p>
+      )}
 
       {data?.gateEnabled && (
         <div className="c2-note c2-note--warn">
@@ -179,6 +223,7 @@ export function OnboardingChecklist({ cohortId, canManage, onCount }) {
                     type="button"
                     className="c2-btn c2-btn--sm c2-btn--ghost"
                     onClick={() => deleteTask(t.id)}
+                    disabled={busy}
                   >
                     <X size={12} />
                   </button>
@@ -284,7 +329,7 @@ export function OnboardingChecklist({ cohortId, canManage, onCount }) {
                   <div style={{ marginTop: '0.4rem' }}>
                     {tasks.map((t) => {
                       const done = m.completed_assignment_ids.includes(t.assignment_id);
-                      const canToggle = (canManage || false) && m.user_linked;
+                      const canToggle = (canManage || false) && m.user_linked && !busy;
                       return (
                         <label
                           key={t.id}
@@ -334,7 +379,7 @@ export function OnboardingChecklist({ cohortId, canManage, onCount }) {
                 <select
                   className="c2-select"
                   value={m.mentor_member_id || ''}
-                  disabled={!canManage}
+                  disabled={!canManage || busy}
                   onChange={(e) => setMentor(m.id, e.target.value)}
                 >
                   <option value="">— mentor —</option>

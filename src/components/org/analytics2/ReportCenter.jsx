@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { orgRequest } from '@/lib/org-request';
 import './analytics.css';
 
 export function ReportCenter() {
@@ -10,6 +11,7 @@ export function ReportCenter() {
   const [error, setError] = useState('');
   const [period, setPeriod] = useState('');
   const [busy, setBusy] = useState(false);
+  const [genError, setGenError] = useState('');
 
   const load = useCallback(async () => {
     try {
@@ -39,19 +41,20 @@ export function ReportCenter() {
 
   const generate = async () => {
     setBusy(true);
+    setGenError('');
     try {
-      const res = await fetch('/api/org/reports', {
+      const data = await orgRequest('/api/org/reports', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ period_label: period || 'Current Term' }),
+        json: { period_label: period || 'Current Term' },
       });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data.report?.id) {
+      if (data.report?.id) {
         setPeriod('');
         await load();
         // Open the branded report immediately.
         window.open(`/api/org/reports/${data.report.id}/pdf`, '_blank', 'noopener');
       }
+    } catch (err) {
+      setGenError(err.message || 'Could not generate the report.');
     } finally {
       setBusy(false);
     }
@@ -79,9 +82,20 @@ export function ReportCenter() {
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
           />
-          <button type="button" className="an4-btn an4-btn--primary" onClick={generate} disabled={busy}>
-            <i className="bi bi-file-earmark-bar-graph" aria-hidden /> {busy ? 'Generating…' : 'Generate Stakeholder Report'}
+          <button
+            type="button"
+            className="an4-btn an4-btn--primary"
+            onClick={generate}
+            disabled={busy}
+          >
+            <i className="bi bi-file-earmark-bar-graph" aria-hidden />{' '}
+            {busy ? 'Generating…' : 'Generate Stakeholder Report'}
           </button>
+          {genError ? (
+            <p className="org-inline-error" role="alert" style={{ width: '100%' }}>
+              {genError}
+            </p>
+          ) : null}
         </div>
       )}
 
@@ -102,7 +116,7 @@ export function ReportCenter() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <i className="bi bi-download" aria-hidden /> Download PDF
+              <i className="bi bi-download" aria-hidden /> Open printable report
             </a>
           </div>
         ))

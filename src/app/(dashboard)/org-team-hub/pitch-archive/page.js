@@ -3,15 +3,31 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useOrg } from '@/contexts/OrgContext';
+import { orgRequest } from '@/lib/org-request';
 import { ArchivePitchList } from '@/components/org/pitches/ArchivePitchList';
 
 function ArchiveAnalyticsStrip() {
   const [a, setA] = useState(null);
+  const [error, setError] = useState('');
   useEffect(() => {
-    fetch('/api/org/archive/report/inception')
-      .then((r) => r.json())
-      .then((d) => setA(d.analytics));
+    let alive = true;
+    orgRequest('/api/org/archive/report/inception')
+      .then((d) => {
+        if (alive) setA(d.analytics);
+      })
+      .catch((err) => {
+        if (alive) setError(err.message || 'Could not load archive analytics.');
+      });
+    return () => {
+      alive = false;
+    };
   }, []);
+  if (error)
+    return (
+      <p className="org-inline-error" role="alert">
+        {error}
+      </p>
+    );
   if (!a) return null;
   return (
     <div className="op-analytics-strip">

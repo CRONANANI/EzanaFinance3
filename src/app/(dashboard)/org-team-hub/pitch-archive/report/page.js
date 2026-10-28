@@ -3,17 +3,30 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useOrg } from '@/contexts/OrgContext';
+import { orgRequest } from '@/lib/org-request';
 
 export default function PitchReportPage() {
   const { isOrgUser, isLoading } = useOrg();
   const [period, setPeriod] = useState('semester');
   const [report, setReport] = useState(null);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!isOrgUser) return;
-    fetch(`/api/org/archive/report/${period}`)
-      .then((r) => r.json())
-      .then(setReport);
+    let alive = true;
+    setError('');
+    orgRequest(`/api/org/archive/report/${period}`)
+      .then((d) => {
+        if (alive) setReport(d);
+      })
+      .catch((err) => {
+        if (!alive) return;
+        setReport(null);
+        setError(err.message || 'Could not load the report.');
+      });
+    return () => {
+      alive = false;
+    };
   }, [isOrgUser, period]);
 
   if (isLoading) return <div style={{ padding: '2rem', color: '#888' }}>Loading…</div>;
@@ -38,6 +51,11 @@ export default function PitchReportPage() {
             Export / Print PDF
           </button>
         </div>
+        {error ? (
+          <p className="org-inline-error" role="alert">
+            {error}
+          </p>
+        ) : null}
       </div>
 
       {report && (

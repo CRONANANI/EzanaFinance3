@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ShieldCheck, ShieldX, ShieldAlert } from 'lucide-react';
+import { orgRequest } from '@/lib/org-request';
 import { IPSPolicyEditor } from '@/components/org/academic2/IPSPolicyEditor';
 import {
   PreTradeGate,
@@ -39,6 +40,8 @@ export function ComplianceClient({ initialData = null }) {
   const [positions, setPositions] = useState([]);
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState('');
+  const [resolvingId, setResolvingId] = useState(null);
+  const [resolveError, setResolveError] = useState('');
 
   const loadRules = useCallback(async () => {
     const res = await fetch('/api/org/ips/rules', { cache: 'no-store' });
@@ -97,12 +100,21 @@ export function ComplianceClient({ initialData = null }) {
   }, [initialData, loadAll, loadPositions]);
 
   const resolveBreach = async (v) => {
-    await fetch('/api/org/ips/violations', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: v.id, resolved: true }),
-    });
-    loadViolations();
+    if (resolvingId) return;
+    setResolvingId(v.id);
+    setResolveError('');
+    try {
+      await orgRequest('/api/org/ips/violations', {
+        method: 'PATCH',
+        json: { id: v.id, resolved: true },
+      });
+      // Refetch so the open-breach list matches what actually persisted.
+      loadViolations();
+    } catch (e) {
+      setResolveError(e.message);
+    } finally {
+      setResolvingId(null);
+    }
   };
 
   const activeRuleCount = useMemo(() => rules.filter((r) => r.is_active).length, [rules]);
@@ -186,6 +198,11 @@ export function ComplianceClient({ initialData = null }) {
                   canResolve={canResolve}
                   onResolve={resolveBreach}
                 />
+                {resolveError && (
+                  <p className="org-inline-error" role="alert">
+                    {resolveError}
+                  </p>
+                )}
               </div>
               <div className="cmp2-col">
                 <RulesInForcePanel rules={rules} />
