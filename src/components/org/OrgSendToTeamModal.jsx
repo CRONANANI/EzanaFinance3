@@ -107,7 +107,7 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
               <i className="bi bi-x-lg" />
             </button>
           </div>
-          <p style={{ color: '#8b949e', fontSize: '0.825rem' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.825rem' }}>
             You don&apos;t have the &quot;Send to Team&quot; permission. Ask your portfolio manager
             or executive to enable it in settings.
           </p>
@@ -145,7 +145,7 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
                   padding: '0.75rem 1rem',
                   background: 'var(--surface-card)',
                   border: '1px solid var(--border-primary)',
-                  borderRadius: 8,
+                  borderRadius: 'var(--radius-md)',
                   marginBottom: '1rem',
                 }}
               >
@@ -158,7 +158,7 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
                     style={{
                       fontWeight: 600,
                       fontSize: '0.825rem',
-                      color: '#f0f6fc',
+                      color: 'var(--text-primary)',
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
@@ -169,7 +169,7 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
                   <div
                     style={{
                       fontSize: '0.65rem',
-                      color: '#8b949e',
+                      color: 'var(--text-muted)',
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
                     }}

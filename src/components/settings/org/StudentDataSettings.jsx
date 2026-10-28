@@ -45,10 +45,10 @@ export function StudentDataSettings() {
       <div className="settings-section">
         <div className="settings-section-title">What we store</div>
         <ul
+          className="sorg-fg-muted"
           style={{
             margin: '0.5rem 0 0',
             paddingLeft: '1.1rem',
-            color: '#9ca3af',
             fontSize: '0.84rem',
             lineHeight: 1.7,
           }}
@@ -61,9 +61,9 @@ export function StudentDataSettings() {
 
       <div className="settings-section">
         <div className="settings-section-title">Who can see grades</div>
-        <p style={{ color: '#9ca3af', fontSize: '0.84rem', lineHeight: 1.6 }}>
+        <p className="sorg-fg-muted" style={{ fontSize: '0.84rem', lineHeight: 1.6 }}>
           Enforced on the server:{' '}
-          <strong style={{ color: '#e2e8f0' }}>a student sees only their own grades</strong>;
+          <strong className="sorg-fg-secondary">a student sees only their own grades</strong>;
           executives and faculty advisors see all. Visibility to students can be paused under{' '}
           <em>Faculty Advisor Controls</em>.
         </p>
@@ -71,12 +71,14 @@ export function StudentDataSettings() {
 
       <div className="settings-section">
         <div className="settings-section-title">Export a student record</div>
-        <p style={{ color: '#9ca3af', fontSize: '0.8rem', marginBottom: '0.75rem' }}>
+        <p className="sorg-fg-muted" style={{ fontSize: '0.8rem', marginBottom: '0.75rem' }}>
           Download a student&apos;s grades, pitches, and participation as a JSON file. Every export
           is recorded in the audit log.
         </p>
         {loading ? (
-          <p style={{ color: '#9ca3af', fontSize: '0.85rem' }}>Loading…</p>
+          <p className="sorg-fg-muted" style={{ fontSize: '0.85rem' }}>
+            Loading…
+          </p>
         ) : (
           <div className="settings-row">
             <div className="settings-field" style={{ flex: 1 }}>
@@ -110,7 +112,7 @@ export function StudentDataSettings() {
 
       <div className="settings-section">
         <div className="settings-section-title">Retention</div>
-        <p style={{ color: '#9ca3af', fontSize: '0.84rem', lineHeight: 1.6 }}>
+        <p className="sorg-fg-muted" style={{ fontSize: '0.84rem', lineHeight: 1.6 }}>
           When a cohort is archived, its members&apos; track record is snapshotted and the members
           are graduated out of the active roster. Archived cohort data is retained read-only for
           program history; export a record before archiving if a student needs a copy.

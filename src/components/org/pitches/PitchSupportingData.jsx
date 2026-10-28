@@ -34,7 +34,7 @@ export function PitchSupportingData({ pitchId }) {
         <h3>Quote</h3>
         <p className="op-fmp-big">${data.quote?.price?.toFixed(2)}</p>
         <p
-          className={data.quote?.changesPercentage >= 0 ? 'op-hindsight--pos' : 'op-hindsight--neg'}
+          className={`org-num ${data.quote?.changesPercentage >= 0 ? 'op-hindsight--pos' : 'op-hindsight--neg'}`}
         >
           {data.quote?.changesPercentage >= 0 ? '+' : ''}
           {data.quote?.changesPercentage?.toFixed(2)}% today

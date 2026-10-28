@@ -30,7 +30,7 @@ function DimensionBlock({ label, rows }) {
             <i
               style={{
                 width: `${Math.max(4, (r.score / max) * 100)}%`,
-                background: 'var(--info, #3b82f6)',
+                background: 'var(--info)',
               }}
             />
           </div>

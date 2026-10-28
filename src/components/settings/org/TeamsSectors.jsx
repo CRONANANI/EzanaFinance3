@@ -127,61 +127,54 @@ export function TeamsSectors() {
             </button>
           </div>
         </form>
-        {msg?.ok && <span style={{ color: '#10b981', fontSize: '0.8rem' }}>✓ {msg.ok}</span>}
-        {msg?.err && <span style={{ color: '#f87171', fontSize: '0.8rem' }}>{msg.err}</span>}
+        {msg?.ok && <span className="sorg-msg-ok">✓ {msg.ok}</span>}
+        {msg?.err && <span className="sorg-msg-err">{msg.err}</span>}
       </div>
 
       <div className="settings-section">
         <div className="settings-section-title">Teams ({teams.length})</div>
         {loading ? (
-          <p style={{ color: '#9ca3af', fontSize: '0.85rem' }}>Loading…</p>
+          <p className="sorg-fg-muted" style={{ fontSize: '0.85rem' }}>
+            Loading…
+          </p>
         ) : teams.length === 0 ? (
-          <p style={{ color: '#6b7280', fontSize: '0.85rem' }}>No teams yet.</p>
+          <p className="sorg-fg-muted" style={{ fontSize: '0.85rem' }}>
+            No teams yet.
+          </p>
         ) : (
           <div style={{ display: 'grid', gap: 8 }}>
             {teams.map((t) => (
               <div
                 key={t.id}
+                className="sorg-row-card"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
                   padding: '8px 12px',
-                  borderRadius: 8,
-                  border: '1px solid rgba(255,255,255,0.07)',
-                  background: 'rgba(255,255,255,0.02)',
                 }}
               >
                 <input
                   defaultValue={t.name}
                   onBlur={(e) => rename(t, e.target.value)}
+                  className="sorg-team-input"
                   style={{
                     flex: 1,
                     minWidth: 0,
-                    background: 'transparent',
-                    border: 'none',
-                    color: '#f0f6fc',
                     fontWeight: 600,
                     fontSize: '0.85rem',
                   }}
                 />
-                <span style={{ color: '#6b7280', fontSize: '0.7rem', flexShrink: 0 }}>
+                <span className="sorg-fg-muted" style={{ fontSize: '0.7rem', flexShrink: 0 }}>
                   {t.memberCount} member{t.memberCount === 1 ? '' : 's'}
                 </span>
                 <button
                   type="button"
                   onClick={() => remove(t)}
                   disabled={removingId === t.id}
+                  className="sorg-pill sorg-pill--danger"
                   style={{
                     cursor: removingId === t.id ? 'default' : 'pointer',
-                    fontSize: '0.72rem',
-                    fontWeight: 600,
-                    padding: '5px 11px',
-                    borderRadius: 999,
-                    color: '#f87171',
-                    background: 'rgba(239,68,68,0.08)',
-                    border: '1px solid rgba(239,68,68,0.25)',
-                    flexShrink: 0,
                     opacity: removingId === t.id ? 0.6 : 1,
                   }}
                 >
@@ -195,36 +188,18 @@ export function TeamsSectors() {
 
       <div className="settings-section">
         <div className="settings-section-title">Sector coverage (GICS)</div>
-        <p style={{ color: '#9ca3af', fontSize: '0.8rem', marginBottom: '0.75rem' }}>
+        <p className="sorg-fg-muted" style={{ fontSize: '0.8rem', marginBottom: '0.75rem' }}>
           The 11 GICS sectors the council can cover. Assign analysts to sectors on the org chart to
           close coverage gaps.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: '0.75rem' }}>
           {GICS_SECTORS.map((s) => (
-            <span
-              key={s}
-              style={{
-                fontSize: '0.7rem',
-                padding: '3px 9px',
-                borderRadius: 999,
-                background: 'rgba(99,102,241,0.08)',
-                color: '#a5b4fc',
-                border: '1px solid rgba(99,102,241,0.18)',
-              }}
-            >
+            <span key={s} className="sorg-tag">
               {s}
             </span>
           ))}
         </div>
-        <Link
-          href="/org-team-hub/org-chart"
-          style={{
-            fontSize: '0.82rem',
-            fontWeight: 600,
-            color: '#c7d2fe',
-            textDecoration: 'none',
-          }}
-        >
+        <Link href="/org-team-hub/org-chart" className="sorg-orgchart-link">
           Manage sector coverage on the org chart →
         </Link>
       </div>

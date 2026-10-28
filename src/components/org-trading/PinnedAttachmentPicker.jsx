@@ -32,7 +32,7 @@ export function PinnedAttachmentPicker({ ticker, selected = [], onChange }) {
 
   if (items === null) {
     return (
-      <div style={{ fontSize: '0.75rem', color: '#8b949e', padding: '0.5rem' }}>
+      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '0.5rem' }}>
         Loading collection…
       </div>
     );
@@ -42,7 +42,7 @@ export function PinnedAttachmentPicker({ ticker, selected = [], onChange }) {
       <div
         style={{
           fontSize: '0.75rem',
-          color: '#8b949e',
+          color: 'var(--text-muted)',
           padding: '0.75rem',
           background: 'rgba(255,255,255,0.02)',
           borderRadius: 6,

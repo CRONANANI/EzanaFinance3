@@ -70,7 +70,9 @@ export function FundConfig() {
       </div>
 
       {loading || !cfg ? (
-        <p style={{ color: '#9ca3af', fontSize: '0.85rem' }}>Loading…</p>
+        <p className="sorg-fg-muted" style={{ fontSize: '0.85rem' }}>
+          Loading…
+        </p>
       ) : (
         <>
           <div className="settings-section">
@@ -142,25 +144,10 @@ export function FundConfig() {
 
           <div className="settings-section">
             <div className="settings-section-title">Investment policy</div>
-            <p style={{ color: '#9ca3af', fontSize: '0.8rem', marginBottom: '0.75rem' }}>
+            <p className="sorg-fg-muted" style={{ fontSize: '0.8rem', marginBottom: '0.75rem' }}>
               The IPS defines the fund&apos;s mandate, constraints, and compliance rules.
             </p>
-            <Link
-              href="/org-team-hub/compliance"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                fontSize: '0.82rem',
-                fontWeight: 600,
-                color: '#c7d2fe',
-                textDecoration: 'none',
-                padding: '8px 14px',
-                borderRadius: 8,
-                border: '1px solid rgba(99,102,241,0.3)',
-                background: 'rgba(99,102,241,0.08)',
-              }}
-            >
+            <Link href="/org-team-hub/compliance" className="sorg-ips-link">
               <i className="bi bi-file-earmark-ruled" /> Open Investment Policy editor
             </Link>
           </div>
@@ -175,8 +162,8 @@ export function FundConfig() {
             >
               {saving ? 'Saving…' : 'Save fund configuration'}
             </button>
-            {msg?.ok && <span style={{ color: '#10b981', fontSize: '0.8rem' }}>✓ {msg.ok}</span>}
-            {msg?.err && <span style={{ color: '#f87171', fontSize: '0.8rem' }}>{msg.err}</span>}
+            {msg?.ok && <span className="sorg-msg-ok">✓ {msg.ok}</span>}
+            {msg?.err && <span className="sorg-msg-err">{msg.err}</span>}
           </div>
         </>
       )}

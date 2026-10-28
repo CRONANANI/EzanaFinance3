@@ -429,7 +429,7 @@ function FundChart({ snapshots, loading, showLabel = true }) {
         ) : (
           <div style={{ padding: '14px 4px' }}>
             {loading ? (
-              <Skel w="100%" h={120} style={{ borderRadius: 10 }} />
+              <Skel w="100%" h={120} style={{ borderRadius: 'var(--radius-md)' }} />
             ) : (
               <p className="thw-empty">
                 No fund snapshots yet. The chart fills in as daily snapshots are recorded from Fund
@@ -986,7 +986,7 @@ export default function OrgTeamHubPage() {
             border: '1px solid var(--emerald-border, rgba(16,185,129,0.4))',
             borderRadius: 8,
             background: 'var(--emerald-bg, rgba(16,185,129,0.1))',
-            color: 'var(--emerald, #10b981)',
+            color: 'var(--emerald)',
             fontWeight: 600,
             cursor: 'pointer',
           }}

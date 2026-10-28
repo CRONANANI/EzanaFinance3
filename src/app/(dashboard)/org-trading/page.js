@@ -10,14 +10,10 @@ export default function OrgTradingPage() {
   const { isOrgUser, orgRole, orgData, isLoading, canFlagPositions } = useOrg();
 
   if (isLoading) {
-    return <div style={{ padding: '2rem', color: '#8b949e' }}>Loading Council Trading…</div>;
+    return <div className="ot-page-notice">Loading Council Trading…</div>;
   }
   if (!isOrgUser) {
-    return (
-      <div style={{ padding: '2rem', color: '#8b949e' }}>
-        This page is for organizational members only.
-      </div>
-    );
+    return <div className="ot-page-notice">This page is for organizational members only.</div>;
   }
 
   return (

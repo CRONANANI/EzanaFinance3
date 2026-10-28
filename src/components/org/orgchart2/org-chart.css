@@ -63,7 +63,7 @@
   line-height: 1;
 }
 .oc2-term-stat-value.is-amber {
-  color: var(--warning, #d97706);
+  color: var(--warning);
 }
 .oc2-term-stat-label {
   font-size: 0.72rem;
@@ -82,7 +82,7 @@
   border-radius: 9999px;
   background: rgba(245, 158, 11, 0.12);
   border: 1px solid rgba(245, 158, 11, 0.35);
-  color: var(--warning, #d97706);
+  color: var(--warning);
 }
 
 /* ── Tabs ───────────────────────────────────────────────────────────────── */
@@ -114,7 +114,7 @@
 }
 .oc2-tab.is-active {
   background: var(--emerald, var(--emerald));
-  color: #04130d;
+  color: #fff;
 }
 
 /* ── Faculty advisor lane ───────────────────────────────────────────────── */
@@ -164,7 +164,7 @@
   padding: 0.12rem 0.5rem;
   border-radius: 9999px;
   background: var(--emerald, var(--emerald));
-  color: #04130d;
+  color: #fff;
 }
 .oc2-advisor-supervises {
   margin-top: 0.55rem;
@@ -342,7 +342,7 @@
   border-radius: 9999px;
   background: rgba(245, 158, 11, 0.14);
   border: 1px solid rgba(245, 158, 11, 0.4);
-  color: var(--warning, #d97706);
+  color: var(--warning);
 }
 
 /* ── Sector coverage map ────────────────────────────────────────────────── */
@@ -385,7 +385,7 @@
   border-radius: 9999px;
   background: rgba(245, 158, 11, 0.16);
   border: 1px solid rgba(245, 158, 11, 0.45);
-  color: var(--warning, #d97706);
+  color: var(--warning);
 }
 .oc2-sector-members {
   display: flex;
@@ -425,7 +425,7 @@
 }
 .oc2-assign-btn:hover {
   background: var(--emerald, var(--emerald));
-  color: #04130d;
+  color: #fff;
 }
 .oc2-assign-row {
   display: flex;

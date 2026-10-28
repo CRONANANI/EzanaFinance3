@@ -80,7 +80,7 @@ export function AcademicSummaryStrip() {
             className="ac3-num ac3-strong"
             style={{
               fontSize: '1.05rem',
-              color: data.openViolations ? 'var(--negative, #ef4444)' : undefined,
+              color: data.openViolations ? 'var(--negative)' : undefined,
             }}
           >
             {data.openViolations}

@@ -14,64 +14,19 @@
   max-width: 100%;
   font-family: var(--font-sans);
 
-  /* ── DARK (default) ── */
-  /* Flat surface: the Command Center rides on the app page colour (#0a0e13, the
+  /* Flat surface: the Command Center rides on the shared app page colour (the
      tone behind the sidebar) rather than its own darker palette, and cards show
-     the page through (transparent + border) instead of a lighter grey fill. */
-  --bg-primary: var(--app-bg);
-  --bg-deep: var(--app-bg);
-  --text-primary: #f0f6fc;
-  --text-secondary: #e2e8f0;
-  --text-muted: #8b949e;
-  --text-faint: #6b7280;
-  --text-ghost: #565d66;
-  --surface-card: transparent;
-  --surface-card-hover: color-mix(in srgb, var(--text-primary) 6%, transparent);
-  --border-primary: rgba(255, 255, 255, 0.14);
-  --border-secondary: rgba(255, 255, 255, 0.06);
-  --border-hover: rgba(255, 255, 255, 0.22);
-  --border-input: rgba(255, 255, 255, 0.1);
-  --emerald: var(--positive-bright);
-  --emerald-bg: rgba(52, 211, 153, 0.1);
-  --emerald-border: rgba(52, 211, 153, 0.3);
-  --emerald-bg-subtle: rgba(52, 211, 153, 0.05);
-  --negative: #f87171;
-  --negative-bg: rgba(248, 113, 113, 0.1);
-  --warning: #d4a72c;
-  --warning-bg: rgba(212, 167, 44, 0.1);
-  --chart-axis: rgba(255, 255, 255, 0.22);
-  --shadow-sm: none;
+     the page through (transparent + border) instead of a lighter grey fill. It
+     consumes the same GLOBAL theme tokens as every other page; the only scoped
+     knob is the transparent card fill below, which keeps cards flat on the
+     same-colour canvas in BOTH themes (the global --surface-card is an opaque
+     white in light mode, which would otherwise give cards a raised fill). */
+  --thw-card-bg: transparent;
 
   background: var(--bg-primary);
   color: var(--text-secondary);
   letter-spacing: -0.008em;
   -webkit-font-smoothing: antialiased;
-}
-
-/* ── LIGHT (.light-mode) ── */
-body.light-mode .thw-root {
-  --bg-primary: #ffffff;
-  --bg-deep: #ffffff;
-  --text-primary: #0b0d10;
-  --text-secondary: #374151;
-  --text-muted: #6b7280;
-  --text-faint: #6b7280;
-  --text-ghost: #9aa0a6;
-  --surface-card: transparent;
-  --surface-card-hover: color-mix(in srgb, var(--text-primary) 4%, transparent);
-  --border-primary: rgba(0, 0, 0, 0.14);
-  --border-secondary: rgba(0, 0, 0, 0.06);
-  --border-hover: rgba(0, 0, 0, 0.18);
-  --border-input: rgba(0, 0, 0, 0.12);
-  --emerald: var(--emerald);
-  --emerald-bg: rgba(5, 150, 105, 0.08);
-  --emerald-border: rgba(5, 150, 105, 0.25);
-  --emerald-bg-subtle: rgba(5, 150, 105, 0.05);
-  --negative: var(--negative);
-  --negative-bg: rgba(220, 38, 38, 0.07);
-  --warning: #b45309;
-  --warning-bg: rgba(180, 83, 9, 0.08);
-  --chart-axis: rgba(0, 0, 0, 0.22);
 }
 
 .thw-root * {
@@ -149,7 +104,7 @@ body.light-mode .thw-root {
   letter-spacing: 0.04em;
   padding: 1px 5px;
   border-radius: var(--radius-sm);
-  background: var(--surface-card);
+  background: var(--thw-card-bg);
   color: var(--text-primary);
   border: 1px solid var(--border-secondary);
   flex-shrink: 0;
@@ -159,8 +114,8 @@ body.light-mode .thw-root {
 .thw-card {
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-xl); /* match Trading Desk .ctd-card */
-  background: var(--surface-card);
-  /* Dark = flat (no shadow slab on #0a0e13); light restores the lift below. */
+  background: var(--thw-card-bg);
+  /* Dark = flat (no shadow slab on the dark canvas); light restores the lift below. */
   box-shadow: none;
   transition:
     border-color 0.15s ease-out,
@@ -188,7 +143,8 @@ html.light-mode .thw-card {
   align-items: center;
   gap: 8px;
 }
-.thw-card-title svg {
+.thw-card-title svg,
+.thw-card-title .bi {
   color: var(--emerald);
 }
 .thw-card-body {
@@ -217,7 +173,7 @@ html.light-mode .thw-card {
   padding: 14px;
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-xl);
-  background: var(--surface-card);
+  background: var(--thw-card-bg);
 }
 .thw-vp-avatar {
   width: 38px;
@@ -290,7 +246,8 @@ html.light-mode .thw-card {
     background 0.12s ease-out,
     color 0.12s ease-out;
 }
-.thw-nav-item svg {
+.thw-nav-item svg,
+.thw-nav-item .bi {
   flex-shrink: 0;
   color: var(--text-faint);
   transition: color 0.12s ease-out;
@@ -304,7 +261,8 @@ html.light-mode .thw-card {
   background: var(--surface-card-hover);
   color: var(--text-primary);
 }
-.thw-nav-item:hover svg {
+.thw-nav-item:hover svg,
+.thw-nav-item:hover .bi {
   color: var(--text-secondary);
 }
 .thw-nav-item.active,
@@ -313,14 +271,16 @@ html.light-mode .thw-card {
   color: var(--emerald);
   font-weight: 600;
 }
-.thw-nav-item.active svg {
+.thw-nav-item.active svg,
+.thw-nav-item.active .bi {
   color: var(--emerald);
 }
 .thw-nav-item.highlight {
   color: var(--emerald);
   font-weight: 600;
 }
-.thw-nav-item.highlight svg {
+.thw-nav-item.highlight svg,
+.thw-nav-item.highlight .bi {
   color: var(--emerald);
 }
 .thw-nav-item.highlight:hover {
@@ -380,7 +340,7 @@ html.light-mode .thw-card {
   padding: 0 12px;
   border: 1px solid var(--border-input);
   border-radius: var(--radius-lg);
-  background: var(--surface-card);
+  background: var(--thw-card-bg);
   color: var(--text-primary);
   font: inherit;
   font-size: var(--type-caption-size);
@@ -403,7 +363,7 @@ html.light-mode .thw-card {
   height: 40px;
   border: 1px solid var(--border-input);
   border-radius: var(--radius-lg);
-  background: var(--surface-card);
+  background: var(--thw-card-bg);
   color: var(--text-faint);
   cursor: text;
   transition: border-color 0.12s ease-out;
@@ -411,7 +371,8 @@ html.light-mode .thw-card {
 .thw-search:focus-within {
   border-color: var(--emerald-border);
 }
-.thw-search svg {
+.thw-search svg,
+.thw-search .bi {
   flex-shrink: 0;
 }
 .thw-search-input {
@@ -459,7 +420,7 @@ html.light-mode .thw-card {
   height: 26px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
-  background: var(--surface-card);
+  background: var(--thw-card-bg);
   color: var(--text-secondary);
   cursor: pointer;
   transition:
@@ -514,7 +475,7 @@ html.light-mode .thw-card {
   border: 1px solid var(--border-primary);
   border-top: 2px solid var(--emerald);
   border-radius: var(--radius-lg); /* kept: 16px reads as a lozenge on a 50px strip card */
-  background: var(--surface-card);
+  background: var(--thw-card-bg);
   box-shadow: none; /* dark = flat; light lift restored below */
   cursor: pointer;
   font-family: inherit;
@@ -574,7 +535,7 @@ html.light-mode .thw-cal-card {
   color: var(--text-muted);
   padding: 2px 6px;
   border-radius: var(--radius-sm);
-  background: var(--surface-card);
+  background: var(--thw-card-bg);
   border: 1px solid var(--border-secondary);
   white-space: nowrap;
   overflow: hidden;
@@ -640,7 +601,7 @@ html.light-mode .thw-cal-card {
   padding: 3px 9px;
   border-radius: 999px;
   border: 1px solid var(--border-primary);
-  background: var(--surface-card);
+  background: var(--thw-card-bg);
   color: var(--text-secondary);
 }
 .thw-pill.pos {
@@ -683,7 +644,7 @@ html.light-mode .thw-cal-card {
   border: 1px solid var(--border-primary);
   border-left: 3px solid var(--emerald);
   border-radius: var(--radius-md);
-  background: var(--surface-card);
+  background: var(--thw-card-bg);
   cursor: pointer;
   font-family: inherit;
   color: inherit;
@@ -855,7 +816,7 @@ html.light-mode .thw-cal-card {
   padding: 10px 12px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-primary);
-  background: var(--surface-card);
+  background: var(--thw-card-bg);
 }
 .thw-deadline + .thw-deadline {
   margin-top: 8px;
@@ -905,7 +866,7 @@ html.light-mode .thw-cal-card {
   border-color: var(--emerald-border);
 }
 .thw-badge-warning {
-  background: var(--surface-card);
+  background: var(--thw-card-bg);
   color: var(--text-secondary);
   border-color: var(--border-primary);
 }
@@ -936,7 +897,7 @@ button.thw-badge-btn:disabled {
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-xl); /* match Trading Desk .ctd-card */
   padding: 12px 16px 6px;
-  background: var(--surface-card);
+  background: var(--thw-card-bg);
   box-shadow: none; /* dark = flat; light lift restored below */
 }
 body.light-mode .thw-chart-card,
@@ -991,9 +952,6 @@ html.light-mode .thw-chart-card {
   background: var(--emerald);
   border-color: var(--emerald);
 }
-body.light-mode .thw-range.active {
-  color: #fff;
-}
 .thw-chart {
   height: 150px;
   margin-top: 12px;
@@ -1020,7 +978,7 @@ body.light-mode .thw-range.active {
   height: 9px;
   border-radius: 50%;
   background: var(--emerald);
-  border: 2px solid var(--surface-card);
+  border: 2px solid var(--thw-card-bg);
   transform: translate(-50%, -50%);
   pointer-events: none;
 }

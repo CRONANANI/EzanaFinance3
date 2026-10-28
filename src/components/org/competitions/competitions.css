@@ -384,14 +384,16 @@
   color: var(--text-secondary);
   font-size: 13.5px;
 }
-.pcx-check li svg {
+.pcx-check li svg,
+.pcx-check li .bi {
   color: var(--text-faint);
   flex: none;
 }
 .pcx-check li.is-met {
   color: var(--text-primary);
 }
-.pcx-check li.is-met svg {
+.pcx-check li.is-met svg,
+.pcx-check li.is-met .bi {
   color: var(--org-primary, var(--emerald));
 }
 .pcx-advance {

@@ -65,7 +65,11 @@ export function CohortSettings() {
   };
 
   const archive = async (cohort) => {
-    if (!window.confirm(`Archive "${cohort.name}"? This snapshots its track record and graduates members.`))
+    if (
+      !window.confirm(
+        `Archive "${cohort.name}"? This snapshots its track record and graduates members.`,
+      )
+    )
       return;
     const res = await fetch(`/api/org/cohorts/${cohort.id}/archive`, { method: 'POST' });
     if (res.ok) {
@@ -112,37 +116,45 @@ export function CohortSettings() {
             </button>
           </div>
         </form>
-        {msg?.ok && <span style={{ color: '#10b981', fontSize: '0.8rem' }}>✓ {msg.ok}</span>}
-        {msg?.err && <span style={{ color: '#f87171', fontSize: '0.8rem' }}>{msg.err}</span>}
+        {msg?.ok && <span className="sorg-msg-ok">✓ {msg.ok}</span>}
+        {msg?.err && <span className="sorg-msg-err">{msg.err}</span>}
       </div>
 
       <div className="settings-section">
         <div className="settings-section-title">Active cohorts</div>
         {loading ? (
-          <p style={{ color: '#9ca3af', fontSize: '0.85rem' }}>Loading…</p>
+          <p className="sorg-fg-muted" style={{ fontSize: '0.85rem' }}>
+            Loading…
+          </p>
         ) : active.length === 0 ? (
-          <p style={{ color: '#6b7280', fontSize: '0.85rem' }}>No active cohorts.</p>
+          <p className="sorg-fg-muted" style={{ fontSize: '0.85rem' }}>
+            No active cohorts.
+          </p>
         ) : (
           <div style={{ display: 'grid', gap: 8 }}>
             {active.map((c) => (
               <div
                 key={c.id}
+                className={`sorg-row-card ${c.is_current ? 'sorg-row-card--current' : ''}`}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
                   padding: '9px 12px',
-                  borderRadius: 8,
-                  border: c.is_current
-                    ? '1px solid rgba(16,185,129,0.35)'
-                    : '1px solid rgba(255,255,255,0.07)',
-                  background: c.is_current ? 'rgba(16,185,129,0.06)' : 'rgba(255,255,255,0.02)',
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ color: '#f0f6fc', fontWeight: 600, fontSize: '0.85rem' }}>{c.name}</span>
+                  <span
+                    className="sorg-fg-primary"
+                    style={{ fontWeight: 600, fontSize: '0.85rem' }}
+                  >
+                    {c.name}
+                  </span>
                   {c.is_current && (
-                    <span style={{ color: '#10b981', fontSize: '0.65rem', fontWeight: 700, marginLeft: 8 }}>
+                    <span
+                      className="sorg-fg-emerald"
+                      style={{ fontSize: '0.65rem', fontWeight: 700, marginLeft: 8 }}
+                    >
                       CURRENT
                     </span>
                   )}
@@ -151,7 +163,7 @@ export function CohortSettings() {
                   <button
                     type="button"
                     onClick={() => setCurrent(c)}
-                    style={pill('#10b981', 'rgba(16,185,129,0.08)', 'rgba(16,185,129,0.25)')}
+                    className="sorg-pill sorg-pill--emerald"
                   >
                     Set current
                   </button>
@@ -159,7 +171,7 @@ export function CohortSettings() {
                 <button
                   type="button"
                   onClick={() => archive(c)}
-                  style={pill('#9ca3af', 'rgba(107,114,128,0.1)', 'rgba(255,255,255,0.12)')}
+                  className="sorg-pill sorg-pill--neutral"
                 >
                   Archive
                 </button>
@@ -176,14 +188,12 @@ export function CohortSettings() {
             {archived.map((c) => (
               <div
                 key={c.id}
+                className="sorg-archived-row"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: 10,
                   padding: '8px 12px',
-                  borderRadius: 8,
-                  border: '1px solid rgba(255,255,255,0.05)',
-                  color: '#6b7280',
                   fontSize: '0.8rem',
                 }}
               >
@@ -199,18 +209,4 @@ export function CohortSettings() {
       )}
     </div>
   );
-}
-
-function pill(fg, bg, border) {
-  return {
-    cursor: 'pointer',
-    fontSize: '0.72rem',
-    fontWeight: 600,
-    padding: '5px 11px',
-    borderRadius: 999,
-    color: fg,
-    background: bg,
-    border: `1px solid ${border}`,
-    flexShrink: 0,
-  };
 }

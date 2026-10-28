@@ -111,11 +111,13 @@ function ExecutiveHomeCards({ summary, meetings, orgData }) {
             >
               <div>
                 <p className="hts-label">{orgName} · Total AUM</p>
-                <div className="hts-stat-lg">{fmtMoney(perf?.total_value)}</div>
+                <div className="hts-stat-lg org-num">{fmtMoney(perf?.total_value)}</div>
                 {todayDollar == null ? (
-                  <div className="hts-change-row">{NA}</div>
+                  <div className="hts-change-row org-num">{NA}</div>
                 ) : (
-                  <div className={`hts-change-row ${todayDollar >= 0 ? 'positive' : 'negative'}`}>
+                  <div
+                    className={`hts-change-row org-num ${todayDollar >= 0 ? 'positive' : 'negative'}`}
+                  >
                     {todayDollar >= 0 ? '▲' : '▼'} {todayDollar >= 0 ? '+' : ''}
                     {fmtMoney(todayDollar)} ({fmtSignedPct(todayPct, 2)}) today
                   </div>
@@ -148,9 +150,9 @@ function ExecutiveHomeCards({ summary, meetings, orgData }) {
                   <h3>{team.name}</h3>
                 </div>
                 <div className="hts-card-body">
-                  <div className="hts-stat-lg">{fmtMoney(team.value)}</div>
+                  <div className="hts-stat-lg org-num">{fmtMoney(team.value)}</div>
                   <div
-                    className={`hts-change-row ${(team.roiPct ?? 0) >= 0 ? 'positive' : 'negative'}`}
+                    className={`hts-change-row org-num ${(team.roiPct ?? 0) >= 0 ? 'positive' : 'negative'}`}
                   >
                     ROI {fmtSignedPct(team.roiPct)}
                   </div>
@@ -281,9 +283,9 @@ function PMHomeCards({ summary, tasks, meetings, orgData }) {
           </div>
           <div className="hts-card-body">
             <p className="hts-label">Team Portfolio Value</p>
-            <div className="hts-stat-lg">{fmtMoney(sector?.value)}</div>
+            <div className="hts-stat-lg org-num">{fmtMoney(sector?.value)}</div>
             <div
-              className={`hts-change-row ${(sector?.roiPct ?? 0) >= 0 ? 'positive' : 'negative'}`}
+              className={`hts-change-row org-num ${(sector?.roiPct ?? 0) >= 0 ? 'positive' : 'negative'}`}
             >
               ROI {fmtSignedPct(sector?.roiPct)}
             </div>
@@ -468,9 +470,9 @@ function AnalystHomeCards({ summary, tasks, meetings, orgData }) {
           </div>
           <div className="hts-card-body">
             <p className="hts-label">Team Portfolio Value</p>
-            <div className="hts-stat-lg">{fmtMoney(sector?.value)}</div>
+            <div className="hts-stat-lg org-num">{fmtMoney(sector?.value)}</div>
             <div
-              className={`hts-change-row ${(sector?.roiPct ?? 0) >= 0 ? 'positive' : 'negative'}`}
+              className={`hts-change-row org-num ${(sector?.roiPct ?? 0) >= 0 ? 'positive' : 'negative'}`}
             >
               ROI {fmtSignedPct(sector?.roiPct)}
             </div>

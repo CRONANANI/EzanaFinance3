@@ -133,9 +133,9 @@
   color: var(--text-primary);
 }
 .sc2-pill.is-active {
-  background: var(--emerald, var(--emerald));
-  border-color: var(--emerald, var(--emerald));
-  color: #04130d;
+  background: var(--emerald);
+  border-color: var(--emerald);
+  color: #fff;
 }
 
 /* ── Research note cards ────────────────────────────────────────────────── */

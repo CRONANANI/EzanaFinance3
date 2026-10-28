@@ -280,7 +280,8 @@ function ApplicantCard({ a, onOpen }) {
       <div className="c2-card-row">
         {a.aggregate_star != null && (
           <span className="c2-star">
-            <i className="bi bi-star" aria-hidden="true" /> {a.aggregate_star.toFixed(2)}
+            <i className="bi bi-star" aria-hidden="true" />{' '}
+            <span className="org-num">{a.aggregate_star.toFixed(2)}</span>
           </span>
         )}
         {a.has_resume && (

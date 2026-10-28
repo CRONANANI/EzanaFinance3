@@ -39,9 +39,9 @@ export function AttributionBySector({ data = [] }) {
             <Tooltip
               cursor={{ fill: 'rgba(16,185,129,0.06)' }}
               contentStyle={{
-                background: 'var(--bg-secondary, #0d1218)',
+                background: 'var(--bg-secondary)',
                 border: '1px solid var(--border-primary)',
-                borderRadius: 10,
+                borderRadius: 'var(--radius-md)',
                 fontSize: 12,
               }}
               formatter={(v, k) => [`${v}%`, k === 'weight' ? 'Weight' : 'Contribution']}

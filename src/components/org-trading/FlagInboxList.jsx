@@ -19,7 +19,10 @@ export function FlagInboxList({ flags, selectedFlagId, onSelect, mode }) {
   if (!flags || flags.length === 0) {
     return (
       <div className="ot-inbox-empty">
-        <i className="bi bi-flag" style={{ fontSize: '2rem', color: '#374151', marginBottom: '0.5rem' }} />
+        <i
+          className="bi bi-flag"
+          style={{ fontSize: '2rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}
+        />
         <p>
           {mode === 'inbox'
             ? 'No flags addressed to you.'
@@ -55,7 +58,9 @@ export function FlagInboxList({ flags, selectedFlagId, onSelect, mode }) {
               <div className="ot-inbox-item-meta">
                 {f.ticker} · {raiserName} → {recipientName} · {timeAgo(f.created_at)}
                 {f.status !== 'open' && (
-                  <span style={{ marginLeft: '0.5rem', textTransform: 'uppercase' }}>· {f.status}</span>
+                  <span style={{ marginLeft: '0.5rem', textTransform: 'uppercase' }}>
+                    · {f.status}
+                  </span>
                 )}
               </div>
               <h3 className="ot-inbox-item-subject">{f.subject}</h3>

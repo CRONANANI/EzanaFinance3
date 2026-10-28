@@ -206,7 +206,7 @@ export function FundDashboard({ initialData = null }) {
             style={{
               width: '100%',
               maxWidth: 640,
-              background: 'var(--bg-secondary, #0d1218)',
+              background: 'var(--bg-secondary)',
               border: '1px solid var(--border-primary)',
               borderRadius: 16,
               padding: '1.5rem',

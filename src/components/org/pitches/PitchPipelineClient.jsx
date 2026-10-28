@@ -17,10 +17,10 @@ export function PitchPipelineClient({ initialBoard = null }) {
   const [composerOpen, setComposerOpen] = useState(false);
   const [boardKey, setBoardKey] = useState(0);
 
-  if (isLoading) return <div style={{ padding: '2rem', color: '#888' }}>Loading…</div>;
+  if (isLoading) return <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Loading…</div>;
   if (!isOrgUser) {
     return (
-      <div style={{ padding: '2rem', color: '#888' }}>
+      <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>
         This page is for organizational members only.
       </div>
     );

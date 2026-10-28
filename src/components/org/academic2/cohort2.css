@@ -167,7 +167,7 @@
 }
 .c2-tab--active .c2-tab-count {
   background: var(--emerald);
-  color: #04120c;
+  color: #fff;
 }
 
 /* ── Stat strip ────────────────────────────────────────────────────────── */
@@ -529,10 +529,6 @@
 .c2-slideover {
   background-color: var(--app-bg);
 }
-:root[data-theme='light'] .c2-modal,
-:root[data-theme='light'] .c2-slideover {
-  background-color: #ffffff;
-}
 .c2-modal-title {
   font-size: 1.15rem;
   font-weight: 700;
@@ -707,6 +703,7 @@
   color: var(--text-muted);
 }
 .c2-empty svg,
+.c2-empty .bi,
 .c2-empty-icon {
   opacity: 0.5;
   margin-bottom: 0.5rem;

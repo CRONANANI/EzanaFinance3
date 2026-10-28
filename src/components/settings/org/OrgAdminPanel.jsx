@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
+import './settings-org.css';
 import { OrgSettingsPanel } from '@/components/settings/OrgSettingsPanel';
 import { InviteOnboarding } from './InviteOnboarding';
 import { TeamsSectors } from './TeamsSectors';
@@ -51,13 +52,13 @@ export function OrgAdminPanel() {
       <div
         role="tablist"
         aria-label="Organization sections"
+        className="sorg-tabs"
         style={{
           display: 'flex',
           flexWrap: 'wrap',
           gap: 6,
           marginBottom: 18,
           paddingBottom: 14,
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
         }}
       >
         {SECTIONS.map((s) => {
@@ -69,19 +70,7 @@ export function OrgAdminPanel() {
               role="tab"
               aria-selected={active}
               onClick={() => setSection(s.key)}
-              style={{
-                cursor: 'pointer',
-                fontSize: '0.78rem',
-                fontWeight: 600,
-                padding: '7px 13px',
-                borderRadius: 8,
-                border: active
-                  ? '1px solid rgba(99,102,241,0.45)'
-                  : '1px solid rgba(255,255,255,0.08)',
-                background: active ? 'rgba(99,102,241,0.12)' : 'transparent',
-                color: active ? '#c7d2fe' : '#9ca3af',
-                transition: 'all 0.12s ease',
-              }}
+              className={`sorg-tab ${active ? 'sorg-tab--active' : 'sorg-tab--inactive'}`}
             >
               {s.label}
             </button>

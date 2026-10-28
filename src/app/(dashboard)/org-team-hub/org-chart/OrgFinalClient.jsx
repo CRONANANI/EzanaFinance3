@@ -628,9 +628,9 @@ export function OrgFinalClient({ initialData = null }) {
 
           {loading ? (
             <div className="ox2-bandchart">
-              <Skel w={540} h={62} style={{ borderRadius: 10 }} />
+              <Skel w={540} h={62} style={{ borderRadius: 'var(--radius-md)' }} />
               <div className="ox2-vline" />
-              <Skel w="100%" h={150} style={{ borderRadius: 10, maxWidth: 1318 }} />
+              <Skel w="100%" h={150} style={{ borderRadius: 'var(--radius-md)', maxWidth: 1318 }} />
             </div>
           ) : layout === 'radial' ? (
             <RadialView

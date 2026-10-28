@@ -11,9 +11,9 @@ import { NA } from '@/lib/org-display';
 const UUID_RE = /^[0-9a-f-]{36}$/i;
 
 function roleColor(role) {
-  if (role === 'executive') return '#f59e0b';
-  if (role === 'portfolio_manager') return '#6366f1';
-  return '#10b981';
+  if (role === 'executive') return 'var(--emerald)';
+  if (role === 'portfolio_manager') return 'var(--warning)';
+  return 'var(--text-muted)';
 }
 
 function AvatarCircle({ name, role, size = 48 }) {
@@ -23,20 +23,21 @@ function AvatarCircle({ name, role, size = 48 }) {
     .join('')
     .slice(0, 2)
     .toUpperCase();
+  const c = roleColor(role);
   return (
     <div
       style={{
         width: size,
         height: size,
         borderRadius: '50%',
-        background: `linear-gradient(135deg, ${roleColor(role)}33, ${roleColor(role)}88)`,
-        border: `2px solid ${roleColor(role)}66`,
+        background: `linear-gradient(135deg, color-mix(in srgb, ${c} 20%, transparent), color-mix(in srgb, ${c} 53%, transparent))`,
+        border: `2px solid color-mix(in srgb, ${c} 40%, transparent)`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         fontSize: size * 0.32,
         fontWeight: 700,
-        color: roleColor(role),
+        color: c,
         flexShrink: 0,
       }}
     >
@@ -45,11 +46,11 @@ function AvatarCircle({ name, role, size = 48 }) {
   );
 }
 
-function SectionTitle({ children, isDark }) {
+function SectionTitle({ children }) {
   return (
     <p
+      className="org-profile-section-title"
       style={{
-        color: isDark ? '#9ca3af' : '#64748b',
         fontSize: '0.5625rem',
         fontWeight: 700,
         textTransform: 'uppercase',
@@ -124,18 +125,6 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
   const memberName = (m) => m?.display_name || m?.name || 'Member';
   const isSelf = viewerMemberId && member.id === viewerMemberId;
 
-  const cardBg = isDark ? '#0d1117' : '#ffffff';
-  const cardBorder = isDark ? '1px solid rgba(99,102,241,0.2)' : '1px solid #e5e7eb';
-  const heading = isDark ? '#f0f6fc' : '#111827';
-  const body = isDark ? '#d1d5db' : '#374151';
-  const bodySecondary = isDark ? '#cbd5e1' : '#4b5563';
-  const muted = isDark ? '#8b949e' : '#6b7280';
-  const meta = muted;
-  const closeBtnBg = 'transparent';
-  const closeBtnBorder = isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e5e7eb';
-  const textareaBg = isDark ? 'rgba(0,0,0,0.25)' : '#f9fafb';
-  const textareaColor = isDark ? '#f0f6fc' : '#111827';
-
   const sendMessage = async () => {
     const trimmed = messageBody.trim();
     if (!trimmed) {
@@ -193,26 +182,24 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
       }}
     >
       <div
-        className="db-card"
+        className="db-card org-profile-card"
         style={{
           width: '100%',
           maxWidth: 440,
           maxHeight: 'min(90vh, 720px)',
           overflow: 'auto',
-          background: cardBg,
-          border: cardBorder,
           boxShadow: isDark ? '0 24px 48px rgba(0,0,0,0.45)' : '0 24px 48px rgba(0,0,0,0.12)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         <div
+          className="org-profile-header"
           style={{
             display: 'flex',
             alignItems: 'flex-start',
             justifyContent: 'space-between',
             gap: '0.75rem',
             padding: '1rem 1rem 0',
-            borderBottom: isDark ? '1px solid rgba(99,102,241,0.1)' : '1px solid #e5e7eb',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -220,13 +207,14 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
             <div>
               <h2
                 id="org-member-profile-title"
-                style={{ color: heading, fontSize: '1.1rem', fontWeight: 700, margin: 0 }}
+                className="org-profile-heading"
+                style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}
               >
                 {member.name}
               </h2>
               <p
+                className="org-profile-subrole"
                 style={{
-                  color: '#818cf8',
                   fontSize: '0.75rem',
                   fontWeight: 600,
                   margin: '4px 0 0',
@@ -241,11 +229,9 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
             type="button"
             onClick={handleClose}
             aria-label="Close profile"
+            className="org-profile-close"
             style={{
-              background: closeBtnBg,
-              border: closeBtnBorder,
               borderRadius: '8px',
-              color: muted,
               width: 36,
               height: 36,
               cursor: 'pointer',
@@ -264,15 +250,13 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
               <button
                 type="button"
                 onClick={() => setShowScorecard((s) => !s)}
+                className={`org-profile-scorecard-toggle${showScorecard ? ' is-active' : ''}`}
                 style={{
                   font: 'inherit',
                   fontSize: '0.78rem',
                   fontWeight: 700,
                   padding: '0.45rem 0.85rem',
                   borderRadius: 9,
-                  border: '1px solid rgba(16,185,129,0.4)',
-                  background: showScorecard ? '#10b981' : 'transparent',
-                  color: showScorecard ? '#04130d' : '#10b981',
                   cursor: 'pointer',
                 }}
               >
@@ -289,15 +273,15 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
 
           {/^[0-9a-f-]{36}$/i.test(member.id || '') && <CompetitionTrophies memberId={member.id} />}
 
-          <SectionTitle isDark={isDark}>Contact</SectionTitle>
-          <p style={{ color: body, fontSize: '0.8125rem', margin: '0 0 1rem' }}>
+          <SectionTitle>Contact</SectionTitle>
+          <p className="org-profile-body" style={{ fontSize: '0.8125rem', margin: '0 0 1rem' }}>
             <i className="bi bi-envelope" style={{ marginRight: 6, opacity: 0.7 }} />
             {member.email || NA}
           </p>
 
           {coverageSectors.length > 0 && (
             <>
-              <SectionTitle isDark={isDark}>Sector coverage</SectionTitle>
+              <SectionTitle>Sector coverage</SectionTitle>
               <div
                 style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', margin: '0 0 1rem' }}
               >
@@ -308,7 +292,7 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
                       fontSize: '0.6875rem',
                       padding: '2px 8px',
                       borderRadius: '999px',
-                      background: 'var(--info-bg, rgba(99,102,241,0.1))',
+                      background: 'var(--info-bg)',
                       color: 'var(--info)',
                       fontWeight: 600,
                     }}
@@ -320,23 +304,23 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
             </>
           )}
 
-          <SectionTitle isDark={isDark}>Reports to</SectionTitle>
+          <SectionTitle>Reports to</SectionTitle>
           {reportsTo ? (
             <p
+              className="org-profile-body"
               style={{
-                color: isDark ? '#e5e7eb' : '#374151',
                 fontSize: '0.8125rem',
                 margin: '0 0 1rem',
               }}
             >
               {memberName(reportsTo)}
-              <span style={{ color: meta, fontSize: '0.7rem' }}>
+              <span className="org-profile-muted" style={{ fontSize: '0.7rem' }}>
                 {' '}
                 ({reportsTo.sub_role || (reportsTo.role || '').replace('_', ' ')})
               </span>
             </p>
           ) : (
-            <p style={{ color: meta, fontSize: '0.8125rem', margin: '0 0 1rem' }}>
+            <p className="org-profile-muted" style={{ fontSize: '0.8125rem', margin: '0 0 1rem' }}>
               Council-level role: no direct report above in this chart.
             </p>
           )}
@@ -344,12 +328,12 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
           {(member.role === 'executive' || member.role === 'portfolio_manager') &&
             directReports.length > 0 && (
               <>
-                <SectionTitle isDark={isDark}>
+                <SectionTitle>
                   {member.role === 'executive' ? 'Direct oversight' : 'Analysts on team'}
                 </SectionTitle>
                 <ul
+                  className="org-profile-body-dim"
                   style={{
-                    color: bodySecondary,
                     fontSize: '0.78rem',
                     margin: '0 0 1rem',
                     paddingLeft: '1.1rem',
@@ -359,15 +343,18 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
                     <li key={m.id}>{memberName(m)}</li>
                   ))}
                   {directReports.length > 8 && (
-                    <li style={{ color: meta }}>+{directReports.length - 8} more</li>
+                    <li className="org-profile-muted">+{directReports.length - 8} more</li>
                   )}
                 </ul>
               </>
             )}
 
-          <SectionTitle isDark={isDark}>Send message</SectionTitle>
+          <SectionTitle>Send message</SectionTitle>
           {isSelf ? (
-            <p style={{ color: meta, fontSize: '0.8125rem', margin: '0 0 0.5rem' }}>
+            <p
+              className="org-profile-muted"
+              style={{ fontSize: '0.8125rem', margin: '0 0 0.5rem' }}
+            >
               This is your profile.
             </p>
           ) : (
@@ -377,15 +364,13 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
                 onChange={(e) => setMessageBody(e.target.value)}
                 placeholder={`Message ${member.name}…`}
                 rows={4}
+                className="org-profile-textarea"
                 style={{
                   width: '100%',
                   resize: 'vertical',
                   minHeight: 88,
                   padding: '0.65rem',
                   borderRadius: '8px',
-                  border: '1px solid rgba(99,102,241,0.25)',
-                  background: textareaBg,
-                  color: textareaColor,
                   fontSize: '0.8125rem',
                   marginBottom: '0.6rem',
                   boxSizing: 'border-box',

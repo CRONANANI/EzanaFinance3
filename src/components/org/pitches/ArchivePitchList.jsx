@@ -106,7 +106,7 @@ export function ArchivePitchList() {
         </select>
       </div>
 
-      <p style={{ fontSize: '0.72rem', color: '#6b7280', margin: 0 }}>
+      <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: 0 }}>
         Showing {pitches.length} archived pitch{pitches.length === 1 ? '' : 'es'}
       </p>
 
@@ -130,14 +130,14 @@ export function ArchivePitchList() {
                       : p.status_label}
                 </span>
               </div>
-              <p style={{ fontSize: '0.72rem', color: '#9ca3af', margin: '0.35rem 0 0' }}>
+              <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0.35rem 0 0' }}>
                 Pitched by {p.analyst_name}
                 {p.pm_name ? ` · Approved by ${p.pm_name}` : ''}
                 {p.decision_at
                   ? ` · ${new Date(p.decision_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
                   : ''}
               </p>
-              <p style={{ fontSize: '0.7rem', color: '#6b7280', margin: '0.25rem 0 0' }}>
+              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: '0.25rem 0 0' }}>
                 Vote: {p.vote_yes_count} yes, {p.vote_no_count} no, {p.vote_abstain_count} abstain
               </p>
               <p className="op-archive-thesis">&ldquo;{p.thesis_short}&rdquo;</p>

@@ -75,8 +75,8 @@ export function FundVsBenchmarkChart({ series, benchmarkLabel = 'Benchmark' }) {
       >
         <defs>
           <linearGradient id={`fill${gid}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--emerald, #10b981)" stopOpacity="0.22" />
-            <stop offset="100%" stopColor="var(--emerald, #10b981)" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--emerald)" stopOpacity="0.22" />
+            <stop offset="100%" stopColor="var(--emerald)" stopOpacity="0" />
           </linearGradient>
         </defs>
         <line
@@ -91,14 +91,14 @@ export function FundVsBenchmarkChart({ series, benchmarkLabel = 'Benchmark' }) {
         <path
           d={benchPath}
           fill="none"
-          stroke="var(--text-muted, #94a3b8)"
+          stroke="var(--text-muted)"
           strokeWidth="1.6"
           strokeDasharray="4 3"
         />
         <path
           d={fundPath}
           fill="none"
-          stroke="var(--emerald, #10b981)"
+          stroke="var(--emerald)"
           strokeWidth="2.2"
           strokeLinejoin="round"
         />
@@ -116,8 +116,8 @@ export function FundVsBenchmarkChart({ series, benchmarkLabel = 'Benchmark' }) {
               cx={X(hover)}
               cy={Y(hp.fund_return_pct)}
               r="3.4"
-              fill="var(--emerald, #10b981)"
-              stroke="var(--surface-card, #fff)"
+              fill="var(--emerald)"
+              stroke="var(--surface-card)"
               strokeWidth="1.4"
             />
           </>

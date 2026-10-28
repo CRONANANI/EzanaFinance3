@@ -353,7 +353,8 @@
   font-size: 0.68rem;
   color: var(--text-muted);
 }
-.fa-card-t svg {
+.fa-card-t svg,
+.fa-card-t .bi {
   color: var(--emerald-text, var(--emerald));
 }
 
@@ -376,7 +377,8 @@
   background: var(--emerald-bg, var(--emerald-bg));
   color: var(--text-primary);
 }
-.fa-slm-lead svg {
+.fa-slm-lead svg,
+.fa-slm-lead .bi {
   color: var(--emerald-text, var(--emerald));
 }
 .fa-slm-lead .t {
@@ -545,7 +547,7 @@
 }
 .fa-rank.top3 {
   background: rgba(180, 120, 60, 0.18);
-  color: #b4783c;
+  color: var(--tier-bronze);
 }
 .fa-who {
   display: flex;
@@ -706,12 +708,14 @@
   background: rgba(245, 158, 11, 0.08);
   border-color: rgba(245, 158, 11, 0.3);
 }
-.fa-callout svg {
+.fa-callout svg,
+.fa-callout .bi {
   flex-shrink: 0;
   margin-top: 1px;
   color: var(--text-muted);
 }
-.fa-callout.warning svg {
+.fa-callout.warning svg,
+.fa-callout.warning .bi {
   color: var(--warning, var(--amber));
 }
 .fa-callout b {
@@ -800,7 +804,7 @@
   display: flex;
   align-items: center;
   padding: 0 0.6rem;
-  color: #04130d;
+  color: #fff;
   font-weight: 700;
   font-size: 0.72rem;
   min-width: 40px;

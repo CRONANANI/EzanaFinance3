@@ -4,6 +4,12 @@
   color: var(--text-primary);
 }
 
+/* Loading / gated-access notice copy. */
+.ot-page-notice {
+  padding: 2rem;
+  color: var(--text-muted);
+}
+
 .ot-hero {
   display: flex;
   justify-content: space-between;
@@ -234,7 +240,7 @@
 }
 
 .ot-position-flag-existing.red {
-  background: var(--negative-bg, rgba(239, 68, 68, 0.15));
+  background: var(--negative-bg);
   color: var(--negative);
 }
 
@@ -317,7 +323,7 @@
 
 .ot-flag-color-btn.is-selected.red {
   border-color: var(--negative);
-  background: var(--negative-bg, rgba(239, 68, 68, 0.12));
+  background: var(--negative-bg);
   color: var(--negative);
 }
 
@@ -350,14 +356,14 @@
 .ot-form-input::placeholder,
 .ot-form-textarea::placeholder {
   /* Spec suggested --text-faint, but that fails the AA target this same task
-     sets for the MESSAGE placeholder in BOTH themes (#94a3b8 on #f3f4f6 /
-     #6b7280 on #0a0e13). --text-muted stays clearly secondary yet clears ~4.5:1. */
+     sets for the MESSAGE placeholder in BOTH themes. --text-muted stays clearly
+     secondary yet clears ~4.5:1. */
   color: var(--text-muted);
 }
 
 /* <select> needs its own treatment — the native arrow does NOT inherit color,
    so hide it and paint a themeable chevron. (Mid-grey reads on both the light
-   #f7faf9 and dark input fills; a chevron is an affordance, not body text.) */
+   and dark input fills; a chevron is an affordance, not body text.) */
 .ot-form-select {
   appearance: none;
   -webkit-appearance: none;
@@ -412,7 +418,7 @@
 }
 
 .ot-attachment-icon {
-  color: #6366f1;
+  color: var(--info);
   font-size: 0.9rem;
 }
 
@@ -444,8 +450,8 @@
 
 .ot-btn-primary {
   padding: 0.6rem 1.25rem;
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
-  border: none;
+  background: var(--emerald);
+  border: 1px solid var(--emerald);
   border-radius: var(--radius-md);
   color: #fff;
   font-size: 0.825rem;
@@ -626,11 +632,11 @@
 .ctd-root {
   /* Sector accents → theme tokens (no raw hex in JSX; slate has no token). */
   --ctd-sec-t1: var(--info, var(--blue));
-  --ctd-sec-t2: var(--pink, #ec4899);
+  --ctd-sec-t2: var(--pink);
   --ctd-sec-t3: var(--warning, var(--amber));
-  --ctd-sec-t4: var(--cyan, #06b6d4);
-  --ctd-sec-t5: var(--indigo, #6366f1);
-  --ctd-sec-t6: #64748b;
+  --ctd-sec-t4: var(--cyan);
+  --ctd-sec-t5: var(--indigo);
+  --ctd-sec-t6: var(--text-muted);
   --ctd-sec-t7: var(--emerald);
 
   --ctd-card: var(--surface-card);
@@ -649,8 +655,8 @@
   background: var(--ctd-card);
   border: 1px solid var(--ctd-border);
   border-radius: var(--radius-xl);
-  /* Dark = flat, border-defined: no shadow, so a transparent card on #0a0e13
-     doesn't ring into a lighter slab. Light restores the subtle lift below. */
+  /* Dark = flat, border-defined: no shadow, so a transparent card on the page
+     background doesn't ring into a lighter slab. Light restores the lift below. */
   box-shadow: none;
 }
 body.light-mode .ctd-card,
@@ -754,7 +760,7 @@ html.light-mode .ctd-card {
   padding: 0 0.3rem;
   border-radius: 9999px;
   background: var(--amber, var(--amber));
-  color: #1a1200;
+  color: #fff;
   font-size: 0.65rem;
   font-weight: 700;
 }
@@ -1049,7 +1055,7 @@ html.light-mode .ctd-kpi {
   font-weight: 700;
 }
 .ctd-row-flagged {
-  background: var(--amber-bg, rgba(245, 158, 11, 0.12)) !important;
+  background: var(--amber-bg) !important;
 }
 
 .ctd-flag-btn {
@@ -1080,7 +1086,7 @@ html.light-mode .ctd-kpi {
 .ctd-flag-btn.is-flagged {
   background: var(--amber, var(--amber));
   border-color: var(--amber, var(--amber));
-  color: #1a1200;
+  color: #fff;
 }
 
 /* ── Responsive ── */
@@ -1210,7 +1216,8 @@ html.light-mode .ctd-kpi {
   text-overflow: ellipsis;
   min-width: 0;
 }
-.ot-switcher-trigger svg {
+.ot-switcher-trigger svg,
+.ot-switcher-trigger .bi {
   color: var(--text-muted);
   flex-shrink: 0;
 }
@@ -1394,13 +1401,13 @@ html.light-mode .ctd-kpi {
   line-height: 1.35;
 }
 .ot-banner.amber {
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: color-mix(in srgb, var(--warning) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent);
   color: var(--warning, var(--amber));
 }
 .ot-banner.red {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: color-mix(in srgb, var(--negative) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--negative) 30%, transparent);
   color: var(--negative, var(--negative));
 }
 
@@ -1491,7 +1498,7 @@ html.light-mode .ctd-kpi {
 }
 .ot-seg.high.is-selected {
   border-color: var(--negative, var(--negative));
-  background: rgba(239, 68, 68, 0.16);
+  background: color-mix(in srgb, var(--negative) 16%, transparent);
   color: var(--negative, var(--negative));
   font-weight: 700;
 }
@@ -1541,7 +1548,7 @@ html.light-mode .ctd-kpi {
   background: linear-gradient(135deg, var(--emerald), var(--emerald-hover));
 }
 .ot-cta-red {
-  background: linear-gradient(135deg, var(--negative), #dc2626);
+  background: linear-gradient(135deg, var(--negative), var(--danger));
 }
 
 /* ── Detail panel — the answer path ── */
@@ -1563,7 +1570,7 @@ html.light-mode .ctd-kpi {
 }
 .ot-status-pill.status-open {
   color: var(--warning, var(--amber));
-  border-color: rgba(245, 158, 11, 0.4);
+  border-color: color-mix(in srgb, var(--warning) 40%, transparent);
 }
 .ot-status-pill.status-accepted {
   color: var(--positive, var(--emerald));
@@ -1571,7 +1578,7 @@ html.light-mode .ctd-kpi {
 }
 .ot-status-pill.status-rejected {
   color: var(--negative, var(--negative));
-  border-color: rgba(239, 68, 68, 0.4);
+  border-color: color-mix(in srgb, var(--negative) 40%, transparent);
 }
 /* Escalated = caution semantics: the hairline amber chip treatment. */
 .ot-status-pill.status-escalated {
@@ -1655,7 +1662,7 @@ html.light-mode .ctd-kpi {
   color: var(--positive, var(--emerald));
 }
 .ot-answer-btn.reject {
-  border-color: rgba(239, 68, 68, 0.4);
+  border-color: color-mix(in srgb, var(--negative) 40%, transparent);
   color: var(--negative, var(--negative));
 }
 .ot-answer-btn.escalate {

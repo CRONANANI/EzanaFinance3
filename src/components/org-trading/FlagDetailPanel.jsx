@@ -119,7 +119,8 @@ export function FlagDetailPanel({ flagId, currentMemberId, onClose, onChange }) 
           </div>
           <p className="ot-dossier-muted" style={{ margin: '0.5rem 0 0' }}>
             Raised by {raiserName}
-            {flag.conviction ? ` · ${flag.conviction} conviction` : ''} · {timeAgo(flag.created_at)}
+            {flag.conviction ? ` · ${flag.conviction} conviction` : ''} ·{' '}
+            <span className="org-num">{timeAgo(flag.created_at)}</span>
           </p>
         </div>
         <button type="button" className="ot-modal-close" aria-label="Close" onClick={onClose}>
@@ -184,7 +185,8 @@ export function FlagDetailPanel({ flagId, currentMemberId, onClose, onChange }) 
           {flag.messages.map((m) => (
             <div key={m.id} className="ot-flag-message">
               <div className="ot-flag-message-author">
-                {m.author?.display_name || 'Member'} · {new Date(m.created_at).toLocaleString()}
+                {m.author?.display_name || 'Member'} ·{' '}
+                <span className="org-num">{new Date(m.created_at).toLocaleString()}</span>
               </div>
               <p className="ot-flag-message-body">{m.body}</p>
             </div>
@@ -300,7 +302,14 @@ export function FlagDetailPanel({ flagId, currentMemberId, onClose, onChange }) 
       {!isOpen && (
         <div className={`ot-resolution-note status-${flag.status}`}>
           {STATUS_PILL[flag.status] || flag.status}
-          {flag.resolved_at ? ` · ${new Date(flag.resolved_at).toLocaleString()}` : ''}
+          {flag.resolved_at ? (
+            <>
+              {' · '}
+              <span className="org-num">{new Date(flag.resolved_at).toLocaleString()}</span>
+            </>
+          ) : (
+            ''
+          )}
           {flag.resolution_note && (
             <span className="ot-resolution-text">{flag.resolution_note}</span>
           )}

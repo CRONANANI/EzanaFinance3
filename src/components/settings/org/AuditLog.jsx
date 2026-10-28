@@ -79,23 +79,29 @@ export function AuditLog() {
         </div>
 
         {err ? (
-          <p style={{ color: '#f87171', fontSize: '0.85rem' }}>{err}</p>
+          <p className="sorg-fg-danger" style={{ fontSize: '0.85rem' }}>
+            {err}
+          </p>
         ) : loading ? (
-          <p style={{ color: '#9ca3af', fontSize: '0.85rem' }}>Loading…</p>
+          <p className="sorg-fg-muted" style={{ fontSize: '0.85rem' }}>
+            Loading…
+          </p>
         ) : entries.length === 0 ? (
-          <p style={{ color: '#6b7280', fontSize: '0.85rem' }}>No audit entries yet.</p>
+          <p className="sorg-fg-muted" style={{ fontSize: '0.85rem' }}>
+            No audit entries yet.
+          </p>
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.78rem' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                <tr className="sorg-audit-head-row">
                   {['TIME', 'ACTOR', 'ACTION', 'TARGET', 'DETAIL'].map((h) => (
                     <th
                       key={h}
+                      className="sorg-audit-th"
                       style={{
                         textAlign: 'left',
                         padding: '0.5rem',
-                        color: '#9ca3af',
                         fontSize: '0.6875rem',
                       }}
                     >
@@ -106,20 +112,23 @@ export function AuditLog() {
               </thead>
               <tbody>
                 {entries.map((e) => (
-                  <tr key={e.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <td style={{ padding: '0.5rem', color: '#9ca3af', whiteSpace: 'nowrap' }}>
+                  <tr key={e.id} className="sorg-audit-row">
+                    <td
+                      className="sorg-fg-muted"
+                      style={{ padding: '0.5rem', whiteSpace: 'nowrap' }}
+                    >
                       {new Date(e.created_at).toLocaleString()}
                     </td>
-                    <td style={{ padding: '0.5rem', color: '#f0f6fc' }}>{e.actor_name}</td>
+                    <td className="sorg-fg-primary" style={{ padding: '0.5rem' }}>
+                      {e.actor_name}
+                    </td>
                     <td style={{ padding: '0.5rem' }}>
                       <span
+                        className="sorg-audit-badge"
                         style={{
                           fontSize: '0.65rem',
                           fontWeight: 700,
                           padding: '2px 7px',
-                          borderRadius: 4,
-                          background: 'rgba(99,102,241,0.12)',
-                          color: '#a5b4fc',
                           textTransform: 'uppercase',
                           letterSpacing: '0.03em',
                         }}
@@ -127,8 +136,10 @@ export function AuditLog() {
                         {e.action.replace(/_/g, ' ')}
                       </span>
                     </td>
-                    <td style={{ padding: '0.5rem', color: '#9ca3af' }}>{e.target_type || NA}</td>
-                    <td style={{ padding: '0.5rem', color: '#6b7280', maxWidth: 280 }}>
+                    <td className="sorg-fg-muted" style={{ padding: '0.5rem' }}>
+                      {e.target_type || NA}
+                    </td>
+                    <td className="sorg-fg-muted" style={{ padding: '0.5rem', maxWidth: 280 }}>
                       {summarize(e.detail)}
                     </td>
                   </tr>

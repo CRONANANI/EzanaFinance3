@@ -281,10 +281,10 @@
   background: var(--text-muted);
 }
 .mt2-dot--exec {
-  background: var(--purple, #a78bfa);
+  background: var(--purple);
 }
 .mt2-dot--education {
-  background: var(--gold, #b8922f);
+  background: var(--gold);
 }
 
 /* Queue + status chips */
@@ -328,8 +328,8 @@
 }
 .mt2-chip--analyzing {
   background: var(--amber-bg, rgba(245, 158, 11, 0.12));
-  color: var(--warning, #d97706);
-  border: 1px solid var(--warning, #d97706);
+  color: var(--warning);
+  border: 1px solid var(--warning);
 }
 .mt2-chip--ready {
   background: var(--emerald-bg, color-mix(in srgb, var(--emerald) 14%, transparent));
@@ -489,11 +489,11 @@
 }
 .mt2-pill--exec {
   background: var(--purple-bg, rgba(167, 139, 250, 0.12));
-  color: var(--purple, #a78bfa);
+  color: var(--purple);
 }
 .mt2-pill--education {
   background: var(--gold-bg, rgba(184, 146, 47, 0.1));
-  color: var(--gold-text, #92731d);
+  color: var(--gold-text);
 }
 .mt2-pill--scheduled {
   background: var(--blue-bg, rgba(59, 130, 246, 0.12));
@@ -709,8 +709,8 @@
 }
 .mt2-rsvp__btn.is-maybe {
   background: var(--amber-bg, rgba(245, 158, 11, 0.12));
-  color: var(--warning, #d97706);
-  border-color: var(--warning, #d97706);
+  color: var(--warning);
+  border-color: var(--warning);
 }
 .mt2-att-absent {
   font-size: 0.62rem;
@@ -898,23 +898,23 @@
   background: var(--emerald-bg, color-mix(in srgb, var(--emerald) 14%, transparent));
 }
 .mt2-deliv--report {
-  color: var(--purple, #a78bfa);
+  color: var(--purple);
   background: var(--purple-bg, rgba(167, 139, 250, 0.12));
 }
 .mt2-deliv--deck {
-  color: var(--warning, #d97706);
+  color: var(--warning);
   background: var(--amber-bg, rgba(245, 158, 11, 0.12));
 }
 .mt2-deliv--sheet {
-  color: var(--cyan, #06b6d4);
+  color: var(--cyan);
   background: var(--cyan-bg, rgba(6, 182, 212, 0.12));
 }
 .mt2-deliv--primer {
-  color: var(--gold-text, #92731d);
+  color: var(--gold-text);
   background: var(--gold-bg, rgba(184, 146, 47, 0.1));
 }
 .mt2-deliv--news {
-  color: var(--pink, #ec4899);
+  color: var(--pink);
   background: var(--pink-soft, rgba(236, 72, 153, 0.12));
 }
 .mt2-deliv--earnings_call {

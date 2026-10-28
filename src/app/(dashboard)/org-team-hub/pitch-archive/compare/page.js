@@ -17,9 +17,9 @@ function CompareInner() {
 export default function ArchiveComparePage() {
   const { isOrgUser, isLoading } = useOrg();
 
-  if (isLoading) return <div style={{ padding: '2rem', color: '#888' }}>Loading…</div>;
+  if (isLoading) return <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Loading…</div>;
   if (!isOrgUser) {
-    return <div style={{ padding: '2rem', color: '#888' }}>Org members only.</div>;
+    return <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Org members only.</div>;
   }
 
   return (

@@ -99,7 +99,7 @@
   color: #fff;
 }
 .asg2-btn--primary:hover {
-  background: color-mix(in srgb, var(--emerald) 88%, #000);
+  background: var(--emerald-hover);
 }
 .asg2-btn--ghost {
   background: transparent;
@@ -725,7 +725,7 @@ html.light-mode .asg2-metric {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: color-mix(in srgb, #000 55%, transparent);
+  background: var(--bg-overlay);
   display: flex;
   justify-content: flex-end;
 }
@@ -742,7 +742,7 @@ html.light-mode .asg2-metric {
   background: var(--app-bg);
   border-left: 1px solid var(--emerald);
   padding: 1.4rem;
-  box-shadow: -20px 0 60px color-mix(in srgb, #000 40%, transparent);
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.4);
 }
 .asg2-modal {
   width: 100%;
@@ -751,7 +751,7 @@ html.light-mode .asg2-metric {
   border: 1px solid var(--emerald);
   border-radius: var(--radius-xl);
   padding: 1.4rem;
-  box-shadow: 0 20px 60px color-mix(in srgb, #000 45%, transparent);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
 }
 .asg2-modal-head,
 .asg2-drawer-head {
@@ -1205,7 +1205,7 @@ html.light-mode .asg2-metric {
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
   padding: 0.35rem;
-  box-shadow: 0 12px 32px color-mix(in srgb, #000 35%, transparent);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
 }
 .asg2-menu button {
   display: flex;

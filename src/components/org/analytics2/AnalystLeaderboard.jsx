@@ -121,7 +121,7 @@ export function AnalystLeaderboard({ data = [], onSelect }) {
                         <span
                           className="amt"
                           style={{
-                            color: c >= 0 ? 'var(--text-primary)' : 'var(--negative, #ef4444)',
+                            color: c >= 0 ? 'var(--text-primary)' : 'var(--negative)',
                           }}
                         >
                           {money(c)}
@@ -130,8 +130,7 @@ export function AnalystLeaderboard({ data = [], onSelect }) {
                           <i
                             style={{
                               width: `${(Math.abs(c) / maxAbs) * 100}%`,
-                              background:
-                                c >= 0 ? 'var(--emerald, #10b981)' : 'var(--negative, #ef4444)',
+                              background: c >= 0 ? 'var(--emerald)' : 'var(--negative)',
                             }}
                           />
                         </span>

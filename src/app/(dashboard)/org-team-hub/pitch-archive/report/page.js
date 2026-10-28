@@ -29,8 +29,9 @@ export default function PitchReportPage() {
     };
   }, [isOrgUser, period]);
 
-  if (isLoading) return <div style={{ padding: '2rem', color: '#888' }}>Loading…</div>;
-  if (!isOrgUser) return <div style={{ padding: '2rem', color: '#888' }}>Org members only.</div>;
+  if (isLoading) return <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Loading…</div>;
+  if (!isOrgUser)
+    return <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Org members only.</div>;
 
   const printReport = () => window.print();
 

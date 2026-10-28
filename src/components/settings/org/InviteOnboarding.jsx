@@ -266,8 +266,8 @@ export function InviteOnboarding() {
             >
               {submitting ? 'Creating…' : 'Create invite'}
             </button>
-            {msg?.ok && <span style={{ color: '#10b981', fontSize: '0.8rem' }}>✓ {msg.ok}</span>}
-            {msg?.err && <span style={{ color: '#f87171', fontSize: '0.8rem' }}>{msg.err}</span>}
+            {msg?.ok && <span className="sorg-msg-ok">✓ {msg.ok}</span>}
+            {msg?.err && <span className="sorg-msg-err">{msg.err}</span>}
           </div>
         </form>
       </div>
@@ -275,30 +275,33 @@ export function InviteOnboarding() {
       <div className="settings-section">
         <div className="settings-section-title">Pending invites ({pending.length})</div>
         {loading ? (
-          <p style={{ color: '#9ca3af', fontSize: '0.85rem' }}>Loading…</p>
+          <p className="sorg-fg-muted" style={{ fontSize: '0.85rem' }}>
+            Loading…
+          </p>
         ) : pending.length === 0 ? (
-          <p style={{ color: '#6b7280', fontSize: '0.85rem' }}>No pending invites.</p>
+          <p className="sorg-fg-muted" style={{ fontSize: '0.85rem' }}>
+            No pending invites.
+          </p>
         ) : (
           <div style={{ display: 'grid', gap: 8 }}>
             {pending.map((i) => (
               <div
                 key={i.id}
+                className="sorg-row-card"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
                   padding: '10px 12px',
-                  borderRadius: 8,
-                  border: '1px solid rgba(255,255,255,0.07)',
-                  background: 'rgba(255,255,255,0.02)',
                 }}
               >
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ color: '#f0f6fc', fontWeight: 600, fontSize: '0.85rem' }}>
+                  <div className="sorg-fg-primary" style={{ fontWeight: 600, fontSize: '0.85rem' }}>
                     {i.email}
                   </div>
                   <div
-                    style={{ color: '#6b7280', fontSize: '0.7rem', textTransform: 'capitalize' }}
+                    className="sorg-fg-muted"
+                    style={{ fontSize: '0.7rem', textTransform: 'capitalize' }}
                   >
                     {i.role.replace('_', ' ')}
                     {i.sub_role ? ` · ${i.sub_role}` : ''}
@@ -308,14 +311,14 @@ export function InviteOnboarding() {
                 <button
                   type="button"
                   onClick={() => copy(i.token)}
-                  style={pillBtn('#818cf8', 'rgba(99,102,241,0.1)', 'rgba(99,102,241,0.3)')}
+                  className="sorg-pill sorg-pill--emerald"
                 >
                   {copied === i.token ? 'Copied!' : 'Copy link'}
                 </button>
                 <button
                   type="button"
                   onClick={() => revoke(i.id)}
-                  style={pillBtn('#f87171', 'rgba(239,68,68,0.08)', 'rgba(239,68,68,0.25)')}
+                  className="sorg-pill sorg-pill--danger"
                 >
                   Revoke
                 </button>
@@ -326,18 +329,4 @@ export function InviteOnboarding() {
       </div>
     </div>
   );
-}
-
-function pillBtn(fg, bg, border) {
-  return {
-    cursor: 'pointer',
-    fontSize: '0.72rem',
-    fontWeight: 600,
-    padding: '5px 11px',
-    borderRadius: 999,
-    color: fg,
-    background: bg,
-    border: `1px solid ${border}`,
-    flexShrink: 0,
-  };
 }

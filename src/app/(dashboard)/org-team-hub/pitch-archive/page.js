@@ -45,10 +45,10 @@ import '../org-pitches.css';
 export default function OrgPitchArchivePage() {
   const { isOrgUser, isLoading } = useOrg();
 
-  if (isLoading) return <div style={{ padding: '2rem', color: '#888' }}>Loading…</div>;
+  if (isLoading) return <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Loading…</div>;
   if (!isOrgUser) {
     return (
-      <div style={{ padding: '2rem', color: '#888' }}>
+      <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>
         This page is for organizational members only.
       </div>
     );

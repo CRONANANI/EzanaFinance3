@@ -47,15 +47,19 @@
   border-color: color-mix(in srgb, var(--warning) 45%, transparent);
   background: color-mix(in srgb, var(--warning) 10%, transparent);
 }
-.ctr-gold svg {
+.ctr-gold svg,
+.ctr-gold .bi {
   color: var(--warning);
 }
-.ctr-silver svg {
+.ctr-silver svg,
+.ctr-silver .bi {
   color: var(--info);
 }
-.ctr-accent svg {
+.ctr-accent svg,
+.ctr-accent .bi {
   color: var(--org-primary, var(--emerald));
 }
-.ctr-mut svg {
+.ctr-mut svg,
+.ctr-mut .bi {
   color: var(--text-faint);
 }

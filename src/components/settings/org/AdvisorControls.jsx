@@ -77,7 +77,9 @@ export function AdvisorControls() {
         <div className="settings-panel-header">
           <h2 className="settings-panel-title">Faculty Advisor Controls</h2>
         </div>
-        <p style={{ color: '#9ca3af', fontSize: '0.85rem' }}>Loading…</p>
+        <p className="sorg-fg-muted" style={{ fontSize: '0.85rem' }}>
+          Loading…
+        </p>
       </div>
     );
   }
@@ -100,21 +102,22 @@ export function AdvisorControls() {
             return (
               <div
                 key={t.key}
+                className="sorg-row-card"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: 14,
                   padding: '11px 13px',
-                  borderRadius: 8,
-                  border: '1px solid rgba(255,255,255,0.06)',
-                  background: 'rgba(255,255,255,0.02)',
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ color: '#e2e8f0', fontSize: '0.86rem', fontWeight: 500 }}>
+                  <div
+                    className="sorg-fg-secondary"
+                    style={{ fontSize: '0.86rem', fontWeight: 500 }}
+                  >
                     {t.label}
                   </div>
-                  <div style={{ color: '#6b7280', fontSize: '0.72rem', marginTop: 2 }}>
+                  <div className="sorg-fg-muted" style={{ fontSize: '0.72rem', marginTop: 2 }}>
                     {t.help}
                   </div>
                 </div>
@@ -124,27 +127,24 @@ export function AdvisorControls() {
                   aria-checked={on}
                   disabled={!canManage}
                   onClick={() => patch({ [t.key]: !on }, { [t.key]: !on })}
+                  className={`sorg-switch ${on ? 'sorg-switch--on' : 'sorg-switch--off'}`}
                   style={{
                     width: 38,
                     height: 22,
-                    borderRadius: 999,
-                    border: 'none',
                     cursor: canManage ? 'pointer' : 'default',
-                    background: on ? '#10b981' : 'rgba(255,255,255,0.14)',
                     position: 'relative',
                     flexShrink: 0,
                     opacity: canManage ? 1 : 0.5,
                   }}
                 >
                   <span
+                    className="sorg-switch-knob"
                     style={{
                       position: 'absolute',
                       top: 2,
                       left: on ? 18 : 2,
                       width: 18,
                       height: 18,
-                      borderRadius: '50%',
-                      background: '#fff',
                       transition: 'left 0.12s ease',
                     }}
                   />
@@ -178,8 +178,8 @@ export function AdvisorControls() {
         </div>
       </div>
 
-      {msg?.ok && <span style={{ color: '#10b981', fontSize: '0.8rem' }}>✓ {msg.ok}</span>}
-      {msg?.err && <span style={{ color: '#f87171', fontSize: '0.8rem' }}>{msg.err}</span>}
+      {msg?.ok && <span className="sorg-msg-ok">✓ {msg.ok}</span>}
+      {msg?.err && <span className="sorg-msg-err">{msg.err}</span>}
     </div>
   );
 }

@@ -51,7 +51,7 @@ export function SectorVsTarget({ data = [] }) {
                 <i
                   style={{
                     width: `${Math.min(100, (s.weight_pct / scale) * 100)}%`,
-                    background: s.over_cap ? 'var(--warning, #f59e0b)' : color,
+                    background: s.over_cap ? 'var(--warning)' : color,
                   }}
                 />
                 {s.cap_pct != null && (

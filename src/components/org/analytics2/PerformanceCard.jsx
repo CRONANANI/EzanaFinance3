@@ -27,10 +27,10 @@ export function PerformanceCard({ latest, series, benchmarkSymbol, benchmarkSour
       <FundVsBenchmarkChart series={series} benchmarkLabel={benchLabel} />
       <div className="fa-legend">
         <span>
-          <i style={{ background: 'var(--emerald, #10b981)' }} /> Ezana fund
+          <i style={{ background: 'var(--emerald)' }} /> Ezana fund
         </span>
         <span title={isProxy ? BENCHMARK_PROXY_TITLE : undefined}>
-          <i style={{ background: 'var(--text-muted, #94a3b8)' }} /> {benchLabel}
+          <i style={{ background: 'var(--text-muted)' }} /> {benchLabel}
         </span>
       </div>
     </div>

@@ -145,7 +145,8 @@
     background 0.12s ease-out,
     color 0.12s ease-out;
 }
-.ohn-nav-item svg {
+.ohn-nav-item svg,
+.ohn-nav-item .bi {
   flex-shrink: 0;
   color: var(--text-faint);
   transition: color 0.12s ease-out;
@@ -168,7 +169,8 @@
   background: color-mix(in srgb, var(--org-primary, var(--emerald)) 8%, transparent);
   color: var(--text-primary);
 }
-.ohn-nav-item:not(.active):not(.anchor):hover svg {
+.ohn-nav-item:not(.active):not(.anchor):hover svg,
+.ohn-nav-item:not(.active):not(.anchor):hover .bi {
   color: var(--text-secondary);
 }
 
@@ -179,7 +181,8 @@
   color: var(--org-on-primary, #fff);
   font-weight: 600;
 }
-.ohn-nav-item.anchor svg {
+.ohn-nav-item.anchor svg,
+.ohn-nav-item.anchor .bi {
   color: var(--org-on-primary, #fff);
 }
 
@@ -192,7 +195,8 @@
   color: var(--org-ink, var(--emerald));
   font-weight: 600;
 }
-.ohn-nav-item.active:not(.anchor) svg {
+.ohn-nav-item.active:not(.anchor) svg,
+.ohn-nav-item.active:not(.anchor) .bi {
   color: var(--org-ink, var(--emerald));
 }
 

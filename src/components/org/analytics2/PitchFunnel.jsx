@@ -31,7 +31,7 @@ export function PitchFunnel({ data }) {
                   className="bar an4-num"
                   style={{
                     width: `${Math.max(12, (s.n / max) * 100)}%`,
-                    background: `color-mix(in srgb, var(--emerald, #10b981) ${s.shade * 100}%, transparent)`,
+                    background: `color-mix(in srgb, var(--emerald) ${s.shade * 100}%, transparent)`,
                   }}
                 >
                   {s.n}

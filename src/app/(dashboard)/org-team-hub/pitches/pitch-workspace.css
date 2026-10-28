@@ -313,7 +313,7 @@
   margin-top: 0.35rem;
   font-size: 0.62rem;
   color: var(--pink);
-  background: var(--pink-soft, rgba(236, 72, 153, 0.12));
+  background: var(--pink-soft);
   padding: 0.15rem 0.4rem;
   border-radius: var(--radius-md);
 }
@@ -769,7 +769,7 @@
   border-radius: var(--radius-md);
   border: none;
   background: var(--emerald, var(--emerald));
-  color: #04140d;
+  color: #fff;
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
@@ -786,7 +786,7 @@
   gap: 0.35rem;
   padding: 0.5rem 0.75rem;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(245, 158, 11, 0.4);
+  border: 1px solid color-mix(in srgb, var(--amber) 40%, transparent);
   background: transparent;
   color: var(--warning, var(--amber));
   font-size: 0.75rem;
@@ -1149,7 +1149,8 @@
   font-size: 0.75rem;
   line-height: 1.4;
 }
-.pxdesk-row-reason svg {
+.pxdesk-row-reason svg,
+.pxdesk-row-reason .bi {
   flex: 0 0 auto;
   margin-top: 0.15rem;
   color: var(--danger);
@@ -1229,7 +1230,7 @@
 .pxdesk-btn--approve {
   border-color: var(--emerald-border);
   background: var(--emerald);
-  color: #04140d;
+  color: #fff;
 }
 .pxdesk-btn--approve:hover:not(:disabled) {
   background: var(--emerald-hover);
@@ -1339,7 +1340,8 @@
   text-transform: uppercase;
   color: var(--text-secondary);
 }
-.psignoff-title svg {
+.psignoff-title svg,
+.psignoff-title .bi {
   color: var(--emerald, var(--emerald));
 }
 .psignoff-progress-wrap {
@@ -1480,9 +1482,9 @@
   background: var(--emerald-soft, color-mix(in srgb, var(--emerald) 10%, transparent));
 }
 .psignoff-scope.changes {
-  color: var(--danger, #f85149);
-  border-color: var(--danger, #f85149);
-  background: var(--danger-soft, rgba(248, 81, 73, 0.1));
+  color: var(--danger);
+  border-color: var(--danger);
+  background: var(--danger-bg);
 }
 .psignoff-scope-label {
   font-variant-numeric: tabular-nums;
@@ -1556,15 +1558,15 @@
   background: var(--emerald-soft, var(--emerald-bg-hover));
 }
 .psignoff-btn.changes {
-  color: var(--danger, #f85149);
-  border-color: var(--danger-soft, rgba(248, 81, 73, 0.4));
+  color: var(--danger);
+  border-color: var(--danger-border);
 }
 .psignoff-btn.changes:hover:not(:disabled) {
-  background: var(--danger-soft, rgba(248, 81, 73, 0.1));
+  background: var(--danger-bg);
 }
 .psignoff-error {
   font-size: 0.74rem;
-  color: var(--danger, #f85149);
+  color: var(--danger);
 }
 .psignoff-noteligible {
   margin: 0;
@@ -1694,9 +1696,9 @@
   background: color-mix(in srgb, var(--warning, var(--gold)) 12%, transparent);
 }
 .pdmeet-decision--kill {
-  color: var(--danger, #f85149);
-  border-color: color-mix(in srgb, var(--danger, #f85149) 45%, transparent);
-  background: color-mix(in srgb, var(--danger, #f85149) 12%, transparent);
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
 }
 
 /* ── Attendee chips ──────────────────────────────────────────────────────── */
@@ -1840,7 +1842,7 @@
 /* ── Actions ─────────────────────────────────────────────────────────────── */
 .pdmeet-error {
   font-size: 0.75rem;
-  color: var(--danger, #f85149);
+  color: var(--danger);
 }
 .pdmeet-actions {
   display: flex;
@@ -1855,7 +1857,7 @@
   border-radius: var(--radius-md);
   border: 1px solid transparent;
   background: var(--emerald, var(--emerald));
-  color: #05130d;
+  color: #fff;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -1938,7 +1940,7 @@
 }
 .pvote-quorum-state.is-short {
   color: var(--warning, var(--amber));
-  background: rgba(245, 158, 11, 0.12);
+  background: color-mix(in srgb, var(--amber) 12%, transparent);
 }
 .pvote-quorum-count {
   display: flex;
@@ -2101,7 +2103,7 @@
 }
 .pvote-badge.pass {
   color: var(--negative, var(--negative));
-  background: rgba(239, 68, 68, 0.12);
+  background: color-mix(in srgb, var(--negative) 12%, transparent);
 }
 .pvote-badge.abstain,
 .pvote-badge.sealed {
@@ -2110,7 +2112,7 @@
 }
 .pvote-badge.recused {
   color: var(--warning, var(--amber));
-  background: rgba(245, 158, 11, 0.12);
+  background: color-mix(in srgb, var(--amber) 12%, transparent);
 }
 .pvote-rationale {
   margin: 0.45rem 0 0;
@@ -2163,7 +2165,7 @@
 }
 .pvote-choice.pass.is-active {
   border-color: var(--negative, var(--negative));
-  background: rgba(239, 68, 68, 0.14);
+  background: color-mix(in srgb, var(--negative) 14%, transparent);
   color: var(--negative, var(--negative));
 }
 .pvote-choice.abstain.is-active {
@@ -2219,7 +2221,7 @@
   border-radius: var(--radius-md);
   border: none;
   background: var(--emerald, var(--emerald));
-  color: #04140d;
+  color: #fff;
   font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
@@ -2298,13 +2300,13 @@
 }
 .pperf-flag.bad {
   color: var(--negative, var(--negative));
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: color-mix(in srgb, var(--negative) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--negative) 30%, transparent);
 }
 .pperf-flag.warn {
   color: var(--warning, var(--amber));
-  background: rgba(245, 158, 11, 0.12);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: color-mix(in srgb, var(--amber) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--amber) 30%, transparent);
 }
 
 /* Prices */
@@ -2379,7 +2381,7 @@
 }
 .pperf-fals.is-tripped {
   border-left: 3px solid var(--negative, var(--negative));
-  background: rgba(239, 68, 68, 0.07);
+  background: color-mix(in srgb, var(--negative) 7%, transparent);
 }
 .pperf-fals-head {
   display: flex;
@@ -2412,7 +2414,7 @@
 }
 .pperf-fals-state.tripped {
   color: var(--negative, var(--negative));
-  background: rgba(239, 68, 68, 0.14);
+  background: color-mix(in srgb, var(--negative) 14%, transparent);
 }
 .pperf-fals-text {
   margin: 0 0 0.6rem;

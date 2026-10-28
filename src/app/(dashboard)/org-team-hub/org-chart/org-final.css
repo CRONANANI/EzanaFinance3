@@ -24,7 +24,9 @@
   --ox-row-hover: var(--surface-card-hover);
   --ox-wash: var(--emerald-bg);
   --ox-wash-hover: var(--emerald-bg-hover);
-  --ox-indigo-text: #a5b4fc;
+  /* PM-tier accent ink. Routed through the neutral informational token so it
+     stays legible in both themes without a raw indigo literal. */
+  --ox-indigo-text: var(--info);
 
   /* Editorial text scale — global tokens (dark values are identical). */
   --ox-text: var(--text-primary);
@@ -39,7 +41,7 @@
 body.light-mode .ox-root {
   /* --ox-canvas/--ox-card/--ox-card-hover flow from their global tokens (their
      light values are identical), so no override is needed here. */
-  --ox-seg: #ffffff;
+  --ox-seg: var(--bg-secondary);
   --ox-line: rgba(0, 0, 0, 0.08);
   --ox-line-2: rgba(0, 0, 0, 0.1);
   --ox-line-strong: rgba(0, 0, 0, 0.12);
@@ -47,8 +49,9 @@ body.light-mode .ox-root {
   --ox-row-hover: rgba(0, 0, 0, 0.025);
   --ox-wash: var(--emerald-bg);
   --ox-wash-hover: var(--emerald-bg-hover);
-  --ox-indigo-text: #4f46e5;
-  /* --ox-text* now flow from the global text tokens (both modes) — no light
+  /* --ox-indigo-text flows from the theme-aware --info token (set in :root),
+     so no light override is needed here.
+     --ox-text* now flow from the global text tokens (both modes) — no light
      overrides needed. */
 }
 .ox-root * {
@@ -531,11 +534,11 @@ body.light-mode .ox-root {
 .ox-fpill.active {
   background: var(--org-primary, var(--emerald));
   border-color: var(--org-primary, var(--emerald));
-  color: var(--org-on-primary, #06241a);
+  color: var(--org-on-primary, #fff);
   font-weight: 700;
 }
 .ox-fpill.active .ox-dot {
-  background: var(--org-on-primary, #06241a);
+  background: var(--org-on-primary, #fff);
 }
 
 .oxr-grid {
@@ -713,7 +716,8 @@ body.light-mode .ox-root {
 .oxr-tier.an {
   color: var(--emerald);
 }
-.oxr-tier svg {
+.oxr-tier svg,
+.oxr-tier .bi {
   margin-left: 1px;
   opacity: 0.7;
 }
@@ -790,7 +794,7 @@ body.light-mode .ox-root {
   font-size: 12px;
   font-weight: 600;
   background: var(--emerald);
-  color: #06241a;
+  color: #fff;
 }
 .oxr-rolebtn:disabled {
   opacity: 0.5;
@@ -905,7 +909,7 @@ body.light-mode .ox-root {
 }
 .ox-segbtn.active {
   background: var(--org-primary, var(--emerald));
-  color: var(--org-on-primary, #06241a);
+  color: var(--org-on-primary, #fff);
 }
 .ox-committee-btn {
   display: inline-flex;

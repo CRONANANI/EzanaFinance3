@@ -4,22 +4,23 @@
    generic, reusable names so no page has to roll its own card/button/pill again.
 
    House values (from the Command Center, the reference implementation):
-     • Card:  1px var(--border-primary) border, 14px radius, var(--surface-card)
-              fill — cards are defined by their BORDER, not a lighter fill.
+     • Card:  1px var(--border-primary) border, var(--radius-lg) (12px) radius,
+              var(--surface-card) fill — cards are defined by their BORDER, not a
+              lighter fill.
      • Pill:  9999px, JetBrains Mono tabular-nums.
      • Button: emerald primary (#fff label, the same emerald fill the Command
-              Center uses on its active range control), 9px radius.
+              Center uses on its active range control), var(--radius-md) (8px) radius.
    Tokens only (the one exception is #fff LABEL text on the emerald/danger fills —
    the Command Center itself uses #fff there, and there is no white token).
    Light + dark both flow from the tokens. No !important.
    ════════════════════════════════════════════════════════════════════════ */
 
-/* ── Card — editorial "broadsheet" surface: flat, border-ruled, squared (8px),
-      no drop shadow. Surface + border route through theme tokens so it is
-      transparent/dark-defined in dark, light in light. ── */
+/* ── Card — editorial "broadsheet" surface: flat, border-ruled, rounded
+      (var(--radius-lg), 12px), no drop shadow. Surface + border route through
+      theme tokens so it is transparent/dark-defined in dark, light in light. ── */
 .org-card {
   border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--surface-card);
   transition: border-color 0.15s ease-out;
 }
@@ -49,7 +50,9 @@
   color: var(--text-muted);
 }
 .org-card-title svg,
-.org-card-label svg {
+.org-card-label svg,
+.org-card-title .bi,
+.org-card-label .bi {
   color: var(--emerald);
 }
 .org-card-body {
@@ -63,7 +66,7 @@
 /* ── Buttons: THE app button standard, codified from the Council Trading
       desk's two template buttons ("Add position" / "Flag inbox", .ctd-btn):
         geometry  inline-flex · gap 0.45rem · padding 0.5rem 0.9rem ·
-                  radius 10px · font 0.8rem/600
+                  radius var(--radius-md) (8px) · font 0.8rem/600
         primary   emerald fill + border, WHITE label, hover emerald-hover
         secondary surface fill, hairline border, dark label, hover
                   surface-card-hover
@@ -81,7 +84,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   padding: 0.5rem 0.9rem;
   border: 1px solid transparent;
   font-family: var(--font-sans);
@@ -95,7 +98,8 @@
     border-color 0.12s ease-out,
     color 0.12s ease-out;
 }
-.org-btn svg {
+.org-btn svg,
+.org-btn .bi {
   flex-shrink: 0;
 }
 .org-btn--primary {
@@ -104,8 +108,8 @@
   border-color: var(--emerald);
 }
 .org-btn--primary:hover:not(:disabled) {
-  background: var(--emerald-hover, color-mix(in srgb, var(--emerald) 85%, #000));
-  border-color: var(--emerald-hover, color-mix(in srgb, var(--emerald) 85%, #000));
+  background: var(--emerald-hover);
+  border-color: var(--emerald-hover);
 }
 .org-btn--secondary {
   background: var(--surface-card);
@@ -131,7 +135,7 @@
   border-color: color-mix(in srgb, var(--danger) 35%, transparent);
 }
 .org-btn--danger:hover:not(:disabled) {
-  background: var(--danger-bg, color-mix(in srgb, var(--danger) 10%, transparent));
+  background: var(--danger-bg);
 }
 .org-btn--sm {
   padding: 0.35rem 0.65rem;
@@ -185,4 +189,51 @@
   font-family: var(--font-sans);
   font-size: var(--type-body-size);
   color: var(--negative);
+}
+
+/* ── Member profile modal (OrgMemberProfileModal) — token-driven surfaces so
+      the card, borders and copy flip per theme without a JS color table. ───── */
+.org-profile-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+}
+.org-profile-header {
+  border-bottom: 1px solid var(--border-primary);
+}
+.org-profile-heading {
+  color: var(--text-primary);
+}
+.org-profile-subrole {
+  color: var(--info);
+}
+.org-profile-body {
+  color: var(--text-secondary);
+}
+.org-profile-body-dim {
+  color: var(--text-body);
+}
+.org-profile-muted {
+  color: var(--text-muted);
+}
+.org-profile-section-title {
+  color: var(--text-muted);
+}
+.org-profile-close {
+  background: transparent;
+  border: 1px solid var(--border-primary);
+  color: var(--text-muted);
+}
+.org-profile-textarea {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+.org-profile-scorecard-toggle {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--emerald) 40%, transparent);
+  color: var(--emerald);
+}
+.org-profile-scorecard-toggle.is-active {
+  background: var(--emerald);
+  color: #fff;
 }

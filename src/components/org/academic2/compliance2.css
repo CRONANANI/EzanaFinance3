@@ -111,9 +111,11 @@
   color: var(--text-primary);
   margin: 0;
 }
-.cmp2-panel-title svg {
+.cmp2-panel-title svg,
+.cmp2-panel-title .bi {
   width: 1rem;
   height: 1rem;
+  font-size: 1rem;
   color: var(--text-muted);
 }
 .cmp2-panel-sub {
@@ -136,9 +138,11 @@
   border-radius: 9999px;
   white-space: nowrap;
 }
-.cmp2-sev svg {
+.cmp2-sev svg,
+.cmp2-sev .bi {
   width: 0.72rem;
   height: 0.72rem;
+  font-size: 0.72rem;
 }
 .cmp2-sev--hard {
   background: var(--danger-bg, rgba(239, 68, 68, 0.08));
@@ -148,7 +152,7 @@
 .cmp2-sev--soft {
   background: var(--warning-bg, rgba(251, 191, 36, 0.12));
   border: 1px solid var(--warning, var(--amber));
-  color: var(--warning, #d97706);
+  color: var(--warning);
 }
 
 /* ── Check rows (pre-trade gate pass/fail) ──────────────────────────────── */
@@ -188,17 +192,22 @@
   display: inline-flex;
   flex-shrink: 0;
 }
-.cmp2-result-icon svg {
+.cmp2-result-icon svg,
+.cmp2-result-icon .bi {
   width: 1.05rem;
   height: 1.05rem;
+  font-size: 1.05rem;
 }
-.cmp2-result-icon--pass svg {
+.cmp2-result-icon--pass svg,
+.cmp2-result-icon--pass .bi {
   color: var(--emerald-text, var(--emerald));
 }
-.cmp2-result-icon--fail svg {
+.cmp2-result-icon--fail svg,
+.cmp2-result-icon--fail .bi {
   color: var(--danger, var(--negative));
 }
-.cmp2-result-icon--na svg {
+.cmp2-result-icon--na svg,
+.cmp2-result-icon--na .bi {
   color: var(--text-muted);
 }
 
@@ -213,9 +222,11 @@
   font-weight: 700;
   margin-bottom: 1rem;
 }
-.cmp2-verdict svg {
+.cmp2-verdict svg,
+.cmp2-verdict .bi {
   width: 1.1rem;
   height: 1.1rem;
+  font-size: 1.1rem;
   flex-shrink: 0;
 }
 .cmp2-verdict--clear {
@@ -226,7 +237,7 @@
 .cmp2-verdict--soft {
   background: var(--warning-bg, rgba(251, 191, 36, 0.1));
   border: 1px solid var(--warning, var(--amber));
-  color: var(--warning, #d97706);
+  color: var(--warning);
 }
 .cmp2-verdict--hard {
   background: var(--danger-bg, rgba(239, 68, 68, 0.1));
@@ -333,9 +344,11 @@
   background: var(--info-bg, rgba(59, 130, 246, 0.08));
   color: var(--text-secondary);
 }
-.cmp2-flag svg {
+.cmp2-flag svg,
+.cmp2-flag .bi {
   width: 1.15rem;
   height: 1.15rem;
+  font-size: 1.15rem;
   color: var(--info, var(--blue));
   flex-shrink: 0;
   margin-top: 0.1rem;
@@ -422,9 +435,11 @@
   line-height: 1.5;
   margin-top: 0.7rem;
 }
-.cmp2-inline-note svg {
+.cmp2-inline-note svg,
+.cmp2-inline-note .bi {
   width: 0.85rem;
   height: 0.85rem;
+  font-size: 0.85rem;
   flex-shrink: 0;
   margin-top: 0.12rem;
 }

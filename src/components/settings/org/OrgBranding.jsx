@@ -57,7 +57,9 @@ export function OrgBranding() {
       </div>
 
       {loading || !b ? (
-        <p style={{ color: '#9ca3af', fontSize: '0.85rem' }}>Loading…</p>
+        <p className="sorg-fg-muted" style={{ fontSize: '0.85rem' }}>
+          Loading…
+        </p>
       ) : (
         <>
           <div className="settings-section">
@@ -83,7 +85,7 @@ export function OrgBranding() {
                 <input
                   className="settings-input"
                   value={b.accent_color}
-                  placeholder="#6366f1"
+                  placeholder="e.g. your brand hex"
                   onChange={(e) => setB((x) => ({ ...x, accent_color: e.target.value }))}
                 />
               </div>
@@ -93,14 +95,12 @@ export function OrgBranding() {
           <div className="settings-section">
             <div className="settings-section-title">Co-brand preview</div>
             <div
+              className="sorg-row-card"
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: 14,
                 padding: '14px 18px',
-                borderRadius: 10,
-                border: '1px solid rgba(255,255,255,0.08)',
-                background: 'rgba(255,255,255,0.02)',
               }}
             >
               {b.logo_url ? (
@@ -112,15 +112,13 @@ export function OrgBranding() {
                 />
               ) : (
                 <span
+                  className="sorg-logo-ph"
                   style={{
                     height: 34,
                     minWidth: 34,
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    borderRadius: 8,
-                    border: '1px dashed rgba(255,255,255,0.2)',
-                    color: '#6b7280',
                     fontSize: '0.6rem',
                     padding: '0 8px',
                   }}
@@ -128,9 +126,11 @@ export function OrgBranding() {
                   LOGO
                 </span>
               )}
-              <span style={{ color: '#4b5563' }}>×</span>
-              <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f0f6fc' }}>Ezana</span>
-              <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: '#6b7280' }}>
+              <span className="sorg-fg-ghost">×</span>
+              <span className="sorg-fg-primary" style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+                Ezana
+              </span>
+              <span className="sorg-fg-muted" style={{ marginLeft: 'auto', fontSize: '0.7rem' }}>
                 {b.orgName}
               </span>
             </div>
@@ -146,8 +146,8 @@ export function OrgBranding() {
             >
               {saving ? 'Saving…' : 'Save branding'}
             </button>
-            {msg?.ok && <span style={{ color: '#10b981', fontSize: '0.8rem' }}>✓ {msg.ok}</span>}
-            {msg?.err && <span style={{ color: '#f87171', fontSize: '0.8rem' }}>{msg.err}</span>}
+            {msg?.ok && <span className="sorg-msg-ok">✓ {msg.ok}</span>}
+            {msg?.err && <span className="sorg-msg-err">{msg.err}</span>}
           </div>
         </>
       )}
