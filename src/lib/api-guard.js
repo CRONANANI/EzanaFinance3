@@ -98,11 +98,16 @@ export function withApiGuard(handler, options = {}) {
 
       let remaining = null;
       if (!EXEMPT.some((re) => re.test(path))) {
-        const limit = strict ? 10 : 30;
         const windowMs = 60000;
         const pattern = routePattern(path, context?.params);
         const failClosed = options.failClosed ?? FAIL_CLOSED.some((re) => re.test(path));
-        const rl = await checkRateLimit(`api:${ip}:${pattern}`, limit, windowMs, { failClosed });
+        /* x-ezana-uid is set only by middleware after getUser() verified the
+           session (client copies are stripped there). Signed-in callers get
+           their own per-route bucket; anonymous callers stay per IP. */
+        const uid = request.headers.get('x-ezana-uid') || '';
+        const limit = uid ? (strict ? 30 : 120) : strict ? 10 : 30;
+        const bucket = uid ? `api:u:${uid}:${pattern}` : `api:${ip}:${pattern}`;
+        const rl = await checkRateLimit(bucket, limit, windowMs, { failClosed });
         remaining = rl.remaining;
         if (!rl.allowed) {
           if (rl.degraded) {

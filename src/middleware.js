@@ -130,71 +130,14 @@ async function handle(request, requestId) {
     }
   }
 
-  // Global rate limit: 100 req/min per IP on /api/* (excludes auth + webhooks)
-  if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth/')) {
-    const skipPaths = [
-      '/api/webhooks/',
-      '/api/stripe/webhook',
-      '/api/revenuecat/webhook',
-      '/api/alpaca/webhook',
-      '/api/trading/webhook',
-      '/api/mux/webhook',
-      '/api/plaid/webhook',
-      /* Monitors and Vercel Cron (Bearer-authenticated) are never limited. */
-      '/api/health',
-      '/api/healthz',
-      '/api/readyz',
-      '/api/cron/',
-      /* Judges share venue Wi-Fi: limited per judge token in the routes. */
-      '/api/competitions/judge/',
-    ];
-    const shouldSkip = skipPaths.some((s) => pathname.startsWith(s));
-
-    if (!shouldSkip) {
-      try {
-        const { checkRateLimit, logSecurityEvent } = await import('@/lib/persistent-rate-limit');
-        const ip = getClientIp(request) || 'unknown';
-        const limited = await withTimeout(
-          checkRateLimit(`global:${ip}`, 100, 60 * 1000),
-          T_RATE_LIMIT_MS,
-          'rate-limit',
-        );
-        /* Fail open: a slow limiter must not stall every API call. */
-        if (!limited.ok) warnTimeout(limited, pathname, requestId);
-        const result = limited.ok ? limited.value : { allowed: true };
-
-        if (!result.allowed) {
-          /* Fire and forget: the audit row never delays the 429. */
-          logSecurityEvent('global_rate_limit_hit', {
-            severity: 'warning',
-            ip,
-            endpoint: pathname,
-            details: { resetAt: result.resetAt.toISOString() },
-          }).catch(() => {});
-
-          return NextResponse.json(
-            { error: 'Too many requests. Please slow down.' },
-            {
-              status: 429,
-              headers: {
-                'Retry-After': String(Math.ceil((result.resetAt.getTime() - Date.now()) / 1000)),
-                'X-RateLimit-Limit': '100',
-                'X-RateLimit-Remaining': '0',
-              },
-            },
-          );
-        }
-      } catch (err) {
-        console.warn('[middleware-rate-limit] error:', err?.message);
-      }
-    }
-  }
-
   /* Forward the resolved pathname as a request header so server components
      (e.g. the root layout) can pre-compute route-scoped body classes
      server-side. Eliminates the class-application race on first paint that
      was causing the split-theme flash on Home / Dashboard. */
   const forwardedHeaders = new Headers(request.headers);
+  /* x-ezana-uid is set ONLY by this middleware, after getUser() verifies the
+     session (see the /api branch). Strip any client-supplied copy. */
+  forwardedHeaders.delete('x-ezana-uid');
   forwardedHeaders.set('x-pathname', pathname);
   forwardedHeaders.set('x-request-id', requestId);
 
@@ -313,6 +256,84 @@ async function handle(request, requestId) {
     response.headers.set('Access-Control-Max-Age', '86400');
     if (request.method === 'OPTIONS') {
       return new NextResponse(null, { status: 200, headers: response.headers });
+    }
+
+    /* Global API rate limit. Signed-in callers are keyed by verified user id
+       (300/min), so a campus or office NAT no longer pools a whole SMIF onto
+       one IP bucket. Anonymous callers keep 100/min per IP. Runs after
+       getUser(), which every /api request already pays for. */
+    const RL_SKIP = [
+      '/api/auth/',
+      '/api/webhooks/',
+      '/api/stripe/webhook',
+      '/api/revenuecat/webhook',
+      '/api/alpaca/webhook',
+      '/api/trading/webhook',
+      '/api/mux/webhook',
+      '/api/plaid/webhook',
+      /* Monitors and Vercel Cron (Bearer-authenticated) are never limited. */
+      '/api/health',
+      '/api/healthz',
+      '/api/readyz',
+      '/api/cron/',
+      /* Judges share venue Wi-Fi: limited per judge token in the routes. */
+      '/api/competitions/judge/',
+    ];
+    if (!RL_SKIP.some((s) => pathname.startsWith(s))) {
+      try {
+        const { checkRateLimit, logSecurityEvent } = await import('@/lib/persistent-rate-limit');
+        const ip = getClientIp(request) || 'unknown';
+        const rlKey = user?.id ? `global:user:${user.id}` : `global:${ip}`;
+        const rlLimit = user?.id ? 300 : 100;
+        const limited = await withTimeout(
+          checkRateLimit(rlKey, rlLimit, 60 * 1000),
+          T_RATE_LIMIT_MS,
+          'rate-limit',
+        );
+        /* Fail open: a slow limiter must not stall every API call. */
+        if (!limited.ok) warnTimeout(limited, pathname, requestId);
+        const result = limited.ok ? limited.value : { allowed: true };
+
+        if (!result.allowed) {
+          logSecurityEvent('global_rate_limit_hit', {
+            severity: 'warning',
+            ip,
+            endpoint: pathname,
+            details: { key: rlKey, resetAt: result.resetAt.toISOString() },
+          }).catch(() => {});
+
+          return NextResponse.json(
+            { error: 'Too many requests. Please slow down.', code: 'RATE_LIMITED' },
+            {
+              status: 429,
+              headers: {
+                ...Object.fromEntries(response.headers),
+                'Retry-After': String(
+                  Math.max(1, Math.ceil((result.resetAt.getTime() - Date.now()) / 1000)),
+                ),
+                'X-RateLimit-Limit': String(rlLimit),
+                'X-RateLimit-Remaining': '0',
+              },
+            },
+          );
+        }
+      } catch (err) {
+        console.warn('[middleware-rate-limit] error:', err?.message);
+      }
+    }
+
+    /* Forward the verified user id so withApiGuard can rate-limit per user.
+       NextResponse.next() snapshots request headers at construction, so
+       rebuild it and carry over the session cookies and CORS headers. */
+    if (user?.id) {
+      forwardedHeaders.set('x-ezana-uid', user.id);
+      const apiNext = NextResponse.next({ request: { headers: forwardedHeaders } });
+      response.headers.forEach((value, key) => {
+        if (key === 'set-cookie' || key.startsWith('x-middleware-')) return;
+        apiNext.headers.set(key, value);
+      });
+      response.cookies.getAll().forEach((c) => apiNext.cookies.set(c));
+      response = apiNext;
     }
 
     if (user && !pathname.startsWith('/api/auth/')) {
