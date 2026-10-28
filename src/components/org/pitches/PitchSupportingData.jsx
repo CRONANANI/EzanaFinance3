@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { NA } from '@/lib/org-display';
 
 export function PitchSupportingData({ pitchId }) {
   const [data, setData] = useState(null);
@@ -43,10 +44,10 @@ export function PitchSupportingData({ pitchId }) {
         <section className="op-fmp-card">
           <h3>Key metrics</h3>
           <ul className="op-metrics-list">
-            <li>P/E: {m0.peRatio?.toFixed(1) ?? '—'}</li>
-            <li>P/B: {m0.pbRatio?.toFixed(1) ?? '—'}</li>
+            <li>P/E: {m0.peRatio?.toFixed(1) ?? NA}</li>
+            <li>P/B: {m0.pbRatio?.toFixed(1) ?? NA}</li>
             <li>ROE: {((m0.roe || 0) * 100).toFixed(1)}%</li>
-            <li>Debt/Equity: {m0.debtToEquity?.toFixed(2) ?? '—'}</li>
+            <li>Debt/Equity: {m0.debtToEquity?.toFixed(2) ?? NA}</li>
           </ul>
         </section>
       )}

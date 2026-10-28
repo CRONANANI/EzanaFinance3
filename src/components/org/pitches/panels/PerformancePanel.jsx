@@ -191,7 +191,7 @@ export function PerformancePanel({ pitch }) {
           {review.known ? (
             review.overdue ? (
               <span className="pperf-review overdue">
-                Review overdue by <span className="pperf-num">{review.days}</span>d — the analyst
+                Review overdue by <span className="pperf-num">{review.days}</span>d. The analyst
                 must re-check this condition.
               </span>
             ) : (

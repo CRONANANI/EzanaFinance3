@@ -65,7 +65,7 @@ export function FundConfig() {
       <div className="settings-panel-header">
         <h2 className="settings-panel-title">Fund Configuration</h2>
         <p className="settings-panel-desc">
-          {orgName} — how the fund is named and benchmarked, and the academic term it runs on.
+          {orgName}: how the fund is named and benchmarked, and the academic term it runs on.
         </p>
       </div>
 

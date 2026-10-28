@@ -2,17 +2,18 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { orgRequest } from '@/lib/org-request';
+import { NA } from '@/lib/org-display';
 import './cohort2.css';
 
 function StatStrip({ stats }) {
   const tiles = [
-    { label: 'Enrolled', value: stats?.enrolled ?? '—' },
+    { label: 'Enrolled', value: stats?.enrolled ?? NA },
     {
       label: 'Avg completion',
-      value: stats?.avg_completion_pct == null ? '—' : `${stats.avg_completion_pct}%`,
+      value: stats?.avg_completion_pct == null ? NA : `${stats.avg_completion_pct}%`,
     },
-    { label: 'Fully onboarded', value: stats?.fully_onboarded ?? '—' },
-    { label: 'Blocked', value: stats?.blocked ?? '—', warn: (stats?.blocked ?? 0) > 0 },
+    { label: 'Fully onboarded', value: stats?.fully_onboarded ?? NA },
+    { label: 'Blocked', value: stats?.blocked ?? NA, warn: (stats?.blocked ?? 0) > 0 },
   ];
   return (
     <div className="c2-stats">
@@ -159,7 +160,7 @@ export function OnboardingChecklist({ cohortId, canManage, onCount }) {
       {data?.gateEnabled && (
         <div className="c2-note c2-note--warn">
           <i className="bi bi-lock" aria-hidden="true" style={{ verticalAlign: 'middle' }} />{' '}
-          Onboarding gate is ON — members must complete gate tasks before submitting a live pitch.
+          Onboarding gate is ON: members must complete gate tasks before submitting a live pitch.
         </div>
       )}
 
@@ -388,7 +389,7 @@ export function OnboardingChecklist({ cohortId, canManage, onCount }) {
                   disabled={!canManage || busy}
                   onChange={(e) => setMentor(m.id, e.target.value)}
                 >
-                  <option value="">— mentor —</option>
+                  <option value="">mentor</option>
                   {seniors.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.display_name} ({s.mentee_count})

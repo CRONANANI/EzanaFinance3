@@ -1,12 +1,12 @@
 'use client';
 
-import { stripDemoLabel } from '@/lib/org-display';
+import { stripDemoLabel, NA } from '@/lib/org-display';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import './social.css';
 
 function fmtPct(n) {
-  if (n == null) return '—';
+  if (n == null) return NA;
   return `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`;
 }
 
@@ -90,7 +90,7 @@ export function ActivityDigest() {
       >
         {votes?.slice(0, 6).map((v) => (
           <div key={v.id} className="sc2-digest-row">
-            <span className="sc2-tag sc2-tag--ticker">{v.ticker || '—'}</span>
+            <span className="sc2-tag sc2-tag--ticker">{v.ticker || NA}</span>
             <span style={{ textTransform: 'capitalize' }}>{v.vote}</span>
           </div>
         ))}
@@ -152,7 +152,7 @@ export function ActivityDigest() {
       >
         {movers?.map((m, i) => (
           <div key={`${m.ticker}-${i}`} className="sc2-digest-row">
-            <span className="sc2-tag sc2-tag--ticker">{m.ticker || '—'}</span>
+            <span className="sc2-tag sc2-tag--ticker">{m.ticker || NA}</span>
             <span className={`sc2-num ${m.alpha_pct >= 0 ? 'sc2-pos' : 'sc2-neg'}`}>
               {fmtPct(m.alpha_pct)} alpha
             </span>

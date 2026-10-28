@@ -6,6 +6,7 @@ import { useTheme } from '@/components/ThemeProvider';
 import { useOrg } from '@/contexts/OrgContext';
 import { AnalystScorecard } from '@/components/org/analytics2/AnalystScorecard';
 import { CompetitionTrophies } from '@/components/org/competitions/CompetitionTrophies';
+import { NA } from '@/lib/org-display';
 
 const UUID_RE = /^[0-9a-f-]{36}$/i;
 
@@ -291,7 +292,7 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
           <SectionTitle isDark={isDark}>Contact</SectionTitle>
           <p style={{ color: body, fontSize: '0.8125rem', margin: '0 0 1rem' }}>
             <i className="bi bi-envelope" style={{ marginRight: 6, opacity: 0.7 }} />
-            {member.email || '—'}
+            {member.email || NA}
           </p>
 
           {coverageSectors.length > 0 && (
@@ -336,7 +337,7 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
             </p>
           ) : (
             <p style={{ color: meta, fontSize: '0.8125rem', margin: '0 0 1rem' }}>
-              Council-level role — no direct report above in this chart.
+              Council-level role: no direct report above in this chart.
             </p>
           )}
 

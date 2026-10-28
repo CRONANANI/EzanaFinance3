@@ -126,8 +126,8 @@ export function LiveBoardClient({ competition }) {
 
       {myAlert ? (
         <div className="pcx-live-alert">
-          You’re {myAlert.team.presentation_status === 'presenting' ? 'presenting now' : 'on deck'}{' '}
-          — {myAlert.team.team_name} in {myAlert.room.name}
+          You’re {myAlert.team.presentation_status === 'presenting' ? 'presenting now' : 'on deck'}:{' '}
+          {myAlert.team.team_name} in {myAlert.room.name}
         </div>
       ) : null}
 

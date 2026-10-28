@@ -168,7 +168,7 @@ export function SignoffPanel({ pitch, viewer, onRefresh }) {
       {eligible ? (
         <div className="psignoff-actions">
           <label className="psignoff-comment-label" htmlFor="psignoff-comment">
-            Comment (optional — attached to your sign-off)
+            Comment (optional, attached to your sign-off)
           </label>
           <textarea
             id="psignoff-comment"

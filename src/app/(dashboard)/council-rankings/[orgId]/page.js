@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getAdminClient } from '@/lib/supabase';
 import { WEIGHTS } from '@/lib/council-elo/model';
+import { NA } from '@/lib/org-display';
 import '../council-rankings.css';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +15,7 @@ const TIER_LABEL = {
   dynasty: 'Dynasty',
 };
 const fmtRatio = (v, suffix = '') =>
-  v == null ? '—' : `${Number(v).toFixed(suffix === '%' ? 1 : 2)}${suffix}`;
+  v == null ? NA : `${Number(v).toFixed(suffix === '%' ? 1 : 2)}${suffix}`;
 function fmtDate(iso) {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ''));
   if (!m) return '';
@@ -124,7 +125,7 @@ export default async function CouncilDetailPage({ params }) {
               <div className="crx-split-label">Competition · {compWeightPct}%</div>
               <div className="crx-split-val">{elo.competition_rating}</div>
               <div className="crx-split-note">
-                Pairwise ELO across every competition — judge-verified. Beating a strong field moves
+                Pairwise ELO across every competition, judge-verified. Beating a strong field moves
                 you more.
               </div>
             </div>
@@ -184,14 +185,14 @@ export default async function CouncilDetailPage({ params }) {
                 <Ratio label="Volatility" v={fmtRatio(metrics.volatility_pct, '%')} />
               </div>
               <p className="crx-note">
-                Sharpe (risk-adjusted return) is weighted above raw ROI on purpose — the score
+                Sharpe (risk-adjusted return) is weighted above raw ROI on purpose: the score
                 rewards good management, not the biggest swing. Ratios only; dollar amounts are
                 never stored or shown.
               </p>
             </>
           ) : (
             <p className="crx-note">
-              No fund ratios reported yet — the fund rating sits at the {WEIGHTS.fund.ratingBase}{' '}
+              No fund ratios reported yet. The fund rating sits at the {WEIGHTS.fund.ratingBase}{' '}
               baseline until this council reports its ratios.
             </p>
           )}

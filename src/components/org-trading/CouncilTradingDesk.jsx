@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useOrg } from '@/contexts/OrgContext';
-import { stripDemoLabel } from '@/lib/org-display';
+import { stripDemoLabel, NA } from '@/lib/org-display';
 import { AddPositionModal } from './add-position/AddPositionModal';
 
 /* FlagComposerModal only mounts when a flag is being composed (openFlagModal
@@ -50,7 +50,7 @@ const shortLabel = (name) =>
     'Metals & Mining': 'Metals',
   })[name] ||
   (name || '').split(/[,&]/)[0].trim() ||
-  '—';
+  NA;
 
 function flagsToTickerMap(flags) {
   const map = {};
@@ -242,7 +242,7 @@ export function CouncilTradingDesk() {
     {
       key: 'top',
       label: 'Top book',
-      value: topBook ? fmtK(topBook.value) : '—',
+      value: topBook ? fmtK(topBook.value) : NA,
       sub: topBook?.short,
     },
   ];
@@ -265,7 +265,7 @@ export function CouncilTradingDesk() {
             )}
           </h1>
           <p className="ctd-sub">
-            Unified book across every sector sleeve — allocation, unrealized performance, and
+            Unified book across every sector sleeve: allocation, unrealized performance, and
             positions in one desk.
           </p>
         </div>
@@ -292,7 +292,7 @@ export function CouncilTradingDesk() {
         <section className="ctd-card ctd-hero">
           <div className="ctd-hero-zone" style={{ gridColumn: '1 / -1', textAlign: 'center' }}>
             <p className="ctd-sub" style={{ marginBottom: '1rem' }}>
-              No positions yet — add one or import your book.
+              No positions yet. Add one or import your book.
             </p>
             {canManagePositions && (
               <button
@@ -319,7 +319,7 @@ export function CouncilTradingDesk() {
               <div className="ctd-perf-row">
                 <span className="ctd-zone-label">Today</span>
                 {todayDollar == null ? (
-                  <span className="ctd-delta ctd-num">—</span>
+                  <span className="ctd-delta ctd-num">{NA}</span>
                 ) : (
                   <span className={`ctd-delta ${todayDollar >= 0 ? 'pos' : 'neg'} ctd-num`}>
                     {todayDollar >= 0 ? '+' : ''}
@@ -355,7 +355,7 @@ export function CouncilTradingDesk() {
                       />
                     </span>
                     <span className={`ctd-roi-val ${(s.roi ?? 0) >= 0 ? 'pos' : 'neg'} ctd-num`}>
-                      {s.roi == null ? '—' : fmtPct(s.roi)}
+                      {s.roi == null ? NA : fmtPct(s.roi)}
                     </span>
                   </li>
                 ))}
@@ -447,11 +447,11 @@ export function CouncilTradingDesk() {
                         <td className="ctd-r ctd-num">{p.shares.toLocaleString('en-US')}</td>
                         <td className="ctd-r ctd-num">{fmtUSD2(p.avg_cost)}</td>
                         <td className="ctd-r ctd-num">
-                          {p.current_price == null ? '—' : fmtUSD2(p.current_price)}
+                          {p.current_price == null ? NA : fmtUSD2(p.current_price)}
                         </td>
                         <td className="ctd-r ctd-num">{fmtUSD(p.value)}</td>
                         <td className={`ctd-r ctd-num ctd-pl ${p.pl >= 0 ? 'pos' : 'neg'}`}>
-                          {plPct == null ? '—' : fmtPct(plPct)}
+                          {plPct == null ? NA : fmtPct(plPct)}
                         </td>
                         <td className="ctd-r">
                           <button

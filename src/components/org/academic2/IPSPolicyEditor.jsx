@@ -197,8 +197,8 @@ export function IPSPolicyEditor({ rules = [], ruleTypes = [], canEdit = false, o
               onChange={(e) => setForm((f) => ({ ...f, severity: e.target.value }))}
               aria-label="Severity"
             >
-              <option value="warning">Soft — allow + log a flag</option>
-              <option value="block">Hard — block the trade</option>
+              <option value="warning">Soft: allow + log a flag</option>
+              <option value="block">Hard: block the trade</option>
             </select>
             <button
               type="button"

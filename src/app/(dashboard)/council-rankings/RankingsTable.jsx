@@ -13,6 +13,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { WEIGHTS } from '@/lib/council-elo/model';
+import { NA } from '@/lib/org-display';
 
 const TIER_LABEL = {
   emerging: 'Emerging',
@@ -22,7 +23,7 @@ const TIER_LABEL = {
   dynasty: 'Dynasty',
 };
 const fmtRatio = (v, suffix = '') =>
-  v == null ? '—' : `${Number(v).toFixed(suffix === '%' ? 1 : 2)}${suffix}`;
+  v == null ? NA : `${Number(v).toFixed(suffix === '%' ? 1 : 2)}${suffix}`;
 
 const SORTS = [
   { key: 'overall', label: 'Overall', field: 'rating' },
@@ -119,7 +120,7 @@ export default function RankingsTable({ rows }) {
                   <td className="crx-num">{fmtRatio(r.roi, '%')}</td>
                   <td className="crx-num">{fmtRatio(r.sharpe)}</td>
                   <td className={`crx-num ${r.move > 0 ? 'crx-up' : r.move < 0 ? 'crx-down' : ''}`}>
-                    {r.move > 0 ? `+${r.move}` : r.move || '—'}
+                    {r.move > 0 ? `+${r.move}` : r.move || NA}
                   </td>
                 </tr>
               );

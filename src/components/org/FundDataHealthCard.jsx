@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { NA } from '@/lib/org-display';
 
 const STATUS_LABEL = { ok: 'Healthy', attention: 'Needs attention', stale: 'Stale' };
 
 function relTime(iso) {
-  if (!iso) return '—';
+  if (!iso) return NA;
   const ms = Date.now() - Date.parse(iso);
   const h = Math.floor(ms / 3600000);
   if (h < 1) return 'just now';
@@ -15,7 +16,11 @@ function relTime(iso) {
 }
 function absDate(iso) {
   if (!iso) return '';
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
 /**
@@ -85,7 +90,7 @@ export function FundDataHealthCard() {
             <div className="thw-health-row">
               <span className="thw-health-label">Last snapshot</span>
               <span className="thw-health-val thw-mono">
-                {data.snapshot.last_date ? absDate(`${data.snapshot.last_date}T00:00:00Z`) : '—'}
+                {data.snapshot.last_date ? absDate(`${data.snapshot.last_date}T00:00:00Z`) : NA}
                 {data.snapshot.days_since != null && (
                   <span className="thw-health-sub"> · {data.snapshot.days_since}d ago</span>
                 )}
@@ -112,9 +117,12 @@ export function FundDataHealthCard() {
             <div className="thw-health-row">
               <span className="thw-health-label">Benchmark</span>
               <span className="thw-health-val thw-mono">
-                {data.benchmark.symbol || '—'}
+                {data.benchmark.symbol || NA}
                 {data.benchmark.source === 'pitch_proxy' && (
-                  <span className="thw-health-sub" title="Estimated from pitch hindsight, not live index prices.">
+                  <span
+                    className="thw-health-sub"
+                    title="Estimated from pitch hindsight, not live index prices."
+                  >
                     {' '}
                     · est.
                   </span>

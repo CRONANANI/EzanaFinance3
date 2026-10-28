@@ -1,6 +1,7 @@
 'use client';
 
 import { useOrg } from '@/contexts/OrgContext';
+import { NA } from '@/lib/org-display';
 
 export function PositionRow({
   position,
@@ -44,14 +45,14 @@ export function PositionRow({
       )}
       <td className="ot-num">{position.shares}</td>
       <td className="ot-num">
-        {position.avg_cost != null ? `$${position.avg_cost.toFixed(2)}` : '—'}
+        {position.avg_cost != null ? `$${position.avg_cost.toFixed(2)}` : NA}
       </td>
-      <td className="ot-num">{priced ? `$${position.current_price.toFixed(2)}` : '—'}</td>
+      <td className="ot-num">{priced ? `$${position.current_price.toFixed(2)}` : NA}</td>
       <td className={`ot-num ot-position-pl ${pl >= 0 ? 'pos' : 'neg'}`}>
         {pl >= 0 ? '+' : ''}
         {plPct.toFixed(1)}%
       </td>
-      {analystName !== undefined && <td className="ot-position-meta">{analystName || '—'}</td>}
+      {analystName !== undefined && <td className="ot-position-meta">{analystName || NA}</td>}
       <td style={{ textAlign: 'right' }}>
         <button
           type="button"

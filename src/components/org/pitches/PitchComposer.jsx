@@ -171,7 +171,7 @@ export function PitchComposer({ open, onClose, onCreated }) {
             <ul>
               {priors.map((p) => (
                 <li key={p.id}>
-                  {p.decision_at ? new Date(p.decision_at).toLocaleDateString() : '?'} —{' '}
+                  {p.decision_at ? new Date(p.decision_at).toLocaleDateString() : '?'},{' '}
                   {p.decision || p.status}: {p.thesis_short?.slice(0, 80)}…
                 </li>
               ))}
@@ -205,7 +205,7 @@ export function PitchComposer({ open, onClose, onCreated }) {
                     type="button"
                     onClick={() => pickSymbol(s.symbol, s.name || s.companyName)}
                   >
-                    {s.symbol} — {s.name || s.companyName}
+                    {s.symbol}: {s.name || s.companyName}
                   </button>
                 ))}
               </div>

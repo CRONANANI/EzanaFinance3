@@ -1,6 +1,7 @@
 'use client';
 
 import { sectorColor } from './sectorColors';
+import { NA } from '@/lib/org-display';
 
 const shortSector = (s) => {
   const m = (s || '').toLowerCase();
@@ -11,7 +12,7 @@ const shortSector = (s) => {
   if (/energy|utilit/.test(m)) return 'Energy';
   if (/industr/.test(m)) return 'Industrials';
   if (/material|metal/.test(m)) return 'Materials';
-  return s || '—';
+  return s || NA;
 };
 
 /** One bar per sleeve: weight bar + cap marker; over-cap turns amber. */

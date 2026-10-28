@@ -1,5 +1,7 @@
 'use client';
 
+import { NA } from '@/lib/org-display';
+
 /* Full-width metrics row: Open · Overdue (amber) · Awaiting review · Completion. */
 export function AssignmentMetricsStrip({ metrics }) {
   const m = metrics || {};
@@ -53,7 +55,7 @@ export function AssignmentMetricsStrip({ metrics }) {
           />
           Completion · term
         </p>
-        <div className="asg2-metric-value">{rate == null ? '—' : `${rate}%`}</div>
+        <div className="asg2-metric-value">{rate == null ? NA : `${rate}%`}</div>
         {delta != null && (
           <div className="asg2-metric-sub">
             <span className={`asg2-delta ${delta >= 0 ? 'asg2-delta--up' : 'asg2-delta--down'}`}>

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useOrg } from '@/contexts/OrgContext';
-import { stripDemoLabel } from '@/lib/org-display';
+import { stripDemoLabel, NA } from '@/lib/org-display';
 import { PositionRow } from './PositionRow';
 import { AddPositionModal } from './add-position/AddPositionModal';
 
@@ -207,7 +207,7 @@ export function TeamPortfolioView({ teamId: dbTeamId, memberRole }) {
                 >
                   {isAnalyst
                     ? mySectors.size === 0
-                      ? 'No sector coverage assigned — ask your PM.'
+                      ? 'No sector coverage assigned. Ask your PM.'
                       : 'No positions in your covered sectors yet.'
                     : 'This team has no active positions.'}
                 </td>
@@ -304,7 +304,7 @@ export function TeamPortfolioView({ teamId: dbTeamId, memberRole }) {
               {otherHoldings.map((h) => (
                 <tr key={`${h.ticker}_${h.team_id || 'na'}`}>
                   <td>{h.ticker}</td>
-                  <td>{h.sector || '—'}</td>
+                  <td>{h.sector || NA}</td>
                   <td>{h.shares}</td>
                   <td>{(h.sector && analystNameBySector.get(h.sector)) || 'Unassigned'}</td>
                 </tr>

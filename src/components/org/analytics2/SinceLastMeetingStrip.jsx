@@ -1,6 +1,7 @@
 'use client';
 
 import { money, pct, signClass } from './format';
+import { NA } from '@/lib/org-display';
 
 /** Full-width delta strip. Renders nothing when `data` is null (no meetings). */
 export function SinceLastMeetingStrip({ data }) {
@@ -9,14 +10,14 @@ export function SinceLastMeetingStrip({ data }) {
   const added = data.positions_added;
   const closed = data.positions_closed;
   const posClosed =
-    added == null && closed == null ? '—' : `+${added ?? 0}${closed ? ` / −${closed}` : ''}`;
+    added == null && closed == null ? NA : `+${added ?? 0}${closed ? ` / −${closed}` : ''}`;
 
   const cells = [
     {
       l: 'Fund value',
       v:
         data.fund_value_delta == null
-          ? '—'
+          ? NA
           : `${data.fund_value_delta >= 0 ? '+' : ''}${money(data.fund_value_delta)}`,
       cls: signClass(data.fund_value_delta),
     },
@@ -24,12 +25,12 @@ export function SinceLastMeetingStrip({ data }) {
     { l: 'Positions', v: posClosed, cls: '' },
     {
       l: 'Pitches decided',
-      v: data.pitches_decided == null ? '—' : String(data.pitches_decided),
+      v: data.pitches_decided == null ? NA : String(data.pitches_decided),
       cls: '',
     },
     {
       l: 'New flags',
-      v: data.flags_raised == null ? '—' : String(data.flags_raised),
+      v: data.flags_raised == null ? NA : String(data.flags_raised),
       cls: data.flags_raised ? 'fa-amber' : '',
     },
   ];

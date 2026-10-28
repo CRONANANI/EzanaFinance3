@@ -25,7 +25,7 @@ export function composeInsight(latest, concentration) {
       text:
         a >= 0
           ? `The fund is beating its benchmark by ${pct(a)} this period${concentration?.source === 'ips' ? ', with every sector inside its IPS cap' : ''}.`
-          : `The fund trails its benchmark by ${pct(a)} this period — review the detractors below.`,
+          : `The fund trails its benchmark by ${pct(a)} this period: review the detractors below.`,
     };
   }
   return null;

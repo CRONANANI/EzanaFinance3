@@ -1,9 +1,10 @@
 'use client';
 
+import { NA } from '@/lib/org-display';
 import './academic.css';
 
 function pct(n) {
-  if (n == null) return '—';
+  if (n == null) return NA;
   return `${n >= 0 ? '+' : ''}${Number(n).toFixed(1)}%`;
 }
 
@@ -22,10 +23,13 @@ export function CohortArchiveView({ cohort, onClose }) {
         </h2>
         <p className="ac3-sub" style={{ marginTop: '-0.5rem' }}>
           Snapshot taken{' '}
-          {cohort.archived_at ? new Date(cohort.archived_at).toLocaleDateString() : '—'}.
+          {cohort.archived_at ? new Date(cohort.archived_at).toLocaleDateString() : NA}.
         </p>
 
-        <div className="ac3-grid" style={{ gridTemplateColumns: 'repeat(2,1fr)', margin: '1rem 0' }}>
+        <div
+          className="ac3-grid"
+          style={{ gridTemplateColumns: 'repeat(2,1fr)', margin: '1rem 0' }}
+        >
           <div className="ac3-card">
             <div className="ac3-meta">Fund value</div>
             <div className="ac3-num ac3-strong" style={{ fontSize: '1.1rem' }}>
@@ -35,7 +39,7 @@ export function CohortArchiveView({ cohort, onClose }) {
           <div className="ac3-card">
             <div className="ac3-meta">Hit rate</div>
             <div className="ac3-num ac3-strong" style={{ fontSize: '1.1rem' }}>
-              {fund.hit_rate == null ? '—' : `${Math.round(fund.hit_rate * 100)}%`}
+              {fund.hit_rate == null ? NA : `${Math.round(fund.hit_rate * 100)}%`}
             </div>
           </div>
           <div className="ac3-card">
@@ -91,7 +95,7 @@ export function CohortArchiveView({ cohort, onClose }) {
                 track.map((t, i) => (
                   <tr key={i}>
                     <td className="ac3-num">{t.ticker}</td>
-                    <td style={{ textTransform: 'capitalize' }}>{t.decision || '—'}</td>
+                    <td style={{ textTransform: 'capitalize' }}>{t.decision || NA}</td>
                     <td className={`ac3-num ${(t.return_pct ?? 0) >= 0 ? 'ac3-pos' : 'ac3-neg'}`}>
                       {pct(t.return_pct)}
                     </td>

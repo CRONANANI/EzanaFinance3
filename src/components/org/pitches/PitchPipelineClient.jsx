@@ -32,7 +32,7 @@ export function PitchPipelineClient({ initialBoard = null }) {
         <div>
           <h1>Stock Pitch Pipeline</h1>
           <p className="op-hero-sub">
-            Track every pitch from idea through committee decision — stage gates with role-based
+            Track every pitch from idea through committee decision: stage gates with role-based
             approvals.
           </p>
         </div>

@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { orgRequest } from '@/lib/org-request';
+import { NA } from '@/lib/org-display';
 import './academic.css';
 
 function pct(n) {
-  if (n == null) return '—';
+  if (n == null) return NA;
   return `${n >= 0 ? '+' : ''}${Number(n).toFixed(2)}%`;
 }
 
@@ -124,7 +125,7 @@ export function CompetitionHub() {
 
       {openId && board && (
         <div className="ac3-card" style={{ marginTop: '1.25rem' }}>
-          <div className="ac3-label">{board.competition?.name} — standings</div>
+          <div className="ac3-label">{board.competition?.name}: standings</div>
           <div className="ac3-table-wrap">
             <table className="ac3-table">
               <thead>
@@ -159,7 +160,7 @@ export function CompetitionHub() {
                       </td>
                       <td className="ac3-num">
                         {s.current_value == null
-                          ? '—'
+                          ? NA
                           : `$${Math.round(s.current_value).toLocaleString()}`}
                       </td>
                     </tr>

@@ -25,7 +25,7 @@ export default function PitchesLoading() {
     <SkeletonRegion label="Loading pitch pipeline…" style={{ padding: '20px 24px 40px' }}>
       <h1 style={titleStyle}>Stock Pitch Pipeline</h1>
       <p style={subStyle}>
-        Track every pitch from idea through committee decision — stage gates with role-based
+        Track every pitch from idea through committee decision: stage gates with role-based
         approvals.
       </p>
 

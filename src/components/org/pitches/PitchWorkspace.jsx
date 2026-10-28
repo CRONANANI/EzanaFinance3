@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useOrg } from '@/contexts/OrgContext';
+import { NA } from '@/lib/org-display';
 
 const VIEWS = [
   { id: 'kanban', label: 'Kanban', icon: 'bi-speedometer2' },
@@ -13,12 +14,12 @@ const VIEWS = [
 const MANAGER_ROLES = ['executive', 'portfolio_manager'];
 
 function pct(x) {
-  if (x == null || Number.isNaN(x)) return '—';
+  if (x == null || Number.isNaN(x)) return NA;
   const v = x * 100;
   return `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`;
 }
 function money(x) {
-  if (x == null || Number.isNaN(Number(x))) return '—';
+  if (x == null || Number.isNaN(Number(x))) return NA;
   return `$${Number(x).toFixed(2)}`;
 }
 function ConvictionDots({ level }) {
@@ -41,7 +42,7 @@ function PitchCard({ p }) {
     >
       <div className="pw-card-top">
         <span className="pw-ticker">{p.ticker}</span>
-        <span className={`pw-upside ${upClass}`}>{p.upside == null ? '—' : pct(p.upside)}</span>
+        <span className={`pw-upside ${upClass}`}>{p.upside == null ? NA : pct(p.upside)}</span>
       </div>
       <div className="pw-company">
         {p.company_name}
@@ -56,7 +57,7 @@ function PitchCard({ p }) {
           <span className="pw-num">{p.days_in_stage}d</span>
         </span>
         <span className="pw-chip">
-          <span className="pw-num">{p.current_price == null ? '—' : money(p.current_price)}</span>
+          <span className="pw-num">{p.current_price == null ? NA : money(p.current_price)}</span>
           {p.target_price != null && <span className="pw-num"> → {money(p.target_price)}</span>}
         </span>
         {p.catalyst_date && (
@@ -94,7 +95,7 @@ function KanbanView({ board }) {
             </div>
             <div className="pw-col-body">
               {col.pitches.length === 0 ? (
-                <div className="pw-col-empty">—</div>
+                <div className="pw-col-empty">{NA}</div>
               ) : (
                 col.pitches.map((p) => <PitchCard key={p.id} p={p} />)
               )}
@@ -179,7 +180,7 @@ function TrackerView({ data }) {
                 <Link href={`/org-team-hub/pitches/${p.id}`}>{p.ticker}</Link>
               </td>
               <td style={{ textAlign: 'left', color: 'var(--text-muted)' }}>{p.stage_label}</td>
-              <td className="num">{p.conviction_level || '—'}</td>
+              <td className="num">{p.conviction_level || NA}</td>
               <td className="num">{money(p.pitch_price)}</td>
               <td className="num">{p.current_price == null ? 'stale' : money(p.current_price)}</td>
               <td
@@ -196,7 +197,7 @@ function TrackerView({ data }) {
                     <i className="bi bi-exclamation-triangle" aria-hidden="true" /> Due
                   </span>
                 ) : (
-                  <span style={{ color: 'var(--text-ghost)' }}>—</span>
+                  <span style={{ color: 'var(--text-ghost)' }}>{NA}</span>
                 )}
               </td>
             </tr>

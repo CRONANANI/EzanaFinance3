@@ -60,7 +60,7 @@ export default function OrgPitchArchivePage() {
         <div>
           <h1>Pitch Archive</h1>
           <p className="op-hero-sub">
-            Searchable history of every pitch the council has reviewed — decisions, votes, and
+            Searchable history of every pitch the council has reviewed: decisions, votes, and
             hindsight performance.
           </p>
         </div>

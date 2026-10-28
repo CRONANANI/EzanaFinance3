@@ -415,7 +415,7 @@ function VoteSection({ detail, viewer, onVote, busy }) {
         </div>
         <div className="mt2-note mt2-num">
           Quorum {v.presentCount}/{v.eligibleCount} present · needs {v.quorumPct}%{' '}
-          {v.quorumMet ? '· quorum met' : '· quorum not met — voting locked'}
+          {v.quorumMet ? '· quorum met' : '· quorum not met, voting locked'}
         </div>
         {!viewer.isICVoter && (
           <div className="mt2-note">Only Investment Committee members can vote.</div>
@@ -443,9 +443,9 @@ function AnalysisSection({ detail }) {
         ) : (
           <p className="mt2-ai__pending">
             {status === 'transcribing' &&
-              'Recording is transcribing — analysis will follow automatically.'}
+              'Recording is transcribing. Analysis will follow automatically.'}
             {status === 'analyzing' &&
-              'Transcript is being analyzed — summary and sentiment are on the way.'}
+              'Transcript is being analyzed. Summary and sentiment are on the way.'}
             {(status === 'none' || status === 'ready') &&
               'Not analyzed yet. A summary appears here once a recording has been transcribed and analyzed.'}
           </p>
@@ -594,7 +594,7 @@ function RecordingSection({ detail, viewer, onLink, busy }) {
             </button>
           </div>
           <div className="mt2-note" style={{ marginTop: '0.4rem' }}>
-            Direct file upload is not available yet — paste a recording link from your provider.
+            Direct file upload is not available yet. Paste a recording link from your provider.
           </div>
         </>
       ) : (

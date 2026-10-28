@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { orgRequest } from '@/lib/org-request';
+import { NA } from '@/lib/org-display';
 import './academic.css';
 
 const WORK_LABEL = {
@@ -186,9 +187,9 @@ export function GradeBook() {
                   <td className="ac3-strong">{g.student_name}</td>
                   <td>{WORK_LABEL[g.work_type] || g.work_type}</td>
                   <td className="ac3-num">
-                    {g.score == null ? '—' : `${g.score}/${g.max_score ?? 100}`}
+                    {g.score == null ? NA : `${g.score}/${g.max_score ?? 100}`}
                   </td>
-                  <td className="ac3-meta">{g.feedback || '—'}</td>
+                  <td className="ac3-meta">{g.feedback || NA}</td>
                 </tr>
               ))
             )}

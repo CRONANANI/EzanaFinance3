@@ -239,7 +239,7 @@ export function FlagDetailPanel({ flagId, currentMemberId, onClose, onChange }) 
           ) : (
             <div className="ot-form-group">
               <label className="ot-form-label" htmlFor="ot-rebuttal">
-                Rebuttal (required) — defend the thesis against this challenge
+                Rebuttal (required): defend the thesis against this challenge
               </label>
               <textarea
                 id="ot-rebuttal"

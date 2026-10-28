@@ -135,7 +135,7 @@ export function PitchGatePanel({ pitch, onSelectTab, onAdvanced }) {
         ) : (
           <div className="pgate-override">
             <label className="pgate-override-label" htmlFor="pgate-reason">
-              Override reason (required, ≥20 chars) — recorded on the transition
+              Override reason (required, ≥20 chars), recorded on the transition
             </label>
             <textarea
               id="pgate-reason"

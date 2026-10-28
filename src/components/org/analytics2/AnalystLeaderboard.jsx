@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { money, pct } from './format';
 import { sectorColor } from './sectorColors';
+import { NA } from '@/lib/org-display';
 
 const initials = (name) =>
   (name || '?')
@@ -103,17 +104,17 @@ export function AnalystLeaderboard({ data = [], onSelect }) {
                   </td>
                   <td className="r an4-num">{a.pitches ?? 0}</td>
                   <td className="r an4-num">
-                    {a.hit_rate_pct == null ? '—' : `${Math.round(a.hit_rate_pct)}%`}
+                    {a.hit_rate_pct == null ? NA : `${Math.round(a.hit_rate_pct)}%`}
                   </td>
                   <td
                     className={`r an4-num ${a.avg_alpha_pct == null ? '' : a.avg_alpha_pct >= 0 ? 'an4-pos' : 'an4-neg'}`}
                   >
-                    {a.avg_alpha_pct == null ? '—' : pct(a.avg_alpha_pct, 1)}
+                    {a.avg_alpha_pct == null ? NA : pct(a.avg_alpha_pct, 1)}
                   </td>
                   <td className="r">
                     {muted ? (
                       <span className="an4-num" style={{ color: 'var(--text-muted)' }}>
-                        —
+                        {NA}
                       </span>
                     ) : (
                       <div className="fa-contrib">

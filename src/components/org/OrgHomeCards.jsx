@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
 import Link from 'next/link';
+import { NA } from '@/lib/org-display';
 
 /* ═══════════════════════════════════════════
    HELPERS
@@ -15,7 +16,8 @@ function statusColor(status) {
   return 'var(--text-muted)';
 }
 function statusBg(status) {
-  if (status === 'completed' || status === 'uploaded') return 'var(--emerald-bg, rgba(16,185,129,0.12))';
+  if (status === 'completed' || status === 'uploaded')
+    return 'var(--emerald-bg, rgba(16,185,129,0.12))';
   if (status === 'in_progress') return 'var(--info-bg, rgba(99,102,241,0.12))';
   if (status === 'review') return 'var(--warning-bg, rgba(245,158,11,0.12))';
   return 'var(--surface-input, rgba(107,114,128,0.12))';
@@ -39,11 +41,13 @@ function formatDate(dateStr) {
   });
 }
 function fmtMoney(n) {
-  if (n == null || !Number.isFinite(Number(n))) return '—';
-  return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  if (n == null || !Number.isFinite(Number(n))) return NA;
+  return (
+    '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+  );
 }
 function fmtSignedPct(n, digits = 1) {
-  if (n == null || !Number.isFinite(Number(n))) return '—';
+  if (n == null || !Number.isFinite(Number(n))) return NA;
   const v = Number(n);
   return `${v >= 0 ? '+' : ''}${v.toFixed(digits)}%`;
 }
@@ -97,12 +101,19 @@ function ExecutiveHomeCards({ summary, meetings, orgData }) {
                 {you.title ? ` · ${you.title}` : ''}
               </p>
             )}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'baseline',
+                marginBottom: '1rem',
+              }}
+            >
               <div>
                 <p className="hts-label">{orgName} · Total AUM</p>
                 <div className="hts-stat-lg">{fmtMoney(perf?.total_value)}</div>
                 {todayDollar == null ? (
-                  <div className="hts-change-row">—</div>
+                  <div className="hts-change-row">{NA}</div>
                 ) : (
                   <div className={`hts-change-row ${todayDollar >= 0 ? 'positive' : 'negative'}`}>
                     {todayDollar >= 0 ? '▲' : '▼'} {todayDollar >= 0 ? '+' : ''}
@@ -122,7 +133,13 @@ function ExecutiveHomeCards({ summary, meetings, orgData }) {
       </div>
 
       {sectors.length > 0 && (
-        <div className="hts-row" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', marginBottom: '1.25rem' }}>
+        <div
+          className="hts-row"
+          style={{
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            marginBottom: '1.25rem',
+          }}
+        >
           {sectors.map((team) => {
             const slug = teamSlugFor(orgData, team.teamId);
             return (
@@ -132,13 +149,24 @@ function ExecutiveHomeCards({ summary, meetings, orgData }) {
                 </div>
                 <div className="hts-card-body">
                   <div className="hts-stat-lg">{fmtMoney(team.value)}</div>
-                  <div className={`hts-change-row ${(team.roiPct ?? 0) >= 0 ? 'positive' : 'negative'}`}>
+                  <div
+                    className={`hts-change-row ${(team.roiPct ?? 0) >= 0 ? 'positive' : 'negative'}`}
+                  >
                     ROI {fmtSignedPct(team.roiPct)}
                   </div>
                   {(team.tickers || []).length > 0 && (
                     <>
-                      <p className="hts-label" style={{ marginTop: '0.5rem' }}>Top Holdings</p>
-                      <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                      <p className="hts-label" style={{ marginTop: '0.5rem' }}>
+                        Top Holdings
+                      </p>
+                      <div
+                        style={{
+                          display: 'flex',
+                          gap: '0.35rem',
+                          flexWrap: 'wrap',
+                          marginBottom: '0.5rem',
+                        }}
+                      >
                         {team.tickers.map((t) => (
                           <span
                             key={t}
@@ -157,7 +185,10 @@ function ExecutiveHomeCards({ summary, meetings, orgData }) {
                       </div>
                     </>
                   )}
-                  <Link href={`/org-team-hub?team=${slug || team.teamId}`} className="hts-card-link">
+                  <Link
+                    href={`/org-team-hub?team=${slug || team.teamId}`}
+                    className="hts-card-link"
+                  >
                     View Team <i className="bi bi-arrow-right" />
                   </Link>
                 </div>
@@ -177,17 +208,47 @@ function ExecutiveHomeCards({ summary, meetings, orgData }) {
               <p className="hts-caption">No upcoming events scheduled.</p>
             ) : (
               upcoming.map((ev) => (
-                <div key={ev.id} style={{ padding: '0.6rem 0', borderBottom: '1px solid var(--border-secondary)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div
+                  key={ev.id}
+                  style={{ padding: '0.6rem 0', borderBottom: '1px solid var(--border-secondary)' }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
                     <div>
-                      <p style={{ color: 'var(--text-primary)', fontSize: '0.8125rem', fontWeight: 600, margin: 0 }}>{ev.title}</p>
-                      <p style={{ color: 'var(--text-muted)', fontSize: '0.6875rem', margin: '2px 0 0' }}>{formatDate(ev.scheduled_at)}</p>
+                      <p
+                        style={{
+                          color: 'var(--text-primary)',
+                          fontSize: '0.8125rem',
+                          fontWeight: 600,
+                          margin: 0,
+                        }}
+                      >
+                        {ev.title}
+                      </p>
+                      <p
+                        style={{
+                          color: 'var(--text-muted)',
+                          fontSize: '0.6875rem',
+                          margin: '2px 0 0',
+                        }}
+                      >
+                        {formatDate(ev.scheduled_at)}
+                      </p>
                     </div>
                   </div>
                 </div>
               ))
             )}
-            <Link href="/org-team-hub/meetings" className="hts-card-link" style={{ marginTop: '0.5rem' }}>
+            <Link
+              href="/org-team-hub/meetings"
+              className="hts-card-link"
+              style={{ marginTop: '0.5rem' }}
+            >
               Manage Events <i className="bi bi-arrow-right" />
             </Link>
           </div>
@@ -210,7 +271,10 @@ function PMHomeCards({ summary, tasks, meetings, orgData }) {
 
   return (
     <>
-      <div className="hts-row" style={{ gridTemplateColumns: 'repeat(2, 1fr)', marginBottom: '1.25rem' }}>
+      <div
+        className="hts-row"
+        style={{ gridTemplateColumns: 'repeat(2, 1fr)', marginBottom: '1.25rem' }}
+      >
         <div className="db-card hts-card">
           <div className="db-card-header">
             <h3>{sector?.name || 'Team'} Portfolio</h3>
@@ -218,13 +282,24 @@ function PMHomeCards({ summary, tasks, meetings, orgData }) {
           <div className="hts-card-body">
             <p className="hts-label">Team Portfolio Value</p>
             <div className="hts-stat-lg">{fmtMoney(sector?.value)}</div>
-            <div className={`hts-change-row ${(sector?.roiPct ?? 0) >= 0 ? 'positive' : 'negative'}`}>
+            <div
+              className={`hts-change-row ${(sector?.roiPct ?? 0) >= 0 ? 'positive' : 'negative'}`}
+            >
               ROI {fmtSignedPct(sector?.roiPct)}
             </div>
             {(sector?.tickers || []).length > 0 && (
               <>
-                <p className="hts-label" style={{ marginTop: '0.5rem' }}>Top Holdings</p>
-                <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                <p className="hts-label" style={{ marginTop: '0.5rem' }}>
+                  Top Holdings
+                </p>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '0.35rem',
+                    flexWrap: 'wrap',
+                    marginBottom: '0.5rem',
+                  }}
+                >
                   {sector.tickers.map((t) => (
                     <span
                       key={t}
@@ -262,13 +337,33 @@ function PMHomeCards({ summary, tasks, meetings, orgData }) {
               <p className="hts-caption">No upcoming events for your team.</p>
             ) : (
               teamEvents.map((ev) => (
-                <div key={ev.id} style={{ padding: '0.6rem 0', borderBottom: '1px solid var(--border-secondary)' }}>
-                  <p style={{ color: 'var(--text-primary)', fontSize: '0.8125rem', fontWeight: 600, margin: 0 }}>{ev.title}</p>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.6875rem', margin: '2px 0 0' }}>{formatDate(ev.scheduled_at)}</p>
+                <div
+                  key={ev.id}
+                  style={{ padding: '0.6rem 0', borderBottom: '1px solid var(--border-secondary)' }}
+                >
+                  <p
+                    style={{
+                      color: 'var(--text-primary)',
+                      fontSize: '0.8125rem',
+                      fontWeight: 600,
+                      margin: 0,
+                    }}
+                  >
+                    {ev.title}
+                  </p>
+                  <p
+                    style={{ color: 'var(--text-muted)', fontSize: '0.6875rem', margin: '2px 0 0' }}
+                  >
+                    {formatDate(ev.scheduled_at)}
+                  </p>
                 </div>
               ))
             )}
-            <Link href="/org-team-hub/meetings" className="hts-card-link" style={{ marginTop: '0.5rem' }}>
+            <Link
+              href="/org-team-hub/meetings"
+              className="hts-card-link"
+              style={{ marginTop: '0.5rem' }}
+            >
               View All Events <i className="bi bi-arrow-right" />
             </Link>
           </div>
@@ -296,20 +391,50 @@ function PMHomeCards({ summary, tasks, meetings, orgData }) {
                   }}
                 >
                   <div>
-                    <p style={{ color: 'var(--text-primary)', fontSize: '0.8125rem', fontWeight: 600, margin: 0 }}>{t.title}</p>
+                    <p
+                      style={{
+                        color: 'var(--text-primary)',
+                        fontSize: '0.8125rem',
+                        fontWeight: 600,
+                        margin: 0,
+                      }}
+                    >
+                      {t.title}
+                    </p>
                     {t.due_date && (
-                      <p style={{ color: 'var(--text-muted)', fontSize: '0.625rem', margin: '2px 0 0' }}>
+                      <p
+                        style={{
+                          color: 'var(--text-muted)',
+                          fontSize: '0.625rem',
+                          margin: '2px 0 0',
+                        }}
+                      >
                         Due {daysUntil(t.due_date)}
                       </p>
                     )}
                   </div>
-                  <span style={{ fontSize: '0.5625rem', fontWeight: 700, padding: '2px 8px', borderRadius: '4px', background: statusBg(t.status), color: statusColor(t.status) }}>
-                    {String(t.status || 'pending').replace('_', ' ').toUpperCase()}
+                  <span
+                    style={{
+                      fontSize: '0.5625rem',
+                      fontWeight: 700,
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      background: statusBg(t.status),
+                      color: statusColor(t.status),
+                    }}
+                  >
+                    {String(t.status || 'pending')
+                      .replace('_', ' ')
+                      .toUpperCase()}
                   </span>
                 </div>
               ))
             )}
-            <Link href="/org-team-hub/assignments" className="hts-card-link" style={{ marginTop: '0.5rem' }}>
+            <Link
+              href="/org-team-hub/assignments"
+              className="hts-card-link"
+              style={{ marginTop: '0.5rem' }}
+            >
               Manage Tasks <i className="bi bi-arrow-right" />
             </Link>
           </div>
@@ -333,7 +458,10 @@ function AnalystHomeCards({ summary, tasks, meetings, orgData }) {
 
   return (
     <>
-      <div className="hts-row" style={{ gridTemplateColumns: 'repeat(2, 1fr)', marginBottom: '1.25rem' }}>
+      <div
+        className="hts-row"
+        style={{ gridTemplateColumns: 'repeat(2, 1fr)', marginBottom: '1.25rem' }}
+      >
         <div className="db-card hts-card">
           <div className="db-card-header">
             <h3>{sector?.name || 'Team'} Portfolio</h3>
@@ -341,10 +469,16 @@ function AnalystHomeCards({ summary, tasks, meetings, orgData }) {
           <div className="hts-card-body">
             <p className="hts-label">Team Portfolio Value</p>
             <div className="hts-stat-lg">{fmtMoney(sector?.value)}</div>
-            <div className={`hts-change-row ${(sector?.roiPct ?? 0) >= 0 ? 'positive' : 'negative'}`}>
+            <div
+              className={`hts-change-row ${(sector?.roiPct ?? 0) >= 0 ? 'positive' : 'negative'}`}
+            >
               ROI {fmtSignedPct(sector?.roiPct)}
             </div>
-            <Link href={`/org-team-hub?team=${slug || teamId || ''}`} className="hts-card-link" style={{ marginTop: '0.5rem' }}>
+            <Link
+              href={`/org-team-hub?team=${slug || teamId || ''}`}
+              className="hts-card-link"
+              style={{ marginTop: '0.5rem' }}
+            >
               View Details <i className="bi bi-arrow-right" />
             </Link>
           </div>
@@ -356,7 +490,7 @@ function AnalystHomeCards({ summary, tasks, meetings, orgData }) {
           </div>
           <div className="hts-card-body">
             {myOpenDue.length === 0 ? (
-              <p className="hts-caption">Nothing due — you&apos;re clear.</p>
+              <p className="hts-caption">Nothing due. You&apos;re clear.</p>
             ) : (
               myOpenDue.map((t) => (
                 <div
@@ -370,16 +504,48 @@ function AnalystHomeCards({ summary, tasks, meetings, orgData }) {
                   }}
                 >
                   <div>
-                    <p style={{ color: 'var(--text-primary)', fontSize: '0.8125rem', fontWeight: 600, margin: 0 }}>{t.title}</p>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.625rem', margin: '2px 0 0' }}>Due {daysUntil(t.due_date)}</p>
+                    <p
+                      style={{
+                        color: 'var(--text-primary)',
+                        fontSize: '0.8125rem',
+                        fontWeight: 600,
+                        margin: 0,
+                      }}
+                    >
+                      {t.title}
+                    </p>
+                    <p
+                      style={{
+                        color: 'var(--text-muted)',
+                        fontSize: '0.625rem',
+                        margin: '2px 0 0',
+                      }}
+                    >
+                      Due {daysUntil(t.due_date)}
+                    </p>
                   </div>
-                  <span style={{ fontSize: '0.5625rem', fontWeight: 700, padding: '2px 8px', borderRadius: '4px', background: statusBg(t.status), color: statusColor(t.status) }}>
-                    {String(t.status || 'pending').replace('_', ' ').toUpperCase()}
+                  <span
+                    style={{
+                      fontSize: '0.5625rem',
+                      fontWeight: 700,
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      background: statusBg(t.status),
+                      color: statusColor(t.status),
+                    }}
+                  >
+                    {String(t.status || 'pending')
+                      .replace('_', ' ')
+                      .toUpperCase()}
                   </span>
                 </div>
               ))
             )}
-            <Link href="/org-team-hub/assignments" className="hts-card-link" style={{ marginTop: '0.5rem' }}>
+            <Link
+              href="/org-team-hub/assignments"
+              className="hts-card-link"
+              style={{ marginTop: '0.5rem' }}
+            >
               All Assignments <i className="bi bi-arrow-right" />
             </Link>
           </div>
@@ -396,9 +562,23 @@ function AnalystHomeCards({ summary, tasks, meetings, orgData }) {
               <p className="hts-caption">No upcoming events for your team.</p>
             ) : (
               teamEvents.map((ev) => (
-                <div key={ev.id} style={{ padding: '0.5rem 0', borderBottom: '1px solid var(--border-secondary)' }}>
-                  <p style={{ color: 'var(--text-primary)', fontSize: '0.8125rem', fontWeight: 600, margin: 0 }}>{ev.title}</p>
-                  <p style={{ color: 'var(--info)', fontSize: '0.625rem', margin: '2px 0 0' }}>{formatDate(ev.scheduled_at)}</p>
+                <div
+                  key={ev.id}
+                  style={{ padding: '0.5rem 0', borderBottom: '1px solid var(--border-secondary)' }}
+                >
+                  <p
+                    style={{
+                      color: 'var(--text-primary)',
+                      fontSize: '0.8125rem',
+                      fontWeight: 600,
+                      margin: 0,
+                    }}
+                  >
+                    {ev.title}
+                  </p>
+                  <p style={{ color: 'var(--info)', fontSize: '0.625rem', margin: '2px 0 0' }}>
+                    {formatDate(ev.scheduled_at)}
+                  </p>
                 </div>
               ))
             )}

@@ -11,6 +11,7 @@ import {
   defaultResponseHoursForConviction,
   reasonsForColor,
 } from '@/lib/org-flag-taxonomy';
+import { NA } from '@/lib/org-display';
 import { PinnedAttachmentPicker } from './PinnedAttachmentPicker';
 
 const num = (v, digits = 2) =>
@@ -45,7 +46,7 @@ function RoutedTo({ name, role }) {
   );
 }
 
-const pctText = (v) => (v == null ? '—' : `${v >= 0 ? '+' : ''}${Number(v).toFixed(1)}%`);
+const pctText = (v) => (v == null ? NA : `${v >= 0 ? '+' : ''}${Number(v).toFixed(1)}%`);
 
 /**
  * Header position switcher — flag a different position without closing the
@@ -117,7 +118,7 @@ function PositionSwitcher({ current, book, onSwitch }) {
         className="ot-switcher-trigger"
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label={`Switch position — currently ${current.ticker}`}
+        aria-label={`Switch position, currently ${current.ticker}`}
         onClick={() => setOpen((o) => !o)}
       >
         <span className="ot-ticker-chip ot-num">{current.ticker}</span>
@@ -401,7 +402,7 @@ export function FlagComposerModal({
           </div>
           <p className="ot-dossier-muted" style={{ marginBottom: '1rem' }}>
             An open flag on <strong>{ticker}</strong> already exists in the council
-            {duplicate.subject ? ` — “${duplicate.subject}”` : ''}. You can raise a separate flag,
+            {duplicate.subject ? ` (“${duplicate.subject}”)` : ''}. You can raise a separate flag,
             or cancel and respond to the existing one.
           </p>
           <div className="ot-modal-footer">
@@ -463,12 +464,12 @@ export function FlagComposerModal({
                   <i className="bi bi-graph-down-arrow" aria-hidden="true" />
                 )}
                 <span className="ot-num">
-                  {plPct == null ? '—' : `${positive ? '▲' : '▼'} ${num(Math.abs(plPct), 1)}%`}
+                  {plPct == null ? NA : `${positive ? '▲' : '▼'} ${num(Math.abs(plPct), 1)}%`}
                 </span>
               </div>
               <div className="ot-dossier-pl-dollar ot-num">
                 {plDollar == null
-                  ? '—'
+                  ? NA
                   : `${plDollar >= 0 ? '+' : '−'}$${num(Math.abs(plDollar), 0)}`}
               </div>
               <div className="ot-dossier-pl-bench ot-num">
@@ -480,23 +481,23 @@ export function FlagComposerModal({
               <div className="ot-dossier-stat">
                 <span className="ot-dossier-stat-label">Shares</span>
                 <span className="ot-dossier-stat-value ot-num">
-                  {position?.shares != null ? num(position.shares, 0) : '—'}
+                  {position?.shares != null ? num(position.shares, 0) : NA}
                 </span>
               </div>
               <div className="ot-dossier-stat">
                 <span className="ot-dossier-stat-label">% of AUM</span>
                 <span className="ot-dossier-stat-value ot-num">
-                  {pctAum == null ? '—' : `${num(pctAum, 1)}%`}
+                  {pctAum == null ? NA : `${num(pctAum, 1)}%`}
                 </span>
               </div>
               <div className="ot-dossier-stat">
                 <span className="ot-dossier-stat-label">Held</span>
-                <span className="ot-dossier-stat-value ot-num">—</span>
+                <span className="ot-dossier-stat-value ot-num">{NA}</span>
               </div>
               <div className="ot-dossier-stat">
                 <span className="ot-dossier-stat-label">Cost</span>
                 <span className="ot-dossier-stat-value ot-num">
-                  {position?.avg_cost != null ? `$${num(position.avg_cost)}` : '—'}
+                  {position?.avg_cost != null ? `$${num(position.avg_cost)}` : NA}
                 </span>
               </div>
             </div>
@@ -514,7 +515,7 @@ export function FlagComposerModal({
               <div className="ot-banner amber">
                 <i className="bi bi-exclamation-triangle" aria-hidden="true" />
                 <span>
-                  Conflict disclosed — you hold {ticker} personally. This is recorded on the flag.
+                  Conflict disclosed: you hold {ticker} personally. This is recorded on the flag.
                 </span>
               </div>
             )}
@@ -544,7 +545,7 @@ export function FlagComposerModal({
               {analystName ? (
                 <RoutedTo name={analystName} role="Covering analyst" />
               ) : (
-                <p className="ot-dossier-muted">No covering analyst — routes to the sector head.</p>
+                <p className="ot-dossier-muted">No covering analyst, routes to the sector head.</p>
               )}
               <RoutedTo name={sectorHeadName} role="Sector head" />
             </div>
@@ -646,7 +647,7 @@ export function FlagComposerModal({
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder={
                   isRed
-                    ? 'Defend or dispute the thesis with specifics — what changed and why it matters.'
+                    ? 'Defend or dispute the thesis with specifics: what changed and why it matters.'
                     : 'What confirms the thesis? Be specific about the new information.'
                 }
               />

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { NA } from '@/lib/org-display';
 import './competitions.css';
 
 const REQ_TONE = { pending: 'warn', approved: 'pos', rejected: 'mut', withdrawn: 'mut' };
@@ -66,7 +67,7 @@ export function RequestsClient({ competition, initialRequests, canManage }) {
               <li key={r.id} className="pcx-req">
                 <div className="pcx-req-main">
                   <div className="pcx-req-name">{r.team_name}</div>
-                  <div className="pcx-req-meta">{r.contact_email || '—'}</div>
+                  <div className="pcx-req-meta">{r.contact_email || NA}</div>
                   {r.application_thesis ? (
                     <p className="pcx-req-thesis">{r.application_thesis}</p>
                   ) : null}
@@ -123,7 +124,7 @@ export function RequestsClient({ competition, initialRequests, canManage }) {
               <li key={r.id} className="pcx-req">
                 <div className="pcx-req-main">
                   <div className="pcx-req-name">{r.team_name}</div>
-                  <div className="pcx-req-meta">{r.contact_email || '—'}</div>
+                  <div className="pcx-req-meta">{r.contact_email || NA}</div>
                   {r.decision_note ? <p className="pcx-muted">Note: {r.decision_note}</p> : null}
                 </div>
                 <span className={`pcx-pill pcx-pill--${REQ_TONE[r.status] || 'mut'}`}>

@@ -1,6 +1,7 @@
 'use client';
 
 import { money, pct } from './format';
+import { NA } from '@/lib/org-display';
 
 function List({ rows, positive }) {
   if (!rows || rows.length === 0) return <div className="fa-empty">No positions yet.</div>;
@@ -9,7 +10,7 @@ function List({ rows, positive }) {
       <div>
         <div className="tk">{c.ticker}</div>
         <div className="meta">
-          {c.sector || '—'}
+          {c.sector || NA}
           {c.analyst_name ? ` · ${c.analyst_name}` : ''}
         </div>
       </div>

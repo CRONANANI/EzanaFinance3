@@ -230,7 +230,7 @@ export function AssignmentDrawer({
                 applyTemplate((templates || []).find((x) => x.id === e.target.value))
               }
             >
-              <option value="">— none —</option>
+              <option value="">none</option>
               {(templates || []).map((tpl) => (
                 <option key={tpl.id} value={tpl.id}>
                   {tpl.name}
@@ -295,7 +295,7 @@ export function AssignmentDrawer({
             className="asg2-textarea"
             value={form.instructions}
             onChange={(e) => set({ instructions: e.target.value })}
-            placeholder="The brief — what to deliver, format, expectations…"
+            placeholder="The brief: what to deliver, format, expectations…"
           />
         </div>
 

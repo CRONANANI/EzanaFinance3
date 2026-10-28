@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { NA } from '@/lib/org-display';
 
 /**
  * VotePanel (spec §5.2) — the IC ballot at the `ic_vote` stage.
@@ -109,7 +110,7 @@ export function VotePanel({ pitch, viewer, onRefresh }) {
         <div className="pvote-quorum-count">
           <span className="pvote-num">{cast}</span>
           <span className="pvote-quorum-sep">of</span>
-          <span className="pvote-num">{needed ?? '—'}</span>
+          <span className="pvote-num">{needed ?? NA}</span>
           <span className="pvote-quorum-label">votes needed</span>
         </div>
         <div
@@ -138,7 +139,7 @@ export function VotePanel({ pitch, viewer, onRefresh }) {
         <div className="pvote-recusal">
           <div className="pvote-recusal-head">
             <i className="bi bi-person-x" aria-hidden="true" />
-            <span>Recused — excluded from quorum</span>
+            <span>Recused, excluded from quorum</span>
           </div>
           <ul className="pvote-recusal-list">
             {recused.map((v) => (
@@ -220,7 +221,7 @@ export function VotePanel({ pitch, viewer, onRefresh }) {
             className="pvote-rationale-input"
             value={rationale}
             onChange={(e) => setRationale(e.target.value)}
-            placeholder="Why you are voting this way — recorded on your ballot."
+            placeholder="Why you are voting this way, recorded on your ballot."
           />
           {error && <div className="pvote-error">{error}</div>}
           <div className="pvote-cast-actions">
@@ -244,7 +245,7 @@ export function VotePanel({ pitch, viewer, onRefresh }) {
       )}
       {!votingOpen && <p className="pvote-closed-note">Voting is closed for this pitch.</p>}
       {votingOpen && !isEligibleRole && (
-        <p className="pvote-closed-note">You are not on the IC — viewing only.</p>
+        <p className="pvote-closed-note">You are not on the IC, viewing only.</p>
       )}
     </section>
   );

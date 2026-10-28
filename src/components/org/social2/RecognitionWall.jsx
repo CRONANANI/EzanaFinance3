@@ -102,7 +102,7 @@ export function RecognitionWall({ initialData = null }) {
           <p className="sc2-eyebrow">Team Hub</p>
           <h1 className="sc2-title">Recognition</h1>
           <p className="sc2-sub">
-            The Ezana Rating — a per-member scorecard built from resolved theses, not vibes.
+            The Ezana Rating: a per-member scorecard built from resolved theses, not vibes.
           </p>
         </div>
         {canAward && (

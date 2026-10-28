@@ -137,7 +137,7 @@ export function PitchDetailClient({ pitchId, inModal = false }) {
 
       {pitch.is_archived && pitch.decision_at && (
         <div className="op-detail-banner">
-          ARCHIVED — Decided{' '}
+          ARCHIVED: Decided{' '}
           {new Date(pitch.decision_at).toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
@@ -254,7 +254,7 @@ export function PitchDetailClient({ pitchId, inModal = false }) {
                   <h3>Outcome</h3>
                   <p>
                     <strong>{pitch.status_label}</strong>
-                    {pitch.decision_rationale && ` — ${pitch.decision_rationale}`}
+                    {pitch.decision_rationale && `: ${pitch.decision_rationale}`}
                   </p>
                   {pitch.position_size_pct && <p>Position size: {pitch.position_size_pct}%</p>}
                   {pitch.hindsight && (

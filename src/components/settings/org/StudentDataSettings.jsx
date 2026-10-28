@@ -55,7 +55,7 @@ export function StudentDataSettings() {
         >
           <li>Grades and rubric feedback on pitches, research, coverage, and participation.</li>
           <li>Pitch performance and outcomes (returns, alpha, committee decisions).</li>
-          <li>Participation — assignments, votes, meeting attendance, recognition.</li>
+          <li>Participation: assignments, votes, meeting attendance, recognition.</li>
         </ul>
       </div>
 

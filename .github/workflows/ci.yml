@@ -89,6 +89,11 @@ jobs:
         # colons, periods or parentheses, never an em dash or &mdash;.
         run: npm run check:help-emdash
 
+      - name: No em dashes in org (university) UI copy
+        # House style: org pages and components use commas, colons, periods or
+        # parentheses, never an em dash. Null values render the NA en dash.
+        run: npm run check:org-emdash
+
       - name: Echo stat grids carry exactly four stats
         # The reader renders one centred row of four stat tiles and caps at
         # four; every stat-grid block in an Echo article module must carry

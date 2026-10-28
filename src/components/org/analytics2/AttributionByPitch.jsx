@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { NA } from '@/lib/org-display';
 import './analytics.css';
 
 function stateClass(state) {
@@ -42,7 +43,7 @@ export function AttributionByPitch({ data = [] }) {
     );
   }
 
-  const pctCell = (n) => (n == null ? '—' : `${n >= 0 ? '+' : ''}${Number(n).toFixed(1)}%`);
+  const pctCell = (n) => (n == null ? NA : `${n >= 0 ? '+' : ''}${Number(n).toFixed(1)}%`);
 
   return (
     <div className="an4-table-wrap">
@@ -83,7 +84,7 @@ export function AttributionByPitch({ data = [] }) {
                     {p.current_state}
                   </span>
                 ) : (
-                  '—'
+                  NA
                 )}
               </td>
             </tr>

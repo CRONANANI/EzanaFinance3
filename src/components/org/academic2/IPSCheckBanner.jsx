@@ -25,8 +25,8 @@ export function IPSCheckBanner({ result }) {
           <i className="bi bi-exclamation-triangle" aria-hidden="true" />
         )}
         {blocked
-          ? 'IPS violation — this would breach a HARD policy limit and is blocked.'
-          : 'IPS warning — allowed, but flagged against a SOFT policy limit.'}
+          ? 'IPS violation: this would breach a HARD policy limit and is blocked.'
+          : 'IPS warning: allowed, but flagged against a SOFT policy limit.'}
       </strong>
       <ul>
         {violations.map((v, i) => (

@@ -2,6 +2,7 @@
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { CHART } from '@/lib/chart-theme';
+import { NA } from '@/lib/org-display';
 import './analytics.css';
 
 /** Horizontal bar of each analyst's total alpha contribution. Click → scorecard. */
@@ -78,12 +79,12 @@ export function AttributionByAnalyst({ data = [], onSelect }) {
                 <td className="r an4-num">{a.pitches}</td>
                 <td className={`r an4-num ${(a.avg_return ?? 0) >= 0 ? 'an4-pos' : 'an4-neg'}`}>
                   {a.avg_return == null
-                    ? '—'
+                    ? NA
                     : `${a.avg_return >= 0 ? '+' : ''}${a.avg_return.toFixed(1)}%`}
                 </td>
                 <td className={`r an4-num ${(a.avg_alpha ?? 0) >= 0 ? 'an4-pos' : 'an4-neg'}`}>
                   {a.avg_alpha == null
-                    ? '—'
+                    ? NA
                     : `${a.avg_alpha >= 0 ? '+' : ''}${a.avg_alpha.toFixed(1)}%`}
                 </td>
               </tr>

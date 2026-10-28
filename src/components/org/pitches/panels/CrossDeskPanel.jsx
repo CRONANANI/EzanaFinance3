@@ -232,7 +232,7 @@ export function CrossDeskPanel({ pitch, viewer, onRefresh }) {
           )}
         </div>
       ) : v?.is_pitching_desk ? (
-        <p className="pxdesk-note">Your desk is pitching — the pitching desk cannot self-review.</p>
+        <p className="pxdesk-note">Your desk is pitching. The pitching desk cannot self-review.</p>
       ) : null}
     </section>
   );

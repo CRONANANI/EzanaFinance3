@@ -12,3 +12,7 @@
 export function stripDemoLabel(label) {
   return typeof label === 'string' ? label.replace(/^\s*\[DEMO\]\s*/i, '') : label;
 }
+
+// Null-value placeholder for org UI. An en dash (U+2013), never an em dash:
+// house style bans em dashes in org copy, and null cells render this.
+export const NA = '–';

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { orgRequest } from '@/lib/org-request';
+import { NA } from '@/lib/org-display';
 import './cohort2.css';
 
 const INDUSTRY_LABEL = {
@@ -20,13 +21,13 @@ const FLAG_LABEL = {
 
 function StatStrip({ stats }) {
   const tiles = [
-    { label: 'Total alumni', value: stats?.total ?? '—' },
+    { label: 'Total alumni', value: stats?.total ?? NA },
     {
       label: 'Placement rate',
-      value: stats?.placement_rate_pct == null ? '—' : `${stats.placement_rate_pct}%`,
+      value: stats?.placement_rate_pct == null ? NA : `${stats.placement_rate_pct}%`,
     },
-    { label: 'Top sector', value: stats?.top_sector || '—' },
-    { label: 'Engaged', value: stats?.engaged ?? '—' },
+    { label: 'Top sector', value: stats?.top_sector || NA },
+    { label: 'Engaged', value: stats?.engaged ?? NA },
   ];
   return (
     <div className="c2-stats">
@@ -107,7 +108,7 @@ export function AlumniDirectory({ cohortId, canManage, onCount }) {
                   Placement outcomes
                 </div>
                 <div className="c2-banner-headline">
-                  {placement.placement_rate_pct == null ? '—' : `${placement.placement_rate_pct}%`}{' '}
+                  {placement.placement_rate_pct == null ? NA : `${placement.placement_rate_pct}%`}{' '}
                   placed in finance within 6 months
                 </div>
               </div>
@@ -177,11 +178,11 @@ export function AlumniDirectory({ cohortId, canManage, onCount }) {
                 <span className="c2-avatar">{initials(a.display_name)}</span>
                 <div>
                   <div className="c2-card-name">{a.display_name}</div>
-                  <div className="c2-card-meta">{a.grad_term || '—'}</div>
+                  <div className="c2-card-meta">{a.grad_term || NA}</div>
                 </div>
               </div>
               <div className="c2-card-meta" style={{ marginTop: '0.5rem' }}>
-                Was: {a.was_role || '—'}
+                Was: {a.was_role || NA}
                 {a.sectors.length > 0 ? ` · ${a.sectors.join(', ')}` : ''}
               </div>
               <div
@@ -192,7 +193,7 @@ export function AlumniDirectory({ cohortId, canManage, onCount }) {
                   style={{ verticalAlign: 'middle' }}
                   aria-hidden="true"
                 />{' '}
-                Now: {a.role_title || '—'}
+                Now: {a.role_title || NA}
                 {a.employer ? ` @ ${a.employer}` : ''}
               </div>
               <div className="c2-frozen" style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}>
@@ -280,7 +281,7 @@ function AlumDetail({ alum, canManage, onClose, onChanged }) {
               <div className="c2-modal-title" style={{ fontSize: '1.05rem' }}>
                 {a.display_name}
               </div>
-              <div className="c2-card-meta">{a.grad_term || '—'}</div>
+              <div className="c2-card-meta">{a.grad_term || NA}</div>
             </div>
           </div>
           <button type="button" className="c2-btn c2-btn--sm" onClick={onClose} aria-label="Close">
@@ -308,7 +309,7 @@ function AlumDetail({ alum, canManage, onClose, onChanged }) {
           </div>
           {a.final_rating == null && (
             <div style={{ fontSize: '0.72rem', marginTop: '0.3rem', opacity: 0.8 }}>
-              Rating pending — no Ezana Rating was frozen for this member.
+              Rating pending: no Ezana Rating was frozen for this member.
             </div>
           )}
         </div>
@@ -345,7 +346,7 @@ function AlumDetail({ alum, canManage, onClose, onChanged }) {
               value={edit.employer_industry}
               onChange={(e) => set('employer_industry', e.target.value)}
             >
-              <option value="">—</option>
+              <option value="">{NA}</option>
               {Object.entries(INDUSTRY_LABEL).map(([k, v]) => (
                 <option key={k} value={k}>
                   {v}
@@ -418,7 +419,7 @@ function AlumDetail({ alum, canManage, onClose, onChanged }) {
           <>
             <div className="c2-label">Now</div>
             <div style={{ fontSize: '0.88rem' }}>
-              {a.role_title || '—'}
+              {a.role_title || NA}
               {a.employer ? ` @ ${a.employer}` : ''}
               {a.employer_industry ? ` · ${INDUSTRY_LABEL[a.employer_industry]}` : ''}
             </div>
@@ -445,6 +446,6 @@ function initials(name) {
     .trim()
     .split(/\s+/)
     .filter(Boolean);
-  if (!p.length) return '—';
+  if (!p.length) return NA;
   return ((p[0][0] || '') + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase();
 }

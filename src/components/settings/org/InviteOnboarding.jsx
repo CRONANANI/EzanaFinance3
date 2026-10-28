@@ -210,7 +210,7 @@ export function InviteOnboarding() {
                 value={form.team_id}
                 onChange={(e) => setForm((f) => ({ ...f, team_id: e.target.value }))}
               >
-                <option value="">— None</option>
+                <option value="">None</option>
                 {teams.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.name}
@@ -225,7 +225,7 @@ export function InviteOnboarding() {
                 value={form.cohort_id}
                 onChange={(e) => setForm((f) => ({ ...f, cohort_id: e.target.value }))}
               >
-                <option value="">— None</option>
+                <option value="">None</option>
                 {cohorts.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}

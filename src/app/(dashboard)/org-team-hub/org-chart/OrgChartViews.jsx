@@ -8,7 +8,7 @@
 /* A single unfilled seat — honest placeholder, never a fabricated person. */
 export function VacantSeat({ label = 'Open role' }) {
   return (
-    <div className="ox-vacant" role="note" aria-label={`${label} — vacant`}>
+    <div className="ox-vacant" role="note" aria-label={`${label} (vacant)`}>
       <span className="ox-vacant-ic">
         <i className="bi bi-person-plus" aria-hidden="true" />
       </span>

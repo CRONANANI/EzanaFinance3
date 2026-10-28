@@ -30,7 +30,7 @@ function MemberNode({ member, onSelect }) {
       type="button"
       className="oc2-node"
       onClick={() => onSelect?.(member)}
-      aria-label={`${member.display_name || 'Member'} — open profile`}
+      aria-label={`${member.display_name || 'Member'}: open profile`}
     >
       <span className="oc2-node-name">{member.display_name || 'Unnamed'}</span>
       {member.title ? <span className="oc2-node-title">{member.title}</span> : null}
@@ -114,8 +114,7 @@ export function OrgChartTree({ members = [], onSelectMember }) {
       }
     }
 
-    const sortFn = (a, b) =>
-      (a.display_name || '').localeCompare(b.display_name || '');
+    const sortFn = (a, b) => (a.display_name || '').localeCompare(b.display_name || '');
     rootList.sort(sortFn);
     for (const arr of kids.values()) arr.sort(sortFn);
     advisorList.sort(sortFn);
@@ -142,7 +141,7 @@ export function OrgChartTree({ members = [], onSelectMember }) {
                 type="button"
                 className="oc2-advisor-card"
                 onClick={() => onSelectMember?.(a)}
-                aria-label={`${a.display_name || 'Advisor'} — open profile`}
+                aria-label={`${a.display_name || 'Advisor'}: open profile`}
               >
                 <span className="oc2-advisor-badge">Advisor</span>
                 <span className="oc2-node-name">{a.display_name || 'Unnamed'}</span>

@@ -2,6 +2,7 @@
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts';
 import { CHART } from '@/lib/chart-theme';
+import { NA } from '@/lib/org-display';
 import './analytics.css';
 
 /** Sector weight vs. contribution to fund return. */
@@ -9,7 +10,7 @@ export function AttributionBySector({ data = [] }) {
   if (data.length === 0) {
     return (
       <div className="an4-state" style={{ padding: '1.5rem' }}>
-        No sector data — add positions to a team portfolio.
+        No sector data. Add positions to a team portfolio.
       </div>
     );
   }
@@ -76,7 +77,7 @@ export function AttributionBySector({ data = [] }) {
                   className={`r an4-num ${(s.contribution_pct ?? 0) >= 0 ? 'an4-pos' : 'an4-neg'}`}
                 >
                   {s.contribution_pct == null
-                    ? '—'
+                    ? NA
                     : `${s.contribution_pct >= 0 ? '+' : ''}${s.contribution_pct.toFixed(1)}%`}
                 </td>
               </tr>

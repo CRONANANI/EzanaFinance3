@@ -127,8 +127,8 @@ export function CohortManager({ initialData = null }) {
           <p className="c2-eyebrow">People</p>
           <h1 className="c2-title">Cohort</h1>
           <p className="c2-sub">
-            The member lifecycle end to end — recruit, onboard, run, and graduate each class into
-            the alumni record.
+            The member lifecycle end to end: recruit, onboard, run, and graduate each class into the
+            alumni record.
           </p>
         </div>
         <div className="c2-selector">
@@ -473,7 +473,7 @@ function GraduateModal({ cohort, onClose, onDone }) {
         {gate && (
           <div className="c2-note c2-note--warn">
             <b>
-              Handoff docs incomplete — {gate.published} of {gate.required} published.
+              Handoff docs incomplete: {gate.published} of {gate.required} published.
             </b>
             <div style={{ marginTop: '0.4rem' }}>
               Missing coverage handoffs:

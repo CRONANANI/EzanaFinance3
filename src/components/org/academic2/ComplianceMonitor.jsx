@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { NA } from '@/lib/org-display';
 import './academic.css';
 import './compliance2.css';
 import { IPSCheckBanner } from './IPSCheckBanner';
@@ -223,19 +224,19 @@ export function PreTradeGate({ rules }) {
           <div className={`cmp2-verdict cmp2-verdict--${verdict}`}>
             {verdict === 'clear' && (
               <>
-                <i className="bi bi-shield-check" aria-hidden="true" /> Clear — no policy limits
+                <i className="bi bi-shield-check" aria-hidden="true" /> Clear: no policy limits
                 breached.
               </>
             )}
             {verdict === 'soft' && (
               <>
-                <i className="bi bi-shield-exclamation" aria-hidden="true" /> Allowed with flags —
+                <i className="bi bi-shield-exclamation" aria-hidden="true" /> Allowed with flags:
                 SOFT limits triggered.
               </>
             )}
             {verdict === 'hard' && (
               <>
-                <i className="bi bi-shield-x" aria-hidden="true" /> Blocked — a HARD limit would be
+                <i className="bi bi-shield-x" aria-hidden="true" /> Blocked: a HARD limit would be
                 breached.
               </>
             )}
@@ -398,14 +399,14 @@ export function SectorCapacityPlanner({ positions, rules }) {
 
       {rows.list.length === 0 ? (
         <div className="ac3-state" style={{ padding: '1rem 0' }}>
-          No positions on record — nothing to plot. Add holdings under Positions to see sector
+          No positions on record, nothing to plot. Add holdings under Positions to see sector
           headroom.
         </div>
       ) : (
         <>
           {cap == null && (
             <p className="cmp2-panel-sub">
-              No sector cap rule (max_sector_pct) is defined — showing raw exposure for reference.
+              No sector cap rule (max_sector_pct) is defined, showing raw exposure for reference.
             </p>
           )}
           {rows.list.map(({ sector, pct }) => {
@@ -708,9 +709,9 @@ export function AuditLog() {
                     <td className="cmp2-mono-cell">
                       {e.target_type
                         ? `${e.target_type}${e.target_id ? `:${String(e.target_id).slice(0, 8)}` : ''}`
-                        : '—'}
+                        : NA}
                     </td>
-                    <td style={{ color: 'var(--text-muted)' }}>{e.detail || '—'}</td>
+                    <td style={{ color: 'var(--text-muted)' }}>{e.detail || NA}</td>
                   </tr>
                 ))}
               </tbody>

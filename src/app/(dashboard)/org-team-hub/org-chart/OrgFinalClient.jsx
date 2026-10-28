@@ -6,6 +6,7 @@ import { useOrg } from '@/contexts/OrgContext';
 import { useToast } from '@/contexts/ToastContext';
 import { OrgMemberProfileModal } from '@/components/org/OrgMemberProfileModal';
 import { ColumnsView, RadialView, VacantSeat } from './OrgChartViews';
+import { NA } from '@/lib/org-display';
 import './org-final.css';
 
 /* ── helpers ──────────────────────────────────────────────────── */
@@ -18,14 +19,14 @@ function initials(name) {
     .toUpperCase();
 }
 function fmtCompactMoney(n) {
-  if (n == null || !Number.isFinite(Number(n))) return '—';
+  if (n == null || !Number.isFinite(Number(n))) return NA;
   const v = Number(n);
   if (Math.abs(v) >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
   if (Math.abs(v) >= 1000) return `$${Math.round(v / 1000)}K`;
   return `$${Math.round(v)}`;
 }
 function fmtSignedPct(n, digits = 1) {
-  if (n == null || !Number.isFinite(Number(n))) return '—';
+  if (n == null || !Number.isFinite(Number(n))) return NA;
   const v = Number(n);
   return `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(digits)}%`;
 }
@@ -320,7 +321,7 @@ export function OrgFinalClient({ initialData = null }) {
         </button>
         {open && (
           <div className="oxr-rolepop" onClick={(e) => e.stopPropagation()}>
-            <div className="oxr-rolepop-head">Change role — {m.display_name}</div>
+            <div className="oxr-rolepop-head">Change role: {m.display_name}</div>
             {(chart?.tiers || [])
               .filter((t2) => assignable.includes(t2.id) || t2.id === m.tier)
               .map((t2) => {
@@ -386,7 +387,7 @@ export function OrgFinalClient({ initialData = null }) {
             <span className="oxr-row-rl">{m.title || tierOf(m).label}</span>
           </span>
         </button>
-        <span className="oxr-row-mgr">{mgr ? mgr.display_name : '—'}</span>
+        <span className="oxr-row-mgr">{mgr ? mgr.display_name : NA}</span>
         <TierChip m={m} />
       </div>
     );
@@ -693,7 +694,7 @@ export function OrgFinalClient({ initialData = null }) {
             <span className="ox-roman">II</span>
             <h2 className="ox-sec-title">The roster</h2>
             <span className="ox-sec-meta">
-              {loading ? '—' : `${visibleCount} OF ${members.length} MEMBERS`}
+              {loading ? NA : `${visibleCount} OF ${members.length} MEMBERS`}
             </span>
           </div>
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { money } from './format';
+import { NA } from '@/lib/org-display';
 
 /**
  * Cash on hand · % of book · vs IPS minimum.
@@ -21,7 +22,7 @@ export function CashTile({ cash }) {
       </div>
       <div style={{ textAlign: 'right' }}>
         <div className="an4-num" style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-          {cash.pct_of_book == null ? '—' : `${Number(cash.pct_of_book).toFixed(1)}%`}
+          {cash.pct_of_book == null ? NA : `${Number(cash.pct_of_book).toFixed(1)}%`}
         </div>
         {cash.ips_min_pct != null && (
           <div style={{ fontSize: '0.62rem', color: 'var(--text-faint, var(--text-muted))' }}>

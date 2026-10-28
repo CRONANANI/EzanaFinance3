@@ -1,6 +1,6 @@
 'use client';
 
-import { stripDemoLabel } from '@/lib/org-display';
+import { NA, stripDemoLabel } from '@/lib/org-display';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { NoteComposer, DOC_TYPES } from './NoteComposer';
@@ -570,7 +570,7 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                   <div className="rl2-meta-item">
                     <div className="k">Published</div>
                     <div className="v rl2-num">
-                      {note.published_at ? fmtDate(note.published_at) : '—'}
+                      {note.published_at ? fmtDate(note.published_at) : NA}
                     </div>
                   </div>
                   <div className="rl2-meta-item">
@@ -585,17 +585,17 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                           {note.ticker}
                         </button>
                       ) : (
-                        '—'
+                        NA
                       )}
                     </div>
                   </div>
                   <div className="rl2-meta-item">
                     <div className="k">Sector</div>
-                    <div className="v">{note.sector || '—'}</div>
+                    <div className="v">{note.sector || NA}</div>
                   </div>
                   <div className="rl2-meta-item">
                     <div className="k">Term</div>
-                    <div className="v">{note.term || '—'}</div>
+                    <div className="v">{note.term || NA}</div>
                   </div>
                   <div className="rl2-meta-item">
                     <div className="k">Version</div>
@@ -825,7 +825,7 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                   <i className="bi bi-clock-history" aria-hidden="true" /> Version history
                 </div>
                 {versions.length === 0 ? (
-                  <div className="rl2-hint">No prior versions — this is the original.</div>
+                  <div className="rl2-hint">No prior versions. This is the original.</div>
                 ) : (
                   versions.map((v) => (
                     <div key={v.id} className="rl2-vrow">
@@ -1022,7 +1022,7 @@ function DossierView({ initialTicker, knownTickers, onOpenNote }) {
           <i className="bi bi-graph-up" style={{ color: 'var(--text-muted)' }} aria-hidden="true" />
           <h3>Ticker dossier</h3>
           <p>
-            Enter a ticker to see every memo, model and note written on it — chronologically — plus
+            Enter a ticker to see every memo, model and note written on it (chronologically), plus
             coverage stats.
           </p>
         </div>
@@ -1502,7 +1502,7 @@ export function ResearchLibrary({ initialData = null }) {
           <p className="rl2-eyebrow">Team Hub</p>
           <h1 className="rl2-title">Research Library</h1>
           <p className="rl2-sub">
-            Typed, versioned institutional memory — theses that survive cohort rollover.
+            Typed, versioned institutional memory: theses that survive cohort rollover.
           </p>
         </div>
         <div className="rl2-header-actions">
@@ -1571,7 +1571,7 @@ export function ResearchLibrary({ initialData = null }) {
             {result?.semantic?.configured ? (
               <span
                 className="rl2-semantic-pill"
-                title="Vector embeddings are configured — search blends keyword matching with semantic (AI) ranking."
+                title="Vector embeddings are configured: search blends keyword matching with semantic (AI) ranking."
               >
                 <i className="bi bi-stars" aria-hidden="true" /> Semantic + AI
               </span>

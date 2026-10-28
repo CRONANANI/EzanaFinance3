@@ -1,6 +1,6 @@
 'use client';
 
-import { stripDemoLabel } from '@/lib/org-display';
+import { NA, stripDemoLabel } from '@/lib/org-display';
 import { useCallback, useEffect, useState } from 'react';
 import { badgeIcon } from './AwardModal';
 import './recognition2.css';
@@ -213,13 +213,13 @@ export function EzanaRatingScorecard({ memberId }) {
             <div>
               <div className="rec2-stat-label">Org percentile</div>
               <div className="rec2-stat-value">
-                {percentiles.org != null ? `${percentiles.org}th` : '—'}
+                {percentiles.org != null ? `${percentiles.org}th` : NA}
               </div>
             </div>
             <div>
               <div className="rec2-stat-label">All funds</div>
               <div className="rec2-stat-value">
-                {percentiles.all_funds != null ? `${percentiles.all_funds}th` : '—'}
+                {percentiles.all_funds != null ? `${percentiles.all_funds}th` : NA}
               </div>
             </div>
           </div>
@@ -233,7 +233,7 @@ export function EzanaRatingScorecard({ memberId }) {
         <Sparkline points={sparkline} />
       ) : (
         <p className="rec2-caveat">
-          No rating history yet — resolve theses to build a track record.
+          No rating history yet. Resolve theses to build a track record.
         </p>
       )}
 
@@ -300,7 +300,7 @@ export function EzanaRatingScorecard({ memberId }) {
                     <td>
                       <span className="rec2-ticker">{r.ticker}</span>
                     </td>
-                    <td className="rec2-td-num">{r.hold_days != null ? `${r.hold_days}d` : '—'}</td>
+                    <td className="rec2-td-num">{r.hold_days != null ? `${r.hold_days}d` : NA}</td>
                     <td
                       className="rec2-td-num"
                       style={{
@@ -309,10 +309,10 @@ export function EzanaRatingScorecard({ memberId }) {
                     >
                       {r.excess_vs_sector != null
                         ? `${r.excess_vs_sector > 0 ? '+' : ''}${r.excess_vs_sector.toFixed(1)}%`
-                        : '—'}
+                        : NA}
                     </td>
                     <td className="rec2-td-num">
-                      {r.conviction_level != null ? `${r.conviction_level}/5` : '—'}
+                      {r.conviction_level != null ? `${r.conviction_level}/5` : NA}
                     </td>
                     <td
                       className="rec2-td-num"

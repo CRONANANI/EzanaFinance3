@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { stripDemoLabel } from '@/lib/org-display';
+import { stripDemoLabel, NA } from '@/lib/org-display';
 import { useRouter } from 'next/navigation';
 import { useOrg } from '@/contexts/OrgContext';
 import { buildTeamCalendar, teamHubEyebrow } from '@/lib/org-team-calendar';
@@ -80,11 +80,11 @@ const NAV_TOOL_IDS = [
 
 /* ── Formatting helpers ───────────────────────────────────────── */
 function fmtMoney(n) {
-  if (n == null || !Number.isFinite(Number(n))) return '—';
+  if (n == null || !Number.isFinite(Number(n))) return NA;
   return `$${Math.round(Number(n)).toLocaleString('en-US')}`;
 }
 function fmtSignedPct(n, digits = 1) {
-  if (n == null || !Number.isFinite(Number(n))) return '—';
+  if (n == null || !Number.isFinite(Number(n))) return NA;
   const v = Number(n);
   return `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(digits)}%`;
 }
@@ -101,7 +101,7 @@ function initials(name) {
 function benchmarkLabel(source, symbol) {
   if (source === 'index' && symbol) return symbol;
   if (source === 'pitch_proxy') return 'Pitch benchmark (est.)';
-  return '—';
+  return NA;
 }
 function monthLabel(dateStr, withDay = false) {
   const d = new Date(`${dateStr}T00:00:00Z`);
@@ -432,7 +432,7 @@ function FundChart({ snapshots, loading, showLabel = true }) {
               <Skel w="100%" h={120} style={{ borderRadius: 10 }} />
             ) : (
               <p className="thw-empty">
-                No fund snapshots yet — the chart fills in as daily snapshots are recorded from Fund
+                No fund snapshots yet. The chart fills in as daily snapshots are recorded from Fund
                 Analytics.
               </p>
             )}
@@ -653,7 +653,7 @@ function CommandHero({ fund, snapshots, tasksData, loading, onOpenTrading }) {
         <div className="thw-assign-list">
           {assignments.length === 0 ? (
             <span className="thw-empty" style={{ padding: 0 }}>
-              Nothing due — you&apos;re clear.
+              Nothing due. You&apos;re clear.
             </span>
           ) : (
             assignments.map((a) => (
@@ -721,7 +721,7 @@ function SectorDesk({ sectors, loading, onOpen }) {
                     />
                   </span>
                   <span className={`thw-sector-roi${neg ? ' neg' : ''}`}>
-                    {s.roiPct == null ? '—' : fmtSignedPct(roi)}
+                    {s.roiPct == null ? NA : fmtSignedPct(roi)}
                   </span>
                   <span className="thw-sector-tkrs">
                     {(s.tickers || []).slice(0, 3).map((t) => (
@@ -735,7 +735,7 @@ function SectorDesk({ sectors, loading, onOpen }) {
             })}
         {!loading && rows.length === 0 && (
           <span className="thw-empty">
-            No sector sleeves yet — import positions from the Trading Desk.
+            No sector sleeves yet. Import positions from the Trading Desk.
           </span>
         )}
       </div>
@@ -787,7 +787,7 @@ function TaskManagement({ tasksData, loading, onStatusChange }) {
             </div>
           ))}
         {!loading && tasks.length === 0 && (
-          <p className="thw-empty">No tasks yet — managers can assign work from the task board.</p>
+          <p className="thw-empty">No tasks yet. Managers can assign work from the task board.</p>
         )}
         {!loading &&
           tasks.slice(0, 7).map((t) => {
@@ -867,7 +867,7 @@ function Deadlines({ tasksData, loading, onOpenBoard }) {
             </div>
           ))}
         {!loading && rows.length === 0 && (
-          <p className="thw-empty">No upcoming deadlines — nothing due.</p>
+          <p className="thw-empty">No upcoming deadlines. Nothing due.</p>
         )}
         {!loading &&
           rows.map((d) => (

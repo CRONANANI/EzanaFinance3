@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { NA } from '@/lib/org-display';
 
 const PAGE = 50;
 
@@ -50,8 +51,8 @@ export function AuditLog() {
       <div className="settings-panel-header">
         <h2 className="settings-panel-title">Audit Log</h2>
         <p className="settings-panel-desc">
-          Every privileged action in the council — role changes, invites, cohort archival, IPS
-          edits, grading, branding, and exports.
+          Every privileged action in the council: role changes, invites, cohort archival, IPS edits,
+          grading, branding, and exports.
         </p>
       </div>
 
@@ -91,7 +92,12 @@ export function AuditLog() {
                   {['TIME', 'ACTOR', 'ACTION', 'TARGET', 'DETAIL'].map((h) => (
                     <th
                       key={h}
-                      style={{ textAlign: 'left', padding: '0.5rem', color: '#9ca3af', fontSize: '0.6875rem' }}
+                      style={{
+                        textAlign: 'left',
+                        padding: '0.5rem',
+                        color: '#9ca3af',
+                        fontSize: '0.6875rem',
+                      }}
                     >
                       {h}
                     </th>
@@ -121,7 +127,7 @@ export function AuditLog() {
                         {e.action.replace(/_/g, ' ')}
                       </span>
                     </td>
-                    <td style={{ padding: '0.5rem', color: '#9ca3af' }}>{e.target_type || '—'}</td>
+                    <td style={{ padding: '0.5rem', color: '#9ca3af' }}>{e.target_type || NA}</td>
                     <td style={{ padding: '0.5rem', color: '#6b7280', maxWidth: 280 }}>
                       {summarize(e.detail)}
                     </td>

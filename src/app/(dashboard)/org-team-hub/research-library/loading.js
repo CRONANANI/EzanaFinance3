@@ -34,7 +34,7 @@ export default function ResearchLibraryLoading() {
       <p style={eyebrowStyle}>Team Hub</p>
       <h1 style={titleStyle}>Research Library</h1>
       <p style={subStyle}>
-        Typed, versioned institutional memory — theses that survive cohort rollover.
+        Typed, versioned institutional memory: theses that survive cohort rollover.
       </p>
 
       <div style={{ marginTop: 20, display: 'flex', gap: 12, flexWrap: 'wrap' }}>

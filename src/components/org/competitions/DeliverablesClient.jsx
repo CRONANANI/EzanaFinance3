@@ -142,8 +142,8 @@ export function DeliverablesClient({ competition, team, config, initialDeliverab
       ) : null}
       {pastDue ? (
         <div className="pcx-error--banner pcx-lock">
-          <i className="bi bi-info-circle" aria-hidden="true" /> The deadline has passed —
-          submissions are closed.
+          <i className="bi bi-info-circle" aria-hidden="true" /> The deadline has passed.
+          Submissions are closed.
         </div>
       ) : null}
       {required.length === 0 ? (
@@ -298,7 +298,7 @@ function TalentPanel({ teamId }) {
       </h2>
       <p className="pcx-muted pcx-note">
         Opt-in only. By default nothing about a member is shared. A member can allow judges (or
-        judges and sponsoring firms) to see their pitch as a recruiting signal — and can revoke it
+        judges and sponsoring firms) to see their pitch as a recruiting signal, and can revoke it
         any time.
       </p>
       <ul className="pcx-roster">

@@ -75,7 +75,7 @@ export default function PitchReportPage() {
           <ul>
             {report.pitches?.map((p) => (
               <li key={p.id}>
-                {p.ticker} — {p.decision} — {p.analyst_name} — {p.thesis_short?.slice(0, 60)}…
+                {p.ticker}, {p.decision}, {p.analyst_name}, {p.thesis_short?.slice(0, 60)}…
               </li>
             ))}
           </ul>

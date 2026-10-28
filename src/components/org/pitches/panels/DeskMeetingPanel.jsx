@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { NA } from '@/lib/org-display';
 
 /**
  * DeskMeetingPanel (spec §5.2, §2.4) — the deep_dive desk meeting artifact.
@@ -137,7 +138,7 @@ export function DeskMeetingPanel({ pitch, viewer, onRefresh }) {
           month: 'short',
           day: 'numeric',
         })
-      : '—';
+      : NA;
     return (
       <section className="pdmeet" aria-label="Desk meeting">
         <header className="pdmeet-head">
@@ -345,7 +346,7 @@ export function DeskMeetingPanel({ pitch, viewer, onRefresh }) {
               value={decision}
               onChange={(e) => setDecision(e.target.value)}
             >
-              <option value="">— (optional)</option>
+              <option value="">None (optional)</option>
               <option value="advance">Advance</option>
               <option value="more_work">More work</option>
               <option value="kill">Kill</option>

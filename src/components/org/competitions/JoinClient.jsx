@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { NA } from '@/lib/org-display';
 import './competitions.css';
 
 const MODE_COPY = {
@@ -51,7 +52,7 @@ export function JoinClient({ competition, config, isHost, alreadyEntered, hasPen
   if (hasPending)
     return notice(
       'Request pending',
-      'Your request is awaiting the host’s approval — we’ll surface it once they decide.',
+      'Your request is awaiting the host’s approval. We’ll surface it once they decide.',
     );
   if (competition.status !== 'open') {
     return notice('Registration closed', 'This competition is not taking new teams right now.');
@@ -185,7 +186,7 @@ export function JoinClient({ competition, config, isHost, alreadyEntered, hasPen
               value={form.side}
               onChange={(e) => set('side', e.target.value)}
             >
-              <option value="">—</option>
+              <option value="">{NA}</option>
               <option value="long">Long</option>
               <option value="short">Short</option>
             </select>

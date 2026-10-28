@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { orgRequest } from '@/lib/org-request';
+import { NA } from '@/lib/org-display';
 import './competitions.css';
 
 export function ScoreboardClient({ competition }) {
@@ -146,9 +147,9 @@ export function ScoreboardClient({ competition }) {
             <tbody>
               {rows.map((r, i) => (
                 <tr key={r.id}>
-                  <td className="mkt-ds-mono">{r.mean != null ? i + 1 : '—'}</td>
+                  <td className="mkt-ds-mono">{r.mean != null ? i + 1 : NA}</td>
                   <td className="mkt-ds-entity">{r.team_name}</td>
-                  <td>{r.ticker || '—'}</td>
+                  <td>{r.ticker || NA}</td>
                   <td className="mkt-ds-mono" style={{ textAlign: 'right' }}>
                     {r.judgeCount}
                   </td>

@@ -139,7 +139,7 @@ export function PositionThread({ ticker }) {
     <div className="sc2-root">
       <div className="sc2-thread">
         {tree.length === 0 ? (
-          <div className="sc2-state">No discussion yet — start the thread on {ticker}.</div>
+          <div className="sc2-state">No discussion yet. Start the thread on {ticker}.</div>
         ) : (
           tree.map(({ root, replies }) => (
             <div key={root.id}>

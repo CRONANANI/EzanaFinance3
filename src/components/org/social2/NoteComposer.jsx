@@ -1,5 +1,6 @@
 'use client';
 
+import { NA } from '@/lib/org-display';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './research2.css';
 
@@ -240,7 +241,7 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
         const pubData = await pubRes.json().catch(() => ({}));
         if (pubRes.status === 409) {
           setBlockers(pubData.blockers || []);
-          setError('Saved as draft — publish is blocked (see below).');
+          setError('Saved as draft. Publish is blocked (see below).');
           onSaved?.(saved);
           return;
         }
@@ -256,7 +257,7 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
       onSaved?.(saved);
       onClose?.();
     } catch (e) {
-      setError(e.message || 'Network error — please try again.');
+      setError(e.message || 'Network error. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -317,7 +318,7 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
               value={templateId}
               onChange={(e) => applyTemplate(e.target.value)}
             >
-              <option value="">— None —</option>
+              <option value="">None</option>
               {templates.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
@@ -333,7 +334,7 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
             className="rl2-input"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. NVDA — datacenter demand still underappreciated"
+            placeholder="e.g. NVDA: datacenter demand still underappreciated"
             maxLength={200}
           />
         </div>
@@ -401,7 +402,7 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
               value={sector}
               onChange={(e) => setSector(e.target.value)}
             >
-              <option value="">—</option>
+              <option value="">{NA}</option>
               {GICS_SECTORS.map((s) => (
                 <option key={s} value={s}>
                   {s}
@@ -469,7 +470,7 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
           </label>
           {!editing ? (
             <div className="rl2-hint">
-              Save the draft first — you can attach files once the document exists.
+              Save the draft first. You can attach files once the document exists.
             </div>
           ) : (
             <>

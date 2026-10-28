@@ -81,7 +81,7 @@ export function AssignmentExport({ assignments }) {
         `<style>body{font-family:sans-serif;padding:24px}h1{font-size:18px}` +
         `table{border-collapse:collapse;width:100%;font-size:12px}` +
         `th,td{border:1px solid #ccc;padding:6px 8px;text-align:left}th{background:#f3f4f6}</style>` +
-        `<h1>Assignment log — ${new Date().toLocaleDateString('en-US')}</h1>` +
+        `<h1>Assignment log: ${new Date().toLocaleDateString('en-US')}</h1>` +
         `<table><thead><tr>${headers.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table>`,
     );
     win.document.close();

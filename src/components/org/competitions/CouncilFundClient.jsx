@@ -7,7 +7,7 @@ import './competitions.css';
 
 const FIELDS = [
   { key: 'roi_pct', label: 'ROI %', hint: 'Period return' },
-  { key: 'sharpe', label: 'Sharpe', hint: 'Risk-adjusted — weighted most' },
+  { key: 'sharpe', label: 'Sharpe', hint: 'Risk-adjusted, weighted most' },
   { key: 'max_drawdown_pct', label: 'Max drawdown %', hint: 'Largest peak-to-trough' },
   { key: 'volatility_pct', label: 'Volatility %', hint: 'Std. dev of returns' },
   { key: 'benchmark_alpha_pct', label: 'Alpha %', hint: 'vs benchmark' },
@@ -100,8 +100,8 @@ export function CouncilFundClient() {
         </div>
         <p className="pcx-lead">
           Your council&apos;s public standing blends judged competition results with your fund
-          performance ratios. <strong>Dollar amounts are never shown</strong> — only ROI, Sharpe,
-          and other ratios.
+          performance ratios. <strong>Dollar amounts are never shown</strong>: only ROI, Sharpe, and
+          other ratios.
         </p>
       </header>
 
@@ -135,7 +135,7 @@ export function CouncilFundClient() {
         </div>
       ) : (
         <p className="pcx-muted pcx-note">
-          No rating yet — it appears after your teams compete or you report fund ratios.
+          No rating yet. It appears after your teams compete or you report fund ratios.
         </p>
       )}
 
@@ -143,8 +143,8 @@ export function CouncilFundClient() {
         <h2 className="pcx-block-title">Fund ratios</h2>
         <p className="pcx-muted pcx-note">
           These feed your council&apos;s public ranking. Sharpe (risk-adjusted) is weighted more
-          than raw ROI. Enter ratios and percentages only — never dollar amounts. Numbers are
-          flagged self-reported on the leaderboard.
+          than raw ROI. Enter ratios and percentages only, never dollar amounts. Numbers are flagged
+          self-reported on the leaderboard.
         </p>
         {!canManage ? (
           <div className="pcx-error--banner pcx-lock">

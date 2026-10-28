@@ -132,7 +132,7 @@ export function TeamPermissionsClient({ initialData }) {
                       disabled={locked || saving || !viewer.canGrant}
                       onClick={() => toggle(m.id, p.key, p.on)}
                       aria-pressed={p.on}
-                      title={locked ? 'Role default — always granted' : undefined}
+                      title={locked ? 'Role default, always granted' : undefined}
                     >
                       <span className="tpm-perm-check" aria-hidden>
                         {saving ? (

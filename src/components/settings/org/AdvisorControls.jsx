@@ -6,7 +6,7 @@ const TOGGLES = [
   {
     key: 'students_see_peer_scorecards',
     label: "Students can see peers' scorecards",
-    help: 'Off by default — keeps individual performance private. When on, analysts can view other analysts.',
+    help: 'Off by default, keeps individual performance private. When on, analysts can view other analysts.',
   },
   {
     key: 'students_see_class_grade_distribution',
@@ -111,8 +111,12 @@ export function AdvisorControls() {
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ color: '#e2e8f0', fontSize: '0.86rem', fontWeight: 500 }}>{t.label}</div>
-                  <div style={{ color: '#6b7280', fontSize: '0.72rem', marginTop: 2 }}>{t.help}</div>
+                  <div style={{ color: '#e2e8f0', fontSize: '0.86rem', fontWeight: 500 }}>
+                    {t.label}
+                  </div>
+                  <div style={{ color: '#6b7280', fontSize: '0.72rem', marginTop: 2 }}>
+                    {t.help}
+                  </div>
                 </div>
                 <button
                   type="button"
@@ -161,7 +165,10 @@ export function AdvisorControls() {
               disabled={!canManage}
               value={gov.who_can_export_reports}
               onChange={(e) =>
-                patch({ who_can_export_reports: e.target.value }, { who_can_export_reports: e.target.value })
+                patch(
+                  { who_can_export_reports: e.target.value },
+                  { who_can_export_reports: e.target.value },
+                )
               }
             >
               <option value="exec_pm_advisor">Executives, PMs &amp; advisors</option>

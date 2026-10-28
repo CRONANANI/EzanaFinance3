@@ -119,7 +119,7 @@ export function PitchVotingPanel({ pitch, onRefresh }) {
       {pitch.votes?.map((v) => (
         <div key={v.id} className="op-vote-row">
           <strong>
-            {v.voter_name} — {v.vote}
+            {v.voter_name}: {v.vote}
           </strong>
           {v.conviction_level && <span>{'★'.repeat(v.conviction_level)}</span>}
           <p>{v.rationale}</p>

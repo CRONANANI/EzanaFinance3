@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Organization | Ezana Finance',
   description:
-    'Investment council — chain of command and the full member roster, grouped by leadership and sector desk.',
+    'Investment council: chain of command and the full member roster, grouped by leadership and sector desk.',
 };
 
 /* Server component: seed the initial payloads OrgFinalClient fetches on mount

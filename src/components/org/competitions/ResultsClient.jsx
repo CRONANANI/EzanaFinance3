@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { NA } from '@/lib/org-display';
 import './competitions.css';
 
 export function ResultsClient({ competition, isHost }) {
@@ -88,7 +89,7 @@ export function ResultsClient({ competition, isHost }) {
               <h2 className="pcx-block-title">Standings</h2>
               {summary.teams.length === 0 ? (
                 <p className="pcx-muted">
-                  No results computed yet — run “Recompute” on the scoreboard.
+                  No results computed yet. Run “Recompute” on the scoreboard.
                 </p>
               ) : (
                 <ol className="pcx-standings">
@@ -99,10 +100,10 @@ export function ResultsClient({ competition, isHost }) {
                         className={`pcx-standing ${detail?.team?.id === t.team_id ? 'is-active' : ''}`}
                         onClick={() => loadDetail(t.team_id)}
                       >
-                        <span className="pcx-standing-rank">{t.rank ?? '—'}</span>
+                        <span className="pcx-standing-rank">{t.rank ?? NA}</span>
                         <span className="pcx-standing-name">{t.team_name}</span>
                         <span className="pcx-standing-total gcx-mono">
-                          {t.weighted_total ?? '—'}
+                          {t.weighted_total ?? NA}
                         </span>
                       </button>
                     </li>
@@ -151,8 +152,8 @@ function ResultDetail({ detail }) {
         </div>
         {result ? (
           <div className="pcx-result-score">
-            <span className="pcx-result-rank">#{result.rank ?? '—'}</span>
-            <span className="pcx-result-total gcx-mono">{result.weighted_total ?? '—'}</span>
+            <span className="pcx-result-rank">#{result.rank ?? NA}</span>
+            <span className="pcx-result-total gcx-mono">{result.weighted_total ?? NA}</span>
             <span className="pcx-muted">
               {result.judge_count} judge{result.judge_count === 1 ? '' : 's'} scored
             </span>
@@ -169,7 +170,7 @@ function ResultDetail({ detail }) {
               <span className="pcx-bd-fill" style={{ width: `${c.pct ?? 0}%` }} />
             </span>
             <span className="pcx-bd-val gcx-mono">
-              {c.avg == null ? '—' : `${c.avg.toFixed(1)}/${c.max_score}`}
+              {c.avg == null ? NA : `${c.avg.toFixed(1)}/${c.max_score}`}
             </span>
           </div>
         ))}

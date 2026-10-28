@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { NA } from '@/lib/org-display';
 import './academic.css';
 
 const WORK_LABEL = {
@@ -82,10 +83,17 @@ export function MyGrades() {
       ) : (
         mine.map((g) => (
           <div key={g.id} className="ac3-card" style={{ marginBottom: '0.75rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.6rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '0.6rem',
+              }}
+            >
               <span className="ac3-strong">{WORK_LABEL[g.work_type] || g.work_type}</span>
               <span className="ac3-num ac3-strong" style={{ fontSize: '1.05rem' }}>
-                {g.score == null ? '—' : `${g.score}/${g.max_score ?? 100}`}
+                {g.score == null ? NA : `${g.score}/${g.max_score ?? 100}`}
                 {g.letter ? ` (${g.letter})` : ''}
               </span>
             </div>

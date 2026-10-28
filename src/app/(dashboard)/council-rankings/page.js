@@ -4,7 +4,7 @@ import RankingsTable from './RankingsTable';
 import './council-rankings.css';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'University Council Rankings — Ezana' };
+export const metadata = { title: 'University Council Rankings | Ezana' };
 
 export default async function CouncilRankingsPage() {
   const admin = getAdminClient();
@@ -73,7 +73,7 @@ export default async function CouncilRankingsPage() {
             Ranked by competition results (judged) and fund performance ratios. Competition is
             weighted {Math.round(WEIGHTS.blend.competition * 100)}% and fund{' '}
             {Math.round(WEIGHTS.blend.fund * 100)}%, because judged results are externally verified
-            and fund ratios are self-reported. We show ROI and Sharpe — never dollar amounts.
+            and fund ratios are self-reported. We show ROI and Sharpe, never dollar amounts.
           </p>
         </header>
 

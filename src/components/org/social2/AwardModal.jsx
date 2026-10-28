@@ -121,7 +121,7 @@ export function AwardModal({ open, onClose, members = [], onAwarded }) {
             className="sc2-input"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Best Call — NVDA"
+            placeholder="e.g. Best Call: NVDA"
           />
         </div>
 

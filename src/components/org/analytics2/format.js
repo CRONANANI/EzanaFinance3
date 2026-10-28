@@ -1,19 +1,21 @@
 // Shared number formatters for the Fund Analytics `1b` cockpit. JetBrains Mono
 // tabular-nums is applied via the `an4-num` class; these only format the value.
 
+import { NA } from '@/lib/org-display';
+
 export const money = (n) =>
   n == null
-    ? '—'
+    ? NA
     : `${n < 0 ? '-$' : '$'}${Math.abs(Math.round(Number(n))).toLocaleString('en-US')}`;
 
 export const moneyK = (n) => {
-  if (n == null) return '—';
+  if (n == null) return NA;
   const k = Number(n) / 1000;
   return `${n < 0 ? '-$' : '$'}${Math.abs(k >= 100 ? Math.round(k) : Number(k.toFixed(1)))}K`;
 };
 
 export const pct = (n, dp = 2) =>
-  n == null ? '—' : `${Number(n) >= 0 ? '+' : ''}${Number(n).toFixed(dp)}%`;
+  n == null ? NA : `${Number(n) >= 0 ? '+' : ''}${Number(n).toFixed(dp)}%`;
 
 export const signClass = (n) => (n == null ? '' : Number(n) >= 0 ? 'an4-pos' : 'an4-neg');
 
@@ -25,7 +27,7 @@ export const signClass = (n) => (n == null ? '' : Number(n) >= 0 ? 'an4-pos' : '
 export const benchmarkLabel = (source, symbol) => {
   if (source === 'index' && symbol) return symbol;
   if (source === 'pitch_proxy') return 'Pitch benchmark (est.)';
-  return '—';
+  return NA;
 };
 export const BENCHMARK_PROXY_TITLE =
   'Estimated from pitch hindsight (average recorded benchmark return), not live index prices.';

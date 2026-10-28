@@ -88,6 +88,7 @@
     "check:help-links": "node --no-warnings scripts/check-help-links.mjs",
     "check:sonar-budget": "node --no-warnings scripts/check-sonar-budget.mjs",
     "check:copy": "node --no-warnings scripts/check-no-backend-copy.mjs",
+    "check:org-emdash": "node scripts/check-org-emdash.mjs",
     "check:vendor-copy": "node --no-warnings scripts/check-no-vendor-copy.mjs",
     "test:sonar-v2": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-v2.mjs",
     "test:sonar-coverage": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-coverage.mjs",

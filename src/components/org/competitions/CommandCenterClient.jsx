@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { StatusPill } from './CompetitionsListClient';
+import { NA } from '@/lib/org-display';
 import './competitions.css';
 
 const STATUS_ORDER = ['draft', 'open', 'in_progress', 'judging', 'complete'];
@@ -718,7 +719,7 @@ function InvitationsTab({ structure, canManage, busy, act, compId }) {
             <li key={t.id} className="pcx-roster-row">
               <span className="pcx-roster-main">{t.team_name}</span>
               <span className="pcx-roster-meta">
-                {t.ticker ? `${t.ticker}${t.side ? ` · ${t.side}` : ''}` : t.invite_email || '—'}
+                {t.ticker ? `${t.ticker}${t.side ? ` · ${t.side}` : ''}` : t.invite_email || NA}
               </span>
               <span className={`pcx-pill pcx-pill--${TEAM_TONE[t.status] || 'mut'}`}>
                 {TEAM_LABEL[t.status] || t.status}
@@ -744,7 +745,7 @@ function InvitationsTab({ structure, canManage, busy, act, compId }) {
           <i className="bi bi-hammer" aria-hidden="true" /> Judges
         </h2>
         <p className="pcx-muted pcx-note">
-          Magic-link access is generated in Phase 3 — for now this just captures the roster.
+          Magic-link access is generated in Phase 3. For now this just captures the roster.
         </p>
         {canManage ? (
           <form className="pcx-stack-form" onSubmit={submitJudge}>
@@ -829,7 +830,7 @@ function InvitationsTab({ structure, canManage, busy, act, compId }) {
               </div>
               {links[j.id] === '__revoked__' ? (
                 <p className="pcx-muted pcx-judge-link">
-                  Link revoked — the judge can no longer access their scorecard.
+                  Link revoked. The judge can no longer access their scorecard.
                 </p>
               ) : links[j.id] ? (
                 <div className="pcx-judge-link">
@@ -847,7 +848,7 @@ function InvitationsTab({ structure, canManage, busy, act, compId }) {
                   >
                     Copy
                   </button>
-                  <span className="pcx-muted">Shown once — copy it now.</span>
+                  <span className="pcx-muted">Shown once, copy it now.</span>
                 </div>
               ) : null}
             </li>
@@ -909,7 +910,7 @@ function RubricTab({ compId, rubric, canManage, onSaved }) {
           <i className="bi bi-sliders" aria-hidden="true" /> Scoring rubric
         </h2>
         <p className="pcx-muted pcx-note">
-          Weights are relative — a criterion at 1.25 counts 25% more than one at 1.0. Judges score
+          Weights are relative. A criterion at 1.25 counts 25% more than one at 1.0. Judges score
           each out of its max in Phase 3.
         </p>
         <div className="pcx-rubric">

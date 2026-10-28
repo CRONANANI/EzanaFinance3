@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { NA } from '@/lib/org-display';
 import './cohort2.css';
 
 const STATUS_LABEL = {
@@ -18,10 +19,10 @@ function Pill({ status }) {
 
 function StatStrip({ stats }) {
   const tiles = [
-    { label: 'Active', value: stats?.active ?? '—' },
-    { label: 'Retention', value: stats?.retention_pct == null ? '—' : `${stats.retention_pct}%` },
-    { label: 'Avg rating', value: stats?.avg_rating ?? '—' },
-    { label: 'Sectors covered', value: stats?.sectors_covered ?? '—' },
+    { label: 'Active', value: stats?.active ?? NA },
+    { label: 'Retention', value: stats?.retention_pct == null ? NA : `${stats.retention_pct}%` },
+    { label: 'Avg rating', value: stats?.avg_rating ?? NA },
+    { label: 'Sectors covered', value: stats?.sectors_covered ?? NA },
   ];
   return (
     <div className="c2-stats">
@@ -196,7 +197,7 @@ export function CohortRoster({ cohortId, canManage, onCount, onGoRecruit }) {
               </div>
               <div className="c2-mcard-stats">
                 <div>
-                  <b>{m.rating != null ? m.rating : '—'}</b>rating
+                  <b>{m.rating != null ? m.rating : NA}</b>rating
                 </div>
                 <div>
                   <b>{m.pitch_count}</b>pitches
@@ -206,7 +207,9 @@ export function CohortRoster({ cohortId, canManage, onCount, onGoRecruit }) {
                 </div>
               </div>
               <div className="c2-card-meta" style={{ marginTop: '0.4rem' }}>
-                {m.joined_at ? `Since ${new Date(m.joined_at).toLocaleDateString()}` : 'Since —'}
+                {m.joined_at
+                  ? `Since ${new Date(m.joined_at).toLocaleDateString()}`
+                  : `Since ${NA}`}
               </div>
             </div>
           ))}
@@ -246,10 +249,10 @@ export function CohortRoster({ cohortId, canManage, onCount, onGoRecruit }) {
                   <td>
                     <Pill status={m.lifecycle_status} />
                   </td>
-                  <td className="c2-num">{m.rating ?? '—'}</td>
+                  <td className="c2-num">{m.rating ?? NA}</td>
                   <td className="c2-num">{m.pitch_count}</td>
                   <td className="c2-num">
-                    {m.joined_at ? new Date(m.joined_at).toLocaleDateString() : '—'}
+                    {m.joined_at ? new Date(m.joined_at).toLocaleDateString() : NA}
                   </td>
                   <td>
                     <button
@@ -336,7 +339,7 @@ function MemberSlideOver({ member, canManage, cohortId, onClose, onChanged }) {
           <div>
             <b>
               <i className="bi bi-star" aria-hidden="true" style={{ verticalAlign: 'middle' }} />{' '}
-              {m.rating ?? '—'}
+              {m.rating ?? NA}
             </b>
             rating {m.rating_provisional ? '(prov.)' : ''}
           </div>
@@ -365,7 +368,7 @@ function MemberSlideOver({ member, canManage, cohortId, onClose, onChanged }) {
         {m.departed_at && (
           <div className="c2-note c2-note--warn" style={{ marginTop: '0.8rem' }}>
             Departed {new Date(m.departed_at).toLocaleDateString()}
-            {m.departure_reason ? ` — ${m.departure_reason}` : ''}
+            {m.departure_reason ? `: ${m.departure_reason}` : ''}
           </div>
         )}
 
@@ -436,6 +439,6 @@ function initials(name) {
     .trim()
     .split(/\s+/)
     .filter(Boolean);
-  if (!p.length) return '—';
+  if (!p.length) return NA;
   return ((p[0][0] || '') + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase();
 }

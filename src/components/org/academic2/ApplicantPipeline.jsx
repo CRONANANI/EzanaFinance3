@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { orgRequest } from '@/lib/org-request';
+import { NA } from '@/lib/org-display';
 import './cohort2.css';
 
 const BOARD_STAGES = [
@@ -28,10 +29,10 @@ const CRITERION_LABEL = {
 
 function StatStrip({ stats }) {
   const tiles = [
-    { label: 'Applicants', value: stats?.applicants ?? '—' },
-    { label: 'Interviewed', value: stats?.interviewed ?? '—' },
-    { label: 'Offers', value: stats?.offers ?? '—' },
-    { label: 'Yield', value: stats?.yield_pct == null ? '—' : `${stats.yield_pct}%` },
+    { label: 'Applicants', value: stats?.applicants ?? NA },
+    { label: 'Interviewed', value: stats?.interviewed ?? NA },
+    { label: 'Offers', value: stats?.offers ?? NA },
+    { label: 'Yield', value: stats?.yield_pct == null ? NA : `${stats.yield_pct}%` },
   ];
   return (
     <div className="c2-stats">
@@ -272,7 +273,7 @@ function ApplicantCard({ a, onOpen }) {
           <div className="c2-card-name">{a.blinded ? `Applicant ${a.initials}` : name}</div>
           <div className="c2-card-meta">
             {[a.program, a.year].filter(Boolean).join(' · ') ||
-              (a.blinded ? 'Blind screening' : '—')}
+              (a.blinded ? 'Blind screening' : NA)}
           </div>
         </div>
       </div>
@@ -430,8 +431,7 @@ function ApplicantModal({ applicant, canManage, onClose, onChanged }) {
               )}
             </h2>
             <p className="c2-sub" style={{ marginTop: 0 }}>
-              {[a.program, a.year, a.source && `via ${a.source}`].filter(Boolean).join(' · ') ||
-                '—'}
+              {[a.program, a.year, a.source && `via ${a.source}`].filter(Boolean).join(' · ') || NA}
             </p>
           </div>
           <button type="button" className="c2-btn c2-btn--sm" onClick={onClose} aria-label="Close">
@@ -442,8 +442,7 @@ function ApplicantModal({ applicant, canManage, onClose, onChanged }) {
         {a.blinded && (
           <div className="c2-note">
             <i className="bi bi-eye-slash" style={{ verticalAlign: 'middle' }} aria-hidden="true" />{' '}
-            Blind screening on — identity is hidden until the interview stage (redacted
-            server-side).
+            Blind screening on: identity is hidden until the interview stage (redacted server-side).
           </div>
         )}
 
@@ -728,7 +727,7 @@ function ProvisionModal({ applicant, onClose, onDone }) {
           onChange={(e) => setReportsTo(e.target.value)}
           style={{ width: '100%' }}
         >
-          <option value="">— none —</option>
+          <option value="">none</option>
           {members.map((m) => (
             <option key={m.id} value={m.id}>
               {m.display_name} {m.title ? `· ${m.title}` : ''}
@@ -742,7 +741,7 @@ function ProvisionModal({ applicant, onClose, onDone }) {
           onChange={(e) => setMentor(e.target.value)}
           style={{ width: '100%' }}
         >
-          <option value="">— none —</option>
+          <option value="">none</option>
           {members.map((m) => (
             <option key={m.id} value={m.id}>
               {m.display_name}
@@ -872,7 +871,7 @@ function FunnelSection({ cohortId, open, onToggle }) {
           style={{ verticalAlign: 'middle' }}
           aria-hidden="true"
         />{' '}
-        Funnel &amp; sources · {f.conversion_pct == null ? '—' : `${f.conversion_pct}%`} accepted
+        Funnel &amp; sources · {f.conversion_pct == null ? NA : `${f.conversion_pct}%`} accepted
       </summary>
       <div style={{ marginTop: '0.8rem' }}>
         {f.funnel.map((row) => (
@@ -978,7 +977,7 @@ function RubricSummaryCard({ applicant }) {
     : null;
   const meta = applicant
     ? [applicant.program, applicant.year].filter(Boolean).join(' · ') ||
-      (applicant.blinded ? 'Blind screening' : '—')
+      (applicant.blinded ? 'Blind screening' : NA)
     : '';
 
   return (
@@ -994,7 +993,7 @@ function RubricSummaryCard({ applicant }) {
         </div>
         <span className="c2-star">
           <i className="bi bi-star" aria-hidden="true" />{' '}
-          {scoreData?.aggregate_star != null ? scoreData.aggregate_star.toFixed(2) : '—'}
+          {scoreData?.aggregate_star != null ? scoreData.aggregate_star.toFixed(2) : NA}
         </span>
       </div>
 
@@ -1025,12 +1024,12 @@ function RubricSummaryCard({ applicant }) {
                       const s = cellScore(c, crit);
                       return (
                         <td key={c.key} className="c2-num">
-                          {s == null ? '—' : s}
+                          {s == null ? NA : s}
                         </td>
                       );
                     })}
                     <td className="c2-num c2-rubric-agg">
-                      {critAggregate(crit) == null ? '—' : critAggregate(crit).toFixed(2)}
+                      {critAggregate(crit) == null ? NA : critAggregate(crit).toFixed(2)}
                     </td>
                   </tr>
                 ))}
@@ -1039,7 +1038,7 @@ function RubricSummaryCard({ applicant }) {
           </div>
           <div className="c2-rubric-sum-foot">
             Panel · {scoreData?.scores_in ?? 0} of {scoreData?.interviewer_count ?? 0} submitted ·
-            unsubmitted shown as —
+            unsubmitted shown as {NA}
           </div>
         </>
       )}
@@ -1190,7 +1189,7 @@ function FormBuilder({ cohortId, canManage, open, onToggle }) {
                 aria-hidden="true"
               />{' '}
               Public link (informational): <code className="c2-num">/apply/{form.public_slug}</code>
-              {!form.is_open && ' — currently closed'}
+              {!form.is_open && ' (currently closed)'}
             </div>
           )}
 
