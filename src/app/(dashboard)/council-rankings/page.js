@@ -8,15 +8,20 @@ export const metadata = { title: 'University Council Rankings — Ezana' };
 
 export default async function CouncilRankingsPage() {
   const admin = getAdminClient();
-  const { data: elo } = await admin
+  const { data: elo, error: eloErr } = await admin
     .from('council_elo')
     .select('org_id, current_rating, tier, competition_rating, fund_rating')
     .order('current_rating', { ascending: false })
     .limit(200);
+  if (eloErr) throw new Error('Council rankings unavailable');
   const rows = elo || [];
   const orgIds = rows.map((r) => r.org_id);
 
-  const [{ data: orgs }, { data: metrics }, { data: txns }] = await Promise.all([
+  const [
+    { data: orgs, error: orgsErr },
+    { data: metrics, error: metricsErr },
+    { data: txns, error: txnsErr },
+  ] = await Promise.all([
     orgIds.length
       ? admin.from('organizations').select('id, name, university_name').in('id', orgIds)
       : Promise.resolve({ data: [] }),
@@ -34,6 +39,7 @@ export default async function CouncilRankingsPage() {
           .order('created_at', { ascending: false })
       : Promise.resolve({ data: [] }),
   ]);
+  if (orgsErr || metricsErr || txnsErr) throw new Error('Council rankings unavailable');
   const orgById = new Map((orgs || []).map((o) => [o.id, o]));
   const metricById = new Map((metrics || []).map((m) => [m.org_id, m]));
   const moveById = new Map();

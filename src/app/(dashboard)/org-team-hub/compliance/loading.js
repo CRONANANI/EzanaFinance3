@@ -6,7 +6,7 @@ import { SkeletonRegion, Skeleton, SkeletonCard, SkeletonTable, token } from '@/
  */
 const eyebrowStyle = {
   margin: 0,
-  fontFamily: token.fontSans,
+  fontFamily: token.fontMono,
   fontSize: 11,
   fontWeight: 600,
   letterSpacing: '0.08em',

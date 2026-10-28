@@ -1,0 +1,60 @@
+/* Org route error card. Tokens only; light and dark flow from the theme. */
+.ore-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 1rem;
+}
+.ore-card {
+  width: 100%;
+  max-width: 560px;
+  padding: 1.5rem;
+  text-align: center;
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-sans);
+}
+.ore-icon {
+  font-size: 1.5rem;
+  color: var(--warning);
+}
+.ore-title {
+  margin: 0.75rem 0 0.5rem;
+  font-size: var(--type-section-size);
+  font-weight: var(--type-section-weight);
+  letter-spacing: var(--type-section-tracking);
+  color: var(--text-primary);
+}
+.ore-body {
+  margin: 0 0 1rem;
+  font-size: var(--type-body-size);
+  color: var(--text-secondary);
+}
+.ore-dev {
+  max-height: 240px;
+  overflow: auto;
+  margin: 0 0 1rem;
+  padding: 0.75rem;
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-md);
+}
+.ore-digest {
+  margin: 0 0 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+.ore-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
