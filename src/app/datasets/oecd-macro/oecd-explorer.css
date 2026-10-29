@@ -249,9 +249,11 @@
 /* ── Card + section header ─────────────────────────────────────────────────── */
 .oecd-card {
   position: relative;
-  border: 1px solid var(--card-border);
+  /* Pinned to the outlined, transparent card the datasets pages use; the app's
+     --card-* tokens now describe borderless filled cards. */
+  border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
-  background: var(--card-bg);
+  background: transparent;
   padding: 12px 14px;
   margin-bottom: 10px;
 }

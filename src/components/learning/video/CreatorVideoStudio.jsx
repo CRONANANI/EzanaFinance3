@@ -87,7 +87,7 @@ export function CreatorVideoStudio() {
       {configured === false && (
         <div
           style={{
-            border: '1px solid var(--gold-border)',
+            border: '1px solid transparent',
             background: 'var(--gold-bg)',
             borderRadius: 12,
             padding: 16,

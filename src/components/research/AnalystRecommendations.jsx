@@ -12,7 +12,7 @@ export function AnalystRecommendations({ symbol }) {
   if (!symbol) return null;
   if (isLoading) {
     return (
-      <div className="research-fade-in research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+      <div className="bg-[var(--card-bg)] research-fade-in research-card rounded-xl p-4">
         <div
           className="flex items-center gap-2"
           style={{
@@ -30,7 +30,7 @@ export function AnalystRecommendations({ symbol }) {
 
   if ((!recommendations || recommendations.length === 0) && !priceTarget?.targetMean) {
     return (
-      <div className="research-fade-in research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+      <div className="bg-[var(--card-bg)] research-fade-in research-card rounded-xl p-4">
         <div className="text-center py-4">
           <Users className="w-8 h-8 text-gray-600 mx-auto mb-2" />
           <p
@@ -96,7 +96,7 @@ export function AnalystRecommendations({ symbol }) {
   };
 
   return (
-    <div className="research-fade-up research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl">
+    <div className="bg-[var(--card-bg)] research-fade-up research-card rounded-xl">
       <div
         style={{
           display: 'flex',
@@ -141,7 +141,7 @@ export function AnalystRecommendations({ symbol }) {
               style={{
                 padding: '0.5rem 1.25rem',
                 borderRadius: 10,
-                border: `1px solid ${consensusBorder}`,
+                border: '1px solid transparent',
                 background: consensusBg,
                 display: 'flex',
                 flexDirection: 'column',

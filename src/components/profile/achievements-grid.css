@@ -1,14 +1,14 @@
 .ag-card {
   border-radius: var(--radius-xl);
-  border: 1px solid var(--border-primary);
-  background: var(--bg-secondary);
+  border: 1px solid transparent;
+  background: var(--card-bg);
   padding: 1rem;
   font-family: var(--font-sans);
 }
 
 body.light-mode .ag-card {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.08);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 
 .ag-head {
@@ -87,8 +87,8 @@ body.light-mode .ag-card {
   gap: 0.375rem;
   padding: 0.625rem 0.75rem;
   text-align: left;
-  border: 1px solid var(--border-secondary);
-  background: var(--surface-card);
+  border: 1px solid transparent;
+  background: var(--card-bg);
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition:
@@ -102,8 +102,9 @@ body.light-mode .ag-card {
 }
 
 .ag-tile:hover {
-  border-color: var(--emerald-border, color-mix(in srgb, var(--emerald) 35%, transparent));
+  border-color: transparent;
   transform: translateY(-1px);
+  background-color: var(--card-bg-hover);
 }
 
 .ag-tile.off {

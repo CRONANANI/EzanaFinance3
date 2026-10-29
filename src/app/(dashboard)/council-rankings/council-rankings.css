@@ -171,9 +171,9 @@
   margin: 20px 0;
 }
 .crx-split-card {
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg, 12px);
-  background: var(--bg-secondary);
+  background: var(--card-bg);
   padding: 16px;
 }
 .crx-split-label {

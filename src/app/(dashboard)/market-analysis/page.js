@@ -876,7 +876,7 @@ function CityNewsPanel({ panelId, powerCountry, selectedLayers, countryScores, o
                     borderRadius: '9999px',
                     background: 'rgba(168, 85, 247, 0.15)',
                     color: '#c4b5fd',
-                    border: '1px solid rgba(168, 85, 247, 0.25)',
+                    border: '1px solid transparent',
                     textTransform: 'capitalize',
                     fontFamily: 'var(--font-mono, monospace)',
                   }}
@@ -955,7 +955,7 @@ function CityNewsPanel({ panelId, powerCountry, selectedLayers, countryScores, o
                   fontSize: '0.8rem',
                   fontStyle: 'italic',
                   background: 'rgba(255, 255, 255, 0.02)',
-                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  border: '1px solid transparent',
                   borderRadius: '8px',
                 }}
               >
@@ -2337,7 +2337,7 @@ export default function MarketAnalysisPage() {
                           padding: '4px 10px',
                           borderRadius: '8px',
                           background: colour + '15',
-                          border: `1px solid ${colour}30`,
+                          border: '1px solid transparent',
                           minWidth: '64px',
                         }}
                       >

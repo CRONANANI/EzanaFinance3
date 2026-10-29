@@ -99,10 +99,10 @@ export function VideoUploader({ onUploaded }) {
   return (
     <div
       style={{
-        border: '1px solid var(--border-primary)',
+        border: '1px solid transparent',
         borderRadius: 12,
         padding: 16,
-        background: 'var(--surface-card)',
+        background: 'var(--card-bg)',
         display: 'flex',
         flexDirection: 'column',
         gap: 10,

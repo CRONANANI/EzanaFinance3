@@ -239,8 +239,8 @@
   color: var(--text-muted);
 }
 .c2-card {
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   padding: 0.6rem;
   cursor: pointer;
@@ -249,7 +249,8 @@
     transform 0.05s;
 }
 .c2-card:hover {
-  border-color: var(--emerald-border);
+  border-color: transparent;
+  background-color: var(--card-bg-hover);
 }
 .c2-card:active {
   transform: scale(0.99);
@@ -402,14 +403,15 @@
   gap: 0.75rem;
 }
 .c2-mcard {
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--c2-radius);
   padding: 0.85rem;
   cursor: pointer;
 }
 .c2-mcard:hover {
-  border-color: var(--emerald-border);
+  border-color: transparent;
+  background-color: var(--card-bg-hover);
 }
 .c2-mcard-head {
   display: flex;
@@ -634,8 +636,8 @@
   gap: 0.9rem;
 }
 .c2-panel {
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--c2-radius);
   padding: 0.85rem;
 }

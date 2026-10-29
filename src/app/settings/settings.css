@@ -674,8 +674,8 @@ body.light-mode .settings-input option:checked {
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 1.25rem;
-  background: rgba(239, 68, 68, 0.04);
-  border: 1px solid rgba(239, 68, 68, 0.15);
+  background: color-mix(in srgb, var(--negative) 8%, var(--card-bg));
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   flex-wrap: wrap;
 }
@@ -739,20 +739,20 @@ body.light-mode .settings-danger-card .settings-danger-text p {
 /* Info cards / badges */
 .settings-info-card {
   padding: 1rem 1.25rem;
-  background: var(--emerald-bg-subtle);
-  border: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
+  background: color-mix(in srgb, var(--emerald) 6%, var(--card-bg));
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   margin-bottom: 1rem;
 }
 
 .settings-info-card.warning {
-  background: rgba(251, 191, 36, 0.06);
-  border-color: rgba(251, 191, 36, 0.15);
+  background: color-mix(in srgb, var(--warning) 8%, var(--card-bg));
+  border-color: transparent;
 }
 
 .settings-info-card.danger {
-  background: rgba(239, 68, 68, 0.06);
-  border-color: rgba(239, 68, 68, 0.15);
+  background: color-mix(in srgb, var(--negative) 8%, var(--card-bg));
+  border-color: transparent;
 }
 
 .settings-badge {
@@ -793,7 +793,7 @@ body.light-mode .settings-danger-card .settings-danger-text p {
 .settings-plan-card {
   padding: 1.25rem;
   background: color-mix(in srgb, var(--emerald) 3%, transparent);
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
   cursor: pointer;
   transition: all 0.2s;
@@ -802,13 +802,13 @@ body.light-mode .settings-danger-card .settings-danger-text p {
 }
 
 .settings-plan-card:hover {
-  border-color: var(--emerald-glow);
+  border-color: transparent;
   background: color-mix(in srgb, var(--emerald) 5%, transparent);
 }
 
 .settings-plan-card.current {
-  border-color: color-mix(in srgb, var(--emerald) 40%, transparent);
-  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+  border-color: transparent;
+  background: color-mix(in srgb, var(--emerald) 12%, var(--card-bg));
   box-shadow: 0 0 20px var(--emerald-bg);
 }
 
@@ -907,7 +907,7 @@ body.light-mode .settings-danger-card .settings-danger-text p {
 .settings-integration-card {
   padding: 1.25rem;
   background: color-mix(in srgb, var(--emerald) 3%, transparent);
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
   display: flex;
   align-items: center;
@@ -916,11 +916,12 @@ body.light-mode .settings-danger-card .settings-danger-text p {
 }
 
 .settings-integration-card:hover {
-  border-color: color-mix(in srgb, var(--emerald) 20%, transparent);
+  border-color: transparent;
+  background-color: var(--card-bg-hover);
 }
 
 .settings-integration-card.connected {
-  border-color: var(--emerald-glow);
+  border-color: transparent;
 }
 
 .settings-integration-icon {
@@ -1221,15 +1222,15 @@ body.light-mode .settings-danger-card .settings-danger-text p {
 
 .settings-push-card {
   background: color-mix(in srgb, var(--emerald) 6%, transparent);
-  border: 1px solid var(--emerald-bg-hover);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   padding: 1.25rem 1.35rem;
   margin-bottom: 0.5rem;
 }
 
 .settings-push-card--muted {
-  background: var(--surface-card);
-  border-color: rgba(255, 255, 255, 0.06);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 
 .settings-toggle-row--push {
@@ -1278,12 +1279,12 @@ body.light-mode .settings-danger-card .settings-danger-text p {
 
 body.light-mode .settings-push-card {
   background: rgba(16, 185, 129, 0.08);
-  border-color: rgba(16, 185, 129, 0.2);
+  border-color: transparent;
 }
 
 body.light-mode .settings-push-card--muted {
-  background: #fff;
-  border-color: rgba(0, 0, 0, 0.08);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 
 /* ══════════════════════════════
@@ -1850,8 +1851,11 @@ body.light-mode .settings-delete-modal__input:focus {
   font-weight: 600;
 }
 .settings-plan-card.popular {
-  border-color: var(--emerald);
+  border-color: transparent;
   position: relative;
+}
+.settings-plan-card.popular:not(.current) {
+  background: color-mix(in srgb, var(--emerald) 8%, var(--card-bg));
 }
 .settings-plan-badge {
   position: absolute;

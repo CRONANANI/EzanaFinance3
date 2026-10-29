@@ -75,7 +75,8 @@ export function FeaturedCreators() {
                     borderRadius: 10,
                     textDecoration: 'none',
                     color: 'inherit',
-                    border: '1px solid var(--border-secondary)',
+                    border: '1px solid transparent',
+                    background: 'var(--card-bg)',
                   }}
                 >
                   <Avatar

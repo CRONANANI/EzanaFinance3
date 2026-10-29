@@ -147,7 +147,8 @@ export function PersonalizationPanel() {
                         fontWeight: 500,
                         padding: '0.25rem 0.55rem',
                         borderRadius: '999px',
-                        border: '1px solid var(--border-input, rgba(255,255,255,0.14))',
+                        border: '1px solid transparent',
+                        background: 'var(--card-bg)',
                         color: 'var(--text-secondary, rgba(255,255,255,0.75))',
                       }}
                     >

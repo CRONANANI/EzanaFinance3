@@ -88,7 +88,7 @@ export function PairsTradingCard() {
                 padding: '0.75rem',
                 borderRadius: 8,
                 background: `${sig.color}15`,
-                border: `1px solid ${sig.color}40`,
+                border: '1px solid transparent',
               }}
             >
               <div style={{ fontSize: '1rem', fontWeight: 700, color: sig.color }}>{sig.label}</div>

@@ -97,8 +97,8 @@
 }
 
 .ot-team-card {
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   padding: 1rem;
   transition:
@@ -107,8 +107,9 @@
 }
 
 .ot-team-card:hover {
-  border-color: var(--border-hover);
+  border-color: transparent;
   transform: translateY(-2px);
+  background-color: var(--card-bg-hover);
 }
 
 .ot-team-card-header {
@@ -656,7 +657,7 @@
 
 .ctd-card {
   background: var(--ctd-card);
-  border: 1px solid var(--ctd-border);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
   /* Dark = flat, border-defined: no shadow, so a transparent card on the page
      background doesn't ring into a lighter slab. Light restores the lift below. */

@@ -60,7 +60,8 @@ export function OpenCalls() {
                 key={c.id}
                 style={{
                   padding: 10,
-                  border: '1px solid var(--border-secondary)',
+                  border: '1px solid transparent',
+                  background: 'var(--card-bg)',
                   borderRadius: 10,
                 }}
               >

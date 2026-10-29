@@ -87,9 +87,9 @@
   gap: 1.25rem;
 }
 .an4-panel {
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
-  background: var(--surface-card);
+  background: var(--card-bg);
   padding: 1rem 1.1rem;
 }
 .an4-panel--wide {
@@ -325,9 +325,9 @@
 
 /* ── Card ── (matches Trading Desk `.ctd-card`) */
 .fa-card {
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
-  background: var(--surface-card);
+  background: var(--card-bg);
 }
 .fa-card-pad {
   padding: 1rem 1.1rem;

@@ -80,8 +80,8 @@
   left: 0;
   right: 0;
   z-index: 50;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg, 0 12px 40px rgba(0, 0, 0, 0.4));
   max-height: 420px;
@@ -91,8 +91,8 @@
 }
 
 body.light-mode .us-panel {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.08);
+  background: var(--card-bg);
+  border-color: transparent;
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
 }
 

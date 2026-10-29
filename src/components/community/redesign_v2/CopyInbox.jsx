@@ -63,7 +63,7 @@ export function CopyInbox({ requests = [], onAction }) {
                 padding: 12,
                 background: 'var(--bg-tertiary)',
                 borderRadius: 8,
-                border: '1px solid var(--border-primary)',
+                border: '1px solid transparent',
               }}
             >
               <Link

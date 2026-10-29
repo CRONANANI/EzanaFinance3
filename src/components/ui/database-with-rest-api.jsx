@@ -107,7 +107,7 @@ function MobileDataSourcesFlow({ sourceConfigs, sourceDetails, circleText, accen
 
       {activeSource && detail && (
         <div
-          className="w-full min-w-0 rounded-xl border p-3 sm:p-4"
+          className="bg-[var(--card-bg)] w-full min-w-0 rounded-xl p-3 sm:p-4"
           style={{
             background: 'rgba(10, 15, 10, 0.98)',
             borderColor: `${accentColor}40`,
@@ -167,7 +167,7 @@ function MobileDataSourcesFlow({ sourceConfigs, sourceDetails, circleText, accen
           transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }}
         />
         <div
-          className="relative flex w-full min-w-0 items-center justify-center gap-2.5 rounded-2xl border bg-[#0a0f0a]/95 px-4 py-3.5 text-center backdrop-blur-sm sm:px-6"
+          className="relative flex w-full min-w-0 items-center justify-center gap-2.5 rounded-2xl bg-[#0a0f0a]/95 px-4 py-3.5 text-center backdrop-blur-sm sm:px-6"
           style={{
             borderColor: `${accentColor}50`,
             boxShadow: `0 0 24px ${accentColor}20, inset 0 1px 0 ${accentColor}15`,
@@ -558,7 +558,7 @@ export default function DatabaseWithRestApi({
               transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
             />
             <div
-              className="relative flex items-center gap-2.5 px-6 py-3.5 rounded-xl border bg-[#0a0f0a]/95 backdrop-blur-sm"
+              className="relative flex items-center gap-2.5 px-6 py-3.5 rounded-xl bg-[#0a0f0a]/95 backdrop-blur-sm"
               style={{
                 borderColor: `${accentColor}50`,
                 boxShadow: `0 0 30px ${accentColor}20, inset 0 1px 0 ${accentColor}15`,

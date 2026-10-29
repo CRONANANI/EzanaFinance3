@@ -130,7 +130,7 @@ export function MyRoleAccessPanel() {
               padding: '0.75rem 0.9rem',
               borderRadius: 8,
               background: 'rgba(245,158,11,0.08)',
-              border: '1px solid rgba(245,158,11,0.2)',
+              border: '1px solid transparent',
               color: '#fbbf24',
               fontSize: '0.8rem',
               lineHeight: 1.5,

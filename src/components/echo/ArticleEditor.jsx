@@ -312,7 +312,7 @@ export function ArticleEditor({ getToken, onSaved, editingArticle }) {
                         padding: '4px 10px',
                         borderRadius: 999,
                         background: 'var(--bg-tertiary)',
-                        border: '1px solid var(--border-secondary)',
+                        border: '1px solid transparent',
                         fontSize: 13,
                       }}
                     >

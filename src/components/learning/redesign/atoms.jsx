@@ -26,7 +26,7 @@ export function Pill({ children, tone = 'default', className = '' }) {
         letterSpacing: '0.06em',
         textTransform: 'uppercase',
         background: t.bg,
-        border: `1px solid ${t.border}`,
+        border: '1px solid transparent',
         color: t.color,
       }}
     >
@@ -55,7 +55,7 @@ export function TierChip({ tier = 'Bronze' }) {
         fontSize: 11,
         fontWeight: 700,
         background: 'var(--surface-2)',
-        border: `1px solid ${c}`,
+        border: '1px solid transparent',
         color: 'var(--fg)',
       }}
     >

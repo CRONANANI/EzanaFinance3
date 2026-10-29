@@ -510,7 +510,7 @@ export function ProfilePageClient({ username }) {
   if (notFound || !profile) {
     return (
       <div className="dashboard-page-inset db-page">
-        <div className="rounded-xl border border-gray-200 dark:border-[#1a1a24] bg-white dark:bg-[#111118] p-8 text-center">
+        <div className="bg-[var(--card-bg)] rounded-xl dark:bg-[#111118] p-8 text-center">
           <p className="text-lg text-gray-600 dark:text-[#9ca3af]">Profile not found</p>
           <Link href="/community" className="mt-4 inline-block text-emerald-400 hover:underline">
             Back to Community
@@ -527,7 +527,7 @@ export function ProfilePageClient({ username }) {
     <div className="dashboard-page-inset db-page comm-profile-page font-sans">
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] 2xl:grid-cols-[minmax(0,1fr)_390px]">
         <section className="min-w-0">
-          <div className="rounded-xl border border-gray-200 dark:border-[#1a1a24] bg-white dark:bg-[#111118] p-5">
+          <div className="bg-[var(--card-bg)] rounded-xl dark:bg-[#111118] p-5">
             <div className="flex flex-col xl:flex-row xl:items-start gap-6">
               <div className="flex flex-wrap items-start gap-4 xl:w-[280px] xl:shrink-0">
                 <div

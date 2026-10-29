@@ -74,7 +74,7 @@ export default function PortfolioDashboard() {
     return (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-white">Portfolio Overview</h2>
-        <div className="flex flex-col items-center justify-center min-h-[300px] bg-[#161b22] rounded-xl border border-gray-800 p-8 text-center">
+        <div className="flex flex-col items-center justify-center min-h-[300px] bg-[#161b22] rounded-xl p-8 text-center">
           <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4">
             <DollarSign className="w-8 h-8 text-emerald-500" />
           </div>
@@ -145,7 +145,7 @@ export default function PortfolioDashboard() {
       </div>
 
       {/* Accounts - collapsed by default, expand on click */}
-      <div className="bg-[#161b22] rounded-xl border border-gray-800 overflow-hidden">
+      <div className="bg-[#161b22] rounded-xl overflow-hidden">
         <div className="p-5 border-b border-gray-800">
           <h3 className="text-lg font-semibold text-white">Accounts</h3>
         </div>
@@ -236,7 +236,7 @@ export default function PortfolioDashboard() {
 
       {/* Top Performers & Asset Allocation - side by side, collapsible */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-[#161b22] rounded-xl border border-gray-800 overflow-hidden">
+        <div className="bg-[#161b22] rounded-xl overflow-hidden">
           <button
             type="button"
             onClick={() => setTopPerformersExpanded(!topPerformersExpanded)}
@@ -308,7 +308,7 @@ export default function PortfolioDashboard() {
           </div>
         </div>
 
-        <div className="bg-[#161b22] rounded-xl border border-gray-800 overflow-hidden">
+        <div className="bg-[#161b22] rounded-xl overflow-hidden">
           <button
             type="button"
             onClick={() => setAllocationExpanded(!allocationExpanded)}

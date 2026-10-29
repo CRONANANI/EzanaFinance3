@@ -82,7 +82,7 @@
 
 .mock-stat-card {
   background: color-mix(in srgb, var(--emerald) 3%, transparent);
-  border: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
   padding: 1rem 1.125rem;
   display: flex;
@@ -131,8 +131,8 @@
 
 /* ── Trade panel (right column) ── */
 .mock-trade-panel {
-  background: var(--surface-card);
-  border: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
   overflow: hidden;
   position: sticky;
@@ -528,8 +528,8 @@
 }
 
 .mock-card {
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
   overflow: hidden;
 }
@@ -743,8 +743,8 @@
 body.light-mode .mock-stat-card,
 body.light-mode .mock-trade-panel,
 body.light-mode .mock-card {
-  background: #fff;
-  border-color: rgba(16, 185, 129, 0.12);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 
 body.light-mode .mock-title,

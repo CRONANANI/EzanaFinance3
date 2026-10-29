@@ -17,13 +17,13 @@
   gap: 0.375rem;
   padding: 0.75rem;
   border-radius: var(--radius-lg);
-  border: 1px solid var(--border-primary);
-  background: var(--bg-secondary);
+  border: 1px solid transparent;
+  background: var(--card-bg);
 }
 
 body.light-mode .mg-card {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.08);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 
 .mg-label {

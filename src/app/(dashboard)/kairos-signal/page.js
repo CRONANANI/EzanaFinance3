@@ -1200,7 +1200,7 @@ function CommoditySensitivityCard() {
                     <div
                       style={{
                         background: 'rgba(255,255,255,0.02)',
-                        border: '1px solid rgba(255,255,255,0.05)',
+                        border: '1px solid transparent',
                         borderRadius: 8,
                         padding: '0.5rem 0.65rem',
                       }}
@@ -1809,7 +1809,7 @@ function BehaviouralSignalsCard() {
                 padding: '0.6rem 0.75rem',
                 borderRadius: '8px',
                 background: 'rgba(212,175,55,0.04)',
-                border: '1px solid rgba(212,175,55,0.1)',
+                border: '1px solid transparent',
               }}
             >
               <div
@@ -2024,7 +2024,7 @@ function ForecastOutlookCard({ weatherData, region }) {
                 padding: '0.65rem 0.75rem',
                 borderRadius: '8px',
                 background: `${row.color}08`,
-                border: `1px solid ${row.color}20`,
+                border: '1px solid transparent',
               }}
             >
               <div>
@@ -2217,7 +2217,7 @@ function SignalDashboardCard({ weatherData, region, owmCurrent }) {
               key={item.label}
               style={{
                 background: 'rgba(212,175,55,0.04)',
-                border: '1px solid rgba(212,175,55,0.08)',
+                border: '1px solid transparent',
                 borderRadius: 8,
                 padding: '0.4rem 0.5rem',
                 textAlign: 'center',
@@ -2359,7 +2359,7 @@ export default function KairosSignalPage() {
                 marginTop: '0.75rem',
                 padding: '0.6rem 0.85rem',
                 background: 'rgba(212, 175, 55, 0.04)',
-                border: '1px solid rgba(212, 175, 55, 0.12)',
+                border: '1px solid transparent',
                 borderRadius: 10,
                 maxWidth: 700,
               }}

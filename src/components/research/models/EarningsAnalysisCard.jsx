@@ -105,7 +105,7 @@ export function EarningsAnalysisCard({ symbol, onClose }) {
   }));
 
   return (
-    <section className="rounded-xl border border-amber-500/40 bg-card p-5 space-y-4 ring-1 ring-amber-500/20">
+    <section className="bg-[var(--card-bg)] rounded-xl p-5 space-y-4 ring-1 ring-amber-500/20">
       <header className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2 min-w-0">
           <div className="h-8 w-8 shrink-0 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">
@@ -139,7 +139,7 @@ export function EarningsAnalysisCard({ symbol, onClose }) {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-lg border border-border bg-card p-4 space-y-2">
+        <div className="bg-[var(--card-bg)] rounded-lg p-4 space-y-2">
           <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
             <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
             Financial Metrics Mentioned
@@ -165,7 +165,7 @@ export function EarningsAnalysisCard({ symbol, onClose }) {
           )}
         </div>
 
-        <div className="rounded-lg border border-border bg-card p-4 space-y-2">
+        <div className="bg-[var(--card-bg)] rounded-lg p-4 space-y-2">
           <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
             <User2 className="h-3.5 w-3.5 text-blue-500" />
             Executive Tone
@@ -209,7 +209,7 @@ export function EarningsAnalysisCard({ symbol, onClose }) {
         </div>
       </div>
 
-      <div className="rounded-lg border border-border bg-card p-4 space-y-2">
+      <div className="bg-[var(--card-bg)] rounded-lg p-4 space-y-2">
         <h4 className="text-xs font-semibold text-foreground">Quarter-over-Quarter Trends</h4>
         <div className="h-52">
           <ResponsiveContainer width="100%" height="100%">
@@ -288,7 +288,7 @@ export function EarningsAnalysisCard({ symbol, onClose }) {
         </div>
       </div>
 
-      <div className="rounded-lg border border-border bg-card p-4 space-y-2">
+      <div className="bg-[var(--card-bg)] rounded-lg p-4 space-y-2">
         <h4 className="text-xs font-semibold text-foreground">Top topics on this call</h4>
         <div className="flex flex-wrap gap-2">
           {(analysis.topTopics || []).map((t) => (
@@ -317,7 +317,7 @@ export function EarningsAnalysisCard({ symbol, onClose }) {
         </div>
       </div>
 
-      <div className="rounded-md border border-amber-500/25 bg-amber-500/5 px-3 py-2 text-[11px] text-muted-foreground leading-relaxed">
+      <div className="rounded-md bg-amber-500/5 px-3 py-2 text-[11px] text-muted-foreground leading-relaxed">
         <span className="font-medium text-amber-800 dark:text-amber-200">Signal strength: </span>
         {synthesis.confidence === 'low'
           ? 'Low — few clear transcript or earnings cues; treat as weak context only.'
@@ -341,7 +341,7 @@ export function EarningsAnalysisCard({ symbol, onClose }) {
         />
       </div>
 
-      <div className="rounded-md border border-border bg-muted/30 p-3 flex gap-2 text-[11px] text-muted-foreground leading-relaxed">
+      <div className="rounded-md bg-muted/30 p-3 flex gap-2 text-[11px] text-muted-foreground leading-relaxed">
         <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
         <div>
           <strong className="text-foreground">How this works:</strong> Sentiment scores come from
@@ -398,7 +398,7 @@ function SynthesisBadge({ synthesis }) {
 
 function SignalList({ title, signals, icon: Icon, color }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-3 space-y-2">
+    <div className="bg-[var(--card-bg)] rounded-lg p-3 space-y-2">
       <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
         <Icon className={`h-3.5 w-3.5 ${color}`} />
         {title}
@@ -420,7 +420,7 @@ function SignalList({ title, signals, icon: Icon, color }) {
 
 function EarningsLoading() {
   return (
-    <section className="rounded-xl border border-amber-500/40 bg-card p-5 space-y-4">
+    <section className="bg-[var(--card-bg)] rounded-xl p-5 space-y-4">
       <div className="h-8 w-48 rounded bg-muted/40 animate-pulse" />
       <div className="h-20 rounded bg-muted/40 animate-pulse" />
       <div className="h-44 rounded bg-muted/40 animate-pulse" />
@@ -430,7 +430,7 @@ function EarningsLoading() {
 
 function EarningsEmpty({ symbol, onRetry, onClose }) {
   return (
-    <section className="rounded-xl border border-border bg-card p-5 text-center space-y-2">
+    <section className="bg-[var(--card-bg)] rounded-xl p-5 text-center space-y-2">
       <div className="flex justify-end gap-2">
         {onClose && (
           <button
@@ -463,7 +463,7 @@ function EarningsError({ symbol, error, onRetry, onClose }) {
   const { status, message, detail } = error;
   return (
     <section
-      className={`rounded-xl border ${status === 503 ? 'border-amber-500/40 bg-amber-500/5' : status === 404 ? 'border-border bg-card' : 'border-destructive/30 bg-card'} p-5 text-center space-y-2`}
+      className={`rounded-xl ${status === 503 ? ' bg-amber-500/5' : status === 404 ? ' bg-card' : 'border-destructive/30 bg-card'} p-5 text-center space-y-2`}
     >
       <div className="flex justify-end gap-2">
         {onClose && (

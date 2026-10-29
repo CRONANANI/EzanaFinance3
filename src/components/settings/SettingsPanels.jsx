@@ -783,7 +783,7 @@ export function ProfilePanel({ onSave, settings, updateSetting, saveSettings, sa
             style={{
               padding: '0.5rem 0.75rem',
               background: 'rgba(16,185,129,0.08)',
-              border: '1px solid rgba(16,185,129,0.2)',
+              border: '1px solid transparent',
               borderRadius: '8px',
               color: '#10b981',
               fontSize: '0.75rem',

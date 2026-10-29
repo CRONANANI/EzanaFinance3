@@ -178,7 +178,7 @@ export function CompsAnalysisCard({ symbol, onClose }) {
 
   if (loading) {
     return (
-      <section className="rounded-xl border border-amber-500/40 bg-white dark:bg-[#0d1117] p-5 space-y-4">
+      <section className="bg-[var(--card-bg)] rounded-xl p-5 space-y-4">
         <div className="h-8 w-56 rounded bg-gray-100 dark:bg-gray-800 animate-pulse" />
         <div className="h-16 rounded bg-gray-100 dark:bg-gray-800 animate-pulse" />
         <div className="h-64 rounded bg-gray-100 dark:bg-gray-800 animate-pulse" />
@@ -188,7 +188,7 @@ export function CompsAnalysisCard({ symbol, onClose }) {
 
   if (error) {
     return (
-      <section className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0d1117] p-5 text-center space-y-2">
+      <section className="bg-[var(--card-bg)] rounded-xl p-5 text-center space-y-2">
         <div className="flex justify-end">
           {onClose && (
             <button
@@ -243,7 +243,7 @@ export function CompsAnalysisCard({ symbol, onClose }) {
   const thActive = 'text-amber-700 dark:text-amber-400';
 
   return (
-    <section className="rounded-xl border border-amber-500/40 bg-white dark:bg-[#0d1117] p-5 space-y-4 ring-1 ring-amber-500/20">
+    <section className="bg-[var(--card-bg)] rounded-xl p-5 space-y-4 ring-1 ring-amber-500/20">
       <header className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2 min-w-0">
           <div className="h-8 w-8 shrink-0 rounded-lg bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center">
@@ -280,7 +280,7 @@ export function CompsAnalysisCard({ symbol, onClose }) {
 
       <ModelVariableStrip variables={stripVars} />
 
-      <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0d1117] overflow-x-auto">
+      <div className="bg-[var(--card-bg)] rounded-lg overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#161b22]">
@@ -401,7 +401,7 @@ export function CompsAnalysisCard({ symbol, onClose }) {
       </div>
 
       {valuation.methods.length > 0 && (
-        <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0d1117] p-4 space-y-3">
+        <div className="bg-[var(--card-bg)] rounded-lg p-4 space-y-3">
           <h4 className="text-xs font-semibold text-gray-900 dark:text-white">
             Implied Valuation (Peer-Median Multiples)
           </h4>
@@ -414,7 +414,7 @@ export function CompsAnalysisCard({ symbol, onClose }) {
               return (
                 <div
                   key={m.method}
-                  className="rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#161b22] p-3 text-center space-y-1"
+                  className="rounded-md bg-gray-50 dark:bg-[#161b22] p-3 text-center space-y-1"
                 >
                   <div className="text-[10px] text-gray-500 dark:text-gray-400">{m.method}</div>
                   <div className="text-sm font-semibold font-mono text-gray-900 dark:text-white">
@@ -453,7 +453,7 @@ export function CompsAnalysisCard({ symbol, onClose }) {
         </div>
       )}
 
-      <div className="rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#161b22] p-3 flex gap-2 text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+      <div className="rounded-md bg-gray-50 dark:bg-[#161b22] p-3 flex gap-2 text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
         <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
         <div>
           <strong className="text-gray-900 dark:text-white">How this works:</strong> Peers are

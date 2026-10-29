@@ -2612,13 +2612,13 @@ html:has(.landing-page) .navbar .logo,
 }
 
 .landing-page .feature-card {
-  background: rgba(255, 255, 255, 0.02) !important;
-  border-color: color-mix(in srgb, var(--emerald) 10%, transparent) !important;
+  background: var(--card-bg) !important;
+  border-color: transparent !important;
 }
 
 .landing-page .feature-card:hover {
   background: var(--emerald-bg-subtle) !important;
-  border-color: var(--emerald-glow) !important;
+  border-color: transparent !important;
 }
 
 .landing-page .feature-card-title {
@@ -3133,18 +3133,20 @@ html:has(.landing-page) .landing-footer button {
 }
 
 /* ============================================================================
-   Canonical card pattern — outlined, transparent, same-colour canvas.
-   A content card carries a visible 1px outline but NO fill and NO lift, so the
-   page colour shows through: card background == page canvas == --app-bg, in both
-   light and dark mode. Pages can adopt `.ez-card` directly, or set the same three
-   declarations (background: var(--card-bg); border: 1px solid var(--card-border);
-   box-shadow: none) on their own card containers. This is for CONTENT CARDS only
-   — inputs, dropdowns, popovers/modals, the sidebar and the ticker keep their own
-   solid backgrounds for legibility.
+   Canonical card pattern — borderless, filled.
+   A content card has NO outline and NO lift; it reads as a filled surface one
+   step off the page canvas (--card-bg, with --card-bg-hover for hover and
+   nested cards), in every theme scope. The 1px transparent border keeps the
+   box size identical to the old outlined cards. State (selected, active,
+   current, highlighted, popular, warning, danger) is a tint of the accent over
+   --card-bg, never an outline; focus rings stay. Pages can adopt `.ez-card`
+   directly or set the same declarations on their own card containers. This is
+   for CONTENT CARDS only — inputs, dropdowns, popovers/modals, the sidebar and
+   the ticker keep their own borders and backgrounds.
    ============================================================================ */
 .ez-card {
   background: var(--card-bg);
-  border: 1px solid var(--card-border);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg, 12px);
   box-shadow: none;
 }

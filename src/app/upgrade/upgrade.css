@@ -24,7 +24,7 @@
 }
 .upg-card {
   padding: 16px;
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   background: var(--surface-card, var(--bg-primary));
 }

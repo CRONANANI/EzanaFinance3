@@ -80,8 +80,8 @@ body.light-mode .ptr-verified-badge {
 
 /* ── CARDS ── */
 body.light-mode .ptr-card {
-  background: #fff;
-  border-color: rgba(0, 0, 0, 0.06);
+  background: var(--card-bg);
+  border-color: transparent;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 body.light-mode .ptr-card-header {
@@ -96,11 +96,11 @@ body.light-mode .ptr-card-count {
 
 /* ── QUICK LINKS ── */
 body.light-mode .ptr-link-card {
-  background: #fff;
-  border-color: rgba(0, 0, 0, 0.06);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 body.light-mode .ptr-link-card:hover {
-  border-color: rgba(184, 146, 47, 0.25);
+  border-color: transparent;
   background: rgba(184, 146, 47, 0.02);
 }
 body.light-mode .ptr-link-label {
@@ -118,12 +118,12 @@ body.light-mode .ptr-link-card:hover .ptr-link-arrow {
 
 /* ── STAT CARDS ── */
 body.light-mode .ptr-stat-card {
-  background: #fff;
-  border-color: rgba(0, 0, 0, 0.06);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 body.light-mode .ptr-stat-card.ptr-stat-gold {
   background: rgba(184, 146, 47, 0.04);
-  border-color: rgba(184, 146, 47, 0.2);
+  border-color: transparent;
 }
 body.light-mode .ptr-stat-card > i {
   color: #94a3b8;
@@ -363,8 +363,8 @@ body.light-mode .ptr-unread-dot {
 
 /* ── ANALYTICS ── */
 body.light-mode .ptr-analytics-card {
-  background: #fff;
-  border-color: rgba(0, 0, 0, 0.06);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 body.light-mode .ptr-analytics-card h4 {
   color: #0f172a;

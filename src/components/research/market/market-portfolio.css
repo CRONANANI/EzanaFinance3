@@ -281,7 +281,7 @@ body.light-mode .shm-error-detail {
   position: relative;
   padding: 0.75rem 0.85rem;
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid transparent;
   transition:
     border-color 0.15s ease,
     transform 0.15s ease;
@@ -291,11 +291,13 @@ body.light-mode .shm-error-detail {
   flex-direction: column;
   justify-content: space-between;
   gap: 0.25rem;
+  background-color: var(--card-bg);
 }
 
 .shm-tile:hover {
-  border-color: color-mix(in srgb, var(--emerald) 50%, transparent);
+  border-color: transparent;
   transform: translateY(-1px);
+  background-color: var(--card-bg-hover);
 }
 
 /* Clickable heatmap tiles (button) — pointer, hover lift, focus ring */
@@ -315,11 +317,9 @@ body.light-mode .shm-error-detail {
 }
 
 .shm-tile--clickable.shm-tile--clickable:hover {
-  border-color: color-mix(in srgb, var(--emerald) 45%, transparent);
+  border-color: transparent;
   transform: translateY(-1px);
-  box-shadow:
-    0 4px 14px rgba(0, 0, 0, 0.25),
-    0 0 0 1px var(--emerald-border);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
 }
 
 .shm-tile--clickable:focus-visible {
@@ -328,34 +328,26 @@ body.light-mode .shm-error-detail {
 }
 
 body.light-mode .shm-tile--clickable.shm-tile--clickable:hover {
-  box-shadow:
-    0 4px 14px rgba(0, 0, 0, 0.12),
-    0 0 0 1px rgba(5, 150, 105, 0.2);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
 
 /* Deep-link highlight (?sector=X) from Market Pulse card */
 .shm-tile--highlighted {
   position: relative;
-  outline: 2px solid var(--emerald);
-  outline-offset: 2px;
-  box-shadow:
-    0 0 0 4px var(--emerald-border),
-    0 6px 20px var(--emerald-glow);
+  outline: none;
+  box-shadow: 0 6px 20px var(--emerald-glow);
   animation: shm-tile-pulse 1.5s ease-out infinite;
   z-index: 2;
+  background: color-mix(in srgb, var(--emerald) 12%, var(--card-bg));
 }
 
 @keyframes shm-tile-pulse {
   0%,
   100% {
-    box-shadow:
-      0 0 0 4px var(--emerald-border),
-      0 6px 20px var(--emerald-glow);
+    box-shadow: 0 6px 20px var(--emerald-glow);
   }
   50% {
-    box-shadow:
-      0 0 0 6px color-mix(in srgb, var(--emerald) 30%, transparent),
-      0 8px 28px color-mix(in srgb, var(--emerald) 40%, transparent);
+    box-shadow: 0 8px 28px color-mix(in srgb, var(--emerald) 40%, transparent);
   }
 }
 
@@ -383,7 +375,8 @@ body.light-mode .shm-tile-value {
 }
 
 body.light-mode .shm-tile {
-  border-color: rgba(0, 0, 0, 0.08);
+  border-color: transparent;
+  background-color: var(--card-bg);
 }
 
 .shm-skeleton-tile {
@@ -611,8 +604,8 @@ body.light-mode .stc-input {
 
 .stc-result-card {
   border-radius: var(--radius-lg);
-  border: 1px solid color-mix(in srgb, var(--emerald) 22%, transparent);
-  background: var(--emerald-bg-subtle);
+  border: 1px solid transparent;
+  background: color-mix(in srgb, var(--emerald) 6%, var(--card-bg));
   padding: 0.9rem 1rem;
   display: flex;
   flex-direction: column;
@@ -1250,7 +1243,7 @@ body.light-mode .stc-tab-btn.is-active {
 .mpv-result,
 .stc-result-card {
   background: var(--inset);
-  border: 1px solid var(--border-secondary);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
 }
 

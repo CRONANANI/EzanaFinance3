@@ -107,8 +107,8 @@ body.light-mode .db-page {
    SHARED CARD STYLES
    ══════════════════════════════ */
 .db-card {
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
   overflow: hidden;
 }
@@ -194,8 +194,8 @@ a.db-icon-btn {
    HERO CARD (Portfolio Value)
    ══════════════════════════════ */
 .db-hero-card {
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
   padding: 1.5rem;
   margin-bottom: 1.25rem;
@@ -404,8 +404,8 @@ a.db-icon-btn {
 
 .db-holding-card {
   padding: 0.625rem 0.875rem;
-  background: var(--surface-card);
-  border: 1px solid var(--border-secondary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   transition: all 0.15s;
   cursor: pointer;
@@ -487,8 +487,8 @@ a.db-icon-btn {
   border-left-color: var(--negative);
 }
 .db-holding-card:hover {
-  border-color: color-mix(in srgb, var(--emerald) 20%, transparent);
-  background: var(--emerald-bg-subtle);
+  border-color: transparent;
+  background: var(--card-bg-hover);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 .db-holding-view-details {
@@ -1225,8 +1225,8 @@ body.light-mode .db-greeting-highlight {
 
 /* ── Shared card shell ── */
 body.light-mode .db-card {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.08);
+  background: var(--card-bg);
+  border-color: transparent;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 body.light-mode .db-card-header {
@@ -1265,8 +1265,8 @@ body.light-mode .db-tf-btn-sm.active {
 
 /* ── Hero card (portfolio value) ── */
 body.light-mode .db-hero-card {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.08);
+  background: var(--card-bg);
+  border-color: transparent;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 body.light-mode .db-hero-value {
@@ -1455,8 +1455,8 @@ body.light-mode .db-tx-scroll {
 
 /* ── Skeleton loading ── */
 body.light-mode .db-skel-card {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.06);
+  background: var(--card-bg);
+  border-color: transparent;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 body.light-mode .db-skel-bar {
@@ -1850,8 +1850,8 @@ body.light-mode .db-sector-legend-pct {
 }
 
 .db-skel-card {
-  background: var(--surface-card);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
   padding: 1.5rem;
   min-height: 200px;

@@ -150,12 +150,12 @@
   flex-direction: column;
   gap: 0.55rem;
   padding: 1rem 1.1rem;
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
-  background: var(--surface-card, transparent);
+  background: var(--card-bg);
 }
 .sc2-note-card.is-pinned {
-  border-color: var(--emerald-border, color-mix(in srgb, var(--emerald) 40%, transparent));
+  border-color: transparent;
 }
 .sc2-note-top {
   display: flex;
@@ -509,9 +509,9 @@
   flex-direction: column;
   gap: 0.5rem;
   padding: 1.1rem;
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
-  background: var(--surface-card, transparent);
+  background: var(--card-bg);
   text-align: center;
   align-items: center;
 }
@@ -561,9 +561,9 @@
   gap: 1.25rem;
 }
 .sc2-panel {
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
-  background: var(--surface-card, transparent);
+  background: var(--card-bg);
   padding: 1rem 1.1rem;
 }
 .sc2-panel-title {

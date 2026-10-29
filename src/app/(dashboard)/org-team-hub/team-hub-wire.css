@@ -112,14 +112,15 @@
 
 /* ── Card chrome ───────────────────────────────────────────────── */
 .thw-card {
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl); /* match Trading Desk .ctd-card */
-  background: var(--thw-card-bg);
+  background: var(--card-bg);
   /* Dark = flat (no shadow slab on the dark canvas); light restores the lift below. */
   box-shadow: none;
   transition:
     border-color 0.15s ease-out,
     box-shadow 0.15s ease-out;
+  background-color: var(--card-bg);
 }
 body.light-mode .thw-card,
 html.light-mode .thw-card {
@@ -472,10 +473,10 @@ html.light-mode .thw-card {
   flex-direction: column;
   text-align: left;
   padding: 7px 12px; /* was 10px 12px — trim vertical to match */
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-top: 2px solid var(--emerald);
   border-radius: var(--radius-lg); /* kept: 16px reads as a lozenge on a 50px strip card */
-  background: var(--thw-card-bg);
+  background: var(--card-bg);
   box-shadow: none; /* dark = flat; light lift restored below */
   cursor: pointer;
   font-family: inherit;
@@ -497,8 +498,8 @@ html.light-mode .thw-cal-card {
     0 1px 3px rgba(0, 0, 0, 0.05);
 }
 .thw-cal-card:hover {
-  background: var(--surface-card-hover);
-  border-color: var(--border-hover);
+  background: var(--card-bg-hover);
+  border-color: transparent;
   border-top-color: var(--emerald);
 }
 .thw-cal-date {
@@ -894,10 +895,10 @@ button.thw-badge-btn:disabled {
 
 /* ── Fund chart (reused rendering) ──────────────────────────────── */
 .thw-chart-card {
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl); /* match Trading Desk .ctd-card */
   padding: 12px 16px 6px;
-  background: var(--thw-card-bg);
+  background: var(--card-bg);
   box-shadow: none; /* dark = flat; light lift restored below */
 }
 body.light-mode .thw-chart-card,

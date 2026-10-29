@@ -92,7 +92,7 @@ export function YourCommunityCard({ skillTier, convictionWins, followers }) {
               background: 'var(--bg-tertiary)',
               borderRadius: 8,
               textAlign: 'center',
-              border: '1px solid var(--border-primary)',
+              border: '1px solid transparent',
             }}
           >
             <div

@@ -106,8 +106,8 @@
 }
 
 .re-card {
-  background: var(--surface-card);
-  border: 1px solid rgba(212, 175, 55, 0.08);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   overflow: hidden;
   transition:
@@ -117,9 +117,10 @@
 }
 
 .re-card:hover {
-  border-color: rgba(212, 175, 55, 0.25);
+  border-color: transparent;
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  background-color: var(--card-bg-hover);
 }
 
 .re-card-img {
@@ -294,12 +295,13 @@
 
 /* ── Light mode ── */
 body.light-mode .re-card {
-  background: #ffffff;
-  border-color: #e5e7eb;
+  background: var(--card-bg);
+  border-color: transparent;
 }
 body.light-mode .re-card:hover {
-  border-color: rgba(212, 175, 55, 0.3);
+  border-color: transparent;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background-color: var(--card-bg-hover);
 }
 body.light-mode .re-hero-title {
   color: #111827;

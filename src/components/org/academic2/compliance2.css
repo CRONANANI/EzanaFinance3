@@ -89,9 +89,9 @@
 
 /* ── Panels ─────────────────────────────────────────────────────────────── */
 .cmp2-panel {
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
-  background: var(--surface-card);
+  background: var(--card-bg);
   padding: 1.05rem 1.1rem;
 }
 .cmp2-panel-head {

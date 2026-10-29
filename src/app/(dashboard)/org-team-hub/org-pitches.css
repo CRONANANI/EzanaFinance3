@@ -158,8 +158,8 @@
   display: block;
   padding: 0.55rem 0.6rem;
   border-radius: var(--radius-md);
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   text-decoration: none;
   color: inherit;
   transition:
@@ -168,8 +168,9 @@
 }
 
 .op-card:hover {
-  border-color: var(--emerald-border);
+  border-color: transparent;
   transform: translateY(-1px);
+  background-color: var(--card-bg-hover);
 }
 
 .op-card-ticker {
@@ -201,8 +202,8 @@
 .op-archive-card {
   padding: 1rem 1.1rem;
   border-radius: var(--radius-md);
-  border: 1px solid var(--border-primary);
-  background: var(--surface-card);
+  border: 1px solid transparent;
+  background: var(--card-bg);
   text-decoration: none;
   color: inherit;
   display: block;
@@ -210,7 +211,8 @@
 }
 
 .op-archive-card:hover {
-  border-color: var(--emerald-border);
+  border-color: transparent;
+  background-color: var(--card-bg-hover);
 }
 
 .op-archive-top {
@@ -598,9 +600,9 @@
 
 .op-fmp-card {
   padding: 0.75rem;
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
-  background: var(--surface-card);
+  background: var(--card-bg);
 }
 
 .op-fmp-card h3 {

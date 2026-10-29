@@ -36,7 +36,7 @@ export function KeyMetrics({ symbol }) {
   if (!symbol) return null;
   if (loading) {
     return (
-      <div className="research-fade-in research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+      <div className="bg-[var(--card-bg)] research-fade-in research-card rounded-xl p-4">
         <div
           className="flex items-center gap-2"
           style={{
@@ -53,7 +53,7 @@ export function KeyMetrics({ symbol }) {
   }
   if (error || !data?.metric) {
     return (
-      <div className="research-fade-in research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+      <div className="bg-[var(--card-bg)] research-fade-in research-card rounded-xl p-4">
         <p
           style={{
             fontSize: '0.6875rem',
@@ -71,7 +71,7 @@ export function KeyMetrics({ symbol }) {
   const entries = Object.entries(metric).filter(([, v]) => v != null && v !== '');
 
   return (
-    <div className="research-fade-up research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl">
+    <div className="bg-[var(--card-bg)] research-fade-up research-card rounded-xl">
       <div
         style={{ padding: '0.75rem 1.25rem', borderBottom: '1px solid rgba(16, 185, 129, 0.06)' }}
       >

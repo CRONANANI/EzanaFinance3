@@ -204,8 +204,8 @@
   align-items: center;
   text-align: center;
   padding: 1.25rem 0.75rem;
-  background: var(--emerald-bg-subtle);
-  border: 2px solid var(--emerald-bg-hover);
+  background: var(--card-bg);
+  border: 2px solid transparent;
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -213,14 +213,14 @@
 }
 
 .onboarding-risk-card:hover {
-  border-color: color-mix(in srgb, var(--emerald) 30%, transparent);
-  background: var(--emerald-bg);
+  border-color: transparent;
+  background: var(--card-bg-hover);
 }
 
 .onboarding-risk-card.selected {
-  border-color: var(--emerald);
-  background: var(--emerald-bg-hover);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--emerald) 10%, transparent);
+  border-color: transparent;
+  background: color-mix(in srgb, var(--emerald) 12%, var(--card-bg));
+  box-shadow: none;
 }
 
 .onboarding-risk-card-label {
@@ -365,29 +365,28 @@
   display: flex;
   flex-direction: column;
   padding: 1.5rem;
-  background: var(--emerald-bg-subtle);
-  border: 2px solid var(--emerald-bg-hover);
+  background: var(--card-bg);
+  border: 2px solid transparent;
   border-radius: var(--radius-lg);
   transition: all 0.3s ease;
   position: relative;
 }
 
 .onboarding-plan-card:hover {
-  border-color: var(--emerald-glow);
-  background: var(--emerald-bg);
+  border-color: transparent;
+  background: var(--card-bg-hover);
 }
 
 .onboarding-plan-card.popular {
-  border-color: var(--emerald);
-  background: color-mix(in srgb, var(--emerald) 10%, transparent);
+  border-color: transparent;
+  background: color-mix(in srgb, var(--emerald) 8%, var(--card-bg));
   transform: scale(1.02);
 }
 
 .onboarding-plan-card.selected {
-  border-color: var(--emerald);
-  box-shadow:
-    inset 0 0 0 1px var(--emerald),
-    0 0 0 3px color-mix(in srgb, var(--emerald) 10%, transparent);
+  border-color: transparent;
+  box-shadow: none;
+  background: color-mix(in srgb, var(--emerald) 12%, var(--card-bg));
 }
 
 .onboarding-plan-header {
@@ -670,9 +669,9 @@ body.light-mode .onboarding-org-role-badge {
 .iq-card {
   width: 100%;
   max-width: 560px;
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 20px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid transparent;
   padding: 36px 32px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
   font-family: var(--font-sans);
@@ -990,8 +989,8 @@ body.light-mode .onboarding-org-role-badge {
   background: var(--nav-bg-solid);
 }
 .iq-container--partner .iq-card {
-  background: var(--surface-card);
-  border-color: var(--border-primary);
+  background: var(--card-bg);
+  border-color: transparent;
   color: var(--text-primary);
 }
 .iq-container--partner .iq-question,

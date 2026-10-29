@@ -612,7 +612,7 @@ function PolymarketSection() {
               gap: '0.5rem',
               alignItems: 'center',
               background: 'rgba(99,102,241,0.04)',
-              border: '1px solid rgba(99,102,241,0.12)',
+              border: '1px solid transparent',
               borderRadius: '8px',
               padding: '0.45rem 0.75rem',
               marginBottom: '0.75rem',
@@ -928,7 +928,7 @@ function KalshiSection() {
                 gap: '0.5rem',
                 alignItems: 'center',
                 background: 'rgba(16,185,129,0.04)',
-                border: '1px solid rgba(16,185,129,0.12)',
+                border: '1px solid transparent',
                 borderRadius: '8px',
                 padding: '0.45rem 0.75rem',
               }}
@@ -1084,7 +1084,7 @@ export default function BettingMarketsPage() {
             display: 'flex',
             gap: '3px',
             background: 'rgba(212,175,55,0.06)',
-            border: '1px solid rgba(212,175,55,0.15)',
+            border: '1px solid transparent',
             borderRadius: '10px',
             padding: '3px',
           }}

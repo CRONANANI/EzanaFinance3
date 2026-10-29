@@ -14,16 +14,7 @@
  * - className:    string                                — extra wrapper class
  * - style:        CSSProperties                         — extra wrapper style
  */
-export function StatCard({
-  icon,
-  label,
-  value,
-  sub,
-  accentColor,
-  onClick,
-  className = '',
-  style,
-}) {
+export function StatCard({ icon, label, value, sub, accentColor, onClick, className = '', style }) {
   const Wrapper = onClick ? 'button' : 'div';
   return (
     <Wrapper
@@ -31,8 +22,8 @@ export function StatCard({
       onClick={onClick}
       type={onClick ? 'button' : undefined}
       style={{
-        background: 'var(--surface-card, rgba(16,185,129,0.02))',
-        border: '1px solid var(--border-primary, rgba(16,185,129,0.08))',
+        background: 'var(--card-bg)',
+        border: '1px solid transparent',
         borderRadius: 10,
         padding: '0.4rem 0.75rem',
         textAlign: 'left',

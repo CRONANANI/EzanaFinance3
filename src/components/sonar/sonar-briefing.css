@@ -174,7 +174,7 @@
 }
 .snb-card {
   background: var(--bg-tertiary);
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   padding: 12px 14px;
   display: flex;

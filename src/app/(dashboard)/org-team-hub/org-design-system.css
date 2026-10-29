@@ -19,13 +19,14 @@
       (var(--radius-lg), 12px), no drop shadow. Surface + border route through
       theme tokens so it is transparent/dark-defined in dark, light in light. ── */
 .org-card {
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
-  background: var(--surface-card);
+  background: var(--card-bg);
   transition: border-color 0.15s ease-out;
 }
 .org-card:hover {
-  border-color: var(--border-hover);
+  border-color: transparent;
+  background-color: var(--card-bg-hover);
 }
 .org-card-head {
   display: flex;
@@ -194,8 +195,8 @@
 /* ── Member profile modal (OrgMemberProfileModal) — token-driven surfaces so
       the card, borders and copy flip per theme without a JS color table. ───── */
 .org-profile-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
 }
 .org-profile-header {
   border-bottom: 1px solid var(--border-primary);

@@ -141,7 +141,7 @@
   position: relative;
   min-width: 200px;
   padding: 0.85rem 1rem;
-  border: 1.5px dashed var(--emerald-border, color-mix(in srgb, var(--emerald) 40%, transparent));
+  border: 1.5px dashed transparent;
   border-radius: var(--radius-xl);
   background: var(--emerald-bg-subtle, var(--emerald-bg-subtle));
   cursor: pointer;
@@ -150,8 +150,9 @@
     transform 0.15s ease;
 }
 .oc2-advisor-card:hover {
-  border-color: var(--emerald, var(--emerald));
+  border-color: transparent;
   transform: translateY(-1px);
+  background-color: var(--card-bg-hover);
 }
 .oc2-advisor-badge {
   position: absolute;
@@ -356,13 +357,13 @@
   flex-direction: column;
   gap: 0.55rem;
   padding: 0.9rem 1rem;
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
-  background: var(--surface-card, transparent);
+  background: var(--card-bg);
   min-height: 120px;
 }
 .oc2-sector-card.is-gap {
-  border-color: rgba(245, 158, 11, 0.4);
+  border-color: transparent;
   background: rgba(245, 158, 11, 0.05);
 }
 .oc2-sector-head {

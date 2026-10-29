@@ -199,8 +199,8 @@ select.echo-input {
 .echo-app-card {
   text-align: center;
   padding: 3rem 2rem;
-  background: rgba(16, 185, 129, 0.02);
-  border: 1px solid rgba(16, 185, 129, 0.08);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: 18px;
 }
 .echo-app-card i {
@@ -543,8 +543,8 @@ body.light-mode .echo-author-name {
   color: #111827;
 }
 body.light-mode .echo-app-card {
-  background: #fff;
-  border-color: rgba(0, 0, 0, 0.06);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 body.light-mode .echo-app-card h3 {
   color: #111827;

@@ -21,8 +21,8 @@
 }
 
 .acl-card {
-  background: var(--surface-card);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
   padding: 2.5rem 2rem;
   max-width: 480px;
@@ -30,8 +30,7 @@
   text-align: center;
   box-shadow:
     0 24px 60px rgba(0, 0, 0, 0.5),
-    0 0 40px rgba(239, 68, 68, 0.06),
-    0 0 0 1px rgba(239, 68, 68, 0.04);
+    0 0 40px rgba(239, 68, 68, 0.06);
   backdrop-filter: blur(8px);
 }
 

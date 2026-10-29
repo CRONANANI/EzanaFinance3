@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { motion, useReducedMotion } from "framer-motion";
-import { useTheme } from "@/components/ThemeProvider";
+import { useState, useEffect } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { useTheme } from '@/components/ThemeProvider';
 export const defaultIndices = [
   {
-    id: "1",
-    name: "Dow Jones USA",
-    country: "USA",
-    countryCode: "US",
+    id: '1',
+    name: 'Dow Jones USA',
+    country: 'USA',
+    countryCode: 'US',
     ytdReturn: 0.4,
     pltmEps: 18.74,
     divYield: 2.0,
@@ -20,10 +20,10 @@ export const defaultIndices = [
     dailyChangePercent: -0.06,
   },
   {
-    id: "2",
-    name: "S&P 500 USA",
-    country: "USA",
-    countryCode: "US",
+    id: '2',
+    name: 'S&P 500 USA',
+    country: 'USA',
+    countryCode: 'US',
     ytdReturn: 11.72,
     pltmEps: 7.42,
     divYield: 1.44,
@@ -35,10 +35,10 @@ export const defaultIndices = [
     dailyChangePercent: -0.19,
   },
   {
-    id: "3",
-    name: "Nasdaq USA",
-    country: "USA",
-    countryCode: "US",
+    id: '3',
+    name: 'Nasdaq USA',
+    country: 'USA',
+    countryCode: 'US',
     ytdReturn: 36.59,
     pltmEps: null,
     divYield: 0.54,
@@ -50,10 +50,10 @@ export const defaultIndices = [
     dailyChangePercent: -0.47,
   },
   {
-    id: "4",
-    name: "TSX Canada",
-    country: "Canada",
-    countryCode: "CA",
+    id: '4',
+    name: 'TSX Canada',
+    country: 'Canada',
+    countryCode: 'CA',
     ytdReturn: -0.78,
     pltmEps: 6.06,
     divYield: 2.56,
@@ -65,10 +65,10 @@ export const defaultIndices = [
     dailyChangePercent: 0.58,
   },
   {
-    id: "5",
-    name: "Grupo BMV Mexico",
-    country: "Mexico",
-    countryCode: "MX",
+    id: '5',
+    name: 'Grupo BMV Mexico',
+    country: 'Mexico',
+    countryCode: 'MX',
     ytdReturn: 4.15,
     pltmEps: 8.19,
     divYield: 2.34,
@@ -80,10 +80,10 @@ export const defaultIndices = [
     dailyChangePercent: -1.85,
   },
   {
-    id: "6",
-    name: "Ibovespa Brazil",
-    country: "Brazil",
-    countryCode: "BR",
+    id: '6',
+    name: 'Ibovespa Brazil',
+    country: 'Brazil',
+    countryCode: 'BR',
     ytdReturn: 11.19,
     pltmEps: 6.23,
     divYield: 9.46,
@@ -97,16 +97,16 @@ export const defaultIndices = [
 ];
 
 export function FinancialTable({
-  title = "Index",
+  title = 'Index',
   indices = defaultIndices,
   onIndexSelect,
-  className = "",
+  className = '',
 }) {
-  const [selectedIndex, setSelectedIndex] = useState("1");
+  const [selectedIndex, setSelectedIndex] = useState('1');
   const [mounted, setMounted] = useState(false);
   const shouldReduceMotion = useReducedMotion();
   const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     setMounted(true);
@@ -122,35 +122,45 @@ export function FinancialTable({
   const formatLargeNumber = (amount, unit) =>
     amount >= 1000 ? `${(amount / 1000).toFixed(1)}${unit}` : `${amount.toFixed(1)}${unit}`;
 
-  const formatPercentage = (value) => `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
+  const formatPercentage = (value) => `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
 
   const getPerformanceColor = (value) => {
     const isPositive = value >= 0;
-    const color = isPositive
-      ? isDark ? "#22c55e" : "#16a34a"
-      : isDark ? "#f87171" : "#dc2626";
+    const color = isPositive ? (isDark ? '#22c55e' : '#16a34a') : isDark ? '#f87171' : '#dc2626';
     const bgColor = isPositive
-      ? isDark ? "bg-green-500/10" : "bg-green-50"
-      : isDark ? "bg-red-500/10" : "bg-red-50";
+      ? isDark
+        ? 'bg-green-500/10'
+        : 'bg-green-50'
+      : isDark
+        ? 'bg-red-500/10'
+        : 'bg-red-50';
     const borderColor = isPositive
-      ? isDark ? "border-green-500/30" : "border-green-200"
-      : isDark ? "border-red-500/30" : "border-red-200";
+      ? isDark
+        ? 'border-green-500/30'
+        : 'border-green-200'
+      : isDark
+        ? 'border-red-500/30'
+        : 'border-red-200';
     const textColor = isPositive
-      ? isDark ? "text-green-400" : "text-green-600"
-      : isDark ? "text-red-400" : "text-red-600";
+      ? isDark
+        ? 'text-green-400'
+        : 'text-green-600'
+      : isDark
+        ? 'text-red-400'
+        : 'text-red-600';
     return { color, bgColor, borderColor, textColor };
   };
 
   const getCountryFlag = (countryCode) => {
     const flags = {
-      US: "🇺🇸",
-      CA: "🇨🇦",
-      MX: "🇲🇽",
-      BR: "🇧🇷",
-      UK: "🇬🇧",
-      DE: "🇩🇪",
+      US: '🇺🇸',
+      CA: '🇨🇦',
+      MX: '🇲🇽',
+      BR: '🇧🇷',
+      UK: '🇬🇧',
+      DE: '🇩🇪',
     };
-    return flags[countryCode] || "🌐";
+    return flags[countryCode] || '🌐';
   };
 
   const renderSparkline = (data, isPositive) => {
@@ -163,8 +173,8 @@ export function FinancialTable({
         const y = 20 - ((value - min) / range) * 15;
         return `${x},${y}`;
       })
-      .join(" ");
-    const strokeColor = isPositive ? "#22c55e" : "#f87171";
+      .join(' ');
+    const strokeColor = isPositive ? '#22c55e' : '#f87171';
     return (
       <div className="w-16 h-6">
         <motion.svg
@@ -175,7 +185,7 @@ export function FinancialTable({
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{
-            type: "spring",
+            type: 'spring',
             stiffness: 400,
             damping: 25,
             duration: shouldReduceMotion ? 0.2 : 0.5,
@@ -190,7 +200,7 @@ export function FinancialTable({
             animate={{ pathLength: 1 }}
             transition={{
               duration: shouldReduceMotion ? 0.3 : 0.8,
-              ease: "easeOut",
+              ease: 'easeOut',
               delay: 0.2,
             }}
           />
@@ -209,30 +219,30 @@ export function FinancialTable({
   };
 
   const rowVariants = {
-    hidden: { opacity: 0, y: 20, scale: 0.98, filter: "blur(4px)" },
+    hidden: { opacity: 0, y: 20, scale: 0.98, filter: 'blur(4px)' },
     visible: {
       opacity: 1,
       y: 0,
       scale: 1,
-      filter: "blur(0px)",
-      transition: { type: "spring", stiffness: 400, damping: 25, mass: 0.7 },
+      filter: 'blur(0px)',
+      transition: { type: 'spring', stiffness: 400, damping: 25, mass: 0.7 },
     },
   };
 
   const gridCols =
-    "250px 100px minmax(60px, 1fr) minmax(60px, 1fr) minmax(60px, 1fr) minmax(60px, 1fr) minmax(80px, 1fr) minmax(60px, 1fr) minmax(100px, 1fr)";
+    '250px 100px minmax(60px, 1fr) minmax(60px, 1fr) minmax(60px, 1fr) minmax(60px, 1fr) minmax(80px, 1fr) minmax(60px, 1fr) minmax(100px, 1fr)';
 
   return (
     <div className={`w-full max-w-7xl mx-auto ${className}`}>
-      <div className="bg-card/50 border border-border rounded-2xl overflow-hidden">
+      <div className="bg-card/50 rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <div className="min-w-[1000px]">
             <div
               className="px-8 py-3 text-xs font-medium text-muted-foreground/70 uppercase tracking-wide bg-muted/15 border-b border-border/20 text-left"
               style={{
-                display: "grid",
+                display: 'grid',
                 gridTemplateColumns: gridCols,
-                columnGap: "6px",
+                columnGap: '6px',
               }}
             >
               <div>{title}</div>
@@ -252,17 +262,17 @@ export function FinancialTable({
                   <div
                     className={`px-8 py-3 cursor-pointer group transition-all duration-200 ${
                       selectedIndex === index.id
-                        ? "bg-primary/10 border-b border-primary/20"
-                        : "hover:bg-muted/30"
+                        ? 'bg-primary/10 border-b border-primary/20'
+                        : 'hover:bg-muted/30'
                     } ${
                       indexNum < indices.length - 1 && selectedIndex !== index.id
-                        ? "border-b border-border/20"
-                        : ""
+                        ? 'border-b border-border/20'
+                        : ''
                     }`}
                     style={{
-                      display: "grid",
+                      display: 'grid',
                       gridTemplateColumns: gridCols,
-                      columnGap: "6px",
+                      columnGap: '6px',
                     }}
                     onClick={() => handleIndexSelect(index.id)}
                   >
@@ -278,10 +288,12 @@ export function FinancialTable({
 
                     <div className="flex items-center">
                       {(() => {
-                        const { bgColor, borderColor, textColor } = getPerformanceColor(index.ytdReturn);
+                        const { bgColor, borderColor, textColor } = getPerformanceColor(
+                          index.ytdReturn,
+                        );
                         return (
                           <div
-                            className={`px-2 py-1 rounded-lg text-xs font-medium border ${bgColor} ${borderColor} ${textColor}`}
+                            className={`bg-[var(--card-bg)] px-2 py-1 rounded-lg text-xs font-medium ${bgColor} ${borderColor} ${textColor}`}
                           >
                             {formatPercentage(index.ytdReturn)}
                           </div>
@@ -291,7 +303,7 @@ export function FinancialTable({
 
                     <div className="flex items-center">
                       <span className="font-semibold text-foreground/90">
-                        {index.pltmEps != null ? index.pltmEps.toFixed(2) : "N/A"}
+                        {index.pltmEps != null ? index.pltmEps.toFixed(2) : 'N/A'}
                       </span>
                     </div>
 
@@ -303,14 +315,14 @@ export function FinancialTable({
 
                     <div className="flex items-center">
                       <span className="font-semibold text-foreground/90">
-                        {formatLargeNumber(index.marketCap, "B")}
+                        {formatLargeNumber(index.marketCap, 'B')}
                       </span>
                     </div>
 
                     <div className="flex items-center">
                       <span className="font-semibold text-foreground/90">
                         {index.volume >= 1
-                          ? formatLargeNumber(index.volume, "M")
+                          ? formatLargeNumber(index.volume, 'M')
                           : `${(index.volume * 1000).toFixed(1)}k`}
                       </span>
                     </div>
@@ -331,16 +343,16 @@ export function FinancialTable({
                       <span
                         className={`font-semibold ${getPerformanceColor(index.dailyChange).textColor}`}
                       >
-                        {index.dailyChange >= 0 ? "+" : ""}
+                        {index.dailyChange >= 0 ? '+' : ''}
                         {index.dailyChange.toFixed(2)}
                       </span>
                       {(() => {
                         const { bgColor, borderColor, textColor } = getPerformanceColor(
-                          index.dailyChangePercent
+                          index.dailyChangePercent,
                         );
                         return (
                           <div
-                            className={`px-2 py-1 rounded-lg text-xs font-medium border ${bgColor} ${borderColor} ${textColor}`}
+                            className={`bg-[var(--card-bg)] px-2 py-1 rounded-lg text-xs font-medium ${bgColor} ${borderColor} ${textColor}`}
                           >
                             {formatPercentage(index.dailyChangePercent)}
                           </div>

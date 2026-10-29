@@ -165,8 +165,8 @@ function OrgAssignedCard() {
             style={{
               padding: '0.75rem',
               borderRadius: '10px',
-              border: '1px solid var(--border-primary)',
-              background: 'var(--surface-card-hover)',
+              border: '1px solid transparent',
+              background: 'var(--card-bg)',
             }}
           >
             <CardPrimary as="div" style={{ fontWeight: 700, fontSize: '0.8125rem' }}>

@@ -89,7 +89,7 @@ export function LegendaryTakes({ takes = [] }) {
                     display: 'block',
                     padding: 12,
                     background: 'var(--gold-bg)',
-                    border: '1px solid var(--gold-border)',
+                    border: '1px solid transparent',
                     borderRadius: 10,
                     textDecoration: 'none',
                     color: 'inherit',
@@ -107,7 +107,7 @@ export function LegendaryTakes({ takes = [] }) {
               style={{
                 padding: 12,
                 background: 'var(--gold-bg)',
-                border: '1px solid var(--gold-border)',
+                border: '1px solid transparent',
                 borderRadius: 10,
               }}
             >

@@ -17,8 +17,8 @@
   font-family: var(--font-sans);
 }
 .ezdp-panel {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   padding: 20px;
   max-width: 92vw;

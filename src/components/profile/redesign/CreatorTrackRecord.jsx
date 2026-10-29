@@ -70,7 +70,7 @@ function CallRow({ call, isOwner, onVote, onResolve, busy }) {
     <li
       style={{
         padding: 12,
-        border: `1px solid ${page.border}`,
+        border: '1px solid transparent',
         borderRadius: 10,
         background: page.surfaceAlt,
       }}

@@ -11,15 +11,15 @@
   max-width: 480px;
   width: 100%;
   padding: 3rem 2.5rem;
-  background: var(--surface-card);
-  border: 1px solid var(--emerald-border);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
   text-align: center;
 }
 
 body.light-mode .reactivate-card {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.08);
+  background: var(--card-bg);
+  border-color: transparent;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
 }
 

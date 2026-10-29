@@ -31,8 +31,8 @@
   min-height: 360px;
   display: flex;
   flex-direction: column;
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   padding: 1.25rem;

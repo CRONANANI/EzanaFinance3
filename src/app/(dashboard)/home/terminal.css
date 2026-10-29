@@ -209,9 +209,9 @@
 
 /* ── PANEL BASE (matches component-card aesthetic) ── */
 .t-panel {
-  background: var(--surface-card);
+  background: var(--card-bg);
   backdrop-filter: blur(12px);
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-md, 1rem);
   display: flex;
   flex-direction: column;
@@ -224,8 +224,9 @@
 }
 
 .t-panel:hover {
-  border-color: color-mix(in srgb, var(--emerald) 20%, transparent);
+  border-color: transparent;
   box-shadow: var(--shadow-md);
+  background-color: var(--card-bg-hover);
 }
 
 .t-panel-header {
@@ -835,8 +836,8 @@ body.light-mode .t-risk-metric {
 }
 
 .t-home-skel-card {
-  background: var(--surface-card);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   padding: 1.25rem;
   min-height: 180px;
@@ -847,8 +848,8 @@ body.light-mode .t-risk-metric {
 }
 
 body.light-mode .t-home-skel-card {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.06);
+  background: var(--card-bg);
+  border-color: transparent;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
@@ -927,8 +928,8 @@ body.light-mode .t-home-skel-bar {
 }
 
 .t-skel-card {
-  background: var(--surface-card);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
 }
 
@@ -943,8 +944,8 @@ body.light-mode .t-skel-bar {
 }
 
 body.light-mode .t-skel-card {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.06);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 
 @keyframes t-skel-shimmer {

@@ -50,8 +50,8 @@
   display: flex;
   align-items: center;
   gap: 0.9rem;
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   padding: 1rem;
 }

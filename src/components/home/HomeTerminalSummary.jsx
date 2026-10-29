@@ -532,7 +532,7 @@ export function HomeTerminalSummary({
             width: '100%',
             background:
               'linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(212, 175, 55, 0.15) 100%)',
-            border: '1px solid rgba(212, 175, 55, 0.3)',
+            border: '1px solid transparent',
             borderRadius: '10px',
             padding: '10px 1.5rem',
             display: 'flex',

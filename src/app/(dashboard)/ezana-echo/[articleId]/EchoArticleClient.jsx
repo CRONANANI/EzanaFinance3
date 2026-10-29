@@ -1002,7 +1002,7 @@ function MaturityWallChart({ title, caption, yLabel }) {
       <div
         style={{
           background: 'var(--echo-tooltip-bg, #0d1117)',
-          border: '1px solid rgba(99,102,241,0.3)',
+          border: '1px solid transparent',
           borderRadius: 8,
           color: 'var(--echo-tooltip-text, #f0f6fc)',
           fontSize: '0.7rem',
@@ -1231,7 +1231,7 @@ function FiberCompanyProfileCard({ company, isDark, onClose }) {
     <div
       style={{
         background: t.cardBg,
-        border: `1px solid ${t.cardBorder}`,
+        border: '1px solid transparent',
         borderRadius: 10,
         padding: '1rem 1.1rem',
         marginTop: '0.75rem',
@@ -1547,7 +1547,7 @@ function HantavirusYearlyChart({ title, caption }) {
         width: '100%',
         background: t.bg,
         borderRadius: 12,
-        border: `1px solid ${t.border}`,
+        border: '1px solid transparent',
         padding: '1rem',
       }}
     >
@@ -1645,7 +1645,7 @@ function HantavirusStateMap({ title, caption }) {
         width: '100%',
         background: t.bg,
         borderRadius: 12,
-        border: `1px solid ${t.border}`,
+        border: '1px solid transparent',
         padding: '1rem',
       }}
     >
@@ -1818,7 +1818,7 @@ function SemiMarketCapChart({ title, caption }) {
         width: '100%',
         background: t.bg,
         borderRadius: 12,
-        border: `1px solid ${t.border}`,
+        border: '1px solid transparent',
         padding: '1rem',
         overflow: 'hidden',
       }}
@@ -2109,7 +2109,7 @@ function FoundryMarketShareChart({ title, caption }) {
         width: '100%',
         background: t.bg,
         borderRadius: 12,
-        border: `1px solid ${t.border}`,
+        border: '1px solid transparent',
         padding: '1rem',
       }}
     >
@@ -2985,7 +2985,7 @@ export default function EchoArticleClient({
                   margin: '10px 0',
                   padding: '12px 14px',
                   borderRadius: 10,
-                  border: '1px solid var(--border-secondary)',
+                  border: '1px solid transparent',
                   background: 'var(--bg-tertiary)',
                 }}
               >

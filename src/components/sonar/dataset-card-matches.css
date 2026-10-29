@@ -139,9 +139,9 @@
   background: color-mix(in srgb, var(--brand-band-mint) 24%, transparent);
 }
 .dcm.dcm--rail .hdc.hub-card {
-  background: transparent;
+  background: var(--card-bg);
   box-shadow: none;
-  border: 1px solid color-mix(in srgb, var(--brand-band-mint) 34%, transparent);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   padding: 16px 18px;
   color: white;

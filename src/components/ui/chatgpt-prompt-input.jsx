@@ -31,20 +31,22 @@ TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
 const Popover = PopoverPrimitive.Root;
 const PopoverTrigger = PopoverPrimitive.Trigger;
-const PopoverContent = React.forwardRef(({ className, align = 'center', sideOffset = 4, ...props }, ref) => (
-  <PopoverPrimitive.Portal>
-    <PopoverPrimitive.Content
-      ref={ref}
-      align={align}
-      sideOffset={sideOffset}
-      className={cn(
-        'z-50 w-72 rounded-xl bg-zinc-900 border border-zinc-700 p-2 text-zinc-100 shadow-lg outline-none',
-        className,
-      )}
-      {...props}
-    />
-  </PopoverPrimitive.Portal>
-));
+const PopoverContent = React.forwardRef(
+  ({ className, align = 'center', sideOffset = 4, ...props }, ref) => (
+    <PopoverPrimitive.Portal>
+      <PopoverPrimitive.Content
+        ref={ref}
+        align={align}
+        sideOffset={sideOffset}
+        className={cn(
+          'z-50 w-72 rounded-xl bg-zinc-900 border border-zinc-700 p-2 text-zinc-100 shadow-lg outline-none',
+          className,
+        )}
+        {...props}
+      />
+    </PopoverPrimitive.Portal>
+  ),
+);
 PopoverContent.displayName = PopoverPrimitive.Content.displayName;
 
 const Dialog = DialogPrimitive.Root;
@@ -69,7 +71,7 @@ const DialogContent = React.forwardRef(({ className, children, ...props }, ref) 
       )}
       {...props}
     >
-      <div className="relative rounded-3xl overflow-hidden bg-zinc-900 border border-zinc-700 shadow-2xl p-1">
+      <div className="bg-[var(--card-bg)] relative rounded-3xl overflow-hidden shadow-2xl p-1">
         {children}
         <DialogPrimitive.Close className="absolute right-3 top-3 z-10 rounded-full bg-zinc-800 p-1.5 hover:bg-zinc-700 transition-colors">
           <XIcon className="h-5 w-5 text-zinc-300" />
@@ -82,13 +84,40 @@ const DialogContent = React.forwardRef(({ className, children, ...props }, ref) 
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
 const PlusIcon = (props) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-    <path d="M12 5V19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M5 12H19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <path
+      d="M12 5V19"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M5 12H19"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 const Settings2Icon = (props) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    {...props}
+  >
     <path d="M20 7h-9" />
     <path d="M14 17H5" />
     <circle cx="17" cy="17" r="3" />
@@ -96,19 +125,54 @@ const Settings2Icon = (props) => (
   </svg>
 );
 const SendIcon = (props) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-    <path d="M12 5.25L12 18.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M18.75 12L12 5.25L5.25 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <path
+      d="M12 5.25L12 18.75"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M18.75 12L12 5.25L5.25 12"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 const XIcon = (props) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
     <line x1="18" y1="6" x2="6" y2="18" />
     <line x1="6" y1="6" x2="18" y2="18" />
   </svg>
 );
 const MicIcon = (props) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    {...props}
+  >
     <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
     <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
     <line x1="12" y1="19" x2="12" y2="23" />
@@ -117,15 +181,55 @@ const MicIcon = (props) => (
 
 /** Stock research tools (Company Research page) */
 export const EZANA_RESEARCH_TOOLS = [
-  { id: 'grpv', name: 'GRPV analysis', shortName: 'GRPV', href: '/company-research#modelDetailSection' },
-  { id: 'dcf', name: 'DCF valuation', shortName: 'DCF', href: '/company-research#modelDetailSection' },
-  { id: 'earnings', name: 'Earnings analysis', shortName: 'Earnings', href: '/company-research#earnings-card' },
-  { id: 'comps', name: 'Comparable companies', shortName: 'Comps', href: '/company-research#modelDetailSection' },
-  { id: 'threestatement', name: '3-statement model', shortName: '3-Stmt', href: '/company-research#modelDetailSection' },
+  {
+    id: 'grpv',
+    name: 'GRPV analysis',
+    shortName: 'GRPV',
+    href: '/company-research#modelDetailSection',
+  },
+  {
+    id: 'dcf',
+    name: 'DCF valuation',
+    shortName: 'DCF',
+    href: '/company-research#modelDetailSection',
+  },
+  {
+    id: 'earnings',
+    name: 'Earnings analysis',
+    shortName: 'Earnings',
+    href: '/company-research#earnings-card',
+  },
+  {
+    id: 'comps',
+    name: 'Comparable companies',
+    shortName: 'Comps',
+    href: '/company-research#modelDetailSection',
+  },
+  {
+    id: 'threestatement',
+    name: '3-statement model',
+    shortName: '3-Stmt',
+    href: '/company-research#modelDetailSection',
+  },
   { id: 'lbo', name: 'LBO model', shortName: 'LBO', href: '/company-research#modelDetailSection' },
-  { id: 'ma', name: 'M&A accretion/dilution', shortName: 'M&A', href: '/company-research#modelDetailSection' },
-  { id: 'risk', name: 'Portfolio risk model', shortName: 'Risk', href: '/company-research#modelDetailSection' },
-  { id: 'montecarlo', name: 'Monte Carlo simulation', shortName: 'Monte Carlo', href: '/company-research#modelDetailSection' },
+  {
+    id: 'ma',
+    name: 'M&A accretion/dilution',
+    shortName: 'M&A',
+    href: '/company-research#modelDetailSection',
+  },
+  {
+    id: 'risk',
+    name: 'Portfolio risk model',
+    shortName: 'Risk',
+    href: '/company-research#modelDetailSection',
+  },
+  {
+    id: 'montecarlo',
+    name: 'Monte Carlo simulation',
+    shortName: 'Monte Carlo',
+    href: '/company-research#modelDetailSection',
+  },
 ];
 
 export function CentaurPromptBox({
@@ -193,7 +297,8 @@ export function CentaurPromptBox({
   };
 
   const toggleMic = () => {
-    const SR = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
+    const SR =
+      typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
     if (!SR) {
       setValue((v) => (v ? `${v} ` : '') + '[Voice input is not supported in this browser.]');
       return;
@@ -244,7 +349,7 @@ export function CentaurPromptBox({
     <form onSubmit={submit} className={cn('flex flex-col', className)}>
       <div
         className={cn(
-          'flex flex-col rounded-[28px] p-2 shadow-lg transition-colors bg-zinc-900/90 border border-zinc-700/80 cursor-text',
+          'flex flex-col rounded-[28px] p-2 shadow-lg transition-colors bg-zinc-900/90 cursor-text',
           promptShellClassName,
         )}
       >
@@ -260,7 +365,11 @@ export function CentaurPromptBox({
         {imagePreview && (
           <>
             <div className="relative mb-1 w-fit rounded-2xl px-1 pt-1">
-              <button type="button" className="transition-transform" onClick={() => setIsImageDialogOpen(true)}>
+              <button
+                type="button"
+                className="transition-transform"
+                onClick={() => setIsImageDialogOpen(true)}
+              >
                 <img src={imagePreview} alt="" className="h-16 w-16 rounded-2xl object-cover" />
               </button>
               <button
@@ -274,16 +383,18 @@ export function CentaurPromptBox({
             </div>
             <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
               <DialogContent>
-                <img src={imagePreview} alt="Preview" className="w-full max-h-[85vh] object-contain rounded-2xl" />
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-full max-h-[85vh] object-contain rounded-2xl"
+                />
               </DialogContent>
             </Dialog>
           </>
         )}
 
         {fileNames.length > 0 && !imagePreview && (
-          <div className="px-3 py-1 text-xs text-zinc-400">
-            Files: {fileNames.join(', ')}
-          </div>
+          <div className="px-3 py-1 text-xs text-zinc-400">Files: {fileNames.join(', ')}</div>
         )}
 
         <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-end' }}>
@@ -360,7 +471,9 @@ export function CentaurPromptBox({
                       >
                         <Settings2Icon className="h-4 w-4" />
                         {!selectedTool && (
-                          <span style={{ color: '#D4AF37', fontWeight: 600, fontSize: '0.75rem' }}>Tools</span>
+                          <span style={{ color: '#D4AF37', fontWeight: 600, fontSize: '0.75rem' }}>
+                            Tools
+                          </span>
                         )}
                       </button>
                     </PopoverTrigger>
@@ -371,7 +484,9 @@ export function CentaurPromptBox({
                 </Tooltip>
                 <PopoverContent side="top" align="start">
                   <div className="flex flex-col gap-0.5 max-h-64 overflow-y-auto">
-                    <p className="text-[10px] uppercase tracking-wider text-zinc-500 px-2 py-1">From Company Research</p>
+                    <p className="text-[10px] uppercase tracking-wider text-zinc-500 px-2 py-1">
+                      From Company Research
+                    </p>
                     {EZANA_RESEARCH_TOOLS.map((tool) => (
                       <button
                         key={tool.id}

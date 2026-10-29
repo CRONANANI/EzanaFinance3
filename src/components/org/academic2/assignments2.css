@@ -214,9 +214,9 @@ html.light-mode .asg2-metric {
   align-items: start;
 }
 .asg2-panel {
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
-  background: var(--surface-card, transparent);
+  background: var(--card-bg);
   padding: 1rem;
 }
 
@@ -419,10 +419,10 @@ html.light-mode .asg2-metric {
 
 /* ── Cards ──────────────────────────────────────────────────────────────── */
 .asg2-card {
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-left: 3px solid transparent;
   border-radius: var(--radius-lg);
-  background: var(--surface-card, transparent);
+  background: var(--card-bg);
   padding: 0.7rem 0.8rem;
   text-align: left;
   width: 100%;
@@ -435,7 +435,8 @@ html.light-mode .asg2-metric {
 }
 .asg2-card:hover {
   transform: translateY(-1px);
-  border-color: color-mix(in srgb, var(--emerald) 35%, var(--border-primary));
+  border-color: transparent;
+  background-color: var(--card-bg-hover);
 }
 .asg2-card:focus-visible {
   outline: 2px solid var(--emerald);

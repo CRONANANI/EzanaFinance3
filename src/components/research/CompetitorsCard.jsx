@@ -8,7 +8,7 @@ export function CompetitorsCard({ symbol, onSelectPeer }) {
   if (!symbol) return null;
   if (loading) {
     return (
-      <div className="research-fade-in research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+      <div className="bg-[var(--card-bg)] research-fade-in research-card rounded-xl p-6">
         <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <div className="w-5 h-5 border-2 border-emerald-500/50 border-t-emerald-500 rounded-full animate-spin" />
           Loading peers...
@@ -18,7 +18,7 @@ export function CompetitorsCard({ symbol, onSelectPeer }) {
   }
   if (error || !data?.length) {
     return (
-      <div className="research-fade-in research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+      <div className="bg-[var(--card-bg)] research-fade-in research-card rounded-xl p-6">
         <p className="text-gray-500 dark:text-gray-400">Peer companies unavailable.</p>
       </div>
     );
@@ -27,7 +27,7 @@ export function CompetitorsCard({ symbol, onSelectPeer }) {
   const peers = data.filter((p) => p && p !== symbol).slice(0, 12);
 
   return (
-    <div className="research-fade-up research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+    <div className="bg-[var(--card-bg)] research-fade-up research-card rounded-xl p-6">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Peer Companies</h3>
       <div className="flex flex-wrap gap-2">
         {peers.map((peer, pi) => (

@@ -126,9 +126,9 @@
 }
 .vms-panel {
   padding: 1rem;
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
-  background: var(--surface-card);
+  background: var(--card-bg);
 }
 .vms-panel-title {
   margin: 0 0 0.5rem;

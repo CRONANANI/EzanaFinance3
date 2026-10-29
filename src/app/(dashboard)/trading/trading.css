@@ -69,7 +69,7 @@
 
 .trd-form-card {
   background: color-mix(in srgb, var(--emerald) 2%, transparent);
-  border: 1px solid var(--emerald-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
   max-width: 560px;
   width: 100%;
@@ -566,7 +566,7 @@ select.trd-input {
 .trd-account-card {
   padding: 1.25rem;
   background: color-mix(in srgb, var(--emerald) 2%, transparent);
-  border: 1px solid var(--emerald-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
 }
 .trd-account-label {
@@ -1085,8 +1085,8 @@ select.trd-input {
 }
 
 body.light-mode .trd-form-card {
-  background: #fff;
-  border-color: rgba(0, 0, 0, 0.06);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 body.light-mode .trd-form-header h2 {
   color: #111827;
@@ -1110,8 +1110,8 @@ body.light-mode .trd-order-symbol {
   color: #111827;
 }
 body.light-mode .trd-account-card {
-  background: #fff;
-  border-color: rgba(0, 0, 0, 0.06);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 body.light-mode .trd-account-value {
   color: #111827;
@@ -1189,7 +1189,7 @@ body.light-mode .trd-search-symbol {
 }
 
 .trd-showcase .trd-feature-card.db-card:hover {
-  border-color: var(--emerald-bg-hover);
+  border-color: transparent;
 }
 .trd-feature-icon-wrap {
   width: 48px;
@@ -1537,8 +1537,8 @@ body.light-mode .trd-feature-icon-wrap {
 body.light-mode .trd-showcase .db-card,
 body.light-mode .trd-pending-app,
 body.light-mode .trd-dash-summary {
-  background: #fff;
-  border-color: rgba(0, 0, 0, 0.06);
+  background: var(--card-bg);
+  border-color: transparent;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 body.light-mode .trd-dash-metric-val {

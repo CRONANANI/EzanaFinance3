@@ -97,7 +97,7 @@ body.ekp-rail-dim .echo-grail::after {
   padding-top: 14px;
 }
 .echo-grail-card {
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   /* The left edge is always 2px so activation never shifts layout; only the
      color changes (resting hairline tone, emerald when active). */
   border-left: 2px solid var(--border-primary);
@@ -188,7 +188,7 @@ body.ekp-rail-dim .echo-grail::after {
   }
   .echo-grail-card--slot {
     padding: 1rem;
-    border: 1px solid var(--emerald);
+    border: 1px solid transparent;
     border-radius: var(--radius-md);
     background: color-mix(in srgb, var(--emerald) 8%, var(--echo-page-bg, var(--bg-primary)));
     box-shadow: var(--shadow-sm);

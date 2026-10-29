@@ -127,8 +127,8 @@
 
 /* ── Form card ── */
 .sa-card {
-  background: var(--surface-card);
-  border: 1px solid rgba(212, 175, 55, 0.08);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   padding: 1.25rem 1.5rem;
 }
@@ -359,8 +359,8 @@
 
 /* ── Light mode ── */
 body.light-mode .sa-card {
-  background: #ffffff;
-  border-color: #e5e7eb;
+  background: var(--card-bg);
+  border-color: transparent;
 }
 body.light-mode .sa-input,
 body.light-mode .sa-select,

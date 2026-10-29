@@ -71,8 +71,8 @@ body.light-mode .db-greeting-highlight {
 
 /* Hero card */
 body.light-mode .db-hero-card {
-  background: var(--surface-card);
-  border-color: var(--border-primary);
+  background: var(--card-bg);
+  border-color: transparent;
   box-shadow: var(--shadow-sm);
 }
 
@@ -91,8 +91,8 @@ body.light-mode .db-hero-stat-label {
 
 /* Cards */
 body.light-mode .db-card {
-  background: var(--surface-card);
-  border-color: var(--border-primary);
+  background: var(--card-bg);
+  border-color: transparent;
   box-shadow: var(--shadow-sm);
 }
 
@@ -106,13 +106,13 @@ body.light-mode .db-card-header h3 {
 
 /* Holdings */
 body.light-mode .db-holding-card {
-  background: var(--bg-primary);
-  border-color: var(--border-primary);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 
 body.light-mode .db-holding-card:hover {
-  background: var(--surface-card-hover);
-  border-color: var(--border-hover);
+  background: var(--card-bg-hover);
+  border-color: transparent;
   box-shadow: var(--shadow-md);
 }
 
@@ -239,8 +239,8 @@ body.light-mode .settings-api-key {
    TRADING
    ══════════════════════════════ */
 body.light-mode .trd-form-card {
-  background: var(--surface-card);
-  border-color: var(--border-primary);
+  background: var(--card-bg);
+  border-color: transparent;
   box-shadow: var(--shadow-sm);
 }
 
@@ -269,8 +269,8 @@ body.light-mode .trd-position-value {
 }
 
 body.light-mode .trd-account-card {
-  background: var(--surface-card);
-  border-color: var(--border-primary);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 
 body.light-mode .trd-account-value {
@@ -481,8 +481,8 @@ body.light-mode .echo-author-name {
 }
 
 body.light-mode .echo-app-card {
-  background: var(--surface-card);
-  border-color: var(--border-primary);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 
 body.light-mode .echo-app-card h3 {
@@ -670,8 +670,8 @@ body.light-mode .db-card-header h3 {
 }
 
 body.light-mode .db-card {
-  background: #ffffff;
-  border-color: #e5e7eb;
+  background: var(--card-bg);
+  border-color: transparent;
 }
 
 body.light-mode .db-card-header {
@@ -709,7 +709,7 @@ body.light-mode .kairos-mini-stat-label {
 /* Betting markets light mode */
 body.light-mode .bm-stat-card {
   background: rgba(212, 175, 55, 0.03);
-  border-color: rgba(212, 175, 55, 0.1);
+  border-color: transparent;
 }
 
 body.light-mode .bm-stat-value,
@@ -745,8 +745,8 @@ body.light-mode .ftq-ind-name {
 
 /* Partner pages light mode */
 body.light-mode .partner-card {
-  background: #ffffff;
-  border-color: #e5e7eb;
+  background: var(--card-bg);
+  border-color: transparent;
 }
 
 body.light-mode .partner-card h3 {
@@ -755,8 +755,8 @@ body.light-mode .partner-card h3 {
 
 /* Generic component card light mode */
 body.light-mode .component-card {
-  background: #ffffff;
-  border-color: #e5e7eb;
+  background: var(--card-bg);
+  border-color: transparent;
 }
 
 body.light-mode .component-card h3 {

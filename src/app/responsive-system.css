@@ -572,7 +572,8 @@
   .hts-card {
     break-inside: avoid;
     box-shadow: none !important;
-    border: 1px solid #ddd !important;
+    border: 1px solid transparent !important;
+    background-color: var(--card-bg);
   }
 }
 
@@ -597,7 +598,8 @@
   .hts-card,
   .centaur-card {
     border-width: 2px !important;
-    border-color: color-mix(in srgb, var(--emerald) 30%, transparent) !important;
+    border-color: transparent !important;
+    background-color: var(--card-bg);
   }
 }
 

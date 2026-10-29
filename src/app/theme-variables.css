@@ -43,8 +43,8 @@
      A content card is an OUTLINED, TRANSPARENT surface that sits on the page
      colour — card == canvas == --app-bg, in both light and dark. --card-border
      resolves to the per-theme --border-primary, so it flips automatically. */
-  --card-bg: transparent;
-  --card-border: var(--border-primary);
+  --card-bg: #0f1519;
+  --card-border: transparent;
 
   /* ── Borders ── */
   --border-primary: rgba(16, 185, 129, 0.08);
@@ -381,6 +381,7 @@
   --tier-gold: #f3c969;
   --tier-platinum: #cfe6e0;
   --tier-diamond: #b9f2ff;
+  --card-bg-hover: #131b21;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -525,6 +526,9 @@ body.light-mode {
   --echo-chart-purple: var(--purple);
   --echo-chart-grid: rgba(120, 120, 120, 0.15);
   --echo-chart-annotation: rgba(120, 120, 120, 0.4);
+  --card-bg: #f3f6f5;
+  --card-bg-hover: #ecf1ef;
+  --card-border: transparent;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -597,6 +601,9 @@ body.light-mode .force-dark-theme {
 
   /* Badge ring */
   --badge-ring: #0f1419;
+  --card-bg: #0f1519;
+  --card-bg-hover: #131b21;
+  --card-border: transparent;
 }
 
 /* Public legal / policy pages (/privacy-policy, /terms-of-service,
@@ -623,6 +630,9 @@ body.partner-app.light-mode {
   --chart-line: #b8922f;
   --chart-fill-start: rgba(184, 146, 47, 0.18);
   --chart-fill-end: rgba(184, 146, 47, 0);
+  --card-bg: #f7f4ec;
+  --card-bg-hover: #f1ece0;
+  --card-border: transparent;
 }
 
 /* V3 Marquee — Ezana Echo Article Footer Tokens */

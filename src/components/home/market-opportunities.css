@@ -3,8 +3,8 @@
    ════════════════════════════════════════════════════════════ */
 
 .mkt-opps-card {
-  background: var(--bg-secondary);
-  border: 1.5px solid var(--gold-champagne);
+  background: var(--card-bg);
+  border: 1.5px solid transparent;
   border-radius: var(--radius-xl);
   overflow: hidden;
   display: flex;
@@ -210,8 +210,8 @@
 
 /* ── Light mode ── */
 body.light-mode .mkt-opps-card {
-  background: #ffffff;
-  border-color: var(--gold-champagne);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 
 body.light-mode .mkt-opps-header {

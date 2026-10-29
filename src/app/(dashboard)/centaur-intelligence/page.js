@@ -656,7 +656,7 @@ export default function CentaurIntelligencePage() {
                 style={{
                   padding: '0.75rem 1rem',
                   borderRadius: '10px',
-                  border: '1px solid rgba(212, 175, 55, 0.15)',
+                  border: '1px solid transparent',
                   background: 'rgba(212, 175, 55, 0.04)',
                 }}
               >

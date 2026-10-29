@@ -369,7 +369,7 @@ body.light-mode .ox-root {
   padding: 2px;
 }
 .ox2-deskcard {
-  border: 1px solid var(--ox-line-2);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   background: var(--ox-card);
   padding: 10px 11px;
@@ -382,7 +382,8 @@ body.light-mode .ox-root {
   flex-shrink: 0;
 }
 .ox2-deskcard:hover {
-  border-color: var(--ox-line-hover);
+  border-color: transparent;
+  background-color: var(--card-bg-hover);
 }
 .ox-teamtag {
   display: flex;

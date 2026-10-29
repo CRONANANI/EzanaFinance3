@@ -30,7 +30,7 @@ function CustomTooltip({ active, payload, label }) {
     <div
       style={{
         background: 'var(--card, #0d1117)',
-        border: '1px solid rgba(16,185,129,0.2)',
+        border: '1px solid transparent',
         borderRadius: '8px',
         padding: '8px 12px',
         fontSize: '0.75rem',
@@ -699,7 +699,7 @@ export default function StockPriceChart({
               key={label}
               style={{
                 background: 'rgba(16,185,129,0.03)',
-                border: '1px solid rgba(16,185,129,0.1)',
+                border: '1px solid transparent',
                 borderRadius: '10px',
                 padding: '0.75rem 0.875rem',
                 display: 'flex',

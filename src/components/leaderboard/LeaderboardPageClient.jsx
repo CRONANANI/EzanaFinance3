@@ -130,7 +130,7 @@ export function LeaderboardPageClient() {
         </div>
       </div>
 
-      <div className="mt-8 overflow-x-auto rounded-xl border border-gray-200 dark:border-[#1a1a24] bg-white dark:bg-[#0d0d14]">
+      <div className="bg-[var(--card-bg)] mt-8 overflow-x-auto rounded-xl">
         {loading ? (
           <div className="animate-pulse p-8 text-[#6b7280]">Loading…</div>
         ) : (

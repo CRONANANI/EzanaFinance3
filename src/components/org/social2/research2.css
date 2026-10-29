@@ -372,8 +372,8 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   padding: 14px;
   cursor: pointer;
@@ -385,8 +385,9 @@
   min-height: 150px;
 }
 .rl2-card:hover {
-  border-color: var(--emerald-border);
+  border-color: transparent;
   transform: translateY(-2px);
+  background-color: var(--card-bg-hover);
 }
 .rl2-card.is-superseded {
   opacity: 0.82;

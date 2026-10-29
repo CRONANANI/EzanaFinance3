@@ -25,7 +25,7 @@ export function EarningsCard({ symbol }) {
   if (!symbol) return null;
   if (loading) {
     return (
-      <div className="research-fade-in research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+      <div className="bg-[var(--card-bg)] research-fade-in research-card rounded-xl p-6">
         <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <div className="w-5 h-5 border-2 border-emerald-500/50 border-t-emerald-500 rounded-full animate-spin" />
           Loading earnings...
@@ -35,7 +35,7 @@ export function EarningsCard({ symbol }) {
   }
   if (error || !data?.length) {
     return (
-      <div className="research-fade-in research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+      <div className="bg-[var(--card-bg)] research-fade-in research-card rounded-xl p-6">
         <p className="text-gray-500 dark:text-gray-400">
           Earnings data unavailable (free tier: last 4 quarters).
         </p>
@@ -45,7 +45,7 @@ export function EarningsCard({ symbol }) {
 
   return (
     <>
-      <div className="research-fade-up research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+      <div className="bg-[var(--card-bg)] research-fade-up research-card rounded-xl p-6">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white m-0">
             Earnings History

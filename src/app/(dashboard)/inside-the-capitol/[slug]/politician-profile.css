@@ -226,8 +226,8 @@
 /* Info cards */
 .pp-info-card {
   padding: 1rem 1.25rem;
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-md, 1rem);
   backdrop-filter: blur(12px);
 }
@@ -298,8 +298,8 @@
 
 /* ═══ Portfolio Overview Card ═══ */
 .po-card {
-  background: var(--surface-card);
-  border: 1px solid var(--emerald-bg);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
   margin-bottom: 0;
 }
@@ -672,8 +672,8 @@
 
 .pp-card {
   padding: 1.25rem;
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-md, 1rem);
   backdrop-filter: blur(12px);
 }
@@ -890,8 +890,8 @@ body.light-mode .pp-info-card,
 body.light-mode .po-card,
 body.light-mode .pp-perf,
 body.light-mode .pp-card {
-  background: #fff;
-  border-color: rgba(16, 185, 129, 0.12);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 body.light-mode .pp-name,
 body.light-mode .po-header h3,
@@ -909,8 +909,8 @@ body.light-mode .pp-trade-amt {
 
 /* ═══ Light mode — Portfolio Overview ═══ */
 body.light-mode .po-card {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.06);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 body.light-mode .po-header h3 {
   color: #0f172a;

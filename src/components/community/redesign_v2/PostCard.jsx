@@ -129,7 +129,7 @@ export const ConvictionLike = forwardRef(function ConvictionLike(
             background: 'var(--bg-tertiary)',
             color: 'var(--text-muted)',
             fontFamily: 'var(--font-mono)',
-            border: '1px solid var(--border-secondary)',
+            border: '1px solid transparent',
             cursor: 'pointer',
           }}
           title="Stake conviction"
@@ -558,7 +558,7 @@ export function TickerEmbed({ embed }) {
         margin: '12px 0',
         padding: 14,
         background: 'var(--bg-tertiary)',
-        border: '1px solid var(--border-secondary)',
+        border: '1px solid transparent',
         borderRadius: 10,
       }}
     >
@@ -630,7 +630,7 @@ export function QuotedPost({ quoted }) {
         margin: '10px 0',
         padding: 12,
         background: 'var(--bg-tertiary)',
-        border: '1px solid var(--border-secondary)',
+        border: '1px solid transparent',
         borderRadius: 10,
       }}
     >

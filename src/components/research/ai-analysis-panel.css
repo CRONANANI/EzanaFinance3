@@ -10,8 +10,8 @@
 }
 
 .ai-analysis-card {
-  border: 1px solid var(--emerald-border) !important;
-  background: var(--surface-card) !important;
+  border: 1px solid transparent !important;
+  background: var(--card-bg) !important;
   backdrop-filter: blur(12px);
   border-radius: var(--radius-md, 1rem) !important;
   overflow: hidden;
@@ -514,14 +514,14 @@
 }
 
 .model-metric-card.ai-model-card:hover {
-  border-color: color-mix(in srgb, var(--emerald) 30%, transparent);
-  background: var(--emerald-bg-subtle);
+  border-color: transparent;
+  background: var(--card-bg-hover);
   transform: translateY(-2px);
 }
 
 .model-metric-card.ai-model-card.active {
-  border-color: color-mix(in srgb, var(--emerald) 50%, transparent);
-  background: var(--emerald-bg);
+  border-color: transparent;
+  background: color-mix(in srgb, var(--emerald) 12%, var(--card-bg));
 }
 
 .model-metric-card.ai-model-card.active::before {
@@ -566,8 +566,8 @@
 
 /* ── Light mode ── */
 body.light-mode .ai-analysis-card {
-  background: #fff !important;
-  border-color: rgba(16, 185, 129, 0.12) !important;
+  background: var(--card-bg) !important;
+  border-color: transparent !important;
 }
 
 body.light-mode .ai-analysis-title,

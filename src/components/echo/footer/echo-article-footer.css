@@ -456,7 +456,7 @@ body.light-mode .echo-slider-cast-btn:hover {
 
 .echo-worthit-tile {
   background: var(--bg-secondary, var(--bg-primary));
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: 999px; /* slim pill */
   padding: 3px 14px; /* ~80% thinner than the old stacked tile */
   display: flex;
@@ -476,7 +476,7 @@ body.light-mode .echo-slider-cast-btn:hover {
 
 .echo-worthit-tile:hover {
   background: var(--bg-tertiary, var(--bg-secondary));
-  border-color: var(--echo-border-strong);
+  border-color: transparent;
   color: var(--text-primary);
   transform: translateY(-1px);
 }
@@ -514,8 +514,8 @@ body.light-mode .echo-slider-cast-btn:hover {
 }
 
 .echo-worthit-tile.is-active {
-  background: var(--echo-accent-soft);
-  border-color: var(--echo-accent-ring);
+  background: color-mix(in srgb, var(--echo-accent) 12%, var(--card-bg));
+  border-color: transparent;
   color: var(--echo-accent);
 }
 

@@ -34,7 +34,7 @@
 
 .ftq-stat-card {
   background: rgba(212, 175, 55, 0.02);
-  border: 1px solid rgba(212, 175, 55, 0.08);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   padding: 0.35rem 0.75rem;
   min-height: unset;
@@ -608,7 +608,7 @@
 .ftq-ind-card {
   padding: 0.85rem 1rem;
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(212, 175, 55, 0.1);
+  border: 1px solid transparent;
   background: rgba(0, 0, 0, 0.12);
 }
 
@@ -655,8 +655,8 @@ body.light-mode .ftq-subtitle {
 
 body.light-mode .ftq-stat-card,
 body.light-mode .db-card {
-  background: #ffffff;
-  border-color: rgba(212, 175, 55, 0.12);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 
 body.light-mode .ftq-stat-value,
@@ -870,12 +870,13 @@ body.light-mode .ftq-pm-input {
   gap: 0.75rem;
   padding: 0.75rem;
   background: rgba(99, 102, 241, 0.04);
-  border: 1px solid rgba(99, 102, 241, 0.12);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
   transition: border-color 0.15s;
 }
 .ftq-template-card:hover {
-  border-color: rgba(99, 102, 241, 0.3);
+  border-color: transparent;
+  background-color: var(--card-bg-hover);
 }
 
 .ftq-template-icon {

@@ -1,14 +1,14 @@
 .pc-card {
   border-radius: var(--radius-xl);
-  border: 1px solid var(--border-primary);
-  background: var(--bg-secondary);
+  border: 1px solid transparent;
+  background: var(--card-bg);
   padding: 1rem 1rem 0.75rem;
   font-family: var(--font-sans);
 }
 
 body.light-mode .pc-card {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.08);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 
 .pc-head {

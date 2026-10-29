@@ -45,7 +45,7 @@
   height: 54px;
   border-radius: var(--radius-xl);
   background: linear-gradient(135deg, var(--emerald-soft), transparent 80%);
-  border: 1px solid var(--emerald-border);
+  border: 1px solid transparent;
   display: grid;
   place-items: center;
   color: var(--emerald);

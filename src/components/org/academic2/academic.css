@@ -95,9 +95,9 @@
 }
 
 .ac3-card {
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
-  background: var(--surface-card, transparent);
+  background: var(--card-bg);
   padding: 1rem 1.1rem;
 }
 .ac3-grid {

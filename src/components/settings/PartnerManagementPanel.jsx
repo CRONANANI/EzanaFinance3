@@ -178,7 +178,7 @@ export function PartnerManagementPanel() {
                     style={{
                       background: 'var(--bg-tertiary, #161b22)',
                       color: 'inherit',
-                      border: '1px solid var(--border-secondary, #30363d)',
+                      border: '1px solid transparent',
                       borderRadius: 8,
                       padding: '4px 8px',
                       fontSize: 12,

@@ -61,7 +61,7 @@ export function EventCalendar({ events = [], onWatchToggle }) {
                 padding: '10px 12px',
                 background: 'var(--bg-tertiary)',
                 borderRadius: 8,
-                border: '1px solid var(--border-primary)',
+                border: '1px solid transparent',
               }}
             >
               <div style={{ minWidth: 0 }}>

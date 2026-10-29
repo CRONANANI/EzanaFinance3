@@ -153,8 +153,8 @@
 
 .m-panel {
   border-radius: var(--radius-xl);
-  border: 1px solid var(--border-primary);
-  background: var(--surface-card);
+  border: 1px solid transparent;
+  background: var(--card-bg);
   overflow: hidden;
   display: flex;
   flex-direction: column;

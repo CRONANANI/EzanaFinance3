@@ -356,8 +356,8 @@
 
 /* ═══ Card ═════════════════════════════════════════════════════ */
 .ds-card {
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   transition:
     border-color 0.2s ease,
@@ -374,8 +374,8 @@
   cursor: pointer;
 }
 .ds-card--interactive:hover {
-  border-color: var(--border-hover);
-  background: var(--surface-card-hover);
+  border-color: transparent;
+  background: var(--card-bg-hover);
 }
 .ds-card--elevated {
   box-shadow: var(--shadow-md);

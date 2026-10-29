@@ -139,16 +139,16 @@ html.light-mode .ezana-theme {
 }
 
 .ez-card {
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   transition:
     border-color 0.2s,
     background 0.2s;
 }
 .ez-card:hover {
-  border-color: var(--border-hover);
-  background: var(--surface-card-hover);
+  border-color: transparent;
+  background: var(--card-bg-hover);
 }
 
 /* ===== COMMUNITY LEDGER ===== */
@@ -444,8 +444,8 @@ html.light-mode .ezana-theme .lpill.on {
 }
 
 .ezana-theme .ledger-card {
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
   box-shadow: var(--ledger-shadow);
   padding: 16px 18px;
@@ -453,7 +453,8 @@ html.light-mode .ezana-theme .lpill.on {
   transition: border-color 0.15s;
 }
 .ezana-theme .ledger-card:hover {
-  border-color: var(--border-hover);
+  border-color: transparent;
+  background-color: var(--card-bg-hover);
 }
 
 .ezana-theme .cardhdr {
@@ -478,7 +479,7 @@ html.light-mode .ezana-theme .lpill.on {
 .ezana-theme .ctile {
   padding: 12px;
   background: var(--bg-tertiary);
-  border: 1px solid var(--border-secondary);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   cursor: pointer;
   text-align: left;
@@ -487,11 +488,12 @@ html.light-mode .ezana-theme .lpill.on {
     background 0.15s;
 }
 .ezana-theme .ctile:hover {
-  border-color: var(--emerald-border);
+  border-color: transparent;
+  background-color: var(--card-bg-hover);
 }
 .ezana-theme .ctile.active {
-  background: var(--emerald-bg);
-  border-color: var(--emerald-border);
+  background: color-mix(in srgb, var(--emerald) 12%, var(--card-bg));
+  border-color: transparent;
 }
 .ezana-theme .ctile-ticker {
   font-family: var(--font-mono);

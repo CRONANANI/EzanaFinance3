@@ -198,17 +198,18 @@
   flex-direction: column;
   gap: 8px;
   padding: 16px;
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg, 12px);
-  background: var(--bg-secondary);
+  background: var(--card-bg);
   text-decoration: none;
   transition:
     border-color 0.15s,
     transform 0.15s;
 }
 .pcx-card:hover {
-  border-color: var(--org-primary, var(--emerald));
+  border-color: transparent;
   transform: translateY(-1px);
+  background-color: var(--card-bg-hover);
 }
 .pcx-card-top {
   display: flex;

@@ -18,7 +18,7 @@ export function CompanyOverview({ symbol }) {
   if (!symbol) return null;
   if (loading) {
     return (
-      <div className="research-fade-in research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+      <div className="bg-[var(--card-bg)] research-fade-in research-card rounded-xl p-6">
         <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <div className="w-5 h-5 border-2 border-emerald-500/50 border-t-emerald-500 rounded-full animate-spin" />
           Loading company profile...
@@ -28,14 +28,14 @@ export function CompanyOverview({ symbol }) {
   }
   if (error || !data) {
     return (
-      <div className="research-fade-in research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+      <div className="bg-[var(--card-bg)] research-fade-in research-card rounded-xl p-6">
         <p className="text-gray-500 dark:text-gray-400">Unable to load company profile.</p>
       </div>
     );
   }
 
   return (
-    <div className="research-fade-up research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+    <div className="bg-[var(--card-bg)] research-fade-up research-card rounded-xl p-6">
       <div className="flex items-start gap-4">
         {data.logo && (
           <img

@@ -34,9 +34,9 @@
 }
 .comp-card {
   padding: 12px 14px;
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
-  background: var(--surface-card, transparent);
+  background: var(--card-bg);
 }
 .comp-card-title {
   font-weight: 600;

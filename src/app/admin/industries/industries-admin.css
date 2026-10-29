@@ -131,7 +131,8 @@
   padding: 14px;
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-md);
-  background: var(--card-bg);
+  /* Pinned: the app's --card-bg is now a fill; admin keeps its transparent rows. */
+  background: transparent;
 }
 .ina-row {
   display: flex;

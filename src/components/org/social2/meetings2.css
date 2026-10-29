@@ -146,9 +146,9 @@
   min-width: 0;
 }
 .mt2-card {
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
-  background: var(--surface-card, transparent);
+  background: var(--card-bg);
   padding: 0.8rem 0.85rem;
 }
 .mt2-card__title {
@@ -423,9 +423,9 @@
   flex: 0 0 184px;
   width: 184px;
   min-height: 68px;
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
-  background: var(--surface-card, transparent);
+  background: var(--card-bg);
   padding: 0.5rem 0.6rem;
   cursor: pointer;
   display: flex;
@@ -440,11 +440,13 @@
 }
 .mt2-mcard:hover {
   transform: translateY(-1px);
-  border-color: var(--border-hover);
+  border-color: transparent;
+  background-color: var(--card-bg-hover);
 }
 .mt2-mcard.is-active {
-  border-color: var(--emerald, var(--emerald));
-  box-shadow: 0 0 0 1px var(--emerald, var(--emerald)) inset;
+  border-color: transparent;
+  box-shadow: none;
+  background: color-mix(in srgb, var(--emerald) 12%, var(--card-bg));
 }
 .mt2-mcard__top {
   display: flex;

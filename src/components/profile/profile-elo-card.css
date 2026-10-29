@@ -2,8 +2,8 @@
    Profile ELO Card — appears in profile aside above performance panel
    ════════════════════════════════════════════════════════════ */
 .pec-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
   padding: 1.25rem;
   margin-bottom: 1rem;
@@ -379,8 +379,8 @@
 
 /* Light mode */
 body.light-mode .pec-card {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.06);
+  background: var(--card-bg);
+  border-color: transparent;
 }
 
 body.light-mode .pec-peak-value {

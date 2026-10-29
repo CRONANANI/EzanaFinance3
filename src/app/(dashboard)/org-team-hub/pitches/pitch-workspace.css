@@ -205,8 +205,8 @@
 /* ── Pitch card — Trading Desk `.ctd-card` skeleton (16px + two-layer shadow) ─ */
 .pw-card {
   display: block;
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
   padding: 0.55rem 0.6rem;
   text-decoration: none;
@@ -216,14 +216,15 @@
     transform 0.05s ease;
 }
 .pw-card:hover {
-  border-color: var(--border-hover);
+  border-color: transparent;
+  background-color: var(--card-bg-hover);
 }
 .pw-card:focus-visible {
   outline: 2px solid var(--border-focus);
   outline-offset: 1px;
 }
 .pw-card.is-aging {
-  border-color: var(--warning);
+  border-color: transparent;
 }
 .pw-card.is-blocked {
   border-left: 3px solid var(--pink);
@@ -392,8 +393,8 @@
   gap: 0.5rem;
 }
 .pw-arc-card {
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-left: 3px solid var(--text-ghost);
   border-radius: var(--radius-lg);
   padding: 0.55rem 0.65rem;
@@ -401,7 +402,8 @@
   color: inherit;
 }
 .pw-arc-card:hover {
-  border-color: var(--border-hover);
+  border-color: transparent;
+  background-color: var(--card-bg-hover);
 }
 .pw-arc-card.is-rejected {
   border-left-color: var(--pink);
@@ -486,8 +488,8 @@
   gap: 0.7rem;
 }
 .pw-ic-card {
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   padding: 0.85rem;
   display: flex;
@@ -495,7 +497,7 @@
   gap: 0.55rem;
 }
 .pw-ic-card.is-live {
-  border-color: var(--emerald-border);
+  border-color: transparent;
 }
 .pw-ic-top {
   display: flex;

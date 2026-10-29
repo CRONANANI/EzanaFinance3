@@ -134,7 +134,7 @@ body.partner-app.light-mode .settings-input:focus {
 
 body.partner-app.light-mode .settings-push-card {
   background: rgba(184, 146, 47, 0.08);
-  border-color: rgba(184, 146, 47, 0.2);
+  border-color: transparent;
 }
 
 body.partner-app.light-mode .settings-saved-ok {

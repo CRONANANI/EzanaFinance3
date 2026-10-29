@@ -28,8 +28,8 @@
 /* â”€â”€ SHARED CARD CHROME â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .am2-card {
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   color: var(--text-primary);
@@ -414,7 +414,7 @@
   height: 30px;
   border-radius: var(--radius-md);
   background: var(--bg-tertiary);
-  border: 1px solid var(--border-primary);
+  border: 1px solid transparent;
   display: inline-flex;
   align-items: center;
   justify-content: center;

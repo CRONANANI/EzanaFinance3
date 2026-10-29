@@ -61,12 +61,12 @@
 /* ---- surface rows (toggle rows, list rows, preview) ---- */
 .sorg-row-card {
   border-radius: var(--radius-md);
-  border: 1px solid var(--border-primary);
-  background: var(--surface-card);
+  border: 1px solid transparent;
+  background: var(--card-bg);
 }
 .sorg-row-card--current {
-  border-color: var(--emerald-border);
-  background: var(--emerald-bg);
+  border-color: transparent;
+  background: color-mix(in srgb, var(--emerald) 12%, var(--card-bg));
 }
 .sorg-archived-row {
   border-radius: var(--radius-md);

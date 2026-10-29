@@ -4,7 +4,7 @@
 
 .cc-chamber-card {
   overflow: hidden;
-  border: 1px solid rgba(212, 175, 55, 0.12);
+  border: 1px solid transparent;
   background: linear-gradient(165deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.88));
 }
 
@@ -309,7 +309,7 @@
 
 body.light-mode .cc-chamber-card {
   background: linear-gradient(165deg, #ffffff, #f8fafc);
-  border-color: rgba(212, 175, 55, 0.25);
+  border-color: transparent;
 }
 
 body.light-mode .cc-chamber-title {

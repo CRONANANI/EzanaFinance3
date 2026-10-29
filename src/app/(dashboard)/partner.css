@@ -391,14 +391,14 @@ body.light-mode .ptr-hero-avatar-initials {
   gap: 1rem;
   padding: 1.25rem;
   background: rgba(212, 168, 83, 0.02);
-  border: 1px solid rgba(212, 168, 83, 0.08);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
   text-decoration: none;
   transition: all 0.2s;
   cursor: pointer;
 }
 .ptr-link-card:hover {
-  border-color: rgba(212, 168, 83, 0.25);
+  border-color: transparent;
   background: rgba(212, 168, 83, 0.04);
   transform: translateY(-2px);
 }
@@ -442,7 +442,7 @@ body.light-mode .ptr-hero-avatar-initials {
    ══════════════════════════════ */
 .ptr-card {
   background: rgba(212, 168, 83, 0.02);
-  border: 1px solid rgba(212, 168, 83, 0.08);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
   overflow: hidden;
 }
@@ -629,7 +629,7 @@ body.light-mode .ptr-hero-avatar-initials {
 .ptr-stat-card {
   padding: 1.25rem;
   background: rgba(212, 168, 83, 0.02);
-  border: 1px solid rgba(212, 168, 83, 0.08);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
   display: flex;
   align-items: center;
@@ -640,7 +640,7 @@ body.light-mode .ptr-hero-avatar-initials {
   color: #6b7280;
 }
 .ptr-stat-card.ptr-stat-gold {
-  border-color: rgba(212, 168, 83, 0.25);
+  border-color: transparent;
   background: rgba(212, 168, 83, 0.04);
 }
 .ptr-stat-card.ptr-stat-gold > i {

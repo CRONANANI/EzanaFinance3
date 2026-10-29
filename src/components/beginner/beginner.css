@@ -64,7 +64,7 @@ body.light-mode .beginner-metric-popover {
 
 .beginner-edu-card {
   border-radius: var(--radius-lg);
-  border: 1px solid var(--emerald-border, color-mix(in srgb, var(--emerald) 20%, transparent));
+  border: 1px solid transparent;
   background: var(--emerald-bg, color-mix(in srgb, var(--emerald) 6%, transparent));
   padding: 16px 18px;
   margin-bottom: 16px;

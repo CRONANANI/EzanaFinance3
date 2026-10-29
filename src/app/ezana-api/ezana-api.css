@@ -931,8 +931,9 @@
   flex-direction: column;
   gap: 0.4rem;
   padding: 0.5rem 0.6rem;
-  border: 1px solid var(--ea-border);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
+  background-color: var(--card-bg);
 }
 .ea-cov-name {
   font-family: var(--font-mono);

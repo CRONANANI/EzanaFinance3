@@ -48,8 +48,8 @@
   flex-direction: column;
   gap: 0.75rem;
   padding: 1rem;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
 }
 

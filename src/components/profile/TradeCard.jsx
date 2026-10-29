@@ -7,7 +7,11 @@ function fmtContract(t) {
   if (t.trade_type !== 'option' || !t.expiry_date) {
     return `${t.ticker} @${Number(t.entry_price).toFixed(2)}`;
   }
-  const exp = new Date(t.expiry_date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' });
+  const exp = new Date(t.expiry_date).toLocaleDateString('en-US', {
+    month: 'numeric',
+    day: 'numeric',
+    year: '2-digit',
+  });
   const strike = t.strike_price != null ? String(t.strike_price) : '';
   const ot = t.option_type === 'put' ? 'p' : 'c';
   return `${exp} ${strike}${ot} @${Number(t.entry_price).toFixed(2)}`;
@@ -36,11 +40,13 @@ export function TradeCard({ trade, isOwner }) {
   }, []);
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 dark:border-[#1a1a24] dark:bg-[#111118] dark:hover:border-[#2a2a34]">
+    <div className="bg-[var(--card-bg)] rounded-xl p-4 transition-colors dark:bg-[#111118] dark:hover:border-[#2a2a34]">
       <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px] md:items-start">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-gray-900 dark:text-[#f5f5f5]">{trade.ticker}</span>
+            <span className="text-2xl font-bold text-gray-900 dark:text-[#f5f5f5]">
+              {trade.ticker}
+            </span>
             {trade.status === 'open' ? (
               <span className="rounded bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
                 OPEN
@@ -55,7 +61,9 @@ export function TradeCard({ trade, isOwner }) {
           {pnl != null && (
             <span
               className={`mt-1 inline-block rounded px-2 py-0.5 text-xs font-semibold ${
-                pos ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-red-500/15 text-red-600 dark:text-red-400'
+                pos
+                  ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                  : 'bg-red-500/15 text-red-600 dark:text-red-400'
               }`}
             >
               {pos ? '↑' : '↓'}
@@ -64,12 +72,11 @@ export function TradeCard({ trade, isOwner }) {
           )}
           <p className="mt-2 text-xs text-gray-500 dark:text-[#6b7280]">
             Risk:{' '}
-            <span className="capitalize text-gray-600 dark:text-[#9ca3af]">{trade.risk_level || 'moderate'}</span>
+            <span className="capitalize text-gray-600 dark:text-[#9ca3af]">
+              {trade.risk_level || 'moderate'}
+            </span>
             {trade.risk_reward_ratio != null && (
-              <>
-                {' '}
-                · R/R: {Number(trade.risk_reward_ratio).toFixed(2)}
-              </>
+              <> · R/R: {Number(trade.risk_reward_ratio).toFixed(2)}</>
             )}
           </p>
           {(trade.tags || []).length > 0 && (

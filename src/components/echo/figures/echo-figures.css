@@ -526,8 +526,8 @@
   min-width: 0;
 }
 .echo-scrolly-card {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
   padding: 18px 20px;
