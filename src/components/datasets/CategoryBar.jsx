@@ -340,10 +340,6 @@ export default function CategoryBar({ active, activeItem, showDimensions = true,
                 Ezana Finance
               </span>
             </Link>
-            <span className="dsi-live">
-              <span className="dsi-live__dot" aria-hidden="true" />
-              <span>Live intelligence</span>
-            </span>
           </>
         )}
       </div>

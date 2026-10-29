@@ -51,7 +51,6 @@ const ORBIT_DIMS = DATASET_TAXONOMY.map((d) => {
     items: d.items.map((it) => ({ label: it.label, href: it.href, live: Boolean(it.live) })),
   };
 });
-const TOTAL = COUNTS.live + COUNTS.roadmap;
 
 const EMPTY_PULSE = { items: [], datasets: {}, partial: true };
 
@@ -93,9 +92,6 @@ export default async function DatasetsIndexPage({ searchParams }) {
           heroAddon={map}
           initialQuery={typeof searchParams?.q === 'string' ? searchParams.q : null}
         />
-        <p className="dsi-totals">
-          {TOTAL} datasets · {COUNTS.live} live · {COUNTS.dimensions} dimensions
-        </p>
       </div>
     </div>
   );

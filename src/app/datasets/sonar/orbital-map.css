@@ -70,7 +70,7 @@
 }
 
 .ds-shell--search
-  :is(.dsi-hero, .dsi-pingframe, .dsi-stage, .dsi-rail, .dsi-iconbtn, .dsi-live)
+  :is(.dsi-hero, .dsi-pingframe, .dsi-stage, .dsi-rail, .dsi-iconbtn)
   :focus-visible,
 .ds-shell--search :is(.dsi-iconbtn, .dsi-dimdot, .dsi-card__head):focus-visible {
   outline: 2px solid var(--dsi-focus);
@@ -124,30 +124,6 @@
   letter-spacing: 0.24em;
   text-transform: uppercase;
   white-space: nowrap;
-}
-.dsi-live {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  flex: 0 0 auto;
-  height: 26px;
-  margin-left: 20px;
-  padding-left: 20px;
-  border-left: 1px solid var(--dsi-line-faint);
-  color: var(--dsi-ink);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-.dsi-live__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--emerald);
-  box-shadow: 0 0 8px var(--emerald);
 }
 .dsi-bar-actions {
   display: flex;
@@ -549,23 +525,10 @@
 }
 
 /* ── Totals line ──────────────────────────────────────────────────────── */
-.dsi-totals {
-  display: flex;
-  justify-content: flex-end;
-  width: min(1440px, 100%);
-  margin: 56px auto 0;
-  padding: 18px 32px 0;
-  border-top: 1px solid var(--dsi-line-faint);
-  color: var(--dsi-ink-muted);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-}
 
 /* ── Responsive ───────────────────────────────────────────────────────── */
 @media (max-width: 960px) {
-  .ds-shell--search .dscat-belt-slot,
-  .dsi-live {
+  .ds-shell--search .dscat-belt-slot {
     display: none;
   }
   .dsi-stage {
@@ -610,10 +573,6 @@
   }
   .dsi-dimdot__tip {
     display: none;
-  }
-  .dsi-totals {
-    justify-content: flex-start;
-    padding: 18px 16px 0;
   }
 }
 
@@ -664,9 +623,6 @@
 .ds-shell--search .dsi-hero__lede,
 .ds-shell--search .dsi-card__desc {
   color: var(--dsi-ink-2);
-}
-.ds-shell--search .dsi-totals {
-  color: var(--dsi-ink-muted);
 }
 .ds-shell--search .dsi-rail {
   text-align: left;
