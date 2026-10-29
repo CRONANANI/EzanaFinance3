@@ -25,16 +25,16 @@ export default function LoginChoicePage({ searchParams }) {
         ← Back to home
       </Link>
 
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-emerald-500/20 bg-white p-8 shadow-xl shadow-slate-200/60">
+      <div className="relative z-10 w-full max-w-md rounded-none border border-emerald-500/20 bg-white p-8 shadow-xl shadow-slate-200/60">
         <h1 className="mb-2 text-2xl font-bold text-slate-900">Login</h1>
         <p className="mb-8 text-slate-600">Choose how you would like to sign in to your account.</p>
 
         <div className="flex flex-col gap-4">
           <Link
             href={withRedirect('/auth/signin')}
-            className="portal-login-choice group flex min-h-[6.5rem] items-center gap-4 rounded-xl border border-emerald-500/25 bg-emerald-500/5 p-4 transition-all hover:border-emerald-400/50 hover:bg-emerald-500/10"
+            className="portal-login-choice group flex min-h-[6.5rem] items-center gap-4 rounded-none border border-emerald-500/25 bg-emerald-500/5 p-4 transition-all hover:border-emerald-400/50 hover:bg-emerald-500/10"
           >
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 transition-colors group-hover:bg-emerald-500/25">
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-none bg-emerald-500/15 transition-colors group-hover:bg-emerald-500/25">
               <i className="bi bi-person text-xl text-emerald-600" />
             </div>
             <div className="flex-1">
@@ -48,9 +48,9 @@ export default function LoginChoicePage({ searchParams }) {
 
           <Link
             href={withRedirect('/auth/partner/signin')}
-            className="portal-login-choice group flex min-h-[6.5rem] items-center gap-4 rounded-xl border border-amber-400/25 bg-amber-500/5 p-4 transition-all hover:border-amber-400/50 hover:bg-amber-500/10"
+            className="portal-login-choice group flex min-h-[6.5rem] items-center gap-4 rounded-none border border-amber-400/25 bg-amber-500/5 p-4 transition-all hover:border-amber-400/50 hover:bg-amber-500/10"
           >
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-amber-500/15 transition-colors group-hover:bg-amber-500/25">
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-none bg-amber-500/15 transition-colors group-hover:bg-amber-500/25">
               <i className="bi bi-patch-check-fill text-xl text-amber-600" />
             </div>
             <div className="flex-1">
@@ -64,9 +64,9 @@ export default function LoginChoicePage({ searchParams }) {
 
           <Link
             href={withRedirect('/auth/org-login')}
-            className="portal-login-choice group flex min-h-[6.5rem] items-center gap-4 rounded-xl border border-indigo-400/25 bg-indigo-500/5 p-4 transition-all hover:border-indigo-400/50 hover:bg-indigo-500/10"
+            className="portal-login-choice group flex min-h-[6.5rem] items-center gap-4 rounded-none border border-indigo-400/25 bg-indigo-500/5 p-4 transition-all hover:border-indigo-400/50 hover:bg-indigo-500/10"
           >
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-500/15 transition-colors group-hover:bg-indigo-500/25">
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-none bg-indigo-500/15 transition-colors group-hover:bg-indigo-500/25">
               <i className="bi bi-mortarboard-fill text-xl text-indigo-600" />
             </div>
             <div className="flex-1">

@@ -55,15 +55,15 @@
   font-variant-numeric: tabular-nums;
 }
 .otp-cell--sm .otp-slot {
-  border-radius: 8px;
+  border-radius: 0;
   font-size: 16px;
 }
 .otp-cell--md .otp-slot {
-  border-radius: 12px;
+  border-radius: 0;
   font-size: 18px;
 }
 .otp-cell--lg .otp-slot {
-  border-radius: 16px;
+  border-radius: 0;
   font-size: 20px;
 }
 

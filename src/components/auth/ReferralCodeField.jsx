@@ -87,7 +87,7 @@ export default function ReferralCodeField({ value, onChange, open, onOpenChange 
           placeholder="ABCD2345"
           aria-describedby="referral-code-status"
           aria-invalid={state.status === 'invalid'}
-          className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 pr-10 font-mono uppercase tracking-[0.2em] text-slate-900 placeholder-slate-400 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+          className="h-11 w-full rounded-none border border-slate-300 bg-white px-4 pr-10 font-mono uppercase tracking-[0.2em] text-slate-900 placeholder-slate-400 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
         />
         {state.status === 'valid' || state.status === 'invalid' ? (
           <i

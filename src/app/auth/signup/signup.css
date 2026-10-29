@@ -23,7 +23,8 @@
   max-width: 480px;
   padding: 32px;
   border: 1px solid color-mix(in srgb, var(--emerald) 22%, transparent);
-  border-radius: var(--radius-xl);
+  /* !important: terminal-theme.css rounds every [class*='-card'] at (0,2,2). */
+  border-radius: 0 !important;
   background: var(--wl-card);
   box-shadow: 0 20px 50px color-mix(in srgb, black 8%, transparent);
   color: var(--wl-ink);
@@ -69,7 +70,7 @@
   margin-bottom: 18px;
   padding: 10px 12px;
   border: 1px solid color-mix(in srgb, var(--wl-danger) 30%, transparent);
-  border-radius: var(--radius-md);
+  border-radius: 0;
   background: color-mix(in srgb, var(--wl-danger) 6%, var(--wl-card));
   font-size: 13px;
   color: var(--wl-danger);
@@ -104,7 +105,7 @@
   min-height: 44px;
   padding: 10px 12px;
   border: 1px solid var(--wl-hair);
-  border-radius: var(--radius-md);
+  border-radius: 0;
   background: var(--wl-field);
   font: inherit;
   font-size: 16px; /* 16px stops iOS zooming on focus */
@@ -182,7 +183,7 @@
   margin-top: 4px;
   padding: 12px 20px;
   border: 0;
-  border-radius: var(--radius-md);
+  border-radius: 0;
   background: var(--wl-accent);
   color: var(--color-on-primary);
   font: inherit;
@@ -271,7 +272,7 @@
 .wl-skel-line {
   width: 80%;
   height: 12px;
-  border-radius: var(--radius-sm);
+  border-radius: 0;
   background: color-mix(in srgb, black 7%, var(--wl-card));
   animation: wl-pulse 1.4s ease-in-out infinite;
 }

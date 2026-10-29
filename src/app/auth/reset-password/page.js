@@ -272,7 +272,7 @@ export default function ResetPasswordPage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full bg-white border border-emerald-500/20 rounded-2xl p-8 text-center relative z-10 shadow-xl shadow-slate-200/60"
+          className="max-w-md w-full bg-white border border-emerald-500/20 rounded-none p-8 text-center relative z-10 shadow-xl shadow-slate-200/60"
         >
           <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <Check className="w-8 h-8 text-emerald-600" />
@@ -301,7 +301,7 @@ export default function ResetPasswordPage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full bg-white border border-red-200 rounded-2xl p-8 text-center relative z-10 shadow-xl shadow-slate-200/60"
+          className="max-w-md w-full bg-white border border-red-200 rounded-none p-8 text-center relative z-10 shadow-xl shadow-slate-200/60"
         >
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="w-8 h-8 text-red-600" />
@@ -313,7 +313,7 @@ export default function ResetPasswordPage() {
           </p>
           <Link
             href="/auth/forgot-password"
-            className="inline-flex items-center justify-center w-full h-11 rounded-lg font-medium bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white transition-all"
+            className="inline-flex items-center justify-center w-full h-11 rounded-none font-medium bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white transition-all"
           >
             Request New Link
             <ArrowRight className="ml-2 h-4 w-4" />
@@ -344,7 +344,7 @@ export default function ResetPasswordPage() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-md overflow-hidden rounded-2xl bg-white border border-emerald-500/20 shadow-xl shadow-slate-200/60 p-8"
+          className="w-full max-w-md overflow-hidden rounded-none bg-white border border-emerald-500/20 shadow-xl shadow-slate-200/60 p-8"
         >
           <div className="flex items-center justify-center mb-8">
             <div className="h-12 w-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center">
@@ -359,7 +359,7 @@ export default function ResetPasswordPage() {
           <p className="text-slate-600 mb-8 text-center">Enter your new password below</p>
 
           {error && (
-            <div className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm flex items-center gap-2">
+            <div className="mb-6 p-3 rounded-none bg-red-50 border border-red-200 text-red-600 text-sm flex items-center gap-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               {error}
             </div>
@@ -377,7 +377,7 @@ export default function ResetPasswordPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your new password"
                   required
-                  className="w-full h-11 rounded-lg border border-slate-300 bg-white px-4 pr-12 text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+                  className="w-full h-11 rounded-none border border-slate-300 bg-white px-4 pr-12 text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
                 />
                 <button
                   type="button"
@@ -444,7 +444,7 @@ export default function ResetPasswordPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm your new password"
                   required
-                  className={`w-full h-11 rounded-lg border bg-white px-4 pr-12 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 transition-all ${
+                  className={`w-full h-11 rounded-none border bg-white px-4 pr-12 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 transition-all ${
                     confirmPassword && confirmPassword !== password
                       ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
                       : confirmPassword && confirmPassword === password
@@ -473,7 +473,7 @@ export default function ResetPasswordPage() {
             <button
               type="submit"
               disabled={isLoading || !password || !confirmPassword || password !== confirmPassword}
-              className="w-full h-11 rounded-lg font-medium bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              className="w-full h-11 rounded-none font-medium bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {isLoading ? (
                 <>

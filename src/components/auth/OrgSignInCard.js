@@ -130,7 +130,7 @@ const OrgSignInCard = ({ redirectTo = '/org-team-hub' }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/60"
+        className="w-full max-w-md overflow-hidden rounded-none border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/60"
       >
         <div className="mb-6 flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700">
@@ -143,7 +143,7 @@ const OrgSignInCard = ({ redirectTo = '/org-team-hub' }) => {
         </div>
 
         {error && (
-          <div className="mb-6 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
+          <div className="mb-6 rounded-none border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
             {error}
           </div>
         )}
@@ -159,7 +159,7 @@ const OrgSignInCard = ({ redirectTo = '/org-team-hub' }) => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@university.ca"
               required
-              className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-slate-900 placeholder-slate-400 transition-all focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+              className="h-11 w-full rounded-none border border-slate-300 bg-white px-4 text-slate-900 placeholder-slate-400 transition-all focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
             />
             <p className="mt-1 text-xs text-slate-600">
               Use your recognized university email address
@@ -177,7 +177,7 @@ const OrgSignInCard = ({ redirectTo = '/org-team-hub' }) => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 required
-                className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 pr-12 text-slate-900 placeholder-slate-400 transition-all focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                className="h-11 w-full rounded-none border border-slate-300 bg-white px-4 pr-12 text-slate-900 placeholder-slate-400 transition-all focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
               />
               <button
                 type="button"
@@ -192,7 +192,7 @@ const OrgSignInCard = ({ redirectTo = '/org-team-hub' }) => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full h-11 rounded-lg font-medium bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+            className="w-full h-11 rounded-none font-medium bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white transition-all flex items-center justify-center gap-2 disabled:opacity-60"
           >
             {isLoading ? (
               'Signing in...'

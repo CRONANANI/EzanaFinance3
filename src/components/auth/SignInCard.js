@@ -170,7 +170,7 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="flex w-full max-w-4xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60"
+        className="flex w-full max-w-4xl overflow-hidden rounded-none border border-slate-200 bg-white shadow-xl shadow-slate-200/60"
       >
         {/* Left side - Network Visualization */}
         <div className="relative hidden h-[600px] w-1/2 overflow-hidden border-r border-slate-200 md:block">
@@ -178,7 +178,7 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
             <AuthDotMap />
 
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-8">
-              <div className="max-w-sm rounded-2xl border border-slate-200 bg-white/85 px-8 py-6 shadow-2xl shadow-emerald-900/20 backdrop-blur-md">
+              <div className="max-w-sm rounded-none border border-slate-200 bg-white/85 px-8 py-6 shadow-2xl shadow-emerald-900/20 backdrop-blur-md">
                 <motion.div
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -248,7 +248,7 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
             <p className="mb-8 text-slate-600">Sign in to your account</p>
 
             {error && (
-              <div className="mb-6 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700">
+              <div className="mb-6 rounded-none border border-red-300 bg-red-50 p-3 text-sm text-red-700">
                 {error}
               </div>
             )}
@@ -268,7 +268,7 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email address"
                   required
-                  className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-base text-slate-900 placeholder-slate-400 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  className="h-11 w-full rounded-none border border-slate-300 bg-white px-4 text-base text-slate-900 placeholder-slate-400 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                 />
               </div>
 
@@ -285,7 +285,7 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
                     required
-                    className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 pr-12 text-base text-slate-900 placeholder-slate-400 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    className="h-11 w-full rounded-none border border-slate-300 bg-white px-4 pr-12 text-base text-slate-900 placeholder-slate-400 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   />
                   <button
                     type="button"
@@ -309,7 +309,7 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className={`flex w-full h-11 items-center justify-center relative overflow-hidden rounded-lg font-medium transition-all duration-300 ${
+                  className={`flex w-full h-11 items-center justify-center relative overflow-hidden rounded-none font-medium transition-all duration-300 ${
                     isLoading
                       ? 'bg-emerald-700 cursor-not-allowed'
                       : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700'
@@ -405,7 +405,7 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
                 </div>
                 <Link
                   href="/auth/partner/signin"
-                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-amber-300 bg-amber-50 py-3 text-sm font-medium text-amber-700 transition-all hover:border-amber-400 hover:bg-amber-100"
+                  className="flex w-full items-center justify-center gap-2 rounded-none border border-amber-300 bg-amber-50 py-3 text-sm font-medium text-amber-700 transition-all hover:border-amber-400 hover:bg-amber-100"
                 >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
                     <path d="M10.067.87a2.89 2.89 0 0 0-4.134 0l-.622.638-.89-.011a2.89 2.89 0 0 0-2.924 2.924l.01.89-.636.622a2.89 2.89 0 0 0 0 4.134l.636.622-.01.89a2.89 2.89 0 0 0 2.924 2.924l.89-.01.622.636a2.89 2.89 0 0 0 4.134 0l.622-.636.89.01a2.89 2.89 0 0 0 2.924-2.924l-.01-.89.636-.622a2.89 2.89 0 0 0 0-4.134l-.636-.622.01-.89a2.89 2.89 0 0 0-2.924-2.924l-.89.01-.622-.636z" />

@@ -118,7 +118,7 @@ export default function MfaChallengeCard({ redirectTo = '/home' }) {
   }
 
   return (
-    <div className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/60">
+    <div className="relative z-10 w-full max-w-md rounded-none border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/60">
       <div className="mb-5 flex flex-col items-center text-center">
         <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
           <i className="bi bi-shield-lock text-xl" aria-hidden />
@@ -142,7 +142,7 @@ export default function MfaChallengeCard({ redirectTo = '/home' }) {
           onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
           disabled={!ready || loading}
           aria-label="6-digit authentication code"
-          className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-center text-lg tracking-[0.4em] text-slate-900 outline-none focus:border-emerald-500"
+          className="w-full rounded-none border border-slate-300 bg-white px-4 py-3 text-center text-lg tracking-[0.4em] text-slate-900 outline-none focus:border-emerald-500"
         />
 
         {error && (
@@ -154,7 +154,7 @@ export default function MfaChallengeCard({ redirectTo = '/home' }) {
         <button
           type="submit"
           disabled={!ready || code.length !== 6 || loading}
-          className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-none bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? 'Verifying…' : 'Verify and continue'}
         </button>

@@ -138,7 +138,7 @@ export default function MfaSetupGateCard({ redirectTo = '/home' }) {
   }
 
   return (
-    <div className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/60">
+    <div className="relative z-10 w-full max-w-md rounded-none border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/60">
       <div className="mb-5 flex flex-col items-center text-center">
         <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">
           <i className="bi bi-shield-lock text-xl" aria-hidden />
@@ -160,7 +160,7 @@ export default function MfaSetupGateCard({ redirectTo = '/home' }) {
           <button
             type="button"
             onClick={startEnroll}
-            className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700"
+            className="w-full rounded-none bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700"
           >
             Try again
           </button>
@@ -174,7 +174,7 @@ export default function MfaSetupGateCard({ redirectTo = '/home' }) {
               <img
                 src={qrCode}
                 alt="Two-factor authentication QR code"
-                className="h-44 w-44 rounded-lg bg-white p-2"
+                className="h-44 w-44 rounded-none bg-white p-2"
               />
               {secret && (
                 <p className="text-center text-xs text-slate-500">
@@ -197,7 +197,7 @@ export default function MfaSetupGateCard({ redirectTo = '/home' }) {
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
             disabled={loading}
             aria-label="6-digit authentication code"
-            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-center text-lg tracking-[0.4em] text-slate-900 outline-none focus:border-emerald-500"
+            className="w-full rounded-none border border-slate-300 bg-white px-4 py-3 text-center text-lg tracking-[0.4em] text-slate-900 outline-none focus:border-emerald-500"
           />
 
           {error && (
@@ -209,7 +209,7 @@ export default function MfaSetupGateCard({ redirectTo = '/home' }) {
           <button
             type="submit"
             disabled={code.length !== 6 || loading}
-            className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-none bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? 'Verifying…' : 'Verify and continue'}
           </button>

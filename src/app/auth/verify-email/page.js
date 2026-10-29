@@ -133,7 +133,7 @@ export default function VerifyEmailPage() {
           background: '#ffffff',
           border: '1px solid #e2e8f0',
           boxShadow: '0 10px 30px rgba(15, 23, 42, 0.08)',
-          borderRadius: '16px',
+          borderRadius: 0,
           padding: '2.5rem',
           maxWidth: '420px',
           width: '100%',
@@ -154,7 +154,7 @@ export default function VerifyEmailPage() {
             style={{
               background: 'rgba(239, 68, 68, 0.08)',
               border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: '8px',
+              borderRadius: 0,
               padding: '12px',
               marginBottom: '1.5rem',
               color: '#dc2626',
@@ -170,7 +170,7 @@ export default function VerifyEmailPage() {
             style={{
               background: 'rgba(16, 185, 129, 0.08)',
               border: '1px solid rgba(16, 185, 129, 0.3)',
-              borderRadius: '8px',
+              borderRadius: 0,
               padding: '12px',
               marginBottom: '1.5rem',
               color: '#059669',
@@ -206,7 +206,7 @@ export default function VerifyEmailPage() {
           style={{
             width: '100%',
             padding: '14px',
-            borderRadius: '10px',
+            borderRadius: 0,
             border: 'none',
             background: code.length === 6 ? '#10b981' : '#e2e8f0',
             color: code.length === 6 ? '#ffffff' : '#64748b',

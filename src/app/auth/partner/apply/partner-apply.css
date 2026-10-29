@@ -92,7 +92,8 @@
 .partner-apply-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: var(--radius-xl);
+  /* !important: terminal-theme.css rounds every [class*='-card'] at (0,2,2). */
+  border-radius: 0 !important;
   padding: 1.75rem 1.5rem;
   box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
   display: flex;
@@ -267,7 +268,7 @@
   color: #fff;
   font-size: 0.9375rem;
   font-weight: 700;
-  border-radius: var(--radius-lg);
+  border-radius: 0;
   text-decoration: none;
   transition: all 0.2s;
 }
@@ -304,14 +305,14 @@
 .partner-form-progress {
   height: 3px;
   background: #e2e8f0;
-  border-radius: var(--radius-sm);
+  border-radius: 0;
   margin-bottom: 2rem;
 }
 
 .partner-form-progress-fill {
   height: 100%;
   background: var(--emerald);
-  border-radius: var(--radius-sm);
+  border-radius: 0;
   transition: width 0.3s;
 }
 
@@ -341,7 +342,7 @@
   padding: 0.625rem 0.875rem;
   background: #ffffff;
   border: 1px solid #cbd5e1;
-  border-radius: var(--radius-lg);
+  border-radius: 0;
   color: #0f172a;
   font-size: 0.8125rem;
   font-family: inherit;
@@ -395,7 +396,7 @@
   padding: 0.75rem;
   background: #ffffff;
   border: 1px solid #cbd5e1;
-  border-radius: var(--radius-lg);
+  border-radius: 0;
   text-align: left;
   cursor: pointer;
   transition: all 0.15s;
@@ -455,7 +456,7 @@
   color: #475569;
   background: #ffffff;
   border: 1px solid #cbd5e1;
-  border-radius: var(--radius-lg);
+  border-radius: 0;
   cursor: pointer;
   font-family: inherit;
 }
@@ -473,7 +474,7 @@
   color: #fff;
   background: linear-gradient(135deg, var(--emerald), var(--emerald-hover));
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: 0;
   cursor: pointer;
   font-family: inherit;
   display: flex;
@@ -502,7 +503,7 @@
   padding: 0.625rem 0.875rem;
   background: rgba(220, 38, 38, 0.08);
   border: 1px solid rgba(220, 38, 38, 0.25);
-  border-radius: var(--radius-md);
+  border-radius: 0;
   color: #dc2626;
   font-size: 0.75rem;
   margin-bottom: 1rem;

@@ -64,14 +64,14 @@ export default async function ContinuePage({ searchParams }) {
         Back to home
       </Link>
 
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-emerald-500/20 bg-white p-8 shadow-xl shadow-slate-200/60">
+      <div className="relative z-10 w-full max-w-md rounded-none border border-emerald-500/20 bg-white p-8 shadow-xl shadow-slate-200/60">
         <h1 className="mb-2 text-2xl font-bold text-slate-900">You&apos;re already signed in</h1>
         <p className="mb-8 text-slate-600">Choose how you&apos;d like to continue.</p>
 
         <div className="flex flex-col gap-3">
           <Link
             href={dest}
-            className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-emerald-700"
+            className="flex min-h-12 items-center justify-center gap-2 rounded-none bg-emerald-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-emerald-700"
           >
             Continue as <span className="truncate font-bold">{who}</span>
           </Link>
@@ -80,7 +80,7 @@ export default async function ContinuePage({ searchParams }) {
             <input type="hidden" name="next" value={dest} />
             <button
               type="submit"
-              className="flex min-h-12 w-full items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-4 py-3 font-semibold text-slate-900 transition-colors hover:bg-emerald-500/10"
+              className="flex min-h-12 w-full items-center justify-center rounded-none border border-emerald-500/30 bg-emerald-500/5 px-4 py-3 font-semibold text-slate-900 transition-colors hover:bg-emerald-500/10"
             >
               Use a different account
             </button>
@@ -91,7 +91,7 @@ export default async function ContinuePage({ searchParams }) {
             <input type="hidden" name="ref" value={ref} />
             <button
               type="submit"
-              className="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              className="flex min-h-12 w-full items-center justify-center rounded-none border border-slate-200 px-4 py-3 font-semibold text-slate-700 transition-colors hover:bg-slate-50"
             >
               Join the waitlist
             </button>

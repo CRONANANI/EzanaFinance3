@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full bg-white border border-emerald-500/20 rounded-2xl p-8 text-center relative z-10 shadow-xl shadow-slate-200/60"
+          className="max-w-md w-full bg-white border border-emerald-500/20 rounded-none p-8 text-center relative z-10 shadow-xl shadow-slate-200/60"
         >
           <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <Mail className="w-8 h-8 text-emerald-600" />
@@ -92,7 +92,7 @@ export default function ForgotPasswordPage() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-md overflow-hidden rounded-2xl bg-white border border-emerald-500/20 shadow-xl shadow-slate-200/60 p-8"
+          className="w-full max-w-md overflow-hidden rounded-none bg-white border border-emerald-500/20 shadow-xl shadow-slate-200/60 p-8"
         >
           {/* Logo */}
           <div className="flex items-center justify-center mb-8">
@@ -109,7 +109,7 @@ export default function ForgotPasswordPage() {
 
           {/* Error message */}
           {error && (
-            <div className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
+            <div className="mb-6 p-3 rounded-none bg-red-50 border border-red-200 text-red-600 text-sm">
               {error}
             </div>
           )}
@@ -125,14 +125,14 @@ export default function ForgotPasswordPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
                 required
-                className="w-full h-11 rounded-lg border border-slate-300 bg-white px-4 text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+                className="w-full h-11 rounded-none border border-slate-300 bg-white px-4 text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
               />
             </div>
 
             <button
               type="submit"
               disabled={isLoading || !email}
-              className="w-full h-11 rounded-lg font-medium bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              className="w-full h-11 rounded-none font-medium bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {isLoading ? (
                 <>
