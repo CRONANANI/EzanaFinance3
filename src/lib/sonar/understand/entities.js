@@ -21,6 +21,10 @@ const clean = (t) =>
     .replace(/^\$/, '')
     .replace(/[^\w.&]/g, '');
 
+/** Nouns after a lowercase "us" that make it the country, not the pronoun. */
+const US_COUNTRY_NOUN =
+  /^(economy|economic|economics|involvement|military|government|dollar|treasury|treasuries|market|markets|stocks?|equities|policy|sanctions?|troops|strikes?|inflation|gdp|growth|recession|rates?|election|elections|congress|president|administration|tariffs?|trade|debt|jobs|labor|labour|housing|banks?|bonds?|yields?|interest|fed|federal|national|budget|deficit|imports?|exports?|defense|defence|navy|army|forces|allies|ally|intervention|response|foreign|vs|versus)$/;
+
 /**
  * @param {string[]} tokens   corrected tokens
  * @param {number} i
@@ -39,7 +43,15 @@ export function resolveToken(tokens, i, ctx = {}) {
   const geoPrep = GEO_PREPOSITION.test(prefix);
   const candidates = [];
 
-  const geo = lookupGeo(clean(raw));
+  let geo = lookupGeo(clean(raw));
+  /* Lowercase "us" is usually the pronoun ("will this affect us", "help us").
+     It is the country only after "the" ("the us", "in the us") or before a
+     country noun ("us economy", "us involvement"). Uppercase "US" is unchanged. */
+  if (geo && clean(raw) === 'us' && raw === raw.toLowerCase()) {
+    const next = clean(tokens[i + 1] || '').toLowerCase();
+    const afterThe = /(^|\s)the\s$/i.test(prefix);
+    if (!afterThe && !US_COUNTRY_NOUN.test(next)) geo = null;
+  }
   if (geo) {
     const conf = geoPrep ? 0.95 : geo.major ? 0.75 : 0.35;
     candidates.push({

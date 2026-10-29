@@ -239,8 +239,17 @@ function buildDisplay(intent, entities, corrected) {
       return get('policy').label;
     case 'theme':
       return `${get('theme').label}${inPlace(country)}`;
-    case 'country':
+    case 'country': {
+      /* Name every country the ping mentions, not just the first, so a
+         two-country ping reads "United States and Iran". US first. */
+      const countries = entities.filter((e) => e.kind === 'country');
+      if (countries.length > 1) {
+        const ordered = [...countries].sort((a, b) => (a.id === 'US' ? -1 : b.id === 'US' ? 1 : 0));
+        const labels = [...new Set(ordered.map((c) => c.label))];
+        return `${labels.slice(0, -1).join(', ')} and ${labels[labels.length - 1]}`;
+      }
       return country.label;
+    }
     default:
       break;
   }

@@ -63,6 +63,12 @@ export async function orchestrate(query, options = {}) {
     retrieverTimeoutMs = null,
     embedTimeoutMs = null,
     rerankTimeoutMs = null,
+    // The original ping text, when the caller retrieves on an enriched/resolved
+    // query (e.g. Sonar's landing pipeline rewrites to a country name). A
+    // retriever that must read the user's own words (the sanctions retriever
+    // resolves countries/themes from them) reads ctx.rawQuery; all others use
+    // `query` unchanged.
+    rawQuery = null,
   } = options;
 
   const q = String(query || '').trim();
@@ -114,7 +120,7 @@ export async function orchestrate(query, options = {}) {
     }
   }
   const entities = extractEntities(effectiveQuery);
-  const ctx = { admin, supabaseUser, member, entities, queryEmbedding };
+  const ctx = { admin, supabaseUser, member, entities, queryEmbedding, rawQuery: rawQuery || q };
 
   // Only run org-scoped retrievers when we have an org member; and, when an
   // allow-list is given (e.g. Sonar's entitlement gate), only those corpora.

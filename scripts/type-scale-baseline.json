@@ -150,7 +150,7 @@
   },
   "src/app/datasets/sonar/orbital-map.css": {
     "sub-floor": 2,
-    "caps-tracking": 4
+    "caps-tracking": 3
   },
   "src/app/datasets/sonar/pulse-brief.css": {
     "sub-floor": 5,

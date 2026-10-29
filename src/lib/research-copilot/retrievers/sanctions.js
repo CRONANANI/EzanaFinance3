@@ -18,7 +18,10 @@ export const scope = 'public';
 
 export async function retrieve(query, ctx = {}, opts = {}) {
   const { limit = 6 } = opts;
-  const q = resolveQuery(query);
+  // Resolve from the user's own words: the pipeline may retrieve on an enriched
+  // query (a resolved country name like "United States") that would hide a
+  // second country such as Iran. ctx.rawQuery carries the original ping.
+  const q = resolveQuery(ctx.rawQuery || query);
   if (!sanctionsAdapter.isRelevant(q)) return [];
 
   let findings = [];

@@ -200,6 +200,7 @@ const SWEPT = [
   { id: 'prediction-markets', chip: 'MARKETS', name: 'Prediction markets' },
   { id: '13f', chip: '13F', name: '13F institutional holdings' },
   { id: 'lobbying', chip: 'LOBBYING', name: 'Lobbying disclosures' },
+  { id: 'sanctions', chip: 'US SANCTIONS', name: 'US Sanctions' },
 ];
 
 /* A country ping leads with the two macro datasets; the company legs follow,
@@ -2733,6 +2734,7 @@ export function SonarSection({
                       /* Matched rich rows first, in the brief's order, then
                      everything else dimmed. */
                       const order = [
+                        'sanctions',
                         'oecd-macro',
                         'empire',
                         'gov-contracts',
@@ -2743,19 +2745,26 @@ export function SonarSection({
                         'lobbying',
                         'prediction-markets',
                       ];
-                      const sorted = [...swept].sort((a, b) => {
-                        const ra = rich[a.id] ? order.indexOf(a.id) : 99;
-                        const rb = rich[b.id] ? order.indexOf(b.id) : 99;
-                        if (ra !== rb) return ra - rb;
-                        return swept.indexOf(a) - swept.indexOf(b);
-                      });
-
                       /* Oct 26: only datasets that found something are listed.
                      A matched dataset with no dossier preview (an open
                      question's contracts or Echo hits) shows the items it
                      contributed, from live.evidence. */
                       const evidenceFor = (id) =>
                         (live?.evidence || []).filter((ev) => ev.dataset === id).slice(0, 3);
+                      /* US Sanctions has no dossier preview, only evidence rows;
+                     when a sanctioned jurisdiction brought it findings it
+                     leads the list instead of sinking below the previews. */
+                      const rankOf = (id) => {
+                        if (rich[id]) return order.indexOf(id);
+                        if (id === 'sanctions' && evidenceFor(id).length) return order.indexOf(id);
+                        return 99;
+                      };
+                      const sorted = [...swept].sort((a, b) => {
+                        const ra = rankOf(a.id);
+                        const rb = rankOf(b.id);
+                        if (ra !== rb) return ra - rb;
+                        return swept.indexOf(a) - swept.indexOf(b);
+                      });
                       const shown = sorted.filter((d) => {
                         const hit = live?.sources?.find((sc) => sc.id === d.id);
                         return Boolean(rich[d.id]) || (hit?.used && evidenceFor(d.id).length > 0);

@@ -12,6 +12,9 @@ import { getFmpKey } from '@/lib/fmp/upcoming-events';
 import { understandQuery } from '@/lib/sonar/understand';
 import { TICKER_BLOCKLIST } from '@/lib/sonar/understand/blocklist';
 import { gateMarkets, gateNews, subjectTerms } from '@/lib/sonar/relevance';
+import { passesCountryIntentGuard } from '@/lib/sonar/guards';
+import { resolveQuery } from '@/lib/sonar/resolveQuery';
+import { rankSourcedMatches } from '@/lib/sonar/rankSourcedMatches';
 import {
   getIndustryRegistry,
   getIndustryRegistryCached,
@@ -1446,6 +1449,10 @@ export async function runLandingPipeline(
         orchestrate(retrievalQuery, {
           admin,
           allowCorpora,
+          /* The user's own words, so a retriever that resolves its own entities
+             (sanctions reads countries/themes) sees the second country even
+             when retrievalQuery collapsed to a single resolved name. */
+          rawQuery: query,
           topK: budget.topK,
           perCorpusCap: budget.perCorpusCap,
           charBudget: budget.charBudget,
@@ -1499,14 +1506,29 @@ export async function runLandingPipeline(
   );
   const US_DOMESTIC =
     /\b(?:american indians?|native americans?|alaska natives?|indian (?:health|affairs|tribes?|tribal|education|country|reservations?|nations?)|bureau of indian|tribal)\b/g;
+  /* A country ping with no company/politician resolution: contracts that
+     matched only because a recipient name contains the country word (e.g.
+     "UNITED STATES VETERANS INITIATIVE") are noise, not a real country link. */
+  const countryIntent = Boolean(country) && !resolved && !politician && !industryPing;
   const items = entityTerms
     ? retrieved.filter((it) => {
+        /* US Sanctions rows are selected by a foreign sanctioned jurisdiction,
+           so they will not carry the (US) country term; keep them as relevant
+           by construction. The retriever only runs when the ping warrants it. */
+        if (it.corpus === 'sanctions') return true;
         let hay = [it.title, it.snippet, ...Object.values(it.meta || {})]
           .filter((v) => typeof v === 'string')
           .join(' ')
           .toLowerCase();
         if (country) hay = hay.replace(US_DOMESTIC, ' ');
-        return termRes.some((re) => re.test(hay));
+        if (!termRes.some((re) => re.test(hay))) return false;
+        if (countryIntent && it.corpus === 'contracts') {
+          return passesCountryIntentGuard(
+            { intent: 'country' },
+            { nameField: it.meta?.recipient || it.title, hasStructuredCountryMatch: false },
+          );
+        }
+        return true;
       })
     : retrieved;
 
@@ -1803,11 +1825,23 @@ export async function runLandingPipeline(
     /* Oct 26: what each matched dataset actually contributed, for the
        Sourced matches rows that have no dossier preview (an open question's
        contracts or Echo hits). Same items the brief cites; trimmed. */
-    evidence: items
-      .filter((it) => CORPUS_TO_DATASET[it.corpus])
+    /* Ranked for the ping BEFORE the cut (rankSourcedMatches): a ping about a
+       sanctioned jurisdiction leads with US Sanctions, and a late-retrieved
+       sanctions row is never sliced off the list. UI order only; the brief
+       already read `items`. */
+    evidence: rankSourcedMatches(
+      items
+        .filter((it) => CORPUS_TO_DATASET[it.corpus])
+        .map((it) => ({
+          ...it,
+          dataset: CORPUS_TO_DATASET[it.corpus],
+          relevance: it.score ?? it.similarity ?? 0.5,
+        })),
+      resolveQuery(query),
+    )
       .slice(0, 12)
       .map((it) => ({
-        dataset: CORPUS_TO_DATASET[it.corpus],
+        dataset: it.dataset,
         title: String(it.title || '').slice(0, 160),
         snippet: String(it.snippet || it.text || '').slice(0, 220),
         url: typeof it.url === 'string' ? it.url : null,

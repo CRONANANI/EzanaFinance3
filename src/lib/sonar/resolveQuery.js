@@ -1,45 +1,96 @@
 /**
  * Ezana Sonar — deterministic ping resolver.
  *
- * Turns a raw ping into a structured query ({ countries, themes, tickers,
- * people, organizations, window }) so country/topic pings (not only tickers)
- * select the right datasets. Dependency-free and pure, so it is cheap to run
- * before the orchestrator and easy to test. The orchestrator's own entity
- * extractor (extractEntities) still runs for the structured corpora; this
- * resolver adds the geography/theme signal those corpora do not infer.
+ * Turns a raw ping into a structured query so country/topic pings (not only
+ * tickers) select the right datasets. Pure and dependency-free, so it is cheap
+ * to run before the pipeline and easy to test.
  *
- * Countries are ISO-2 codes; the per-source adapters map ISO to the names and
- * program codes their data uses (e.g. IR -> "Iran", "IRGC").
+ * It extracts EVERY country (not just the first), handles the ambiguous word
+ * "us" safely (a country only when written "US"/"U.S." or in phrases like
+ * "the us", "us economy", "us involvement", never "affect us"/"for us"),
+ * derives themes, and exposes `subjects` for UI labels, an `intent`, and
+ * `hasSanctionedJurisdiction` so a foreign sanctioned jurisdiction drives
+ * source selection and ranking.
+ *
+ * Countries are ISO-2 codes; adapters map ISO to the names/program codes their
+ * data uses (e.g. IR -> "Iran", "IRGC").
  */
 
-/** ISO-2 -> lowercase aliases that imply that country when found as a word. */
+/** ISO-2 -> lowercase aliases that imply that country as a whole word. "us" is
+ *  deliberately excluded here; it is handled by US_AS_COUNTRY below. */
 export const COUNTRY_ALIASES = {
-  US: ['us', 'u.s.', 'usa', 'united states', 'america', 'american', 'washington'],
+  US: ['u.s.', 'u.s.a.', 'usa', 'united states', 'america', 'american'],
   IR: ['iran', 'iranian', 'tehran', 'irgc', 'islamic republic'],
-  RU: ['russia', 'russian', 'moscow', 'kremlin'],
+  RU: ['russia', 'russian', 'kremlin', 'moscow'],
   CN: ['china', 'chinese', 'beijing', 'prc'],
   IL: ['israel', 'israeli'],
   SA: ['saudi', 'saudi arabia', 'riyadh'],
   VE: ['venezuela', 'venezuelan'],
   KP: ['north korea', 'dprk', 'pyongyang'],
-  SY: ['syria', 'syrian', 'damascus'],
   CU: ['cuba', 'cuban', 'havana'],
+  SY: ['syria', 'syrian', 'damascus'],
+  BY: ['belarus', 'belarusian'],
   UA: ['ukraine', 'ukrainian', 'kyiv', 'kiev'],
-  VN: ['vietnam', 'vietnamese', 'hanoi'],
+};
+
+/** ISO-2 -> display name for subject labels. */
+export const COUNTRY_NAMES = {
+  US: 'United States',
+  IR: 'Iran',
+  RU: 'Russia',
+  CN: 'China',
+  IL: 'Israel',
+  SA: 'Saudi Arabia',
+  VE: 'Venezuela',
+  KP: 'North Korea',
+  CU: 'Cuba',
+  SY: 'Syria',
+  BY: 'Belarus',
+  UA: 'Ukraine',
 };
 
 /** Theme -> substrings that imply it (matched on the lowercased query). */
 export const THEME_KEYWORDS = {
   sanctions: ['sanction', 'ofac', 'embargo', 'designation', 'blacklist', 'export control'],
-  conflict: ['involvement', 'war', 'strike', 'military', 'conflict', 'escalation', 'invasion'],
-  macro: ['economic outlook', 'economy', 'gdp', 'inflation', 'recession', 'rates', 'growth'],
-  energy: ['oil', 'crude', 'brent', 'opec', 'energy', 'strait of hormuz', 'gas'],
-  defense: ['defense', 'defence', 'contractor', 'weapons', 'pentagon'],
+  conflict: [
+    'involvement',
+    'war',
+    'strike',
+    'military',
+    'conflict',
+    'escalation',
+    'tension',
+    'invasion',
+  ],
+  macro: [
+    'economic outlook',
+    'economy',
+    'gdp',
+    'inflation',
+    'recession',
+    'rates',
+    'outlook',
+    'growth',
+  ],
+  energy: ['oil', 'crude', 'brent', 'opec', 'energy', 'hormuz', 'gas'],
+  defense: ['defense', 'defence', 'weapons', 'pentagon', 'contractor'],
 };
+
+/** Jurisdictions whose presence (with conflict/macro/sanctions framing) makes
+ *  US Sanctions the leading source. */
+export const SANCTIONED = new Set(['IR', 'RU', 'KP', 'VE', 'CU', 'SY', 'BY']);
+
+/** "us" is a country only in these shapes; never "affect us" / "for us". */
+const US_AS_COUNTRY = [
+  /\bUS\b/, // uppercase anywhere
+  /\bthe us\b/i,
+  /\bus (economy|economic|involvement|military|government|dollar|treasury|market|markets|stocks|policy|sanctions|troops|strikes?|sanctioned?)\b/i,
+  /\b(in|to|from|against|with|on) the us\b/i,
+];
 
 const TICKER_RE = /\$?\b[A-Z]{1,5}\b/g;
 
-/** Word-boundary match so "us" never matches inside "business". */
+/** Whole-word match so "us" never matches inside "business". */
 function hasTerm(text, term) {
   const esc = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return new RegExp(`(^|[^a-z])${esc}([^a-z]|$)`, 'i').test(text);
@@ -51,46 +102,79 @@ function daysAgo(n) {
   return d.toISOString().slice(0, 10);
 }
 
+/** Every country named in the ping, ISO-2. Sanctioned jurisdictions sort first
+ *  so they drive source selection. */
+export function extractCountries(raw) {
+  const lower = ` ${String(raw || '').toLowerCase()} `;
+  const found = new Set();
+  for (const [iso, aliases] of Object.entries(COUNTRY_ALIASES)) {
+    if (aliases.some((a) => hasTerm(lower, a))) found.add(iso);
+  }
+  if (US_AS_COUNTRY.some((re) => re.test(String(raw || '')))) found.add('US');
+  return [...found].sort((a, b) => Number(SANCTIONED.has(b)) - Number(SANCTIONED.has(a)));
+}
+
+/** Themes present in the ping; a sanctioned jurisdiction implies sanctions. */
+export function extractThemes(raw, countries = []) {
+  const lower = String(raw || '').toLowerCase();
+  const themes = Object.entries(THEME_KEYWORDS)
+    .filter(([, kws]) => kws.some((k) => lower.includes(k)))
+    .map(([t]) => t);
+  if (countries.some((c) => SANCTIONED.has(c)) && !themes.includes('sanctions')) {
+    themes.push('sanctions');
+  }
+  return themes;
+}
+
+/** Subjects for the UI label: countries (US last so "United States and Iran"
+ *  reads naturally with the foreign subject last), then orgs, then people. */
+function subjectsFor(countries, organizations, people) {
+  const labelOrder = [...countries].sort((a, b) => (a === 'US' ? -1 : b === 'US' ? 1 : 0));
+  return [...labelOrder.map((c) => COUNTRY_NAMES[c] ?? c), ...organizations, ...people];
+}
+
 /**
  * @param {string} raw
- * @param {{ knownTickers?: Set<string> }} [opts]
- * @returns {{ raw: string, tickers: string[], countries: string[], people: string[],
- *   organizations: string[], themes: string[], window: { from: string, to: string } }}
+ * @param {{ knownTickers?: Set<string>, organizations?: string[], people?: string[], tickers?: string[] }} [opts]
  */
-export function resolveQuery(raw, { knownTickers = new Set() } = {}) {
-  const text = ` ${String(raw || '').toLowerCase()} `;
+export function resolveQuery(raw, opts = {}) {
+  const { knownTickers = new Set(), organizations = [], people = [] } = opts;
+  const countries = extractCountries(raw);
+  const themes = extractThemes(raw, countries);
 
-  const countries = Object.entries(COUNTRY_ALIASES)
-    .filter(([, aliases]) => aliases.some((a) => hasTerm(text, a)))
-    .map(([iso]) => iso);
-
-  const themes = Object.entries(THEME_KEYWORDS)
-    .filter(([, kws]) => kws.some((k) => text.includes(k)))
-    .map(([t]) => t);
-
-  // A country plus conflict or macro framing implies sanctions relevance, even
-  // when the word "sanctions" is never typed (the Iran outlook case).
-  if (countries.length >= 1 && (themes.includes('conflict') || themes.includes('macro'))) {
-    if (!themes.includes('sanctions')) themes.push('sanctions');
-  }
-
-  // Only accept uppercase tokens the caller recognises as real tickers, so a
-  // word like "US" is never mistaken for a symbol.
-  const tickers = [
+  const knownTickerHits = [
     ...new Set(
       (String(raw || '').match(TICKER_RE) || [])
         .map((t) => t.replace('$', ''))
         .filter((t) => knownTickers.has(t)),
     ),
   ];
+  const tickers = (opts.tickers && opts.tickers.length ? opts.tickers : knownTickerHits) || [];
+
+  const intent =
+    organizations.length || people.length || tickers.length
+      ? 'entity'
+      : countries.length
+        ? 'country'
+        : 'topic';
 
   return {
     raw: String(raw || ''),
     tickers,
     countries,
-    people: [],
-    organizations: [],
     themes,
+    organizations,
+    people,
+    intent,
+    subjects: subjectsFor(countries, organizations, people),
+    hasSanctionedJurisdiction: countries.some((c) => SANCTIONED.has(c)),
     window: { from: daysAgo(365 * 2), to: new Date().toISOString().slice(0, 10) },
   };
+}
+
+/** "United States and Iran"; "A, B and C". */
+export function subjectLabel(subjects = []) {
+  if (!subjects.length) return '';
+  if (subjects.length === 1) return subjects[0];
+  return `${subjects.slice(0, -1).join(', ')} and ${subjects[subjects.length - 1]}`;
 }
