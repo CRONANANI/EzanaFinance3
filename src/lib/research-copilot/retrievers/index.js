@@ -3,13 +3,14 @@ import * as markets from './markets';
 import * as researchNotes from './research-notes';
 import * as congress from './congress';
 import * as contracts from './contracts';
+import * as sanctions from './sanctions';
 
 /**
  * The retriever registry. Each module implements the shared contract
  * (see ./shared.js): { corpus, kind, scope, retrieve }. The orchestrator fans
  * out to every retriever the caller is allowed to use.
  */
-export const RETRIEVERS = [echo, markets, researchNotes, congress, contracts];
+export const RETRIEVERS = [echo, markets, researchNotes, congress, contracts, sanctions];
 
 export const CORPUS_LABELS = {
   research_notes: 'Research notes',
@@ -17,4 +18,5 @@ export const CORPUS_LABELS = {
   markets: 'Prediction markets',
   congress: 'Congressional trades',
   contracts: 'Government contracts',
+  sanctions: 'US Sanctions',
 };

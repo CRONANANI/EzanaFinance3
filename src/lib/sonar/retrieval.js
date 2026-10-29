@@ -18,6 +18,7 @@ export const DATASET_TO_CORPUS = {
   'gov-contracts': 'contracts',
   'prediction-markets': 'markets',
   'org-internal': 'research_notes',
+  sanctions: 'sanctions',
 };
 
 /** Corpus name → the Sonar dataset id it satisfies (reverse of the above). */

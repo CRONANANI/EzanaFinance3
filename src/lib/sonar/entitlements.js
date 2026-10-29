@@ -26,6 +26,7 @@ export const SONAR_DATASETS = {
     label: 'Prediction markets',
     source: 'Market odds',
   },
+  sanctions: { id: 'sanctions', label: 'US Sanctions', source: 'US Treasury OFAC' },
   'sec-filings': { id: 'sec-filings', label: 'SEC filings', source: 'EDGAR' },
   '13f': { id: '13f', label: '13F institutional holdings', source: 'SEC 13F' },
   lobbying: { id: 'lobbying', label: 'Lobbying disclosures', source: 'Senate LDA' },
@@ -67,7 +68,9 @@ export function getSonarEntitlements({
   // live web search (Anthropic's native tool is billed PER SEARCH on top of tokens,
   // so `maxUses` is a real cost control — it rises with plan so cost tracks revenue).
   const base = {
-    datasets: ['echo', 'congress', 'gov-contracts'],
+    // Sanctions is public-domain OFAC data with no account needed, so it is
+    // part of the free sweep (the Iran-outlook acceptance test is a free user).
+    datasets: ['echo', 'congress', 'gov-contracts', 'sanctions'],
     depth: 'summary', // summary | standard | deep
     dailyQueries: 5,
     exportsEnabled: false,
