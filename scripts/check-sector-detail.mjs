@@ -38,6 +38,7 @@ function article(i, extra = {}) {
 
 let scenario;
 let seen;
+let seenSymbols = [];
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 
@@ -45,6 +46,7 @@ globalThis.fetch = async (url) => {
   const u = new URL(String(url));
   const path = u.pathname.replace('/stable', '');
   seen.push(`${u.host}${path}`);
+  seenSymbols.push(u.searchParams.get('symbol') || u.searchParams.get('symbols') || '');
   if (u.host === 'api.marketaux.com') {
     if (scenario.newsDown) return json({ error: { code: 'server_error' } }, 500);
     if (u.searchParams.get('industries')) {
@@ -54,6 +56,20 @@ globalThis.fetch = async (url) => {
       return json({ data: [article(0), article(20), article(21), article(22)] });
     }
     return json({ data: [] });
+  }
+  if (u.host === 'finnhub.io') {
+    const sym = u.searchParams.get('symbol');
+    return json(
+      [0, 1].map((i) => ({
+        id: Number(sym.slice(2)) * 10 + i,
+        headline: `${sym} headline ${i}`,
+        summary: '',
+        source: 'Example Wire',
+        url: `https://wire.example/${sym}/${i}`,
+        datetime: Math.floor(Date.now() / 1000) - i * 3600,
+        related: sym,
+      })),
+    );
   }
   if (path === '/company-screener') {
     if (scenario.screenerDown) return json({ 'Error Message': 'down' }, 500);
@@ -75,6 +91,7 @@ globalThis.fetch = async (url) => {
 beforeEach(() => {
   scenario = { industryCount: 10, newsDown: false, screenerDown: false };
   seen = [];
+  seenSymbols = [];
   resetRefusals();
 });
 
@@ -171,4 +188,31 @@ test('screener down: news still renders, performers flag their own error', async
 
 test('an unknown sector returns null (the route answers 400)', async () => {
   assert.equal(await getSectorDetail('Not A Sector', '1D'), null);
+});
+
+test('no news token: company headlines for the largest names fill the panel', async () => {
+  const saved = process.env.marketaux;
+  delete process.env.marketaux;
+  process.env.FINNHUB_API_KEY = 'test-finnhub';
+  try {
+    const d = await getSectorDetail('Utilities', '1D');
+    assert.equal(d.errors.news, false);
+    assert.equal(d.news.length, 6, 'two headlines for each of the three largest names');
+    assert.ok(!seen.some((s) => s.startsWith('api.marketaux.com')), 'no call without a token');
+    assert.ok(d.news.every((n) => n.source === 'Example Wire' && n.url && n.publishedAt));
+  } finally {
+    process.env.marketaux = saved;
+    delete process.env.FINNHUB_API_KEY;
+  }
+});
+
+test("a company's notes and preferreds collapse into its common stock", async () => {
+  UNIVERSE.push({ symbol: 'UT00N', companyName: 'Utility 0', marketCap: 1e12, price: 25 });
+  try {
+    const d = await getSectorDetail('Utilities', '1D');
+    assert.ok(!d.topPerformers.some((p) => p.symbol === 'UT00N'));
+    assert.ok(!seenSymbols.some((s) => s.split(',').includes('UT00N')), 'never priced');
+  } finally {
+    UNIVERSE.pop();
+  }
 });

@@ -14,7 +14,16 @@ import { fetchWithTimeout } from '../http/fetch-json.js';
 const BASE = 'https://api.marketaux.com/v1';
 
 export function getMarketauxToken() {
-  return process.env.marketaux || process.env.MARKETAUX_TOKEN || '';
+  /* Production had none of the first two set (sector modal, Oct 30:
+     invalid_api_token with no upstream call), so the conventional names are
+     read too. */
+  return (
+    process.env.marketaux ||
+    process.env.MARKETAUX_TOKEN ||
+    process.env.MARKETAUX_API_KEY ||
+    process.env.MARKETAUX_API_TOKEN ||
+    ''
+  );
 }
 export function hasMarketaux() {
   return !!getMarketauxToken();

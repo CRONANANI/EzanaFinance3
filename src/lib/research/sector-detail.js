@@ -104,16 +104,23 @@ export async function sectorUniverse(fmpSector, log = () => {}) {
   const rows = Array.isArray(data) ? data : [];
   log(`screener ${status} rows=${rows.length}`);
   if (!rows.length) throw new Error(`screener ${status}`);
-  const seen = new Set();
-  return rows
-    .filter((r) => r?.symbol && !seen.has(r.symbol) && seen.add(r.symbol))
-    .map((r) => ({
+  /* One listing per company: the screener also returns a company's notes
+     and preferreds under its name (SO, SOMN, SOJE are all The Southern
+     Company). The shortest symbol is the common stock. */
+  const byCompany = new Map();
+  for (const r of rows) {
+    if (!r?.symbol) continue;
+    const row = {
       symbol: String(r.symbol),
       name: r.companyName || r.name || String(r.symbol),
       price: finite(r.price),
       marketCap: finite(r.marketCap),
-    }))
-    .sort((a, b) => (b.marketCap ?? 0) - (a.marketCap ?? 0));
+    };
+    const key = row.name.toLowerCase();
+    const prev = byCompany.get(key);
+    if (!prev || row.symbol.length < prev.symbol.length) byCompany.set(key, row);
+  }
+  return [...byCompany.values()].sort((a, b) => (b.marketCap ?? 0) - (a.marketCap ?? 0));
 }
 
 /* /stable names it changePercentage; v3 called it changesPercentage. */
@@ -288,6 +295,39 @@ function normalizeArticle(a) {
   };
 }
 
+/** Last 7 days of company news per symbol, in the news-provider shape;
+    null when every call failed. */
+async function companyHeadlines(symbols, log) {
+  const token = process.env.FINNHUB_API_KEY || '';
+  const to = new Date().toISOString().slice(0, 10);
+  const from = new Date(Date.now() - 7 * 86_400_000).toISOString().slice(0, 10);
+  let ok = 0;
+  const lists = await mapLimit(symbols, 3, async (symbol) => {
+    const qs = new URLSearchParams({ symbol, from, to, token });
+    const res = await fetchWithTimeout(
+      `https://finnhub.io/api/v1/company-news?${qs}`,
+      { next: { revalidate: 600 } },
+      6000,
+    );
+    if (!res.ok) return [];
+    ok += 1;
+    const rows = await res.json();
+    return (Array.isArray(rows) ? rows : []).slice(0, 6).map((n) => ({
+      uuid: n.id != null ? `c${n.id}` : n.url,
+      title: n.headline,
+      description: n.summary,
+      source: n.source,
+      url: n.url,
+      published_at: n.datetime ? new Date(Number(n.datetime) * 1000).toISOString() : null,
+      image_url: n.image || null,
+      entities: [{ symbol: n.related || symbol }],
+    }));
+  });
+  const flat = lists.flat().filter(Boolean);
+  log(`company headlines ${symbols.join(',')} ok=${ok} n=${flat.length}`);
+  return ok ? flat : null;
+}
+
 /**
  * Latest sector news: the industry filter first; under NEWS_TARGET, the
  * sector's largest tickers, merged and deduped by uuid/url. Throws only when
@@ -317,6 +357,16 @@ export async function sectorNews(
     );
     const seen = new Set(articles.map((a) => a.uuid || a.url));
     articles = [...articles, ...more.articles.filter((a) => !seen.has(a.uuid || a.url))];
+  }
+  /* Company headlines for the sector's largest names from the second
+     news source when the first is unconfigured or thin. Per company, so no
+     keyword filter is needed. */
+  if (articles.length < NEWS_TARGET && syms.length && process.env.FINNHUB_API_KEY) {
+    const extra = await companyHeadlines(syms.slice(0, 3), log);
+    calls += 1;
+    if (extra === null) failures += 1;
+    const seen = new Set(articles.map((a) => a.uuid || a.url));
+    articles = [...articles, ...(extra || []).filter((a) => !seen.has(a.uuid || a.url))];
   }
   if (!articles.length && failures === calls) {
     throw new Error(`news unavailable (${first.error || 'error'})`);
