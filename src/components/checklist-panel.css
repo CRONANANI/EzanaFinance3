@@ -1,0 +1,365 @@
+/* Getting-started checklist panel (prefix cl2-). Same shell as the
+   notifications panel (nav-notifications.css, .nnx-panel): Ezana standard
+   card surface, hairline border, radius-lg, shadow-lg. */
+.cl2-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.cl2-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 50;
+  width: 400px;
+  max-width: calc(100vw - 24px);
+  max-height: min(560px, calc(100vh - 90px));
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  overflow: visible;
+  animation: cl2-in 0.2s ease;
+}
+@keyframes cl2-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.cl2-caret {
+  position: absolute;
+  top: -6px;
+  left: 16px;
+  width: 12px;
+  height: 12px;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-primary);
+  border-top: 1px solid var(--border-primary);
+  transform: rotate(45deg);
+}
+
+/* Header: ring, title, XP */
+.cl2-header {
+  flex-shrink: 0;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-secondary);
+}
+.cl2-header-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.cl2-ring {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+.cl2-ring-track {
+  fill: none;
+  stroke: var(--surface-card-hover);
+  stroke-width: 5;
+}
+.cl2-ring-arc {
+  fill: none;
+  stroke: var(--emerald);
+  stroke-width: 5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s ease-out;
+}
+.cl2-ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+}
+.cl2-ring-count {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.cl2-ring-label {
+  font-size: 0.6875rem; /* 11px, the type floor */
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.cl2-header-text {
+  min-width: 0;
+}
+.cl2-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.cl2-sub {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.cl2-xp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+.cl2-xp-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-card-hover);
+  overflow: hidden;
+}
+.cl2-xp-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--emerald);
+  transition: width 0.3s ease-out;
+}
+.cl2-xp-value {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--emerald);
+}
+
+/* Body: stages */
+.cl2-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 16px;
+}
+.cl2-stage {
+  margin-bottom: 16px;
+}
+.cl2-stage:last-child {
+  margin-bottom: 0;
+}
+.cl2-stage-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.cl2-stage-num {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+.cl2-stage-num--active {
+  background: var(--emerald-bg);
+  color: var(--emerald);
+  box-shadow: inset 0 0 0 1px var(--emerald-border);
+}
+.cl2-stage-num--done {
+  background: var(--emerald);
+  color: var(--bg-primary);
+}
+.cl2-stage-num--locked {
+  background: var(--surface-card-hover);
+  color: var(--text-faint);
+}
+.cl2-stage-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.cl2-xp-pill {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
+  color: var(--emerald);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.cl2-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cl2-task {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  text-align: left;
+  font-family: var(--font-sans);
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.cl2-task:hover {
+  background: var(--surface-card-hover);
+}
+.cl2-task:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: -2px;
+}
+.cl2-task--done {
+  cursor: default;
+}
+.cl2-task--done:hover {
+  background: transparent;
+}
+.cl2-check {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-input);
+  font-size: 0.75rem;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.cl2-check--done {
+  background: var(--emerald);
+  border-color: var(--emerald);
+  color: var(--bg-primary);
+}
+.cl2-task-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.cl2-task-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.cl2-task--done .cl2-task-title {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--text-ghost);
+}
+.cl2-task-desc {
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+.cl2-task-meta {
+  font-size: 0.6875rem;
+  color: var(--emerald);
+}
+.cl2-task--done .cl2-task-meta {
+  color: var(--text-ghost);
+}
+.cl2-locked {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--surface-card-hover);
+  color: var(--text-faint);
+}
+.cl2-locked i {
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+.cl2-locked-title {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.cl2-locked-preview {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+/* Footer */
+.cl2-footer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-secondary);
+}
+.cl2-footer-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.cl2-resume {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--emerald);
+  color: var(--bg-primary);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.cl2-resume:hover:not(:disabled) {
+  background: var(--emerald-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--emerald-glow);
+}
+.cl2-resume:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--emerald-glow);
+}
+.cl2-resume:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cl2-panel {
+    animation: none;
+  }
+  .cl2-ring-arc,
+  .cl2-xp-fill,
+  .cl2-check,
+  .cl2-task,
+  .cl2-resume {
+    transition: none;
+  }
+  .cl2-resume:hover:not(:disabled) {
+    transform: none;
+  }
+}

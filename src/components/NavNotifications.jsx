@@ -2,61 +2,21 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  Bell,
-  LineChart,
-  Landmark,
-  TrendingUp,
-  Eye,
-  Users,
-  GraduationCap,
-  Check,
-  ArrowRight,
-} from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase-browser';
 
-/* Notification type → display category (label, accent color, Lucide icon).
-   Colors are literals only where no theme token maps (per the handoff). */
+/* Notification type → display category (label, Bootstrap icon). Oct 29: one
+   accent (emerald, in nav-notifications.css) for every category tile instead
+   of six unrelated hues, so the panel reads as one Ezana surface. */
 const CATEGORY_META = {
-  market_news: {
-    label: 'Market',
-    color: '#3b82f6',
-    tint: 'rgba(59,130,246,0.14)',
-    Icon: LineChart,
-  },
-  'inside-the-capitol': {
-    label: 'Inside the Capitol',
-    color: '#a78bfa',
-    tint: 'rgba(167,139,250,0.16)',
-    Icon: Landmark,
-  },
-  portfolio_alerts: {
-    label: 'Portfolio',
-    color: '#f59e0b',
-    tint: 'rgba(245,158,11,0.16)',
-    Icon: TrendingUp,
-  },
-  watchlist: {
-    label: 'Watchlist',
-    color: 'var(--emerald, #10b981)',
-    tint: 'var(--emerald-bg, rgba(16,185,129,0.14))',
-    Icon: Eye,
-  },
-  community: { label: 'Community', color: '#06b6d4', tint: 'rgba(6,182,212,0.16)', Icon: Users },
-  learning: {
-    label: 'Learning',
-    color: '#ec4899',
-    tint: 'rgba(236,72,153,0.16)',
-    Icon: GraduationCap,
-  },
+  market_news: { label: 'Market', icon: 'bi-graph-up' },
+  'inside-the-capitol': { label: 'Inside the Capitol', icon: 'bi-bank' },
+  portfolio_alerts: { label: 'Portfolio', icon: 'bi-briefcase' },
+  watchlist: { label: 'Watchlist', icon: 'bi-eye' },
+  community: { label: 'Community', icon: 'bi-people' },
+  learning: { label: 'Learning', icon: 'bi-mortarboard' },
 };
-const NEUTRAL_CATEGORY = {
-  label: 'Notification',
-  color: 'var(--text-muted, #6b7280)',
-  tint: 'rgba(107,114,128,0.14)',
-  Icon: Bell,
-};
+const NEUTRAL_CATEGORY = { label: 'Notification', icon: 'bi-bell' };
 function categoryMeta(type) {
   return CATEGORY_META[type] || NEUTRAL_CATEGORY;
 }
@@ -104,7 +64,6 @@ const FILTER_TABS = [
 function NotifRowNew({ n, onOpen, onFriendRespond }) {
   const cat = categoryMeta(n.type);
   const sev = severityMeta(n.priority);
-  const Icon = cat.Icon;
   const unread = !n.read;
   return (
     <div
@@ -119,8 +78,8 @@ function NotifRowNew({ n, onOpen, onFriendRespond }) {
         }
       }}
     >
-      <span className="nnx-tile" style={{ color: cat.color, background: cat.tint }}>
-        <Icon size={18} strokeWidth={1.9} aria-hidden />
+      <span className="nnx-tile" aria-hidden="true">
+        <i className={`bi ${cat.icon}`} />
       </span>
       <span className="nnx-main">
         <span className="nnx-cat">{cat.label}</span>
@@ -563,7 +522,7 @@ export function NavNotifications() {
             </div>
             {unreadCount > 0 && (
               <button className="nnx-markall" onClick={markAllRead} type="button">
-                <Check size={13} strokeWidth={2.6} aria-hidden /> Mark all read
+                <i className="bi bi-check2-all" aria-hidden="true" /> Mark all read
               </button>
             )}
           </div>
@@ -593,7 +552,7 @@ export function NavNotifications() {
           <div className="nnx-body">
             {filtered.length === 0 ? (
               <div className="nnx-empty">
-                <Bell size={26} strokeWidth={1.5} aria-hidden />
+                <i className="bi bi-bell-slash" aria-hidden="true" />
                 <p>You&apos;re all caught up.</p>
               </div>
             ) : (
@@ -631,7 +590,7 @@ export function NavNotifications() {
           {/* Fixed footer */}
           <div className="nnx-footer">
             <a className="nnx-center-link" href="/settings?tab=notifications" onClick={closePanel}>
-              View notification center <ArrowRight size={14} strokeWidth={2.2} aria-hidden />
+              View notification center <i className="bi bi-arrow-right" aria-hidden="true" />
             </a>
           </div>
         </div>

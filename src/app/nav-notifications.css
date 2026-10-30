@@ -29,10 +29,11 @@
   width: 44px;
   height: 44px;
   padding: 0; /* glyph sits dead-centre in the box, no asymmetric inset */
-  border-radius: var(--radius-lg);
+  /* Oct 29: same radius and resting colour as the checklist trigger beside it. */
+  border-radius: var(--radius-md);
   background: transparent;
   border: 1px solid transparent;
-  color: #8b949e;
+  color: var(--text-muted);
   /* 1.35rem = the old 1.125rem glyph +20%; the 44px box absorbs it. The logo
      PNG's ink is exactly centered in its canvas (measured), so flex centering
      alone puts this glyph's center on the logo's optical center line. */
@@ -805,29 +806,40 @@ body.light-mode .nn-filter-active {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   REDESIGNED DESKTOP NOTIFICATIONS PANEL (spec 1b)
-   New `.nnx-*` namespace layered on the existing `.nn-dropdown`
-   positioning wrapper (keeps anchoring + mobile-hide). Token-first,
-   Lucide icons, fixed header/footer + scrolling body, caret.
+   DESKTOP NOTIFICATIONS PANEL (Oct 29, Ezana standard card)
+   Shares its shell with the checklist panel (checklist-panel.css):
+   same surface, border, radius, shadow, header, row and footer rhythm.
    ══════════════════════════════════════════════════════════════ */
 body .nn-dropdown.nnx-panel {
-  width: 396px;
+  width: 400px;
   min-width: 0;
   max-width: calc(100vw - 24px);
   max-height: min(560px, calc(100vh - 90px));
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg, 0 16px 48px rgba(0, 0, 0, 0.16));
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   overflow: visible;
   font-family: var(--font-sans);
+  color: var(--text-primary);
+  animation: nnx-in 0.2s ease;
+}
+@keyframes nnx-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 .nnx-panel .nnx-caret {
   position: absolute;
   top: -6px;
-  right: 22px;
+  left: 16px;
   width: 12px;
   height: 12px;
   background: var(--bg-secondary);
@@ -842,21 +854,22 @@ body .nn-dropdown.nnx-panel {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 14px 16px;
+  gap: 12px;
+  padding: 16px 16px 12px;
   border-bottom: 1px solid var(--border-secondary);
 }
 .nnx-header-l {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
 }
 .nnx-live {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: var(--emerald, var(--emerald));
-  box-shadow: 0 0 0 3px var(--emerald-bg, color-mix(in srgb, var(--emerald) 18%, transparent));
+  background: var(--emerald);
+  box-shadow: 0 0 0 3px var(--emerald-bg);
   animation: nnx-pulse 2s ease-in-out infinite;
 }
 @keyframes nnx-pulse {
@@ -865,101 +878,111 @@ body .nn-dropdown.nnx-panel {
     opacity: 1;
   }
   50% {
-    opacity: 0.5;
+    opacity: 0.45;
   }
 }
-/* Panel title follows the dashboard-home kicker convention: mono
-   small-caps with wide tracking, not a bold sans heading. */
 .nnx-h-title {
   margin: 0;
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: var(--type-eyebrow-size);
-  font-weight: var(--type-eyebrow-weight);
-  letter-spacing: var(--type-eyebrow-tracking);
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--text-primary);
 }
 .nnx-new-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
+  color: var(--emerald);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.66rem;
-  font-weight: 700;
-  padding: 1px 7px;
-  border-radius: 999px;
-  color: var(--emerald-text, var(--emerald-hover));
-  background: transparent;
-  border: 1px solid var(--emerald-border, color-mix(in srgb, var(--emerald) 40%, transparent));
+  font-size: 0.6875rem;
+  font-weight: 600;
 }
 .nnx-markall {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
   background: none;
-  border: none;
   cursor: pointer;
-  font-family: inherit;
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--emerald-text, var(--emerald-hover));
+  color: var(--emerald);
+  transition: background 0.15s ease;
 }
 .nnx-markall:hover {
-  text-decoration: underline;
+  background: var(--emerald-bg);
+}
+.nnx-markall:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--emerald-glow);
 }
 
 /* Filter tabs */
 .nnx-tabs {
   flex-shrink: 0;
   display: flex;
-  gap: 6px;
+  gap: 4px;
   padding: 10px 16px;
   overflow-x: auto;
-  scrollbar-width: thin; /* visible affordance when the chip row overflows */
+  scrollbar-width: thin;
   border-bottom: 1px solid var(--border-secondary);
 }
 .nnx-tab {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   flex-shrink: 0;
-  padding: 5px 11px;
+  padding: 4px 10px;
   border-radius: 999px;
-  border: 1px solid var(--border-secondary);
+  border: 1px solid transparent;
   background: transparent;
   color: var(--text-muted);
-  font-family: inherit;
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   transition:
-    color 0.12s ease,
-    background 0.12s ease,
-    border-color 0.12s ease;
+    color 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 .nnx-tab:hover {
   color: var(--text-primary);
-  border-color: var(--border-hover);
+  background: var(--surface-card-hover);
 }
-.nnx-tab--active {
-  color: var(--emerald-text, var(--emerald-hover));
-  background: var(--emerald-bg, var(--emerald-bg-hover));
-  border-color: var(--emerald-border, color-mix(in srgb, var(--emerald) 40%, transparent));
+.nnx-tab:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--emerald-glow);
+}
+.nnx-tab--active,
+.nnx-tab--active:hover {
+  color: var(--emerald);
+  background: var(--emerald-bg);
+  border-color: var(--emerald-border);
 }
 .nnx-tab-count {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: var(--type-value-sm-size);
-  font-weight: var(--type-value-sm-weight);
-  min-width: 15px;
-  height: 15px;
+  min-width: 16px;
+  height: 16px;
   padding: 0 4px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
-  background: var(--emerald, var(--emerald));
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--bg-primary);
+  background: var(--emerald);
 }
 .nnx-tab:not(.nnx-tab--active) .nnx-tab-count {
   color: var(--text-secondary);
@@ -971,25 +994,26 @@ body .nn-dropdown.nnx-panel {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 0 0 6px;
+  padding: 0 0 4px;
 }
 .nnx-group {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  color: var(--text-faint);
   padding: 12px 16px 6px;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-faint);
 }
 .nnx-row {
   position: relative;
   display: flex;
-  gap: 11px;
-  padding: 10px 16px;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--border-secondary);
   cursor: pointer;
-  transition: background 0.12s ease;
+  transition: background 0.15s ease;
 }
 .nnx-row:last-child {
   border-bottom: none;
@@ -998,41 +1022,44 @@ body .nn-dropdown.nnx-panel {
   background: var(--surface-card-hover);
 }
 .nnx-row:focus-visible {
-  outline: 2px solid var(--emerald, var(--emerald));
+  outline: 2px solid var(--emerald);
   outline-offset: -2px;
-}
-.nnx-row--unread {
-  background: var(--emerald-bg-subtle, color-mix(in srgb, var(--emerald) 5%, transparent));
 }
 .nnx-row--unread::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 8px;
-  bottom: 8px;
-  width: 3px;
+  top: 12px;
+  bottom: 12px;
+  width: 2px;
   border-radius: 999px;
-  background: var(--emerald, var(--emerald));
+  background: var(--emerald);
 }
 .nnx-tile {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radius-lg);
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  background: var(--emerald-bg);
+  color: var(--emerald);
+  font-size: 0.95rem;
+}
+.nnx-row:not(.nnx-row--unread) .nnx-tile {
+  background: var(--surface-card-hover);
+  color: var(--text-muted);
 }
 .nnx-main {
-  min-width: 0;
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 .nnx-cat {
   font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -1040,18 +1067,18 @@ body .nn-dropdown.nnx-panel {
   color: var(--text-muted);
 }
 .nnx-title {
-  font-size: 0.83rem;
+  font-size: 0.8125rem;
   font-weight: 600;
+  line-height: 1.35;
   color: var(--text-primary);
-  line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* Status dot before the title: the app's severity semantics (orange =
-   watch/signal, red family = high alert, emerald = positive). The red rides
-   the echo chart token with the platform --negative fallback on non-echo
-   routes, same pattern as the sonar chart markers. */
+.nnx-row:not(.nnx-row--unread) .nnx-title {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
 .nnx-status-dot {
   display: inline-block;
   width: 6px;
@@ -1071,14 +1098,13 @@ body .nn-dropdown.nnx-panel {
 }
 .nnx-desc {
   font-size: 0.75rem;
-  line-height: 1.4;
+  line-height: 1.45;
   color: var(--text-muted);
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
-/* Hairline tag chips in the severity's own text color (the dashboard chip
-   convention), replacing the old filled pastel pills. */
 .nnx-sev {
   display: inline-flex;
   align-items: center;
@@ -1086,13 +1112,13 @@ body .nn-dropdown.nnx-panel {
   margin-top: 4px;
   padding: 1px 8px;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
   background: transparent;
   font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
 }
 .nnx-sev--high {
   color: var(--echo-chart-red, var(--negative));
@@ -1114,15 +1140,15 @@ body .nn-dropdown.nnx-panel {
 .nnx-time {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.66rem;
+  font-size: 0.6875rem;
   color: var(--text-faint);
   white-space: nowrap;
 }
 .nnx-udot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: var(--emerald, var(--emerald));
+  background: var(--emerald);
 }
 .nnx-friend {
   display: flex;
@@ -1133,20 +1159,29 @@ body .nn-dropdown.nnx-panel {
 .nnx-friend-decline {
   padding: 4px 12px;
   border-radius: var(--radius-md);
-  font-family: inherit;
-  font-size: 0.72rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 .nnx-friend-accept {
   border: none;
-  background: var(--emerald, var(--emerald));
-  color: #fff;
+  background: var(--emerald);
+  color: var(--bg-primary);
+}
+.nnx-friend-accept:hover {
+  background: var(--emerald-hover);
 }
 .nnx-friend-decline {
-  border: 1px solid var(--border-primary);
+  border: 1px solid var(--border-input);
   background: transparent;
   color: var(--text-secondary);
+}
+.nnx-friend-decline:hover {
+  border-color: var(--border-hover);
 }
 
 /* Empty state */
@@ -1158,9 +1193,13 @@ body .nn-dropdown.nnx-panel {
   padding: 40px 20px;
   color: var(--text-faint);
 }
+.nnx-empty i {
+  font-size: 1.5rem;
+}
 .nnx-empty p {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
 }
 
 /* Footer */
@@ -1173,14 +1212,14 @@ body .nn-dropdown.nnx-panel {
 .nnx-center-link {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 0.8rem;
+  gap: 6px;
+  font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--emerald-text, var(--emerald-hover));
+  color: var(--emerald);
   text-decoration: none;
 }
 .nnx-center-link:hover {
-  text-decoration: underline;
+  color: var(--emerald-hover);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1191,6 +1230,7 @@ body .nn-dropdown.nnx-panel {
   .nnx-live,
   .nnx-row,
   .nnx-tab,
+  .nnx-markall,
   .nn-bell-btn.nn-has-unread i {
     animation: none;
     transition: none;

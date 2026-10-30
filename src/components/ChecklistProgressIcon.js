@@ -1,11 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, Lock, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useChecklist } from '@/hooks/useChecklist';
 import { getTasksByStage, isStageUnlocked, CHECKLIST_STAGES } from '@/config/checklist';
 import { useOptionalActiveTaskContext } from '@/contexts/ActiveTaskContext';
+import './checklist-panel.css';
+
+/* Trigger ring geometry (24px box). */
+const TRIG_R = 9.5;
+const TRIG_C = 2 * Math.PI * TRIG_R;
 
 /**
  * Getting-Started checklist dropdown — rebuilt per the Nav Dropdowns design
@@ -98,7 +102,19 @@ export function ChecklistProgressIcon() {
         aria-expanded={isOpen}
       >
         <span className="checklist-trigger-inner" aria-hidden="true">
-          <i className="bi bi-check2-square" />
+          <svg className="cl2-trig-ring" viewBox="0 0 24 24" width="24" height="24">
+            <circle className="cl2-trig-track" cx="12" cy="12" r={TRIG_R} />
+            <circle
+              className="cl2-trig-arc"
+              cx="12"
+              cy="12"
+              r={TRIG_R}
+              strokeDasharray={TRIG_C}
+              strokeDashoffset={TRIG_C * (1 - pct)}
+              transform="rotate(-90 12 12)"
+            />
+          </svg>
+          <i className="bi bi-check2 cl2-trig-check" />
         </span>
         <span className="checklist-trigger-badge cl2-mono" aria-hidden="true">
           {completedCount}/{totalTasks}
@@ -164,7 +180,11 @@ export function ChecklistProgressIcon() {
                   <div key={s.meta.id} className="cl2-stage">
                     <div className="cl2-stage-head">
                       <span className={chipCls}>
-                        {s.complete ? <Check size={13} strokeWidth={3} aria-hidden /> : s.meta.id}
+                        {s.complete ? (
+                          <i className="bi bi-check-lg" aria-hidden="true" />
+                        ) : (
+                          s.meta.id
+                        )}
                       </span>
                       <span className="cl2-stage-name">{s.meta.name}</span>
                       <span className="cl2-xp-pill cl2-mono">+{s.meta.rewardXp} XP</span>
@@ -187,7 +207,7 @@ export function ChecklistProgressIcon() {
                               disabled={done}
                             >
                               <span className={`cl2-check${done ? ' cl2-check--done' : ''}`}>
-                                {done && <Check size={12} strokeWidth={3.2} aria-hidden />}
+                                {done && <i className="bi bi-check-lg" aria-hidden="true" />}
                               </span>
                               <span className="cl2-task-body">
                                 <span className="cl2-task-title">{task.title}</span>
@@ -200,7 +220,7 @@ export function ChecklistProgressIcon() {
                       </div>
                     ) : (
                       <div className="cl2-locked">
-                        <Lock size={14} strokeWidth={2} aria-hidden />
+                        <i className="bi bi-lock" aria-hidden="true" />
                         <div>
                           <p className="cl2-locked-title">
                             Complete Stage {s.meta.id - 1} to unlock
@@ -218,7 +238,7 @@ export function ChecklistProgressIcon() {
             <div className="cl2-footer">
               <span className="cl2-footer-text">{footerText}</span>
               <button type="button" className="cl2-resume" onClick={resume} disabled={!nextTask}>
-                Resume <ArrowRight size={14} strokeWidth={2.2} aria-hidden />
+                Resume <i className="bi bi-arrow-right" aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -227,317 +247,8 @@ export function ChecklistProgressIcon() {
 
       {/* The trigger button itself is styled ONLY by the .checklist-trigger-btn
           family in globals.css (borderless 44px icon button matching the bell).
-          A legacy outlined-pill rule used to live here and, injected after the
-          global sheet, won the cascade and re-drew the border. Do not re-add
-          trigger styles to this block. */}
-      <style>{`
-        .cl2-mono {
-          font-family: var(--font-mono);
-          font-variant-numeric: tabular-nums;
-        }
-
-        /* ── Panel shell ── */
-        .cl2-panel {
-          position: absolute;
-          top: calc(100% + 10px);
-          left: 0;
-          width: 396px;
-          max-width: calc(100vw - 24px);
-          max-height: min(560px, calc(100vh - 90px));
-          display: flex;
-          flex-direction: column;
-          background: var(--surface-card, #ffffff);
-          border: 1px solid var(--border-primary, rgba(0,0,0,0.08));
-          border-radius: 16px;
-          box-shadow: var(--shadow-lg, 0 16px 48px rgba(0,0,0,0.16));
-          z-index: 50;
-          overflow: visible;
-          font-family: var(--font-sans);
-          animation: cl2-in 0.2s ease;
-        }
-        @keyframes cl2-in {
-          from { opacity: 0; transform: translateY(-6px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .cl2-caret {
-          position: absolute;
-          top: -6px;
-          left: 26px;
-          width: 12px;
-          height: 12px;
-          background: var(--surface-card, #ffffff);
-          border-left: 1px solid var(--border-primary, rgba(0,0,0,0.08));
-          border-top: 1px solid var(--border-primary, rgba(0,0,0,0.08));
-          transform: rotate(45deg);
-        }
-
-        /* ── Header ── */
-        .cl2-header {
-          flex-shrink: 0;
-          padding: 16px 18px;
-          border-bottom: 1px solid var(--border-primary, rgba(0,0,0,0.08));
-          border-radius: 16px 16px 0 0;
-          background:
-            linear-gradient(180deg, rgba(16,185,129,0.08), transparent 90%),
-            var(--surface-card, #ffffff);
-        }
-        .cl2-header-top {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-        }
-        .cl2-ring {
-          position: relative;
-          width: 64px;
-          height: 64px;
-          flex-shrink: 0;
-        }
-        .cl2-ring-track {
-          fill: none;
-          stroke: var(--emerald-bg, rgba(16,185,129,0.14));
-          stroke-width: 6;
-        }
-        .cl2-ring-arc {
-          fill: none;
-          stroke: var(--emerald, #10b981);
-          stroke-width: 6;
-          stroke-linecap: round;
-          transition: stroke-dashoffset 0.5s cubic-bezier(0.4,0,0.2,1);
-        }
-        .cl2-ring-center {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          line-height: 1;
-        }
-        .cl2-ring-count {
-          font-size: 14px;
-          font-weight: 700;
-          color: var(--text-primary, #111827);
-        }
-        .cl2-ring-label {
-          font-size: 7.5px;
-          letter-spacing: 0.14em;
-          color: var(--text-muted, #6b7280);
-          margin-top: 2px;
-        }
-        .cl2-title {
-          margin: 0;
-          font-size: 1rem;
-          font-weight: 700;
-          color: var(--text-primary, #111827);
-        }
-        .cl2-sub {
-          margin: 2px 0 0;
-          font-size: 0.8rem;
-          color: var(--text-muted, #6b7280);
-        }
-        .cl2-xp {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          margin-top: 14px;
-        }
-        .cl2-xp-track {
-          flex: 1;
-          height: 8px;
-          border-radius: 999px;
-          background: var(--emerald-bg, rgba(16,185,129,0.12));
-          overflow: hidden;
-        }
-        .cl2-xp-fill {
-          height: 100%;
-          border-radius: 999px;
-          background: linear-gradient(90deg, var(--emerald, #10b981), #34d399);
-          transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
-        }
-        .cl2-xp-value {
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: var(--emerald-text, #059669);
-          flex-shrink: 0;
-        }
-
-        /* ── Body ── */
-        .cl2-body {
-          flex: 1;
-          min-height: 0;
-          overflow-y: auto;
-          padding: 14px 18px 8px;
-        }
-        .cl2-stage { margin-bottom: 16px; }
-        .cl2-stage-head {
-          display: flex;
-          align-items: center;
-          gap: 9px;
-          margin-bottom: 9px;
-        }
-        .cl2-stage-num {
-          width: 22px;
-          height: 22px;
-          border-radius: 7px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          font-family: var(--font-mono);
-          font-size: 11px;
-          font-weight: 700;
-          flex-shrink: 0;
-        }
-        .cl2-stage-num--active {
-          color: var(--emerald-text, #059669);
-          background: var(--emerald-bg, rgba(16,185,129,0.12));
-          border: 1px solid var(--emerald-border, rgba(16,185,129,0.35));
-        }
-        .cl2-stage-num--done {
-          color: #fff;
-          background: var(--emerald, #10b981);
-        }
-        .cl2-stage-num--locked {
-          color: var(--text-muted, #9ca3af);
-          background: var(--surface-card-hover, rgba(0,0,0,0.04));
-          border: 1px solid var(--border-primary, rgba(0,0,0,0.08));
-        }
-        .cl2-stage-name {
-          font-size: 0.85rem;
-          font-weight: 600;
-          color: var(--text-primary, #111827);
-        }
-        .cl2-xp-pill {
-          margin-left: auto;
-          font-size: 0.65rem;
-          font-weight: 700;
-          padding: 2px 7px;
-          border-radius: 999px;
-          color: var(--emerald-text, #059669);
-          background: var(--emerald-bg, rgba(16,185,129,0.1));
-        }
-
-        .cl2-tasks { display: flex; flex-direction: column; gap: 2px; }
-        .cl2-task {
-          display: flex;
-          align-items: flex-start;
-          gap: 10px;
-          width: 100%;
-          text-align: left;
-          padding: 8px;
-          border: none;
-          border-radius: 9px;
-          background: transparent;
-          cursor: pointer;
-          transition: background 0.15s ease;
-          font-family: inherit;
-        }
-        .cl2-task:hover { background: var(--emerald-bg, rgba(16,185,129,0.06)); }
-        .cl2-task--done { cursor: default; }
-        .cl2-task--done:hover { background: transparent; }
-        .cl2-check {
-          width: 18px;
-          height: 18px;
-          border-radius: 6px;
-          border: 2px solid var(--border-input, #d1d5db);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #fff;
-          flex-shrink: 0;
-          margin-top: 1px;
-          transition: background 0.15s ease, border-color 0.15s ease;
-        }
-        .cl2-check--done {
-          background: var(--emerald, #10b981);
-          border-color: var(--emerald, #10b981);
-          animation: cl2-pop 0.2s ease;
-        }
-        @keyframes cl2-pop { from { transform: scale(0.6); } to { transform: scale(1); } }
-        .cl2-task-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-        .cl2-task-title {
-          font-size: 0.85rem;
-          font-weight: 600;
-          color: var(--text-primary, #111827);
-        }
-        .cl2-task--done .cl2-task-title {
-          text-decoration: line-through;
-          color: var(--text-muted, #9ca3af);
-          font-weight: 500;
-        }
-        .cl2-task-desc {
-          font-size: 0.75rem;
-          line-height: 1.4;
-          color: var(--text-muted, #6b7280);
-        }
-        .cl2-task-meta {
-          font-size: 0.66rem;
-          font-weight: 600;
-          color: var(--emerald-text, #059669);
-          margin-top: 1px;
-        }
-        .cl2-task--done .cl2-task-meta { color: var(--text-ghost, #9ca3af); }
-
-        /* Locked stage inset */
-        .cl2-locked {
-          display: flex;
-          align-items: flex-start;
-          gap: 10px;
-          padding: 12px;
-          border: 1px dashed var(--border-hover, rgba(0,0,0,0.18));
-          border-radius: 10px;
-          color: var(--text-muted, #6b7280);
-        }
-        .cl2-locked svg { margin-top: 1px; flex-shrink: 0; }
-        .cl2-locked-title {
-          margin: 0;
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: var(--text-secondary, #4b5563);
-        }
-        .cl2-locked-preview {
-          margin: 2px 0 0;
-          font-size: 0.72rem;
-          color: var(--text-muted, #9ca3af);
-        }
-
-        /* ── Footer ── */
-        .cl2-footer {
-          flex-shrink: 0;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          padding: 12px 18px;
-          border-top: 1px solid var(--border-primary, rgba(0,0,0,0.08));
-        }
-        .cl2-footer-text {
-          font-size: 0.78rem;
-          color: var(--text-muted, #6b7280);
-        }
-        .cl2-resume {
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          padding: 7px 14px;
-          border: none;
-          border-radius: 9px;
-          background: var(--emerald, #10b981);
-          color: #fff;
-          font-size: 0.8rem;
-          font-weight: 700;
-          cursor: pointer;
-          font-family: inherit;
-          transition: filter 0.15s ease;
-          flex-shrink: 0;
-        }
-        .cl2-resume:hover:not(:disabled) { filter: brightness(1.06); }
-        .cl2-resume:disabled { opacity: 0.5; cursor: default; }
-
-        @media (prefers-reduced-motion: reduce) {
-          .cl2-panel { animation: none; }
-          .cl2-ring-arc, .cl2-xp-fill, .cl2-check--done, .cl2-task, .cl2-resume { transition: none; animation: none; }
-        }
-      `}</style>
+          The panel's styles live in checklist-panel.css; do not add trigger
+          styles there. */}
     </div>
   );
 }

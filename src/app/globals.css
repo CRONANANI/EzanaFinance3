@@ -844,20 +844,20 @@ body.light-mode .nav-logo-img {
   mix-blend-mode: darken;
 }
 
-/* Nav left zone — Logo + bell + checklist (checklist right of bell) */
+/* Nav left zone: logo, bell, checklist (checklist right of bell), read as one
+   group (Oct 29). The two icon buttons share one 44px box, one resting colour
+   (--text-muted) and a tight 0.25rem gap; the logo sits a wider 0.75rem
+   (gap + margin) from them. mobile-responsive.css uses the same values. */
 .nav-left-zone {
   display: flex;
   align-items: center;
-  /* ONE gap, applied uniformly between logo · bell · checklist, and the SAME
-     0.5rem the right cluster (.nav-actions) uses, so the two ends of the nav
-     read as one system. */
-  gap: 0.5rem;
+  gap: 0.25rem;
   flex-shrink: 0;
   flex-grow: 0;
 }
-/* Mobile keeps the SAME 0.5rem as the right cluster (mobile-responsive.css
-   gives .nav-actions 0.5rem too): no tighter left-only override, so both
-   ends of the bar stay one system at every width. */
+.nav-left-zone > .nav-brand {
+  margin-right: 0.5rem;
+}
 
 /* Notifications component's own centering wrapper (de-scoped from the removed
    bell/checklist wrapper so it stands alone). */
@@ -891,7 +891,7 @@ body.light-mode .nav-logo-img {
   background: color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 body:not(.light-mode) .checklist-trigger-btn:hover {
-  background: rgba(16, 185, 129, 0.08);
+  background: color-mix(in srgb, var(--emerald) 8%, transparent);
 }
 /* Keyboard focus gets a REAL ring (ds.css convention), not just the hover
    tint; the removed resting border was decoration, not the focus affordance. */
@@ -901,7 +901,7 @@ body:not(.light-mode) .checklist-trigger-btn:hover {
   background: color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 body:not(.light-mode) .checklist-trigger-btn:focus-visible {
-  background: rgba(16, 185, 129, 0.08);
+  background: color-mix(in srgb, var(--emerald) 8%, transparent);
 }
 .checklist-trigger-inner {
   display: flex;
@@ -915,6 +915,12 @@ body:not(.light-mode) .checklist-trigger-btn:focus-visible {
      button box is the cluster standard. */
   font-size: 1.35rem;
   line-height: 1;
+  /* Resting glyph matches the bell (--text-muted); hover and open go emerald. */
+  color: var(--text-muted);
+  position: relative;
+}
+.checklist-trigger-btn:hover .checklist-trigger-inner,
+.checklist-trigger-btn[aria-expanded='true'] .checklist-trigger-inner {
   color: var(--emerald);
 }
 @media (max-width: 767px) {
@@ -925,6 +931,35 @@ body:not(.light-mode) .checklist-trigger-btn:focus-visible {
 .checklist-trigger-inner i {
   display: block;
   line-height: 1;
+}
+/* Oct 29: the trigger is a progress ring around a check, previewing the
+   panel header's ring (ChecklistProgressIcon.js). */
+.cl2-trig-ring {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+}
+.cl2-trig-track {
+  fill: none;
+  stroke: color-mix(in srgb, currentColor 28%, transparent);
+  stroke-width: 2;
+}
+.cl2-trig-arc {
+  fill: none;
+  stroke: var(--emerald);
+  stroke-width: 2;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s ease-out;
+}
+.cl2-trig-check {
+  position: relative;
+  font-size: 0.8rem;
+  line-height: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cl2-trig-arc {
+    transition: none;
+  }
 }
 /* Same box as the bell's .nn-badge, in the emerald treatment. The numeral
    follows the app's text-on-emerald convention (--bg-primary), which is white
