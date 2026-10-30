@@ -131,3 +131,59 @@ export function normalizeMarketauxArticle(a = {}, { city = '', country = '' } = 
     country,
   };
 }
+
+/**
+ * GET /news/all filtered by industry and/or symbols (the sector modal). Same
+ * token, error envelope and cache stance as fetchCityNews; never throws.
+ * @param {{industries?:string, symbols?:string[], countries?:string, limit?:number,
+ *   publishedAfter?:string, revalidate?:number}} opts
+ * @returns {Promise<{articles:Array, error?:string, status?:number}>}
+ */
+export async function fetchMarketNews({
+  industries,
+  symbols,
+  countries = 'us',
+  limit = 10,
+  publishedAfter,
+  revalidate = 600,
+} = {}) {
+  const token = getMarketauxToken();
+  if (!token) return { articles: [], error: 'invalid_api_token' };
+
+  const params = new URLSearchParams({
+    api_token: token,
+    language: 'en',
+    filter_entities: 'true',
+    group_similar: 'true',
+    sort: 'published_at',
+    limit: String(Math.min(Math.max(Number(limit) || 10, 1), 50)),
+  });
+  if (countries) params.set('countries', countries);
+  if (industries) params.set('industries', industries);
+  const syms = (Array.isArray(symbols) ? symbols : [])
+    .map((s) =>
+      String(s || '')
+        .trim()
+        .toUpperCase(),
+    )
+    .filter(Boolean);
+  if (syms.length) params.set('symbols', syms.join(','));
+  if (publishedAfter && /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/.test(publishedAfter)) {
+    params.set('published_after', publishedAfter);
+  }
+
+  try {
+    const res = await fetchWithTimeout(
+      `${BASE}/news/all?${params.toString()}`,
+      { headers: { Accept: 'application/json' }, next: { revalidate } },
+      8000,
+    );
+    const json = await res.json().catch(() => null);
+    if ((json && json.error) || !res.ok) {
+      return { articles: [], error: errorCode(json, res.status), status: res.status };
+    }
+    return { articles: Array.isArray(json?.data) ? json.data : [], status: res.status };
+  } catch (err) {
+    return { articles: [], error: err?.name === 'TimeoutError' ? 'timeout' : 'fetch_failed' };
+  }
+}

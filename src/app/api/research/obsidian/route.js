@@ -34,28 +34,40 @@ function extractHotTickers(markdown) {
   return [...found];
 }
 
-/** Price the tickers through FMP batch-quote; only symbols FMP knows survive. */
+/** Price the tickers; only symbols the quote feed knows survive. The bulk
+    quote endpoint answers 402 on the current plan (seen on the sector modal,
+    Oct 30), so a refused or empty bulk call falls back to one quote per
+    symbol (at most 10 here). */
 async function priceTickers(symbols) {
   const key = process.env.FMP_API_KEY || '';
   if (!key || symbols.length === 0) return [];
-  try {
-    const url = `${FMP_BASE}/batch-quote?symbols=${encodeURIComponent(symbols.join(','))}&apikey=${encodeURIComponent(key)}`;
-    const res = await fetchWithTimeout(url, { cache: 'no-store' }, 8000);
-    if (!res.ok) return [];
-    const data = await res.json();
-    if (!Array.isArray(data)) return [];
-    return data
-      .map((q) => {
-        const pct = Number(q?.changePercentage ?? q?.changesPercentage);
-        const price = Number(q?.price);
-        if (!Number.isFinite(pct) || !Number.isFinite(price)) return null;
-        return { symbol: q.symbol, name: q.name || q.symbol, price, changePct: pct };
-      })
-      .filter(Boolean)
-      .sort((a, b) => b.changePct - a.changePct);
-  } catch {
-    return [];
+  const k = encodeURIComponent(key);
+  const getJson = async (url) => {
+    try {
+      const res = await fetchWithTimeout(url, { cache: 'no-store' }, 8000);
+      return res.ok ? await res.json() : null;
+    } catch {
+      return null;
+    }
+  };
+  let data = await getJson(
+    `${FMP_BASE}/batch-quote?symbols=${encodeURIComponent(symbols.join(','))}&apikey=${k}`,
+  );
+  if (!Array.isArray(data) || data.length === 0) {
+    const each = await Promise.all(
+      symbols.map((s) => getJson(`${FMP_BASE}/quote?symbol=${encodeURIComponent(s)}&apikey=${k}`)),
+    );
+    data = each.map((d) => (Array.isArray(d) ? d[0] : d)).filter(Boolean);
   }
+  return data
+    .map((q) => {
+      const pct = Number(q?.changePercentage ?? q?.changesPercentage);
+      const price = Number(q?.price);
+      if (!Number.isFinite(pct) || !Number.isFinite(price)) return null;
+      return { symbol: q.symbol, name: q.name || q.symbol, price, changePct: pct };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.changePct - a.changePct);
 }
 
 export async function POST(request) {

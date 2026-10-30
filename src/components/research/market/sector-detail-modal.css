@@ -5,7 +5,9 @@
 .sdm-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  /* Same layer as the app's other modals (add-portfolio-modal.css), above
+     the fixed nav; at 100 the nav covered the modal's header. */
+  z-index: 1100;
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(4px);
   display: flex;
@@ -52,21 +54,12 @@
   }
 }
 
-body.light-mode .sdm-panel {
-  background: #ffffff;
-  border-color: rgba(5, 150, 105, 0.18);
-}
-
 .sdm-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-body.light-mode .sdm-header {
-  border-bottom-color: rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid var(--border-secondary);
 }
 
 .sdm-eyebrow {
@@ -130,19 +123,9 @@ body.light-mode .sdm-header {
   border: 1px solid color-mix(in srgb, var(--emerald) 35%, transparent);
 }
 
-body.light-mode .sdm-range-pill {
-  background: rgba(5, 150, 105, 0.1);
-  border-color: rgba(5, 150, 105, 0.3);
-  color: var(--emerald-hover);
-}
-
-body.light-mode .sdm-title {
-  color: #0f172a;
-}
-
 .sdm-close {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-primary);
   border-radius: var(--radius-md);
   padding: 0.5rem 0.7rem;
   color: var(--text-secondary);
@@ -154,14 +137,14 @@ body.light-mode .sdm-title {
 }
 
 .sdm-close:hover {
-  background: rgba(239, 68, 68, 0.1);
+  background: color-mix(in srgb, var(--negative) 10%, transparent);
   color: var(--negative);
-  border-color: rgba(239, 68, 68, 0.4);
+  border-color: color-mix(in srgb, var(--negative) 40%, transparent);
 }
 
-body.light-mode .sdm-close {
-  border-color: rgba(0, 0, 0, 0.1);
-  color: #475569;
+.sdm-close:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
 }
 
 .sdm-grid {
@@ -186,23 +169,13 @@ body.light-mode .sdm-close {
 }
 
 .sdm-section + .sdm-section {
-  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 1px solid var(--border-secondary);
 }
 
 @media (max-width: 768px) {
   .sdm-section + .sdm-section {
     border-left: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-  }
-}
-
-body.light-mode .sdm-section + .sdm-section {
-  border-left-color: rgba(0, 0, 0, 0.08);
-}
-
-@media (max-width: 768px) {
-  body.light-mode .sdm-section + .sdm-section {
-    border-top-color: rgba(0, 0, 0, 0.08);
+    border-top: 1px solid var(--border-secondary);
   }
 }
 
@@ -218,10 +191,6 @@ body.light-mode .sdm-section + .sdm-section {
   font-size: 1rem;
   font-weight: 700;
   color: var(--text-primary);
-}
-
-body.light-mode .sdm-section-header h3 {
-  color: #0f172a;
 }
 
 .sdm-section-meta {
@@ -247,26 +216,18 @@ body.light-mode .sdm-section-header h3 {
   border-radius: var(--radius-md);
   text-decoration: none;
   color: inherit;
-  background: var(--bg-tertiary);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  transition:
-    background 150ms ease,
-    border-color 150ms ease;
+  background: var(--card-bg);
+  transition: background 150ms ease;
 }
 
 .sdm-performer-row:hover {
-  background: var(--emerald-bg);
-  border-color: var(--emerald-glow);
+  background: var(--card-bg-hover);
 }
 
-body.light-mode .sdm-performer-row {
-  background: rgba(0, 0, 0, 0.02);
-  border-color: rgba(0, 0, 0, 0.06);
-}
-
-body.light-mode .sdm-performer-row:hover {
-  background: rgba(5, 150, 105, 0.06);
-  border-color: rgba(5, 150, 105, 0.25);
+.sdm-performer-row:focus-visible,
+.sdm-news-row:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: -2px;
 }
 
 .sdm-performer-id {
@@ -277,14 +238,11 @@ body.light-mode .sdm-performer-row:hover {
 }
 
 .sdm-performer-symbol {
+  font-family: var(--font-mono);
   font-size: 0.875rem;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.01em;
-}
-
-body.light-mode .sdm-performer-symbol {
-  color: #0f172a;
 }
 
 .sdm-performer-name {
@@ -311,8 +269,11 @@ body.light-mode .sdm-performer-symbol {
   color: var(--text-primary);
 }
 
-body.light-mode .sdm-performer-price {
-  color: #0f172a;
+.sdm-performer-cap {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
 }
 
 .sdm-performer-change {
@@ -338,21 +299,12 @@ body.light-mode .sdm-performer-price {
   border-radius: var(--radius-md);
   text-decoration: none;
   color: inherit;
-  background: var(--bg-tertiary);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  transition:
-    background 150ms ease,
-    border-color 150ms ease;
+  background: var(--card-bg);
+  transition: background 150ms ease;
 }
 
 .sdm-news-row:hover {
-  background: color-mix(in srgb, var(--emerald) 6%, transparent);
-  border-color: color-mix(in srgb, var(--emerald) 20%, transparent);
-}
-
-body.light-mode .sdm-news-row {
-  background: rgba(0, 0, 0, 0.02);
-  border-color: rgba(0, 0, 0, 0.06);
+  background: var(--card-bg-hover);
 }
 
 .sdm-news-body {
@@ -370,10 +322,6 @@ body.light-mode .sdm-news-row {
   line-height: 1.35;
 }
 
-body.light-mode .sdm-news-title {
-  color: #0f172a;
-}
-
 .sdm-news-summary {
   font-size: 0.75rem;
   color: var(--text-secondary);
@@ -384,11 +332,14 @@ body.light-mode .sdm-news-title {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.6875rem;
   color: var(--text-faint);
 }
 
 .sdm-news-source {
+  font-family: var(--font-sans);
   font-weight: 600;
   color: var(--emerald);
 }
@@ -435,5 +386,50 @@ body.light-mode .sdm-news-title {
 @keyframes sdm-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Loading skeleton rows, one per panel. */
+.sdm-skeleton {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sdm-skeleton-row {
+  height: 3.1rem;
+  border-radius: var(--radius-md);
+  background: var(--card-bg);
+  animation: sdm-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes sdm-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sdm-backdrop,
+  .sdm-panel,
+  .sdm-skeleton-row,
+  .sdm-spin {
+    animation: none;
+  }
+  .sdm-performer-row,
+  .sdm-news-row,
+  .sdm-news-arrow,
+  .sdm-close {
+    transition: none;
+  }
+  .sdm-news-row:hover .sdm-news-arrow {
+    transform: none;
   }
 }
