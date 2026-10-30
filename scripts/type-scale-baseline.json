@@ -16,7 +16,7 @@
   },
   "src/app/(dashboard)/home/broadsheet.css": {
     "sub-floor": 17,
-    "caps-tracking": 18
+    "caps-tracking": 16
   },
   "src/app/(dashboard)/home/terminal.css": {
     "sub-floor": 9,
@@ -176,7 +176,7 @@
     "caps-tracking": 2
   },
   "src/app/nav-notifications.css": {
-    "sub-floor": 7
+    "sub-floor": 5
   },
   "src/app/not-found.css": {
     "heavy-weight": 1
@@ -311,7 +311,7 @@
     "sub-floor": 1
   },
   "src/components/ui/DateSelector.jsx": {
-    "sub-floor": 4
+    "sub-floor": 1
   },
   "src/components/ui/SortableTable.jsx": {
     "sub-floor": 1
