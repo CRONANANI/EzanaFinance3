@@ -84,11 +84,18 @@ function degraded(bucketKey, limit, windowMs, failClosed, message) {
  * @param {string} bucketKey - unique key like `auth:1.2.3.4` or `global:1.2.3.4`
  * @param {number} limit - max requests allowed in the window
  * @param {number} windowMs - window size in milliseconds
- * @param {{ failClosed?: boolean }} [opts]
+ * @param {{ failClosed?: boolean, timeoutMs?: number }} [opts] timeoutMs overrides the
+ *   database bound for one caller (the 6-second Sonar ping passes 800)
  * @returns {Promise<{allowed: boolean, remaining: number, resetAt: Date, degraded?: boolean}>}
  */
-export async function checkRateLimit(bucketKey, limit, windowMs, { failClosed = false } = {}) {
+export async function checkRateLimit(
+  bucketKey,
+  limit,
+  windowMs,
+  { failClosed = false, timeoutMs } = {},
+) {
   if (!bucketKey) return { allowed: true, remaining: limit, resetAt: new Date() };
+  const dbTimeoutMs = Math.max(250, Number(timeoutMs) || DB_TIMEOUT_MS);
   try {
     const admin = getAdminClient();
     const call = await withTimeout(
@@ -97,7 +104,7 @@ export async function checkRateLimit(bucketKey, limit, windowMs, { failClosed = 
         p_limit: limit,
         p_window_ms: windowMs,
       }),
-      DB_TIMEOUT_MS,
+      dbTimeoutMs,
       'rate_limit_hit',
     );
     if (!call.ok) {
@@ -106,7 +113,7 @@ export async function checkRateLimit(bucketKey, limit, windowMs, { failClosed = 
         limit,
         windowMs,
         failClosed,
-        call.timedOut ? `timed out after ${DB_TIMEOUT_MS}ms` : call.error?.message || 'rpc failed',
+        call.timedOut ? `timed out after ${dbTimeoutMs}ms` : call.error?.message || 'rpc failed',
       );
     }
     const { data, error } = call.value;

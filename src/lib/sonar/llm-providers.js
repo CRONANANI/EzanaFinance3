@@ -150,17 +150,22 @@ const isAbort = (e) => e?.name === 'TimeoutError' || e?.name === 'AbortError';
    runs past the route's 60s cap and the platform kills the function (a 504
    the client can only read as "That ping did not land"). 1.5s is kept back
    for the response itself. */
-function hopMs(ms, deadlineAt) {
+/* Oct 30: the 6-second landing ping passes its own floor and reserve
+   (minHopMs, reserveMs). It already subtracts its tail from deadlineAt, and
+   a 4s floor would refuse every hop it can afford. Every other caller keeps
+   the defaults. */
+const HOP_RESERVE_MS = 1_500;
+function hopMs(ms, deadlineAt, reserveMs = HOP_RESERVE_MS) {
   if (!deadlineAt) return ms;
-  return Math.min(ms, deadlineAt - Date.now() - 1_500);
+  return Math.min(ms, deadlineAt - Date.now() - reserveMs);
 }
 const MIN_HOP_MS = 4_000;
 /* Same clip, but a hop with under MIN_HOP_MS left is not started: it throws
    the typed timeout the chain already handles, so the route can still answer
    (or fail fast with a real status) inside its budget. */
-function guardHop(ms, deadlineAt) {
-  const t = hopMs(ms, deadlineAt);
-  if (t < MIN_HOP_MS) throw Object.assign(new Error('deadline'), { name: 'TimeoutError' });
+function guardHop(ms, deadlineAt, { minHopMs = MIN_HOP_MS, reserveMs = HOP_RESERVE_MS } = {}) {
+  const t = hopMs(ms, deadlineAt, reserveMs);
+  if (t < minHopMs) throw Object.assign(new Error('deadline'), { name: 'TimeoutError' });
   return t;
 }
 
@@ -230,8 +235,11 @@ async function anthropicSynthesize({
   fallbackModel,
   webSearch,
   deadlineAt = null,
+  minHopMs,
+  reserveMs,
 }) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
+  const hop = { minHopMs, reserveMs };
   if (!apiKey) throw new ProviderUnavailableError('anthropic: no ANTHROPIC_API_KEY');
   const safeFallback = fallbackModel || HAIKU_MODEL;
 
@@ -250,7 +258,7 @@ async function anthropicSynthesize({
   const webOn =
     Boolean(webSearch?.enabled) &&
     process.env.SONAR_WEB_SEARCH === 'true' &&
-    hopMs(38_000, deadlineAt) >= 20_000;
+    hopMs(38_000, deadlineAt, reserveMs) >= 20_000;
   const maxUses = Math.max(1, Number(webSearch?.maxUses) || 3);
 
   let res;
@@ -260,7 +268,7 @@ async function anthropicSynthesize({
       tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: maxUses }],
     };
     try {
-      res = await callAnthropic(withTool, apiKey, hopMs(38_000, deadlineAt));
+      res = await callAnthropic(withTool, apiKey, hopMs(38_000, deadlineAt, reserveMs));
     } catch (e) {
       if (isAbort(e)) throw new ProviderUnavailableError('anthropic: timed out');
       throw e;
@@ -269,7 +277,7 @@ async function anthropicSynthesize({
       const detail = await readBody(res);
       console.warn('[sonar] web_search 400 — retrying without tool', { model, detail });
       try {
-        res = await callAnthropic(baseBody, apiKey, guardHop(20_000, deadlineAt));
+        res = await callAnthropic(baseBody, apiKey, guardHop(20_000, deadlineAt, hop));
       } catch (e) {
         if (isAbort(e)) throw new ProviderUnavailableError('anthropic: timed out');
         throw e;
@@ -277,7 +285,7 @@ async function anthropicSynthesize({
     }
   } else {
     try {
-      res = await callAnthropic(baseBody, apiKey, guardHop(25_000, deadlineAt));
+      res = await callAnthropic(baseBody, apiKey, guardHop(25_000, deadlineAt, hop));
     } catch (e) {
       if (isAbort(e)) throw new ProviderUnavailableError('anthropic: timed out');
       throw e;
@@ -292,7 +300,7 @@ async function anthropicSynthesize({
       res = await callAnthropic(
         { ...baseBody, model: safeFallback },
         apiKey,
-        guardHop(20_000, deadlineAt),
+        guardHop(20_000, deadlineAt, hop),
       );
     } catch (e) {
       if (isAbort(e)) throw new ProviderUnavailableError('anthropic: timed out');
@@ -329,7 +337,7 @@ async function anthropicSynthesize({
  * moat; web is an Anthropic-only bonus.
  */
 function openaiCompatSynthesize({ id, baseURL, apiKey, model }) {
-  return async ({ system, user, maxTokens, deadlineAt = null }) => {
+  return async ({ system, user, maxTokens, deadlineAt = null, minHopMs, reserveMs }) => {
     const key = apiKey();
     if (!key) throw new ProviderUnavailableError(`${id}: no API key`);
     // Kimi and DeepSeek are tried SEQUENTIALLY, so an unbounded wait on one
@@ -347,7 +355,7 @@ function openaiCompatSynthesize({ id, baseURL, apiKey, model }) {
             { role: 'user', content: user },
           ],
         }),
-        signal: AbortSignal.timeout(guardHop(12_000, deadlineAt)),
+        signal: AbortSignal.timeout(guardHop(12_000, deadlineAt, { minHopMs, reserveMs })),
       });
     } catch (e) {
       if (isAbort(e)) throw new ProviderUnavailableError(`${id}: timed out`);
@@ -429,6 +437,9 @@ export async function synthesizeWithFallback(args) {
      already spent time on retrieval) passes deadlineAt; the chain never runs
      past it. Callers that do not pass one keep the old 50s chain. */
   const deadline = Math.min(Date.now() + 50_000, Number(args?.deadlineAt) || Infinity);
+  /* The least time worth starting a provider with. A caller with its own
+     floor (the 6-second landing ping) passes minHopMs. */
+  const chainFloorMs = Number(args?.minHopMs) || 8_000;
   if (!active.length) {
     console.error(
       '[sonar] no LLM provider configured (ANTHROPIC_API_KEY missing and no fallback enabled)',
@@ -438,7 +449,7 @@ export async function synthesizeWithFallback(args) {
 
   let lastErr;
   for (const provider of active) {
-    if (Date.now() > deadline - 8_000) {
+    if (Date.now() > deadline - chainFloorMs) {
       providerErrors.push({
         provider: provider.id,
         status: null,

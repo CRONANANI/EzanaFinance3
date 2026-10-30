@@ -137,6 +137,46 @@
       #065f46 80%,
       #047857 100%
     );
+  /* Oct 30: the Sonar ping loader's ground (SonarRailLoader, the /datasets
+     hand-off and route loading). Brushed black metal: hairline grain, a top
+     sheen, one diagonal specular streak, a faint emerald glow from below, on
+     graphite reflection bands. A constant like the band green: the loader
+     owns its ground and its ink in either shell, so it is declared here only.
+     Static only. */
+  --brand-metal-black:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.014) 0 1px,
+      rgba(255, 255, 255, 0) 1px 3px
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.07) 0%,
+      rgba(255, 255, 255, 0.015) 16%,
+      rgba(255, 255, 255, 0) 32%
+    ),
+    linear-gradient(
+      112deg,
+      rgba(255, 255, 255, 0) 34%,
+      rgba(255, 255, 255, 0.035) 41%,
+      rgba(255, 255, 255, 0.075) 44%,
+      rgba(255, 255, 255, 0.03) 47%,
+      rgba(255, 255, 255, 0) 55%
+    ),
+    radial-gradient(110% 60% at 50% 115%, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0) 62%),
+    linear-gradient(
+      112deg,
+      #08090a 0%,
+      #131618 26%,
+      #1b1f22 42%,
+      #0e1012 60%,
+      #16191c 80%,
+      #0a0b0c 100%
+    );
+  /* Ezana green on that ground, constant across shells (--emerald turns
+     gold in the partner scope and darker in light mode). */
+  --brand-ezana-green: #10b981;
+  --brand-ezana-green-deep: #047857;
 
   /* ── Dataset dimension hues ── */
   /* The seven fixed dot colours of the shared dataset chrome contract

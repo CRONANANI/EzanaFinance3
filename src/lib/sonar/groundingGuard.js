@@ -11,23 +11,25 @@
  *   2. A cheap post-check on the draft: a sentence with a negative claim
  *      ("has not", "never", "remains private") that no source supports is
  *      rejected. The caller regenerates once through its existing synthesis
- *      call; whatever still fails is removed, or replaced with NO_RECORD_LINE
- *      when there were no findings at all.
+ *      call when it has the time; whatever still fails is removed.
  *
  * "Supported" means a source passage itself makes a negative statement and
- * shares a subject word with the sentence. Sentences about Ezana's own
- * coverage ("Our datasets returned no record of this yet.") are not claims
- * about the world and always pass.
+ * shares a subject word with the sentence.
+ *
+ * Oct 30 (v2): a brief no longer talks about Ezana's own coverage at all.
+ * "Our datasets returned no record of a SpaceX initial public offering" read
+ * as a claim about SpaceX, sat above cards that did show SpaceX, and the
+ * rules used to ask for exactly that line. The rules now forbid it, and
+ * stripCoverageNotes removes any sentence about what the datasets, sources
+ * or web search did or did not return, whatever the model writes.
  */
-
-export const NO_RECORD_LINE = 'Our datasets returned no record of this yet.';
 
 export const GROUNDING_RULES = `
 Grounding rules:
 - State only facts that appear in the sources below or in a web search result you read here. Every factual sentence must rest on at least one of them.
 - Your own background knowledge may be out of date. Never use it to state whether an event happened, or did not happen.
 - Never say something has not happened, does not exist, never occurred, or that a company is not public or remains private, unless a source or web result explicitly says so.
-- If no source answers the question, say: "${NO_RECORD_LINE}" Then report what the web results say, if web search ran.
+- Never write that a dataset, source or search has no record of something, returned nothing, or does not cover it, and never mention whether web search ran. If the sources answer only part of the question, answer that part and leave the rest out.
 - Findings only. No recommendations, no buy or sell language.`;
 
 /* Claims that something did not happen or is not so. Deliberately the
@@ -36,7 +38,8 @@ Grounding rules:
 const NEGATION_RE =
   /\b(?:has not|hasn['’]t|have not|haven['’]t|had not|hadn['’]t|did not|didn['’]t|never|no (?:record|ipo|evidence|plans? to)|has yet to|have yet to|is yet to|(?:is|was|isn['’]t|wasn['’]t) not (?:yet )?(?:public|listed|publicly traded)|(?:isn['’]t|wasn['’]t) (?:yet )?(?:public|listed|publicly traded)|remains? (?:a )?private(?:ly held)?|still private|privately held|not (?:yet )?publicly traded|not held|does not exist|doesn['’]t exist)\b/i;
 
-/* A sentence about Ezana's own coverage, not about the world. */
+/* A sentence about Ezana's own coverage, not about the world. Never judged
+   as a claim; stripCoverageNotes removes it from the brief instead. */
 const META_RE =
   /\b(?:our|ezana['’]?s?|the|these|its|this)\s+(?:proprietary\s+)?(?:datasets?|sources?|snippets?|findings?|records?|data)\b|\bweb search\b|\bsearch results?\b|\bno (?:dataset|snippet|finding|source|match)(?:es|s)?\b|\b(?:financial|investment) advice\b/i;
 
@@ -94,21 +97,41 @@ export function findUnsupportedNegatives(draft, findings = []) {
     });
 }
 
-/** Drop the given sentences, keeping the paragraph breaks. */
-function removeSentences(text, bad, { noFindings }) {
+/** Drop the given sentences, keeping the paragraph breaks. May return ''. */
+function removeSentences(text, bad) {
   let out = String(text || '');
-  let placed = out.includes(NO_RECORD_LINE);
-  for (const s of bad) {
-    const replacement = noFindings && !placed ? NO_RECORD_LINE : '';
-    if (replacement) placed = true;
-    out = out.replace(s, replacement);
-  }
-  out = out
+  for (const s of bad) out = out.replace(s, '');
+  return out
     .split(/\n{2,}/)
     .map((p) => p.replace(/[ \t]{2,}/g, ' ').trim())
     .filter(Boolean)
     .join('\n\n');
-  return out || NO_RECORD_LINE;
+}
+
+/* Sentences about what Ezana's datasets, the sources or a search did or did
+   not return ("Our datasets returned no record of ...", "The provided
+   sources do not include the offer price", "Web search was not available").
+   Positive dataset sentences ("Ezana's datasets show 12 trades") are kept. */
+const COVERAGE_RES = [
+  /\bno record\b/i,
+  /\b(?:web search|live web|search results?)\b/i,
+  /\bgeneral background\b/i,
+  /\b(?:our|ezana['’]?s?|the|these|those|its|available|provided|retrieved)\s+(?:[\w-]+\s+){0,2}(?:datasets?|sources?|snippets?)\s+(?:[\w-]+\s+){0,3}?(?:do(?:es)?\s+not|don['’]t|doesn['’]t|did\s+not|didn['’]t|returned\s+no|return\s+no|contain\s+no|have\s+no|has\s+no|show\s+no|shows\s+no|include\s+no|lack|are\s+silent|is\s+silent|are\s+empty|is\s+empty)\b/i,
+  /\b(?:not|isn['’]t|aren['’]t)\s+(?:yet\s+)?(?:covered|available|included)\s+(?:in|by)\s+(?:our|ezana|the)\b/i,
+  /\b(?:datasets?|sources?)\s+(?:do\s+not|don['’]t)\s+(?:yet\s+)?cover\b/i,
+];
+
+/**
+ * Remove every sentence that comments on coverage rather than the subject.
+ * @param {string} text
+ * @returns {string} the brief without those sentences ('' when nothing is left)
+ */
+export function stripCoverageNotes(text) {
+  const notes = String(text || '')
+    .split(/\n+/)
+    .flatMap(splitSentences)
+    .filter((s) => COVERAGE_RES.some((re) => re.test(s)));
+  return notes.length ? removeSentences(text, notes) : String(text || '').trim();
 }
 
 /**
@@ -120,10 +143,13 @@ function removeSentences(text, bad, { noFindings }) {
  *   the caller's existing synthesis call with one extra instruction, or null
  *   when there is no time left to regenerate
  * @returns {Promise<{ text: string, flagged: string[], regenerated: boolean, removed: string[] }>}
+ *   `text` is '' when nothing supported is left; the caller falls back.
  */
 export async function enforceGrounding(draft, findings = [], regenerate = null) {
   const flagged = findUnsupportedNegatives(draft, findings);
-  if (!flagged.length) return { text: draft, flagged, regenerated: false, removed: [] };
+  if (!flagged.length) {
+    return { text: stripCoverageNotes(draft), flagged, regenerated: false, removed: [] };
+  }
 
   let text = draft;
   let regenerated = false;
@@ -134,7 +160,7 @@ export async function enforceGrounding(draft, findings = [], regenerate = null) 
           .map((s) => `"${s}"`)
           .join(
             '; ',
-          )}. Rewrite the brief using only the sources and web results. Do not say whether something happened unless a source says so; if nothing answers the question, say "${NO_RECORD_LINE}"`,
+          )}. Rewrite the brief using only the sources and web results. Do not say whether something happened unless a source says so, and never write that a source or dataset has no record of it.`,
       );
       if (retry) {
         text = retry;
@@ -146,9 +172,9 @@ export async function enforceGrounding(draft, findings = [], regenerate = null) 
   }
 
   const still = findUnsupportedNegatives(text, findings);
-  if (!still.length) return { text, flagged, regenerated, removed: [] };
+  if (!still.length) return { text: stripCoverageNotes(text), flagged, regenerated, removed: [] };
   return {
-    text: removeSentences(text, still, { noFindings: !(findings || []).length }),
+    text: stripCoverageNotes(removeSentences(text, still)),
     flagged,
     regenerated,
     removed: still,

@@ -178,6 +178,32 @@ async function cacheBySearch(admin, phrase, limit = 6) {
 }
 
 /**
+ * Recent headlines from Ezana's own news cache for a ping, newest first:
+ * the articles tagged with the subject's tickers plus a full-text match on
+ * its name. The landing brief cites them as (news) evidence (Oct 30), which
+ * is how a ping hears about events newer than any model, inside the
+ * 6-second budget a live web search cannot fit.
+ * @param {object} admin
+ * @param {{ tickers?: string[], phrase?: string, limit?: number }} opts
+ */
+export async function newsEvidence(admin, { tickers = [], phrase = '', limit = 5 } = {}) {
+  const [byTickers, searched] = await Promise.all([
+    cacheByTickers(admin, tickers.filter(Boolean), limit),
+    phrase ? cacheBySearch(admin, phrase, limit) : [],
+  ]);
+  const seen = new Set();
+  return [...byTickers, ...searched]
+    .filter((a) => {
+      const key = String(a.url).replace(/[#?].*$/, '');
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((a, b) => String(b.publishedAt || '').localeCompare(String(a.publishedAt || '')))
+    .slice(0, limit);
+}
+
+/**
  * What the three columns are for, per kind of ping, with the articles
  * Ezana's own cache already holds for each.
  */
@@ -386,7 +412,7 @@ const validDate = (d) => (/^\d{4}-\d{2}-\d{2}$/.test(String(d || '')) ? String(d
  * items is kept so the layout stays three-up, and the client shows its
  * empty line.
  */
-export async function buildNewsColumns({ subject, specs }) {
+export async function buildNewsColumns({ subject, specs, webSearch = true }) {
   const columns = specs.map((c) => ({ id: c.id, title: c.title, icon: c.icon, items: [] }));
   const seen = new Set();
   const push = (col, it) => {
@@ -400,6 +426,10 @@ export async function buildNewsColumns({ subject, specs }) {
 
   const wanted = specs.filter((_, i) => columns[i].items.length < PER_COLUMN);
   if (!wanted.length) return columns;
+  /* Oct 30: only links the search tool returned are ever kept, so without
+     web search the model call can add nothing. It used to run anyway and
+     cost every ping about 6 seconds. The 6-second ping passes false. */
+  if (!webSearch || process.env.SONAR_WEB_SEARCH !== 'true') return columns;
 
   let synth;
   try {

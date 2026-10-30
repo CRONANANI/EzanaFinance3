@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { withApiGuard, safeErrorResponse } from '@/lib/api-guard';
 import { getAdminClient, getAuthUser } from '@/lib/supabase';
-import { runLandingPipeline, hashIp, DISCLAIMER } from '@/lib/sonar/landing-pipeline';
+import { runLandingPipeline, hashIp, DISCLAIMER, pingProfile } from '@/lib/sonar/landing-pipeline';
 import { reservePing, completePing, failPing } from '@/lib/sonar/quota';
 import { getClientIp } from '@/lib/client-ip';
 import { withTimeout } from '@/lib/with-timeout';
@@ -39,9 +39,17 @@ export const dynamic = 'force-dynamic';
    (PIPELINE_BUDGET_MS from the handler's start, every leg bounded) and the
    function cap sits above it, so the route always gets to answer. */
 export const maxDuration = 90;
-const PIPELINE_BUDGET_MS = 70_000;
-const AUTH_MS = 3_000;
-const RESERVE_MS = 6_000;
+/* Oct 30 (v2): every ping answers inside six seconds (the 'fast' profile,
+   landing-pipeline.js). The pipeline gets PIPELINE_BUDGET_MS from the
+   handler's start; the session lookup, the reservation and the ledger write
+   are each bounded so the whole request stays under it. SONAR_PING_PROFILE=
+   deep restores the 70 second web-search budget. maxDuration stays a
+   literal (Next reads it statically) and above both. */
+const PROFILE = pingProfile();
+const PIPELINE_BUDGET_MS = PROFILE.routeBudgetMs;
+const AUTH_MS = PROFILE.authMs;
+const RESERVE_MS = PROFILE.reserveMs;
+const LEDGER_MS = PROFILE.ledgerMs;
 
 const GUEST_LIMIT = 5;
 const COOKIE = 'snr_guest';
@@ -188,7 +196,7 @@ export const POST = withApiGuard(
         deadlineAt: startedAt + PIPELINE_BUDGET_MS,
       });
     } catch (e) {
-      await failPing(admin, reservation);
+      await withTimeout(failPing(admin, reservation), LEDGER_MS, 'ledger-fail');
       return safeErrorResponse(e);
     }
 
@@ -203,7 +211,7 @@ export const POST = withApiGuard(
     /* No answer at all means both the grounded and the general synthesis
        failed, which is our problem and not the visitor's. Nothing is spent. */
     if (!result.answer) {
-      await failPing(admin, reservation);
+      await withTimeout(failPing(admin, reservation), LEDGER_MS, 'ledger-fail');
       return NextResponse.json(
         {
           answer: null,
@@ -223,14 +231,21 @@ export const POST = withApiGuard(
     /* Complete the reserved ledger row. Non-fatal by design: the row is
        already counted, and failing here would show the visitor an error for
        a working ping whose synthesis we have already paid for. */
-    try {
-      await completePing(admin, reservation, {
+    /* Bounded: a slow ledger write must not hold a finished brief. */
+    const ledger = await withTimeout(
+      completePing(admin, reservation, {
         classification: result.classification,
         datasets_searched: result.sources.map((s) => s.id),
         grounded: result.grounded,
-      });
-    } catch (e) {
-      console.error('[sonar/landing] ledger complete threw:', e?.message);
+      }),
+      LEDGER_MS,
+      'ledger',
+    );
+    if (!ledger.ok) {
+      console.error(
+        '[sonar/landing] ledger complete',
+        ledger.timedOut ? 'timed out' : ledger.error?.message,
+      );
     }
 
     const nextUsed = used + 1;
@@ -253,5 +268,7 @@ export const POST = withApiGuard(
     if (!member) setGuestCount(res, nextUsed);
     return res;
   },
-  { requireAuth: false, strict: true },
+  /* The limiter's database call is bounded to fit the six-second ping; a
+     miss falls back to the per-instance count (persistent-rate-limit.js). */
+  { requireAuth: false, strict: true, rateLimitTimeoutMs: PROFILE.rateLimitMs },
 );

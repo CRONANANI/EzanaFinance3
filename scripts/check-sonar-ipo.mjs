@@ -15,9 +15,10 @@ process.env.FMP_API_KEY = process.env.FMP_API_KEY || 'test-key';
 const { extractIntents, ipoSubject, resolveQuery } = await import('@/lib/sonar/resolveQuery');
 const ipoMod = await import('@/lib/sonar/sources/ipo-events');
 const ipoEvents = ipoMod.default;
-const { findUnsupportedNegatives, enforceGrounding, NO_RECORD_LINE } =
+const { findUnsupportedNegatives, enforceGrounding, stripCoverageNotes, GROUNDING_RULES } =
   await import('@/lib/sonar/groundingGuard');
-const { resolveIpoCompany } = await import('@/lib/sonar/landing-pipeline');
+const { resolveIpoCompany, aliasedCompany, evidenceBrief, marketSnapshot, pingProfile } =
+  await import('@/lib/sonar/landing-pipeline');
 const { rankSourcedMatches } = await import('@/lib/sonar/rankSourcedMatches');
 const { getLiveSources, coverageReport } = await import('@/lib/sonar/sources/registry');
 
@@ -58,6 +59,18 @@ const FIXTURE = {
   'search-name': [
     { symbol: 'SPCX', name: 'Space Exploration Technologies Corp.', exchange: 'NASDAQ' },
   ],
+  quote: [
+    {
+      symbol: 'SPCX',
+      name: 'Space Exploration Technologies Corp.',
+      price: 171.5,
+      changePercentage: 1.25,
+      marketCap: 2_100_000_000_000,
+      yearLow: 140,
+      yearHigh: 190,
+      exchange: 'NASDAQ',
+    },
+  ],
 };
 
 let calls = [];
@@ -67,7 +80,7 @@ globalThis.fetch = async (url) => {
   const key = u.pathname.split('/').pop();
   const sym = u.searchParams.get('symbol');
   let body = FIXTURE[key] ?? [];
-  if (key === 'profile' && sym && sym !== 'SPCX') body = [];
+  if ((key === 'profile' || key === 'quote') && sym && sym !== 'SPCX') body = [];
   return new Response(JSON.stringify(body), {
     status: 200,
     headers: { 'content-type': 'application/json' },
@@ -87,6 +100,55 @@ test('resolver: the SpaceX ping is an IPO question about SpaceX, resolving to SP
   assert.equal(ipoSubject(raw), 'spacex');
   const hit = await resolveIpoCompany(ipoSubject(raw));
   assert.equal(hit?.ticker, 'SPCX');
+});
+
+test('resolver: noisy SpaceX pings still resolve to SPCX, alias first', async () => {
+  for (const raw of [
+    'can you give me details on the spacex ipo',
+    'SpaceX IPO filing SEC 2026',
+    'how did space x do after it went public this summer',
+  ]) {
+    assert.ok(aliasedCompany(raw), `alias found in "${raw}"`);
+    calls = [];
+    const hit = await resolveIpoCompany(ipoSubject(raw), raw);
+    assert.equal(hit?.ticker, 'SPCX', raw);
+    assert.equal(hit?.alias, 'SpaceX');
+    assert.ok(!calls.some((c) => c.endsWith('search-name')), 'no name search when aliased');
+  }
+  assert.equal(ipoSubject('can you give me details on the spacex ipo'), 'spacex');
+  assert.equal(ipoSubject('SpaceX IPO filing SEC 2026'), 'SpaceX');
+  assert.equal(aliasedCompany('spacexai lab ecosystem etf'), null, 'whole words only');
+});
+
+test('resolver: a fund never wins a company name search', async () => {
+  const saved = FIXTURE['search-name'];
+  FIXTURE['search-name'] = [
+    { symbol: 'XAIW', name: 'SpaceXAI Lab Ecosystem ETF', exchange: 'NYSE' },
+  ];
+  try {
+    assert.equal(await resolveIpoCompany('rocketco', 'when did rocketco ipo'), null);
+  } finally {
+    FIXTURE['search-name'] = saved;
+  }
+});
+
+test('market snapshot: listing date and live price, no vendor name', async () => {
+  const m = await marketSnapshot('SPCX', 1000);
+  assert.equal(m.corpus, 'market');
+  assert.match(m.snippet, /listed since 2026-06-12/);
+  assert.match(m.snippet, /Last price \$171\.50, up 1\.25% on the day/);
+  assert.match(m.snippet, /Market cap \$2\.10T/);
+  assert.ok(!/fmp|financialmodelingprep/i.test(m.snippet));
+  assert.ok(!/[—–]/.test(m.snippet));
+});
+
+test('fast profile: a six-second ping by default', () => {
+  const P = pingProfile();
+  assert.equal(P.id, 'fast');
+  assert.ok(P.routeBudgetMs + P.rateLimitMs + P.ledgerMs <= 6_100);
+  assert.equal(P.web, false);
+  assert.equal(P.regenerate, false);
+  assert.ok(P.legs.retrieveCap < P.routeBudgetMs);
 });
 
 test('resolver: other IPO phrasings and a sanctions "listed" ping', () => {
@@ -164,8 +226,37 @@ test('guard: a false negative is rejected when an IPO finding exists', () => {
 
 test('guard: a grounded positive answer passes', () => {
   const draft =
-    'SpaceX priced its IPO at $135.00 per share and raised about $75.0B [S1]. Our datasets returned no record of congressional trades in SPCX.';
+    'SpaceX priced its IPO at $135.00 per share and raised about $75.0B [S1]. Ezana\u2019s datasets show 12 congressional trades in SPCX [S2].';
   assert.deepEqual(findUnsupportedNegatives(draft, [ipoFinding]), []);
+});
+
+test('guard: coverage notes never reach the brief', async () => {
+  assert.ok(
+    !/returned no record|say: "/i.test(GROUNDING_RULES),
+    'the rules never ask for a no-record line',
+  );
+  const draft = [
+    'Our datasets returned no record of a SpaceX initial public offering. SpaceX listed on Nasdaq as SPCX on 2026-06-12 [S1].',
+    'Web search was not available for this brief. Ezana\u2019s datasets show 12 congressional trades in SPCX [S2].',
+    'The provided sources do not include the offer price. This is general background rather than sourced research.',
+  ].join('\n\n');
+  const out = stripCoverageNotes(draft);
+  assert.equal(
+    out,
+    'SpaceX listed on Nasdaq as SPCX on 2026-06-12 [S1].\n\nEzana\u2019s datasets show 12 congressional trades in SPCX [S2].',
+  );
+  const guarded = await enforceGrounding(draft, [ipoFinding], null);
+  assert.ok(!/no record|web search|general background/i.test(guarded.text));
+});
+
+test('evidence brief: cited snippets when synthesis misses the deadline', () => {
+  const brief = evidenceBrief('SpaceX', [
+    { marker: 'S1', snippet: ipoFinding.summary },
+    { marker: 'S2', snippet: 'SpaceX (SPCX) is a listed company trading on Nasdaq.' },
+  ]);
+  assert.match(brief, /^Here is what Sonar found on SpaceX\. SpaceX priced at \$135\.00/);
+  assert.match(brief, /2026-06-12 \[S1\]\. .*Nasdaq \[S2\]\.$/);
+  assert.equal(evidenceBrief('SpaceX', []), null);
 });
 
 test('guard: a negative a source states is supported', () => {
@@ -176,10 +267,10 @@ test('guard: a negative a source states is supported', () => {
   assert.deepEqual(findUnsupportedNegatives('Stripe has not gone public.', [src]), []);
 });
 
-test('guard: a negative with zero findings is replaced with the no-record line', async () => {
+test('guard: a negative with zero findings is removed, never replaced with a no-record line', async () => {
   assert.equal(findUnsupportedNegatives('Stripe has not gone public.', []).length, 1);
   const out = await enforceGrounding('Stripe has not gone public.', [], null);
-  assert.equal(out.text, NO_RECORD_LINE);
+  assert.equal(out.text, '', 'the caller falls back to the evidence brief');
 });
 
 test('guard: regenerates once, then removes what still fails, keeping paragraphs', async () => {

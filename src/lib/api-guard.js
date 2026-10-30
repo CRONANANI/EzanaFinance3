@@ -107,7 +107,10 @@ export function withApiGuard(handler, options = {}) {
         const uid = request.headers.get('x-ezana-uid') || '';
         const limit = uid ? (strict ? 30 : 120) : strict ? 10 : 30;
         const bucket = uid ? `api:u:${uid}:${pattern}` : `api:${ip}:${pattern}`;
-        const rl = await checkRateLimit(bucket, limit, windowMs, { failClosed });
+        const rl = await checkRateLimit(bucket, limit, windowMs, {
+          failClosed,
+          timeoutMs: options.rateLimitTimeoutMs,
+        });
         remaining = rl.remaining;
         if (!rl.allowed) {
           if (rl.degraded) {

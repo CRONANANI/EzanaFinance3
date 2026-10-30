@@ -1,8 +1,28 @@
 /* Sonar rail loader (prefix srl-). Seven tiles on one bus; a pulse sweeps the
-   bus left to right and each tile lights as the pulse reaches it. */
+   bus left to right and each tile lights as the pulse reaches it.
+   Oct 30: Ezana green ink for the metallic black ground the overlays give it
+   (--brand-metal-black), and the bouncing dataset stack hovering above the
+   beam. Constant brand tokens only, so the loader reads the same in every
+   shell. */
 .srl-wrap {
+  --srl-green: var(--brand-ezana-green);
+  --srl-mint: var(--brand-band-mint);
   display: grid;
   justify-items: center;
+}
+/* The stack hovers over the beam that feeds the bus. Its palette is mixed
+   from the constant greens here: the page sheet that normally sets it may
+   not have loaded, and its defaults follow the shell, not this ground. */
+.srl-hover {
+  margin-bottom: -8px;
+}
+.srl-hover .snrl-wrap {
+  --snrl-deep: color-mix(in srgb, var(--brand-ezana-green) 55%, var(--brand-ezana-green-deep));
+  --snrl-mid: color-mix(in srgb, var(--brand-ezana-green) 30%, var(--brand-ezana-green-deep));
+  --snrl-top: color-mix(in srgb, var(--brand-ezana-green) 78%, var(--brand-ezana-green-deep));
+  --snrl-bright: var(--brand-band-mint);
+  --snrl-shadow: color-mix(in srgb, var(--brand-ezana-green) 30%, transparent);
+  padding: 0;
 }
 .srl-rail {
   --srl-size: clamp(40px, 7vw, 56px);
@@ -10,7 +30,7 @@
   --srl-drop: 28px;
   --srl-cycle: 2.4s;
   --srl-span: calc((var(--srl-n) - 1) * (var(--srl-size) + var(--srl-gap)));
-  --srl-line: color-mix(in srgb, white 26%, transparent);
+  --srl-line: color-mix(in srgb, var(--srl-green) 38%, transparent);
   position: relative;
   display: grid;
   grid-template-columns: repeat(var(--srl-n), var(--srl-size));
@@ -25,7 +45,7 @@
   width: 2px;
   height: var(--srl-drop);
   margin-left: -1px;
-  background: linear-gradient(to bottom, transparent, var(--brand-band-mint));
+  background: linear-gradient(to bottom, transparent, var(--srl-mint));
 }
 .srl-bus {
   position: absolute;
@@ -43,10 +63,10 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: white;
+  background: var(--srl-mint);
   box-shadow:
-    0 0 10px var(--brand-band-mint),
-    0 0 22px color-mix(in srgb, var(--brand-band-mint) 60%, transparent);
+    0 0 10px var(--srl-green),
+    0 0 22px color-mix(in srgb, var(--srl-green) 60%, transparent);
   animation: srl-sweep var(--srl-cycle) linear infinite;
 }
 .srl-node {
@@ -72,9 +92,9 @@
   place-items: center;
   border-radius: var(--radius-lg);
   font-size: calc(var(--srl-size) * 0.42);
-  color: color-mix(in srgb, white 72%, transparent);
-  background: color-mix(in srgb, white 8%, transparent);
-  border: 1px solid color-mix(in srgb, white 22%, transparent);
+  color: var(--srl-green);
+  background: color-mix(in srgb, var(--srl-green) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--srl-green) 30%, transparent);
   animation: srl-light var(--srl-cycle) ease-out infinite;
   animation-delay: calc(var(--srl-cycle) * var(--srl-i) / (var(--srl-n) - 1));
 }
@@ -102,26 +122,26 @@
 }
 @keyframes srl-light {
   0% {
-    color: var(--emerald-dark);
-    background: white;
-    border-color: white;
+    color: var(--srl-mint);
+    background: color-mix(in srgb, var(--srl-green) 22%, transparent);
+    border-color: var(--srl-green);
     box-shadow:
-      0 0 0 4px color-mix(in srgb, white 16%, transparent),
-      0 0 24px color-mix(in srgb, var(--brand-band-mint) 55%, transparent);
+      0 0 0 4px color-mix(in srgb, var(--srl-green) 14%, transparent),
+      0 0 24px color-mix(in srgb, var(--srl-green) 50%, transparent);
     transform: translateY(-2px);
   }
   24%,
   100% {
-    color: color-mix(in srgb, white 72%, transparent);
-    background: color-mix(in srgb, white 8%, transparent);
-    border-color: color-mix(in srgb, white 22%, transparent);
+    color: var(--srl-green);
+    background: color-mix(in srgb, var(--srl-green) 8%, transparent);
+    border-color: color-mix(in srgb, var(--srl-green) 30%, transparent);
     box-shadow: none;
     transform: none;
   }
 }
 @keyframes srl-stem {
   0% {
-    background: var(--brand-band-mint);
+    background: var(--srl-mint);
   }
   24%,
   100% {

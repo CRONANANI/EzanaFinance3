@@ -209,7 +209,15 @@ const IPO_FRAME_WORDS = new Set(
     'on at by to from with about and or value valued valuation price priced pricing size raise raised ' +
     'raising proceeds ipo ipos ipoed initial public offering offerings went go goes going gone listing ' +
     'listed list debut debuted debuts stock stocks share shares ticker yet ever company tell me give ' +
-    'show date day first trade trading market cap s'
+    'show date day first trade trading market cap s ' +
+    /* Oct 30 (v2): "can you give me details on the spacex ipo" left "you
+       details spacex" as the subject, and "spacex ipo filing sec 2026" left
+       "SpaceX filing SEC 2026". Conversational and filing words go too. */
+    'i me my we us our you your please know explain summary summarize details detail info ' +
+    'information any all more everything happened happen happening recent recently latest news ' +
+    'update updates filing filings filed file sec s-1 prospectus registration earlier last ago ' +
+    'year years month months week summer spring fall autumn winter today big biggest largest ' +
+    'record results result performance since after before opening opened open close closed so far'
   ).split(' '),
 );
 
@@ -225,7 +233,9 @@ export function ipoSubject(raw) {
     .replace(/[^\p{L}\p{N}&.\s-]/gu, ' ')
     .split(/\s+/)
     .filter(Boolean)
-    .filter((w) => !IPO_FRAME_WORDS.has(w.toLowerCase().replace(/[.]+$/, '')));
+    .filter((w) => !IPO_FRAME_WORDS.has(w.toLowerCase().replace(/[.]+$/, '')))
+    /* A bare year or number frames the question ("in 2026"), never names it. */
+    .filter((w) => !/^\d+$/.test(w));
   const subject = words.join(' ').replace(/[.]+$/, '').trim();
   return subject || null;
 }

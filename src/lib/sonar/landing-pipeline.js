@@ -55,6 +55,7 @@ import {
   splitExposed,
   columnSpecs,
   buildNewsColumns,
+  newsEvidence,
 } from '@/lib/sonar/landing-research';
 import { BoundedMap } from '@/lib/bounded-map';
 import { withTimeout } from '@/lib/with-timeout';
@@ -97,10 +98,13 @@ export const DISCLAIMER =
    Reuters and Bloomberg on runs where no web search ran. Every brief now
    gets today's date in the ping and these two rule blocks. */
 const DATE_RULES = `
-Dates: today's date is the first line of the ping. Anything dated before today has already happened. Never describe a past election, vote, meeting, data release or deadline as upcoming, and never tell the reader to watch an event that has passed. If a past event's outcome is not in the sources or a web result, say it has taken place and that its result is not in the sources yet; never guess the result. A projection for a year that is already over is history, not a forecast.`;
+Dates: today's date is the first line of the ping. Anything dated before today has already happened. Never describe a past election, vote, meeting, data release or deadline as upcoming, and never tell the reader to watch an event that has passed. If a past event's outcome is not in the sources, say it has taken place and never guess its result. A projection for a year that is already over is history, not a forecast.`;
 
+/* Oct 30 (v2): no longer tells the model web search is off. Briefs were
+   passing that on to the reader ("this is general background", "web search
+   did not run"), which says nothing about the subject. */
 const NO_WEB_RULES = `
-Web search is not available for this brief. Never attribute a fact to an outlet, agency or report you did not read here (no "per Reuters", no "according to Bloomberg"). Anything you add beyond the sources is general background: say so, give the year it dates from, and never let it contradict the sources.`;
+Use only the sources below. Never attribute a fact to an outlet, agency or report you did not read here (no "per Reuters", no "according to Bloomberg") unless a (news) snippet names it. Never let anything you add contradict the sources.`;
 
 /** Today in Toronto (the brief's reader), long form: "Monday, October 26, 2026". */
 function todayLine() {
@@ -127,18 +131,40 @@ Rules:
 /* The no-snippet path: the datasets returned nothing about the subject, so
    the brief is web research. It says so in one clause, never invents a
    dataset citation, and still has to be substantive. */
-const GENERAL_SYSTEM_PROMPT = `You are Ezana Sonar, a research analyst answering a ping. Ezana's proprietary datasets returned no match for this subject, so your evidence is live web search.
+const GENERAL_SYSTEM_PROMPT = `You are Ezana Sonar, a research analyst answering a ping. Your evidence is live web search.
 Rules:
 - Search the web thoroughly and answer the question the visitor actually asked, leading with what is true and current. Give real substance: names, dates, figures, outlets.
-- Note in ONE clause, not a sentence of its own, that Ezana's datasets do not cover this subject yet.
-- Never invent dataset citations. Do not use [S1] style markers: there are no snippets to cite. If web search did not run, say plainly that this is general background rather than sourced research.
+- Write only about the subject. Never mention Ezana's datasets, what they cover, or how the research was done.
+- Never invent dataset citations. Do not use [S1] style markers: there are no snippets to cite.
 - No fabricated figures, dates or names. A number either comes from a web result or does not appear.
 - Findings only. No financial or investment advice, price targets, or buy/sell/hold language.
-- Four short paragraphs separated by blank lines: (1) direct answer, (2) the strongest specifics, (3) recent developments, (4) what to watch, or a better ping for sourced results. Each paragraph 50 to 90 words. No headers, no lists, no em dashes.`;
+- Four short paragraphs separated by blank lines: (1) direct answer, (2) the strongest specifics, (3) recent developments, (4) what to watch. Each paragraph 50 to 90 words. No headers, no lists, no em dashes.`;
+
+/* Oct 30 (v2): the 6-second ping. No live web search fits in six seconds,
+   so the brief's internet evidence is what the pipeline fetched itself:
+   live market data and the listing record for a resolved company (market),
+   the IPO filings source (ipo) and recent headlines from Ezana's news feed
+   (news). Three shorter paragraphs, so a fast model finishes in time. */
+const FAST_GROUNDED_PROMPT = `You are Ezana Sonar, a research analyst answering a ping. Your evidence is the numbered snippets below: Ezana's datasets (congressional trades, government contracts, SEC and IPO filings, 13F holdings, lobbying, the OFAC sanctions list, prediction markets, Echo editorial), live market data marked (market) and recent headlines from Ezana's news feed marked (news). The (market) and (news) snippets are current as of today.
+Rules:
+- Answer the question the visitor actually asked. Lead with the direct answer, then the evidence, then what it means.
+- Cite every fact inline with its snippet marker, e.g. [S1]. Never cite a snippet about a different entity.
+- Write only about the subject. Never comment on what the snippets, datasets or searches contain or lack, and never mention web search. If the snippets answer only part of the question, answer that part.
+- Findings only. No financial or investment advice, price targets, or buy/sell/hold language. No fabricated figures: a number comes from a snippet or it does not appear.
+- Three short paragraphs separated by blank lines: (1) direct answer, (2) the evidence, cited, (3) what it means and what to watch. Each paragraph 40 to 70 words. No headers, no lists, no em dashes.`;
+
+/* No snippet at all, and no web: established background, dated. */
+const FAST_GENERAL_PROMPT = `You are Ezana Sonar, a research analyst answering a ping. Answer the question the visitor asked from established background knowledge.
+Rules:
+- Lead with the direct answer, then the key specifics, then what to watch.
+- Your knowledge may be out of date. Give the year a time-sensitive fact dates from ("as of 2025"), and never state whether a recent event happened or did not happen.
+- Write only about the subject. Never mention Ezana's datasets, sources, coverage or web search.
+- No fabricated figures, dates or names. Findings only. No financial or investment advice, price targets, or buy/sell/hold language.
+- Three short paragraphs separated by blank lines, each 40 to 70 words. No headers, no lists, no em dashes.`;
 
 /* Appended for an IPO ping (Oct 30). */
 const IPO_ADDENDUM = `
-This ping is about an IPO. Snippets marked (ipo) are IPO filing records: offer price, shares offered, proceeds, valuation, exchange, ticker and first trade date. Lead with them and cite them. A value written with "about" is derived from the record's own numbers; say "about". If there is no (ipo) snippet, do not say whether the company has gone public unless a web result says so.`;
+This ping is about an IPO. Snippets marked (ipo) are IPO filing records: offer price, shares offered, proceeds, valuation, exchange, ticker and first trade date. Lead with them and cite them. A value written with "about" is derived from the record's own numbers; say "about". A (market) snippet that shows the stock trading, with its listing date, means the company is public: say when it listed and how it trades now. Without an (ipo) or (market) snippet, do not say whether the company has gone public unless a (news) snippet or a web result reports it.`;
 
 /* Recent-event pings (IPO, M&A, earnings, elections, appointments, deaths,
    launches) can postdate any model's training, so they search a little more. */
@@ -196,27 +222,48 @@ const RESOLVE_TTL_MS = 24 * 60 * 60 * 1000;
 const RESOLVE_MISS_TTL_MS = 10 * 60 * 1000;
 const resolveCache = new BoundedMap(1000);
 
-/* Last resort for an IPO ping whose company name the search endpoints do not
-   know yet (the listing is newer than their name index). Only used after the
-   name search misses, and the ticker is then checked against the profile
-   endpoint, so an alias can never resolve to a symbol that does not trade. */
-const IPO_NAME_ALIASES = {
-  spacex: 'SPCX',
-  'space x': 'SPCX',
-  'space exploration technologies': 'SPCX',
-  'space exploration technologies corp': 'SPCX',
-};
+/* Companies the name-search endpoints do not know by the name people use
+   (the listing is newer than their name index, or the brand is not the
+   legal name). Oct 30 (v2): matched as whole words ANYWHERE in the ping and
+   tried BEFORE the name search. Tried after it, "spacex" went to the name
+   search first, which answered with the "SpaceXAI Lab Ecosystem ETF"
+   (XAIW), and the brief described that fund instead of SpaceX. The ticker
+   is still checked against the profile endpoint, so an alias can never
+   resolve to a symbol that does not trade. */
+const COMPANY_ALIASES = [
+  {
+    re: /(^|[^\p{L}\p{N}])(?:space\s?x|space exploration technologies)(?=[^\p{L}\p{N}]|$)/iu,
+    ticker: 'SPCX',
+    surface: 'SpaceX',
+  },
+];
 
-/** Resolve the company an IPO ping is about. */
-export async function resolveIpoCompany(subject) {
+/** The aliased company a ping names, or null. */
+export function aliasedCompany(text) {
+  const t = String(text || '');
+  return COMPANY_ALIASES.find((a) => a.re.test(t)) || null;
+}
+
+/** Resolve an aliased company, keeping the name people use as `alias`. */
+async function resolveAlias(alias) {
+  const hit = await resolveCompany(`$${alias.ticker}`);
+  return hit ? { ...hit, alias: alias.surface } : null;
+}
+
+/**
+ * Resolve the company an IPO ping is about.
+ * @param {string} subject  the ping with the question framing stripped
+ * @param {string} [raw]    the whole ping, searched for an alias first
+ */
+export async function resolveIpoCompany(subject, raw = '') {
   const s = String(subject || '').trim();
+  const alias = aliasedCompany(raw) || aliasedCompany(s);
+  if (alias) {
+    const hit = await resolveAlias(alias);
+    if (hit) return hit;
+  }
   if (!s) return null;
-  const hit = await resolveCompany(s);
-  if (hit) return hit;
-  const alias = IPO_NAME_ALIASES[s.toLowerCase().replace(/[.,]+$/, '')];
-  if (!alias) return null;
-  console.log('[sonar-pipeline] ipo alias fallback', { subject: s, alias });
-  return resolveCompany(`$${alias}`);
+  return resolveCompany(s);
 }
 
 /* A bare all-caps token is a ticker only when it is not geography or a
@@ -300,20 +347,45 @@ function tickerToken(query) {
  */
 const US_EXCHANGES = new Set(['NASDAQ', 'NYSE', 'AMEX', 'NYSEARCA', 'BATS', 'OTC']);
 
-function pickUsListing(rows) {
+/* Oct 30 (v2): a fund is never the answer to a company ping. "spacex"
+   resolved to the SpaceXAI Lab Ecosystem ETF because nothing here told a
+   fund from a company. A fund wins only when the ping asks for one. */
+const FUND_NAME_RE =
+  /\b(?:etf|etn|etp|fund|ishares|spdr|proshares|direxion|leveraged|inverse|2x|3x)\b/i;
+const FUND_ASK_RE = /\b(?:etf|etfs|etn|etp|fund|funds)\b/i;
+const isFund = (r) =>
+  FUND_NAME_RE.test(String(r.name || r.companyName || '')) ||
+  /^(?:etf|etp|fund|mutual fund)$/i.test(String(r.type || ''));
+
+function pickUsListing(rows, query = '') {
   const list = Array.isArray(rows)
     ? rows.filter((r) => r?.symbol && (r.name || r.companyName))
     : [];
   if (!list.length) return null;
+  const wantsFund = FUND_ASK_RE.test(String(query));
+  const words = String(query)
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((w) => w.length >= 3);
   const score = (r) => {
     const sym = String(r.symbol).toUpperCase();
     const ex = String(r.exchangeShortName || r.exchange || '').toUpperCase();
+    const name = String(r.name || r.companyName).toLowerCase();
     let n = 0;
     if (!sym.includes('.')) n += 2;
     if (US_EXCHANGES.has(ex)) n += 1;
+    /* A whole query word in the name ("lockheed" in "Lockheed Martin
+       Corporation"); "spacex" is not a whole word of "SpaceXAI ...". */
+    if (
+      words.some((w) => new RegExp(`(^|[^\\p{L}\\p{N}])${w}(?=[^\\p{L}\\p{N}]|$)`, 'u').test(name))
+    ) {
+      n += 1;
+    }
+    if (!wantsFund && isFund(r)) n -= 4;
     return n;
   };
   const best = list.reduce((a, b) => (score(b) > score(a) ? b : a), list[0]);
+  if (!wantsFund && isFund(best)) return null;
   return {
     ticker: String(best.symbol).toUpperCase(),
     name: String(best.name || best.companyName),
@@ -326,20 +398,20 @@ const NAME_LOOKUPS = [
     id: 'fmp/search-name',
     url: (q, k) => `${FMP_STABLE}/search-name?query=${encodeURIComponent(q)}&limit=10&apikey=${k}`,
     pick: (d) => d,
-    map: (d) => pickUsListing(d),
+    map: (d, q) => pickUsListing(d, q),
   },
   {
     id: 'fmp/search-symbol',
     url: (q, k) =>
       `${FMP_STABLE}/search-symbol?query=${encodeURIComponent(q)}&limit=10&apikey=${k}`,
     pick: (d) => d,
-    map: (d) => pickUsListing(d),
+    map: (d, q) => pickUsListing(d, q),
   },
   {
     id: 'fmp-v3/search',
     url: (q, k) => `${FMP_V3}/search?query=${encodeURIComponent(q)}&limit=10&apikey=${k}`,
     pick: (d) => d,
-    map: (d) => pickUsListing(d),
+    map: (d, q) => pickUsListing(d, q),
   },
 ];
 
@@ -364,7 +436,7 @@ async function tryFmp(lookups, arg) {
   const k = encodeURIComponent(key);
   for (const lookup of lookups) {
     try {
-      const data = await fetchJson(lookup.url(arg, k));
+      const data = await fetchJson(lookup.url(arg, k), pingProfile().resolveFetchMs);
       const hit = lookup.map(lookup.pick(data), arg);
       if (hit) {
         console.log('[sonar-pipeline] resolved via', lookup.id, hit);
@@ -386,6 +458,7 @@ async function tryFinnhub(query, ticker) {
     if (ticker) {
       const d = await fetchJson(
         `https://finnhub.io/api/v1/stock/profile2?symbol=${encodeURIComponent(ticker)}&token=${k}`,
+        pingProfile().resolveFetchMs,
       );
       if (d?.name) {
         console.log('[sonar-pipeline] resolved via finnhub/profile2', { ticker, name: d.name });
@@ -395,10 +468,18 @@ async function tryFinnhub(query, ticker) {
     }
     const d = await fetchJson(
       `https://finnhub.io/api/v1/search?q=${encodeURIComponent(query)}&exchange=US&token=${k}`,
+      pingProfile().resolveFetchMs,
     );
-    const row = Array.isArray(d?.result) ? d.result[0] : null;
-    if (row?.symbol && row?.description) {
-      const hit = { ticker: String(row.symbol).toUpperCase(), name: String(row.description) };
+    /* Same picker as FMP, so a fund is passed over here too. */
+    const hit = pickUsListing(
+      (Array.isArray(d?.result) ? d.result : []).map((r) => ({
+        symbol: r?.symbol,
+        name: r?.description,
+        type: r?.type,
+      })),
+      query,
+    );
+    if (hit) {
       console.log('[sonar-pipeline] resolved via finnhub/search', hit);
       return hit;
     }
@@ -1272,40 +1353,236 @@ export function companyEvidence(matches, resolved) {
   return out;
 }
 
-/* Per-leg ceilings for the landing ping. The route runs inside a 60s
-   function; before these, every leg was unbounded and a slow database or
-   upstream stacked them past the cap (prod Oct 26: resolve finished at 30s,
-   retrieval was still running at 60s, Vercel killed the function, the
-   client got a bare 504). A leg that misses its ceiling degrades to the
-   same value it returns when it finds nothing, so the ping still answers. */
-const LEG_MS = {
-  industry: 5_000,
-  politician: 5_000,
-  resolve: 6_000,
-  /* Oct 26 (v2): 9s per retriever cut the contracts scan off on every
-     ping in production (the raw awards table is slow under the current
-     disk IO), so every company brief went ungrounded. 15s with the trigram
-     indexes from the matching migration, and the dossier matches below as
-     a second evidence source when it still misses. */
-  retrieveCap: 18_000,
-  retriever: 15_000,
-  embed: 3_000,
-  rerank: 4_000,
-  sanctions: 5_000,
-  countryDossier: 8_000,
-  companyDossier: 18_000,
-  macroRank: 5_000,
+/* Per-leg ceilings for the landing ping. A leg that misses its ceiling
+   degrades to the same value it returns when it finds nothing, so the ping
+   still answers (prod Oct 26: unbounded legs stacked past the function cap
+   and the client got a bare 504).
+
+   Oct 30 (v2): two profiles. 'fast' is the default and answers inside six
+   seconds end to end: tight legs run side by side, a fast model writes a
+   shorter brief, nothing is regenerated, and live web search (which alone
+   takes longer than six seconds) is off; the internet evidence is fetched
+   by the pipeline itself (market data, IPO filings, the news feed). 'deep'
+   (SONAR_PING_PROFILE=deep) is the previous behaviour: the stronger model,
+   web search when SONAR_WEB_SEARCH=true, a 70 second budget.
+
+   evidenceReserveMs is the time kept back after the evidence legs for the
+   brief and the tail; tailMs after the brief for the response itself. */
+const PROFILES = {
+  fast: {
+    id: 'fast',
+    routeBudgetMs: 4_900,
+    defaultBudgetMs: 4_900,
+    authMs: 700,
+    reserveMs: 1_100,
+    ledgerMs: 400,
+    rateLimitMs: 800,
+    resolveFetchMs: 900,
+    tailMs: 300,
+    evidenceReserveMs: 2_700,
+    dossierReserveMs: 2_700,
+    model: process.env.SONAR_FAST_MODEL || HAIKU_MODEL,
+    briefTokens: 420,
+    sanctionsExtraTokens: 260,
+    web: false,
+    regenerate: false,
+    generalMinMs: 1_300,
+    minHopMs: 1_000,
+    hopReserveMs: 0,
+    maxSnippets: 14,
+    legs: {
+      industry: 700,
+      politician: 600,
+      resolve: 1_100,
+      retrieveCap: 1_600,
+      retriever: 1_200,
+      embed: 600,
+      rerank: 700,
+      sanctions: 900,
+      countryDossier: 1_200,
+      companyDossier: 1_400,
+      macroRank: 900,
+      ipo: 2_000,
+      ipoFetch: 1_000,
+      market: 1_200,
+      news: 1_000,
+    },
+  },
+  deep: {
+    id: 'deep',
+    routeBudgetMs: 70_000,
+    defaultBudgetMs: 52_000,
+    authMs: 3_000,
+    reserveMs: 6_000,
+    ledgerMs: 5_000,
+    rateLimitMs: undefined,
+    resolveFetchMs: 4_000,
+    tailMs: 3_000,
+    evidenceReserveMs: 22_000,
+    dossierReserveMs: 25_000,
+    model: BRIEF_MODEL,
+    briefTokens: BRIEF_TOKENS,
+    sanctionsExtraTokens: 400,
+    web: true,
+    regenerate: true,
+    generalMinMs: 8_000,
+    minHopMs: undefined,
+    hopReserveMs: undefined,
+    maxSnippets: 40,
+    legs: {
+      industry: 5_000,
+      politician: 5_000,
+      resolve: 6_000,
+      retrieveCap: 18_000,
+      retriever: 15_000,
+      embed: 3_000,
+      rerank: 4_000,
+      sanctions: 5_000,
+      countryDossier: 8_000,
+      companyDossier: 18_000,
+      macroRank: 5_000,
+      ipo: 6_000,
+      ipoFetch: 4_000,
+      market: 4_000,
+      news: 4_000,
+    },
+  },
 };
-/* Time kept back after the brief for the dossier/news awaits and the JSON
-   response. */
-const TAIL_MS = 3_000;
-const DEFAULT_BUDGET_MS = 52_000;
+
+/** The ping profile in force: 'fast' unless SONAR_PING_PROFILE=deep. */
+export function pingProfile() {
+  return process.env.SONAR_PING_PROFILE === 'deep' ? PROFILES.deep : PROFILES.fast;
+}
+
+/* "Space Exploration Technologies Corp." -> "Space Exploration Technologies". */
+const shortName = (name) =>
+  String(name || '')
+    .replace(
+      /[,.]?\s+(?:inc|corp|corporation|co|company|ltd|limited|plc|holdings?|group|sa|ag|nv|se|llc|lp)\.?$/i,
+      '',
+    )
+    .trim();
+
+/* $1.75T, $482.1B, $310.0M. */
+function compactUsd(n) {
+  const v = Number(n);
+  if (!Number.isFinite(v) || v <= 0) return null;
+  if (v >= 1e12) return `$${(v / 1e12).toFixed(2)}T`;
+  return usd(v);
+}
+
+/**
+ * Live market data for a resolved company, as one (market) snippet: where it
+ * trades, since when, the last price and day move, market cap and 52-week
+ * range. The listing date is what answers "has it gone public" for a new
+ * listing that no model knows about. Never names the data vendor.
+ */
+export async function marketSnapshot(ticker, ms = 1_200) {
+  const key = getFmpKey();
+  if (!key || !ticker) return null;
+  const k = encodeURIComponent(key);
+  const sym = encodeURIComponent(ticker);
+  const [q, p] = await Promise.all([
+    fetchWithStatus(`${FMP_STABLE}/quote?symbol=${sym}&apikey=${k}`, ms),
+    fetchWithStatus(`${FMP_STABLE}/profile?symbol=${sym}&apikey=${k}`, ms),
+  ]);
+  const quote = (Array.isArray(q.data) ? q.data[0] : q.data) || null;
+  const prof = (Array.isArray(p.data) ? p.data[0] : p.data) || null;
+  const price = Number(quote?.price ?? prof?.price);
+  const name = String(prof?.companyName || quote?.name || ticker);
+  if (!Number.isFinite(price) && !prof?.companyName) return null;
+  const exchange = prof?.exchangeFullName || prof?.exchange || quote?.exchange || null;
+  const ipoDate = /^\d{4}-\d{2}-\d{2}/.test(String(prof?.ipoDate || ''))
+    ? String(prof.ipoDate).slice(0, 10)
+    : null;
+  const chg = Number(quote?.changePercentage ?? quote?.changesPercentage);
+  const cap = compactUsd(quote?.marketCap ?? prof?.marketCap ?? prof?.mktCap);
+  const low = Number(quote?.yearLow);
+  const high = Number(quote?.yearHigh);
+  const parts = [
+    `${name} (${ticker}) is a listed company${exchange ? ` trading on ${exchange}` : ''}${
+      ipoDate ? `, listed since ${ipoDate}` : ''
+    }.`,
+  ];
+  if (Number.isFinite(price)) {
+    parts.push(
+      `Last price $${price.toFixed(2)}${
+        Number.isFinite(chg)
+          ? `, ${chg >= 0 ? 'up' : 'down'} ${Math.abs(chg).toFixed(2)}% on the day`
+          : ''
+      }.`,
+    );
+  }
+  if (cap) parts.push(`Market cap ${cap}.`);
+  if (Number.isFinite(low) && Number.isFinite(high) && high > 0) {
+    parts.push(`52-week range $${low.toFixed(2)} to $${high.toFixed(2)}.`);
+  }
+  const sector = [prof?.sector, prof?.industry].filter(Boolean).join(', ');
+  if (sector) parts.push(`Sector: ${sector}.`);
+  const today = new Date().toISOString().slice(0, 10);
+  parts.push(`Market data as of ${today}.`);
+  return {
+    corpus: 'market',
+    title: `${name} market data`,
+    snippet: parts.join(' '),
+    date: today,
+    meta: { ticker },
+  };
+}
+
+/* Headlines from Ezana's news feed as (news) snippets. */
+function newsItems(articles) {
+  return (articles || []).map((a) => {
+    const day = String(a.publishedAt || '').slice(0, 10);
+    return {
+      corpus: 'news',
+      title: a.title,
+      snippet: `Headline: "${String(a.title).replace(/\s*[—–]\s*/g, ', ')}" (${a.source}${
+        day ? `, ${day}` : ''
+      }).`,
+      url: a.url,
+      date: day || null,
+      meta: { source: a.source },
+    };
+  });
+}
+
+/**
+ * The brief when synthesis cannot answer in time: the strongest snippets in
+ * order, each cited. Every word comes from the evidence, so it can never
+ * make a claim the sources do not, and the ping still answers.
+ */
+export function evidenceBrief(subject, marked) {
+  const clip = (raw) => {
+    let t = String(raw || '')
+      .replace(/\s*[—–]\s*/g, ', ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (t.length > 280) {
+      const cut = t.slice(0, 280);
+      const end = cut.lastIndexOf('. ');
+      t = end > 120 ? cut.slice(0, end + 1) : `${cut.replace(/\s+\S*$/, '')}...`;
+    }
+    return /[.!?]$/.test(t) ? t : `${t}.`;
+  };
+  const line = (it) =>
+    `${clip(it.snippet || it.text || it.title).replace(/[.!?]$/, '')} [${it.marker}].`;
+  const top = marked.slice(0, 3).map(line);
+  if (!top.length) return null;
+  const rest = marked.slice(3, 6).map(line);
+  const paras = [`Here is what Sonar found on ${subject}. ${top.join(' ')}`];
+  if (rest.length) paras.push(rest.join(' '));
+  return paras.join('\n\n');
+}
 
 export async function runLandingPipeline(
   query,
   { admin, wantDossier = true, noCorrect = false, force = null, deadlineAt = null } = {},
 ) {
-  const deadline = Number(deadlineAt) || Date.now() + DEFAULT_BUDGET_MS;
+  const P = pingProfile();
+  const LEG = P.legs;
+  const TAIL_MS = P.tailMs;
+  const deadline = Number(deadlineAt) || Date.now() + P.defaultBudgetMs;
   const left = () => deadline - Date.now();
   /* Resolve a leg's value within `ms` (clipped to what the request has left)
      or fall back. A thrown error still throws, so the trace records it. */
@@ -1363,7 +1640,12 @@ export async function runLandingPipeline(
   const ipoIntent = eventIntents.includes('ipo');
   const recentEvent = eventIntents.includes('recentEvent');
   const ipoSubj = ipoIntent ? ipoSubject(q) : null;
-  const industryEnt = INDUSTRY_INTENTS.has(understood.intent) ? entity('industry') : null;
+  /* Oct 30 (v2): a company people know by a name the search endpoints do
+     not (SpaceX), anywhere in the ping, before any name search runs. */
+  const companyAlias = aliasedCompany(query) || aliasedCompany(q);
+  /* "spacex ipo" is about the company, never the space industry. */
+  const industryEnt =
+    INDUSTRY_INTENTS.has(understood.intent) && !companyAlias ? entity('industry') : null;
   const tickerEnt = entity('ticker');
   const countryEnt = entity('country');
 
@@ -1378,7 +1660,7 @@ export async function runLandingPipeline(
             admin
               ? getIndustryRegistryCached(industryEnt.id)
               : getIndustryRegistry(null, industryEnt.id),
-            LEG_MS.industry,
+            LEG.industry,
             null,
             'industry',
           ),
@@ -1401,11 +1683,12 @@ export async function runLandingPipeline(
   const politician =
     country ||
     industryPing ||
+    companyAlias ||
     (tickerEnt && !understood.entities.some((e) => e.kind === 'person_politician'))
       ? null
       : await leg(
           'resolve-politician',
-          () => within(resolvePolitician(q, admin), LEG_MS.politician, null, 'politician'),
+          () => within(resolvePolitician(q, admin), LEG.politician, null, 'politician'),
           (v) => (v ? v.bioguideId : 'none'),
         );
   /* A company: only from a chosen ticker entity, or a ping with no other
@@ -1417,6 +1700,7 @@ export async function runLandingPipeline(
     !industryEnt &&
     (tickerEnt ||
       ipoIntent ||
+      companyAlias ||
       ['company', 'ticker_lookup', 'open_question', 'fund'].includes(understood.intent));
   const resolved = companyAllowed
     ? await leg(
@@ -1425,10 +1709,12 @@ export async function runLandingPipeline(
           within(
             tickerEnt
               ? resolveCompany(`$${tickerEnt.id}`)
-              : ipoSubj
-                ? resolveIpoCompany(ipoSubj)
-                : resolveCompany(q),
-            LEG_MS.resolve,
+              : ipoIntent
+                ? resolveIpoCompany(ipoSubj, query)
+                : companyAlias
+                  ? resolveIpoCompany(null, query)
+                  : resolveCompany(q),
+            LEG.resolve,
             null,
             'resolve',
           ),
@@ -1474,7 +1760,7 @@ export async function runLandingPipeline(
       : politician
         ? ` (resolved to ${politician.name}, ${[politician.party, politician.state].filter(Boolean).join('-')}, U.S. ${politician.chamberLabel || 'Congress'})`
         : resolved
-          ? ` (resolved to ${resolved.name}, ${resolved.ticker})`
+          ? ` (resolved to ${resolved.alias ? `${resolved.alias}, ` : ''}${resolved.name}, ${resolved.ticker})`
           : '';
 
   const entitlements = getSonarEntitlements({ planTier: 0, version: 'regular' });
@@ -1495,6 +1781,61 @@ export async function runLandingPipeline(
       ? buildDossierFor({ country, politician, resolved, industry, understood, admin, leg })
       : null;
 
+  /* Oct 30 (v2): the internet evidence, started beside retrieval rather
+     than after it. A resolved company gets live market data (where it
+     trades, since when, price, market cap) and, on an IPO ping, the IPO
+     filings source; every ping gets recent headlines from Ezana's news feed
+     for its subject. Each is bounded and degrades to nothing. */
+  const ipoP =
+    ipoIntent && resolved?.ticker
+      ? leg(
+          'ipo',
+          () =>
+            within(
+              ipoEvents.search(
+                { intents: eventIntents, tickers: [resolved.ticker] },
+                { timeoutMs: LEG.ipoFetch },
+              ),
+              LEG.ipo,
+              [],
+              'ipo',
+            ),
+          (v) => `findings=${v.length}`,
+        ).catch(() => [])
+      : Promise.resolve([]);
+  const marketP =
+    resolved?.ticker && !country && !politician && !industryPing
+      ? leg(
+          'market',
+          () => within(marketSnapshot(resolved.ticker, LEG.market), LEG.market, null, 'market'),
+          (v) => (v ? 'snapshot' : 'none'),
+        ).catch(() => null)
+      : Promise.resolve(null);
+  const newsPhrase = industryPing
+    ? display
+    : country
+      ? country.name
+      : politician
+        ? politician.name
+        : resolved
+          ? resolved.alias || shortName(resolved.name)
+          : ipoSubj || subjectTerms(understood).slice(0, 3).join(' ');
+  const newsP = leg(
+    'news',
+    () =>
+      within(
+        newsEvidence(admin, {
+          tickers: resolved?.ticker ? [resolved.ticker] : [],
+          phrase: newsPhrase,
+          limit: 5,
+        }),
+        LEG.news,
+        [],
+        'news',
+      ),
+    (v) => `articles=${v.length}`,
+  ).catch(() => []);
+
   const out = await leg(
     'retrieve',
     () =>
@@ -1510,13 +1851,13 @@ export async function runLandingPipeline(
           perCorpusCap: budget.perCorpusCap,
           charBudget: budget.charBudget,
           /* A slow corpus drops out instead of holding the whole fan-out. */
-          retrieverTimeoutMs: LEG_MS.retriever,
-          embedTimeoutMs: LEG_MS.embed,
-          rerankTimeoutMs: LEG_MS.rerank,
+          retrieverTimeoutMs: LEG.retriever,
+          embedTimeoutMs: LEG.embed,
+          rerankTimeoutMs: LEG.rerank,
         }),
-        /* Never let retrieval eat the brief's time: at least ~22s stays for
-           synthesis and the tail. */
-        Math.min(LEG_MS.retrieveCap, left() - 22_000),
+        /* Never let retrieval eat the brief's time: the profile's reserve
+           stays for synthesis and the tail. */
+        Math.min(LEG.retrieveCap, left() - P.evidenceReserveMs),
         { items: [], corporaSearched: allowCorpora || [] },
         'retrieve',
       ),
@@ -1544,7 +1885,9 @@ export async function runLandingPipeline(
       : politician
         ? [politician.name, politician.lastName].filter(Boolean).map((t) => t.toLowerCase())
         : resolved
-          ? [resolved.name, resolved.ticker].filter(Boolean).map((t) => t.toLowerCase())
+          ? [resolved.name, shortName(resolved.name), resolved.ticker, resolved.alias]
+              .filter(Boolean)
+              .map((t) => t.toLowerCase())
           : ipoSubj
             ? /* An IPO ping for a company nothing resolved: only snippets
                  that name it, never unrelated ones for the brief to fill. */
@@ -1592,41 +1935,32 @@ export async function runLandingPipeline(
   /* A sanctions ping reads the OFAC aggregates as dataset evidence too. */
   const sanctions =
     intent === 'sanctions'
-      ? await within(sanctionsContext(), LEG_MS.sanctions, null, 'sanctions').catch(() => null)
+      ? await within(sanctionsContext(), LEG.sanctions, null, 'sanctions').catch(() => null)
       : null;
   if (sanctions) items.push(...sanctions.evidence);
 
   /* An IPO ping reads the IPO filings source (price, shares, proceeds,
      valuation, exchange, first trade) for the resolved symbol, at the top of
      the evidence so the brief leads with it. */
-  let ipoFindings = [];
-  if (ipoIntent && resolved?.ticker) {
-    ipoFindings = await leg(
-      'ipo',
-      () =>
-        within(
-          ipoEvents.search(
-            { intents: eventIntents, tickers: [resolved.ticker] },
-            { timeoutMs: 4_000 },
-          ),
-          ipoEvents.timeoutMs,
-          [],
-          'ipo',
-        ),
-      (v) => `findings=${v.length}`,
-    ).catch(() => []);
-    items.unshift(
-      ...ipoFindings.map((f) => ({
-        corpus: 'ipo',
-        title: f.title,
-        snippet: f.summary,
-        url: f.citation?.href || null,
-        date: f.date || null,
-        score: f.relevance,
-        meta: { symbol: f.meta?.symbol || resolved.ticker, citation: f.citation?.label || null },
-      })),
-    );
-  }
+  /* The IPO filings and the market snapshot lead the evidence, so the
+     brief opens with them. */
+  const evidenceWait = Math.max(0, left() - P.evidenceReserveMs);
+  const [ipoFindings, market] = await Promise.all([
+    within(ipoP, evidenceWait, [], 'ipo-wait').catch(() => []),
+    within(marketP, evidenceWait, null, 'market-wait').catch(() => null),
+  ]);
+  if (market) items.unshift(market);
+  items.unshift(
+    ...ipoFindings.map((f) => ({
+      corpus: 'ipo',
+      title: f.title,
+      snippet: f.summary,
+      url: f.citation?.href || null,
+      date: f.date || null,
+      score: f.relevance,
+      meta: { symbol: f.meta?.symbol || resolved?.ticker, citation: f.citation?.label || null },
+    })),
+  );
 
   /* A company ping cites its own dataset matches. Before this the brief saw
      only the retrievers, so when the contracts scan missed its window the
@@ -1638,12 +1972,21 @@ export async function runLandingPipeline(
   if (resolved && !country && !politician && !industryPing && dossierP) {
     const early = await within(
       dossierP,
-      Math.min(LEG_MS.companyDossier, left() - 25_000),
+      Math.min(LEG.companyDossier, left() - P.dossierReserveMs),
       null,
       'company-dossier',
     ).catch(() => null);
     if (early?.matches) items.push(...companyEvidence(early.matches, resolved));
   }
+
+  /* Headlines last: the brief reads the datasets first. */
+  const news = await within(
+    newsP,
+    Math.max(0, left() - P.evidenceReserveMs),
+    [],
+    'news-wait',
+  ).catch(() => []);
+  items.push(...newsItems(news));
 
   if (ipoIntent && resolved?.ticker && !corporaSearched.includes('ipo')) {
     corporaSearched.push('ipo');
@@ -1657,7 +2000,7 @@ export async function runLandingPipeline(
   if (country) {
     const countryDossier = await within(
       dossierP,
-      LEG_MS.countryDossier,
+      LEG.countryDossier,
       null,
       'country-dossier',
     ).catch(() => null);
@@ -1669,12 +2012,7 @@ export async function runLandingPipeline(
       const rank = await leg(
         'macro-rank',
         () =>
-          within(
-            buildRankBlock(country, countryDossier, admin),
-            LEG_MS.macroRank,
-            null,
-            'macro-rank',
-          ),
+          within(buildRankBlock(country, countryDossier, admin), LEG.macroRank, null, 'macro-rank'),
         (v) => (v ? `metrics=${Object.keys(v.view?.metrics || {}).length}` : 'none'),
       ).catch(() => null);
       if (rank) {
@@ -1697,7 +2035,7 @@ export async function runLandingPipeline(
   if (industry) {
     const industryDossier = await within(
       dossierP,
-      LEG_MS.countryDossier,
+      LEG.countryDossier,
       null,
       'industry-dossier',
     ).catch(() => null);
@@ -1705,7 +2043,16 @@ export async function runLandingPipeline(
   }
   const columnsP = wantDossier
     ? (async () => {
-        const dossierNow = await dossierP;
+        /* Bounded (Oct 30 v2): the columns no longer wait for the whole
+           dossier; without it they still have the feed's headlines. */
+        const dossierNow = dossierP
+          ? await within(
+              dossierP,
+              Math.max(0, left() - TAIL_MS - 600),
+              null,
+              'columns-dossier',
+            ).catch(() => null)
+          : null;
         const specs = await columnSpecs({
           query: display,
           country,
@@ -1736,6 +2083,7 @@ export async function runLandingPipeline(
                       ? resolved.name
                       : display,
               specs,
+              webSearch: P.web,
             }),
           (c) => c.map((x) => `${x.id}=${x.items.length}`).join(' '),
         );
@@ -1758,7 +2106,9 @@ export async function runLandingPipeline(
   const guardBrief = async (draft, args, synth, sourceTexts) => {
     if (!draft) return draft;
     const findings = [...sourceTexts, ...(synth?.webCitedText || [])];
-    const canRetry = left() - TAIL_MS > 14_000;
+    /* The fast profile never regenerates: a second model call does not fit
+       in six seconds, so an unsupported negative is removed instead. */
+    const canRetry = P.regenerate && left() - TAIL_MS > 14_000;
     const res = await enforceGrounding(
       draft,
       findings,
@@ -1768,6 +2118,8 @@ export async function runLandingPipeline(
               ...args,
               system: `${args.system}\n${extra}`,
               deadlineAt: deadline - TAIL_MS,
+              minHopMs: P.minHopMs,
+              reserveMs: P.hopReserveMs,
             });
             return again?.answer || null;
           }
@@ -1783,34 +2135,64 @@ export async function runLandingPipeline(
     return res.text;
   };
   const webUses = recentEvent ? RECENT_WEB_USES : BRIEF_WEB_USES;
+  /* Live web search runs only in the deep profile, and only when the
+     deployment turns it on. */
+  const webActive = P.web && webSearchOn();
+  /* What the brief is about, for the evidence fallback's opening line. */
+  const subjectLabel = industryPing
+    ? display
+    : country
+      ? country.name
+      : politician
+        ? politician.name
+        : resolved
+          ? resolved.alias || shortName(resolved.name)
+          : display;
+  /* The news headlines a brief read are the pages it read: listed under
+     the brief like web pages when no web search ran. */
+  const newsSources = items
+    .filter((it) => it.corpus === 'news' && it.url)
+    .slice(0, 6)
+    .map((it) => ({ url: it.url, title: it.title }));
 
   if (items.length) {
-    const marked = items.map((it, i) => ({ ...it, marker: `S${i + 1}` }));
+    /* Fewer, shorter snippets on the fast profile, so the model reads and
+       answers in time; the feed's headlines always keep a few places. */
+    const newsKept = items.filter((it) => it.corpus === 'news').slice(0, 4);
+    const evidence =
+      items.length > P.maxSnippets
+        ? [
+            ...items.filter((it) => it.corpus !== 'news').slice(0, P.maxSnippets - newsKept.length),
+            ...newsKept,
+          ]
+        : items;
+    const snippetChars = P.id === 'fast' ? 360 : 500;
+    const marked = evidence.map((it, i) => ({ ...it, marker: `S${i + 1}` }));
     const sourcesBlock = marked
       .map(
         (it) =>
-          `[${it.marker}] (${it.corpus}) ${String(it.text || it.snippet || '').slice(0, 500)}`,
+          `[${it.marker}] (${it.corpus}) ${String(it.text || it.snippet || '').slice(0, snippetChars)}`,
       )
       .join('\n');
     const groundedArgs = {
       system:
-        GROUNDED_SYSTEM_PROMPT +
+        (webActive ? GROUNDED_SYSTEM_PROMPT : FAST_GROUNDED_PROMPT) +
         (sanctions ? SANCTIONS_ADDENDUM : '') +
         (country ? COUNTRY_ADDENDUM : '') +
         (ipoIntent ? IPO_ADDENDUM : '') +
         DATE_RULES +
         GROUNDING_RULES +
-        (webSearchOn() ? '' : NO_WEB_RULES),
+        (webActive ? '' : NO_WEB_RULES),
       user: `Today is ${todayLine()}.\nPing: ${display}${resolvedNote}\n\nSources:\n${sourcesBlock}`,
-      /* Room for four paragraphs of dataset and web findings; the brief
-         panel scrolls inside the locked viewport. */
-      maxTokens: sanctions ? BRIEF_TOKENS + 400 : BRIEF_TOKENS,
-      model: BRIEF_MODEL,
+      maxTokens: sanctions ? P.briefTokens + P.sanctionsExtraTokens : P.briefTokens,
+      model: P.model,
       fallbackModel: HAIKU_MODEL,
-      /* Inert until SONAR_WEB_SEARCH=true is set: anthropicSynthesize
-         gates the tool on that env var as well as this flag. */
-      webSearch: { enabled: true, maxUses: webUses },
+      /* Inert unless webActive: anthropicSynthesize also gates the tool on
+         SONAR_WEB_SEARCH. */
+      webSearch: { enabled: webActive, maxUses: webUses },
       deadlineAt: deadline - TAIL_MS,
+      minHopMs: P.minHopMs,
+      reserveMs: P.hopReserveMs,
     };
     const synth = await leg(
       'synthesize',
@@ -1844,25 +2226,39 @@ export async function runLandingPipeline(
         answer = deterministicBrief(dossierNow?.rank?.view, dossierNow?.empire) || answer;
       }
     }
+    /* Oct 30 (v2): synthesis that cannot answer in time (or whose every
+       sentence the guard removed) no longer costs the ping: the brief is
+       the strongest snippets, cited, word for word. */
+    if (!answer) {
+      answer = evidenceBrief(subjectLabel, marked);
+      if (answer) {
+        console.warn('[sonar-pipeline] evidence brief', {
+          reason: synth.answer ? 'guard emptied the draft' : synth.degraded || 'no answer',
+        });
+      }
+    }
     grounded = Boolean(answer);
     webUsed = Boolean(synth.webUsed);
-    webSources = (synth.webSources || []).slice(0, 6);
+    webSources = (synth.webSources?.length ? synth.webSources : newsSources).slice(0, 6);
     providerErrors = synth.providerErrors || [];
   }
 
-  /* The general brief only starts when there is time to finish it; a
-     provider hop under ~4s cannot. Running out here returns no answer, which
-     the route turns into a fast 502 that does not spend the visitor's ping. */
-  if (!answer && left() - TAIL_MS > 8_000) {
+  /* The general brief only starts when there is time to finish it.
+     Running out here returns no answer, which the route turns into a fast
+     502 that does not spend the visitor's ping. */
+  if (!answer && left() - TAIL_MS > P.generalMinMs) {
     const generalArgs = {
-      system:
-        GENERAL_SYSTEM_PROMPT + DATE_RULES + GROUNDING_RULES + (webSearchOn() ? '' : NO_WEB_RULES),
+      system: webActive
+        ? GENERAL_SYSTEM_PROMPT + DATE_RULES + GROUNDING_RULES
+        : FAST_GENERAL_PROMPT + DATE_RULES,
       user: `Today is ${todayLine()}.\nPing: ${display}${resolvedNote}`,
-      maxTokens: BRIEF_TOKENS,
-      model: BRIEF_MODEL,
+      maxTokens: P.briefTokens,
+      model: P.model,
       fallbackModel: HAIKU_MODEL,
-      webSearch: { enabled: true, maxUses: webUses },
+      webSearch: { enabled: webActive, maxUses: webUses },
       deadlineAt: deadline - TAIL_MS,
+      minHopMs: P.minHopMs,
+      reserveMs: P.hopReserveMs,
     };
     const synth = await leg(
       'synthesize-general',
@@ -1889,13 +2285,18 @@ export async function runLandingPipeline(
   /* The brief is the answer; the dossier and the news columns are extras.
      Whatever has not landed by the tail is left off rather than holding the
      response past the function cap. */
-  const tailMs = Math.max(0, left() - 1_500);
+  const tailMs = Math.max(0, left() - Math.min(1_500, TAIL_MS));
   const dossier =
     wantDossier && dossierP
       ? await within(dossierP, tailMs, null, 'dossier-tail').catch(() => null)
       : null;
   const newsColumns = columnsP
-    ? await within(columnsP, Math.max(0, left() - 1_500), null, 'news-tail').catch(() => null)
+    ? await within(
+        columnsP,
+        Math.max(0, left() - Math.min(1_500, TAIL_MS)),
+        null,
+        'news-tail',
+      ).catch(() => null)
     : null;
   if (dossier) dossier.newsColumns = newsColumns;
 

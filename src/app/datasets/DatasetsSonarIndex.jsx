@@ -54,16 +54,22 @@ export default async function DatasetsSonarIndex({ searchParams, stage = 'datase
   /* A short budget for first paint: anything still warming arrives with the
      client's first refresh a few seconds later. readPulse never throws. */
   let pulse = EMPTY_PULSE;
-  try {
-    pulse = await timed(
-      stage === 'app' ? '/sonar' : '/datasets',
-      readPulse,
-      'readPulse',
-    )({
-      budgetMs: 1800,
-    });
-  } catch {
-    /* No pulse, no belt: the page is still complete. */
+  /* Oct 30 (v2): a ping hand-off (?q=) shows the loader and then the
+     results, never the belt, so the server does not spend up to 1.8s of the
+     six-second ping reading the pulse first. The client fills it after. */
+  const pinging = typeof searchParams?.q === 'string' && searchParams.q.trim().length > 0;
+  if (!pinging) {
+    try {
+      pulse = await timed(
+        stage === 'app' ? '/sonar' : '/datasets',
+        readPulse,
+        'readPulse',
+      )({
+        budgetMs: 1800,
+      });
+    } catch {
+      /* No pulse, no belt: the page is still complete. */
+    }
   }
   /* Nothing is selected unless the URL names a real dimension. */
   const rawDim = typeof searchParams?.dimension === 'string' ? searchParams.dimension : null;

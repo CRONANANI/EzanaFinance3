@@ -1,42 +1,14 @@
-/* The /datasets overview's loading state (loading.js, prefix dsl-): the
-   Sonar ping loader centred on the green ground, nothing else. The loader's
-   palette is mixed against the emerald tokens here because the page sheet
-   that normally sets it (sonar/sonar.css) has not loaded yet. Tokens only. */
-/* Oct 29: a fixed full-viewport layer like .dsl-handoff (same z-index,
-   under the sticky nav), so only the green ground and the stack show while
-   Sonar loads, never the dataset chrome or footer around it. */
-.dsl-sonar {
-  position: fixed;
-  inset: 0;
-  z-index: 2147482990;
-  display: grid;
-  place-items: center;
-  padding: 48px 16px;
-  background: var(--brand-band-green);
-}
-/* In the app shell the overlays start under the fixed app nav. */
-.dsl-sonar--app,
-.dsl-handoff--app {
-  top: var(--navbar-height, 64px);
-}
-.dsl-sonar .snrl-wrap {
-  --snrl-deep: color-mix(in srgb, var(--emerald) 55%, var(--emerald-dark));
-  --snrl-mid: color-mix(in srgb, var(--emerald) 40%, var(--emerald-dark));
-  --snrl-top: color-mix(in srgb, var(--emerald) 72%, var(--emerald-dark));
-  --snrl-bright: var(--brand-band-mint);
-  color: white;
-}
-.dsl-sonar .snrl-label {
-  color: white;
-}
-.dsl-sonar .snrl-sublabel {
-  color: color-mix(in srgb, white 85%, transparent);
-}
-
-/* Oct 27: the landing hand-off keeps this exact screen up until the ping has
-   answered (SonarExperience, .dsl-handoff), so the visitor sees one loading
-   page and then the results, never the empty results band in between. Fixed
-   over the page, under the sticky navbar (z 2147483000) so the logo stays. */
+/* The /datasets overview's loading state (loading.js, prefix dsl-) and the
+   landing hand-off (SonarExperience, .dsl-handoff): one Sonar ping screen.
+   Oct 30: a metallic black ground (--brand-metal-black) under the rail
+   loader (SonarRailLoader: the seven dimension icons in Ezana green with
+   the bouncing dataset stack above them). The loader sets its own palette
+   from constant brand tokens, so nothing here depends on the page sheet
+   (sonar/sonar.css) having loaded. Tokens only. */
+/* Oct 29: a fixed full-viewport layer, under the sticky nav, so only the
+   ground and the loader show while Sonar loads, never the dataset chrome or
+   footer around it. */
+.dsl-sonar,
 .dsl-handoff {
   position: fixed;
   inset: 0;
@@ -44,12 +16,15 @@
   display: grid;
   place-items: center;
   padding: 48px 16px;
-  background: var(--brand-band-green);
-}
-.dsl-handoff .snrl-wrap {
-  --snrl-deep: color-mix(in srgb, var(--emerald) 55%, var(--emerald-dark));
-  --snrl-mid: color-mix(in srgb, var(--emerald) 40%, var(--emerald-dark));
-  --snrl-top: color-mix(in srgb, var(--emerald) 72%, var(--emerald-dark));
-  --snrl-bright: var(--brand-band-mint);
+  background: var(--brand-metal-black);
   color: white;
 }
+/* In the app shell the overlays start under the fixed app nav. */
+.dsl-sonar--app,
+.dsl-handoff--app {
+  top: var(--navbar-height, 64px);
+}
+/* Oct 27: the landing hand-off keeps this exact screen up until the ping has
+   answered, so the visitor sees one loading page and then the results, never
+   the empty results band in between. Fixed over the page, under the sticky
+   navbar (z 2147483000) so the logo stays. */
