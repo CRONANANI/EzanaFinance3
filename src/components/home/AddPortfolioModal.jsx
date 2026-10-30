@@ -42,7 +42,7 @@ export function AddPortfolioModal(props) {
         <div className="apm-card apm-card--grid" onClick={(e) => e.stopPropagation()}>
           <div className="apm-grid-head">
             <button type="button" className="apm-close" onClick={props.onClose} aria-label="Close">
-              ×
+              <i className="bi bi-x-lg" aria-hidden="true" />
             </button>
             <h2 className="apm-grid-title">Connect your brokerage</h2>
           </div>
@@ -191,7 +191,7 @@ function AddPortfolioModalInner({ open, onClose, onConnected }) {
           <div className="apm-card apm-card--grid" onClick={(e) => e.stopPropagation()}>
             <div className="apm-grid-head">
               <button type="button" className="apm-close" onClick={onClose} aria-label="Close">
-                ×
+                <i className="bi bi-x-lg" aria-hidden="true" />
               </button>
               <h2 className="apm-grid-title">Connect your brokerage</h2>
             </div>
@@ -264,7 +264,7 @@ function AddPortfolioModalInner({ open, onClose, onConnected }) {
         {step === 'provider-choice' && selected && (
           <div className="apm-card apm-card--choice" onClick={(e) => e.stopPropagation()}>
             <button type="button" className="apm-close" onClick={onClose} aria-label="Close">
-              ×
+              <i className="bi bi-x-lg" aria-hidden="true" />
             </button>
 
             <div className="apm-choice-header">
@@ -279,7 +279,7 @@ function AddPortfolioModalInner({ open, onClose, onConnected }) {
 
             <p className="apm-choice-sub">
               Both providers connect your account securely. Pick the support team you&apos;d rather
-              work with if something goes wrong — you can disconnect and switch at any time.
+              work with if something goes wrong. You can disconnect and switch at any time.
             </p>
 
             <button
@@ -320,7 +320,7 @@ function AddPortfolioModalInner({ open, onClose, onConnected }) {
                 </div>
                 <p className="apm-provider-btn-desc">
                   Read-only holdings, refreshed once per day (end-of-day data). Trusted by 8,000+
-                  financial apps including Venmo and Robinhood — useful if you already have Plaid
+                  financial apps including Venmo and Robinhood. Useful if you already have Plaid
                   connections elsewhere.
                 </p>
               </div>
@@ -343,7 +343,7 @@ function AddPortfolioModalInner({ open, onClose, onConnected }) {
               onClick={onClose}
               aria-label="Close"
             >
-              ×
+              <i className="bi bi-x-lg" aria-hidden="true" />
             </button>
             <div className="apm-disc-logos">
               <span className="apm-disc-logo apm-disc-logo--ezana">
