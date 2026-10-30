@@ -158,6 +158,8 @@ export function resolveQuery(raw, opts = {}) {
         ? 'country'
         : 'topic';
 
+  const intents = extractIntents(raw, themes);
+
   return {
     raw: String(raw || ''),
     tickers,
@@ -166,10 +168,66 @@ export function resolveQuery(raw, opts = {}) {
     organizations,
     people,
     intent,
+    /* Event intents layered on top of the entity/country/topic intent:
+       'ipo' and 'recentEvent'. A recent-event ping must sweep live web. */
+    intents,
+    forceLiveWeb: intents.includes('recentEvent'),
     subjects: subjectsFor(countries, organizations, people),
     hasSanctionedJurisdiction: countries.some((c) => SANCTIONED.has(c)),
     window: { from: daysAgo(365 * 2), to: new Date().toISOString().slice(0, 10) },
   };
+}
+
+/* Event intents (Oct 30, SpaceX IPO false negative). 'ipo' sends the ping to
+   the IPO filings source at the top weight; 'recentEvent' marks a question
+   whose answer may postdate any model's training, so live web is swept. */
+const INTENT_PATTERNS = {
+  ipo: /\b(ipo'?s?|ipoed|ipo'd|initial public offerings?|went public|go(?:es|ing)? public|gone public|listing|listed|debut(?:ed|s)?|offering price|priced at|public offering)\b/i,
+  recentEvent:
+    /\b(ipo'?s?|ipoed|ipo'd|initial public offerings?|went public|go(?:es|ing)? public|gone public|acquir\w*|merger|merged|earnings|elected|appointed|resign\w*|died|death|launch(?:ed|es)?|announced|this year|latest|recent(?:ly)?)\b/i,
+};
+
+/**
+ * Event intents for a ping. "Listed" means an OFAC listing on a sanctions
+ * ping, never a stock listing, so a sanctions ping never carries 'ipo'.
+ * @param {string} raw
+ * @param {string[]} [themes]
+ * @returns {string[]}
+ */
+export function extractIntents(raw, themes = extractThemes(raw, extractCountries(raw))) {
+  const text = String(raw || '');
+  return Object.entries(INTENT_PATTERNS)
+    .filter(([k, re]) => re.test(text) && !(k === 'ipo' && themes.includes('sanctions')))
+    .map(([k]) => k);
+}
+
+/* Words that frame an IPO question rather than name its subject. */
+const IPO_FRAME_WORDS = new Set(
+  (
+    'what whats when where which who how why much many was were is are be been being did does do ' +
+    'has have had will would could should can the a an of its it their they them this that for in ' +
+    'on at by to from with about and or value valued valuation price priced pricing size raise raised ' +
+    'raising proceeds ipo ipos ipoed initial public offering offerings went go goes going gone listing ' +
+    'listed list debut debuted debuts stock stocks share shares ticker yet ever company tell me give ' +
+    'show date day first trade trading market cap s'
+  ).split(' '),
+);
+
+/**
+ * The company an IPO ping is about, with the question framing stripped:
+ * "what was the ipo value of spacex" -> "spacex", "has Stripe gone public"
+ * -> "Stripe". Null when nothing is left.
+ * @param {string} raw
+ */
+export function ipoSubject(raw) {
+  const words = String(raw || '')
+    .replace(/[’']s\b/g, '')
+    .replace(/[^\p{L}\p{N}&.\s-]/gu, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter((w) => !IPO_FRAME_WORDS.has(w.toLowerCase().replace(/[.]+$/, '')));
+  const subject = words.join(' ').replace(/[.]+$/, '').trim();
+  return subject || null;
 }
 
 /** "United States and Iran"; "A, B and C". */

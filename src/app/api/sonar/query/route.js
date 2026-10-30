@@ -17,6 +17,7 @@ import {
   classifyQuery,
   CORPUS_TO_DATASET,
 } from '@/lib/sonar/retrieval';
+import { enforceGrounding, GROUNDING_RULES } from '@/lib/sonar/groundingGuard';
 import { synthesizeWithFallback } from '@/lib/sonar/llm-providers';
 import { logZeroResult } from '@/lib/rag/zero-results';
 import { reservePing, completePing, failPing } from '@/lib/sonar/quota';
@@ -229,15 +230,35 @@ async function handlePing(request, user, ping) {
       // Multi-provider fallback: Anthropic (with web search) → Kimi → DeepSeek. If the
       // primary is out of credits / rate-limited / down, synthesis fails over to a
       // fallback so the briefing still renders; only if ALL fail is it degraded.
-      const out = await synthesizeWithFallback({
-        system: SYSTEM_PROMPT,
+      const synthArgs = {
+        system: SYSTEM_PROMPT + GROUNDING_RULES,
         user: buildUserPrompt(query, marked, context),
         maxTokens: budget.maxTokens,
         model: modelForDepth(entitlements.depth),
         fallbackModel: HAIKU_MODEL,
         webSearch: entitlements.webSearch,
-      });
+      };
+      const out = await synthesizeWithFallback(synthArgs);
       answer = out.answer;
+      /* A negative claim no snippet or web result supports is regenerated
+         once, then removed (groundingGuard.js). */
+      if (answer) {
+        const guarded = await enforceGrounding(
+          answer,
+          [
+            ...marked.map((m) => `${m.title || ''}. ${String(m.text || m.snippet || '')}`),
+            ...(out.webCitedText || []),
+          ],
+          async (extra) =>
+            (
+              await synthesizeWithFallback({
+                ...synthArgs,
+                system: `${synthArgs.system}\n${extra}`,
+              })
+            )?.answer || null,
+        );
+        answer = guarded.text;
+      }
       degraded = out.degraded;
       // Dev ergonomics: the per-provider failure summary rides the JSON payload
       // in development so the browser network tab shows the real failure;

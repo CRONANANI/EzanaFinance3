@@ -29,7 +29,14 @@ const BASE_WEIGHTS = {
   '13f': 0.65,
   echo: 0.6,
   news: 0.6,
+  /* IPO filings (sources/ipo-events.js): ordinary weight, top weight on an
+     IPO ping (see sourceWeight). */
+  'ipo-events': 0.7,
+  'ipo-filings': 0.7,
+  ipo: 0.7,
 };
+
+const IPO_SLUGS = new Set(['ipo-events', 'ipo-filings', 'ipo']);
 
 const SANCTIONS_SLUGS = new Set(['us-sanctions', 'sanctions']);
 const CONTRACTS_SLUGS = new Set(['government-contracts', 'gov-contracts', 'contracts']);
@@ -41,6 +48,7 @@ function sourceWeight(slug, q) {
     if (q.themes?.includes('sanctions')) w += 0.3;
     if (q.themes?.includes('conflict')) w += 0.2;
   }
+  if (IPO_SLUGS.has(slug) && q.intents?.includes('ipo')) w += 1.0;
   if (CONTRACTS_SLUGS.has(slug) && q.intent === 'country') w -= 0.2;
   if ((slug === 'prediction-markets' || slug === 'markets') && q.themes?.includes('conflict')) {
     w += 0.2;

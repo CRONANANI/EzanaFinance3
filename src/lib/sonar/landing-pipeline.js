@@ -13,7 +13,9 @@ import { understandQuery } from '@/lib/sonar/understand';
 import { TICKER_BLOCKLIST } from '@/lib/sonar/understand/blocklist';
 import { gateMarkets, gateNews, subjectTerms } from '@/lib/sonar/relevance';
 import { passesCountryIntentGuard } from '@/lib/sonar/guards';
-import { resolveQuery } from '@/lib/sonar/resolveQuery';
+import { extractIntents, ipoSubject, resolveQuery } from '@/lib/sonar/resolveQuery';
+import ipoEvents from '@/lib/sonar/sources/ipo-events';
+import { enforceGrounding, GROUNDING_RULES } from '@/lib/sonar/groundingGuard';
 import { rankSourcedMatches } from '@/lib/sonar/rankSourcedMatches';
 import {
   getIndustryRegistry,
@@ -134,6 +136,14 @@ Rules:
 - Findings only. No financial or investment advice, price targets, or buy/sell/hold language.
 - Four short paragraphs separated by blank lines: (1) direct answer, (2) the strongest specifics, (3) recent developments, (4) what to watch, or a better ping for sourced results. Each paragraph 50 to 90 words. No headers, no lists, no em dashes.`;
 
+/* Appended for an IPO ping (Oct 30). */
+const IPO_ADDENDUM = `
+This ping is about an IPO. Snippets marked (ipo) are IPO filing records: offer price, shares offered, proceeds, valuation, exchange, ticker and first trade date. Lead with them and cite them. A value written with "about" is derived from the record's own numbers; say "about". If there is no (ipo) snippet, do not say whether the company has gone public unless a web result says so.`;
+
+/* Recent-event pings (IPO, M&A, earnings, elections, appointments, deaths,
+   launches) can postdate any model's training, so they search a little more. */
+const RECENT_WEB_USES = BRIEF_WEB_USES + 2;
+
 /* Appended for a sanctions ping. The JSON is stripped from the brief and
    drawn as the exposure table; splitExposed drops malformed rows. */
 const SANCTIONS_ADDENDUM = `
@@ -180,7 +190,34 @@ const FLOOR_UNGROUNDED = 0.12;
    warm instance: a cache miss costs one cheap search call, never a wrong
    answer. */
 const RESOLVE_TTL_MS = 24 * 60 * 60 * 1000;
+/* Oct 30: a miss used to be cached for the same day as a hit, so a company
+   that listed after its first failed lookup (a new IPO) stayed unresolvable
+   for 24 hours on that instance. A miss now expires in 10 minutes. */
+const RESOLVE_MISS_TTL_MS = 10 * 60 * 1000;
 const resolveCache = new BoundedMap(1000);
+
+/* Last resort for an IPO ping whose company name the search endpoints do not
+   know yet (the listing is newer than their name index). Only used after the
+   name search misses, and the ticker is then checked against the profile
+   endpoint, so an alias can never resolve to a symbol that does not trade. */
+const IPO_NAME_ALIASES = {
+  spacex: 'SPCX',
+  'space x': 'SPCX',
+  'space exploration technologies': 'SPCX',
+  'space exploration technologies corp': 'SPCX',
+};
+
+/** Resolve the company an IPO ping is about. */
+export async function resolveIpoCompany(subject) {
+  const s = String(subject || '').trim();
+  if (!s) return null;
+  const hit = await resolveCompany(s);
+  if (hit) return hit;
+  const alias = IPO_NAME_ALIASES[s.toLowerCase().replace(/[.,]+$/, '')];
+  if (!alias) return null;
+  console.log('[sonar-pipeline] ipo alias fallback', { subject: s, alias });
+  return resolveCompany(`$${alias}`);
+}
 
 /* A bare all-caps token is a ticker only when it is not geography or a
    common acronym: "…industry in the USA" used to take the ticker branch and
@@ -380,7 +417,9 @@ export async function resolveCompany(query) {
   if (!q) return null;
   const key = q.toLowerCase();
   const hit = resolveCache.get(key);
-  if (hit && Date.now() - hit.at < RESOLVE_TTL_MS) return hit.value;
+  if (hit && Date.now() - hit.at < (hit.value ? RESOLVE_TTL_MS : RESOLVE_MISS_TTL_MS)) {
+    return hit.value;
+  }
 
   const ticker = looksLikeTicker(q) ? tickerToken(q) : null;
   let value = null;
@@ -1315,6 +1354,15 @@ export async function runLandingPipeline(
   );
   const q = understood.corrected || query;
   const entity = (kind) => understood.entities.find((e) => e.kind === kind) || null;
+  /* Oct 30: event intents from the visitor's own words. An IPO ping resolves
+     the company it names (the question framing stripped: "what was the ipo
+     value of spacex" resolves "spacex", not the whole sentence) and reads
+     the IPO filings source first. A recent-event ping always asks for live
+     web, whatever the tier. */
+  const eventIntents = extractIntents(query);
+  const ipoIntent = eventIntents.includes('ipo');
+  const recentEvent = eventIntents.includes('recentEvent');
+  const ipoSubj = ipoIntent ? ipoSubject(q) : null;
   const industryEnt = INDUSTRY_INTENTS.has(understood.intent) ? entity('industry') : null;
   const tickerEnt = entity('ticker');
   const countryEnt = entity('country');
@@ -1368,13 +1416,18 @@ export async function runLandingPipeline(
     !politician &&
     !industryEnt &&
     (tickerEnt ||
+      ipoIntent ||
       ['company', 'ticker_lookup', 'open_question', 'fund'].includes(understood.intent));
   const resolved = companyAllowed
     ? await leg(
         'resolve',
         () =>
           within(
-            resolveCompany(tickerEnt ? `$${tickerEnt.id}` : q),
+            tickerEnt
+              ? resolveCompany(`$${tickerEnt.id}`)
+              : ipoSubj
+                ? resolveIpoCompany(ipoSubj)
+                : resolveCompany(q),
             LEG_MS.resolve,
             null,
             'resolve',
@@ -1470,7 +1523,7 @@ export async function runLandingPipeline(
     (v) => `retrieved ${(v.items || []).length}`,
   );
   const retrieved = out.items || [];
-  const corporaSearched = out.corporaSearched || [];
+  const corporaSearched = [...(out.corporaSearched || [])];
 
   /* Off-entity chunks poison the synthesis: an Apple ping came back citing
      Boeing and Lockheed awards, because semantic retrieval returns what is
@@ -1492,7 +1545,11 @@ export async function runLandingPipeline(
         ? [politician.name, politician.lastName].filter(Boolean).map((t) => t.toLowerCase())
         : resolved
           ? [resolved.name, resolved.ticker].filter(Boolean).map((t) => t.toLowerCase())
-          : null;
+          : ipoSubj
+            ? /* An IPO ping for a company nothing resolved: only snippets
+                 that name it, never unrelated ones for the brief to fill. */
+              [ipoSubj.toLowerCase()]
+            : null;
   /* Oct 27: whole words, not substrings ("india" must not match Indiana),
      and for a country, US domestic names that carry a demonym are removed
      first: an India ping was citing federal awards to "The Friendship House
@@ -1539,6 +1596,38 @@ export async function runLandingPipeline(
       : null;
   if (sanctions) items.push(...sanctions.evidence);
 
+  /* An IPO ping reads the IPO filings source (price, shares, proceeds,
+     valuation, exchange, first trade) for the resolved symbol, at the top of
+     the evidence so the brief leads with it. */
+  let ipoFindings = [];
+  if (ipoIntent && resolved?.ticker) {
+    ipoFindings = await leg(
+      'ipo',
+      () =>
+        within(
+          ipoEvents.search(
+            { intents: eventIntents, tickers: [resolved.ticker] },
+            { timeoutMs: 4_000 },
+          ),
+          ipoEvents.timeoutMs,
+          [],
+          'ipo',
+        ),
+      (v) => `findings=${v.length}`,
+    ).catch(() => []);
+    items.unshift(
+      ...ipoFindings.map((f) => ({
+        corpus: 'ipo',
+        title: f.title,
+        snippet: f.summary,
+        url: f.citation?.href || null,
+        date: f.date || null,
+        score: f.relevance,
+        meta: { symbol: f.meta?.symbol || resolved.ticker, citation: f.citation?.label || null },
+      })),
+    );
+  }
+
   /* A company ping cites its own dataset matches. Before this the brief saw
      only the retrievers, so when the contracts scan missed its window the
      brief said "Ezana's datasets do not cover this" directly above cards
@@ -1554,6 +1643,10 @@ export async function runLandingPipeline(
       'company-dossier',
     ).catch(() => null);
     if (early?.matches) items.push(...companyEvidence(early.matches, resolved));
+  }
+
+  if (ipoIntent && resolved?.ticker && !corporaSearched.includes('ipo')) {
+    corporaSearched.push('ipo');
   }
 
   /* Recomputed from the survivors: a corpus that only contributed off-entity
@@ -1659,6 +1752,38 @@ export async function runLandingPipeline(
   let webUsed = false;
   let webSources = [];
 
+  /* The grounding guard (groundingGuard.js): a negative claim no source or web
+     result supports is regenerated once through the same synthesis call when
+     there is time, and removed otherwise. */
+  const guardBrief = async (draft, args, synth, sourceTexts) => {
+    if (!draft) return draft;
+    const findings = [...sourceTexts, ...(synth?.webCitedText || [])];
+    const canRetry = left() - TAIL_MS > 14_000;
+    const res = await enforceGrounding(
+      draft,
+      findings,
+      canRetry
+        ? async (extra) => {
+            const again = await synthesizeWithFallback({
+              ...args,
+              system: `${args.system}\n${extra}`,
+              deadlineAt: deadline - TAIL_MS,
+            });
+            return again?.answer || null;
+          }
+        : null,
+    );
+    if (res.flagged.length) {
+      console.warn('[sonar-pipeline] grounding guard', {
+        flagged: res.flagged.length,
+        regenerated: res.regenerated,
+        removed: res.removed.length,
+      });
+    }
+    return res.text;
+  };
+  const webUses = recentEvent ? RECENT_WEB_USES : BRIEF_WEB_USES;
+
   if (items.length) {
     const marked = items.map((it, i) => ({ ...it, marker: `S${i + 1}` }));
     const sourcesBlock = marked
@@ -1667,31 +1792,38 @@ export async function runLandingPipeline(
           `[${it.marker}] (${it.corpus}) ${String(it.text || it.snippet || '').slice(0, 500)}`,
       )
       .join('\n');
+    const groundedArgs = {
+      system:
+        GROUNDED_SYSTEM_PROMPT +
+        (sanctions ? SANCTIONS_ADDENDUM : '') +
+        (country ? COUNTRY_ADDENDUM : '') +
+        (ipoIntent ? IPO_ADDENDUM : '') +
+        DATE_RULES +
+        GROUNDING_RULES +
+        (webSearchOn() ? '' : NO_WEB_RULES),
+      user: `Today is ${todayLine()}.\nPing: ${display}${resolvedNote}\n\nSources:\n${sourcesBlock}`,
+      /* Room for four paragraphs of dataset and web findings; the brief
+         panel scrolls inside the locked viewport. */
+      maxTokens: sanctions ? BRIEF_TOKENS + 400 : BRIEF_TOKENS,
+      model: BRIEF_MODEL,
+      fallbackModel: HAIKU_MODEL,
+      /* Inert until SONAR_WEB_SEARCH=true is set: anthropicSynthesize
+         gates the tool on that env var as well as this flag. */
+      webSearch: { enabled: true, maxUses: webUses },
+      deadlineAt: deadline - TAIL_MS,
+    };
     const synth = await leg(
       'synthesize',
-      () =>
-        synthesizeWithFallback({
-          system:
-            GROUNDED_SYSTEM_PROMPT +
-            (sanctions ? SANCTIONS_ADDENDUM : '') +
-            (country ? COUNTRY_ADDENDUM : '') +
-            DATE_RULES +
-            (webSearchOn() ? '' : NO_WEB_RULES),
-          user: `Today is ${todayLine()}.\nPing: ${display}${resolvedNote}\n\nSources:\n${sourcesBlock}`,
-          /* Room for four paragraphs of dataset and web findings; the brief
-             panel scrolls inside the locked viewport. */
-          maxTokens: sanctions ? BRIEF_TOKENS + 400 : BRIEF_TOKENS,
-          model: BRIEF_MODEL,
-          fallbackModel: HAIKU_MODEL,
-          /* Inert until SONAR_WEB_SEARCH=true is set: anthropicSynthesize
-             gates the tool on that env var as well as this flag. */
-          webSearch: { enabled: true, maxUses: BRIEF_WEB_USES },
-          deadlineAt: deadline - TAIL_MS,
-        }),
+      () => synthesizeWithFallback(groundedArgs),
       (v) => (v.answer ? `answered${v.webUsed ? ' +web' : ''}` : v.degraded || 'no answer'),
       (v) => Boolean(v.answer),
     );
-    answer = synth.answer || null;
+    answer = await guardBrief(
+      synth.answer || null,
+      groundedArgs,
+      synth,
+      marked.map((it) => `${it.title || ''}. ${String(it.text || it.snippet || '')}`),
+    );
     /* country_rank: every number must come from the rank facts and the
        other sources; a brief with an invented figure is replaced by the
        deterministic brief built from the same facts. */
@@ -1722,22 +1854,23 @@ export async function runLandingPipeline(
      provider hop under ~4s cannot. Running out here returns no answer, which
      the route turns into a fast 502 that does not spend the visitor's ping. */
   if (!answer && left() - TAIL_MS > 8_000) {
+    const generalArgs = {
+      system:
+        GENERAL_SYSTEM_PROMPT + DATE_RULES + GROUNDING_RULES + (webSearchOn() ? '' : NO_WEB_RULES),
+      user: `Today is ${todayLine()}.\nPing: ${display}${resolvedNote}`,
+      maxTokens: BRIEF_TOKENS,
+      model: BRIEF_MODEL,
+      fallbackModel: HAIKU_MODEL,
+      webSearch: { enabled: true, maxUses: webUses },
+      deadlineAt: deadline - TAIL_MS,
+    };
     const synth = await leg(
       'synthesize-general',
-      () =>
-        synthesizeWithFallback({
-          system: GENERAL_SYSTEM_PROMPT + DATE_RULES + (webSearchOn() ? '' : NO_WEB_RULES),
-          user: `Today is ${todayLine()}.\nPing: ${display}${resolvedNote}`,
-          maxTokens: BRIEF_TOKENS,
-          model: BRIEF_MODEL,
-          fallbackModel: HAIKU_MODEL,
-          webSearch: { enabled: true, maxUses: BRIEF_WEB_USES },
-          deadlineAt: deadline - TAIL_MS,
-        }),
+      () => synthesizeWithFallback(generalArgs),
       (v) => (v.answer ? `answered${v.webUsed ? ' +web' : ''}` : v.degraded || 'no answer'),
       (v) => Boolean(v.answer),
     );
-    answer = synth.answer || null;
+    answer = await guardBrief(synth.answer || null, generalArgs, synth, []);
     grounded = false;
     webUsed = Boolean(synth.webUsed);
     webSources = (synth.webSources || []).slice(0, 6);

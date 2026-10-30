@@ -15,6 +15,7 @@
  */
 import { DATASET_TAXONOMY, isFullyLive } from '@/lib/datasets/taxonomy';
 import sanctions from './sanctions';
+import ipoEvents from './ipo-events';
 
 /** href -> slug (the part after /datasets/). */
 export function slugFromHref(href) {
@@ -85,6 +86,22 @@ export const EXCLUDED = {
   'crowd-forecasts': 'Play-money crowd forecasts; relevance model and adapter tracked.',
 };
 
+/**
+ * Core Sonar sources that are not one dataset page: they answer a kind of
+ * question (an IPO) across the market rather than mirror a /datasets/ page,
+ * so they sit outside the taxonomy coverage check. IPO filings belongs to
+ * Titans Shadow (corporate filings) should it ever get a page of its own.
+ * @type {Record<string, import('./types').SonarSourceAdapter>}
+ */
+export const CORE_SOURCES = {
+  [ipoEvents.slug]: ipoEvents,
+};
+
+/** A core source by slug (e.g. 'ipo-events'), or null. */
+export function getCoreSource(slug) {
+  return CORE_SOURCES[slug] || null;
+}
+
 const TIER_RANK = { free: 0, pro: 1, org: 2 };
 
 /** Live slugs that have no adapter, are not covered, and are not excluded. */
@@ -97,7 +114,9 @@ export function findMissingAdapters() {
 /** First-class adapters this tier may run. */
 export function getLiveSources(tier = 'free') {
   const rank = TIER_RANK[tier] ?? 0;
-  return Object.values(ADAPTERS).filter((a) => rank >= (TIER_RANK[a.minTier ?? 'free'] ?? 0));
+  return [...Object.values(ADAPTERS), ...Object.values(CORE_SOURCES)].filter(
+    (a) => rank >= (TIER_RANK[a.minTier ?? 'free'] ?? 0),
+  );
 }
 
 /** Structured view for reports and the coverage test. */
@@ -106,6 +125,7 @@ export function coverageReport() {
   return {
     liveCount: live.length,
     adapters: Object.keys(ADAPTERS),
+    coreSources: Object.keys(CORE_SOURCES),
     covered: Object.keys(COVERED_BY_EXISTING),
     excluded: Object.keys(EXCLUDED),
     missing: findMissingAdapters(),

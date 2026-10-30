@@ -28,6 +28,9 @@ export const SONAR_DATASETS = {
   },
   sanctions: { id: 'sanctions', label: 'US Sanctions', source: 'US Treasury OFAC' },
   'sec-filings': { id: 'sec-filings', label: 'SEC filings', source: 'EDGAR' },
+  /* IPO pricing, shares, proceeds and listing (sources/ipo-events.js). Free:
+     an IPO question must be answerable at the lowest tier. */
+  'ipo-filings': { id: 'ipo-filings', label: 'IPO filings', source: 'SEC filings' },
   '13f': { id: '13f', label: '13F institutional holdings', source: 'SEC 13F' },
   lobbying: { id: 'lobbying', label: 'Lobbying disclosures', source: 'Senate LDA' },
   'org-internal': {
@@ -70,7 +73,7 @@ export function getSonarEntitlements({
   const base = {
     // Sanctions is public-domain OFAC data with no account needed, so it is
     // part of the free sweep (the Iran-outlook acceptance test is a free user).
-    datasets: ['echo', 'congress', 'gov-contracts', 'sanctions'],
+    datasets: ['echo', 'congress', 'gov-contracts', 'sanctions', 'ipo-filings'],
     depth: 'summary', // summary | standard | deep
     dailyQueries: 5,
     exportsEnabled: false,

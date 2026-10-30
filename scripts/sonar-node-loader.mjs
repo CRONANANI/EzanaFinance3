@@ -32,11 +32,16 @@ export async function resolve(specifier, context, nextResolve) {
     return await nextResolve(specifier, context);
   } catch (err) {
     if (
-      err?.code === 'ERR_MODULE_NOT_FOUND' &&
+      (err?.code === 'ERR_MODULE_NOT_FOUND' || err?.code === 'ERR_UNSUPPORTED_DIR_IMPORT') &&
       (specifier.startsWith('./') || specifier.startsWith('../')) &&
       !/\.[a-z]+$/i.test(specifier)
     ) {
-      return nextResolve(`${specifier}.js`, context);
+      try {
+        return await nextResolve(`${specifier}.js`, context);
+      } catch {
+        /* a directory import: './retrievers' -> './retrievers/index.js' */
+        return nextResolve(`${specifier}/index.js`, context);
+      }
     }
     throw err;
   }

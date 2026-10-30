@@ -178,6 +178,10 @@ export function parseAnthropicContent(content) {
      ask the model for links (Sonar's news columns) keep only links found
      here, so a URL the model made up can never reach the page. */
   const webResults = [];
+  /* The passages the model's web citations quote. The grounding guard
+     (groundingGuard.js) reads them, so a claim a web page supports counts as
+     supported even though the page itself never reaches us. */
+  const webCitedText = [];
   const seenResult = new Set();
   const seen = new Set();
   const addSource = (url, title) => {
@@ -189,7 +193,12 @@ export function parseAnthropicContent(content) {
     if (!b || typeof b !== 'object') continue;
     if (b.type === 'text') {
       text += b.text || '';
-      for (const c of b.citations || []) addSource(c.url, c.title);
+      for (const c of b.citations || []) {
+        addSource(c.url, c.title);
+        if (typeof c.cited_text === 'string' && c.cited_text && webCitedText.length < 40) {
+          webCitedText.push(c.cited_text.slice(0, 600));
+        }
+      }
     } else if (b.type === 'server_tool_use' && b.name === 'web_search') {
       webUsed = true;
     } else if (b.type === 'web_search_tool_result') {
@@ -204,7 +213,7 @@ export function parseAnthropicContent(content) {
       }
     }
   }
-  return { answer: text.trim(), webUsed, webSources, webResults };
+  return { answer: text.trim(), webUsed, webSources, webResults, webCitedText };
 }
 
 /**
