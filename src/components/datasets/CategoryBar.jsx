@@ -333,12 +333,9 @@ export default function CategoryBar({ active, activeItem, showDimensions = true,
              no longer a white knock-out (category-bar.css). */
           <>
             <Link href="/" className="dscat-logo" aria-label="Ezana Finance home">
+              {/* Oct 30: the mark alone; the "Ezana Finance" wordmark beside
+                  it was removed. The link keeps its aria-label. */}
               <EzanaNavLogo priority className="dscat-logo-img dscat-logo-img--brand" />
-              {/* Oct 28 redesign: wordmark beside the mark (styles in
-                  app/datasets/sonar/orbital-map.css, prefix dsi-). */}
-              <span className="dsi-wordmark" aria-hidden="true">
-                Ezana Finance
-              </span>
             </Link>
           </>
         )}

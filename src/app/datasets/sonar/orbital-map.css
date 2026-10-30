@@ -115,16 +115,6 @@
 }
 
 /* ── Top bar additions (CategoryBar, overview only) ───────────────────── */
-.dsi-wordmark {
-  margin-left: 12px;
-  color: var(--dsi-ink);
-  font-family: var(--font-sans);
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
 .dsi-bar-actions {
   display: flex;
   align-items: center;
@@ -539,9 +529,6 @@
   }
 }
 @media (max-width: 640px) {
-  .dsi-wordmark {
-    display: none;
-  }
   .dsi-hero {
     padding-top: 36px;
   }
