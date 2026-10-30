@@ -371,8 +371,13 @@ export async function sectorNews(
   if (!articles.length && failures === calls) {
     throw new Error(`news unavailable (${first.error || 'error'})`);
   }
-  return articles
-    .filter((a) => a?.url && a?.title)
+  /* One story can be tagged to several of the sector's names. */
+  const unique = new Map();
+  for (const a of articles) {
+    const key = a?.url || a?.uuid;
+    if (key && a?.title && !unique.has(key)) unique.set(key, a);
+  }
+  return [...unique.values()]
     .sort((a, b) => new Date(b.published_at || 0) - new Date(a.published_at || 0))
     .slice(0, 10)
     .map(normalizeArticle);

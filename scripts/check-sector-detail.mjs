@@ -59,8 +59,19 @@ globalThis.fetch = async (url) => {
   }
   if (u.host === 'finnhub.io') {
     const sym = u.searchParams.get('symbol');
-    return json(
-      [0, 1].map((i) => ({
+    /* "shared" is one story tagged to every symbol: it must appear once. */
+    const shared = {
+      id: 999,
+      headline: 'Sector-wide story',
+      summary: '',
+      source: 'Example Wire',
+      url: 'https://wire.example/shared',
+      datetime: Math.floor(Date.now() / 1000) - 7200,
+      related: sym,
+    };
+    return json([
+      shared,
+      ...[0, 1].map((i) => ({
         id: Number(sym.slice(2)) * 10 + i,
         headline: `${sym} headline ${i}`,
         summary: '',
@@ -69,7 +80,7 @@ globalThis.fetch = async (url) => {
         datetime: Math.floor(Date.now() / 1000) - i * 3600,
         related: sym,
       })),
-    );
+    ]);
   }
   if (path === '/company-screener') {
     if (scenario.screenerDown) return json({ 'Error Message': 'down' }, 500);
@@ -197,7 +208,12 @@ test('no news token: company headlines for the largest names fill the panel', as
   try {
     const d = await getSectorDetail('Utilities', '1D');
     assert.equal(d.errors.news, false);
-    assert.equal(d.news.length, 6, 'two headlines for each of the three largest names');
+    assert.equal(
+      d.news.length,
+      7,
+      'two per name for the three largest, plus the shared story once',
+    );
+    assert.equal(d.news.filter((n) => n.url === 'https://wire.example/shared').length, 1);
     assert.ok(!seen.some((s) => s.startsWith('api.marketaux.com')), 'no call without a token');
     assert.ok(d.news.every((n) => n.source === 'Example Wire' && n.url && n.publishedAt));
   } finally {
