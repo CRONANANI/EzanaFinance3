@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import { ModelCardShell } from '@/components/research/ModelCardShell';
 
@@ -21,6 +22,7 @@ function formatRelativeTime(iso) {
 export function ObsidianPanel() {
   const [keyword, setKeyword] = useState('');
   const [report, setReport] = useState('');
+  const [topPerformers, setTopPerformers] = useState([]);
   const [generatedAt, setGeneratedAt] = useState(null);
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState(null);
@@ -36,6 +38,7 @@ export function ObsidianPanel() {
       setStatus('loading');
       setError(null);
       setReport('');
+      setTopPerformers([]);
 
       try {
         const res = await fetch('/api/research/obsidian', {
@@ -50,6 +53,7 @@ export function ObsidianPanel() {
         }
 
         setReport(body.report || '');
+        setTopPerformers(Array.isArray(body.topPerformers) ? body.topPerformers : []);
         setGeneratedAt(body.generatedAt || new Date().toISOString());
         setStatus('done');
       } catch (err) {
@@ -74,7 +78,7 @@ export function ObsidianPanel() {
     <ModelCardShell
       icon="bi-gem"
       title="Obsidian"
-      description="Type a theme or industry — get an analysis, sentiment read, hot names, and tailwinds vs headwinds."
+      description="Type a theme or industry to get an analysis, sentiment read, hot names, and tailwinds vs headwinds."
       className="obsidian-card"
     >
       <form className="obsidian-search" onSubmit={handleSubmit}>
@@ -142,6 +146,38 @@ export function ObsidianPanel() {
 
       {status === 'done' && report && (
         <div className="obsidian-result">
+          <section className="obsidian-top" aria-label="Top performers">
+            <header className="obsidian-top-head">
+              <h4 className="obsidian-top-title">Top performers</h4>
+              <span className="obsidian-top-meta">By daily return</span>
+            </header>
+            {topPerformers.length === 0 ? (
+              <p className="obsidian-top-empty">No listed companies to price for this theme.</p>
+            ) : (
+              <ul className="obsidian-top-list">
+                {topPerformers.map((p) => (
+                  <li key={p.symbol}>
+                    <Link
+                      href={`/company-research?ticker=${encodeURIComponent(p.symbol)}`}
+                      className="obsidian-top-row"
+                    >
+                      <span className="obsidian-top-id">
+                        <span className="obsidian-top-sym">{p.symbol}</span>
+                        <span className="obsidian-top-name">{p.name}</span>
+                      </span>
+                      <span className="obsidian-top-px">${p.price.toFixed(2)}</span>
+                      <span
+                        className={`obsidian-top-chg ${p.changePct >= 0 ? 'is-up' : 'is-down'}`}
+                      >
+                        {p.changePct >= 0 ? '+' : ''}
+                        {p.changePct.toFixed(2)}%
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
           <div className="obsidian-report">
             <ReactMarkdown>{report}</ReactMarkdown>
           </div>

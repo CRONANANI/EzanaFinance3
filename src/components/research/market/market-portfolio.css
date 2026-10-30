@@ -50,7 +50,6 @@
   width: 100%;
   padding: 5px;
   border-radius: var(--radius-lg);
-  border: 1px solid color-mix(in srgb, var(--emerald) 18%, transparent);
   background: var(--emerald-bg-subtle);
   gap: 4px;
 }
@@ -87,13 +86,15 @@
 .cpr-view-toggle-btn.is-active {
   background: var(--emerald);
   color: #0b1220;
-  box-shadow:
-    0 1px 2px var(--emerald-glow),
-    0 0 0 1px color-mix(in srgb, var(--emerald) 30%, transparent);
+  box-shadow: none;
+}
+
+.cpr-view-toggle-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--emerald-glow);
 }
 
 body.light-mode .cpr-view-toggle {
-  border-color: rgba(5, 150, 105, 0.2);
   background: #ffffff;
 }
 
@@ -135,9 +136,9 @@ body.light-mode .cpr-page-eyebrow {
 
 /* Market view root -------------------------------------------------------- */
 .mpv-root.mpv-ledger {
-  max-width: 1300px;
-  margin: 0 auto;
-  padding: 30px 36px;
+  max-width: none;
+  margin: 0;
+  padding: 30px 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -1187,7 +1188,7 @@ body.light-mode .stc-tab-btn.is-active {
   }
 
   .mpv-root.mpv-ledger {
-    padding: 20px 16px;
+    padding: 20px 0;
   }
 }
 
@@ -1598,6 +1599,103 @@ body.light-mode .stc-tab-btn.is-active {
   font-size: var(--type-micro-size);
   color: var(--text-faint);
   letter-spacing: 0.04em;
+}
+
+/* Obsidian: Top performers priced from the report's Hot Companies. */
+.obsidian-top {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-secondary);
+}
+.obsidian-top-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.obsidian-top-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.obsidian-top-meta {
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.obsidian-top-empty {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+.obsidian-top-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+.obsidian-top-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 72px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+.obsidian-top-row:hover {
+  background: var(--surface-card-hover);
+}
+.obsidian-top-row:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: -2px;
+}
+.obsidian-top-id {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.obsidian-top-sym {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  color: var(--text-primary);
+}
+.obsidian-top-name {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.obsidian-top-px,
+.obsidian-top-chg {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8125rem;
+  text-align: right;
+}
+.obsidian-top-px {
+  color: var(--text-secondary);
+}
+.obsidian-top-chg.is-up {
+  color: var(--positive);
+}
+.obsidian-top-chg.is-down {
+  color: var(--negative);
+}
+@media (prefers-reduced-motion: reduce) {
+  .obsidian-top-row {
+    transition: none;
+  }
 }
 
 @media (max-width: 640px) {

@@ -211,6 +211,49 @@ function normalizeSeriesDesc(series) {
   return [...withDate].sort((a, b) => String(b.date).localeCompare(String(a.date)));
 }
 
+/** /stable returns changePercentage; v3 returned changesPercentage. */
+function quotePct(q) {
+  const n = Number(q?.changePercentage ?? q?.changesPercentage);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** FMP /stable/batch-quote, 100 symbols per call. Returns raw rows. */
+async function fmpBatchQuotes(symbols) {
+  const FMP_KEY = getFmpKey();
+  if (!FMP_KEY || symbols.length === 0) return [];
+  const rows = [];
+  for (let i = 0; i < symbols.length; i += 100) {
+    const group = symbols.slice(i, i + 100);
+    const url = `${FMP_BASE}/batch-quote?symbols=${encodeURIComponent(group.join(','))}&apikey=${encodeURIComponent(FMP_KEY)}`;
+    try {
+      const res = await fetchWithTimeout(url, { cache: 'no-store' });
+      if (!res.ok) {
+        console.warn(`[sector-detail] batch-quote HTTP ${res.status}`);
+        continue;
+      }
+      const data = await res.json();
+      if (Array.isArray(data)) rows.push(...data);
+    } catch (err) {
+      console.warn('[sector-detail] batch-quote failed:', err?.message);
+    }
+  }
+  return rows;
+}
+
+/** Run `fn` over `items` with at most `limit` in flight (rate-limit friendly). */
+async function mapPool(items, limit, fn) {
+  const out = new Array(items.length);
+  let next = 0;
+  async function worker() {
+    while (next < items.length) {
+      const idx = next++;
+      out[idx] = await fn(items[idx]);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return out;
+}
+
 async function fetchSectorCandidates(canonicalSector) {
   const FMP_KEY = getFmpKey();
   if (!FMP_KEY) {
@@ -253,32 +296,25 @@ async function fetchSectorCandidates(canonicalSector) {
 }
 
 async function fetch1DPerformance(candidates) {
-  const FMP_KEY = getFmpKey();
-  if (candidates.length === 0 || !FMP_KEY) return [];
-  const top60 = candidates.slice(0, 60);
-  const symbolList = top60.map((c) => c.symbol).join(',');
-  const url = `${FMP_BASE}/quote?symbol=${encodeURIComponent(symbolList)}&apikey=${encodeURIComponent(FMP_KEY)}`;
-  try {
-    const res = await fetchWithTimeout(url, { cache: 'no-store' });
-    if (!res.ok) {
-      console.warn(`[sector-detail] quote HTTP ${res.status}`);
-      return [];
-    }
-    const data = await res.json();
-    if (!Array.isArray(data)) return [];
-    return data
-      .filter((q) => Number.isFinite(Number(q.changesPercentage)))
-      .map((q) => ({
+  if (candidates.length === 0) return [];
+  const top = candidates.slice(0, 100);
+  const meta = new Map(top.map((c) => [c.symbol, c]));
+  const rows = await fmpBatchQuotes(top.map((c) => c.symbol));
+  return rows
+    .map((q) => {
+      const pct = quotePct(q);
+      const price = Number(q?.price);
+      if (pct == null || !Number.isFinite(price)) return null;
+      const c = meta.get(q.symbol);
+      return {
         symbol: q.symbol,
-        name: q.name || top60.find((c) => c.symbol === q.symbol)?.name || q.symbol,
-        price: Number(q.price),
-        changePct: Number(q.changesPercentage),
-        marketCap: top60.find((c) => c.symbol === q.symbol)?.marketCap ?? null,
-      }));
-  } catch (err) {
-    console.error('[sector-detail] 1D quote fetch failed:', err);
-    return [];
-  }
+        name: q.name || c?.name || q.symbol,
+        price,
+        changePct: pct,
+        marketCap: c?.marketCap ?? null,
+      };
+    })
+    .filter(Boolean);
 }
 
 async function fetchHistoricalPerformance(candidates, range) {
@@ -286,53 +322,61 @@ async function fetchHistoricalPerformance(candidates, range) {
   if (candidates.length === 0 || !FMP_KEY) return [];
   const days = tradingDaysFor(range);
   if (days < 1) return [];
-  const top60 = candidates.slice(0, 60);
+  const top30 = candidates.slice(0, 30);
 
-  const results = await Promise.all(
-    top60.map(async (c) => {
-      try {
-        const url = `${FMP_BASE}/historical-price-eod/light?symbol=${encodeURIComponent(c.symbol)}&apikey=${encodeURIComponent(FMP_KEY)}`;
-        const res = await fetchWithTimeout(url, { cache: 'no-store' });
-        if (!res.ok) return null;
-        const data = await res.json();
-        const seriesRaw = Array.isArray(data) ? data : data?.historical;
-        const desc = normalizeSeriesDesc(seriesRaw);
-        if (desc.length < days + 1) return null;
-        const latest = desc[0];
-        const earlier = desc[Math.min(days, desc.length - 1)];
-        const pLatest = barClose(latest);
-        const pEarlier = barClose(earlier);
-        if (pLatest == null || pEarlier == null || pEarlier === 0) return null;
-        const changePct = ((pLatest - pEarlier) / pEarlier) * 100;
-        return {
-          symbol: c.symbol,
-          name: c.name,
-          price: pLatest,
-          changePct,
-          marketCap: c.marketCap,
-        };
-      } catch {
-        return null;
-      }
-    }),
-  );
+  const results = await mapPool(top30, 6, async (c) => {
+    try {
+      const url = `${FMP_BASE}/historical-price-eod/light?symbol=${encodeURIComponent(c.symbol)}&apikey=${encodeURIComponent(FMP_KEY)}`;
+      const res = await fetchWithTimeout(url, { cache: 'no-store' });
+      if (!res.ok) return null;
+      const data = await res.json();
+      const seriesRaw = Array.isArray(data) ? data : data?.historical;
+      const desc = normalizeSeriesDesc(seriesRaw);
+      if (desc.length < days + 1) return null;
+      const latest = desc[0];
+      const earlier = desc[Math.min(days, desc.length - 1)];
+      const pLatest = barClose(latest);
+      const pEarlier = barClose(earlier);
+      if (pLatest == null || pEarlier == null || pEarlier === 0) return null;
+      const changePct = ((pLatest - pEarlier) / pEarlier) * 100;
+      return {
+        symbol: c.symbol,
+        name: c.name,
+        price: pLatest,
+        changePct,
+        marketCap: c.marketCap,
+      };
+    } catch {
+      return null;
+    }
+  });
 
   return results.filter(Boolean);
 }
 
 async function fetchTopPerformers(canonicalSector, range) {
   const candidates = await fetchSectorCandidates(canonicalSector);
-  if (candidates.length === 0) return [];
+  if (candidates.length === 0) return { rows: [], performanceRange: range };
 
-  const performance =
+  let performanceRange = range;
+  let performance =
     range === '1D'
       ? await fetch1DPerformance(candidates)
       : await fetchHistoricalPerformance(candidates, range);
 
-  return performance
+  if (range !== '1D' && performance.length < 5) {
+    console.warn(
+      `[sector-detail] ${range} history thin (${performance.length}) for "${canonicalSector}", falling back to 1D`,
+    );
+    performance = await fetch1DPerformance(candidates);
+    performanceRange = '1D';
+  }
+
+  const rows = performance
     .filter((p) => Number.isFinite(p.changePct))
     .sort((a, b) => b.changePct - a.changePct)
     .slice(0, 50);
+  return { rows, performanceRange };
 }
 
 async function fetchSectorNews(rawSectorParam, canonicalSector) {
@@ -408,7 +452,7 @@ export const GET = withApiGuard(
         `[sector-detail] sector="${sectorParam}" → canonical="${canonicalSector}" range="${range}"`,
       );
 
-      const [topPerformers, news] = await Promise.all([
+      const [{ rows: topPerformers, performanceRange }, news] = await Promise.all([
         fetchTopPerformers(canonicalSector, range),
         fetchSectorNews(sectorParam, canonicalSector),
       ]);
@@ -419,6 +463,7 @@ export const GET = withApiGuard(
           canonicalSector,
           sectorDisplay: sectorDisplay || sectorParam,
           range,
+          performanceRange,
           topPerformers,
           news,
           diagnostics: {
@@ -431,7 +476,10 @@ export const GET = withApiGuard(
         },
         {
           headers: {
-            'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+            'Cache-Control':
+              topPerformers.length > 0
+                ? 'public, s-maxage=300, stale-while-revalidate=600'
+                : 'no-store',
           },
         },
       );

@@ -26,18 +26,27 @@ const formatPrice = (n) => {
   return `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
-export function SectorDetailModal({ sector, displayName, changePct, range = '1D', isOpen, onClose }) {
+export function SectorDetailModal({
+  sector,
+  displayName,
+  changePct,
+  range = '1D',
+  isOpen,
+  onClose,
+}) {
   const [data, setData] = useState({ topPerformers: [], news: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const headerLabel = displayName || sector;
 
+  /* The API falls back to daily returns when multi-day history is thin. */
+  const perfRange = data.performanceRange || range;
   const performersMeta =
-    range === '1D'
+    perfRange === '1D'
       ? 'By daily return'
-      : range === '1W'
+      : perfRange === '1W'
         ? 'By 1-week return'
-        : range === '1M'
+        : perfRange === '1M'
           ? 'By 1-month return'
           : 'By YTD return';
 
@@ -60,7 +69,11 @@ export function SectorDetailModal({ sector, displayName, changePct, range = '1D'
           setError(typeof d.error === 'string' ? d.error : 'Failed to load sector');
           return;
         }
-        setData({ topPerformers: d.topPerformers || [], news: d.news || [] });
+        setData({
+          topPerformers: d.topPerformers || [],
+          news: d.news || [],
+          performanceRange: d.performanceRange || null,
+        });
       })
       .catch((err) => {
         if (!cancelled) setError(err.message);
