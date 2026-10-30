@@ -81,7 +81,7 @@
 }
 
 .mock-stat-card {
-  background: color-mix(in srgb, var(--emerald) 3%, transparent);
+  background: transparent;
   border: 1px solid transparent;
   border-radius: var(--radius-xl);
   padding: 1rem 1.125rem;
@@ -131,7 +131,7 @@
 
 /* ── Trade panel (right column) ── */
 .mock-trade-panel {
-  background: var(--card-bg);
+  background: transparent;
   border: 1px solid transparent;
   border-radius: var(--radius-xl);
   overflow: hidden;
@@ -528,7 +528,7 @@
 }
 
 .mock-card {
-  background: var(--card-bg);
+  background: transparent;
   border: 1px solid transparent;
   border-radius: var(--radius-xl);
   overflow: hidden;
@@ -743,7 +743,7 @@
 body.light-mode .mock-stat-card,
 body.light-mode .mock-trade-panel,
 body.light-mode .mock-card {
-  background: var(--card-bg);
+  background: transparent;
   border-color: transparent;
 }
 

@@ -1069,7 +1069,7 @@ function MockTradingPageInner() {
 
         <div className="mock-trade-panel">
           <div className="mock-trade-panel-header">
-            <i className="bi bi-graph-up-arrow" style={{ color: '#10b981' }} />
+            <i className="bi bi-graph-up-arrow" style={{ color: 'var(--emerald)' }} />
             <h3>Place Order</h3>
           </div>
           <div className="mock-trade-body">
