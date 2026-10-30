@@ -167,45 +167,6 @@ function getGreeting() {
   return 'Good evening';
 }
 
-/** 'daily' on weekdays, 'weekly' on Sat/Sun (America/New_York). */
-function getMoversWindow() {
-  const nyParts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/New_York',
-    weekday: 'short',
-  }).formatToParts(new Date());
-  const day = nyParts.find((p) => p.type === 'weekday')?.value;
-  return day === 'Sat' || day === 'Sun' ? 'weekly' : 'daily';
-}
-
-/**
- * Commodities shown in the home Top Movers — must match the watchlist page's
- * COMMODITIES_ONLY constant so both surfaces show the same instruments.
- */
-const HOME_COMMODITIES = [
-  { name: 'Gold', batchSym: 'GC=F', candleSym: 'GCUSD' },
-  { name: 'Silver', batchSym: 'SI=F', candleSym: 'SIUSD' },
-  { name: 'Platinum', batchSym: 'PL=F', candleSym: 'PLUSD' },
-  { name: 'Palladium', batchSym: 'PA=F', candleSym: 'PAUSD' },
-  { name: 'Copper', batchSym: 'HG=F', candleSym: 'HGUSD' },
-  { name: 'Oil (WTI)', batchSym: 'CL=F', candleSym: 'CLUSD' },
-  { name: 'Nat Gas', batchSym: 'NG=F', candleSym: 'NGUSD' },
-  { name: 'Wheat', batchSym: 'ZW=F', candleSym: 'ZWUSD' },
-  { name: 'Corn', batchSym: 'ZC=F', candleSym: 'ZCUSD' },
-];
-
-function weeklyPctFromCandles(candles) {
-  if (!candles?.length || candles.length < 2) return null;
-  const first = Number(candles[0]?.close ?? candles[0]?.c ?? candles[0]?.price ?? 0);
-  const last = Number(
-    candles[candles.length - 1]?.close ??
-      candles[candles.length - 1]?.c ??
-      candles[candles.length - 1]?.price ??
-      0,
-  );
-  if (first <= 0) return null;
-  return { pct: ((last - first) / first) * 100, price: last };
-}
-
 function formatLongDate() {
   return new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -299,9 +260,18 @@ function BandHeader({ number, label, meta, dark = false, centered = false }) {
   );
 }
 
-/* Mini calendar — renders the current month with a coloured dot per event
+/* Mini calendar: renders the current month with a coloured dot per event
    category on each day that has events (respecting the active filter). */
-function MiniCalendar({ cells, dayToCategories, today, monthTitle, legend }) {
+function MiniCalendar({
+  cells,
+  dayToCategories,
+  today,
+  monthTitle,
+  legend,
+  selection,
+  onSelectDay,
+}) {
+  const inSel = (d) => selection && d >= selection.start && d <= selection.end;
   return (
     <div className="bs-cal-box">
       <div className="bs-cal-head">{monthTitle}</div>
@@ -312,11 +282,28 @@ function MiniCalendar({ cells, dayToCategories, today, monthTitle, legend }) {
           </div>
         ))}
         {cells.map((d, i) => {
-          const cats = d != null ? dayToCategories[d] || [] : [];
+          if (d === null) return <div key={i} className="bs-cal-cell bs-cal-cell--empty" />;
+          const cats = dayToCategories[d] || [];
+          const isPast = d < today;
+          const selected = inSel(d);
+          const edge = selection && (d === selection.start || d === selection.end);
           return (
-            <div
+            <button
               key={i}
-              className={`bs-cal-cell ${d === today ? 'bs-cal-cell--today' : ''} ${d === null ? 'bs-cal-cell--empty' : ''}`}
+              type="button"
+              disabled={isPast}
+              aria-pressed={Boolean(selected)}
+              aria-label={`${monthTitle.split(' ')[0]} ${d}${cats.length ? `, ${cats.length} event types` : ''}`}
+              onClick={() => onSelectDay(d)}
+              className={[
+                'bs-cal-cell',
+                d === today ? 'bs-cal-cell--today' : '',
+                selected ? 'bs-cal-cell--in-range' : '',
+                edge ? 'bs-cal-cell--sel' : '',
+                isPast ? 'bs-cal-cell--past' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
             >
               {d}
               {cats.length > 0 && (
@@ -334,10 +321,11 @@ function MiniCalendar({ cells, dayToCategories, today, monthTitle, legend }) {
                   ))}
                 </span>
               )}
-            </div>
+            </button>
           );
         })}
       </div>
+      <p className="bs-cal-hint">Select a day, or two days for a range.</p>
       <div className="bs-cal-legend">
         {legend.map((c) => (
           <div key={c.key} className="bs-cal-leg-item">
@@ -378,6 +366,15 @@ export default function HomePage() {
     relevance: scheduleRelevance,
   });
   const [eventFilter, setEventFilter] = useState('all');
+  const [expandedEventId, setExpandedEventId] = useState(null);
+  const [calSel, setCalSel] = useState(null); // { start, end } day-of-month numbers
+  const selectCalendarDay = useCallback((day) => {
+    setCalSel((prev) => {
+      if (!prev || prev.start !== prev.end) return { start: day, end: day };
+      if (prev.start === day) return null;
+      return { start: Math.min(prev.start, day), end: Math.max(prev.start, day) };
+    });
+  }, []);
 
   const scheduleData = useMemo(() => {
     const now = new Date();
@@ -394,6 +391,9 @@ export default function HomePage() {
     const todayMidnight = new Date(y, m, todayDay, 0, 0, 0);
     // "Upcoming week" window for the event list — today through +7 days.
     const weekEnd = new Date(y, m, todayDay + 7, 23, 59, 59);
+    // A calendar selection (one day, or a range) replaces the 7-day window.
+    const selStart = calSel ? new Date(y, m, calSel.start, 0, 0, 0) : null;
+    const selEnd = calSel ? new Date(y, m, calSel.end, 23, 59, 59) : null;
 
     const parseDay = (ev) => {
       if (!ev?.fullDate) return null;
@@ -427,7 +427,12 @@ export default function HomePage() {
     for (const ev of inWindow) {
       if (!matchesFilter(ev)) continue;
       const d = parseDay(ev);
-      if (!d || d > weekEnd) continue;
+      if (!d) continue;
+      if (calSel) {
+        if (d < selStart || d > selEnd) continue;
+      } else if (d > weekEnd) {
+        continue;
+      }
       const key = String(ev.fullDate).slice(0, 10);
       if (!groupMap.has(key)) groupMap.set(key, []);
       groupMap.get(key).push(ev);
@@ -439,7 +444,16 @@ export default function HomePage() {
     const categoriesWithEvents = new Set(inWindow.map((ev) => ev.category));
     const legend = DEFAULT_CAL_LEGEND.filter((c) => categoriesWithEvents.has(c.key));
 
+    const fmtDay = (day) =>
+      new Date(y, m, day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const selectionLabel = calSel
+      ? calSel.start === calSel.end
+        ? fmtDay(calSel.start)
+        : `${fmtDay(calSel.start)} to ${fmtDay(calSel.end)}`
+      : null;
+
     return {
+      selectionLabel,
       cells,
       today: todayDay,
       monthTitle: new Date(y, m, 1).toLocaleDateString('en-US', {
@@ -453,7 +467,7 @@ export default function HomePage() {
       totalWeek: dayGroups.reduce((n, g) => n + g.items.length, 0),
       totalWindow: inWindow.length,
     };
-  }, [liveScheduleEvents, eventFilter]);
+  }, [liveScheduleEvents, eventFilter, calSel]);
 
   // News-article / market-implications enrichment for the visible schedule.
   const visibleScheduleEvents = useMemo(
@@ -491,16 +505,11 @@ export default function HomePage() {
   const [sectorData, setSectorData] = useState({ top: [], bottom: [] });
   const [sectorLoaded, setSectorLoaded] = useState(false);
   const [sectorEmpty, setSectorEmpty] = useState(false);
-  const [gainers, setGainers] = useState([]);
-  const [losers, setLosers] = useState([]);
-  const [congressTrades, setCongressTrades] = useState([]);
-  const [opportunities, setOpportunities] = useState([]);
   const [tickerItems, setTickerItems] = useState(TICKER_ITEMS);
   const [activeIndices, setActiveIndices] = useState(new Set(['S&P 500']));
+  const [showPortfolio, setShowPortfolio] = useState(true);
   const [indexSeries, setIndexSeries] = useState({});
   const [indexSeriesLoading, setIndexSeriesLoading] = useState(false);
-  const [commodityMovers, setCommodityMovers] = useState([]);
-  const [cryptoMovers, setCryptoMovers] = useState([]);
   const [pulseRange, setPulseRange] = useState('1D');
   const [sectorDrilldown, setSectorDrilldown] = useState(null);
   const [tickerModal, setTickerModal] = useState(null);
@@ -710,39 +719,6 @@ export default function HomePage() {
     }));
   }, [activeWatchlist]);
 
-  const commodityGainers = useMemo(
-    () =>
-      [...commodityMovers]
-        .filter((c) => c.pct > 0)
-        .sort((a, b) => b.pct - a.pct)
-        .slice(0, 3),
-    [commodityMovers],
-  );
-  const commodityLosers = useMemo(
-    () =>
-      [...commodityMovers]
-        .filter((c) => c.pct < 0)
-        .sort((a, b) => a.pct - b.pct)
-        .slice(0, 3),
-    [commodityMovers],
-  );
-  const cryptoGainers = useMemo(
-    () =>
-      [...cryptoMovers]
-        .filter((c) => c.pct > 0)
-        .sort((a, b) => b.pct - a.pct)
-        .slice(0, 3),
-    [cryptoMovers],
-  );
-  const cryptoLosers = useMemo(
-    () =>
-      [...cryptoMovers]
-        .filter((c) => c.pct < 0)
-        .sort((a, b) => a.pct - b.pct)
-        .slice(0, 3),
-    [cryptoMovers],
-  );
-
   const firstName =
     user?.user_metadata?.full_name?.split(' ')[0] ||
     user?.user_metadata?.name?.split(' ')[0] ||
@@ -751,9 +727,6 @@ export default function HomePage() {
   const displayValue = Number.isFinite(currentValue) ? currentValue : 0;
   const changePct = valueWindowFromApi?.changePct ?? 0;
   const changeAbs = valueWindowFromApi?.changeAbs ?? 0;
-
-  const moversWindow = getMoversWindow();
-  const moversTitle = moversWindow === 'weekly' ? 'Top movers this week' : 'Top movers today';
 
   useEffect(() => {
     if (userWatchlists.length > 0 && !selectedWatchlistId) {
@@ -904,273 +877,6 @@ export default function HomePage() {
       cancelled = true;
     };
   }, [pulseRange]);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        let res = await fetch('/api/alpha/movers?limit=3');
-        if (!res.ok) {
-          res = await fetch('/api/fmp/movers?limit=3');
-        }
-        if (!res.ok) return;
-        const data = await res.json();
-        const toPct = (s) => parseFloat(String(s).replace(/[+%]/g, '')) || 0;
-        if (!cancelled) {
-          setGainers(
-            (data.gainers || []).slice(0, 3).map((g) => ({
-              sym: g.ticker,
-              pct: toPct(g.change),
-              chg: g.dollarChange ?? g.change ?? '—',
-            })),
-          );
-          setLosers(
-            (data.losers || []).slice(0, 3).map((l) => ({
-              sym: l.ticker,
-              pct: toPct(l.change),
-              chg: l.dollarChange ?? l.change ?? '—',
-            })),
-          );
-        }
-      } catch {
-        /* ignore */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const [tradesRes, lobbyingRes] = await Promise.allSettled([
-          fetch('/api/fmp/congress-latest?raw=1&limit=12', { cache: 'no-store' }),
-          fetch('/api/lobbying/feed?limit=8', { cache: 'no-store' }),
-        ]);
-
-        const tradeRows = [];
-        if (tradesRes.status === 'fulfilled' && tradesRes.value.ok) {
-          const tradesData = await tradesRes.value.json();
-          const trades = tradesData.trades || tradesData || [];
-          for (const t of Array.isArray(trades) ? trades.slice(0, 6) : []) {
-            const typeStr = String(t.type || t.transactionType || '').toLowerCase();
-            const isBuy = typeStr.includes('purchase') || typeStr.includes('buy');
-            // Chamber comes from the raw route shape; fall back defensively.
-            const chamber = t.chamber || (t.senator ? 'Senate' : 'House');
-            const when = t.transactionDate || t.disclosureDate || '—';
-            tradeRows.push({
-              kind: 'trade',
-              rep: t.representative || t.name || '—',
-              cham: chamber,
-              when:
-                when && when !== '—'
-                  ? new Date(when).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                  : '—',
-              sym: (t.ticker || t.symbol || '—').toUpperCase(),
-              side: isBuy ? 'BUY' : 'SELL',
-              size: t.amount || '—',
-              ts: when && when !== '—' ? new Date(when).getTime() : 0,
-            });
-          }
-        }
-
-        const lobbyingRows = [];
-        if (lobbyingRes.status === 'fulfilled' && lobbyingRes.value.ok) {
-          const lobbyingData = await lobbyingRes.value.json();
-          const items = Array.isArray(lobbyingData) ? lobbyingData : [];
-          for (const l of items.slice(0, 4)) {
-            const amount = Number(l.Amount);
-            const amountFmt = Number.isFinite(amount)
-              ? amount >= 1_000_000
-                ? `$${(amount / 1_000_000).toFixed(1)}M`
-                : amount >= 1_000
-                  ? `$${(amount / 1_000).toFixed(0)}K`
-                  : `$${amount.toLocaleString()}`
-              : '—';
-            lobbyingRows.push({
-              kind: 'lobbying',
-              rep: l.Client || l.Registrant || '—',
-              cham: 'Lobbying',
-              when: l.Date || '—',
-              sym: (l.Ticker || '').toUpperCase() || '—',
-              side: 'LOBBY',
-              size: amountFmt,
-              ts: l.Date ? new Date(l.Date).getTime() : 0,
-            });
-          }
-        }
-
-        const merged = [...tradeRows, ...lobbyingRows].sort((a, b) => b.ts - a.ts).slice(0, 6);
-
-        if (!cancelled) {
-          setCongressTrades(merged);
-        }
-      } catch {
-        /* ignore — fallback empty-state placeholder will render */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const holdingTickers = (normalizedHoldings || [])
-          .map((h) => (h.ticker || '').toUpperCase())
-          .filter(Boolean);
-        const watchlistTickers = (userWatchlists || [])
-          .flatMap((w) => (w.stocks || []).map((s) => (s.ticker || '').toUpperCase()))
-          .filter(Boolean);
-        const userTickers = new Set([...holdingTickers, ...watchlistTickers]);
-
-        const res = await fetch('/api/isr/feed?window=24h&minSeverity=Low', {
-          cache: 'no-store',
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        const allEvents = Array.isArray(data?.events) ? data.events : [];
-
-        const SEVERITY_RANK = { Critical: 3, High: 2, Medium: 1, Low: 0 };
-        const scored = allEvents.map((e) => {
-          const impacted = Array.isArray(e.impactedSymbols)
-            ? e.impactedSymbols.map((s) => String(s).toUpperCase())
-            : [];
-          const matchedTicker = impacted.find((s) => userTickers.has(s));
-          return {
-            event: e,
-            relevance: matchedTicker ? 1 : 0,
-            matchedTicker: matchedTicker || impacted[0] || '',
-            severity: SEVERITY_RANK[e.severity] ?? 0,
-            ts: e.publishedAt ? new Date(e.publishedAt).getTime() : 0,
-          };
-        });
-        scored.sort((a, b) => b.relevance - a.relevance || b.severity - a.severity || b.ts - a.ts);
-
-        const top = scored.slice(0, 5).map(({ event, matchedTicker }) => ({
-          sym: matchedTicker || '',
-          title: event.headline || '',
-          src: event.source || '',
-          url: event.url || '#',
-          when: event.publishedAt
-            ? new Date(event.publishedAt).toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-              })
-            : '',
-        }));
-
-        if (!cancelled) {
-          setOpportunities(top);
-        }
-      } catch {
-        /* ignore — empty state will render */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [normalizedHoldings, userWatchlists]);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        if (moversWindow === 'daily') {
-          const batchSyms = HOME_COMMODITIES.map((c) => c.batchSym).join(',');
-          const res = await fetch(
-            `/api/market/batch-quotes?symbols=${encodeURIComponent(batchSyms)}`,
-          );
-          if (!res.ok) return;
-          const data = await res.json();
-          const quotes = data?.quotes || {};
-          const rows = HOME_COMMODITIES.map((c) => {
-            const q = quotes[c.batchSym];
-            if (!q) return null;
-            const pct = Number(q.changePercent);
-            if (!Number.isFinite(pct)) return null;
-            return {
-              sym: c.name,
-              pct,
-              price: Number(q.price) || 0,
-            };
-          }).filter(Boolean);
-          if (!cancelled) setCommodityMovers(rows);
-        } else {
-          const results = await Promise.all(
-            HOME_COMMODITIES.map(async (c) => {
-              try {
-                const r = await fetch(
-                  `/api/market-data/stock-candles?symbol=${encodeURIComponent(c.candleSym)}&range=1W`,
-                );
-                if (!r.ok) return null;
-                const j = await r.json();
-                const row = weeklyPctFromCandles(j.candles || j.points || []);
-                return row ? { sym: c.name, ...row } : null;
-              } catch {
-                return null;
-              }
-            }),
-          );
-          if (!cancelled) setCommodityMovers(results.filter(Boolean));
-        }
-      } catch {
-        /* ignore — empty state will render */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [moversWindow]);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        if (moversWindow === 'daily') {
-          const res = await fetch('/api/fmp/crypto');
-          if (!res.ok) return;
-          const data = await res.json();
-          const rows = (data.quotes || []).map((q) => ({
-            sym: q.name,
-            pct: Number(q.changePercent) || 0,
-            price: Number(q.price) || 0,
-          }));
-          if (!cancelled) setCryptoMovers(rows);
-        } else {
-          const list = await fetch('/api/fmp/crypto').then((r) =>
-            r.ok ? r.json() : { quotes: [] },
-          );
-          const symbols = (list.quotes || []).map((q) => ({ sym: q.symbol, name: q.name }));
-          const results = await Promise.all(
-            symbols.map(async (s) => {
-              try {
-                const r = await fetch(
-                  `/api/market-data/stock-candles?symbol=${encodeURIComponent(s.sym)}&range=1W`,
-                );
-                if (!r.ok) return null;
-                const j = await r.json();
-                const row = weeklyPctFromCandles(j.candles || j.points || []);
-                return row ? { sym: s.name, ...row } : null;
-              } catch {
-                return null;
-              }
-            }),
-          );
-          if (!cancelled) setCryptoMovers(results.filter(Boolean));
-        }
-      } catch {
-        /* ignore */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [moversWindow]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1482,12 +1188,6 @@ export default function HomePage() {
       {/* ═══ BAND I — LATELY ON EZANA ═══ */}
       <section className="bs-band bs-band--cream">
         <div className="bs-page-inner">
-          <BandHeader
-            number="I"
-            label="Lately on Ezana"
-            meta={`Performance · ${timeframe === '1D' ? 'today' : timeframe === '5D' ? 'trailing five days' : timeframe === '1M' ? 'past month' : timeframe === '3M' ? 'past 3 months' : timeframe === '6M' ? 'past 6 months' : timeframe === '1Y' ? 'past year' : 'all time'}`}
-            centered
-          />
           <div className="bs-chart-block">
             <div className="bs-chart-range-row">
               <DateSelector
@@ -1555,16 +1255,18 @@ export default function HomePage() {
                         );
                       }}
                     />
-                    <Area
-                      type="monotone"
-                      dataKey="portfolio"
-                      name="Portfolio"
-                      stroke="var(--bs-green)"
-                      strokeWidth={2}
-                      fill="url(#portfolioFill)"
-                      isAnimationActive
-                      animationDuration={CHART.animationDuration}
-                    />
+                    {showPortfolio && (
+                      <Area
+                        type="monotone"
+                        dataKey="portfolio"
+                        name="Portfolio"
+                        stroke="var(--bs-green)"
+                        strokeWidth={2}
+                        fill="url(#portfolioFill)"
+                        isAnimationActive
+                        animationDuration={CHART.animationDuration}
+                      />
+                    )}
                     {Array.from(activeIndices).map((label) => {
                       const apiKey = INDEX_API_KEYS[label];
                       if (!apiKey) return null;
@@ -1590,6 +1292,51 @@ export default function HomePage() {
             </div>
 
             <div className="bs-index-strip">
+              {(() => {
+                const hasPortfolio =
+                  useMock || plaidConnected || (sparklinePoints?.length ?? 0) > 1;
+                if (!hasPortfolio) {
+                  return (
+                    <button
+                      type="button"
+                      className="bs-index-chip bs-index-chip--portfolio"
+                      onClick={() => setAddPortfolioOpen(true)}
+                    >
+                      <i className="bi bi-plus-lg" aria-hidden="true" />
+                      <span>My Portfolio</span>
+                      <span className="bs-index-chip-pct">Connect</span>
+                    </button>
+                  );
+                }
+                return (
+                  <button
+                    type="button"
+                    className={`bs-index-chip bs-index-chip--portfolio ${showPortfolio ? 'bs-index-chip--active' : ''}`}
+                    aria-pressed={showPortfolio}
+                    onClick={() => setShowPortfolio((v) => !v)}
+                  >
+                    <span
+                      className="bs-index-chip-dot"
+                      style={{
+                        background: showPortfolio ? 'var(--bs-green)' : 'var(--bs-border-rule)',
+                      }}
+                    />
+                    <span>My Portfolio</span>
+                    <span
+                      className="bs-index-chip-pct"
+                      style={{
+                        color: showPortfolio
+                          ? 'inherit'
+                          : changePct >= 0
+                            ? 'var(--bs-green)'
+                            : 'var(--bs-red)',
+                      }}
+                    >
+                      {fmtPct(changePct)}
+                    </span>
+                  </button>
+                );
+              })()}
               {indices.map((idx) => {
                 const isOn = activeIndices.has(idx.sym);
                 return (
@@ -1597,6 +1344,7 @@ export default function HomePage() {
                     key={idx.sym}
                     type="button"
                     className={`bs-index-chip ${isOn ? 'bs-index-chip--active' : ''}`}
+                    aria-pressed={isOn}
                     onClick={() =>
                       setActiveIndices((prev) => {
                         const next = new Set(prev);
@@ -1960,15 +1708,31 @@ export default function HomePage() {
           </div>
           <div className="bs-sched-row">
             <div className="bs-sched-events">
+              {scheduleData.selectionLabel && (
+                <div className="bs-sched-selection" role="status">
+                  <span>Showing {scheduleData.selectionLabel}</span>
+                  <button
+                    type="button"
+                    className="bs-sched-selection-clear"
+                    onClick={() => setCalSel(null)}
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
               {scheduleLoading && scheduleData.totalWindow === 0 ? (
                 <div className="bs-sched-empty">Loading upcoming events…</div>
               ) : scheduleData.dayGroups.length === 0 ? (
                 <div className="bs-sched-empty">
-                  {scheduleData.totalWindow === 0
-                    ? 'No upcoming events in the next week. Economic releases for your region and events for the companies, politicians and assets you follow will appear here.'
-                    : `No ${(
-                        SCHEDULE_FILTERS.find((f) => f.key === eventFilter)?.label || ''
-                      ).toLowerCase()} events in the next week.`}
+                  {calSel
+                    ? calSel.start === calSel.end
+                      ? `No events on ${scheduleData.selectionLabel}.`
+                      : `No events between ${scheduleData.selectionLabel}.`
+                    : scheduleData.totalWindow === 0
+                      ? 'No upcoming events in the next week. Economic releases for your region and events for the companies, politicians and assets you follow will appear here.'
+                      : `No ${(
+                          SCHEDULE_FILTERS.find((f) => f.key === eventFilter)?.label || ''
+                        ).toLowerCase()} events in the next week.`}
                 </div>
               ) : (
                 scheduleData.dayGroups.map((group) => (
@@ -1980,63 +1744,77 @@ export default function HomePage() {
                       </span>
                     </div>
                     <div className="bs-event-grid">
-                      {group.items.map((ev) => (
-                        <div
-                          key={ev.id}
-                          className="bs-event-item"
-                          style={{
-                            borderLeft: `2px solid ${ev.color || eventCategoryColor(ev.category)}`,
-                          }}
-                          title={ev.subtitle || ev.title}
-                        >
+                      {group.items.map((ev) => {
+                        const color = ev.color || eventCategoryColor(ev.category);
+                        const open = expandedEventId === ev.id;
+                        const detailId = `bs-ev-${String(ev.id).replace(/[^a-zA-Z0-9_-]/g, '')}`;
+                        const catLabel = EVENT_CATEGORY_META[ev.category]?.label || ev.category;
+                        const ctx = contextById[ev.id];
+                        return (
                           <div
-                            className="bs-event-date"
-                            style={{ color: ev.color || eventCategoryColor(ev.category) }}
+                            key={ev.id}
+                            className={`bs-event-item${open ? ' is-open' : ''}`}
+                            style={{ '--bs-ev-color': color }}
                           >
-                            {EVENT_CATEGORY_META[ev.category]?.label || ev.category}
-                            {ev.time ? ` · ${ev.time}` : ''}
-                          </div>
-                          <div className="bs-event-title">{ev.title}</div>
-                          <div className="bs-event-meta-row">
-                            <span>{ev.subtitle || ev.symbol || ''}</span>
-                            {ev.impact === 'High' && <span className="bs-event-flag">HIGH</span>}
-                          </div>
-                          {(() => {
-                            const ctx = contextById[ev.id];
-                            if (!ctx) return null;
-                            if (ctx.article) {
-                              return (
-                                <a
-                                  href={ctx.article.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="bs-event-article"
-                                >
-                                  <span className="bs-event-article-icon">📰</span>
-                                  <span className="bs-event-article-text">
-                                    {ctx.article.headline}
-                                    <span className="bs-event-article-src">
-                                      {' '}
-                                      — {ctx.article.source}
-                                    </span>
-                                  </span>
-                                </a>
-                              );
-                            }
-                            if (ctx.blurb) {
-                              return (
-                                <div className="bs-event-implication">
-                                  <span className="bs-event-implication-label">
-                                    Market implications
-                                  </span>
-                                  <p className="bs-event-implication-text">{ctx.blurb}</p>
+                            <button
+                              type="button"
+                              className="bs-event-toggle"
+                              aria-expanded={open}
+                              aria-controls={detailId}
+                              onClick={() => setExpandedEventId(open ? null : ev.id)}
+                              title={ev.subtitle || ev.title}
+                            >
+                              <span className="bs-event-dot" aria-hidden="true" />
+                              <span className="bs-event-compact-time">{ev.time || catLabel}</span>
+                              <span className="bs-event-compact-title">{ev.title}</span>
+                              {ev.impact === 'High' && <span className="bs-event-flag">HIGH</span>}
+                              <i
+                                className={`bi bi-chevron-${open ? 'up' : 'down'} bs-event-chev`}
+                                aria-hidden="true"
+                              />
+                            </button>
+                            {open && (
+                              <div id={detailId} className="bs-event-detail">
+                                <div className="bs-event-date" style={{ color }}>
+                                  {catLabel}
+                                  {ev.time ? ` · ${ev.time}` : ''}
                                 </div>
-                              );
-                            }
-                            return null;
-                          })()}
-                        </div>
-                      ))}
+                                <div className="bs-event-title">{ev.title}</div>
+                                <div className="bs-event-meta-row">
+                                  <span>{ev.subtitle || ev.symbol || ''}</span>
+                                </div>
+                                {ctx?.article ? (
+                                  <a
+                                    href={ctx.article.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="bs-event-article"
+                                  >
+                                    <i
+                                      className="bi bi-newspaper bs-event-article-icon"
+                                      aria-hidden="true"
+                                    />
+                                    <span className="bs-event-article-text">
+                                      {ctx.article.headline}
+                                      <span className="bs-event-article-src">
+                                        {' '}
+                                        · {ctx.article.source}
+                                      </span>
+                                    </span>
+                                  </a>
+                                ) : ctx?.blurb ? (
+                                  <div className="bs-event-implication">
+                                    <span className="bs-event-implication-label">
+                                      Market implications
+                                    </span>
+                                    <p className="bs-event-implication-text">{ctx.blurb}</p>
+                                  </div>
+                                ) : null}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 ))
@@ -2049,228 +1827,9 @@ export default function HomePage() {
                 today={scheduleData.today}
                 monthTitle={scheduleData.monthTitle}
                 legend={scheduleData.legend}
+                selection={calSel}
+                onSelectDay={selectCalendarDay}
               />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ BAND V — INTELLIGENCE ═══ */}
-      <section className="bs-band bs-band--light">
-        <div className="bs-page-inner">
-          <BandHeader number="V" label="Intelligence" />
-          <div className="bs-intel-grid">
-            {/* Column A — Market opportunities */}
-            <div className="bs-intel-col">
-              <div className="bs-sub-head">
-                <h3 className="bs-sub-title">Market opportunities</h3>
-                <span className="bs-sub-meta">Matched · moderate</span>
-              </div>
-              {(opportunities.length
-                ? opportunities
-                : [{ sym: '—', title: 'Loading headlines…', src: '', when: '', url: '' }]
-              ).map((o, i) => (
-                <a
-                  key={`${o.sym}-${i}`}
-                  href={o.url || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bs-opp-row bs-opp-row--link"
-                  onClick={(e) => {
-                    if (!o.url) e.preventDefault();
-                  }}
-                >
-                  <div className="bs-opp-rule">
-                    <span className="bs-opp-sym">{o.sym}</span>
-                    <span className="bs-opp-when">{o.when}</span>
-                  </div>
-                  <div className="bs-opp-title">{o.title}</div>
-                  <div className="bs-opp-src">{o.src}</div>
-                </a>
-              ))}
-            </div>
-
-            {/* Column B — Congressional tracker */}
-            <div className="bs-intel-col">
-              <div className="bs-sub-head">
-                <h3 className="bs-sub-title">Congressional tracker</h3>
-                <span className="bs-sub-meta">Latest 24h</span>
-              </div>
-              {(congressTrades.length
-                ? congressTrades
-                : [{ rep: '—', cham: '', when: '', sym: '—', side: 'BUY', size: '—' }]
-              ).map((c, i) => (
-                <div key={`${c.sym}-${i}`} className="bs-cong-row">
-                  <div className="bs-cong-left">
-                    <div className="bs-cong-name">{c.rep}</div>
-                    <div className="bs-cong-meta">
-                      {c.cham} · {c.when}
-                    </div>
-                  </div>
-                  <div className="bs-cong-right">
-                    <div className="bs-cong-sym">{c.sym}</div>
-                    <div
-                      className={`bs-cong-side ${
-                        c.side === 'BUY'
-                          ? 'bs-cong-side--buy'
-                          : c.side === 'LOBBY'
-                            ? 'bs-cong-side--lobby'
-                            : 'bs-cong-side--sell'
-                      }`}
-                    >
-                      {c.side}
-                    </div>
-                    <div className="bs-cong-size">{c.size}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bs-movers-row">
-            <div className="bs-sub-head">
-              <h3 className="bs-sub-title">{moversTitle}</h3>
-              <span className="bs-sub-meta">
-                {moversWindow === 'weekly' ? 'Week ending Friday close' : 'Current session'}
-              </span>
-            </div>
-
-            <div className="bs-movers-grid">
-              <div className="bs-movers-col">
-                <div className="bs-mover-group-head">Equities</div>
-                <div className="bs-mover-head">Gainers</div>
-                {(gainers.length ? gainers : [{ sym: '—', pct: 0 }]).slice(0, 3).map((g, i) => (
-                  <Link
-                    key={`eg-${g.sym}-${i}`}
-                    href={`/company-research?q=${encodeURIComponent(g.sym)}`}
-                    className="bs-mover-row bs-mover-row--link"
-                  >
-                    <span className="bs-mover-sym">{g.sym}</span>
-                    <span className="bs-mover-pct bs-mover-pct--up">+{g.pct.toFixed(2)}%</span>
-                    <Spark
-                      values={genSeries(91 + i * 7, 24, 0.8, 1.0)}
-                      color="var(--bs-green)"
-                      w={56}
-                      h={20}
-                    />
-                  </Link>
-                ))}
-                <div className="bs-mover-head" style={{ marginTop: 10 }}>
-                  Losers
-                </div>
-                {(losers.length ? losers : [{ sym: '—', pct: 0 }]).slice(0, 3).map((l, i) => (
-                  <Link
-                    key={`el-${l.sym}-${i}`}
-                    href={`/company-research?q=${encodeURIComponent(l.sym)}`}
-                    className="bs-mover-row bs-mover-row--link"
-                  >
-                    <span className="bs-mover-sym">{l.sym}</span>
-                    <span className="bs-mover-pct bs-mover-pct--down">{l.pct.toFixed(2)}%</span>
-                    <Spark
-                      values={genSeries(31 + i * 9, 24, -0.6, 1.0)}
-                      color="var(--bs-red)"
-                      w={56}
-                      h={20}
-                    />
-                  </Link>
-                ))}
-              </div>
-
-              <div className="bs-movers-col">
-                <div className="bs-mover-group-head">Commodities</div>
-                <div className="bs-mover-head">Gainers</div>
-                {commodityGainers.length === 0 ? (
-                  <p className="bs-mover-empty">No gainers</p>
-                ) : (
-                  commodityGainers.map((c, i) => (
-                    <Link
-                      key={`cg-${c.sym}`}
-                      href="/watchlist"
-                      className="bs-mover-row bs-mover-row--link"
-                    >
-                      <span className="bs-mover-sym">{c.sym}</span>
-                      <span className="bs-mover-pct bs-mover-pct--up">+{c.pct.toFixed(2)}%</span>
-                      <Spark
-                        values={genSeries(41 + i * 13, 24, 0.5, 1.0)}
-                        color="var(--bs-green)"
-                        w={56}
-                        h={20}
-                      />
-                    </Link>
-                  ))
-                )}
-                <div className="bs-mover-head" style={{ marginTop: 10 }}>
-                  Losers
-                </div>
-                {commodityLosers.length === 0 ? (
-                  <p className="bs-mover-empty">No losers</p>
-                ) : (
-                  commodityLosers.map((c, i) => (
-                    <Link
-                      key={`cl-${c.sym}`}
-                      href="/watchlist"
-                      className="bs-mover-row bs-mover-row--link"
-                    >
-                      <span className="bs-mover-sym">{c.sym}</span>
-                      <span className="bs-mover-pct bs-mover-pct--down">{c.pct.toFixed(2)}%</span>
-                      <Spark
-                        values={genSeries(141 + i * 13, 24, -0.5, 1.0)}
-                        color="var(--bs-red)"
-                        w={56}
-                        h={20}
-                      />
-                    </Link>
-                  ))
-                )}
-              </div>
-
-              <div className="bs-movers-col">
-                <div className="bs-mover-group-head">Alternatives</div>
-                <div className="bs-mover-head">Gainers</div>
-                {cryptoGainers.length === 0 ? (
-                  <p className="bs-mover-empty">No gainers</p>
-                ) : (
-                  cryptoGainers.map((c, i) => (
-                    <Link
-                      key={`ag-${c.sym}`}
-                      href="/watchlist"
-                      className="bs-mover-row bs-mover-row--link"
-                    >
-                      <span className="bs-mover-sym">{c.sym}</span>
-                      <span className="bs-mover-pct bs-mover-pct--up">+{c.pct.toFixed(2)}%</span>
-                      <Spark
-                        values={genSeries(51 + i * 5, 24, 0.6, 1.2)}
-                        color="var(--bs-green)"
-                        w={56}
-                        h={20}
-                      />
-                    </Link>
-                  ))
-                )}
-                <div className="bs-mover-head" style={{ marginTop: 10 }}>
-                  Losers
-                </div>
-                {cryptoLosers.length === 0 ? (
-                  <p className="bs-mover-empty">No losers</p>
-                ) : (
-                  cryptoLosers.map((c, i) => (
-                    <Link
-                      key={`al-${c.sym}`}
-                      href="/watchlist"
-                      className="bs-mover-row bs-mover-row--link"
-                    >
-                      <span className="bs-mover-sym">{c.sym}</span>
-                      <span className="bs-mover-pct bs-mover-pct--down">{c.pct.toFixed(2)}%</span>
-                      <Spark
-                        values={genSeries(151 + i * 5, 24, -0.4, 1.2)}
-                        color="var(--bs-red)"
-                        w={56}
-                        h={20}
-                      />
-                    </Link>
-                  ))
-                )}
-              </div>
             </div>
           </div>
         </div>
