@@ -226,9 +226,9 @@ export function Navbar() {
     pathname?.includes('/for-the-quants') ||
     pathname?.includes('/betting-markets') ||
     pathname?.includes('/ezana-echo') ||
-    // NOT /sonar: Sonar has its own nav pill, so the route must light that pill
-    // alone. It stays in the Research DROPDOWN as a link, but it does not make
-    // the Research trigger read active.
+    // NOT /sonar: Sonar has its own nav pill, so the route lights that pill
+    // alone. It is not in the Research dropdown either (Oct 29), so the
+    // Research trigger never reads active on /sonar.
     pathname?.includes('/alternative-markets') ||
     pathname?.includes('/centaur-intelligence') ||
     pathname?.includes('/kairos-signal');
@@ -282,13 +282,6 @@ export function Navbar() {
       dropdown: true,
       isActive: isResearchActive,
       items: [
-        {
-          id: 21,
-          title: 'Ezana Sonar',
-          description: 'Ping anything — cross-dataset intelligence',
-          url: '/sonar',
-          icon: 'bi-broadcast-pin',
-        },
         {
           id: 22,
           title: 'Company & Portfolio Research',

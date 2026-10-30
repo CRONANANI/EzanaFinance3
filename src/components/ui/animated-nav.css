@@ -88,7 +88,11 @@
 
 /* Dropdown panel */
 .animated-nav-dropdown {
+  /* Oct 29: as wide as its longest line, so every title and description
+     sits on one line; never wider than the viewport. */
   min-width: 240px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
   background: var(--app-bg);
   border: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
   border-radius: var(--radius-xl);
@@ -129,12 +133,14 @@
   font-size: 0.8125rem;
   font-weight: 600;
   color: #e2e8f0;
+  white-space: nowrap;
 }
 
 .animated-nav-dropdown-desc {
   font-size: 0.625rem;
   color: #6b7280;
   margin-top: 0.0625rem;
+  white-space: nowrap;
 }
 
 /* Premium research highlights (match Centaur / Kairos brand gold) */
