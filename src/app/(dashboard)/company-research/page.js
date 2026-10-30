@@ -9,9 +9,14 @@ import {
   KeyMetrics,
   AnalystRecommendations,
   CompanyNews,
+  CompanyOverview,
   EarningsCard,
   CompetitorsCard,
 } from '@/components/research';
+import { ViewToggle } from '@/components/research/dossier/ViewToggle';
+import { SectionTabs } from '@/components/research/dossier/SectionTabs';
+import { SectionStack } from '@/components/research/dossier/SectionStack';
+import { useSectionStack } from '@/components/research/dossier/useSectionStack';
 import { AIAnalysisPanel } from '@/components/research/AIAnalysisPanel';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 import { useCompanySearchFinnhub } from '@/hooks/useFinnhub';
@@ -57,6 +62,7 @@ import '@/components/research/ai-analysis-panel.css';
 import '@/components/research/model-card-shell.css';
 import '@/components/research/market/market-portfolio.css';
 import './company-research-theme.css';
+import './dossier.css';
 import '../org-trading/org-trading.css';
 
 const CAROUSEL_MODELS = getCarouselModels();
@@ -64,38 +70,7 @@ const CAROUSEL_MODELS = getCarouselModels();
 function ResearchPageHeader({ view, setView }) {
   return (
     <header className="cpr-page-header">
-      <div role="tablist" aria-label="Research view" className="cpr-view-toggle">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={view === 'company'}
-          onClick={() => setView('company')}
-          className={`cpr-view-toggle-btn ${view === 'company' ? 'is-active' : ''}`}
-        >
-          <i className="bi bi-building" />
-          Company
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={view === 'industry'}
-          onClick={() => setView('industry')}
-          className={`cpr-view-toggle-btn ${view === 'industry' ? 'is-active' : ''}`}
-        >
-          <i className="bi bi-grid-3x3-gap" />
-          Industry
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={view === 'portfolio'}
-          onClick={() => setView('portfolio')}
-          className={`cpr-view-toggle-btn ${view === 'portfolio' ? 'is-active' : ''}`}
-        >
-          <i className="bi bi-pie-chart" />
-          Portfolio
-        </button>
-      </div>
+      <ViewToggle view={view} setView={setView} />
     </header>
   );
 }
@@ -159,6 +134,16 @@ function CompanyResearchPageInner() {
   } = useWatchlists();
   const searchRef = useRef(null);
   const modelsCarouselScrollRef = useRef(null);
+  /* Section tabs (Overview, Models, Valuation, Earnings, News, Peers):
+     in-place panels with pinning. activeModel and each card's data live
+     above the stack, so a pinned section moves instead of remounting. */
+  const {
+    state: sectionState,
+    order: sectionOrder,
+    open: openSection,
+    pin: pinSection,
+    announcement: sectionAnnouncement,
+  } = useSectionStack();
 
   const researchCourses = useMemo(() => {
     const stocks = getCoursesByTrack('stocks');
@@ -237,7 +222,7 @@ function CompanyResearchPageInner() {
     if (stats.capType && stats.capType !== '--') parts.push(stats.capType);
     if (stats.mcap && stats.mcap !== '--' && stats.mcap !== '…')
       parts.push(`Market Cap: ${stats.mcap}`);
-    return parts.join(' · ') || selectedStock || '—';
+    return parts.join(' · ') || selectedStock || '';
   }, [stats.mcap, stats.capType, selectedStock]);
 
   useEffect(() => {
@@ -282,9 +267,11 @@ function CompanyResearchPageInner() {
         setActiveModel(null);
       } else {
         setActiveModel(modelId);
+        /* With a ticker, the analysis opens in the Models section. */
+        if (selectedStock) openSection('models', 'Models');
       }
     },
-    [activeModel],
+    [activeModel, selectedStock, openSection],
   );
 
   const handleCloseAnalysis = useCallback(() => {
@@ -441,279 +428,318 @@ function CompanyResearchPageInner() {
       );
     });
 
+  /* One body per section tab. Phase 1 reuses the existing research cards;
+     the redesigned cards replace them in later phases. */
+  const renderSection = (id) => {
+    switch (id) {
+      case 'overview':
+        return (
+          <div className="crx-section-grid">
+            <CompanyOverview symbol={selectedStock} />
+            <div className="crx-section-actions">
+              <button
+                type="button"
+                className="crx-link-btn"
+                onClick={() => openSection('news', 'News')}
+              >
+                See all news <i className="bi bi-arrow-right" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+        );
+      case 'models':
+        return activeModel ? (
+          <AIAnalysisPanel
+            modelId={activeModel}
+            symbol={selectedStock}
+            onClose={handleCloseAnalysis}
+            onOpenModel={setActiveModel}
+            showTips={beginner?.showTips}
+          />
+        ) : (
+          <p className="crx-section-empty">
+            Pick a model from the strip above to run it on {selectedStock}.
+          </p>
+        );
+      case 'valuation':
+        return (
+          <div className="crx-section-grid crx-section-grid--two">
+            <AnalystRecommendations symbol={selectedStock} />
+            <KeyMetrics symbol={selectedStock} />
+          </div>
+        );
+      case 'earnings':
+        return <EarningsCard symbol={selectedStock} />;
+      case 'news':
+        return <CompanyNews symbol={selectedStock} />;
+      case 'peers':
+        return (
+          <CompetitorsCard
+            symbol={selectedStock}
+            onSelectPeer={(peer) => handleSelectStock(peer, { fromPeer: true })}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   if (view === 'industry' || view === 'portfolio') {
     return (
       <div className="dashboard-page-inset cr-page">
-        <ResearchPageHeader view={view} setView={setView} />
-        <MarketPortfolioView section={view} />
+        <div className="crx-canvas">
+          <ResearchPageHeader view={view} setView={setView} />
+          <MarketPortfolioView section={view} />
+        </div>
       </div>
     );
   }
 
   return (
     <div className="dashboard-page-inset cr-page">
-      <ResearchPageHeader view={view} setView={setView} />
-      {showBeginnerAnalysis && (
-        <div className="beginner-first-analysis">
-          <p>
-            New here? Let&apos;s analyze Apple together — we&apos;ll walk you through the models and
-            key metrics.
-          </p>
-          <button type="button" onClick={handleStartAppleAnalysis}>
-            Analyze AAPL together →
-          </button>
-        </div>
-      )}
-
-      <div
-        className="company-search-wrapper relative"
-        ref={searchRef}
-        data-task-target="research-search-bar"
-      >
-        <AnimatedGlowingSearchBar
-          value={query}
-          onChange={handleSearchInput}
-          onSearch={(q) => q && handleSelectStock(q.toUpperCase())}
-          placeholder="Search company or ticker (e.g., NVDA, Apple Inc.)"
-          suggestions={suggestions}
-          onSelectSuggestion={handleSelectSuggestion}
-          showSuggestions={showSuggestions}
-          onFocus={() => {}}
-          loading={searchLoading}
-        />
-      </div>
-
-      {/* Stock analysis models — horizontal strip, above heatmap (heatmap view) or above stock chart (stock view) */}
-      {((selectedStock && viewMode === 'stock') || viewMode === 'heatmap') && (
-        <section
-          className="models-carousel-section compact cr-models-above-chart"
-          aria-label="Stock analysis models"
-        >
-          <button
-            className="carousel-nav prev"
-            type="button"
-            onClick={() => scrollModelsCarousel(-1)}
-            aria-label="Previous models"
-          >
-            <i className="bi bi-chevron-left" />
-          </button>
-          <div className="models-carousel-container" ref={modelsCarouselScrollRef}>
-            <div
-              className="models-carousel-track"
-              id={viewMode === 'stock' ? 'modelsCarouselTrackStock' : 'modelsCarouselTrack'}
-            >
-              {renderModelCards(viewMode === 'stock' ? 'st' : 'hm')}
-            </div>
+      <div className="crx-canvas">
+        <ResearchPageHeader view={view} setView={setView} />
+        {showBeginnerAnalysis && (
+          <div className="beginner-first-analysis">
+            <p>
+              New here? Let&apos;s analyze Apple together. We&apos;ll walk you through the models
+              and key metrics.
+            </p>
+            <button type="button" onClick={handleStartAppleAnalysis}>
+              Analyze AAPL together →
+            </button>
           </div>
-          <button
-            className="carousel-nav next"
-            type="button"
-            onClick={() => scrollModelsCarousel(1)}
-            aria-label="Next models"
-          >
-            <i className="bi bi-chevron-right" />
-          </button>
-        </section>
-      )}
+        )}
 
-      <section className="cr-market-chart-root" id="marketChartSection">
         <div
-          id="heatmapView"
-          className="cr-heatmap-layout cr-heatmap-layout--full"
-          style={{ display: viewMode === 'heatmap' ? undefined : 'none' }}
+          className="company-search-wrapper crx-search"
+          ref={searchRef}
+          data-task-target="research-search-bar"
         >
-          <div className="cr-heatmap-main">
-            <PinnableCard cardId="stock-heatmap" section="research">
-              <div className="cr-db-card cr-pinnable-inner">
-                <div className="chart-header compact">
-                  <div className="chart-title-area">
-                    <h2 className="chart-title">Stock Market Heatmap</h2>
-                    <span className="heatmap-subtitle">
-                      S&amp;P 500 · Performance YTD % · Tile size by return magnitude
-                    </span>
-                  </div>
-                </div>
-                <div
-                  className="heatmap-container"
-                  id="heatmapContainer"
-                  data-task-target="research-company-card"
-                >
-                  <StockHeatmap onSelectStock={handleSelectStock} />
-                </div>
-              </div>
-            </PinnableCard>
-          </div>
+          <AnimatedGlowingSearchBar
+            value={query}
+            onChange={handleSearchInput}
+            onSearch={(q) => q && handleSelectStock(q.toUpperCase())}
+            placeholder="Search company or ticker (e.g., NVDA, Apple Inc.)"
+            suggestions={suggestions}
+            onSelectSuggestion={handleSelectSuggestion}
+            showSuggestions={showSuggestions}
+            onFocus={() => {}}
+            loading={searchLoading}
+          />
         </div>
 
-        <div id="stockChartView" style={{ display: viewMode === 'stock' ? '' : 'none' }}>
-          {selectedStock && (
-            <PinnableCard cardId="stock-chart-merged" section="research">
-              <div className="market-chart-section cr-db-card cr-stock-merged-card">
-                <div className="cr-merged-stock-head">
-                  <div className="cr-merged-title-row">
-                    <div className="cr-merged-names">
-                      <span className="cr-merged-ticker">{selectedStock}</span>
-                      <span id="stockChartTitle" className="sr-only">
-                        {selectedStock}
+        {/* Stock analysis models — horizontal strip, above heatmap (heatmap view) or above stock chart (stock view) */}
+        {((selectedStock && viewMode === 'stock') || viewMode === 'heatmap') && (
+          <section
+            className="models-carousel-section compact cr-models-above-chart"
+            aria-label="Stock analysis models"
+          >
+            <button
+              className="carousel-nav prev"
+              type="button"
+              onClick={() => scrollModelsCarousel(-1)}
+              aria-label="Previous models"
+            >
+              <i className="bi bi-chevron-left" />
+            </button>
+            <div className="models-carousel-container" ref={modelsCarouselScrollRef}>
+              <div
+                className="models-carousel-track"
+                id={viewMode === 'stock' ? 'modelsCarouselTrackStock' : 'modelsCarouselTrack'}
+              >
+                {renderModelCards(viewMode === 'stock' ? 'st' : 'hm')}
+              </div>
+            </div>
+            <button
+              className="carousel-nav next"
+              type="button"
+              onClick={() => scrollModelsCarousel(1)}
+              aria-label="Next models"
+            >
+              <i className="bi bi-chevron-right" />
+            </button>
+          </section>
+        )}
+
+        <section className="cr-market-chart-root" id="marketChartSection">
+          <div
+            id="heatmapView"
+            className="cr-heatmap-layout cr-heatmap-layout--full"
+            style={{ display: viewMode === 'heatmap' ? undefined : 'none' }}
+          >
+            <div className="cr-heatmap-main">
+              <PinnableCard cardId="stock-heatmap" section="research">
+                <div className="cr-db-card cr-pinnable-inner">
+                  <div className="chart-header compact">
+                    <div className="chart-title-area">
+                      <h2 className="chart-title">Stock Market Heatmap</h2>
+                      <span className="heatmap-subtitle">
+                        S&amp;P 500 · Performance YTD % · Tile size by return magnitude
                       </span>
                     </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        flexWrap: 'wrap',
-                        marginLeft: 'auto',
-                      }}
-                    >
-                      {isOrgUser && hasPermission('send_to_team') && (
-                        <button
-                          type="button"
-                          className="ot-position-flag-btn"
-                          onClick={() => setSendChartTicker(selectedStock)}
-                          style={{ whiteSpace: 'nowrap' }}
-                        >
-                          <i className="bi bi-send" /> Send Chart
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={openWatchlistModal}
+                  </div>
+                  <div
+                    className="heatmap-container"
+                    id="heatmapContainer"
+                    data-task-target="research-company-card"
+                  >
+                    <StockHeatmap onSelectStock={handleSelectStock} />
+                  </div>
+                </div>
+              </PinnableCard>
+            </div>
+          </div>
+
+          <div id="stockChartView" style={{ display: viewMode === 'stock' ? '' : 'none' }}>
+            {selectedStock && (
+              <PinnableCard cardId="stock-chart-merged" section="research">
+                <div className="market-chart-section cr-db-card cr-stock-merged-card">
+                  <div className="cr-merged-stock-head">
+                    <div className="cr-merged-title-row">
+                      <div className="cr-merged-names">
+                        <span className="cr-merged-ticker">{selectedStock}</span>
+                        <span id="stockChartTitle" className="sr-only">
+                          {selectedStock}
+                        </span>
+                      </div>
+                      <div
                         style={{
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '0.35rem',
-                          padding: '0.35rem 0.85rem',
-                          borderRadius: '8px',
-                          border: '1px solid rgba(16, 185, 129, 0.3)',
-                          background: 'rgba(16, 185, 129, 0.08)',
-                          color: '#10b981',
-                          fontSize: '0.8125rem',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                          whiteSpace: 'nowrap',
-                          fontFamily: 'var(--font-sans)',
-                          flexShrink: 0,
+                          gap: '0.5rem',
+                          flexWrap: 'wrap',
+                          marginLeft: 'auto',
                         }}
                       >
-                        <i className="bi bi-plus-lg" style={{ fontSize: '0.875rem' }} />
-                        Add to Watchlist
+                        {isOrgUser && hasPermission('send_to_team') && (
+                          <button
+                            type="button"
+                            className="ot-position-flag-btn"
+                            onClick={() => setSendChartTicker(selectedStock)}
+                            style={{ whiteSpace: 'nowrap' }}
+                          >
+                            <i className="bi bi-send" /> Send Chart
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={openWatchlistModal}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            padding: '0.35rem 0.85rem',
+                            borderRadius: '8px',
+                            border: '1px solid rgba(16, 185, 129, 0.3)',
+                            background: 'rgba(16, 185, 129, 0.08)',
+                            color: '#10b981',
+                            fontSize: '0.8125rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap',
+                            fontFamily: 'var(--font-sans)',
+                            flexShrink: 0,
+                          }}
+                        >
+                          <i className="bi bi-plus-lg" style={{ fontSize: '0.875rem' }} />
+                          Add to Watchlist
+                        </button>
+                      </div>
+                    </div>
+                    <p className="cr-merged-meta-line">{companyMetaLine}</p>
+                  </div>
+                  <div className="chart-header compact cr-chart-toolbar">
+                    <div className="chart-controls">
+                      <button
+                        className="back-to-heatmap-btn"
+                        id="backToHeatmap"
+                        type="button"
+                        onClick={() => {
+                          setViewMode('heatmap');
+                          setSelectedStock(null);
+                          resetStats();
+                          setActiveModel(null);
+                          try {
+                            window.marketChartWidget?.showHeatmap?.();
+                          } catch (_) {}
+                        }}
+                      >
+                        <i className="bi bi-grid-3x3-gap" /> Heatmap
                       </button>
                     </div>
                   </div>
-                  <p className="cr-merged-meta-line">{companyMetaLine}</p>
-                </div>
-                <div className="chart-header compact cr-chart-toolbar">
-                  <div className="chart-controls">
-                    <button
-                      className="back-to-heatmap-btn"
-                      id="backToHeatmap"
-                      type="button"
-                      onClick={() => {
-                        setViewMode('heatmap');
-                        setSelectedStock(null);
-                        resetStats();
-                        setActiveModel(null);
-                        try {
-                          window.marketChartWidget?.showHeatmap?.();
-                        } catch (_) {}
-                      }}
-                    >
-                      <i className="bi bi-grid-3x3-gap" /> Heatmap
-                    </button>
+
+                  {/* New React-based chart component */}
+                  <div style={{ padding: '1rem 0' }}>
+                    <StockPriceChart symbol={selectedStock} livePrice={livePrice} stats={stats} />
                   </div>
                 </div>
+              </PinnableCard>
+            )}
+          </div>
+        </section>
 
-                {/* New React-based chart component */}
-                <div style={{ padding: '1rem 0' }}>
-                  <StockPriceChart symbol={selectedStock} livePrice={livePrice} stats={stats} />
-                </div>
+        {/* Heatmap: user opened a model before selecting a ticker */}
+        {activeModel && !selectedStock && (
+          <section
+            className="model-detail-section cr-model-detail-no-ticker"
+            id="modelDetailSectionHeatmap"
+          >
+            <div className="component-card model-detail-card">
+              <div className="card-header">
+                <h3>{CAROUSEL_MODELS.find((m) => m.id === activeModel)?.name || 'Analysis'}</h3>
+                <button className="card-action-btn" type="button" onClick={handleCloseAnalysis}>
+                  <i className="bi bi-x-lg" /> Close
+                </button>
               </div>
-            </PinnableCard>
-          )}
-
-          {selectedStock && activeModel && (
-            <section
-              className="model-detail-section cr-model-detail-below-chart"
-              id="modelDetailSection"
-            >
-              <AIAnalysisPanel
-                modelId={activeModel}
-                symbol={selectedStock}
-                onClose={handleCloseAnalysis}
-                onOpenModel={setActiveModel}
-                showTips={beginner?.showTips}
-              />
-            </section>
-          )}
-        </div>
-      </section>
-
-      {/* Heatmap: user opened a model before selecting a ticker */}
-      {activeModel && !selectedStock && (
-        <section
-          className="model-detail-section cr-model-detail-no-ticker"
-          id="modelDetailSectionHeatmap"
-        >
-          <div className="component-card model-detail-card">
-            <div className="card-header">
-              <h3>{CAROUSEL_MODELS.find((m) => m.id === activeModel)?.name || 'Analysis'}</h3>
-              <button className="card-action-btn" type="button" onClick={handleCloseAnalysis}>
-                <i className="bi bi-x-lg" /> Close
-              </button>
+              <div className="card-body" style={{ padding: '3rem 1rem', textAlign: 'center' }}>
+                <i
+                  className="bi bi-search"
+                  style={{
+                    fontSize: '2rem',
+                    color: '#6b7280',
+                    display: 'block',
+                    marginBottom: '1rem',
+                  }}
+                />
+                <p style={{ color: '#8b949e', fontSize: '0.9375rem' }}>
+                  Search for a company or select a stock from the heatmap above to run this
+                  analysis.
+                </p>
+              </div>
             </div>
-            <div className="card-body" style={{ padding: '3rem 1rem', textAlign: 'center' }}>
-              <i
-                className="bi bi-search"
-                style={{
-                  fontSize: '2rem',
-                  color: '#6b7280',
-                  display: 'block',
-                  marginBottom: '1rem',
-                }}
-              />
-              <p style={{ color: '#8b949e', fontSize: '0.9375rem' }}>
-                Search for a company or select a stock from the heatmap above to run this analysis.
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
+          </section>
+        )}
 
-      {selectedStock && view === 'company' && <EducationTip topic="diversification" />}
+        {selectedStock && view === 'company' && <EducationTip topic="diversification" />}
 
-      {selectedStock && (
-        <section className="research-cards-section cr-research-cards mt-8">
-          <h2 className="cr-section-heading">Research · {selectedStock}</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <PinnableCard cardId="key-metrics" section="research">
-              <KeyMetrics symbol={selectedStock} />
-            </PinnableCard>
-            <PinnableCard cardId="analyst-recommendations" section="research">
-              <AnalystRecommendations symbol={selectedStock} />
-            </PinnableCard>
-            <PinnableCard cardId="company-news" section="research" className="lg:col-span-2">
-              <CompanyNews symbol={selectedStock} className="lg:col-span-2" />
-            </PinnableCard>
-            <PinnableCard cardId="earnings-card" section="research">
-              <EarningsCard symbol={selectedStock} />
-            </PinnableCard>
-            <PinnableCard cardId="competitors-card" section="research">
-              <CompetitorsCard
-                symbol={selectedStock}
-                onSelectPeer={(peer) => handleSelectStock(peer, { fromPeer: true })}
-              />
-            </PinnableCard>
-          </div>
-        </section>
-      )}
+        {selectedStock && (
+          <>
+            <SectionTabs state={sectionState} onOpen={openSection} />
+            <SectionStack
+              state={sectionState}
+              order={sectionOrder}
+              onPin={pinSection}
+              renderSection={renderSection}
+              titles={{
+                models: `Run a model on ${selectedStock}`,
+                valuation: 'Valuation and analyst view',
+              }}
+            />
+            <p className="crx-visually-hidden" aria-live="polite">
+              {sectionAnnouncement}
+            </p>
+          </>
+        )}
 
-      <CoursePreviewSection
-        title="Fundamental Analysis Mastery"
-        subtitle="Deep dive into financial statement analysis and valuation"
-        courses={researchCourses}
-        viewAllHref="/learning-center?track=stocks"
-      />
+        <CoursePreviewSection
+          title="Fundamental Analysis Mastery"
+          subtitle="Deep dive into financial statement analysis and valuation"
+          courses={researchCourses}
+          viewAllHref="/learning-center?track=stocks"
+        />
+      </div>
 
       {wlModalOpen && selectedStock && (
         <>
@@ -769,7 +795,7 @@ function CompanyResearchPageInner() {
                     color: 'var(--home-muted, #6b7280)',
                   }}
                 >
-                  Adding <strong style={{ color: '#10b981' }}>{selectedStock}</strong> — select a
+                  Adding <strong style={{ color: '#10b981' }}>{selectedStock}</strong>: select a
                   watchlist
                 </p>
               </div>
@@ -976,12 +1002,12 @@ function CompanyResearchPageInner() {
         steps={[
           {
             targetSelector: '[data-task-target="research-search-bar"]',
-            message: 'Search any ticker here — try AAPL or your favorite company.',
+            message: 'Search any ticker here. Try AAPL or your favorite company.',
             position: 'bottom',
           },
           {
             targetSelector: '[data-model="grpv"]',
-            message: 'Start with GRPV — our guided model for a quick fundamentals overview.',
+            message: 'Start with GRPV, our guided model for a quick fundamentals overview.',
             position: 'bottom',
           },
           {

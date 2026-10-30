@@ -1,0 +1,318 @@
+/* Company research dossier (Phase 1). Page-scoped (crx-), tokens only, no
+   Tailwind. Amendments: full-width view toggle and search pill (B), and
+   section tabs that swap content in place with pinning (C). */
+
+.crx-canvas {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+}
+
+/* ── Full-width view toggle ─────────────────────────────── */
+.crx-view-toggle {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width: 100%;
+  padding: 0.25rem;
+  gap: 0.25rem;
+  /* --surface-card is transparent in dark mode; the track is a filled
+     surface like every other card since the Oct 29 borderless change. */
+  background: var(--card-bg);
+  border-radius: 999px;
+  box-shadow: var(--shadow-sm);
+}
+
+.crx-view-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  font-weight: var(--weight-strong);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.crx-view-toggle-btn:hover {
+  background: var(--card-bg-hover);
+  color: var(--text-primary);
+}
+
+.crx-view-toggle-btn[aria-selected='true'] {
+  background: var(--emerald);
+  color: var(--color-on-primary);
+}
+
+.crx-view-toggle-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--btn-ring);
+}
+
+/* ── Full-width search pill ─────────────────────────────── */
+/* The shared search input stays transparent (ds.css, Oct 15 search design);
+   the pill is drawn by this wrapper, as .ds-search does elsewhere. */
+.crx-search {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-xl);
+  /* --surface-input is transparent in dark mode, which would leave no pill;
+     the card fill reads as the same surface in light mode. */
+  background: var(--card-bg);
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.crx-search:focus-within {
+  background: var(--card-bg-hover);
+  box-shadow: var(--shadow-glow);
+}
+
+.crx-search .ds-search-input {
+  height: 64px;
+  border-radius: var(--radius-xl);
+  font-family: var(--font-sans);
+  font-size: var(--type-lead-size);
+}
+
+/* The page's legacy wrapper adds a bottom margin; the canvas gap spaces it. */
+.crx-canvas .company-search-wrapper {
+  margin-bottom: 0;
+}
+
+/* ── Sticky section tabs ────────────────────────────────── */
+.crx-tabs-bar {
+  position: sticky;
+  top: var(--crx-sticky-top, var(--navbar-height, 64px));
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--bg-primary);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--text-muted) 18%, transparent);
+}
+
+.crx-tabs {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  gap: 0.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.crx-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.crx-tab {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 44px;
+  padding: 0 0.875rem;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: inset 0 -2px 0 transparent;
+  transition:
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.crx-tab:hover {
+  color: var(--text-primary);
+}
+
+.crx-tab[aria-selected='true'] {
+  color: var(--text-primary);
+  box-shadow: inset 0 -2px 0 var(--emerald);
+}
+
+.crx-tab:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: -2px;
+}
+
+.crx-tab-pin {
+  font-size: 0.75rem;
+  color: var(--emerald);
+}
+
+/* ── Section stack ──────────────────────────────────────── */
+.crx-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  scroll-margin-top: 120px;
+}
+
+.crx-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: crx-section-in 0.2s ease;
+}
+
+.crx-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.crx-section-titles {
+  min-width: 0;
+}
+
+.crx-section-title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--type-section-size);
+  font-weight: var(--type-section-weight);
+  letter-spacing: var(--type-section-tracking);
+  line-height: var(--type-section-leading);
+  color: var(--text-primary);
+}
+
+.crx-eyebrow {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.crx-section-pin {
+  min-width: 44px;
+  min-height: 44px;
+  color: var(--text-muted);
+}
+
+.crx-section-pin.is-on {
+  color: var(--emerald);
+  background: var(--emerald-bg-subtle);
+}
+
+/* Section bodies: one column; two for the paired Valuation cards. */
+.crx-section-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .crx-section-grid--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.crx-section-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.crx-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 44px;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--emerald-bg-subtle);
+  color: var(--emerald-text);
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  font-weight: var(--weight-strong);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.crx-link-btn:hover {
+  background: var(--emerald-bg);
+}
+
+.crx-link-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--btn-ring);
+}
+
+.crx-section-empty {
+  margin: 0;
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  font-size: var(--type-body-size);
+}
+
+.crx-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@keyframes crx-section-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crx-section {
+    animation: none;
+  }
+  .crx-view-toggle-btn,
+  .crx-tab,
+  .crx-search,
+  .crx-link-btn {
+    transition: none;
+  }
+}
+
+@media (max-width: 639px) {
+  .crx-canvas {
+    gap: 1.25rem;
+  }
+  .crx-view-toggle-btn {
+    min-height: 44px;
+    padding: 0 0.5rem;
+    gap: 0.375rem;
+  }
+  .crx-search .ds-search-input {
+    height: 56px;
+  }
+}
