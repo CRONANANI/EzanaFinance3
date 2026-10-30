@@ -95,7 +95,7 @@ function SingleDateField({
  * - ranges:             string[]                          — preset labels (range mode)
  * - value:              string                            — selected label (range) or ISO date (single)
  * - onChange:           (range: string) => void  |  (isoDate: string) => void
- * - size:               'xs' | 'sm' | 'md' | 'lg'         — defaults to 'sm' (range mode)
+ * - size:               'xs' | 'sm' | 'md' | 'lg'         — accepted but ignored in range mode (one pill size)
  * - variant:            'default' | 'partner' | 'org'     — brand variant (emerald/gold)
  * - inactiveTextColor:  string                            — text color for non-selected pills
  * - showCustomDateButton: boolean                         — show the custom range picker (default true)
@@ -123,8 +123,6 @@ export function DateSelector({
 }) {
   const [showCalendar, setShowCalendar] = useState(false);
 
-  const accentColor = variant === 'partner' ? '#d4a853' : '#10b981';
-
   if (mode === 'single') {
     return (
       <SingleDateField
@@ -141,18 +139,27 @@ export function DateSelector({
     );
   }
 
+  /* One pill size for every timeframe selector on the platform (Oct 29).
+     `size` is still accepted for back-compat but no longer changes the pill:
+     the same control must read the same in every card, in every app. */
+  const accent = variant === 'partner' ? 'var(--gold)' : 'var(--emerald)';
   const inactiveColor =
-    inactiveTextColor || (variant === 'partner' ? '#a8956f' : 'var(--text-muted, #8b949e)');
-
-  const sizeMap = {
-    xs: { padding: '0.11rem 0.26rem', fontSize: '0.41rem' },
-    sm: { padding: '0.15rem 0.30rem', fontSize: '0.43rem' },
-    md: { padding: '0.18rem 0.35rem', fontSize: '0.48rem' },
-    // 'lg' matches the dashboard "My Holdings" pill size (the platform reference size).
-    lg: { padding: '0.3rem 0.625rem', fontSize: '0.625rem' },
+    inactiveTextColor || (variant === 'partner' ? 'var(--gold-hover)' : 'var(--text-muted)');
+  const pill = {
+    minWidth: '2.125rem',
+    padding: '0.3rem 0.625rem',
+    fontSize: '0.625rem',
+    lineHeight: 1.2,
+    fontWeight: 700,
+    borderRadius: 'var(--radius-sm)',
+    fontFamily: 'var(--font-sans)',
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'background 0.15s ease, color 0.15s ease, border-color 0.15s ease',
   };
-  const sizes = sizeMap[size] || sizeMap.sm;
-
   const isCustomActive = value === 'CUSTOM';
 
   return (
@@ -161,35 +168,31 @@ export function DateSelector({
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '0.20rem',
+        gap: '0.25rem',
         flexWrap: 'wrap',
-        fontFamily: 'var(--font-sans, "Plus Jakarta Sans", system-ui)',
+        fontFamily: 'var(--font-sans)',
         ...style,
       }}
     >
-      {ranges.map((r) => (
-        <button
-          key={r}
-          type="button"
-          onClick={() => onChange(r)}
-          aria-pressed={value === r}
-          style={{
-            padding: sizes.padding,
-            borderRadius: 4,
-            border: 'none',
-            fontSize: sizes.fontSize,
-            fontWeight: 700,
-            cursor: 'pointer',
-            fontFamily: 'var(--font-sans, "Plus Jakarta Sans", system-ui)',
-            background: value === r ? accentColor : 'rgba(107, 114, 128, 0.1)',
-            color: value === r ? '#fff' : inactiveColor,
-            transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {r}
-        </button>
-      ))}
+      {ranges.map((r) => {
+        const on = value === r;
+        return (
+          <button
+            key={r}
+            type="button"
+            onClick={() => onChange(r)}
+            aria-pressed={on}
+            style={{
+              ...pill,
+              border: '1px solid transparent',
+              background: on ? accent : 'color-mix(in srgb, var(--text-muted) 10%, transparent)',
+              color: on ? '#fff' : inactiveColor,
+            }}
+          >
+            {r}
+          </button>
+        );
+      })}
 
       {showCustomDateButton && (
         <button
@@ -198,20 +201,11 @@ export function DateSelector({
           aria-pressed={isCustomActive}
           title="Select a custom date range"
           style={{
-            padding: sizes.padding,
-            borderRadius: 4,
-            border: `1px solid ${isCustomActive ? accentColor : 'var(--border-primary, rgba(107,114,128,0.25))'}`,
-            fontSize: sizes.fontSize,
-            fontWeight: 700,
-            cursor: 'pointer',
-            fontFamily: 'var(--font-sans, "Plus Jakarta Sans", system-ui)',
-            background: isCustomActive ? accentColor : 'transparent',
-            color: isCustomActive ? '#fff' : accentColor,
-            transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
-            whiteSpace: 'nowrap',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.2rem',
+            ...pill,
+            gap: '0.25rem',
+            border: `1px solid ${isCustomActive ? accent : 'var(--border-primary)'}`,
+            background: isCustomActive ? accent : 'transparent',
+            color: isCustomActive ? '#fff' : accent,
           }}
         >
           <svg width="9" height="9" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
