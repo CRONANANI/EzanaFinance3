@@ -22,6 +22,7 @@ import { supabase } from '@/lib/supabase-browser';
 
 import '@/app/(dashboard)/sonar/sonar.css';
 import { SonarLoader } from '@/components/sonar/SonarLoader';
+import { SonarRailLoader } from '@/components/sonar/SonarRailLoader';
 import '@/app/datasets/datasets-loading.css';
 
 /* The landing Sonar band, loaded only once a Datasets search is sent. */
@@ -96,7 +97,12 @@ function relTime(ts) {
  * (Echo, Government Signal, Prediction Markets, gated when the plan doesn't
  * include it, Key Entities, Ping Next). The API enforces the entitlement matrix.
  */
-export function SonarExperience({ variant = 'app', heroAddon = null, initialQuery = null }) {
+export function SonarExperience({
+  variant = 'app',
+  heroAddon = null,
+  initialQuery = null,
+  stage = 'datasets',
+}) {
   const onDatasets = variant === 'datasets';
   /* Datasets: once a search is sent, the page shows the landing Sonar band
      (same format, same guest pipeline, follow-up pings in its own bar).
@@ -114,11 +120,11 @@ export function SonarExperience({ variant = 'app', heroAddon = null, initialQuer
      drives the sign-up CTA and the ?q= in the address. */
   const [shownQuery, setShownQuery] = useState(startQuery);
   const [answeredQuery, setAnsweredQuery] = useState(null);
-  /* Oct 27: a ping handed off from the landing pill (/datasets?q=...) keeps
-     the full green loading screen up until it settles, answered or not, so
-     the visitor goes from one loading page straight to the results. Follow-up
-     pings typed in the band keep the band's own loader. */
-  const [handoffPending, setHandoffPending] = useState(Boolean(startQuery));
+  /* Oct 29: every ping in flight (the hero's first ping, the landing pill's
+     /datasets?q= hand-off, and follow-ups typed in the band) shows only the
+     animated seven-dimension rail on the green ground until it settles,
+     answered or not, so the visitor goes straight from the rail to results. */
+  const [pingInFlight, setPingInFlight] = useState(Boolean(startQuery));
   const [phase, setPhase] = useState('idle'); // idle | searching | streaming | complete | error
   const pingIdRef = useRef(0);
   const [result, setResult] = useState(null);
@@ -159,25 +165,33 @@ export function SonarExperience({ variant = 'app', heroAddon = null, initialQuer
     return () => document.body.classList.remove(cls);
   }, [phase, onDatasets]);
 
+  /* Safety valve: the rail can never stick if a ping never reports back. */
+  useEffect(() => {
+    if (!pingInFlight) return undefined;
+    const id = setTimeout(() => setPingInFlight(false), 70_000);
+    return () => clearTimeout(id);
+  }, [pingInFlight]);
+
   /* Keep the address shareable and refresh-safe without a navigation. */
   function onBandPing(query, meta = null) {
     /* The band reports twice: the raw words when the ping starts (for ?q=),
        then the understood display title once it lands, which is what the
        sign-up CTA shows. The address keeps the raw words. It also reports
-       `settled` when the ping finishes either way, which lifts the hand-off
-       loading screen. */
+       `settled` when the ping finishes either way, which lifts the rail
+       loader. */
     if (meta?.settled) {
-      setHandoffPending(false);
+      setPingInFlight(false);
       return;
     }
     if (meta?.display) {
-      setHandoffPending(false);
+      setPingInFlight(false);
       setShownQuery(meta.display);
       /* The briefing has landed: only now may matching dataset cards show,
          so a card list is never the whole response. */
       setAnsweredQuery(query);
       return;
     }
+    setPingInFlight(true);
     setAnsweredQuery(null);
     setShownQuery(query);
     try {
@@ -210,6 +224,7 @@ export function SonarExperience({ variant = 'app', heroAddon = null, initialQuer
     if (!query || phase === 'searching' || phase === 'streaming') return;
     if (onDatasets) {
       setQueryText(query);
+      setPingInFlight(true);
       setBandQuery(query);
       onBandPing(query);
       return;
@@ -359,9 +374,9 @@ export function SonarExperience({ variant = 'app', heroAddon = null, initialQuer
         {/* Guests only (the card checks auth itself): a centred popup once
             the briefing lands, minimizable to a small widget bottom left. */}
         <SonarSignupCta query={shownQuery || bandQuery} ready={Boolean(answeredQuery)} />
-        {handoffPending ? (
-          <div className="dsl-handoff">
-            <SonarLoader size="md" label="Sonar is pinging" bare />
+        {pingInFlight ? (
+          <div className={`dsl-handoff${stage === 'app' ? ' dsl-handoff--app' : ''}`}>
+            <SonarRailLoader />
           </div>
         ) : null}
       </div>

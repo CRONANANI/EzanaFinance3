@@ -1,0 +1,139 @@
+/* Sonar rail loader (prefix srl-). Seven tiles on one bus; a pulse sweeps the
+   bus left to right and each tile lights as the pulse reaches it. */
+.srl-wrap {
+  display: grid;
+  justify-items: center;
+}
+.srl-rail {
+  --srl-size: clamp(40px, 7vw, 56px);
+  --srl-gap: clamp(8px, 2.4vw, 28px);
+  --srl-drop: 28px;
+  --srl-cycle: 2.4s;
+  --srl-span: calc((var(--srl-n) - 1) * (var(--srl-size) + var(--srl-gap)));
+  --srl-line: color-mix(in srgb, white 26%, transparent);
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--srl-n), var(--srl-size));
+  column-gap: var(--srl-gap);
+  padding-top: calc(var(--srl-drop) * 2);
+}
+/* The beam that feeds the bus from above, as on the datasets stage. */
+.srl-beam {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: var(--srl-drop);
+  margin-left: -1px;
+  background: linear-gradient(to bottom, transparent, var(--brand-band-mint));
+}
+.srl-bus {
+  position: absolute;
+  top: var(--srl-drop);
+  left: calc(var(--srl-size) / 2);
+  right: calc(var(--srl-size) / 2);
+  height: 2px;
+  border-radius: 999px;
+  background: var(--srl-line);
+}
+.srl-pulse {
+  position: absolute;
+  top: calc(var(--srl-drop) - 3px);
+  left: calc(var(--srl-size) / 2 - 4px);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+  box-shadow:
+    0 0 10px var(--brand-band-mint),
+    0 0 22px color-mix(in srgb, var(--brand-band-mint) 60%, transparent);
+  animation: srl-sweep var(--srl-cycle) linear infinite;
+}
+.srl-node {
+  position: relative;
+  display: grid;
+  justify-items: center;
+}
+.srl-stem {
+  position: absolute;
+  top: calc(var(--srl-drop) * -1);
+  left: 50%;
+  width: 2px;
+  height: var(--srl-drop);
+  margin-left: -1px;
+  background: var(--srl-line);
+  animation: srl-stem var(--srl-cycle) ease-out infinite;
+  animation-delay: calc(var(--srl-cycle) * var(--srl-i) / (var(--srl-n) - 1));
+}
+.srl-tile {
+  width: var(--srl-size);
+  height: var(--srl-size);
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-lg);
+  font-size: calc(var(--srl-size) * 0.42);
+  color: color-mix(in srgb, white 72%, transparent);
+  background: color-mix(in srgb, white 8%, transparent);
+  border: 1px solid color-mix(in srgb, white 22%, transparent);
+  animation: srl-light var(--srl-cycle) ease-out infinite;
+  animation-delay: calc(var(--srl-cycle) * var(--srl-i) / (var(--srl-n) - 1));
+}
+.srl-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+@keyframes srl-sweep {
+  0% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  6%,
+  94% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(var(--srl-span));
+    opacity: 0;
+  }
+}
+@keyframes srl-light {
+  0% {
+    color: var(--emerald-dark);
+    background: white;
+    border-color: white;
+    box-shadow:
+      0 0 0 4px color-mix(in srgb, white 16%, transparent),
+      0 0 24px color-mix(in srgb, var(--brand-band-mint) 55%, transparent);
+    transform: translateY(-2px);
+  }
+  24%,
+  100% {
+    color: color-mix(in srgb, white 72%, transparent);
+    background: color-mix(in srgb, white 8%, transparent);
+    border-color: color-mix(in srgb, white 22%, transparent);
+    box-shadow: none;
+    transform: none;
+  }
+}
+@keyframes srl-stem {
+  0% {
+    background: var(--brand-band-mint);
+  }
+  24%,
+  100% {
+    background: var(--srl-line);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .srl-pulse {
+    display: none;
+  }
+  .srl-tile,
+  .srl-stem {
+    animation: none;
+  }
+}

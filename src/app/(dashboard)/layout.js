@@ -58,6 +58,9 @@ export default function DashboardLayout({ children }) {
   useWatchlistPriceAlerts();
 
   const isMarketAnalysisFullscreen = pathname === '/market-analysis';
+  /* /sonar renders the datasets Sonar full bleed, like /market-analysis, but
+     without the market-analysis body class. */
+  const isSonarStage = pathname === '/sonar';
   const isEchoArticle =
     !!pathname &&
     pathname.startsWith('/ezana-echo/') &&
@@ -136,6 +139,7 @@ export default function DashboardLayout({ children }) {
                 <DashboardShell
                   isPartnerExperience={isPartnerExperience}
                   isMarketAnalysisFullscreen={isMarketAnalysisFullscreen}
+                  isSonarStage={isSonarStage}
                   isAuthenticated={isAuthenticated}
                 >
                   {children}
@@ -154,6 +158,7 @@ export default function DashboardLayout({ children }) {
 function DashboardShell({
   isPartnerExperience,
   isMarketAnalysisFullscreen,
+  isSonarStage,
   isAuthenticated,
   children,
 }) {
@@ -161,7 +166,9 @@ function DashboardShell({
     <ErrorBoundary>
       <TutorialWalkthrough />
       <main
-        className={`dashboard-main dashboard-main-content bg-app${isMarketAnalysisFullscreen ? ' dashboard-main-content--fullscreen' : ''}`}
+        className={`dashboard-main dashboard-main-content bg-app${
+          isMarketAnalysisFullscreen || isSonarStage ? ' dashboard-main-content--fullscreen' : ''
+        }`}
         id="main-content"
       >
         <div

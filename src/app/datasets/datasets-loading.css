@@ -2,12 +2,22 @@
    Sonar ping loader centred on the green ground, nothing else. The loader's
    palette is mixed against the emerald tokens here because the page sheet
    that normally sets it (sonar/sonar.css) has not loaded yet. Tokens only. */
+/* Oct 29: a fixed full-viewport layer like .dsl-handoff (same z-index,
+   under the sticky nav), so only the green ground and the stack show while
+   Sonar loads, never the dataset chrome or footer around it. */
 .dsl-sonar {
-  min-height: calc(100dvh - 120px);
+  position: fixed;
+  inset: 0;
+  z-index: 2147482990;
   display: grid;
   place-items: center;
   padding: 48px 16px;
   background: var(--brand-band-green);
+}
+/* In the app shell the overlays start under the fixed app nav. */
+.dsl-sonar--app,
+.dsl-handoff--app {
+  top: var(--navbar-height, 64px);
 }
 .dsl-sonar .snrl-wrap {
   --snrl-deep: color-mix(in srgb, var(--emerald) 55%, var(--emerald-dark));
