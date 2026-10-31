@@ -986,6 +986,8 @@ export default function WatchlistPage() {
           <button
             type="button"
             className="wl-class-btn"
+            aria-label={`Asset class: ${assetClass}`}
+            title={`Asset class: ${assetClass}`}
             onClick={() => setAssetClassMenuOpen((v) => !v)}
             aria-haspopup="menu"
             aria-expanded={assetClassMenuOpen}

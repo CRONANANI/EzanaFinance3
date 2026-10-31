@@ -17,26 +17,48 @@
 .wl-row-1 .wl-top-strip {
   flex: 1;
   min-width: 0;
-  padding-bottom: 0;
 }
 
 .wl-top-strip {
-  /* CSS Grid auto-fill: as many ~150px columns as fit, last column grows to
-     absorb the remaining width. Keeps the row flush with the sidebar's right
-     edge below it instead of leaving whitespace where flex cards stopped. */
+  /* Oct 31: one single row. Cards flow into columns (at least 150px, growing
+     to fill the width when they fit) and the row scrolls sideways when they
+     do not, instead of wrapping onto a second line. The 2px top padding
+     keeps the hover lift from being clipped by the scroll box. */
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(150px, 1fr);
+  /* The row keeps the cards' own height, so the bottom padding stays below
+     them for the scrollbar and the capsule beside it matches exactly. */
+  align-content: start;
   gap: 0.5rem;
-  padding: 0 0 0.75rem;
+  padding: 2px 0 0.5rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  scrollbar-color: var(--emerald-border) transparent;
+}
+.wl-top-strip::-webkit-scrollbar {
+  height: 6px;
+}
+.wl-top-strip::-webkit-scrollbar-thumb {
+  background: var(--emerald-border);
+  border-radius: 999px;
+}
+.wl-top-strip::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .wl-strip-card {
   width: 100%;
   min-width: 0;
   padding: 0.7rem 0.875rem 0.6rem;
-  background: var(--card-bg);
-  border: 1px solid transparent;
+  /* Oct 31: transparent cards; the hairline border defines the card. */
+  background: transparent;
+  border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
+  scroll-snap-align: start;
   appearance: none;
   font: inherit;
   color: inherit;
@@ -60,13 +82,13 @@
   transition: background 0.25s;
 }
 .wl-strip-card:hover {
-  border-color: transparent;
-  background: rgba(22, 27, 34, 0.85);
+  border-color: var(--border-hover);
+  background: transparent;
   transform: translateY(-1px);
 }
 .wl-strip-card.active {
-  border-color: transparent;
-  background: color-mix(in srgb, var(--emerald) 12%, var(--card-bg));
+  border-color: var(--border-focus);
+  background: transparent;
 }
 .wl-strip-card.active::before {
   background: var(--emerald);
@@ -74,15 +96,15 @@
 
 /* Type-specific left-accent glow */
 .wl-strip-card.politician.active {
-  border-color: transparent;
-  background: color-mix(in srgb, var(--blue) 12%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--blue) 45%, transparent);
+  background: transparent;
 }
 .wl-strip-card.politician.active::before {
   background: var(--blue);
 }
 .wl-strip-card.institution.active {
-  border-color: transparent;
-  background: color-mix(in srgb, var(--purple) 12%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--purple) 45%, transparent);
+  background: transparent;
 }
 .wl-strip-card.institution.active::before {
   background: #a78bfa;
@@ -257,11 +279,10 @@
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  background: var(--card-bg);
-  border: 1px solid transparent;
+  background: transparent;
+  border: 1px solid var(--border-primary);
   border-radius: 1rem;
   padding: 1.25rem 1.5rem;
-  backdrop-filter: blur(12px);
 }
 
 /* Breadcrumb */
@@ -643,11 +664,10 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  background: var(--surface-card);
+  background: transparent;
   border: 1px solid var(--border-primary);
   border-radius: 1rem;
   padding: 1rem;
-  backdrop-filter: blur(12px);
   position: sticky;
   top: calc(var(--nav-height, 64px) + 1rem);
   max-height: calc(100vh - var(--nav-height, 64px) - 2rem);
@@ -967,7 +987,7 @@
 @media (max-width: 480px) {
   .wl-top-strip {
     gap: 0.35rem;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-auto-columns: minmax(140px, 1fr);
   }
   .wl-strip-card {
     padding: 0.5rem 0.65rem 0.45rem;
@@ -983,11 +1003,13 @@
 }
 
 /* ═══ LIGHT MODE ═══ */
-body.light-mode .wl-strip-card,
+/* Oct 31: transparent in light mode too; the border tokens flip with the
+   theme. Active and hover borders keep their own rules. */
+body.light-mode .wl-strip-card:not(.active):not(:hover),
 body.light-mode .wl-chart-panel,
 body.light-mode .wl-side {
-  background: var(--card-bg);
-  border-color: transparent;
+  background: transparent;
+  border-color: var(--border-primary);
 }
 body.light-mode .wl-strip-name,
 body.light-mode .wl-strip-price,
@@ -1338,15 +1360,30 @@ body.light-mode .wl-strip-asset {
   position: relative;
   flex-shrink: 0;
   z-index: 6;
+  /* A 44px column the height of the row. The capsule is positioned inside
+     it with the strip's own insets (hover room above, scrollbar room
+     below), so it is exactly the height of the cards and never makes the
+     row taller than they are. */
+  width: 44px;
 }
 
 .wl-class-btn {
+  /* Oct 31: a slim vertical capsule, the height of the strip cards beside
+     it and about a third of its old width: the class icon on top, the
+     label reading upward, the caret at the bottom. Mobile keeps the wide
+     horizontal pill (see the 768px block). */
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  height: 100%;
-  min-height: 100%;
-  padding: 0.6rem 0.9rem;
+  justify-content: center;
+  gap: 0.45rem;
+  position: absolute;
+  top: 2px;
+  bottom: 0.5rem;
+  left: 0;
+  width: 44px;
+  overflow: hidden;
+  padding: 0.5rem 0;
   background: linear-gradient(135deg, var(--emerald), var(--emerald-hover));
   color: #ffffff;
   border: 1px solid color-mix(in srgb, var(--emerald) 40%, transparent);
@@ -1376,20 +1413,22 @@ body.light-mode .wl-strip-asset {
 }
 
 .wl-class-btn-label {
-  font-size: 0.8125rem;
+  font-size: 0.6875rem;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  line-height: 1;
 }
 
 .wl-class-btn-caret {
   font-size: 0.6875rem;
   opacity: 0.8;
-  margin-left: 0.15rem;
 }
 
-/* Popover menu */
+/* Popover menu: opens to the right of the slim capsule. */
 .wl-class-menu {
   position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
+  top: 0;
+  left: calc(100% + 6px);
   min-width: 200px;
   background: var(--card);
   border: 1px solid color-mix(in srgb, var(--emerald) 30%, transparent);
@@ -1539,14 +1578,25 @@ body.light-mode .wl-strip-badge.crypto {
 
   .wl-class-switcher {
     width: 100%;
+    padding: 0;
   }
 
   .wl-class-btn {
+    position: static;
+    flex-direction: row;
     width: 100%;
+    padding: 0.6rem 0.9rem;
     justify-content: center;
   }
 
+  .wl-class-btn-label {
+    writing-mode: horizontal-tb;
+    transform: none;
+  }
+
   .wl-class-menu {
+    top: calc(100% + 6px);
+    left: 0;
     width: 100%;
     min-width: 0;
   }
