@@ -10,16 +10,34 @@
  * icons in Ezana green, and the bouncing dataset stack (SonarLoader, bare)
  * hovering centred above the rail, feeding the beam into the bus.
  *
+ * Oct 31: the icons stand on their own (no tile outline); a lit icon glows.
+ * While any rail loader is mounted, body.srl-active is set so the in-app
+ * nav turns the same metallic black (nav-sonar-dark.css).
+ *
  * Decorative stage (aria-hidden) plus a visually hidden live label. Under
  * prefers-reduced-motion the rail and the stack are static.
  */
+import { useEffect } from 'react';
 import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 import { SonarLoader } from '@/components/sonar/SonarLoader';
 import './sonar-rail-loader.css';
 
 const NODES = DATASET_TAXONOMY.map((d) => ({ id: d.id, icon: d.biIcon }));
 
+/* More than one loader can be mounted at once (route loading hands over to
+   the in-page hand-off), so the body class is counted, not toggled. */
+let mounted = 0;
+
 export function SonarRailLoader({ label = 'Sonar is pinging' }) {
+  useEffect(() => {
+    mounted += 1;
+    document.body.classList.add('srl-active');
+    return () => {
+      mounted = Math.max(0, mounted - 1);
+      if (!mounted) document.body.classList.remove('srl-active');
+    };
+  }, []);
+
   return (
     <div className="srl-wrap" role="status" aria-live="polite">
       <div className="srl-hover" aria-hidden="true">

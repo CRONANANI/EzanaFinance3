@@ -85,17 +85,25 @@
   pointer-events: none;
   background: radial-gradient(ellipse 55% 34% at 50% 44%, var(--dsi-glow), transparent 70%);
 }
-.dsi-worldmap {
+/* Oct 31: dotted mountain ranges (GlobeBackground) in place of the dotted
+   world map. A dot grid in the map colour, drawn through the ranges' mask:
+   bright dotted crests, fading slopes. Full width, behind the lower half of
+   the stage and the dimension cards; the ranges dip behind the globe. */
+.dsi-mountains {
   position: absolute;
-  left: 50%;
-  top: 60px;
-  width: 1600px;
-  height: 760px;
-  transform: translateX(-50%);
-  background: var(--dsi-map);
-  -webkit-mask: url('/images/datasets/worldmap-bg.svg') center / 100% 100% no-repeat;
-  mask: url('/images/datasets/worldmap-bg.svg') center / 100% 100% no-repeat;
-  opacity: 0.9;
+  left: 0;
+  right: 0;
+  top: 250px;
+  height: 720px;
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--emerald) 70%, transparent) 1.2px,
+    transparent 1.7px
+  );
+  background-size: 7px 7px;
+  background-position: center top;
+  -webkit-mask: url('/images/datasets/mountains-bg.svg') center bottom / 100% 100% no-repeat;
+  mask: url('/images/datasets/mountains-bg.svg') center bottom / 100% 100% no-repeat;
 }
 .dsi-floor {
   position: absolute;
@@ -491,6 +499,182 @@
   opacity: 1;
 }
 
+/* ── Turning ring and signal flashes (Oct 31, OrbitalMap) ─────────────────
+   The ring groups sit inside the slab plane's transform, so a CSS rotation
+   around their own box centre (the plane's origin) turns them in the plane. */
+.dsi-ring-spin {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: dsi-ring-spin 48s linear infinite;
+}
+.dsi-ring-spin--rev {
+  animation-duration: 72s;
+  animation-direction: reverse;
+}
+@keyframes dsi-ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* A signal: a bright point where it happened on the globe, two rings
+   spreading from it, and a trace up to its dimension's dot. */
+.dsi-events {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.dsi-events__traces {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.dsi-event__trace {
+  fill: none;
+  stroke: var(--dsi-focus);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  filter: drop-shadow(0 0 3px var(--emerald));
+  animation: dsi-trace 2.6s ease-out forwards;
+}
+@keyframes dsi-trace {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  45% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+.dsi-event {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--emerald) 30%, white);
+  box-shadow:
+    0 0 6px 2px var(--emerald),
+    0 0 16px 4px var(--emerald-glow);
+  animation: dsi-event-dot 2.6s ease-out forwards;
+}
+.dsi-event::before,
+.dsi-event::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  border: 1.5px solid var(--dsi-focus);
+  animation: dsi-event-ring 1.6s ease-out forwards;
+}
+.dsi-event::after {
+  animation-delay: 0.45s;
+}
+@keyframes dsi-event-dot {
+  0% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  10% {
+    transform: scale(1.6);
+    opacity: 1;
+  }
+  30% {
+    transform: scale(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes dsi-event-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  100% {
+    /* Squashed like the globe, which lies in the slab's tilted plane. */
+    transform: scale(5, 2.4);
+    opacity: 0;
+  }
+}
+
+/* The dimension dot the trace lands on ripples. Two identical classes so
+   back-to-back flashes restart the ripple (OrbitalMap). */
+.dsi-dimdot.is-flash-a::before,
+.dsi-dimdot.is-flash-b::before {
+  background: var(--emerald);
+  box-shadow: 0 0 12px var(--emerald);
+}
+.dsi-dimdot.is-flash-a::after,
+.dsi-dimdot.is-flash-b::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  border: 1.5px solid var(--dsi-focus);
+  pointer-events: none;
+}
+.dsi-dimdot.is-flash-a::after {
+  animation: dsi-dot-ripple-a 1.2s ease-out 1.1s both;
+}
+.dsi-dimdot.is-flash-b::after {
+  animation: dsi-dot-ripple-b 1.2s ease-out 1.1s both;
+}
+@keyframes dsi-dot-ripple-a {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4.2);
+    opacity: 0;
+  }
+}
+@keyframes dsi-dot-ripple-b {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4.2);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dsi-ring-spin,
+  .dsi-event,
+  .dsi-event::before,
+  .dsi-event::after,
+  .dsi-event__trace,
+  .dsi-dimdot::after {
+    animation: none;
+  }
+}
+
 /* ── Brief restyle (PulseBrief takes the stage's place) ───────────────── */
 .ds-shell--search .dpb-brief {
   width: min(720px, 100%);
@@ -612,6 +796,14 @@
   color: var(--dsi-ink-2);
 }
 .ds-shell--search .dsi-rail {
+  text-align: left;
+}
+/* Oct 31: the card face is centred (console-rail.css); the expanded dataset
+   list stays left-aligned for scanning. */
+.ds-shell--search .dsi-card {
+  text-align: center;
+}
+.ds-shell--search .dsi-card__more {
   text-align: left;
 }
 .ds-shell--search .dsi-ping__input,

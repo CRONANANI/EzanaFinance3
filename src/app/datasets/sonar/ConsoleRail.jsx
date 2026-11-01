@@ -6,9 +6,13 @@
  * lands feeds one card per dimension, in taxonomy order.
  *
  * What is real (all from src/lib/datasets/taxonomy.js via page.js): the name,
- * Bootstrap icon, tagline, live/total count, status (Live, Partial, Soon:
- * text and icon, never colour alone) and, when a card is selected, its dataset
- * list with each dataset's own live or soon state.
+ * Bootstrap icon, tagline, live/total count and, when a card is selected, its
+ * dataset list with each dataset's own live or soon state (text and icon,
+ * never colour alone).
+ *
+ * Oct 31: the card face is centred: the icon above a one-line title, the
+ * tagline and the count. The dimension-level Live / Partial / Soon badge is
+ * gone from the face; the count says the same thing.
  *
  * The activity line renders only from a real series (`d.series`, an array of
  * numbers). No dimension has one today, so every card draws the dashed
@@ -24,18 +28,6 @@ import { useSonarSelection } from './SonarSelection';
 import { usePulse } from './PulseProvider';
 import { hubHref } from '@/lib/datasets/hubs';
 import './console-rail.css';
-
-const STATUS = {
-  live: { label: 'Live', icon: 'bi-circle-fill' },
-  partial: { label: 'Partial', icon: 'bi-circle-half' },
-  soon: { label: 'Soon', icon: 'bi-circle' },
-};
-
-export function dimensionStatus(live, total) {
-  if (total > 0 && live === total) return 'live';
-  if (live === 0) return 'soon';
-  return 'partial';
-}
 
 const SW = 140;
 const SH = 22;
@@ -82,7 +74,6 @@ function ActivityLine({ series }) {
 function Card({ d, on, onChoose }) {
   const total = d.items.length;
   const live = d.liveCount;
-  const st = dimensionStatus(live, total);
   const listId = `dsi-list-${d.id}`;
 
   return (
@@ -97,7 +88,10 @@ function Card({ d, on, onChoose }) {
           onClick={onChoose}
         >
           <i className={`bi ${d.icon} dsi-card__icon`} aria-hidden="true" />
-          <span>{d.label}</span>
+          {/* One line; the full name stays available if it is ever clipped. */}
+          <span className="dsi-card__name" title={d.label}>
+            {d.label}
+          </span>
         </button>
       </h3>
 
@@ -113,10 +107,6 @@ function Card({ d, on, onChoose }) {
           <span className="dsi-vh">
             {live} of {total} datasets live
           </span>
-        </span>
-        <span className={`dsi-status dsi-status--${st}`}>
-          <i className={`bi ${STATUS[st].icon}`} aria-hidden="true" />
-          {STATUS[st].label}
         </span>
       </div>
 

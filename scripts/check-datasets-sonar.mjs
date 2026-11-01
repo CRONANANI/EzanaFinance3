@@ -17,6 +17,7 @@ const { DATASET_TAXONOMY, TAXONOMY_STATS } = await import('../src/lib/datasets/t
 const { hubHref } = await import('../src/lib/datasets/hubs.js');
 const D = await import('../src/app/datasets/sonar/derive.js');
 const W = await import('../src/app/datasets/sonar/worked-example.js');
+const G = await import('../src/app/datasets/sonar/geo-events.js');
 const { parse } = await import('../src/lib/ezanaql/parser.js');
 const { validate } = await import('../src/lib/ezanaql/validator.js');
 const { CATALOG, dimensionHasQueryableData } = await import('../src/lib/ezanaql/catalog.js');
@@ -186,5 +187,35 @@ test('the page source holds no em dash, hex colour or lucide import', () => {
     assert.ok(!s.includes('\u2014'), `${f}: em dash`);
     assert.ok(!/lucide-react/.test(s), `${f}: lucide`);
     if (f.endsWith('.css')) assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(s), `${f}: hex colour`);
+  }
+});
+
+test('stage flashes: a signal lands where it happened, or at its home market', () => {
+  const near = (a, b, d = 3.1) => Math.abs(a - b) <= d;
+  const br = G.eventLocation({
+    key: 'x',
+    dimensionId: 'lighthouse',
+    headline: 'Brazil GDP growth 2.1%',
+  });
+  assert.ok(near(br.lon, -47.88) && near(br.lat, -15.79), 'Brazil');
+  const kr = G.eventLocation({ key: 'y', dimensionId: 'hive', headline: 'South Korea odds shift' });
+  assert.ok(near(kr.lon, 126.98), 'South Korea beats Korea');
+  const dc = G.eventLocation({
+    key: 'z',
+    dimensionId: 'capitol',
+    headline: 'Rep. Smith bought NVDA',
+  });
+  assert.ok(near(dc.lon, -77.04) && near(dc.lat, 38.9), 'Capitol Watch home is Washington');
+  assert.equal(G.placeIn('Indiana senator files'), null, 'whole words only');
+  assert.equal(G.eventLocation({ key: 'q', dimensionId: 'nope', headline: 'nothing' }), null);
+  assert.equal(G.eventLocation(null), null);
+  for (const [lon, lat] of [
+    [-180, 90],
+    [180, -90],
+    [0, 0],
+  ]) {
+    const p = G.globePoint(lon, lat);
+    assert.ok(p.x >= G.GLOBE_BOX.x && p.x <= G.GLOBE_BOX.x + G.GLOBE_BOX.w);
+    assert.ok(p.y >= G.GLOBE_BOX.y && p.y <= G.GLOBE_BOX.y + G.GLOBE_BOX.h);
   }
 });

@@ -90,11 +90,11 @@
   height: var(--srl-size);
   display: grid;
   place-items: center;
-  border-radius: var(--radius-lg);
-  font-size: calc(var(--srl-size) * 0.42);
+  /* Oct 31: no outline or fill; the icon alone, a little larger. */
+  font-size: calc(var(--srl-size) * 0.5);
   color: var(--srl-green);
-  background: color-mix(in srgb, var(--srl-green) 8%, transparent);
-  border: 1px solid color-mix(in srgb, var(--srl-green) 30%, transparent);
+  background: none;
+  border: 0;
   animation: srl-light var(--srl-cycle) ease-out infinite;
   animation-delay: calc(var(--srl-cycle) * var(--srl-i) / (var(--srl-n) - 1));
 }
@@ -123,19 +123,15 @@
 @keyframes srl-light {
   0% {
     color: var(--srl-mint);
-    background: color-mix(in srgb, var(--srl-green) 22%, transparent);
-    border-color: var(--srl-green);
-    box-shadow:
-      0 0 0 4px color-mix(in srgb, var(--srl-green) 14%, transparent),
-      0 0 24px color-mix(in srgb, var(--srl-green) 50%, transparent);
-    transform: translateY(-2px);
+    text-shadow:
+      0 0 10px color-mix(in srgb, var(--srl-green) 80%, transparent),
+      0 0 22px color-mix(in srgb, var(--srl-green) 50%, transparent);
+    transform: translateY(-2px) scale(1.08);
   }
   24%,
   100% {
     color: var(--srl-green);
-    background: color-mix(in srgb, var(--srl-green) 8%, transparent);
-    border-color: color-mix(in srgb, var(--srl-green) 30%, transparent);
-    box-shadow: none;
+    text-shadow: none;
     transform: none;
   }
 }

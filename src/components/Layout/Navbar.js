@@ -18,6 +18,7 @@ import { DATASET_TAXONOMY, isNavigable, isPreview } from '@/lib/datasets/taxonom
 import '@/components/ui/animated-nav.css';
 import './nav-datasets-light.css';
 import './mobile-nav-sheet.css';
+import './nav-sonar-dark.css';
 import { hubHref } from '@/lib/datasets/hubs';
 import HubLink from '@/components/datasets/HubLink';
 
@@ -168,6 +169,9 @@ export function Navbar() {
   const [echoNavTitle, setEchoNavTitle] = useState('');
   const [echoTitleInNav, setEchoTitleInNav] = useState(false);
   const isSettings = pathname?.startsWith('/settings');
+  /* Oct 31: in-app Sonar paints a dark ground, so the app nav goes dark with
+     it (nav-sonar-dark.css). */
+  const isSonarRoute = pathname === '/sonar' || pathname?.startsWith('/sonar/');
   const isLanding = pathname === '/';
   const isPricing = pathname === '/pricing';
   const isAuthPage = pathname?.startsWith('/auth');
@@ -965,7 +969,11 @@ export function Navbar() {
   }
 
   return (
-    <nav className="main-nav" id="mainNav" data-tutorial="main-nav">
+    <nav
+      className={`main-nav${isSonarRoute ? ' main-nav--sonar' : ''}`}
+      id="mainNav"
+      data-tutorial="main-nav"
+    >
       <div className="nav-container">
         {/* ── LEFT ZONE: Logo + bell + checklist ── */}
         <div className="nav-left-zone">

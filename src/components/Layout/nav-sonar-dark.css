@@ -1,0 +1,98 @@
+/* In-app Sonar nav (Oct 31). On /sonar the page paints its own dark
+   evergreen ground (orbital-map.css, .ds-shell--search), so the app nav
+   drops its white bar and takes the ground's edge colour; while the Sonar
+   ping loader is up (body.srl-active, set by SonarRailLoader) it takes the
+   loader's metallic black instead, fixed to the viewport like the loader so
+   the brushed finish runs straight through. The icons and links switch to
+   light ink so they stay visible on either ground.
+
+   Specificity: #mainNav beats layout.css's `body .main-nav` !important
+   background and the light-mode nav, link and icon rules, which use
+   classes only. Tokens only. */
+
+html :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav) {
+  --nav-sonar-ink: color-mix(in srgb, white 78%, transparent);
+  --nav-sonar-ink-hover: var(--brand-band-mint);
+  --nav-sonar-tint: color-mix(in srgb, var(--brand-band-mint) 10%, transparent);
+  background: color-mix(in srgb, var(--emerald) 6%, color-mix(in srgb, white 3%, black)) !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* The loader's ground, aligned with the overlay under the nav. */
+html body.srl-active #mainNav {
+  background: var(--brand-metal-black) !important;
+  background-attachment: fixed !important;
+}
+
+/* Logo: light mode blends it with `darken`, which would erase it on black;
+   lifted a touch so the dark green mark reads on the dark ground. */
+html :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav) .nav-logo-img {
+  mix-blend-mode: normal;
+  filter: brightness(1.55) saturate(1.1);
+}
+
+/* Centre links. */
+html :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav) .animated-nav-link {
+  color: var(--nav-sonar-ink);
+}
+html :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav) .animated-nav-link:hover,
+html :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav) .animated-nav-link.hovered {
+  color: var(--nav-sonar-ink-hover);
+  background: var(--nav-sonar-tint);
+}
+html :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav) .animated-nav-link.active {
+  color: var(--nav-sonar-ink-hover);
+}
+
+/* Left cluster: bell and checklist. */
+html :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav) .nn-bell-btn,
+html :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav) .checklist-trigger-inner {
+  color: var(--nav-sonar-ink);
+}
+html :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav) .nn-bell-btn:hover,
+html :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav) .nn-bell-btn.nn-bell-active,
+html
+  :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav)
+  .checklist-trigger-btn:hover
+  .checklist-trigger-inner {
+  color: var(--nav-sonar-ink-hover);
+  background: var(--nav-sonar-tint);
+}
+
+/* Right cluster: profile and settings in mint, log out in a light red. */
+html
+  :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav)
+  .nav-action-inner.nav-profile-icon,
+html
+  :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav)
+  .nav-action-inner.nav-profile-icon
+  i,
+html
+  :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav)
+  .nav-action-inner.nav-settings-gear,
+html
+  :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav)
+  .nav-action-inner.nav-settings-gear
+  i {
+  color: var(--brand-band-mint) !important;
+}
+html :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav) .nav-action-inner.nav-logout-btn,
+html
+  :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav)
+  .nav-action-inner.nav-logout-btn
+  i {
+  color: color-mix(in srgb, var(--negative) 65%, white) !important;
+}
+html :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav) .nav-action-tap {
+  background: transparent;
+  border-color: transparent;
+}
+html :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav) .nav-action-tap:hover {
+  background: var(--nav-sonar-tint);
+}
+html :is(body #mainNav.main-nav--sonar, body.srl-active #mainNav) .mobile-hamburger {
+  color: white;
+}

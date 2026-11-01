@@ -18,8 +18,18 @@
  * Geometry is the handoff's 800 x 362 local box (HANDOFF.md section 3.5).
  * Every coordinate is computed once at module load from fixed constants, so
  * the server and client render identical markup.
+ *
+ * Oct 31: the outer ring turns (its ticks and a bright arc rotate in the
+ * slab's plane), and the stage plays the pulse's real signals: every few
+ * seconds the next signal flashes where it happened on the globe
+ * (geo-events.js), a trace runs from the flash to its dimension's dot on the
+ * ring, and that dot ripples. A pulse with no signals flashes nothing. Both
+ * are decorative (aria-hidden) and stop under prefers-reduced-motion.
  */
+import { useEffect, useRef, useState } from 'react';
 import { useSonarSelection } from './SonarSelection';
+import { usePulse } from './PulseProvider';
+import { eventLocation } from './geo-events';
 import './orbital-map.css';
 
 const C = { x: 400, y: 170 };
@@ -36,10 +46,22 @@ const ringPt = (r, deg) => {
 
 const onPlane = (dy = 0) => `translate(${C.x} ${C.y + dy}) scale(1 ${K}) rotate(45)`;
 const SIDE_LAYERS = Array.from({ length: 22 }, (_, i) => 22 - i);
+/* Ticks in the slab plane's own coordinates (drawn inside onPlane), so the
+   ring can rotate in that plane. */
 const TICKS = Array.from({ length: 72 }, (_, i) => {
-  const a = ringPt(134, i * 5);
-  const b = ringPt(i % 6 ? 138 : 143, i * 5);
-  return { x1: r1(a.x), y1: r1(a.y), x2: r1(b.x), y2: r1(b.y) };
+  const t = (i * 5 * Math.PI) / 180;
+  const ro = i % 6 ? 138 : 143;
+  return {
+    x1: r1(134 * Math.cos(t)),
+    y1: r1(134 * Math.sin(t)),
+    x2: r1(ro * Math.cos(t)),
+    y2: r1(ro * Math.sin(t)),
+  };
+});
+/* Three small markers riding the turning ring. */
+const RIDERS = [0, 120, 240].map((deg) => {
+  const t = (deg * Math.PI) / 180;
+  return { cx: r1(124 * Math.cos(t)), cy: r1(124 * Math.sin(t)) };
 });
 const L = plane(-155, 155);
 const B = plane(155, 155);
@@ -188,12 +210,42 @@ function StageArt() {
         <circle r="104" fill="none" stroke="var(--dsi-line)" />
         <circle r="80" fill="none" stroke="var(--dsi-line-faint)" strokeDasharray="2 4" />
         <circle r="50" fill="none" stroke="var(--dsi-line)" />
-      </g>
 
-      <g stroke="var(--dsi-line)" strokeWidth="1">
-        {TICKS.map((t, i) => (
-          <line key={i} {...t} />
-        ))}
+        {/* The turning ring: ticks, a bright arc and three riders rotate in
+            the plane. The full-size invisible circle keeps the group's box
+            centred on the plane's origin, the pivot. */}
+        <g className="dsi-ring-spin">
+          <circle r="143" fill="none" stroke="none" />
+          <g stroke="var(--dsi-line)" strokeWidth="1" vectorEffect="non-scaling-stroke">
+            {TICKS.map((t, i) => (
+              <line key={i} {...t} vectorEffect="non-scaling-stroke" />
+            ))}
+          </g>
+          <circle
+            r="124"
+            fill="none"
+            stroke="var(--dsi-focus)"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeDasharray="96 683"
+            filter="url(#dsi-glow)"
+          />
+          <g fill="var(--dsi-focus)">
+            {RIDERS.map((p) => (
+              <circle key={p.cx} cx={p.cx} cy={p.cy} r="2.6" />
+            ))}
+          </g>
+        </g>
+        <g className="dsi-ring-spin dsi-ring-spin--rev">
+          <circle r="104" fill="none" stroke="none" />
+          <circle
+            r="104"
+            fill="none"
+            stroke="var(--dsi-line)"
+            strokeWidth="1.6"
+            strokeDasharray="40 286"
+          />
+        </g>
       </g>
 
       {/* beam: Ping field, through the core, down to the bus */}
@@ -322,9 +374,102 @@ function Panels() {
   );
 }
 
+/* Stage pixels of each dimension's dot on the ring, in taxonomy order. */
+const dotPoint = (i, n) => {
+  const p = ringPt(124, -135 + i * (360 / Math.max(1, n)));
+  return { x: r1(p.x), y: r1(p.y) };
+};
+
+const EVENT_EVERY_MS = 3200;
+const EVENT_LIFE_MS = 2600;
+
+/**
+ * Plays the pulse's signals on the stage, one every EVENT_EVERY_MS, in feed
+ * order: a flash where it happened, a trace to its dimension's dot, and the
+ * dimension id handed to `onFlash` so the dot ripples. Paused while the tab
+ * is hidden; off under prefers-reduced-motion.
+ */
+function useStageEvents(dims, onFlash) {
+  const { items } = usePulse();
+  const [events, setEvents] = useState([]);
+  const cursor = useRef(0);
+  const seq = useRef(0);
+
+  useEffect(() => {
+    if (!items?.length) return undefined;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined;
+    const timers = new Set();
+    const fire = () => {
+      if (document.hidden) return;
+      for (let tries = 0; tries < items.length; tries += 1) {
+        const item = items[cursor.current % items.length];
+        cursor.current += 1;
+        const at = eventLocation(item);
+        const di = dims.findIndex((d) => d.id === item?.dimensionId);
+        if (!at || di < 0) continue;
+        const to = dotPoint(di, dims.length);
+        const id = (seq.current += 1);
+        setEvents((prev) => [...prev.slice(-2), { id, at, to, dim: item.dimensionId }]);
+        onFlash(item.dimensionId);
+        const t = setTimeout(() => {
+          timers.delete(t);
+          setEvents((prev) => prev.filter((e) => e.id !== id));
+        }, EVENT_LIFE_MS);
+        timers.add(t);
+        return;
+      }
+    };
+    const first = setTimeout(fire, 900);
+    const every = setInterval(fire, EVENT_EVERY_MS);
+    return () => {
+      clearTimeout(first);
+      clearInterval(every);
+      timers.forEach(clearTimeout);
+    };
+  }, [items, dims, onFlash]);
+
+  return events;
+}
+
+/* A curved trace from the flash up to the ring dot. */
+const tracePath = ({ at, to }) => {
+  const mx = (at.x + to.x) / 2;
+  const my = Math.min(at.y, to.y) - 36;
+  return `M${at.x} ${at.y} Q${r1(mx)} ${r1(my)} ${to.x} ${to.y}`;
+};
+
+function StageEvents({ events }) {
+  if (!events.length) return null;
+  return (
+    <div className="dsi-events" aria-hidden="true">
+      <svg className="dsi-events__traces" viewBox="0 0 800 362" focusable="false">
+        {events.map((e) => (
+          <path key={e.id} className="dsi-event__trace" d={tracePath(e)} pathLength="1" />
+        ))}
+      </svg>
+      {events.map((e) => (
+        <span key={e.id} className="dsi-event" style={{ left: e.at.x, top: e.at.y }} />
+      ))}
+    </div>
+  );
+}
+
 export default function OrbitalMap({ dims, pinging, silent }) {
   const { selected, select } = useSonarSelection();
   const step = 360 / Math.max(1, dims.length);
+  /* The dimension whose dot is rippling, cleared after one ripple. */
+  const [flash, setFlash] = useState(null);
+  const flashTimer = useRef(null);
+  const onFlashRef = useRef(null);
+  if (!onFlashRef.current) {
+    onFlashRef.current = (id) => {
+      setFlash((prev) => ({ id, n: (prev?.n || 0) + 1 }));
+      clearTimeout(flashTimer.current);
+      flashTimer.current = setTimeout(() => setFlash(null), EVENT_LIFE_MS);
+    };
+  }
+  useEffect(() => () => clearTimeout(flashTimer.current), []);
+  const events = useStageEvents(dims, onFlashRef.current);
 
   return (
     <div
@@ -336,16 +481,21 @@ export default function OrbitalMap({ dims, pinging, silent }) {
         <StageArt />
         <div className="dsi-globe" aria-hidden="true" />
         <div className="dsi-core" aria-hidden="true" />
+        <StageEvents events={events} />
         <Panels />
         {dims.map((d, i) => {
           const p = ringPt(124, -135 + i * step);
           const on = selected === d.id;
           const total = d.items.length;
+          const lit = flash?.id === d.id;
           return (
             <button
               key={d.id}
               type="button"
-              className="dsi-dimdot"
+              /* Two identical ripple classes, alternated, restart the ripple
+                 on back-to-back flashes without remounting (and so without
+                 losing keyboard focus). */
+              className={`dsi-dimdot${lit ? (flash.n % 2 ? ' is-flash-a' : ' is-flash-b') : ''}`}
               style={{ left: r1(p.x), top: r1(p.y) }}
               aria-pressed={on}
               aria-label={`${d.label}, ${d.liveCount} of ${total} datasets live`}

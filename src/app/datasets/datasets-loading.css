@@ -17,6 +17,9 @@
   place-items: center;
   padding: 48px 16px;
   background: var(--brand-metal-black);
+  /* Fixed to the viewport, like the in-app nav above it while the loader is
+     up (nav-sonar-dark.css), so the brushed finish runs through both. */
+  background-attachment: fixed;
   color: white;
 }
 /* In the app shell the overlays start under the fixed app nav. */
