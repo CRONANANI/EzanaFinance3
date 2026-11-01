@@ -56,7 +56,15 @@
 
 'use client';
 
-import { Component, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  Component,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useMemo,
+} from 'react';
 import * as Sentry from '@sentry/nextjs';
 import { SonarOrbital } from './SonarOrbital';
 import { SonarLoader } from '@/components/sonar/SonarLoader';
@@ -69,6 +77,8 @@ import { SonarUnderstoodNotice } from './SonarUnderstoodNotice';
 import { IndustryStack } from './SonarIndustryStack';
 import { IndustryLayout } from '@/components/sonar/industry/IndustryLayout';
 import { CountryRankPanel } from '@/components/sonar/macro/CountryRankPanel';
+import { SonarCommodityChart } from './SonarCommodityChart';
+import { commoditySegments, windowStart } from '@/lib/sonar/commodity-stats';
 
 /**
  * An element's resting rect, with the mount entrance taken off it first.
@@ -750,6 +760,13 @@ export function SonarSection({
   /* Characters of the answer revealed so far; -1 means "no typewriter, show
      all of it" (reduced motion, or a result restored after one ran). */
   const [typed, setTyped] = useState(-1);
+  /* Nov 1: the commodity figure in the brief whose chart is open at the top
+     of the right-hand stack ({ id, figure, key }), or null. A new answer
+     closes it. */
+  const [commodityStat, setCommodityStat] = useState(null);
+  useEffect(() => {
+    setCommodityStat(null);
+  }, [live?.answer]);
   const demoStartedRef = useRef(false);
   const demoDoneRef = useRef(false);
   const hasPingedRef = useRef(false);
@@ -2322,6 +2339,26 @@ export function SonarSection({
     </div>
   ) : null;
   const answerFailed = hasPinged && !pinging && !live;
+  /* The open commodity chart, measured from the brief's own start date
+     ("since the Iran war began on February 28, 2026"). It leads the
+     right-hand stack, above the country's power profile. */
+  const commodityFrom = useMemo(() => windowStart(live?.answer), [live?.answer]);
+  const commodityChart =
+    answerReady && commodityStat ? (
+      <SonarCommodityChart
+        key={commodityStat.key}
+        stat={commodityStat}
+        from={commodityFrom}
+        onClose={() => setCommodityStat(null)}
+      />
+    ) : null;
+  const leadTop =
+    commodityChart || stackTop ? (
+      <>
+        {commodityChart}
+        {stackTop}
+      </>
+    ) : null;
 
   /* The loader outlives its own active state by one fast duration, so it fades
      out across the answer's first characters rather than unmounting into a
@@ -2561,12 +2598,35 @@ export function SonarSection({
                             const shown =
                               typed < 0 ? para : para.slice(0, Math.max(0, typed - start));
                             if (typed >= 0 && !shown) return null;
+                            /* Once the paragraph has fully typed, each commodity
+                               figure ("tungsten up 557%") is a button that opens
+                               its price chart in the right-hand stack. */
+                            const segs = typed < 0 ? commoditySegments(para) : [{ text: shown }];
                             return (
                               <p
                                 key={`live-${i}`}
                                 className={`snr-para${i === 0 ? ' snr-line-lead' : ''}`}
                               >
-                                {shown}
+                                {segs.map((seg, j) => {
+                                  if (!seg.stat) return <span key={j}>{seg.text}</span>;
+                                  const statKey = `${i}-${j}`;
+                                  const on = commodityStat?.key === statKey;
+                                  return (
+                                    <button
+                                      key={j}
+                                      type="button"
+                                      className="snr-stat-link"
+                                      aria-pressed={on}
+                                      title="Show the price chart"
+                                      onClick={() =>
+                                        setCommodityStat(on ? null : { ...seg.stat, key: statKey })
+                                      }
+                                    >
+                                      {seg.text}
+                                      <i className="bi bi-graph-up" aria-hidden="true" />
+                                    </button>
+                                  );
+                                })}
                               </p>
                             );
                           });
@@ -3055,7 +3115,7 @@ export function SonarSection({
                 <PoliticianStack
                   dossier={live.dossier}
                   onGate={() => openGate()}
-                  topSlot={stackTop}
+                  topSlot={leadTop}
                 />
               ) : null}
 
@@ -3068,13 +3128,14 @@ export function SonarSection({
                   onGate={() => openGate()}
                   newsSlot={railNews}
                   topSlot={stackTop}
+                  leadSlot={commodityChart}
                 />
               ) : null}
 
               {/* An industry: the value-chain preview in the price chart's slot.
               The full Industry Layout renders below the deck on the page. */}
               {stage2 && live?.dossier?.kind === 'industry' ? (
-                <IndustryStack dossier={live.dossier} newsSlot={railNews} topSlot={stackTop} />
+                <IndustryStack dossier={live.dossier} newsSlot={railNews} topSlot={leadTop} />
               ) : null}
 
               {stage2 &&
@@ -3085,9 +3146,9 @@ export function SonarSection({
                 live?.dossier?.news?.length ||
                 live?.dossier?.echo?.length ||
                 railNews ||
-                stackTop) ? (
+                leadTop) ? (
                 <div className="snr-stack">
-                  {stackTop}
+                  {leadTop}
                   {/* live.dossier can be null here: an open-question ping
                   ("brazilian economy") returns news columns (railNews) but no
                   dossier, and railNews alone opens this block. */}
@@ -3205,8 +3266,8 @@ export function SonarSection({
 
           {/* A ping that lands without a dossier has no right-hand stack, so
             the matching dataset cards fall back to a row under the columns. */}
-          {stackTop && answerReady && !stage2 ? (
-            <div className="snr-stack-fallback">{stackTop}</div>
+          {leadTop && answerReady && !stage2 ? (
+            <div className="snr-stack-fallback">{leadTop}</div>
           ) : null}
         </div>
 

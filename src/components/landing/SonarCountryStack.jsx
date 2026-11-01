@@ -495,16 +495,33 @@ function EmpireCard({ dossier, onGate }) {
 /* newsSlot (Oct 19): the /datasets results band hands in the "news around it"
    rail, which takes the Relevant News card's place. Absent on the landing band,
    which keeps the card exactly as before. */
-export function CountryStack({ dossier, onGate, newsSlot = null, topSlot = null }) {
+export function CountryStack({
+  dossier,
+  onGate,
+  newsSlot = null,
+  topSlot = null,
+  leadSlot = null,
+}) {
   const hasStory = Boolean(dossier.oecd?.stories?.length);
   const hasEmpire = Boolean(dossier.empire?.dims?.length);
   const news = dossier.news || [];
   const echo = dossier.echo || [];
-  if (!hasStory && !hasEmpire && !news.length && !echo.length && !newsSlot && !topSlot) {
+  if (
+    !hasStory &&
+    !hasEmpire &&
+    !news.length &&
+    !echo.length &&
+    !newsSlot &&
+    !topSlot &&
+    !leadSlot
+  ) {
     return null;
   }
   return (
     <div className="snr-stack">
+      {/* Nov 1: a commodity chart opened from the brief leads, above the key
+          chart or power profile. */}
+      {leadSlot}
       {/* Oct 26: the Key Chart leads the stack; the matching dataset cards
           (topSlot) follow it. */}
       {hasStory ? (

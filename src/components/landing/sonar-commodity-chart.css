@@ -1,0 +1,249 @@
+/* The commodity chart card in the Sonar band's right-hand stack (Nov 1,
+   SonarCommodityChart, prefix snrc-). It wears the .snr-fund shell; the band
+   tokens (--snr-*) come from sonar-band.css. Tokens only. */
+
+.snrc {
+  position: relative;
+  animation: snrc-in 0.3s ease-out;
+}
+@keyframes snrc-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.snrc-close {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--snr-text-faint);
+  font-size: 12px;
+  cursor: pointer;
+}
+.snrc-close:hover {
+  color: var(--snr-text);
+  background: color-mix(in srgb, var(--snr-mint) 12%, transparent);
+}
+.snrc-close:focus-visible,
+.snrc-plot:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 2px;
+}
+
+/* Three figures: the brief's claim, the measured change, the last close. */
+.snrc-figures {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.snrc-fig {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.snrc-fig-label {
+  font-family: var(--snr-font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--snr-text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.snrc-fig-value {
+  font-family: var(--snr-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  color: var(--snr-text);
+  white-space: nowrap;
+}
+/* Direction is said by the sign too, never colour alone. */
+.snrc-fig-value.is-up {
+  color: var(--snr-mint);
+}
+.snrc-fig-value.is-down {
+  color: color-mix(in srgb, var(--negative) 60%, white);
+}
+
+/* The plot: an SVG line under HTML axis labels, crosshair and tooltip. */
+.snrc-plot {
+  position: relative;
+  height: 132px;
+  margin: 4px 0 6px;
+  cursor: crosshair;
+  touch-action: pan-y;
+}
+.snrc-plot svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.snrc-plot--skeleton {
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--snr-mint) 6%, transparent),
+    color-mix(in srgb, var(--snr-mint) 12%, transparent),
+    color-mix(in srgb, var(--snr-mint) 6%, transparent)
+  );
+  background-size: 200% 100%;
+  animation: snrc-shimmer 1.5s ease-in-out infinite;
+}
+@keyframes snrc-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+.snrc-base {
+  stroke: color-mix(in srgb, white 16%, transparent);
+  stroke-width: 1;
+}
+.snrc-area {
+  fill: color-mix(in srgb, var(--snr-mint) 10%, transparent);
+}
+.snrc-line {
+  fill: none;
+  stroke: var(--snr-mint);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.snrc-cross {
+  stroke: color-mix(in srgb, white 45%, transparent);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.snrc-dot {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  border-radius: 50%;
+  background: var(--snr-mint);
+  box-shadow: 0 0 0 2px var(--snr-panel);
+  pointer-events: none;
+}
+.snrc-tip {
+  position: absolute;
+  top: 2px;
+  transform: translateX(10px);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, black 82%, var(--snr-mint));
+  border: 1px solid color-mix(in srgb, var(--snr-mint) 35%, transparent);
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 2;
+}
+.snrc-tip--left {
+  transform: translateX(calc(-100% - 10px));
+}
+.snrc-tip-day {
+  font-family: var(--snr-font-mono);
+  font-size: 9.5px;
+  color: var(--snr-text-faint);
+}
+.snrc-tip-val {
+  font-family: var(--snr-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--snr-text);
+}
+.snrc-axis {
+  position: absolute;
+  font-family: var(--snr-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 9px;
+  color: var(--snr-text-faint);
+  pointer-events: none;
+}
+.snrc-axis--hi {
+  top: -2px;
+  right: 2px;
+}
+.snrc-axis--lo {
+  bottom: 18px;
+  right: 2px;
+}
+.snrc-axis--from {
+  bottom: 0;
+  left: 2px;
+}
+.snrc-axis--to {
+  bottom: 0;
+  right: 2px;
+}
+
+.snrc-empty,
+.snrc-note {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--snr-text-faint);
+}
+.snrc-empty {
+  font-size: 12px;
+  color: var(--snr-text-muted);
+}
+
+.snrc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* The figure in the brief that opens the chart. */
+.snr-stat-link {
+  appearance: none;
+  display: inline;
+  padding: 0 1px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--snr-mint) 10%, transparent);
+  font: inherit;
+  color: var(--snr-mint);
+  text-decoration: underline dotted;
+  text-decoration-color: color-mix(in srgb, var(--snr-mint) 60%, transparent);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.snr-stat-link:hover,
+.snr-stat-link[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--snr-mint) 20%, transparent);
+  text-decoration-style: solid;
+}
+.snr-stat-link:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 1px;
+}
+.snr-stat-link i {
+  margin-left: 3px;
+  font-size: 0.75em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snrc,
+  .snrc-plot--skeleton {
+    animation: none;
+  }
+}
