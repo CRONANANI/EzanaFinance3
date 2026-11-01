@@ -55,8 +55,8 @@
 }
 .snrc-fig-label {
   font-family: var(--snr-font-mono);
-  font-size: 9px;
-  letter-spacing: 0.12em;
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--snr-text-faint);
   white-space: nowrap;
@@ -157,7 +157,7 @@
 }
 .snrc-tip-day {
   font-family: var(--snr-font-mono);
-  font-size: 9.5px;
+  font-size: var(--type-micro-size);
   color: var(--snr-text-faint);
 }
 .snrc-tip-val {
@@ -170,7 +170,7 @@
   position: absolute;
   font-family: var(--snr-font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 9px;
+  font-size: var(--type-micro-size);
   color: var(--snr-text-faint);
   pointer-events: none;
 }
