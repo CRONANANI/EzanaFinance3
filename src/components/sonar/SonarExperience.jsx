@@ -22,7 +22,8 @@ import { supabase } from '@/lib/supabase-browser';
 
 import '@/app/(dashboard)/sonar/sonar.css';
 import { SonarLoader } from '@/components/sonar/SonarLoader';
-import { SonarRailLoader } from '@/components/sonar/SonarRailLoader';
+import { SonarPingLoader } from '@/components/sonar/SonarPingLoader';
+import { pingEntityLabel } from '@/lib/sonar/ping-entity';
 import '@/app/datasets/datasets-loading.css';
 
 /* The landing Sonar band, loaded only once a Datasets search is sent. */
@@ -120,11 +121,20 @@ export function SonarExperience({
      drives the sign-up CTA and the ?q= in the address. */
   const [shownQuery, setShownQuery] = useState(startQuery);
   const [answeredQuery, setAnsweredQuery] = useState(null);
-  /* Oct 29: every ping in flight (the hero's first ping, the landing pill's
+  /* Every ping in flight (the hero's first ping, the landing pill's
      /datasets?q= hand-off, and follow-ups typed in the band) shows only the
-     animated seven-dimension rail on the green ground until it settles,
-     answered or not, so the visitor goes straight from the rail to results. */
-  const [pingInFlight, setPingInFlight] = useState(Boolean(startQuery));
+     Sonar ping screen until it settles (Nov 2: "Pulse", SonarPingLoader).
+     { query, phase: 'sweeping' | 'ready' | 'error', leaving } or null. */
+  const [loader, setLoader] = useState(
+    startQuery ? { query: startQuery, phase: 'sweeping', leaving: false } : null,
+  );
+  const pingInFlight = Boolean(loader && loader.phase === 'sweeping');
+  /* The band's handle on its ping (cancel, retry), and whether it has ever
+     shown an answer (Cancel or Back then returns to it, not the hero). */
+  const bandControlRef = useRef(null);
+  const hadAnswerRef = useRef(false);
+  const loaderTimers = useRef([]);
+  useEffect(() => () => loaderTimers.current.forEach(clearTimeout), []);
   const [phase, setPhase] = useState('idle'); // idle | searching | streaming | complete | error
   const pingIdRef = useRef(0);
   const [result, setResult] = useState(null);
@@ -165,10 +175,15 @@ export function SonarExperience({
     return () => document.body.classList.remove(cls);
   }, [phase, onDatasets]);
 
-  /* Safety valve: the rail can never stick if a ping never reports back. */
+  /* Safety valve: the loader can never stick if a ping never reports back. */
   useEffect(() => {
     if (!pingInFlight) return undefined;
-    const id = setTimeout(() => setPingInFlight(false), 70_000);
+    /* A ping that never reports back shows the error state, not a sweep
+       that runs forever. */
+    const id = setTimeout(
+      () => setLoader((l) => (l && l.phase === 'sweeping' ? { ...l, phase: 'error' } : l)),
+      70_000,
+    );
     return () => clearTimeout(id);
   }, [pingInFlight]);
 
@@ -180,18 +195,37 @@ export function SonarExperience({
        `settled` when the ping finishes either way, which lifts the rail
        loader. */
     if (meta?.settled) {
-      setPingInFlight(false);
+      if (meta.cancelled) return;
+      if (meta.ok === false) {
+        /* A failed ping: the screen stays up in its error state, with Try
+           again and Back. */
+        setLoader((l) => (l ? { ...l, phase: 'error', leaving: false } : l));
+        return;
+      }
+      /* Settled without a briefing (gated, or nothing found): the screen
+         simply fades out; "Briefing ready" would not be true. */
+      setLoader((l) => (l && l.phase === 'sweeping' ? { ...l, leaving: true } : l));
+      loaderTimers.current.push(setTimeout(() => setLoader((l) => (l?.leaving ? null : l)), 300));
       return;
     }
     if (meta?.display) {
-      setPingInFlight(false);
+      hadAnswerRef.current = true;
+      /* All seven dots, "Briefing ready", then a 300ms fade into the
+         results. */
+      setLoader((l) => (l ? { ...l, phase: 'ready', leaving: false } : l));
+      loaderTimers.current.push(
+        setTimeout(() => setLoader((l) => (l ? { ...l, leaving: true } : l)), 450),
+        setTimeout(() => setLoader((l) => (l?.leaving ? null : l)), 750),
+      );
       setShownQuery(meta.display);
       /* The briefing has landed: only now may matching dataset cards show,
          so a card list is never the whole response. */
       setAnsweredQuery(query);
       return;
     }
-    setPingInFlight(true);
+    loaderTimers.current.forEach(clearTimeout);
+    loaderTimers.current = [];
+    setLoader({ query, phase: 'sweeping', leaving: false });
     setAnsweredQuery(null);
     setShownQuery(query);
     try {
@@ -201,6 +235,32 @@ export function SonarExperience({
     } catch {
       /* non-fatal */
     }
+  }
+
+  /* Leave the ping screen. With an earlier answer on the page, back to it;
+     on a first ping, back to the Ping field with the query still in it. */
+  function leavePing() {
+    const query = loader?.query || bandQuery || '';
+    loaderTimers.current.forEach(clearTimeout);
+    loaderTimers.current = [];
+    setLoader(null);
+    if (hadAnswerRef.current) return;
+    setQueryText(query);
+    setBandQuery(null);
+    setShownQuery(null);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('q');
+      window.history.replaceState(window.history.state, '', url);
+    } catch {
+      /* non-fatal */
+    }
+  }
+
+  /* Cancel: abort the request (nothing is shown for it), then leave. */
+  function cancelPing() {
+    bandControlRef.current?.cancel();
+    leavePing();
   }
 
   function pushRecent(query, classification) {
@@ -224,7 +284,6 @@ export function SonarExperience({
     if (!query || phase === 'searching' || phase === 'streaming') return;
     if (onDatasets) {
       setQueryText(query);
-      setPingInFlight(true);
       setBandQuery(query);
       onBandPing(query);
       return;
@@ -367,6 +426,7 @@ export function SonarExperience({
           variant="page"
           query={bandQuery}
           onPing={onBandPing}
+          controlRef={bandControlRef}
           stackTop={
             answeredQuery ? <DatasetCardMatches query={answeredQuery} variant="rail" /> : null
           }
@@ -374,9 +434,16 @@ export function SonarExperience({
         {/* Guests only (the card checks auth itself): a centred popup once
             the briefing lands, minimizable to a small widget bottom left. */}
         <SonarSignupCta query={shownQuery || bandQuery} ready={Boolean(answeredQuery)} />
-        {pingInFlight ? (
+        {loader ? (
           <div className={`dsl-handoff${stage === 'app' ? ' dsl-handoff--app' : ''}`}>
-            <SonarRailLoader />
+            <SonarPingLoader
+              entityLabel={pingEntityLabel(loader.query)}
+              phase={loader.phase}
+              leaving={loader.leaving}
+              onCancel={cancelPing}
+              onRetry={() => bandControlRef.current?.retry()}
+              onBack={leavePing}
+            />
           </div>
         ) : null}
       </div>

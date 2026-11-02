@@ -660,6 +660,7 @@ export function SonarSection({
   query = null,
   onPing = null,
   stackTop = null,
+  controlRef = null,
 } = {}) {
   /* 'page': the same band embedded on the Datasets search page. No takeover,
      no demo, no header (the page has its own), and it pings `query` as soon
@@ -698,6 +699,10 @@ export function SonarSection({
   const [live, setLive] = useState(null);
   const [pinging, setPinging] = useState(false);
   const [pingError, setPingError] = useState(null);
+  /* Nov 2: the ping in flight (aborted by the loading screen's Cancel) and
+     the last query sent (re-sent by its Try again). */
+  const pingAbortRef = useRef(null);
+  const lastPingRef = useRef(null);
   /* The gate serves two paths with different copy: an exhausted quota, and a
      visitor clicking a tool link. Default is the tool-link wording. */
   const [gateCopy, setGateCopy] = useState(null);
@@ -2152,9 +2157,17 @@ export function SonarSection({
 
   async function runPing(q, opts = {}) {
     if (pinging) return;
+    /* Nov 2: the ping loader's Cancel aborts the request (controlRef). */
+    const controller = new AbortController();
+    pingAbortRef.current = controller;
+    /* What the band showed before this ping, so a cancelled ping can put it
+       back instead of leaving an error in its place. */
+    const hadPinged = hasPingedRef.current;
+    let settle = { settled: true, ok: false };
     hasPingedRef.current = true;
     setHasPinged(true);
     setLastQuery(q);
+    lastPingRef.current = q;
     /* Oct 18: lets the /datasets host follow follow-up pings (CTA copy, ?q=). */
     if (typeof onPing === 'function') onPing(q);
     setPinging(true);
@@ -2168,8 +2181,12 @@ export function SonarSection({
           ...(opts.noCorrect ? { noCorrect: true } : {}),
           ...(opts.force ? { force: opts.force } : {}),
         }),
+        signal: controller.signal,
       });
       const data = await res.json().catch(() => null);
+      /* Answered, gated or "no coverage" all end the loading screen; only a
+         failed request turns it into its error state. */
+      settle = { settled: true, ok: Boolean(res.ok || data?.gate) };
       if (data?.gate) {
         openGate({
           title: 'You\u2019ve used your 5 free pings.',
@@ -2224,15 +2241,45 @@ export function SonarSection({
       } else {
         setPingError(data?.error || 'That ping did not land. Try again.');
       }
-    } catch {
-      setPingError('That ping did not land. Try again.');
+    } catch (e) {
+      if (e?.name === 'AbortError') {
+        /* Cancelled from the loading screen: no error, and the band goes
+           back to what it showed before, with the query left in the field. */
+        settle = { settled: true, ok: false, cancelled: true };
+        if (!hadPinged) {
+          hasPingedRef.current = false;
+          setHasPinged(false);
+        }
+        setQueryValue(q);
+      } else {
+        setPingError('That ping did not land. Try again.');
+      }
     } finally {
+      if (pingAbortRef.current === controller) pingAbortRef.current = null;
       setPinging(false);
       /* Oct 27: answered or not, the ping is over: the /datasets host lifts
-         its hand-off loading screen on this. */
-      if (typeof onPing === 'function') onPing(q, { settled: true });
+         its hand-off loading screen on this. Nov 2: it also says how
+         (ok, or cancelled), so the screen can show its error state. */
+      if (typeof onPing === 'function') onPing(q, settle);
     }
   }
+
+  /* Nov 2: the host's handle on the ping in flight: Cancel aborts it, Try
+     again re-sends the last ping. runPingRef keeps the latest closure. */
+  const runPingRef = useRef(runPing);
+  runPingRef.current = runPing;
+  useEffect(() => {
+    if (!controlRef) return undefined;
+    controlRef.current = {
+      cancel: () => pingAbortRef.current?.abort(),
+      retry: () => {
+        if (lastPingRef.current) runPingRef.current(lastPingRef.current);
+      },
+    };
+    return () => {
+      controlRef.current = null;
+    };
+  }, [controlRef]);
 
   /* Both conditions, not either: now that the stage and the type-out run
      concurrently, the stage settling no longer implies the answer has

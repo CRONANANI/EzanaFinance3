@@ -1,0 +1,192 @@
+/* Sonar ping loader, "Pulse" (Nov 2, prefix snrp-, SonarPingLoader).
+   Fills the overlay that holds it (.dsl-handoff / .dsl-sonar in
+   datasets-loading.css, which paint the ground). Tokens only: the
+   --sonar-ping-* set in theme-variables.css, the constant brand emerald and
+   the negative token. Only transform and opacity animate. */
+
+.snrp {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  padding: 24px 16px 96px;
+  box-sizing: border-box;
+  color: var(--sonar-ping-ink);
+  font-family: var(--font-sans);
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+.snrp.is-leaving {
+  opacity: 0;
+}
+
+/* The motif: three rings spreading from a glowing core. */
+.snrp-pulse {
+  position: relative;
+  flex: 0 0 auto;
+  width: 240px;
+  height: 240px;
+}
+.snrp-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--brand-ezana-green);
+  opacity: 0;
+  transform: scale(0.2);
+  animation: snrp-ring 3s ease-out infinite;
+}
+.snrp-ring:nth-child(2) {
+  animation-delay: 1s;
+}
+.snrp-ring:nth-child(3) {
+  animation-delay: 2s;
+}
+@keyframes snrp-ring {
+  0% {
+    transform: scale(0.2);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+.snrp-core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: var(--brand-ezana-green);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--brand-ezana-green) 90%, transparent);
+}
+
+/* Error: the rings stop and the core turns negative, no glow. */
+.snrp.is-error .snrp-ring {
+  animation: none;
+  opacity: 0;
+}
+.snrp.is-error .snrp-core {
+  background: var(--negative);
+  box-shadow: none;
+}
+
+.snrp-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  text-align: center;
+}
+.snrp-entity {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: var(--type-eyebrow-tracking-marketing);
+  text-transform: uppercase;
+  color: var(--sonar-ping-ink);
+  white-space: nowrap;
+}
+/* Fixed height, so a longer dimension name never moves anything. */
+.snrp-status {
+  height: 20px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--sonar-ping-muted);
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity 0.15s ease;
+}
+.snrp-status.is-fading {
+  opacity: 0;
+}
+.snrp-slow {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--sonar-ping-muted);
+}
+
+.snrp-dots {
+  display: flex;
+  gap: 10px;
+}
+.snrp-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--sonar-ping-dot-idle);
+  transition: background 0.4s ease;
+}
+.snrp-dot.is-sweeping {
+  background: color-mix(in srgb, var(--brand-ezana-green) 45%, transparent);
+}
+.snrp-dot.is-done {
+  background: var(--brand-ezana-green);
+}
+
+/* Cancel, or Try again and Back: pinned 32px from the bottom. */
+.snrp-actions {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 32px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.snrp-btn {
+  min-height: 44px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--sonar-ping-muted);
+  cursor: pointer;
+}
+.snrp-btn:hover {
+  color: var(--sonar-ping-ink);
+}
+.snrp-btn--primary {
+  color: var(--sonar-ping-ink);
+  font-weight: 600;
+}
+.snrp-btn:focus-visible {
+  outline: 2px solid var(--brand-ezana-green);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .snrp-pulse {
+    width: 180px;
+    height: 180px;
+  }
+}
+
+/* Reduced motion: one still ring at 60% scale, no fades. */
+@media (prefers-reduced-motion: reduce) {
+  .snrp-ring {
+    animation: none;
+  }
+  .snrp-ring:first-child {
+    opacity: 0.3;
+    transform: scale(0.6);
+  }
+  .snrp.is-error .snrp-ring:first-child {
+    opacity: 0;
+  }
+  .snrp,
+  .snrp-status,
+  .snrp-dot {
+    transition: none;
+  }
+}

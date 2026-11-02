@@ -1,8 +1,8 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { SkeletonRegion, Skeleton, SkeletonTable, token } from '@/components/ds';
-import { SonarRailLoader } from '@/components/sonar/SonarRailLoader';
+import { SkeletonRegion, Skeleton, SkeletonTable } from '@/components/ds';
+import { SonarRouteLoader } from '@/components/sonar/SonarRouteLoader';
 import './datasets-loading.css';
 
 /**
@@ -10,21 +10,19 @@ import './datasets-loading.css';
  * bar and a data-table silhouette — self-contained presentational chrome, no
  * fetch.
  *
- * Oct 25: the /datasets overview itself (where the landing page's Sonar pill
- * hands off a ping, /datasets?q=...) is not a table page, so its loading
- * state is the Sonar ping loader alone on the green ground, never the white
- * table silhouette. Every dataset page under it keeps the skeleton.
- *
- * Oct 30: the same rail loader as the in-page hand-off (SonarExperience), so
- * a ping shows one loading screen from the click to the results.
+ * The /datasets overview itself (where the landing page's Sonar pill hands
+ * off a ping, /datasets?q=...) is not a table page. Nov 2: while it loads it
+ * shows the Sonar ping screen ("Pulse", SonarPingLoader), the same screen
+ * the page keeps up until the ping answers, so the visitor sees one loading
+ * screen from the click to the results. With no ping it shows the pulse
+ * alone. Every dataset page under it keeps the skeleton.
  */
 export default function DatasetLoading() {
   const pathname = usePathname();
   if (pathname === '/datasets') {
     return (
       <div className="dsl-sonar">
-        {/* No visible copy; the label is announced only. */}
-        <SonarRailLoader />
+        <SonarRouteLoader />
       </div>
     );
   }
