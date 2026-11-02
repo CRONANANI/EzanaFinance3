@@ -114,6 +114,10 @@
       "schedule": "43 6 * * *"
     },
     {
+      "path": "/api/cron/adb-kidb",
+      "schedule": "17 5 * * *"
+    },
+    {
       "path": "/api/cron/eyes-fred",
       "schedule": "5 7 * * *"
     },
