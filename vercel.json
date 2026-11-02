@@ -118,6 +118,22 @@
       "schedule": "17 5 * * *"
     },
     {
+      "path": "/api/cron/macro-bcb",
+      "schedule": "11 5 * * *"
+    },
+    {
+      "path": "/api/cron/macro-bis",
+      "schedule": "23 5 * * *"
+    },
+    {
+      "path": "/api/cron/macro-cepal",
+      "schedule": "37 5 * * *"
+    },
+    {
+      "path": "/api/cron/macro-afdb",
+      "schedule": "49 5 * * *"
+    },
+    {
       "path": "/api/cron/eyes-fred",
       "schedule": "5 7 * * *"
     },
