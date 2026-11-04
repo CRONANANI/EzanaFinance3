@@ -16,6 +16,7 @@
 import { DATASET_TAXONOMY, isFullyLive } from '@/lib/datasets/taxonomy';
 import sanctions from './sanctions';
 import ipoEvents from './ipo-events';
+import macroIndicators from './macro-indicators';
 
 /** href -> slug (the part after /datasets/). */
 export function slugFromHref(href) {
@@ -62,6 +63,8 @@ export const COVERED_BY_EXISTING = {
   patents: 'P eyes.patents',
   'supply-chain': 'P eyes.chokepoints + P eyes.ports',
   'oecd-macro': 'P lighthouse.oecd',
+  'world-bank': 'Q macro (core source macro-indicators reads macro_series_values)',
+  'geopolitical-risk': 'Q macro (GPR, EPU, WUI, UCDP, GDELT via macro-indicators)',
   'whale-moves': 'P titans.whale_moves',
 };
 
@@ -79,8 +82,6 @@ export const EXCLUDED = {
     'Monthly brightness time-series, no entity-level rows to cite yet; adapter tracked.',
   'commercial-real-estate':
     'Market-wide FRED series, no entity-level rows to cite yet; adapter tracked.',
-  'world-bank': 'Country macro time-series, no entity-level rows to cite yet; adapter tracked.',
-  'geopolitical-risk': 'Index time-series, no entity-level rows to cite yet; adapter tracked.',
   'global-empire-lighthouse':
     'Composite country rankings, reached via macro rank; dedicated adapter tracked.',
   'crowd-forecasts': 'Play-money crowd forecasts; relevance model and adapter tracked.',
@@ -95,6 +96,7 @@ export const EXCLUDED = {
  */
 export const CORE_SOURCES = {
   [ipoEvents.slug]: ipoEvents,
+  [macroIndicators.slug]: macroIndicators,
 };
 
 /** A core source by slug (e.g. 'ipo-events'), or null. */

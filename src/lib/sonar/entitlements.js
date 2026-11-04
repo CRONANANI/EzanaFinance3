@@ -27,6 +27,9 @@ export const SONAR_DATASETS = {
     source: 'Market odds',
   },
   sanctions: { id: 'sanctions', label: 'US Sanctions', source: 'US Treasury OFAC' },
+  /* Country macro series from public.macro_series_values (sources/macro-indicators.js):
+     IMF, World Bank, central banks, risk indices, UCDP, GDELT. Public statistics, so free. */
+  macro: { id: 'macro', label: 'Macro indicators', source: 'IMF, World Bank, central banks' },
   'sec-filings': { id: 'sec-filings', label: 'SEC filings', source: 'EDGAR' },
   /* IPO pricing, shares, proceeds and listing (sources/ipo-events.js). Free:
      an IPO question must be answerable at the lowest tier. */
@@ -73,7 +76,7 @@ export function getSonarEntitlements({
   const base = {
     // Sanctions is public-domain OFAC data with no account needed, so it is
     // part of the free sweep (the Iran-outlook acceptance test is a free user).
-    datasets: ['echo', 'congress', 'gov-contracts', 'sanctions', 'ipo-filings'],
+    datasets: ['echo', 'congress', 'gov-contracts', 'sanctions', 'ipo-filings', 'macro'],
     depth: 'summary', // summary | standard | deep
     dailyQueries: 5,
     exportsEnabled: false,

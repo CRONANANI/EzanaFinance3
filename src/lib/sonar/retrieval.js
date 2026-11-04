@@ -19,6 +19,7 @@ export const DATASET_TO_CORPUS = {
   'prediction-markets': 'markets',
   'org-internal': 'research_notes',
   sanctions: 'sanctions',
+  macro: 'macro',
   /* Not an orchestrator retriever: the landing pipeline runs the IPO filings
      source itself once the ping has resolved to a symbol. */
   'ipo-filings': 'ipo',

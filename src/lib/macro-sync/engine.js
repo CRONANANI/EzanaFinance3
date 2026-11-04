@@ -6,6 +6,9 @@
  *     buildBatches(passDate) -> Batch[],          // deterministic for a given pass date
  *     fetchBatch(batch, fetchWithRetry) -> Row[] }
  * Row = { series_key, country_iso3, period, value, series_name, unit, frequency, dataset }
+ * Optional adapter fields: requiresEnv (string[]; the rotator skips the adapter when any is
+ * unset), enabled (false = registered but never run), dedicatedCron (true = has its own cron
+ * route, so the rotator leaves it alone), afterBatch(db, rows) (mirror rows elsewhere).
  *
  * The batch list depends only on config and the pass start date, so the cursor stays valid
  * across runs. Every batch is checkpointed; rate-limit responses stop the run and the next
@@ -158,6 +161,8 @@ export async function runSync(db, adapter, { budgetMs = Infinity, force = false,
       );
       rowsRead += rows.length;
       rowsWritten += await upsertRows(db, source, rows);
+      /* Optional mirror into another table (GPR also feeds lighthouse_observations). */
+      if (typeof adapter.afterBatch === 'function') await adapter.afterBatch(db, rows);
       cursor += 1;
       await writeState(db, source, { cursor });
     } catch (e) {
