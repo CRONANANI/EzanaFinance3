@@ -31,7 +31,7 @@ export const COMMODITY_MOVERS = [
 ];
 
 export const SUPPLY_DEMAND = [
-  'Oil: OPEC meeting Jun 2 — cut expected',
+  'Oil: OPEC meeting Jun 2, cut expected',
   'Gold: Central bank buying at record highs',
   'Wheat: Ukraine export corridor renewed',
 ];

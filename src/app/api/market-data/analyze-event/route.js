@@ -4,6 +4,7 @@ import { assertPublicHttpUrl } from '@/lib/url-guard';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
+import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 export const dynamic = 'force-dynamic';
 
 const ANTHROPIC_MODEL = 'claude-3-5-sonnet-20241022';
@@ -154,16 +155,16 @@ ${holdingsBlock}
 Write your analysis using EXACTLY this structure (use these headers verbatim):
 
 📊 SUMMARY
-One paragraph (3-5 sentences) explaining what the article actually says — not generic statements.
+One paragraph (3-5 sentences) explaining what the article actually says, not generic statements.
 
 🎯 IMPACT ON YOUR PORTFOLIO
 If the user has holdings, name the SPECIFIC tickers in their portfolio that are most exposed to the events in the article and explain why (sector, geography, supply chain, customer base, etc.). If a holding has no plausible connection to the article, do not mention it. If the user has no holdings, say so once and continue with the general impact analysis below.
 
 📈 OPPORTUNITIES
-2-3 specific, actionable observations tied to the article's content. Avoid generic advice like "watch for oversold conditions" — say what specifically might benefit and why.
+2-3 specific, actionable observations tied to the article's content. Avoid generic advice like "watch for oversold conditions", say what specifically might benefit and why.
 
 ⚠️ RISKS
-2-3 specific risks tied to the article's content for the user's positions. Again, no generic boilerplate — refer to actual sectors, regions, or company exposures.
+2-3 specific risks tied to the article's content for the user's positions. Again, no generic boilerplate, refer to actual sectors, regions, or company exposures.
 
 💡 BOTTOM LINE
 One sentence with a clear takeaway: are the events bullish, bearish, or neutral for this specific portfolio, and is any action warranted?
@@ -171,12 +172,12 @@ One sentence with a clear takeaway: are the events bullish, bearish, or neutral 
 Important rules:
 - Reference the user's actual tickers by name when relevant.
 - Do NOT use phrases like "watch for X-related exposure" or "monitor currency impacts" unless you can name the specific currency/ticker/sector and why.
-- Do NOT recommend specific trades — observations only.
+- Do NOT recommend specific trades, observations only.
 - Keep the total response under 450 words.
 - Plain text only, no markdown formatting beyond the section headers above.`;
 }
 
-export async function POST(request) {
+async function POST_HANDLER(request) {
   // Moderate limit — fetches an external article + runs a paid LLM analysis.
   const rl = await checkRateLimit(`ai:analyze-event:${getClientIp(request)}`, {
     limit: 20,
@@ -283,3 +284,6 @@ export async function POST(request) {
     );
   }
 }
+
+/* No em dashes in anything this route returns (src/lib/text/em-dash.js). */
+export const POST = withNoEmDash(POST_HANDLER);

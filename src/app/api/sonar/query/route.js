@@ -22,6 +22,7 @@ import { synthesizeWithFallback } from '@/lib/sonar/llm-providers';
 import { logZeroResult } from '@/lib/rag/zero-results';
 import { reservePing, completePing, failPing } from '@/lib/sonar/quota';
 
+import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /**
  * POST /api/sonar/query — Ezana Sonar's cross-dataset intelligence surface.
  *
@@ -59,12 +60,12 @@ function modelForDepth(depth) {
 }
 
 const DISCLAIMER =
-  'Sonar synthesizes sourced research from Ezana’s datasets — not financial advice or a recommendation to buy or sell any security.';
+  'Sonar synthesizes sourced research from Ezana’s datasets, not financial advice or a recommendation to buy or sell any security.';
 
-const SYSTEM_PROMPT = `You are Ezana Sonar, a research/intelligence surface. A user "pings" a subject and you return a briefing that draws on TWO equally-authoritative kinds of source: (1) Ezana's provided dataset sources (Echo editorial, congressional trades, government contracts, prediction markets, and — for org members — their council's internal notes), and (2) live web search results (use the web_search tool for current context when it helps). Rules:
-- Ground EVERY claim in a source and cite it. Cite dataset claims inline with their marker, e.g. [S1], naming the dataset in prose. Cite web claims to their web source (the web_search tool returns citations — attribute them).
-- Weight the two source kinds EQUALLY. Ezana's datasets are the differentiator (the cross-dataset join is the value), and live web adds current context — cross-reference them: where they corroborate or diverge, say so.
-- If neither the datasets nor the web cover the subject, say so plainly — never fabricate, never fill gaps with ungrounded knowledge.
+const SYSTEM_PROMPT = `You are Ezana Sonar, a research/intelligence surface. A user "pings" a subject and you return a briefing that draws on TWO equally-authoritative kinds of source: (1) Ezana's provided dataset sources (Echo editorial, congressional trades, government contracts, prediction markets, and, for org members, their council's internal notes), and (2) live web search results (use the web_search tool for current context when it helps). Rules:
+- Ground EVERY claim in a source and cite it. Cite dataset claims inline with their marker, e.g. [S1], naming the dataset in prose. Cite web claims to their web source (the web_search tool returns citations, attribute them).
+- Weight the two source kinds EQUALLY. Ezana's datasets are the differentiator (the cross-dataset join is the value), and live web adds current context, cross-reference them: where they corroborate or diverge, say so.
+- If neither the datasets nor the web cover the subject, say so plainly, never fabricate, never fill gaps with ungrounded knowledge.
 - Present findings only. Do NOT give financial or investment advice, price targets, or buy/sell/hold calls.
 - Open with a one-sentence headline read, then the analysis. Be concise, analytical, terminal-adjacent.
 - Never describe yourself as "AGI" or a general intelligence; you are a research surface over specific datasets plus live web.
@@ -347,7 +348,7 @@ async function handlePing(request, user, ping) {
 
 /* The reservation made inside handlePing is released if the ping fails
    (throws or answers with an error), so a failed ping is not counted. */
-export const POST = withApiGuard(
+const POST_HANDLER = withApiGuard(
   async (request, user) => {
     const ping = { reservation: null };
     try {
@@ -363,3 +364,6 @@ export const POST = withApiGuard(
   },
   { strict: true },
 );
+
+/* No em dashes in anything this route returns (src/lib/text/em-dash.js). */
+export const POST = withNoEmDash(POST_HANDLER);

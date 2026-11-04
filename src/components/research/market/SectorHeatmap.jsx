@@ -12,7 +12,7 @@ import { DateSelector } from '@/components/ui/DateSelector';
 const RANGES = ['1D', '1W', '1M', 'YTD'];
 
 function formatChange(value) {
-  if (!Number.isFinite(value)) return '—';
+  if (!Number.isFinite(value)) return '–';
   const sign = value > 0 ? '+' : '';
   return `${sign}${value.toFixed(2)}%`;
 }
@@ -179,16 +179,16 @@ export function SectorHeatmap() {
     () => [
       { label: 'Window', value: range, format: undefined },
       { label: 'Sectors', value: sorted.length, format: 'number' },
-      { label: 'As of', value: asOf || '—', format: undefined },
+      { label: 'As of', value: asOf || '–', format: undefined },
       {
         label: 'Top move',
-        value: best ? formatChange(best.changePct) : '—',
+        value: best ? formatChange(best.changePct) : '–',
         format: undefined,
         emphasis: true,
       },
       {
         label: 'Bottom move',
-        value: worst ? formatChange(worst.changePct) : '—',
+        value: worst ? formatChange(worst.changePct) : '–',
         format: undefined,
         emphasis: 'negative',
       },

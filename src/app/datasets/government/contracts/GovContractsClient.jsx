@@ -93,7 +93,7 @@ function aggregate(awards) {
       map.set(key, {
         name: key,
         agency,
-        ticker: a.ticker && a.ticker !== '—' ? a.ticker : null,
+        ticker: a.ticker && a.ticker !== '–' ? a.ticker : null,
         total: 0,
         count: 0,
         awards: [],
@@ -312,7 +312,7 @@ export default function GovContractsClient({
   // the largest-agency %, so shares never sum past 100. Sub-0.1% reads "<0.1%".
   const shareOf = useCallback(
     (total) => {
-      if (!totalObligatedTrue) return '—';
+      if (!totalObligatedTrue) return '–';
       const pct = (total / totalObligatedTrue) * 100;
       if (pct >= 10) return `${Math.round(pct)}%`;
       if (pct >= 0.1) return `${pct.toFixed(1)}%`;
@@ -1170,7 +1170,7 @@ function DispersionCard({ agencyTotals, colorOf }) {
   }, [agencyTotals]);
 
   if (!stat) {
-    return <MetricCard label="Award concentration" value="—" meta="" />;
+    return <MetricCard label="Award concentration" value="–" meta="" />;
   }
   return (
     <MetricCard
@@ -1844,7 +1844,7 @@ function DrillModal({ recipient: r, allRecipients = [], onSelect, onClose, color
             <MiniStat label="Total awarded" value={fmtUSD(r.total)} sub={coverageSub} />
             <MiniStat label="Awards" value={fmtInt(r.count)} sub={agencySub} />
             <MiniStat label="Avg contract" value={fmtUSD(r.avg)} sub="per award, all years" />
-            <MiniStat label="YoY" value={series.length >= 2 ? yoy(series) : '—'} sub={yoySub} />
+            <MiniStat label="YoY" value={series.length >= 2 ? yoy(series) : '–'} sub={yoySub} />
           </div>
 
           <div className="gcx-modal-section">
@@ -2039,7 +2039,7 @@ function PriceSparkline({ ticker, candles }) {
 function yoy(series) {
   const a = series[series.length - 2].value;
   const b = series[series.length - 1].value;
-  if (!a) return '—';
+  if (!a) return '–';
   const pct = ((b - a) / Math.abs(a)) * 100;
   return `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`;
 }
@@ -2411,7 +2411,7 @@ function DossierMetrics({ ticker }) {
               <MiniStat
                 key={m.key}
                 label={m.label}
-                value={formatted ?? '—'}
+                value={formatted ?? '–'}
                 sub={formatted ? 'TTM · FMP' : 'Not available'}
               />
             );
@@ -2579,7 +2579,7 @@ function DossierOverlay({ recipient: r, series, subs, capitolStrength, colorOf, 
                 <MiniStat label="Avg contract" value={fmtUSD(r.avg)} sub="per award, all years" />
                 <MiniStat
                   label="YoY"
-                  value={series.length >= 2 ? yoy(series) : '—'}
+                  value={series.length >= 2 ? yoy(series) : '–'}
                   sub={subs.yoySub}
                 />
               </div>

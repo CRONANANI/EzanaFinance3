@@ -73,7 +73,7 @@ export function MomentumChip({ score, max, label, size = 'md' }) {
   return (
     <span
       className="congress-momentum-chip"
-      title={`Legislative momentum score ${s.toFixed(1)}${max ? ` of ${Number(max).toFixed(1)} top` : ''} — rising activity, not advice`}
+      title={`Legislative momentum score ${s.toFixed(1)}${max ? ` of ${Number(max).toFixed(1)} top` : ''}, rising activity, not advice`}
       style={{
         display: 'inline-flex',
         alignItems: 'center',

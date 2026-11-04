@@ -742,7 +742,7 @@ export function PostHeader({ post, showSkill = true, onDelete }) {
         </div>
       </div>
       <span className="post-ts ez-mono" title={post.timeAgo}>
-        {post.timeAgo || '—'}
+        {post.timeAgo || '–'}
       </span>
       {!isOwner && (
         /* Report and block (required for user-generated content in the apps). */

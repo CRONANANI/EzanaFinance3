@@ -59,7 +59,7 @@ export function EveningBriefing({ pulse, postCount, onDismiss }) {
             <span className="ez-mono" style={{ fontWeight: 700 }}>
               {postCount}
             </span>{' '}
-            posts in your current lens — stake conviction on the strongest takes.
+            posts in your current lens, stake conviction on the strongest takes.
           </p>
         </div>
         <button

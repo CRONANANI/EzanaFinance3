@@ -54,7 +54,7 @@ function slugify(s) {
     .replace(/(^-|-$)/g, '');
 }
 function fmtPrice(n) {
-  if (n == null || !Number.isFinite(Number(n))) return '—';
+  if (n == null || !Number.isFinite(Number(n))) return '–';
   if (n >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
   if (n >= 1e6) return `$${(n / 1e6).toFixed(2)}M`;
   return `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -69,7 +69,7 @@ function fmtChg(n) {
 }
 function fmtPct(n) {
   const x = Number(n);
-  if (n == null || Number.isNaN(x)) return '—';
+  if (n == null || Number.isNaN(x)) return '–';
   return `${x >= 0 ? '+' : ''}${x.toFixed(2)}%`;
 }
 
@@ -1134,7 +1134,7 @@ export default function WatchlistPage() {
                   <span className="wl-ticker-strong">
                     {selected.displayTicker || selected.ticker}
                   </span>
-                  <span className="wl-ticker-sep">—</span>
+                  <span className="wl-ticker-sep">–</span>
                   <span className="wl-co-full-name">{selected.name}</span>
                 </div>
               )}
@@ -1264,7 +1264,7 @@ export default function WatchlistPage() {
                                   ? 'Crypto'
                                   : item.type === 'stock'
                                     ? 'Stock'
-                                    : '—'}
+                                    : '–'}
                     </span>
                     {isPF ? (
                       <SparkPortfolio

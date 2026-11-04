@@ -15,7 +15,7 @@ const DEFAULT_ITEMS = [
     question:
       'Does following congressional or institutional trades actually produce an edge, or is it just interesting?',
     answer:
-      "It's a signal, not a guarantee, and we present it that way. Disclosure timing means you're never seeing a trade in real time — there's a legally mandated reporting lag — so this isn't front-running anyone. What it is: a structured view of how informed, access-rich actors are positioned, which historically has been hard for individuals to assemble. The value is in pattern recognition across many filings, cross-referenced with insider activity and institutional flows, not in blindly mirroring one politician's single trade.",
+      "It's a signal, not a guarantee, and we present it that way. Disclosure timing means you're never seeing a trade in real time, there's a legally mandated reporting lag, so this isn't front-running anyone. What it is: a structured view of how informed, access-rich actors are positioned, which historically has been hard for individuals to assemble. The value is in pattern recognition across many filings, cross-referenced with insider activity and institutional flows, not in blindly mirroring one politician's single trade.",
   },
   {
     id: 'paper-to-live',
@@ -29,13 +29,13 @@ const DEFAULT_ITEMS = [
     question:
       'When you connect to my brokerage, what can Ezana actually touch, and what can it never do?',
     answer:
-      "Brokerage connections run through regulated, read-only aggregators. Ezana can read positions and balances to power your analysis; it cannot move money, place trades on your live account, or access your login credentials — we never see or store them. Paper trading is the only place orders execute, and that's simulated by design. We also don't sell user data or run ads inside the product, so your holdings aren't a revenue stream for anyone but you.",
+      "Brokerage connections run through regulated, read-only aggregators. Ezana can read positions and balances to power your analysis; it cannot move money, place trades on your live account, or access your login credentials, we never see or store them. Paper trading is the only place orders execute, and that's simulated by design. We also don't sell user data or run ads inside the product, so your holdings aren't a revenue stream for anyone but you.",
   },
   {
     id: 'who-its-for',
     question: 'Who is this actually built for, and who is it not for?',
     answer:
-      "It's built for the investor who's outgrown a broker's basic dashboard and wants the data professionals use, but who isn't a day trader chasing momentum. If you want one-click meme-stock tips or a copy-trading autopilot, this isn't that. If you want to understand why a position makes sense — across fundamentals, institutional positioning, macro context, and your own risk tolerance — and to build a repeatable process, that's exactly who Ezana is for. The family-office tier extends the same toolkit to people managing larger, multi-account portfolios.",
+      "It's built for the investor who's outgrown a broker's basic dashboard and wants the data professionals use, but who isn't a day trader chasing momentum. If you want one-click meme-stock tips or a copy-trading autopilot, this isn't that. If you want to understand why a position makes sense, across fundamentals, institutional positioning, macro context, and your own risk tolerance, and to build a repeatable process, that's exactly who Ezana is for. The family-office tier extends the same toolkit to people managing larger, multi-account portfolios.",
   },
 ];
 

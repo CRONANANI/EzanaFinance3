@@ -27,7 +27,7 @@ const decode = (s) =>
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
     .replace(/&#8211;|&ndash;/g, '–')
-    .replace(/&#8212;|&mdash;/g, '—')
+    .replace(/&#8212;|&mdash;/g, '–')
     .replace(/&#039;|&#39;|&rsquo;/g, "'")
     .replace(/&quot;/g, '"')
     .replace(/&lt;/g, '<')

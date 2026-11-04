@@ -80,7 +80,7 @@ export default function SponsorApplicationPage() {
             <p className="sa-success-desc">
               Thank you, {form.fullName}. Our team will review your application for{' '}
               {form.propertyName} and reach out within 48 hours. Once approved, your property will
-              be listed on the Ezana Real Estate Marketplace — where everyday investors get first
+              be listed on the Ezana Real Estate Marketplace, where everyday investors get first
               access to fractional ownership opportunities.
             </p>
             <button
@@ -112,10 +112,10 @@ export default function SponsorApplicationPage() {
       <div className="sa-banner">
         <div className="sa-banner-icon">🏠</div>
         <div className="sa-banner-text">
-          <h4>People-First Capital — Not Institutional, Not Government</h4>
+          <h4>People-First Capital: Not Institutional, Not Government</h4>
           <p>
             Ezana&apos;s marketplace is built for everyday investors. When you list a property here,
-            the general population gets first access to buy fractional stakes — not hedge funds, not
+            the general population gets first access to buy fractional stakes, not hedge funds, not
             sovereign wealth funds, not government entities. We believe real estate wealth should be
             accessible to everyone, starting at $100. Your investors are teachers, nurses,
             engineers, and small business owners building generational wealth through real assets.
@@ -273,7 +273,7 @@ export default function SponsorApplicationPage() {
             <h2 className="sa-card-title">Offering Structure</h2>
             <p className="sa-card-desc">
               How do you want to structure the fractional offering? Remember: your investors will be
-              everyday people — keep minimums accessible and terms clear.
+              everyday people, keep minimums accessible and terms clear.
             </p>
 
             <div className="sa-row">
@@ -374,11 +374,11 @@ export default function SponsorApplicationPage() {
                 { label: 'Raise Amount', value: form.raiseAmount },
                 {
                   label: 'Target Return',
-                  value: form.targetReturn ? `${form.targetReturn}%` : '—',
+                  value: form.targetReturn ? `${form.targetReturn}%` : '–',
                 },
                 { label: 'Hold Period', value: form.holdPeriod },
                 { label: 'Min Investment', value: form.minInvestment },
-                { label: 'Website', value: form.website || '—' },
+                { label: 'Website', value: form.website || '–' },
               ].map((item) => (
                 <div key={item.label} className="sa-review-item">
                   <div className="sa-review-label">{item.label}</div>

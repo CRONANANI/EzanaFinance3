@@ -138,6 +138,10 @@ test('depth caps the number of tasks', () => {
     issueTextFor(spec('who lobbies on crypto')),
     'cryptocurrency OR "digital asset" OR "digital assets" OR stablecoin OR blockchain',
   );
+  const ai = planResearch(spec('Who is lobbying hardest on AI regulation?'), {}, {}).tasks.find(
+    (t) => t.source === 'lobbying_leaders',
+  );
+  assert.equal(ai.params.topic, 'ai');
 });
 
 /* ── evidence ───────────────────────────────────────────────────────── */

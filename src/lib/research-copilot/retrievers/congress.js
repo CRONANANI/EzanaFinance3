@@ -57,7 +57,7 @@ export async function retrieve(query, ctx = {}, opts = {}) {
     return {
       corpus,
       id: String(r.id),
-      title: `${who} — ${action} ${r.symbol || ''}`.trim(),
+      title: `${who} · ${action} ${r.symbol || ''}`.trim(),
       snippet: [
         `${who} ${action} ${r.symbol || 'a security'}`,
         amount ? `(${amount})` : null,

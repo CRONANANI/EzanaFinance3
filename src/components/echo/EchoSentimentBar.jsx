@@ -125,7 +125,7 @@ export function EchoSentimentBar({ articleId }) {
         <SaveAuthPrompt
           icon="bi-bar-chart-fill"
           headline="Share your read on this article"
-          body="Create a free account to flag whether this article's thesis reads as signal or noise — and see how other readers weighed in."
+          body="Create a free account to flag whether this article's thesis reads as signal or noise, and see how other readers weighed in."
           onClose={() => setShowAuthPrompt(false)}
           onSignUp={() => router.push(`/auth/signup?redirect=${redirectParam}`)}
           onSignIn={() => router.push(`/auth/signin?redirect=${redirectParam}`)}

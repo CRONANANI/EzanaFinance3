@@ -64,7 +64,7 @@ export function useLoginHistory(days = 30) {
         // If the API returned a fallback hint, log it for the developer
         if (data._fallback) {
           console.warn(
-            '[useLoginHistory] Table missing — showing fallback. Run the migration:',
+            '[useLoginHistory] Table missing, showing fallback. Run the migration:',
             data._hint,
           );
         }

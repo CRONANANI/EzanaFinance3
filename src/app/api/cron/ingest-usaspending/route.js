@@ -164,7 +164,7 @@ async function run(request) {
           funding_agency: r['Funding Agency'] || null,
           action_date,
           award_type: r['Award Type'] || null,
-          ticker: sym === '—' ? null : sym,
+          ticker: sym === '–' ? null : sym,
           fiscal_year: currentFederalFiscalYear(new Date(`${action_date}T00:00:00Z`)).fyEndYear,
           raw: r,
           synced_at: syncedAt,

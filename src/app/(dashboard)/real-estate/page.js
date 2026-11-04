@@ -28,7 +28,7 @@ const LISTINGS = [
   },
   {
     id: 're-002',
-    name: 'Austin Tech Campus — Phase II',
+    name: 'Austin Tech Campus: Phase II',
     location: 'Austin, TX',
     type: 'Commercial',
     image: null,
@@ -53,7 +53,7 @@ const LISTINGS = [
     funded: 81,
     sponsor: 'Coastal Ventures',
     description:
-      'Ground-floor retail + 120 residential units in South Beach. 81% funded — closing in 30 days.',
+      'Ground-floor retail + 120 residential units in South Beach. 81% funded, closing in 30 days.',
     holdPeriod: '6 years',
   },
   {
@@ -83,7 +83,7 @@ const LISTINGS = [
     funded: 92,
     sponsor: 'Music City Holdings',
     description:
-      '8-property STR portfolio near Broadway. 92% funded — generating cash flow from day one.',
+      '8-property STR portfolio near Broadway. 92% funded, generating cash flow from day one.',
     holdPeriod: '3 years',
   },
   {
@@ -328,7 +328,7 @@ export default function RealEstateMarketplacePage() {
             <i className="bi bi-houses" />
           </div>
           <h3 className="re-empty-title">No {filter} listings yet</h3>
-          <p className="re-empty-desc">Check back soon — new properties are added weekly.</p>
+          <p className="re-empty-desc">Check back soon, new properties are added weekly.</p>
         </div>
       )}
 

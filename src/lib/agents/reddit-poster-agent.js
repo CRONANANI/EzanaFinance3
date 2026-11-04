@@ -79,7 +79,7 @@ Workflow:
 
 Caption rules:
 - Title under 300 characters (Reddit truncates).
-- Lead with the data point, finding, or angle — not "Check out our article" or "New from Ezana Finance" or any promotional framing.
+- Lead with the data point, finding, or angle, not "Check out our article" or "New from Ezana Finance" or any promotional framing.
 - Adapt voice per subreddit. r/investing wants dry/data-driven. r/wallstreetbets wants punchy/irreverent. r/SecurityAnalysis wants academic.
 - Never use emojis unless voice_description explicitly says it.
 - Never include marketing language ("must read", "you won't believe", "game-changing").
@@ -146,7 +146,7 @@ export async function runRedditPosterAgent({ articleId, dryRun = false } = {}) {
     {
       role: 'user',
       content: dryRun
-        ? `DRY RUN — article_id="${articleId}". Load the article and target subreddits, generate the caption you WOULD post for each, but do NOT actually call submit_reddit_post. Describe each caption in your final summary.`
+        ? `DRY RUN, article_id="${articleId}". Load the article and target subreddits, generate the caption you WOULD post for each, but do NOT actually call submit_reddit_post. Describe each caption in your final summary.`
         : `New article published. article_id="${articleId}". Post to every pending subreddit. Start by loading the article and targets.`,
     },
   ];
@@ -233,7 +233,7 @@ export async function runRedditPosterAgent({ articleId, dryRun = false } = {}) {
   }
 
   if (summary.iterations >= MAX_ITERATIONS) {
-    summary.errors.push('Hit max iterations — some posts may not have been processed');
+    summary.errors.push('Hit max iterations, some posts may not have been processed');
   }
 
   return { success: true, ...summary };

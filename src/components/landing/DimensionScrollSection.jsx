@@ -202,7 +202,7 @@ export function DimensionScrollSection() {
               <h2 className="dscroll-title">Your portfolio, read seven ways.</h2>
               <p className="dscroll-sub">
                 One holding is never one story. Ezana reads every position against seven independent
-                dimensions of evidence — then weighs them against how you actually invest.
+                dimensions of evidence, then weighs them against how you actually invest.
               </p>
               <PortfolioSignalCard
                 activeLabel={unpinned ? null : activeDim.label}

@@ -12,6 +12,7 @@ import { revalidateTag } from 'next/cache';
 import { ECHO_HUB_TAG } from '@/lib/echo/hub-cache';
 import { logger } from '@/lib/logger';
 
+import { removeEmDashes } from '@/lib/text/em-dash';
 export const dynamic = 'force-dynamic';
 
 const admin = getLazyAdminClient();
@@ -131,10 +132,11 @@ export const POST = withApiGuard(
         author_id: user.id,
         author_name: partner.display_name || user.email?.split('@')[0] || 'Anonymous',
         author_avatar: partner.avatar_url || null,
-        article_title: title,
+        /* House style: no em dashes in published text (src/lib/text/em-dash.js). */
+        article_title: removeEmDashes(title),
         article_slug: slug,
-        article_excerpt: excerpt || articleBody.slice(0, 200) + '...',
-        article_body: articleBody,
+        article_excerpt: removeEmDashes(excerpt || articleBody.slice(0, 200) + '...'),
+        article_body: removeEmDashes(articleBody),
         article_category: category || 'Markets',
         cover_image_url: coverImageUrl || null,
         article_status: status,
@@ -199,6 +201,11 @@ export const PATCH = withApiGuard(
     if (body.seriesId !== undefined) updates.series_id = body.seriesId || null;
     if (body.seriesOrder !== undefined) {
       updates.series_order = Number.isInteger(body.seriesOrder) ? body.seriesOrder : null;
+    }
+
+    /* House style: no em dashes in published text (src/lib/text/em-dash.js). */
+    for (const k of ['article_title', 'article_excerpt', 'article_body']) {
+      if (typeof updates[k] === 'string') updates[k] = removeEmDashes(updates[k]);
     }
 
     // QA PAR-11: a published article whose title or body changes goes back

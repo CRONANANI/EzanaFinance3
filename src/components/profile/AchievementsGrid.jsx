@@ -104,7 +104,7 @@ export function AchievementsGrid({ positions = [], totalReturnPct = 0, variant =
           <Trophy size={14} className="ag-trophy-icon" />
           <h2 className="ag-title">Achievements</h2>
         </div>
-        <span className="ag-count">{loading ? '—' : `${earnedCount} of ${totalCount} earned`}</span>
+        <span className="ag-count">{loading ? '–' : `${earnedCount} of ${totalCount} earned`}</span>
       </div>
       <div className="ag-progress">
         <div className="ag-progress-fill" style={{ width: `${pct}%` }} aria-hidden />
@@ -113,7 +113,7 @@ export function AchievementsGrid({ positions = [], totalReturnPct = 0, variant =
       {loading ? (
         <div className="ag-empty">Loading achievements…</div>
       ) : sorted.length === 0 ? (
-        <div className="ag-empty">No achievements yet — start trading or take a course.</div>
+        <div className="ag-empty">No achievements yet, start trading or take a course.</div>
       ) : (
         <div className={gridClass}>
           {sorted.map((a) => {

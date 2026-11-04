@@ -14,29 +14,29 @@ export function StatsStrip({ stats }) {
       const d = new Date(iso);
       return d.toISOString().substr(11, 8);
     } catch {
-      return '—';
+      return '–';
     }
   };
 
   const cells = [
     {
       label: 'TOTAL TRADERS',
-      value: stats.totalTraders?.toLocaleString() ?? '—',
+      value: stats.totalTraders?.toLocaleString() ?? '–',
       delta: stats.totalTradersDelta > 0 ? `+${stats.totalTradersDelta}` : null,
     },
     {
       label: 'AVG ELO',
-      value: stats.avgElo?.toLocaleString() ?? '—',
+      value: stats.avgElo?.toLocaleString() ?? '–',
       delta: stats.avgEloDelta > 0 ? `+${stats.avgEloDelta}` : null,
     },
     {
       label: 'MEDIAN',
-      value: stats.medianElo?.toLocaleString() ?? '—',
+      value: stats.medianElo?.toLocaleString() ?? '–',
       delta: stats.medianEloDelta > 0 ? `+${stats.medianEloDelta}` : null,
     },
     {
       label: 'TOP 1%',
-      value: stats.top1PctThreshold?.toLocaleString() ?? '—',
+      value: stats.top1PctThreshold?.toLocaleString() ?? '–',
       delta: null,
     },
     {

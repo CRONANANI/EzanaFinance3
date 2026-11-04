@@ -28,7 +28,7 @@ export function BeginnerCommunityIntro() {
       <h3>New to the community?</h3>
       <p>
         Conviction scores reflect how strongly members stand behind an idea, weighted by their track
-        record. Start low-stakes: ask a question or introduce yourself — no need to post a trade
+        record. Start low-stakes: ask a question or introduce yourself, no need to post a trade
         thesis on day one.
       </p>
       <div className="beginner-edu-card__actions" style={{ marginBottom: 12 }}>
@@ -59,7 +59,7 @@ export function BeginnerCommunityIntro() {
             <Link href={m.href} className="beginner-edu-card__link">
               {m.name}
             </Link>
-            {' — '}
+            {' · '}
             {m.hint}
           </li>
         ))}

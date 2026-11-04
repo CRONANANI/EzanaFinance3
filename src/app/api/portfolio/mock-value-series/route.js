@@ -48,7 +48,7 @@ export const GET = withApiGuard(
       const portfolio = portfolioRow?.portfolio || null;
 
       if (trades.length === 0 && !portfolio) {
-        console.info('[mock-value-series] empty state — no trades, no portfolio', {
+        console.info('[mock-value-series] empty state, no trades, no portfolio', {
           user_id: user.id,
         });
         return NextResponse.json({
@@ -63,7 +63,7 @@ export const GET = withApiGuard(
         const createdAt = portfolioRow.updated_at || new Date().toISOString();
         const startISO = new Date(createdAt).toISOString().slice(0, 10);
         const endISO = new Date().toISOString().slice(0, 10);
-        console.info('[mock-value-series] flat line — has portfolio, no trades', {
+        console.info('[mock-value-series] flat line, has portfolio, no trades', {
           user_id: user.id,
           cash,
         });
@@ -145,8 +145,8 @@ export const GET = withApiGuard(
           source: replay.source,
           startedAt: replay.startedAt,
           note: isCustom
-            ? 'Not enough history in the selected window — showing all data since portfolio creation'
-            : `Less than ${range} of history available — showing all data since portfolio creation`,
+            ? 'Not enough history in the selected window, showing all data since portfolio creation'
+            : `Less than ${range} of history available, showing all data since portfolio creation`,
         });
       }
 
@@ -197,7 +197,7 @@ async function fetchCurrentPrices(tickers) {
 
   const apiKey = process.env.FMP_API_KEY || '';
   if (!apiKey) {
-    console.warn('[mock-value-series] FMP_API_KEY missing — cannot fetch current prices');
+    console.warn('[mock-value-series] FMP_API_KEY missing, cannot fetch current prices');
     return {};
   }
 

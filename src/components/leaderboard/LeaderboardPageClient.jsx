@@ -13,8 +13,8 @@ const PERIODS = [
 ];
 
 function formatChange(c) {
-  if (c == null || Number.isNaN(c)) return '—';
-  if (c === 0) return '—';
+  if (c == null || Number.isNaN(c)) return '–';
+  if (c === 0) return '–';
   if (c > 0) return <span className="text-emerald-600 dark:text-emerald-400">↑{c}</span>;
   return <span className="text-red-600 dark:text-red-400">↓{Math.abs(c)}</span>;
 }
@@ -173,7 +173,7 @@ export function LeaderboardPageClient() {
                       <Link
                         href={`/profile/${encodeURIComponent(r.username)}`}
                         className="inline-flex items-center gap-2 font-semibold text-gray-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400"
-                        title={`${r.username} — ${r.winRate.toFixed(1)}% win · ${r.totalTrades} trades`}
+                        title={`${r.username} · ${r.winRate.toFixed(1)}% win · ${r.totalTrades} trades`}
                       >
                         {r.rank === 1 && '👑 '}
                         {r.rank === 2 && '👑 '}

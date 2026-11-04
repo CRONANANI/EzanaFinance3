@@ -53,7 +53,7 @@ const PLANS = [
   {
     id: 'free',
     name: 'Free',
-    tagline: 'Explore the platform — no credit card needed.',
+    tagline: 'Explore the platform, no credit card needed.',
     monthlyPrice: 0,
     yearlyPrice: 0,
     highlight: false,
@@ -402,7 +402,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Can I cancel anytime?',
-    a: 'Yes. Cancel from your account settings at any time — during the trial, or after. If you cancel during a paid billing period, you keep access until the end of that period.',
+    a: 'Yes. Cancel from your account settings at any time, during the trial, or after. If you cancel during a paid billing period, you keep access until the end of that period.',
   },
   {
     q: 'Can I change plans later?',
@@ -650,7 +650,7 @@ export default function PricingPage() {
       } else if (res.status === 400 && data?.error?.toLowerCase().includes('invalid plan')) {
         userMessage = `This plan isn't available right now. Please pick another or contact support. (${planKey})`;
       } else if (res.status === 500 && data?.error?.toLowerCase().includes('configuration')) {
-        userMessage = 'Billing setup error — our team has been notified. Please contact support.';
+        userMessage = 'Billing setup error, our team has been notified. Please contact support.';
       } else if (data?.error) {
         // Surface server's actual error message — this is what makes the bug debuggable
         userMessage = `Checkout failed: ${data.error}`;
@@ -876,7 +876,7 @@ export default function PricingPage() {
             <span className="pricing-partner-eyebrow">Partner Program</span>
             <h3 className="pricing-partner-name">Partner</h3>
             <p className="pricing-partner-tagline">
-              For creators, traders, and financial professionals. Free to join — Ezana takes a
+              For creators, traders, and financial professionals. Free to join, Ezana takes a
               commission only when you earn, so your plan scales with what you make.
             </p>
           </div>

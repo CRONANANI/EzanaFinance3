@@ -56,11 +56,11 @@ export function normalizeAlphaVantageMover(m) {
     change: pct >= 0 ? `+${pct.toFixed(2)}%` : `${pct.toFixed(2)}%`,
     dollarChange: dollarChange >= 0 ? `+${dollarChange.toFixed(2)}` : dollarChange.toFixed(2),
     volume:
-      m.volume != null && m.volume !== '' ? formatVolume(String(m.volume).replace(/,/g, '')) : '—',
+      m.volume != null && m.volume !== '' ? formatVolume(String(m.volume).replace(/,/g, '')) : '–',
     positive: pct >= 0,
     yearHigh: null,
     yearLow: null,
-    range52w: '—',
+    range52w: '–',
   };
 }
 
@@ -76,12 +76,12 @@ function normalizeMover(m) {
     price: Number(m.price ?? 0),
     change: pct >= 0 ? `+${pct.toFixed(2)}%` : `${pct.toFixed(2)}%`,
     dollarChange: dollarChange >= 0 ? `+${dollarChange.toFixed(2)}` : dollarChange.toFixed(2),
-    volume: m.volume ? formatVolume(m.volume) : '—',
+    volume: m.volume ? formatVolume(m.volume) : '–',
     positive: pct >= 0,
     yearHigh: yearHigh > 0 ? yearHigh : null,
     yearLow: yearLow > 0 ? yearLow : null,
     range52w:
-      yearHigh > 0 && yearLow > 0 ? `$${formatPrice(yearLow)} – $${formatPrice(yearHigh)}` : '—',
+      yearHigh > 0 && yearLow > 0 ? `$${formatPrice(yearLow)} – $${formatPrice(yearHigh)}` : '–',
   };
 }
 

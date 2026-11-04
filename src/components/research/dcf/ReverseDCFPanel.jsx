@@ -69,7 +69,7 @@ async function solveImpliedGrowth(symbol, baseAssumptions, targetPrice, onProgre
       finalFairValue: fvAtMax,
       history,
       verdict: 'unjustifiable',
-      message: `Even at ${(hi * 100).toFixed(0)}% revenue growth, the DCF fair value of $${fvAtMax.toFixed(2)} is below the market price of $${targetPrice.toFixed(2)}. The market is pricing in growth assumptions outside the typical range — the stock may be significantly overvalued.`,
+      message: `Even at ${(hi * 100).toFixed(0)}% revenue growth, the DCF fair value of $${fvAtMax.toFixed(2)} is below the market price of $${targetPrice.toFixed(2)}. The market is pricing in growth assumptions outside the typical range, the stock may be significantly overvalued.`,
     };
   }
 
@@ -88,7 +88,7 @@ async function solveImpliedGrowth(symbol, baseAssumptions, targetPrice, onProgre
       finalFairValue: fvAtMin,
       history,
       verdict: 'undervalued',
-      message: `Even with ${(lo * 100).toFixed(0)}% revenue decline, the DCF fair value of $${fvAtMin.toFixed(2)} exceeds the market price of $${targetPrice.toFixed(2)}. The market is pricing in significantly more pessimism than the model — the stock may be significantly undervalued.`,
+      message: `Even with ${(lo * 100).toFixed(0)}% revenue decline, the DCF fair value of $${fvAtMin.toFixed(2)} exceeds the market price of $${targetPrice.toFixed(2)}. The market is pricing in significantly more pessimism than the model, the stock may be significantly undervalued.`,
     };
   }
 
@@ -143,7 +143,7 @@ export default function ReverseDCFPanel({ symbol, baseAssumptions, livePrice }) 
 
   const handleRun = useCallback(async () => {
     if (!symbol || !livePrice || livePrice <= 0) {
-      setError('No live price available — try refreshing or check the ticker.');
+      setError('No live price available, try refreshing or check the ticker.');
       return;
     }
     setRunning(true);
@@ -181,7 +181,7 @@ export default function ReverseDCFPanel({ symbol, baseAssumptions, livePrice }) 
         <div className="rdcf-input-card">
           <div className="rdcf-input-label">Market Price (Target)</div>
           <div className="rdcf-input-value">
-            {livePrice ? `$${livePrice.toFixed(2)}` : '—'}
+            {livePrice ? `$${livePrice.toFixed(2)}` : '–'}
           </div>
           <div className="rdcf-input-hint">From live quote</div>
         </div>
@@ -333,7 +333,7 @@ function ResultVerdict({ result, currentGrowth }) {
         </div>
         <p>
           The market is pricing in <strong>{(result.impliedGrowth * 100).toFixed(1)}%</strong> annual
-          revenue growth — {deltaPp.toFixed(1)} percentage points HIGHER than your forecast. If you
+          revenue growth: {deltaPp.toFixed(1)} percentage points HIGHER than your forecast. If you
           believe growth will only hit {(currentGrowth * 100).toFixed(1)}%, the stock is overvalued
           on your assumptions.
         </p>
@@ -348,7 +348,7 @@ function ResultVerdict({ result, currentGrowth }) {
       </div>
       <p>
         The market is pricing in <strong>{(result.impliedGrowth * 100).toFixed(1)}%</strong> annual
-        revenue growth — {Math.abs(deltaPp).toFixed(1)} percentage points LOWER than your forecast.
+        revenue growth: {Math.abs(deltaPp).toFixed(1)} percentage points LOWER than your forecast.
         If your {(currentGrowth * 100).toFixed(1)}% growth view is correct, the stock is undervalued.
       </p>
     </div>

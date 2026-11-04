@@ -79,16 +79,16 @@ export function EarningsAnalysisCard({ symbol, onClose }) {
   const guidanceLabel =
     {
       raised: '▲ Raised',
-      reiterated: '— Reiterated',
+      reiterated: 'Reiterated',
       lowered: '▼ Lowered',
-    }[analysis.guidanceDirection] || '—';
+    }[analysis.guidanceDirection] || '–';
 
   const variables = [
-    { label: 'Last EPS', value: latestEarnings?.epsActual ?? '—', format: 'currency' },
-    { label: 'Consensus', value: latestEarnings?.epsEstimated ?? '—', format: 'currency' },
+    { label: 'Last EPS', value: latestEarnings?.epsActual ?? '–', format: 'currency' },
+    { label: 'Consensus', value: latestEarnings?.epsEstimated ?? '–', format: 'currency' },
     {
       label: 'Surprise',
-      value: surpriseDecimal != null ? surpriseDecimal : '—',
+      value: surpriseDecimal != null ? surpriseDecimal : '–',
       format: surpriseDecimal != null ? 'percent' : undefined,
     },
     { label: 'Guidance', value: guidanceLabel },
@@ -320,10 +320,10 @@ export function EarningsAnalysisCard({ symbol, onClose }) {
       <div className="rounded-md bg-amber-500/5 px-3 py-2 text-[11px] text-muted-foreground leading-relaxed">
         <span className="font-medium text-amber-800 dark:text-amber-200">Signal strength: </span>
         {synthesis.confidence === 'low'
-          ? 'Low — few clear transcript or earnings cues; treat as weak context only.'
+          ? 'Low, few clear transcript or earnings cues; treat as weak context only.'
           : synthesis.confidence === 'moderate'
-            ? 'Moderate — several cues align; still one input among many.'
-            : 'Higher — multiple cues point the same way; still not deterministic.'}
+            ? 'Moderate, several cues align; still one input among many.'
+            : 'Higher, multiple cues point the same way; still not deterministic.'}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

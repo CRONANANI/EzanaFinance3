@@ -82,7 +82,7 @@ export function YourCommunityCard({ skillTier, convictionWins, followers }) {
       >
         {[
           { label: 'Streak', value: streak, suffix: 'd' },
-          { label: 'Followers', value: followers ?? '—' },
+          { label: 'Followers', value: followers ?? '–' },
           { label: 'Conviction wins', value: convictionWins ?? 0 },
         ].map((stat) => (
           <div

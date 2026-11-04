@@ -383,8 +383,8 @@ function AddPortfolioModalInner({ open, onClose, onConnected }) {
                 </div>
                 <p className="apm-disc-block-text">
                   {chosenProvider === 'snaptrade'
-                    ? 'We use SnapTrade — an SOC 2 Type II certified connectivity provider — to handle the OAuth handshake. Ezana never sees your login credentials.'
-                    : 'We use Plaid — used by 8,000+ financial apps including Venmo and Robinhood — to securely connect your account. Ezana never sees your login credentials.'}
+                    ? 'We use SnapTrade, an SOC 2 Type II certified connectivity provider, to handle the OAuth handshake. Ezana never sees your login credentials.'
+                    : 'We use Plaid, used by 8,000+ financial apps including Venmo and Robinhood, to securely connect your account. Ezana never sees your login credentials.'}
                 </p>
               </div>
             </div>
@@ -447,7 +447,7 @@ function AccessLevelBlock({ provider, selected }) {
         <p className="apm-disc-block-text">
           {trading
             ? `${selected.displayName} via SnapTrade supports both portfolio sync and order placement. You can place trades from Ezana once connected.`
-            : `${selected.displayName} via ${provider === 'snaptrade' ? 'SnapTrade' : 'Plaid'} connects in read-only mode. We can show your holdings, balances, and recent activity — but cannot place trades from Ezana.`}
+            : `${selected.displayName} via ${provider === 'snaptrade' ? 'SnapTrade' : 'Plaid'} connects in read-only mode. We can show your holdings, balances, and recent activity, but cannot place trades from Ezana.`}
         </p>
       </div>
     </div>
@@ -467,7 +467,7 @@ function formatSnapTradeError(data, selected) {
   }
   if (code === 'rate_limited') return 'Too many requests. Wait a moment and try again.';
   if (code === 'snaptrade_not_configured') {
-    return 'Brokerage connections are not configured. Contact support — reference: SNAPTRADE_CREDS_MISSING.';
+    return 'Brokerage connections are not configured. Contact support, reference: SNAPTRADE_CREDS_MISSING.';
   }
   if (code === 'network_unreachable') {
     return detail

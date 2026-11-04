@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Congressional trading data | Ezana',
   description:
-    'Every stock transaction disclosed by members of Congress under the STOCK Act — normalized and enriched with party, chamber, and excess-return context.',
+    'Every stock transaction disclosed by members of Congress under the STOCK Act, normalized and enriched with party, chamber, and excess-return context.',
 };
 
 const DEV_SAMPLE_ENABLED =

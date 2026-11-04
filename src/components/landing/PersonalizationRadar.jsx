@@ -467,7 +467,7 @@ export default function PersonalizationRadar({ sourceDetails }) {
                     transform={`translate(${ix.toFixed(2)} ${iy.toFixed(2)})`}
                     role="button"
                     tabIndex={0}
-                    aria-label={`${d.nm} — show data sources`}
+                    aria-label={`${d.nm}, show data sources`}
                     aria-expanded={isActive}
                     style={{ cursor: 'pointer' }}
                     onMouseEnter={() => setHoveredDim(i)}

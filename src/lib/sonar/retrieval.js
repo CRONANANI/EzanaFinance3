@@ -20,6 +20,9 @@ export const DATASET_TO_CORPUS = {
   'org-internal': 'research_notes',
   sanctions: 'sanctions',
   macro: 'macro',
+  /* Not an orchestrator retriever: lobbying questions read the LDA leaders
+     RPC directly (landing pipeline and research engine). */
+  lobbying: 'lobbying',
   /* Not an orchestrator retriever: the landing pipeline runs the IPO filings
      source itself once the ping has resolved to a symbol. */
   'ipo-filings': 'ipo',

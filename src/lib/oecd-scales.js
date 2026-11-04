@@ -221,13 +221,13 @@ export function rankingBarGeometry(value, { signed = false, clamp = null, maxAbs
 export function scalingNote(series) {
   if (!series) return '';
   if (series.clamp != null) {
-    return `Bars are capped at ${series.clamp}${unitSuffix(series)} — values beyond that are marked ▸ off-scale so one outlier doesn't flatten the rest.`;
+    return `Bars are capped at ${series.clamp}${unitSuffix(series)}, values beyond that are marked ▸ off-scale so one outlier doesn't flatten the rest.`;
   }
   if (series.signed) {
-    return 'Diverging scale around zero — surpluses extend right (emerald), deficits left (red).';
+    return 'Diverging scale around zero, surpluses extend right (emerald), deficits left (red).';
   }
   if (series.skew) {
-    return 'Highly concentrated distribution — a few economies dominate, so most bars sit near the low end by design.';
+    return 'Highly concentrated distribution, a few economies dominate, so most bars sit near the low end by design.';
   }
   return 'Linear scale, anchored at zero.';
 }
@@ -242,7 +242,7 @@ function unitSuffix(series) {
  *  values. Returns '—' for null/undefined. */
 export function formatValue(value, series) {
   const v = toNum(value);
-  if (v == null) return '—';
+  if (v == null) return '–';
   const decimals = series?.decimals ?? 1;
   const txt = v.toFixed(decimals);
   if (series?.signed && v > 0) return `+${txt}`;

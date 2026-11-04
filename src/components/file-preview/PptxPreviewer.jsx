@@ -25,7 +25,7 @@ export function PptxPreviewer({ file }) {
     return (
       <div style={{ padding: '3rem 2rem', textAlign: 'center', color: '#8b949e' }}>
         <i className="bi bi-file-earmark-slides" style={{ fontSize: '3rem', color: '#ea580c', display: 'block', marginBottom: '0.75rem' }} />
-        <p style={{ color: '#c9d1d9', marginBottom: '0.5rem' }}>Demo file — slides not generated</p>
+        <p style={{ color: '#c9d1d9', marginBottom: '0.5rem' }}>Demo file, slides not generated</p>
         <p style={{ fontSize: '0.75rem', color: '#6b7280', maxWidth: 360, margin: '0 auto' }}>
           Real uploads are converted to PNG slide images server-side. Each slide will render as a navigable image with
           prev/next + thumbnail strip.

@@ -94,7 +94,7 @@ function normalizeTrade(t, _chamberFallback, idx = 0) {
   }
 
   const amountNum = parseTradeSizeMidpoint(t.Trade_Size_USD);
-  const amountDisplay = t.Trade_Size_USD || '—';
+  const amountDisplay = t.Trade_Size_USD || '–';
 
   const excessReturn =
     t.excess_return != null && t.excess_return !== ''
@@ -110,8 +110,8 @@ function normalizeTrade(t, _chamberFallback, idx = 0) {
     id: `${chamber}-${sym}-${rawDate || idx}-${name}-${idx}`,
     type,
     ticker: sym,
-    company: t.Company || sym || '—',
-    exchange: sym ? `${sym}:US` : '—',
+    company: t.Company || sym || '–',
+    exchange: sym ? `${sym}:US` : '–',
     member: name,
     party,
     chamber,
@@ -143,7 +143,7 @@ function parseLobbyingAmount(raw) {
 }
 
 function formatCompactUSD(n) {
-  if (!Number.isFinite(n) || n === 0) return '—';
+  if (!Number.isFinite(n) || n === 0) return '–';
   if (n >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
   if (n >= 1e6) return `$${(n / 1e6).toFixed(1)}M`;
   if (n >= 1e3) return `$${(n / 1e3).toFixed(0)}K`;
@@ -151,9 +151,9 @@ function formatCompactUSD(n) {
 }
 
 function formatShortDate(iso) {
-  if (!iso) return '—';
+  if (!iso) return '–';
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
+  if (Number.isNaN(d.getTime())) return '–';
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
@@ -186,11 +186,11 @@ function mapTopPerformerToFeatured(p, idx) {
     name,
     party,
     chamber,
-    state: '—',
+    state: '–',
     initials,
     trades: p.num_trades ?? 0,
-    filings: '—',
-    issuers: '—',
+    filings: '–',
+    issuers: '–',
     volume,
     seed,
   };
@@ -336,10 +336,10 @@ function InsideTheCapitolContent() {
   const [sec13fData, setSec13fData] = useState([]);
   const [sec13fLoading, setSec13fLoading] = useState(true);
   const [statsData, setStatsData] = useState({
-    trades: { value: '—', change: 'Loading...', changeType: 'neutral' },
-    volume: { value: '—', change: 'Loading...', changeType: 'neutral' },
-    traders: { value: '—', change: 'of 535 members', changeType: 'neutral' },
-    alerts: { value: '—', change: 'Last 24 hours', changeType: 'neutral' },
+    trades: { value: '–', change: 'Loading...', changeType: 'neutral' },
+    volume: { value: '–', change: 'Loading...', changeType: 'neutral' },
+    traders: { value: '–', change: 'of 535 members', changeType: 'neutral' },
+    alerts: { value: '–', change: 'Last 24 hours', changeType: 'neutral' },
   });
   const [featuredPoliticians, setFeaturedPoliticians] = useState([]);
   const [featuredLoading, setFeaturedLoading] = useState(true);
@@ -357,10 +357,10 @@ function InsideTheCapitolContent() {
           console.error('[inside-the-capitol] congress-trades HTTP', res.status);
           setLatestTrades([]);
           setStatsData({
-            trades: { value: '—', change: 'Could not load', changeType: 'neutral' },
-            volume: { value: '—', change: '—', changeType: 'neutral' },
-            traders: { value: '—', change: '—', changeType: 'neutral' },
-            alerts: { value: '—', change: '—', changeType: 'neutral' },
+            trades: { value: '–', change: 'Could not load', changeType: 'neutral' },
+            volume: { value: '–', change: '–', changeType: 'neutral' },
+            traders: { value: '–', change: '–', changeType: 'neutral' },
+            alerts: { value: '–', change: '–', changeType: 'neutral' },
           });
           return;
         }
@@ -422,10 +422,10 @@ function InsideTheCapitolContent() {
         console.error('[inside-the-capitol] fetchTrades failed:', err);
         setLatestTrades([]);
         setStatsData({
-          trades: { value: '—', change: 'Could not load', changeType: 'neutral' },
-          volume: { value: '—', change: '—', changeType: 'neutral' },
-          traders: { value: '—', change: '—', changeType: 'neutral' },
-          alerts: { value: '—', change: '—', changeType: 'neutral' },
+          trades: { value: '–', change: 'Could not load', changeType: 'neutral' },
+          volume: { value: '–', change: '–', changeType: 'neutral' },
+          traders: { value: '–', change: '–', changeType: 'neutral' },
+          alerts: { value: '–', change: '–', changeType: 'neutral' },
         });
       } finally {
         setTradesLoading(false);
@@ -568,7 +568,7 @@ function InsideTheCapitolContent() {
           buy: buyPct,
           sell: 100 - buyPct,
           trades: total,
-          vol: '—',
+          vol: '–',
         };
       })
       .filter(Boolean)
@@ -653,7 +653,7 @@ function InsideTheCapitolContent() {
                 <i className={`bi ${s.icon}`} />
               </div>
               <div>
-                <div className="itc-stat-val">{live.value ?? '—'}</div>
+                <div className="itc-stat-val">{live.value ?? '–'}</div>
                 <div className="itc-stat-lbl">{s.label}</div>
                 <div className={`itc-stat-chg ${live.changeType ?? 'neutral'}`}>
                   {live.change ?? ''}
@@ -804,7 +804,7 @@ function InsideTheCapitolContent() {
                       <span className="itc-tr-mem-name">{t.member}</span>
                       <span className="itc-tr-mem-meta">
                         <span className={`itc-dot ${t.party.toLowerCase()}`} />
-                        {t.party} | {t.chamber} | {t.state || '—'}
+                        {t.party} | {t.chamber} | {t.state || '–'}
                       </span>
                     </Link>
                     <div className="itc-tr-right">
@@ -1066,7 +1066,7 @@ function InsideTheCapitolContent() {
                   return (
                     <div key={`${l.Client}-${l.Registrant}-${l.Date}-${i}`} className="itc-lob-row">
                       <div className="itc-lob-left">
-                        <span className="itc-lob-client">{l.Client || '—'}</span>
+                        <span className="itc-lob-client">{l.Client || '–'}</span>
                         <span className="itc-lob-meta">
                           via {l.Registrant || 'Unknown'} ·{' '}
                           {l.Issue || l.Specific_Issue || 'General'}
@@ -1141,7 +1141,7 @@ function InsideTheCapitolContent() {
                       <div className="itc-13f-left">
                         <span className="itc-13f-fund">{fundName}</span>
                         <span className="itc-13f-meta">
-                          <span className="itc-13f-ticker">{f.Ticker || '—'}</span>
+                          <span className="itc-13f-ticker">{f.Ticker || '–'}</span>
                           {f.ReportPeriod && ` · ${formatShortDate(f.ReportPeriod)}`}
                         </span>
                       </div>
@@ -1258,7 +1258,7 @@ function InsideTheCapitolContent() {
                       <Link href={`/company-research?ticker=${b.ticker}`} className="itc-bipart-tk">
                         {b.ticker}
                       </Link>
-                      <span className="itc-bipart-co"> — {b.name}</span>
+                      <span className="itc-bipart-co">: {b.name}</span>
                     </div>
                     <p className="itc-bipart-meta">
                       <span className="itc-bipart-party dem">
@@ -1314,7 +1314,7 @@ function InsideTheCapitolContent() {
                       <Link href={`/company-research?ticker=${e.ticker}`} className="itc-earn-tk">
                         {e.ticker}
                       </Link>
-                      <span className="itc-earn-date"> — Earnings: {e.earnDate}</span>
+                      <span className="itc-earn-date"> Earnings: {e.earnDate}</span>
                     </div>
                     <p className="itc-earn-line">
                       <Link href={`/inside-the-capitol/${e.slug}`}>{e.member}</Link> {e.side}{' '}

@@ -419,7 +419,7 @@ export default function HomeTerminalPage() {
                       </>
                     ) : (
                       <span className="t-dim" style={{ fontSize: 10 }}>
-                        {marketLoading ? '...' : '—'}
+                        {marketLoading ? '...' : '–'}
                       </span>
                     )}
                   </div>
@@ -580,7 +580,7 @@ export default function HomeTerminalPage() {
               />
               <RiskMetric
                 label="Largest"
-                value={enrichedHoldings.length > 0 ? enrichedHoldings[0].ticker : '—'}
+                value={enrichedHoldings.length > 0 ? enrichedHoldings[0].ticker : '–'}
                 sub={
                   enrichedHoldings.length > 0
                     ? `$${enrichedHoldings[0].value.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
@@ -694,11 +694,11 @@ export default function HomeTerminalPage() {
                     <span className="t-mover-ticker" style={{ minWidth: 60 }}>
                       {idx.name}
                     </span>
-                    <span className="t-mover-price">{q ? q.price.toFixed(2) : '—'}</span>
+                    <span className="t-mover-price">{q ? q.price.toFixed(2) : '–'}</span>
                     <span
                       className={`t-mover-change ${q && q.changePercent >= 0 ? 't-green' : 't-red'}`}
                     >
-                      {q ? `${q.changePercent >= 0 ? '+' : ''}${q.changePercent.toFixed(2)}%` : '—'}
+                      {q ? `${q.changePercent >= 0 ? '+' : ''}${q.changePercent.toFixed(2)}%` : '–'}
                     </span>
                   </div>
                 );
@@ -759,7 +759,7 @@ export default function HomeTerminalPage() {
                     <span key={`a-${i}`} className="t-news-item">
                       <strong>{h.ticker}</strong> ${h.price.toFixed(2)} (
                       {h.pctChange >= 0 ? '+' : ''}
-                      {h.pctChange.toFixed(2)}%) — {h.shares} shares worth $
+                      {h.pctChange.toFixed(2)}%): {h.shares} shares worth $
                       {h.value.toLocaleString('en-US', { maximumFractionDigits: 0 })}
                     </span>,
                     <span key={`b-${i}`} className="t-news-item">

@@ -22,10 +22,10 @@ import { dimensionIdsForFocus } from '@/lib/empire-dimension-groups';
 const STALE_YEARS = 2;
 
 function fmtScore(v) {
-  return v == null ? '—' : Math.round(v).toString();
+  return v == null ? '–' : Math.round(v).toString();
 }
 function fmtMetric(v, unit) {
-  if (v == null) return '—';
+  if (v == null) return '–';
   if (unit === 'US$') {
     const a = Math.abs(v);
     if (a >= 1e12) return `${(v / 1e12).toFixed(1)}T`;
@@ -251,7 +251,7 @@ export default function OecdCompare({
                           r.meta.stale?.[iso] ? 'is-stale' : ''
                         }`}
                       >
-                        <span className="oecd-compare-val">{v == null ? '—' : r.fmt(v)}</span>
+                        <span className="oecd-compare-val">{v == null ? '–' : r.fmt(v)}</span>
                         {rk ? (
                           <span className="oecd-compare-rank">
                             #{rk.rank}/{rk.n}
@@ -264,7 +264,7 @@ export default function OecdCompare({
                     <td
                       className={`oecd-compare-cell oecd-compare-delta oecd-num ${delta?.tone ? `is-${delta.tone}` : ''}`}
                     >
-                      {delta ? delta.text : '—'}
+                      {delta ? delta.text : '–'}
                     </td>
                   ) : null}
                 </tr>
@@ -282,7 +282,7 @@ export default function OecdCompare({
           </>
         ) : (
           <>
-            Rank chips read #n/N where #1 is the best outcome — lowest for unemployment, inflation,
+            Rank chips read #n/N where #1 is the best outcome, lowest for unemployment, inflation,
             rates and debt. N is the number of countries reporting that indicator.
           </>
         )}

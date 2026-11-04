@@ -83,7 +83,7 @@ const IMPROVEMENT_PATHS = [
 ];
 
 function formatRating(n) {
-  if (typeof n !== 'number' || !Number.isFinite(n)) return '—';
+  if (typeof n !== 'number' || !Number.isFinite(n)) return '–';
   return n.toLocaleString('en-US');
 }
 
@@ -108,7 +108,7 @@ function HistorySparkline({ transactions, lineColor }) {
   if (data.length < 2) {
     return (
       <div className="pec-spark-empty">
-        Not enough history yet — keep playing to build a track record.
+        Not enough history yet, keep playing to build a track record.
       </div>
     );
   }

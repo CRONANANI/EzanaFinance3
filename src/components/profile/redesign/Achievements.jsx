@@ -8,7 +8,7 @@ export function Achievements({ achievements = [] }) {
   while (safeList.length < 9) {
     safeList.push({
       key: `placeholder-${safeList.length}`,
-      name: '—',
+      name: '–',
       category: 'TRADING',
       iconGlyph: '·',
       earned: false,

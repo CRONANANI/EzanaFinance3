@@ -30,7 +30,7 @@ export async function generateMetadata({ params }) {
   const admin = getAdminClient();
   const { data } = await admin.from('pitch_competitions').select('name, public_blurb, is_public').eq('slug', slug).maybeSingle();
   if (!data || !data.is_public) return { title: 'Competition' };
-  return { title: `${data.name} — Pitch Competition`, description: data.public_blurb || undefined };
+  return { title: `${data.name}, Pitch Competition`, description: data.public_blurb || undefined };
 }
 
 export default async function PublicCompetitionPage({ params }) {
@@ -70,7 +70,7 @@ export default async function PublicCompetitionPage({ params }) {
                 {cta.label}
               </Link>
             ) : (
-              <span className="pubx-invite">{cta.label} — contact the host council for an invitation.</span>
+              <span className="pubx-invite">{cta.label}, contact the host council for an invitation.</span>
             )}
           </div>
         </header>

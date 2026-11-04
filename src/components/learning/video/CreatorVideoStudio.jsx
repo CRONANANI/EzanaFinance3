@@ -99,7 +99,7 @@ export function CreatorVideoStudio() {
           <p style={{ margin: '6px 0 0' }}>
             Add a Mux account and set <code>MUX_TOKEN_ID</code>, <code>MUX_TOKEN_SECRET</code> (and{' '}
             <code>MUX_WEBHOOK_SECRET</code> for the webhook at <code>/api/mux/webhook</code>) in the
-            environment. Uploading and playback activate automatically once those are present — no
+            environment. Uploading and playback activate automatically once those are present, no
             code changes needed.
           </p>
         </div>
@@ -162,7 +162,7 @@ export function CreatorVideoStudio() {
                 ) : (
                   <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
                     {v.status === 'errored'
-                      ? 'Processing failed — try re-uploading.'
+                      ? 'Processing failed, try re-uploading.'
                       : 'Processing… this can take a minute after upload.'}
                   </div>
                 )}

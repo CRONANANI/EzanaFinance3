@@ -42,7 +42,7 @@ export const POST = withApiGuard(
         skipped: 0,
         totalEloAwarded: 0,
         errors: [],
-        message: 'userIds was empty — nothing to do',
+        message: 'userIds was empty, nothing to do',
       });
     }
 

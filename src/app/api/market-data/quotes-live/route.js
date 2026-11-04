@@ -165,7 +165,7 @@ async function handleGet() {
         default:
           break;
       }
-      if (!result) return { symbol: item.display, price: '—', change: 0 };
+      if (!result) return { symbol: item.display, price: '–', change: 0 };
       return {
         symbol: item.display,
         price: result.price.toLocaleString('en-US', {
@@ -178,10 +178,10 @@ async function handleGet() {
   );
 
   const quotes = results.map((r) =>
-    r.status === 'fulfilled' ? r.value : { symbol: '—', price: '—', change: 0 },
+    r.status === 'fulfilled' ? r.value : { symbol: '–', price: '–', change: 0 },
   );
 
-  const anyPrice = quotes.some((q) => q.price && q.price !== '—');
+  const anyPrice = quotes.some((q) => q.price && q.price !== '–');
   if (!anyPrice) {
     return NextResponse.json(
       { quotes: [], fallback: true },

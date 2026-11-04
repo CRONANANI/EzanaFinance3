@@ -58,7 +58,7 @@ export function BetaLockGate({ children }) {
           <div className="beta-lock-meta">
             <p>
               You&apos;re currently using <strong>Ezana Finance Beta v0</strong>. We&apos;ve
-              launched with our core features — portfolio tracking, community, learning, and our
+              launched with our core features, portfolio tracking, community, learning, and our
               most-loved research tools. The remaining advanced features are being polished for our
               v1.0 release.
             </p>

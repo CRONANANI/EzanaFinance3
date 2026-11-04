@@ -119,7 +119,7 @@ async function semanticPass(admin, query, ctx, limit, threshold) {
     match_count: limit * 2,
   });
   if (error) {
-    warnOnce('chunk-semantic', '[echo] match_echo_chunks failed — article-level fallback', error.message);
+    warnOnce('chunk-semantic', '[echo] match_echo_chunks failed, article-level fallback', error.message);
     return semanticArticlePass(admin, vec, limit, threshold);
   }
   // Empty (not an error) means the chunk index isn't populated yet — e.g. between
@@ -178,7 +178,7 @@ async function lexicalPass(admin, query, limit) {
     .textSearch('tsv', query, { type: 'websearch', config: 'english' })
     .limit(limit * 2);
   if (error) {
-    warnOnce('chunk-lexical', '[echo] chunk lexical failed — article-level fallback', error.message);
+    warnOnce('chunk-lexical', '[echo] chunk lexical failed, article-level fallback', error.message);
     return lexicalArticlePass(admin, query, limit);
   }
   // Empty chunk-lexical while the chunk index is unpopulated → article-level tsv,

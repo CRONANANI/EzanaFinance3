@@ -177,7 +177,7 @@ export function CookieConsentBanner() {
                 <label className="cookie-banner-cat-row">
                   <input type="checkbox" checked disabled />
                   <span>
-                    <strong>Necessary</strong> — required for the site to function (auth, security).
+                    <strong>Necessary</strong>, required for the site to function (auth, security).
                     Always on.
                   </span>
                 </label>
@@ -190,7 +190,7 @@ export function CookieConsentBanner() {
                     onChange={(e) => setPrefs((p) => ({ ...p, preferences: e.target.checked }))}
                   />
                   <span>
-                    <strong>Preferences</strong> — remember UI choices like theme and dashboard
+                    <strong>Preferences</strong>, remember UI choices like theme and dashboard
                     layout across sessions.
                   </span>
                 </label>
@@ -203,7 +203,7 @@ export function CookieConsentBanner() {
                     onChange={(e) => setPrefs((p) => ({ ...p, analytics: e.target.checked }))}
                   />
                   <span>
-                    <strong>Analytics</strong> — anonymous product usage so we know what to improve.
+                    <strong>Analytics</strong>, anonymous product usage so we know what to improve.
                   </span>
                 </label>
               </li>
@@ -215,7 +215,7 @@ export function CookieConsentBanner() {
                     onChange={(e) => setPrefs((p) => ({ ...p, marketing: e.target.checked }))}
                   />
                   <span>
-                    <strong>Marketing</strong> — help us measure campaigns. Off by default.
+                    <strong>Marketing</strong>, help us measure campaigns. Off by default.
                   </span>
                 </label>
               </li>

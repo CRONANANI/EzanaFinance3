@@ -122,7 +122,7 @@ export default function TradingPage() {
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.25rem' }}>
               <Link href="/trading/mock" className="trd-mock-btn">
                 <i className="bi bi-controller" />
-                Try Mock Trading — $100,000 Paper Account
+                Try Mock Trading: $100,000 Paper Account
               </Link>
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function TradingPage() {
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.25rem' }}>
           <Link href="/trading/mock" className="trd-mock-btn">
             <i className="bi bi-controller" />
-            Try Mock Trading — $100,000 Paper Account
+            Try Mock Trading: $100,000 Paper Account
           </Link>
         </div>
       </section>
@@ -196,7 +196,7 @@ export default function TradingPage() {
           <p className="trd-feature-p">
             Set up recurring investments on your own terms. Choose daily, weekly, or monthly
             frequency. Pick specific stocks, a custom portfolio mix, or mirror a copy-trade strategy
-            — all running automatically based on your parameters.
+            all running automatically based on your parameters.
           </p>
         </div>
 

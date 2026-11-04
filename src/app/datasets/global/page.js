@@ -7,7 +7,7 @@ import { WEALTH_SAMPLE, MACRO_SNAPSHOT } from './global-sample';
 
 const config = {
   title: 'Global, macro & wealth data',
-  lead: 'The wider lens — macro indicators, global markets, and billionaire wealth tracking — connecting company-level signals to the forces moving whole economies.',
+  lead: 'The wider lens, macro indicators, global markets, and billionaire wealth tracking, connecting company-level signals to the forces moving whole economies.',
   searches: [
     {
       id: 'name',
@@ -28,7 +28,7 @@ const config = {
     badge: 'New',
     icon: Landmark,
     title: 'Macro snapshot',
-    desc: 'Headline economic indicators that frame the backdrop for every position — growth, inflation, and labor across major economies.',
+    desc: 'Headline economic indicators that frame the backdrop for every position, growth, inflation, and labor across major economies.',
     items: MACRO_SNAPSHOT,
   },
   table: {
@@ -48,7 +48,7 @@ const config = {
     ],
     rows: WEALTH_SAMPLE,
   },
-  sampleNote: 'Sample of tracked wealth — full live dataset available in the app.',
+  sampleNote: 'Sample of tracked wealth, full live dataset available in the app.',
   source: {
     title: 'How we source it',
     body: [

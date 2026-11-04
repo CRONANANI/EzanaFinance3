@@ -99,7 +99,7 @@ export async function retrieve(query, ctx = {}, opts = {}) {
     return {
       corpus,
       id: String(r.generated_award_id),
-      title: `${r.recipient_name}${amount ? ` — ${amount}` : ''}`,
+      title: `${r.recipient_name}${amount ? `: ${amount}` : ''}`,
       snippet: [
         r.recipient_name,
         amount ? `awarded ${amount}` : 'awarded a contract',

@@ -82,8 +82,7 @@ export default function DashboardLoading() {
           height: 180px;
         }
         @media (max-width: 1024px) {
-          .dl-skel-row,
-          .dl-skel-row-3 {
+          .dl-skel-row.dl-skel-row-3 {
             grid-template-columns: 1fr;
           }
         }
@@ -92,7 +91,7 @@ export default function DashboardLoading() {
           100% { background-position: -200% 0; }
         }
 
-        /* Light-mode skeleton — softer grays on white (--nav-bg-solid in light). */
+        /* Light-mode skeleton, softer grays on white (--nav-bg-solid in light). */
         body.light-mode .dl-skel {
           background: linear-gradient(
             90deg,

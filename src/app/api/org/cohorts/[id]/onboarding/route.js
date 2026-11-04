@@ -207,7 +207,7 @@ export const POST = withApiGuard(
       }
       if (!target.user_id) {
         return NextResponse.json(
-          { error: 'Member has no linked account yet — cannot record completion.' },
+          { error: 'Member has no linked account yet, cannot record completion.' },
           { status: 400 },
         );
       }

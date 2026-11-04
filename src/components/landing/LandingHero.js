@@ -171,7 +171,7 @@ export function LandingHero() {
 
           <p className="lp-lead">Better data. Better decisions. Better returns.</p>
           <p className="lp-sub">
-            Ezana turns scattered market signals into one clear read on your portfolio — the
+            Ezana turns scattered market signals into one clear read on your portfolio, the
             information edge once reserved for Wall Street, now built for you.
           </p>
 

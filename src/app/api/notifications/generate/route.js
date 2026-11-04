@@ -255,7 +255,7 @@ async function run() {
           user_id: pr.user_id,
           type: 'portfolio_alerts',
           title: `${pr.sym} ${direction} ${Math.abs(changePct).toFixed(1)}%`,
-          content: `Your holding ${pr.sym} moved significantly. Price: $${Number.isFinite(priceNum) ? priceNum.toFixed(2) : '—'}.`,
+          content: `Your holding ${pr.sym} moved significantly. Price: $${Number.isFinite(priceNum) ? priceNum.toFixed(2) : '–'}.`,
         });
         if (insPortErr) {
           // eslint-disable-next-line no-await-in-loop

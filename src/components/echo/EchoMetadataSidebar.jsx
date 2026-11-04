@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 const META_EXPLAINER =
-  'Ezana uses the people, terms, and tickers in each article as signals to tailor your experience — the news, alerts, and articles we surface next. Your affinity to a topic strengthens the more you engage: reading the full article, rating it Signal over Noise at the end, and interacting with its charts and interactive components all increase your ties to that metadata. The goal is a feed that reflects what you actually follow, not what is loudest.';
+  'Ezana uses the people, terms, and tickers in each article as signals to tailor your experience, the news, alerts, and articles we surface next. Your affinity to a topic strengthens the more you engage: reading the full article, rating it Signal over Noise at the end, and interacting with its charts and interactive components all increase your ties to that metadata. The goal is a feed that reflects what you actually follow, not what is loudest.';
 
 // Smooth-scroll to an anchor id and apply a brief highlight pulse.
 function scrollToAnchor(anchorId) {
@@ -87,7 +87,7 @@ function Group({ title, children, count }) {
         <i className="bi bi-chevron-down emeta-group-chevron" aria-hidden="true" />
       </summary>
       {empty ? (
-        <span className="emeta-empty">—</span>
+        <span className="emeta-empty">–</span>
       ) : (
         <div className="emeta-chiprow">{children}</div>
       )}

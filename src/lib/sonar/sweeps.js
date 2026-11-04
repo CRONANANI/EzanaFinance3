@@ -111,12 +111,12 @@ async function sweepContracts({ tickers, terms }) {
   const rows = [];
   for (const r of recipients) {
     const mapped = tickerForRecipient(r.name);
-    const byTicker = mapped !== '—' && tickerSet.has(mapped);
+    const byTicker = mapped !== '–' && tickerSet.has(mapped);
     const byName = needles.some((n) => r.name.toLowerCase().includes(n));
     if (!byTicker && !byName) continue;
     rows.push({
       recipient: r.name,
-      ticker: mapped !== '—' ? mapped : null,
+      ticker: mapped !== '–' ? mapped : null,
       totalUsd: r.total,
       awards: r.count,
       topAgency: r.topAgency,

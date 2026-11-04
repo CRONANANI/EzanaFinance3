@@ -100,9 +100,9 @@ function formatTickByRange(at, range) {
 const TICKER_ITEMS = [
   { tag: 'LIVE', text: 'JT CLOSED 20,371.81  +0.61%' },
   { tag: 'FLOWS', text: 'Equities +$2.1B · IG credit tight 2bps · HY issuance light' },
-  { tag: 'CONGRESS', text: '14 STOCK Act filings (24h) — committees: Energy, Intel, Banking' },
+  { tag: 'CONGRESS', text: '14 STOCK Act filings (24h), committees: Energy, Intel, Banking' },
   { tag: 'EIF', text: 'Quarterly window: elevated odds in AI · mfg · biotech mega caps' },
-  { tag: 'FED WATCH', text: 'Speakers on deck — front-end yields tick higher into auction' },
+  { tag: 'FED WATCH', text: 'Speakers on deck, front-end yields tick higher into auction' },
 ];
 
 /* Schedule (Band IV) category metadata — colours/labels mirror the
@@ -806,7 +806,7 @@ export default function HomePage() {
           setIndices(
             map.map((m) => {
               const q = quotes[m.key];
-              if (!q) return { sym: m.sym, last: '—', chg: '—', up: false };
+              if (!q) return { sym: m.sym, last: '–', chg: '–', up: false };
               const price = q.price ?? q.regularMarketPrice ?? 0;
               const chgPct = q.changePercent ?? q.regularMarketChangePercent ?? 0;
               return {
@@ -1416,7 +1416,7 @@ export default function HomePage() {
               {pagedHoldings.length === 0 ? (
                 <p className="bs-holdings-empty">
                   {useMock
-                    ? 'No mock positions yet — open Mock Trading to build a portfolio.'
+                    ? 'No mock positions yet, open Mock Trading to build a portfolio.'
                     : plaidConnected
                       ? 'Holdings sync in progress…'
                       : 'Link a brokerage or try Mock Trading to see positions here.'}
@@ -1562,7 +1562,7 @@ export default function HomePage() {
                 </div>
                 {watchlistRows.length === 0 ? (
                   <p className="bs-watchlist-empty">
-                    Empty watchlist — add symbols to track live prices.
+                    Empty watchlist, add symbols to track live prices.
                   </p>
                 ) : (
                   watchlistRows.map((w) => {

@@ -115,8 +115,8 @@ export function useWatchlists() {
         price: 0,
         change: 0,
         changePct: 0,
-        marketCap: '—',
-        volume: '—',
+        marketCap: '–',
+        volume: '–',
       };
       setWatchlists((prev) =>
         prev.map((list) => {

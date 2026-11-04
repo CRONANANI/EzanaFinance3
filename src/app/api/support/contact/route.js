@@ -89,7 +89,7 @@ export const POST = withApiGuard(
           console.error('[support/contact] RESEND_API_KEY is not set in production');
           return NextResponse.json({ error: 'Email service not configured' }, { status: 503 });
         }
-        console.warn('[support/contact] RESEND_API_KEY not set — logging locally only', {
+        console.warn('[support/contact] RESEND_API_KEY not set, logging locally only', {
           ...data,
           target: supportInbox,
         });

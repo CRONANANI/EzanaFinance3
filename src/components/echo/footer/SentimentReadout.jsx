@@ -7,7 +7,7 @@ export function SentimentReadout({ isVoted, aggregateSignal, voteCount, userSent
       : userSentiment >= 60
         ? '↑ Signal'
         : userSentiment >= 40
-          ? '— Balanced'
+          ? 'Balanced'
           : '↓ Noise';
 
   return (
@@ -20,14 +20,14 @@ export function SentimentReadout({ isVoted, aggregateSignal, voteCount, userSent
               <span className="echo-readout-pct">%</span>
             </>
           ) : (
-            <span className="echo-readout-number">—</span>
+            <span className="echo-readout-number">–</span>
           )}
         </div>
         <div className="echo-readout-meta-1">aggregate signal</div>
         <div className="echo-readout-meta-2">
           {isVoted
             ? `${voteCount} ${voteCount === 1 ? 'vote' : 'votes'} · weighted average`
-            : 'No votes yet — yours opens the count'}
+            : 'No votes yet, yours opens the count'}
         </div>
       </div>
 

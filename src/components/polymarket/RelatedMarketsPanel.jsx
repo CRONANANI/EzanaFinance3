@@ -43,7 +43,7 @@ export function RelatedMarketsPanel({
 
       {variant === 'modal' && (
         <p className="pm-related__subtitle">
-          Live prediction markets semantically matched to this event. Odds shown in cents (¢) — the
+          Live prediction markets semantically matched to this event. Odds shown in cents (¢), the
           implied probability of the YES outcome.
         </p>
       )}
@@ -72,7 +72,7 @@ export function RelatedMarketsPanel({
       {!isLoading && !error && markets.length === 0 && !noHighConfidence && (
         <div className="pm-related__empty">
           No related markets found on Polymarket. The keywords from this event didn&apos;t match any
-          active markets right now — that&apos;s normal for niche or breaking news.
+          active markets right now, that&apos;s normal for niche or breaking news.
         </div>
       )}
 

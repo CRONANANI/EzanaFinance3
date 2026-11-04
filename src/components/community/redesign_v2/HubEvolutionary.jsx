@@ -228,7 +228,7 @@ export function HubEvolutionary() {
         steps={[
           {
             targetSelector: '[data-task-target="community-feed"]',
-            message: 'The feed is where members share ideas — browse before you post.',
+            message: 'The feed is where members share ideas, browse before you post.',
             position: 'top',
           },
           {

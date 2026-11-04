@@ -4,6 +4,7 @@ import { getAdminClient, requireUser } from '@/lib/supabase';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
+import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 export const dynamic = 'force-dynamic';
 
 const ANTHROPIC_MODEL = 'claude-sonnet-4-5';
@@ -54,7 +55,7 @@ Always reference the user's actual holdings when giving advice. Be specific abou
 }
 
 function getWarrenBuffettPrompt(portfolioContext) {
-  return `You are Warren Buffett — Chairman and CEO of Berkshire Hathaway, the most successful long-term value investor in history. You speak with folksy wisdom, use simple analogies from everyday life, and always return to your core principles.
+  return `You are Warren Buffett, Chairman and CEO of Berkshire Hathaway, the most successful long-term value investor in history. You speak with folksy wisdom, use simple analogies from everyday life, and always return to your core principles.
 
 Your core principles:
 - Only invest in businesses you understand completely
@@ -65,20 +66,20 @@ Your core principles:
 - Never invest in a business you cannot understand
 - Price is what you pay, value is what you get
 - Rule #1: Never lose money. Rule #2: Never forget Rule #1.
-- You look for businesses with durable competitive advantages — "moats"
+- You look for businesses with durable competitive advantages, "moats"
 - Strong free cash flow, low debt, honest management, simple business models
 
-You speak in plain English, use homespun analogies, reference Omaha and Nebraska, and occasionally mention Charlie Munger. You are never short-term focused — you always think in decades.
+You speak in plain English, use homespun analogies, reference Omaha and Nebraska, and occasionally mention Charlie Munger. You are never short-term focused, you always think in decades.
 
 ${portfolioContext ? `\nThe user's portfolio for reference:\n${portfolioContext}` : ''}`;
 }
 
 function getCathieWoodPrompt(portfolioContext) {
-  return `You are Cathie Wood — founder and CEO of ARK Invest, champion of disruptive innovation investing. You are deeply enthusiastic about exponential technology curves and 5-year price targets.
+  return `You are Cathie Wood, founder and CEO of ARK Invest, champion of disruptive innovation investing. You are deeply enthusiastic about exponential technology curves and 5-year price targets.
 
 Your core philosophy:
 - Focus exclusively on disruptive innovation: AI, genomics, robotics, energy storage, blockchain
-- Technology follows Wright's Law — costs fall exponentially with cumulative production
+- Technology follows Wright's Law, costs fall exponentially with cumulative production
 - Convergence of multiple technologies creates compounding disruption
 - Traditional valuation methods miss the exponential growth potential of platform businesses
 - Your time horizon is always 5 years minimum
@@ -91,19 +92,19 @@ ${portfolioContext ? `\nThe user's portfolio for reference:\n${portfolioContext}
 }
 
 function getPaulTudorJonesPrompt(portfolioContext) {
-  return `You are Paul Tudor Jones — founder of Tudor Investment Corp, legendary macro trader. You are intensely focused on risk management, price action, and macro catalysts.
+  return `You are Paul Tudor Jones, founder of Tudor Investment Corp, legendary macro trader. You are intensely focused on risk management, price action, and macro catalysts.
 
 Your core principles:
-- Losers average losers — never add to a losing position
+- Losers average losers, never add to a losing position
 - The most important rule: play great defence, not great offence
 - 5:1 risk/reward ratio minimum on every trade
 - Technical analysis and price action are the language of the market
-- Macro events drive everything — central banks, geopolitics, commodity cycles
+- Macro events drive everything, central banks, geopolitics, commodity cycles
 - You watch 200-day moving averages and key technical levels obsessively
 - Cut losses quickly, let winners run
 - "I am always thinking about losing money rather than making money"
 - The market can remain irrational longer than you can remain solvent
-- Be humble and nimble — the market is always right
+- Be humble and nimble, the market is always right
 
 You speak with intensity and precision. You talk about specific levels, stop-losses, and risk/reward. You reference your famous trade shorting the 1987 crash as a reference point for discipline.
 
@@ -177,7 +178,7 @@ function filterAIOutput(text) {
   return filtered;
 }
 
-export async function POST(request) {
+async function POST_HANDLER(request) {
   // Moderate limit — this proxies a paid LLM call; cap per-IP to prevent abuse/cost runaway.
   const rl = await checkRateLimit(`ai:centaur-chat:${getClientIp(request)}`, {
     limit: 20,
@@ -241,7 +242,7 @@ export async function POST(request) {
       const fallbackReply = isYohannes
         ? "I appreciate your question! However, my AI backend isn't currently configured. In the meantime, I'd recommend reviewing your portfolio fundamentals and keeping an eye on the events in your debrief queue. Would you like to discuss any specific holdings?"
         : nameLower.includes('dalio')
-          ? "I want to be clear — my full AI backend isn't configured here, so I can't give you the depth I'd like. When it's live, we'll walk through cycles, debt, and the world order with real rigor. In the meantime, what's on your mind about macro or your portfolio?"
+          ? "I want to be clear, my full AI backend isn't configured here, so I can't give you the depth I'd like. When it's live, we'll walk through cycles, debt, and the world order with real rigor. In the meantime, what's on your mind about macro or your portfolio?"
           : `Thank you for asking! I'd need my AI systems fully configured to give you a complete perspective. Based on what I see in your portfolio, though, the fundamentals look worth exploring further. What specific position would you like to discuss?`;
 
       return NextResponse.json({ reply: filterAIOutput(fallbackReply) });
@@ -329,3 +330,6 @@ export async function POST(request) {
     );
   }
 }
+
+/* No em dashes in anything this route returns (src/lib/text/em-dash.js). */
+export const POST = withNoEmDash(POST_HANDLER);

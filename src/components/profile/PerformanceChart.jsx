@@ -194,12 +194,12 @@ export function PerformanceChart({ userSeriesFull = null, userSeries = null }) {
       {platformLoading && !hasPlatform && <p className="pc-note">Loading platform data…</p>}
       {!platformLoading && !hasPlatform && (
         <p className="pc-note">
-          Platform comparison not yet available — check back once nightly aggregates have run.
+          Platform comparison not yet available, check back once nightly aggregates have run.
         </p>
       )}
       {typeof sampleSize === 'number' && sampleSize > 0 && sampleSize < 30 && (
         <p className="pc-warn">
-          Platform comparison is preliminary — based on {sampleSize} active investor
+          Platform comparison is preliminary, based on {sampleSize} active investor
           {sampleSize === 1 ? '' : 's'}. Results will stabilize as more users join.
         </p>
       )}
@@ -220,7 +220,7 @@ function CustomTooltip({ active, payload, label }) {
           <span className="pc-tooltip-name">{p.name}</span>
           <span className="pc-tooltip-val">
             {p.value == null
-              ? '—'
+              ? '–'
               : `${Number(p.value) >= 0 ? '+' : ''}${Number(p.value).toFixed(2)}%`}
           </span>
         </div>

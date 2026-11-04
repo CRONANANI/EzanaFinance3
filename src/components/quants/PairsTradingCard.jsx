@@ -5,12 +5,12 @@ const SIGNAL_MAP = {
   long_spread: {
     label: 'LONG SPREAD',
     color: '#10b981',
-    desc: 'A is undervalued relative to B — buy A, sell B',
+    desc: 'A is undervalued relative to B, buy A, sell B',
   },
   short_spread: {
     label: 'SHORT SPREAD',
     color: '#ef4444',
-    desc: 'A is overvalued relative to B — sell A, buy B',
+    desc: 'A is overvalued relative to B, sell A, buy B',
   },
   watch_long: {
     label: 'WATCH (Long)',
@@ -108,7 +108,7 @@ export function PairsTradingCard() {
                 },
                 {
                   label: 'Half-Life',
-                  value: data.halfLife ? `${data.halfLife.toFixed(0)} days` : '—',
+                  value: data.halfLife ? `${data.halfLife.toFixed(0)} days` : '–',
                   color: '#d1d5db',
                 },
               ].map((m) => (

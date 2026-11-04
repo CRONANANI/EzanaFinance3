@@ -75,7 +75,7 @@ export default async function GovernmentContractsPage() {
     const kb = Math.round(JSON.stringify(rollup).length / 1024);
     if (kb > 900) {
       console.warn(
-        `[gov-contracts] rollup payload ${kb} KB — this is serialized into the RSC ` +
+        `[gov-contracts] rollup payload ${kb} KB, this is serialized into the RSC ` +
           `payload on every request. Lower PER_YEAR_KEEP in getContractRollups.`,
       );
     }

@@ -167,7 +167,7 @@ export function ISRArticleModal({ event, polymarket, onClose }) {
             <div className="sentinel-report-section-body">
               {event.isSeed ? (
                 <p>
-                  <strong>{event.source}</strong> — sample entry.{' '}
+                  <strong>{event.source}</strong>, sample entry.{' '}
                   <span className="isr-article-source-note">
                     Live news from this region will replace this once the news feed catches up.
                   </span>

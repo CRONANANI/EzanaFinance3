@@ -5,7 +5,7 @@ const SUPPLEMENTAL_DEFINITIONS = {
   'interest rate risk': 'Bond prices fall when interest rates rise.',
   'market risk': 'A broad selloff drags every asset down at once.',
   'business risk': 'The specific company you own falters or fails.',
-  'liquidity risk': "You can't sell when you need to — or only at a steep discount.",
+  'liquidity risk': "You can't sell when you need to, or only at a steep discount.",
   diversification: 'Holding many uncorrelated positions so no single risk dominates the outcome.',
   'asset allocation':
     'How a portfolio is split across asset classes (stocks, bonds, cash, real estate).',
@@ -22,7 +22,7 @@ const SUPPLEMENTAL_DEFINITIONS = {
   'gross profit':
     'Revenue minus cost of revenue. The profit from the product itself, before overhead.',
   'operating expenses':
-    'Costs of running the business beyond the direct cost of the product — R&D, sales, admin.',
+    'Costs of running the business beyond the direct cost of the product, R&D, sales, admin.',
   'operating income':
     'Profit from the core business after operating expenses, before interest and taxes.',
   'net income': 'Final profit after every cost. The "bottom line."',
@@ -83,7 +83,7 @@ function resolveTermDefinition(term, existingDef) {
   if (existingDef && existingDef !== '(definition pending)') return existingDef;
   return (
     lookupDefinition(term) ||
-    `Definition for "${term}" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js.`
+    `Definition for "${term}", add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js.`
   );
 }
 
@@ -237,7 +237,7 @@ function buildContextTimeline(section) {
     title: 'Historical context',
     events: [
       {
-        year: '—',
+        year: '–',
         label: 'Author needed',
         detail: `Authoring required: replace with real events for "${section.title}".`,
       },

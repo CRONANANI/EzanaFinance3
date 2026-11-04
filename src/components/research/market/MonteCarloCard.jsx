@@ -112,7 +112,7 @@ export function MonteCarloCard() {
       { label: 'Drift', value: 0.07, format: 'percent' },
       {
         label: 'P(hit)',
-        value: result != null && Number.isFinite(result.probability) ? result.probability : '—',
+        value: result != null && Number.isFinite(result.probability) ? result.probability : '–',
         format: result != null && Number.isFinite(result.probability) ? 'percent' : undefined,
         emphasis: true,
       },
@@ -125,7 +125,7 @@ export function MonteCarloCard() {
     const pct = Math.round(result.probability * 100);
     if (pct >= 80) return { tone: 'is-pos', text: 'High confidence' };
     if (pct >= 50) return { tone: 'is-pos', text: 'Plausible path' };
-    if (pct >= 25) return { tone: 'is-neg', text: 'Stretch goal — consider adjusting' };
+    if (pct >= 25) return { tone: 'is-neg', text: 'Stretch goal, consider adjusting' };
     return { tone: 'is-neg', text: 'Unlikely at current inputs' };
   }, [result]);
 

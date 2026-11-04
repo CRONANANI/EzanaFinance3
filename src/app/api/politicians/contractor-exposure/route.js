@@ -22,7 +22,7 @@ export const dynamic = 'force-dynamic';
 
 const TTL = 6 * 60 * 60 * 1000;
 /* tickerForRecipient's "no ticker" placeholder. */
-const NO_TICKER = '—';
+const NO_TICKER = '–';
 let cache = null;
 
 async function build() {

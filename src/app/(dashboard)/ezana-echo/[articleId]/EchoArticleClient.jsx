@@ -400,7 +400,7 @@ function ArticleBlock({ block }) {
       return (
         <blockquote className="echo-pullquote">
           <p>{block.text}</p>
-          {block.source && <cite>— {block.source}</cite>}
+          {block.source && <cite>: {block.source}</cite>}
         </blockquote>
       );
 
@@ -903,7 +903,7 @@ function MarketForecastChart({ title, caption, yLabel }) {
     if (startVal > 0 && endVal > 0) {
       cagrByKey[k.key] = ((Math.pow(endVal / startVal, 1 / n) - 1) * 100).toFixed(1);
     } else {
-      cagrByKey[k.key] = '—';
+      cagrByKey[k.key] = '–';
     }
   }
 
@@ -1323,7 +1323,7 @@ function FiberCompanyProfileCard({ company, isDark, onClose }) {
             className="bi bi-lock"
             style={{ fontSize: '1.25rem', display: 'block', marginBottom: '0.4rem' }}
           />
-          Private company — financial data not available.
+          Private company, financial data not available.
         </div>
       )}
 
@@ -1351,7 +1351,7 @@ function FiberCompanyProfileCard({ company, isDark, onClose }) {
             }}
           >
             <span style={{ fontSize: '1.4rem', fontWeight: 800, color: t.headingColor }}>
-              {price != null ? `$${Number(price).toFixed(2)}` : '—'}
+              {price != null ? `$${Number(price).toFixed(2)}` : '–'}
             </span>
             {change != null && (
               <span
@@ -1377,15 +1377,15 @@ function FiberCompanyProfileCard({ company, isDark, onClose }) {
             }}
           >
             {[
-              { label: 'Market Cap', value: marketCapDisplay ?? '—' },
-              { label: 'P/E Ratio', value: peDisplay ?? '—' },
-              { label: 'EPS', value: epsDisplay ?? '—' },
+              { label: 'Market Cap', value: marketCapDisplay ?? '–' },
+              { label: 'P/E Ratio', value: peDisplay ?? '–' },
+              { label: 'EPS', value: epsDisplay ?? '–' },
               {
                 label: '52W Range',
                 value:
                   low52 && high52
                     ? `${Number(low52).toFixed(0)} – ${Number(high52).toFixed(0)}`
-                    : '—',
+                    : '–',
               },
             ].map((s) => (
               <div
@@ -1523,7 +1523,7 @@ function MiniSparkChart({ data, label, isDark, bg }) {
 
 function fmtLargeNum(n) {
   const num = Number(n);
-  if (Number.isNaN(num)) return '—';
+  if (Number.isNaN(num)) return '–';
   if (num >= 1e12) return `$${(num / 1e12).toFixed(2)}T`;
   if (num >= 1e9) return `$${(num / 1e9).toFixed(1)}B`;
   if (num >= 1e6) return `$${(num / 1e6).toFixed(0)}M`;

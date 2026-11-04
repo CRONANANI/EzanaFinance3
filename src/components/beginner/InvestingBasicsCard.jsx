@@ -18,7 +18,7 @@ export function InvestingBasicsCard() {
       <div className="beginner-edu-card__eyebrow">Investing Basics · Education</div>
       <h3 className="beginner-edu-card__title">Understanding Risk &amp; Diversification</h3>
       <p className="beginner-edu-card__body">
-        Learn how spreading investments across many companies can reduce company-specific risk — and
+        Learn how spreading investments across many companies can reduce company-specific risk, and
         what tradeoffs that involves (including market risk you cannot diversify away).
       </p>
       <p className="beginner-edu-card__disclaimer">{DIVERSIFICATION_DISCLAIMER}</p>

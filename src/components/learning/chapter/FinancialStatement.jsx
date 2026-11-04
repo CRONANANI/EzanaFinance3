@@ -126,7 +126,7 @@ export function FinancialStatement({
 }
 
 function formatValue(v, isEps) {
-  if (v == null || !Number.isFinite(v)) return '—';
+  if (v == null || !Number.isFinite(v)) return '–';
   if (isEps) return `$${v.toFixed(2)}`;
   const abs = Math.abs(v);
   if (abs >= 1e9) return `${v < 0 ? '-' : ''}$${(abs / 1e9).toFixed(2)}B`;
@@ -136,11 +136,11 @@ function formatValue(v, isEps) {
 }
 
 function formatDelta(values, isEps) {
-  if (!Array.isArray(values) || values.length < 2) return '—';
+  if (!Array.isArray(values) || values.length < 2) return '–';
   const [current, prior] = values;
-  if (current == null || prior == null || prior === 0) return '—';
+  if (current == null || prior == null || prior === 0) return '–';
   const pct = ((current - prior) / Math.abs(prior)) * 100;
-  if (!Number.isFinite(pct)) return '—';
+  if (!Number.isFinite(pct)) return '–';
   const sign = pct >= 0 ? '▲' : '▼';
   const color = pct >= 0 ? 'lc-edit-finstmt-pos' : 'lc-edit-finstmt-neg';
   return (

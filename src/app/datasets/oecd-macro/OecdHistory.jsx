@@ -184,7 +184,7 @@ export default function OecdHistory({
               value: formatValue(r.v, series),
               tone: r.v >= 0 ? 'pos' : 'neg',
             }))
-          : [{ label: 'No data', value: '—' }],
+          : [{ label: 'No data', value: '–' }],
       }),
     });
   };

@@ -249,7 +249,7 @@ function normalizers() {
         day: dt.getDate(),
         month: dt.getMonth(),
         year: dt.getFullYear(),
-        time: c.time || '—',
+        time: c.time || '–',
         color: COLORS.crypto,
         impact: null,
       };
@@ -269,7 +269,7 @@ function normalizers() {
         day: dt.getDate(),
         month: dt.getMonth(),
         year: dt.getFullYear(),
-        time: c.time || '—',
+        time: c.time || '–',
         color: COLORS.commodity,
         impact: null,
       };

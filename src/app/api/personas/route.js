@@ -54,7 +54,7 @@ export const POST = withApiGuard(
       // Personas are GLOBAL content (system prompts fed to the AI analyzer
       // for every user), so mutation is admin-only.
       if (!isAdminUser(user)) {
-        return NextResponse.json({ error: 'Forbidden — admin access required' }, { status: 403 });
+        return NextResponse.json({ error: 'Forbidden, admin access required' }, { status: 403 });
       }
       const supabase = getServerSupabase();
       const body = await request.json();

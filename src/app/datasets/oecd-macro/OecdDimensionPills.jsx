@@ -22,7 +22,7 @@ function catToken(category) {
   }
 }
 
-const PENDING_TIP = 'Data source pending — not yet scored from live sources.';
+const PENDING_TIP = 'Data source pending, not yet scored from live sources.';
 
 export default function OecdDimensionPills({ dimensions, dim, onDim }) {
   return (
@@ -47,7 +47,7 @@ export default function OecdDimensionPills({ dimensions, dim, onDim }) {
             aria-pressed={dim === d.id}
             aria-disabled={disabled || undefined}
             disabled={disabled}
-            title={disabled ? PENDING_TIP : `${d.name} (${d.category || '—'})`}
+            title={disabled ? PENDING_TIP : `${d.name} (${d.category || '–'})`}
             onClick={() => !disabled && onDim(d.id)}
           >
             <span

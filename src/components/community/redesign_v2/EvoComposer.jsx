@@ -519,7 +519,7 @@ export function EvoComposer({
                     value={disclosure}
                     onChange={(e) => setDisclosure(e.target.value)}
                     maxLength={200}
-                    placeholder="Position or sponsorship disclosure (optional) — e.g., Long $TSLA"
+                    placeholder="Position or sponsorship disclosure (optional), e.g. Long $TSLA"
                     style={{
                       width: '100%',
                       padding: '6px 10px',

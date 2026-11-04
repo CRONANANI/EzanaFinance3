@@ -348,7 +348,7 @@ async function run(request) {
     const matched = bqCount !== null && srcCount !== null && bqCount === srcCount;
     if (load.ok && !matched) {
       errors.push(
-        `${key}: count mismatch — supabase ${srcCount ?? 'unknown'}, ` +
+        `${key}: count mismatch, supabase ${srcCount ?? 'unknown'}, ` +
           `bigquery ${bqCount ?? 'unknown'}, exported ${exp.exported}` +
           (bqCount !== null && srcCount !== null ? ` (difference ${bqCount - srcCount})` : ''),
       );

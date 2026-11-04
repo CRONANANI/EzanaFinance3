@@ -117,7 +117,7 @@ export default function MfaSetupGateCard({ redirectTo = '/home' }) {
       } catch (err) {
         setError(
           err?.name === 'AbortError'
-            ? 'Verifying took too long — please try again.'
+            ? 'Verifying took too long, please try again.'
             : 'Something went wrong. Please try again.',
         );
         setLoading(false);

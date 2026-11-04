@@ -7,7 +7,7 @@ import { ALT_SIGNALS_SAMPLE, TOP_MENTIONS } from './alternative-sample';
 
 const config = {
   title: 'Consumer & alternative signals',
-  lead: 'Signals beyond the tape — analyst coverage, on-air stock mentions, and consumer-interest proxies — entity-resolved to tickers so attention shows up before it moves price.',
+  lead: 'Signals beyond the tape, analyst coverage, on-air stock mentions, and consumer-interest proxies, entity-resolved to tickers so attention shows up before it moves price.',
   searches: [
     {
       id: 'ticker',
@@ -43,12 +43,12 @@ const config = {
     ],
     rows: ALT_SIGNALS_SAMPLE,
   },
-  sampleNote: 'Sample of recent signals — full live dataset available in the app.',
+  sampleNote: 'Sample of recent signals, full live dataset available in the app.',
   source: {
     title: 'How we source it',
     body: [
       'On-air mentions come from Quiver Quantitative and analyst signals from Financial Modeling Prep / Finnhub, entity-resolved to tickers.',
-      'Where a specific provider for app or search-interest signals is still being finalized, we mark it “[CONFIRM source]” rather than overstate the source — sample rows show that convention explicitly.',
+      'Where a specific provider for app or search-interest signals is still being finalized, we mark it “[CONFIRM source]” rather than overstate the source, sample rows show that convention explicitly.',
     ],
   },
   cta: { href: '/auth/login', label: 'Explore in the app' },

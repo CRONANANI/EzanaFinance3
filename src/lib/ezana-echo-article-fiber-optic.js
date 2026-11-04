@@ -468,11 +468,11 @@ export const fiberOpticArticle = {
   id: 'fiber-optic-cable-ai-boom-benny-fazio',
   title: 'Fiber Optic Cable: Alotta Money In This Stuff',
   excerpt:
-    "From a construction site score to a $30 billion global market — how fiber optic cable went from Benny Fazio's side hustle to the backbone of the AI revolution, and why Corning's stock is outrunning Nvidia.",
+    "From a construction site score to a $30 billion global market, how fiber optic cable went from Benny Fazio's side hustle to the backbone of the AI revolution, and why Corning's stock is outrunning Nvidia.",
   heroImage: {
     src: '/benny-fazio-christopher.png',
-    alt: 'Benny Fazio and Christopher Moltisanti at a pizza shop — The Sopranos',
-    caption: '"Fiber optic cable. High-speed internet access." — Benny Fazio',
+    alt: 'Benny Fazio and Christopher Moltisanti at a pizza shop, The Sopranos',
+    caption: '"Fiber optic cable. High-speed internet access.", Benny Fazio',
   },
   contentBlocks: [
     {
@@ -481,17 +481,17 @@ export const fiberOpticArticle = {
     },
     {
       type: 'paragraph',
-      text: 'The scene aired in the early 2000s. The [[kw:dot-com-bubble]]dot-com bubble[[/kw]] had just burst. Half of Wall Street thought the internet was a fad. And here were three guys from North Jersey — guys whose primary expertise was in waste management consulting — standing at a construction site, staring at a pile of glass thread, and correctly identifying the investment opportunity of the century. Vito called the top. Benny called the product. Christopher, asking "what is all that?", was every retail investor who ignored fiber for twenty years and is now panic-buying Corning at all-time highs.',
+      text: 'The scene aired in the early 2000s. The [[kw:dot-com-bubble]]dot-com bubble[[/kw]] had just burst. Half of Wall Street thought the internet was a fad. And here were three guys from North Jersey, guys whose primary expertise was in waste management consulting, standing at a construction site, staring at a pile of glass thread, and correctly identifying the investment opportunity of the century. Vito called the top. Benny called the product. Christopher, asking "what is all that?", was every retail investor who ignored fiber for twenty years and is now panic-buying Corning at all-time highs.',
     },
     {
       type: 'paragraph',
-      text: 'The joke writes itself: the mob figured out fiber optics before most hedge funds did. But the punchline is that Benny Fazio was not wrong. He was early. If you had taken his construction-site thesis seriously — that the physical layer of the internet was valuable enough to lift off the ground — and bought the companies that actually manufacture the cable, you would be sitting on one of the best-performing industrial trades of the last two decades. Fiber optic cable was not a fad. It was infrastructure. And infrastructure always wins.',
+      text: 'The joke writes itself: the mob figured out fiber optics before most hedge funds did. But the punchline is that Benny Fazio was not wrong. He was early. If you had taken his construction-site thesis seriously, that the physical layer of the internet was valuable enough to lift off the ground, and bought the companies that actually manufacture the cable, you would be sitting on one of the best-performing industrial trades of the last two decades. Fiber optic cable was not a fad. It was infrastructure. And infrastructure always wins.',
     },
 
     { type: 'heading', text: 'The Price Index: What The Factory Floor Is Telling Us', level: 2 },
     {
       type: 'paragraph',
-      text: 'The Bureau of Labor Statistics tracks the [[kw:producer-price-index]]Producer Price Index[[/kw]] for Fiber Optic Cable Manufacturing — a measure of what factories charge for the cable before it reaches installers and end users. This is the wholesale heartbeat of the industry. When the PPI rises, it means demand is outrunning supply and manufacturers have pricing power. When it falls, it means capacity is plentiful and buyers are negotiating discounts. The chart below spans two decades of this signal.',
+      text: 'The Bureau of Labor Statistics tracks the [[kw:producer-price-index]]Producer Price Index[[/kw]] for Fiber Optic Cable Manufacturing, a measure of what factories charge for the cable before it reaches installers and end users. This is the wholesale heartbeat of the industry. When the PPI rises, it means demand is outrunning supply and manufacturers have pricing power. When it falls, it means capacity is plentiful and buyers are negotiating discounts. The chart below spans two decades of this signal.',
     },
     {
       type: 'chart',
@@ -504,11 +504,11 @@ export const fiberOpticArticle = {
     },
     {
       type: 'paragraph',
-      text: 'The pattern is striking. From 2004 to 2017, the index declined almost continuously — a long deflationary grind driven by manufacturing scale-up in China, overcapacity from the dot-com overbuild, and steady efficiency gains in glass fiber production. Prices fell from the 100 baseline to roughly 83 by mid-2016. Then something changed. Starting in late 2017, the index reversed sharply — climbing from 83 to a peak near 98 by mid-2019. That spike aligned with the first wave of 5G network buildouts and hyperscale data center expansion. Carriers and cloud providers were pulling fiber at a pace the [[kw:glass-preform-oligopoly]]supply chain[[/kw]] had not anticipated.',
+      text: 'The pattern is striking. From 2004 to 2017, the index declined almost continuously, a long deflationary grind driven by manufacturing scale-up in China, overcapacity from the dot-com overbuild, and steady efficiency gains in glass fiber production. Prices fell from the 100 baseline to roughly 83 by mid-2016. Then something changed. Starting in late 2017, the index reversed sharply, climbing from 83 to a peak near 98 by mid-2019. That spike aligned with the first wave of 5G network buildouts and hyperscale data center expansion. Carriers and cloud providers were pulling fiber at a pace the [[kw:glass-preform-oligopoly]]supply chain[[/kw]] had not anticipated.',
     },
     {
       type: 'paragraph',
-      text: 'COVID disrupted the trajectory briefly, pushing the index back down to the mid-80s as construction slowed and supply chains seized. But the structural demand story never broke. By late 2022, prices were climbing again — and the current reading near 87 sits in a range that suggests the market is in early-cycle recovery, not late-cycle froth. The AI-driven buildout has not yet fully hit the PPI. When Meta, Microsoft, and Amazon start pulling cable at the volumes their [[kw:hyperscaler-pull-through]]capex budgets[[/kw]] budgets imply, this index is going to move.',
+      text: 'COVID disrupted the trajectory briefly, pushing the index back down to the mid-80s as construction slowed and supply chains seized. But the structural demand story never broke. By late 2022, prices were climbing again, and the current reading near 87 sits in a range that suggests the market is in early-cycle recovery, not late-cycle froth. The AI-driven buildout has not yet fully hit the PPI. When Meta, Microsoft, and Amazon start pulling cable at the volumes their [[kw:hyperscaler-pull-through]]capex budgets[[/kw]] budgets imply, this index is going to move.',
     },
 
     {
@@ -518,7 +518,7 @@ export const fiberOpticArticle = {
     },
     {
       type: 'paragraph',
-      text: 'The global fiber optic cable market is projected to grow from roughly $6.7 billion in 2024 to over $30 billion by 2034 — a [[kw:compound-annual-growth-rate]]compound annual growth rate[[/kw]] near 16%. Telecom remains the largest application segment, driven by 5G densification, fiber-to-the-home rollouts in emerging markets, and the insatiable bandwidth appetite of AI data centers. But the fastest-growing segments are not telecom — they are automobile (in-vehicle optical networks for autonomous driving), industrial automation (Industry 4.0 sensor networks), and aerospace (weight savings over copper in next-generation aircraft).',
+      text: 'The global fiber optic cable market is projected to grow from roughly $6.7 billion in 2024 to over $30 billion by 2034, a [[kw:compound-annual-growth-rate]]compound annual growth rate[[/kw]] near 16%. Telecom remains the largest application segment, driven by 5G densification, fiber-to-the-home rollouts in emerging markets, and the insatiable bandwidth appetite of AI data centers. But the fastest-growing segments are not telecom, they are automobile (in-vehicle optical networks for autonomous driving), industrial automation (Industry 4.0 sensor networks), and aerospace (weight savings over copper in next-generation aircraft).',
     },
     {
       type: 'chart',
@@ -531,7 +531,7 @@ export const fiberOpticArticle = {
     },
     {
       type: 'paragraph',
-      text: 'The chart tells a compound story. Telecom is the blue base — large and growing steadily. But watch the green (Industrial Automation) and orange (Automobile) segments: they roughly triple over the decade. The medical equipment slice — small today — is projected to quadruple as surgical robotics, in-vivo imaging, and remote diagnostics all shift from copper to optical interconnects. Aerospace and defense, while smaller in absolute dollars, commands the highest per-meter prices because military-grade cable requires radiation hardening, extreme temperature tolerance, and redundant core geometry.',
+      text: 'The chart tells a compound story. Telecom is the blue base, large and growing steadily. But watch the green (Industrial Automation) and orange (Automobile) segments: they roughly triple over the decade. The medical equipment slice, small today, is projected to quadruple as surgical robotics, in-vivo imaging, and remote diagnostics all shift from copper to optical interconnects. Aerospace and defense, while smaller in absolute dollars, commands the highest per-meter prices because military-grade cable requires radiation hardening, extreme temperature tolerance, and redundant core geometry.',
     },
 
     {
@@ -577,7 +577,7 @@ export const fiberOpticArticle = {
       figureLabel: 'FIG. 2 · WHO MAKES THE CABLE',
       kicker:
         'MAJOR FIBER-OPTIC CABLE PRODUCERS BY REGION · ANCHOR = TICKER · HEADQUARTERS · PRIMARY APPLICATION (FROM THE MAP) · CLICK A ROW FOR THE DOSSIER.',
-      hint: 'Six producers — expand a row for the dossier.',
+      hint: 'Six producers, expand a row for the dossier.',
       source:
         'Ezana Finance Research (manufacturer map); Corning figures from company reporting and its Q1 2026 earnings.',
       headers: ['Producer', 'Role in the supply chain', 'Anchor', 'Key risk', ''],
@@ -588,7 +588,7 @@ export const fiberOpticArticle = {
           role: 'The 175-year-old glass maker now at the center of the AI data-center buildout; its Multicore Fiber packs four cores into a standard 125-micron strand.',
           anchor: '+74% YTD · $6B Meta deal · Corning, NY',
           keyRisk:
-            'Single-customer concentration — an entire new factory, broken ground March 2026, dedicated to one buyer.',
+            'Single-customer concentration, an entire new factory, broken ground March 2026, dedicated to one buyer.',
           dossier: [
             {
               label: 'AI thesis',
@@ -620,7 +620,7 @@ export const fiberOpticArticle = {
           role: 'European leader focused on power-utility and submarine cable.',
           anchor: 'PRY.MI · Milan, Italy · Power Utilities',
           keyRisk:
-            'Single-mode / submarine demand is lumpy — one large cable order every few years rather than recurring volume.',
+            'Single-mode / submarine demand is lumpy, one large cable order every few years rather than recurring volume.',
           dossier: [
             {
               label: 'Position',
@@ -687,15 +687,15 @@ export const fiberOpticArticle = {
       label: 'Corning (NYSE: GLW)',
       value: '+74% YTD',
       context:
-        'Outperforming Nvidia, Broadcom, and AMD in 2025 — on fiber optic cable demand from AI data centers.',
+        'Outperforming Nvidia, Broadcom, and AMD in 2025, on fiber optic cable demand from AI data centers.',
     },
     {
       type: 'paragraph',
-      text: "The thesis is deceptively simple. Every AI model runs on GPUs. Those GPUs live inside racks. Those racks need to talk to each other — fast. The current workhorse, Nvidia's NVLink 72 rack configuration, uses approximately two miles of copper cabling per rack. But copper has a distance problem: signal degrades over length, requiring repeaters that add latency and power draw. Fiber does not have this problem. A single glass strand can carry data at the speed of light over kilometers without meaningful loss. The industry is transitioning, and Corning is the company with the patent portfolio, the manufacturing capacity, and the customer relationships to capture the shift.",
+      text: "The thesis is deceptively simple. Every AI model runs on GPUs. Those GPUs live inside racks. Those racks need to talk to each other, fast. The current workhorse, Nvidia's NVLink 72 rack configuration, uses approximately two miles of copper cabling per rack. But copper has a distance problem: signal degrades over length, requiring repeaters that add latency and power draw. Fiber does not have this problem. A single glass strand can carry data at the speed of light over kilometers without meaningful loss. The industry is transitioning, and Corning is the company with the patent portfolio, the manufacturing capacity, and the customer relationships to capture the shift.",
     },
     {
       type: 'paragraph',
-      text: "Corning's recent innovation — [[kw:multicore-fiber]]Multicore Fiber (MCF)[[/kw]] — packs four optical cores into a standard 125-micron strand, delivering four times the data density of traditional single-core fiber. For data center operators, this means maintaining peak performance while using 75% fewer cables. The practical impact is not just speed — it is cost. Fewer cables mean fewer conduits, fewer splice points, fewer failure modes, and dramatically reduced installation labor. When you are building a facility with 100,000 GPU racks, a 75% reduction in cabling is not a nice-to-have. It is the difference between a buildout that takes 18 months and one that takes 12.",
+      text: "Corning's recent innovation, [[kw:multicore-fiber]]Multicore Fiber (MCF)[[/kw]], packs four optical cores into a standard 125-micron strand, delivering four times the data density of traditional single-core fiber. For data center operators, this means maintaining peak performance while using 75% fewer cables. The practical impact is not just speed, it is cost. Fewer cables mean fewer conduits, fewer splice points, fewer failure modes, and dramatically reduced installation labor. When you are building a facility with 100,000 GPU racks, a 75% reduction in cabling is not a nice-to-have. It is the difference between a buildout that takes 18 months and one that takes 12.",
     },
     {
       type: 'stat-grid',
@@ -716,17 +716,17 @@ export const fiberOpticArticle = {
     },
     {
       type: 'paragraph',
-      text: "The scale of institutional commitment became clear in January 2026 when Meta Platforms signed a deal worth $6 billion over several years for Corning's optical fiber. [[person:mark-zuckerberg]]Mark Zuckerberg[[/person]]'s company is building AI data centers at a pace that would make a 1990s telecom executive weep. To meet Meta's demand alone, Corning broke ground on a brand-new manufacturing facility in March 2026 — a factory dedicated specifically to producing cables for one customer. When a single buyer justifies an entire factory, you are not in a cyclical business. You are in an arms race.",
+      text: "The scale of institutional commitment became clear in January 2026 when Meta Platforms signed a deal worth $6 billion over several years for Corning's optical fiber. [[person:mark-zuckerberg]]Mark Zuckerberg[[/person]]'s company is building AI data centers at a pace that would make a 1990s telecom executive weep. To meet Meta's demand alone, Corning broke ground on a brand-new manufacturing facility in March 2026, a factory dedicated specifically to producing cables for one customer. When a single buyer justifies an entire factory, you are not in a cyclical business. You are in an arms race.",
     },
     {
       type: 'paragraph',
-      text: 'In its Q1 2026 earnings report, Corning revealed two additional major deals with AI [[kw:hyperscale]]hyperscale[[/kw]] customers — names it did not disclose but which Wall Street assumes are Microsoft and Amazon based on capex timing. The stock responded by extending its year-to-date gain to 74%, surpassing the returns of every major semiconductor name. Nvidia, for all its GPU dominance, returned 51% over the same period. Broadcom managed 42%. AMD delivered 14%. The company that makes glass cables is beating the companies that make the chips those cables connect.',
+      text: 'In its Q1 2026 earnings report, Corning revealed two additional major deals with AI [[kw:hyperscale]]hyperscale[[/kw]] customers, names it did not disclose but which Wall Street assumes are Microsoft and Amazon based on capex timing. The stock responded by extending its year-to-date gain to 74%, surpassing the returns of every major semiconductor name. Nvidia, for all its GPU dominance, returned 51% over the same period. Broadcom managed 42%. AMD delivered 14%. The company that makes glass cables is beating the companies that make the chips those cables connect.',
     },
 
     { type: 'heading', text: 'Market Segmentation: Mode, Type, and Application', level: 2 },
     {
       type: 'paragraph',
-      text: 'The fiber optic cable market segments along three axes. By mode: [[kw:single-mode-vs-multi-mode]]single-mode fiber[[/kw]] (long-distance, narrow core, used in telecom backhaul and submarine cables) versus multi-mode fiber (short-distance, wider core, used inside data centers and buildings). By type: glass optical fiber (the dominant material, offering lower attenuation and higher bandwidth) versus plastic optical fiber (cheaper, more flexible, used in automotive and consumer electronics where extreme performance is not required). By application: the seven segments visible in the forecast chart — telecom, automobile, medical equipment, power utilities, aerospace and defense, industrial automation, and others.',
+      text: 'The fiber optic cable market segments along three axes. By mode: [[kw:single-mode-vs-multi-mode]]single-mode fiber[[/kw]] (long-distance, narrow core, used in telecom backhaul and submarine cables) versus multi-mode fiber (short-distance, wider core, used inside data centers and buildings). By type: glass optical fiber (the dominant material, offering lower attenuation and higher bandwidth) versus plastic optical fiber (cheaper, more flexible, used in automotive and consumer electronics where extreme performance is not required). By application: the seven segments visible in the forecast chart, telecom, automobile, medical equipment, power utilities, aerospace and defense, industrial automation, and others.',
     },
     {
       type: 'paragraph',
@@ -736,7 +736,7 @@ export const fiberOpticArticle = {
     { type: 'heading', text: 'Benny Fazio Was Right', level: 2 },
     {
       type: 'paragraph',
-      text: 'The fiber optic cable industry is not glamorous. It does not have the narrative sizzle of GPU wars or the meme energy of cryptocurrency. It is glass thread pulled through conduit by workers in hard hats. It is splice trays and fusion splicers and optical time-domain reflectometers. It is, by every aesthetic standard, boring. And that is exactly why it works as an investment. Boring infrastructure with secular demand tailwinds and oligopolistic supply structure is the compound-interest machine that wealth managers dream about — the kind of setup Graham associated with a true [[kw:margin-of-safety]]margin of safety[[/kw]].',
+      text: 'The fiber optic cable industry is not glamorous. It does not have the narrative sizzle of GPU wars or the meme energy of cryptocurrency. It is glass thread pulled through conduit by workers in hard hats. It is splice trays and fusion splicers and optical time-domain reflectometers. It is, by every aesthetic standard, boring. And that is exactly why it works as an investment. Boring infrastructure with secular demand tailwinds and oligopolistic supply structure is the compound-interest machine that wealth managers dream about, the kind of setup Graham associated with a true [[kw:margin-of-safety]]margin of safety[[/kw]].',
     },
     {
       type: 'quote',
@@ -818,7 +818,7 @@ export const fiberOpticArticle = {
         },
       ],
       killSwitch:
-        'IF THE PPI BREAKS BELOW ITS ~83 2016 LOW, THE DEFLATIONARY REGIME HAS RETURNED — RE-UNDERWRITE THE PRICING-POWER THESIS.',
+        'IF THE PPI BREAKS BELOW ITS ~83 2016 LOW, THE DEFLATIONARY REGIME HAS RETURNED, RE-UNDERWRITE THE PRICING-POWER THESIS.',
     },
   ],
   globeRail: {
@@ -840,7 +840,7 @@ export const fiberOpticArticle = {
         lat: 42.14,
         lng: -77.05,
         impact:
-          'Corning (GLW), the 175-year-old glass maker, sits at the center of the AI data-center buildout. Its Multicore Fiber packs four cores into a standard strand — 4x the data density with 75% fewer cables. A $6 billion Meta deal justified a dedicated new factory (ground broken March 2026), and the stock is up 74% YTD, ahead of Nvidia (51%), Broadcom (42%), and AMD (14%).',
+          'Corning (GLW), the 175-year-old glass maker, sits at the center of the AI data-center buildout. Its Multicore Fiber packs four cores into a standard strand, 4x the data density with 75% fewer cables. A $6 billion Meta deal justified a dedicated new factory (ground broken March 2026), and the stock is up 74% YTD, ahead of Nvidia (51%), Broadcom (42%), and AMD (14%).',
       },
       {
         name: 'Milan',
@@ -848,7 +848,7 @@ export const fiberOpticArticle = {
         lat: 45.46,
         lng: 9.19,
         impact:
-          'Prysmian is the European leader, focused on power-utility and submarine cable — the lumpy end of the market, where one large order can arrive every few years rather than as recurring volume.',
+          'Prysmian is the European leader, focused on power-utility and submarine cable, the lumpy end of the market, where one large order can arrive every few years rather than as recurring volume.',
       },
       {
         name: 'Wuhan',
@@ -856,7 +856,7 @@ export const fiberOpticArticle = {
         lat: 30.59,
         lng: 114.3,
         impact:
-          'Yangtze Optical Fiber (YOFC) is a Chinese telecom-fiber giant. Chinese manufacturing scale reshaped global fiber pricing — the overcapacity behind the long 2004–2017 deflationary grind in the price index.',
+          'Yangtze Optical Fiber (YOFC) is a Chinese telecom-fiber giant. Chinese manufacturing scale reshaped global fiber pricing, the overcapacity behind the long 2004–2017 deflationary grind in the price index.',
       },
       {
         name: 'Suzhou',
@@ -880,7 +880,7 @@ export const fiberOpticArticle = {
         lat: 35.64,
         lng: -80.47,
         impact:
-          'CommScope is one of three US producers anchoring the North American supply chain, named alongside Corning and Belden — exposed to the deflationary grind that Chinese scale-up and the dot-com overbuild can bring back.',
+          'CommScope is one of three US producers anchoring the North American supply chain, named alongside Corning and Belden, exposed to the deflationary grind that Chinese scale-up and the dot-com overbuild can bring back.',
       },
     ],
   },

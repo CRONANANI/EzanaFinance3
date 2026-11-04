@@ -56,7 +56,7 @@ export function getAllLearningCommunityBadgeDefinitions() {
         t.tier === 5 ? trackBadgeKey(track.id) : levelBadgeKey(track.id, t.curriculumLevel);
       if (!badge_key) continue;
 
-      const badge_name = `${track.shortLabel} — ${t.tier_name}`;
+      const badge_name = `${track.shortLabel} · ${t.tier_name}`;
       let badge_description;
       if (t.tier === 5) {
         badge_description = `Master the full ${cat} path: complete every course through Expert with passing quiz scores.`;

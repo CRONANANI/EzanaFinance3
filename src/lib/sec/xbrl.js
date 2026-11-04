@@ -214,7 +214,7 @@ function ixNumber(text, attrs) {
   let t = String(text || '')
     .replace(/<[^>]+>/g, '')
     .trim();
-  if (/fixed-zero|zerodash|fixedzero/i.test(fmt) || t === '-' || t === '\u2014') return 0;
+  if (/fixed-zero|zerodash|fixedzero/i.test(fmt) || t === '-' || t === '–') return 0;
   if (/comma-decimal|numcommadecimal/i.test(fmt)) t = t.replace(/\./g, '').replace(',', '.');
   else t = t.replace(/,/g, '');
   t = t.replace(/[^0-9.]/g, '');

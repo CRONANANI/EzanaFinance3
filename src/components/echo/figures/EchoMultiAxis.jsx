@@ -322,7 +322,7 @@ export function EchoMultiAxis({ figureLabel, kicker, hint, source, categories = 
             stroke="var(--border-secondary)"
           />
           <text x={PLOT.l + 16} y={31} style={SERIF} fontSize="15" fill="var(--text-muted)">
-            {categories[activeIdx] ?? '—'}
+            {categories[activeIdx] ?? '–'}
           </text>
           {meta.map((m, ri) => {
             const rowY = 46 + ri * 15;
@@ -341,7 +341,7 @@ export function EchoMultiAxis({ figureLabel, kicker, hint, source, categories = 
                   fontSize="15"
                   fill="var(--text-primary)"
                 >
-                  {val === undefined ? '—' : `${fmt(val)}${m.s.unit ? ` ${m.s.unit}` : ''}`}
+                  {val === undefined ? '–' : `${fmt(val)}${m.s.unit ? ` ${m.s.unit}` : ''}`}
                 </text>
               </g>
             );

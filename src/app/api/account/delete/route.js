@@ -170,7 +170,7 @@ function buildDeletionEmail({ reactivationUrl, formattedDate, email }) {
             We've received your request to delete the Ezana account associated with <strong style="color:#f0f6fc;">${escapeHtml(email)}</strong>. Your account is now scheduled for permanent deletion on <strong style="color:#f0f6fc;">${escapeHtml(formattedDate)}</strong>.
           </p>
           <p style="margin:0 0 24px;font-size:0.95rem;line-height:1.6;color:#d1d5db;">
-            If you've changed your mind, you can reactivate your account anytime before then. Your data is preserved during this grace period — nothing is permanently removed until the scheduled date.
+            If you've changed your mind, you can reactivate your account anytime before then. Your data is preserved during this grace period, nothing is permanently removed until the scheduled date.
           </p>
           <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto 24px;">
             <tr><td>

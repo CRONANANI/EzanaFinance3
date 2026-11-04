@@ -24,7 +24,7 @@ export function buildConfirmationEmail({ confirmUrl, unsubscribeUrl }) {
     '',
     confirmUrl,
     '',
-    "If you didn't request this, ignore this email — you won't be subscribed.",
+    "If you didn't request this, ignore this email, you won't be subscribed.",
     '',
     NEWSLETTER_MAILING_ADDRESS,
     `Unsubscribe: ${unsubscribeUrl}`,
@@ -48,7 +48,7 @@ export function buildConfirmationEmail({ confirmUrl, unsubscribeUrl }) {
         <h2 style="color:#f0f6fc;font-size:22px;margin:0 0 14px;text-align:center;">Confirm your subscription</h2>
         <p style="color:#8b949e;font-size:15px;line-height:1.6;margin:0 0 24px;text-align:center;">
           You asked to receive Ezana Echo articles and product updates. Tap the button below to
-          confirm — you won't receive anything until you do.
+          confirm, you won't receive anything until you do.
         </p>
         <div style="text-align:center;margin:0 0 24px;">
           <a href="${confirmUrl}" style="display:inline-block;background:#10b981;color:#0d1117;font-weight:700;font-size:15px;text-decoration:none;padding:14px 28px;border-radius:10px;">
@@ -56,7 +56,7 @@ export function buildConfirmationEmail({ confirmUrl, unsubscribeUrl }) {
           </a>
         </div>
         <p style="color:#6e7681;font-size:13px;line-height:1.6;margin:0;text-align:center;">
-          If you didn't request this, you can ignore this email — you won't be subscribed.
+          If you didn't request this, you can ignore this email, you won't be subscribed.
         </p>
       </div>
 

@@ -565,7 +565,7 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
                 <div className="nwd-muted">Finding matches…</div>
               ) : suggestions.length === 0 ? (
                 <div className="nwd-muted">
-                  No matches yet — try keywords like <em>AI</em>, <em>dividends</em>,{' '}
+                  No matches yet, try keywords like <em>AI</em>, <em>dividends</em>,{' '}
                   <em>clean energy</em>, <em>chips</em>, or <em>defense</em>.
                 </div>
               ) : (
@@ -630,7 +630,7 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
             </div>
             {tickers.length === 0 ? (
               <div className="nwd-empty">
-                Nothing added yet — pick a kind above, search, or use one of the quick picks.
+                Nothing added yet, pick a kind above, search, or use one of the quick picks.
               </div>
             ) : (
               <div className="nwd-chips">

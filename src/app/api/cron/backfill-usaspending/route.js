@@ -170,7 +170,7 @@ function toRow(r, fyEndYear, nowYear, syncedAt, reasons) {
     funding_agency: r['Funding Agency'] || null,
     action_date: `${d.y}-${pad2(d.mo)}-${pad2(d.d)}`,
     award_type: r['Award Type'] || null,
-    ticker: sym === '—' ? null : sym,
+    ticker: sym === '–' ? null : sym,
     fiscal_year: fyEndYear,
     raw: r,
     synced_at: syncedAt,
@@ -277,7 +277,7 @@ async function run(request) {
     } else if (page >= MAX_PAGE_INDEX) {
       // Hit the API's 10k pagination ceiling for this month — log and move on.
       reasons.month_capped = (reasons.month_capped || 0) + 1;
-      errors.push(`fy${fy} m${month}: hit 10k page cap — sub-slice needed`);
+      errors.push(`fy${fy} m${month}: hit 10k page cap, sub-slice needed`);
       month += 1;
       page = 1;
       if (month > 11) {

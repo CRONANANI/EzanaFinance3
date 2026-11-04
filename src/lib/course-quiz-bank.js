@@ -37,7 +37,7 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Sector rotation shifts capital to sectors expected to outperform at different phases of the business cycle — for example, Financials in early recovery and Utilities in late-cycle contraction.',
+        'Sector rotation shifts capital to sectors expected to outperform at different phases of the business cycle, for example, Financials in early recovery and Utilities in late-cycle contraction.',
     },
     {
       question:
@@ -50,7 +50,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        "Capital structure, growth profiles, and margin expectations vary by sector. A utility with a P/E of 20 may be expensive while a tech stock at 20 may be cheap — the sector context determines what's normal.",
+        "Capital structure, growth profiles, and margin expectations vary by sector. A utility with a P/E of 20 may be expensive while a tech stock at 20 may be cheap, the sector context determines what's normal.",
     },
     {
       question: 'Which sector typically outperforms during a recession?',
@@ -82,7 +82,7 @@ const QUIZ_BANK = {
       options: ['Energy', 'Utilities', 'Financials', 'Materials'],
       correct: 1,
       explanation:
-        'Utilities are bond-like — they carry high debt and pay stable dividends. Rising rates increase their borrowing costs and make their dividend yields less attractive relative to risk-free bonds.',
+        'Utilities are bond-like, they carry high debt and pay stable dividends. Rising rates increase their borrowing costs and make their dividend yields less attractive relative to risk-free bonds.',
     },
     {
       question: 'What does "sector concentration risk" mean in a portfolio context?',
@@ -164,7 +164,7 @@ const QUIZ_BANK = {
       question: 'What is DRIP and why does it accelerate wealth building?',
       options: [
         'A risk management technique that limits daily losses to 1%',
-        'Dividend Reinvestment Plan — automatically buys more shares with dividend payments, harnessing compound growth',
+        'Dividend Reinvestment Plan, automatically buys more shares with dividend payments, harnessing compound growth',
         'A tax strategy that defers dividend income to future years',
         'A type of preferred stock that pays dividends in increments',
       ],
@@ -202,7 +202,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        "If you buy a stock on or after the ex-dividend date, you don't receive the next dividend — the seller does. The stock price typically drops by roughly the dividend amount on the ex-date.",
+        "If you buy a stock on or after the ex-dividend date, you don't receive the next dividend, the seller does. The stock price typically drops by roughly the dividend amount on the ex-date.",
     },
     {
       question: 'Which type of stock is most likely to offer a high dividend yield?',
@@ -240,7 +240,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        "An abnormally high yield relative to peers usually means the stock price has dropped — often because the market is pricing in a dividend cut. A yield that's too good to be true often is.",
+        "An abnormally high yield relative to peers usually means the stock price has dropped, often because the market is pricing in a dividend cut. A yield that's too good to be true often is.",
     },
   ],
 
@@ -255,14 +255,14 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Value stocks trade at low P/E, P/B, or P/S ratios relative to the market — they appear cheap on fundamental metrics. Growth stocks trade at high multiples because the market prices in rapid future earnings growth.',
+        'Value stocks trade at low P/E, P/B, or P/S ratios relative to the market, they appear cheap on fundamental metrics. Growth stocks trade at high multiples because the market prices in rapid future earnings growth.',
     },
     {
       question: 'Historically, which style has outperformed over very long periods (50+ years)?',
       options: [
         'Value has outperformed growth over multi-decade periods, though with long stretches of underperformance',
         'Growth has consistently beaten value',
-        'Neither — both produce identical returns over long periods',
+        'Neither, both produce identical returns over long periods',
         'It depends entirely on which decade you pick',
       ],
       correct: 0,
@@ -275,17 +275,17 @@ const QUIZ_BANK = {
         'A stock that pays dividends but has negative earnings',
         'When a value investor accidentally buys a growth stock',
         'A regulatory restriction on buying stocks with very low P/E ratios',
-        'A stock that appears cheap but is cheap for good reason — deteriorating fundamentals, not temporary undervaluation',
+        'A stock that appears cheap but is cheap for good reason, deteriorating fundamentals, not temporary undervaluation',
       ],
       correct: 3,
       explanation:
-        'A value trap looks cheap on metrics (low P/E, low P/B) but the business is genuinely deteriorating — declining revenue, losing market share, or facing obsolescence. The stock is cheap because it deserves to be.',
+        'A value trap looks cheap on metrics (low P/E, low P/B) but the business is genuinely deteriorating, declining revenue, losing market share, or facing obsolescence. The stock is cheap because it deserves to be.',
     },
     {
       question: 'What does the PEG ratio measure?',
       options: [
         "Price relative to the company's total debt",
-        'P/E ratio divided by the expected earnings growth rate — a stock is considered fairly valued at PEG = 1',
+        'P/E ratio divided by the expected earnings growth rate, a stock is considered fairly valued at PEG = 1',
         'The premium a growth stock trades at over the sector average',
         'The percentage of earnings paid as dividends',
       ],
@@ -310,7 +310,7 @@ const QUIZ_BANK = {
       options: [
         'Government-Assisted Retirement Planning',
         'Guaranteed Annual Return Protocol',
-        'Growth At a Reasonable Price — buying growth stocks but only when their valuation metrics are not extreme',
+        'Growth At a Reasonable Price, buying growth stocks but only when their valuation metrics are not extreme',
         'General Asset Rebalancing Procedure',
       ],
       correct: 2,
@@ -364,7 +364,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'When the growth trade is crowded (everyone holds the same tech stocks), a shock can cause violent unwinds. The 2022 growth-to-value rotation demonstrated this — growth stocks dropped 30%+ as crowded positions unwound.',
+        'When the growth trade is crowded (everyone holds the same tech stocks), a shock can cause violent unwinds. The 2022 growth-to-value rotation demonstrated this, growth stocks dropped 30%+ as crowded positions unwound.',
     },
   ],
 
@@ -379,19 +379,19 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        "Asset allocation is the most important investment decision — studies show it explains over 90% of portfolio return variation over time. It's about matching your risk tolerance to the right mix of assets.",
+        "Asset allocation is the most important investment decision, studies show it explains over 90% of portfolio return variation over time. It's about matching your risk tolerance to the right mix of assets.",
     },
     {
       question: 'What does "correlation" measure in portfolio construction?',
       options: [
-        'How closely two assets move together — from -1 (perfectly opposite) to +1 (perfectly together)',
+        'How closely two assets move together, from -1 (perfectly opposite) to +1 (perfectly together)',
         'The average return of two assets',
         'The total number of assets in the portfolio',
         'The trading volume relationship between two stocks',
       ],
       correct: 0,
       explanation:
-        'Correlation of +1 means two assets move identically (no diversification benefit). Correlation of 0 means independent. Negative correlation means they move opposite — the ideal for diversification.',
+        'Correlation of +1 means two assets move identically (no diversification benefit). Correlation of 0 means independent. Negative correlation means they move opposite, the ideal for diversification.',
     },
     {
       question: 'Why does rebalancing a portfolio improve risk-adjusted returns over time?',
@@ -416,37 +416,37 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        "Harry Markowitz showed that for any given risk level, there's an optimal portfolio mix that maximizes return. The curve connecting all these optimal points is the efficient frontier — you want to be on it, not below it.",
+        "Harry Markowitz showed that for any given risk level, there's an optimal portfolio mix that maximizes return. The curve connecting all these optimal points is the efficient frontier, you want to be on it, not below it.",
     },
     {
       question: 'What is the biggest practical problem with mean-variance optimization?',
       options: [
-        'The model is extremely sensitive to input estimates — small errors in expected returns or covariances produce wildly different portfolio weights',
+        'The model is extremely sensitive to input estimates, small errors in expected returns or covariances produce wildly different portfolio weights',
         'It requires a PhD in mathematics to compute',
         'It can only handle portfolios with fewer than 10 assets',
         'It only works for bond portfolios, not equity portfolios',
       ],
       correct: 0,
       explanation:
-        'Estimation error dominates optimization. If your expected return for Tech is 10% ± 5%, the optimizer treats 10% as exact truth and may put 80% in Tech. Garbage in, garbage out — which is why constraints and shrinkage are essential.',
+        'Estimation error dominates optimization. If your expected return for Tech is 10% ± 5%, the optimizer treats 10% as exact truth and may put 80% in Tech. Garbage in, garbage out, which is why constraints and shrinkage are essential.',
     },
     {
       question: 'What is the "60/40 portfolio" and why has it been a standard allocation?',
       options: [
         '60% gold and 40% cash',
         '60% growth stocks and 40% value stocks',
-        '60% stocks and 40% bonds — historically effective because stock-bond correlation was low or negative, providing diversification',
+        '60% stocks and 40% bonds, historically effective because stock-bond correlation was low or negative, providing diversification',
         '60% domestic and 40% international stocks',
       ],
       correct: 2,
       explanation:
-        'The 60/40 mix worked for decades because stocks and bonds were negatively correlated — when stocks fell, bonds rallied, cushioning the portfolio. In 2022, both fell simultaneously, challenging this assumption.',
+        'The 60/40 mix worked for decades because stocks and bonds were negatively correlated, when stocks fell, bonds rallied, cushioning the portfolio. In 2022, both fell simultaneously, challenging this assumption.',
     },
     {
       question: 'What is the "Sharpe ratio" and what does it measure?',
       options: [
         'Total return divided by the number of years invested',
-        "Excess return over the risk-free rate divided by the portfolio's standard deviation — it measures risk-adjusted performance",
+        "Excess return over the risk-free rate divided by the portfolio's standard deviation, it measures risk-adjusted performance",
         'The ratio of stocks to bonds in a portfolio',
         'The percentage of trades that were profitable',
       ],
@@ -461,7 +461,7 @@ const QUIZ_BANK = {
         'All assets improve a portfolio if you add enough of them',
         'Uncorrelated assets are exempt from capital gains taxes',
         'It is required by fiduciary regulations',
-        'The low correlation reduces overall portfolio volatility more than the mediocre return hurts — net Sharpe ratio improves',
+        'The low correlation reduces overall portfolio volatility more than the mediocre return hurts, net Sharpe ratio improves',
       ],
       correct: 3,
       explanation:
@@ -498,7 +498,7 @@ const QUIZ_BANK = {
       question:
         'What is the tax difference between long-term and short-term capital gains in the US?',
       options: [
-        'There is no difference — all gains are taxed the same',
+        'There is no difference, all gains are taxed the same',
         'Short-term gains are tax-free; long-term gains are taxed at 30%',
         'Long-term gains (held over 1 year) are taxed at lower rates (0%, 15%, or 20%); short-term gains are taxed as ordinary income (up to 37%)',
         'Only gains above $10,000 are taxed',
@@ -597,13 +597,13 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Tax alpha is real and measurable — studies show tax-efficient management can add 0.5-1.5% per year in after-tax returns. Over 30 years of compounding, that compounds to significantly more wealth.',
+        'Tax alpha is real and measurable, studies show tax-efficient management can add 0.5-1.5% per year in after-tax returns. Over 30 years of compounding, that compounds to significantly more wealth.',
     },
     {
       question:
         'An investor realizes $20,000 in long-term gains and $25,000 in short-term losses. What is their net tax situation?',
       options: [
-        'They have a net $5,000 loss — they can deduct $3,000 this year and carry forward $2,000',
+        'They have a net $5,000 loss, they can deduct $3,000 this year and carry forward $2,000',
         'They owe tax on $20,000 at long-term rates',
         'They owe tax on $45,000 combined',
         'Losses and gains cannot offset each other',
@@ -691,7 +691,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        "An option buyer's risk is capped at the premium paid. Even if the underlying rallies indefinitely, a long put simply expires worthless — the buyer loses only what they paid upfront.",
+        "An option buyer's risk is capped at the premium paid. Even if the underlying rallies indefinitely, a long put simply expires worthless, the buyer loses only what they paid upfront.",
     },
     {
       question:
@@ -786,7 +786,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Buying a put limits downside below the strike while preserving upside (minus premium). It is essentially insurance — you pay a premium to cap losses.',
+        'Buying a put limits downside below the strike while preserving upside (minus premium). It is essentially insurance, you pay a premium to cap losses.',
     },
     {
       question: 'What is a calendar spread?',
@@ -885,7 +885,7 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'The best case for a short is the stock goes to zero — you buy back at $0 and keep the sale proceeds. Unlike a long, upside risk is unlimited because there is no cap on how high a stock can rise.',
+        'The best case for a short is the stock goes to zero, you buy back at $0 and keep the sale proceeds. Unlike a long, upside risk is unlimited because there is no cap on how high a stock can rise.',
     },
     {
       question: 'What does "hard to borrow" (HTB) mean for a short seller?',
@@ -958,7 +958,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'FINRA and exchange data publish short interest twice monthly. It is a lagging snapshot — positions can change significantly between reporting dates.',
+        'FINRA and exchange data publish short interest twice monthly. It is a lagging snapshot, positions can change significantly between reporting dates.',
     },
     {
       question: 'Why is shorting fundamentally different from buying a put for a bearish view?',
@@ -1034,7 +1034,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        "Margin interest is charged on the net debit balance — cash you've borrowed to fund purchases. It accrues daily and compounds, making long-term leveraged holding expensive.",
+        "Margin interest is charged on the net debit balance, cash you've borrowed to fund purchases. It accrues daily and compounds, making long-term leveraged holding expensive.",
     },
     {
       question: 'What is a "fed call" under Regulation T?',
@@ -1121,7 +1121,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Beta is the slope of the regression — how much the stock tends to move for a 1% move in the market. Beta > 1 means more volatile than the market; beta < 1 means less.',
+        'Beta is the slope of the regression, how much the stock tends to move for a 1% move in the market. Beta > 1 means more volatile than the market; beta < 1 means less.',
     },
     {
       question: 'What is a key weakness of backtesting trading strategies on historical data?',
@@ -1129,7 +1129,7 @@ const QUIZ_BANK = {
         'Historical data is always perfectly clean',
         'Backtests cannot compute returns',
         'Past volatility cannot be measured',
-        'Overfitting — strategies tuned to past noise may fail out-of-sample',
+        'Overfitting, strategies tuned to past noise may fail out-of-sample',
       ],
       correct: 3,
       explanation:
@@ -1181,7 +1181,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'Monte Carlo draws random returns from assumed distributions to estimate probability ranges for portfolio values, drawdowns, or strategy P&L — useful for stress testing uncertainty.',
+        'Monte Carlo draws random returns from assumed distributions to estimate probability ranges for portfolio values, drawdowns, or strategy P&L, useful for stress testing uncertainty.',
     },
     {
       question: 'What does autocorrelation in return series suggest?',
@@ -1206,7 +1206,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Markowitz optimization magnifies input errors — tiny changes in expected returns can swing optimal weights from 5% to 80% in one asset. Practitioners use shrinkage, constraints, or robust methods.',
+        'Markowitz optimization magnifies input errors, tiny changes in expected returns can swing optimal weights from 5% to 80% in one asset. Practitioners use shrinkage, constraints, or robust methods.',
     },
     {
       question: 'What is the purpose of a out-of-sample holdout set?',
@@ -1245,7 +1245,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Confirmation bias causes selective attention — reading bullish articles on a stock you own while dismissing bear cases. It reinforces overconfidence and delays thesis revision.',
+        'Confirmation bias causes selective attention, reading bullish articles on a stock you own while dismissing bear cases. It reinforces overconfidence and delays thesis revision.',
     },
     {
       question: 'The disposition effect describes the tendency to:',
@@ -1317,19 +1317,19 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Mental accounting leads to inconsistent risk-taking — conservative with retirement funds while speculating aggressively in a "fun" account without holistic portfolio view.',
+        'Mental accounting leads to inconsistent risk-taking, conservative with retirement funds while speculating aggressively in a "fun" account without holistic portfolio view.',
     },
     {
       question: 'Prospect theory implies people are risk-seeking when facing:',
       options: [
         'Certain gains',
         'Probable gains after already being ahead',
-        'Losses — they may gamble to avoid realizing a sure loss',
+        'Losses, they may gamble to avoid realizing a sure loss',
         'Well-diversified portfolios only',
       ],
       correct: 2,
       explanation:
-        'In the loss domain, prospect theory predicts risk-seeking behavior — holding a losing lottery ticket or doubling down to avoid locking in defeat, even when expected value favors cutting losses.',
+        'In the loss domain, prospect theory predicts risk-seeking behavior, holding a losing lottery ticket or doubling down to avoid locking in defeat, even when expected value favors cutting losses.',
     },
     {
       question: 'A pre-mortem exercise helps counter behavioral bias by:',
@@ -1455,7 +1455,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'When housing and portfolios appreciate, consumers tend to spend more even if income is unchanged. Conversely, bear markets can dampen consumption — a feedback loop traders watch in late cycle.',
+        'When housing and portfolios appreciate, consumers tend to spend more even if income is unchanged. Conversely, bear markets can dampen consumption, a feedback loop traders watch in late cycle.',
     },
     {
       question: 'Why do traders watch initial jobless claims weekly?',
@@ -1467,7 +1467,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Weekly claims spike early in downturns and normalize slowly in recoveries. They offer one of the fastest reads on whether layoffs are accelerating — critical for recession timing trades.',
+        'Weekly claims spike early in downturns and normalize slowly in recoveries. They offer one of the fastest reads on whether layoffs are accelerating, critical for recession timing trades.',
     },
   ],
 
@@ -1494,7 +1494,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Markets trade on expectations versus reality across the full report — guidance, margins, segment detail, and tone matter. A beat on lagging EPS with weak forward outlook often triggers "sell the news."',
+        'Markets trade on expectations versus reality across the full report, guidance, margins, segment detail, and tone matter. A beat on lagging EPS with weak forward outlook often triggers "sell the news."',
     },
     {
       question:
@@ -1507,7 +1507,7 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Options price in an uncertain move before the event. Once the number is known, the uncertainty premium evaporates — IV crush hurts long straddle holders even if direction was correct.',
+        'Options price in an uncertain move before the event. Once the number is known, the uncertainty premium evaporates, IV crush hurts long straddle holders even if direction was correct.',
     },
     {
       question: 'What is a "double beat" that investors often reward most?',
@@ -1567,7 +1567,7 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Comps strip out expansion-driven growth to show organic demand. A revenue beat driven only by new stores can mask weakening traffic — a classic earnings-season trap.',
+        'Comps strip out expansion-driven growth to show organic demand. A revenue beat driven only by new stores can mask weakening traffic, a classic earnings-season trap.',
     },
     {
       question: 'What is post-earnings announcement drift (PEAD)?',
@@ -1607,7 +1607,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Slippage captures implementation shortfall — paying more when buying or receiving less when selling versus the decision price. It erodes backtested edge in live trading.',
+        'Slippage captures implementation shortfall, paying more when buying or receiving less when selling versus the decision price. It erodes backtested edge in live trading.',
     },
     {
       question: 'A VWAP algorithm aims to:',
@@ -1619,7 +1619,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        "VWAP algos slice orders to track intraday volume curves, minimizing detection and benchmarking against the day's average price — common for institutional equity execution.",
+        "VWAP algos slice orders to track intraday volume curves, minimizing detection and benchmarking against the day's average price, common for institutional equity execution.",
     },
     {
       question: 'What is look-ahead bias in a backtested algo strategy?',
@@ -1631,7 +1631,7 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Look-ahead bias inflates backtests — e.g., using revised earnings data or closing prices known only after the signal time. It is one of the most common reasons algos fail live.',
+        'Look-ahead bias inflates backtests, e.g. using revised earnings data or closing prices known only after the signal time. It is one of the most common reasons algos fail live.',
     },
     {
       question: 'Low-latency strategies most often compete on:',
@@ -1703,7 +1703,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Complex models memorize historical quirks — specific tickers, regimes, or outliers. Without strict regularization and out-of-sample tests, live performance regresses harshly.',
+        'Complex models memorize historical quirks, specific tickers, regimes, or outliers. Without strict regularization and out-of-sample tests, live performance regresses harshly.',
     },
     {
       question: 'Kill switches in automated trading systems exist to:',
@@ -1715,7 +1715,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Kill switches are fail-safes — fat-finger errors, runaway loops, or flash crashes can be contained by automatic cancellation and flattening when limits trip.',
+        'Kill switches are fail-safes, fat-finger errors, runaway loops, or flash crashes can be contained by automatic cancellation and flattening when limits trip.',
     },
   ],
 
@@ -1742,7 +1742,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Momentum exploits continuation — stocks that outperformed recently tend to keep outperforming short-term. It is powerful but prone to sharp crashes during reversals.',
+        'Momentum exploits continuation, stocks that outperformed recently tend to keep outperforming short-term. It is powerful but prone to sharp crashes during reversals.',
     },
     {
       question: 'Why might a value factor underperform for extended periods?',
@@ -1754,7 +1754,7 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Value cycles — the 2010-2020 growth dominance showed factors can lag badly. Patience, diversification across factors, and understanding regime drivers are essential.',
+        'Value cycles, the 2010-2020 growth dominance showed factors can lag badly. Patience, diversification across factors, and understanding regime drivers are essential.',
     },
     {
       question: 'What is factor crowding risk?',
@@ -1802,7 +1802,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'Multi-factor models rank stocks on value, momentum, quality, etc., then blend scores. Correlation among factors matters — combining low-correlation factors improves diversification of alpha sources.',
+        'Multi-factor models rank stocks on value, momentum, quality, etc. then blend scores. Correlation among factors matters, combining low-correlation factors improves diversification of alpha sources.',
     },
     {
       question: 'The low-volatility anomaly suggests:',
@@ -1814,19 +1814,19 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Contrary to CAPM intuition, low-vol stocks have often matched or beaten high-vol stocks on a risk-adjusted basis — partly due to leverage constraints and lottery preferences.',
+        'Contrary to CAPM intuition, low-vol stocks have often matched or beaten high-vol stocks on a risk-adjusted basis, partly due to leverage constraints and lottery preferences.',
     },
     {
       question: 'Why do factor premiums require a economic rationale to be durable?',
       options: [
         'Factors work only due to data mining with no explanation needed',
         'Premium means subscription fee on ETFs',
-        'Persistent premiums often compensate for risk, behavioral biases, or structural constraints — otherwise they may be arbitraged away',
+        'Persistent premiums often compensate for risk, behavioral biases, or structural constraints, otherwise they may be arbitraged away',
         'Rationale is optional if backtest Sharpe exceeds 3',
       ],
       correct: 2,
       explanation:
-        'Spurious factors from mining disappear out-of-sample. Durable factors typically have stories — distress risk (value), underreaction (momentum), or leverage limits (low vol).',
+        'Spurious factors from mining disappear out-of-sample. Durable factors typically have stories, distress risk (value), underreaction (momentum), or leverage limits (low vol).',
     },
     {
       question: 'In factor investing, "neutralizing" sector exposure means:',
@@ -1853,7 +1853,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'CVaR captures severity of tail events VaR ignores. If VaR says worst 5% days exceed −2%, CVaR tells you how bad those days are on average — critical for tail risk management.',
+        'CVaR captures severity of tail events VaR ignores. If VaR says worst 5% days exceed −2%, CVaR tells you how bad those days are on average, critical for tail risk management.',
     },
     {
       question: 'Maximum drawdown measures:',
@@ -1865,7 +1865,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Max drawdown quantifies worst historical loss path — essential for sizing leverage and setting investor expectations. Recovery from deep drawdowns requires disproportionately large gains.',
+        'Max drawdown quantifies worst historical loss path, essential for sizing leverage and setting investor expectations. Recovery from deep drawdowns requires disproportionately large gains.',
     },
     {
       question: 'Why is correlation unstable during crises?',
@@ -1877,7 +1877,7 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Normal-period correlations underestimate crisis co-movement. Risk models assuming stable correlations underestimate portfolio tail risk — a lesson from 2008 and 2020.',
+        'Normal-period correlations underestimate crisis co-movement. Risk models assuming stable correlations underestimate portfolio tail risk, a lesson from 2008 and 2020.',
     },
     {
       question: 'Beta hedging a long portfolio with index futures aims to:',
@@ -1901,14 +1901,14 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Stress tests ask "what if 2008 repeats" or "what if rates rise 300 bps" — revealing vulnerabilities VaR models with normal assumptions may miss.',
+        'Stress tests ask "what if 2008 repeats" or "what if rates rise 300 bps", revealing vulnerabilities VaR models with normal assumptions may miss.',
     },
     {
       question: 'The Sortino ratio differs from Sharpe by using:',
       options: [
         'Total standard deviation in the denominator',
         'Maximum drawdown instead of volatility',
-        'Downside deviation — penalizing only harmful volatility below a target return',
+        'Downside deviation, penalizing only harmful volatility below a target return',
         'Beta instead of standard deviation',
       ],
       correct: 2,
@@ -1925,7 +1925,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'Illiquid holdings may show smooth marks until you need to sell — then impact costs bite. Liquidity-adjusted VaR and position limits address this gap.',
+        'Illiquid holdings may show smooth marks until you need to sell, then impact costs bite. Liquidity-adjusted VaR and position limits address this gap.',
     },
     {
       question: 'What is risk parity allocation?',
@@ -1971,12 +1971,12 @@ const QUIZ_BANK = {
       options: [
         'Net Broker Balance Obligation for margin accounts',
         'Non-Binding Buy Order type',
-        'National Best Bid and Offer — the highest bid and lowest ask across protected venues',
+        'National Best Bid and Offer, the highest bid and lowest ask across protected venues',
         'NYSE-only book for closing auctions',
       ],
       correct: 2,
       explanation:
-        'Reg NMS requires routers to respect the NBBO — trading through a worse price on a protected quote is prohibited. It anchors best execution standards for retail and institutional orders.',
+        'Reg NMS requires routers to respect the NBBO, trading through a worse price on a protected quote is prohibited. It anchors best execution standards for retail and institutional orders.',
     },
     {
       question: 'Payment for order flow (PFOF) means:',
@@ -2012,7 +2012,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'Large orders move price against the trader — buying lifts the ask and depletes the book. Impact is a major component of implementation shortfall for institutional size.',
+        'Large orders move price against the trader, buying lifts the ask and depletes the book. Impact is a major component of implementation shortfall for institutional size.',
     },
     {
       question: 'Dark pools are trading venues that:',
@@ -2048,7 +2048,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'When informed traders pick off stale quotes, market makers lose. They widen spreads or pull liquidity — visible in fast markets around news and earnings.',
+        'When informed traders pick off stale quotes, market makers lose. They widen spreads or pull liquidity, visible in fast markets around news and earnings.',
     },
     {
       question: 'Opening and closing auctions on exchanges exist primarily to:',
@@ -2112,7 +2112,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'DXY is dominated by the euro (~57%). It is not a broad EM dollar measure — traders use other indices for wider currency baskets.',
+        'DXY is dominated by the euro (~57%). It is not a broad EM dollar measure, traders use other indices for wider currency baskets.',
     },
     {
       question: 'Carry trade in FX involves:',
@@ -2137,7 +2137,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'Return in dollars = local return + currency move. A 10% local gain with 10% currency loss nets to roughly flat in USD — currency is a first-order component of global equity P&L.',
+        'Return in dollars = local return + currency move. A 10% local gain with 10% currency loss nets to roughly flat in USD, currency is a first-order component of global equity P&L.',
     },
     {
       question:
@@ -2150,7 +2150,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Low JPY rates fund global carry. When volatility spikes, positions unwind — investors buy yen to repay loans, pushing JPY up precisely when equities fall.',
+        'Low JPY rates fund global carry. When volatility spikes, positions unwind, investors buy yen to repay loans, pushing JPY up precisely when equities fall.',
     },
     {
       question: 'Sovereign credit spreads widening in a country most directly signals:',
@@ -2162,7 +2162,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Wider spreads mean investors demand more yield to hold government debt — often preceding currency weakness, capital flight, and equity selloffs in fragile economies.',
+        'Wider spreads mean investors demand more yield to hold government debt, often preceding currency weakness, capital flight, and equity selloffs in fragile economies.',
     },
     {
       question: 'Why do multinationals hedge FX exposure?',
@@ -2186,7 +2186,7 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Inflows boost EM currencies and equities but can build imbalances. When Fed tightening or risk-off hits, the same flows reverse quickly — the EM boom-bust cycle.',
+        'Inflows boost EM currencies and equities but can build imbalances. When Fed tightening or risk-off hits, the same flows reverse quickly, the EM boom-bust cycle.',
     },
     {
       question: 'Purchasing Power Parity (PPP) as a long-run FX concept suggests:',
@@ -2198,7 +2198,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'PPP is a slow anchor — deviations can persist for years driven by rates, flows, and risk premia. It informs long-horizon fair value debates, not day trading.',
+        'PPP is a slow anchor, deviations can persist for years driven by rates, flows, and risk premia. It informs long-horizon fair value debates, not day trading.',
     },
     {
       question:
@@ -2226,7 +2226,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'A thesis is a falsifiable view on mispricing plus a path to realization — earnings inflection, multiple re-rating, capital return, or structural change. Without a catalyst, value can stay trapped.',
+        'A thesis is a falsifiable view on mispricing plus a path to realization, earnings inflection, multiple re-rating, capital return, or structural change. Without a catalyst, value can stay trapped.',
     },
     {
       question: 'What is the "variant perception" in a thesis?',
@@ -2238,7 +2238,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Edge requires seeing something consensus misses — on growth, margins, competitive dynamics, or risk. If your view matches the Street, expected alpha is negligible minus costs.',
+        'Edge requires seeing something consensus misses, on growth, margins, competitive dynamics, or risk. If your view matches the Street, expected alpha is negligible minus costs.',
     },
     {
       question: 'A pre-mortem on a thesis asks:',
@@ -2250,7 +2250,7 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Defining kill criteria upfront — specific metrics, events, or timelines — prevents sunk-cost holding when the original rationale breaks.',
+        'Defining kill criteria upfront, specific metrics, events, or timelines, prevents sunk-cost holding when the original rationale breaks.',
     },
     {
       question: 'Why document assumptions explicitly in a thesis journal?',
@@ -2327,9 +2327,9 @@ const QUIZ_BANK = {
     {
       question: 'The best time to write an exit plan is:',
       options: [
-        'At thesis entry — defining profit targets, stop conditions, and time limits before emotions run high',
+        'At thesis entry, defining profit targets, stop conditions, and time limits before emotions run high',
         'After the stock has already fallen 40%',
-        'Never — hold forever',
+        'Never, hold forever',
         'Only when tax season begins',
       ],
       correct: 0,
@@ -2350,7 +2350,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'AMMs use bonding curves — typically x × y = k — so price moves automatically as traders swap against the pool. No traditional order book is required.',
+        'AMMs use bonding curves, typically x × y = k, so price moves automatically as traders swap against the pool. No traditional order book is required.',
     },
     {
       question: 'What is "impermanent loss" for a liquidity provider?',
@@ -2374,7 +2374,7 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'TVL sums assets staked, lent, or pooled in a protocol. It is a size/usage metric, not profitability — high TVL does not guarantee safety or yield quality.',
+        'TVL sums assets staked, lent, or pooled in a protocol. It is a size/usage metric, not profitability, high TVL does not guarantee safety or yield quality.',
     },
     {
       question:
@@ -2453,7 +2453,7 @@ const QUIZ_BANK = {
     {
       question: 'What is "yield farming" in DeFi?',
       options: [
-        'Deploying capital across protocols to earn rewards — often trading fees plus governance token incentives',
+        'Deploying capital across protocols to earn rewards, often trading fees plus governance token incentives',
         'Mining Bitcoin with agricultural GPUs',
         'Buying farmland tokenized as NFTs',
         'Staking ETH on the Beacon Chain only',
@@ -2499,7 +2499,7 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Floor price is the cheapest currently listed NFT — a common liquidity and sentiment metric, though it can be manipulated with wash listings.',
+        'Floor price is the cheapest currently listed NFT, a common liquidity and sentiment metric, though it can be manipulated with wash listings.',
     },
     {
       question: 'What is "metadata" in the context of an NFT?',
@@ -2511,7 +2511,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'Metadata (often JSON on IPFS) defines what the NFT represents — image URL, attributes, description — and is what marketplaces display to buyers.',
+        'Metadata (often JSON on IPFS) defines what the NFT represents, image URL, attributes, description, and is what marketplaces display to buyers.',
     },
     {
       question: 'What is a creator royalty in NFT marketplaces?',
@@ -2523,7 +2523,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Royalties (e.g., 5% to the creator on each resale) were a major NFT value proposition. Enforcement varies — some marketplaces made royalties optional after 2022.',
+        'Royalties (e.g. 5% to the creator on each resale) were a major NFT value proposition. Enforcement varies, some marketplaces made royalties optional after 2022.',
     },
     {
       question: 'What does "minting" an NFT mean?',
@@ -2535,7 +2535,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Minting executes the smart contract function that creates a new tokenId and assigns ownership — either at public sale or via allowlist.',
+        'Minting executes the smart contract function that creates a new tokenId and assigns ownership, either at public sale or via allowlist.',
     },
     {
       question: 'What is IPFS commonly used for in NFT projects?',
@@ -2555,7 +2555,7 @@ const QUIZ_BANK = {
         'Any collection with more than 10,000 items',
         'NFTs minted on Bitcoin only',
         'Tokens that pay dividends to holders',
-        'Collections with established brand, liquidity, and community — often higher floor prices and longer track records',
+        'Collections with established brand, liquidity, and community, often higher floor prices and longer track records',
       ],
       correct: 3,
       explanation:
@@ -2576,7 +2576,7 @@ const QUIZ_BANK = {
     {
       question: 'What is ERC-1155 designed to support?',
       options: [
-        'Multi-token standard supporting both fungible and non-fungible tokens in one contract — efficient for games and batch mints',
+        'Multi-token standard supporting both fungible and non-fungible tokens in one contract, efficient for games and batch mints',
         'Only single-edition art',
         'Proof-of-work mining pools',
         'Cross-chain bridges only',
@@ -2598,7 +2598,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'L1 chains are the foundation — they finalize state, enforce rules, and anchor security. Everything else builds on or connects to this layer.',
+        'L1 chains are the foundation, they finalize state, enforce rules, and anchor security. Everything else builds on or connects to this layer.',
     },
     {
       question: 'What problem do Layer 2 (L2) rollups primarily aim to solve?',
@@ -2646,7 +2646,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'If L2 transaction data is not available on L1, users cannot verify balances or exit to L1 safely — a critical security requirement for rollups.',
+        'If L2 transaction data is not available on L1, users cannot verify balances or exit to L1 safely, a critical security requirement for rollups.',
     },
     {
       question:
@@ -2696,7 +2696,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'L2s amortize L1 costs across many transactions. For frequent activity, fee savings dominate — though users must manage bridging and counterparty/sequencer risks.',
+        'L2s amortize L1 costs across many transactions. For frequent activity, fee savings dominate, though users must manage bridging and counterparty/sequencer risks.',
     },
     {
       question: 'What does "modular blockchain" architecture emphasize?',
@@ -2708,7 +2708,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Modular design splits concerns — e.g., Celestia for DA, rollups for execution, Ethereum for settlement — to scale each component independently.',
+        'Modular design splits concerns, e.g. Celestia for DA, rollups for execution, Ethereum for settlement, to scale each component independently.',
     },
   ],
 
@@ -2816,7 +2816,7 @@ const QUIZ_BANK = {
       options: [
         'Guaranteed FDIC insurance returns',
         'Mining rewards from Bitcoin',
-        'Compensation for lending liquidity, taking smart contract risk, and sometimes token incentives — not risk-free interest',
+        'Compensation for lending liquidity, taking smart contract risk, and sometimes token incentives, not risk-free interest',
         'Automatic US Treasury bill rates with no risk',
       ],
       correct: 2,
@@ -2843,12 +2843,12 @@ const QUIZ_BANK = {
       options: [
         'Celebrity social media posts only',
         'Centralized exchange order books exclusively',
-        'Public blockchain data — flows, balances, and entity behavior — to infer market activity',
+        'Public blockchain data, flows, balances, and entity behavior, to infer market activity',
         'Private bank wire transfers',
       ],
       correct: 2,
       explanation:
-        'On-chain analysts use transparent ledger data (with clustering/heuristics) to track whales, exchange flows, and network usage — data CEX order books alone cannot show.',
+        'On-chain analysts use transparent ledger data (with clustering/heuristics) to track whales, exchange flows, and network usage, data CEX order books alone cannot show.',
     },
     {
       question: 'What does a large inflow of BTC to exchange addresses often signal to analysts?',
@@ -2860,7 +2860,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Exchange inflows suggest coins moving to venues where they can be sold. Context matters — not every inflow leads to selling, but it is a watched bearish indicator.',
+        'Exchange inflows suggest coins moving to venues where they can be sold. Context matters, not every inflow leads to selling, but it is a watched bearish indicator.',
     },
     {
       question: 'What is "whale watching" in crypto markets?',
@@ -2878,7 +2878,7 @@ const QUIZ_BANK = {
       question: 'What metric does "NVT ratio" (Network Value to Transactions) approximate?',
       options: [
         'GPU temperature during mining',
-        'Whether network valuation is high relative to on-chain transaction volume — a crude "P/E" for blockchains',
+        'Whether network valuation is high relative to on-chain transaction volume, a crude "P/E" for blockchains',
         'The number of validators slashed',
         'NFT floor prices',
       ],
@@ -2914,7 +2914,7 @@ const QUIZ_BANK = {
       question: 'What is MVRV (Market Value to Realized Value) commonly used for?',
       options: [
         'Setting gas limits',
-        'Identifying macro cycle extremes — high MVRV suggests holders are broadly in profit',
+        'Identifying macro cycle extremes, high MVRV suggests holders are broadly in profit',
         'Calculating NFT royalties',
         'Determining mining pool fees',
       ],
@@ -2932,24 +2932,24 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Much trading happens off L1 or through custodial books. On-chain metrics are powerful but incomplete — combine with market structure and fundamentals.',
+        'Much trading happens off L1 or through custodial books. On-chain metrics are powerful but incomplete, combine with market structure and fundamentals.',
     },
     {
       question: 'What does an increasing "active addresses" count suggest?',
       options: [
         'Automatic price doubling',
         'All addresses belong to one person',
-        'Growing network usage and participation — a fundamental adoption signal',
+        'Growing network usage and participation, a fundamental adoption signal',
         'Mining difficulty is falling',
       ],
       correct: 2,
       explanation:
-        'Sustained growth in daily active addresses indicates more users transacting. Spikes can be sybil/airdrop farming — quality filters matter.',
+        'Sustained growth in daily active addresses indicates more users transacting. Spikes can be sybil/airdrop farming, quality filters matter.',
     },
     {
       question: 'What is a "coin days destroyed" (CDD) metric designed to capture?',
       options: [
-        'When long-held coins move — weighting transfers by how long they were dormant',
+        'When long-held coins move, weighting transfers by how long they were dormant',
         'Physical coin wear',
         'Daily mining revenue only',
         'Stablecoin mint volume',
@@ -2966,7 +2966,7 @@ const QUIZ_BANK = {
       options: [
         'Price crossing below all moving averages',
         'Volume dropping to zero',
-        'A 50-day moving average crossing above a 200-day moving average — a bullish signal to many traders',
+        'A 50-day moving average crossing above a 200-day moving average, a bullish signal to many traders',
         'A cross-chain bridge opening',
       ],
       correct: 2,
@@ -2976,7 +2976,7 @@ const QUIZ_BANK = {
     {
       question: 'What do Bollinger Bands show on a price chart?',
       options: [
-        'Volatility bands around a moving average — widening bands suggest higher volatility',
+        'Volatility bands around a moving average, widening bands suggest higher volatility',
         'Only the opening price each day',
         'Guaranteed support at the lower band',
         'Mining hash rate',
@@ -2991,17 +2991,17 @@ const QUIZ_BANK = {
         'Oversold conditions',
         'Zero trading volume',
         'A confirmed trend reversal',
-        'Overbought conditions — momentum may be stretched to the upside',
+        'Overbought conditions, momentum may be stretched to the upside',
       ],
       correct: 3,
       explanation:
-        'RSI ranges 0–100. Above 70 is overbought, below 30 oversold. In strong trends, RSI can stay extreme for extended periods — not a standalone sell signal.',
+        'RSI ranges 0–100. Above 70 is overbought, below 30 oversold. In strong trends, RSI can stay extreme for extended periods, not a standalone sell signal.',
     },
     {
       question: 'Why is 24/7 crypto market structure different for TA than traditional equities?',
       options: [
         'Crypto markets close on holidays',
-        'No session gaps — weekend and overnight moves are continuous, changing gap and liquidity patterns',
+        'No session gaps, weekend and overnight moves are continuous, changing gap and liquidity patterns',
         'Crypto has no volume data',
         'Charts are unavailable for crypto',
       ],
@@ -3019,7 +3019,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Support is where demand previously absorbed supply. Breakdown below support can trigger stops and accelerate selling — levels are probabilistic, not walls.',
+        'Support is where demand previously absorbed supply. Breakdown below support can trigger stops and accelerate selling, levels are probabilistic, not walls.',
     },
     {
       question: 'What does MACD histogram crossing zero often signal to momentum traders?',
@@ -3051,7 +3051,7 @@ const QUIZ_BANK = {
         'Price and RSI both rise together',
         'RSI stays at 50 forever',
         'Only occurs on monthly charts of gold',
-        'Price makes higher highs while RSI makes lower highs — momentum weakening despite rising price',
+        'Price makes higher highs while RSI makes lower highs, momentum weakening despite rising price',
       ],
       correct: 3,
       explanation:
@@ -3062,7 +3062,7 @@ const QUIZ_BANK = {
       options: [
         'Calculating block rewards',
         'Setting Uniswap fees',
-        'Positive funding means longs pay shorts — extreme positive rates can signal crowded long positioning',
+        'Positive funding means longs pay shorts, extreme positive rates can signal crowded long positioning',
         'Determining NFT rarity',
       ],
       correct: 2,
@@ -3072,7 +3072,7 @@ const QUIZ_BANK = {
     {
       question: 'What is a key limitation of technical analysis in crypto?',
       options: [
-        'Manipulation, low liquidity alts, and macro shocks can invalidate patterns — TA describes probability, not certainty',
+        'Manipulation, low liquidity alts, and macro shocks can invalidate patterns, TA describes probability, not certainty',
         'Charts cannot display candlesticks',
         'TA is illegal for crypto',
         'All indicators use identical timeframes',
@@ -3089,12 +3089,12 @@ const QUIZ_BANK = {
       options: [
         'The study of physical coin minting',
         'A type of NFT royalty',
-        'The economic design of a token — supply, distribution, incentives, and utility',
+        'The economic design of a token, supply, distribution, incentives, and utility',
         'Ethereum gas fee calculation only',
       ],
       correct: 2,
       explanation:
-        'Tokenomics covers how a token is created, allocated, released over time, and used — determining whether incentives align with long-term protocol health.',
+        'Tokenomics covers how a token is created, allocated, released over time, and used, determining whether incentives align with long-term protocol health.',
     },
     {
       question: 'What does "fully diluted valuation" (FDV) represent?',
@@ -3114,7 +3114,7 @@ const QUIZ_BANK = {
         'When a wallet password expires',
         'When a blockchain hard forks',
         'A stablecoin redemption event',
-        'Scheduled release of previously locked tokens to team, investors, or ecosystem — often adding sell pressure',
+        'Scheduled release of previously locked tokens to team, investors, or ecosystem, often adding sell pressure',
       ],
       correct: 3,
       explanation:
@@ -3135,14 +3135,14 @@ const QUIZ_BANK = {
     {
       question: 'What does "utility token" typically mean?',
       options: [
-        "A token that grants access to a protocol's services, governance, or fee discounts — not necessarily a claim on profits",
+        "A token that grants access to a protocol's services, governance, or fee discounts, not necessarily a claim on profits",
         'A token backed 1:1 by US Treasuries only',
         'A physical subway pass',
         'A mining hardware warranty',
       ],
       correct: 0,
       explanation:
-        'Utility tokens drive ecosystem participation (staking, fees, governance). Regulatory treatment varies — "utility" labels do not automatically avoid securities analysis.',
+        'Utility tokens drive ecosystem participation (staking, fees, governance). Regulatory treatment varies, "utility" labels do not automatically avoid securities analysis.',
     },
     {
       question: 'Why might high initial token allocation to insiders concern investors?',
@@ -3202,7 +3202,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Unsustainable emissions attract yield farmers who dump reward tokens. When APY falls, capital rotates out — the "farm and dump" cycle.',
+        'Unsustainable emissions attract yield farmers who dump reward tokens. When APY falls, capital rotates out, the "farm and dump" cycle.',
     },
   ],
 
@@ -3212,12 +3212,12 @@ const QUIZ_BANK = {
       options: [
         'It ruled all tokens are always securities',
         'It banned Ethereum in the US',
-        'It suggested context matters — institutional sales may be securities while programmatic exchange sales might differ',
+        'It suggested context matters, institutional sales may be securities while programmatic exchange sales might differ',
         'It eliminated all crypto taxes',
       ],
       correct: 2,
       explanation:
-        'The 2023 ruling partially favored Ripple on retail exchange sales but found institutional sales violated securities law — reinforcing facts-and-circumstances analysis.',
+        'The 2023 ruling partially favored Ripple on retail exchange sales but found institutional sales violated securities law, reinforcing facts-and-circumstances analysis.',
     },
     {
       question: 'What is the Howey Test used to evaluate in the US?',
@@ -3241,13 +3241,13 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Markets in Crypto-Assets (MiCA) creates EU-wide rules for CASPs, token white papers, and stablecoin reserve requirements — phased in from 2024–2025.',
+        'Markets in Crypto-Assets (MiCA) creates EU-wide rules for CASPs, token white papers, and stablecoin reserve requirements, phased in from 2024–2025.',
     },
     {
       question: 'What is a "money transmitter" license relevant to in the US?',
       options: [
         'GPU import permits',
-        'Businesses that custody or transmit customer funds — including some crypto exchanges and payment processors — at the state level',
+        'Businesses that custody or transmit customer funds, including some crypto exchanges and payment processors, at the state level',
         'Patents on blockchain algorithms',
         'Mining pool registration',
       ],
@@ -3258,7 +3258,7 @@ const QUIZ_BANK = {
     {
       question: 'What is travel rule compliance in crypto?',
       options: [
-        'Sharing originator and beneficiary information for transfers above thresholds — extending banking AML rules to VASPs',
+        'Sharing originator and beneficiary information for transfers above thresholds, extending banking AML rules to VASPs',
         'A tourism tax on Bitcoin',
         'A rule banning cross-border crypto',
         'Mandatory vacation for traders',
@@ -3272,7 +3272,7 @@ const QUIZ_BANK = {
       options: [
         'They eliminate Bitcoin volatility',
         'They replace the Bitcoin network',
-        'They offer regulated brokerage access to BTC exposure without direct self-custody — broadening institutional participation',
+        'They offer regulated brokerage access to BTC exposure without direct self-custody, broadening institutional participation',
         'They pay guaranteed 10% dividends',
       ],
       correct: 2,
@@ -3297,7 +3297,7 @@ const QUIZ_BANK = {
         'It only applies to banks',
         'It requires proof-of-stake',
         'It bans all privacy coins globally',
-        'US persons must block transactions with sanctioned addresses and entities — including on-chain wallet screening',
+        'US persons must block transactions with sanctioned addresses and entities, including on-chain wallet screening',
       ],
       correct: 3,
       explanation:
@@ -3360,7 +3360,7 @@ const QUIZ_BANK = {
         'Slower transaction confirmation',
         'Automatic FDIC insurance',
         'Lower funding rates',
-        'Liquidation during volatile wicks — losing margin even if price later recovers',
+        'Liquidation during volatile wicks, losing margin even if price later recovers',
       ],
       correct: 3,
       explanation:
@@ -3376,7 +3376,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'Grid bots automate range trading — buying dips and selling rips. They underperform in strong trends that break the range.',
+        'Grid bots automate range trading, buying dips and selling rips. They underperform in strong trends that break the range.',
     },
     {
       question: 'Why do traders monitor cross-exchange BTC spreads?',
@@ -3406,7 +3406,7 @@ const QUIZ_BANK = {
       question: 'What does "risk-reward ratio" of 1:3 mean in trade planning?',
       options: [
         'Risk $3 to make $1',
-        'Risk $1 to target $3 profit — seeking asymmetric payoff if win rate supports it',
+        'Risk $1 to target $3 profit, seeking asymmetric payoff if win rate supports it',
         'Win 3 trades then lose 1 automatically',
         'Use 3× leverage only',
       ],
@@ -3420,7 +3420,7 @@ const QUIZ_BANK = {
         'A regulatory audit',
         'A guaranteed bullish signal',
         'When miners stop validating blocks',
-        'Price briefly moves to trigger clustered stop orders before reversing — common in leveraged markets',
+        'Price briefly moves to trigger clustered stop orders before reversing, common in leveraged markets',
       ],
       correct: 3,
       explanation:
@@ -3436,7 +3436,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Footprint charts, CVD, and liquidation heatmaps show where leveraged participants get forced out — useful for short-term execution timing.',
+        'Footprint charts, CVD, and liquidation heatmaps show where leveraged participants get forced out, useful for short-term execution timing.',
     },
     {
       question: 'What is the main purpose of a trading journal for crypto strategies?',
@@ -3475,7 +3475,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Advanced LPs short the volatile leg or use options to neutralize delta while collecting fees — complex and can fail if correlations break.',
+        'Advanced LPs short the volatile leg or use options to neutralize delta while collecting fees, complex and can fail if correlations break.',
     },
     {
       question: 'What is a "vault" or "auto-compounder" in DeFi yield strategies?',
@@ -3487,7 +3487,7 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Vaults (Yearn-style) batch compounding to save gas and optimize allocation — users deposit and receive share tokens representing vault NAV.',
+        'Vaults (Yearn-style) batch compounding to save gas and optimize allocation, users deposit and receive share tokens representing vault NAV.',
     },
     {
       question: 'What is "recursive lending" (looping) for yield?',
@@ -3518,7 +3518,7 @@ const QUIZ_BANK = {
       options: [
         'Slower block times',
         'Higher gas on Sundays',
-        'Composable protocol stacks multiply attack surface — one vulnerable dependency can drain nested positions',
+        'Composable protocol stacks multiply attack surface, one vulnerable dependency can drain nested positions',
         'Mandatory KYC on-chain',
       ],
       correct: 2,
@@ -3547,7 +3547,7 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Projects track usage metrics and award points speculated to convert to tokens. Sybil attackers multiply wallets — teams add anti-sybil filters at claim.',
+        'Projects track usage metrics and award points speculated to convert to tokens. Sybil attackers multiply wallets, teams add anti-sybil filters at claim.',
     },
     {
       question: 'Why can advertised APY above 50% be a red flag?',
@@ -3571,7 +3571,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'If insurance fund is insufficient during cascades, exchanges ADL winning hedges — breaking supposed delta-neutral books at the worst time.',
+        'If insurance fund is insufficient during cascades, exchanges ADL winning hedges, breaking supposed delta-neutral books at the worst time.',
     },
   ],
 
@@ -3616,7 +3616,7 @@ const QUIZ_BANK = {
       question: 'What is a "straddle" options strategy?',
       options: [
         'Buy only call options',
-        'Buy a call and put at the same strike and expiry — profiting from large moves in either direction',
+        'Buy a call and put at the same strike and expiry, profiting from large moves in either direction',
         'Sell all portfolio assets',
         'Stake ETH and BTC equally',
       ],
@@ -3652,7 +3652,7 @@ const QUIZ_BANK = {
       question: 'What is a "cash-and-carry" arbitrage with Bitcoin futures?',
       options: [
         'Carrying physical bitcoin in a bag',
-        'Buy spot BTC and sell equivalent futures when futures trade at premium — locking spread at expiry',
+        'Buy spot BTC and sell equivalent futures when futures trade at premium, locking spread at expiry',
         'Only using cash with no crypto',
         'Borrowing BTC to short spot',
       ],
@@ -3663,7 +3663,7 @@ const QUIZ_BANK = {
     {
       question: 'What risk does "counterparty default" pose on unregulated derivatives platforms?',
       options: [
-        'None — all perps are on-chain with full collateral',
+        'None, all perps are on-chain with full collateral',
         'Only affects spot holders',
         'It increases block size',
         'During stress, platform insolvency or auto-deleveraging can leave profitable traders unpaid',
@@ -3677,7 +3677,7 @@ const QUIZ_BANK = {
       options: [
         'The worst personal trading loss',
         'Maximum mining pain when difficulty rises',
-        'The strike price where most options expire worthless, minimizing payout by option writers — a heuristic, not a law',
+        'The strike price where most options expire worthless, minimizing payout by option writers, a heuristic, not a law',
         'The highest gas fee ever paid',
       ],
       correct: 2,
@@ -3687,7 +3687,7 @@ const QUIZ_BANK = {
     {
       question: 'Why might traders use put options on BTC holdings?',
       options: [
-        'As portfolio insurance — limiting downside below the strike for the cost of premium',
+        'As portfolio insurance, limiting downside below the strike for the cost of premium',
         'To increase exposure to unlimited upside only',
         'To avoid all taxes automatically',
         'To mine more blocks',
@@ -3721,7 +3721,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Attackers observe mempool txs, buy before large swap, let victim buy at worse price, then sell into inflated price — extracting value from slippage.',
+        'Attackers observe mempool txs, buy before large swap, let victim buy at worse price, then sell into inflated price, extracting value from slippage.',
     },
     {
       question: 'What is "frontrunning" in crypto context?',
@@ -3781,7 +3781,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'Liquidations and DEX arb often backrun oracle updates or large swaps — profitable ordering right after the triggering event.',
+        'Liquidations and DEX arb often backrun oracle updates or large swaps, profitable ordering right after the triggering event.',
     },
     {
       question: 'What ethical debate surrounds MEV extraction?',
@@ -3800,7 +3800,7 @@ const QUIZ_BANK = {
       options: [
         'Stealing watches',
         'Delayed KYC verification',
-        'Rewinding chain history to capture past MEV — more feasible under PoW reorg incentives than modern PoS finality',
+        'Rewinding chain history to capture past MEV, more feasible under PoW reorg incentives than modern PoS finality',
         'Clock skew on laptops',
       ],
       correct: 2,
@@ -3810,7 +3810,7 @@ const QUIZ_BANK = {
     {
       question: 'How do L2 sequencers relate to MEV?',
       options: [
-        'Centralized sequencers can extract or sell ordering priority similarly to L1 builders — decentralizing sequencers is an active research area',
+        'Centralized sequencers can extract or sell ordering priority similarly to L1 builders, decentralizing sequencers is an active research area',
         'They have no ordering power',
         'They eliminate all trading fees',
         'They only process NFTs',
@@ -3852,11 +3852,11 @@ const QUIZ_BANK = {
         'Bridges are protected by military encryption',
         'Hackers only target Bitcoin base layer',
         'Bridges cannot hold more than $1,000',
-        'Bridges hold large pooled locked assets and complex smart contracts — large attack surface',
+        'Bridges hold large pooled locked assets and complex smart contracts, large attack surface',
       ],
       correct: 3,
       explanation:
-        'Ronin, Wormhole, and others lost hundreds of millions. Bridges concentrate TVL and often use multisigs or complex verification — frequent weak links.',
+        'Ronin, Wormhole, and others lost hundreds of millions. Bridges concentrate TVL and often use multisigs or complex verification, frequent weak links.',
     },
     {
       question: 'What is an "optimistic bridge" or fraud-proof bridge model?',
@@ -3916,7 +3916,7 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'During bridge outages, wrapped assets depeg from native. Arbitrageurs normally align prices — unless redemption is impossible.',
+        'During bridge outages, wrapped assets depeg from native. Arbitrageurs normally align prices, unless redemption is impossible.',
     },
     {
       question: 'What is a "canonical bridge" recommended by an L2 team?',
@@ -3960,14 +3960,14 @@ const QUIZ_BANK = {
     {
       question: 'What is a governance token typically used for?',
       options: [
-        'Voting on proposals — parameter changes, treasury spends, upgrades',
+        'Voting on proposals, parameter changes, treasury spends, upgrades',
         'Paying electricity bills directly',
         'Mining proof-of-work',
         'Replacing gas on all chains',
       ],
       correct: 0,
       explanation:
-        'One token often equals one vote (or quadratic variants). Large holders wield disproportionate influence — "plutocracy" criticism is common.',
+        'One token often equals one vote (or quadratic variants). Large holders wield disproportionate influence, "plutocracy" criticism is common.',
     },
     {
       question: 'What is "vote delegation" in DAOs?',
@@ -3996,14 +3996,14 @@ const QUIZ_BANK = {
     {
       question: 'What is a "timelock" on governance execution?',
       options: [
-        'A mandatory delay between vote passage and on-chain execution — allowing exit or response if malicious',
+        'A mandatory delay between vote passage and on-chain execution, allowing exit or response if malicious',
         'A clock on the website',
         'A ban on night trading',
         'NFT auction duration',
       ],
       correct: 0,
       explanation:
-        'Timelocks give the community time to react (move funds, fork) if a harmful proposal passes — critical security layer for DeFi DAOs.',
+        'Timelocks give the community time to react (move funds, fork) if a harmful proposal passes, critical security layer for DeFi DAOs.',
     },
     {
       question: 'What is "quorum" in DAO voting?',
@@ -4021,13 +4021,13 @@ const QUIZ_BANK = {
       question: 'What is "Snapshot" voting commonly used for?',
       options: [
         'Taking screenshots of charts',
-        'Off-chain signature-based voting weighted by token balance at a block — avoiding gas for each vote',
+        'Off-chain signature-based voting weighted by token balance at a block, avoiding gas for each vote',
         'On-chain mining votes',
         'Instagram marketing',
       ],
       correct: 1,
       explanation:
-        'Snapshot reads balances at a historical block. It is not enforceable on-chain alone — execution requires separate multisig or timelock trust.',
+        'Snapshot reads balances at a historical block. It is not enforceable on-chain alone, execution requires separate multisig or timelock trust.',
     },
     {
       question: 'What challenge does "voter apathy" create for DAOs?',
@@ -4051,7 +4051,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Exit rights let dissenters take proportional assets instead of being trapped — reduces governance deadlock at cost of treasury stability.',
+        'Exit rights let dissenters take proportional assets instead of being trapped, reduces governance deadlock at cost of treasury stability.',
     },
     {
       question: 'What legal wrapper (e.g., Wyoming DAO LLC) attempts to solve?',
@@ -4074,7 +4074,7 @@ const QUIZ_BANK = {
       options: [
         '100% in one micro-cap',
         'Exactly 50% always',
-        'Often cited guidance suggests limiting single non-BTC/ETH positions to small percentages — e.g., 1–5% — due to idiosyncratic risk',
+        'Often cited guidance suggests limiting single non-BTC/ETH positions to small percentages, e.g. 1–5%, due to idiosyncratic risk',
         'Zero BTC allowed',
       ],
       correct: 2,
@@ -4091,7 +4091,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Rebalancing sells winners and buys laggards mechanically — enforcing discipline. Crypto volatility makes drift large quickly without periodic resets.',
+        'Rebalancing sells winners and buys laggards mechanically, enforcing discipline. Crypto volatility makes drift large quickly without periodic resets.',
     },
     {
       question:
@@ -4100,7 +4100,7 @@ const QUIZ_BANK = {
         'They must use the same wallet',
         'Trading stack must be 100% of net worth',
         'Investment stack requires daily leverage',
-        'Long-term holdings use cold storage; active trading capital stays on exchanges/hot wallets — limiting catastrophic loss',
+        'Long-term holdings use cold storage; active trading capital stays on exchanges/hot wallets, limiting catastrophic loss',
       ],
       correct: 3,
       explanation:
@@ -4110,7 +4110,7 @@ const QUIZ_BANK = {
       question: 'What is "correlation" risk when holding many altcoins?',
       options: [
         'Alts always move independently',
-        'During market stress, alt-BTC correlations often rise toward 1 — diversification benefits shrink when needed most',
+        'During market stress, alt-BTC correlations often rise toward 1, diversification benefits shrink when needed most',
         'Correlation is irrelevant to crypto',
         'Only stablecoins correlate',
       ],
@@ -4135,7 +4135,7 @@ const QUIZ_BANK = {
       options: [
         'It guarantees the lowest possible price',
         'It eliminates all losses',
-        'It reduces timing risk by spreading purchases over time — smoothing entry across volatility',
+        'It reduces timing risk by spreading purchases over time, smoothing entry across volatility',
         'It requires leverage',
       ],
       correct: 2,
@@ -4152,7 +4152,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'ETH staking ~3–4% historically — real but not risk-free. Liquid staking tokens add smart contract layer; rewards are often taxable events.',
+        'ETH staking ~3–4% historically, real but not risk-free. Liquid staking tokens add smart contract layer; rewards are often taxable events.',
     },
     {
       question: 'What is a "barbell strategy" applied to crypto?',
@@ -4160,18 +4160,18 @@ const QUIZ_BANK = {
         'Only holding mid-cap alts',
         'Equal weight 500 tokens',
         'All funds in leverage',
-        'Heavy allocation to conservative core (BTC/ETH/stables) plus small speculative bets — avoiding the mushy middle',
+        'Heavy allocation to conservative core (BTC/ETH/stables) plus small speculative bets, avoiding the mushy middle',
       ],
       correct: 3,
       explanation:
-        'Taleb-style barbell survives drawdowns on the safe side while optional moonshots on the other — avoids moderate-risk alts that fail asymmetrically.',
+        'Taleb-style barbell survives drawdowns on the safe side while optional moonshots on the other, avoids moderate-risk alts that fail asymmetrically.',
     },
     {
       question: 'Why track portfolio in fiat AND in BTC terms?',
       options: [
         'Fiat is meaningless for crypto',
         'BTC terms are illegal',
-        'BTC denomination shows whether you are growing wealth vs simply riding BTC beta — especially for alt-heavy books',
+        'BTC denomination shows whether you are growing wealth vs simply riding BTC beta, especially for alt-heavy books',
         'Exchanges require both',
       ],
       correct: 2,
@@ -4198,7 +4198,7 @@ const QUIZ_BANK = {
       options: [
         'Foreign currency with no capital gains',
         'Tax-exempt like municipal bonds',
-        'Property — capital gains/losses apply on disposition',
+        'Property, capital gains/losses apply on disposition',
         'Ordinary income only, never capital gains',
       ],
       correct: 2,
@@ -4239,7 +4239,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'Mining income is recognized when rewarded. Selling mined coins later adds another layer — short/long-term gain on appreciation after receipt.',
+        'Mining income is recognized when rewarded. Selling mined coins later adds another layer, short/long-term gain on appreciation after receipt.',
     },
     {
       question: 'What is Form 8949 used for in US crypto tax filing?',
@@ -4256,9 +4256,9 @@ const QUIZ_BANK = {
     {
       question: 'What is the wash sale rule status for crypto as of common 2024–2025 guidance?',
       options: [
-        'Identical to stocks — always applies',
+        'Identical to stocks, always applies',
         'Wash sales never exist in any asset',
-        'Crypto was not subject to wash sale rules for securities because classified as property — though legislation may change this',
+        'Crypto was not subject to wash sale rules for securities because classified as property, though legislation may change this',
         'It only applies to NFTs',
       ],
       correct: 2,
@@ -4294,7 +4294,7 @@ const QUIZ_BANK = {
       options: [
         'Currently valid for all BTC-to-ETH swaps in the US',
         'Required for all NFT sales',
-        'Generally NOT available for crypto swaps after TCJA limited 1031 to real property — crypto-for-crypto is usually taxable',
+        'Generally NOT available for crypto swaps after TCJA limited 1031 to real property, crypto-for-crypto is usually taxable',
         'A DeFi flash loan technique',
       ],
       correct: 2,
@@ -4311,7 +4311,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'US persons report worldwide income. Foreign CEX accounts may trigger FBAR (>$10k aggregate) and Form 8938 FATCA thresholds — separate from income tax.',
+        'US persons report worldwide income. Foreign CEX accounts may trigger FBAR (>$10k aggregate) and Form 8938 FATCA thresholds, separate from income tax.',
     },
   ],
 
@@ -4350,13 +4350,13 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'State changes must precede external calls so reentrant entry sees updated balances. Violating CEI — sending ETH before updating mappings — is the root cause of most reentrancy exploits.',
+        'State changes must precede external calls so reentrant entry sees updated balances. Violating CEI, sending ETH before updating mappings, is the root cause of most reentrancy exploits.',
     },
     {
       question: 'What is "oracle manipulation" in DeFi auditing context?',
       options: [
         'Changing Ethereum consensus rules',
-        'Temporarily distorting the price feed a protocol reads — via flash loans or thin pools — to trigger unfair liquidations or mints',
+        'Temporarily distorting the price feed a protocol reads, via flash loans or thin pools, to trigger unfair liquidations or mints',
         'Replacing a hardware wallet firmware',
         "A hacker guessing a user's seed phrase",
       ],
@@ -4367,7 +4367,7 @@ const QUIZ_BANK = {
     {
       question: 'What does SWC (Smart Contract Weakness Classification) provide?',
       options: [
-        'A standardized taxonomy of common vulnerability classes — similar to CWE for traditional software',
+        'A standardized taxonomy of common vulnerability classes, similar to CWE for traditional software',
         'A list of approved auditors licensed by the SEC',
         'A gas price oracle for Ethereum mainnet',
         'A token standard for security tokens only',
@@ -4418,7 +4418,7 @@ const QUIZ_BANK = {
       options: [
         'Only whether the frontend matches the whitepaper branding',
         'The legal jurisdiction of token holders',
-        'Properties that must always hold — such as solvency or conservation of tokens — under randomized sequences of protocol actions',
+        'Properties that must always hold, such as solvency or conservation of tokens, under randomized sequences of protocol actions',
         'Historical price performance of governance tokens',
       ],
       correct: 2,
@@ -4450,7 +4450,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Qualified custodians (Coinbase Custody, BitGo, Fidelity Digital, etc.) meet regulatory thresholds for asset segregation, insurance, and audit — required for many funds, ETFs, and RIAs holding crypto on behalf of clients.',
+        'Qualified custodians (Coinbase Custody, BitGo, Fidelity Digital, etc.) meet regulatory thresholds for asset segregation, insurance, and audit, required for many funds, ETFs, and RIAs holding crypto on behalf of clients.',
     },
     {
       question: 'How does an OTC desk typically serve large institutional crypto trades?',
@@ -4474,7 +4474,7 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Crypto prime brokers (Genesis historically, FalconX, Hidden Road) let funds borrow against collateral, access multiple venues, and net exposures — mirroring TradFi prime services adapted for 24/7 digital assets.',
+        'Crypto prime brokers (Genesis historically, FalconX, Hidden Road) let funds borrow against collateral, access multiple venues, and net exposures, mirroring TradFi prime services adapted for 24/7 digital assets.',
     },
     {
       question: 'In a spot Bitcoin ETF, what is the role of authorized participants (APs)?',
@@ -4524,7 +4524,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'Post-FTX, institutions demand regular attestations (Merkle tree proofs, SOC reports) that client assets are segregated and fully backed — not commingled with proprietary trading balances.',
+        'Post-FTX, institutions demand regular attestations (Merkle tree proofs, SOC reports) that client assets are segregated and fully backed, not commingled with proprietary trading balances.',
     },
     {
       question:
@@ -4533,7 +4533,7 @@ const QUIZ_BANK = {
         'Always 100% allocation regardless of mandate',
         'Zero allocation is the only approved approach',
         'Exactly equal weight to every altcoin',
-        'Based on mandate, liquidity needs, and risk budget — often 1–5% for conservative allocators, higher for dedicated crypto funds',
+        'Based on mandate, liquidity needs, and risk budget, often 1–5% for conservative allocators, higher for dedicated crypto funds',
       ],
       correct: 3,
       explanation:
@@ -4590,7 +4590,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Many tokens lack cash-flow linkage — governance-only tokens, unlimited emissions, or fees paid in ETH not the native token weaken the investment case. Thesis must trace usage → revenue → token.',
+        'Many tokens lack cash-flow linkage, governance-only tokens, unlimited emissions, or fees paid in ETH not the native token weaken the investment case. Thesis must trace usage → revenue → token.',
     },
     {
       question: 'In a crypto thesis, what is a "bear case" meant to capture?',
@@ -4598,7 +4598,7 @@ const QUIZ_BANK = {
         'Only regulatory scenarios that help the token',
         'Historical price charts from 2017 only',
         'Social media sentiment on bull posts',
-        'The strongest arguments for failure — competition, regulation, tech risk, tokenomics dilution — and what would invalidate the bull view',
+        'The strongest arguments for failure, competition, regulation, tech risk, tokenomics dilution, and what would invalidate the bull view',
       ],
       correct: 3,
       explanation:
@@ -4608,7 +4608,7 @@ const QUIZ_BANK = {
       question: 'What is "comparable analysis" (comps) in crypto sector research?',
       options: [
         'Comparing wallet addresses byte-by-byte',
-        "Benchmarking a project's metrics — TVL, fees, users, FDV/revenue — against similar protocols at analogous maturity stages",
+        "Benchmarking a project's metrics, TVL, fees, users, FDV/revenue, against similar protocols at analogous maturity stages",
         'Matching token colors across portfolios',
         'Only comparing BTC and ETH',
       ],
@@ -4619,7 +4619,7 @@ const QUIZ_BANK = {
     {
       question: 'What role do "catalysts" play in a crypto thesis timeline?',
       options: [
-        'Identifiable events — mainnet launches, upgrades, ETF flows, halvings — that may reprice the asset as the market updates expectations',
+        'Identifiable events, mainnet launches, upgrades, ETF flows, halvings, that may reprice the asset as the market updates expectations',
         'They replace all fundamental analysis',
         'Catalysts only matter for stablecoins',
         'They guarantee price direction',
@@ -4644,7 +4644,7 @@ const QUIZ_BANK = {
       question: 'What is a "moat" in crypto protocol analysis?',
       options: [
         'A physical vault for mining rigs',
-        'Durable competitive advantage — network effects, liquidity depth, integrations, brand, or switching costs — that protects market share',
+        'Durable competitive advantage, network effects, liquidity depth, integrations, brand, or switching costs, that protects market share',
         'The moat around a castle-themed NFT',
         'Minimum gas price on L2',
       ],
@@ -4659,18 +4659,18 @@ const QUIZ_BANK = {
         'Unlocks are irrelevant to price',
         'Unlocks always cause instant 10× pumps',
         'Only miners are affected by vesting',
-        'Large insider unlocks increase float and potential sell pressure — thesis should model supply shock and whether demand absorbs it',
+        'Large insider unlocks increase float and potential sell pressure, thesis should model supply shock and whether demand absorbs it',
       ],
       correct: 3,
       explanation:
-        'Supply overhang is quantifiable. Expert theses track vesting calendars, estimate seller behavior (OTC vs open market), and adjust risk/reward before cliffs — not after.',
+        'Supply overhang is quantifiable. Expert theses track vesting calendars, estimate seller behavior (OTC vs open market), and adjust risk/reward before cliffs, not after.',
     },
     {
       question: 'What does "reflexivity" mean in crypto narrative-driven markets?',
       options: [
         'Prices never respond to beliefs',
         'Only applies to government bonds',
-        'Rising prices attract attention and capital, reinforcing the narrative and fundamentals (TVL, security budget) in a feedback loop — and reversing viciously on the way down',
+        'Rising prices attract attention and capital, reinforcing the narrative and fundamentals (TVL, security budget) in a feedback loop, and reversing viciously on the way down',
         'A technical indicator on RSI',
       ],
       correct: 2,
@@ -4681,7 +4681,7 @@ const QUIZ_BANK = {
       question:
         'What is the purpose of assigning "thesis kill criteria" before entering a position?',
       options: [
-        'Predefined observable failures — lost TVL share, broken peg, missed milestone — that trigger reassessment or exit regardless of emotional attachment',
+        'Predefined observable failures, lost TVL share, broken peg, missed milestone, that trigger reassessment or exit regardless of emotional attachment',
         'To never sell under any circumstances',
         'To maximize leverage automatically',
         'To satisfy tax reporting only',
@@ -4723,7 +4723,7 @@ const QUIZ_BANK = {
         'Choosing the wrong blockchain to deploy on',
         'Selecting auditors with low ratings',
         'Regulatory selection of jurisdictions',
-        'Trading against counterparties who know more — toxic flow that hits your quotes just before price moves against you',
+        'Trading against counterparties who know more, toxic flow that hits your quotes just before price moves against you',
       ],
       correct: 3,
       explanation:
@@ -4745,14 +4745,14 @@ const QUIZ_BANK = {
     {
       question: 'What is "quote skew" in market making?',
       options: [
-        'Adjusting bid/ask prices asymmetrically to reduce unwanted inventory accumulation — e.g., lowering bid when long-heavy',
+        'Adjusting bid/ask prices asymmetrically to reduce unwanted inventory accumulation, e.g. lowering bid when long-heavy',
         'Displaying fake prices on a website',
         'Skewing chart timeframes',
         'Randomizing quotes for fairness',
       ],
       correct: 0,
       explanation:
-        'If inventory is too long BTC, the MM lowers bid and raises ask to attract sellers and deter buyers — rebalancing toward target neutrality without stopping quotes entirely.',
+        'If inventory is too long BTC, the MM lowers bid and raises ask to attract sellers and deter buyers, rebalancing toward target neutrality without stopping quotes entirely.',
     },
     {
       question: 'Why do market makers monitor "funding rates" on perpetual futures?',
@@ -4764,13 +4764,13 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Rich positive funding may encourage MM to hold spot and short perps (collecting funding) while quoting on spot books — integrating derivatives into inventory management.',
+        'Rich positive funding may encourage MM to hold spot and short perps (collecting funding) while quoting on spot books, integrating derivatives into inventory management.',
     },
     {
       question: 'What is a "minimum spread" constraint for a crypto MM on an altcoin?',
       options: [
         'Regulators require exactly 0.01% spread always',
-        'Spread must cover fees, adverse selection, volatility risk, and opportunity cost — thin markets require wider spreads than BTC/ETH',
+        'Spread must cover fees, adverse selection, volatility risk, and opportunity cost, thin markets require wider spreads than BTC/ETH',
         'Spreads must be zero to attract volume',
         'Only applies to stablecoin pairs',
       ],
@@ -4795,7 +4795,7 @@ const QUIZ_BANK = {
       options: [
         'A public limit order visible to all retail',
         'A regulatory filing form',
-        'Client requests a firm quote for a specific size; market maker responds with a binding bid/offer for a short window — common for block trades',
+        'Client requests a firm quote for a specific size; market maker responds with a binding bid/offer for a short window, common for block trades',
         'A method to mint NFTs',
       ],
       correct: 2,
@@ -4805,14 +4805,14 @@ const QUIZ_BANK = {
     {
       question: 'Why might a market maker pull quotes entirely during extreme volatility?',
       options: [
-        'Spread-based profits cannot compensate for gap risk and uncertain fair value — withdrawal prevents catastrophic inventory losses',
+        'Spread-based profits cannot compensate for gap risk and uncertain fair value, withdrawal prevents catastrophic inventory losses',
         'To manipulate elections',
         'Exchanges require quotes during crashes',
         'Pulling quotes increases mining rewards',
       ],
       correct: 0,
       explanation:
-        'During flash crashes or exchange outages, fair price is unknown. MMs go wide or flat — liquidity vanishes when needed most, a known structural fragility in crypto market structure.',
+        'During flash crashes or exchange outages, fair price is unknown. MMs go wide or flat, liquidity vanishes when needed most, a known structural fragility in crypto market structure.',
     },
   ],
 
@@ -4822,12 +4822,12 @@ const QUIZ_BANK = {
       options: [
         'Restaking ETH only on Bitcoin',
         'Banning liquid staking tokens',
-        'Reusing staked ETH (or other assets) to secure additional actively validated services (AVSs) in exchange for extra yield — with added slashing risk',
+        'Reusing staked ETH (or other assets) to secure additional actively validated services (AVSs) in exchange for extra yield, with added slashing risk',
         'Converting all DeFi to proof-of-work',
       ],
       correct: 2,
       explanation:
-        'EigenLayer-style restaking lets stakers opt into securing oracles, bridges, and middleware. Yield stacks but slashing conditions multiply — thesis must weigh incremental return vs tail risk.',
+        'EigenLayer-style restaking lets stakers opt into securing oracles, bridges, and middleware. Yield stacks but slashing conditions multiply, thesis must weigh incremental return vs tail risk.',
     },
     {
       question: 'In "Real World Assets" (RWA) crypto narrative, what is being tokenized?',
@@ -4857,7 +4857,7 @@ const QUIZ_BANK = {
       question: 'How should an expert evaluate "AI + crypto" intersection projects?',
       options: [
         'Assume all AI tokens will 100× because of ChatGPT',
-        'Assess whether blockchain adds verifiable compute, data ownership, micropayments, or coordination that centralized AI lacks — or if it is a buzzword wrapper',
+        'Assess whether blockchain adds verifiable compute, data ownership, micropayments, or coordination that centralized AI lacks, or if it is a buzzword wrapper',
         'Only count Twitter followers',
         'Ignore tokenomics entirely',
       ],
@@ -4883,18 +4883,18 @@ const QUIZ_BANK = {
       options: [
         'They are legally required dividend instruments',
         'All memecoins are backed by US Treasuries',
-        'They encode community identity, speculation, and attention markets — reflexive social coordination that fundamentals-based models poorly price',
+        'They encode community identity, speculation, and attention markets, reflexive social coordination that fundamentals-based models poorly price',
         'Exchanges ban them globally',
       ],
       correct: 2,
       explanation:
-        'Memecoins are cultural derivatives. Expert analysis treats them as sentiment/liquidity phenomena with extreme tail risk — not dismissible noise but a distinct regime requiring separate sizing rules.',
+        'Memecoins are cultural derivatives. Expert analysis treats them as sentiment/liquidity phenomena with extreme tail risk, not dismissible noise but a distinct regime requiring separate sizing rules.',
     },
     {
       question: 'What is "chain abstraction" as an emerging narrative?',
       options: [
         'Hiding all blockchain data from users permanently',
-        'Users interact with apps without manually choosing chains, bridges, or gas tokens — infrastructure routes assets and execution in the background',
+        'Users interact with apps without manually choosing chains, bridges, or gas tokens, infrastructure routes assets and execution in the background',
         'Abstract art sold as NFTs only',
         'Removing all smart contracts',
       ],
@@ -4920,7 +4920,7 @@ const QUIZ_BANK = {
       options: [
         'Loyalty programs that never convert to tokens',
         'Credit card reward points on Visa only',
-        'Pre-token incentive campaigns speculated to airdrop governance tokens — later phases add sybil resistance and diminishing returns for mercenary farmers',
+        'Pre-token incentive campaigns speculated to airdrop governance tokens, later phases add sybil resistance and diminishing returns for mercenary farmers',
         'Proof-of-stake validator scores',
       ],
       correct: 2,
@@ -4930,7 +4930,7 @@ const QUIZ_BANK = {
     {
       question: 'How should emerging narrative theses account for "crowded trade" risk?',
       options: [
-        'When capital piles into a narrative (restaking, RWA), valuations embed optimistic assumptions — underperformance follows if growth or token accrual disappoints vs hype',
+        'When capital piles into a narrative (restaking, RWA), valuations embed optimistic assumptions, underperformance follows if growth or token accrual disappoints vs hype',
         'Crowding never affects crypto',
         'Crowded trades always outperform',
         'Only BTC suffers from crowding',
@@ -4947,12 +4947,12 @@ const QUIZ_BANK = {
       options: [
         'Exploiting tax-loss harvesting rules only',
         'Arbitrage between two DEX pools on the same chain',
-        'Structuring entities, licensing, and product offerings in permissive jurisdictions while serving global users to minimize compliance burden — without eliminating home-country obligations',
+        'Structuring entities, licensing, and product offerings in permissive jurisdictions while serving global users to minimize compliance burden, without eliminating home-country obligations',
         'Using faster internet to front-run trades',
       ],
       correct: 2,
       explanation:
-        'Firms choose Malta, Dubai, or Cayman for licensing flexibility. Users and operators may still face local securities, tax, and sanctions laws — arbitrage is partial, not a free pass.',
+        'Firms choose Malta, Dubai, or Cayman for licensing flexibility. Users and operators may still face local securities, tax, and sanctions laws, arbitrage is partial, not a free pass.',
     },
     {
       question: 'Under EU MiCA, what extra requirements apply to "significant" stablecoin issuers?',
@@ -4964,7 +4964,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'MiCA tiers stablecoin issuers by size and usage. Significant asset-referenced or e-money tokens face enhanced capital, liquidity, and ECB oversight — shaping where issuers domicile products.',
+        'MiCA tiers stablecoin issuers by size and usage. Significant asset-referenced or e-money tokens face enhanced capital, liquidity, and ECB oversight, shaping where issuers domicile products.',
     },
     {
       question: 'What is the FATF Travel Rule compliance challenge for VASPs?',
@@ -4972,7 +4972,7 @@ const QUIZ_BANK = {
         'Tourists must declare crypto at airports only',
         'It bans all cross-border crypto transfers',
         'It applies only to NFT art sales under $10',
-        'Virtual asset service providers must share originator and beneficiary identifying information on transfers above thresholds — difficult to implement on pseudonymous chains',
+        'Virtual asset service providers must share originator and beneficiary identifying information on transfers above thresholds, difficult to implement on pseudonymous chains',
       ],
       correct: 3,
       explanation:
@@ -4989,26 +4989,26 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'IP blocking and terms-of-service splits are imperfect compliance tools. Regulators have pursued teams whose products were accessible to US persons despite disclaimers — geography is risk management, not immunity.',
+        'IP blocking and terms-of-service splits are imperfect compliance tools. Regulators have pursued teams whose products were accessible to US persons despite disclaimers, geography is risk management, not immunity.',
     },
     {
       question: 'What is OFAC compliance for a centralized crypto exchange?',
       options: [
-        'Screening deposits and withdrawals against sanctioned entity lists and blocking transactions involving flagged addresses — required for US nexus firms',
+        'Screening deposits and withdrawals against sanctioned entity lists and blocking transactions involving flagged addresses, required for US nexus firms',
         'Optional for all non-US firms',
         'Only applies to physical cash',
         'Mandates proof-of-stake consensus',
       ],
       correct: 0,
       explanation:
-        'Tornado Cash sanctions demonstrated on-chain address blocking. Exchanges use Chainalysis/Elliptic to freeze flows linked to sanctioned wallets — a compliance cost centralized venues bear that pure DeFi protocols debate.',
+        'Tornado Cash sanctions demonstrated on-chain address blocking. Exchanges use Chainalysis/Elliptic to freeze flows linked to sanctioned wallets, a compliance cost centralized venues bear that pure DeFi protocols debate.',
     },
     {
       question: 'How does the SEC "broker-dealer" framework affect crypto platforms?',
       options: [
         'It has no relevance to digital assets',
         'It only regulates Bitcoin mining pools',
-        'Platforms that match orders, hold customer assets, or solicit trades may need registration — affecting whether order flow can be internalized or tokens listed',
+        'Platforms that match orders, hold customer assets, or solicit trades may need registration, affecting whether order flow can be internalized or tokens listed',
         'It requires all tokens to be registered as national banks',
       ],
       correct: 2,
@@ -5025,12 +5025,12 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'VASP licensing formalizes who may legally operate custodial crypto businesses. Passporting under MiCA lets authorized firms serve EU markets under harmonized rules — reducing patchwork national licenses.',
+        'VASP licensing formalizes who may legally operate custodial crypto businesses. Passporting under MiCA lets authorized firms serve EU markets under harmonized rules, reducing patchwork national licenses.',
     },
     {
       question: 'What compliance risk arises from offering "yield" on customer crypto deposits?',
       options: [
-        'None — yield products are universally exempt',
+        'None, yield products are universally exempt',
         'Yield products are only regulated in Antarctica',
         'Only NFTs trigger securities analysis',
         'Products promising returns on pooled assets may be classified as securities or banking products depending on marketing, custody, and who generates yield',
@@ -5045,12 +5045,12 @@ const QUIZ_BANK = {
       options: [
         'To avoid paying any lawyers',
         'Substance requirements ban all crypto trading',
-        'Regulators and courts may look through shell companies — real offices, directors, and operations in the license jurisdiction reduce "forum shopping" challenges',
+        'Regulators and courts may look through shell companies, real offices, directors, and operations in the license jurisdiction reduce "forum shopping" challenges',
         'Only affects NFT marketplaces',
       ],
       correct: 2,
       explanation:
-        'A PO box in a friendly jurisdiction is insufficient if decisions run from a restricted country. Substance — local staff, board meetings, audits — supports licensing credibility and tax residency claims.',
+        'A PO box in a friendly jurisdiction is insufficient if decisions run from a restricted country. Substance, local staff, board meetings, audits, supports licensing credibility and tax residency claims.',
     },
     {
       question: 'What trend followed global stablecoin scrutiny (US, EU, UK) in 2023–2025?',
@@ -5093,7 +5093,7 @@ const QUIZ_BANK = {
         'The commission charged when you close your account',
         'The final score margin of victory',
         'The value of parlay insurance offers',
-        'Whether the line moved in your favor by game time — a proxy for whether you beat the market',
+        'Whether the line moved in your favor by game time, a proxy for whether you beat the market',
       ],
       correct: 3,
       explanation:
@@ -5142,7 +5142,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'Value exists when your edge (true prob − implied prob) is positive. The market at 50% vs your 55% is a 5-point probability edge — the foundation of +EV betting.',
+        'Value exists when your edge (true prob − implied prob) is positive. The market at 50% vs your 55% is a 5-point probability edge, the foundation of +EV betting.',
     },
     {
       question: 'What is a common mistake when interpreting "value" from a single winning bet?',
@@ -5154,7 +5154,7 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Short-term variance masks skill. A +EV bet loses often. Edge is measured over hundreds of bets via CLV, EV, and ROI — not one ticket outcome.',
+        'Short-term variance masks skill. A +EV bet loses often. Edge is measured over hundreds of bets via CLV, EV, and ROI, not one ticket outcome.',
     },
     {
       question:
@@ -5162,12 +5162,12 @@ const QUIZ_BANK = {
       options: ['0%', '4%', '2%', '10%'],
       correct: 2,
       explanation:
-        '48% + 52% = 100% would be fair; sportsbooks typically sum to 102–105%+. Here 100% total with slight vig embedded per side — always de-vig before comparing to your model.',
+        '48% + 52% = 100% would be fair; sportsbooks typically sum to 102–105%+. Here 100% total with slight vig embedded per side, always de-vig before comparing to your model.',
     },
     {
       question: 'Kelly criterion suggests bet size based on:',
       options: [
-        'Edge and odds — fraction of bankroll proportional to advantage',
+        'Edge and odds, fraction of bankroll proportional to advantage',
         'Your mood after a loss',
         'Always 10% of bankroll flat',
         'The biggest line move of the day',
@@ -5198,7 +5198,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Markets are forward-looking and continuous. Polls are lagging samples. Traders price information polls miss — fundraising, scandals, early voting, and coalition math.',
+        'Markets are forward-looking and continuous. Polls are lagging samples. Traders price information polls miss, fundraising, scandals, early voting, and coalition math.',
     },
     {
       question:
@@ -5223,7 +5223,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'Empirical literature shows longshots lose more than implied odds suggest, while heavy favorites sometimes offer slight value — though vig and fees still matter.',
+        'Empirical literature shows longshots lose more than implied odds suggest, while heavy favorites sometimes offer slight value, though vig and fees still matter.',
     },
     {
       question:
@@ -5282,7 +5282,7 @@ const QUIZ_BANK = {
       options: [
         'Certain victory',
         'That polls are worthless',
-        'Uncertainty — small leads are not decisive with sampling error and electoral college structure',
+        'Uncertainty, small leads are not decisive with sampling error and electoral college structure',
         '100% implied probability',
       ],
       correct: 2,
@@ -5292,7 +5292,7 @@ const QUIZ_BANK = {
     {
       question: 'Combining poll-based models with market prices is often done via:',
       options: [
-        'Bayesian or ensemble blending — weighting each signal by historical accuracy',
+        'Bayesian or ensemble blending, weighting each signal by historical accuracy',
         'Ignoring markets entirely',
         'Betting only on vice-presidential debates',
         'Using only Twitter sentiment',
@@ -5314,7 +5314,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'xG assigns a probability to each shot becoming a goal. Teams outperforming xG may regress; underperformers may improve — useful for match odds modeling.',
+        'xG assigns a probability to each shot becoming a goal. Teams outperforming xG may regress; underperformers may improve, useful for match odds modeling.',
     },
     {
       question:
@@ -5339,7 +5339,7 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Pace = possessions per 48 minutes. High-pace matchups inflate shot volume; low-pace grind games favor unders — adjust totals models accordingly.',
+        'Pace = possessions per 48 minutes. High-pace matchups inflate shot volume; low-pace grind games favor unders, adjust totals models accordingly.',
     },
     {
       question:
@@ -5364,7 +5364,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'EPA contextualizes efficiency — a 2-yard gain on 3rd-and-1 can be more valuable than a 20-yard gain on 3rd-and-20. Sharp totals and spread models use team EPA trends.',
+        'EPA contextualizes efficiency, a 2-yard gain on 3rd-and-1 can be more valuable than a 20-yard gain on 3rd-and-20. Sharp totals and spread models use team EPA trends.',
     },
     {
       question:
@@ -5397,7 +5397,7 @@ const QUIZ_BANK = {
         'Finding true edge always',
         'Beating closing line every time',
         'Eliminating vig',
-        'Misreading efficiency — garbage-time yards inflate stats',
+        'Misreading efficiency, garbage-time yards inflate stats',
       ],
       correct: 3,
       explanation:
@@ -5440,7 +5440,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Deep liquidity means tight spreads and large resting orders. Thin books move cents per dollar traded — critical for sizing.',
+        'Deep liquidity means tight spreads and large resting orders. Thin books move cents per dollar traded, critical for sizing.',
     },
     {
       question: 'Slippage occurs when:',
@@ -5460,7 +5460,7 @@ const QUIZ_BANK = {
         'Government tax',
         'Player injury status',
         'Maximum parlay legs',
-        'The cost of immediacy — difference between best buy and sell prices',
+        'The cost of immediacy, difference between best buy and sell prices',
       ],
       correct: 3,
       explanation:
@@ -5477,7 +5477,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'Informed traders hit stale quotes after news. Makers compensate with wider spreads or pull liquidity — bettors see temporary illiquidity.',
+        'Informed traders hit stale quotes after news. Makers compensate with wider spreads or pull liquidity, bettors see temporary illiquidity.',
     },
     {
       question: 'A limit order at 48¢ when best ask is 50¢ will:',
@@ -5537,7 +5537,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Heavy two-way trading can print volume at stable mid when bulls and bears are balanced — not necessarily directional edge.',
+        'Heavy two-way trading can print volume at stable mid when bulls and bears are balanced, not necessarily directional edge.',
     },
     {
       question: 'To minimize slippage on a $10,000 political contract purchase, you should:',
@@ -5607,7 +5607,7 @@ const QUIZ_BANK = {
       question:
         'Correlation mistake: hedging NFL team win with same-game player yards on same team is:',
       options: [
-        'Partial hedge at best — correlated outcomes may not reduce risk as expected',
+        'Partial hedge at best, correlated outcomes may not reduce risk as expected',
         'Perfect independence',
         'Always full lock',
         'Illegal',
@@ -5749,7 +5749,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Lower Brier is better. Useful if you log model probability vs market and outcome — separates forecasting from ROI.',
+        'Lower Brier is better. Useful if you log model probability vs market and outcome, separates forecasting from ROI.',
     },
     {
       question: 'A betting journal should include emotional/context notes because:',
@@ -5761,7 +5761,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'Chasing losses, betting drunk, or illiquid markets show up as patterns in notes + worse CLV — fix process leaks.',
+        'Chasing losses, betting drunk, or illiquid markets show up as patterns in notes + worse CLV, fix process leaks.',
     },
     {
       question: 'Drawdown measures:',
@@ -5812,7 +5812,7 @@ const QUIZ_BANK = {
     {
       question: 'Train/test split in betting models prevents:',
       options: [
-        'Overfitting past noise — evaluating on unseen seasons or games',
+        'Overfitting past noise, evaluating on unseen seasons or games',
         'All data usage',
         'Closing line access',
         'Vig calculation',
@@ -5879,7 +5879,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'Beat-close backtests approximate whether model would have captured CLV — stronger signal than W/L alone.',
+        'Beat-close backtests approximate whether model would have captured CLV, stronger signal than W/L alone.',
     },
     {
       question: 'Non-stationarity in sports (rule changes, roster turnover) requires:',
@@ -5959,8 +5959,8 @@ const QUIZ_BANK = {
     {
       question: 'Cross-exchange arb between Polymarket and Kalshi requires:',
       options: [
-        'Nothing — always identical',
-        'Same settlement rules, timing, and fee structure — or basis risk remains',
+        'Nothing, always identical',
+        'Same settlement rules, timing, and fee structure, or basis risk remains',
         'Only sports data',
         'Parlay cards',
       ],
@@ -6002,7 +6002,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'Middle is speculative arb cousin — wins both on specific margin; arb is true lock (before void risk).',
+        'Middle is speculative arb cousin, wins both on specific margin; arb is true lock (before void risk).',
     },
     {
       question: 'Bonus arbitrage ("matched betting") exploits:',
@@ -6038,7 +6038,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Sustainable edge shifts to soft books, promotional EV, and modeling — not classic arb alone.',
+        'Sustainable edge shifts to soft books, promotional EV, and modeling, not classic arb alone.',
     },
   ],
 
@@ -6065,7 +6065,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Reward programs pay for rested limit orders within spread thresholds — improves depth for all traders.',
+        'Reward programs pay for rested limit orders within spread thresholds, improves depth for all traders.',
     },
     {
       question: 'Splitting a large YES position before a binary event via selling into strength:',
@@ -6077,14 +6077,14 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Advanced traders scale out into liquidity when news shifts probability — not only hold to 0/100 settlement.',
+        'Advanced traders scale out into liquidity when news shifts probability, not only hold to 0/100 settlement.',
     },
     {
       question:
         'Correlation between related Polymarket contracts (e.g., "wins state" vs "wins presidency") enables:',
       options: [
         'Ignore both',
-        'Relative value trades — overweight cheaper implied conditional vs reweighted joint prob',
+        'Relative value trades, overweight cheaper implied conditional vs reweighted joint prob',
         'Guaranteed arb always',
         'No analysis',
       ],
@@ -6134,7 +6134,7 @@ const QUIZ_BANK = {
         'Only game injury',
         'Book limit',
         'Parlay leg',
-        'Smart contract bugs, bridge risk, and USDC depeg — not just prediction risk',
+        'Smart contract bugs, bridge risk, and USDC depeg, not just prediction risk',
       ],
       correct: 3,
       explanation:
@@ -6182,7 +6182,7 @@ const QUIZ_BANK = {
     {
       question: 'S&P 500 "close above X" weekly contracts correlate with:',
       options: [
-        'VIX, earnings calendar, and overnight futures — not isolated from finance',
+        'VIX, earnings calendar, and overnight futures, not isolated from finance',
         'Only college football',
         'Weather in Iowa',
         'Player props',
@@ -6241,7 +6241,7 @@ const QUIZ_BANK = {
     },
     {
       question:
-        'Term premium in rates markets vs "Fed cuts by date" contracts — divergence may mean:',
+        'Term premium in rates markets vs "Fed cuts by date" contracts, divergence may mean:',
       options: [
         'Data error only',
         'Markets disagree on timing vs magnitude of easing',
@@ -6258,7 +6258,7 @@ const QUIZ_BANK = {
         'Always loses',
         'Unrelated',
         'Banned',
-        'Adds convexity — VIX spikes when equities sell off',
+        'Adds convexity: VIX spikes when equities sell off',
       ],
       correct: 3,
       explanation:
@@ -6286,7 +6286,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'CME/es deep books absorb news first. Thin event contracts lag — short-lived arb for fastest infrastructure.',
+        'CME/es deep books absorb news first. Thin event contracts lag, short-lived arb for fastest infrastructure.',
     },
   ],
 
@@ -6306,7 +6306,7 @@ const QUIZ_BANK = {
     {
       question: 'Inventory risk for a market maker holding excess YES shares:',
       options: [
-        'Loses if price falls before resolution — must skew quotes to attract NO buyers',
+        'Loses if price falls before resolution, must skew quotes to attract NO buyers',
         'Loses if event resolves YES',
         'No risk',
         'Only vig',
@@ -6321,7 +6321,7 @@ const QUIZ_BANK = {
         'Spread is zero',
         'You only post bids',
         'Market closes',
-        'Takers know more than your stale quote — you fill losing side before repricing',
+        'Takers know more than your stale quote, you fill losing side before repricing',
       ],
       correct: 3,
       explanation:
@@ -6330,19 +6330,19 @@ const QUIZ_BANK = {
     {
       question: 'Quote skew example: if maker is long YES, they typically:',
       options: [
-        'Widen YES bid and tighten NO — encourage sales of YES to them',
+        'Widen YES bid and tighten NO, encourage sales of YES to them',
         'Raise YES ask and lower YES bid to reduce further YES accumulation',
         'Stop quoting',
         'Only market buy',
       ],
       correct: 1,
       explanation:
-        'Skew makes buying YES from maker harder and selling YES more attractive — rebalancing inventory.',
+        'Skew makes buying YES from maker harder and selling YES more attractive, rebalancing inventory.',
     },
     {
       question: 'Tick size on a 0–100¢ contract affects:',
       options: [
-        'Minimum price increment — profitability of tight spread strategies at extreme prices',
+        'Minimum price increment, profitability of tight spread strategies at extreme prices',
         'Only sports',
         'Tax rate',
         'Parlay legs',
@@ -6385,14 +6385,14 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Gamma and news risk rise. Spreads compensate for jump risk; depth thins — takers pay more slippage.',
+        'Gamma and news risk rise. Spreads compensate for jump risk; depth thins, takers pay more slippage.',
     },
     {
       question: 'Order book imbalance (heavy bids, thin asks) suggests:',
       options: [
         'Price must crash',
         'No information',
-        'Short-term upward pressure — makers may adjust mid upward',
+        'Short-term upward pressure, makers may adjust mid upward',
         'Parlay only',
       ],
       correct: 2,
@@ -6444,7 +6444,7 @@ const QUIZ_BANK = {
         'Improved CLV',
         'Automatic bonus',
         'Book limits rise',
-        'Larger, less selective bets chasing losses — negative EV behavior',
+        'Larger, less selective bets chasing losses, negative EV behavior',
       ],
       correct: 3,
       explanation:
@@ -6577,7 +6577,7 @@ const QUIZ_BANK = {
       question: 'Player-level RAPM or tracking data in NBA models captures:',
       options: [
         'Only fouls',
-        'Individual contribution beyond box score — useful for injury substitution impact',
+        'Individual contribution beyond box score, useful for injury substitution impact',
         'Jersey sales',
         'Vig',
       ],
@@ -6631,19 +6631,19 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Quants with sub-second data feeds reprice before books adjust — shrinking but real at softer books.',
+        'Quants with sub-second data feeds reprice before books adjust, shrinking but real at softer books.',
     },
     {
       question: 'Hierarchical model for league strength (e.g., EPL teams nested):',
       options: [
         'Each team isolated only',
         'No shrinkage',
-        'Shares information across teams — stabilizes ratings for promoted clubs',
+        'Shares information across teams, stabilizes ratings for promoted clubs',
         'Only futures',
       ],
       correct: 2,
       explanation:
-        'Partial pooling borrows strength from league context — better early-season estimates for new entrants.',
+        'Partial pooling borrows strength from league context, better early-season estimates for new entrants.',
     },
     {
       question: 'Execution alpha separate from model alpha means:',
@@ -6690,7 +6690,7 @@ const QUIZ_BANK = {
         'Mid only always',
         'Free fills',
         'Ignore voids',
-        'Fees, spread, partial fills, and resolution rules — not mid price only',
+        'Fees, spread, partial fills, and resolution rules, not mid price only',
       ],
       correct: 3,
       explanation:
@@ -6700,7 +6700,7 @@ const QUIZ_BANK = {
       question: 'Smart contract interaction risk when building on-chain tools includes:',
       options: [
         'Only CSS bugs',
-        'ABI changes, approval exploits, and failed txs — test on testnet',
+        'ABI changes, approval exploits, and failed txs, test on testnet',
         'No audits needed',
         'Guaranteed profit',
       ],
@@ -6799,7 +6799,7 @@ const QUIZ_BANK = {
     {
       question: 'UIGEA (2006) primarily targeted:',
       options: [
-        'Payment processing for unlawful internet gambling — not bettors directly in text',
+        'Payment processing for unlawful internet gambling, not bettors directly in text',
         'Prediction market CFTC contracts',
         'Stock trading',
         'Fantasy only',
@@ -6849,7 +6849,7 @@ const QUIZ_BANK = {
       options: [
         'Always tax-free',
         'Only professionals pay',
-        'Taxable income — must be reported; losses may offset up to winnings with documentation',
+        'Taxable income, must be reported; losses may offset up to winnings with documentation',
         'Deductible without limit always',
       ],
       correct: 2,
@@ -6860,7 +6860,7 @@ const QUIZ_BANK = {
       question: 'Polymarket US access restrictions relate to:',
       options: [
         'No restrictions ever',
-        'Regulatory jurisdiction — offshore crypto platforms may geo-block US persons',
+        'Regulatory jurisdiction, offshore crypto platforms may geo-block US persons',
         'Only age 16',
         'SEC stock rule',
       ],
@@ -6953,7 +6953,7 @@ const QUIZ_BANK = {
     {
       question: 'Operational costs for pro betting include:',
       options: [
-        'Data feeds, software, employees, account fees, and taxes — not just vig',
+        'Data feeds, software, employees, account fees, and taxes, not just vig',
         'Only subscription to one tipster',
         'Nothing',
         'Stadium tickets only',
@@ -6971,13 +6971,13 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Books limit winners. Diversifying appearance and using exchanges reduces single-point failure — stay within law.',
+        'Books limit winners. Diversifying appearance and using exchanges reduces single-point failure, stay within law.',
     },
     {
       question: 'ROI target for sustainable pro operation might be:',
       options: [
         '100% monthly guaranteed',
-        '3–7% on turnover long-term at scale — high but not Hollywood 50%',
+        '3–7% on turnover long-term at scale, high but not Hollywood 50%',
         '0% always',
         'Only parlays',
       ],
@@ -6991,7 +6991,7 @@ const QUIZ_BANK = {
         'Guaranteed wins',
         'Bypass all KYC',
         'SEC registration',
-        'Accounting separation, tax planning, and partner agreements — consult CPA/lawyer',
+        'Accounting separation, tax planning, and partner agreements, consult CPA/lawyer',
       ],
       correct: 3,
       explanation:
@@ -7039,7 +7039,7 @@ const QUIZ_BANK = {
     {
       question: 'Initial margin on futures is:',
       options: [
-        'Good-faith deposit — not full notional — marking to market daily',
+        'Good-faith deposit, not full notional, marking to market daily',
         'Full contract value upfront always',
         'Optional',
         'Paid only on profit',
@@ -7064,7 +7064,7 @@ const QUIZ_BANK = {
       question: 'Backwardation occurs when:',
       options: [
         'Supply is infinite',
-        'Near futures trade above deferred — often tight supply near term',
+        'Near futures trade above deferred, often tight supply near term',
         'Only gold can backwardate',
         'Roll yield is always negative',
       ],
@@ -7099,7 +7099,7 @@ const QUIZ_BANK = {
       question: 'First Notice Day matters because:',
       options: [
         'Nothing happens',
-        'Long may be assigned delivery notice — many retail close before this',
+        'Long may be assigned delivery notice, many retail close before this',
         'Only shorts affected',
         'Contract expires same day',
       ],
@@ -7112,7 +7112,7 @@ const QUIZ_BANK = {
       options: ['$7,500', '$750,000', '$75', '$75,000 (1,000 bbl)'],
       correct: 3,
       explanation:
-        'Notional = price × multiplier. Margin is fraction of this — leverage magnifies P&L %.',
+        'Notional = price × multiplier. Margin is fraction of this, leverage magnifies P&L %.',
     },
     {
       question: 'Cash-settled vs physically-settled futures:',
@@ -7136,7 +7136,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Commercials (airlines, farmers) hedge. Speculators take other side — regulators monitor positioning.',
+        'Commercials (airlines, farmers) hedge. Speculators take other side, regulators monitor positioning.',
     },
   ],
 
@@ -7146,17 +7146,17 @@ const QUIZ_BANK = {
       options: [
         'Guaranteed crash',
         'Nothing',
-        'Indecision — potential reversal if confirmed by volume and next session',
+        'Indecision, potential reversal if confirmed by volume and next session',
         'Only bullish continuation',
       ],
       correct: 2,
       explanation:
-        'Doji shows open≈close. Context matters — need trend, support/resistance, and inventory data confirmation.',
+        'Doji shows open≈close. Context matters, need trend, support/resistance, and inventory data confirmation.',
     },
     {
       question: 'Support level on a copper chart is:',
       options: [
-        'Price zone where buying historically emerged — breaks may accelerate selling',
+        'Price zone where buying historically emerged, breaks may accelerate selling',
         'Government mandate',
         'Random line',
         'Only for stocks',
@@ -7171,17 +7171,17 @@ const QUIZ_BANK = {
         'Must buy',
         'Bear market start',
         'Irrelevant for commodities',
-        'Overbought momentum — not automatic short; trends can stay overbought in crises',
+        'Overbought momentum, not automatic short; trends can stay overbought in crises',
       ],
       correct: 3,
       explanation:
-        'RSI is oscillator context. War premium can keep RSI elevated weeks — combine with structure.',
+        'RSI is oscillator context. War premium can keep RSI elevated weeks, combine with structure.',
     },
     {
       question: 'Volume spike on breakout above range in natural gas often:',
       options: [
         'Means nothing',
-        'Confirms participation — false breakouts show weak volume',
+        'Confirms participation, false breakouts show weak volume',
         'Guarantees reversal',
         'Only for equities',
       ],
@@ -7192,7 +7192,7 @@ const QUIZ_BANK = {
     {
       question: 'Moving average crossover (50 crossing 200) on corn is:',
       options: [
-        'Lagging signal — late but popular for trend following systems',
+        'Lagging signal, late but popular for trend following systems',
         'Leading indicator of USDA report',
         'Illegal',
         'Same as contango',
@@ -7206,7 +7206,7 @@ const QUIZ_BANK = {
       options: [
         'Immediate delivery notice',
         'Mine shutdown',
-        'Trend reversal potential — neckline break triggers measured move target',
+        'Trend reversal potential, neckline break triggers measured move target',
         'Only bullish',
       ],
       correct: 2,
@@ -7217,7 +7217,7 @@ const QUIZ_BANK = {
       question: 'Fibonacci retracement 61.8% bounce in wheat often used by traders to:',
       options: [
         'Predict USDA acreage',
-        'Identify pullback entry in trend — self-fulfilling to degree',
+        'Identify pullback entry in trend, self-fulfilling to degree',
         'Set margin rates',
         'Replace COT report',
       ],
@@ -7231,7 +7231,7 @@ const QUIZ_BANK = {
         'Market closed',
         'Only shorts exist',
         'Roll only',
-        'New money entering longs (or shorts covering) — trend may have fuel',
+        'New money entering longs (or shorts covering), trend may have fuel',
       ],
       correct: 3,
       explanation:
@@ -7242,7 +7242,7 @@ const QUIZ_BANK = {
       options: [
         'Exact mine output daily',
         'Shipping rates only',
-        'Managed money net positioning extremes — contrarian at tails',
+        'Managed money net positioning extremes, contrarian at tails',
         'Fed minutes',
       ],
       correct: 2,
@@ -7252,7 +7252,7 @@ const QUIZ_BANK = {
     {
       question: 'Multi-timeframe analysis for soybeans means:',
       options: [
-        'Align weekly trend with daily entry — avoid counter-trend scalps on report day',
+        'Align weekly trend with daily entry, avoid counter-trend scalps on report day',
         'Only 1-minute charts',
         'Ignore fundamentals',
         'Charts replace USDA',
@@ -7303,7 +7303,7 @@ const QUIZ_BANK = {
       question: 'Crack spread (3:2:1) measures:',
       options: [
         'Oil minus gold',
-        'Refining margin — crude vs gasoline + heating oil products',
+        'Refining margin, crude vs gasoline + heating oil products',
         'Pipeline tariff only',
         'Wind power output',
       ],
@@ -7314,7 +7314,7 @@ const QUIZ_BANK = {
     {
       question: 'Strategic Petroleum Reserve (SPR) release affects market by:',
       options: [
-        'Adding supply — can cap prompt spikes but may not fix structural deficit',
+        'Adding supply, can cap prompt spikes but may not fix structural deficit',
         'Permanent demand destruction',
         'Only Brent',
         'Eliminating futures',
@@ -7327,7 +7327,7 @@ const QUIZ_BANK = {
       options: [
         'Only local weather',
         'Corn ethanol',
-        'Global gas via JKM/TTF — export arb when US price low vs Asia/Europe',
+        'Global gas via JKM/TTF, export arb when US price low vs Asia/Europe',
         'Silver mine costs',
       ],
       correct: 2,
@@ -7338,7 +7338,7 @@ const QUIZ_BANK = {
       question: 'Renewable build-out long-term can:',
       options: [
         'Eliminate all oil tomorrow',
-        'Cap coal demand and shift oil demand growth — structural energy transition theme',
+        'Cap coal demand and shift oil demand growth, structural energy transition theme',
         'Remove all commodity trading',
         'Only affect equities',
       ],
@@ -7352,7 +7352,7 @@ const QUIZ_BANK = {
         'Bearish oil always',
         'Only affects gas',
         'Lowers gold',
-        'Removes barrels from market — bullish risk premium on Brent',
+        'Removes barrels from market, bullish risk premium on Brent',
       ],
       correct: 3,
       explanation: 'Supply disruption premium. Enforcement and cheat barrels determine magnitude.',
@@ -7362,7 +7362,7 @@ const QUIZ_BANK = {
       options: [
         'Immediate shortage',
         'Only bullish',
-        'Efficiency gains or shale breakeven drop — bearish supply response over time',
+        'Efficiency gains or shale breakeven drop, bearish supply response over time',
         'No supply effect',
       ],
       correct: 2,
@@ -7372,7 +7372,7 @@ const QUIZ_BANK = {
     {
       question: 'Diesel shortage (gasoil) in Europe impacts:',
       options: [
-        'Heating oil and distillate cracks — freight and agriculture fuel costs',
+        'Heating oil and distillate cracks, freight and agriculture fuel costs',
         'Only gold',
         'Soybeans directly',
         'Fed funds',
@@ -7389,7 +7389,7 @@ const QUIZ_BANK = {
       options: [
         'Oil always positively',
         'All currencies equally always',
-        'Real interest rates (TIPS yields) — higher real rates raise opportunity cost of gold',
+        'Real interest rates (TIPS yields), higher real rates raise opportunity cost of gold',
         'Only wheat',
       ],
       correct: 2,
@@ -7399,7 +7399,7 @@ const QUIZ_BANK = {
     {
       question: "Silver's dual role means:",
       options: [
-        'Monetary safe-haven plus industrial demand (solar, electronics) — more volatile than gold',
+        'Monetary safe-haven plus industrial demand (solar, electronics), more volatile than gold',
         'Only jewelry',
         'No industrial use',
         'Tracks corn',
@@ -7414,7 +7414,7 @@ const QUIZ_BANK = {
         'Iowa',
         'Only recycled',
         'China exclusively',
-        'South Africa / Russia — geopolitical and labor risk premium',
+        'South Africa / Russia, geopolitical and labor risk premium',
       ],
       correct: 3,
       explanation: 'Auto catalyst demand and supply shocks move platinum/palladium sharply.',
@@ -7423,7 +7423,7 @@ const QUIZ_BANK = {
       question: 'Gold ETF (GLD) holdings change indicates:',
       options: [
         'Mine output daily',
-        'Investment demand flow — rising holdings often bullish sentiment',
+        'Investment demand flow, rising holdings often bullish sentiment',
         'Central bank sales only',
         'Oil inventory',
       ],
@@ -7434,7 +7434,7 @@ const QUIZ_BANK = {
     {
       question: 'COMEX vs LBMA gold price divergence can create:',
       options: [
-        'Arbitrage and delivery stress narratives — watch lease rates and spreads',
+        'Arbitrage and delivery stress narratives, watch lease rates and spreads',
         'Nothing',
         'Only silver effect',
         'Ban on futures',
@@ -7448,7 +7448,7 @@ const QUIZ_BANK = {
       options: [
         'Bearish gold',
         'Only affects silver',
-        'Supports long-term floor on prices — de-dollarization reserve diversification theme',
+        'Supports long-term floor on prices, de-dollarization reserve diversification theme',
         'Eliminates volatility',
       ],
       correct: 2,
@@ -7459,7 +7459,7 @@ const QUIZ_BANK = {
       question: 'Inflation hedge debate for gold: strongest when:',
       options: [
         'Deflation and rising real yields',
-        'Real rates fall and inflation uncertainty rises — stagflation fear',
+        'Real rates fall and inflation uncertainty rises, stagflation fear',
         'Only when stocks rally',
         'Never',
       ],
@@ -7477,14 +7477,14 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Ratio trades are relative value. Industrial bust can keep ratio extended — risk management required.',
+        'Ratio trades are relative value. Industrial bust can keep ratio extended, risk management required.',
     },
     {
       question: 'Jewelry demand for gold is largest in:',
       options: [
         'Antarctica',
         'Only US ETFs',
-        'India and China — festival and wedding seasons move regional premiums',
+        'India and China, festival and wedding seasons move regional premiums',
         'Natural gas hubs',
       ],
       correct: 2,
@@ -7494,7 +7494,7 @@ const QUIZ_BANK = {
     {
       question: 'Miner equity (GDX) vs gold futures leverage:',
       options: [
-        'Equities have operational risk — can underperform gold in cost inflation',
+        'Equities have operational risk, can underperform gold in cost inflation',
         'Always 1:1',
         'No correlation',
         'Only bearish',
@@ -7511,7 +7511,7 @@ const QUIZ_BANK = {
       options: [
         'Sets oil OPEC quota',
         'Only affects cattle',
-        'It revises global supply/demand balance — acreage, yield, stocks-to-use',
+        'It revises global supply/demand balance, acreage, yield, stocks-to-use',
         'Fixed prices legally',
       ],
       correct: 2,
@@ -7521,7 +7521,7 @@ const QUIZ_BANK = {
     {
       question: 'Corn ethanol mandate (RFS) links corn to:',
       options: [
-        'Gasoline demand and oil prices indirectly — energy policy cross-impact',
+        'Gasoline demand and oil prices indirectly, energy policy cross-impact',
         'Gold only',
         'Silver industrial',
         'LNG only',
@@ -7536,7 +7536,7 @@ const QUIZ_BANK = {
         'Oil minus gas spread',
         'Gold minus silver',
         'Freight only',
-        'Value of meal + oil minus bean cost — processor profitability',
+        'Value of meal + oil minus bean cost, processor profitability',
       ],
       correct: 3,
       explanation: 'High crush encourages processing. China hog herd recovery boosts meal demand.',
@@ -7545,18 +7545,18 @@ const QUIZ_BANK = {
       question: 'La Niña weather pattern often associated with:',
       options: [
         'Guaranteed record crops always',
-        'US Plains dryness risk — bullish wheat/corn volatility',
+        'US Plains dryness risk, bullish wheat/corn volatility',
         'Only bearish ag',
         'No weather impact',
       ],
       correct: 1,
       explanation:
-        'ENSO shifts global rainfall. South America soy crop also sensitive — watch Brazil forecasts.',
+        'ENSO shifts global rainfall. South America soy crop also sensitive, watch Brazil forecasts.',
     },
     {
       question: 'Basis in local grain markets is:',
       options: [
-        'Cash price minus futures — reflects local supply/demand vs board',
+        'Cash price minus futures, reflects local supply/demand vs board',
         'Same as contango always',
         'Fed funds spread',
         'Only for oil',
@@ -7580,7 +7580,7 @@ const QUIZ_BANK = {
       question: 'Coffee frost in Brazil can:',
       options: [
         'Only affect tea',
-        'Spike arabica futures limit-up — weather binary risk',
+        'Spike arabica futures limit-up, weather binary risk',
         'Lower oil',
         'Fix corn basis',
       ],
@@ -7604,7 +7604,7 @@ const QUIZ_BANK = {
       options: [
         'Gold lease',
         'Natural gas Henry Hub only',
-        'Wheat and corn export flows — global food security premium',
+        'Wheat and corn export flows, global food security premium',
         'PGM',
       ],
       correct: 2,
@@ -7641,7 +7641,7 @@ const QUIZ_BANK = {
     {
       question: 'Russia pipeline gas cut to Europe historically moved:',
       options: [
-        'TTF gas and coal substitute demand — energy security repricing',
+        'TTF gas and coal substitute demand, energy security repricing',
         'Soybeans only',
         'Cotton',
         'Copper mine grades',
@@ -7656,7 +7656,7 @@ const QUIZ_BANK = {
         'Wheat basis',
         'Henry Hub',
         'Lean hogs',
-        'Global copper price — Chile large share of mine supply',
+        'Global copper price: Chile large share of mine supply',
       ],
       correct: 3,
       explanation:
@@ -7666,7 +7666,7 @@ const QUIZ_BANK = {
       question: 'US-China tariffs on agricultural goods can:',
       options: [
         'Eliminate all trade',
-        'Shift export destinations and basis — Brazil gains share',
+        'Shift export destinations and basis, Brazil gains share',
         'Only help US farmers always',
         'Fix gold ratio',
       ],
@@ -7677,7 +7677,7 @@ const QUIZ_BANK = {
     {
       question: 'Sanctions on Russian metals (aluminum, nickel) caused:',
       options: [
-        'Exchange chaos and short squeezes — LME nickel limit event',
+        'Exchange chaos and short squeezes, LME nickel limit event',
         'Nothing in markets',
         'Only oil down',
         'Corn surplus',
@@ -7691,7 +7691,7 @@ const QUIZ_BANK = {
       options: [
         'Only gold negatively',
         'USDA acres',
-        'Freight rates and delay premiums on goods — oil and container costs',
+        'Freight rates and delay premiums on goods, oil and container costs',
         'VIX only equities',
       ],
       correct: 2,
@@ -7727,7 +7727,7 @@ const QUIZ_BANK = {
       options: [
         'Short all energy always',
         'Only corn',
-        'Long oil vol, Brent calls, and gold — hedge tail scenarios',
+        'Long oil vol, Brent calls, and gold, hedge tail scenarios',
         'Ignore headers',
       ],
       correct: 2,
@@ -7737,7 +7737,7 @@ const QUIZ_BANK = {
     {
       question: 'Embargo on Venezuelan crude historically:',
       options: [
-        'Redirected flows and quality discounts — USGC refinery adjustments',
+        'Redirected flows and quality discounts, USGC refinery adjustments',
         'Zero global oil price effect',
         'Only agricultural',
         'Fed rate cut',
@@ -7753,17 +7753,17 @@ const QUIZ_BANK = {
       options: [
         'Only spot',
         'Dividends',
-        'Term structure — contango/backwardation shift vs flat price direction',
+        'Term structure, contango/backwardation shift vs flat price direction',
         'USDA stocks',
       ],
       correct: 2,
       explanation:
-        'Calendar spreads isolate curve. Inventory draws steepen backwardation — bull spread for long near/short deferred.',
+        'Calendar spreads isolate curve. Inventory draws steepen backwardation, bull spread for long near/short deferred.',
     },
     {
       question: 'Margin offset for correlated spreads on CME:',
       options: [
-        'Lower margin than outright legs — exchange recognizes partial hedge',
+        'Lower margin than outright legs, exchange recognizes partial hedge',
         'Double margin',
         'No margin',
         'Only stocks',
@@ -7778,7 +7778,7 @@ const QUIZ_BANK = {
         'Guarantee profits',
         'Only for oil',
         'Replace clearing',
-        'Pause disorderly moves — may halt trading expanding ranges next session',
+        'Pause disorderly moves, may halt trading expanding ranges next session',
       ],
       correct: 3,
       explanation:
@@ -7788,7 +7788,7 @@ const QUIZ_BANK = {
       question: 'Stop order in thin overnight session risk:',
       options: [
         'Perfect fill always',
-        'Slippage far beyond stop level — gap through stop',
+        'Slippage far beyond stop level, gap through stop',
         'No risk',
         'Only for equities',
       ],
@@ -7812,7 +7812,7 @@ const QUIZ_BANK = {
       options: [
         'Only matchmaking',
         'Sets OPEC quota',
-        'Central counterparty — mutualizes default risk, marks margin daily',
+        'Central counterparty, mutualizes default risk, marks margin daily',
         'Prints money',
       ],
       correct: 2,
@@ -7836,7 +7836,7 @@ const QUIZ_BANK = {
         'Doubles always',
         'Closes exchange',
         'Only equities',
-        'Thins in front month — wider spreads; volume shifts to next month',
+        'Thins in front month, wider spreads; volume shifts to next month',
       ],
       correct: 3,
       explanation: 'Roll windows see volume migrate. Slippage higher if holding expiring contract.',
@@ -7846,7 +7846,7 @@ const QUIZ_BANK = {
       options: [
         '2% loss',
         'No effect',
-        'Roughly wipes margin deposit (before calls) — risk of liquidation',
+        'Roughly wipes margin deposit (before calls), risk of liquidation',
         'Profit doubles',
       ],
       correct: 2,
@@ -7855,14 +7855,14 @@ const QUIZ_BANK = {
     {
       question: 'Exchange for Physical (EFP) allows:',
       options: [
-        'Swap futures vs cash bilaterally — linked to commercial hedging',
+        'Swap futures vs cash bilaterally, linked to commercial hedging',
         'Only retail day trade',
         'Free gold delivery to home',
         'Ignore reporting',
       ],
       correct: 0,
       explanation:
-        'EFP transfers futures position to cash market off exchange tape — institutional tool.',
+        'EFP transfers futures position to cash market off exchange tape, institutional tool.',
     },
   ],
 
@@ -7872,7 +7872,7 @@ const QUIZ_BANK = {
       options: [
         'Oil crashes only',
         'Corn rallies',
-        'Refining margins expand — strong driving season or outage',
+        'Refining margins expand, strong driving season or outage',
         'Dollar up only',
       ],
       correct: 2,
@@ -7905,7 +7905,7 @@ const QUIZ_BANK = {
       question: 'Spark spread in power markets is:',
       options: [
         'Oil minus gold',
-        'Power price minus fuel cost (gas) — gas plant margin analogue',
+        'Power price minus fuel cost (gas), gas plant margin analogue',
         'Corn crush',
         'Freight only',
       ],
@@ -7916,7 +7916,7 @@ const QUIZ_BANK = {
     {
       question: 'Lithium carbonate vs hydroxide spread trade involves:',
       options: [
-        'Battery chemistry demand differences — technical grade premiums',
+        'Battery chemistry demand differences, technical grade premiums',
         'Only oil rigs',
         'Cattle',
         'TIPS',
@@ -7929,7 +7929,7 @@ const QUIZ_BANK = {
       options: [
         'Always positive',
         'Zero',
-        'Negative — sells low front, buys high deferred',
+        'Negative, sells low front, buys high deferred',
         'Only for gold',
       ],
       correct: 2,
@@ -7939,7 +7939,7 @@ const QUIZ_BANK = {
       question: 'Butterfly spread in futures is:',
       options: [
         'Only directional outright',
-        'Long wing, short 2× middle — bets on curvature of term structure',
+        'Long wing, short 2× middle, bets on curvature of term structure',
         'Physical delivery',
         'Stock dividend',
       ],
@@ -7952,7 +7952,7 @@ const QUIZ_BANK = {
         'Deflation only',
         'Bear stocks',
         'Only ag bullish',
-        'Growth/industrial optimism vs safety — risk-on macro',
+        'Growth/industrial optimism vs safety, risk-on macro',
       ],
       correct: 3,
       explanation: 'Copper = Dr Copper growth; gold = fear. Ratio used as macro risk gauge.',
@@ -7962,7 +7962,7 @@ const QUIZ_BANK = {
       options: [
         'Never',
         'Only once yearly',
-        'Volatility correlation changes — beta not constant',
+        'Volatility correlation changes, beta not constant',
         'USDA only',
       ],
       correct: 2,
@@ -7972,7 +7972,7 @@ const QUIZ_BANK = {
     {
       question: 'Maximum drawdown on spread vs outright often:',
       options: [
-        'Lower vol — but correlation breakdown can cause spread blowouts',
+        'Lower vol, but correlation breakdown can cause spread blowouts',
         'Always zero',
         'Higher always',
         'Unrelated',
@@ -7989,7 +7989,7 @@ const QUIZ_BANK = {
       options: [
         'Perfectly smooth',
         'Only bullish',
-        'Amplifies cycles — restocking waves after destocking',
+        'Amplifies cycles, restocking waves after destocking',
         'Ignores prices',
       ],
       correct: 2,
@@ -7998,14 +7998,14 @@ const QUIZ_BANK = {
     {
       question: 'Baltic Dry Index measures:',
       options: [
-        'Dry bulk shipping rates — leading indicator of raw material trade volume',
+        'Dry bulk shipping rates, leading indicator of raw material trade volume',
         'Gold volatility',
         'Fed funds',
         'Corn yield',
       ],
       correct: 0,
       explanation:
-        'BDI rises with China steel demand etc. Leading but noisy — ship supply matters too.',
+        'BDI rises with China steel demand etc. Leading but noisy, ship supply matters too.',
     },
     {
       question: 'LME warehouse queues and cancellations signal:',
@@ -8013,7 +8013,7 @@ const QUIZ_BANK = {
         'Bearish surplus always',
         'Only paper trade',
         'Oil SPR',
-        'Physical tightness — metal available for immediate draw',
+        'Physical tightness, metal available for immediate draw',
       ],
       correct: 3,
       explanation:
@@ -8046,7 +8046,7 @@ const QUIZ_BANK = {
       options: [
         'Only forex',
         'Gold lease',
-        'Grain and LNG shipping costs/time — reroute premiums',
+        'Grain and LNG shipping costs/time, reroute premiums',
         'Fed policy',
       ],
       correct: 2,
@@ -8056,7 +8056,7 @@ const QUIZ_BANK = {
       question: 'Inventory draw in Cushing OK matters for:',
       options: [
         'Corn ethanol',
-        'WTI prompt pricing and backwardation — delivery hub stocks',
+        'WTI prompt pricing and backwardation, delivery hub stocks',
         'Silver jewelry',
         'VIX',
       ],
@@ -8079,7 +8079,7 @@ const QUIZ_BANK = {
       options: [
         'Deflation',
         'Only bear markets',
-        'Container shortages and commodity demand surge — inflationary 2021-22',
+        'Container shortages and commodity demand surge, inflationary 2021-22',
         'Zero shipping impact',
       ],
       correct: 2,
@@ -8114,7 +8114,7 @@ const QUIZ_BANK = {
     {
       question: 'DXY (dollar index) up 5% often means for commodities:',
       options: [
-        'Headwind for dollar-denominated prices — empirical negative correlation',
+        'Headwind for dollar-denominated prices, empirical negative correlation',
         'Always rally',
         'No link',
         'Only helps EM',
@@ -8129,7 +8129,7 @@ const QUIZ_BANK = {
         'Only bond crash',
         'Permanent deflation',
         'Ag only down',
-        'Financial conditions easing — risk assets and commodities rallied with liquidity',
+        'Financial conditions easing, risk assets and commodities rallied with liquidity',
       ],
       correct: 3,
       explanation:
@@ -8139,25 +8139,25 @@ const QUIZ_BANK = {
       question: 'Yield curve inversion signals for commodities often:',
       options: [
         'Bullish oil always',
-        'Recession risk — bearish industrial demand outlook (copper, oil)',
+        'Recession risk, bearish industrial demand outlook (copper, oil)',
         'Only gold down',
         'No macro use',
       ],
       correct: 1,
       explanation:
-        'Inversion precedes slowdowns. Energy demand forecasts cut — curve can move to contango.',
+        'Inversion precedes slowdowns. Energy demand forecasts cut, curve can move to contango.',
     },
     {
       question: 'ECB energy shock 2022 forced:',
       options: [
-        'Fiscal subsidies and rate hikes together — mixed commodity impacts',
+        'Fiscal subsidies and rate hikes together, mixed commodity impacts',
         'Only gold down',
         'Corn embargo',
         'Zero FX move',
       ],
       correct: 0,
       explanation:
-        'Europe gas crisis diverged regional energy costs from US — macro policy complex.',
+        'Europe gas crisis diverged regional energy costs from US, macro policy complex.',
     },
     {
       question: 'China PBOC easing and commodity prices:',
@@ -8168,7 +8168,7 @@ const QUIZ_BANK = {
         'Unrelated',
       ],
       correct: 2,
-      explanation: 'Credit impulse tracks property and infrastructure — key for iron ore, copper.',
+      explanation: 'Credit impulse tracks property and infrastructure, key for iron ore, copper.',
     },
     {
       question: 'Real rate = nominal yield minus breakeven inflation. Rising real rates:',
@@ -8187,7 +8187,7 @@ const QUIZ_BANK = {
         'No effect',
         'Only US',
         'Only equities',
-        'Weak EM currency can boost export competitiveness — producer currency collapse can raise USD prices',
+        'Weak EM currency can boost export competitiveness, producer currency collapse can raise USD prices',
       ],
       correct: 3,
       explanation: 'Brazil real vs soy exports example. FX is part of global ag competitiveness.',
@@ -8207,14 +8207,14 @@ const QUIZ_BANK = {
     {
       question: 'Bank of Japan YCC exit risk trades include:',
       options: [
-        'Higher global yields pressure — volatility in gold, JPY, and risk assets',
+        'Higher global yields pressure, volatility in gold, JPY, and risk assets',
         'Only cotton',
         'USDA report',
         'Hog spreads',
       ],
       correct: 0,
       explanation:
-        'Japan flow reversal affects global bond vol — spillover to commodity risk premia.',
+        'Japan flow reversal affects global bond vol, spillover to commodity risk premia.',
     },
   ],
 
@@ -8224,7 +8224,7 @@ const QUIZ_BANK = {
       options: [
         'Only gold supply',
         'US corn acres',
-        'Power sector fuel switching cost — gas vs coal economics in Europe',
+        'Power sector fuel switching cost, gas vs coal economics in Europe',
         'Silver jewelry',
       ],
       correct: 2,
@@ -8234,7 +8234,7 @@ const QUIZ_BANK = {
     {
       question: 'ESG divestment from fossil equities does not always:',
       options: [
-        'Reduce physical oil consumption near-term — capital cycle may tighten supply later',
+        'Reduce physical oil consumption near-term, capital cycle may tighten supply later',
         'Instantly end oil demand',
         'Lower emissions day one',
         'Eliminate futures',
@@ -8249,7 +8249,7 @@ const QUIZ_BANK = {
         'Only USDA',
         'Gold lease',
         'Henry Hub only',
-        'Embedded carbon cost on steel/aluminum imports — trade flow shifts',
+        'Embedded carbon cost on steel/aluminum imports, trade flow shifts',
       ],
       correct: 3,
       explanation: 'CBAM changes competitive landscape for carbon-intensive exports to EU.',
@@ -8258,7 +8258,7 @@ const QUIZ_BANK = {
       question: 'Renewable certificate (REC) markets tie to:',
       options: [
         'Corn crush',
-        'Power greening mandates — complement physical power trading',
+        'Power greening mandates, complement physical power trading',
         'Oil crack only',
         'Cattle',
       ],
@@ -8269,7 +8269,7 @@ const QUIZ_BANK = {
     {
       question: 'Critical minerals list (US/EU) investment impact:',
       options: [
-        'Subsidies for domestic lithium, graphite — long-dated supply response',
+        'Subsidies for domestic lithium, graphite, long-dated supply response',
         'Instant price crash',
         'Only bearish copper',
         'No commodity effect',
@@ -8283,7 +8283,7 @@ const QUIZ_BANK = {
       options: [
         'All steel uses green H2 now',
         'Only affects gold',
-        'Cost gap large — transition fuel is mostly NG-derived grey H2 near-term',
+        'Cost gap large, transition fuel is mostly NG-derived grey H2 near-term',
         'Eliminates oil',
       ],
       correct: 2,
@@ -8294,7 +8294,7 @@ const QUIZ_BANK = {
       question: 'Scope 3 emissions reporting pushes corporates to:',
       options: [
         'Ignore supply chain',
-        'Audit supplier commodities carbon — preference for low-carbon inputs',
+        'Audit supplier commodities carbon, preference for low-carbon inputs',
         'Only trade FX',
         'Stop hedging',
       ],
@@ -8307,7 +8307,7 @@ const QUIZ_BANK = {
         'Permanent coal boom',
         'Only gold bullish',
         'USDA',
-        '2022 gas crisis repricing — but long-term ESG still down coal',
+        '2022 gas crisis repricing, but long-term ESG still down coal',
       ],
       correct: 3,
       explanation:
@@ -8318,7 +8318,7 @@ const QUIZ_BANK = {
       options: [
         'Only wheat',
         'SPR',
-        'Lithium, nickel, graphite demand — multi-year structural bull case with volatility',
+        'Lithium, nickel, graphite demand, multi-year structural bull case with volatility',
         'VIX only',
       ],
       correct: 2,
@@ -8328,7 +8328,7 @@ const QUIZ_BANK = {
     {
       question: 'Stranded asset risk for oil majors means:',
       options: [
-        'Reserves may not be produced if transition accelerates — valuation and capex discipline',
+        'Reserves may not be produced if transition accelerates, valuation and capex discipline',
         'Guaranteed higher oil tomorrow',
         'Only equity issue',
         'No commodity price link',
@@ -8355,7 +8355,7 @@ const QUIZ_BANK = {
     {
       question: 'Bull case for copper thesis often centers on:',
       options: [
-        'Grid buildout + mine supply lag — deficit narrative',
+        'Grid buildout + mine supply lag, deficit narrative',
         'Only jewelry',
         'SPR release',
         'Hog disease',
@@ -8370,17 +8370,17 @@ const QUIZ_BANK = {
         'Guaranteed shortage',
         'Only OPEC dissolution',
         'Corn ethanol end',
-        'EV penetration, efficiency, and policy — demand peak arguments',
+        'EV penetration, efficiency, and policy, demand peak arguments',
       ],
       correct: 3,
       explanation:
-        'Demand destruction long-term vs inelastic short-term supply — timeframe matters.',
+        'Demand destruction long-term vs inelastic short-term supply, timeframe matters.',
     },
     {
       question: 'Position sizing for thesis trade uses:',
       options: [
         'Max leverage always',
-        'Vol targeting — smaller size in NG than gold due to sigma',
+        'Vol targeting, smaller size in NG than gold due to sigma',
         'No stops',
         'One contract rule',
       ],
@@ -8409,7 +8409,7 @@ const QUIZ_BANK = {
         'Mine opens',
       ],
       correct: 2,
-      explanation: 'Predefined exit when driver reverses — not when P&L feels bad only.',
+      explanation: 'Predefined exit when driver reverses, not when P&L feels bad only.',
     },
     {
       question: 'Expressing stagflation thesis might combine:',
@@ -8421,7 +8421,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        'Thesis mapping to instruments. Stagflation = slow growth + inflation — multi-asset expression.',
+        'Thesis mapping to instruments. Stagflation = slow growth + inflation, multi-asset expression.',
     },
     {
       question: 'Scenario analysis (bull/base/bear) assigns:',
@@ -8429,7 +8429,7 @@ const QUIZ_BANK = {
         'One certainty',
         'Only technicals',
         'Ignore bear case',
-        'Probabilities and price targets per path — expected value weighted position',
+        'Probabilities and price targets per path, expected value weighted position',
       ],
       correct: 3,
       explanation: 'Weighted EV prevents binary thinking. Adjust size to probability × payoff.',
@@ -8465,7 +8465,7 @@ const QUIZ_BANK = {
       options: [
         'Only stock picking',
         'Fundamental USDA only',
-        'Time-series momentum across diversified futures — long winners, short losers',
+        'Time-series momentum across diversified futures, long winners, short losers',
         'No risk limits',
       ],
       correct: 2,
@@ -8475,7 +8475,7 @@ const QUIZ_BANK = {
     {
       question: 'CTA volatility targeting scales exposure:',
       options: [
-        'Inversely to recent vol — maintain constant risk budget',
+        'Inversely to recent vol, maintain constant risk budget',
         'To max leverage always',
         'Only on Fridays',
         'Ignore covariance',
@@ -8489,7 +8489,7 @@ const QUIZ_BANK = {
         'One oil contract',
         'Only S&P',
         'Cash only',
-        '30+ markets — low average pairwise correlation improves Sharpe',
+        '30+ markets, low average pairwise correlation improves Sharpe',
       ],
       correct: 3,
       explanation: 'Diversification across energies, metals, ag, FX, rates is CTA edge source.',
@@ -8498,7 +8498,7 @@ const QUIZ_BANK = {
       question: 'CTA drawdown in 2011-2014 "death zone" caused by:',
       options: [
         'Single corn report',
-        'Low vol range markets — trend signals whipsawed',
+        'Low vol range markets, trend signals whipsawed',
         'Only fraud',
         'Gold standard return',
       ],
@@ -8509,7 +8509,7 @@ const QUIZ_BANK = {
     {
       question: 'Skewness of CTA returns is often:',
       options: [
-        'Positive skew — many small losses, occasional large trend wins',
+        'Positive skew, many small losses, occasional large trend wins',
         'Always negative only',
         'Gaussian perfect',
         'Zero vol',
@@ -8522,7 +8522,7 @@ const QUIZ_BANK = {
       options: [
         'Unlimited AUM always',
         'Only regulation',
-        'Market impact in illiquid contracts — size caps per market',
+        'Market impact in illiquid contracts, size caps per market',
         'No trading',
       ],
       correct: 2,
@@ -8547,7 +8547,7 @@ const QUIZ_BANK = {
         'No overlap',
         'Only equities',
         'Only cash',
-        'Both use vol scaling and futures — correlation spikes in stress',
+        'Both use vol scaling and futures, correlation spikes in stress',
       ],
       correct: 3,
       explanation:
@@ -8558,7 +8558,7 @@ const QUIZ_BANK = {
       options: [
         'Zero fees',
         'Only subscription',
-        '2 and 20 — high-water mark on incentive fee',
+        '2 and 20, high-water mark on incentive fee',
         'SEC mutual fund only',
       ],
       correct: 2,
@@ -8574,7 +8574,7 @@ const QUIZ_BANK = {
         'Replace commodities exposure entirely',
       ],
       correct: 0,
-      explanation: 'CTAs can profit in inflation shocks when bonds sell off — portfolio convexity.',
+      explanation: 'CTAs can profit in inflation shocks when bonds sell off, portfolio convexity.',
     },
   ],
 
@@ -8584,7 +8584,7 @@ const QUIZ_BANK = {
       options: [
         'Manipulation only',
         'No impact',
-        'Refinery/transport disruption — physical premium vs futures',
+        'Refinery/transport disruption, physical premium vs futures',
         'Only ETFs',
       ],
       correct: 2,
@@ -8594,7 +8594,7 @@ const QUIZ_BANK = {
     {
       question: 'Backwardation in oil with low Cushing stocks means:',
       options: [
-        'Prompt physical scarcity — paper near month rich',
+        'Prompt physical scarcity, paper near month rich',
         'Surplus always',
         'Contango forever',
         'Only paper trade',
@@ -8608,7 +8608,7 @@ const QUIZ_BANK = {
         'Stock dividend',
         'Only paper',
         'USDA certificate',
-        'Claim on metal in approved warehouse — can withdraw or deliver',
+        'Claim on metal in approved warehouse, can withdraw or deliver',
       ],
       correct: 3,
       explanation:
@@ -8618,7 +8618,7 @@ const QUIZ_BANK = {
       question: 'Gold lease rate spiking indicates:',
       options: [
         'Bearish gold always',
-        'Tightness borrowing physical gold — bullish physical demand',
+        'Tightness borrowing physical gold, bullish physical demand',
         'Only silver',
         'Oil surplus',
       ],
@@ -8629,7 +8629,7 @@ const QUIZ_BANK = {
     {
       question: 'Paper silver stack vs COMEX registered inventories debate centers on:',
       options: [
-        'Whether deliverable metal backs large open interest — squeeze risk narrative',
+        'Whether deliverable metal backs large open interest, squeeze risk narrative',
         'Corn yield',
         'Fed funds',
         'Only ETFs',
@@ -8643,7 +8643,7 @@ const QUIZ_BANK = {
       options: [
         'Identical to corn',
         'Only US shale',
-        'Atlantic basin waterborne pricing — different from WTI pipeline economics',
+        'Atlantic basin waterborne pricing, different from WTI pipeline economics',
         'No trade',
       ],
       correct: 2,
@@ -8654,7 +8654,7 @@ const QUIZ_BANK = {
       question: 'Force majeure at mine (copper) affects:',
       options: [
         'Only paper down',
-        'Immediate supply removal — spot premia can rise faster than curve back',
+        'Immediate supply removal, spot premia can rise faster than curve back',
         'Guaranteed 10-year glut',
         'Corn basis',
       ],
@@ -8679,7 +8679,7 @@ const QUIZ_BANK = {
       options: [
         'Same as CL',
         'Only stocks',
-        'OTC bilateral thin — price discovery less transparent than oil',
+        'OTC bilateral thin, price discovery less transparent than oil',
         'Fed sets price',
       ],
       correct: 2,
@@ -8689,7 +8689,7 @@ const QUIZ_BANK = {
     {
       question: 'Deliverable supply chain bullwhip in aluminum when:',
       options: [
-        'Smelter power cuts (Europe) remove metal — spot premium spikes',
+        'Smelter power cuts (Europe) remove metal, spot premium spikes',
         'Only stocks rally',
         'USDA report',
         'VIX low',
@@ -8706,7 +8706,7 @@ const QUIZ_BANK = {
       options: [
         'Obligation to sell',
         'Unlimited loss',
-        'Right to buy futures at strike — limited premium risk, nonlinear upside',
+        'Right to buy futures at strike, limited premium risk, nonlinear upside',
         'Dividend stream',
       ],
       correct: 2,
@@ -8716,7 +8716,7 @@ const QUIZ_BANK = {
     {
       question: 'Put option on gold used by producer to:',
       options: [
-        'Floor sale price — protective put on inventory',
+        'Floor sale price, protective put on inventory',
         'Guarantee higher gold forever',
         'Eliminate mining',
         'Only speculators',
@@ -8730,7 +8730,7 @@ const QUIZ_BANK = {
         'No move expected',
         'Vol crush certain',
         'Only calls cheap',
-        'Market prices big move — straddle prices expensive',
+        'Market prices big move, straddle prices expensive',
       ],
       correct: 3,
       explanation:
@@ -8750,7 +8750,7 @@ const QUIZ_BANK = {
     {
       question: 'Calendar spread options in soy differ from futures calendar because:',
       options: [
-        'Options on spreads have vol on spread itself — correlation risk',
+        'Options on spreads have vol on spread itself, correlation risk',
         'Identical risk',
         'No vol',
         'Only American exercise',
@@ -8764,7 +8764,7 @@ const QUIZ_BANK = {
       options: [
         'Only premium gain',
         'Capped loss',
-        'Unlimited loss potential on rallies/crashes — margin calls',
+        'Unlimited loss potential on rallies/crashes, margin calls',
         'No margin',
       ],
       correct: 2,
@@ -8775,7 +8775,7 @@ const QUIZ_BANK = {
       question: 'Skew in oil options often shows:',
       options: [
         'Flat vol always',
-        'Higher implied vol on OTM calls during supply fear — upside tail priced',
+        'Higher implied vol on OTM calls during supply fear, upside tail priced',
         'Only puts exist',
         'No skew',
       ],
@@ -8789,7 +8789,7 @@ const QUIZ_BANK = {
         'Set once forever',
         'Ignore delta',
         'Only stocks',
-        'Adjusting hedge ratio as spot moves (gamma) — dynamic hedging',
+        'Adjusting hedge ratio as spot moves (gamma), dynamic hedging',
       ],
       correct: 3,
       explanation:
@@ -8800,7 +8800,7 @@ const QUIZ_BANK = {
       options: [
         'All risk to zero',
         'Only American style',
-        'Gamma risk for hedgers — path-dependent settlement',
+        'Gamma risk for hedgers, path-dependent settlement',
         'Corn basis',
       ],
       correct: 2,
@@ -8809,7 +8809,7 @@ const QUIZ_BANK = {
     {
       question: 'Commodity option margin SPAN system:',
       options: [
-        'Scenario-based worst-loss margin — offsets for spreads',
+        'Scenario-based worst-loss margin, offsets for spreads',
         'Full notional always',
         'No margin',
         'Only equity rules',
@@ -8835,7 +8835,7 @@ const QUIZ_BANK = {
     {
       question: '1970s stagflation macro trade classic expression:',
       options: [
-        'Long gold, long oil, short bonds — real asset outperformance',
+        'Long gold, long oil, short bonds, real asset outperformance',
         'Short all commodities',
         'Only tech long',
         'Cash only',
@@ -8850,7 +8850,7 @@ const QUIZ_BANK = {
         'Bullish oil always',
         'Only ag up',
         'No link',
-        'Iron ore and copper demand fear — bearish industrial metals',
+        'Iron ore and copper demand fear, bearish industrial metals',
       ],
       correct: 3,
       explanation:
@@ -8860,18 +8860,18 @@ const QUIZ_BANK = {
       question: 'Fed pivot trade in macro commodities often:',
       options: [
         'Short everything',
-        'Long gold/copper on easing expectations — weaker dollar tailwind',
+        'Long gold/copper on easing expectations, weaker dollar tailwind',
         'Only short gold',
         'Ignore rates',
       ],
       correct: 1,
       explanation:
-        'First cut cycle can reflate risk assets. Timing matters — growth scare vs pure liquidity.',
+        'First cut cycle can reflate risk assets. Timing matters, growth scare vs pure liquidity.',
     },
     {
       question: 'War premium in oil macro thesis must separate:',
       options: [
-        'Risk premium vs physical loss — premium can fade on ceasefire without demand destruction',
+        'Risk premium vs physical loss, premium can fade on ceasefire without demand destruction',
         'Permanent $200',
         'Only paper',
         'Corn impact',
@@ -8885,7 +8885,7 @@ const QUIZ_BANK = {
       options: [
         'Only euro',
         'Fixed peg',
-        'Oil/metal export revenues — FX as proxy hedge for macro commodity view',
+        'Oil/metal export revenues: FX as proxy hedge for macro commodity view',
         'No commodity link',
       ],
       correct: 2,
@@ -8910,27 +8910,27 @@ const QUIZ_BANK = {
         'Only affects corn',
         'Eliminated 2020',
         'Bearish gold always',
-        'Correlated petrodollar flows into financial assets — macro liquidity link',
+        'Correlated petrodollar flows into financial assets, macro liquidity link',
       ],
       correct: 3,
-      explanation: 'High oil = surplus SWF buying. Low oil = reserve draw — EM FX pressure.',
+      explanation: 'High oil = surplus SWF buying. Low oil = reserve draw, EM FX pressure.',
     },
     {
       question: 'Tail hedge fund strategy for macro book may buy:',
       options: [
         'Only futures long',
         'No hedges',
-        'Deep OTM puts on oil/gold and VIX calls — convexity for crash',
+        'Deep OTM puts on oil/gold and VIX calls, convexity for crash',
         'Corn calls only',
       ],
       correct: 2,
       explanation:
-        'Cheap tails hedge gap risk. Cost drag in calm years — insurance not alpha alone.',
+        'Cheap tails hedge gap risk. Cost drag in calm years, insurance not alpha alone.',
     },
     {
       question: 'Macro risk management uses gross exposure caps because:',
       options: [
-        'Correlations go to 1 in crises — diversified book becomes one trade',
+        'Correlations go to 1 in crises, diversified book becomes one trade',
         'Never needed',
         'Only for retail',
         'Guarantees profit',
@@ -8952,7 +8952,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'VaR estimates the worst expected loss over a time horizon at a given confidence level. A 1-day 95% VaR of $5,000 means you should not lose more than $5,000 on 19 out of 20 days — though tail events can exceed it.',
+        'VaR estimates the worst expected loss over a time horizon at a given confidence level. A 1-day 95% VaR of $5,000 means you should not lose more than $5,000 on 19 out of 20 days, though tail events can exceed it.',
     },
     {
       question: 'How is portfolio beta calculated relative to a benchmark?',
@@ -8976,14 +8976,14 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Max drawdown captures the worst sustained loss episode — critical for understanding how painful a strategy feels in practice. A 40% drawdown requires a 67% gain just to recover.',
+        'Max drawdown captures the worst sustained loss episode, critical for understanding how painful a strategy feels in practice. A 40% drawdown requires a 67% gain just to recover.',
     },
     {
       question:
         'If a portfolio has 15% annualized volatility, what does that approximately represent?',
       options: [
         'The guaranteed annual loss limit',
-        'The standard deviation of returns — roughly two-thirds of daily/annual returns fall within ±15% of the mean under normal assumptions',
+        'The standard deviation of returns, roughly two-thirds of daily/annual returns fall within ±15% of the mean under normal assumptions',
         'The expected annual return',
         'The fixed margin requirement',
       ],
@@ -9046,13 +9046,13 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Same return with lower volatility means a higher Sharpe ratio. Risk-adjusted metrics reward efficiency — getting the same result with less variance is strictly superior.',
+        'Same return with lower volatility means a higher Sharpe ratio. Risk-adjusted metrics reward efficiency, getting the same result with less variance is strictly superior.',
     },
     {
       question:
         'What is the primary limitation of using historical volatility to forecast future risk?',
       options: [
-        'Volatility clusters and regime-shifts — past calm periods can understate future crisis risk',
+        'Volatility clusters and regime-shifts, past calm periods can understate future crisis risk',
         'Historical volatility is always too low',
         'Volatility is constant and never changes',
         'Historical data cannot be calculated for liquid assets',
@@ -9067,10 +9067,10 @@ const QUIZ_BANK = {
     {
       question: 'Two assets with a correlation of +0.85 provide what diversification benefit?',
       options: [
-        'Maximum diversification — they move in opposite directions',
-        'Moderate diversification — they move similarly but not identically',
-        'Minimal diversification — they tend to move together, reducing portfolio risk reduction',
-        'Negative diversification — correlation above 0.5 always increases risk',
+        'Maximum diversification, they move in opposite directions',
+        'Moderate diversification, they move similarly but not identically',
+        'Minimal diversification, they tend to move together, reducing portfolio risk reduction',
+        'Negative diversification, correlation above 0.5 always increases risk',
       ],
       correct: 2,
       explanation:
@@ -9099,7 +9099,7 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'In liquidity crises, correlations converge toward 1 — the "correlation goes to 1" phenomenon. Diversification fails precisely when you need it most, which is why stress testing matters.',
+        'In liquidity crises, correlations converge toward 1, the "correlation goes to 1" phenomenon. Diversification fails precisely when you need it most, which is why stress testing matters.',
     },
     {
       question: 'What is "diversification ratio" in portfolio construction?',
@@ -9124,7 +9124,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Gold often acts as a crisis hedge — not because it always rises, but because its correlation with stocks drops or turns negative during equity selloffs, providing a partial offset.',
+        'Gold often acts as a crisis hedge, not because it always rises, but because its correlation with stocks drops or turns negative during equity selloffs, providing a partial offset.',
     },
     {
       question:
@@ -9157,7 +9157,7 @@ const QUIZ_BANK = {
         'Their returns move in perfect opposite directions',
         'Both assets have zero volatility',
         'One asset must be a bond and the other a stock',
-        "Their returns are statistically independent — knowing one's move tells you nothing about the other's direction",
+        "Their returns are statistically independent, knowing one's move tells you nothing about the other's direction",
       ],
       correct: 3,
       explanation:
@@ -9179,7 +9179,7 @@ const QUIZ_BANK = {
     {
       question: 'What is "false diversification"?',
       options: [
-        'Owning many positions that share the same underlying risk factor — appearing diversified but concentrated',
+        'Owning many positions that share the same underlying risk factor, appearing diversified but concentrated',
         'Holding assets in different brokerage accounts',
         'Investing in both large-cap and mid-cap versions of the same sector ETF',
         'Using dollar-cost averaging across time',
@@ -9196,12 +9196,12 @@ const QUIZ_BANK = {
       options: [
         'A technical chart pattern indicating reversal',
         'The optimal portfolio tilt toward growth stocks',
-        'An emotional state where recent losses or wins cause deviation from your trading plan — often leading to oversized or impulsive trades',
+        'An emotional state where recent losses or wins cause deviation from your trading plan, often leading to oversized or impulsive trades',
         'A regulatory requirement to report emotional trades',
       ],
       correct: 2,
       explanation:
-        'Tilt — borrowed from poker — describes emotional decision-making after variance hits. On tilt, traders abandon position sizing, chase losses, or overtrade. Recognizing tilt is the first step to stopping it.',
+        'Tilt, borrowed from poker, describes emotional decision-making after variance hits. On tilt, traders abandon position sizing, chase losses, or overtrade. Recognizing tilt is the first step to stopping it.',
     },
     {
       question:
@@ -9226,7 +9226,7 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Physical separation breaks the feedback loop. A cooldown — 30 minutes to 24 hours — lets cortisol levels drop and prefrontal cortex re-engage. No trade is worth trading while emotionally compromised.',
+        'Physical separation breaks the feedback loop. A cooldown, 30 minutes to 24 hours, lets cortisol levels drop and prefrontal cortex re-engage. No trade is worth trading while emotionally compromised.',
     },
     {
       question: 'Why does journaling trades improve emotional discipline over time?',
@@ -9243,7 +9243,7 @@ const QUIZ_BANK = {
     {
       question: 'What is "outcome bias" in trading?',
       options: [
-        'Judging a decision as good because it was profitable, or bad because it lost money — regardless of whether the process was sound',
+        'Judging a decision as good because it was profitable, or bad because it lost money, regardless of whether the process was sound',
         'Bias toward trading only outcome-focused ETFs',
         'Preferring trades with defined outcomes',
         'Ignoring trade outcomes entirely',
@@ -9268,7 +9268,7 @@ const QUIZ_BANK = {
       question: 'What is "recency bias" and how does it affect traders?',
       options: [
         'Bias against recent IPOs',
-        'Overweighting the most recent market events when making decisions — assuming recent trends will continue indefinitely',
+        'Overweighting the most recent market events when making decisions, assuming recent trends will continue indefinitely',
         'Only trading stocks listed in the last year',
         'Ignoring all recent price data',
       ],
@@ -9282,7 +9282,7 @@ const QUIZ_BANK = {
         'Because self-worth is irrelevant to all decision-making',
         'Because profitable traders never feel emotions',
         'Because brokers penalize emotional traders with higher fees',
-        'Because trading is a probabilistic game where variance dominates short-term results — tying identity to P&L makes variance unbearable',
+        'Because trading is a probabilistic game where variance dominates short-term results, tying identity to P&L makes variance unbearable',
       ],
       correct: 3,
       explanation:
@@ -9298,7 +9298,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Personal circuit breakers — e.g., "stop trading after 3% daily loss or 2 rule violations" — prevent one bad session from becoming a catastrophic week. They are non-negotiable, like market halts.',
+        'Personal circuit breakers, e.g. "stop trading after 3% daily loss or 2 rule violations", prevent one bad session from becoming a catastrophic week. They are non-negotiable, like market halts.',
     },
     {
       question: 'Confirmation bias in trading leads to:',
@@ -9310,7 +9310,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Once committed to a trade, confirmation bias makes you read bullish news on a long and dismiss bearish data. Actively seeking disconfirming evidence is the antidote — "What would make me wrong?"',
+        'Once committed to a trade, confirmation bias makes you read bullish news on a long and dismiss bearish data. Actively seeking disconfirming evidence is the antidote, "What would make me wrong?"',
     },
   ],
 
@@ -9318,9 +9318,9 @@ const QUIZ_BANK = {
     {
       question: 'What is "averaging down" and why is it dangerous without a defined edge?',
       options: [
-        'Selling half your position at a loss — always safe',
-        'Averaging entry prices across multiple days — a valid DCA strategy',
-        'Adding to a losing position to lower average cost — which increases total exposure to a thesis that is already wrong',
+        'Selling half your position at a loss, always safe',
+        'Averaging entry prices across multiple days, a valid DCA strategy',
+        'Adding to a losing position to lower average cost, which increases total exposure to a thesis that is already wrong',
         'Reducing position size after each loss',
       ],
       correct: 2,
@@ -9331,7 +9331,7 @@ const QUIZ_BANK = {
       question:
         'Why is trading without a stop-loss one of the most common account-killing mistakes?',
       options: [
-        'A single unbounded loss can exceed dozens of small wins — one catastrophic trade can wipe out months of gains',
+        'A single unbounded loss can exceed dozens of small wins, one catastrophic trade can wipe out months of gains',
         'Stops guarantee profits on every trade',
         'Stops are only needed for day traders',
         'Brokers require stops on all orders',
@@ -9346,7 +9346,7 @@ const QUIZ_BANK = {
         'Trading too many different asset classes',
         'Using too many technical indicators',
         'Trading only during market hours',
-        'Executing excessive trades driven by boredom, FOMO, or need to "do something" — generating fees and emotional decisions without edge',
+        'Executing excessive trades driven by boredom, FOMO, or need to "do something", generating fees and emotional decisions without edge',
       ],
       correct: 3,
       explanation:
@@ -9368,21 +9368,21 @@ const QUIZ_BANK = {
       question:
         'What mistake do traders make when they "move their stop to avoid being stopped out"?',
       options: [
-        'They transform a small defined loss into a potentially large undefined one — exactly what stops are designed to prevent',
+        'They transform a small defined loss into a potentially large undefined one, exactly what stops are designed to prevent',
         'They improve their risk-reward ratio',
         'They reduce total portfolio risk',
         'They follow proper risk management protocol',
       ],
       correct: 0,
       explanation:
-        'Moving stops wider mid-trade is hope-based risk management. The original stop reflected your thesis invalidation point. Widening it means you no longer have a plan — you have a prayer.',
+        'Moving stops wider mid-trade is hope-based risk management. The original stop reflected your thesis invalidation point. Widening it means you no longer have a plan, you have a prayer.',
     },
     {
       question: 'Why is failing to account for slippage and commissions a common mistake?',
       options: [
         'Slippage only occurs in crypto markets',
         'Commissions were eliminated in 2019',
-        'A strategy with positive gross expectancy can have negative net expectancy after costs — especially with high-frequency trading',
+        'A strategy with positive gross expectancy can have negative net expectancy after costs, especially with high-frequency trading',
         "Slippage always works in the trader's favor",
       ],
       correct: 2,
@@ -9393,7 +9393,7 @@ const QUIZ_BANK = {
       question: 'What is the "sunk cost fallacy" in trading?',
       options: [
         'Calculating the cost basis of a position for tax purposes',
-        "Holding a losing position because you've already lost money — treating past losses as a reason to stay rather than evaluating forward expected value",
+        "Holding a losing position because you've already lost money, treating past losses as a reason to stay rather than evaluating forward expected value",
         'Recording trade costs in a journal',
         'Selling immediately after any loss',
       ],
@@ -9407,7 +9407,7 @@ const QUIZ_BANK = {
         'Story stocks always go to zero',
         'Regulators ban story stock trading',
         'Story stocks have no liquidity',
-        'You cannot size risk properly without understanding the business, catalysts, and volatility drivers — leaving you vulnerable to unexpected moves',
+        'You cannot size risk properly without understanding the business, catalysts, and volatility drivers, leaving you vulnerable to unexpected moves',
       ],
       correct: 3,
       explanation:
@@ -9418,7 +9418,7 @@ const QUIZ_BANK = {
       options: [
         'Positions slowly moving in price',
         'Reducing size over time',
-        'Gradually increasing position sizes after wins without recalibrating to account equity — inflating risk beyond your plan',
+        'Gradually increasing position sizes after wins without recalibrating to account equity, inflating risk beyond your plan',
         'A broker feature that auto-scales orders',
       ],
       correct: 2,
@@ -9428,7 +9428,7 @@ const QUIZ_BANK = {
     {
       question: 'Why is checking your P&L constantly during a trade a mistake?',
       options: [
-        'It triggers emotional reactions to noise — causing premature exits on winners and panic on normal pullbacks',
+        'It triggers emotional reactions to noise, causing premature exits on winners and panic on normal pullbacks',
         'P&L data is always delayed',
         'Brokers charge per P&L refresh',
         'P&L is only available after market close',
@@ -9468,7 +9468,7 @@ const QUIZ_BANK = {
       question: 'When scaling out of a position, what is the typical professional approach?',
       options: [
         'Close the entire position at the first target',
-        'Never take partial profits — all or nothing',
+        'Never take partial profits, all or nothing',
         'Add to the position at each target',
         'Take partial profits at predefined targets while letting a "runner" portion ride with a trailing stop',
       ],
@@ -9492,7 +9492,7 @@ const QUIZ_BANK = {
       question:
         'Why should stop placement be based on volatility (e.g., ATR) rather than arbitrary dollar amounts?',
       options: [
-        'Volatility-based stops adapt to market conditions — wider in volatile names, tighter in calm ones — reducing noise exits while respecting structure',
+        'Volatility-based stops adapt to market conditions, wider in volatile names, tighter in calm ones, reducing noise exits while respecting structure',
         'ATR stops guarantee no whipsaws',
         'Dollar stops are illegal for retail traders',
         'ATR is only used for options pricing',
@@ -9506,7 +9506,7 @@ const QUIZ_BANK = {
       options: [
         'Stopping trading at a specific time of day',
         'Using only stop-limit orders',
-        "Closing a position if it hasn't moved in your favor within a defined period — freeing capital from dead trades",
+        "Closing a position if it hasn't moved in your favor within a defined period, freeing capital from dead trades",
         'Holding positions for exactly one year for tax purposes',
       ],
       correct: 2,
@@ -9516,7 +9516,7 @@ const QUIZ_BANK = {
     {
       question: 'When managing multiple correlated positions, you should:',
       options: [
-        'Treat each as independent 1% risk trades — 5 tech longs = 5% total risk',
+        'Treat each as independent 1% risk trades, 5 tech longs = 5% total risk',
         'Reduce individual position sizes because combined correlation means aggregate risk exceeds the sum of parts',
         'Ignore correlation because diversification always protects you',
         'Only trade one position at a time always',
@@ -9535,25 +9535,25 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Mental stops fail when you need them most — during fast moves when emotions peak. Hard stops (broker-held) execute regardless of your emotional state. Always use hard stops for defined risk.',
+        'Mental stops fail when you need them most, during fast moves when emotions peak. Hard stops (broker-held) execute regardless of your emotional state. Always use hard stops for defined risk.',
     },
     {
       question: 'What is "position sizing via the Kelly Criterion" and its practical limitation?',
       options: [
         'Kelly is a chart pattern for entry timing',
         'Kelly only applies to casino games, not trading',
-        'Kelly tells you the mathematically optimal fraction of capital to risk based on edge and odds — but full Kelly is too aggressive; most traders use half-Kelly or less',
+        'Kelly tells you the mathematically optimal fraction of capital to risk based on edge and odds, but full Kelly is too aggressive; most traders use half-Kelly or less',
         'Kelly requires you to risk 100% of capital on every trade',
       ],
       correct: 2,
       explanation:
-        'Kelly = (Win% × Avg Win - Loss% × Avg Loss) / Avg Win. Full Kelly maximizes long-run growth but produces brutal drawdowns. Half-Kelly sacrifices ~25% of growth for ~50% less drawdown — much more livable.',
+        'Kelly = (Win% × Avg Win - Loss% × Avg Loss) / Avg Win. Full Kelly maximizes long-run growth but produces brutal drawdowns. Half-Kelly sacrifices ~25% of growth for ~50% less drawdown, much more livable.',
     },
     {
       question: 'When should you reduce position size mid-trade?',
       options: [
-        "When the original thesis is partially invalidated but not fully — reducing exposure limits damage while keeping some upside if you're wrong about the invalidation",
-        'Never — size should be fixed at entry',
+        "When the original thesis is partially invalidated but not fully, reducing exposure limits damage while keeping some upside if you're wrong about the invalidation",
+        'Never, size should be fixed at entry',
         'Only when the stock pays a dividend',
         'Always double size when a trade moves against you',
       ],
@@ -9574,7 +9574,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Sharpe = (Rp - Rf) / σp. It measures excess return per unit of total volatility. A Sharpe of 1.0 means you earn 1% above risk-free for every 1% of volatility — the universal risk-adjusted benchmark.',
+        'Sharpe = (Rp - Rf) / σp. It measures excess return per unit of total volatility. A Sharpe of 1.0 means you earn 1% above risk-free for every 1% of volatility, the universal risk-adjusted benchmark.',
     },
     {
       question: 'What does a negative alpha indicate?',
@@ -9586,7 +9586,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Alpha = Actual Return - [Rf + Beta × (Rm - Rf)]. Negative alpha means you took market risk but got less return than beta alone would predict — the manager destroyed value.',
+        'Alpha = Actual Return - [Rf + Beta × (Rm - Rf)]. Negative alpha means you took market risk but got less return than beta alone would predict, the manager destroyed value.',
     },
     {
       question:
@@ -9595,7 +9595,7 @@ const QUIZ_BANK = {
         'Higher returns are always better regardless of risk',
         'Volatility does not matter for long-term investors',
         'The 20% return portfolio is always preferable for tax reasons',
-        'The 12%/8% portfolio has a Sharpe ratio of ~1.0+ versus ~0.5 for the 20%/30% portfolio — more return per unit of risk',
+        'The 12%/8% portfolio has a Sharpe ratio of ~1.0+ versus ~0.5 for the 20%/30% portfolio, more return per unit of risk',
       ],
       correct: 3,
       explanation:
@@ -9605,7 +9605,7 @@ const QUIZ_BANK = {
       question: 'What is the Treynor ratio and when is it preferred over Sharpe?',
       options: [
         'Treynor measures only downside risk',
-        'Treynor uses beta in the denominator instead of total standard deviation — preferred when evaluating well-diversified portfolios where unsystematic risk is eliminated',
+        'Treynor uses beta in the denominator instead of total standard deviation, preferred when evaluating well-diversified portfolios where unsystematic risk is eliminated',
         'Treynor is identical to Sharpe for all portfolios',
         'Treynor only applies to bond portfolios',
       ],
@@ -9616,7 +9616,7 @@ const QUIZ_BANK = {
     {
       question: 'What is the Information Ratio?',
       options: [
-        'Active return divided by tracking error — measuring risk-adjusted value added by active management',
+        'Active return divided by tracking error, measuring risk-adjusted value added by active management',
         'The ratio of buy orders to sell orders',
         'The ratio of fundamental to technical analysis',
         'Total return divided by number of trades',
@@ -9631,7 +9631,7 @@ const QUIZ_BANK = {
       options: [
         'Sortino ignores all volatility',
         'Sortino is always higher than Sharpe so it looks better',
-        'Sortino uses downside deviation only — not penalizing favorable upside volatility that traders intentionally accept',
+        'Sortino uses downside deviation only, not penalizing favorable upside volatility that traders intentionally accept',
         'Sortino only works for short strategies',
       ],
       correct: 2,
@@ -9642,7 +9642,7 @@ const QUIZ_BANK = {
       question: 'What is "risk-adjusted return" fundamentally measuring?',
       options: [
         'Return after subtracting taxes',
-        'Return per unit of risk taken — answering "was the return worth the ride?"',
+        'Return per unit of risk taken, answering "was the return worth the ride?"',
         'Return adjusted for inflation only',
         'Return divided by the number of trades',
       ],
@@ -9654,14 +9654,14 @@ const QUIZ_BANK = {
       question:
         'A hedge fund reports 15% annual return with a max drawdown of 5%. A competitor reports 25% return with 40% max drawdown. Which likely has better risk-adjusted performance?',
       options: [
-        'The 25% return fund — higher is always better',
+        'The 25% return fund, higher is always better',
         'Cannot determine without more data',
         'Both are equal on a risk-adjusted basis',
-        'The 15% return fund — similar return-to-drawdown ratio with far less pain and faster recovery',
+        'The 15% return fund, similar return-to-drawdown ratio with far less pain and faster recovery',
       ],
       correct: 3,
       explanation:
-        "Return/drawdown ratio: Fund A = 3.0, Fund B = 0.625. Fund A delivers strong returns with minimal drawdown — investors can stay invested without panic selling. Fund B's 40% drawdown requires 67% recovery.",
+        "Return/drawdown ratio: Fund A = 3.0, Fund B = 0.625. Fund A delivers strong returns with minimal drawdown, investors can stay invested without panic selling. Fund B's 40% drawdown requires 67% recovery.",
     },
     {
       question: 'What is the Calmar ratio?',
@@ -9673,13 +9673,13 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Calmar = Annual Return / Max Drawdown. It directly links reward to worst pain. A Calmar above 1.0 means annual return exceeds worst drawdown — a hallmark of robust strategies.',
+        'Calmar = Annual Return / Max Drawdown. It directly links reward to worst pain. A Calmar above 1.0 means annual return exceeds worst drawdown, a hallmark of robust strategies.',
     },
     {
       question:
         'Why can two strategies with the same Sharpe ratio still feel very different to live through?',
       options: [
-        'Sharpe uses standard deviation which treats upside and downside equally — strategies with fat left tails (crash risk) can have identical Sharpe but worse real-world outcomes',
+        'Sharpe uses standard deviation which treats upside and downside equally, strategies with fat left tails (crash risk) can have identical Sharpe but worse real-world outcomes',
         'Sharpe ratio is always wrong',
         'Sharpe captures return distribution shape differences perfectly',
         'Sharpe only applies to one-year periods',
@@ -9701,7 +9701,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Stress tests ask "what if?" — what if rates spike 200bps, what if oil doubles, what if credit spreads blow out? They reveal vulnerabilities that calm-period metrics hide.',
+        'Stress tests ask "what if?", what if rates spike 200bps, what if oil doubles, what if credit spreads blow out? They reveal vulnerabilities that calm-period metrics hide.',
     },
     {
       question: 'What is a "historical scenario" stress test?',
@@ -9750,15 +9750,15 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'Reverse stress testing asks: "What has to go wrong for me to lose 30%?" It identifies the specific combination of shocks that breaks your portfolio — often more actionable than forward scenario testing.',
+        'Reverse stress testing asks: "What has to go wrong for me to lose 30%?" It identifies the specific combination of shocks that breaks your portfolio, often more actionable than forward scenario testing.',
     },
     {
       question:
         'Why is a 2008-style stress test still relevant for a portfolio with no direct mortgage exposure?',
       options: [
-        "It isn't — only test scenarios matching your exact holdings",
+        "It isn't, only test scenarios matching your exact holdings",
         '2008 only affected mortgage-backed securities',
-        'Liquidity crises transmit through correlated selloffs across all risk assets — equity, credit, commodities, and alternatives all fell together',
+        'Liquidity crises transmit through correlated selloffs across all risk assets, equity, credit, commodities, and alternatives all fell together',
         'Stress tests expire after 5 years',
       ],
       correct: 2,
@@ -9781,32 +9781,32 @@ const QUIZ_BANK = {
       question:
         'A stress test shows your portfolio would lose 35% in a severe recession scenario. What is the appropriate response?',
       options: [
-        'Ignore it — stress tests are theoretical',
+        'Ignore it, stress tests are theoretical',
         'Immediately sell everything',
         'Leverage up because prices will be cheaper',
         'Evaluate whether you can emotionally and financially withstand that drawdown; if not, reduce risk now while calm rather than during the crisis',
       ],
       correct: 3,
       explanation:
-        'The value of stress testing is proactive adjustment. If a 35% loss would force you to sell at the bottom, reduce equity exposure, add hedges, or increase cash now — when you can think clearly.',
+        'The value of stress testing is proactive adjustment. If a 35% loss would force you to sell at the bottom, reduce equity exposure, add hedges, or increase cash now, when you can think clearly.',
     },
     {
       question: 'What is "liquidity stress testing"?',
       options: [
         'Testing how long it takes to withdraw cash from a checking account',
         'Testing only liquid large-cap stocks',
-        'Estimating whether you can exit positions at reasonable prices during a market freeze — when bid-ask spreads widen and volume collapses',
+        'Estimating whether you can exit positions at reasonable prices during a market freeze, when bid-ask spreads widen and volume collapses',
         'Measuring portfolio turnover rate',
       ],
       correct: 2,
       explanation:
-        "In crises, the problem isn't just price decline — it's inability to sell at any price. Liquidity stress tests model execution at stressed bid prices and extended settlement times.",
+        "In crises, the problem isn't just price decline, it's inability to sell at any price. Liquidity stress tests model execution at stressed bid prices and extended settlement times.",
     },
     {
       question:
         'Why should stress test results be reviewed regularly rather than once at portfolio inception?',
       options: [
-        "Portfolio composition, correlations, and macro environment change — yesterday's stress profile may not reflect today's vulnerabilities",
+        "Portfolio composition, correlations, and macro environment change, yesterday's stress profile may not reflect today's vulnerabilities",
         'Stress tests are only valid for one day',
         'Regulations require daily stress testing for all investors',
         'Markets never change so one test is sufficient',
@@ -9823,7 +9823,7 @@ const QUIZ_BANK = {
       options: [
         'Physical exhaustion from staring at screens',
         'Fatigue caused by profitable trading sessions',
-        'The deteriorating quality of decisions after prolonged cognitive effort — leading to impulsive trades, ignored rules, and simplified reasoning',
+        'The deteriorating quality of decisions after prolonged cognitive effort, leading to impulsive trades, ignored rules, and simplified reasoning',
         'A medical condition unrelated to trading',
       ],
       correct: 2,
@@ -9841,7 +9841,7 @@ const QUIZ_BANK = {
       ],
       correct: 0,
       explanation:
-        'The first impulse after a large loss is revenge trading — the most dangerous response. Stopping preserves remaining capital and allows rational analysis. Was the loss within expected variance or a process break?',
+        'The first impulse after a large loss is revenge trading, the most dangerous response. Stopping preserves remaining capital and allows rational analysis. Was the loss within expected variance or a process break?',
     },
     {
       question:
@@ -9850,7 +9850,7 @@ const QUIZ_BANK = {
         'Volatility events are predictable and easy to trade',
         'Brokers require written plans during volatile events',
         'Volatility events always produce profits for prepared traders',
-        'High volatility increases emotional arousal and narrows cognitive focus — pre-written rules are your only defense against impulsive action',
+        'High volatility increases emotional arousal and narrows cognitive focus, pre-written rules are your only defense against impulsive action',
       ],
       correct: 3,
       explanation:
@@ -9871,7 +9871,7 @@ const QUIZ_BANK = {
     {
       question: 'What physical techniques help maintain decision quality under trading pressure?',
       options: [
-        'Structured breathing, brief physical movement, and hydration — which reduce cortisol and restore prefrontal cortex function',
+        'Structured breathing, brief physical movement, and hydration, which reduce cortisol and restore prefrontal cortex function',
         'Drinking more caffeine to stay alert',
         'Trading faster to get through the pressure event',
         'Avoiding all food during trading hours',
@@ -9903,7 +9903,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        "If-then plans eliminate real-time decision-making under stress. You've already decided what to do when X happens — you just execute. This is how pilots, surgeons, and professional traders handle emergencies.",
+        "If-then plans eliminate real-time decision-making under stress. You've already decided what to do when X happens, you just execute. This is how pilots, surgeons, and professional traders handle emergencies.",
     },
     {
       question: 'What is "analysis paralysis" under pressure?',
@@ -9911,7 +9911,7 @@ const QUIZ_BANK = {
         'Paralysis caused by too many profitable opportunities',
         'A technical indicator signal',
         'Being unable to open the trading platform',
-        "Over-analyzing to the point of inaction — missing valid setups or failing to cut losses because you're seeking one more confirming data point",
+        "Over-analyzing to the point of inaction, missing valid setups or failing to cut losses because you're seeking one more confirming data point",
       ],
       correct: 3,
       explanation:
@@ -9923,7 +9923,7 @@ const QUIZ_BANK = {
       options: [
         'House money profits are tax-free',
         'Brokers confiscate house money at end of day',
-        'The "house money effect" causes reckless risk-taking with unrealized gains — treating them as "free" money not worth protecting',
+        'The "house money effect" causes reckless risk-taking with unrealized gains, treating them as "free" money not worth protecting',
         'House money refers to borrowed funds only',
       ],
       correct: 2,
@@ -9960,14 +9960,14 @@ const QUIZ_BANK = {
     {
       question: 'What is Value-at-Risk (VaR) model validation and why is it critical?',
       options: [
-        'Backtesting VaR predictions against actual losses to verify the model is calibrated — too many breaches means the model underestimates risk',
+        'Backtesting VaR predictions against actual losses to verify the model is calibrated, too many breaches means the model underestimates risk',
         'Checking that VaR software is installed correctly',
         'Validating that VaR is always positive',
         'A one-time setup procedure with no ongoing need',
       ],
       correct: 0,
       explanation:
-        'If your 99% VaR is breached 5% of the time instead of 1%, the model is wrong. Continuous backtesting and recalibration are required — especially after regime changes.',
+        'If your 99% VaR is breached 5% of the time instead of 1%, the model is wrong. Continuous backtesting and recalibration are required, especially after regime changes.',
     },
     {
       question: 'What is the difference between "risk appetite" and "risk tolerance"?',
@@ -9985,7 +9985,7 @@ const QUIZ_BANK = {
       question: 'What is an Risk Management Framework (RMF) and its core components?',
       options: [
         'A single spreadsheet tracking daily P&L',
-        'A structured approach encompassing governance, risk identification, assessment, mitigation, monitoring, and reporting — integrated into business decisions',
+        'A structured approach encompassing governance, risk identification, assessment, mitigation, monitoring, and reporting, integrated into business decisions',
         'A framework only used by banks',
         'A technical analysis methodology',
       ],
@@ -9996,7 +9996,7 @@ const QUIZ_BANK = {
     {
       question: 'What is "risk culture" and why do regulators emphasize it?',
       options: [
-        'The shared values, beliefs, and behaviors that determine how an organization responds to risk — which ultimately drives outcomes more than models or policies',
+        'The shared values, beliefs, and behaviors that determine how an organization responds to risk, which ultimately drives outcomes more than models or policies',
         "The cultural sector's market risk",
         'A type of alternative investment',
         'Culture is irrelevant to risk management',
@@ -10010,7 +10010,7 @@ const QUIZ_BANK = {
       options: [
         'Risk of trading against counter-trend signals',
         'Risk only relevant in OTC derivatives markets',
-        'Risk that your trading counterparty fails to fulfill obligations — critical during liquidity crises when counterparty defaults cascade',
+        'Risk that your trading counterparty fails to fulfill obligations, critical during liquidity crises when counterparty defaults cascade',
         'Risk managed by using market orders only',
       ],
       correct: 2,
@@ -10027,7 +10027,7 @@ const QUIZ_BANK = {
       ],
       correct: 1,
       explanation:
-        "The CRO must be independent from profit-generating units — reporting to the CEO or board, not the head of trading. Independence ensures risk concerns aren't suppressed for short-term P&L.",
+        "The CRO must be independent from profit-generating units, reporting to the CEO or board, not the head of trading. Independence ensures risk concerns aren't suppressed for short-term P&L.",
     },
     {
       question: 'What is "risk aggregation" and its key challenge?',
@@ -10035,7 +10035,7 @@ const QUIZ_BANK = {
         'Adding up all profits from different desks',
         'Aggregating only market risk, ignoring credit risk',
         'Summing individual VaRs without adjustment always gives accurate total risk',
-        'Combining risk measures across business units while accounting for diversification and correlation — challenging because correlations shift in stress',
+        'Combining risk measures across business units while accounting for diversification and correlation, challenging because correlations shift in stress',
       ],
       correct: 3,
       explanation:
@@ -10046,7 +10046,7 @@ const QUIZ_BANK = {
       options: [
         'A broker account registration form',
         'A register of all profitable trades',
-        'A living document cataloging identified risks, their likelihood, impact, owners, and mitigation actions — reviewed and updated regularly',
+        'A living document cataloging identified risks, their likelihood, impact, owners, and mitigation actions, reviewed and updated regularly',
         'A regulatory filing submitted annually',
       ],
       correct: 2,
@@ -10074,7 +10074,7 @@ const QUIZ_BANK = {
       options: [
         'Deploy all available cash into the cheapest assets immediately',
         'Short the market aggressively',
-        'Preserve capital and liquidity — assess what you hold, what you owe, and what you can exit without catastrophic slippage',
+        'Preserve capital and liquidity, assess what you hold, what you owe, and what you can exit without catastrophic slippage',
         'Ignore the crisis and maintain all positions',
       ],
       correct: 2,
@@ -10084,7 +10084,7 @@ const QUIZ_BANK = {
     {
       question: 'What is "deleveraging" during a crisis and why does it cascade?',
       options: [
-        'Forced selling of assets to meet margin calls or redemption requests — which pushes prices lower, triggering more margin calls in a self-reinforcing loop',
+        'Forced selling of assets to meet margin calls or redemption requests, which pushes prices lower, triggering more margin calls in a self-reinforcing loop',
         'Banks increasing lending to stimulate the economy',
         'Government policy to reduce national debt',
         'Investors voluntarily reducing positions for tax purposes',
@@ -10096,10 +10096,10 @@ const QUIZ_BANK = {
     {
       question: 'What role does cash play in a crisis playbook?',
       options: [
-        'Cash is trash — always be fully invested',
+        'Cash is trash, always be fully invested',
         'Cash loses all value during crises',
         'Cash should be converted to gold immediately',
-        'Cash is optionality — it allows you to buy quality assets at distressed prices when others are forced to sell',
+        'Cash is optionality, it allows you to buy quality assets at distressed prices when others are forced to sell',
       ],
       correct: 3,
       explanation:
@@ -10109,7 +10109,7 @@ const QUIZ_BANK = {
       question: 'What is a "flight to quality" during market crises?',
       options: [
         'Airlines outperforming during crises',
-        'Investors moving from speculative assets to safe havens — Treasuries, gold, USD, and high-quality short-duration bonds',
+        'Investors moving from speculative assets to safe havens, Treasuries, gold, USD, and high-quality short-duration bonds',
         'Quality stocks always rising while everything else falls',
         'A regulatory mandate to buy quality stocks',
       ],
@@ -10120,7 +10120,7 @@ const QUIZ_BANK = {
     {
       question: 'Why should a crisis playbook be written and rehearsed BEFORE a crisis occurs?',
       options: [
-        'During a crisis, cognitive function degrades — pre-written protocols with clear triggers ensure disciplined action when emotions would otherwise dominate',
+        'During a crisis, cognitive function degrades, pre-written protocols with clear triggers ensure disciplined action when emotions would otherwise dominate',
         'Crises are predictable and can be timed',
         'Rehearsal guarantees profits during crises',
         'Crises no longer occur in modern markets',
@@ -10134,7 +10134,7 @@ const QUIZ_BANK = {
       options: [
         'Ranking assets by expected return',
         'Tiering brokers by commission rates',
-        'Classifying holdings by how quickly and cheaply they can be sold — ensuring you know which assets to sell first if forced to raise cash',
+        'Classifying holdings by how quickly and cheaply they can be sold, ensuring you know which assets to sell first if forced to raise cash',
         'Organizing trades by size',
       ],
       correct: 2,
@@ -10145,7 +10145,7 @@ const QUIZ_BANK = {
       question: 'What is the "breakdown playbook" for when correlations go to 1?',
       options: [
         'A plan for when trading platforms crash',
-        'A plan for when diversification fails — including pre-identified hedges (Treasuries, puts, cash), maximum portfolio heat limits, and circuit breakers',
+        'A plan for when diversification fails, including pre-identified hedges (Treasuries, puts, cash), maximum portfolio heat limits, and circuit breakers',
         'A technical analysis pattern',
         'A plan only for bond traders',
       ],
@@ -10160,18 +10160,18 @@ const QUIZ_BANK = {
         'Central banks will never intervene in markets',
         'COVID had no market impact',
         'Emergency responses always fail',
-        "Policy response speed and magnitude matter — the Fed's rapid liquidity injection truncated what could have been a multi-year bear market into a weeks-long crash",
+        "Policy response speed and magnitude matter, the Fed's rapid liquidity injection truncated what could have been a multi-year bear market into a weeks-long crash",
       ],
       correct: 3,
       explanation:
-        'Crisis playbooks must include a "policy response" scenario. The speed and scale of central bank intervention (rate cuts, QE, credit facilities) can dramatically alter crisis trajectories — plan for both delayed and aggressive policy responses.',
+        'Crisis playbooks must include a "policy response" scenario. The speed and scale of central bank intervention (rate cuts, QE, credit facilities) can dramatically alter crisis trajectories, plan for both delayed and aggressive policy responses.',
     },
     {
       question: 'What is "opportunistic rebalancing" in a crisis playbook?',
       options: [
         'Rebalancing on a fixed calendar schedule regardless of conditions',
         'Only rebalancing bond portfolios',
-        'Deliberately shifting toward assets that have been disproportionately sold — buying quality at distressed prices when forced selling creates mispricings',
+        'Deliberately shifting toward assets that have been disproportionately sold, buying quality at distressed prices when forced selling creates mispricings',
         'Avoiding all rebalancing during crises',
       ],
       correct: 2,
@@ -10182,7 +10182,7 @@ const QUIZ_BANK = {
       question:
         'What communication protocol should a crisis playbook include for managed accounts or partners?',
       options: [
-        'Pre-defined communication templates, frequency, and escalation paths — proactive transparency reduces panic redemptions and maintains trust',
+        'Pre-defined communication templates, frequency, and escalation paths, proactive transparency reduces panic redemptions and maintains trust',
         'No communication until the crisis is over',
         'Only communicate if the portfolio is up',
         'Communication is optional during crises',
@@ -10205,7 +10205,7 @@ const QUIZ_BANK = {
       ],
       correct: 2,
       explanation:
-        'Systematic risk management removes human discretion from risk decisions. Rules are coded, backtested, and executed automatically — eliminating the emotional failures that discretionary traders consistently exhibit.',
+        'Systematic risk management removes human discretion from risk decisions. Rules are coded, backtested, and executed automatically, eliminating the emotional failures that discretionary traders consistently exhibit.',
     },
     {
       question: 'What is a "kill switch" in systematic risk management?',
@@ -10225,17 +10225,17 @@ const QUIZ_BANK = {
         'Allocating equal dollar amounts to each asset',
         'Parity between long and short positions only',
         'Equal risk per trade regardless of asset',
-        'Allocating so each asset class contributes equally to total portfolio risk — typically requiring leverage on lower-volatility assets like bonds',
+        'Allocating so each asset class contributes equally to total portfolio risk, typically requiring leverage on lower-volatility assets like bonds',
       ],
       correct: 3,
       explanation:
-        'Traditional 60/40 is ~90% equity risk. Risk parity balances risk contributions — more bonds (often levered), commodities, and alternatives — so no single factor dominates portfolio volatility.',
+        'Traditional 60/40 is ~90% equity risk. Risk parity balances risk contributions, more bonds (often levered), commodities, and alternatives, so no single factor dominates portfolio volatility.',
     },
     {
       question: 'What is "drawdown control" in systematic risk management?',
       options: [
         'Preventing any losing day',
-        'Dynamically reducing exposure as drawdowns deepen — using rules like "at -5% drawdown, reduce equity allocation by 25%" to limit cascade losses',
+        'Dynamically reducing exposure as drawdowns deepen, using rules like "at -5% drawdown, reduce equity allocation by 25%" to limit cascade losses',
         'Controlling the drawdown of individual charts',
         'A manual process requiring daily judgment calls',
       ],
@@ -10260,7 +10260,7 @@ const QUIZ_BANK = {
       options: [
         'Hedging only the most probable outcomes',
         'Hedging only during earnings season',
-        'Systematically purchasing cheap out-of-the-money puts or maintaining crisis hedges as a permanent portfolio insurance cost — accepting small drag for crash protection',
+        'Systematically purchasing cheap out-of-the-money puts or maintaining crisis hedges as a permanent portfolio insurance cost, accepting small drag for crash protection',
         'Eliminating all tail risk through diversification alone',
       ],
       correct: 2,
@@ -10271,13 +10271,13 @@ const QUIZ_BANK = {
       question: 'What is "position limit enforcement" in systematic risk management?',
       options: [
         'A suggestion to limit position sizes',
-        'Hard-coded maximum position sizes, sector concentrations, and leverage limits that the system cannot override — even when signals are strong',
+        'Hard-coded maximum position sizes, sector concentrations, and leverage limits that the system cannot override, even when signals are strong',
         'Limits set manually each morning',
         'Limits that apply only to losing positions',
       ],
       correct: 1,
       explanation:
-        'Human override of position limits is how Archegos built $100B in hidden exposure. Systematic enforcement means the code physically cannot exceed limits — no matter how compelling the trade looks.',
+        'Human override of position limits is how Archegos built $100B in hidden exposure. Systematic enforcement means the code physically cannot exceed limits, no matter how compelling the trade looks.',
     },
     {
       question: 'What is the role of " Monte Carlo simulation" in systematic risk management?',
@@ -10289,14 +10289,14 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'Monte Carlo generates thousands of possible future paths based on return distributions and correlations. It reveals the probability of various drawdown levels — essential for setting risk limits with quantified confidence.',
+        'Monte Carlo generates thousands of possible future paths based on return distributions and correlations. It reveals the probability of various drawdown levels, essential for setting risk limits with quantified confidence.',
     },
     {
       question: 'What is "adaptive position sizing" in systematic frameworks?',
       options: [
         'Fixed position sizes regardless of conditions',
         'Sizes adjusted manually by the portfolio manager daily',
-        'Position sizes that automatically adjust based on current volatility, recent performance, and regime indicators — larger in favorable conditions, smaller in adverse ones',
+        'Position sizes that automatically adjust based on current volatility, recent performance, and regime indicators, larger in favorable conditions, smaller in adverse ones',
         'Only increasing sizes, never decreasing',
       ],
       correct: 2,
@@ -10306,14 +10306,14 @@ const QUIZ_BANK = {
     {
       question: 'Why must systematic risk systems include "model decay monitoring"?',
       options: [
-        "Markets evolve, and strategies that worked in one regime lose edge in another — continuous monitoring detects when a model's risk/return profile is deteriorating before major losses occur",
-        'Models never decay — once built, they work forever',
+        "Markets evolve, and strategies that worked in one regime lose edge in another, continuous monitoring detects when a model's risk/return profile is deteriorating before major losses occur",
+        'Models never decay, once built, they work forever',
         'Decay monitoring is only for machine learning models',
         'Model decay is a theoretical concept with no practical application',
       ],
       correct: 0,
       explanation:
-        'Every edge decays as markets adapt. Systematic monitoring tracks rolling Sharpe, hit rate, and drawdown metrics. When performance degrades beyond statistical thresholds, the system reduces allocation or halts — before human intuition catches on.',
+        'Every edge decays as markets adapt. Systematic monitoring tracks rolling Sharpe, hit rate, and drawdown metrics. When performance degrades beyond statistical thresholds, the system reduces allocation or halts, before human intuition catches on.',
     },
   ],
 
@@ -10323,7 +10323,7 @@ const QUIZ_BANK = {
       options: [
         'Trading from the edge of your seat during volatile markets',
         'Having insider information',
-        'A statistical advantage that produces positive expectancy over a large sample of trades — a repeatable source of profit after costs',
+        'A statistical advantage that produces positive expectancy over a large sample of trades, a repeatable source of profit after costs',
         'Using the most advanced charting software',
       ],
       correct: 2,
@@ -10333,20 +10333,20 @@ const QUIZ_BANK = {
     {
       question: 'What is the relationship between edge, position sizing, and risk of ruin?',
       options: [
-        'Edge determines direction (profit vs loss); position sizing determines speed and survival — even positive edge leads to ruin with oversized bets',
+        'Edge determines direction (profit vs loss); position sizing determines speed and survival, even positive edge leads to ruin with oversized bets',
         'Larger positions always increase edge',
         'Risk of ruin is zero with any positive edge',
         'Position sizing is irrelevant if you have edge',
       ],
       correct: 0,
       explanation:
-        'A coin flip with 51% edge will still bankrupt you if you bet 50% of capital each time. Edge is necessary but not sufficient — sizing determines whether you survive long enough for edge to manifest.',
+        'A coin flip with 51% edge will still bankrupt you if you bet 50% of capital each time. Edge is necessary but not sufficient, sizing determines whether you survive long enough for edge to manifest.',
     },
     {
       question: 'What is "sample size" significance when validating a trading edge?',
       options: [
         'Only the most recent 5 trades matter',
-        'Sample size is irrelevant — one big win proves edge',
+        'Sample size is irrelevant, one big win proves edge',
         '1000 trades minimum for any strategy',
         'Edge validation requires sufficient trades (typically 100+ for most strategies) to distinguish genuine edge from random variance',
       ],
@@ -10369,7 +10369,7 @@ const QUIZ_BANK = {
     {
       question: 'What is a "trading journal edge audit" and what should it track?',
       options: [
-        'Systematically logging entry rationale, market conditions, execution quality, and outcome — then analyzing patterns to identify which conditions produce your edge and which destroy it',
+        'Systematically logging entry rationale, market conditions, execution quality, and outcome, then analyzing patterns to identify which conditions produce your edge and which destroy it',
         'Only recording profitable trades',
         "Auditing your broker's fees",
         'Tracking only losing trades for tax purposes',
@@ -10383,7 +10383,7 @@ const QUIZ_BANK = {
       options: [
         'Running multiple copies of the same strategy',
         'Using multiple brokers for the same trades',
-        'Combining uncorrelated strategies (trend, mean reversion, carry, vol) so that when one loses, others may profit — stabilizing the equity curve',
+        'Combining uncorrelated strategies (trend, mean reversion, carry, vol) so that when one loses, others may profit, stabilizing the equity curve',
         'Edge that only works in multiple timeframes simultaneously',
       ],
       correct: 2,
@@ -10412,14 +10412,14 @@ const QUIZ_BANK = {
       ],
       correct: 3,
       explanation:
-        'A strategy with 0.2% signal edge but 0.15% execution cost (slippage, spread, impact) retains only 0.05%. Execution edge — smart order routing, limit vs market timing, dark pools — can double net returns.',
+        'A strategy with 0.2% signal edge but 0.15% execution cost (slippage, spread, impact) retains only 0.05%. Execution edge, smart order routing, limit vs market timing, dark pools, can double net returns.',
     },
     {
       question: 'Why is "intellectual honesty" about edge the hallmark of expert risk management?',
       options: [
         'Experts never lose money',
         'Intellectual honesty means always being bullish',
-        'Acknowledging when you have no edge (and not trading) is as important as exploiting edge when you have it — most losses come from trading without edge',
+        'Acknowledging when you have no edge (and not trading) is as important as exploiting edge when you have it, most losses come from trading without edge',
         'Experts have permanent edge that never decays',
       ],
       correct: 2,
@@ -10430,7 +10430,7 @@ const QUIZ_BANK = {
       question:
         'What is "compounding edge" and why is it the ultimate goal of systematic risk management?',
       options: [
-        'The combination of positive expectancy, optimal position sizing, drawdown control, and reinvestment that produces exponential wealth growth over time — the intersection of edge and survival',
+        'The combination of positive expectancy, optimal position sizing, drawdown control, and reinvestment that produces exponential wealth growth over time, the intersection of edge and survival',
         'Edge that compounds interest on cash balances',
         'A type of compound option strategy',
         'Edge that only works in compound interest calculations',

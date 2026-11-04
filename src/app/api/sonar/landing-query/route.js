@@ -7,6 +7,7 @@ import { reservePing, completePing, failPing } from '@/lib/sonar/quota';
 import { getClientIp } from '@/lib/client-ip';
 import { withTimeout } from '@/lib/with-timeout';
 
+import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /**
  * POST /api/sonar/landing-query. The landing page's guest Sonar.
  *
@@ -90,7 +91,7 @@ function setGuestCount(res, n) {
 
 const FORCE_KINDS = new Set(['ticker', 'country', 'industry', 'sector', 'state_province', 'theme']);
 
-export const POST = withApiGuard(
+const POST_HANDLER = withApiGuard(
   async (request) => {
     const startedAt = Date.now();
     const body = await request.json().catch(() => ({}));
@@ -272,3 +273,6 @@ export const POST = withApiGuard(
      miss falls back to the per-instance count (persistent-rate-limit.js). */
   { requireAuth: false, strict: true, rateLimitTimeoutMs: PROFILE.rateLimitMs },
 );
+
+/* No em dashes in anything this route returns (src/lib/text/em-dash.js). */
+export const POST = withNoEmDash(POST_HANDLER);

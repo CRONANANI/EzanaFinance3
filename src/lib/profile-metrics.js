@@ -144,7 +144,7 @@ function uniqueSectors(positions = []) {
 }
 
 function formatDelta(n, unit) {
-  if (!Number.isFinite(n)) return `—`;
+  if (!Number.isFinite(n)) return `–`;
   const sign = n >= 0 ? '+' : '';
   const digits = unit === '%' ? 1 : 0;
   return `${sign}${n.toFixed(digits)}${unit}`;
@@ -263,7 +263,7 @@ export function computeProfileMetrics({
     holdingDiscipline: mk(
       'holdingDiscipline',
       'Avg Hold Time',
-      holdingDays >= 1 ? `${Math.round(holdingDays)}d` : '—',
+      holdingDays >= 1 ? `${Math.round(holdingDays)}d` : '–',
       holdingDays,
       'd',
     ),

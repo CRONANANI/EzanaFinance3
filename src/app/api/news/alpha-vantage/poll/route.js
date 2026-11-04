@@ -3,6 +3,7 @@ import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
+import { deepRemoveEmDashes } from '@/lib/text/em-dash';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -160,7 +161,10 @@ export const GET = withApiGuard(
         return NextResponse.json({ fetched: true, inserted: 0, total: 0 });
       }
 
-      const normalized = feed.filter((a) => a.url && a.title).map(normalizeAvArticle);
+      /* No em dashes in stored headlines (src/lib/text/em-dash.js). */
+      const normalized = feed
+        .filter((a) => a.url && a.title)
+        .map((a) => deepRemoveEmDashes(normalizeAvArticle(a)));
 
       if (normalized.length > 0) {
         const { error: upsertErr } = await getAdminClient()

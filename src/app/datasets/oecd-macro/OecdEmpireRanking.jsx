@@ -33,8 +33,8 @@ export default function OecdEmpireRanking({ model, focus, selectedA, onPickCount
     lines: [
       { label: 'Composite', value: r.composite.toFixed(1), tone: 'pos' },
       { label: 'Coverage', value: `${r.present}/${dimCount}` },
-      { label: 'Strongest', value: r.strongest.join(', ') || '—' },
-      { label: 'Weakest', value: r.weakest.join(', ') || '—' },
+      { label: 'Strongest', value: r.strongest.join(', ') || '–' },
+      { label: 'Weakest', value: r.weakest.join(', ') || '–' },
     ],
   });
 
@@ -44,7 +44,7 @@ export default function OecdEmpireRanking({ model, focus, selectedA, onPickCount
         <div className="oecd-section-head-l">
           <span className="oecd-section-tag">EMPIRE COMPOSITE</span>
           <h2 className="oecd-section-title">
-            Composite of {dimCount} live dimension{dimCount === 1 ? '' : 's'} — not a full
+            Composite of {dimCount} live dimension{dimCount === 1 ? '' : 's'}, not a full
             18-dimension score
           </h2>
           <span

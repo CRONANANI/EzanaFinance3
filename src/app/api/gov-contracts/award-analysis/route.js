@@ -5,6 +5,7 @@ import { getAdminClient } from '@/lib/supabase';
 import { HAIKU_MODEL } from '@/lib/sonar/llm-providers';
 import { reserveGlobalAiCall } from '@/lib/ai-rate-limit';
 
+import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -62,7 +63,7 @@ You are given ONE federal contract award's public USAspending record and nothing
 Explain, in plain language, what the awarding agency is buying, and which sectors or
 supply chains the work plausibly touches. Hard rules:
 - Base everything ONLY on the fields provided. If the description is terse or empty,
-  say so and keep the analysis short — do NOT invent detail.
+  say so and keep the analysis short, do NOT invent detail.
 - Frame sector/supply-chain links as POSSIBILITIES, never predictions.
 - State uncertainty explicitly where the record is thin.
 - NEVER name a public company as a beneficiary unless the recipient itself is that
@@ -123,8 +124,8 @@ function buildPrompt(a) {
     ),
     f('Action date', a.action_date),
     f('Fiscal year', a.fiscal_year),
-    f('NAICS', [a.naics_code, a.naics_description].filter(Boolean).join(' — ')),
-    f('PSC (product/service code)', [a.psc_code, a.psc_description].filter(Boolean).join(' — ')),
+    f('NAICS', [a.naics_code, a.naics_description].filter(Boolean).join(' · ')),
+    f('PSC (product/service code)', [a.psc_code, a.psc_description].filter(Boolean).join(' · ')),
     f('Place of performance', [a.pop_city, a.pop_state].filter(Boolean).join(', ')),
     f('PIID', a.award_id_piid),
     f('Description', a.description),
@@ -137,7 +138,7 @@ function buildPrompt(a) {
    prompt is built from the DB record — NO client-supplied text reaches the model
    (that would be a prompt-injection surface). Result is cached on the row so a
    repeatedly-opened award costs one model call. Public + rate-limited (strict). */
-export const POST = withApiGuard(
+const POST_HANDLER = withApiGuard(
   async (request) => {
     let body;
     try {
@@ -246,3 +247,6 @@ export const POST = withApiGuard(
   },
   { requireAuth: false, strict: true },
 );
+
+/* No em dashes in anything this route returns (src/lib/text/em-dash.js). */
+export const POST = withNoEmDash(POST_HANDLER);

@@ -32,7 +32,7 @@ function num(v) {
 }
 
 function fmtMcap(n) {
-  if (n === null || n === undefined) return '—';
+  if (n === null || n === undefined) return '–';
   if (n >= 1e12) return `$${(n / 1e12).toFixed(1)}T`;
   if (n >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
   if (n >= 1e6) return `$${(n / 1e6).toFixed(0)}M`;
@@ -724,7 +724,7 @@ async function fetchTickerData(symbol, key) {
         if (marketCap === null) marketCap = num(av.MarketCapitalization);
 
         console.log(
-          `[comps] ${symbol}: AV OVERVIEW filled — pe=${pe}, evRev=${evRevenue}, evEbitda=${evEbitda}, revGrowth=${revenueGrowth}`,
+          `[comps] ${symbol}: AV OVERVIEW filled, pe=${pe}, evRev=${evRevenue}, evEbitda=${evEbitda}, revGrowth=${revenueGrowth}`,
         );
       }
     } catch (err) {

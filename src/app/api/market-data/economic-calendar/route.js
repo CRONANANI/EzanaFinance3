@@ -145,7 +145,7 @@ export const GET = withApiGuard(
       const FMP_KEY = getFmpKey();
       if (!FMP_KEY) {
         console.warn(
-          '[economic-calendar] FMP_API_KEY not set — FMP news aggregation skipped, Finnhub still active.',
+          '[economic-calendar] FMP_API_KEY not set, FMP news aggregation skipped, Finnhub still active.',
         );
       }
 

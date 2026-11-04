@@ -25,9 +25,9 @@ export function ResourcesSection() {
             className="max-w-[600px] mx-auto px-6 text-sm leading-relaxed mt-3"
             style={{ color: 'var(--text-muted)' }}
           >
-            Ezana never stops studying your activity, risk tolerance and interests &mdash;
-            continuously retuning how much each domain weighs. The further a dimension drifts from
-            the core, the more it shapes the news in your dashboard right now.
+            Ezana never stops studying your activity, risk tolerance and interests continuously
+            retuning how much each domain weighs. The further a dimension drifts from the core, the
+            more it shapes the news in your dashboard right now.
           </p>
         </div>
 

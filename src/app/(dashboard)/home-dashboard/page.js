@@ -715,7 +715,7 @@ export default function HomeDashboardPage() {
                       <strong className="db-greeting-highlight">
                         +{mock.totalPnlPct.toFixed(2)}%
                       </strong>{' '}
-                      since you started — paper trading!
+                      since you started, paper trading!
                     </>
                   ) : (
                     <>
@@ -723,7 +723,7 @@ export default function HomeDashboardPage() {
                       <strong className="db-greeting-highlight">
                         {mock.totalPnlPct.toFixed(2)}%
                       </strong>{' '}
-                      — adjust your strategy!
+                      adjust your strategy!
                     </>
                   )
                 ) : valueWindowFromApi && Math.abs(valueWindowFromApi.changePct) > 1e-6 ? (
@@ -1077,7 +1077,7 @@ export default function HomeDashboardPage() {
                       style={{ fontSize: '2rem', color: '#6b7280', marginBottom: '0.5rem' }}
                     />
                     <p style={{ margin: 0, fontSize: '0.875rem', color: '#8b949e' }}>
-                      Empty watchlist — add stocks to track
+                      Empty watchlist, add stocks to track
                     </p>
                     <button
                       className="db-icon-btn"
@@ -1155,7 +1155,7 @@ export default function HomeDashboardPage() {
                           : typeof plaidSummary?.totalGainLoss === 'number'
                             ? plaidSummary.totalGainLoss
                             : null;
-                        if (total === null) return '—';
+                        if (total === null) return '–';
                         return `${total >= 0 ? '+' : '-'}$${Math.abs(total).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
                       })()}
                     </div>
@@ -1253,7 +1253,7 @@ export default function HomeDashboardPage() {
                                 ? `${pnl >= 0 ? '+' : '-'}$${Math.abs(pnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
                                 : typeof p.dayDelta === 'number'
                                   ? `Day ${p.dayDelta >= 0 ? '+' : ''}$${Math.abs(p.dayDelta).toFixed(0)}`
-                                  : '—'}
+                                  : '–'}
                             </span>
                             <span className="db-legend-pct">{p.weightPct.toFixed(0)}%</span>
                           </li>
@@ -1462,13 +1462,13 @@ export default function HomeDashboardPage() {
         steps={[
           {
             targetSelector: '.db-hero-card',
-            message: 'Your portfolio snapshot — value, change, and sparkline over time.',
+            message: 'Your portfolio snapshot, value, change, and sparkline over time.',
             position: 'bottom',
           },
           {
             targetSelector: '.db-sector-card',
             message:
-              'Sector distribution shows how your holdings are spread — diversification at a glance.',
+              'Sector distribution shows how your holdings are spread, diversification at a glance.',
             position: 'top',
           },
         ]}

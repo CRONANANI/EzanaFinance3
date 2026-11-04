@@ -267,7 +267,7 @@ export function UserSearch({ className = '' }) {
           )}
 
           {!loading && !errored && debouncedQuery.length > 0 && debouncedQuery.length < 2 && (
-            <div className="us-state us-state-hint">Keep typing — at least 2 characters.</div>
+            <div className="us-state us-state-hint">Keep typing, at least 2 characters.</div>
           )}
 
           {showRecents && (

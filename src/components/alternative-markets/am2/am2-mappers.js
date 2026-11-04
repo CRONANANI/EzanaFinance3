@@ -57,7 +57,7 @@ export function enrichPricesRow(row, rank) {
     price: row.price,
     chg24h: signed,
     chg7d: row.chg7d != null ? parseFloat(row.chg7d) : signed * 1.4 + Math.sin(rank) * 0.5,
-    mcap: row.mcap || '—',
+    mcap: row.mcap || '–',
     sparkline: synthesizeSparkline(row.price, signed, 16),
     positive: row.pos !== false,
     tier: row.tier || row.category || 'top',
@@ -100,7 +100,7 @@ export function buildMarqueeItems(...sources) {
 export function deriveOHLC(currentPriceStr, sparkline) {
   const current = parseFloat(String(currentPriceStr).replace(/[$,]/g, '')) || 0;
   if (!sparkline || sparkline.length === 0) {
-    return { h: current, l: current, o: current, v: '—' };
+    return { h: current, l: current, o: current, v: '–' };
   }
   return {
     h: Math.max(...sparkline),
@@ -117,7 +117,7 @@ function estimateVolume(price) {
 }
 
 export function formatLargeNumber(n) {
-  if (n == null) return '—';
+  if (n == null) return '–';
   if (n >= 1e9) return `$${(n / 1e9).toFixed(2)}B`;
   if (n >= 1e6) return `$${(n / 1e6).toFixed(2)}M`;
   return `$${n.toLocaleString()}`;

@@ -93,7 +93,7 @@ export function mapPerfStats(metrics) {
       return {
         key: k,
         label: METRIC_LABELS[k],
-        value: '—',
+        value: '–',
         rawValue: null,
         vsAvgLabel: '',
         vsAvgDirection: 'neutral',
@@ -105,7 +105,7 @@ export function mapPerfStats(metrics) {
     return {
       key: m.key,
       label: METRIC_LABELS[k] || (m.label || k).toUpperCase(),
-      value: m.value || '—',
+      value: m.value || '–',
       rawValue: m.rawValue ?? null,
       vsAvgLabel: m.vsAverageFormatted || '',
       vsAvgDirection:
@@ -120,7 +120,7 @@ export function mapPerfStats(metrics) {
               : 'neg',
       topPercentile: m.percentile ?? 0,
       barFill: Math.max(0, Math.min(1, (m.percentile ?? 0) / 100)),
-      muted: m.value === '—' || m.value == null,
+      muted: m.value === '–' || m.value == null,
     };
   });
 }
@@ -209,7 +209,7 @@ export function generateHeuristicQuests({ metrics, achievementsState, activity }
       category: 'BEAT',
       title: 'Beat the market this month',
       description:
-        'Your consistency is below average — closing a few winning weeks lifts your ranking quickly.',
+        'Your consistency is below average, closing a few winning weeks lifts your ranking quickly.',
       xpRangeLabel: '+50 – 200',
       ctaLabel: 'View portfolio',
       ctaHref: '/home-dashboard',
@@ -222,7 +222,7 @@ export function generateHeuristicQuests({ metrics, achievementsState, activity }
       key: 'browse-learning',
       category: 'LEARN',
       title: 'Complete a course module',
-      description: 'Bronze courses give 5–15 ELO each — and unlock learning achievements.',
+      description: 'Bronze courses give 5–15 ELO each, and unlock learning achievements.',
       xpRangeLabel: '+5 – 15',
       ctaLabel: 'Browse Learning Center',
       ctaHref: '/learning-center',
@@ -246,8 +246,7 @@ export function generateHeuristicQuests({ metrics, achievementsState, activity }
       key: 'diversify',
       category: 'BEAT',
       title: 'Spread across more sectors',
-      description:
-        'Diversification is below average — holding more sectors stabilizes your return.',
+      description: 'Diversification is below average, holding more sectors stabilizes your return.',
       xpRangeLabel: '+10 – 40',
       ctaLabel: 'Open watchlist',
       ctaHref: '/watchlist',

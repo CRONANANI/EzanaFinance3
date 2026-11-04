@@ -51,7 +51,7 @@ export function StressTestCard() {
     const label = SCENARIOS.find((s) => s.id === scenarioId)?.label ?? scenarioId;
     return [
       { label: 'Scenario', value: label, format: undefined },
-      { label: 'Shock mag.', value: '—', format: undefined },
+      { label: 'Shock mag.', value: '–', format: undefined },
       { label: 'Correlation', value: '0.6 est.', format: undefined },
       { label: 'Horizon', value: '1y', format: undefined },
     ];
@@ -199,8 +199,8 @@ export function StressTestCard() {
         </div>
         <p className="stc-aw-copy">
           The Ray Dalio <strong>All Weather Portfolio</strong> targets consistent returns across
-          growth, recession, inflation, and deflation regimes using risk parity — roughly{' '}
-          <strong>30% stocks, 55% bonds, 15% commodities/gold</strong> — to limit drawdowns.
+          growth, recession, inflation, and deflation regimes using risk parity, roughly{' '}
+          <strong>30% stocks, 55% bonds, 15% commodities/gold</strong>, to limit drawdowns.
         </p>
         <div className="stc-aw-allocation">
           {awRows.map((row) => (

@@ -149,7 +149,7 @@ export const MARKETS_DATA = {
     tab: 'Pre-Market',
     type: 'pre-market',
     displayType: 'pre-market-table',
-    preMarketSession: '8:00 AM — 9:30 AM ET',
+    preMarketSession: '8:00 AM, 9:30 AM ET',
     groups: [
       {
         title: 'Index Futures Pre-Market',

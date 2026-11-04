@@ -7,7 +7,7 @@ export function EchoFooterDiscuss({ articleId }) {
 
   return (
     <p className="echo-footer-discuss">
-      Or pull up a chair —{' '}
+      Or pull up a chair:{' '}
       <Link href={communityHref} className="echo-footer-discuss-link">
         start the conversation in the community thread →
       </Link>

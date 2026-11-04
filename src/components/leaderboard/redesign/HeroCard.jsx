@@ -77,7 +77,7 @@ export function HeroCard({ user, weeklyDelta, streakDays }) {
           </NumberText>{' '}
           of{' '}
           <NumberText size={12} weight={600}>
-            {user.totalTraders?.toLocaleString() ?? '—'}
+            {user.totalTraders?.toLocaleString() ?? '–'}
           </NumberText>
         </div>
 

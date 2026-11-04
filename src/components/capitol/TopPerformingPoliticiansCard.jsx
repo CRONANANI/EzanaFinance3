@@ -156,7 +156,7 @@ export function TopPerformingPoliticiansCard({ onOpenPolitician }) {
           <strong>How this is calculated:</strong> We estimate position size using the midpoint of
           each disclosed amount range, pull entry/exit prices from historical market data, and match
           buys to sells where possible within the same calendar year. Unmatched buys are priced to
-          year-end. These are <em>estimates</em> — congressional disclosures report amounts only as
+          year-end. These are <em>estimates</em>, congressional disclosures report amounts only as
           ranges and don&apos;t include cost-basis tracking, so actual returns may differ. This
           metric reflects disclosed trades only, not total portfolio return.
         </div>

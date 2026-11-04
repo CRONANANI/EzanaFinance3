@@ -267,7 +267,7 @@ export function ArticleEditor({ getToken, onSaved, editingArticle }) {
             value={seriesId}
             onChange={(e) => setSeriesId(e.target.value)}
           >
-            <option value="">— No series —</option>
+            <option value="">No series</option>
             {seriesList.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.title}

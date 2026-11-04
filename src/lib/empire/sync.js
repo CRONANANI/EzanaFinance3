@@ -62,7 +62,7 @@ export async function syncAllSources(opts = {}) {
   if (cErr) throw new Error(`[empire-sync] country load failed: ${cErr.message}`);
   const iso3List = (countries ?? []).map((c) => c.code).filter((c) => c && c.length === 3);
   if (iso3List.length === 0) {
-    console.warn('[empire-sync] no included countries — aborting');
+    console.warn('[empire-sync] no included countries, aborting');
     return { observations: 0, sources: {}, refreshed: false };
   }
 
@@ -92,7 +92,7 @@ export async function syncAllSources(opts = {}) {
   for (const fetcher of SOURCES) {
     const metricIds = Array.from(metricsBySource.get(fetcher.sourceId) ?? []);
     if (metricIds.length === 0) {
-      console.log(`[empire-sync] ${fetcher.sourceId}: no mapped metrics — skipping`);
+      console.log(`[empire-sync] ${fetcher.sourceId}: no mapped metrics, skipping`);
       continue;
     }
 
@@ -158,7 +158,7 @@ export async function syncAllSources(opts = {}) {
   }
 
   console.log(
-    `[empire-sync] done — upserted ${upsertedCount} observations, refreshed=${refreshed}`,
+    `[empire-sync] done, upserted ${upsertedCount} observations, refreshed=${refreshed}`,
   );
 
   return { observations: upsertedCount, sources: sourceStats, refreshed };

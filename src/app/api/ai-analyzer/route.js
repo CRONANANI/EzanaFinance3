@@ -6,6 +6,7 @@ import { fetchMarketData } from '@/lib/ai/market-data';
 import { buildAnalysisPrompt } from '@/lib/ai/persona-engine';
 import { synthesizeResponses } from '@/lib/ai/synthesis';
 
+import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 export const dynamic = 'force-dynamic';
 
 const MODEL = 'claude-sonnet-4-20250514';
@@ -57,7 +58,7 @@ async function runPersonaAnalysis(anthropic, persona, marketData, query) {
   return parsePersonaResponse(text, persona.id, persona.name, persona.type);
 }
 
-export const POST = withApiGuard(
+const POST_HANDLER = withApiGuard(
   async (request, user) => {
     try {
       const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -234,3 +235,6 @@ export const POST = withApiGuard(
   },
   { requireAuth: true },
 );
+
+/* No em dashes in anything this route returns (src/lib/text/em-dash.js). */
+export const POST = withNoEmDash(POST_HANDLER);

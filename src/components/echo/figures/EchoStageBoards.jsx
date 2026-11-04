@@ -57,7 +57,7 @@ export function EchoStageBoards({ figureLabel, kicker, hint, source, boards = []
             </div>
             {open[b.id] != null && (
               <div className="echo-fig-detail">
-                <strong>{b.stages[open[b.id]].label}</strong> — {b.stages[open[b.id]].note}
+                <strong>{b.stages[open[b.id]].label}</strong> · {b.stages[open[b.id]].note}
               </div>
             )}
             <div className="echo-board-stats">

@@ -157,7 +157,7 @@ export const worldBankFetcher = {
     for (const metricId of req.metricIds) {
       const meta = METRIC_REGISTRY[metricId];
       if (!meta) {
-        console.warn(`[world_bank] unknown metric_id '${metricId}' — skipping`);
+        console.warn(`[world_bank] unknown metric_id '${metricId}', skipping`);
         continue;
       }
 

@@ -272,7 +272,7 @@ export function HubConservative() {
           <KpiCard
             icon="bi-graph-up-arrow"
             label="Top performer"
-            value={topPerformer ? `@${topPerformer.username || 'leader'}` : '—'}
+            value={topPerformer ? `@${topPerformer.username || 'leader'}` : '–'}
             sub={
               topPerformer
                 ? `${topPerformer.return >= 0 ? '+' : ''}${topPerformer.return}% this week`
@@ -284,7 +284,7 @@ export function HubConservative() {
           <KpiCard
             icon="bi-bar-chart-line"
             label="Sector momentum"
-            value={topSector?.name || (loading ? '…' : '—')}
+            value={topSector?.name || (loading ? '…' : '–')}
             sub={
               topSector
                 ? `${topSector.pct >= 0 ? '+' : ''}${topSector.pct.toFixed(1)}% past 7d`

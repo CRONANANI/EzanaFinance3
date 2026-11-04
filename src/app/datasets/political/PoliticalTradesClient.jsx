@@ -58,16 +58,16 @@ const PARTY_WORD = { D: 'Democrat', R: 'Republican', I: 'Independent' };
 function toDisplay(c, i) {
   return {
     id: c.id || `${c.bioguideId || c.name}-${c.ticker}-${c.tradedAt}-${i}`,
-    ticker: c.ticker || '—',
+    ticker: c.ticker || '–',
     transaction: c.side === 'purchase' ? 'Purchase' : c.side === 'sale' ? 'Sale' : 'Other',
     politician: c.name,
     party: PARTY_WORD[c.party] || 'Unknown',
-    chamber: c.chamber || '—',
+    chamber: c.chamber || '–',
     state: c.state || null,
     bioguideId: c.bioguideId || null,
     traded: c.tradedAt || '',
     filed: c.filedAt || '',
-    amount: c.amountBand?.raw || '—',
+    amount: c.amountBand?.raw || '–',
     amountMin: c.amountBand?.min ?? 0,
     amountMid: c.amountBand?.mid ?? 0,
     excessReturn: null, // computed pipeline; unavailable in the firehose → "—"
@@ -83,7 +83,7 @@ function fmtUSD(v) {
   return `$${n.toFixed(0)}`;
 }
 function pct(v) {
-  if (v == null || !Number.isFinite(v)) return '—';
+  if (v == null || !Number.isFinite(v)) return '–';
   return `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`;
 }
 /** disclosed-amount band → midpoint dollars, e.g. "$100,001 – $250,000" → 175000 */
@@ -159,13 +159,12 @@ export default function PoliticalTradesClient({ devSampleTrades = null }) {
           setTrades(devSampleTrades); // local-dev only
         } else {
           setLoadError(
-            data?.error ||
-              'Live congressional data is temporarily unavailable — try again shortly.',
+            data?.error || 'Live congressional data is temporarily unavailable, try again shortly.',
           );
         }
       } catch {
         if (!cancelled && !devSampleTrades) {
-          setLoadError('Live congressional data is temporarily unavailable — try again shortly.');
+          setLoadError('Live congressional data is temporarily unavailable, try again shortly.');
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -275,7 +274,7 @@ export default function PoliticalTradesClient({ devSampleTrades = null }) {
         <p className="ptx-eyebrow">DATASETS · HOUSE &amp; SENATE DISCLOSURES</p>
         <h1 className="ptx-title">Congressional trading data</h1>
         <p className="ptx-sub">
-          Every stock transaction disclosed by members of Congress under the STOCK Act — enriched
+          Every stock transaction disclosed by members of Congress under the STOCK Act, enriched
           with party, chamber, and excess-return context.
         </p>
       </header>
@@ -381,7 +380,7 @@ export default function PoliticalTradesClient({ devSampleTrades = null }) {
             />
             <StatCard
               label="Top performer"
-              value={stats.top ? stats.top.name : '—'}
+              value={stats.top ? stats.top.name : '–'}
               sub={stats.top ? `${pct(stats.top.excess)} excess` : ''}
               tone={stats.top && stats.top.excess >= 0 ? 'pos' : 'neg'}
             />
@@ -492,7 +491,7 @@ export default function PoliticalTradesClient({ devSampleTrades = null }) {
                     <td
                       className={`ptx-mono r ${t.excessReturn == null ? 'ptx-muted' : Number(t.excessReturn) >= 0 ? 'pos' : 'neg'}`}
                     >
-                      {t.excessReturn == null ? '—' : pct(Number(t.excessReturn))}
+                      {t.excessReturn == null ? '–' : pct(Number(t.excessReturn))}
                     </td>
                   </tr>
                 );
@@ -666,13 +665,13 @@ function FaceCard({ member, rank, onClick }) {
       <Avatar member={member} />
       <div className="ptx-fc-name">{member.name}</div>
       <div className="ptx-fc-meta">
-        {member.chamber} · {member.state || '—'}
+        {member.chamber} · {member.state || '–'}
       </div>
       <div className={`ptx-fc-excess ptx-mono ${member.excess >= 0 ? 'pos' : 'neg'}`}>
         {pct(member.excess)}
       </div>
       <Sparkline values={member.spark} positive={member.excess >= 0} />
-      <div className="ptx-fc-pv ptx-mono">Portfolio —</div>
+      <div className="ptx-fc-pv ptx-mono">Portfolio</div>
     </button>
   );
 }
@@ -806,11 +805,11 @@ function TickerSearch({ onSelectMember }) {
         setResult({ symbol: sym, company: company || '', members: data.members });
       } else {
         setResult(null);
-        setError(data?.error || 'Search is temporarily unavailable — try again shortly.');
+        setError(data?.error || 'Search is temporarily unavailable, try again shortly.');
       }
     } catch {
       setResult(null);
-      setError('Search is temporarily unavailable — try again shortly.');
+      setError('Search is temporarily unavailable, try again shortly.');
     } finally {
       setLoading(false);
     }
@@ -828,7 +827,7 @@ function TickerSearch({ onSelectMember }) {
     onSelectMember({
       name: g.member.name,
       party: PARTY_WORD[g.member.party] || 'Unknown',
-      chamber: g.member.chamber || '—',
+      chamber: g.member.chamber || '–',
       state: g.member.state || null,
       bioguideId: g.member.bioguideId || null,
       count: g.trades.length,
@@ -852,7 +851,7 @@ function TickerSearch({ onSelectMember }) {
             value={q}
             onChange={(e) => setQ(e.target.value.toUpperCase())}
             onKeyDown={(e) => e.key === 'Enter' && runSearch()}
-            placeholder="Search a ticker — e.g. AAPL"
+            placeholder="Search a ticker, e.g. AAPL"
             aria-label="Search a stock ticker for congressional trades"
           />
           {suggests.length > 0 && (
@@ -930,7 +929,7 @@ function TickerSearch({ onSelectMember }) {
                             {pm.code}
                           </span>
                           <span className="ptx-polcell-sub">
-                            {g.member.chamber || '—'} · {g.member.state || '—'}
+                            {g.member.chamber || '–'} · {g.member.state || '–'}
                           </span>
                         </span>
                       </span>
@@ -941,7 +940,7 @@ function TickerSearch({ onSelectMember }) {
                               {t.side === 'purchase' ? 'Buy' : t.side === 'sale' ? 'Sale' : 'Other'}
                             </span>
                             <span className="ptx-mono ptx-muted">{t.tradedAt}</span>
-                            <span className="ptx-mono">{t.amountBand?.raw || '—'}</span>
+                            <span className="ptx-mono">{t.amountBand?.raw || '–'}</span>
                           </span>
                         ))}
                         {g.trades.length > 3 && (
@@ -1059,7 +1058,7 @@ function MemberLegislativeContext({ member: m }) {
             </div>
           ))}
           <p className="ptx-rail-note" style={{ marginTop: 2 }}>
-            Sector overlap between disclosed trades and active legislation — informational context,
+            Sector overlap between disclosed trades and active legislation, informational context,
             not a claim of influence or investment advice.
           </p>
         </div>
@@ -1097,17 +1096,17 @@ function MemberModal({ member: m, onClose }) {
           </div>
           <h3 className="ptx-modal-name">{m.name}</h3>
           <p className="ptx-modal-sub">
-            {m.party} · {m.chamber} · {m.state || '—'}
+            {m.party} · {m.chamber} · {m.state || '–'}
           </p>
           <div className="ptx-modal-grid">
-            <MiniStat label="Portfolio value" value="—" />
+            <MiniStat label="Portfolio value" value="–" />
             <MiniStat
               label="Excess · 90d"
               value={pct(m.excess)}
               tone={m.excess >= 0 ? 'pos' : 'neg'}
             />
             <MiniStat label="Disclosed trades" value={String(m.count)} />
-            <MiniStat label="Win rate" value="—" />
+            <MiniStat label="Win rate" value="–" />
           </div>
           <div className="ptx-modal-section">
             <div className="ptx-modal-h">Sector allocation</div>
@@ -1159,7 +1158,7 @@ function mostTraded(trades) {
   const c = {};
   for (const t of trades) c[t.ticker] = (c[t.ticker] || 0) + 1;
   const top = Object.entries(c).sort((a, b) => b[1] - a[1])[0];
-  return top ? top[0] : '—';
+  return top ? top[0] : '–';
 }
 function MiniStat({ label, value, tone }) {
   return (

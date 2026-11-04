@@ -277,7 +277,7 @@ export function ensureCuratedSeeded(admin) {
         console.error(
           '[echo] curated content reconcile failed:',
           reconcileError.message,
-          '— if this mentions "globe_rail", apply supabase/migrations/20260807_echo_globe_rail.sql in the SQL Editor',
+          'if this mentions "globe_rail", apply supabase/migrations/20260807_echo_globe_rail.sql in the SQL Editor',
         );
       } else {
         console.log('[echo] curated seed reconcile', SEED_VERSION, contentRows.length);

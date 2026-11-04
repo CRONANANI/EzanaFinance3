@@ -133,7 +133,7 @@ export const hantavirusArticle = {
   subtitle:
     'A 30-year-old virus reemerges on a cruise ship. The investment implications span biodefense, diagnostics, and travel.',
   excerpt:
-    "In May 2026, a hantavirus outbreak aboard the MV Hondius expedition cruise ship killed three passengers and sickened at least four others — the most high-profile cluster in the virus's modern history. With a 38% fatality rate, no approved vaccine, and no antiviral treatment, hantavirus is one of the deadliest pathogens without a pharmaceutical countermeasure. Here's what investors need to know.",
+    "In May 2026, a hantavirus outbreak aboard the MV Hondius expedition cruise ship killed three passengers and sickened at least four others, the most high-profile cluster in the virus's modern history. With a 38% fatality rate, no approved vaccine, and no antiviral treatment, hantavirus is one of the deadliest pathogens without a pharmaceutical countermeasure. Here's what investors need to know.",
   heroImage: null,
   contentBlocks: [
     {
@@ -152,11 +152,11 @@ export const hantavirusArticle = {
     { type: 'heading', text: 'A Cruise Ship, A Virus, And A 38% Kill Rate', level: 2 },
     {
       type: 'paragraph',
-      text: 'On April 1, 2026, the MV Hondius — a Dutch-flagged expedition cruise ship operated by Oceanwide Expeditions — departed Ushuaia, Argentina, carrying 147 passengers and crew from 23 countries. By April 11, a passenger was dead. By April 26, his spouse had died in a Johannesburg emergency room after being evacuated from Saint Helena. By May 4, the [[kw:who-notification]]World Health Organization[[/kw]] had confirmed a cluster of seven cases, including three deaths, aboard a ship now anchored off Cabo Verde with no country willing to let it dock.',
+      text: 'On April 1, 2026, the MV Hondius, a Dutch-flagged expedition cruise ship operated by Oceanwide Expeditions, departed Ushuaia, Argentina, carrying 147 passengers and crew from 23 countries. By April 11, a passenger was dead. By April 26, his spouse had died in a Johannesburg emergency room after being evacuated from Saint Helena. By May 4, the [[kw:who-notification]]World Health Organization[[/kw]] had confirmed a cluster of seven cases, including three deaths, aboard a ship now anchored off Cabo Verde with no country willing to let it dock.',
     },
     {
       type: 'paragraph',
-      text: 'The pathogen: [[kw:hantavirus-definition]]hantavirus[[/kw]], a rodent-borne virus that causes hantavirus pulmonary syndrome (HPS) — a disease with no approved vaccine, no antiviral treatment, and a case fatality rate of roughly 38%. The specific strain under investigation is the [[kw:andes-virus]]Andes virus[[/kw]], the only hantavirus documented to spread between humans. Every other known hantavirus is a dead-end infection: you catch it from a rodent, but you cannot pass it to another person.',
+      text: 'The pathogen: [[kw:hantavirus-definition]]hantavirus[[/kw]], a rodent-borne virus that causes hantavirus pulmonary syndrome (HPS), a disease with no approved vaccine, no antiviral treatment, and a case fatality rate of roughly 38%. The specific strain under investigation is the [[kw:andes-virus]]Andes virus[[/kw]], the only hantavirus documented to spread between humans. Every other known hantavirus is a dead-end infection: you catch it from a rodent, but you cannot pass it to another person.',
     },
     {
       type: 'paragraph',
@@ -166,25 +166,25 @@ export const hantavirusArticle = {
     { type: 'heading', text: 'Thirty Years Of Data: What The CDC Numbers Show', level: 2 },
     {
       type: 'paragraph',
-      text: 'The United States has tracked hantavirus cases through the [[kw:nndss]]National Notifiable Diseases Surveillance System (NNDSS)[[/kw]] since 1993, when the "Four Corners disease" was first identified in the desert Southwest. Between 1993 and 2023, 864 confirmed cases were reported — a small number by infectious disease standards, but notable for the severity: roughly one-third of patients died.',
+      text: 'The United States has tracked hantavirus cases through the [[kw:nndss]]National Notifiable Diseases Surveillance System (NNDSS)[[/kw]] since 1993, when the "Four Corners disease" was first identified in the desert Southwest. Between 1993 and 2023, 864 confirmed cases were reported, a small number by infectious disease standards, but notable for the severity: roughly one-third of patients died.',
     },
     {
       type: 'paragraph',
-      text: 'The yearly chart reveals three patterns. First, the 1993 spike — 48 cases in the discovery year, driven by a surge in deer mouse populations after heavy El Niño rains. Second, a cyclical rhythm tied to [[kw:rodent-population-dynamics]]rodent population dynamics[[/kw]] — wet years produce more food, which produces more mice, which produces more hantavirus exposure. Third, a post-2017 decline to 12-27 cases per year, likely driven by increased awareness and prevention measures rather than any pharmaceutical intervention.',
+      text: 'The yearly chart reveals three patterns. First, the 1993 spike, 48 cases in the discovery year, driven by a surge in deer mouse populations after heavy El Niño rains. Second, a cyclical rhythm tied to [[kw:rodent-population-dynamics]]rodent population dynamics[[/kw]], wet years produce more food, which produces more mice, which produces more hantavirus exposure. Third, a post-2017 decline to 12-27 cases per year, likely driven by increased awareness and prevention measures rather than any pharmaceutical intervention.',
     },
     {
       type: 'paragraph',
-      text: 'The geographic concentration is extreme. Over 94% of cases occurred west of the Mississippi River. New Mexico (129 cases), Colorado (121), Arizona (92), and California (79) account for nearly half of all US cases. These are the [[kw:four-corners-region]]Four Corners[[/kw]] states — the arid, rural West where deer mice thrive in proximity to human structures.',
+      text: 'The geographic concentration is extreme. Over 94% of cases occurred west of the Mississippi River. New Mexico (129 cases), Colorado (121), Arizona (92), and California (79) account for nearly half of all US cases. These are the [[kw:four-corners-region]]Four Corners[[/kw]] states, the arid, rural West where deer mice thrive in proximity to human structures.',
     },
 
     { type: 'heading', text: 'The MV Hondius Timeline: How An Outbreak Unfolds At Sea', level: 2 },
     {
       type: 'paragraph',
-      text: 'The cruise ship outbreak is unprecedented for hantavirus. The MV Hondius departed from Ushuaia — deep in Andes virus territory — and visited Antarctica, South Georgia, and remote Atlantic islands before the first passenger fell ill. The [[kw:prodromal-phase]]incubation period[[/kw]] for hantavirus ranges from 1 to 8 weeks, which means passengers could have been infected before boarding, at any port of call, or onboard from contaminated surfaces.',
+      text: 'The cruise ship outbreak is unprecedented for hantavirus. The MV Hondius departed from Ushuaia, deep in Andes virus territory, and visited Antarctica, South Georgia, and remote Atlantic islands before the first passenger fell ill. The [[kw:prodromal-phase]]incubation period[[/kw]] for hantavirus ranges from 1 to 8 weeks, which means passengers could have been infected before boarding, at any port of call, or onboard from contaminated surfaces.',
     },
     {
       type: 'paragraph',
-      text: "Two hypotheses are being investigated. First, onboard rodent contamination — passengers inhaling aerosolized virus particles from infected rodent urine, droppings, or saliva that were present in the ship's infrastructure. Second, and more consequential: person-to-person spread of the Andes strain in a confined, recirculated-air environment. Several of the ill passengers were avid birdwatchers who had traveled extensively in South America before boarding, creating multiple potential exposure windows.",
+      text: "Two hypotheses are being investigated. First, onboard rodent contamination, passengers inhaling aerosolized virus particles from infected rodent urine, droppings, or saliva that were present in the ship's infrastructure. Second, and more consequential: person-to-person spread of the Andes strain in a confined, recirculated-air environment. Several of the ill passengers were avid birdwatchers who had traveled extensively in South America before boarding, creating multiple potential exposure windows.",
     },
     {
       type: 'paragraph',
@@ -206,13 +206,13 @@ export const hantavirusArticle = {
           lane: 0,
           label: 'Apr 1 · Departs Ushuaia (147 aboard)',
           detail:
-            'The MV Hondius, a Dutch-flagged Oceanwide Expeditions expedition ship, departs Ushuaia, Argentina — deep in Andes-virus territory — carrying 147 passengers and crew from 23 countries.',
+            'The MV Hondius, a Dutch-flagged Oceanwide Expeditions expedition ship, departs Ushuaia, Argentina, deep in Andes-virus territory, carrying 147 passengers and crew from 23 countries.',
         },
         {
           year: 2026.28,
           lane: 1,
           label: 'Apr 11 · First passenger dies',
-          detail: 'Ten days out, a passenger is dead — the first fatality of the cluster.',
+          detail: 'Ten days out, a passenger is dead, the first fatality of the cluster.',
         },
         {
           year: 2026.32,
@@ -234,29 +234,29 @@ export const hantavirusArticle = {
     { type: 'heading', text: 'No Vaccine. No Treatment. A Market Gap.', level: 2 },
     {
       type: 'paragraph',
-      text: 'There is currently no FDA-approved vaccine or antiviral drug for any hantavirus disease. Treatment is entirely supportive — oxygen therapy, mechanical ventilation, and in severe cases, [[kw:ecmo]]extracorporeal membrane oxygenation (ECMO)[[/kw]]. Patients who are diagnosed early and receive intensive care have better outcomes, but the disease progresses rapidly from initial flu-like symptoms to acute respiratory distress syndrome (ARDS) and shock, often within 48-72 hours.',
+      text: 'There is currently no FDA-approved vaccine or antiviral drug for any hantavirus disease. Treatment is entirely supportive, oxygen therapy, mechanical ventilation, and in severe cases, [[kw:ecmo]]extracorporeal membrane oxygenation (ECMO)[[/kw]]. Patients who are diagnosed early and receive intensive care have better outcomes, but the disease progresses rapidly from initial flu-like symptoms to acute respiratory distress syndrome (ARDS) and shock, often within 48-72 hours.',
     },
     {
       type: 'paragraph',
-      text: 'For investors, the pharmaceutical void is both a risk and an opportunity. In February 2026, researchers at the University of Texas at Austin published new structural insights into hantavirus surface proteins — the first high-resolution blueprint of how the virus attaches to human cells. The NIH has funded the Provident consortium through its ReVAMPP program specifically to develop countermeasures for hantaviruses and other [[kw:pandemic-preparedness]]pandemic-preparedness[[/kw]] pathogens.',
+      text: 'For investors, the pharmaceutical void is both a risk and an opportunity. In February 2026, researchers at the University of Texas at Austin published new structural insights into hantavirus surface proteins, the first high-resolution blueprint of how the virus attaches to human cells. The NIH has funded the Provident consortium through its ReVAMPP program specifically to develop countermeasures for hantaviruses and other [[kw:pandemic-preparedness]]pandemic-preparedness[[/kw]] pathogens.',
     },
     {
       type: 'paragraph',
-      text: 'The biodefense sector — companies like Emergent BioSolutions (EBS), SIGA Technologies (SIGA), and Vir Biotechnology (VIR) — has historically traded on government contract announcements and outbreak news cycles. The question for this outbreak is whether it generates enough sustained attention to drive funding into hantavirus-specific R&D, or whether it fades like previous clusters.',
+      text: 'The biodefense sector, companies like Emergent BioSolutions (EBS), SIGA Technologies (SIGA), and Vir Biotechnology (VIR), has historically traded on government contract announcements and outbreak news cycles. The question for this outbreak is whether it generates enough sustained attention to drive funding into hantavirus-specific R&D, or whether it fades like previous clusters.',
     },
     {
       type: 'dossier-table',
       figureLabel: 'FIG. 4 · THE MARKET GAP, BY TIER',
       kicker:
         'NO FDA-APPROVED VACCINE OR ANTIVIRAL · THREE INVESTABLE TIERS AROUND A 38% CASE-FATALITY PATHOGEN. CLICK A ROW TO EXPAND THE DOSSIER.',
-      hint: 'Three tiers — expand a row for the record.',
+      hint: 'Three tiers, expand a row for the record.',
       source: 'article reporting · CDC case-fatality figure.',
       headers: ['Tier', 'Why the outbreak touches it', 'Anchor', 'Key risk', ''],
       rows: [
         {
           name: 'Biodefense',
           tag: 'EBS · SIGA · VIR',
-          role: 'The pharmaceutical void: no approved vaccine and no antiviral for any hantavirus disease — treatment is entirely supportive, up to ECMO.',
+          role: 'The pharmaceutical void: no approved vaccine and no antiviral for any hantavirus disease, treatment is entirely supportive, up to ECMO.',
           anchor: 'Trade on government contracts and outbreak news cycles',
           keyRisk:
             'May fade like previous clusters unless the outbreak drives sustained hantavirus-specific R&D funding.',
@@ -270,7 +270,7 @@ export const hantavirusArticle = {
         {
           name: 'Cruise lines',
           tag: 'RCL · CCL · NCLH',
-          role: 'The most immediate reputational risk in travel and hospitality — the MV Hondius is a ship stranded at sea with no port willing to accept it.',
+          role: 'The most immediate reputational risk in travel and hospitality, the MV Hondius is a ship stranded at sea with no port willing to accept it.',
           anchor: 'Historically dip 2–5% on infectious-disease news cycles',
           keyRisk:
             'The stranded-ship narrative is the exact story that erodes consumer confidence in cruise bookings.',
@@ -300,21 +300,21 @@ export const hantavirusArticle = {
     { type: 'heading', text: 'The FIFA World Cup Problem', level: 2 },
     {
       type: 'paragraph',
-      text: 'The timing of this outbreak is uniquely dangerous. The FIFA World Cup 2026 opens in six weeks across 11 American cities — one of the largest mass gathering events ever staged on US soil. The United States withdrew from the WHO in January 2025, which means it no longer receives [[kw:ihr-notifications]]IHR (International Health Regulations) notifications[[/kw]] through the formal cascade that compresses the timeline between detecting a signal and responding to it.',
+      text: 'The timing of this outbreak is uniquely dangerous. The FIFA World Cup 2026 opens in six weeks across 11 American cities, one of the largest mass gathering events ever staged on US soil. The United States withdrew from the WHO in January 2025, which means it no longer receives [[kw:ihr-notifications]]IHR (International Health Regulations) notifications[[/kw]] through the formal cascade that compresses the timeline between detecting a signal and responding to it.',
     },
     {
       type: 'paragraph',
-      text: 'For the travel and hospitality sector, the cruise industry faces the most immediate reputational risk. Royal Caribbean (RCL), Carnival (CCL), and Norwegian Cruise Line (NCLH) stocks have historically dipped 2-5% on infectious disease news cycles, even when the underlying risk to their operations is minimal. The MV Hondius incident — a ship stranded at sea with no port willing to accept it — is the exact narrative that erodes consumer confidence in cruise bookings.',
+      text: 'For the travel and hospitality sector, the cruise industry faces the most immediate reputational risk. Royal Caribbean (RCL), Carnival (CCL), and Norwegian Cruise Line (NCLH) stocks have historically dipped 2-5% on infectious disease news cycles, even when the underlying risk to their operations is minimal. The MV Hondius incident, a ship stranded at sea with no port willing to accept it, is the exact narrative that erodes consumer confidence in cruise bookings.',
     },
     {
       type: 'paragraph',
-      text: 'The diagnostic implications are also worth monitoring. If the Andes strain can spread person-to-person in enclosed environments, rapid point-of-care testing becomes critical for early intervention. Companies with [[kw:pcr-diagnostics]]PCR diagnostic platforms[[/kw]] capable of testing for hantavirus — including Cepheid (part of Danaher, DHR), BioMérieux, and Hologic (HOLX) — could see incremental demand.',
+      text: 'The diagnostic implications are also worth monitoring. If the Andes strain can spread person-to-person in enclosed environments, rapid point-of-care testing becomes critical for early intervention. Companies with [[kw:pcr-diagnostics]]PCR diagnostic platforms[[/kw]] capable of testing for hantavirus, including Cepheid (part of Danaher, DHR), BioMérieux, and Hologic (HOLX), could see incremental demand.',
     },
 
     { type: 'heading', text: 'What To Watch', level: 2 },
     {
       type: 'paragraph',
-      text: 'Three things will determine whether this outbreak remains a contained incident or becomes a structural catalyst. First, the genome sequencing results: if the Andes strain shows new mutations that enhance transmissibility, the risk assessment changes entirely. Second, NIH and BARDA funding announcements: any acceleration of the ReVAMPP program or emergency countermeasure contracts would directly benefit biodefense names. Third, the World Cup: 11 cities, millions of international visitors, and a country operating outside the WHO information network — the epidemiological monitoring gap is real, and the market will price it if hantavirus cases surface domestically during the tournament.',
+      text: 'Three things will determine whether this outbreak remains a contained incident or becomes a structural catalyst. First, the genome sequencing results: if the Andes strain shows new mutations that enhance transmissibility, the risk assessment changes entirely. Second, NIH and BARDA funding announcements: any acceleration of the ReVAMPP program or emergency countermeasure contracts would directly benefit biodefense names. Third, the World Cup: 11 cities, millions of international visitors, and a country operating outside the WHO information network, the epidemiological monitoring gap is real, and the market will price it if hantavirus cases surface domestically during the tournament.',
     },
     {
       type: 'scenario-chain',
@@ -386,7 +386,7 @@ export const hantavirusArticle = {
         },
       ],
       killSwitch:
-        'GENOME SEQUENCING CONFIRMS ANDES-STRAIN MUTATIONS THAT ENHANCE HUMAN-TO-HUMAN TRANSMISSIBILITY — THE RISK ASSESSMENT CHANGES ENTIRELY.',
+        'GENOME SEQUENCING CONFIRMS ANDES-STRAIN MUTATIONS THAT ENHANCE HUMAN-TO-HUMAN TRANSMISSIBILITY, THE RISK ASSESSMENT CHANGES ENTIRELY.',
     },
   ],
   globeRail: {
@@ -409,7 +409,7 @@ export const hantavirusArticle = {
         lat: 35.08,
         lng: -106.65,
         impact:
-          'New Mexico leads cumulative U.S. cases at 129 — the heart of the Four Corners region where the "Four Corners disease" was first identified in 1993 and where deer mice thrive near human structures.',
+          'New Mexico leads cumulative U.S. cases at 129, the heart of the Four Corners region where the "Four Corners disease" was first identified in 1993 and where deer mice thrive near human structures.',
       },
       {
         name: 'Atlanta',
@@ -425,7 +425,7 @@ export const hantavirusArticle = {
         lat: -54.8,
         lng: -68.3,
         impact:
-          'The MV Hondius departed here on April 1, 2026 with 147 passengers and crew — deep in Andes-virus territory, the only hantavirus documented to spread between humans.',
+          'The MV Hondius departed here on April 1, 2026 with 147 passengers and crew, deep in Andes-virus territory, the only hantavirus documented to spread between humans.',
       },
       {
         name: 'Johannesburg',

@@ -39,7 +39,7 @@ export const POST_TYPE_LIST = [
 
 export const ALLOWED_POST_TYPES = Object.keys(POST_TYPES);
 
-export const STANDARD_DISCLAIMER = 'Not financial advice — shared for educational purposes.';
+export const STANDARD_DISCLAIMER = 'Not financial advice, shared for educational purposes.';
 
 export function getPostType(key) {
   return key ? POST_TYPES[key] || null : null;

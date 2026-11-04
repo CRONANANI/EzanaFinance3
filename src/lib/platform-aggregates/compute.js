@@ -153,7 +153,7 @@ export async function recomputeAggregates(asOf = new Date()) {
     if (code === 'PGRST205' || code === '42P01') {
       return {
         upserted: 0,
-        skipped: 'portfolio_daily_returns not provisioned — no source data to aggregate',
+        skipped: 'portfolio_daily_returns not provisioned, no source data to aggregate',
       };
     }
     throw error;

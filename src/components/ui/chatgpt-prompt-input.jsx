@@ -325,7 +325,7 @@ export function CentaurPromptBox({
   const submit = (e) => {
     e?.preventDefault();
     const tool = EZANA_RESEARCH_TOOLS.find((t) => t.id === selectedTool);
-    const toolNote = tool ? `\n\n[Research context: ${tool.name} — see ${tool.href}]` : '';
+    const toolNote = tool ? `\n\n[Research context: ${tool.name}, see ${tool.href}]` : '';
     const fileNote = fileNames.length ? `\n\n[Attached files: ${fileNames.join(', ')}]` : '';
     const msg = `${value.trim()}${toolNote}${fileNote}`.trim();
     if (!msg && !imagePreview) return;

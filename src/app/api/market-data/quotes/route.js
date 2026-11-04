@@ -44,7 +44,7 @@ async function fetchFinnhubQuote(symbol, apiKey) {
     if (!data || data.c === 0) return null;
     return {
       symbol,
-      price: data.c?.toFixed(2) ?? '—',
+      price: data.c?.toFixed(2) ?? '–',
       change: data.dp != null ? parseFloat(data.dp.toFixed(2)) : 0,
     };
   } catch {
@@ -129,7 +129,7 @@ async function handleGet() {
             change: parseFloat((q.changePercent ?? 0).toFixed(2)),
           });
         } else {
-          allQuotes.push({ symbol: item.display, price: '—', change: 0 });
+          allQuotes.push({ symbol: item.display, price: '–', change: 0 });
         }
       }
     } catch {
@@ -142,7 +142,7 @@ async function handleGet() {
           allQuotes.push(
             r
               ? { symbol: EQUITY_SYMBOLS[i].display, price: r.price, change: r.change }
-              : { symbol: EQUITY_SYMBOLS[i].display, price: '—', change: 0 },
+              : { symbol: EQUITY_SYMBOLS[i].display, price: '–', change: 0 },
           );
         }
       }
@@ -156,7 +156,7 @@ async function handleGet() {
       allQuotes.push(
         r
           ? { symbol: EQUITY_SYMBOLS[i].display, price: r.price, change: r.change }
-          : { symbol: EQUITY_SYMBOLS[i].display, price: '—', change: 0 },
+          : { symbol: EQUITY_SYMBOLS[i].display, price: '–', change: 0 },
       );
     }
   }
@@ -166,7 +166,7 @@ async function handleGet() {
       const rate = await fetchAvFxRate(pair.from, pair.to);
       allQuotes.push({
         symbol: pair.display,
-        price: rate ? rate.toFixed(4) : '—',
+        price: rate ? rate.toFixed(4) : '–',
         change: 0,
       });
     } else if (finnhubKey) {
@@ -174,7 +174,7 @@ async function handleGet() {
       allQuotes.push(
         r
           ? { symbol: pair.display, price: r.price, change: r.change }
-          : { symbol: pair.display, price: '—', change: 0 },
+          : { symbol: pair.display, price: '–', change: 0 },
       );
     }
   }
@@ -189,7 +189,7 @@ async function handleGet() {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })
-          : '—',
+          : '–',
         change: 0,
       });
     } else if (finnhubKey) {
@@ -197,12 +197,12 @@ async function handleGet() {
       allQuotes.push(
         r
           ? { symbol: coin.display, price: r.price, change: r.change }
-          : { symbol: coin.display, price: '—', change: 0 },
+          : { symbol: coin.display, price: '–', change: 0 },
       );
     }
   }
 
-  return allQuotes.filter((q) => q.price !== '—');
+  return allQuotes.filter((q) => q.price !== '–');
 }
 
 export const GET = withApiGuard(

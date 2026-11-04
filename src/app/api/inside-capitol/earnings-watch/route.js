@@ -61,7 +61,7 @@ export const GET = withApiGuard(
               .replace(/[^a-z0-9-]/g, ''),
             member,
             side,
-            range: trade.amount || '—',
+            range: trade.amount || '–',
             when: relativeTime(tradeDate),
             warn: `Traded ${daysBefore} day${daysBefore === 1 ? '' : 's'} before earnings`,
           });

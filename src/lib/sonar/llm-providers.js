@@ -21,6 +21,7 @@
  * ─────────────────────────────────────────────────────────────────────────────────
  */
 
+import { removeEmDashes } from '@/lib/text/em-dash';
 // ── Typed errors so the chain can distinguish "provider unavailable" (fall through
 //    quietly) from "we sent a bad request" (fall through, but log loudly so a code
 //    bug isn't masked by failover) from a rate limit.
@@ -275,7 +276,7 @@ async function anthropicSynthesize({
     }
     if (res.status === 400) {
       const detail = await readBody(res);
-      console.warn('[sonar] web_search 400 — retrying without tool', { model, detail });
+      console.warn('[sonar] web_search 400, retrying without tool', { model, detail });
       try {
         res = await callAnthropic(baseBody, apiKey, guardHop(20_000, deadlineAt, hop));
       } catch (e) {
@@ -295,7 +296,7 @@ async function anthropicSynthesize({
   // A deep-tier model the account can't access 400s — retry once on the safe Haiku.
   if (res.status === 400 && model !== safeFallback) {
     const detail = await readBody(res);
-    console.warn('[sonar] model 400 — retrying on Haiku', { model, detail });
+    console.warn('[sonar] model 400, retrying on Haiku', { model, detail });
     try {
       res = await callAnthropic(
         { ...baseBody, model: safeFallback },
@@ -417,7 +418,7 @@ const PROVIDERS = [
  * model/fallbackModel/webSearch; the OpenAI-compatible providers use their own env
  * model and ignore the web tool.
  */
-export async function synthesizeWithFallback(args) {
+async function synthesizeWithFallbackRaw(args) {
   // Diagnosis line, once per synthesis: whether the primary's key is even
   // visible at runtime (a missing Vercel env var is the classic root cause of
   // a silent slide into "all providers unavailable"). Boolean only; the key
@@ -524,4 +525,14 @@ export async function synthesizeWithFallback(args) {
     lastError: lastErr?.message,
   });
   return { answer: null, degraded: 'all providers unavailable', providerErrors };
+}
+
+/**
+ * Every model answer Sonar shows passes the house rule on its way out: no em
+ * dashes (src/lib/text/em-dash.js), whichever provider wrote it. JSON answers
+ * are safe: the rewrite never adds a quote or a backslash.
+ */
+export async function synthesizeWithFallback(args) {
+  const out = await synthesizeWithFallbackRaw(args);
+  return out?.answer ? { ...out, answer: removeEmDashes(out.answer) } : out;
 }

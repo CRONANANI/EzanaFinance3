@@ -13,7 +13,7 @@ const SHARED_BASE = [
     category: 'Experience',
     question: 'How long have you been actively investing?',
     options: [
-      { label: "I'm brand new — haven't started yet", value: 'none', score: 0 },
+      { label: "I'm brand new, haven't started yet", value: 'none', score: 0 },
       { label: 'Less than 1 year', value: 'beginner', score: 1 },
       { label: '1–3 years', value: 'intermediate', score: 2 },
       { label: '3–10 years', value: 'advanced', score: 3 },
@@ -39,10 +39,10 @@ const SHARED_BASE = [
     category: 'Risk Tolerance',
     question: 'Your portfolio drops 20% in a single week. What do you do?',
     options: [
-      { label: 'Sell everything — protect capital', value: 'very_low', score: 0 },
+      { label: 'Sell everything, protect capital', value: 'very_low', score: 0 },
       { label: 'Trim positions to reduce exposure', value: 'low', score: 1 },
       { label: 'Hold steady and wait for recovery', value: 'moderate', score: 2 },
-      { label: "Buy more — it's on sale", value: 'high', score: 3 },
+      { label: "Buy more, it's on sale", value: 'high', score: 3 },
     ],
   },
   {
@@ -50,7 +50,7 @@ const SHARED_BASE = [
     category: 'Goals',
     question: "What's your primary investment objective?",
     options: [
-      { label: 'Capital preservation — minimize drawdowns', value: 'preservation', score: 0 },
+      { label: 'Capital preservation, minimize drawdowns', value: 'preservation', score: 0 },
       { label: 'Steady income (dividends, yield)', value: 'income', score: 1 },
       { label: 'Long-term growth over 5+ years', value: 'growth', score: 2 },
       { label: 'Aggressive alpha generation', value: 'aggressive', score: 3 },
@@ -129,19 +129,19 @@ const EXEC_QUESTIONS = [
     category: 'Performance Evaluation',
     question: 'How do you evaluate your PMs and analysts?',
     options: [
-      { label: 'Raw returns — whoever generates the most alpha wins', value: 'returns', score: 0 },
+      { label: 'Raw returns, whoever generates the most alpha wins', value: 'returns', score: 0 },
       {
         label: 'Risk-adjusted returns (Sharpe, Sortino, information ratio)',
         value: 'risk_adjusted',
         score: 0,
       },
       {
-        label: 'Process quality — did they follow their thesis and size correctly?',
+        label: 'Process quality, did they follow their thesis and size correctly?',
         value: 'process',
         score: 0,
       },
       {
-        label: 'Research quality — depth of analysis regardless of outcomes',
+        label: 'Research quality, depth of analysis regardless of outcomes',
         value: 'research',
         score: 0,
       },
@@ -169,11 +169,11 @@ const PM_QUESTIONS = [
     category: 'Strategy Approach',
     question: 'What best describes your investment strategy approach?',
     options: [
-      { label: 'Fundamental — deep-dive financials, DCF, comps', value: 'fundamental', score: 0 },
-      { label: 'Technical — charts, momentum, price action', value: 'technical', score: 0 },
-      { label: 'Quantitative — statistical models, factor investing', value: 'quant', score: 0 },
-      { label: 'Macro / thematic — top-down sector and geo allocation', value: 'macro', score: 0 },
-      { label: 'Blended — multiple approaches depending on the setup', value: 'blended', score: 0 },
+      { label: 'Fundamental, deep-dive financials, DCF, comps', value: 'fundamental', score: 0 },
+      { label: 'Technical, charts, momentum, price action', value: 'technical', score: 0 },
+      { label: 'Quantitative, statistical models, factor investing', value: 'quant', score: 0 },
+      { label: 'Macro / thematic, top-down sector and geo allocation', value: 'macro', score: 0 },
+      { label: 'Blended, multiple approaches depending on the setup', value: 'blended', score: 0 },
     ],
   },
   {
@@ -255,10 +255,10 @@ const ANALYST_EXTRAS = [
     question:
       'What percentage of a mock portfolio would you put into a single high-conviction position?',
     options: [
-      { label: 'Under 5% — diversification first', value: 'minimal', score: 0 },
-      { label: '5–10% — moderate concentration', value: 'moderate', score: 1 },
-      { label: '10–20% — concentrated bets', value: 'concentrated', score: 2 },
-      { label: '20%+ — go big or go home', value: 'yolo', score: 3 },
+      { label: 'Under 5%, diversification first', value: 'minimal', score: 0 },
+      { label: '5–10%, moderate concentration', value: 'moderate', score: 1 },
+      { label: '10–20%, concentrated bets', value: 'concentrated', score: 2 },
+      { label: '20%+, go big or go home', value: 'yolo', score: 3 },
     ],
   },
   {

@@ -35,7 +35,7 @@ const JOIN_NOTES = `Joins: only between datasets the schema marks "joinable with
 
 function buildSystemPrompt(dimension, scope) {
   return `You translate a plain-English report request into a single EzanaQL query.
-EzanaQL is a SQL-like, query-only DSL. Output ONLY the EzanaQL query — no prose, no markdown fences, no explanation.
+EzanaQL is a SQL-like, query-only DSL. Output ONLY the EzanaQL query, no prose, no markdown fences, no explanation.
 
 Grammar: FROM dataset [[SEMI] JOIN dataset ON key] [WHERE cond] [SELECT projection] [GROUP BY fields] [HAVING cond] [ORDER BY sort] [LIMIT n [OFFSET m]] [AS csv|json|table]; . FROM is required and first. Strings use double quotes. Money shorthand: 50M, 1.2B. Relative dates: LAST 30 DAYS, LAST 6 MONTHS, LAST 5 YEARS, LAST QUARTER, YTD, FY2026. Aggregations: SUM/AVG/MIN/MAX/COUNT()/COUNT(DISTINCT f)/MEDIAN (COUNT takes () or one field, never *). Functions: YOY, PCT_CHANGE, YEAR, QUARTER, FISCAL_YEAR, ROUND, ABS, UPPER, LOWER, COALESCE. There is NO INSERT/UPDATE/DELETE.
 ${JOIN_NOTES}
@@ -120,7 +120,7 @@ export async function POST(request) {
       });
       const msg =
         resp.status === 429
-          ? 'The report model is busy — try again in a moment.'
+          ? 'The report model is busy, try again in a moment.'
           : resp.status === 401
             ? 'The report-generation model is misconfigured. (Server logs have details.)'
             : 'The report-generation model is unavailable. (Server logs have details.)';

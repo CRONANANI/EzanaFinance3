@@ -189,6 +189,9 @@ export function listFilings(f = {}, opts) {
       filing_type: f.filingType,
       lobbying_activity_issue: f.issueCode,
       lobbying_activity_government_entity: f.governmentEntity,
+      /* Full-text search over the activities' specific issue descriptions
+         (the API's "advanced text searching"). Used by the topic ingest. */
+      filing_specific_lobbying_issues: f.specificIssues,
       ordering: f.ordering || '-dt_posted',
       page: f.page || 1,
       page_size: f.pageSize || 25,

@@ -78,9 +78,9 @@ const SERIES_NAMES = {
 const SERIES_DESCRIPTIONS = {
   spx: 'Tracks the 500 largest US public companies. The broadest measure of how well the American stock market is performing overall.',
   ixic: 'The NASDAQ Composite is heavily weighted toward technology stocks. It tells you how well the tech sector and growth companies are doing relative to the broader market.',
-  rut: 'Tracks 2,000 small-cap US companies. Small caps tend to lead in early recoveries and lag in recessions — a useful economic sentiment gauge.',
+  rut: 'Tracks 2,000 small-cap US companies. Small caps tend to lead in early recoveries and lag in recessions, a useful economic sentiment gauge.',
   dji: "The Dow Jones Industrial Average tracks 30 blue-chip US stocks. It's price-weighted, so higher-priced stocks have more influence.",
-  vix: 'The CBOE Volatility Index measures expected market volatility over the next 30 days. Often called the "Fear Index" — a spike in VIX means investors are pricing in uncertainty and hedging aggressively. When VIX is above 30, markets are in stress.',
+  vix: 'The CBOE Volatility Index measures expected market volatility over the next 30 days. Often called the "Fear Index", a spike in VIX means investors are pricing in uncertainty and hedging aggressively. When VIX is above 30, markets are in stress.',
   wti: 'West Texas Intermediate is the US benchmark for crude oil. Tracking WTI helps you understand how oil prices are fluctuating, which directly impacts energy stocks, transportation costs, and consumer inflation.',
   brent:
     'Brent Crude is the international benchmark for oil pricing. It tends to trade at a premium to WTI and reflects global supply/demand dynamics, especially from the Middle East and Europe.',
@@ -354,7 +354,7 @@ function MarketPerformanceTab({
             className="hts-week-corr-value"
             style={{ color: correlationDisplay ? correlationColor : 'var(--home-muted)' }}
           >
-            {correlationDisplay ?? '—'}
+            {correlationDisplay ?? '–'}
           </span>
         </div>
       )}
@@ -415,7 +415,7 @@ function MarketPerformanceTab({
                 <ReferenceLine y={0} stroke="rgba(107,114,128,0.3)" strokeDasharray="3 3" />
                 <Tooltip
                   formatter={(value, name) => {
-                    if (typeof value !== 'number') return ['—', name];
+                    if (typeof value !== 'number') return ['–', name];
                     const sign = value >= 0 ? '+' : '';
                     return [`${sign}${value.toFixed(2)}%`, name];
                   }}

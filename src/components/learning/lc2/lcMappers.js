@@ -20,7 +20,7 @@ export function deriveEloHero(data, effectiveTrack, currentTierLevel) {
   }
 
   const rankPct = me.position_pct != null ? Math.round(me.position_pct) : null;
-  const rank = rankPct != null ? `Top ${rankPct}%` : me.rank ? `#${me.rank}` : '—';
+  const rank = rankPct != null ? `Top ${rankPct}%` : me.rank ? `#${me.rank}` : '–';
   const rankScope = 'in your network';
 
   return {
@@ -116,12 +116,12 @@ export function deriveSessionMetrics(data) {
       },
       {
         label: 'Lessons today',
-        value: '—',
+        value: '–',
         color: 'dim',
       },
       {
         label: 'Time studied today',
-        value: '—',
+        value: '–',
         color: 'dim',
       },
       {

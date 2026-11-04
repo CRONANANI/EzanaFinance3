@@ -47,7 +47,7 @@ export function LobbyingToLegislationCard({ limit = 5 }) {
       </div>
       <div className="itc-body itc-body-pad">
         <p style={{ margin: '0 0 0.75rem', fontSize: '0.78rem', color: MUTED, lineHeight: 1.5 }}>
-          Sectors where legislation is advancing fastest in Congress — context for where lobbying
+          Sectors where legislation is advancing fastest in Congress, context for where lobbying
           dollars are meeting live policy. Informational only, not investment advice.
         </p>
         {loading ? (
@@ -60,7 +60,7 @@ export function LobbyingToLegislationCard({ limit = 5 }) {
           <div
             style={{ padding: '1.25rem', textAlign: 'center', color: MUTED, fontSize: '0.82rem' }}
           >
-            No legislative momentum to show yet — sectors appear here as tracked bills advance.
+            No legislative momentum to show yet, sectors appear here as tracked bills advance.
           </div>
         ) : (
           top.map((s) => {

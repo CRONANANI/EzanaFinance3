@@ -18,6 +18,7 @@ import { runResearch, DEPTH_PROFILES } from '@/lib/sonar/engine/engine';
 import { recordRun } from '@/lib/sonar/engine/telemetry';
 import { rememberRun } from '@/lib/sonar/engine/memory';
 
+import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /**
  * POST /api/sonar/research. Sonar research engine v3, streamed
  * (engine v3, Section 7). Body: { query, depth?, noCorrect?, force? }.
@@ -51,7 +52,7 @@ export const maxDuration = 90;
 const DEPTHS = new Set(['quick', 'standard', 'deep']);
 const FORCE_KINDS = new Set(['ticker', 'country', 'industry', 'sector', 'state_province', 'theme']);
 
-export const POST = withApiGuard(
+const POST_HANDLER = withApiGuard(
   async (request) => {
     if (process.env.SONAR_ENGINE_V3 !== 'true') {
       return NextResponse.json({ error: 'Not available.' }, { status: 404 });
@@ -251,3 +252,6 @@ export const POST = withApiGuard(
   },
   { requireAuth: false, strict: true },
 );
+
+/* No em dashes in anything this route returns (src/lib/text/em-dash.js). */
+export const POST = withNoEmDash(POST_HANDLER);

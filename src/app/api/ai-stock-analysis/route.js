@@ -7,11 +7,12 @@ import { fetchMarketData, formatMarketDataForPrompt } from '@/lib/ai/market-data
 import { getUserClient } from '@/lib/supabase';
 import { sanitizeAIOutput } from '@/lib/sanitize';
 
+import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 export const dynamic = 'force-dynamic';
 
 const MODEL = 'claude-sonnet-4-20250514';
 
-export const POST = withApiGuard(
+const POST_HANDLER = withApiGuard(
   async (request, user) => {
     try {
       const blocked = await enforceAiRateLimit(user.id, 'ai-stock-analysis');
@@ -52,7 +53,7 @@ export const POST = withApiGuard(
 
       // Fetch real market data (FMP + AV — fetchMarketData never throws)
       let marketData = null;
-      let marketDataPrompt = 'Market data unavailable — provide analysis based on your knowledge.';
+      let marketDataPrompt = 'Market data unavailable, provide analysis based on your knowledge.';
 
       try {
         marketData = await fetchMarketData(ticker);
@@ -114,3 +115,6 @@ export const POST = withApiGuard(
   },
   { requireAuth: true },
 );
+
+/* No em dashes in anything this route returns (src/lib/text/em-dash.js). */
+export const POST = withNoEmDash(POST_HANDLER);

@@ -52,7 +52,7 @@ export function estimatePassage(bill = {}) {
       key: 'stage',
       label: 'Stage',
       contribution: z,
-      detail: `${stage} — base rate ${(base * 100).toFixed(1)}%`,
+      detail: `${stage}, base rate ${(base * 100).toFixed(1)}%`,
     },
   ];
 

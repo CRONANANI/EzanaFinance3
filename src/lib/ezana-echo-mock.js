@@ -234,7 +234,7 @@ export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
       id: 'c-empire-1',
       author: { name: 'Alexei Novak', initials: 'AN' },
       content:
-        'The sequence framing is what makes this more than a history lesson. "Reserve status arrives last and decays last" reframes the whole dollar debate — the 58% share isn\'t strength, it\'s the last overhang to erode, exactly like sterling into the 1950s. The kill switch at 45% COFER is the right number to actually watch.',
+        'The sequence framing is what makes this more than a history lesson. "Reserve status arrives last and decays last" reframes the whole dollar debate, the 58% share isn\'t strength, it\'s the last overhang to erode, exactly like sterling into the 1950s. The kill switch at 45% COFER is the right number to actually watch.',
       createdAt: '2026-08-05T14:05:00Z',
     },
     {
@@ -248,7 +248,7 @@ export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
       id: 'c-empire-3',
       author: { name: 'Tomás Herrera', initials: 'TH' },
       content:
-        "The Soviet row is the most useful part for me — output alone never converted because the middle steps (convertible currency, open capital market, financial center) were simply missing. That's the real question hanging over China, and the article is honest that no prior challenger cleared it without capital-account convertibility.",
+        "The Soviet row is the most useful part for me, output alone never converted because the middle steps (convertible currency, open capital market, financial center) were simply missing. That's the real question hanging over China, and the article is honest that no prior challenger cleared it without capital-account convertibility.",
       createdAt: '2026-08-06T09:15:00Z',
     },
   ],
@@ -257,14 +257,14 @@ export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
       id: 'c-tok-1',
       author: { name: 'Lucas Ferreira', initials: 'LF' },
       content:
-        'The enforceability point is the one everyone waves away. A token is a clean record of a lien; it is not a court order. The Paraná deal only works because the sensor feed plus B3 registration make the cow seizable in practice — most "tokenize the building" pitches have no equivalent, and that gap is exactly where the first collateral blow-up will come from.',
+        'The enforceability point is the one everyone waves away. A token is a clean record of a lien; it is not a court order. The Paraná deal only works because the sensor feed plus B3 registration make the cow seizable in practice, most "tokenize the building" pitches have no equivalent, and that gap is exactly where the first collateral blow-up will come from.',
       createdAt: '2026-08-02T15:10:00Z',
     },
     {
       id: 'c-tok-2',
       author: { name: 'Hana Kim', initials: 'HK' },
       content:
-        'Inverting the RWA pitch to "watch the venue, not the asset" is the correct read. The tokenized treasuries were never the trade — the fee-earning issuers and the lending/trading venues charging basis points are. Toll booth, not treasure hunt, and the scarce thing is the license stack.',
+        'Inverting the RWA pitch to "watch the venue, not the asset" is the correct read. The tokenized treasuries were never the trade, the fee-earning issuers and the lending/trading venues charging basis points are. Toll booth, not treasure hunt, and the scarce thing is the license stack.',
       createdAt: '2026-08-02T18:45:00Z',
     },
     {
@@ -280,7 +280,7 @@ export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
       id: 'c-jm-1',
       author: { name: 'Priya Raghunathan', initials: 'PR' },
       content:
-        'The four-phase framing is the useful part — everyone knows consolidation happens, but "which categories are entering the consolidation phase now" is the actual tradable question. Security is clearly mid-phase; the data layer (IBM–Confluent) looks earlier.',
+        'The four-phase framing is the useful part, everyone knows consolidation happens, but "which categories are entering the consolidation phase now" is the actual tradable question. Security is clearly mid-phase; the data layer (IBM–Confluent) looks earlier.',
       createdAt: '2026-08-02T14:20:00Z',
     },
     {
@@ -294,7 +294,7 @@ export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
       id: 'c-jm-3',
       author: { name: 'Dana Osei', initials: 'DO' },
       content:
-        'Appreciate that the Nvidia–Groq line is described as an asset/licensing deal and not an acquisition — most write-ups collapse that distinction and then get the antitrust angle wrong. The "consolidation finds a structure" point is the one to remember.',
+        'Appreciate that the Nvidia–Groq line is described as an asset/licensing deal and not an acquisition, most write-ups collapse that distinction and then get the antitrust angle wrong. The "consolidation finds a structure" point is the one to remember.',
       createdAt: '2026-08-03T09:40:00Z',
     },
   ],
@@ -360,7 +360,7 @@ export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
       id: 'c-trump-2',
       author: { name: 'Andre Kessler', initials: 'AK' },
       content:
-        'Would love a saved screen for the AI-chip basket mentioned here — NVDA/AMD/AVGO/INTC/MU/TXN. The disclosure-lag framing is exactly right.',
+        'Would love a saved screen for the AI-chip basket mentioned here, NVDA/AMD/AVGO/INTC/MU/TXN. The disclosure-lag framing is exactly right.',
       createdAt: '2026-06-20T16:05:00Z',
     },
   ],
@@ -368,7 +368,7 @@ export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
     {
       id: 'c-sector-1',
       author: { name: 'Morgan Ellis', initials: 'ME' },
-      content: 'The finance era dominance at 90% is staggering — great visualization.',
+      content: 'The finance era dominance at 90% is staggering, great visualization.',
       createdAt: '2026-04-20T12:00:00Z',
     },
   ],
@@ -384,7 +384,7 @@ export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
       id: 'c-fiber-2',
       author: { name: 'Lisa Park', initials: 'LP' },
       content:
-        "That interactive map is incredible — clicked through every company. Corning profile card is chef's kiss.",
+        "That interactive map is incredible, clicked through every company. Corning profile card is chef's kiss.",
       createdAt: '2026-05-02T16:20:00Z',
     },
   ],
@@ -415,7 +415,7 @@ export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
     {
       id: 'c-nvda-val-3',
       author: { name: 'David Oyelaran', initials: 'DO' },
-      content: 'The $26B R&D spend exceeding AMD entire revenue — that is the moat in one number.',
+      content: 'The $26B R&D spend exceeding AMD entire revenue, that is the moat in one number.',
       createdAt: '2026-05-19T15:45:00Z',
     },
   ],

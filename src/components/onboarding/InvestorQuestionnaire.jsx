@@ -9,7 +9,7 @@ const QUESTIONS = [
     category: 'Experience',
     question: 'How long have you been actively investing?',
     options: [
-      { label: "I'm brand new — haven't started yet", value: 'none', score: 0 },
+      { label: "I'm brand new, haven't started yet", value: 'none', score: 0 },
       { label: 'Less than 1 year', value: 'beginner', score: 1 },
       { label: '1–3 years', value: 'intermediate', score: 2 },
       { label: '3–10 years', value: 'advanced', score: 3 },
@@ -35,10 +35,10 @@ const QUESTIONS = [
     category: 'Risk Tolerance',
     question: 'Your portfolio drops 20% in a single week. What do you do?',
     options: [
-      { label: "Sell everything — I can't handle that stress", value: 'very_low', score: 0 },
+      { label: "Sell everything: I can't handle that stress", value: 'very_low', score: 0 },
       { label: 'Sell some positions to reduce exposure', value: 'low', score: 1 },
       { label: 'Hold steady and wait for recovery', value: 'moderate', score: 2 },
-      { label: "Buy more — it's on sale", value: 'high', score: 3 },
+      { label: "Buy more, it's on sale", value: 'high', score: 3 },
     ],
   },
   {
@@ -46,10 +46,10 @@ const QUESTIONS = [
     category: 'Goals',
     question: "What's your primary investment goal?",
     options: [
-      { label: "Preserve my capital — don't lose what I have", value: 'preservation', score: 0 },
+      { label: "Preserve my capital, don't lose what I have", value: 'preservation', score: 0 },
       { label: 'Steady income (dividends, interest)', value: 'income', score: 1 },
       { label: 'Long-term growth over 5+ years', value: 'growth', score: 2 },
-      { label: 'Aggressive growth — maximize returns', value: 'aggressive', score: 3 },
+      { label: 'Aggressive growth, maximize returns', value: 'aggressive', score: 3 },
       { label: 'Speculation / short-term trades', value: 'speculation', score: 4 },
     ],
   },
@@ -73,7 +73,7 @@ const QUESTIONS = [
       { label: '10–30%', value: 'conservative', score: 1 },
       { label: '30–60%', value: 'moderate', score: 2 },
       { label: '60–90%', value: 'aggressive', score: 3 },
-      { label: "90%+ — I'm all in", value: 'yolo', score: 4 },
+      { label: "90%+: I'm all in", value: 'yolo', score: 4 },
     ],
   },
   {
@@ -137,7 +137,7 @@ const PROFILE_CONFIGS = {
   },
   Expert: {
     label: 'Expert',
-    desc: "You're a seasoned investor. We'll give you the full firehose — real-time signals, complex markets, institutional-grade analysis.",
+    desc: "You're a seasoned investor. We'll give you the full firehose, real-time signals, complex markets, institutional-grade analysis.",
   },
 };
 

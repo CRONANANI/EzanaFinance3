@@ -106,7 +106,7 @@ export const POST = withApiGuard(
           recipient_id: recip.user_id,
           awarded_by: member.user_id,
           badge_type: 'best_call',
-          title: `Best Call — ${best.pitch.ticker || best.pitch.company_name || 'Pitch'}`,
+          title: `Best Call: ${best.pitch.ticker || best.pitch.company_name || 'Pitch'}`,
           reason: `Top alpha of ${best.alpha.toFixed(1)}% vs. benchmark on ${best.pitch.company_name || best.pitch.ticker}.`,
           period,
           auto_generated: true,
@@ -134,7 +134,7 @@ export const POST = withApiGuard(
       return NextResponse.json({
         awarded: [],
         period,
-        message: 'Nothing new to award — already computed for this period or no outcome data.',
+        message: 'Nothing new to award, already computed for this period or no outcome data.',
       });
     }
 

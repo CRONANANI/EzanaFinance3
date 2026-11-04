@@ -44,7 +44,7 @@ export function PortfolioNews() {
                 <p className="insight-text">
                   Connect your brokerage to see personalized news and statistics for your portfolio holdings.
                 </p>
-                <span className="insight-time">—</span>
+                <span className="insight-time">–</span>
               </div>
             </div>
           ) : (

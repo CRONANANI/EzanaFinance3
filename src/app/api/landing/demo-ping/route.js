@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { runLandingPipeline, DISCLAIMER } from '@/lib/sonar/landing-pipeline';
 
+import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /**
  * GET /api/landing/demo-ping
  *
@@ -54,7 +55,7 @@ function bodyFrom(result) {
   };
 }
 
-export async function GET() {
+async function GET_HANDLER() {
   if (memo && Date.now() - memo.at < TTL_MS) {
     return NextResponse.json(memo.body);
   }
@@ -135,3 +136,6 @@ export async function GET() {
   memo = { at: Date.now(), body };
   return NextResponse.json(body);
 }
+
+/* No em dashes in anything this route returns (src/lib/text/em-dash.js). */
+export const GET = withNoEmDash(GET_HANDLER);

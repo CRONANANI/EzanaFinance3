@@ -727,7 +727,7 @@ export default function StockPriceChart({
                   lineHeight: 1.2,
                 }}
               >
-                {value ?? '—'}
+                {value ?? '–'}
               </span>
               {sub && sub !== '--' && (
                 <span

@@ -56,7 +56,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     if (!isAdminUser(user)) {
-      return NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403 });
+      return NextResponse.json({ error: 'Forbidden, admin only' }, { status: 403 });
     }
     const supabaseAdmin = getAdminClient();
 

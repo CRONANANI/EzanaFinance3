@@ -94,7 +94,7 @@ export function evaluateRegistration(config, ctx) {
   const now = nowIso ? Date.parse(nowIso) : NaN;
 
   if (config.admission_mode === 'invite_only') {
-    return { ok: false, error: 'This competition is invite-only — you can’t self-register.' };
+    return { ok: false, error: 'This competition is invite-only, you can’t self-register.' };
   }
 
   if (config.registration_opens_at && Number.isFinite(now) && now < Date.parse(config.registration_opens_at)) {

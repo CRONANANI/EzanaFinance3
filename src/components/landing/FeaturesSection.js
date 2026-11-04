@@ -9,7 +9,7 @@ const FEATURE_CARDS = [
   {
     key: 'congress',
     title: 'Congressional Trading',
-    desc: 'Real-time trades from all 535 members of Congress — with filing dates, disclosure lag, and politician-level history.',
+    desc: 'Real-time trades from all 535 members of Congress, with filing dates, disclosure lag, and politician-level history.',
     caption: 'Top traders · 90d',
   },
   {
@@ -21,7 +21,7 @@ const FEATURE_CARDS = [
   {
     key: 'intelligence',
     title: 'Market Intelligence',
-    desc: 'Geopolitical analysis, sector rotation, and market-moving signals — surfaced before they reach the mainstream.',
+    desc: 'Geopolitical analysis, sector rotation, and market-moving signals, surfaced before they reach the mainstream.',
     caption: 'Market heat · Live',
   },
   {
@@ -33,13 +33,13 @@ const FEATURE_CARDS = [
   {
     key: 'community',
     title: 'Community Insights',
-    desc: 'High-conviction research from a ranked community of serious investors — signal, not noise.',
+    desc: 'High-conviction research from a ranked community of serious investors, signal, not noise.',
     caption: 'Consensus signal',
   },
   {
     key: 'alt',
     title: 'Alternative Analytics',
-    desc: 'Alternative-data signals — satellite, app, and card-spend trends — mapped to the tickers they move.',
+    desc: 'Alternative-data signals, satellite, app, and card-spend trends, mapped to the tickers they move.',
     caption: 'Alt-signal × Price',
   },
 ];
@@ -83,8 +83,8 @@ export function WhyEzanaSection() {
           <p className="eyebrow lf-mono">Why Ezana Finance</p>
           <h2>Built for investors who demand more</h2>
           <p className="section-subtitle">
-            Professional-grade tools that put institutional intelligence — and the transparency to
-            trust it — in your hands.
+            Professional-grade tools that put institutional intelligence, and the transparency to
+            trust it, in your hands.
           </p>
         </div>
 

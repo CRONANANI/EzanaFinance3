@@ -66,7 +66,7 @@ export const POST = withApiGuard(async (request, user) => {
     // flags the middleware gate actually reads so the user is never trapped.
     missingColumns = true;
     console.error(
-      '[api/onboarding/complete] undefined column — apply supabase/migrations/20260919130000_onboarding_columns_ensure.sql:',
+      '[api/onboarding/complete] undefined column, apply supabase/migrations/20260919130000_onboarding_columns_ensure.sql:',
       error.message,
     );
     ({ data: updated, error } = await applyUpdate(coreUpdates));

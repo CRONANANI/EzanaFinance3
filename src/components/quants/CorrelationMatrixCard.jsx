@@ -91,7 +91,7 @@ export function CorrelationMatrixCard() {
                             borderRadius: 4,
                           }}
                         >
-                          {v != null ? v.toFixed(2) : '—'}
+                          {v != null ? v.toFixed(2) : '–'}
                         </td>
                       );
                     })}

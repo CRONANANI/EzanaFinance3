@@ -198,7 +198,7 @@ function MiniSparkline({ positive }) {
 
 function formatSectorChangePct(changePct) {
   const x = Number(changePct);
-  if (!Number.isFinite(x)) return '—';
+  if (!Number.isFinite(x)) return '–';
   return `${x >= 0 ? '+' : ''}${x.toFixed(2)}%`;
 }
 
@@ -278,7 +278,7 @@ export function HomeTerminalSummary({
           const rawDate = new Date(disclosure);
           const ts = rawDate.getTime();
           const relDate = !disclosure
-            ? '—'
+            ? '–'
             : Number.isNaN(ts)
               ? disclosure
               : (() => {
@@ -725,7 +725,7 @@ export function HomeTerminalSummary({
 
                     {enrichedHoldings.length === 0 ? (
                       <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: 0 }}>
-                        No positions yet — start mock trading to see holdings here.
+                        No positions yet, start mock trading to see holdings here.
                       </p>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
@@ -1221,7 +1221,7 @@ export function HomeTerminalSummary({
                       <span className="streak-card__title">Day Streak</span>
                       <span className="streak-card__subtitle">
                         {streakDays >= 30
-                          ? "30 days strong — you've made it 🎉"
+                          ? "30 days strong, you've made it 🎉"
                           : `${30 - streakDays} day${30 - streakDays === 1 ? '' : 's'} to go`}
                       </span>
                     </div>
@@ -1244,7 +1244,7 @@ export function HomeTerminalSummary({
                           key={key}
                           className={`streak-card__bar ${isLoggedIn ? 'is-active' : ''} ${isToday ? 'is-today' : ''}`}
                           style={{ opacity }}
-                          title={`${key}${isLoggedIn ? ' — logged in' : ' — missed'}`}
+                          title={`${key}${isLoggedIn ? ' logged in' : ' missed'}`}
                         />
                       );
                     })}
@@ -1598,7 +1598,7 @@ export function HomeTerminalSummary({
                                   whiteSpace: 'nowrap',
                                 }}
                               >
-                                {m.range52w ?? '—'}
+                                {m.range52w ?? '–'}
                               </span>
                             </div>
                           ))
@@ -1717,7 +1717,7 @@ export function HomeTerminalSummary({
                                   whiteSpace: 'nowrap',
                                 }}
                               >
-                                {m.range52w ?? '—'}
+                                {m.range52w ?? '–'}
                               </span>
                             </div>
                           ))

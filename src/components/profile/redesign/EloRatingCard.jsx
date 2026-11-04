@@ -80,7 +80,7 @@ export function EloRatingCard({ user }) {
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 16, marginBottom: 12 }}>
         <div>
           <NumberText size={36} weight={600}>
-            {user.rating?.toLocaleString() ?? '—'}
+            {user.rating?.toLocaleString() ?? '–'}
           </NumberText>
           <div>
             <Caps>Current</Caps>
@@ -88,7 +88,7 @@ export function EloRatingCard({ user }) {
         </div>
         <div>
           <NumberText size={20} weight={500} color={page.inkSoft}>
-            {user.peak?.toLocaleString() ?? '—'}
+            {user.peak?.toLocaleString() ?? '–'}
           </NumberText>
           <div>
             <Caps>Peak</Caps>

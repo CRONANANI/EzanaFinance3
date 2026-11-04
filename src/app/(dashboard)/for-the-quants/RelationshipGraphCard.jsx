@@ -112,7 +112,7 @@ export default function RelationshipGraphCard({ seed = 21 }) {
     <div className="ezana-card ftq-sim-card ftq-sim-card--wide">
       <div className="ezana-card-header">
         <div>
-          <div className="ezana-card-title">Minnow — Relationship Graph Simulation</div>
+          <div className="ezana-card-title">Minnow: Relationship Graph Simulation</div>
           <div className="ezana-card-subtitle">Signal Confluence Network</div>
         </div>
         <span className="ezana-pill ftq-sim-live">

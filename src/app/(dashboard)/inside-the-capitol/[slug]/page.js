@@ -106,7 +106,7 @@ function HoldingsDonut({ holdings }) {
         {holdings.map((h, i) => (
           <div key={`${h.ticker}-leg-${i}`} className="pp-donut-item">
             <span className="pp-donut-color" style={{ background: colors[i % colors.length] }} />
-            {h.ticker && h.ticker !== '—' ? (
+            {h.ticker && h.ticker !== '–' ? (
               <Link href={`/company-research?ticker=${h.ticker}`} className="pp-donut-tk">{h.ticker}</Link>
             ) : (
               <span className="pp-donut-tk">{h.ticker}</span>
@@ -248,7 +248,7 @@ export default function PoliticianProfilePage() {
             <h4>Politician Info</h4>
             <div className="pp-info-row"><span className="pp-info-lbl">Role</span><span className="pp-info-val">{pol.role}</span></div>
             <div className="pp-info-row"><span className="pp-info-lbl">Years in Office</span><span className="pp-info-val">{pol.yearsInOffice}</span></div>
-            <div className="pp-info-row"><span className="pp-info-lbl">Age</span><span className="pp-info-val">{pol.age != null ? `${pol.age} years` : '—'}</span></div>
+            <div className="pp-info-row"><span className="pp-info-lbl">Age</span><span className="pp-info-val">{pol.age != null ? `${pol.age} years` : '–'}</span></div>
             <div className="pp-info-row">
               <span className="pp-info-lbl">Committees</span>
               <a href={pol.committeeUrl} target="_blank" rel="noopener noreferrer" className="pp-info-link">{pol.committees}</a>
@@ -346,7 +346,7 @@ export default function PoliticianProfilePage() {
                 {pol.holdings.map((h) => (
                   <div key={h.ticker} className="pp-holding-row">
                     <div className="pp-hold-info">
-                      {h.ticker && h.ticker !== '—' ? (
+                      {h.ticker && h.ticker !== '–' ? (
                         <>
                           <Link href={`/company-research?ticker=${h.ticker}`} className="pp-hold-tk">{h.ticker}</Link>
                           <Link href={`/company-research?ticker=${h.ticker}`} className="pp-hold-name">{h.name}</Link>

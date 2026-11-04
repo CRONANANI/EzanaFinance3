@@ -74,9 +74,9 @@ function resolveOpenedAt(pos, history) {
 }
 
 function formatOpenedDate(iso) {
-  if (!iso) return '—';
+  if (!iso) return '–';
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
+  if (Number.isNaN(d.getTime())) return '–';
   return d.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -622,7 +622,7 @@ function MockTradingPageInner() {
           if (cancelled) return;
 
           if (!data) {
-            setPriceFetchError(`HTTP ${res.status} — response not JSON`);
+            setPriceFetchError(`HTTP ${res.status}, response not JSON`);
             continue;
           }
 
@@ -1125,7 +1125,7 @@ function MockTradingPageInner() {
 
             <div className="mock-asset-selected">
               <div className="mock-asset-left">
-                <span className="mock-asset-ticker">{selectedSymbol || '—'}</span>
+                <span className="mock-asset-ticker">{selectedSymbol || '–'}</span>
                 <span className="mock-asset-name">
                   {selectedName || 'Search to select an asset'}
                 </span>
@@ -1277,7 +1277,7 @@ function MockTradingPageInner() {
 
             {side === 'buy' && dollarAmount > portfolio.cash && (
               <p style={{ textAlign: 'center', fontSize: '0.75rem', color: '#ef4444', margin: 0 }}>
-                Insufficient funds — available: {fmtUSD(portfolio.cash)}
+                Insufficient funds, available: {fmtUSD(portfolio.cash)}
               </p>
             )}
 

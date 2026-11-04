@@ -30,7 +30,7 @@ function buildLiveRows(latest) {
       lensLabel,
       value: nf.format(Number(r.latest_value)),
       unit: series.unitLabel,
-      change: change == null ? '—' : `${change >= 0 ? '+' : ''}${nf.format(change)}`,
+      change: change == null ? '–' : `${change >= 0 ? '+' : ''}${nf.format(change)}`,
       positive: change != null && change >= 0,
       period: fmtPeriod(r.latest_year),
     });
@@ -71,7 +71,7 @@ export default function OecdMacroClient({ latest }) {
 
   const config = {
     title: 'OECD macro data',
-    lead: 'Harmonised OECD Economic Outlook indicators — growth, households, inflation, rates, government, and external balances — on one comparable basis, so a position in one market can be read against the conditions in another.',
+    lead: 'Harmonised OECD Economic Outlook indicators, growth, households, inflation, rates, government, and external balances, on one comparable basis, so a position in one market can be read against the conditions in another.',
     searches: [
       {
         id: 'country',
@@ -105,7 +105,7 @@ export default function OecdMacroClient({ latest }) {
       title: 'OECD-area snapshot',
       desc: isLive
         ? 'Latest OECD-area prints from the Economic Outlook database. Years marked proj. are OECD projections, not actuals.'
-        : 'Composite view of the OECD area — the series are being loaded.',
+        : 'Composite view of the OECD area, the series are being loaded.',
       items: highlights,
     },
     table: {
@@ -139,12 +139,12 @@ export default function OecdMacroClient({ latest }) {
     },
     sampleNote: isLive
       ? 'Latest OECD Economic Outlook values per country. Years ≥ 2024 are OECD projections. Source: OECD (CC BY 4.0).'
-      : 'Placeholder rows — the OECD series are being loaded. Structure shown is final.',
+      : 'Placeholder rows, the OECD series are being loaded. Structure shown is final.',
     source: {
       title: 'How we source it',
       body: [
-        'Indicators come from the OECD’s SDMX data API — the organisation’s official statistical distribution channel, published under a CC BY 4.0 licence with attribution. OECD harmonises national statistics onto a common methodology, which is what makes a figure for Canada directly comparable to one for Japan; national statistical offices do not guarantee that on their own.',
-        'Series are keyed by country and reference period, so a macro reading can be joined to the market, contract, and prediction-market signals that share the same window. Values from 2024 onward are OECD projections from the Economic Outlook database. Attribution: Source — OECD.',
+        'Indicators come from the OECD’s SDMX data API, the organisation’s official statistical distribution channel, published under a CC BY 4.0 licence with attribution. OECD harmonises national statistics onto a common methodology, which is what makes a figure for Canada directly comparable to one for Japan; national statistical offices do not guarantee that on their own.',
+        'Series are keyed by country and reference period, so a macro reading can be joined to the market, contract, and prediction-market signals that share the same window. Values from 2024 onward are OECD projections from the Economic Outlook database. Attribution: Source, OECD.',
       ],
     },
     cta: { href: '/auth/login', label: 'Explore in the app' },

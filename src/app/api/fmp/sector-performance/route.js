@@ -41,7 +41,7 @@ function classify(err) {
       case 404:
         return {
           status: 502,
-          userMessage: 'FMP endpoint not found — the URL may have changed upstream.',
+          userMessage: 'FMP endpoint not found, the URL may have changed upstream.',
         };
       case 410:
         return {
@@ -50,7 +50,7 @@ function classify(err) {
             'FMP retired this endpoint. The server is using the legacy v3 URL and needs an update.',
         };
       case 429:
-        return { status: 503, userMessage: 'FMP rate limit hit — please wait a moment and retry.' };
+        return { status: 503, userMessage: 'FMP rate limit hit, please wait a moment and retry.' };
       default:
         return { status: 502, userMessage: `Couldn't reach FMP (HTTP ${err.status}).` };
     }

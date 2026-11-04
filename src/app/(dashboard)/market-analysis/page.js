@@ -589,7 +589,8 @@ function CategoryPanel({ category, onClose, layerDefs }) {
         </span>
         <div className="ma-panel-actions">
           <button type="button" onClick={() => setMinimized(true)} title="Minimize">
-            —
+            {' '}
+            ·{' '}
           </button>
           <button type="button" onClick={onClose} title="Close">
             ✕
@@ -741,9 +742,9 @@ function SettingsPanel({ onClose }) {
         <div className="ma-filter-section">
           <h4>DATE FORMAT</h4>
           <select className="ma-settings-select">
-            <option>MM/DD/YYYY — US</option>
-            <option>DD/MM/YYYY — EU</option>
-            <option>YYYY-MM-DD — ISO</option>
+            <option>MM/DD/YYYY: US</option>
+            <option>DD/MM/YYYY: EU</option>
+            <option>YYYY-MM-DD: ISO</option>
           </select>
         </div>
         <div className="ma-filter-section">
@@ -1001,7 +1002,7 @@ function CityNewsPanel({ panelId, powerCountry, selectedLayers, countryScores, o
                           letterSpacing: '0.04em',
                           fontWeight: 600,
                         }}
-                        title="Sourced via AlphaVantage NEWS_SENTIMENT — topic-filtered for the selected layer"
+                        title="Sourced via AlphaVantage NEWS_SENTIMENT, topic-filtered for the selected layer"
                       >
                         AV
                       </span>
@@ -1132,7 +1133,7 @@ function CityNewsPanel({ panelId, powerCountry, selectedLayers, countryScores, o
 function EventAnalysisProse({ text }) {
   const cleaned = (text || '').trim();
   if (!cleaned) {
-    return <p className="sentinel-report-section-body sentinel-report-section-body--empty">—</p>;
+    return <p className="sentinel-report-section-body sentinel-report-section-body--empty">–</p>;
   }
   const lines = cleaned
     .split('\n')
@@ -1610,7 +1611,7 @@ const TUTORIAL_STEPS = [
   {
     id: 'commodities',
     title: 'Commodities',
-    body: 'Oil, gold, copper, wheat, and more — spot levels and futures curves.',
+    body: 'Oil, gold, copper, wheat, and more, spot levels and futures curves.',
     target: "[data-tour='sidebar-commodities']",
     placement: 'right',
   },
@@ -1623,7 +1624,7 @@ const TUTORIAL_STEPS = [
   },
   {
     id: 'isr',
-    title: 'ISR — Intelligence, Surveillance & Reconnaissance',
+    title: 'ISR: Intelligence, Surveillance & Reconnaissance',
     body: 'Live geolocated news from public sources, plus Polymarket signals when events could move prediction markets.',
     target: "[data-tour='sidebar-isr']",
     placement: 'right',
@@ -1631,7 +1632,7 @@ const TUTORIAL_STEPS = [
   {
     id: 'globe',
     title: 'The map',
-    body: 'Drag to pan, scroll to zoom. Pulsating dots mark live news events — click one to read the article inline.',
+    body: 'Drag to pan, scroll to zoom. Pulsating dots mark live news events, click one to read the article inline.',
     target: "[data-tour='globe-canvas']",
     placement: 'left',
   },
@@ -1973,7 +1974,7 @@ export default function MarketAnalysisPage() {
           data = res.ok ? await res.json() : {};
         }
         if (data.quotes) {
-          setTickerData(data.quotes.filter((q) => q.price !== '—'));
+          setTickerData(data.quotes.filter((q) => q.price !== '–'));
         }
       } catch (err) {
         console.error('Ticker fetch failed:', err);

@@ -6,6 +6,7 @@ import { scoreTrendingBatch, spreadOf, unitPrice } from '@/lib/prediction-market
 import { attachWindowMetrics, writeSnapshots } from '@/lib/prediction-markets/snapshot-store';
 import { cronRoute } from '@/lib/cron/with-cron-lock';
 
+import { removeEmDashes } from '@/lib/text/em-dash';
 /* Logged once per instance when the events refresh function is missing. */
 let warnedEventsMissing = false;
 
@@ -115,7 +116,8 @@ function eventInfo(m) {
 
 /** Gamma market to { question, row } (MappedMarket shape, platform=polymarket). */
 function toRow(m) {
-  const question = String(m?.question ?? m?.title ?? '').trim();
+  /* No em dashes in stored, user-facing text (src/lib/text/em-dash.js). */
+  const question = removeEmDashes(String(m?.question ?? m?.title ?? '').trim());
   const marketId = String(m?.id ?? m?.conditionId ?? '');
   if (!marketId || !question) return null;
   return {
@@ -126,7 +128,7 @@ function toRow(m) {
       platform: 'polymarket',
       ...eventInfo(m),
       question,
-      description: typeof m?.description === 'string' ? m.description : null,
+      description: typeof m?.description === 'string' ? removeEmDashes(m.description) : null,
       probability: yesProbability(m),
       // volumeNum is the numeric field; volume is the same figure as a string.
       volume: Number(m?.volumeNum ?? m?.volume ?? 0) || 0,

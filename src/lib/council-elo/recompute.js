@@ -79,7 +79,7 @@ export async function recomputeCouncilElo(admin) {
         org_id: orgId,
         delta: newCurrent - prev.current_rating,
         component,
-        reason: `Recompute — competition ${clamp(newComp)}, fund ${clamp(newFund)}`,
+        reason: `Recompute, competition ${clamp(newComp)}, fund ${clamp(newFund)}`,
         metadata: { competition_rating: clamp(newComp), fund_rating: clamp(newFund) },
         rating_before: prev.current_rating,
         rating_after: newCurrent,

@@ -39,7 +39,7 @@ export default function TradingDashboardPlaceholderPage() {
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
           <Link href="/trading/mock" className="trd-mock-btn">
             <i className="bi bi-controller" />
-            Try Mock Trading — $100,000 Paper Account
+            Try Mock Trading: $100,000 Paper Account
           </Link>
         </div>
       </div>

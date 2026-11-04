@@ -23,8 +23,8 @@ export const dynamic = 'force-dynamic';
 const SOURCE = {
   title: 'How we source it',
   body: [
-    'Federal contract awards come from the USAspending.gov API (U.S. Department of the Treasury) — the official public record of federal spending, with no API key required. A scheduled job syncs the current fiscal year’s contract awards into Ezana, and the page reads from there (with the live API as a fallback). Lobbying and patent signals come from public LD-1 / LD-2 disclosure filings and patent-office publication data.',
-    'Records are normalized and entity-resolved to public companies where an unambiguous match exists. USAspending reports the recipient company name, not a stock ticker — symbols shown are our own resolution of a few large public contractors, and every unmapped recipient displays “—”.',
+    'Federal contract awards come from the USAspending.gov API (U.S. Department of the Treasury), the official public record of federal spending, with no API key required. A scheduled job syncs the current fiscal year’s contract awards into Ezana, and the page reads from there (with the live API as a fallback). Lobbying and patent signals come from public LD-1 / LD-2 disclosure filings and patent-office publication data.',
+    'Records are normalized and entity-resolved to public companies where an unambiguous match exists. USAspending reports the recipient company name, not a stock ticker, symbols shown are our own resolution of a few large public contractors, and every unmapped recipient displays “, ”.',
   ],
 };
 
@@ -48,13 +48,13 @@ export default async function GovernmentDatasetPage() {
   return (
     <GovernmentContractsDashboard
       title="Government activity data"
-      lead="The data institutions act on — federal contract awards, lobbying spend, and patent filings — entity-resolved to public companies and connected to tickers."
+      lead="The data institutions act on, federal contract awards, lobbying spend, and patent filings, entity-resolved to public companies and connected to tickers."
       rows={tableRows}
       topRecipients={leaders}
       isLive={!usingSample}
       note={contractFreshnessNote(source ?? 'sample', syncedAt)}
       highlightTitle="Top contract recipients this fiscal year"
-      highlightDesc="Recipients ranked by total disclosed federal contract value this fiscal year — a read on which firms are winning government dollars right now."
+      highlightDesc="Recipients ranked by total disclosed federal contract value this fiscal year, a read on which firms are winning government dollars right now."
       tableLink={{ href: '/datasets/government/contracts', label: 'View all contracts' }}
       source={SOURCE}
     />

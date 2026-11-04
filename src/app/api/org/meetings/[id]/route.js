@@ -134,7 +134,7 @@ export const GET = withApiGuard(
         preRead.push({
           kind: 'pitch',
           id: pitch.id,
-          label: `${pitch.ticker}${pitch.company_name ? ` — ${pitch.company_name}` : ''}`,
+          label: `${pitch.ticker}${pitch.company_name ? `: ${pitch.company_name}` : ''}`,
           note: pitch.thesis_short || null,
         });
       }

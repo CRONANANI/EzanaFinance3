@@ -100,7 +100,7 @@ export function LearningCommunityBadgesPanel() {
           <div>
             <h3 style={{ margin: 0 }}>Course topic badges</h3>
             <p style={{ color: '#6b7280', fontSize: '0.6875rem', margin: '0.15rem 0 0' }}>
-              Same tier style as partner achievements — earn by completing Learning Center tracks
+              Same tier style as partner achievements, earn by completing Learning Center tracks
             </p>
           </div>
           <Link

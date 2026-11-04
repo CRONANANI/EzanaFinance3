@@ -45,7 +45,7 @@ export const DIMENSION_METHODOLOGY = {
   expected_growth: {
     what: 'How fast real output is currently expanding.',
     caveat:
-      'A single-year growth print, not a forecast — a country recovering from a contraction can score high on a weak base.',
+      'A single-year growth print, not a forecast, a country recovering from a contraction can score high on a weak base.',
   },
   debt_burden: {
     what: 'How heavily the state and the wider economy are leveraged.',
@@ -67,7 +67,7 @@ export const DIMENSION_METHODOLOGY = {
   infrastructure: {
     what: 'Baseline physical and digital connectivity available to the population.',
     caveat:
-      'Universal-access metrics saturate — most advanced economies cluster at the top with little separation.',
+      'Universal-access metrics saturate, most advanced economies cluster at the top with little separation.',
   },
   military_strength: {
     what: 'Defence resourcing relative to the economy, plus personnel scale.',
@@ -77,7 +77,7 @@ export const DIMENSION_METHODOLOGY = {
   wealth_gaps: {
     what: 'How unevenly income is distributed within the country.',
     caveat:
-      'Built on the Gini index, which is reported irregularly — the observation year can lag the score year by several years.',
+      'Built on the Gini index, which is reported irregularly, the observation year can lag the score year by several years.',
   },
   cost_competition: {
     what: 'Whether the country is a cost-competitive place to employ people and operate.',
@@ -87,7 +87,7 @@ export const DIMENSION_METHODOLOGY = {
   resource_efficiency: {
     what: 'How much energy and emissions it takes to generate a unit of output.',
     caveat:
-      'Both inputs are inverted — lower energy and emissions intensity per unit of GDP score higher.',
+      'Both inputs are inverted, lower energy and emissions intensity per unit of GDP score higher.',
   },
 
   // ── Source pending (placeholder rows only) ────────────────────────────────
@@ -136,7 +136,7 @@ export const DIMENSION_METHODOLOGY = {
 };
 
 function fmtWeight(w) {
-  if (w == null) return '—';
+  if (w == null) return '–';
   return Number.isInteger(w) ? `×${w}.0` : `×${w}`;
 }
 
@@ -177,7 +177,7 @@ export function empireDimensionExplainer(dim, matrix) {
     'Pull the latest raw World Bank observation for each contributing metric, per country.',
     'Min–max normalize each metric to 0–100 against every country reporting it in the same year. If every country reports the same value, all receive 50.',
     'Flip the metrics marked "lower is stronger" so a higher normalized value always means better.',
-    'Take the weighted mean across the contributing metrics using the weights below — that is the 0–100 dimension score.',
+    'Take the weighted mean across the contributing metrics using the weights below, that is the 0–100 dimension score.',
     `Draw the radius at score ÷ 100, with a ${RADIAL_FLOOR_PCT}% floor so a bottom-ranked country still shows a visible vertex.`,
   ];
 
@@ -192,7 +192,7 @@ export function empireDimensionExplainer(dim, matrix) {
     metrics: copy.pending ? [] : metrics,
     footnote: copy.pending
       ? 'Dimensions without a wired source are listed as pending and never estimated.'
-      : `Source: World Bank Open Data, synced weekly. Score year ${matrix?.year ?? '—'}. Normalization is cross-country within a single year — never across years, which would distort the trend.`,
+      : `Source: World Bank Open Data, synced weekly. Score year ${matrix?.year ?? '–'}. Normalization is cross-country within a single year, never across years, which would distort the trend.`,
   };
 }
 
@@ -212,7 +212,7 @@ export function oecdIndicatorExplainer(series, latestYear, reporting) {
     }.`,
     `Min–max normalize to 0–1 across the ${reporting || 0} countries reporting it. OECD-computed aggregates are excluded so a bloc figure can never set the scale.`,
     series.inv
-      ? 'Invert, because lower is the better outcome on this indicator — outward on the radar always means stronger.'
+      ? 'Invert, because lower is the better outcome on this indicator, outward on the radar always means stronger.'
       : 'Higher is the better outcome here, so no inversion is applied.',
     `Draw the radius at the normalized value, with a ${RADIAL_FLOOR_PCT}% floor so a bottom-ranked country still shows a visible vertex.`,
   ];
@@ -230,6 +230,6 @@ export function oecdIndicatorExplainer(series, latestYear, reporting) {
       projected
         ? ` Values from ${PROJECTION_FROM_YEAR} onward are OECD projections, not actuals.`
         : ''
-    } The #n/N chip in the table is ranked on raw published values, direction-aware — it is not derived from the normalized radius.`,
+    } The #n/N chip in the table is ranked on raw published values, direction-aware, it is not derived from the normalized radius.`,
   };
 }

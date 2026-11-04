@@ -8,7 +8,7 @@ export default function NewsletterConfirmedPage({ searchParams }) {
 
   let title = 'You’re subscribed 🎉';
   let body =
-    'Your email is confirmed — you’ll now receive Ezana Echo articles and product updates. You can unsubscribe from any email at any time.';
+    'Your email is confirmed, you’ll now receive Ezana Echo articles and product updates. You can unsubscribe from any email at any time.';
 
   if (status === 'expired') {
     title = 'That link has expired';

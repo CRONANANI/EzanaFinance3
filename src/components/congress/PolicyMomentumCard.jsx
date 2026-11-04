@@ -14,7 +14,7 @@ import { MomentumChip, BillStageChip } from './chips';
 
 export function PolicyMomentumCard({
   title = 'Policy momentum by sector',
-  intro = 'Sectors seeing rising legislative activity in Congress, weighted by how far each bill has advanced. Informational only — not investment advice.',
+  intro = 'Sectors seeing rising legislative activity in Congress, weighted by how far each bill has advanced. Informational only, not investment advice.',
   windowDays = 90,
   limit = 6,
 }) {
@@ -54,7 +54,7 @@ export function PolicyMomentumCard({
         <p className="congress-surface-empty">Loading legislative momentum…</p>
       ) : !top.length ? (
         <p className="congress-surface-empty">
-          No legislative momentum to show yet — sectors will appear here as tracked bills advance
+          No legislative momentum to show yet, sectors will appear here as tracked bills advance
           through Congress.
         </p>
       ) : (

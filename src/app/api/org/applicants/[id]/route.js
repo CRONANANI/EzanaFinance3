@@ -50,7 +50,7 @@ export const PATCH = withApiGuard(
       // row is actually created — never a bare stage flip.
       if (targetStage === 'accepted' && !applicant.provisioned_member_id) {
         return NextResponse.json(
-          { error: 'Use POST /provision to accept — it creates the member row.' },
+          { error: 'Use POST /provision to accept, it creates the member row.' },
           { status: 400 },
         );
       }

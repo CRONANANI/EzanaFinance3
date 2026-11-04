@@ -36,7 +36,7 @@ export function AchievementCard({ achievement }) {
   return (
     <div
       role="article"
-      aria-label={`${achievement.name} — ${earned ? 'earned' : inProgress ? `${Math.round((achievement.progress ?? 0) * 100)}% progress` : 'locked'}`}
+      aria-label={`${achievement.name} · ${earned ? 'earned' : inProgress ? `${Math.round((achievement.progress ?? 0) * 100)}% progress` : 'locked'}`}
       style={{
         background: surface,
         border: `1px solid ${page.border}`,

@@ -17,7 +17,7 @@ export const GET = withApiGuard(
         return NextResponse.json(
           {
             error:
-              'Invalid profile link. Open a member from search or the leaderboard — names without an account use placeholder links only.',
+              'Invalid profile link. Open a member from search or the leaderboard, names without an account use placeholder links only.',
           },
           { status: 400 },
         );

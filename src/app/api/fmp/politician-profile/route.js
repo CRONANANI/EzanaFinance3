@@ -128,8 +128,8 @@ function getFmpKey() {
 const BASE = 'https://financialmodelingprep.com/stable';
 
 function fmtAmount(raw) {
-  if (raw == null || raw === '') return '—';
-  return String(raw).trim() || '—';
+  if (raw == null || raw === '') return '–';
+  return String(raw).trim() || '–';
 }
 
 function isSellType(t) {
@@ -138,9 +138,9 @@ function isSellType(t) {
 }
 
 function formatTradeDate(d) {
-  if (!d) return '—';
+  if (!d) return '–';
   const dt = new Date(d);
-  if (Number.isNaN(dt.getTime())) return '—';
+  if (Number.isNaN(dt.getTime())) return '–';
   return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
@@ -231,9 +231,9 @@ export async function GET(request) {
           .slice(0, 3),
         role: 'Member of Congress',
         district: null,
-        yearsInOffice: '—',
+        yearsInOffice: '–',
         age: null,
-        committees: '—',
+        committees: '–',
         committeeUrl: 'https://www.congress.gov',
         stateFull: '',
         slug,
@@ -265,10 +265,10 @@ export async function GET(request) {
 
   const trades = rawTrades.slice(0, 50).map((t) => ({
     date: formatTradeDate(t.disclosureDate || t.transactionDate),
-    ticker: (t.symbol || t.ticker || '—').toUpperCase(),
+    ticker: (t.symbol || t.ticker || '–').toUpperCase(),
     type: isSellType(t) ? 'SELL' : 'BUY',
     amount: fmtAmount(t.amount),
-    price: '—',
+    price: '–',
   }));
 
   const holdings = buildHoldingsFromTrades(rawTrades);
@@ -307,7 +307,7 @@ export async function GET(request) {
   const ytdDollar = Math.round((totalValue * ytdPct) / 100);
 
   const topIndustry = {
-    name: holdings[0]?.ticker ? 'Mixed / Disclosed' : '—',
+    name: holdings[0]?.ticker ? 'Mixed / Disclosed' : '–',
     pct: holdings[0]?.pct ?? 0,
   };
 
@@ -339,7 +339,7 @@ export async function GET(request) {
     holdings:
       holdings.length > 0
         ? holdings
-        : [{ ticker: '—', name: 'No symbols', value: 1, pct: 100, change: 0 }],
+        : [{ ticker: '–', name: 'No symbols', value: 1, pct: 100, change: 0 }],
     trades: trades.length > 0 ? trades : [],
     filingStats: {
       avgReportingTime: avgReporting,

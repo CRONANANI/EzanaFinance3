@@ -241,12 +241,12 @@ export default function CentaurIntelligencePage() {
     setApiMessages([]);
     const welcome =
       investor.id === 'ray-dalio'
-        ? `Welcome to the boardroom. I'm DalioMind — drawing on the principles and macro frameworks from Ray Dalio's work. I want to think through long cycles, money and credit dynamics, and how empires rise and decline. I've reviewed your portfolio context. What would you like to explore?`
+        ? `Welcome to the boardroom. I'm DalioMind, drawing on the principles and macro frameworks from Ray Dalio's work. I want to think through long cycles, money and credit dynamics, and how empires rise and decline. I've reviewed your portfolio context. What would you like to explore?`
         : investor.id === 'warren-buffett'
-          ? `Welcome to the boardroom. I'm BuffettBot — channeling the value investing philosophy found throughout Warren Buffett's shareholder letters and interviews. I've reviewed your portfolio. What would you like to analyse together?`
+          ? `Welcome to the boardroom. I'm BuffettBot, channeling the value investing philosophy found throughout Warren Buffett's shareholder letters and interviews. I've reviewed your portfolio. What would you like to analyse together?`
           : investor.id === 'cathie-wood'
-            ? `Welcome to the boardroom. I'm ArkOracle — built on the disruptive innovation framework Cathie Wood is known for. I've reviewed your portfolio. Which emerging themes or positions would you like to discuss?`
-            : `Welcome to the boardroom. I'm TudorSignal — inspired by Paul Tudor Jones's macro trading discipline. I've reviewed your portfolio. What market dynamics or positions would you like to work through?`;
+            ? `Welcome to the boardroom. I'm ArkOracle, built on the disruptive innovation framework Cathie Wood is known for. I've reviewed your portfolio. Which emerging themes or positions would you like to discuss?`
+            : `Welcome to the boardroom. I'm TudorSignal, inspired by Paul Tudor Jones's macro trading discipline. I've reviewed your portfolio. What market dynamics or positions would you like to work through?`;
     setDisplayMessages([
       {
         role: 'assistant',

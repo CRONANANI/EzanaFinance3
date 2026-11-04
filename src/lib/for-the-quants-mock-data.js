@@ -74,7 +74,7 @@ export const LATEST_BACKTESTS = [
   {
     id: 'ma-cross-bt',
     strategyName: 'Moving Average Crossover',
-    period: 'Jan 2025 — Dec 2025',
+    period: 'Jan 2025: Dec 2025',
     returnPct: '+23.4%',
     sharpe: '1.82',
     maxDd: '-8.3%',
@@ -86,7 +86,7 @@ export const LATEST_BACKTESTS = [
   {
     id: 'sector-ml-bt',
     strategyName: 'Sector Rotation ML',
-    period: 'Jul 2025 — Dec 2025',
+    period: 'Jul 2025: Dec 2025',
     returnPct: '+48.3%',
     sharpe: '2.14',
     maxDd: '-12.1%',
@@ -223,7 +223,7 @@ export const STRATEGY_DETAILS = {
       { key: 'holdDays', label: 'Max hold (days)', value: 10, min: 1, max: 30, step: 1 },
     ],
     backtest: {
-      period: 'Jul 2024 — Jan 2026',
+      period: 'Jul 2024: Jan 2026',
       returnPct: '+142.3%',
       sharpe: '1.94',
       maxDd: '-6.1%',
@@ -252,7 +252,7 @@ export const STRATEGY_DETAILS = {
       },
     ],
     backtest: {
-      period: 'Jan 2025 — Jan 2026',
+      period: 'Jan 2025: Jan 2026',
       returnPct: '+89.7%',
       sharpe: '1.42',
       maxDd: '-9.4%',
@@ -274,7 +274,7 @@ export const STRATEGY_DETAILS = {
       { key: 'entryZ', label: 'Entry z-score', value: 1.8, min: 0.5, max: 3, step: 0.1 },
     ],
     backtest: {
-      period: 'Mar 2024 — Jan 2026',
+      period: 'Mar 2024: Jan 2026',
       returnPct: '+67.2%',
       sharpe: '1.28',
       maxDd: '-7.2%',
@@ -296,7 +296,7 @@ export const STRATEGY_DETAILS = {
       { key: 'trailPct', label: 'Trail stop %', value: 4.0, min: 1, max: 10, step: 0.5 },
     ],
     backtest: {
-      period: 'Jun 2024 — Jan 2026',
+      period: 'Jun 2024: Jan 2026',
       returnPct: '+54.8%',
       sharpe: '1.15',
       maxDd: '-11.0%',
@@ -318,7 +318,7 @@ export const STRATEGY_DETAILS = {
       { key: 'topN', label: 'Top sectors', value: 3, min: 1, max: 5, step: 1 },
     ],
     backtest: {
-      period: 'Jan 2024 — Jan 2026',
+      period: 'Jan 2024: Jan 2026',
       returnPct: '+48.3%',
       sharpe: '1.08',
       maxDd: '-8.9%',
@@ -632,7 +632,7 @@ export const EXPLAINER_TRADES = [
         condition: 'Congress member buys stock',
         detail: 'Rep. Pelosi disclosed NVDA purchase ($500K–$1M) on 2026-01-14',
       },
-      { condition: 'RSI below 30', detail: 'RSI(14) was 28.4 — oversold signal confirmed' },
+      { condition: 'RSI below 30', detail: 'RSI(14) was 28.4, oversold signal confirmed' },
     ],
     outcome: { exitDate: '2026-02-14', exitPrice: '$168.20', pnl: '+18.0%', holdDays: 30 },
   },
@@ -659,11 +659,11 @@ export const EXPLAINER_TRADES = [
     reasons: [
       {
         condition: 'Volume spike (vs 20d avg)',
-        detail: 'Volume was 3.2× the 20-day average — institutional accumulation signal',
+        detail: 'Volume was 3.2× the 20-day average, institutional accumulation signal',
       },
       {
         condition: 'Price above SMA(50)',
-        detail: 'Price $510 vs SMA(50) $485 — uptrend confirmed',
+        detail: 'Price $510 vs SMA(50) $485, uptrend confirmed',
       },
     ],
     outcome: { exitDate: null, exitPrice: null, pnl: 'Open', holdDays: null },

@@ -86,13 +86,13 @@ export const POST = withApiGuard(
             if (v.max != null && positionCount > Number(v.max)) {
               status = 'bad';
               detail = `${positionCount} positions exceed the ${v.max} max.`;
-            } else detail = `${positionCount} of ${v.max ?? '—'} positions.`;
+            } else detail = `${positionCount} of ${v.max ?? '–'} positions.`;
             break;
           case 'min_positions':
             if (v.min != null && positionCount < Number(v.min)) {
               status = 'bad';
               detail = `${positionCount} positions below the ${v.min} minimum.`;
-            } else detail = `${positionCount} positions (min ${v.min ?? '—'}).`;
+            } else detail = `${positionCount} positions (min ${v.min ?? '–'}).`;
             break;
           case 'prohibited_ticker':
             if (
@@ -103,13 +103,13 @@ export const POST = withApiGuard(
             ) {
               status = 'bad';
               detail = `Currently holding prohibited ${v.ticker}.`;
-            } else detail = `${v.ticker || '—'} not held.`;
+            } else detail = `${v.ticker || '–'} not held.`;
             break;
           case 'prohibited_sector':
             if (v.sector && positions.some((x) => x.sector === v.sector)) {
               status = 'bad';
               detail = `Holding in prohibited ${v.sector}.`;
-            } else detail = `No ${v.sector || '—'} exposure.`;
+            } else detail = `No ${v.sector || '–'} exposure.`;
             break;
           default:
             detail = 'Enforced at trade time.';

@@ -249,7 +249,7 @@ export default function ContractsExplorer({ coverage = null, onOpenQuickView }) 
                   <td>{r.agency}</td>
                   <td className="gcx-mono">{r.ticker}</td>
                   <td className="gcx-exp-num gcx-mono">{r.amount}</td>
-                  <td className="gcx-mono">{r.fiscalYear ? `FY${r.fiscalYear}` : '—'}</td>
+                  <td className="gcx-mono">{r.fiscalYear ? `FY${r.fiscalYear}` : '–'}</td>
                   <td>{r.date}</td>
                 </tr>
               ))

@@ -128,10 +128,10 @@ export const DATASET_TAXONOMY = [
       {
         label: 'Whale Moves', // composite-scored 13F changes + 13D/13G stakes
         description:
-          "Institutional and activist bets ranked by conviction — position as a share of the filer's own book, newness, and concentration — not raw size",
+          "Institutional and activist bets ranked by conviction, position as a share of the filer's own book, newness, and concentration, not raw size",
         href: '/datasets/whale-moves',
         live: true,
-        source: 'SEC EDGAR — 13F / 13D/13G (Ezana composite score)',
+        source: 'SEC EDGAR: 13F / 13D/13G (Ezana composite score)',
         sourceType: 'gov',
       },
       {
@@ -198,7 +198,7 @@ export const DATASET_TAXONOMY = [
     corner: 'CONSUMER WHISPERS',
     tagline: 'Catch signals from shifts in consumer behaviour',
     blurb:
-      'Alternative demand signals — search interest, web traffic, app installs, and card-spend trends. On the roadmap.',
+      'Alternative demand signals, search interest, web traffic, app installs, and card-spend trends. On the roadmap.',
     items: [
       // the old nav "Alternative Signals" bucket folds into these orbital sources
       {
@@ -361,7 +361,7 @@ export const DATASET_TAXONOMY = [
     corner: 'REGULATORY WINDS',
     tagline: 'Anticipate regulatory and legal catalysts before they hit',
     blurb:
-      'Legal and policy catalysts — legislation tracking today, with litigation, enforcement, and agency rulings on the roadmap.',
+      'Legal and policy catalysts, legislation tracking today, with litigation, enforcement, and agency rulings on the roadmap.',
     items: [
       {
         label: 'New Laws & Policy Legislation', // Legislation Search page is live

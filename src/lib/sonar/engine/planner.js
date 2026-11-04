@@ -12,6 +12,7 @@
  * Pure. Unit-tested in scripts/check-sonar-engine.mjs.
  */
 import { SOURCES, DEFAULT_CONFIG, weightOf } from './domains';
+import { topicForText } from '@/lib/lobbying/topics';
 
 /* Dataset entitlement each gated source needs (entitlements.js ids). */
 export const SOURCE_DATASET = {
@@ -74,6 +75,7 @@ function paramsFor(source, resolution, spec) {
       return {
         issueBuckets: issueBucketsFor(spec, r),
         text: issueTextFor(spec),
+        topic: topicForText(spec.rawQuery)?.key || null,
         years: yearsFor(spec),
       };
     case 'sanctions':
@@ -120,26 +122,10 @@ export function issueBucketsFor(spec, resolution) {
   return out;
 }
 
-/* A topic narrower than an LDA issue area, searched in the filings' specific
-   issue descriptions (lobbying_filings.specific_issues) when they exist. */
-const ISSUE_TEXT = [
-  [
-    /\b(ai|artificial intelligence|machine learning|generative)\b/i,
-    '"artificial intelligence" OR "machine learning" OR "generative AI" OR AI',
-  ],
-  [/\b(semiconductors?|chips?|chips act)\b/i, 'semiconductor OR semiconductors OR "CHIPS Act"'],
-  [
-    /\b(crypto\w*|digital assets?|stablecoins?|blockchain)\b/i,
-    'cryptocurrency OR "digital asset" OR "digital assets" OR stablecoin OR blockchain',
-  ],
-  [
-    /\b(tiktok|social media|online safety|kids online)\b/i,
-    '"social media" OR "online safety" OR TikTok',
-  ],
-];
+/* A topic narrower than an LDA issue area (src/lib/lobbying/topics.js),
+   searched in the filings' specific issue text once its ingest is complete. */
 export function issueTextFor(spec) {
-  const hit = ISSUE_TEXT.find(([re]) => re.test(spec.rawQuery || ''));
-  return hit ? hit[1] : null;
+  return topicForText(spec.rawQuery)?.tsquery || null;
 }
 
 function yearsFor(spec) {

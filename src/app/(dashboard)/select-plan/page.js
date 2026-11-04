@@ -137,7 +137,7 @@ function SelectPlanContent() {
           typeof data.error === 'string' &&
           data.error.includes('configuration')
         ) {
-          setCheckoutError('Billing setup error — please contact support.');
+          setCheckoutError('Billing setup error, please contact support.');
           return;
         }
         setCheckoutError(data.error);

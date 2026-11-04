@@ -115,7 +115,7 @@ export const COURSES = {
         lessons: [
           { id: 'opt-1-1', title: 'What Are Options?', duration: '20:00', type: 'video', videoUrl: null, content: 'Understand calls, puts, strike prices, expiration dates, premiums, and the basic mechanics of options contracts.' },
           { id: 'opt-1-2', title: 'Intrinsic vs Extrinsic Value', duration: '18:00', type: 'video', videoUrl: null, content: 'Break down what makes up an option\'s price and why time decay matters.' },
-          { id: 'opt-1-3', title: 'The Greeks Explained', duration: '32:00', type: 'video', videoUrl: null, content: 'Delta, Gamma, Theta, Vega, and Rho — what each Greek measures and how they affect your P&L.' },
+          { id: 'opt-1-3', title: 'The Greeks Explained', duration: '32:00', type: 'video', videoUrl: null, content: 'Delta, Gamma, Theta, Vega, and Rho, what each Greek measures and how they affect your P&L.' },
           { id: 'opt-1-4', title: 'Module 1 Quiz', duration: '10:00', type: 'quiz', questions: [
             { q: 'A call option gives the holder the right to:', options: ['Sell a stock at a set price', 'Buy a stock at a set price', 'Short sell a stock', 'Lend money'], answer: 1 },
           ]},
@@ -137,7 +137,7 @@ export const COURSES = {
         id: 'opt-3',
         title: 'Spread Strategies',
         lessons: [
-          { id: 'opt-3-1', title: 'Vertical Spreads', duration: '28:00', type: 'video', videoUrl: null, content: 'Bull call spreads, bear put spreads — define your risk and reward with two-leg strategies.' },
+          { id: 'opt-3-1', title: 'Vertical Spreads', duration: '28:00', type: 'video', videoUrl: null, content: 'Bull call spreads, bear put spreads, define your risk and reward with two-leg strategies.' },
           { id: 'opt-3-2', title: 'Iron Condors', duration: '30:00', type: 'video', videoUrl: null, content: 'Profit from low-volatility environments with this 4-leg neutral strategy.' },
           { id: 'opt-3-3', title: 'Butterfly Spreads', duration: '25:00', type: 'video', videoUrl: null, content: 'Advanced 3-strike strategy for precise price targeting with limited risk.' },
           { id: 'opt-3-4', title: 'Module 3 Quiz', duration: '10:00', type: 'quiz', questions: [

@@ -5,6 +5,7 @@ import { fetchAV, getAlphaVantageApiKey } from '@/lib/alpha-vantage';
 import { enforceAiRateLimit, reserveGlobalAiCall } from '@/lib/ai-rate-limit';
 import { HAIKU_MODEL } from '@/lib/sonar/llm-providers';
 
+import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -186,7 +187,7 @@ async function enrichEvent(ev) {
   return { id, ...value };
 }
 
-export const POST = withApiGuard(
+const POST_HANDLER = withApiGuard(
   async (request, user) => {
     /* F-07: signed-in only (the Schedule band lives on the dashboard home),
        per-user minute/day caps, plus the global daily budget per model call. */
@@ -217,3 +218,6 @@ export const POST = withApiGuard(
   },
   { requireAuth: true },
 );
+
+/* No em dashes in anything this route returns (src/lib/text/em-dash.js). */
+export const POST = withNoEmDash(POST_HANDLER);

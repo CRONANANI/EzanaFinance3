@@ -39,7 +39,7 @@ export const SONAR_DATASETS = {
   'org-internal': {
     id: 'org-internal',
     label: 'Your council (internal)',
-    source: 'Org — members only',
+    source: 'Org, members only',
   },
   'partner-analytics': {
     id: 'partner-analytics',

@@ -268,10 +268,10 @@ function AwardBody({ award }) {
 
 /** Split the leaderboard `meta` ("BA · Air Force" or "Department of Defense"). */
 function parseMeta(meta) {
-  if (!meta) return ['—', '—'];
+  if (!meta) return ['–', '–'];
   const parts = String(meta).split(' · ');
   if (parts.length >= 2) return [parts[0], parts.slice(1).join(' · ')];
-  return ['—', meta];
+  return ['–', meta];
 }
 
 function RecipientBody({ item, onOpenAward }) {
@@ -321,8 +321,8 @@ function RecipientBody({ item, onOpenAward }) {
       <section className="mkt-award-section">
         <h3 className="mkt-award-section-title">Key facts</h3>
         <dl className="mkt-award-facts">
-          <Fact label="Total awarded this FY" value={value || '—'} mono />
-          <Fact label="Ticker" value={ticker} mono={ticker !== '—'} />
+          <Fact label="Total awarded this FY" value={value || '–'} mono />
+          <Fact label="Ticker" value={ticker} mono={ticker !== '–'} />
           <Fact label="Primary awarding agency" value={agency} />
         </dl>
       </section>
@@ -344,7 +344,7 @@ function RecipientBody({ item, onOpenAward }) {
                   className="mkt-award-mod mkt-award-mod--btn"
                   onClick={() => onOpenAward?.({ awardId: row.awardId, recipient: row.recipient })}
                   disabled={!row.awardId}
-                  aria-label={`Open award details — ${row.agency}, ${row.amount}`}
+                  aria-label={`Open award details: ${row.agency}, ${row.amount}`}
                 >
                   <span className="mkt-award-mod-main">
                     <span className="mkt-ds-mono">{row.date}</span>

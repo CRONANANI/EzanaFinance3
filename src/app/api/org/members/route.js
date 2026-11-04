@@ -118,7 +118,7 @@ export const PATCH = withApiGuard(
         .eq('is_active', true);
       if ((count ?? 0) <= 1) {
         return NextResponse.json(
-          { error: 'This is the last active executive — assign another executive first.' },
+          { error: 'This is the last active executive, assign another executive first.' },
           { status: 409 },
         );
       }

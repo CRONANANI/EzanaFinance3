@@ -123,7 +123,7 @@ export default function ResearchCopilotPage() {
         result.empty ? (
           <div className="rc-empty">
             Ezana&apos;s corpora don&apos;t cover that yet. Try naming a sector, ticker, company, or
-            person — or broaden the question.
+            person, or broaden the question.
           </div>
         ) : (
           <>

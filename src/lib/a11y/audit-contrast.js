@@ -128,7 +128,7 @@ export function auditContrast(scopeSelector = '.er-page') {
     for (const f of failed) {
       // eslint-disable-next-line no-console
       console.warn(
-        `${f.ratio}:1 (needs ${f.threshold}:1) — "${f.text}"  fg=${f.fg}  bg=${f.bg}`,
+        `${f.ratio}:1 (needs ${f.threshold}:1), "${f.text}"  fg=${f.fg}  bg=${f.bg}`,
         f.el,
       );
     }
@@ -136,7 +136,7 @@ export function auditContrast(scopeSelector = '.er-page') {
     console.groupEnd();
   } else {
     // eslint-disable-next-line no-console
-    console.info(`[contrast] ${scopeSelector} — ${checked} element(s) pass WCAG AA`);
+    console.info(`[contrast] ${scopeSelector} · ${checked} element(s) pass WCAG AA`);
   }
 
   return { checked, failed };

@@ -6,6 +6,7 @@ import { sanitizeAIOutput } from '@/lib/sanitize';
 import { OBSIDIAN_SYSTEM_PROMPT, buildObsidianUserPrompt } from '@/lib/ai/obsidian-prompt';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
+import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /** Reuses ANTHROPIC_API_KEY (same as /api/ai-stock-analysis). */
 export const dynamic = 'force-dynamic';
 
@@ -70,7 +71,7 @@ async function priceTickers(symbols) {
     .sort((a, b) => b.changePct - a.changePct);
 }
 
-export async function POST(request) {
+async function POST_HANDLER(request) {
   try {
     const supabase = getUserClient();
     const {
@@ -133,3 +134,6 @@ export async function POST(request) {
     );
   }
 }
+
+/* No em dashes in anything this route returns (src/lib/text/em-dash.js). */
+export const POST = withNoEmDash(POST_HANDLER);

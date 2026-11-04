@@ -227,7 +227,7 @@ export function EchoWallTimeline({
           <strong>
             {plaques[selected].year} · {plaques[selected].label}
           </strong>{' '}
-          — {plaques[selected].detail}
+          · {plaques[selected].detail}
         </div>
       )}
     </EchoFigureShell>

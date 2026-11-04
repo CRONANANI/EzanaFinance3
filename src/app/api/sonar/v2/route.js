@@ -20,6 +20,7 @@ import { getExemplars } from '@/lib/sonar/exemplars';
 import { composeBriefing } from '@/lib/sonar/composer';
 import { reservePing, completePing, failPing } from '@/lib/sonar/quota';
 
+import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /**
  * POST /api/sonar/v2 — template-driven Sonar briefings
  * (sonar-templates-spec.md). Body: { query, parentPingId? }.
@@ -344,7 +345,7 @@ async function handlePing(request, user, ping) {
 
 /* The reservation made inside handlePing is released if the ping fails
    (throws or answers with an error), so a failed ping is not counted. */
-export const POST = withApiGuard(
+const POST_HANDLER = withApiGuard(
   async (request, user) => {
     const ping = { reservation: null };
     try {
@@ -360,3 +361,6 @@ export const POST = withApiGuard(
   },
   { strict: true },
 );
+
+/* No em dashes in anything this route returns (src/lib/text/em-dash.js). */
+export const POST = withNoEmDash(POST_HANDLER);

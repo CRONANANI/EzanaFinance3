@@ -21,5 +21,5 @@ export function requireAdminAccess(request, user) {
   if (adminOk || cronOk) return null;
   if (user?.app_metadata?.role === 'admin') return null;
   if (isAdminUser(user)) return null;
-  return NextResponse.json({ error: 'Forbidden — admin access required' }, { status: 403 });
+  return NextResponse.json({ error: 'Forbidden, admin access required' }, { status: 403 });
 }

@@ -20,7 +20,7 @@ function BonusQuest({ quest }) {
   );
 }
 
-export function DailyQuest({ primary, bonus = [], resetsInLabel = '—' }) {
+export function DailyQuest({ primary, bonus = [], resetsInLabel = '–' }) {
   const course = primary?.course_id ? getCourseById(primary.course_id) : null;
   const trackLabel = course ? TRACKS.find((t) => t.id === course.track)?.shortLabel : null;
 

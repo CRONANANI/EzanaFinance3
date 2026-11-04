@@ -22,7 +22,7 @@ const RANGES = ['1W', '1M', '3M', 'YTD'];
 function PerfTooltip({ active, payload }) {
   if (!active || !payload?.length) return null;
   const row = payload[0].payload;
-  const fmt = (v) => (v == null ? '—' : `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`);
+  const fmt = (v) => (v == null ? '–' : `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`);
   return (
     <div className="perf-tooltip">
       <div className="perf-tooltip-date">

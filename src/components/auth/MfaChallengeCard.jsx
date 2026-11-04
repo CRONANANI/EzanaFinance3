@@ -96,7 +96,7 @@ export default function MfaChallengeCard({ redirectTo = '/home' }) {
         window.location.assign(dest);
       } catch (err) {
         if (err?.name === 'AbortError') {
-          setError('Verifying took too long — please check your connection and try again.');
+          setError('Verifying took too long, please check your connection and try again.');
         } else {
           setError('Something went wrong. Please try again.');
         }

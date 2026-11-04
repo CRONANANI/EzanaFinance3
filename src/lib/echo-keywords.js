@@ -70,7 +70,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      "When the article describes Standard Oil being broken up in 1911 into 34 companies — Exxon, Chevron, Mobil, Amoco — that's antitrust law in action. The same legal framework is now being applied to today's tech giants.",
+      "When the article describes Standard Oil being broken up in 1911 into 34 companies, Exxon, Chevron, Mobil, Amoco, that's antitrust law in action. The same legal framework is now being applied to today's tech giants.",
     courseId: 'stocks-advanced-7',
     courseTitle: 'Macroeconomics for Traders',
   },
@@ -83,7 +83,7 @@ export const KEYWORDS = {
     id: 'producer-price-index',
     term: 'Producer Price Index (PPI)',
     definition:
-      'The PPI measures the average change over time in selling prices received by domestic producers. Unlike CPI (which tracks consumer prices), PPI captures price movements at the wholesale/factory level — before goods reach retail shelves.',
+      'The PPI measures the average change over time in selling prices received by domestic producers. Unlike CPI (which tracks consumer prices), PPI captures price movements at the wholesale/factory level, before goods reach retail shelves.',
     template: 'comparison',
     templateData: {
       title: 'PPI vs CPI',
@@ -96,7 +96,7 @@ export const KEYWORDS = {
         { label: 'CPI', cells: ['Prices paid by consumers', 'Fed policy, wage negotiations'] },
       ],
       footnote:
-        'Rising PPI often leads CPI — factory price increases eventually pass through to consumers.',
+        'Rising PPI often leads CPI, factory price increases eventually pass through to consumers.',
     },
     realWorld:
       "When the PPI for fiber optic cable rises, it signals that demand is outrunning supply at the factory level. Cable installers and data center operators will soon pay more, which flows into Corning's revenue and margins.",
@@ -108,7 +108,7 @@ export const KEYWORDS = {
     id: 'compound-annual-growth-rate',
     term: 'CAGR (Compound Annual Growth Rate)',
     definition:
-      'CAGR measures the mean annual growth rate of an investment or market over a specified time period longer than one year. It smooths out volatility to show a steady trajectory — useful for comparing growth across different time horizons.',
+      'CAGR measures the mean annual growth rate of an investment or market over a specified time period longer than one year. It smooths out volatility to show a steady trajectory, useful for comparing growth across different time horizons.',
     template: 'formula',
     templateData: {
       formula: 'CAGR = (End Value / Start Value)^(1/n) – 1',
@@ -139,7 +139,7 @@ export const KEYWORDS = {
       footnote: "Corning's MCF reduces cable count by 75% in data center deployments.",
     },
     realWorld:
-      "When a data center needs to connect 100,000 GPU racks, the difference between 1-core and 4-core fiber is the difference between 200,000 cable runs and 50,000. That's not just cost savings — it's physical space savings in conduits and trays.",
+      "When a data center needs to connect 100,000 GPU racks, the difference between 1-core and 4-core fiber is the difference between 200,000 cable runs and 50,000. That's not just cost savings, it's physical space savings in conduits and trays.",
     courseId: 'tech-fundamentals-6',
     courseTitle: 'Fiber Optic Technology Basics',
   },
@@ -148,7 +148,7 @@ export const KEYWORDS = {
     id: 'hyperscale',
     term: 'Hyperscale',
     definition:
-      'Refers to the massive scale at which cloud providers (Meta, Amazon, Microsoft, Google) build and operate infrastructure. Hyperscale data centers have 100,000+ servers and are designed for horizontal scaling — adding capacity by adding more identical units.',
+      'Refers to the massive scale at which cloud providers (Meta, Amazon, Microsoft, Google) build and operate infrastructure. Hyperscale data centers have 100,000+ servers and are designed for horizontal scaling, adding capacity by adding more identical units.',
     template: 'comparison',
     templateData: {
       title: 'Hyperscale vs enterprise data centers',
@@ -193,7 +193,7 @@ export const KEYWORDS = {
     id: 'margin-of-safety',
     term: 'Margin of Safety',
     definition:
-      'A principle from Benjamin Graham: only buy a stock when its market price is significantly below your estimate of intrinsic value. The gap between price and value is your "margin of safety" — it protects you if your analysis is wrong.',
+      'A principle from Benjamin Graham: only buy a stock when its market price is significantly below your estimate of intrinsic value. The gap between price and value is your "margin of safety", it protects you if your analysis is wrong.',
     template: 'formula',
     templateData: {
       formula: 'Margin of Safety = (Intrinsic Value – Market Price) / Intrinsic Value',
@@ -203,7 +203,7 @@ export const KEYWORDS = {
       },
     },
     realWorld:
-      "Graham's Golden Fleece — the concept that protects investors from overpaying. If you estimate a stock is worth $150 but only buy at $120, you have a 20% buffer if your valuation is off. Infrastructure companies like Corning often trade with visible margins of safety during cyclical lows.",
+      "Graham's Golden Fleece, the concept that protects investors from overpaying. If you estimate a stock is worth $150 but only buy at $120, you have a 20% buffer if your valuation is off. Infrastructure companies like Corning often trade with visible margins of safety during cyclical lows.",
     courseId: 'valuation-101-1',
     courseTitle: 'Value Investing Foundations',
   },
@@ -216,9 +216,9 @@ export const KEYWORDS = {
     template: 'timeline',
     templateData: {
       events: [
-        { year: '1995', label: 'Netscape IPO — internet mania begins' },
+        { year: '1995', label: 'Netscape IPO, internet mania begins' },
         { year: '1999', label: 'NASDAQ peaks above 5,000' },
-        { year: '2000', label: 'Bubble bursts — NASDAQ crashes 78%' },
+        { year: '2000', label: 'Bubble bursts: NASDAQ crashes 78%' },
         { year: '2001–2003', label: 'Fiber optic overcapacity, Corning stock drops 99%' },
         { year: '2017–present', label: '5G + AI drive fiber demand recovery' },
       ],
@@ -254,7 +254,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      'When tensions rise between Iran and the US, oil traders immediately price in "Hormuz risk" — the possibility that Iran could mine, blockade, or disrupt shipping through the strait. Even a partial disruption can add $10–20/barrel to crude prices.',
+      'When tensions rise between Iran and the US, oil traders immediately price in "Hormuz risk", the possibility that Iran could mine, blockade, or disrupt shipping through the strait. Even a partial disruption can add $10–20/barrel to crude prices.',
     courseId: 'geopolitics-101-1',
     courseTitle: 'Geopolitical Risk in Markets',
   },
@@ -284,13 +284,13 @@ export const KEYWORDS = {
     id: 'strategic-reserves',
     term: 'Strategic Petroleum Reserve (SPR)',
     definition:
-      "Government-held stockpiles of crude oil maintained for emergency supply disruptions. The US SPR is the world's largest at ~370M barrels (down from 700M+ after drawdowns in 2022). The SPR acts as a buffer — releasing barrels can temporarily moderate price spikes.",
+      "Government-held stockpiles of crude oil maintained for emergency supply disruptions. The US SPR is the world's largest at ~370M barrels (down from 700M+ after drawdowns in 2022). The SPR acts as a buffer, releasing barrels can temporarily moderate price spikes.",
     template: 'timeline',
     templateData: {
       events: [
         { year: '1975', label: 'US SPR created after 1973 oil embargo' },
         { year: '2011', label: '30M barrel release during Libya conflict' },
-        { year: '2022', label: '180M barrel release (largest ever) — Ukraine war' },
+        { year: '2022', label: '180M barrel release (largest ever), Ukraine war' },
         { year: '2024–26', label: 'Partial refill at ~$70–80/barrel' },
       ],
     },
@@ -304,7 +304,7 @@ export const KEYWORDS = {
     id: 'backwardation',
     term: 'Backwardation',
     definition:
-      'A futures curve shape where near-term contracts trade at a higher price than longer-dated ones. It signals that the market wants supply NOW — buyers are willing to pay a premium for immediate delivery. Opposite of contango.',
+      'A futures curve shape where near-term contracts trade at a higher price than longer-dated ones. It signals that the market wants supply NOW, buyers are willing to pay a premium for immediate delivery. Opposite of contango.',
     template: 'comparison',
     templateData: {
       title: 'Backwardation vs Contango',
@@ -314,7 +314,7 @@ export const KEYWORDS = {
         { label: 'Contango', cells: ['Near < Far', 'Ample supply, storage costs priced in'] },
       ],
       footnote:
-        'Oil markets shifted into steep backwardation during the Iran conflict — a clear supply-fear signal.',
+        'Oil markets shifted into steep backwardation during the Iran conflict, a clear supply-fear signal.',
     },
     realWorld:
       'When oil is in backwardation, refiners and airlines are scrambling for barrels today, not next month. For investors, backwardation in commodity futures is one of the strongest signals that a supply disruption is real, not just media noise.',
@@ -338,7 +338,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      'Tungsten prices surged 557% since the Iran conflict began — the largest gain of any commodity tracked. Military demand for ammunition and armor-piercing rounds, combined with China restricting exports as geopolitical leverage, created a perfect supply squeeze.',
+      'Tungsten prices surged 557% since the Iran conflict began, the largest gain of any commodity tracked. Military demand for ammunition and armor-piercing rounds, combined with China restricting exports as geopolitical leverage, created a perfect supply squeeze.',
     courseId: 'commodities-101-5',
     courseTitle: 'Strategic Minerals & Defense',
   },
@@ -347,7 +347,7 @@ export const KEYWORDS = {
     id: 'fertilizer-market',
     term: 'Fertilizer Markets',
     definition:
-      'The global market for nitrogen, phosphorus, and potassium (NPK) compounds used in agriculture. Natural gas is the primary feedstock for nitrogen fertilizers. When energy prices spike (oil, gas), fertilizer costs follow — directly impacting food prices worldwide.',
+      'The global market for nitrogen, phosphorus, and potassium (NPK) compounds used in agriculture. Natural gas is the primary feedstock for nitrogen fertilizers. When energy prices spike (oil, gas), fertilizer costs follow, directly impacting food prices worldwide.',
     template: 'schema',
     templateData: {
       title: 'Energy → fertilizer → food price chain',
@@ -361,7 +361,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      'The Iran conflict disrupted Middle East energy flows, pushing natural gas prices higher. Since natural gas is ~70–80% of the cost of producing ammonia (the base for nitrogen fertilizers), fertilizer prices surged ~75% — directly threatening food security in import-dependent nations.',
+      'The Iran conflict disrupted Middle East energy flows, pushing natural gas prices higher. Since natural gas is ~70–80% of the cost of producing ammonia (the base for nitrogen fertilizers), fertilizer prices surged ~75%, directly threatening food security in import-dependent nations.',
     courseId: 'commodities-101-6',
     courseTitle: 'Agricultural Commodities',
   },
@@ -396,7 +396,7 @@ export const KEYWORDS = {
     id: 'andes-virus',
     term: 'Andes Virus',
     definition:
-      'A strain of hantavirus endemic to South America, primarily carried by the long-tailed pygmy rice rat. It is the ONLY hantavirus with documented human-to-human transmission — all other strains are "dead-end infections" that pass from rodent to human but not person to person.',
+      'A strain of hantavirus endemic to South America, primarily carried by the long-tailed pygmy rice rat. It is the ONLY hantavirus with documented human-to-human transmission, all other strains are "dead-end infections" that pass from rodent to human but not person to person.',
     template: 'schema',
     templateData: {
       title: 'Why Andes virus is unique',
@@ -429,7 +429,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      'The US withdrew from WHO in January 2025. This means the US no longer receives IHR notifications through the formal cascade — it gets outbreak information on the same timeline as anyone reading the news. For the 2026 World Cup across 11 American cities, this gap in early warning capability is a tangible epidemiological risk.',
+      'The US withdrew from WHO in January 2025. This means the US no longer receives IHR notifications through the formal cascade, it gets outbreak information on the same timeline as anyone reading the news. For the 2026 World Cup across 11 American cities, this gap in early warning capability is a tangible epidemiological risk.',
     courseId: 'geopolitics-101-3',
     courseTitle: 'Global Health Governance',
   },
@@ -438,7 +438,7 @@ export const KEYWORDS = {
     id: 'nndss',
     term: 'NNDSS (National Notifiable Diseases Surveillance System)',
     definition:
-      'The CDC system that collects and publishes data on nationally notifiable infectious diseases in the United States. Physicians and labs are required by law to report certain diseases — including hantavirus — to state health departments, which relay the data to the CDC through NNDSS.',
+      'The CDC system that collects and publishes data on nationally notifiable infectious diseases in the United States. Physicians and labs are required by law to report certain diseases, including hantavirus, to state health departments, which relay the data to the CDC through NNDSS.',
     template: 'schema',
     templateData: {
       title: 'How disease surveillance flows',
@@ -474,7 +474,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      'The 1993 hantavirus discovery year — with 48 cases, the highest ever — followed a period of heavy El Niño rains in the Four Corners region. Researchers at UNM have found over 30 small mammal species in New Mexico that carry live hantavirus, beyond just the deer mouse.',
+      'The 1993 hantavirus discovery year, with 48 cases, the highest ever, followed a period of heavy El Niño rains in the Four Corners region. Researchers at UNM have found over 30 small mammal species in New Mexico that carry live hantavirus, beyond just the deer mouse.',
     courseId: 'health-101-4',
     courseTitle: 'Environmental Drivers of Disease',
   },
@@ -483,7 +483,7 @@ export const KEYWORDS = {
     id: 'four-corners-region',
     term: 'Four Corners Region',
     definition:
-      'The geographic area where Utah, Colorado, New Mexico, and Arizona meet — the only place in the US where four states share a single boundary point. This arid, rural region is the epicenter of US hantavirus cases due to the high density of deer mice in proximity to human dwellings.',
+      'The geographic area where Utah, Colorado, New Mexico, and Arizona meet, the only place in the US where four states share a single boundary point. This arid, rural region is the epicenter of US hantavirus cases due to the high density of deer mice in proximity to human dwellings.',
     template: 'comparison',
     templateData: {
       title: 'Four Corners states: hantavirus cases (1993–2023)',
@@ -497,7 +497,7 @@ export const KEYWORDS = {
       footnote: 'Combined: 390 of 864 US cases (45%) from just four states.',
     },
     realWorld:
-      'Hantavirus was originally called "Four Corners disease" before it was formally named. The Navajo Nation, which spans parts of all four states, was particularly affected in 1993. Traditional Navajo knowledge already recognized a connection between increased mouse populations and respiratory illness — long before Western medicine identified the virus.',
+      'Hantavirus was originally called "Four Corners disease" before it was formally named. The Navajo Nation, which spans parts of all four states, was particularly affected in 1993. Traditional Navajo knowledge already recognized a connection between increased mouse populations and respiratory illness, long before Western medicine identified the virus.',
     courseId: 'health-101-5',
     courseTitle: 'Geography of Disease',
   },
@@ -506,7 +506,7 @@ export const KEYWORDS = {
     id: 'ecmo',
     term: 'ECMO (Extracorporeal Membrane Oxygenation)',
     definition:
-      'A life-support machine that pumps blood outside the body through an artificial lung (oxygenator) and back in. Used when the lungs are too damaged to oxygenate blood on their own. In severe hantavirus cases, ECMO can keep patients alive while their lungs recover — but it requires specialized ICU equipment and trained perfusionists.',
+      'A life-support machine that pumps blood outside the body through an artificial lung (oxygenator) and back in. Used when the lungs are too damaged to oxygenate blood on their own. In severe hantavirus cases, ECMO can keep patients alive while their lungs recover, but it requires specialized ICU equipment and trained perfusionists.',
     template: 'schema',
     templateData: {
       title: 'How ECMO works',
@@ -519,7 +519,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      'ECMO machines cost $100K-$250K each and require 24/7 specialist staffing. Most rural hospitals in the Four Corners region — where hantavirus is most common — do not have ECMO capability. Patients must be airlifted to urban tertiary care centers, adding critical delay.',
+      'ECMO machines cost $100K-$250K each and require 24/7 specialist staffing. Most rural hospitals in the Four Corners region, where hantavirus is most common, do not have ECMO capability. Patients must be airlifted to urban tertiary care centers, adding critical delay.',
     courseId: 'health-101-8',
     courseTitle: 'Critical Care Technology',
   },
@@ -543,7 +543,7 @@ export const KEYWORDS = {
         'Hantavirus is classified by NIH as a Category A priority pathogen for biodefense research.',
     },
     realWorld:
-      'In 2024, the NIH identified hantaviruses as one of several pathogen families with no effective vaccines or treatments, making them "of special concern for pandemic potential." The ReVAMPP grants fund structural biology, vaccine candidates, and antibody therapies — but progress is slow without a commercial market to incentivize pharma investment.',
+      'In 2024, the NIH identified hantaviruses as one of several pathogen families with no effective vaccines or treatments, making them "of special concern for pandemic potential." The ReVAMPP grants fund structural biology, vaccine candidates, and antibody therapies, but progress is slow without a commercial market to incentivize pharma investment.',
     courseId: 'health-101-9',
     courseTitle: 'Biodefense & Market Implications',
   },
@@ -566,7 +566,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      'On the MV Hondius, initial testing for influenza, COVID-19, and legionella all came back negative. It took two rounds of negative results before clinicians in South Africa tested for hantavirus — a rarely considered diagnosis. This diagnostic delay cost critical time. Companies like Cepheid (Danaher) and BioMérieux make multiplexed PCR platforms that could include hantavirus on respiratory panels.',
+      'On the MV Hondius, initial testing for influenza, COVID-19, and legionella all came back negative. It took two rounds of negative results before clinicians in South Africa tested for hantavirus, a rarely considered diagnosis. This diagnostic delay cost critical time. Companies like Cepheid (Danaher) and BioMérieux make multiplexed PCR platforms that could include hantavirus on respiratory panels.',
     courseId: 'health-101-10',
     courseTitle: 'Diagnostic Technology',
   },
@@ -581,13 +581,13 @@ export const KEYWORDS = {
       events: [
         { year: '2005', label: 'Current IHR adopted after SARS' },
         { year: '2009', label: 'H1N1 declared PHEIC under IHR' },
-        { year: '2020', label: 'COVID-19 PHEIC — IHR stress-tested' },
-        { year: '2025', label: 'US withdraws from WHO — exits IHR framework' },
+        { year: '2020', label: 'COVID-19 PHEIC: IHR stress-tested' },
+        { year: '2025', label: 'US withdraws from WHO, exits IHR framework' },
         { year: '2026', label: 'MV Hondius outbreak: US gets no formal IHR notification' },
       ],
     },
     realWorld:
-      'The IHR notification cascade is not a diplomatic nicety — it is the system that compresses outbreak detection-to-response timelines. Without it, the US receives the same information as anyone with an internet connection, on the same timeline. During the 2026 FIFA World Cup, this gap means American public health authorities may learn about relevant outbreaks later than countries still in the WHO system.',
+      'The IHR notification cascade is not a diplomatic nicety, it is the system that compresses outbreak detection-to-response timelines. Without it, the US receives the same information as anyone with an internet connection, on the same timeline. During the 2026 FIFA World Cup, this gap means American public health authorities may learn about relevant outbreaks later than countries still in the WHO system.',
     courseId: 'geopolitics-101-3',
     courseTitle: 'Global Health Governance',
   },
@@ -614,7 +614,7 @@ export const KEYWORDS = {
       footnote: 'Smaller node = more powerful, more efficient, and much harder to manufacture.',
     },
     realWorld:
-      'Each node shrink costs $15-20 billion in fab construction and takes 3-5 years of R&D. This is why only TSMC and Samsung can manufacture at the leading edge — the capital barrier is insurmountable for most companies.',
+      'Each node shrink costs $15-20 billion in fab construction and takes 3-5 years of R&D. This is why only TSMC and Samsung can manufacture at the leading edge, the capital barrier is insurmountable for most companies.',
     courseId: 'tech-fundamentals-8',
     courseTitle: 'Semiconductor Manufacturing',
   },
@@ -623,7 +623,7 @@ export const KEYWORDS = {
     id: 'chokepoint',
     term: 'Economic Chokepoint',
     definition:
-      "A single point in a supply chain where disruption would cascade through the entire global economy. Taiwan's chip manufacturing is the most consequential chokepoint — more concentrated than oil (multiple producers) or rare earths (substitutes exist).",
+      "A single point in a supply chain where disruption would cascade through the entire global economy. Taiwan's chip manufacturing is the most consequential chokepoint, more concentrated than oil (multiple producers) or rare earths (substitutes exist).",
     template: 'comparison',
     templateData: {
       title: 'Global economic chokepoints',
@@ -631,11 +631,11 @@ export const KEYWORDS = {
       rows: [
         {
           label: 'Taiwan (TSMC)',
-          cells: ['90% advanced chips', 'Global tech, AI, military — $600B-$1T GDP hit'],
+          cells: ['90% advanced chips', 'Global tech, AI, military, $600B-$1T GDP hit'],
         },
         {
           label: 'Strait of Hormuz',
-          cells: ['20% global oil', 'Energy prices, inflation — $200-400B GDP hit'],
+          cells: ['20% global oil', 'Energy prices, inflation, $200-400B GDP hit'],
         },
         {
           label: 'ASML (Netherlands)',
@@ -643,7 +643,7 @@ export const KEYWORDS = {
         },
       ],
       footnote:
-        'TSMC + ASML together form a two-node chokepoint — you need both to make advanced chips.',
+        'TSMC + ASML together form a two-node chokepoint, you need both to make advanced chips.',
     },
     realWorld:
       'The concentration of advanced chip manufacturing in Taiwan is more extreme than oil in the Middle East. At least 13 countries produce significant oil. Only one company produces 90%+ of advanced chips.',
@@ -677,7 +677,7 @@ export const KEYWORDS = {
     id: 'silicon-shield',
     term: 'Silicon Shield',
     definition:
-      "The geopolitical theory that Taiwan's semiconductor manufacturing dominance deters Chinese invasion — because disrupting TSMC would cause catastrophic global economic damage, compelling Taiwan's allies to intervene militarily.",
+      "The geopolitical theory that Taiwan's semiconductor manufacturing dominance deters Chinese invasion, because disrupting TSMC would cause catastrophic global economic damage, compelling Taiwan's allies to intervene militarily.",
     template: 'schema',
     templateData: {
       title: 'Silicon shield deterrence logic',
@@ -691,7 +691,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      'Former President Tsai Ing-wen explicitly named this strategy in Foreign Affairs in 2021. Critics argue the shield is weakening as the US and China build domestic chip capacity — reducing dependence on Taiwan and potentially reducing the deterrent.',
+      'Former President Tsai Ing-wen explicitly named this strategy in Foreign Affairs in 2021. Critics argue the shield is weakening as the US and China build domestic chip capacity, reducing dependence on Taiwan and potentially reducing the deterrent.',
     courseId: 'geopolitics-101-5',
     courseTitle: 'Taiwan & Semiconductor Geopolitics',
   },
@@ -723,14 +723,14 @@ export const KEYWORDS = {
     id: 'made-in-china-2025',
     term: 'Made in China 2025',
     definition:
-      "A Chinese industrial policy announced in 2015 aiming to transform China into a high-tech manufacturing superpower by 2025. Semiconductors were a key target — China aimed for 70% chip self-sufficiency by 2025 but achieved only ~33%, making it the strategy's biggest shortfall.",
+      "A Chinese industrial policy announced in 2015 aiming to transform China into a high-tech manufacturing superpower by 2025. Semiconductors were a key target, China aimed for 70% chip self-sufficiency by 2025 but achieved only ~33%, making it the strategy's biggest shortfall.",
     template: 'timeline',
     templateData: {
       events: [
-        { year: '2015', label: 'Made in China 2025 announced — 70% chip self-sufficiency target' },
+        { year: '2015', label: 'Made in China 2025 announced, 70% chip self-sufficiency target' },
         { year: '2020', label: 'US export controls block ASML EUV sales to China' },
-        { year: '2023', label: "Huawei's Mate 60 Pro uses SMIC 7nm chip — surprise breakthrough" },
-        { year: '2025', label: 'China reaches ~33% self-sufficiency — misses 70% target' },
+        { year: '2023', label: "Huawei's Mate 60 Pro uses SMIC 7nm chip, surprise breakthrough" },
+        { year: '2025', label: 'China reaches ~33% self-sufficiency, misses 70% target' },
         { year: '2026', label: 'New 80% target set for 2030 by Chinese chip executives' },
       ],
     },
@@ -744,7 +744,7 @@ export const KEYWORDS = {
     id: 'two-nanometer',
     term: '2-Nanometer Chips',
     definition:
-      "The current leading edge of semiconductor manufacturing. TSMC's 2nm (N2) process uses Gate-All-Around (GAA) transistor architecture — a fundamental redesign from FinFET transistors used since 2012. 2nm chips deliver 45% more performance at 75% less power vs 7nm.",
+      "The current leading edge of semiconductor manufacturing. TSMC's 2nm (N2) process uses Gate-All-Around (GAA) transistor architecture, a fundamental redesign from FinFET transistors used since 2012. 2nm chips deliver 45% more performance at 75% less power vs 7nm.",
     template: 'comparison',
     templateData: {
       title: '2nm vs 7nm chips',
@@ -759,7 +759,7 @@ export const KEYWORDS = {
         'Only TSMC and Samsung are attempting 2nm production. Intel targets 18A (roughly equivalent).',
     },
     realWorld:
-      'For AI training, the difference between 7nm and 2nm is roughly the difference between training a model in 6 months versus 6 weeks — same compute, fraction of the power bill. This is why every hyperscaler is competing for TSMC 2nm allocation.',
+      'For AI training, the difference between 7nm and 2nm is roughly the difference between training a model in 6 months versus 6 weeks, same compute, fraction of the power bill. This is why every hyperscaler is competing for TSMC 2nm allocation.',
     courseId: 'tech-fundamentals-8',
     courseTitle: 'Semiconductor Manufacturing',
   },
@@ -768,7 +768,7 @@ export const KEYWORDS = {
     id: 'fabless-model',
     term: 'Fabless Semiconductor Company',
     definition:
-      'A company that designs chips but does not own fabrication facilities (fabs). Instead, it outsources manufacturing to foundries like TSMC. Nvidia, AMD, Qualcomm, Apple, and Broadcom are all fabless — they design the chips that TSMC manufactures.',
+      'A company that designs chips but does not own fabrication facilities (fabs). Instead, it outsources manufacturing to foundries like TSMC. Nvidia, AMD, Qualcomm, Apple, and Broadcom are all fabless, they design the chips that TSMC manufactures.',
     template: 'comparison',
     templateData: {
       title: 'Fabless vs IDM vs Foundry',
@@ -782,10 +782,10 @@ export const KEYWORDS = {
         },
       ],
       footnote:
-        "Fabless companies capture the highest margins — Nvidia's net margin is ~52% vs Intel's negative.",
+        "Fabless companies capture the highest margins, Nvidia's net margin is ~52% vs Intel's negative.",
     },
     realWorld:
-      'The fabless model is why Nvidia can be worth $5 trillion without owning a single factory. All the manufacturing risk, capital expenditure, and yield headaches belong to TSMC. Nvidia focuses purely on design, software, and ecosystem — the highest-margin activities.',
+      'The fabless model is why Nvidia can be worth $5 trillion without owning a single factory. All the manufacturing risk, capital expenditure, and yield headaches belong to TSMC. Nvidia focuses purely on design, software, and ecosystem, the highest-margin activities.',
     courseId: 'tech-fundamentals-9',
     courseTitle: 'Semiconductor Business Models',
   },
@@ -806,7 +806,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      "Intel's struggle illustrates the IDM challenge: you must be world-class at BOTH design and manufacturing simultaneously. When Intel fell behind TSMC in manufacturing (stuck at 10nm while TSMC shipped 5nm), its entire product line suffered — because unlike Nvidia, Intel couldn't just switch to a better foundry.",
+      "Intel's struggle illustrates the IDM challenge: you must be world-class at BOTH design and manufacturing simultaneously. When Intel fell behind TSMC in manufacturing (stuck at 10nm while TSMC shipped 5nm), its entire product line suffered, because unlike Nvidia, Intel couldn't just switch to a better foundry.",
     courseId: 'tech-fundamentals-9',
     courseTitle: 'Semiconductor Business Models',
   },
@@ -820,14 +820,14 @@ export const KEYWORDS = {
     templateData: {
       events: [
         { year: '2021', label: 'Pat Gelsinger announces IDM 2.0 at Intel' },
-        { year: '2022', label: 'IFS launched — Intel accepts external foundry orders' },
+        { year: '2022', label: 'IFS launched: Intel accepts external foundry orders' },
         { year: '2024', label: 'Intel 18A process in development (comparable to 2nm)' },
         { year: '2025', label: 'CHIPS Act awards Intel $8.5B for Ohio/Arizona fabs' },
-        { year: '2026', label: 'Intel reports -$20.5B net income TTM — turnaround uncertain' },
+        { year: '2026', label: 'Intel reports -$20.5B net income TTM, turnaround uncertain' },
       ],
     },
     realWorld:
-      "IDM 2.0 is Intel's bet-the-company strategy. If it works, Intel becomes both a leading chip designer AND a TSMC competitor. If it fails, Intel may need to split or sell its foundry business. The -$20.5B net income shows the cost of this transition — Intel is spending massively on new fabs while its existing products lose market share to AMD and Nvidia.",
+      "IDM 2.0 is Intel's bet-the-company strategy. If it works, Intel becomes both a leading chip designer AND a TSMC competitor. If it fails, Intel may need to split or sell its foundry business. The -$20.5B net income shows the cost of this transition, Intel is spending massively on new fabs while its existing products lose market share to AMD and Nvidia.",
     courseId: 'tech-fundamentals-10',
     courseTitle: "Intel's Transformation",
   },
@@ -836,7 +836,7 @@ export const KEYWORDS = {
     id: 'terafab',
     term: 'Terafab',
     definition:
-      "Elon Musk's planned advanced chip fabrication facility in Texas for Tesla and SpaceX. The concept consolidates every stage of semiconductor production — design, fabrication, packaging, testing — under one roof. Estimated cost: $25 billion.",
+      "Elon Musk's planned advanced chip fabrication facility in Texas for Tesla and SpaceX. The concept consolidates every stage of semiconductor production, design, fabrication, packaging, testing, under one roof. Estimated cost: $25 billion.",
     template: 'schema',
     templateData: {
       title: 'Terafab concept: vertically integrated chip production',
@@ -876,7 +876,7 @@ export const KEYWORDS = {
         },
       ],
       footnote:
-        'Many African markets sit in the Frontier tier — high potential return, high volatility.',
+        'Many African markets sit in the Frontier tier, high potential return, high volatility.',
     },
     realWorld:
       "When the article says Africa's corporate landscape is deeper than investors realize, it's referring to opportunities in frontier markets that don't show up in standard emerging-market indices. Most global portfolios have zero frontier-market exposure.",
@@ -912,7 +912,7 @@ export const KEYWORDS = {
     id: 'extractive-industries',
     term: 'Extractive Industries',
     definition:
-      'Sectors that extract natural resources from the earth — primarily oil & gas, mining (metals and minerals), and forestry. African economies are often heavily exposed to extractives, which creates both opportunity and concentration risk.',
+      'Sectors that extract natural resources from the earth, primarily oil & gas, mining (metals and minerals), and forestry. African economies are often heavily exposed to extractives, which creates both opportunity and concentration risk.',
     template: 'schema',
     templateData: {
       title: 'African extractive concentrations',
@@ -928,7 +928,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      "Angola's 9 billion-dollar companies are almost entirely petroleum. The DRC's 4 are dominated by copper and cobalt — both critical for EV batteries. Resource concentration means these economies are highly exposed to commodity price cycles.",
+      "Angola's 9 billion-dollar companies are almost entirely petroleum. The DRC's 4 are dominated by copper and cobalt, both critical for EV batteries. Resource concentration means these economies are highly exposed to commodity price cycles.",
     courseId: 'sector-2',
     courseTitle: 'Commodities & Extractives',
   },
@@ -949,7 +949,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      "Safaricom (Kenya's flagship telecom) is one of Eastern Africa's 6 billion-dollar companies almost entirely because of M-Pesa. The platform has more users than the entire Kenyan banking system serves — a perfect example of mobile-first financial leapfrogging.",
+      "Safaricom (Kenya's flagship telecom) is one of Eastern Africa's 6 billion-dollar companies almost entirely because of M-Pesa. The platform has more users than the entire Kenyan banking system serves, a perfect example of mobile-first financial leapfrogging.",
     courseId: 'fintech-3',
     courseTitle: 'Mobile Money & Fintech in EM',
   },
@@ -981,7 +981,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      'Capital controls are a major risk for investors in many African markets. Egypt, Nigeria, and Ethiopia have all imposed restrictions on dollar conversion at various points. A 30% return in local currency can become a 0% return after FX conversion — or worse if the official rate diverges from market.',
+      'Capital controls are a major risk for investors in many African markets. Egypt, Nigeria, and Ethiopia have all imposed restrictions on dollar conversion at various points. A 30% return in local currency can become a 0% return after FX conversion, or worse if the official rate diverges from market.',
     courseId: 'risk-3',
     courseTitle: 'EM Capital Controls',
   },
@@ -1014,7 +1014,7 @@ export const KEYWORDS = {
     id: 'demographic-dividend',
     term: 'Demographic Dividend',
     definition:
-      "The economic growth that can result from a shift in a country's age structure — specifically when the working-age population grows larger relative to dependents (children + elderly). Africa has the youngest population of any continent, with 60% under age 25.",
+      "The economic growth that can result from a shift in a country's age structure, specifically when the working-age population grows larger relative to dependents (children + elderly). Africa has the youngest population of any continent, with 60% under age 25.",
     template: 'schema',
     templateData: {
       title: 'Africa demographic profile (2026)',
@@ -1035,7 +1035,7 @@ export const KEYWORDS = {
     id: 'phosphate-reserves',
     term: 'Phosphate Reserves',
     definition:
-      "Phosphate rock is a non-renewable mineral that is the primary source of phosphorus — a critical input for synthetic fertilizers. Without phosphorus, modern agricultural yields would collapse. Morocco controls roughly 70% of the world's economically extractable phosphate reserves.",
+      "Phosphate rock is a non-renewable mineral that is the primary source of phosphorus, a critical input for synthetic fertilizers. Without phosphorus, modern agricultural yields would collapse. Morocco controls roughly 70% of the world's economically extractable phosphate reserves.",
     template: 'comparison',
     templateData: {
       title: 'World phosphate reserves (USGS estimates)',
@@ -1051,7 +1051,7 @@ export const KEYWORDS = {
         'Phosphate dependence makes OCP Group (state-controlled Moroccan producer) strategically critical to global food security.',
     },
     realWorld:
-      "OCP Group is one of Morocco's most valuable companies and a key reason Morocco has 20 billion-dollar firms. As global food demand grows and finite phosphate reserves deplete, Morocco's position is structurally appreciating — similar to OPEC's position in oil.",
+      "OCP Group is one of Morocco's most valuable companies and a key reason Morocco has 20 billion-dollar firms. As global food demand grows and finite phosphate reserves deplete, Morocco's position is structurally appreciating, similar to OPEC's position in oil.",
     courseId: 'sector-3',
     courseTitle: 'Critical Minerals',
   },
@@ -1060,19 +1060,19 @@ export const KEYWORDS = {
     id: 'imf-program',
     term: 'IMF Structural Adjustment Program',
     definition:
-      'A lending arrangement where the International Monetary Fund provides financing to a country experiencing balance-of-payments problems in exchange for the country implementing specific economic reforms — typically including currency devaluation, subsidy reduction, fiscal tightening, and market liberalization.',
+      'A lending arrangement where the International Monetary Fund provides financing to a country experiencing balance-of-payments problems in exchange for the country implementing specific economic reforms, typically including currency devaluation, subsidy reduction, fiscal tightening, and market liberalization.',
     template: 'timeline',
     templateData: {
       events: [
-        { date: '1980s', label: 'Original "structural adjustment" era — controversial in Africa' },
-        { date: '2016', label: 'Egypt $12B program — floats EGP, reforms subsidies' },
+        { date: '1980s', label: 'Original "structural adjustment" era, controversial in Africa' },
+        { date: '2016', label: 'Egypt $12B program, floats EGP, reforms subsidies' },
         { date: '2019', label: 'Argentina program collapses, $57B unwinds' },
         { date: '2022', label: 'Egypt + Pakistan + Sri Lanka all back at IMF table' },
         { date: '2024', label: 'Egypt expands program to $8B addition' },
       ],
     },
     realWorld:
-      "Egypt's economic reforms since 2016 have been driven by IMF program conditions: floating the pound, slashing subsidies, raising interest rates. The short-term cost was painful for consumers but improved the operating environment for large corporates — which is why Egypt now has 33 billion-dollar companies.",
+      "Egypt's economic reforms since 2016 have been driven by IMF program conditions: floating the pound, slashing subsidies, raising interest rates. The short-term cost was painful for consumers but improved the operating environment for large corporates, which is why Egypt now has 33 billion-dollar companies.",
     courseId: 'macro-5',
     courseTitle: 'IMF & Sovereign Debt',
   },
@@ -1082,7 +1082,7 @@ export const KEYWORDS = {
     id: 'cuda',
     term: 'CUDA',
     definition:
-      "CUDA (Compute Unified Device Architecture) is NVIDIA's proprietary programming platform and API for running general-purpose computation on its GPUs. Released in 2007, CUDA has become the standard for high-performance computing — and the network effect locks in NVIDIA's market position.",
+      "CUDA (Compute Unified Device Architecture) is NVIDIA's proprietary programming platform and API for running general-purpose computation on its GPUs. Released in 2007, CUDA has become the standard for high-performance computing, and the network effect locks in NVIDIA's market position.",
     template: 'schema',
     templateData: {
       title: "CUDA's lock-in effect",
@@ -1110,7 +1110,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      "AMD's MI300X chip has performance comparable to NVIDIA's H100, but enterprise buyers still choose NVIDIA because their existing code runs on CUDA. Switching to AMD's ROCm framework requires re-engineering software — most teams won't pay that cost even for cheaper hardware.",
+      "AMD's MI300X chip has performance comparable to NVIDIA's H100, but enterprise buyers still choose NVIDIA because their existing code runs on CUDA. Switching to AMD's ROCm framework requires re-engineering software, most teams won't pay that cost even for cheaper hardware.",
     courseId: 'tech-5',
     courseTitle: 'CUDA & AI Software Stacks',
   },
@@ -1119,7 +1119,7 @@ export const KEYWORDS = {
     id: 'hyperscalers',
     term: 'Hyperscalers',
     definition:
-      "The largest cloud computing providers — primarily Amazon AWS, Microsoft Azure, Google Cloud, and Meta. They operate hundreds of data centers globally and represent the bulk of enterprise AI capex. NVIDIA's revenue is concentrated in selling GPUs to this small group of buyers.",
+      "The largest cloud computing providers, primarily Amazon AWS, Microsoft Azure, Google Cloud, and Meta. They operate hundreds of data centers globally and represent the bulk of enterprise AI capex. NVIDIA's revenue is concentrated in selling GPUs to this small group of buyers.",
     template: 'comparison',
     templateData: {
       title: 'Hyperscaler AI capex (2025-26 estimates)',
@@ -1155,7 +1155,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      "Every NVIDIA H100, B100, and GB200 is physically manufactured at TSMC in Taiwan on 4nm or 3nm process nodes. TSMC's $2.04T market cap reflects its role as the critical-path supplier for the entire AI build-out — without TSMC capacity, NVIDIA can't ship chips no matter how high demand goes.",
+      "Every NVIDIA H100, B100, and GB200 is physically manufactured at TSMC in Taiwan on 4nm or 3nm process nodes. TSMC's $2.04T market cap reflects its role as the critical-path supplier for the entire AI build-out, without TSMC capacity, NVIDIA can't ship chips no matter how high demand goes.",
     courseId: 'tech-7',
     courseTitle: 'Foundry Model & TSMC',
   },
@@ -1168,9 +1168,9 @@ export const KEYWORDS = {
     template: 'timeline',
     templateData: {
       events: [
-        { date: '2017', label: 'Volta (V100) — first datacenter Tensor Cores' },
-        { date: '2020', label: 'Ampere (A100) — early generative AI training' },
-        { date: '2022', label: 'Hopper (H100) — ChatGPT era workhorse' },
+        { date: '2017', label: 'Volta (V100), first datacenter Tensor Cores' },
+        { date: '2020', label: 'Ampere (A100), early generative AI training' },
+        { date: '2022', label: 'Hopper (H100): ChatGPT era workhorse' },
         { date: '2024', label: 'Blackwell announced at GTC 2024' },
         { date: '2026', label: 'Blackwell scale ramp + Rubin announced' },
       ],
@@ -1200,10 +1200,10 @@ export const KEYWORDS = {
         { label: 'Tesla', cells: ['~$1T', 'EVs + energy storage'] },
       ],
       footnote:
-        '6 of these 7 are exposed to AI infrastructure either as buyer or seller — NVIDIA sits at the center of the trade.',
+        '6 of these 7 are exposed to AI infrastructure either as buyer or seller, NVIDIA sits at the center of the trade.',
     },
     realWorld:
-      'When NVIDIA became the #2 most valuable asset behind only gold, it reshuffled the order INSIDE the Magnificent 7. Three years ago, Apple was the clear leader. Now NVIDIA, GOOG, and AAPL all sit above $4T — and NVIDIA is on top.',
+      'When NVIDIA became the #2 most valuable asset behind only gold, it reshuffled the order INSIDE the Magnificent 7. Three years ago, Apple was the clear leader. Now NVIDIA, GOOG, and AAPL all sit above $4T, and NVIDIA is on top.',
     courseId: 'stocks-3',
     courseTitle: 'Magnificent 7 Stocks',
   },
@@ -1212,7 +1212,7 @@ export const KEYWORDS = {
     id: 'inference-vs-training',
     term: 'AI Training vs Inference',
     definition:
-      'Two distinct workloads in AI computing. Training is the one-time (or periodic) process of building a model from data — it requires massive compute clusters running for weeks. Inference is running the trained model to answer queries — it requires less compute per request but happens billions of times per day across all users.',
+      'Two distinct workloads in AI computing. Training is the one-time (or periodic) process of building a model from data, it requires massive compute clusters running for weeks. Inference is running the trained model to answer queries, it requires less compute per request but happens billions of times per day across all users.',
     template: 'comparison',
     templateData: {
       title: 'Training vs inference characteristics',
@@ -1228,10 +1228,10 @@ export const KEYWORDS = {
         { label: 'Hardware', cells: ['NVIDIA dominant', 'NVIDIA dominant + custom ASICs'] },
       ],
       footnote:
-        'The inference workload is becoming the larger market — every enterprise needs continuous inference capacity.',
+        'The inference workload is becoming the larger market, every enterprise needs continuous inference capacity.',
     },
     realWorld:
-      "NVIDIA Blackwell's 30x inference throughput improvement over Hopper is more important than its 4x training improvement, because inference workloads are growing faster than training. Every ChatGPT query is an inference call — and there are billions per day.",
+      "NVIDIA Blackwell's 30x inference throughput improvement over Hopper is more important than its 4x training improvement, because inference workloads are growing faster than training. Every ChatGPT query is an inference call, and there are billions per day.",
     courseId: 'tech-9',
     courseTitle: 'AI Training & Inference',
   },
@@ -1240,7 +1240,7 @@ export const KEYWORDS = {
     id: 'gold-store-of-value',
     term: 'Gold as Store of Value',
     definition:
-      'Gold has functioned as a monetary asset for ~5,000 years because of its scarcity, durability, and divisibility. Roughly 215,000 tonnes have been mined globally — most of it still exists in jewelry, bullion, and central bank reserves. Gold is the asset most often bought as a hedge against currency debasement, inflation, and crisis.',
+      'Gold has functioned as a monetary asset for ~5,000 years because of its scarcity, durability, and divisibility. Roughly 215,000 tonnes have been mined globally, most of it still exists in jewelry, bullion, and central bank reserves. Gold is the asset most often bought as a hedge against currency debasement, inflation, and crisis.',
     template: 'schema',
     templateData: {
       title: "Where the world's gold sits",
@@ -1261,19 +1261,19 @@ export const KEYWORDS = {
     id: 'capex-cycle',
     term: 'AI Capex Cycle',
     definition:
-      'Capital expenditure (capex) cycles are multi-year periods of elevated industry investment that eventually peak and unwind. The current AI capex cycle began in early 2023 with the launch of ChatGPT. The market is pricing in 30%+ annual growth in hyperscaler AI spending continuing for years — any deceleration would reprice the sector aggressively.',
+      'Capital expenditure (capex) cycles are multi-year periods of elevated industry investment that eventually peak and unwind. The current AI capex cycle began in early 2023 with the launch of ChatGPT. The market is pricing in 30%+ annual growth in hyperscaler AI spending continuing for years, any deceleration would reprice the sector aggressively.',
     template: 'timeline',
     templateData: {
       events: [
-        { date: 'Nov 2022', label: 'ChatGPT launches — kicks off cycle' },
+        { date: 'Nov 2022', label: 'ChatGPT launches, kicks off cycle' },
         { date: '2023', label: 'Hyperscaler AI capex ramps from ~$130B to ~$200B' },
-        { date: '2024', label: 'Capex hits ~$220B — NVIDIA data center revenue 3x YoY' },
-        { date: '2025', label: 'Capex hits ~$300B — Blackwell ramp begins' },
-        { date: '2026 est.', label: 'Capex ~$345B+ — sustained growth or peak?' },
+        { date: '2024', label: 'Capex hits ~$220B: NVIDIA data center revenue 3x YoY' },
+        { date: '2025', label: 'Capex hits ~$300B: Blackwell ramp begins' },
+        { date: '2026 est.', label: 'Capex ~$345B+, sustained growth or peak?' },
       ],
     },
     realWorld:
-      "NVIDIA's $5T+ valuation is fundamentally a bet that hyperscalers will keep growing their AI capex at 30-50% annually. The bear case is that AI model efficiency improves faster than expected — same intelligence, less compute — causing capex growth to stall or reverse.",
+      "NVIDIA's $5T+ valuation is fundamentally a bet that hyperscalers will keep growing their AI capex at 30-50% annually. The bear case is that AI model efficiency improves faster than expected, same intelligence, less compute, causing capex growth to stall or reverse.",
     courseId: 'macro-7',
     courseTitle: 'Capex Cycles & Cyclicals',
   },
@@ -1282,7 +1282,7 @@ export const KEYWORDS = {
     id: 'sovereign-ai',
     term: 'Sovereign AI',
     definition:
-      'The push by national governments to build their own AI infrastructure — domestic data centers, locally-trained models, and indigenous compute capacity — rather than depending on US-hosted services. Sovereign AI initiatives are now active in the UK, EU, India, Japan, Saudi Arabia, UAE, Singapore, and others.',
+      'The push by national governments to build their own AI infrastructure, domestic data centers, locally-trained models, and indigenous compute capacity, rather than depending on US-hosted services. Sovereign AI initiatives are now active in the UK, EU, India, Japan, Saudi Arabia, UAE, Singapore, and others.',
     template: 'schema',
     templateData: {
       title: 'Major sovereign AI initiatives (2026)',
@@ -1294,7 +1294,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      "Sovereign AI is the underappreciated leg of NVIDIA's bull case. Hyperscaler demand is concentrated in 4-5 customers — but sovereign AI adds new buyers (national governments) whose demand has different drivers and is less correlated with US enterprise capex.",
+      "Sovereign AI is the underappreciated leg of NVIDIA's bull case. Hyperscaler demand is concentrated in 4-5 customers, but sovereign AI adds new buyers (national governments) whose demand has different drivers and is less correlated with US enterprise capex.",
     courseId: 'tech-10',
     courseTitle: 'Sovereign AI & Geopolitics',
   },
@@ -1308,15 +1308,15 @@ export const KEYWORDS = {
     template: 'timeline',
     templateData: {
       events: [
-        { year: '1790', label: 'First US government bonds issued — traded informally' },
-        { year: '1792', label: 'Buttonwood Agreement signed — 24 brokers formalize trading' },
+        { year: '1790', label: 'First US government bonds issued, traded informally' },
+        { year: '1792', label: 'Buttonwood Agreement signed: 24 brokers formalize trading' },
         { year: '1817', label: 'New York Stock & Exchange Board formed (becomes NYSE)' },
         { year: '1863', label: 'Renamed New York Stock Exchange' },
         { year: '1878', label: 'Telephones installed on NYSE trading floor' },
       ],
     },
     realWorld:
-      'The Buttonwood Agreement matters because it established the principle of organized, rule-bound securities trading. Before it, buying shares meant finding a willing seller on the street. After it, there was a centralized marketplace with standardized rules — the seed of everything the modern stock market became.',
+      'The Buttonwood Agreement matters because it established the principle of organized, rule-bound securities trading. Before it, buying shares meant finding a willing seller on the street. After it, there was a centralized marketplace with standardized rules, the seed of everything the modern stock market became.',
     courseId: 'market-history-1',
     courseTitle: 'Origins of US Capital Markets',
   },
@@ -1332,12 +1332,12 @@ export const KEYWORDS = {
         { year: '1789', label: 'Hamilton becomes first Secretary of the Treasury' },
         { year: '1790', label: 'Federal assumption of $25M in state war debts' },
         { year: '1791', label: 'First Bank of the United States chartered (20-year term)' },
-        { year: '1792', label: 'Panic of 1792 — first US financial crisis, Hamilton intervenes' },
+        { year: '1792', label: 'Panic of 1792, first US financial crisis, Hamilton intervenes' },
         { year: '1811', label: 'First Bank charter expires; Second Bank chartered 1816' },
       ],
     },
     realWorld:
-      "Hamilton's genius was recognizing that public debt, properly managed, could be a national asset. By making US bonds safe and liquid, he created the first instruments that attracted institutional capital — and the exchanges that emerged to trade them became the foundation of American capitalism.",
+      "Hamilton's genius was recognizing that public debt, properly managed, could be a national asset. By making US bonds safe and liquid, he created the first instruments that attracted institutional capital, and the exchanges that emerged to trade them became the foundation of American capitalism.",
     courseId: 'market-history-1',
     courseTitle: 'Origins of US Capital Markets',
   },
@@ -1369,7 +1369,7 @@ export const KEYWORDS = {
         'The shift from income to growth investing fundamentally changed which sectors dominated the market.',
     },
     realWorld:
-      'When the article describes energy and materials stocks paying "generous dividends" in the post-war era, it\'s describing the coupon-clipping mentality: investors held US Steel or Standard Oil for the quarterly checks, not for share price appreciation. That entire investment philosophy had to die for technology stocks — which reinvest everything — to dominate.',
+      'When the article describes energy and materials stocks paying "generous dividends" in the post-war era, it\'s describing the coupon-clipping mentality: investors held US Steel or Standard Oil for the quarterly checks, not for share price appreciation. That entire investment philosophy had to die for technology stocks, which reinvest everything, to dominate.',
     courseId: 'stocks-intermediate-5',
     courseTitle: 'Dividend Investing',
   },
@@ -1399,7 +1399,7 @@ export const KEYWORDS = {
     id: 'revenue-multiple-valuation',
     term: 'Revenue Multiple Valuation',
     definition:
-      'A valuation method that prices a company as a multiple of its annual revenue (EV/Revenue or Price/Sales), rather than earnings. It emerged in the 1990s because many high-growth technology companies had no earnings — traditional P/E ratios were undefined. Revenue multiples allowed investors to compare and price companies like Amazon, Netscape, and Yahoo that were reinvesting all revenue into growth.',
+      'A valuation method that prices a company as a multiple of its annual revenue (EV/Revenue or Price/Sales), rather than earnings. It emerged in the 1990s because many high-growth technology companies had no earnings, traditional P/E ratios were undefined. Revenue multiples allowed investors to compare and price companies like Amazon, Netscape, and Yahoo that were reinvesting all revenue into growth.',
     template: 'formula',
     templateData: {
       formula: 'EV/Revenue = Enterprise Value ÷ Annual Revenue',
@@ -1415,7 +1415,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      'When the article says the market "learned to value tech differently," this is what it means. Steel companies were valued on earnings. Software companies were valued on revenue — because earnings were deliberately zero (reinvested into growth). That conceptual leap changed which sectors could command premium valuations.',
+      'When the article says the market "learned to value tech differently," this is what it means. Steel companies were valued on earnings. Software companies were valued on revenue, because earnings were deliberately zero (reinvested into growth). That conceptual leap changed which sectors could command premium valuations.',
     courseId: 'valuation-101-2',
     courseTitle: 'Valuation Methods',
   },
@@ -1429,15 +1429,15 @@ export const KEYWORDS = {
     templateData: {
       title: 'Minsky cycle in the dot-com bubble',
       events: [
-        { year: '1995', label: 'Displacement — Netscape IPO proves internet is commercial' },
-        { year: '1997-98', label: 'Boom — venture capital floods in, IPOs multiply' },
-        { year: '1999', label: 'Euphoria — day traders, pets.com, $10T NASDAQ' },
-        { year: 'Mar 2000', label: 'Profit-taking — insiders begin selling' },
-        { year: '2001-02', label: 'Panic — NASDAQ falls 78%, $5T in value destroyed' },
+        { year: '1995', label: 'Displacement: Netscape IPO proves internet is commercial' },
+        { year: '1997-98', label: 'Boom, venture capital floods in, IPOs multiply' },
+        { year: '1999', label: 'Euphoria, day traders, pets.com, $10T NASDAQ' },
+        { year: 'Mar 2000', label: 'Profit-taking, insiders begin selling' },
+        { year: '2001-02', label: 'Panic: NASDAQ falls 78%, $5T in value destroyed' },
       ],
     },
     realWorld:
-      'The dot-com mania followed Minsky\'s pattern precisely. The "displacement" was real (the internet DID change everything), but the euphoria phase detached stock prices from any rational valuation. The crash destroyed temporary companies but left permanent infrastructure — the fiber, the data centers, the software platforms that the next era was built on.',
+      'The dot-com mania followed Minsky\'s pattern precisely. The "displacement" was real (the internet DID change everything), but the euphoria phase detached stock prices from any rational valuation. The crash destroyed temporary companies but left permanent infrastructure, the fiber, the data centers, the software platforms that the next era was built on.',
     courseId: 'market-history-2',
     courseTitle: 'Market Bubbles & Crashes',
   },
@@ -1446,7 +1446,7 @@ export const KEYWORDS = {
     id: 'glass-preform-oligopoly',
     term: 'Glass Preform Oligopoly',
     definition:
-      "The fiber optic industry's critical bottleneck: glass preforms — cylindrical rods of ultra-pure silica from which optical fiber is drawn. Only three companies (Corning, Prysmian, YOFC) control ~60% of global preform manufacturing capacity. Preform production requires proprietary vapor deposition techniques (OVD, VAD, MCVD) and 18-24 months of lead time to add capacity. This concentration gives manufacturers pricing power during demand surges.",
+      "The fiber optic industry's critical bottleneck: glass preforms, cylindrical rods of ultra-pure silica from which optical fiber is drawn. Only three companies (Corning, Prysmian, YOFC) control ~60% of global preform manufacturing capacity. Preform production requires proprietary vapor deposition techniques (OVD, VAD, MCVD) and 18-24 months of lead time to add capacity. This concentration gives manufacturers pricing power during demand surges.",
     template: 'schema',
     templateData: {
       title: 'Fiber optic preform manufacturing process',
@@ -1462,7 +1462,7 @@ export const KEYWORDS = {
           color: '#3b82f6',
         },
         {
-          label: 'Fiber drawing at 2,000°C — 1 preform = 8,000 km of fiber',
+          label: 'Fiber drawing at 2,000°C, 1 preform = 8,000 km of fiber',
           sectors: [],
           color: '#f59e0b',
         },
@@ -1470,7 +1470,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      'A single glass preform — about 1 meter long and 20 cm in diameter — yields up to 8,000 kilometers of optical fiber when drawn. The manufacturing process requires ultra-pure synthetic silica with impurities below 1 part per billion. This extreme precision is why only three companies dominate global production, and why expanding capacity takes years, not months.',
+      'A single glass preform, about 1 meter long and 20 cm in diameter, yields up to 8,000 kilometers of optical fiber when drawn. The manufacturing process requires ultra-pure synthetic silica with impurities below 1 part per billion. This extreme precision is why only three companies dominate global production, and why expanding capacity takes years, not months.',
     courseId: 'tech-fundamentals-6',
     courseTitle: 'Fiber Optic Technology Basics',
   },
@@ -1515,7 +1515,7 @@ export const KEYWORDS = {
         'AI superclusters consume 10-100× more fiber optic cable per square foot than traditional data centers.',
     },
     realWorld:
-      "The reason Corning's demand outlook is transformational — not incremental — is that AI superclusters consume fiber at 10-100× the density of traditional data centers. Every GPU rack needs multiple high-bandwidth fiber connections to every other rack. The networking bill for a single AI supercluster can exceed $500 million in fiber alone.",
+      "The reason Corning's demand outlook is transformational, not incremental, is that AI superclusters consume fiber at 10-100× the density of traditional data centers. Every GPU rack needs multiple high-bandwidth fiber connections to every other rack. The networking bill for a single AI supercluster can exceed $500 million in fiber alone.",
     courseId: 'tech-fundamentals-5',
     courseTitle: 'Understanding Cloud Infrastructure',
   },
@@ -1524,7 +1524,7 @@ export const KEYWORDS = {
     id: 'secondary-sanctions',
     term: 'Secondary Sanctions',
     definition:
-      'Penalties imposed not on the sanctioned country directly, but on third-party companies and countries that do business with the sanctioned entity. Secondary sanctions are the enforcement mechanism that makes US sanctions extraterritorial — a Chinese bank that processes Iranian oil payments can itself be cut off from the US dollar system. This "long arm" reach is why US sanctions are far more effective than those of other nations.',
+      'Penalties imposed not on the sanctioned country directly, but on third-party companies and countries that do business with the sanctioned entity. Secondary sanctions are the enforcement mechanism that makes US sanctions extraterritorial, a Chinese bank that processes Iranian oil payments can itself be cut off from the US dollar system. This "long arm" reach is why US sanctions are far more effective than those of other nations.',
     template: 'schema',
     templateData: {
       title: 'How secondary sanctions work',
@@ -1554,7 +1554,7 @@ export const KEYWORDS = {
     id: 'force-majeure-cascade',
     term: 'Force Majeure Cascade',
     definition:
-      'A chain reaction in commodity markets triggered when a major producer declares force majeure — a legal clause excusing non-delivery due to extraordinary circumstances (war, natural disaster, embargo). When one supplier invokes force majeure, buyers scramble to replace contracted volumes on the spot market, spiking prices. This forces downstream buyers (refiners, manufacturers) to invoke their own force majeure clauses, cascading disruption through the entire supply chain.',
+      'A chain reaction in commodity markets triggered when a major producer declares force majeure, a legal clause excusing non-delivery due to extraordinary circumstances (war, natural disaster, embargo). When one supplier invokes force majeure, buyers scramble to replace contracted volumes on the spot market, spiking prices. This forces downstream buyers (refiners, manufacturers) to invoke their own force majeure clauses, cascading disruption through the entire supply chain.',
     template: 'schema',
     templateData: {
       title: 'Force majeure cascade in commodity markets',
@@ -1568,7 +1568,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      'The Iran conflict triggered force majeure declarations across Middle Eastern oil and gas contracts. When a single LNG producer in Qatar declares force majeure on a 20-year supply contract, the buyer (often a Japanese or Korean utility) must immediately source replacement cargoes on the spot market — at 2-4× the contracted price.',
+      'The Iran conflict triggered force majeure declarations across Middle Eastern oil and gas contracts. When a single LNG producer in Qatar declares force majeure on a 20-year supply contract, the buyer (often a Japanese or Korean utility) must immediately source replacement cargoes on the spot market, at 2-4× the contracted price.',
     courseId: 'commodities-101-2',
     courseTitle: 'Commodity Price Dynamics',
   },
@@ -1584,7 +1584,7 @@ export const KEYWORDS = {
       example: {
         title: 'NVIDIA implied assumptions (May 2026)',
         substitution:
-          '$5.34T EV implies: ~$200B revenue by 2028, ~55% FCF margins, 30× terminal multiple — or ~40% annual revenue CAGR for 5 years',
+          '$5.34T EV implies: ~$200B revenue by 2028, ~55% FCF margins, 30× terminal multiple, or ~40% annual revenue CAGR for 5 years',
       },
     },
     realWorld:
@@ -1597,7 +1597,7 @@ export const KEYWORDS = {
     id: 'tensor-core-parallelism',
     term: 'Tensor Core Parallelism',
     definition:
-      "The architectural innovation that makes NVIDIA GPUs dominant in AI: specialized processing units called Tensor Cores that perform matrix multiplication — the core mathematical operation in neural networks — in a single clock cycle. A single H100 GPU contains 528 Tensor Cores, each capable of performing 256 FP16 multiply-accumulate operations per clock. This massive parallelism (vs. a CPU's 8-64 cores) is why GPUs train AI models 100-1,000× faster than CPUs.",
+      "The architectural innovation that makes NVIDIA GPUs dominant in AI: specialized processing units called Tensor Cores that perform matrix multiplication, the core mathematical operation in neural networks, in a single clock cycle. A single H100 GPU contains 528 Tensor Cores, each capable of performing 256 FP16 multiply-accumulate operations per clock. This massive parallelism (vs. a CPU's 8-64 cores) is why GPUs train AI models 100-1,000× faster than CPUs.",
     template: 'comparison',
     templateData: {
       title: 'Why GPUs dominate AI workloads',
@@ -1614,10 +1614,10 @@ export const KEYWORDS = {
         },
       ],
       footnote:
-        "Tensor Cores are NVIDIA's key differentiator — they're purpose-built for the linear algebra that AI requires.",
+        "Tensor Cores are NVIDIA's key differentiator, they're purpose-built for the linear algebra that AI requires.",
     },
     realWorld:
-      'When NVIDIA sells a $30,000+ H100 GPU to a hyperscaler, the buyer is paying for Tensor Core parallelism — the ability to perform trillions of matrix multiplications per second. This is why NVIDIA commands 80-90% market share: their Tensor Cores, combined with the CUDA software ecosystem, deliver AI training performance that no competitor matches at scale.',
+      'When NVIDIA sells a $30,000+ H100 GPU to a hyperscaler, the buyer is paying for Tensor Core parallelism, the ability to perform trillions of matrix multiplications per second. This is why NVIDIA commands 80-90% market share: their Tensor Cores, combined with the CUDA software ecosystem, deliver AI training performance that no competitor matches at scale.',
     courseId: 'tech-4',
     courseTitle: 'AI Hardware Basics',
   },
@@ -1648,25 +1648,25 @@ export const KEYWORDS = {
     id: 'prodromal-phase',
     term: 'Prodromal Phase',
     definition:
-      'The early symptomatic period of hantavirus infection (3-5 days) characterized by nonspecific symptoms — fever, myalgia, fatigue, nausea — that mimic influenza or altitude sickness. The prodromal phase is diagnostically treacherous because patients appear to have a common illness. By the time HPS-specific symptoms appear (sudden respiratory distress, pulmonary edema), the disease has progressed to the cardiopulmonary phase where the fatality rate exceeds 38%.',
+      'The early symptomatic period of hantavirus infection (3-5 days) characterized by nonspecific symptoms, fever, myalgia, fatigue, nausea, that mimic influenza or altitude sickness. The prodromal phase is diagnostically treacherous because patients appear to have a common illness. By the time HPS-specific symptoms appear (sudden respiratory distress, pulmonary edema), the disease has progressed to the cardiopulmonary phase where the fatality rate exceeds 38%.',
     template: 'timeline',
     templateData: {
       title: 'Hantavirus disease progression',
       events: [
-        { year: 'Day 0-14', label: 'Incubation — no symptoms, virus replicating' },
+        { year: 'Day 0-14', label: 'Incubation, no symptoms, virus replicating' },
         {
           year: 'Day 14-19',
-          label: 'Prodromal phase — fever, muscle aches, fatigue (looks like flu)',
+          label: 'Prodromal phase, fever, muscle aches, fatigue (looks like flu)',
         },
         {
           year: 'Day 19-24',
-          label: 'Cardiopulmonary phase — sudden respiratory failure, pulmonary edema',
+          label: 'Cardiopulmonary phase, sudden respiratory failure, pulmonary edema',
         },
-        { year: 'Day 24+', label: 'Recovery or death — ~38% case fatality rate' },
+        { year: 'Day 24+', label: 'Recovery or death, ~38% case fatality rate' },
       ],
     },
     realWorld:
-      'On the MV Hondius, the first patient developed what appeared to be flu symptoms — fever and muscle aches. During the prodromal phase, hantavirus is clinically indistinguishable from influenza, altitude sickness, or seasickness. This is why initial testing focused on common pathogens (COVID, influenza, legionella), all of which came back negative, delaying the correct diagnosis by critical days.',
+      'On the MV Hondius, the first patient developed what appeared to be flu symptoms, fever and muscle aches. During the prodromal phase, hantavirus is clinically indistinguishable from influenza, altitude sickness, or seasickness. This is why initial testing focused on common pathogens (COVID, influenza, legionella), all of which came back negative, delaying the correct diagnosis by critical days.',
     courseId: 'health-101-6',
     courseTitle: 'Epidemiology Basics',
   },
@@ -1675,7 +1675,7 @@ export const KEYWORDS = {
     id: 'yield-ramp-parity',
     term: 'Yield Ramp Parity',
     definition:
-      'The critical milestone where a new semiconductor fab achieves manufacturing yields (percentage of usable chips per wafer) comparable to established fabs. TSMC\'s Taiwan fabs typically achieve 90%+ yields within 6-12 months of production start. New overseas fabs (Arizona, Japan, Germany) face a "yield gap" — they may take 18-36 months to match Taiwan yields due to workforce inexperience, equipment calibration differences, and supply chain immaturity.',
+      'The critical milestone where a new semiconductor fab achieves manufacturing yields (percentage of usable chips per wafer) comparable to established fabs. TSMC\'s Taiwan fabs typically achieve 90%+ yields within 6-12 months of production start. New overseas fabs (Arizona, Japan, Germany) face a "yield gap", they may take 18-36 months to match Taiwan yields due to workforce inexperience, equipment calibration differences, and supply chain immaturity.',
     template: 'comparison',
     templateData: {
       title: 'Yield ramp timelines',
@@ -1689,14 +1689,14 @@ export const KEYWORDS = {
         { label: 'Intel Ohio', cells: ['Intel 18A', 'Unknown', '2026+ (not yet producing)'] },
         {
           label: 'Samsung Taylor TX',
-          cells: ['4nm', 'Below target', 'Delayed — workforce issues'],
+          cells: ['4nm', 'Below target', 'Delayed, workforce issues'],
         },
       ],
       footnote:
         'Until overseas fabs achieve yield parity, they cannot compete on cost with Taiwan production.',
     },
     realWorld:
-      "Yield ramp parity is the real test of semiconductor reshoring — not whether you can build a $20 billion fab, but whether it can produce chips as efficiently as Taiwan. If TSMC Arizona achieves only 80% yield vs Taiwan's 95%, every chip costs 19% more to produce. That cost gap determines whether reshoring is viable or just expensive symbolism.",
+      "Yield ramp parity is the real test of semiconductor reshoring, not whether you can build a $20 billion fab, but whether it can produce chips as efficiently as Taiwan. If TSMC Arizona achieves only 80% yield vs Taiwan's 95%, every chip costs 19% more to produce. That cost gap determines whether reshoring is viable or just expensive symbolism.",
     courseId: 'tech-fundamentals-8',
     courseTitle: 'Semiconductor Manufacturing',
   },
@@ -1705,7 +1705,7 @@ export const KEYWORDS = {
     id: 'profit-repatriation-leakage',
     term: 'Profit Repatriation Leakage',
     definition:
-      'The economic phenomenon where multinational corporations generate revenue in African markets but book profits, pay taxes, and distribute dividends in their home jurisdiction (typically London, Paris, or Zurich). This "leakage" means that African GDP benefits from employment and local spending, but the equity value creation — share price appreciation and dividends — accrues to foreign shareholders. An estimated 60-70% of corporate profits generated in sub-Saharan Africa are repatriated to headquarters outside the continent.',
+      'The economic phenomenon where multinational corporations generate revenue in African markets but book profits, pay taxes, and distribute dividends in their home jurisdiction (typically London, Paris, or Zurich). This "leakage" means that African GDP benefits from employment and local spending, but the equity value creation, share price appreciation and dividends, accrues to foreign shareholders. An estimated 60-70% of corporate profits generated in sub-Saharan Africa are repatriated to headquarters outside the continent.',
     template: 'schema',
     templateData: {
       title: 'How profit repatriation leakage works',
@@ -1716,7 +1716,7 @@ export const KEYWORDS = {
           color: '#f59e0b',
         },
         {
-          label: 'Revenue generated locally — wages, taxes paid locally',
+          label: 'Revenue generated locally, wages, taxes paid locally',
           sectors: [],
           color: '#10b981',
         },
@@ -1734,7 +1734,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      'The 54 companies headquartered outside Africa but generating $1B+ from African operations represent the scale of profit repatriation leakage. Unilever sells soap in Lagos, Total pumps oil in Luanda, Vodafone runs cell towers in Accra — but the share price appreciation and dividends flow to shareholders in London, Paris, and Amsterdam.',
+      'The 54 companies headquartered outside Africa but generating $1B+ from African operations represent the scale of profit repatriation leakage. Unilever sells soap in Lagos, Total pumps oil in Luanda, Vodafone runs cell towers in Accra, but the share price appreciation and dividends flow to shareholders in London, Paris, and Amsterdam.',
     courseId: 'global-3',
     courseTitle: 'Foreign Direct Investment',
   },
@@ -1753,7 +1753,7 @@ export const KEYWORDS = {
       title: 'Palantir at a glance',
       headers: ['Aspect', 'Detail'],
       rows: [
-        { label: 'Founded', cells: ['2003 — Thiel, Karp, Lonsdale, Cohen, Stephens'] },
+        { label: 'Founded', cells: ['2003: Thiel, Karp, Lonsdale, Cohen, Stephens'] },
         { label: 'Core platforms', cells: ['Gotham (gov), Foundry (commercial), AIP (AI)'] },
         { label: 'Anchor customers', cells: ['US defense & intelligence, then enterprise'] },
         { label: 'Why it matters', cells: ['A pure-play bet on state power fused with data'] },
@@ -1771,7 +1771,7 @@ export const KEYWORDS = {
     id: 'paypal-mafia',
     term: 'The PayPal Mafia',
     definition:
-      'The informal network of PayPal’s early founders and employees who, after eBay acquired PayPal in 2002, went on to found or fund a remarkable share of Silicon Valley’s most valuable companies — concentrating influence among a small, interconnected group.',
+      'The informal network of PayPal’s early founders and employees who, after eBay acquired PayPal in 2002, went on to found or fund a remarkable share of Silicon Valley’s most valuable companies, concentrating influence among a small, interconnected group.',
     template: 'schema',
     templateData: {
       title: 'Where the PayPal Mafia went next',
@@ -1787,7 +1787,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      'Thiel co-founded PayPal and seeded this network; its members’ companies now define social platforms, EVs, space launch, and defense data — a vivid example of how concentrated the founder class has become.',
+      'Thiel co-founded PayPal and seeded this network; its members’ companies now define social platforms, EVs, space launch, and defense data, a vivid example of how concentrated the founder class has become.',
     courseId: 'market-history-2',
     courseTitle: 'Market Bubbles & Crashes',
   },
@@ -1796,7 +1796,7 @@ export const KEYWORDS = {
     id: 'regulatory-capture',
     term: 'Regulatory Capture',
     definition:
-      'When the agencies meant to regulate an industry come to serve that industry’s interests instead of the public’s — through shared personnel, social ties, information asymmetry, or revolving-door careers. It is the structural risk the Dialog leak crystallized.',
+      'When the agencies meant to regulate an industry come to serve that industry’s interests instead of the public’s, through shared personnel, social ties, information asymmetry, or revolving-door careers. It is the structural risk the Dialog leak crystallized.',
     template: 'schema',
     templateData: {
       title: 'How capture tends to form',
@@ -1817,7 +1817,7 @@ export const KEYWORDS = {
     id: 'mimetic-desire',
     term: 'Mimetic Desire',
     definition:
-      'René Girard’s theory that people desire things not intrinsically but by imitating what others desire. Because everyone converges on the same objects, mimetic desire breeds rivalry. Thiel studied under Girard at Stanford and built his investing philosophy — avoid competition, seek monopoly — directly on it.',
+      'René Girard’s theory that people desire things not intrinsically but by imitating what others desire. Because everyone converges on the same objects, mimetic desire breeds rivalry. Thiel studied under Girard at Stanford and built his investing philosophy, avoid competition, seek monopoly, directly on it.',
     template: 'schema',
     templateData: {
       title: 'The mimetic loop',
@@ -1829,7 +1829,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      "Thiel's famous advice — avoid competition, build monopolies — is mimetic theory inverted: competition is mimetic rivalry, and escaping it is how he argues you create durable value.",
+      "Thiel's famous advice, avoid competition, build monopolies, is mimetic theory inverted: competition is mimetic rivalry, and escaping it is how he argues you create durable value.",
     courseId: 'market-history-2',
     courseTitle: 'Market Bubbles & Crashes',
   },
@@ -1863,7 +1863,7 @@ export const KEYWORDS = {
     id: 'great-stagnation',
     term: 'The Great Stagnation ("Bits, Not Atoms")',
     definition:
-      'The thesis — associated with Thiel and economist Tyler Cowen — that outside computing and the internet, technological and productivity growth slowed sharply after roughly 1970: fast progress in "bits" (software) but stalled progress in "atoms" (energy, transit, biotech).',
+      'The thesis, associated with Thiel and economist Tyler Cowen, that outside computing and the internet, technological and productivity growth slowed sharply after roughly 1970: fast progress in "bits" (software) but stalled progress in "atoms" (energy, transit, biotech).',
     template: 'timeline',
     templateData: {
       title: 'The "atoms vs bits" divergence',
@@ -1900,7 +1900,7 @@ export const KEYWORDS = {
     id: 'surveillance-infrastructure',
     term: 'Surveillance Infrastructure',
     definition:
-      'The data-collection and analytics systems — sensors, databases, and the software that fuses them — that let a state or firm monitor populations at scale. The same tools that power security and logistics can enable mass surveillance, which is why their concentration raises civil-liberties concerns.',
+      'The data-collection and analytics systems, sensors, databases, and the software that fuses them, that let a state or firm monitor populations at scale. The same tools that power security and logistics can enable mass surveillance, which is why their concentration raises civil-liberties concerns.',
     template: 'comparison',
     templateData: {
       title: 'Dual-use data analytics',
@@ -1911,7 +1911,7 @@ export const KEYWORDS = {
         { label: 'Concentration', cells: ['One trusted vendor', 'Single point of control'] },
       ],
       footnote:
-        'Thiel warns a centralized, all-seeing state is the ultimate danger — while Palantir builds tools such a state would use.',
+        'Thiel warns a centralized, all-seeing state is the ultimate danger, while Palantir builds tools such a state would use.',
     },
     realWorld:
       'As the article puts it: the man warning that a surveillance superstate is the ultimate evil is among the people best positioned to build it.',
@@ -1923,7 +1923,7 @@ export const KEYWORDS = {
     id: 'concentration-risk',
     term: 'Concentration Risk',
     definition:
-      'The risk that arises when exposure is clustered in a few holdings, sectors, or — as here — decision-makers. Diversification reduces it; concentration amplifies both the upside and the damage from a single failure or shared blind spot.',
+      'The risk that arises when exposure is clustered in a few holdings, sectors, or, as here, decision-makers. Diversification reduces it; concentration amplifies both the upside and the damage from a single failure or shared blind spot.',
     template: 'comparison',
     templateData: {
       title: 'Diversified vs concentrated exposure',
@@ -1934,7 +1934,7 @@ export const KEYWORDS = {
         { label: 'Governance', cells: ['Many actors', 'Few actors, shared ideology'] },
       ],
       footnote:
-        'The article’s concern is concentration of influence — a small, aligned network spanning platforms, defense, and appointments.',
+        'The article’s concern is concentration of influence, a small, aligned network spanning platforms, defense, and appointments.',
     },
     realWorld:
       'A remarkably small group, bound by shared ideology and personal ties, holds outsized influence over the platforms, defense systems, and political appointments that define the era.',
@@ -1946,7 +1946,7 @@ export const KEYWORDS = {
     id: 'exit-vs-voice',
     term: 'Exit vs. Voice',
     definition:
-      'Albert O. Hirschman’s framework: when an organization or state declines, members can use "voice" (stay and push for reform) or "exit" (leave). Thiel’s philosophy consistently favors exit — new jurisdictions, additional citizenships, and technologies that route around politics rather than reform it.',
+      'Albert O. Hirschman’s framework: when an organization or state declines, members can use "voice" (stay and push for reform) or "exit" (leave). Thiel’s philosophy consistently favors exit, new jurisdictions, additional citizenships, and technologies that route around politics rather than reform it.',
     template: 'comparison',
     templateData: {
       title: 'Two responses to decline',
@@ -1959,7 +1959,7 @@ export const KEYWORDS = {
         'For people who cannot "exit," the system Thiel hedges against is the only one they have.',
     },
     realWorld:
-      'The risks Thiel hedges against — runaway AI, instability — are precisely the ones his companies help accelerate. The young inherit the system; they do not get to escape it.',
+      'The risks Thiel hedges against, runaway AI, instability, are precisely the ones his companies help accelerate. The young inherit the system; they do not get to escape it.',
     courseId: 'geopolitics-101-1',
     courseTitle: 'Geopolitical Risk in Markets',
   },
@@ -1968,7 +1968,7 @@ export const KEYWORDS = {
     id: 'in-q-tel',
     term: 'In-Q-Tel',
     definition:
-      'The not-for-profit strategic investor founded by the CIA in 1999 to back startups whose technology could serve U.S. intelligence. In-Q-Tel was an early funder reported behind Palantir — an illustration of how national-security capital can seed a company years before it ever reaches public markets.',
+      'The not-for-profit strategic investor founded by the CIA in 1999 to back startups whose technology could serve U.S. intelligence. In-Q-Tel was an early funder reported behind Palantir, an illustration of how national-security capital can seed a company years before it ever reaches public markets.',
     template: 'schema',
     templateData: {
       title: 'How In-Q-Tel works',
@@ -1988,7 +1988,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      'Palantir’s reported early In-Q-Tel backing helped it win the government contracts that became its core business — a head start most startups never get, and a reason its growth tracks defense and intelligence budgets.',
+      'Palantir’s reported early In-Q-Tel backing helped it win the government contracts that became its core business, a head start most startups never get, and a reason its growth tracks defense and intelligence budgets.',
     courseId: 'geopolitics-101-4',
     courseTitle: 'Supply Chain Geopolitics',
   },
@@ -1997,7 +1997,7 @@ export const KEYWORDS = {
     id: 'political-patronage',
     term: 'Political Patronage',
     definition:
-      'The practice of an established power-holder using money and access to identify, fund, and elevate political talent who will carry the patron’s priorities into office. Thiel’s backing of JD Vance — from a 2011 lecture to a record-setting 2022 Senate campaign — is a textbook case.',
+      'The practice of an established power-holder using money and access to identify, fund, and elevate political talent who will carry the patron’s priorities into office. Thiel’s backing of JD Vance, from a 2011 lecture to a record-setting 2022 Senate campaign, is a textbook case.',
     template: 'timeline',
     templateData: {
       title: 'Thiel → Vance: patronage in action',
@@ -2025,7 +2025,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      'Thiel rarely runs for anything. His political method is patronage: back the right individual early and let proximity compound — mimetic theory applied to power.',
+      'Thiel rarely runs for anything. His political method is patronage: back the right individual early and let proximity compound, mimetic theory applied to power.',
     courseId: 'geopolitics-101-1',
     courseTitle: 'Geopolitical Risk in Markets',
   },
@@ -2038,7 +2038,7 @@ export const KEYWORDS = {
     id: 'business-development-company',
     term: 'Business Development Company (BDC)',
     definition:
-      'A publicly traded or non-traded fund that lends to mid-sized private companies, giving ordinary investors access to private credit. BDCs must distribute most of their income as dividends, which makes them high-yield vehicles — and exposes them directly to the credit quality of the loans they hold.',
+      'A publicly traded or non-traded fund that lends to mid-sized private companies, giving ordinary investors access to private credit. BDCs must distribute most of their income as dividends, which makes them high-yield vehicles, and exposes them directly to the credit quality of the loans they hold.',
     template: 'comparison',
     templateData: {
       title: 'BDC vs. traditional bond fund',
@@ -2052,7 +2052,7 @@ export const KEYWORDS = {
         'Because BDC loans are private and marked to model, the income statement (PIK, non-accruals) often reveals stress before the NAV does.',
     },
     realWorld:
-      'When a BDC reports rising payment-in-kind income, it is collecting less cash than its headline yield implies — a leading indicator that the maturity wall ahead could be harder to refinance than the dividend suggests.',
+      'When a BDC reports rising payment-in-kind income, it is collecting less cash than its headline yield implies, a leading indicator that the maturity wall ahead could be harder to refinance than the dividend suggests.',
     courseId: 'fixed-income-101-1',
     courseTitle: 'Credit and Fixed Income',
   },
@@ -2061,7 +2061,7 @@ export const KEYWORDS = {
     id: 'amend-and-extend',
     term: 'Amend-and-Extend',
     definition:
-      'A liability-management transaction in which a borrower and its lenders renegotiate an existing loan to push out the maturity date rather than repaying or refinancing it. It defers the refinancing question — useful for healthy credits, a way to delay recognition of trouble for weak ones.',
+      'A liability-management transaction in which a borrower and its lenders renegotiate an existing loan to push out the maturity date rather than repaying or refinancing it. It defers the refinancing question, useful for healthy credits, a way to delay recognition of trouble for weak ones.',
     template: 'comparison',
     templateData: {
       title: 'Why the maturity wall moved to 2028-2029',
@@ -2078,7 +2078,7 @@ export const KEYWORDS = {
         'Repricings and refinancings made up 75-85% of leveraged-loan issuance in 2024-2025 (Fitch), thinning near-term maturities.',
     },
     realWorld:
-      'Each extension bets the borrower will be healthier — or rates lower — when the new maturity arrives. For marginal credits, repeated extensions quietly turn a refinancing question into a solvency one.',
+      'Each extension bets the borrower will be healthier, or rates lower, when the new maturity arrives. For marginal credits, repeated extensions quietly turn a refinancing question into a solvency one.',
     courseId: 'fixed-income-101-1',
     courseTitle: 'Credit and Fixed Income',
   },
@@ -2087,20 +2087,20 @@ export const KEYWORDS = {
     id: 'payment-in-kind',
     term: 'Payment-in-Kind (PIK)',
     definition:
-      'Interest a borrower defers by adding it to the loan’s principal instead of paying it in cash. PIK lets a lender book income it has not actually collected, flattering reported yield and the appearance of credit health — which is why a rising PIK share is a classic early-warning sign.',
+      'Interest a borrower defers by adding it to the loan’s principal instead of paying it in cash. PIK lets a lender book income it has not actually collected, flattering reported yield and the appearance of credit health, which is why a rising PIK share is a classic early-warning sign.',
     template: 'comparison',
     templateData: {
       title: 'Cash interest vs. PIK',
       headers: ['Type', 'Cash received', 'What it signals'],
       rows: [
         { label: 'Cash interest', cells: ['Yes', 'Borrower is servicing debt'] },
-        { label: 'PIK', cells: ['No — added to principal', 'Borrower is conserving cash'] },
+        { label: 'PIK', cells: ['No, added to principal', 'Borrower is conserving cash'] },
       ],
       footnote:
         'PIK above ~10% of a BDC’s interest income is a flag worth scrutinizing; the sector average is around 8% and rising (2026).',
     },
     realWorld:
-      'When PIK climbs, a fund’s yield can look healthy while the cash behind it thins out. Analysts estimate the industry’s true stress rate is near 5% — roughly double the sub-2% carried in reported NAVs.',
+      'When PIK climbs, a fund’s yield can look healthy while the cash behind it thins out. Analysts estimate the industry’s true stress rate is near 5%, roughly double the sub-2% carried in reported NAVs.',
     courseId: 'fixed-income-101-1',
     courseTitle: 'Credit and Fixed Income',
   },
@@ -2109,7 +2109,7 @@ export const KEYWORDS = {
     id: 'long-term-debt-cycle',
     term: 'Long-Term Debt Cycle',
     definition:
-      'The multi-year pattern in which debt builds up while borrowing feels cheap and safe, until the accumulated debt-service burden eventually forces a reckoning — refinancing, restructuring, or default. A sector’s maturity wall is a small instance of this larger, recurring rhythm.',
+      'The multi-year pattern in which debt builds up while borrowing feels cheap and safe, until the accumulated debt-service burden eventually forces a reckoning, refinancing, restructuring, or default. A sector’s maturity wall is a small instance of this larger, recurring rhythm.',
     template: 'timeline',
     templateData: {
       title: 'Phases of a long-term debt cycle',
@@ -2132,12 +2132,12 @@ export const KEYWORDS = {
         {
           year: 'Deleveraging',
           label: 'Orderly or disorderly',
-          detail: 'Extensions and paydowns — or defaults and markdowns',
+          detail: 'Extensions and paydowns, or defaults and markdowns',
         },
       ],
     },
     realWorld:
-      'Private credit scaled to ~$1.7 trillion during a decade of near-zero rates. The 2028-2029 maturity wall is the back end of that accumulation phase — the point where the borrowing has to be settled.',
+      'Private credit scaled to ~$1.7 trillion during a decade of near-zero rates. The 2028-2029 maturity wall is the back end of that accumulation phase, the point where the borrowing has to be settled.',
     courseId: 'macro-indicators-2',
     courseTitle: 'Understanding Economic Indicators',
   },
@@ -2162,7 +2162,7 @@ export const KEYWORDS = {
         },
       ],
       footnote:
-        'What tips one to the other is flexibility — refinancing access, equity cushions, and income trajectory.',
+        'What tips one to the other is flexibility, refinancing access, equity cushions, and income trajectory.',
     },
     realWorld:
       'For private credit, the fork shows up in the income statement before the maturity schedule: rising PIK, climbing non-accruals, and widening discounts to NAV signal the soft resolution slipping toward the hard one.',
@@ -2174,7 +2174,7 @@ export const KEYWORDS = {
     id: 'maturity-wall',
     term: 'Maturity Wall',
     definition:
-      'A maturity wall is a concentration of debt that all comes due within a short, specific window — here, the cluster of private-credit and BDC loans maturing in 2028 and 2029. When too much debt matures at once into tight financing conditions, borrowers can struggle to refinance, which turns a scheduling issue into a potential credit event.',
+      'A maturity wall is a concentration of debt that all comes due within a short, specific window, here, the cluster of private-credit and BDC loans maturing in 2028 and 2029. When too much debt matures at once into tight financing conditions, borrowers can struggle to refinance, which turns a scheduling issue into a potential credit event.',
     template: 'comparison',
     templateData: {
       title: 'Near-term maturities vs. the wall',
@@ -2186,7 +2186,7 @@ export const KEYWORDS = {
       footnote: 'Only ~$15B of ~$84B in BDC assets mature in 2026; the load peaks in 2028–2029.',
     },
     realWorld:
-      'The danger of a maturity wall is timing: refinancing a few loans is easy, but refinancing a wall of them at once — into higher rates and thinner liquidity — is where defaults cluster.',
+      'The danger of a maturity wall is timing: refinancing a few loans is easy, but refinancing a wall of them at once, into higher rates and thinner liquidity, is where defaults cluster.',
     courseId: 'fixed-income-101-1',
     courseTitle: 'Credit and Fixed Income',
   },
@@ -2195,7 +2195,7 @@ export const KEYWORDS = {
     id: 'leveraged-loan',
     term: 'Leveraged Loan',
     definition:
-      'A leveraged loan is a floating-rate loan made to a company that already carries significant debt — a below-investment-grade, or “B”-tier, borrower. These loans finance buyouts and refinancings and are the raw material of both the syndicated market and private credit. Because their rate floats, the borrower’s interest cost rises directly with policy rates.',
+      'A leveraged loan is a floating-rate loan made to a company that already carries significant debt, a below-investment-grade, or “B”-tier, borrower. These loans finance buyouts and refinancings and are the raw material of both the syndicated market and private credit. Because their rate floats, the borrower’s interest cost rises directly with policy rates.',
     template: 'comparison',
     templateData: {
       title: 'Leveraged loan vs. investment-grade bond',
@@ -2209,7 +2209,7 @@ export const KEYWORDS = {
         'Issuers rated ‘B-’ or below make up roughly 68% of 2028 leveraged-loan maturities.',
     },
     realWorld:
-      'Because leveraged loans float, the climb in base rates raised borrowers’ debt-service costs in real time — the squeeze that sits behind the maturity wall.',
+      'Because leveraged loans float, the climb in base rates raised borrowers’ debt-service costs in real time, the squeeze that sits behind the maturity wall.',
     courseId: 'fixed-income-101-1',
     courseTitle: 'Credit and Fixed Income',
   },
@@ -2218,7 +2218,7 @@ export const KEYWORDS = {
     id: 'dry-powder',
     term: 'Dry Powder',
     definition:
-      'Dry powder is capital that investors have committed to a fund but that the manager has not yet deployed. In private credit it is firepower available to make new loans or refinance existing ones — a buffer that can absorb part of a maturity wall, though lenders deploy it on their own terms and at current pricing.',
+      'Dry powder is capital that investors have committed to a fund but that the manager has not yet deployed. In private credit it is firepower available to make new loans or refinance existing ones, a buffer that can absorb part of a maturity wall, though lenders deploy it on their own terms and at current pricing.',
     template: 'comparison',
     templateData: {
       title: 'Private credit firepower',
@@ -2228,7 +2228,7 @@ export const KEYWORDS = {
         { label: 'Total private credit', cells: ['~$1.7 trillion'] },
       ],
       footnote:
-        'Dry powder can refinance the strongest borrowers into the wall — but only at the price the lender sets.',
+        'Dry powder can refinance the strongest borrowers into the wall, but only at the price the lender sets.',
     },
     realWorld:
       'More than $500 billion of committed-but-undeployed capital is the system’s main shock absorber against the 2028–2029 wall.',
@@ -2244,7 +2244,7 @@ export const KEYWORDS = {
     id: 'mineral-reserves',
     term: 'Mineral Reserves',
     definition:
-      'Reserves are the portion of a mineral deposit that is economically extractable at the time of assessment — not the total amount in the earth’s crust, which is the broader "resource." Because economics decide the boundary, reserves grow or shrink as prices and mining technology change: a deposit uneconomic at one price becomes a reserve at a higher one.',
+      'Reserves are the portion of a mineral deposit that is economically extractable at the time of assessment, not the total amount in the earth’s crust, which is the broader "resource." Because economics decide the boundary, reserves grow or shrink as prices and mining technology change: a deposit uneconomic at one price becomes a reserve at a higher one.',
     template: 'comparison',
     templateData: {
       title: 'Reserves vs. resources',
@@ -2254,7 +2254,7 @@ export const KEYWORDS = {
         { label: 'Resources', cells: ['All identified material', 'Geology (mostly fixed)'] },
       ],
       footnote:
-        'Reserve shares — not resource shares — constrain the next decade of supply, which is why the USGS reserve figures are the relevant chokepoint measure.',
+        'Reserve shares, not resource shares, constrain the next decade of supply, which is why the USGS reserve figures are the relevant chokepoint measure.',
     },
     realWorld:
       'A country’s reserve share is what gives it near-term leverage: China’s ~48% of rare-earth reserves and South Africa’s 83% of platinum-group metals are reserve positions, and they set the supply constraints the energy transition has to work around.',
@@ -2266,7 +2266,7 @@ export const KEYWORDS = {
     id: 'platinum-group-metals',
     term: 'Platinum-Group Metals (PGMs)',
     definition:
-      'A set of six related metals — platinum, palladium, rhodium, ruthenium, iridium, and osmium — prized for catalytic and high-temperature properties. They are essential to catalytic converters, hydrogen electrolyzers, jet-engine coatings, and chip fabrication, and their reserves are the most geographically concentrated of any major mineral.',
+      'A set of six related metals, platinum, palladium, rhodium, ruthenium, iridium, and osmium, prized for catalytic and high-temperature properties. They are essential to catalytic converters, hydrogen electrolyzers, jet-engine coatings, and chip fabrication, and their reserves are the most geographically concentrated of any major mineral.',
     template: 'comparison',
     templateData: {
       title: 'Where PGM reserves sit',
@@ -2288,7 +2288,7 @@ export const KEYWORDS = {
     id: 'rare-earth-elements',
     term: 'Rare-Earth Elements (REEs)',
     definition:
-      'A group of 17 metals — including neodymium and dysprosium — used to make the high-strength permanent magnets in electric motors, wind turbines, guided munitions, and hard drives. They are not geologically rare, but their reserves and, far more so, their processing are concentrated in China.',
+      'A group of 17 metals, including neodymium and dysprosium, used to make the high-strength permanent magnets in electric motors, wind turbines, guided munitions, and hard drives. They are not geologically rare, but their reserves and, far more so, their processing are concentrated in China.',
     template: 'comparison',
     templateData: {
       title: 'Rare-earth reserves vs. leverage',
@@ -2302,7 +2302,7 @@ export const KEYWORDS = {
         'World reserve base is 91.9 Mt (USGS 2026). China’s real leverage rests on processing, where its share far exceeds its ~48% of reserves.',
     },
     realWorld:
-      'Because the value and dependency concentrate in the midstream (processing), reserve share understates China’s position — the reason the U.S. response is a stockpile ("Project Vault") rather than mining alone.',
+      'Because the value and dependency concentrate in the midstream (processing), reserve share understates China’s position, the reason the U.S. response is a stockpile ("Project Vault") rather than mining alone.',
     courseId: 'geopolitics-101-4',
     courseTitle: 'Resources and Power',
   },
@@ -2311,7 +2311,7 @@ export const KEYWORDS = {
     id: 'supply-chain-chokepoint',
     term: 'Supply-Chain Chokepoint',
     definition:
-      'A single point in a global supply chain — a country, a strait, a processing step — through which so much of a good passes that a disruption there ripples worldwide. In minerals, a chokepoint does not require a monopoly: a 25–50% reserve or processing share in one jurisdiction is enough for one government’s policy to move a global price.',
+      'A single point in a global supply chain, a country, a strait, a processing step, through which so much of a good passes that a disruption there ripples worldwide. In minerals, a chokepoint does not require a monopoly: a 25–50% reserve or processing share in one jurisdiction is enough for one government’s policy to move a global price.',
     template: 'comparison',
     templateData: {
       title: 'What makes a mineral a chokepoint',
@@ -2322,7 +2322,7 @@ export const KEYWORDS = {
         { label: 'Located in a fragile state', cells: ['Standing supply risk'] },
       ],
       footnote:
-        'Cobalt (DRC ~50%) and bauxite (Guinea ~26%) combine high concentration with political fragility — the sharpest chokepoint profile.',
+        'Cobalt (DRC ~50%) and bauxite (Guinea ~26%) combine high concentration with political fragility, the sharpest chokepoint profile.',
     },
     realWorld:
       'Morocco’s 69% of phosphate is a food-security chokepoint; the DRC’s ~50% of cobalt is a battery one. Neither is a monopoly, yet each lets one country’s decisions reverberate globally.',
@@ -2357,7 +2357,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      'The critical-minerals list is effectively a map of where U.S. import dependence meets strategic use — and it is redrawn only about once a year, which makes it a slow-moving, decisive macro variable.',
+      'The critical-minerals list is effectively a map of where U.S. import dependence meets strategic use, and it is redrawn only about once a year, which makes it a slow-moving, decisive macro variable.',
     courseId: 'geopolitics-101-1',
     courseTitle: 'Resources and Power',
   },
@@ -2376,7 +2376,7 @@ export const KEYWORDS = {
       title: 'An advisory vote is not an approval',
       headers: ['', 'Advisory-committee vote', 'FDA approval / listing'],
       rows: [
-        { label: 'Binding?', cells: ['No — recommendation only', 'Yes — the legal decision'] },
+        { label: 'Binding?', cells: ['No, recommendation only', 'Yes, the legal decision'] },
         { label: 'Who decides', cells: ['Outside expert panel', 'FDA itself, after review'] },
         { label: 'What follows', cells: ['FDA may accept or decline', 'The change takes effect'] },
       ],
@@ -2423,7 +2423,7 @@ export const KEYWORDS = {
     id: 'compounding-pharmacy',
     term: 'Compounding Pharmacy',
     definition:
-      'A pharmacy that prepares a customized medication for a specific patient — a different dose, an allergen removed, a swallowable form. Compounded drugs require a prescription and are NOT reviewed by the FDA for quality, safety, or efficacy the way an approved drug is. 503A pharmacies serve individual prescriptions; 503B outsourcing facilities make larger batches under tighter FDA oversight.',
+      'A pharmacy that prepares a customized medication for a specific patient, a different dose, an allergen removed, a swallowable form. Compounded drugs require a prescription and are NOT reviewed by the FDA for quality, safety, or efficacy the way an approved drug is. 503A pharmacies serve individual prescriptions; 503B outsourcing facilities make larger batches under tighter FDA oversight.',
     template: 'comparison',
     templateData: {
       title: '503A vs 503B compounding',
@@ -2437,10 +2437,10 @@ export const KEYWORDS = {
         { label: 'Reviewed for efficacy?', cells: ['No', 'No'] },
       ],
       footnote:
-        'Neither route reviews a drug for efficacy — the point compounding is not meant to become a second approval path.',
+        'Neither route reviews a drug for efficacy, the point compounding is not meant to become a second approval path.',
     },
     realWorld:
-      'The vote concerned the 503A list — widening what pharmacies may compound, not approving a peptide as a drug.',
+      'The vote concerned the 503A list, widening what pharmacies may compound, not approving a peptide as a drug.',
     courseId: 'policy-101-1',
     courseTitle: 'How Regulators Decide',
   },
@@ -2449,7 +2449,7 @@ export const KEYWORDS = {
     id: 'peptide-therapeutics',
     term: 'Peptide Therapeutics',
     definition:
-      'Peptides are short chains of amino acids; some are established medicines (insulin, GLP-1 drugs) built on large, well-characterized trials. Characterization — knowing exactly which molecule you have and at what purity — is the floor beneath any safety or efficacy claim. When multiple different molecules are sold under one name, that floor is missing.',
+      'Peptides are short chains of amino acids; some are established medicines (insulin, GLP-1 drugs) built on large, well-characterized trials. Characterization, knowing exactly which molecule you have and at what purity, is the floor beneath any safety or efficacy claim. When multiple different molecules are sold under one name, that floor is missing.',
     template: 'comparison',
     templateData: {
       title: 'Well-characterized vs "same name, different molecule"',
@@ -2460,7 +2460,7 @@ export const KEYWORDS = {
         { label: 'Purity standard', cells: ['Specified and enforced', 'Not established'] },
       ],
       footnote:
-        'FDA staff asked, on the record, "What is BPC-157?" — characterization is exactly what was disputed.',
+        'FDA staff asked, on the record, "What is BPC-157?", characterization is exactly what was disputed.',
     },
     realWorld:
       'If a peptide is not well-characterized, an approval or listing in one form need not describe what a pharmacy compounds or a consumer buys.',
@@ -2525,7 +2525,7 @@ export const KEYWORDS = {
         {
           year: 'Final',
           label: 'Final rule issued',
-          detail: 'Or withdrawn — completion is not guaranteed',
+          detail: 'Or withdrawn, completion is not guaranteed',
         },
       ],
     },
@@ -2539,7 +2539,7 @@ export const KEYWORDS = {
     id: 'cash-pay-healthcare',
     term: 'Cash-Pay Healthcare',
     definition:
-      'Care and products a patient pays for directly, outside insurance and pharmacy-benefit reimbursement. Compounded peptides are largely cash-pay, which lets a category grow without touching the rebate and formulary economics that pharmacy-benefit managers monetize — and also means it does not ride existing insurance rails.',
+      'Care and products a patient pays for directly, outside insurance and pharmacy-benefit reimbursement. Compounded peptides are largely cash-pay, which lets a category grow without touching the rebate and formulary economics that pharmacy-benefit managers monetize, and also means it does not ride existing insurance rails.',
     template: 'comparison',
     templateData: {
       title: 'Cash-pay vs insured channels',
@@ -2561,7 +2561,7 @@ export const KEYWORDS = {
     id: 'regulatory-catalyst',
     term: 'Regulatory Catalyst',
     definition:
-      'A regulatory event — a vote, a designation, a ruling — that moves a stock. Markets often reprice hard on non-binding steps because a bullish headline compresses a long, uncertain, reversible process into one word. The size of the move can far exceed the actual change in probability the event delivered.',
+      'A regulatory event, a vote, a designation, a ruling, that moves a stock. Markets often reprice hard on non-binding steps because a bullish headline compresses a long, uncertain, reversible process into one word. The size of the move can far exceed the actual change in probability the event delivered.',
     template: 'comparison',
     templateData: {
       title: 'Binding vs non-binding catalysts',
@@ -2574,7 +2574,7 @@ export const KEYWORDS = {
       footnote: 'HIMS moved ~13% on a recommendation that binds no one and starts no rule.',
     },
     realWorld:
-      'The move bought an option on a rulemaking that had not begun — the classic shape of a mispriced procedural catalyst.',
+      'The move bought an option on a rulemaking that had not begun, the classic shape of a mispriced procedural catalyst.',
     courseId: 'stocks-intermediate-4',
     courseTitle: 'Catalysts and Event Risk',
   },
@@ -2589,15 +2589,15 @@ export const KEYWORDS = {
       title: 'What a low adverse-event count does and does not mean',
       headers: ['', 'What it is NOT', 'What it IS'],
       rows: [
-        { label: 'A safety guarantee', cells: ['No', '—'] },
-        { label: 'Evidence of harm', cells: ['No', '—'] },
-        { label: 'A weak, under-reported signal', cells: ['—', 'Yes'] },
+        { label: 'A safety guarantee', cells: ['No', '–'] },
+        { label: 'Evidence of harm', cells: ['No', '–'] },
+        { label: 'A weak, under-reported signal', cells: ['–', 'Yes'] },
       ],
       footnote:
         'Compounded and consumer products are under-reported, so absence of reports is not evidence of absence of harm.',
     },
     realWorld:
-      'The FDA cited three adverse-event reports after BPC-157 injection — enough to note, too few to conclude much from either way.',
+      'The FDA cited three adverse-event reports after BPC-157 injection, enough to note, too few to conclude much from either way.',
     courseId: 'tech-fundamentals-6',
     courseTitle: 'Reading the Science',
   },
@@ -2606,7 +2606,7 @@ export const KEYWORDS = {
     id: 'total-addressable-market',
     term: 'Total Addressable Market',
     definition:
-      'The full revenue a product or category could theoretically capture. TAM estimates are built from stacked assumptions — adoption, price, capture rate — so two credible firms can produce very different numbers for the same market. Treat a TAM as a scenario, not a measurement.',
+      'The full revenue a product or category could theoretically capture. TAM estimates are built from stacked assumptions, adoption, price, capture rate, so two credible firms can produce very different numbers for the same market. Treat a TAM as a scenario, not a measurement.',
     template: 'comparison',
     templateData: {
       title: 'Two firms, one market, a billion dollars apart',
@@ -2633,7 +2633,7 @@ export const KEYWORDS = {
     id: 'downstream-sector',
     term: 'Downstream Sector',
     definition:
-      'The refining, processing, and distribution end of the oil and gas industry — turning crude into gasoline, diesel, jet fuel, and petrochemicals and getting them to buyers. It is where raw barrels become finished, higher-value products.',
+      'The refining, processing, and distribution end of the oil and gas industry, turning crude into gasoline, diesel, jet fuel, and petrochemicals and getting them to buyers. It is where raw barrels become finished, higher-value products.',
     template: 'schema',
     templateData: {
       title: 'The three stages of the oil value chain',
@@ -2656,14 +2656,14 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      'Africa long exported upstream (raw crude) and imported downstream (finished fuel). Building refineries captures the downstream value — and margin — at home.',
+      'Africa long exported upstream (raw crude) and imported downstream (finished fuel). Building refineries captures the downstream value, and margin, at home.',
   },
 
   'single-train-refinery': {
     id: 'single-train-refinery',
     term: 'Single-Train Refinery',
     definition:
-      'A refinery built as one continuous, integrated processing line rather than several smaller parallel units ("trains"). It shares utilities, hydrogen, and heat across the whole plant, lowering cost per barrel — but an outage can idle the entire facility at once.',
+      'A refinery built as one continuous, integrated processing line rather than several smaller parallel units ("trains"). It shares utilities, hydrogen, and heat across the whole plant, lowering cost per barrel, but an outage can idle the entire facility at once.',
     template: 'comparison',
     templateData: {
       title: 'Single-train vs multi-train refining',
@@ -2671,15 +2671,15 @@ export const KEYWORDS = {
       rows: [
         {
           label: 'Single-train',
-          cells: ['Lower (shared utilities)', 'High — one fault idles all'],
+          cells: ['Lower (shared utilities)', 'High, one fault idles all'],
         },
         {
           label: 'Multi-train',
-          cells: ['Higher (duplicated units)', 'Lower — units fail independently'],
+          cells: ['Higher (duplicated units)', 'Lower, units fail independently'],
         },
       ],
       footnote:
-        'Dangote is the first single-train refinery to run at 650,000 bpd — a scale no other single line had reached.',
+        'Dangote is the first single-train refinery to run at 650,000 bpd, a scale no other single line had reached.',
     },
   },
 
@@ -2687,7 +2687,7 @@ export const KEYWORDS = {
     id: 'refining-capacity',
     term: 'Refining Capacity',
     definition:
-      'The volume of crude a refinery can process, measured in barrels per day (bpd). It sets the ceiling on how much finished fuel a plant — or a country — can make, but the ceiling is only reached when the plant runs reliably.',
+      'The volume of crude a refinery can process, measured in barrels per day (bpd). It sets the ceiling on how much finished fuel a plant, or a country, can make, but the ceiling is only reached when the plant runs reliably.',
     template: 'comparison',
     templateData: {
       title: "The world's largest single-site refineries",
@@ -2713,7 +2713,7 @@ export const KEYWORDS = {
       rows: [
         {
           label: 'Import refined fuel',
-          cells: ['Recurring — every cargo', 'Persistent downward pressure'],
+          cells: ['Recurring, every cargo', 'Persistent downward pressure'],
         },
         {
           label: 'Refine at home',
@@ -2748,7 +2748,7 @@ export const KEYWORDS = {
     id: 'refined-product-exports',
     term: 'Refined-Product Exports',
     definition:
-      'Sales of finished fuels — gasoline, diesel, jet fuel — rather than raw crude. Exporting products instead of crude captures the refining margin domestically and shifts a country up the value chain.',
+      'Sales of finished fuels, gasoline, diesel, jet fuel, rather than raw crude. Exporting products instead of crude captures the refining margin domestically and shifts a country up the value chain.',
     template: 'comparison',
     templateData: {
       title: 'Exporting crude vs exporting product',
@@ -2766,7 +2766,7 @@ export const KEYWORDS = {
     id: 'coal-to-liquids',
     term: 'Coal-to-Liquids (CTL)',
     definition:
-      'A process that synthesizes liquid fuels from coal rather than crude oil, using gasification and Fischer-Tropsch synthesis. It is energy-intensive and carbon-heavy, and economical only in specific circumstances — such as a country with abundant coal and constrained oil access.',
+      'A process that synthesizes liquid fuels from coal rather than crude oil, using gasification and Fischer-Tropsch synthesis. It is energy-intensive and carbon-heavy, and economical only in specific circumstances, such as a country with abundant coal and constrained oil access.',
     template: 'comparison',
     templateData: {
       title: 'Coal-to-liquids vs conventional refining',
@@ -2784,7 +2784,7 @@ export const KEYWORDS = {
     id: 'nameplate-capacity',
     term: 'Nameplate Capacity',
     definition:
-      'The rate a plant is designed to process under ideal conditions — the number "on the plate." Achieved output is what it actually delivers; for aging or poorly maintained refineries the gap between the two can be enormous.',
+      'The rate a plant is designed to process under ideal conditions, the number "on the plate." Achieved output is what it actually delivers; for aging or poorly maintained refineries the gap between the two can be enormous.',
     template: 'comparison',
     templateData: {
       title: 'Nameplate vs achieved output',
@@ -2794,7 +2794,7 @@ export const KEYWORDS = {
         { label: 'Achieved', cells: ['Actual throughput', 'Often a small fraction, or zero'] },
       ],
       footnote:
-        "A chunk of Africa's 3.5M bpd headline is nameplate capacity awaiting rehabilitation — not delivered barrels.",
+        "A chunk of Africa's 3.5M bpd headline is nameplate capacity awaiting rehabilitation, not delivered barrels.",
     },
   },
 
@@ -2810,11 +2810,11 @@ export const KEYWORDS = {
       rows: [
         {
           label: 'Import fuel',
-          cells: ['Long — overseas refiners', 'Spending and margin leave the country'],
+          cells: ['Long, overseas refiners', 'Spending and margin leave the country'],
         },
         {
           label: 'Substitute (refine locally)',
-          cells: ['Short — regional', 'Spending and jobs stay home'],
+          cells: ['Short, regional', 'Spending and jobs stay home'],
         },
       ],
       footnote:
@@ -2837,7 +2837,7 @@ export const KEYWORDS = {
       },
     },
     realWorld:
-      'Independent refiners like Valero live and die by the crack spread — when product values outrun crude costs, margins expand regardless of the absolute oil price.',
+      'Independent refiners like Valero live and die by the crack spread, when product values outrun crude costs, margins expand regardless of the absolute oil price.',
   },
 
   /* ════════════════════════════════════════════════════════════════════════
@@ -2848,7 +2848,7 @@ export const KEYWORDS = {
     id: 'reverse-acquihire',
     term: 'Reverse-Acquihire',
     definition:
-      "A deal in which an acquirer hires a startup's founders and key team and licenses its data or IP, without buying the company itself. It captures the talent and the data pipeline while leaving the corporate shell — and the merger-review trigger — behind.",
+      "A deal in which an acquirer hires a startup's founders and key team and licenses its data or IP, without buying the company itself. It captures the talent and the data pipeline while leaving the corporate shell, and the merger-review trigger, behind.",
     template: 'comparison',
     templateData: {
       title: 'Three ways to absorb a startup',
@@ -2870,7 +2870,7 @@ export const KEYWORDS = {
     id: 'platformization',
     term: 'Platformization',
     definition:
-      'The strategy of collapsing separate point-solution categories — firewall, EDR, SIEM, identity, and the rest — into a single integrated vendor platform, so a customer buys one console instead of dozens. It is the M&A engine of the consolidation phase: the platform acquires the categories it lacks and integrates away the redundancy.',
+      'The strategy of collapsing separate point-solution categories, firewall, EDR, SIEM, identity, and the rest, into a single integrated vendor platform, so a customer buys one console instead of dozens. It is the M&A engine of the consolidation phase: the platform acquires the categories it lacks and integrates away the redundancy.',
     template: 'comparison',
     templateData: {
       title: 'Point solutions vs a consolidated platform',
@@ -2894,10 +2894,10 @@ export const KEYWORDS = {
       title: 'Model vs data as the moat',
       headers: ['Asset', 'Defensibility', 'Trend'],
       rows: [
-        { label: 'The model', cells: ['Low — open weights close the gap', 'Commoditizing'] },
+        { label: 'The model', cells: ['Low, open weights close the gap', 'Commoditizing'] },
         {
           label: 'Proprietary data',
-          cells: ['High — cannot be scraped or reproduced', 'Appreciating'],
+          cells: ['High, cannot be scraped or reproduced', 'Appreciating'],
         },
       ],
       footnote: 'Acquirers pay for governed data because the right to use it is itself scarce.',
@@ -2908,7 +2908,7 @@ export const KEYWORDS = {
     id: 'workflow-lock-in',
     term: 'Workflow Lock-In',
     definition:
-      "A moat created by owning the position inside a customer's daily workflow — the system of record where the work actually happens. The switching costs of ripping that out, plus the accumulated interaction data, make the incumbent hard to displace regardless of who has the better model.",
+      "A moat created by owning the position inside a customer's daily workflow, the system of record where the work actually happens. The switching costs of ripping that out, plus the accumulated interaction data, make the incumbent hard to displace regardless of who has the better model.",
     template: 'comparison',
     templateData: {
       title: 'Model in isolation vs embedded in the workflow',
@@ -2925,7 +2925,7 @@ export const KEYWORDS = {
     id: 'data-governance',
     term: 'Data Governance',
     definition:
-      'The ownership, licensing, lineage and liability rules that determine who is allowed to move which data through which pipelines. In a data-defined market, the right to use data legally is part of the moat — governed data beats scraped data.',
+      'The ownership, licensing, lineage and liability rules that determine who is allowed to move which data through which pipelines. In a data-defined market, the right to use data legally is part of the moat, governed data beats scraped data.',
     template: 'schema',
     templateData: {
       title: 'The four questions of data governance',
@@ -2968,7 +2968,7 @@ export const KEYWORDS = {
       formula: 'Trigger = (3-mo avg unemployment) − (12-mo low) ≥ 0.50',
       example: {
         title: 'Mid-2026 reading',
-        substitution: 'Currently ≈ 0.10 against a 0.50 trigger — nowhere near a recession signal.',
+        substitution: 'Currently ≈ 0.10 against a 0.50 trigger, nowhere near a recession signal.',
       },
     },
     realWorld:
@@ -2979,7 +2979,7 @@ export const KEYWORDS = {
     id: 'yield-curve-inversion',
     term: 'Yield-Curve Inversion',
     definition:
-      'When short-term government bond yields rise above long-term yields — an unusual state that has historically been one of the most reliable leading indicators of recession, typically preceding downturns by several months to two years.',
+      'When short-term government bond yields rise above long-term yields, an unusual state that has historically been one of the most reliable leading indicators of recession, typically preceding downturns by several months to two years.',
     template: 'comparison',
     templateData: {
       title: 'Normal vs inverted yield curve',
@@ -2996,7 +2996,7 @@ export const KEYWORDS = {
     id: 'acquihire',
     term: 'Acquihire',
     definition:
-      'An acquisition made primarily to obtain a company\'s employees rather than its products or revenue — "acquisition-hire." The company is bought and usually wound down; the team is retained.',
+      'An acquisition made primarily to obtain a company\'s employees rather than its products or revenue, "acquisition-hire." The company is bought and usually wound down; the team is retained.',
     template: 'comparison',
     templateData: {
       title: 'Acquihire vs reverse-acquihire',
@@ -3014,7 +3014,7 @@ export const KEYWORDS = {
     id: 'infrastructure-lock-in',
     term: 'Infrastructure Lock-In',
     definition:
-      'A moat created by becoming the compute or data substrate that other software depends on. Once workloads, pipelines and integrations are built on your layer, migrating off is costly — so the dependency itself is the durable advantage.',
+      'A moat created by becoming the compute or data substrate that other software depends on. Once workloads, pipelines and integrations are built on your layer, migrating off is costly, so the dependency itself is the durable advantage.',
     template: 'comparison',
     templateData: {
       title: 'Application layer vs infrastructure layer',
@@ -3053,7 +3053,7 @@ export const KEYWORDS = {
     id: 'real-world-assets',
     term: 'Real-world assets (RWA)',
     definition:
-      'Tokenized claims on off-chain assets — treasuries, private credit, real estate, commodities, and even livestock — recorded on open blockchain rails so they can be transferred, traded, and borrowed against like any other digital token.',
+      'Tokenized claims on off-chain assets, treasuries, private credit, real estate, commodities, and even livestock, recorded on open blockchain rails so they can be transferred, traded, and borrowed against like any other digital token.',
     template: 'timeline',
     templateData: {
       title: 'From $1B to a projected $16T',
@@ -3079,7 +3079,7 @@ export const KEYWORDS = {
     id: 'collateral-utility',
     term: 'Collateral utility',
     definition:
-      'The value unlocked when an illiquid asset becomes verifiable, transferable collateral that can be borrowed against instantly on open rails — the first thing an asset does once tokenized is get pledged for a loan.',
+      'The value unlocked when an illiquid asset becomes verifiable, transferable collateral that can be borrowed against instantly on open rails, the first thing an asset does once tokenized is get pledged for a loan.',
     template: 'comparison',
     templateData: {
       title: 'Illiquid asset vs tokenized collateral',
@@ -3087,7 +3087,7 @@ export const KEYWORDS = {
       rows: [
         {
           label: 'Illiquid (today)',
-          cells: ['Inspect, appraise, chase paperwork', 'Weeks — if at all'],
+          cells: ['Inspect, appraise, chase paperwork', 'Weeks, if at all'],
         },
         {
           label: 'Tokenized collateral',
@@ -3103,7 +3103,7 @@ export const KEYWORDS = {
     id: 'msme-finance-gap',
     term: 'MSME finance gap',
     definition:
-      'The difference between what micro, small, and medium enterprises need to borrow and the formal credit actually available to them — the demand-side case for collateral tokenization in emerging markets.',
+      'The difference between what micro, small, and medium enterprises need to borrow and the formal credit actually available to them, the demand-side case for collateral tokenization in emerging markets.',
     template: 'comparison',
     templateData: {
       title: 'Sizing the gap',
@@ -3115,7 +3115,7 @@ export const KEYWORDS = {
         { label: 'African smallholders with credit', cells: ['6%', 'African Development Bank'] },
       ],
       footnote:
-        'Much of the "missing" collateral is not missing — farmers own livestock they cannot borrow against for lack of a lender-ready registry and insurance.',
+        'Much of the "missing" collateral is not missing, farmers own livestock they cannot borrow against for lack of a lender-ready registry and insurance.',
     },
   },
 
@@ -3127,7 +3127,7 @@ export const KEYWORDS = {
     id: 'reserve-currency-status',
     term: 'Reserve Currency Status',
     definition:
-      "The share of global central-bank foreign-exchange reserves held in a given currency, as reported by the IMF's COFER survey. In the sequence of national power, reserve-currency status is the last dimension to arrive during a hegemonic ascent — and the last to decay during a decline, persisting decades after the underlying output, trade, and financial-center leads have eroded.",
+      "The share of global central-bank foreign-exchange reserves held in a given currency, as reported by the IMF's COFER survey. In the sequence of national power, reserve-currency status is the last dimension to arrive during a hegemonic ascent, and the last to decay during a decline, persisting decades after the underlying output, trade, and financial-center leads have eroded.",
     template: 'comparison',
     templateData: {
       title: 'Allocated FX reserves by currency (IMF COFER, 2025)',
@@ -3142,7 +3142,7 @@ export const KEYWORDS = {
         'One of the 18 power dimensions in Ezana\'s Empire Rankings. A COFER dollar share below 45% is this report\'s explicit "kill switch" for the incumbent-holds base case.',
     },
     realWorld:
-      'When the article notes the dollar at 58% of reserves against a US output share between 15% (PPP) and 26% (nominal), that gap is the "overhang" — reserve status outlasting the leads that built it, exactly as sterling did into the 1950s.',
+      'When the article notes the dollar at 58% of reserves against a US output share between 15% (PPP) and 26% (nominal), that gap is the "overhang", reserve status outlasting the leads that built it, exactly as sterling did into the 1950s.',
     courseId: 'stocks-advanced-7',
     courseTitle: 'Macroeconomics for Traders',
   },
@@ -3171,7 +3171,7 @@ export const KEYWORDS = {
       ],
     },
     realWorld:
-      "Every long-run output figure in this article — the 1500 half-of-the-world share, China's 1820 peak, the 1950 American maximum — follows the Maddison convention. The values are scholarly estimates revised across editions, not measurements, which is why the piece rounds them.",
+      "Every long-run output figure in this article, the 1500 half-of-the-world share, China's 1820 peak, the 1950 American maximum, follows the Maddison convention. The values are scholarly estimates revised across editions, not measurements, which is why the piece rounds them.",
     courseId: 'stocks-advanced-7',
     courseTitle: 'Macroeconomics for Traders',
   },

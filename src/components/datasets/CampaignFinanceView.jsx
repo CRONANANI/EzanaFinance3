@@ -135,7 +135,7 @@ export function CampaignFinanceView({ members = [], onSelectMember }) {
       return onSelectMember({
         name: row.name,
         party: row.party,
-        chamber: row.office === 'S' ? 'Senate' : row.office === 'H' ? 'House' : '—',
+        chamber: row.office === 'S' ? 'Senate' : row.office === 'H' ? 'House' : '–',
         state: row.state || null,
         bioguideId: row.bioguideId || null,
         trades: [],
@@ -215,7 +215,7 @@ function MoneyMapStrip({ cycle }) {
         <div key={c.label} className="pcf-stat">
           <div className="pcf-stat-label">{c.label}</div>
           <div className="pcf-stat-value">
-            {loading ? '—' : c.count ? Number(c.value || 0) : fmtMoney(c.value)}
+            {loading ? '–' : c.count ? Number(c.value || 0) : fmtMoney(c.value)}
           </div>
           <div className="pcf-stat-sub">{c.sub}</div>
         </div>
@@ -307,7 +307,7 @@ function TopRaisersCard({ cycle, onSelectMember }) {
                         bioguideId={r.bioguideId}
                         party={PARTY_WORD[r.party]}
                       />
-                      <span className="pcf-member-name">{r.name || '—'}</span>
+                      <span className="pcf-member-name">{r.name || '–'}</span>
                     </span>
                   </td>
                   <td>
@@ -316,14 +316,14 @@ function TopRaisersCard({ cycle, onSelectMember }) {
                     </span>
                   </td>
                   <td className="pcf-member-sub">
-                    {r.office === 'S' ? 'Senate' : r.office === 'H' ? 'House' : '—'}
+                    {r.office === 'S' ? 'Senate' : r.office === 'H' ? 'House' : '–'}
                     {r.state ? ` · ${r.state}` : ''}
                   </td>
                   <td className="pcf-mono r">{fmtMoney(r.raised)}</td>
                   <td className="pcf-mono r">{fmtMoney(r.cashOnHand)}</td>
                   <td>
                     {indPct == null ? (
-                      <span className="pcf-muted">—</span>
+                      <span className="pcf-muted">–</span>
                     ) : (
                       <span className="pcf-mix">
                         <span
@@ -478,7 +478,7 @@ function OutsideMoneyCard({ cycle, onSelectMember }) {
                       bioguideId={r.bioguideId}
                       party={PARTY_WORD[r.party]}
                     />
-                    <span className="pcf-member-name">{r.name || '—'}</span>
+                    <span className="pcf-member-name">{r.name || '–'}</span>
                   </span>
                 </td>
                 <td className="pcf-mono r pcf-pos">{fmtMoney(r.forAmount)}</td>
@@ -667,7 +667,7 @@ export function MemberCampaignFinance({ member: m, cycle = 2026 }) {
 
           {outside && (outside.supportTotal > 0 || outside.opposeTotal > 0) ? (
             <p className="pcf-modal-sub" style={{ marginTop: 10 }}>
-              Outside money — for: <span className="pcf-pos">{fmtUSD(outside.supportTotal)}</span> ·
+              Outside money, for: <span className="pcf-pos">{fmtUSD(outside.supportTotal)}</span> ·
               against: <span className="pcf-neg">{fmtUSD(outside.opposeTotal)}</span>
             </p>
           ) : null}
@@ -697,7 +697,7 @@ function CampaignFinanceMemberModal({ member: m, cycle, onClose }) {
         <div className="pcf-cfm-head">
           <MiniAvatar name={m.name} bioguideId={m.bioguideId} party={m.party} />
           <div>
-            <div className="pcf-cfm-name">{m.name || '—'}</div>
+            <div className="pcf-cfm-name">{m.name || '–'}</div>
             <div className="pcf-cfm-sub">
               <span className="pcf-badge" style={{ background: pm.color }}>
                 {pm.code}

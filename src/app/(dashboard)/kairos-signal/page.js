@@ -91,7 +91,7 @@ function RegionPicker({ value, onChange }) {
     <select className="kairos-select" value={value} onChange={(e) => onChange(e.target.value)}>
       {REGIONS.map((r) => (
         <option key={r.id} value={r.id}>
-          {r.label} — {r.commodity}
+          {r.label} · {r.commodity}
         </option>
       ))}
     </select>
@@ -171,12 +171,12 @@ function TemperatureAnomalyCard({ weatherData, region }) {
       <div className="kairos-stat-row">
         <MiniStat
           label="Current avg"
-          value={currentTemp != null ? `${currentTemp}°` : '—'}
+          value={currentTemp != null ? `${currentTemp}°` : '–'}
           unit="C"
         />
         <MiniStat
           label="7-day Δ"
-          value={delta != null ? `${delta > 0 ? '+' : ''}${delta.toFixed(1)}°` : '—'}
+          value={delta != null ? `${delta > 0 ? '+' : ''}${delta.toFixed(1)}°` : '–'}
           positive={delta != null ? delta > 0 : undefined}
         />
         <MiniStat label="Region" value={region.label} />
@@ -352,7 +352,7 @@ function GrowingDegreeDaysCard({ weatherData }) {
       </div>
       <p className="kairos-card-hint">
         GDD accumulates heat above 10°C. Corn pollination occurs at ~630 GDD (silking begins, pollen
-        shed lasts ~2 weeks). Per Iowa State research, this is the highest-risk window — drought +
+        shed lasts ~2 weeks). Per Iowa State research, this is the highest-risk window, drought +
         heat here causes irreversible yield loss. No-till fields and stress-tolerant hybrids perform
         best during this critical period.
       </p>
@@ -498,11 +498,11 @@ function CommoditySensitivityCard() {
       corn: {
         score: 95,
         summary:
-          "Temperature is the dominant factor for corn yields. Per Iowa State research, pollen viability drops to zero once temperatures reach the mid-90s°F — especially with low relative humidity. Silks grow 1–1.5 inches/day and must be fertilized by viable pollen for kernels to develop. The natural buffer: pollen shed occurs early-to-mid morning when temps are lower. But the critical insight is that high temperatures alone won't destroy pollination IF soil moisture is adequate. It's the combination of drought + heat at pollination that causes catastrophic yield loss. The 2012 US drought destroyed 27% of the corn crop when this combination persisted for 10+ days across the Corn Belt.",
+          "Temperature is the dominant factor for corn yields. Per Iowa State research, pollen viability drops to zero once temperatures reach the mid-90s°F, especially with low relative humidity. Silks grow 1–1.5 inches/day and must be fertilized by viable pollen for kernels to develop. The natural buffer: pollen shed occurs early-to-mid morning when temps are lower. But the critical insight is that high temperatures alone won't destroy pollination IF soil moisture is adequate. It's the combination of drought + heat at pollination that causes catastrophic yield loss. The 2012 US drought destroyed 27% of the corn crop when this combination persisted for 10+ days across the Corn Belt.",
         risks: [
           'Pollen dies at mid-90s°F+ (low humidity amplifies)',
           'Drought desynchronizes silk emergence from pollen shed',
-          'No-till fields outperform in heat — moisture conservation is key',
+          'No-till fields outperform in heat, moisture conservation is key',
           'Early-maturing hybrids can escape peak heat windows',
         ],
       },
@@ -539,7 +539,7 @@ function CommoditySensitivityCard() {
       oil: {
         score: 35,
         summary:
-          'Crude oil has limited direct temperature sensitivity, but extreme cold affects pipeline flow (crude thickens), refinery operations, and offshore platform safety. The primary temperature impact is on demand — cold winters increase heating oil consumption.',
+          'Crude oil has limited direct temperature sensitivity, but extreme cold affects pipeline flow (crude thickens), refinery operations, and offshore platform safety. The primary temperature impact is on demand, cold winters increase heating oil consumption.',
         risks: [
           'Pipeline viscosity issues in extreme cold',
           'Refinery outages from freeze events',
@@ -551,11 +551,11 @@ function CommoditySensitivityCard() {
       corn: {
         score: 90,
         summary:
-          'Corn requires 20–24 inches during the growing season, but WHEN moisture is available matters more than how much. Iowa State research shows drought stress slows silk elongation while simultaneously accelerating pollen shed — this desynchronization means pollen is gone before silks emerge, and no fertilization occurs. One corn plant produces enough pollen for 10 plants (a natural compensation buffer), but if silking is delayed 2+ weeks by drought stress, that buffer is exhausted. No-till and reduced-till practices conserve soil moisture and significantly improve pollination success during drought years.',
+          'Corn requires 20–24 inches during the growing season, but WHEN moisture is available matters more than how much. Iowa State research shows drought stress slows silk elongation while simultaneously accelerating pollen shed, this desynchronization means pollen is gone before silks emerge, and no fertilization occurs. One corn plant produces enough pollen for 10 plants (a natural compensation buffer), but if silking is delayed 2+ weeks by drought stress, that buffer is exhausted. No-till and reduced-till practices conserve soil moisture and significantly improve pollination success during drought years.',
         risks: [
           'Drought desynchronizes pollen shed and silk emergence',
           'Silk delay >2 weeks = total fertilization failure',
-          'No-till conserves moisture — fields outperform in drought',
+          'No-till conserves moisture, fields outperform in drought',
           'Every planting day past May 15 costs ~1 bushel/acre',
         ],
       },
@@ -582,7 +582,7 @@ function CommoditySensitivityCard() {
       wheat: {
         score: 88,
         summary:
-          'Wheat needs 15–20 inches during the growing season, with moisture critical during tillering and heading. Drought in the Black Sea region (Russia, Ukraine) during April–May directly moves global wheat futures — these regions produce 30% of world wheat exports.',
+          'Wheat needs 15–20 inches during the growing season, with moisture critical during tillering and heading. Drought in the Black Sea region (Russia, Ukraine) during April–May directly moves global wheat futures, these regions produce 30% of world wheat exports.',
         risks: [
           'Black Sea spring drought',
           'Harvest rain (sprouting/mycotoxins)',
@@ -592,7 +592,7 @@ function CommoditySensitivityCard() {
       oil: {
         score: 25,
         summary:
-          'Precipitation affects oil primarily through logistics — hurricanes and flooding disrupt Gulf Coast refining capacity (45% of US refining), pipeline operations, and port loading. Hurricane Katrina (2005) shut 95% of Gulf production for weeks.',
+          'Precipitation affects oil primarily through logistics, hurricanes and flooding disrupt Gulf Coast refining capacity (45% of US refining), pipeline operations, and port loading. Hurricane Katrina (2005) shut 95% of Gulf production for weeks.',
         risks: [
           'Hurricane-forced refinery shutdowns',
           'Flooding of pipeline infrastructure',
@@ -604,7 +604,7 @@ function CommoditySensitivityCard() {
       corn: {
         score: 60,
         summary:
-          'Solar radiation drives photosynthesis — corn needs 500+ hours of direct sunlight during the growing season. Overcast conditions during grain fill reduce starch accumulation. However, too much direct sun during drought amplifies heat stress on exposed ears.',
+          'Solar radiation drives photosynthesis, corn needs 500+ hours of direct sunlight during the growing season. Overcast conditions during grain fill reduce starch accumulation. However, too much direct sun during drought amplifies heat stress on exposed ears.',
         risks: [
           'Low light during grain fill',
           'Solar-amplified heat stress',
@@ -614,7 +614,7 @@ function CommoditySensitivityCard() {
       coffee: {
         score: 55,
         summary:
-          'Coffee is a shade-loving plant — direct tropical sun can scorch leaves and cherries. Many premium farms use shade-grown techniques. Solar radiation matters most during drying — sun-dried beans (natural process) require 15–20 days of consistent sun.',
+          'Coffee is a shade-loving plant, direct tropical sun can scorch leaves and cherries. Many premium farms use shade-grown techniques. Solar radiation matters most during drying, sun-dried beans (natural process) require 15–20 days of consistent sun.',
         risks: [
           'Leaf scorch from direct sun',
           'Insufficient drying conditions',
@@ -656,7 +656,7 @@ function CommoditySensitivityCard() {
       corn: {
         score: 70,
         summary:
-          "Corn is a tropical grass — it cannot survive frost. A late spring frost kills seedlings, forcing replanting at lower yield potential. An early fall frost before maturity traps moisture in kernels. Iowa State research adds a subtlety: early-season hybrids that pollinate before July heat peaks can avoid the worst temperature stress entirely, but they also face higher frost risk on both ends of the season. Hybrid selection that balances frost escape with stress tolerance is the most important management decision — because it's impossible to predict when stressful conditions will occur year to year.",
+          "Corn is a tropical grass, it cannot survive frost. A late spring frost kills seedlings, forcing replanting at lower yield potential. An early fall frost before maturity traps moisture in kernels. Iowa State research adds a subtlety: early-season hybrids that pollinate before July heat peaks can avoid the worst temperature stress entirely, but they also face higher frost risk on both ends of the season. Hybrid selection that balances frost escape with stress tolerance is the most important management decision, because it's impossible to predict when stressful conditions will occur year to year.",
         risks: [
           'Late spring frost kills seedlings → replanting penalty',
           'Early fall frost traps kernel moisture',
@@ -677,7 +677,7 @@ function CommoditySensitivityCard() {
       natgas: {
         score: 45,
         summary:
-          "Frost itself doesn't impact gas production, but frost events correlate with cold outbreaks that spike heating demand. The distinction matters — it's the cold temperatures, not the frost, that move gas prices.",
+          "Frost itself doesn't impact gas production, but frost events correlate with cold outbreaks that spike heating demand. The distinction matters, it's the cold temperatures, not the frost, that move gas prices.",
         risks: [
           'Early frost signals cold winter onset',
           'Agricultural demand for frost protection',
@@ -687,7 +687,7 @@ function CommoditySensitivityCard() {
       wheat: {
         score: 80,
         summary:
-          'Winter wheat survives cold by going dormant under snow cover. The danger is frost without snow — exposed crowns die below 12°F. Spring frost on wheat that has broken dormancy (greened up) can destroy tillers and reduce head count by 30–50%.',
+          'Winter wheat survives cold by going dormant under snow cover. The danger is frost without snow, exposed crowns die below 12°F. Spring frost on wheat that has broken dormancy (greened up) can destroy tillers and reduce head count by 30–50%.',
         risks: [
           'Crown kill without snow cover',
           'Spring frost on greened-up wheat',
@@ -709,7 +709,7 @@ function CommoditySensitivityCard() {
       corn: {
         score: 40,
         summary:
-          "Wind primarily affects corn through derecho events — straight-line windstorms that can flatten millions of acres in hours. The 2020 Iowa derecho destroyed 43% of Iowa's corn crop with 140mph winds. Wind also increases evapotranspiration, worsening drought stress.",
+          "Wind primarily affects corn through derecho events, straight-line windstorms that can flatten millions of acres in hours. The 2020 Iowa derecho destroyed 43% of Iowa's corn crop with 140mph winds. Wind also increases evapotranspiration, worsening drought stress.",
         risks: [
           'Derecho events flatten standing corn',
           'Increased evapotranspiration in drought',
@@ -729,7 +729,7 @@ function CommoditySensitivityCard() {
       natgas: {
         score: 75,
         summary:
-          'Wind directly competes with gas for electricity — when wind generation is high, gas-fired plants ramp down. In ERCOT (Texas), wind provides 25–30% of electricity. Wind also affects offshore operations — high seas shut down Gulf platforms.',
+          'Wind directly competes with gas for electricity, when wind generation is high, gas-fired plants ramp down. In ERCOT (Texas), wind provides 25–30% of electricity. Wind also affects offshore operations, high seas shut down Gulf platforms.',
         risks: [
           'Wind displacement of gas generation',
           'Offshore platform shutdowns (>40kt winds)',
@@ -739,7 +739,7 @@ function CommoditySensitivityCard() {
       wheat: {
         score: 50,
         summary:
-          'Wind causes lodging (plants blow over) in mature wheat, making harvest difficult and reducing yield. Sustained winds during dry conditions cause soil erosion, particularly in the US Great Plains — echoing the 1930s Dust Bowl dynamics.',
+          'Wind causes lodging (plants blow over) in mature wheat, making harvest difficult and reducing yield. Sustained winds during dry conditions cause soil erosion, particularly in the US Great Plains, echoing the 1930s Dust Bowl dynamics.',
         risks: [
           'Lodging of mature wheat',
           'Soil erosion in dry conditions',
@@ -749,7 +749,7 @@ function CommoditySensitivityCard() {
       oil: {
         score: 55,
         summary:
-          'Wind impacts oil through offshore production — tropical storms and hurricanes force platform evacuations in the Gulf of Mexico. Hurricane season (June–November) historically causes 5–15% Gulf production shutdowns. Wind also affects tanker loading at ports.',
+          'Wind impacts oil through offshore production, tropical storms and hurricanes force platform evacuations in the Gulf of Mexico. Hurricane season (June–November) historically causes 5–15% Gulf production shutdowns. Wind also affects tanker loading at ports.',
         risks: [
           'Hurricane-forced platform evacuations',
           'Tanker loading delays',
@@ -761,7 +761,7 @@ function CommoditySensitivityCard() {
       corn: {
         score: 35,
         summary:
-          'Corn logistics are primarily river-based — the Mississippi River system moves 60% of US corn exports. Low water levels (drought) restrict barge loading capacity, adding $0.20–0.50/bushel in transport costs. The 2022 Mississippi drought cut barge capacity 30%.',
+          'Corn logistics are primarily river-based, the Mississippi River system moves 60% of US corn exports. Low water levels (drought) restrict barge loading capacity, adding $0.20–0.50/bushel in transport costs. The 2022 Mississippi drought cut barge capacity 30%.',
         risks: [
           'Low Mississippi River levels',
           'Rail bottlenecks during harvest',
@@ -771,7 +771,7 @@ function CommoditySensitivityCard() {
       coffee: {
         score: 50,
         summary:
-          "Coffee logistics are highly weather-sensitive — most Brazilian coffee moves by truck on unpaved rural roads. Harvest-season rain turns roads to mud, delaying transport to dry mills by days. Port congestion at Santos (world's largest coffee port) compounds the problem.",
+          "Coffee logistics are highly weather-sensitive, most Brazilian coffee moves by truck on unpaved rural roads. Harvest-season rain turns roads to mud, delaying transport to dry mills by days. Port congestion at Santos (world's largest coffee port) compounds the problem.",
         risks: [
           'Muddy harvest roads delay transport',
           'Santos port congestion',
@@ -781,7 +781,7 @@ function CommoditySensitivityCard() {
       natgas: {
         score: 85,
         summary:
-          "Natural gas logistics ARE the market — pipeline capacity, LNG liquefaction, and storage utilization determine regional prices. A pipeline freeze (2021 Texas) or compressor station failure creates localized price spikes of 10–100x. Gas can't be easily rerouted like oil.",
+          "Natural gas logistics ARE the market, pipeline capacity, LNG liquefaction, and storage utilization determine regional prices. A pipeline freeze (2021 Texas) or compressor station failure creates localized price spikes of 10–100x. Gas can't be easily rerouted like oil.",
         risks: [
           'Pipeline freeze/compressor failures',
           'LNG export terminal weather delays',
@@ -797,7 +797,7 @@ function CommoditySensitivityCard() {
       oil: {
         score: 95,
         summary:
-          'Logistics is THE weather variable for oil. Strait of Hormuz (20% of global oil), Suez Canal, Malacca Strait — any disruption at these chokepoints (hurricanes, fog, military conflict amplified by weather) directly reprices crude.',
+          'Logistics is THE weather variable for oil. Strait of Hormuz (20% of global oil), Suez Canal, Malacca Strait, any disruption at these chokepoints (hurricanes, fog, military conflict amplified by weather) directly reprices crude.',
         risks: [
           'Gulf hurricane refinery shutdowns',
           'Chokepoint disruptions (Hormuz, Suez)',
@@ -813,35 +813,35 @@ function CommoditySensitivityCard() {
       {
         date: '2026-05-15',
         headline:
-          'Iowa State Extension: corn pollination window approaching — pollen viability drops to zero above mid-90s°F. Drought + heat combination is the critical threat, not heat alone. No-till fields and early-maturing hybrids offer best resilience.',
+          'Iowa State Extension: corn pollination window approaching, pollen viability drops to zero above mid-90s°F. Drought + heat combination is the critical threat, not heat alone. No-till fields and early-maturing hybrids offer best resilience.',
         region: 'US Midwest',
         severity: 'medium',
       },
       {
         date: '2026-05-14',
         headline:
-          'Pacific Northwest heatwave forecast for June — NOAA warns of 100°F+ temps across Oregon and Washington',
+          'Pacific Northwest heatwave forecast for June, NOAA warns of 100°F+ temps across Oregon and Washington',
         region: 'US West Coast',
         severity: 'high',
       },
       {
         date: '2026-05-12',
         headline:
-          'India heatwave death toll rises as temperatures exceed 122°F in Rajasthan — rice planting delays expected',
+          'India heatwave death toll rises as temperatures exceed 122°F in Rajasthan, rice planting delays expected',
         region: 'South Asia',
         severity: 'critical',
       },
       {
         date: '2026-05-10',
         headline:
-          'Southern Brazil cold snap forecasted for late May — coffee growing regions on frost watch',
+          'Southern Brazil cold snap forecasted for late May, coffee growing regions on frost watch',
         region: 'Brazil',
         severity: 'high',
       },
       {
         date: '2026-05-08',
         headline:
-          'EU Mediterranean basin projected to see hottest summer on record — drought risk elevated',
+          'EU Mediterranean basin projected to see hottest summer on record, drought risk elevated',
         region: 'Europe',
         severity: 'medium',
       },
@@ -850,35 +850,35 @@ function CommoditySensitivityCard() {
       {
         date: '2026-05-15',
         headline:
-          'ISU research reminder: drought stress slows silk elongation while accelerating pollen shed — this desynchronization is the #1 mechanism for corn yield loss. Soil moisture at pollination matters more than total season rainfall.',
+          'ISU research reminder: drought stress slows silk elongation while accelerating pollen shed, this desynchronization is the #1 mechanism for corn yield loss. Soil moisture at pollination matters more than total season rainfall.',
         region: 'US Midwest',
         severity: 'high',
       },
       {
         date: '2026-05-13',
         headline:
-          'Corn Belt rainfall deficit widens — Iowa and Illinois at 60% of normal May precipitation',
+          'Corn Belt rainfall deficit widens, Iowa and Illinois at 60% of normal May precipitation',
         region: 'US Midwest',
         severity: 'high',
       },
       {
         date: '2026-05-11',
         headline:
-          'Monsoon onset forecast 10 days early for central India — potential flooding in Gujarat',
+          'Monsoon onset forecast 10 days early for central India, potential flooding in Gujarat',
         region: 'South Asia',
         severity: 'medium',
       },
       {
         date: '2026-05-09',
         headline:
-          'La Niña watch issued by NOAA — dry pattern expected across US Southern Plains through August',
+          'La Niña watch issued by NOAA, dry pattern expected across US Southern Plains through August',
         region: 'Global',
         severity: 'high',
       },
       {
         date: '2026-05-07',
         headline:
-          'Black Sea region drought deepening — Ukraine winter wheat crop rated 35% poor/very poor',
+          'Black Sea region drought deepening, Ukraine winter wheat crop rated 35% poor/very poor',
         region: 'Eastern Europe',
         severity: 'critical',
       },
@@ -887,20 +887,20 @@ function CommoditySensitivityCard() {
       {
         date: '2026-05-12',
         headline:
-          'Extended cloud cover across Northern Europe reduces solar generation — gas backup demand rises',
+          'Extended cloud cover across Northern Europe reduces solar generation, gas backup demand rises',
         region: 'Europe',
         severity: 'low',
       },
       {
         date: '2026-05-09',
-        headline: 'Australian solar output hits record — displaces coal and gas in NEM grid',
+        headline: 'Australian solar output hits record, displaces coal and gas in NEM grid',
         region: 'Australia',
         severity: 'low',
       },
       {
         date: '2026-05-06',
         headline:
-          'ERCOT forecasts record solar generation for Texas summer 2026 — gas demand outlook lowered',
+          'ERCOT forecasts record solar generation for Texas summer 2026, gas demand outlook lowered',
         region: 'US South',
         severity: 'medium',
       },
@@ -909,20 +909,20 @@ function CommoditySensitivityCard() {
       {
         date: '2026-05-14',
         headline:
-          'Late frost warning for Argentina Pampas — soybean harvest 80% complete but unharvested fields at risk',
+          'Late frost warning for Argentina Pampas, soybean harvest 80% complete but unharvested fields at risk',
         region: 'South America',
         severity: 'high',
       },
       {
         date: '2026-05-10',
         headline:
-          'Southern Brazil coffee regions see frost probability rise to 35% for June — GFS and ECMWF models agree',
+          'Southern Brazil coffee regions see frost probability rise to 35% for June, GFS and ECMWF models agree',
         region: 'Brazil',
         severity: 'critical',
       },
       {
         date: '2026-05-07',
-        headline: 'Montana spring wheat hit by May frost — 200K acres replanting',
+        headline: 'Montana spring wheat hit by May frost, 200K acres replanting',
         region: 'US Northern Plains',
         severity: 'medium',
       },
@@ -931,7 +931,7 @@ function CommoditySensitivityCard() {
       {
         date: '2026-05-13',
         headline:
-          'NOAA issues above-average hurricane season forecast — 18-22 named storms expected',
+          'NOAA issues above-average hurricane season forecast, 18-22 named storms expected',
         region: 'Atlantic Basin',
         severity: 'high',
       },
@@ -944,7 +944,7 @@ function CommoditySensitivityCard() {
       {
         date: '2026-05-08',
         headline:
-          'Derecho risk elevated across Corn Belt through late June — atmospheric pattern favors MCS formation',
+          'Derecho risk elevated across Corn Belt through late June, atmospheric pattern favors MCS formation',
         region: 'US Midwest',
         severity: 'medium',
       },
@@ -953,26 +953,26 @@ function CommoditySensitivityCard() {
       {
         date: '2026-05-14',
         headline:
-          'Mississippi River levels forecast to drop below critical thresholds by mid-June — barge restrictions likely',
+          'Mississippi River levels forecast to drop below critical thresholds by mid-June, barge restrictions likely',
         region: 'US Interior',
         severity: 'high',
       },
       {
         date: '2026-05-12',
-        headline: 'Santos port closure due to storm — 15 coffee vessels delayed, basis widens',
+        headline: 'Santos port closure due to storm, 15 coffee vessels delayed, basis widens',
         region: 'Brazil',
         severity: 'medium',
       },
       {
         date: '2026-05-09',
         headline:
-          'Panama Canal transit restrictions tightened again — drought reduces daily crossings to 24 from 36 normal',
+          'Panama Canal transit restrictions tightened again, drought reduces daily crossings to 24 from 36 normal',
         region: 'Central America',
         severity: 'critical',
       },
       {
         date: '2026-05-06',
-        headline: 'Black Sea grain corridor talks stall — shipping insurance premiums rise 40%',
+        headline: 'Black Sea grain corridor talks stall, shipping insurance premiums rise 40%',
         region: 'Eastern Europe',
         severity: 'high',
       },
@@ -1163,7 +1163,7 @@ function CommoditySensitivityCard() {
                   gap: '0.3rem',
                 }}
               >
-                <i className="bi bi-newspaper" /> Weather News — {activeDim}
+                <i className="bi bi-newspaper" /> Weather News: {activeDim}
               </div>
               <div style={{ position: 'relative', paddingLeft: 16 }}>
                 {/* Chain view vertical line */}
@@ -1404,7 +1404,7 @@ function CriticalWindowsCard() {
         {
           label: 'Planting',
           months: [3, 4],
-          risk: 'Wet delays — each day past May 15 costs ~1 bu/acre',
+          risk: 'Wet delays, each day past May 15 costs ~1 bu/acre',
         },
         {
           label: 'Pollination',
@@ -1414,7 +1414,7 @@ function CriticalWindowsCard() {
         {
           label: 'Grain fill',
           months: [7],
-          risk: 'Night temps drive kernel weight — high nights reduce starch accumulation',
+          risk: 'Night temps drive kernel weight, high nights reduce starch accumulation',
         },
         {
           label: 'Harvest',
@@ -1525,7 +1525,7 @@ function WeatherMarketImpactCard({ weatherData, region }) {
         commodity,
         direction: 'bearish',
         magnitude: 'High',
-        reason: `${totalPrecip.toFixed(0)}mm in 7 days — flooding risk for ${commodity} supply chain`,
+        reason: `${totalPrecip.toFixed(0)}mm in 7 days, flooding risk for ${commodity} supply chain`,
         icon: '🌧️',
       });
     } else if (totalPrecip < 5) {
@@ -1534,7 +1534,7 @@ function WeatherMarketImpactCard({ weatherData, region }) {
         commodity,
         direction: 'bullish',
         magnitude: 'High',
-        reason: `Only ${totalPrecip.toFixed(1)}mm in 7 days — yield reduction risk`,
+        reason: `Only ${totalPrecip.toFixed(1)}mm in 7 days, yield reduction risk`,
         icon: '☀️',
       });
     }
@@ -1545,7 +1545,7 @@ function WeatherMarketImpactCard({ weatherData, region }) {
         commodity,
         direction: 'bullish',
         magnitude: avgTemp > 38 ? 'Critical' : 'Medium',
-        reason: `Average ${avgTemp.toFixed(1)}°C over 7 days — crop stress likely`,
+        reason: `Average ${avgTemp.toFixed(1)}°C over 7 days, crop stress likely`,
         icon: '🌡️',
       });
     } else if (avgTemp < 2) {
@@ -1554,7 +1554,7 @@ function WeatherMarketImpactCard({ weatherData, region }) {
         commodity,
         direction: 'bullish',
         magnitude: 'High',
-        reason: `Temperatures near or below freezing — potential crop loss`,
+        reason: `Temperatures near or below freezing, potential crop loss`,
         icon: '❄️',
       });
     }
@@ -1565,7 +1565,7 @@ function WeatherMarketImpactCard({ weatherData, region }) {
         commodity: 'Energy / Logistics',
         direction: 'bullish',
         magnitude: 'High',
-        reason: `${peakWind.toFixed(0)} km/h peak — offshore disruption possible`,
+        reason: `${peakWind.toFixed(0)} km/h peak, offshore disruption possible`,
         icon: '🌪️',
       });
     }
@@ -1710,7 +1710,7 @@ function BehaviouralSignalsCard() {
     {
       months: [2, 3, 4],
       commodity: 'Agricultural',
-      signal: 'Spring planting season — input buying',
+      signal: 'Spring planting season, input buying',
       direction: 'bullish',
       note: 'Fertiliser, corn seed, soy futures see volume spikes',
       reliability: 72,
@@ -1981,22 +1981,22 @@ function ForecastOutlookCard({ weatherData, region }) {
         outlook = 'Bearish for supply';
         color = 'var(--negative)';
         icon = '🌧️';
-        note = `Heavy rain (${totPrecp.toFixed(0)}mm) — logistics and harvest disruption risk.`;
+        note = `Heavy rain (${totPrecp.toFixed(0)}mm), logistics and harvest disruption risk.`;
       } else if (totPrecp < 2 && avgTemp > 30) {
         outlook = 'Bullish for prices';
         color = 'var(--emerald)';
         icon = '☀️';
-        note = `Dry + hot — drought stress risk for ${region.commodity}.`;
+        note = `Dry + hot, drought stress risk for ${region.commodity}.`;
       } else if (peakWind > 65) {
         outlook = 'Supply disruption risk';
         color = '#f97316';
         icon = '💨';
-        note = `High winds (${peakWind.toFixed(0)} km/h) — transport and offshore impact.`;
+        note = `High winds (${peakWind.toFixed(0)} km/h), transport and offshore impact.`;
       } else if (avgTemp < 1) {
         outlook = 'Frost risk';
         color = '#3b82f6';
         icon = '❄️';
-        note = `Near-freezing temps — potential damage to ${region.commodity}.`;
+        note = `Near-freezing temps, potential damage to ${region.commodity}.`;
       }
 
       return { label: p.label, outlook, color, icon, note, avgTemp, totPrecp, peakWind };
@@ -2170,39 +2170,39 @@ function SignalDashboardCard({ weatherData, region, owmCurrent }) {
     ? [
         {
           label: 'Temperature',
-          value: owmCurrent.temp != null ? `${owmCurrent.temp.toFixed(1)}°C` : '—',
+          value: owmCurrent.temp != null ? `${owmCurrent.temp.toFixed(1)}°C` : '–',
           icon: 'bi-thermometer-half',
         },
         {
           label: 'Humidity',
-          value: owmCurrent.humidity != null ? `${owmCurrent.humidity}%` : '—',
+          value: owmCurrent.humidity != null ? `${owmCurrent.humidity}%` : '–',
           icon: 'bi-droplet',
         },
         {
           label: 'Wind',
-          value: owmCurrent.windSpeed != null ? `${owmCurrent.windSpeed.toFixed(1)} m/s` : '—',
+          value: owmCurrent.windSpeed != null ? `${owmCurrent.windSpeed.toFixed(1)} m/s` : '–',
           icon: 'bi-wind',
         },
         {
           label: 'Pressure',
-          value: owmCurrent.pressure != null ? `${owmCurrent.pressure} hPa` : '—',
+          value: owmCurrent.pressure != null ? `${owmCurrent.pressure} hPa` : '–',
           icon: 'bi-speedometer2',
         },
         {
           label: 'UV Index',
-          value: owmCurrent.uvi != null ? owmCurrent.uvi.toFixed(1) : '—',
+          value: owmCurrent.uvi != null ? owmCurrent.uvi.toFixed(1) : '–',
           icon: 'bi-brightness-high',
         },
         {
           label: 'Cloud Cover',
-          value: owmCurrent.clouds != null ? `${owmCurrent.clouds}%` : '—',
+          value: owmCurrent.clouds != null ? `${owmCurrent.clouds}%` : '–',
           icon: 'bi-cloud',
         },
       ]
     : null;
 
   return (
-    <KairosCard icon="bi-shield-check" title="Signal strength — live">
+    <KairosCard icon="bi-shield-check" title="Signal strength, live">
       {conditionTiles && (
         <div
           style={{
@@ -2257,7 +2257,7 @@ function SignalDashboardCard({ weatherData, region, owmCurrent }) {
           {severityLabels[overallSeverity]}
         </span>
         <span className="kairos-signal-region">
-          {region.label} — {region.commodity}
+          {region.label} · {region.commodity}
         </span>
       </div>
       <div className="kairos-signal-grid">
@@ -2377,7 +2377,7 @@ export default function KairosSignalPage() {
                   gap: '0.3rem',
                 }}
               >
-                <i className="bi bi-robot" /> AI Weather Summary — {region.label}
+                <i className="bi bi-robot" /> AI Weather Summary: {region.label}
               </div>
               <p
                 style={{

@@ -102,7 +102,7 @@ export const POST = withApiGuard(
       cohort: cohort?.name || null,
     };
 
-    const title = `${universityName} — Fund Report (${periodLabel})`;
+    const title = `${universityName}, Fund Report (${periodLabel})`;
 
     const { data, error } = await supabase
       .from('org_reports')

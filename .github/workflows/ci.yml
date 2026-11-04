@@ -99,6 +99,12 @@ jobs:
         # parentheses, never an em dash. Null values render the NA en dash.
         run: npm run check:org-emdash
 
+      - name: No em dashes in any user-facing text
+        # House style, app wide: commas, colons, periods or parentheses,
+        # never an em dash. Null values render the NA en dash. Fix with
+        # scripts/codemods/remove-em-dashes.mjs.
+        run: npm run check:no-em-dash
+
       - name: Echo stat grids carry exactly four stats
         # The reader renders one centred row of four stat tiles and caps at
         # four; every stat-grid block in an Echo article module must carry

@@ -29,7 +29,7 @@ export const DEMO_POSTS = [
     id: ID.chen,
     user_id: 'demo-user-mchen',
     content:
-      'Datacenter run-rate still understates Blackwell. $NVDA hyperscaler capex guides are the tell — three of four raised this cycle. Adding on any pullback toward the 50-day.',
+      'Datacenter run-rate still understates Blackwell. $NVDA hyperscaler capex guides are the tell, three of four raised this cycle. Adding on any pullback toward the 50-day.',
     mentioned_ticker: 'NVDA',
     image_url: null,
     poll_data: null,
@@ -60,7 +60,7 @@ export const DEMO_POSTS = [
     id: ID.whitfield,
     user_id: 'demo-user-dwhitfield',
     content:
-      "Duration trade is back on. If the Fed pivots dovish in Q1, $TLT at these levels is the cleanest expression. Rotating out of $XLE into long bonds — energy's structural bid is fading faster than consensus.",
+      "Duration trade is back on. If the Fed pivots dovish in Q1, $TLT at these levels is the cleanest expression. Rotating out of $XLE into long bonds, energy's structural bid is fading faster than consensus.",
     mentioned_ticker: 'TLT',
     image_url: null,
     poll_data: null,
@@ -91,7 +91,7 @@ export const DEMO_POSTS = [
     id: ID.kapoor,
     user_id: 'demo-user-riyakap',
     content:
-      "China reopen narrative is getting crowded. $BABA ran 22% in three weeks on stimulus hopes that haven't materialized. Trimming half here — happy to be wrong but the risk/reward flipped.",
+      "China reopen narrative is getting crowded. $BABA ran 22% in three weeks on stimulus hopes that haven't materialized. Trimming half here, happy to be wrong but the risk/reward flipped.",
     mentioned_ticker: 'BABA',
     image_url: null,
     poll_data: null,

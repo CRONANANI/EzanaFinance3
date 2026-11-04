@@ -16,7 +16,7 @@ export const revalidate = 600;
 export const metadata = {
   title: 'OECD macro data | Ezana',
   description:
-    'Harmonised OECD Economic Outlook indicators — growth, households, inflation, rates, government, external — on one comparable basis. Source: OECD.',
+    'Harmonised OECD Economic Outlook indicators, growth, households, inflation, rates, government, external, on one comparable basis. Source: OECD.',
 };
 
 export default async function OecdMacroDatasetPage() {

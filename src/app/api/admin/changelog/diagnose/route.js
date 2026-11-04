@@ -31,7 +31,7 @@ export const GET = withApiGuard(
       return NextResponse.json(
         {
           ok: false,
-          error: 'Unauthorized — pass `Authorization: Bearer <CRON_SECRET>`',
+          error: 'Unauthorized, pass `Authorization: Bearer <CRON_SECRET>`',
         },
         { status: 401 },
       );

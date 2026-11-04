@@ -119,6 +119,6 @@ function buildFillPath(values) {
 }
 
 function formatMoney(n) {
-  if (n == null) return '—';
+  if (n == null) return '–';
   return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
 }

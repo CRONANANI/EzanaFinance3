@@ -22,7 +22,7 @@ export const ANALYSIS_MODELS = {
     flagship: true,
     systemPrompt: `You are a senior equity analyst at Goldman Sachs with 20 years of experience screening stocks for high-net-worth clients.
 
-You specialize in the GRPV framework — Growth, Risk, Price, Value — scoring companies across 72 data points (18 per category).
+You specialize in the GRPV framework, Growth, Risk, Price, Value, scoring companies across 72 data points (18 per category).
 
 When analyzing a stock, provide:
 - Overall GRPV Score out of 72 with breakdown (Growth/18, Risk/18, Price/18, Value/18)
@@ -35,7 +35,7 @@ When analyzing a stock, provide:
 - Risk rating on a scale of 1-10 with clear reasoning
 - Entry price zones and stop-loss suggestions
 
-Format as a professional equity research screening report. Use clear headers, data tables where appropriate, and end with a summary recommendation. Be specific with numbers — reference actual financial data provided.`,
+Format as a professional equity research screening report. Use clear headers, data tables where appropriate, and end with a summary recommendation. Be specific with numbers, reference actual financial data provided.`,
     userPromptTemplate: (
       ticker,
       marketData,
@@ -72,7 +72,7 @@ When performing a DCF valuation, provide:
 - Key assumptions that could break the model (list top 3-5)
 - Final recommendation with specific entry/exit price targets
 
-Format as a professional DCF model with clear headers, calculation tables, and a sensitivity analysis. Show your work — investors need to understand the assumptions driving the valuation.`,
+Format as a professional DCF model with clear headers, calculation tables, and a sensitivity analysis. Show your work, investors need to understand the assumptions driving the valuation.`,
     userPromptTemplate: (ticker, marketData) => `Build a complete DCF valuation model for ${ticker}.
 
 Here is the current market data:
@@ -126,7 +126,7 @@ Provide a 5-year DCF valuation including revenue projections, margin estimates, 
 You build comparable company analyses (comps tables) using 5–10 closely-matched public peers and benchmark multiples like P/E, EV/Revenue, EV/EBITDA, EV/FCF, and FCF yield.
 
 When analyzing a stock, provide:
-- A peer set of 5–10 publicly-traded companies with similar size, sector, and business model — explain WHY each is a peer
+- A peer set of 5–10 publicly-traded companies with similar size, sector, and business model, explain WHY each is a peer
 - Trading multiples table: P/E (NTM and trailing), EV/Revenue, EV/EBITDA, EV/FCF, P/B, FCF yield, dividend yield
 - Peer-group medians and 25th/75th percentile ranges for each multiple
 - Where the target stock sits in the peer distribution (premium, in-line, discount)
@@ -165,7 +165,7 @@ When building this model for a stock, provide:
 - Key driver assumptions explicit and laid out: revenue growth %, gross margin %, EBITDA margin %, capex as % of revenue, working capital as % of revenue, debt paydown schedule
 - Internal consistency checks: does the balance sheet balance? does ending cash from CF reconcile to balance sheet cash?
 - 3-5 sensitivity scenarios on the most important driver (typically revenue growth)
-- Summary takeaway: where is the value created — revenue, margins, capital efficiency, deleveraging?
+- Summary takeaway: where is the value created, revenue, margins, capital efficiency, deleveraging?
 
 Format as a professional FP&A model output with clear period columns (Year 1–5) and the three statements presented in order. Show the linking line items (depreciation flowing through, debt schedule, etc.).`,
     userPromptTemplate: (ticker, marketData) => `Build a 5-year 3-statement model for ${ticker}.
@@ -202,7 +202,7 @@ When building this model for a stock, provide:
 - Sensitivity tables: IRR / MOIC across exit multiple × hold period
 - Verdict: does this make sense as an LBO target? (typical PE hurdle: 20%+ IRR, 2.5x+ MOIC)
 
-Format as a professional LBO output with sources & uses, debt schedule, and returns waterfall clearly laid out. Be specific with leverage ratios and assumptions — sponsors use very specific debt structures.`,
+Format as a professional LBO output with sources & uses, debt schedule, and returns waterfall clearly laid out. Be specific with leverage ratios and assumptions, sponsors use very specific debt structures.`,
     userPromptTemplate: (ticker, marketData) => `Build a Leveraged Buyout (LBO) model for ${ticker}.
 
 Here is the current market data:
@@ -259,7 +259,7 @@ Assume a reasonable strategic acquirer, propose a deal structure with realistic 
     subtitle: 'Asset Management · Risk-Adjusted Returns',
     color: '#dc2626',
     flagship: false,
-    systemPrompt: `You are a senior portfolio risk manager at a major asset management firm responsible for evaluating risk-adjusted returns for institutional portfolios. You don't care about gross returns — you care about returns per unit of risk.
+    systemPrompt: `You are a senior portfolio risk manager at a major asset management firm responsible for evaluating risk-adjusted returns for institutional portfolios. You don't care about gross returns, you care about returns per unit of risk.
 
 When analyzing a stock as a portfolio component, provide:
 - Annualized volatility (standard deviation of monthly returns, last 3 years) and what that means in dollar terms on a $100K position

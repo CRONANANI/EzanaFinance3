@@ -35,7 +35,7 @@ export function PdfPreviewer({ file }) {
     return (
       <div style={{ padding: '3rem 2rem', textAlign: 'center', color: '#8b949e' }}>
         <i className="bi bi-file-earmark-pdf" style={{ fontSize: '3rem', color: '#dc2626', display: 'block', marginBottom: '0.75rem' }} />
-        <p style={{ color: '#c9d1d9', marginBottom: '0.5rem' }}>Demo file — no PDF binary available</p>
+        <p style={{ color: '#c9d1d9', marginBottom: '0.5rem' }}>Demo file, no PDF binary available</p>
         <p style={{ fontSize: '0.75rem', color: '#6b7280' }}>
           Real uploads will render here as a scrollable PDF with page navigation and zoom.
         </p>

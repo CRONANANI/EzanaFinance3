@@ -37,7 +37,7 @@ const DEMO_ALLOC = [
 function SectionBody({ text }) {
   const cleaned = cleanSentinelField(text || '');
   if (!cleaned.trim()) {
-    return <p className="sentinel-report-section-body sentinel-report-section-body--empty">—</p>;
+    return <p className="sentinel-report-section-body sentinel-report-section-body--empty">–</p>;
   }
   const lines = cleaned
     .split('\n')

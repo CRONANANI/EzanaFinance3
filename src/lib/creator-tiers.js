@@ -34,7 +34,7 @@ export const CREATOR_TIERS = {
     ring: '#e8c879',
     soft: 'rgba(212,168,83,0.15)',
     icon: 'bi-star-fill',
-    blurb: 'Featured creator — top engagement and quality',
+    blurb: 'Featured creator, top engagement and quality',
   },
   signature: {
     key: 'signature',
@@ -45,7 +45,7 @@ export const CREATOR_TIERS = {
     ring: '#67e8f9',
     soft: 'rgba(34,211,238,0.15)',
     icon: 'bi-gem',
-    blurb: 'Signature creator — a marquee voice on Ezana',
+    blurb: 'Signature creator, a marquee voice on Ezana',
   },
 };
 

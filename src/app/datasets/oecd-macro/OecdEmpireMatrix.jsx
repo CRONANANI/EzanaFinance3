@@ -27,10 +27,10 @@ import OecdTip, { tipFromEvent, tipFromElement } from './OecdTip';
 const STALE_YEARS = 2;
 
 function fmtScore(v) {
-  return v == null ? '—' : Math.round(v).toString();
+  return v == null ? '–' : Math.round(v).toString();
 }
 function fmtMetric(v, unit) {
-  if (v == null) return '—';
+  if (v == null) return '–';
   if (unit === 'US$') {
     const a = Math.abs(v);
     if (a >= 1e12) return `${(v / 1e12).toFixed(1)}T`;
@@ -175,8 +175,8 @@ export default function OecdEmpireMatrix({ model, dim, selectedA, query, onPickC
         value:
           c.kind === 'score' ? fmtScore(v) : `${fmtMetric(v, c.unit)}${c.unit ? ` ${c.unit}` : ''}`,
       },
-      { label: 'Year', value: obsYear != null ? String(obsYear) : '—' },
-      { label: 'Rank', value: rk ? `#${rk}/${st.n}` : '—' },
+      { label: 'Year', value: obsYear != null ? String(obsYear) : '–' },
+      { label: 'Rank', value: rk ? `#${rk}/${st.n}` : '–' },
     ];
     if (stale) lines.push({ label: 'Note', value: 'observation >2y older than score vintage' });
     return { title: country.name, lines };

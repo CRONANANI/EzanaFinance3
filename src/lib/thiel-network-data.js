@@ -224,9 +224,9 @@ export const THIEL_NETWORK_PEOPLE = [
     tie: 'business',
     avatar: '/images/echo/thiel-network/mosley.jpg',
     relationship:
-      "Joined Palantir in 2016; leads its UK/Europe operations and drove the firm's expansion into the British state. (Grandson of Oswald Mosley — noted as fact, not as evidence of his own views.)",
+      "Joined Palantir in 2016; leads its UK/Europe operations and drove the firm's expansion into the British state. (Grandson of Oswald Mosley, noted as fact, not as evidence of his own views.)",
     markets:
-      "Runs Palantir's UK government business — NHS data platforms, MoD contracts worth hundreds of millions, policing and financial-regulation systems.",
+      "Runs Palantir's UK government business, NHS data platforms, MoD contracts worth hundreds of millions, policing and financial-regulation systems.",
     companies: ['Palantir Technologies (PLTR)'],
     headlines: [
       { date: 'Dec 2025', text: 'Palantir signed a multi-hundred-million-pound UK MoD data deal.' },
@@ -259,7 +259,7 @@ export const THIEL_NETWORK_PEOPLE = [
     tie: 'association',
     avatar: '/images/echo/thiel-network/starmer.jpg',
     relationship:
-      "Labour PM whose government has continued awarding Palantir public contracts; subject of Mandelson's July 2025 invitation to meet Thiel — illustrating Thiel's bipartisan UK reach.",
+      "Labour PM whose government has continued awarding Palantir public contracts; subject of Mandelson's July 2025 invitation to meet Thiel, illustrating Thiel's bipartisan UK reach.",
     markets:
       "Sets UK fiscal, industrial, and tech-procurement policy; decisions on data/health/defense contracts directly affect Palantir's UK revenue.",
     companies: ['(public office)'],

@@ -30,7 +30,7 @@ const CACHE_TTL_MS = 60 * 60 * 1000; // 1h
 // calls, purchase orders, delivery orders). Grants/loans intentionally excluded.
 const CONTRACT_AWARD_TYPE_CODES = ['A', 'B', 'C', 'D'];
 
-const EM_DASH = '—';
+const EM_DASH = '–';
 
 /**
  * Ticker handling — USAspending returns the recipient *company name*, never a

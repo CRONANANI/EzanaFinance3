@@ -1,5 +1,5 @@
 export const DIVERSIFICATION_DISCLAIMER =
-  'Educational only — not investment advice. All investing involves risk, including loss of principal.';
+  'Educational only, not investment advice. All investing involves risk, including loss of principal.';
 
 export const DIVERSIFICATION_LESSON_ID = 'stocks-basic-7';
 export const DIVERSIFICATION_LESSON_PATH = `/learning-center/course/${DIVERSIFICATION_LESSON_ID}`;
@@ -9,7 +9,7 @@ export const DIVERSIFICATION_POINTS = [
   {
     id: 'index-spread',
     stat: null,
-    source: 'SEC Investor.gov — Diversification',
+    source: 'SEC Investor.gov, Diversification',
     plainExplanation:
       'Broad index funds hold hundreds of companies, so trouble at one firm usually has limited impact on the whole fund.',
     tradeoff:
@@ -18,9 +18,9 @@ export const DIVERSIFICATION_POINTS = [
   {
     id: 'unsystematic-vs-market',
     stat: null,
-    source: 'SEC Investor.gov — Market risk vs. company-specific risk',
+    source: 'SEC Investor.gov, Market risk vs. company-specific risk',
     plainExplanation:
-      'Diversification mainly reduces company-specific (unsystematic) risk — it does not remove broad market risk in downturns.',
+      'Diversification mainly reduces company-specific (unsystematic) risk, it does not remove broad market risk in downturns.',
     tradeoff:
       'When the whole market falls, diversified funds still decline; diversification is not a shield against every scenario.',
   },

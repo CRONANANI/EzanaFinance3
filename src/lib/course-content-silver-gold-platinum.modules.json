@@ -3,14 +3,14 @@
     "sections": [
       {
         "title": "What Is Fundamental Analysis?",
-        "content": "Fundamental analysis evaluates a company's intrinsic value by examining its financial statements, competitive position, and growth prospects. Isichenko (Ch.2.1.3) notes that \"quarterly and yearly company reports of earnings, sales, cash flows, R&D expenditure, and other financials are among the primary indicators of management quality, financial health, and competitiveness.\" These data are sparse — typically once per quarter — and fairly complex, including hundreds of numeric and text fields per company.\n\nThe core principle: markets can misprice securities short-term, but prices converge toward intrinsic value over time. Fundamental analysis asks what a business is actually worth based on its cash flows, not what the market thinks today.\n\nIsichenko warns that \"forming relevant systematic features from company reports requires an accounting expertise. Cross-sectional application of accounting data would benefit from understanding differences between industries.\" The capital structure of banks and manufacturers is not the same — you cannot compare their ratios directly.",
+        "content": "Fundamental analysis evaluates a company's intrinsic value by examining its financial statements, competitive position, and growth prospects. Isichenko (Ch.2.1.3) notes that \"quarterly and yearly company reports of earnings, sales, cash flows, R&D expenditure, and other financials are among the primary indicators of management quality, financial health, and competitiveness.\" These data are sparse, typically once per quarter, and fairly complex, including hundreds of numeric and text fields per company.\n\nThe core principle: markets can misprice securities short-term, but prices converge toward intrinsic value over time. Fundamental analysis asks what a business is actually worth based on its cash flows, not what the market thinks today.\n\nIsichenko warns that \"forming relevant systematic features from company reports requires an accounting expertise. Cross-sectional application of accounting data would benefit from understanding differences between industries.\" The capital structure of banks and manufacturers is not the same, you cannot compare their ratios directly.",
         "keyTerms": ["intrinsic value", "P/E ratio", "EPS", "free cash flow"],
         "shortTitle": "What Is Fundamental Analysis?",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Fundamental analysis evaluates a company's intrinsic value by examining its financial statements, competitive position, and growth prospects. Isichenko (Ch.2.1.3) notes that \"quarterly and yearly company reports of earnings, sales, cash flows, R&D expenditure, and other financials are among the primary indicators of management quality, financial health, and competitiveness.\" These data are sparse — typically once per quarter — and fairly complex, including hundreds of numeric and text fields per company."
+            "body": "Fundamental analysis evaluates a company's intrinsic value by examining its financial statements, competitive position, and growth prospects. Isichenko (Ch.2.1.3) notes that \"quarterly and yearly company reports of earnings, sales, cash flows, R&D expenditure, and other financials are among the primary indicators of management quality, financial health, and competitiveness.\" These data are sparse, typically once per quarter, and fairly complex, including hundreds of numeric and text fields per company."
           },
           {
             "type": "paragraphs",
@@ -18,7 +18,7 @@
           },
           {
             "type": "paragraphs",
-            "body": "Isichenko warns that \"forming relevant systematic features from company reports requires an accounting expertise. Cross-sectional application of accounting data would benefit from understanding differences between industries.\" The capital structure of banks and manufacturers is not the same — you cannot compare their ratios directly."
+            "body": "Isichenko warns that \"forming relevant systematic features from company reports requires an accounting expertise. Cross-sectional application of accounting data would benefit from understanding differences between industries.\" The capital structure of banks and manufacturers is not the same, you cannot compare their ratios directly."
           },
           {
             "type": "keyTermCards",
@@ -28,12 +28,12 @@
               {
                 "name": "intrinsic value",
                 "color": "amber",
-                "definition": "Definition for \"intrinsic value\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
+                "definition": "Definition for \"intrinsic value\", add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "P/E ratio",
                 "color": "blue",
-                "definition": "Price-to-Earnings ratio: a company's share price divided by its earnings per share. The most-cited single number for measuring whether a stock is expensive. Low P/E = cheap, high P/E = expensive — but interpretation depends on growth rate and sector norms."
+                "definition": "Price-to-Earnings ratio: a company's share price divided by its earnings per share. The most-cited single number for measuring whether a stock is expensive. Low P/E = cheap, high P/E = expensive, but interpretation depends on growth rate and sector norms."
               },
               {
                 "name": "EPS",
@@ -51,7 +51,7 @@
       },
       {
         "title": "P/E Ratio and Valuation Multiples",
-        "content": "Isichenko describes how \"various accounting ratios are often used\" including \"earnings to price, book value to price, debt to equity, dividend payout to income, assets to liabilities, profit to sales.\" These ratios serve dimensionality reduction — simplifying complex financials into comparable numbers, similar to how physicists use dimensional analysis.\n\nThe P/E ratio divides stock price by earnings per share. A P/E of 20 means investors pay $20 for each $1 of annual earnings. Context is everything: compare within the same industry, against historical averages, and consider growth expectations. A tech company at 30x P/E might be cheap if peers trade at 50x.\n\nForward P/E (using estimated future earnings) is more useful than trailing P/E because you buy future cash flows, not past ones. Isichenko (Ch.2.1.4) notes that \"analyst estimates and their revisions carry a predictive power for stock returns either directly or via statistics such as the variance of analysts' opinions.\"",
+        "content": "Isichenko describes how \"various accounting ratios are often used\" including \"earnings to price, book value to price, debt to equity, dividend payout to income, assets to liabilities, profit to sales.\" These ratios serve dimensionality reduction, simplifying complex financials into comparable numbers, similar to how physicists use dimensional analysis.\n\nThe P/E ratio divides stock price by earnings per share. A P/E of 20 means investors pay $20 for each $1 of annual earnings. Context is everything: compare within the same industry, against historical averages, and consider growth expectations. A tech company at 30x P/E might be cheap if peers trade at 50x.\n\nForward P/E (using estimated future earnings) is more useful than trailing P/E because you buy future cash flows, not past ones. Isichenko (Ch.2.1.4) notes that \"analyst estimates and their revisions carry a predictive power for stock returns either directly or via statistics such as the variance of analysts' opinions.\"",
         "visual": {
           "type": "bar-chart",
           "data": {
@@ -84,14 +84,14 @@
             ],
             "unit": "x"
           },
-          "caption": "P/E ratios vary dramatically by sector — always compare within the same industry (Isichenko Ch.2.1.3)."
+          "caption": "P/E ratios vary dramatically by sector, always compare within the same industry (Isichenko Ch.2.1.3)."
         },
         "shortTitle": "P/E Ratio and Valuation Multiples",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Isichenko describes how \"various accounting ratios are often used\" including \"earnings to price, book value to price, debt to equity, dividend payout to income, assets to liabilities, profit to sales.\" These ratios serve dimensionality reduction — simplifying complex financials into comparable numbers, similar to how physicists use dimensional analysis."
+            "body": "Isichenko describes how \"various accounting ratios are often used\" including \"earnings to price, book value to price, debt to equity, dividend payout to income, assets to liabilities, profit to sales.\" These ratios serve dimensionality reduction, simplifying complex financials into comparable numbers, similar to how physicists use dimensional analysis."
           },
           {
             "type": "paragraphs",
@@ -135,21 +135,21 @@
               "unit": "x"
             },
             "eyebrow": "Live example",
-            "title": "P/E ratios vary dramatically by sector — always compare within the same industry (Isichenko Ch.2.1.3)."
+            "title": "P/E ratios vary dramatically by sector, always compare within the same industry (Isichenko Ch.2.1.3)."
           }
         ]
       },
       {
-        "title": "Beyond P/E — Free Cash Flow and Earnings Quality",
-        "content": "Khraisha defines the cash flow statement as providing \"information on a firm's cash movements (in and out), which can help determine whether the firm is generating enough cash to carry out its operations.\" Free cash flow — operating cash flow minus capital expenditures — is the cash available after maintaining the asset base.\n\nWhy FCF matters more than earnings: accrual accounting creates gaps between reported profits and actual cash. A company might recognize revenue before collecting payment or capitalize expenses across years. When earnings grow but free cash flow shrinks, something is off.\n\nIsichenko references how fundamental data including \"earnings, sales, cash flows\" are primary indicators. The shortcut: follow the cash. If free cash flow consistently exceeds net income, earnings quality is high.",
+        "title": "Beyond P/E: Free Cash Flow and Earnings Quality",
+        "content": "Khraisha defines the cash flow statement as providing \"information on a firm's cash movements (in and out), which can help determine whether the firm is generating enough cash to carry out its operations.\" Free cash flow, operating cash flow minus capital expenditures, is the cash available after maintaining the asset base.\n\nWhy FCF matters more than earnings: accrual accounting creates gaps between reported profits and actual cash. A company might recognize revenue before collecting payment or capitalize expenses across years. When earnings grow but free cash flow shrinks, something is off.\n\nIsichenko references how fundamental data including \"earnings, sales, cash flows\" are primary indicators. The shortcut: follow the cash. If free cash flow consistently exceeds net income, earnings quality is high.",
         "keyTerms": ["free cash flow", "earnings quality", "accrual accounting"],
-        "callout": "Isichenko Ch.2.1.3: Forming features from company reports \"requires an accounting expertise.\" Start with FCF — it is harder to manipulate than earnings.",
-        "shortTitle": "Beyond P/E — Free Cash Flow and Earnings Quality",
+        "callout": "Isichenko Ch.2.1.3: Forming features from company reports \"requires an accounting expertise.\" Start with FCF, it is harder to manipulate than earnings.",
+        "shortTitle": "Beyond P/E: Free Cash Flow and Earnings Quality",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Khraisha defines the cash flow statement as providing \"information on a firm's cash movements (in and out), which can help determine whether the firm is generating enough cash to carry out its operations.\" Free cash flow — operating cash flow minus capital expenditures — is the cash available after maintaining the asset base."
+            "body": "Khraisha defines the cash flow statement as providing \"information on a firm's cash movements (in and out), which can help determine whether the firm is generating enough cash to carry out its operations.\" Free cash flow, operating cash flow minus capital expenditures, is the cash available after maintaining the asset base."
           },
           {
             "type": "paragraphs",
@@ -161,7 +161,7 @@
           },
           {
             "type": "callout",
-            "body": "Isichenko Ch.2.1.3: Forming features from company reports \"requires an accounting expertise.\" Start with FCF — it is harder to manipulate than earnings."
+            "body": "Isichenko Ch.2.1.3: Forming features from company reports \"requires an accounting expertise.\" Start with FCF, it is harder to manipulate than earnings."
           },
           {
             "type": "keyTermCards",
@@ -176,12 +176,12 @@
               {
                 "name": "earnings quality",
                 "color": "blue",
-                "definition": "Definition for \"earnings quality\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
+                "definition": "Definition for \"earnings quality\", add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "accrual accounting",
                 "color": "red",
-                "definition": "Definition for \"accrual accounting\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
+                "definition": "Definition for \"accrual accounting\", add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -189,8 +189,8 @@
       },
       {
         "title": "Margin of Safety and Practical Application",
-        "content": "Screen quantitatively: P/E below sector median, revenue growth above 10%, positive free cash flow, debt-to-equity below 1.5. This eliminates most noise.\n\nAnalyze survivors: read the 10-K, listen to the earnings call (our Earnings Call Analyzer helps), and build a simple earnings model. Isichenko (Ch.2.12) emphasizes \"forecast research vs simulation\" — validate your process.\n\nValue: compare your intrinsic value estimate to market price. Graham recommended at least a 30% margin of safety. Kanungo (B3) adds the probabilistic perspective: your estimate is a distribution, not a point. If reasonable values range $80-$120 and the stock trades at $70, that is a strong margin of safety even with uncertainty.",
-        "callout": "Isichenko (Ch.4.7) warns about \"crowding\" — when too many investors follow the same factors (like low P/E), the edge erodes. Use fundamentals as a starting point, not the entire strategy.",
+        "content": "Screen quantitatively: P/E below sector median, revenue growth above 10%, positive free cash flow, debt-to-equity below 1.5. This eliminates most noise.\n\nAnalyze survivors: read the 10-K, listen to the earnings call (our Earnings Call Analyzer helps), and build a simple earnings model. Isichenko (Ch.2.12) emphasizes \"forecast research vs simulation\", validate your process.\n\nValue: compare your intrinsic value estimate to market price. Graham recommended at least a 30% margin of safety. Kanungo (B3) adds the probabilistic perspective: your estimate is a distribution, not a point. If reasonable values range $80-$120 and the stock trades at $70, that is a strong margin of safety even with uncertainty.",
+        "callout": "Isichenko (Ch.4.7) warns about \"crowding\", when too many investors follow the same factors (like low P/E), the edge erodes. Use fundamentals as a starting point, not the entire strategy.",
         "shortTitle": "Margin of Safety and Practical Application",
         "estimatedMinutes": 3,
         "modules": [
@@ -200,7 +200,7 @@
           },
           {
             "type": "paragraphs",
-            "body": "Analyze survivors: read the 10-K, listen to the earnings call (our Earnings Call Analyzer helps), and build a simple earnings model. Isichenko (Ch.2.12) emphasizes \"forecast research vs simulation\" — validate your process."
+            "body": "Analyze survivors: read the 10-K, listen to the earnings call (our Earnings Call Analyzer helps), and build a simple earnings model. Isichenko (Ch.2.12) emphasizes \"forecast research vs simulation\", validate your process."
           },
           {
             "type": "paragraphs",
@@ -208,19 +208,19 @@
           },
           {
             "type": "callout",
-            "body": "Isichenko (Ch.4.7) warns about \"crowding\" — when too many investors follow the same factors (like low P/E), the edge erodes. Use fundamentals as a starting point, not the entire strategy."
+            "body": "Isichenko (Ch.4.7) warns about \"crowding\", when too many investors follow the same factors (like low P/E), the edge erodes. Use fundamentals as a starting point, not the entire strategy."
           }
         ]
       },
       {
         "title": "Connecting to the Platform",
-        "content": "On Ezana, the Company Research page provides real-time fundamental data via Alpha Vantage: P/E, EPS, revenue growth, margins, and free cash flow. The 3-Statement Model projects income statement, balance sheet, and cash flow forward — exactly the integrated analysis Khraisha describes.\n\nThe Comparable Company Analysis model applies peer-group median multiples to your target's financials, giving you an implied valuation range. Use this alongside your own DCF estimate for triangulation.\n\nIsichenko's advice applies directly: \"due to being widely followed, and therefore subject to crowding, these themes are also used as risk factors.\" Don't just screen for low P/E — combine fundamental analysis with technical timing and risk management.",
+        "content": "On Ezana, the Company Research page provides real-time fundamental data via Alpha Vantage: P/E, EPS, revenue growth, margins, and free cash flow. The 3-Statement Model projects income statement, balance sheet, and cash flow forward, exactly the integrated analysis Khraisha describes.\n\nThe Comparable Company Analysis model applies peer-group median multiples to your target's financials, giving you an implied valuation range. Use this alongside your own DCF estimate for triangulation.\n\nIsichenko's advice applies directly: \"due to being widely followed, and therefore subject to crowding, these themes are also used as risk factors.\" Don't just screen for low P/E, combine fundamental analysis with technical timing and risk management.",
         "shortTitle": "Connecting to the Platform",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "On Ezana, the Company Research page provides real-time fundamental data via Alpha Vantage: P/E, EPS, revenue growth, margins, and free cash flow. The 3-Statement Model projects income statement, balance sheet, and cash flow forward — exactly the integrated analysis Khraisha describes."
+            "body": "On Ezana, the Company Research page provides real-time fundamental data via Alpha Vantage: P/E, EPS, revenue growth, margins, and free cash flow. The 3-Statement Model projects income statement, balance sheet, and cash flow forward, exactly the integrated analysis Khraisha describes."
           },
           {
             "type": "paragraphs",
@@ -228,7 +228,7 @@
           },
           {
             "type": "paragraphs",
-            "body": "Isichenko's advice applies directly: \"due to being widely followed, and therefore subject to crowding, these themes are also used as risk factors.\" Don't just screen for low P/E — combine fundamental analysis with technical timing and risk management."
+            "body": "Isichenko's advice applies directly: \"due to being widely followed, and therefore subject to crowding, these themes are also used as risk factors.\" Don't just screen for low P/E, combine fundamental analysis with technical timing and risk management."
           }
         ]
       }
@@ -238,18 +238,18 @@
         "question": "According to Isichenko, what makes cross-sectional fundamental analysis challenging?",
         "options": [
           "Companies report at different frequencies",
-          "The capital structure of different industries is not the same — direct ratio comparison across sectors is misleading",
+          "The capital structure of different industries is not the same, direct ratio comparison across sectors is misleading",
           "Financial statements are always accurate",
           "All companies use the same accounting standards"
         ],
         "correctIndex": 1,
-        "explanation": "Isichenko Ch.2.1.3 warns that \"cross-sectional application of accounting data would benefit from understanding differences between industries\" — banks and manufacturers have fundamentally different capital structures."
+        "explanation": "Isichenko Ch.2.1.3 warns that \"cross-sectional application of accounting data would benefit from understanding differences between industries\", banks and manufacturers have fundamentally different capital structures."
       },
       {
         "question": "Why is free cash flow often more reliable than reported earnings?",
         "options": [
           "Free cash flow is always larger",
-          "Cash either arrives or it doesn't — it is harder to manipulate through accounting choices than accrual-based earnings",
+          "Cash either arrives or it doesn't, it is harder to manipulate through accounting choices than accrual-based earnings",
           "The SEC verifies FCF but not earnings",
           "FCF includes stock-based compensation"
         ],
@@ -276,7 +276,7 @@
           "As government-mandated figures"
         ],
         "correctIndex": 1,
-        "explanation": "Kanungo's probabilistic framework emphasizes every prediction should output a distribution — ignoring uncertainty leads to overconfidence."
+        "explanation": "Kanungo's probabilistic framework emphasizes every prediction should output a distribution, ignoring uncertainty leads to overconfidence."
       },
       {
         "question": "What does Isichenko say about analyst estimates (Ch.2.1.4)?",
@@ -294,15 +294,15 @@
   "stocks-intermediate-2": {
     "sections": [
       {
-        "title": "Mean Reversion and Momentum — The Two Forces",
-        "content": "Isichenko (Ch.2.2) identifies two primary technical phenomena. Mean reversion (Ch.2.2.1): \"most stock moves are correlated with, and can be 'explained by,' the market.\" After removing the market effect via beta regression (Eq. 2.2), residual returns show mean-reverting behavior. Isichenko explains: \"The story of mean reversion is herding\" — stocks deviate from the mean due to overreaction, then revert as the overreaction corrects.\n\nMomentum (Ch.2.2.2): \"over longer horizons, stock returns tend to be positively autocorrelated,\" attributed to \"delayed information propagation and behavioral effects.\" Momentum is \"more natural to expect in group forecasts, such as for industry or other factor returns, where the oscillatory residual noise tends to cancel out.\"\n\nThese two forces operate on different timescales: mean reversion dominates daily residual returns (1-5 days), while momentum drives trend-following over weeks to months.",
+        "title": "Mean Reversion and Momentum: The Two Forces",
+        "content": "Isichenko (Ch.2.2) identifies two primary technical phenomena. Mean reversion (Ch.2.2.1): \"most stock moves are correlated with, and can be 'explained by,' the market.\" After removing the market effect via beta regression (Eq. 2.2), residual returns show mean-reverting behavior. Isichenko explains: \"The story of mean reversion is herding\", stocks deviate from the mean due to overreaction, then revert as the overreaction corrects.\n\nMomentum (Ch.2.2.2): \"over longer horizons, stock returns tend to be positively autocorrelated,\" attributed to \"delayed information propagation and behavioral effects.\" Momentum is \"more natural to expect in group forecasts, such as for industry or other factor returns, where the oscillatory residual noise tends to cancel out.\"\n\nThese two forces operate on different timescales: mean reversion dominates daily residual returns (1-5 days), while momentum drives trend-following over weeks to months.",
         "keyTerms": ["mean reversion", "momentum", "beta", "residual return"],
-        "shortTitle": "Mean Reversion and Momentum — The Two Forces",
+        "shortTitle": "Mean Reversion and Momentum: The Two Forces",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Isichenko (Ch.2.2) identifies two primary technical phenomena. Mean reversion (Ch.2.2.1): \"most stock moves are correlated with, and can be 'explained by,' the market.\" After removing the market effect via beta regression (Eq. 2.2), residual returns show mean-reverting behavior. Isichenko explains: \"The story of mean reversion is herding\" — stocks deviate from the mean due to overreaction, then revert as the overreaction corrects."
+            "body": "Isichenko (Ch.2.2) identifies two primary technical phenomena. Mean reversion (Ch.2.2.1): \"most stock moves are correlated with, and can be 'explained by,' the market.\" After removing the market effect via beta regression (Eq. 2.2), residual returns show mean-reverting behavior. Isichenko explains: \"The story of mean reversion is herding\", stocks deviate from the mean due to overreaction, then revert as the overreaction corrects."
           },
           {
             "type": "paragraphs",
@@ -320,29 +320,29 @@
               {
                 "name": "mean reversion",
                 "color": "amber",
-                "definition": "Definition for \"mean reversion\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
+                "definition": "Definition for \"mean reversion\", add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "momentum",
                 "color": "blue",
-                "definition": "Definition for \"momentum\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
+                "definition": "Definition for \"momentum\", add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "beta",
                 "color": "red",
-                "definition": "Definition for \"beta\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
+                "definition": "Definition for \"beta\", add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "residual return",
                 "color": "violet",
-                "definition": "Definition for \"residual return\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
+                "definition": "Definition for \"residual return\", add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
         ]
       },
       {
-        "title": "Reading Charts — Candlesticks, Support, Resistance",
+        "title": "Reading Charts: Candlesticks, Support, Resistance",
         "content": "Candlestick charts encode open, high, low, and close. The body shows open-to-close range; wicks show high-low extremes. Key patterns: doji (indecision), hammer (potential reversal), engulfing (strong reversal signal).\n\nSupport and resistance form because of market memory. Isichenko's mean reversion framework explains why: stocks that deviate from their recent range experience statistical pull back toward the mean. When support breaks, it often becomes resistance (the \"polarity flip\").\n\nIsichenko (Ch.2.2.3) emphasizes trading volume as confirmation: \"a breakout on heavy volume means many participants confirmed the move.\" Volume validates price signals and distinguishes real moves from noise.",
         "visual": {
           "type": "comparison-table",
@@ -365,8 +365,8 @@
               {
                 "attribute": "Isichenko reference",
                 "values": [
-                  "Ch.2.2.1 — residual returns revert",
-                  "Ch.2.2.2 — positive autocorrelation"
+                  "Ch.2.2.1, residual returns revert",
+                  "Ch.2.2.2, positive autocorrelation"
                 ]
               },
               {
@@ -379,9 +379,9 @@
               }
             ]
           },
-          "caption": "Isichenko identifies these as the two primary technical phenomena — they operate on different timescales."
+          "caption": "Isichenko identifies these as the two primary technical phenomena, they operate on different timescales."
         },
-        "shortTitle": "Reading Charts — Candlesticks, Support, Resistance",
+        "shortTitle": "Reading Charts: Candlesticks, Support, Resistance",
         "estimatedMinutes": 3,
         "modules": [
           {
@@ -418,8 +418,8 @@
                 {
                   "attribute": "Isichenko reference",
                   "values": [
-                    "Ch.2.2.1 — residual returns revert",
-                    "Ch.2.2.2 — positive autocorrelation"
+                    "Ch.2.2.1, residual returns revert",
+                    "Ch.2.2.2, positive autocorrelation"
                   ]
                 },
                 {
@@ -436,24 +436,24 @@
               ]
             },
             "eyebrow": "Live example",
-            "title": "Isichenko identifies these as the two primary technical phenomena — they operate on different timescales."
+            "title": "Isichenko identifies these as the two primary technical phenomena, they operate on different timescales."
           }
         ]
       },
       {
         "title": "Moving Averages and Indicators",
-        "content": "The 50-day and 200-day simple moving averages (SMA) are the most-watched. The \"Golden Cross\" (50-day crossing above 200-day) confirms uptrends; the \"Death Cross\" confirms downtrends. These are lagging indicators — useful for confirmation, not prediction.\n\nRSI measures momentum on a 0-100 scale. Above 70 is \"overbought\"; below 30 is \"oversold.\" But Isichenko's momentum research (Ch.2.2.2) shows that in strong trends, prices can stay overbought for weeks — don't blindly fade momentum.\n\nMACD shows the relationship between two exponential moving averages. The histogram is the most actionable signal. These indicators are available live on Ezana's Technical Scanner on the For the Quants page, pulling real-time data from Alpha Vantage.",
+        "content": "The 50-day and 200-day simple moving averages (SMA) are the most-watched. The \"Golden Cross\" (50-day crossing above 200-day) confirms uptrends; the \"Death Cross\" confirms downtrends. These are lagging indicators, useful for confirmation, not prediction.\n\nRSI measures momentum on a 0-100 scale. Above 70 is \"overbought\"; below 30 is \"oversold.\" But Isichenko's momentum research (Ch.2.2.2) shows that in strong trends, prices can stay overbought for weeks, don't blindly fade momentum.\n\nMACD shows the relationship between two exponential moving averages. The histogram is the most actionable signal. These indicators are available live on Ezana's Technical Scanner on the For the Quants page, pulling real-time data from Alpha Vantage.",
         "callout": "Isichenko Ch.2.2.2: Momentum \"has been attributed to delayed information propagation and behavioral effects.\" Strong trends can persist longer than mean reversion traders expect.",
         "shortTitle": "Moving Averages and Indicators",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "The 50-day and 200-day simple moving averages (SMA) are the most-watched. The \"Golden Cross\" (50-day crossing above 200-day) confirms uptrends; the \"Death Cross\" confirms downtrends. These are lagging indicators — useful for confirmation, not prediction."
+            "body": "The 50-day and 200-day simple moving averages (SMA) are the most-watched. The \"Golden Cross\" (50-day crossing above 200-day) confirms uptrends; the \"Death Cross\" confirms downtrends. These are lagging indicators, useful for confirmation, not prediction."
           },
           {
             "type": "paragraphs",
-            "body": "RSI measures momentum on a 0-100 scale. Above 70 is \"overbought\"; below 30 is \"oversold.\" But Isichenko's momentum research (Ch.2.2.2) shows that in strong trends, prices can stay overbought for weeks — don't blindly fade momentum."
+            "body": "RSI measures momentum on a 0-100 scale. Above 70 is \"overbought\"; below 30 is \"oversold.\" But Isichenko's momentum research (Ch.2.2.2) shows that in strong trends, prices can stay overbought for weeks, don't blindly fade momentum."
           },
           {
             "type": "paragraphs",
@@ -467,7 +467,7 @@
       },
       {
         "title": "Backtesting Technical Signals",
-        "content": "Hilpisch (Ch.10) introduces vectorized backtesting: processing entire time series at once for speed. \"Backtesting an SMA-Based Strategy\" shows how to validate moving average crossover signals on historical data.\n\nBut Isichenko (Ch.7.2) warns about \"simulation and overfitting\" — the more strategies you test, the more likely you find false positives. Cross-validation (Ch.2.4.8) is essential: split data into training and testing sets, and the \"final testing verdict is supposed to be rendered only once.\"\n\nIsichenko quotes Feynman: \"The first principle is that you must not fool yourself — and you are the easiest person to fool.\" This is the central challenge of technical analysis: distinguishing real patterns from noise.",
+        "content": "Hilpisch (Ch.10) introduces vectorized backtesting: processing entire time series at once for speed. \"Backtesting an SMA-Based Strategy\" shows how to validate moving average crossover signals on historical data.\n\nBut Isichenko (Ch.7.2) warns about \"simulation and overfitting\", the more strategies you test, the more likely you find false positives. Cross-validation (Ch.2.4.8) is essential: split data into training and testing sets, and the \"final testing verdict is supposed to be rendered only once.\"\n\nIsichenko quotes Feynman: \"The first principle is that you must not fool yourself, and you are the easiest person to fool.\" This is the central challenge of technical analysis: distinguishing real patterns from noise.",
         "shortTitle": "Backtesting Technical Signals",
         "estimatedMinutes": 3,
         "modules": [
@@ -477,17 +477,17 @@
           },
           {
             "type": "paragraphs",
-            "body": "But Isichenko (Ch.7.2) warns about \"simulation and overfitting\" — the more strategies you test, the more likely you find false positives. Cross-validation (Ch.2.4.8) is essential: split data into training and testing sets, and the \"final testing verdict is supposed to be rendered only once.\""
+            "body": "But Isichenko (Ch.7.2) warns about \"simulation and overfitting\", the more strategies you test, the more likely you find false positives. Cross-validation (Ch.2.4.8) is essential: split data into training and testing sets, and the \"final testing verdict is supposed to be rendered only once.\""
           },
           {
             "type": "paragraphs",
-            "body": "Isichenko quotes Feynman: \"The first principle is that you must not fool yourself — and you are the easiest person to fool.\" This is the central challenge of technical analysis: distinguishing real patterns from noise."
+            "body": "Isichenko quotes Feynman: \"The first principle is that you must not fool yourself, and you are the easiest person to fool.\" This is the central challenge of technical analysis: distinguishing real patterns from noise."
           }
         ]
       },
       {
         "title": "Risk Management for Technical Traders",
-        "content": "Every setup needs three elements before entry: trigger, stop loss, and target. Position sizing: never risk more than 1-2% per trade.\n\nIsichenko (Ch.6.9) derives optimal sizing via the Kelly criterion: \"a gambler receives a positive return R on the bet amount with probability p and otherwise loses the whole bet. The question is what fraction φ of money at hand to bet repeatedly for long-term success.\" The optimal fraction is φ* = p - (1-p)/R. Most practitioners use fractional Kelly (25-50%) because estimation error in p and R can lead to catastrophic over-sizing.\n\nThe best technical traders win only 40-60% of the time. They profit because winners exceed losers — the math of expectation, not accuracy.",
+        "content": "Every setup needs three elements before entry: trigger, stop loss, and target. Position sizing: never risk more than 1-2% per trade.\n\nIsichenko (Ch.6.9) derives optimal sizing via the Kelly criterion: \"a gambler receives a positive return R on the bet amount with probability p and otherwise loses the whole bet. The question is what fraction φ of money at hand to bet repeatedly for long-term success.\" The optimal fraction is φ* = p - (1-p)/R. Most practitioners use fractional Kelly (25-50%) because estimation error in p and R can lead to catastrophic over-sizing.\n\nThe best technical traders win only 40-60% of the time. They profit because winners exceed losers, the math of expectation, not accuracy.",
         "shortTitle": "Risk Management for Technical Traders",
         "estimatedMinutes": 3,
         "modules": [
@@ -501,7 +501,7 @@
           },
           {
             "type": "paragraphs",
-            "body": "The best technical traders win only 40-60% of the time. They profit because winners exceed losers — the math of expectation, not accuracy."
+            "body": "The best technical traders win only 40-60% of the time. They profit because winners exceed losers, the math of expectation, not accuracy."
           }
         ]
       }
@@ -511,12 +511,12 @@
         "question": "According to Isichenko Ch.2.2.1, what drives mean reversion in stock residual returns?",
         "options": [
           "Government intervention",
-          "Herding behavior — stocks deviate from the mean due to overreaction, then revert",
+          "Herding behavior, stocks deviate from the mean due to overreaction, then revert",
           "Random chance with no mechanism",
           "Dividend payments"
         ],
         "correctIndex": 1,
-        "explanation": "Isichenko: \"The story of mean reversion is herding\" — stocks move with the market and experience residual motion that reverts."
+        "explanation": "Isichenko: \"The story of mean reversion is herding\", stocks move with the market and experience residual motion that reverts."
       },
       {
         "question": "What does Isichenko attribute momentum to (Ch.2.2.2)?",
@@ -538,13 +538,13 @@
           "Backtesting should never be used"
         ],
         "correctIndex": 1,
-        "explanation": "Ch.7.2 \"Simulation and overfitting\" — extensive testing increases the risk of discovering patterns that are noise, not signal."
+        "explanation": "Ch.7.2 \"Simulation and overfitting\", extensive testing increases the risk of discovering patterns that are noise, not signal."
       },
       {
         "question": "Hilpisch (Ch.10) introduces what approach to backtesting?",
         "options": [
           "Manual paper trading only",
-          "Vectorized backtesting — processing entire time series at once for speed",
+          "Vectorized backtesting, processing entire time series at once for speed",
           "Asking experts for opinions",
           "Only using monthly data"
         ],
@@ -573,7 +573,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Every public company publishes three core financial statements every quarter and every year: the **income statement**, the **balance sheet**, and the **cash flow statement**. Each answers a different question. The income statement tells you whether the business made money over a period of time. The balance sheet tells you what the business owns and owes at a single point in time. The cash flow statement tells you where cash actually moved during the period — which is not the same thing as profit."
+            "body": "Every public company publishes three core financial statements every quarter and every year: the **income statement**, the **balance sheet**, and the **cash flow statement**. Each answers a different question. The income statement tells you whether the business made money over a period of time. The balance sheet tells you what the business owns and owes at a single point in time. The cash flow statement tells you where cash actually moved during the period, which is not the same thing as profit."
           },
           {
             "type": "paragraphs",
@@ -586,7 +586,7 @@
           },
           {
             "type": "paragraphs",
-            "body": "Throughout this course we'll use a real company — [[ticker:AAPL]]Apple[[/ticker]] — to walk through what each statement looks like in practice. Apple is large enough that the numbers are easy to find, conservative enough that the statements aren't full of unusual items, and recognizable enough that the lessons stick."
+            "body": "Throughout this course we'll use a real company, [[ticker:AAPL]]Apple[[/ticker]], to walk through what each statement looks like in practice. Apple is large enough that the numbers are easy to find, conservative enough that the statements aren't full of unusual items, and recognizable enough that the lessons stick."
           }
         ]
       },
@@ -597,11 +597,11 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "The income statement (sometimes called the **profit and loss statement** or **P&L**) measures a company's profit over a defined period — usually a quarter or a year. It starts with the money the company brought in and subtracts every type of cost until you arrive at net income at the bottom. This top-to-bottom structure is why people refer to revenue as the **top line** and net income as the **bottom line**."
+            "body": "The income statement (sometimes called the **profit and loss statement** or **P&L**) measures a company's profit over a defined period, usually a quarter or a year. It starts with the money the company brought in and subtracts every type of cost until you arrive at net income at the bottom. This top-to-bottom structure is why people refer to revenue as the **top line** and net income as the **bottom line**."
           },
           {
             "type": "paragraphs",
-            "body": "The basic structure is consistent across companies: **Revenue → Cost of Revenue → Gross Profit → Operating Expenses → Operating Income → Taxes & Interest → Net Income**. Each step strips out a different category of cost. Gross profit shows what's left after the direct cost of making the product. Operating income shows what's left after running the business (R&D, sales, admin). Net income shows what's left after everything — including taxes and interest."
+            "body": "The basic structure is consistent across companies: **Revenue → Cost of Revenue → Gross Profit → Operating Expenses → Operating Income → Taxes & Interest → Net Income**. Each step strips out a different category of cost. Gross profit shows what's left after the direct cost of making the product. Operating income shows what's left after running the business (R&D, sales, admin). Net income shows what's left after everything, including taxes and interest."
           },
           {
             "type": "financialStatement",
@@ -610,7 +610,7 @@
             "period": "annual",
             "limit": 2,
             "eyebrow": "Live example",
-            "caption": "Apple's most recent two fiscal years. The YoY column shows the year-over-year change. Notice how revenue, gross profit, operating income, and net income all change at different rates — operating leverage at work."
+            "caption": "Apple's most recent two fiscal years. The YoY column shows the year-over-year change. Notice how revenue, gross profit, operating income, and net income all change at different rates, operating leverage at work."
           },
           {
             "type": "paragraphs",
@@ -618,7 +618,7 @@
           },
           {
             "type": "paragraphs",
-            "body": "Pay attention to **earnings per share (EPS)** at the bottom. EPS is net income divided by the number of shares outstanding. Companies that buy back stock reduce the share count, which mechanically increases EPS even without growing net income. That makes EPS growth a useful number to compare to net-income growth — if EPS is growing faster than net income, buybacks are doing the work."
+            "body": "Pay attention to **earnings per share (EPS)** at the bottom. EPS is net income divided by the number of shares outstanding. Companies that buy back stock reduce the share count, which mechanically increases EPS even without growing net income. That makes EPS growth a useful number to compare to net-income growth, if EPS is growing faster than net income, buybacks are doing the work."
           },
           {
             "type": "keyTermCards",
@@ -643,7 +643,7 @@
               {
                 "name": "Net income",
                 "color": "red",
-                "definition": "Profit after every cost — operating, interest, and taxes. Also called the \"bottom line.\" This is what flows to shareholders."
+                "definition": "Profit after every cost, operating, interest, and taxes. Also called the \"bottom line.\" This is what flows to shareholders."
               },
               {
                 "name": "EPS (Earnings Per Share)",
@@ -661,7 +661,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "The balance sheet is a snapshot — it shows what the company owns and owes at a single point in time, usually the last day of the quarter or fiscal year. Unlike the income statement, which measures a period, the balance sheet measures a moment."
+            "body": "The balance sheet is a snapshot, it shows what the company owns and owes at a single point in time, usually the last day of the quarter or fiscal year. Unlike the income statement, which measures a period, the balance sheet measures a moment."
           },
           {
             "type": "paragraphs",
@@ -678,11 +678,11 @@
           },
           {
             "type": "paragraphs",
-            "body": "Within assets, items are split into **current** (convertible to cash within a year — receivables, inventory, short-term investments) and **non-current** (longer-lived items — property, plant and equipment, goodwill, long-term investments). Liabilities follow the same split: **current liabilities** are debts due within a year; **non-current liabilities** are longer-dated debt."
+            "body": "Within assets, items are split into **current** (convertible to cash within a year, receivables, inventory, short-term investments) and **non-current** (longer-lived items, property, plant and equipment, goodwill, long-term investments). Liabilities follow the same split: **current liabilities** are debts due within a year; **non-current liabilities** are longer-dated debt."
           },
           {
             "type": "paragraphs",
-            "body": "The relationship between current assets and current liabilities is one of the most important ratios in finance: the **current ratio** (current assets ÷ current liabilities) measures whether a company can pay its near-term obligations from its near-term resources. A ratio above 1 means it can; below 1 raises a question. The **quick ratio** is a stricter version that excludes inventory — it asks whether the company can pay debts with only its most liquid assets."
+            "body": "The relationship between current assets and current liabilities is one of the most important ratios in finance: the **current ratio** (current assets ÷ current liabilities) measures whether a company can pay its near-term obligations from its near-term resources. A ratio above 1 means it can; below 1 raises a question. The **quick ratio** is a stricter version that excludes inventory, it asks whether the company can pay debts with only its most liquid assets."
           },
           {
             "type": "paragraphs",
@@ -711,7 +711,7 @@
               {
                 "name": "Current ratio",
                 "color": "amber",
-                "definition": "Current assets divided by current liabilities. Measures short-term liquidity — whether the company can pay near-term obligations from near-term resources."
+                "definition": "Current assets divided by current liabilities. Measures short-term liquidity, whether the company can pay near-term obligations from near-term resources."
               },
               {
                 "name": "Retained earnings",
@@ -729,7 +729,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "The cash flow statement tracks actual cash movement during the period. This sounds redundant with the income statement, but it isn't. The income statement is built on **accrual accounting** — revenue is recognized when earned, costs are recognized when incurred, regardless of when cash actually changes hands. The cash flow statement strips out all those timing assumptions and shows what really moved in and out of the bank account."
+            "body": "The cash flow statement tracks actual cash movement during the period. This sounds redundant with the income statement, but it isn't. The income statement is built on **accrual accounting**, revenue is recognized when earned, costs are recognized when incurred, regardless of when cash actually changes hands. The cash flow statement strips out all those timing assumptions and shows what really moved in and out of the bank account."
           },
           {
             "type": "paragraphs",
@@ -737,7 +737,7 @@
           },
           {
             "type": "paragraphs",
-            "body": "The statement is divided into three sections. **Operating activities** is cash generated or used by the core business. **Investing activities** is cash spent on or received from buying/selling long-term assets (the big one is **capital expenditure** — money spent on property, equipment, software). **Financing activities** is cash from issuing or repaying debt, issuing stock, repurchasing stock, or paying dividends."
+            "body": "The statement is divided into three sections. **Operating activities** is cash generated or used by the core business. **Investing activities** is cash spent on or received from buying/selling long-term assets (the big one is **capital expenditure**, money spent on property, equipment, software). **Financing activities** is cash from issuing or repaying debt, issuing stock, repurchasing stock, or paying dividends."
           },
           {
             "type": "financialStatement",
@@ -746,15 +746,15 @@
             "period": "annual",
             "limit": 2,
             "eyebrow": "Live example",
-            "caption": "Apple's cash flow statement. Notice how net income at the top differs from operating cash flow below — depreciation and working-capital changes are the biggest reconciling items."
+            "caption": "Apple's cash flow statement. Notice how net income at the top differs from operating cash flow below, depreciation and working-capital changes are the biggest reconciling items."
           },
           {
             "type": "paragraphs",
-            "body": "The most important number on the cash flow statement is **free cash flow (FCF)**: cash from operations minus capital expenditure. FCF measures how much cash the business throws off after paying for everything required to keep operating. It's the cash available to repay debt, buy back stock, pay dividends, or make acquisitions — anything that creates shareholder value. Many investors consider FCF a better measure of business quality than net income because it strips out accounting choices."
+            "body": "The most important number on the cash flow statement is **free cash flow (FCF)**: cash from operations minus capital expenditure. FCF measures how much cash the business throws off after paying for everything required to keep operating. It's the cash available to repay debt, buy back stock, pay dividends, or make acquisitions, anything that creates shareholder value. Many investors consider FCF a better measure of business quality than net income because it strips out accounting choices."
           },
           {
             "type": "paragraphs",
-            "body": "Watch the **depreciation and amortization** line near the top of the operating section. Depreciation is a non-cash expense — it represents the wearing-out of long-term assets over time, but no actual cash is spent. So it gets ADDED BACK to net income when calculating operating cash flow. A company with heavy property, plant, and equipment (think utilities, telecoms, manufacturers) will report much higher operating cash flow than net income because of this addback."
+            "body": "Watch the **depreciation and amortization** line near the top of the operating section. Depreciation is a non-cash expense, it represents the wearing-out of long-term assets over time, but no actual cash is spent. So it gets ADDED BACK to net income when calculating operating cash flow. A company with heavy property, plant, and equipment (think utilities, telecoms, manufacturers) will report much higher operating cash flow than net income because of this addback."
           },
           {
             "type": "keyTermCards",
@@ -779,7 +779,7 @@
               {
                 "name": "Depreciation & amortization",
                 "color": "violet",
-                "definition": "A non-cash expense that allocates the cost of long-term assets over their useful life. Reduces net income but not cash — so it gets added back when computing operating cash flow."
+                "definition": "A non-cash expense that allocates the cost of long-term assets over their useful life. Reduces net income but not cash, so it gets added back when computing operating cash flow."
               },
               {
                 "name": "Working capital",
@@ -809,7 +809,7 @@
           },
           {
             "type": "paragraphs",
-            "body": "**The third link**: the ending cash balance on the cash flow statement equals the cash line on the balance sheet. The cash flow statement shows you how cash got from last period's balance to this period's — all three operating, investing, and financing activities sum to the net change in cash."
+            "body": "**The third link**: the ending cash balance on the cash flow statement equals the cash line on the balance sheet. The cash flow statement shows you how cash got from last period's balance to this period's, all three operating, investing, and financing activities sum to the net change in cash."
           },
           {
             "type": "pullQuote",
@@ -818,7 +818,7 @@
           },
           {
             "type": "paragraphs",
-            "body": "This is why financial-modeling work always builds the three statements together rather than in isolation. Change one assumption — say, revenue growth — and the effects ripple. Revenue change moves net income (income statement), which moves operating cash flow (cash flow statement), which moves the cash balance (balance sheet), which moves the next period's opening cash. A model that gets these links right will balance; a model that gets them wrong will not."
+            "body": "This is why financial-modeling work always builds the three statements together rather than in isolation. Change one assumption, say, revenue growth, and the effects ripple. Revenue change moves net income (income statement), which moves operating cash flow (cash flow statement), which moves the cash balance (balance sheet), which moves the next period's opening cash. A model that gets these links right will balance; a model that gets them wrong will not."
           }
         ]
       },
@@ -829,7 +829,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Let's read [[ticker:AAPL]]Apple[[/ticker]]'s three statements together and see what story they tell. Start with the income statement: notice how revenue, gross profit, and operating income each grow at slightly different rates. The spread between them is operating leverage — when revenue grows faster than fixed costs, profit grows even faster."
+            "body": "Let's read [[ticker:AAPL]]Apple[[/ticker]]'s three statements together and see what story they tell. Start with the income statement: notice how revenue, gross profit, and operating income each grow at slightly different rates. The spread between them is operating leverage, when revenue grows faster than fixed costs, profit grows even faster."
           },
           {
             "type": "financialStatement",
@@ -842,7 +842,7 @@
           },
           {
             "type": "paragraphs",
-            "body": "Now look at the balance sheet. Apple carries an enormous cash and investment position — historically more than $150 billion in cash and marketable securities. That gives the business flexibility to invest, repurchase stock, weather downturns, and acquire targets without taking on debt."
+            "body": "Now look at the balance sheet. Apple carries an enormous cash and investment position, historically more than $150 billion in cash and marketable securities. That gives the business flexibility to invest, repurchase stock, weather downturns, and acquire targets without taking on debt."
           },
           {
             "type": "financialStatement",
@@ -851,7 +851,7 @@
             "period": "annual",
             "limit": 3,
             "eyebrow": "Three-year view",
-            "caption": "Three years of Apple's balance sheet. Watch how cash, total assets, and total stockholders equity evolve — and how the company has reduced its share count via buybacks."
+            "caption": "Three years of Apple's balance sheet. Watch how cash, total assets, and total stockholders equity evolve, and how the company has reduced its share count via buybacks."
           },
           {
             "type": "paragraphs",
@@ -864,11 +864,11 @@
             "period": "annual",
             "limit": 3,
             "eyebrow": "Three-year view",
-            "caption": "Apple's cash flow statement. Most of the free cash flow has historically gone to share buybacks and dividends — a deliberate capital-return strategy."
+            "caption": "Apple's cash flow statement. Most of the free cash flow has historically gone to share buybacks and dividends, a deliberate capital-return strategy."
           },
           {
             "type": "paragraphs",
-            "body": "Looking at all three together: Apple makes a lot of money, holds a fortress balance sheet, generates more cash than it can reinvest, and returns the excess to shareholders. That's not just three separate facts — it's one coherent picture only visible by reading the statements together."
+            "body": "Looking at all three together: Apple makes a lot of money, holds a fortress balance sheet, generates more cash than it can reinvest, and returns the excess to shareholders. That's not just three separate facts, it's one coherent picture only visible by reading the statements together."
           }
         ]
       },
@@ -879,7 +879,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Now that you know how the three statements fit together, here are the most common mistakes that trip up readers — including experienced ones."
+            "body": "Now that you know how the three statements fit together, here are the most common mistakes that trip up readers, including experienced ones."
           },
           {
             "type": "paragraphs",
@@ -887,7 +887,7 @@
           },
           {
             "type": "paragraphs",
-            "body": "**Ignoring stock-based compensation**. SBC is a real cost — it dilutes existing shareholders — but it doesn't reduce cash, so it gets added back to operating cash flow. Many tech companies report large operating cash flows partly because of this. Always check how much of operating cash flow is just SBC being added back. If you subtract SBC from operating cash flow, you get a more conservative measure of cash profitability."
+            "body": "**Ignoring stock-based compensation**. SBC is a real cost, it dilutes existing shareholders, but it doesn't reduce cash, so it gets added back to operating cash flow. Many tech companies report large operating cash flows partly because of this. Always check how much of operating cash flow is just SBC being added back. If you subtract SBC from operating cash flow, you get a more conservative measure of cash profitability."
           },
           {
             "type": "paragraphs",
@@ -895,7 +895,7 @@
           },
           {
             "type": "paragraphs",
-            "body": "**Missing the working-capital story**. A business that's growing rapidly often has to invest in working capital — building inventory, extending credit to customers — which can drain operating cash flow even when profit is strong. The opposite is also true: a business with negative working capital (collecting from customers before paying suppliers) generates cash AHEAD of profit."
+            "body": "**Missing the working-capital story**. A business that's growing rapidly often has to invest in working capital, building inventory, extending credit to customers, which can drain operating cash flow even when profit is strong. The opposite is also true: a business with negative working capital (collecting from customers before paying suppliers) generates cash AHEAD of profit."
           },
           {
             "type": "paragraphs",
@@ -903,7 +903,7 @@
           },
           {
             "type": "callout",
-            "body": "Practice: pull up any company you follow and answer three questions. (1) Is revenue growing faster, in line with, or slower than net income? (2) How much of operating cash flow is just stock-based compensation? (3) What is free cash flow as a percentage of net income — and what does that tell you?"
+            "body": "Practice: pull up any company you follow and answer three questions. (1) Is revenue growing faster, in line with, or slower than net income? (2) How much of operating cash flow is just stock-based compensation? (3) What is free cash flow as a percentage of net income, and what does that tell you?"
           }
         ]
       },
@@ -922,11 +922,11 @@
           },
           {
             "type": "paragraphs",
-            "body": "Every public-company filing — 10-K (annual) and 10-Q (quarterly) — contains all three statements plus management's commentary on what's behind the numbers. Reading that commentary alongside the statements is where intermediate-level financial analysis lives. The numbers tell you WHAT happened; the commentary tells you WHY."
+            "body": "Every public-company filing, 10-K (annual) and 10-Q (quarterly), contains all three statements plus management's commentary on what's behind the numbers. Reading that commentary alongside the statements is where intermediate-level financial analysis lives. The numbers tell you WHAT happened; the commentary tells you WHY."
           },
           {
             "type": "paragraphs",
-            "body": "When you're ready to go deeper, the next step is **ratio analysis** — combining numbers across the three statements to build measurements of profitability (return on equity, return on invested capital), efficiency (asset turnover, inventory days), leverage (debt-to-equity, interest coverage), and valuation (P/E, EV/EBITDA, P/FCF). Each ratio asks a specific question about the business. With the foundation you have now, those ratios will mean something instead of being abstract."
+            "body": "When you're ready to go deeper, the next step is **ratio analysis**, combining numbers across the three statements to build measurements of profitability (return on equity, return on invested capital), efficiency (asset turnover, inventory days), leverage (debt-to-equity, interest coverage), and valuation (P/E, EV/EBITDA, P/FCF). Each ratio asks a specific question about the business. With the foundation you have now, those ratios will mean something instead of being abstract."
           }
         ]
       }

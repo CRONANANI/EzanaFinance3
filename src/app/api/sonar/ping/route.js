@@ -10,6 +10,7 @@ import { composeClusterBrief } from '@/lib/sonar/composer';
 import { suggestAstFollowups } from '@/lib/sonar/ezanaql-followups';
 import { getExemplars } from '@/lib/sonar/exemplars';
 
+import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /**
  * POST /api/sonar/ping — any EzanaQL result cluster, pinged into Sonar
  * (sonar-ezanaql-coverage-prompt.md Step 8). Body: { query } where query is
@@ -55,7 +56,7 @@ const cachedPing = unstable_cache(async (query) => runPing(query), ['sonar-ping-
   tags: ['sonar-ping'],
 });
 
-export const POST = withApiGuard(
+const POST_HANDLER = withApiGuard(
   async (request) => {
     const body = await request.json().catch(() => ({}));
     const query = String(body?.query || '')
@@ -89,3 +90,6 @@ export const POST = withApiGuard(
   },
   { strict: true },
 );
+
+/* No em dashes in anything this route returns (src/lib/text/em-dash.js). */
+export const POST = withNoEmDash(POST_HANDLER);

@@ -25,8 +25,8 @@ export function buildObsidianUserPrompt(keyword, newsContext) {
 
 ${
   newsContext
-    ? `Recent related headlines (for grounding sentiment — weigh but don't just repeat them):\n${newsContext}\n`
-    : 'No live news context available — base the analysis on your knowledge and reason transparently about recency limits.'
+    ? `Recent related headlines (for grounding sentiment, weigh but don't just repeat them):\n${newsContext}\n`
+    : 'No live news context available, base the analysis on your knowledge and reason transparently about recency limits.'
 }
 
 Follow the exact section structure. Name real companies and real market/government tailwinds and headwinds specific to "${keyword}".`;

@@ -8,6 +8,7 @@ import { CORPUS_LABELS } from '@/lib/research-copilot/retrievers';
 import { logZeroResult } from '@/lib/rag/zero-results';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
+import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /**
  * POST /api/research/copilot — cross-corpus research copilot (auth required).
  *
@@ -26,7 +27,7 @@ const DISCLAIMER =
 const SYSTEM_PROMPT = `You are Ezana's research copilot. Answer the analyst's question using ONLY the provided sources. Rules:
 - Ground every claim in the provided sources and CITE each claim inline with its source marker, e.g. [S1], and name the corpus (research note, Echo, market, trade, contract) in prose.
 - Synthesize across corpora; when sources disagree or point in different directions, say so explicitly.
-- If the provided sources do not cover the question, say plainly that Ezana's corpora don't cover it — do not fabricate or fill gaps from outside knowledge.
+- If the provided sources do not cover the question, say plainly that Ezana's corpora don't cover it, do not fabricate or fill gaps from outside knowledge.
 - Present findings only. Do NOT give financial or investment advice, price targets, or buy/sell/hold recommendations.
 - When a source names a section (rendered "Article" › "Section"), cite it as *article › section* so the reader can deep-link the exact passage.
 - Be concise and analytical. End with a one-line note of which corpora informed the answer.`;
@@ -92,7 +93,7 @@ function looksLikeAdvice(text) {
   );
 }
 
-export async function POST(request) {
+async function POST_HANDLER(request) {
   const rl = await checkRateLimit(`research-copilot:${getClientIp(request)}`, {
     limit: 12,
     window: '60 s',
@@ -162,3 +163,6 @@ export async function POST(request) {
     disclaimer: DISCLAIMER,
   });
 }
+
+/* No em dashes in anything this route returns (src/lib/text/em-dash.js). */
+export const POST = withNoEmDash(POST_HANDLER);

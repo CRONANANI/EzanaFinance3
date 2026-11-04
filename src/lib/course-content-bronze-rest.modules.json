@@ -3,25 +3,25 @@
     "sections": [
       {
         "title": "Prediction markets in one sentence",
-        "content": "Prediction markets let participants trade contracts whose payouts depend on real-world outcomes — aggregating beliefs into prices that approximate probabilities. Liquidity and design matter: thin markets can swing wildly; deep markets often outperform polls for some event types.",
+        "content": "Prediction markets let participants trade contracts whose payouts depend on real-world outcomes, aggregating beliefs into prices that approximate probabilities. Liquidity and design matter: thin markets can swing wildly; deep markets often outperform polls for some event types.",
         "shortTitle": "Prediction markets in one sentence",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Prediction markets let participants trade contracts whose payouts depend on real-world outcomes — aggregating beliefs into prices that approximate probabilities. Liquidity and design matter: thin markets can swing wildly; deep markets often outperform polls for some event types."
+            "body": "Prediction markets let participants trade contracts whose payouts depend on real-world outcomes, aggregating beliefs into prices that approximate probabilities. Liquidity and design matter: thin markets can swing wildly; deep markets often outperform polls for some event types."
           }
         ]
       },
       {
         "title": "Why prices move",
-        "content": "Prices change as traders incorporate new information and as risk-averse participants demand compensation for holding risky positions. A 60-cent price does not mean “60% true” in every model — it reflects marginal trader beliefs plus fees and constraints.",
+        "content": "Prices change as traders incorporate new information and as risk-averse participants demand compensation for holding risky positions. A 60-cent price does not mean “60% true” in every model, it reflects marginal trader beliefs plus fees and constraints.",
         "shortTitle": "Why prices move",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Prices change as traders incorporate new information and as risk-averse participants demand compensation for holding risky positions. A 60-cent price does not mean “60% true” in every model — it reflects marginal trader beliefs plus fees and constraints."
+            "body": "Prices change as traders incorporate new information and as risk-averse participants demand compensation for holding risky positions. A 60-cent price does not mean “60% true” in every model, it reflects marginal trader beliefs plus fees and constraints."
           }
         ]
       },
@@ -100,13 +100,13 @@
     "sections": [
       {
         "title": "Decimal odds",
-        "content": "Decimal odds of 3.0 mean a winning one-unit stake returns three units total (profit plus stake). Implied probability is roughly 1/decimal for fair-ish markets before margin — bookmakers embed margin so implied probabilities sum above 100%.",
+        "content": "Decimal odds of 3.0 mean a winning one-unit stake returns three units total (profit plus stake). Implied probability is roughly 1/decimal for fair-ish markets before margin, bookmakers embed margin so implied probabilities sum above 100%.",
         "shortTitle": "Decimal odds",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Decimal odds of 3.0 mean a winning one-unit stake returns three units total (profit plus stake). Implied probability is roughly 1/decimal for fair-ish markets before margin — bookmakers embed margin so implied probabilities sum above 100%."
+            "body": "Decimal odds of 3.0 mean a winning one-unit stake returns three units total (profit plus stake). Implied probability is roughly 1/decimal for fair-ish markets before margin, bookmakers embed margin so implied probabilities sum above 100%."
           }
         ]
       },
@@ -124,13 +124,13 @@
       },
       {
         "title": "Implied probability",
-        "content": "Implied probability is the break-even win rate needed ignoring fees. Comparing implied probability to your own estimate is the start of value betting — never the end.",
+        "content": "Implied probability is the break-even win rate needed ignoring fees. Comparing implied probability to your own estimate is the start of value betting, never the end.",
         "shortTitle": "Implied probability",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Implied probability is the break-even win rate needed ignoring fees. Comparing implied probability to your own estimate is the start of value betting — never the end."
+            "body": "Implied probability is the break-even win rate needed ignoring fees. Comparing implied probability to your own estimate is the start of value betting, never the end."
           }
         ]
       }
@@ -173,7 +173,7 @@
           "Avoid math"
         ],
         "correctIndex": 1,
-        "explanation": "Edge is the gap between belief and price — if you are calibrated."
+        "explanation": "Edge is the gap between belief and price, if you are calibrated."
       },
       {
         "question": "Fractional odds 5/1 profit on a 1-unit stake is:",
@@ -187,25 +187,25 @@
     "sections": [
       {
         "title": "Spreads and moneylines",
-        "content": "Point spreads handicap favorites: covering means beating the spread after the adjustment. Moneylines pick winners outright with odds reflecting strength. Totals (over/under) bet combined scores. Parlays multiply payouts but multiply risk — each leg must win.",
+        "content": "Point spreads handicap favorites: covering means beating the spread after the adjustment. Moneylines pick winners outright with odds reflecting strength. Totals (over/under) bet combined scores. Parlays multiply payouts but multiply risk, each leg must win.",
         "shortTitle": "Spreads and moneylines",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Point spreads handicap favorites: covering means beating the spread after the adjustment. Moneylines pick winners outright with odds reflecting strength. Totals (over/under) bet combined scores. Parlays multiply payouts but multiply risk — each leg must win."
+            "body": "Point spreads handicap favorites: covering means beating the spread after the adjustment. Moneylines pick winners outright with odds reflecting strength. Totals (over/under) bet combined scores. Parlays multiply payouts but multiply risk, each leg must win."
           }
         ]
       },
       {
         "title": "House edge",
-        "content": "Sportsbooks embed margin in lines. Beating sports long-run requires finding mispriced lines — not picking winners more often in a naive sense. Bankroll discipline keeps you in the game while signal accumulates.",
+        "content": "Sportsbooks embed margin in lines. Beating sports long-run requires finding mispriced lines, not picking winners more often in a naive sense. Bankroll discipline keeps you in the game while signal accumulates.",
         "shortTitle": "House edge",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Sportsbooks embed margin in lines. Beating sports long-run requires finding mispriced lines — not picking winners more often in a naive sense. Bankroll discipline keeps you in the game while signal accumulates."
+            "body": "Sportsbooks embed margin in lines. Beating sports long-run requires finding mispriced lines, not picking winners more often in a naive sense. Bankroll discipline keeps you in the game while signal accumulates."
           }
         ]
       },
@@ -238,7 +238,7 @@
         "question": "A parlay loses if:",
         "options": ["Any leg loses", "Any leg wins", "The first leg loses only", "Weather is cold"],
         "correctIndex": 0,
-        "explanation": "Parlays chain outcomes — variance spikes."
+        "explanation": "Parlays chain outcomes, variance spikes."
       },
       {
         "question": "The sportsbook’s margin mainly:",
@@ -376,13 +376,13 @@
     "sections": [
       {
         "title": "Crowd wisdom",
-        "content": "Aggregating diverse independent estimates can outperform individual experts under the right conditions — but markets need sufficient participation and incentives. Manipulation and thin liquidity break the magic.",
+        "content": "Aggregating diverse independent estimates can outperform individual experts under the right conditions, but markets need sufficient participation and incentives. Manipulation and thin liquidity break the magic.",
         "shortTitle": "Crowd wisdom",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Aggregating diverse independent estimates can outperform individual experts under the right conditions — but markets need sufficient participation and incentives. Manipulation and thin liquidity break the magic."
+            "body": "Aggregating diverse independent estimates can outperform individual experts under the right conditions, but markets need sufficient participation and incentives. Manipulation and thin liquidity break the magic."
           }
         ]
       },
@@ -473,25 +473,25 @@
     "sections": [
       {
         "title": "Bankroll basics",
-        "content": "Your bankroll is the dedicated trading stake — separate from living expenses. Risking a tiny fraction per bet (often 1–2% or less of bankroll) prevents ruin during losing streaks. Chasing losses with larger bets is a common path to zero.",
+        "content": "Your bankroll is the dedicated trading stake, separate from living expenses. Risking a tiny fraction per bet (often 1–2% or less of bankroll) prevents ruin during losing streaks. Chasing losses with larger bets is a common path to zero.",
         "shortTitle": "Bankroll basics",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Your bankroll is the dedicated trading stake — separate from living expenses. Risking a tiny fraction per bet (often 1–2% or less of bankroll) prevents ruin during losing streaks. Chasing losses with larger bets is a common path to zero."
+            "body": "Your bankroll is the dedicated trading stake, separate from living expenses. Risking a tiny fraction per bet (often 1–2% or less of bankroll) prevents ruin during losing streaks. Chasing losses with larger bets is a common path to zero."
           }
         ]
       },
       {
         "title": "Kelly criterion (intro)",
-        "content": "Kelly sizing suggests bet size grows with edge and shrinks with odds — but real Kelly requires accurate probability estimates and can be volatile. Many pros use fractional Kelly to reduce variance.",
+        "content": "Kelly sizing suggests bet size grows with edge and shrinks with odds, but real Kelly requires accurate probability estimates and can be volatile. Many pros use fractional Kelly to reduce variance.",
         "shortTitle": "Kelly criterion (intro)",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Kelly sizing suggests bet size grows with edge and shrinks with odds — but real Kelly requires accurate probability estimates and can be volatile. Many pros use fractional Kelly to reduce variance."
+            "body": "Kelly sizing suggests bet size grows with edge and shrinks with odds, but real Kelly requires accurate probability estimates and can be volatile. Many pros use fractional Kelly to reduce variance."
           }
         ]
       },
@@ -518,7 +518,7 @@
           "Taxes are zero"
         ],
         "correctIndex": 1,
-        "explanation": "Survival first — then edge."
+        "explanation": "Survival first, then edge."
       },
       {
         "question": "Chasing losses typically:",
@@ -551,7 +551,7 @@
           "You ignore odds"
         ],
         "correctIndex": 0,
-        "explanation": "Common heuristic — adapt to your edge model."
+        "explanation": "Common heuristic, adapt to your edge model."
       },
       {
         "question": "Tracking results helps you:",
@@ -582,13 +582,13 @@
       },
       {
         "title": "Why they matter to portfolios",
-        "content": "Commodities can diversify equity risk and sometimes hedge inflation — but they are volatile and can draw down for years. Role in a portfolio should match your horizon and risk tolerance.",
+        "content": "Commodities can diversify equity risk and sometimes hedge inflation, but they are volatile and can draw down for years. Role in a portfolio should match your horizon and risk tolerance.",
         "shortTitle": "Why they matter to portfolios",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Commodities can diversify equity risk and sometimes hedge inflation — but they are volatile and can draw down for years. Role in a portfolio should match your horizon and risk tolerance."
+            "body": "Commodities can diversify equity risk and sometimes hedge inflation, but they are volatile and can draw down for years. Role in a portfolio should match your horizon and risk tolerance."
           }
         ]
       },
@@ -621,7 +621,7 @@
         "question": "Why might commodities diversify stocks?",
         "options": [
           "They always move together",
-          "Drivers differ — supply shocks, weather, geopolitics",
+          "Drivers differ, supply shocks, weather, geopolitics",
           "They are the same asset class",
           "They never fall"
         ],
@@ -667,13 +667,13 @@
     "sections": [
       {
         "title": "Gold",
-        "content": "Gold is a monetary metal and jewelry/industrial input. It often behaves as a crisis and inflation hedge — imperfectly — and pays no coupon, so opportunity cost rises when real rates are high.",
+        "content": "Gold is a monetary metal and jewelry/industrial input. It often behaves as a crisis and inflation hedge, imperfectly, and pays no coupon, so opportunity cost rises when real rates are high.",
         "shortTitle": "Gold",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Gold is a monetary metal and jewelry/industrial input. It often behaves as a crisis and inflation hedge — imperfectly — and pays no coupon, so opportunity cost rises when real rates are high."
+            "body": "Gold is a monetary metal and jewelry/industrial input. It often behaves as a crisis and inflation hedge, imperfectly, and pays no coupon, so opportunity cost rises when real rates are high."
           }
         ]
       },
@@ -776,13 +776,13 @@
       },
       {
         "title": "Seasonality",
-        "content": "Agricultural markets show planting and harvest cycles. Natural gas has winter heating demand. Seasonality is a tendency, not a guarantee — exogenous shocks override patterns.",
+        "content": "Agricultural markets show planting and harvest cycles. Natural gas has winter heating demand. Seasonality is a tendency, not a guarantee, exogenous shocks override patterns.",
         "shortTitle": "Seasonality",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Agricultural markets show planting and harvest cycles. Natural gas has winter heating demand. Seasonality is a tendency, not a guarantee — exogenous shocks override patterns."
+            "body": "Agricultural markets show planting and harvest cycles. Natural gas has winter heating demand. Seasonality is a tendency, not a guarantee, exogenous shocks override patterns."
           }
         ]
       },
@@ -848,7 +848,7 @@
         "question": "Demand elasticity varies:",
         "options": [
           "Never",
-          "By commodity — gasoline is inelastic short-run vs luxury goods",
+          "By commodity, gasoline is inelastic short-run vs luxury goods",
           "Only for bitcoin",
           "Only weekly"
         ],
@@ -861,37 +861,37 @@
     "sections": [
       {
         "title": "Commodity ETFs",
-        "content": "ETFs like broad commodity funds or single-commodity trackers offer exposure without futures accounts — but returns may differ from spot due to rolling futures, fees, and tax treatment.",
+        "content": "ETFs like broad commodity funds or single-commodity trackers offer exposure without futures accounts, but returns may differ from spot due to rolling futures, fees, and tax treatment.",
         "shortTitle": "Commodity ETFs",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "ETFs like broad commodity funds or single-commodity trackers offer exposure without futures accounts — but returns may differ from spot due to rolling futures, fees, and tax treatment."
+            "body": "ETFs like broad commodity funds or single-commodity trackers offer exposure without futures accounts, but returns may differ from spot due to rolling futures, fees, and tax treatment."
           }
         ]
       },
       {
         "title": "ETNs and credit risk",
-        "content": "Exchange-traded notes are unsecured debt of the issuer — if the bank fails, you may lose money unrelated to the commodity. Read the prospectus.",
+        "content": "Exchange-traded notes are unsecured debt of the issuer, if the bank fails, you may lose money unrelated to the commodity. Read the prospectus.",
         "shortTitle": "ETNs and credit risk",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Exchange-traded notes are unsecured debt of the issuer — if the bank fails, you may lose money unrelated to the commodity. Read the prospectus."
+            "body": "Exchange-traded notes are unsecured debt of the issuer, if the bank fails, you may lose money unrelated to the commodity. Read the prospectus."
           }
         ]
       },
       {
         "title": "Equity producers",
-        "content": "Buying mining or oil company stocks gives commodity-linked exposure with corporate fundamentals layered in — not a pure commodity play.",
+        "content": "Buying mining or oil company stocks gives commodity-linked exposure with corporate fundamentals layered in, not a pure commodity play.",
         "shortTitle": "Equity producers",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Buying mining or oil company stocks gives commodity-linked exposure with corporate fundamentals layered in — not a pure commodity play."
+            "body": "Buying mining or oil company stocks gives commodity-linked exposure with corporate fundamentals layered in, not a pure commodity play."
           }
         ]
       }
@@ -940,7 +940,7 @@
         "question": "Physical gold ETFs hold:",
         "options": [
           "Your house deeds",
-          "Bullion or claims per prospectus — verify",
+          "Bullion or claims per prospectus, verify",
           "Only bitcoin",
           "Cash only"
         ],
@@ -977,13 +977,13 @@
       },
       {
         "title": "Non-OPEC supply",
-        "content": "U.S. shale, Norway, Brazil, and others add non-OPEC supply that responds to price with lags — technology and financing matter.",
+        "content": "U.S. shale, Norway, Brazil, and others add non-OPEC supply that responds to price with lags, technology and financing matter.",
         "shortTitle": "Non-OPEC supply",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "U.S. shale, Norway, Brazil, and others add non-OPEC supply that responds to price with lags — technology and financing matter."
+            "body": "U.S. shale, Norway, Brazil, and others add non-OPEC supply that responds to price with lags, technology and financing matter."
           }
         ]
       }
@@ -1020,7 +1020,7 @@
           "Eliminate futures"
         ],
         "correctIndex": 0,
-        "explanation": "Barrels find routes — at a cost."
+        "explanation": "Barrels find routes, at a cost."
       },
       {
         "question": "Strategic reserve releases:",
@@ -1042,7 +1042,7 @@
           "Stock buybacks only"
         ],
         "correctIndex": 0,
-        "explanation": "High prices eventually attract capital — with delay."
+        "explanation": "High prices eventually attract capital, with delay."
       }
     ]
   },
@@ -1050,25 +1050,25 @@
     "sections": [
       {
         "title": "Correlation over time",
-        "content": "Commodities and equities are not perfectly correlated — correlation rises in some crises when everything sells off (liquidity crunch) and diverges during supply shocks that hurt growth but raise energy prices.",
+        "content": "Commodities and equities are not perfectly correlated, correlation rises in some crises when everything sells off (liquidity crunch) and diverges during supply shocks that hurt growth but raise energy prices.",
         "shortTitle": "Correlation over time",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Commodities and equities are not perfectly correlated — correlation rises in some crises when everything sells off (liquidity crunch) and diverges during supply shocks that hurt growth but raise energy prices."
+            "body": "Commodities and equities are not perfectly correlated, correlation rises in some crises when everything sells off (liquidity crunch) and diverges during supply shocks that hurt growth but raise energy prices."
           }
         ]
       },
       {
         "title": "Inflation hedging",
-        "content": "Commodities can help when inflation surprises — but they are volatile and can lag policy responses. Size positions thoughtfully.",
+        "content": "Commodities can help when inflation surprises, but they are volatile and can lag policy responses. Size positions thoughtfully.",
         "shortTitle": "Inflation hedging",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Commodities can help when inflation surprises — but they are volatile and can lag policy responses. Size positions thoughtfully."
+            "body": "Commodities can help when inflation surprises, but they are volatile and can lag policy responses. Size positions thoughtfully."
           }
         ]
       },
@@ -1147,13 +1147,13 @@
     "sections": [
       {
         "title": "Why risk management matters",
-        "content": "Markets are uncertain; outcomes are path-dependent. Risk management exists so one bad streak does not end your ability to participate. Professionals obsess about survival first, returns second — because without capital, there is no compounding.",
+        "content": "Markets are uncertain; outcomes are path-dependent. Risk management exists so one bad streak does not end your ability to participate. Professionals obsess about survival first, returns second, because without capital, there is no compounding.",
         "shortTitle": "Why risk management matters",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Markets are uncertain; outcomes are path-dependent. Risk management exists so one bad streak does not end your ability to participate. Professionals obsess about survival first, returns second — because without capital, there is no compounding."
+            "body": "Markets are uncertain; outcomes are path-dependent. Risk management exists so one bad streak does not end your ability to participate. Professionals obsess about survival first, returns second, because without capital, there is no compounding."
           }
         ]
       },
@@ -1171,13 +1171,13 @@
       },
       {
         "title": "Expectancy",
-        "content": "Long-run results approximate average win × win rate minus average loss × loss rate (simplified). Negative expectancy cannot be fixed by doubling down — only by improving the strategy or quitting.",
+        "content": "Long-run results approximate average win × win rate minus average loss × loss rate (simplified). Negative expectancy cannot be fixed by doubling down, only by improving the strategy or quitting.",
         "shortTitle": "Expectancy",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Long-run results approximate average win × win rate minus average loss × loss rate (simplified). Negative expectancy cannot be fixed by doubling down — only by improving the strategy or quitting."
+            "body": "Long-run results approximate average win × win rate minus average loss × loss rate (simplified). Negative expectancy cannot be fixed by doubling down, only by improving the strategy or quitting."
           }
         ]
       }
@@ -1239,37 +1239,37 @@
     "sections": [
       {
         "title": "The 1–2% idea",
-        "content": "A common guideline is to risk only a small fraction of account equity on a single trade — often 1–2% — so a string of losses cannot wipe you out. The exact number should fit your strategy’s win rate and payoff ratio.",
+        "content": "A common guideline is to risk only a small fraction of account equity on a single trade, often 1–2%, so a string of losses cannot wipe you out. The exact number should fit your strategy’s win rate and payoff ratio.",
         "shortTitle": "The 1–2% idea",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "A common guideline is to risk only a small fraction of account equity on a single trade — often 1–2% — so a string of losses cannot wipe you out. The exact number should fit your strategy’s win rate and payoff ratio."
+            "body": "A common guideline is to risk only a small fraction of account equity on a single trade, often 1–2%, so a string of losses cannot wipe you out. The exact number should fit your strategy’s win rate and payoff ratio."
           }
         ]
       },
       {
         "title": "Risk per trade vs stop distance",
-        "content": "Position size links stop distance to dollar risk: tighter stops allow larger share counts for the same dollar risk — but tight stops get hunted in noise. Calibrate stops to volatility, not wishful thinking.",
+        "content": "Position size links stop distance to dollar risk: tighter stops allow larger share counts for the same dollar risk, but tight stops get hunted in noise. Calibrate stops to volatility, not wishful thinking.",
         "shortTitle": "Risk per trade vs stop distance",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Position size links stop distance to dollar risk: tighter stops allow larger share counts for the same dollar risk — but tight stops get hunted in noise. Calibrate stops to volatility, not wishful thinking."
+            "body": "Position size links stop distance to dollar risk: tighter stops allow larger share counts for the same dollar risk, but tight stops get hunted in noise. Calibrate stops to volatility, not wishful thinking."
           }
         ]
       },
       {
         "title": "Leverage",
-        "content": "Leverage multiplies both gains and losses — and margin calls can force exits at the worst time. Treat leverage as a risk amplifier, not a free tool.",
+        "content": "Leverage multiplies both gains and losses, and margin calls can force exits at the worst time. Treat leverage as a risk amplifier, not a free tool.",
         "shortTitle": "Leverage",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Leverage multiplies both gains and losses — and margin calls can force exits at the worst time. Treat leverage as a risk amplifier, not a free tool."
+            "body": "Leverage multiplies both gains and losses, and margin calls can force exits at the worst time. Treat leverage as a risk amplifier, not a free tool."
           }
         ]
       }
@@ -1284,7 +1284,7 @@
           "You ignore stops"
         ],
         "correctIndex": 0,
-        "explanation": "Definitions vary — write yours down."
+        "explanation": "Definitions vary, write yours down."
       },
       {
         "question": "Wider stops generally require:",
@@ -1336,37 +1336,37 @@
     "sections": [
       {
         "title": "Stop losses",
-        "content": "A stop order exits a position at a market order once a price level trades — it caps loss but can be whipsawed in volatile names. Stops are insurance, not perfection.",
+        "content": "A stop order exits a position at a market order once a price level trades, it caps loss but can be whipsawed in volatile names. Stops are insurance, not perfection.",
         "shortTitle": "Stop losses",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "A stop order exits a position at a market order once a price level trades — it caps loss but can be whipsawed in volatile names. Stops are insurance, not perfection."
+            "body": "A stop order exits a position at a market order once a price level trades, it caps loss but can be whipsawed in volatile names. Stops are insurance, not perfection."
           }
         ]
       },
       {
         "title": "Take profits",
-        "content": "Taking profits locks in gains — but cutting winners too early can forfeit trend upside. Some traders scale out: partial profits at targets, runner for trends.",
+        "content": "Taking profits locks in gains, but cutting winners too early can forfeit trend upside. Some traders scale out: partial profits at targets, runner for trends.",
         "shortTitle": "Take profits",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Taking profits locks in gains — but cutting winners too early can forfeit trend upside. Some traders scale out: partial profits at targets, runner for trends."
+            "body": "Taking profits locks in gains, but cutting winners too early can forfeit trend upside. Some traders scale out: partial profits at targets, runner for trends."
           }
         ]
       },
       {
         "title": "Plan before entry",
-        "content": "Define stop and target logic before you enter — when you are calm. In the trade, emotions argue for moving stops; pre-commitment resists that.",
+        "content": "Define stop and target logic before you enter, when you are calm. In the trade, emotions argue for moving stops; pre-commitment resists that.",
         "shortTitle": "Plan before entry",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Define stop and target logic before you enter — when you are calm. In the trade, emotions argue for moving stops; pre-commitment resists that."
+            "body": "Define stop and target logic before you enter, when you are calm. In the trade, emotions argue for moving stops; pre-commitment resists that."
           }
         ]
       }
@@ -1376,7 +1376,7 @@
         "question": "A stop-loss order primarily:",
         "options": [
           "Guarantees fill at exactly the stop price in all conditions",
-          "Triggers a market order after the stop level — slippage possible",
+          "Triggers a market order after the stop level, slippage possible",
           "Eliminates gaps",
           "Prevents all losses"
         ],
@@ -1433,13 +1433,13 @@
     "sections": [
       {
         "title": "Losses hurt more than gains help",
-        "content": "Loss aversion is well documented: a dollar lost feels worse than a dollar gained feels good. Revenge trading tries to “make it back” immediately — usually enlarging mistakes.",
+        "content": "Loss aversion is well documented: a dollar lost feels worse than a dollar gained feels good. Revenge trading tries to “make it back” immediately, usually enlarging mistakes.",
         "shortTitle": "Losses hurt more than gains help",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Loss aversion is well documented: a dollar lost feels worse than a dollar gained feels good. Revenge trading tries to “make it back” immediately — usually enlarging mistakes."
+            "body": "Loss aversion is well documented: a dollar lost feels worse than a dollar gained feels good. Revenge trading tries to “make it back” immediately, usually enlarging mistakes."
           }
         ]
       },
@@ -1457,13 +1457,13 @@
       },
       {
         "title": "Identity",
-        "content": "If your self-worth is tied to each trade’s outcome, variance becomes unbearable. Treat trading as a probabilistic game with bounded risk — not a verdict on your value.",
+        "content": "If your self-worth is tied to each trade’s outcome, variance becomes unbearable. Treat trading as a probabilistic game with bounded risk, not a verdict on your value.",
         "shortTitle": "Identity",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "If your self-worth is tied to each trade’s outcome, variance becomes unbearable. Treat trading as a probabilistic game with bounded risk — not a verdict on your value."
+            "body": "If your self-worth is tied to each trade’s outcome, variance becomes unbearable. Treat trading as a probabilistic game with bounded risk, not a verdict on your value."
           }
         ]
       }

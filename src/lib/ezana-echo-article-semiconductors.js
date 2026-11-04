@@ -169,18 +169,18 @@ export const semiconductorArticle = {
   subtitle:
     "Taiwan's semiconductor dominance is a geopolitical weapon, a $5 trillion investment thesis, and the most consequential chokepoint in the global economy.",
   excerpt:
-    'One company — TSMC — produces over 90% of the world\'s most advanced semiconductor chips. These chips power AI training, military systems, smartphones, and the entire digital economy. Taiwan transformed this manufacturing supremacy into what analysts call a "silicon shield" — the theory that no rational actor would invade the island and risk disrupting the global chip supply. Here\'s the full picture for investors.',
+    'One company, TSMC, produces over 90% of the world\'s most advanced semiconductor chips. These chips power AI training, military systems, smartphones, and the entire digital economy. Taiwan transformed this manufacturing supremacy into what analysts call a "silicon shield", the theory that no rational actor would invade the island and risk disrupting the global chip supply. Here\'s the full picture for investors.',
   heroImage: {
     src: '/echo/tmsc-manufacturing.png',
     alt: 'Inside a TSMC advanced semiconductor fabrication plant',
     caption:
-      "TSMC's advanced fabs produce over 90% of the world's most advanced chips — the manufacturing supremacy behind Taiwan's “silicon shield.”",
+      "TSMC's advanced fabs produce over 90% of the world's most advanced chips, the manufacturing supremacy behind Taiwan's “silicon shield.”",
   },
   contentBlocks: [
     { type: 'heading', text: 'The Most Important Factory In The World', level: 2 },
     {
       type: 'paragraph',
-      text: "There is a facility in Hsinchu Science Park, a sprawling industrial cluster south of Taipei, that quietly underpins the entire modern economy. Inside, engineers operate at tolerances measured in atoms — etching circuits onto silicon wafers at the [[kw:nanometer-process]]2-nanometer scale[[/kw]], where the gap between transistors is smaller than a strand of DNA. This facility belongs to Taiwan Semiconductor Manufacturing Company, and it produces more than 90% of the world's most advanced chips.",
+      text: "There is a facility in Hsinchu Science Park, a sprawling industrial cluster south of Taipei, that quietly underpins the entire modern economy. Inside, engineers operate at tolerances measured in atoms, etching circuits onto silicon wafers at the [[kw:nanometer-process]]2-nanometer scale[[/kw]], where the gap between transistors is smaller than a strand of DNA. This facility belongs to Taiwan Semiconductor Manufacturing Company, and it produces more than 90% of the world's most advanced chips.",
     },
     {
       type: 'paragraph',
@@ -196,7 +196,7 @@ export const semiconductorArticle = {
     { type: 'heading', text: 'How Taiwan Built A Monopoly On Purpose', level: 2 },
     {
       type: 'paragraph',
-      text: 'Taiwan did not stumble into semiconductor supremacy. In the 1970s, Taiwanese technocrats recognized that the nation could not compete at the electronics frontier against Japan and the United States. Instead of trying to dominate the entire chip value chain — design, manufacturing, packaging — they focused on a single link: precision manufacturing, the most operationally demanding stage.',
+      text: 'Taiwan did not stumble into semiconductor supremacy. In the 1970s, Taiwanese technocrats recognized that the nation could not compete at the electronics frontier against Japan and the United States. Instead of trying to dominate the entire chip value chain, design, manufacturing, packaging, they focused on a single link: precision manufacturing, the most operationally demanding stage.',
     },
     {
       type: 'paragraph',
@@ -243,7 +243,7 @@ export const semiconductorArticle = {
           lane: 2,
           label: '1987 · Morris Chang founds TSMC',
           detail:
-            'Invented the pure-play foundry model — manufacturing others’ designs, never competing with customers.',
+            'Invented the pure-play foundry model, manufacturing others’ designs, never competing with customers.',
         },
         {
           year: 1992,
@@ -276,7 +276,7 @@ export const semiconductorArticle = {
     { type: 'heading', text: 'The Silicon Shield Thesis', level: 2 },
     {
       type: 'paragraph',
-      text: "Taiwan's semiconductor dominance serves a dual purpose beyond economics. Former President [[person:tsai-ing-wen]]Tsai Ing-wen[[/person]] explicitly named this strategy in a 2021 Foreign Affairs article: the [[kw:silicon-shield]]\"silicon shield\"[[/kw]] — the argument that Taiwan's chip manufacturing is so critical to the global economy that any disruption from a Chinese invasion would trigger catastrophic consequences, compelling Taiwan's allies to intervene.",
+      text: "Taiwan's semiconductor dominance serves a dual purpose beyond economics. Former President [[person:tsai-ing-wen]]Tsai Ing-wen[[/person]] explicitly named this strategy in a 2021 Foreign Affairs article: the [[kw:silicon-shield]]\"silicon shield\"[[/kw]], the argument that Taiwan's chip manufacturing is so critical to the global economy that any disruption from a Chinese invasion would trigger catastrophic consequences, compelling Taiwan's allies to intervene.",
     },
     {
       type: 'paragraph',
@@ -290,17 +290,17 @@ export const semiconductorArticle = {
     },
     {
       type: 'paragraph',
-      text: "China's approach is different. After semiconductors underperformed in the [[kw:made-in-china-2025]]Made in China 2025[[/kw]] strategy — missing targets for domestic production and global market share — Beijing doubled down. A proposal by 13 Chinese chip industry executives in March 2026 outlined aims to increase self-sufficiency to 80% by 2030, up from the current 33%. Companies like SMIC and HiSilicon are gaining momentum, though they remain generations behind TSMC's leading edge.",
+      text: "China's approach is different. After semiconductors underperformed in the [[kw:made-in-china-2025]]Made in China 2025[[/kw]] strategy, missing targets for domestic production and global market share, Beijing doubled down. A proposal by 13 Chinese chip industry executives in March 2026 outlined aims to increase self-sufficiency to 80% by 2030, up from the current 33%. Companies like SMIC and HiSilicon are gaining momentum, though they remain generations behind TSMC's leading edge.",
     },
     {
       type: 'paragraph',
-      text: 'The critical gap: TSMC now produces at [[kw:two-nanometer]]2-nanometer[[/kw]] process nodes, while Chinese self-sufficiency goals target "entirely domestically produced equipment" for the less sophisticated 7nm and 14nm generations. The difference is significant — 2nm chips deliver a 45% performance increase while consuming 75% less power than 7nm chips. For AI training workloads, this gap is the difference between competitive and obsolete.',
+      text: 'The critical gap: TSMC now produces at [[kw:two-nanometer]]2-nanometer[[/kw]] process nodes, while Chinese self-sufficiency goals target "entirely domestically produced equipment" for the less sophisticated 7nm and 14nm generations. The difference is significant, 2nm chips deliver a 45% performance increase while consuming 75% less power than 7nm chips. For AI training workloads, this gap is the difference between competitive and obsolete.',
     },
     {
       type: 'adjudication-matrix',
       figureLabel: 'FIG. 2',
-      kicker: 'SAME = ON THE LEADING EDGE · PART = PARTIAL · — = BEHIND · TAP FOR DETAIL',
-      hint: 'Two reshoring programs, four dimensions — Washington and Beijing from opposite directions.',
+      kicker: 'SAME = ON THE LEADING EDGE · PART = PARTIAL ·, = BEHIND · TAP FOR DETAIL',
+      hint: 'Two reshoring programs, four dimensions, Washington and Beijing from opposite directions.',
       source: 'CHIPS and Science Act (2022); Chinese chip self-sufficiency proposal (March 2026).',
       cols: [
         'Subsidy commitment',
@@ -336,15 +336,15 @@ export const semiconductorArticle = {
     { type: 'heading', text: 'The $5 Trillion Investment Landscape', level: 2 },
     {
       type: 'paragraph',
-      text: 'The US semiconductor industry, measured by the ten largest public companies, represents over $10 trillion in combined market capitalization. Nvidia alone — a [[kw:fabless-model]]fabless[[/kw]] company that designs chips but outsources manufacturing to TSMC — commands a $5.18 trillion valuation, making it the most valuable company on Earth by some measures. Broadcom follows at $1.93 trillion.',
+      text: 'The US semiconductor industry, measured by the ten largest public companies, represents over $10 trillion in combined market capitalization. Nvidia alone, a [[kw:fabless-model]]fabless[[/kw]] company that designs chips but outsources manufacturing to TSMC, commands a $5.18 trillion valuation, making it the most valuable company on Earth by some measures. Broadcom follows at $1.93 trillion.',
     },
     {
       type: 'paragraph',
-      text: 'The industry breaks into three business models. Fabless companies (Nvidia, AMD, Qualcomm) design chips and outsource manufacturing. [[kw:idm]]Integrated Device Manufacturers (IDMs)[[/kw]] like Intel, Micron, and Texas Instruments both design and manufacture. And equipment companies (Applied Materials, Lam Research, KLA) build the machines that fabricate chips — the "picks and shovels" of the semiconductor gold rush.',
+      text: 'The industry breaks into three business models. Fabless companies (Nvidia, AMD, Qualcomm) design chips and outsource manufacturing. [[kw:idm]]Integrated Device Manufacturers (IDMs)[[/kw]] like Intel, Micron, and Texas Instruments both design and manufacture. And equipment companies (Applied Materials, Lam Research, KLA) build the machines that fabricate chips, the "picks and shovels" of the semiconductor gold rush.',
     },
     {
       type: 'paragraph',
-      text: "Intel's position is particularly notable. Once the undisputed leader in semiconductor manufacturing, Intel has reported negative net income of $20.5 billion TTM while trading at a $107 billion market cap — a fraction of its fabless rivals. The company is attempting a historic pivot under its [[kw:idm-2-0]]IDM 2.0 strategy[[/kw]], splitting into separate design and manufacturing divisions and accepting foundry contracts from other chipmakers. Whether Intel can execute this transformation or become another cautionary tale is one of the most consequential binary outcomes in the sector.",
+      text: "Intel's position is particularly notable. Once the undisputed leader in semiconductor manufacturing, Intel has reported negative net income of $20.5 billion TTM while trading at a $107 billion market cap, a fraction of its fabless rivals. The company is attempting a historic pivot under its [[kw:idm-2-0]]IDM 2.0 strategy[[/kw]], splitting into separate design and manufacturing divisions and accepting foundry contracts from other chipmakers. Whether Intel can execute this transformation or become another cautionary tale is one of the most consequential binary outcomes in the sector.",
     },
     {
       type: 'chart',
@@ -360,13 +360,13 @@ export const semiconductorArticle = {
     },
     {
       type: 'paragraph',
-      text: '[[person:elon-musk]]Elon Musk[[/person]] recently announced plans for advanced chip facilities in Texas — the so-called [[kw:terafab]]"Terafab"[[/kw]] venture for Tesla and SpaceX — consolidating every stage of semiconductor production under one roof at an estimated cost of $25 billion. Other companies investing in US chip fabrication include Micron, Texas Instruments, and Intel. The question is whether any of these efforts can match TSMC\'s yield rates, which reflect 37 years of continuous process optimization.',
+      text: '[[person:elon-musk]]Elon Musk[[/person]] recently announced plans for advanced chip facilities in Texas, the so-called [[kw:terafab]]"Terafab"[[/kw]] venture for Tesla and SpaceX, consolidating every stage of semiconductor production under one roof at an estimated cost of $25 billion. Other companies investing in US chip fabrication include Micron, Texas Instruments, and Intel. The question is whether any of these efforts can match TSMC\'s yield rates, which reflect 37 years of continuous process optimization.',
     },
 
     { type: 'heading', text: 'What Investors Should Watch', level: 2 },
     {
       type: 'paragraph',
-      text: "Five catalysts will shape the semiconductor investment landscape over the next 12-18 months. First, the TSMC Arizona yield ramp — if yields approach Taiwan levels, it validates [[kw:yield-ramp-parity]]onshoring[[/kw]] as viable. Second, China's SMIC progress at 7nm and below — any breakthrough accelerates the timeline for Chinese chip independence. Third, Intel's foundry pivot — the IFS (Intel Foundry Services) order book will signal whether the IDM 2.0 thesis has legs. Fourth, AI capex cycles — Nvidia's revenue is a direct function of hyperscale data center spending by Meta, Microsoft, Amazon, and Google. Fifth, geopolitical escalation across the Taiwan Strait — any increase in military posturing reprices the entire sector's risk premium overnight.",
+      text: "Five catalysts will shape the semiconductor investment landscape over the next 12-18 months. First, the TSMC Arizona yield ramp, if yields approach Taiwan levels, it validates [[kw:yield-ramp-parity]]onshoring[[/kw]] as viable. Second, China's SMIC progress at 7nm and below, any breakthrough accelerates the timeline for Chinese chip independence. Third, Intel's foundry pivot, the IFS (Intel Foundry Services) order book will signal whether the IDM 2.0 thesis has legs. Fourth, AI capex cycles, Nvidia's revenue is a direct function of hyperscale data center spending by Meta, Microsoft, Amazon, and Google. Fifth, geopolitical escalation across the Taiwan Strait, any increase in military posturing reprices the entire sector's risk premium overnight.",
     },
     {
       type: 'scenario-chain',
@@ -413,7 +413,7 @@ export const semiconductorArticle = {
         },
       ],
       killSwitch:
-        'TSMC Arizona yields reaching Taiwan-level parity — the signal that onshoring is viable and the shield is eroding.',
+        'TSMC Arizona yields reaching Taiwan-level parity, the signal that onshoring is viable and the shield is eroding.',
     },
   ],
   globeRail: {
@@ -437,7 +437,7 @@ export const semiconductorArticle = {
         lat: 24.81,
         lng: 120.97,
         impact:
-          'TSMC’s fabs in Hsinchu Science Park produce over 90% of the world’s most advanced chips at the 2-nanometer scale and hold ~62% of the global foundry market. This concentration — 100 miles from a hostile superpower — is the “silicon shield”: McKinsey estimates a prolonged disruption could cut global GDP by $600B–$1T in the first year.',
+          'TSMC’s fabs in Hsinchu Science Park produce over 90% of the world’s most advanced chips at the 2-nanometer scale and hold ~62% of the global foundry market. This concentration, 100 miles from a hostile superpower, is the “silicon shield”: McKinsey estimates a prolonged disruption could cut global GDP by $600B–$1T in the first year.',
       },
       {
         name: 'Seoul',
@@ -445,7 +445,7 @@ export const semiconductorArticle = {
         lat: 37.57,
         lng: 126.98,
         impact:
-          'Samsung holds about 13% of the global foundry market, the second-largest share behind TSMC’s 62% — but still behind Taiwan’s leading edge.',
+          'Samsung holds about 13% of the global foundry market, the second-largest share behind TSMC’s 62%, but still behind Taiwan’s leading edge.',
       },
       {
         name: 'Shanghai',
@@ -461,7 +461,7 @@ export const semiconductorArticle = {
         lat: 33.45,
         lng: -112.07,
         impact:
-          'TSMC’s Arizona fab received up to $6.6 billion under the CHIPS Act and drew a further $100 billion commitment in March 2025. Whether its yields reach Taiwan-level parity is the signal that onshoring is viable — and that the shield is eroding.',
+          'TSMC’s Arizona fab received up to $6.6 billion under the CHIPS Act and drew a further $100 billion commitment in March 2025. Whether its yields reach Taiwan-level parity is the signal that onshoring is viable, and that the shield is eroding.',
       },
       {
         name: 'Washington',
@@ -469,7 +469,7 @@ export const semiconductorArticle = {
         lat: 38.9,
         lng: -77.04,
         impact:
-          'The 2022 CHIPS and Science Act put $52 billion of incentives behind domestic manufacturing to reduce dependence on Taiwanese chips. Reshoring runs in parallel with the silicon shield — but slowly.',
+          'The 2022 CHIPS and Science Act put $52 billion of incentives behind domestic manufacturing to reduce dependence on Taiwanese chips. Reshoring runs in parallel with the silicon shield, but slowly.',
       },
     ],
   },

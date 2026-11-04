@@ -128,7 +128,7 @@ export function EloHero({
         />
         <HeroStat
           label="Hours this week"
-          value={stats?.hours_this_week ?? '—'}
+          value={stats?.hours_this_week ?? '–'}
           sub="Learning time"
         />
         <HeroStat

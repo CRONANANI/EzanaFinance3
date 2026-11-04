@@ -16,7 +16,7 @@
 import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 import { formatAmount, formatDisplayDate, getContractAwards } from './usaspending';
 
-const EM_DASH = '—';
+const EM_DASH = '–';
 
 /* Server-side reads go through the service-role client: the dataset tables
    are not readable with the public (anon) key, so they can only be reached
@@ -477,12 +477,12 @@ export function contractFreshnessNote(source, syncedAt) {
   }
   if (source === 'hosted') {
     const when = syncedAt ? formatDisplayDate(syncedAt) : 'recently';
-    return `Federal contract data via USAspending.gov (U.S. Treasury) — synced ${when}.`;
+    return `Federal contract data via USAspending.gov (U.S. Treasury), synced ${when}.`;
   }
   if (source === 'live') {
     return 'Live federal contract data via USAspending.gov (U.S. Treasury), updated daily.';
   }
-  return 'Sample of recent awards — full live dataset available in the app.';
+  return 'Sample of recent awards, full live dataset available in the app.';
 }
 
 /**

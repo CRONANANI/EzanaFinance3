@@ -101,7 +101,7 @@ export const POST = withApiGuard(
 
     if (!applicant.email) {
       return NextResponse.json(
-        { error: 'Applicant has no email — cannot create an account to provision.' },
+        { error: 'Applicant has no email, cannot create an account to provision.' },
         { status: 400 },
       );
     }

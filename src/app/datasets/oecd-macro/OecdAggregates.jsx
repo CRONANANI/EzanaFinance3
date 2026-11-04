@@ -28,11 +28,11 @@ export default function OecdAggregates({ model, slug }) {
   const payloadFor = (area, cell) => ({
     title: FULL[area] || area,
     lines: [
-      { label: series?.label, value: cell ? formatValue(cell.value, series) : '—' },
+      { label: series?.label, value: cell ? formatValue(cell.value, series) : '–' },
       { label: 'Unit', value: series?.unitLabel },
       {
         label: 'Year',
-        value: cell ? `${cell.year}${isProjected(cell.year) ? ' · PROJ' : ''}` : '—',
+        value: cell ? `${cell.year}${isProjected(cell.year) ? ' · PROJ' : ''}` : '–',
       },
     ],
   });
@@ -58,7 +58,7 @@ export default function OecdAggregates({ model, slug }) {
             >
               <span className="oecd-agg-name">{LABELS[area] || area}</span>
               <span className="oecd-agg-val oecd-num">
-                {cell ? formatValue(cell.value, series) : '—'}
+                {cell ? formatValue(cell.value, series) : '–'}
                 {cell && isProjected(cell.year) ? (
                   <OecdProjBadge year={cell.year} className="oecd-proj-badge--sm" />
                 ) : null}

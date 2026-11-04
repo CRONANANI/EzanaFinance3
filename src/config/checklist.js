@@ -44,7 +44,7 @@ export const CHECKLIST_TASKS = {
     section: 'learning',
     sectionName: 'Learning Center',
     title: 'Read Risk & Diversification',
-    description: 'Complete "Risk vs Reward" — diversification basics',
+    description: 'Complete "Risk vs Reward", diversification basics',
     page: '/learning-center/course/stocks-basic-7',
     guide: {
       targetSelector: '[data-task-target="learning-module-card"]',

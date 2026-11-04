@@ -14,7 +14,7 @@ const REGULAR_TUTORIAL_STEPS = [
   {
     title: 'Your Home Dashboard',
     description:
-      'This is your personalized home page. Everything you need — market data, portfolio, news — all in one place. Pin your favorite cards to customize the layout.',
+      'This is your personalized home page. Everything you need, market data, portfolio, news, all in one place. Pin your favorite cards to customize the layout.',
     target: '[data-tutorial="home-grid"]',
     icon: '🏠',
   },
@@ -28,14 +28,14 @@ const REGULAR_TUTORIAL_STEPS = [
   {
     title: 'Your Getting Started Checklist',
     description:
-      'This checklist guides you through the platform step by step. Complete tasks to unlock features and earn XP. Click the icon anytime to see your progress — each task links directly to the right page.',
+      'This checklist guides you through the platform step by step. Complete tasks to unlock features and earn XP. Click the icon anytime to see your progress, each task links directly to the right page.',
     target: '[data-tutorial="checklist-icon"]',
     icon: '✅',
   },
   {
     title: 'Company Research',
     description:
-      'Search any public company to see financials, AI analysis models (DCF, 3-Statement, Comps), earnings transcripts, and analyst ratings — all powered by real-time data.',
+      'Search any public company to see financials, AI analysis models (DCF, 3-Statement, Comps), earnings transcripts, and analyst ratings, all powered by real-time data.',
     target: null,
     icon: '🔬',
   },
@@ -49,7 +49,7 @@ const REGULAR_TUTORIAL_STEPS = [
   {
     title: "You're all set!",
     description:
-      "Start by completing your first checklist task — it'll guide you through the key features. You can always replay this tour from Settings. Happy investing!",
+      "Start by completing your first checklist task, it'll guide you through the key features. You can always replay this tour from Settings. Happy investing!",
     target: null,
     icon: '🚀',
   },

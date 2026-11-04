@@ -238,7 +238,7 @@ export function EchoClearingSankey({
       </p>
       {selected != null && flows[selected]?.record && (
         <div className="echo-fig-detail">
-          <strong>{flows[selected].label || 'Flow'}</strong> — {flows[selected].record}
+          <strong>{flows[selected].label || 'Flow'}</strong> · {flows[selected].record}
         </div>
       )}
     </EchoFigureShell>

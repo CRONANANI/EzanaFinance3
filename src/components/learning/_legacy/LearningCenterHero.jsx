@@ -43,7 +43,7 @@ export function LearningCenterHero({ viewer, overall, tracks, badges }) {
               {currentTrack.shortLabel}
             </>
           ) : (
-            '—'
+            '–'
           )}
         </p>
         <div className="lc2-hero-track-bar">

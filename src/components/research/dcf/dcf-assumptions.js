@@ -248,7 +248,7 @@ export const DCF_ASSUMPTIONS = [
 ];
 
 export function formatAssumption(value, unit) {
-  if (value == null || !Number.isFinite(value)) return '—';
+  if (value == null || !Number.isFinite(value)) return '–';
   if (unit === 'pct') return `${(value * 100).toFixed(1)}%`;
   if (unit === 'years') return `${Math.round(value)}y`;
   if (unit === 'num') return value.toFixed(2);

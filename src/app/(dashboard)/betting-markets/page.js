@@ -119,7 +119,7 @@ const EV_ITEMS_BY_SPORT = {
         ],
         backstory: [
           'Chiefs are 12-3 ATS at home this season. Ravens missing two starting CBs confirmed Friday.',
-          'Mahomes averages 2.4 TDs at home vs 1.8 on the road — regression model weights this heavily.',
+          'Mahomes averages 2.4 TDs at home vs 1.8 on the road, regression model weights this heavily.',
         ],
       },
     },
@@ -259,7 +259,7 @@ const EV_ITEMS_BY_SPORT = {
         basedOn: 'xG trends, home advantage, squad rotation',
         math: [
           'Market handicap implies Arsenal covers 48% of the time.',
-          'Our expected goals model gives 51.9% — edge holds after vig.',
+          'Our expected goals model gives 51.9%, edge holds after vig.',
         ],
         backstory: [
           'Arsenal unbeaten at home in 14. Man Utd rotate heavily after midweek European fixture.',
@@ -272,7 +272,7 @@ const EV_ITEMS_BY_SPORT = {
 const LINE_MOVES = [
   {
     id: 'lm1',
-    title: 'Lakers vs Celtics — Spread',
+    title: 'Lakers vs Celtics: Spread',
     opened: 'LAL +4.5',
     current: 'LAL +3.5',
     move: '-1.0',
@@ -281,7 +281,7 @@ const LINE_MOVES = [
   },
   {
     id: 'lm2',
-    title: 'Warriors vs Bucks — Total',
+    title: 'Warriors vs Bucks: Total',
     opened: '228.5',
     current: '231',
     move: '+2.5',
@@ -437,7 +437,7 @@ function PolymarketSection() {
       <div className="db-card">
         <div className="db-card-header">
           <h3 style={{ color: 'var(--bm-heading)' }}>
-            <span style={{ color: '#6366f1', marginRight: 6 }}>◆</span> Polymarket — Top Markets
+            <span style={{ color: '#6366f1', marginRight: 6 }}>◆</span> Polymarket: Top Markets
           </h3>
           <a
             href="https://polymarket.com"
@@ -785,7 +785,7 @@ function KalshiSection() {
       <div className="db-card">
         <div className="db-card-header">
           <h3 style={{ color: 'var(--bm-heading)' }}>
-            <span style={{ color: '#10b981', marginRight: 6 }}>◆</span> Kalshi — Top Markets
+            <span style={{ color: '#10b981', marginRight: 6 }}>◆</span> Kalshi: Top Markets
           </h3>
           <a
             href="https://kalshi.com"
@@ -1277,7 +1277,7 @@ export default function BettingMarketsPage() {
                 fontWeight: 600,
               }}
             >
-              {evSport} — High EV Opportunities Today
+              {evSport}, High EV Opportunities Today
             </p>
             {(EV_ITEMS_BY_SPORT[evSport] || []).length === 0 ? (
               <div
@@ -1432,22 +1432,22 @@ export default function BettingMarketsPage() {
               <div className="bm-modal-kpi-grid">
                 <div className="bm-modal-kpi">
                   <span className="bm-modal-kpi-label">Implied Prob</span>
-                  <span className="bm-modal-kpi-value">{evOpen.analysis.implied ?? '—'}</span>
+                  <span className="bm-modal-kpi-value">{evOpen.analysis.implied ?? '–'}</span>
                 </div>
                 <div className="bm-modal-kpi">
                   <span className="bm-modal-kpi-label">Model Prob</span>
-                  <span className="bm-modal-kpi-value">{evOpen.analysis.model ?? '—'}</span>
+                  <span className="bm-modal-kpi-value">{evOpen.analysis.model ?? '–'}</span>
                 </div>
                 <div className="bm-modal-kpi">
                   <span className="bm-modal-kpi-label">Edge</span>
                   <span className="bm-modal-kpi-value" style={{ color: '#10b981' }}>
-                    {evOpen.analysis.edge ?? '—'}
+                    {evOpen.analysis.edge ?? '–'}
                   </span>
                 </div>
                 <div className="bm-modal-kpi">
                   <span className="bm-modal-kpi-label">Expected Value</span>
                   <span className="bm-modal-kpi-value" style={{ color: '#d4af37' }}>
-                    {evOpen.analysis.evPer100 ?? '—'}
+                    {evOpen.analysis.evPer100 ?? '–'}
                   </span>
                 </div>
               </div>

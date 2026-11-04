@@ -59,7 +59,7 @@ export function TrialBanner({ daysRemaining, trialExpired, variant = 'account' }
       >
         <span>
           {daysRemaining === 1
-            ? 'Your free trial ends tomorrow — cancel anytime before then to avoid being charged.'
+            ? 'Your free trial ends tomorrow, cancel anytime before then to avoid being charged.'
             : `${daysRemaining} days left in your free trial. You won’t be charged until the trial ends.`}
         </span>
         <button

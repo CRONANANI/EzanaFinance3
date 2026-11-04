@@ -104,7 +104,7 @@ export function TechnicalScannerCard() {
                           color: '#d1d5db',
                         }}
                       >
-                        {ind.formatted ?? '—'}
+                        {ind.formatted ?? '–'}
                       </div>
                       <span
                         style={{

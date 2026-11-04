@@ -99,7 +99,7 @@ export const GET = withApiGuard(
         {
           name: 'SMA 50/200 Cross',
           value: sma50 && sma200 ? sma50 - sma200 : null,
-          formatted: sma50 && sma200 ? (sma50 > sma200 ? 'Golden Cross' : 'Death Cross') : '—',
+          formatted: sma50 && sma200 ? (sma50 > sma200 ? 'Golden Cross' : 'Death Cross') : '–',
           signal: sma50 && sma200 ? (sma50 > sma200 ? 'buy' : 'sell') : 'neutral',
           detail:
             sma50 && sma200
@@ -109,7 +109,7 @@ export const GET = withApiGuard(
         {
           name: 'Price vs SMA 50',
           value: price && sma50 ? price - sma50 : null,
-          formatted: price && sma50 ? `${(((price - sma50) / sma50) * 100).toFixed(1)}%` : '—',
+          formatted: price && sma50 ? `${(((price - sma50) / sma50) * 100).toFixed(1)}%` : '–',
           signal: price && sma50 ? (price > sma50 ? 'buy' : 'sell') : 'neutral',
           detail: price > sma50 ? 'Price above SMA 50 (uptrend)' : 'Price below SMA 50 (downtrend)',
         },

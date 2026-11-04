@@ -194,7 +194,7 @@ export async function POST(request) {
         code: 'auth_failed',
         detail:
           last.detail ||
-          'SnapTrade rejected the request — check SNAPTRADE_CONSUMER_KEY or IP allowlist',
+          'SnapTrade rejected the request, check SNAPTRADE_CONSUMER_KEY or IP allowlist',
       },
       { status: 502 },
     );

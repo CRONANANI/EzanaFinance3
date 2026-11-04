@@ -110,7 +110,7 @@ export const HOW_STEPS = [
   {
     icon: 'bi-link-45deg',
     title: 'Connect your accounts',
-    desc: 'Securely link any brokerage or exchange via SnapTrade or Plaid — read-only by default.',
+    desc: 'Securely link any brokerage or exchange via SnapTrade or Plaid, read-only by default.',
   },
   {
     icon: 'bi-grid-1x2',
@@ -120,7 +120,7 @@ export const HOW_STEPS = [
   {
     icon: 'bi-activity',
     title: 'Get conviction-ranked signals',
-    desc: 'Congressional trades, government activity, and community research — surfaced and scored.',
+    desc: 'Congressional trades, government activity, and community research, surfaced and scored.',
   },
   {
     icon: 'bi-bell',

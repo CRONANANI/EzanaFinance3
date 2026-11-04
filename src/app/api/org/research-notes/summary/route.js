@@ -39,7 +39,7 @@ export const POST = withApiGuard(
 
     const lines = notes.map(
       (n, i) =>
-        `${i + 1}. [${n.doc_type}] ${n.ticker ? n.ticker + ' — ' : ''}${n.title}${n.abstract ? ` — ${String(n.abstract).slice(0, 200)}` : ''}`,
+        `${i + 1}. [${n.doc_type}] ${n.ticker ? n.ticker + ', ' : ''}${n.title}${n.abstract ? `: ${String(n.abstract).slice(0, 200)}` : ''}`,
     );
     const prompt = [
       `Give a short synthesis across these ${notes.length} internal research documents${body?.label ? ` (${String(body.label).slice(0, 80)})` : ''}.`,

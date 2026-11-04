@@ -3,6 +3,7 @@ import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
+import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -127,7 +128,7 @@ async function generateAiAnalysis(event, riskProfile, tickerStats) {
     tickerStats?.marketCap != null ? (tickerStats.marketCap / 1e9).toFixed(1) : null;
   const statsLine =
     tickerStats && tickerStats.price != null
-      ? `Current price: $${tickerStats.price}, Change: ${tickerStats.changePct ?? '—'}%, P/E: ${tickerStats.pe ?? '—'}, Market Cap: $${mcBillions ?? '—'}B`
+      ? `Current price: $${tickerStats.price}, Change: ${tickerStats.changePct ?? '–'}%, P/E: ${tickerStats.pe ?? '–'}, Market Cap: $${mcBillions ?? '–'}B`
       : '';
 
   try {
@@ -157,7 +158,7 @@ ${statsLine ? `${statsLine}` : ''}
 Respond ONLY with a JSON object (no markdown, no backticks):
 {
   "context": "2-3 sentence explanation of WHY this is a ${event.type} for a ${riskProfile} investor specifically",
-  "insight": "1 sentence actionable takeaway — what to watch for or consider",
+  "insight": "1 sentence actionable takeaway, what to watch for or consider",
   "confidence": "high" or "medium" or "low",
   "factors": ["factor 1", "factor 2", "factor 3"]
 }`,
@@ -258,7 +259,7 @@ function buildKpis(tickerStats, event) {
   return kpis.slice(0, 3);
 }
 
-export const POST = withApiGuard(
+const POST_HANDLER = withApiGuard(
   async (request, user) => {
     const supabase = getUserClient();
 
@@ -305,3 +306,6 @@ export const POST = withApiGuard(
   },
   { requireAuth: true },
 );
+
+/* No em dashes in anything this route returns (src/lib/text/em-dash.js). */
+export const POST = withNoEmDash(POST_HANDLER);

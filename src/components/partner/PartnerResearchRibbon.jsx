@@ -14,7 +14,7 @@ export function PartnerResearchRibbon() {
           Partner
         </span>
         <span className="partner-research-ribbon-text">
-          Turn research into audience content — clip insights and publish from Content Studio.
+          Turn research into audience content, clip insights and publish from Content Studio.
         </span>
         <div className="partner-research-ribbon-actions">
           <Link href="/partner-dashboard" className="partner-research-ribbon-link">

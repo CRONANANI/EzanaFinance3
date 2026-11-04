@@ -178,7 +178,7 @@ export default function MockPortfolioChart() {
           <i className="bi bi-graph-up mpc-empty-icon" />
           <p>
             {data.source === 'no-portfolio' &&
-              'No portfolio activity yet — place a trade to start tracking performance.'}
+              'No portfolio activity yet, place a trade to start tracking performance.'}
             {data.source === 'no-trades' &&
               'Your portfolio has cash but no trades yet. Place a trade to see performance over time.'}
             {data.source === 'empty-portfolio' &&
@@ -245,7 +245,7 @@ export default function MockPortfolioChart() {
           {data.source === 'trade-replay-tradeprice' && (
             <div className="mpc-source-note">
               <i className="bi bi-info-circle" />
-              Historical prices unavailable — showing approximation based on trade execution prices.
+              Historical prices unavailable, showing approximation based on trade execution prices.
             </div>
           )}
         </>

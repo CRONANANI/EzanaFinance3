@@ -110,7 +110,7 @@ export const GET = withApiGuard(
     }
     if (checks.fmp_api_key_configured && !checks.fmp_transcript_probe_ok) {
       degradedReasons.push(
-        `FMP transcript probe HTTP ${checks.fmp_transcript_probe_status} — plan may exclude transcripts`,
+        `FMP transcript probe HTTP ${checks.fmp_transcript_probe_status}, plan may exclude transcripts`,
       );
     }
     if (checks.av_api_key_configured && !checks.av_transcript_probe_ok) {

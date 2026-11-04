@@ -68,7 +68,7 @@ export function BullBearDebate({ data }) {
   return (
     <div className="evo-bull-bear" style={{ marginBottom: 16 }}>
       <div className="cardhdr" style={{ marginBottom: 10 }}>
-        Bull vs Bear — <span className="ez-mono">${data.ticker}</span>
+        Bull vs Bear: <span className="ez-mono">${data.ticker}</span>
       </div>
       <div style={{ display: 'flex', gap: 12 }}>
         <TakeCard side="bull" take={data.bull} tone="bull" />

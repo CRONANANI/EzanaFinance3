@@ -48,12 +48,12 @@ export function MPTCard() {
 
   const verdict =
     risk < 30
-      ? 'Capital preservation — bond-heavy mix with limited drawdowns.'
+      ? 'Capital preservation, bond-heavy mix with limited drawdowns.'
       : risk < 60
-        ? 'Balanced growth — equities lead with a meaningful bond ballast.'
+        ? 'Balanced growth, equities lead with a meaningful bond ballast.'
         : risk < 85
-          ? 'Growth-oriented — higher expected return with larger drawdowns.'
-          : 'Aggressive — near max equity, accept substantial short-term volatility.';
+          ? 'Growth-oriented, higher expected return with larger drawdowns.'
+          : 'Aggressive, near max equity, accept substantial short-term volatility.';
 
   const stripVariables = useMemo(
     () => [

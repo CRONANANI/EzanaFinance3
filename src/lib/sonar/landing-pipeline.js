@@ -47,6 +47,9 @@ import {
   politicianEvidence,
 } from '@/lib/sonar/landing-politician';
 import { buildSectorScreen, sectorEvidence, sectorUniverse } from '@/lib/sonar/sector-screen';
+import { DOMAINS } from '@/lib/sonar/engine/domains';
+import { issueBucketsFor, issueTextFor } from '@/lib/sonar/engine/planner';
+import { topicForText } from '@/lib/lobbying/topics';
 import {
   resolveCountry,
   mentionedCountry,
@@ -198,6 +201,18 @@ Disclosures report ranges, never exact amounts: write "between $500K and $1M" or
 /* Nov 4: a sector screen ("Which defense stocks are members of Congress
    trading?"). The brief answers from the screen's tables, in the order the
    ping asked. */
+/* Nov 4: a lobbying question ("Who is lobbying hardest on AI regulation?").
+   The brief answers from the disclosures: clients ranked by disclosed spend
+   on the matching filings, the period, and what the figure does and does
+   not measure. */
+const LOBBYING_ADDENDUM = `
+This ping is about lobbying. Answer from the (lobbying) snippets, which are Senate LDA lobbying disclosures in Ezana's datasets:
+- Lead with who reported the most lobbying on the matching filings, by name, with the disclosed amount, the number of filings and the period. Say whether each is a company or a trade association when the name makes it clear.
+- Say what the ranking covers exactly as the snippet states it (the issue area or topic it matched).
+- A filing's amount is the client's total lobbying spend reported on that filing across every issue it lists; never present it as spend on one issue alone.
+- Then what to watch, using (news) snippets only for context, cited inline.
+Never suggest that lobbying shows improper influence or wrongdoing.`;
+
 const SECTOR_ADDENDUM = `
 This ping is about a sector, read through Ezana's datasets. Answer the question as asked, from the snippets, leading with what it asks about:
 - (congress) snippets: which of the sector's stocks members of Congress traded most in the last 12 months, purchases against sales, the most active members by name and party, and the latest trades with their disclosed ranges.
@@ -1470,6 +1485,7 @@ const PROFILES = {
       /* Nov 4: a sector screen's three legs (Congress, performance,
          contracts), each bounded on its own. */
       sector: 1_800,
+      lobbying: 1_800,
       resolve: 1_100,
       retrieveCap: 1_600,
       retriever: 1_200,
@@ -1511,6 +1527,7 @@ const PROFILES = {
       industry: 5_000,
       politician: 5_000,
       sector: 6_000,
+      lobbying: 6_000,
       resolve: 6_000,
       retrieveCap: 18_000,
       retriever: 15_000,
@@ -1990,6 +2007,37 @@ export async function runLandingPipeline(
           (v) => `items=${v.length}`,
         ).catch(() => [])
       : Promise.resolve([]);
+  /* Nov 4: a lobbying question reads the disclosures themselves (the
+     research engine's lobbying-leaders runner: same RPC, same counting rule,
+     and the topic's own filings only once its ingest is complete). */
+  const lobbyingPing = DOMAINS.lobbying.cues[0].test(query) && !resolved && !politician;
+  const lobbyYear = new Date().getUTCFullYear();
+  const lobbyingP = lobbyingPing
+    ? leg(
+        'lobbying',
+        () =>
+          within(
+            import('@/lib/sonar/engine/sources').then(({ RUNNERS }) =>
+              RUNNERS.lobbying_leaders(
+                {
+                  issueBuckets: issueBucketsFor(
+                    { rawQuery: query },
+                    { industry: industry ? { label: industry.industry.label } : null },
+                  ),
+                  text: issueTextFor({ rawQuery: query }),
+                  topic: topicForText(query)?.key || null,
+                  years: { from: lobbyYear - 2, to: lobbyYear },
+                },
+                { admin, maxItems: 5 },
+              ),
+            ),
+            LEG.lobbying,
+            { items: [] },
+            'lobbying',
+          ),
+        (v) => `items=${v?.items?.length || 0}`,
+      ).catch(() => ({ items: [] }))
+    : Promise.resolve({ items: [] });
   const newsPhrase = sectorPing
     ? `${sectorU.label} stocks`
     : industryPing
@@ -2198,6 +2246,26 @@ export async function runLandingPipeline(
       'politician-dossier',
     ).catch(() => null);
     if (early) items.unshift(...politicianEvidence(early));
+  }
+
+  /* The lobbying disclosures lead the evidence for a lobbying question. */
+  if (lobbyingPing) {
+    const lob = await within(
+      lobbyingP,
+      Math.max(0, left() - P.evidenceReserveMs),
+      { items: [] },
+      'lobbying-wait',
+    ).catch(() => ({ items: [] }));
+    items.unshift(
+      ...(lob?.items || []).map((it) => ({
+        corpus: 'lobbying',
+        title: it.title,
+        snippet: it.text,
+        date: it.date || it.period?.to || null,
+        meta: { source: 'Senate LDA disclosures' },
+      })),
+    );
+    if (!corporaSearched.includes('lobbying')) corporaSearched.push('lobbying');
   }
 
   /* Headlines last: the brief reads the datasets first. */
@@ -2413,6 +2481,7 @@ export async function runLandingPipeline(
         (country ? COUNTRY_ADDENDUM : '') +
         (politician ? POLITICIAN_ADDENDUM : '') +
         (sectorPing ? SECTOR_ADDENDUM : '') +
+        (lobbyingPing ? LOBBYING_ADDENDUM : '') +
         (ipoIntent ? IPO_ADDENDUM : '') +
         (resolved &&
         !country &&

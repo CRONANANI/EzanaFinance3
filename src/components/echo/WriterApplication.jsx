@@ -65,7 +65,7 @@ export function WriterApplication({ getToken }) {
       <div className="echo-app-card echo-app-pending">
         <i className="bi bi-hourglass-split" />
         <h3>Application Under Review</h3>
-        <p>Your writer application was submitted on {application?.submitted_at ? new Date(application.submitted_at).toLocaleDateString() : '—'}. Our editorial team is reviewing your experience and samples. This typically takes 2-3 business days.</p>
+        <p>Your writer application was submitted on {application?.submitted_at ? new Date(application.submitted_at).toLocaleDateString() : '–'}. Our editorial team is reviewing your experience and samples. This typically takes 2-3 business days.</p>
       </div>
     );
   }

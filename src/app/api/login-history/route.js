@@ -128,7 +128,7 @@ export const GET = withApiGuard(
 
       if (error) {
         if (error.code === '42P01' || error.message?.includes('does not exist')) {
-          console.warn('[login-history GET] table missing — returning fallback with today only');
+          console.warn('[login-history GET] table missing, returning fallback with today only');
           // Return today as the only login so the component shows at least 1 active bar
           const todayStr = utcYmd(today);
           return NextResponse.json({

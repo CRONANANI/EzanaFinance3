@@ -176,7 +176,7 @@ export function useBeginnerLevel() {
         (prev === 'learning' && band === 'seasoned'))
     ) {
       toast.info(
-        "You've graduated from Beginner tips — they'll show less now. Re-enable anytime in Settings.",
+        "You've graduated from Beginner tips, they'll show less now. Re-enable anytime in Settings.",
       );
       void (async () => {
         const uid = userIdRef.current;

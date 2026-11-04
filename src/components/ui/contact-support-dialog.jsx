@@ -227,7 +227,7 @@ export function ContactSupportDialog({ open, onOpenChange }) {
       console.error("[contact-support-dialog] submit failed:", err);
       setPhase("form");
       setErrorBanner(
-        `Couldn't send right now — please try again, or email us directly at ${FALLBACK_EMAIL}.`,
+        `Couldn't send right now, please try again, or email us directly at ${FALLBACK_EMAIL}.`,
       );
     }
   };
@@ -582,7 +582,7 @@ function SuccessState({ onClose }) {
           className="text-sm leading-relaxed max-w-sm mx-auto"
           style={{ color: "var(--text-muted)" }}
         >
-          Thanks for reaching out — we&apos;ll reply within 24 hours. Keep an eye on
+          Thanks for reaching out, we&apos;ll reply within 24 hours. Keep an eye on
           your inbox (and spam folder, just in case).
         </p>
       </div>

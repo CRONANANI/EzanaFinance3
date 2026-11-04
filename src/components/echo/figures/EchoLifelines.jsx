@@ -194,7 +194,7 @@ export function EchoLifelines({
               <strong>
                 {row.name} · {row.from}–{row.to ?? 'present'}
               </strong>{' '}
-              — {row.record}
+              · {row.record}
             </div>
           );
         })()}

@@ -620,7 +620,7 @@ export function CommunityFeedPost({
               <span className="comm-ticker-sym">${post.tickerSym}</span>
               {quote ? (
                 <>
-                  <span className="comm-ticker-price">${quote.price?.toFixed(2) ?? '—'}</span>
+                  <span className="comm-ticker-price">${quote.price?.toFixed(2) ?? '–'}</span>
                   <span
                     className={`comm-ticker-chg ${(quote.changePercent ?? 0) >= 0 ? 'up' : 'dn'}`}
                   >
@@ -730,7 +730,7 @@ export function CommunityFeedPost({
                       onClick={() => {
                         // Future: open OAuth-linked share from settings
                         alert(
-                          `Share to ${platform.label} — connect your account in Settings to share.`,
+                          `Share to ${platform.label}, connect your account in Settings to share.`,
                         );
                         setShareOpen(false);
                       }}

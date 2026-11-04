@@ -34,7 +34,7 @@ function computeDelta(fairValue, livePrice) {
 }
 
 function badgeVariant(deltaPct) {
-  if (deltaPct == null) return { label: '—', cls: 'dcf-v5-badge--fair', arrow: '·' };
+  if (deltaPct == null) return { label: '–', cls: 'dcf-v5-badge--fair', arrow: '·' };
   if (deltaPct >= 5) return { label: 'Undervalued', cls: 'dcf-v5-badge--good', arrow: '↑' };
   if (deltaPct <= -5) return { label: 'Overvalued', cls: 'dcf-v5-badge--bad', arrow: '↓' };
   return { label: 'Fairly Valued', cls: 'dcf-v5-badge--fair', arrow: '≈' };
@@ -361,7 +361,7 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
                       <span className="dcf-v5-badge-pct">
                         {primaryDelta != null
                           ? `${primaryDelta >= 0 ? '+' : ''}${primaryDelta.toFixed(1)}%`
-                          : '—'}
+                          : '–'}
                       </span>
                     </span>
                   </div>

@@ -599,7 +599,7 @@ export function synthesize(input) {
         : tilt === 'bearish'
           ? 'Multiple negative signals outweigh positives'
           : tilt === 'mixed'
-            ? 'Meaningful signals on both sides — watch for confirmation'
+            ? 'Meaningful signals on both sides, watch for confirmation'
             : 'Insufficient signal strength either way';
 
     return {

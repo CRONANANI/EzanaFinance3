@@ -244,14 +244,14 @@ export function formatMarketDataForPrompt(data) {
           .slice(0, 6)
           .map(
             (t) =>
-              `${t.transactionDate}: ${t.reportingName} — ${t.acquistionOrDisposition === 'A' ? 'BUY' : 'SELL'} ${fmt(t.securitiesTransacted)} shares at $${t.price}`,
+              `${t.transactionDate}: ${t.reportingName} · ${t.acquistionOrDisposition === 'A' ? 'BUY' : 'SELL'} ${fmt(t.securitiesTransacted)} shares at $${t.price}`,
           )
           .join('\n'),
     );
   }
 
   if (sections.length === 0)
-    return 'Market data unavailable — provide analysis based on your knowledge.';
+    return 'Market data unavailable, provide analysis based on your knowledge.';
   return sections.join('\n\n');
 }
 

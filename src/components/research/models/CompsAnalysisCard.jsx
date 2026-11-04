@@ -16,13 +16,13 @@ import {
 import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
 
 const MULTIPLE_COLS = [
-  { key: 'pe', label: 'P/E', fmt: (v) => v?.toFixed(1) ?? '—' },
-  { key: 'evRevenue', label: 'EV/Rev', fmt: (v) => v?.toFixed(1) ?? '—' },
-  { key: 'evEbitda', label: 'EV/EBITDA', fmt: (v) => v?.toFixed(1) ?? '—' },
-  { key: 'pb', label: 'P/B', fmt: (v) => v?.toFixed(1) ?? '—' },
-  { key: 'divYield', label: 'Div Yield', fmt: (v) => (v != null ? `${v.toFixed(1)}%` : '—') },
-  { key: 'grossMargin', label: 'Gross Mgn', fmt: (v) => (v != null ? `${v.toFixed(1)}%` : '—') },
-  { key: 'revenueGrowth', label: 'Rev Growth', fmt: (v) => (v != null ? `${v.toFixed(1)}%` : '—') },
+  { key: 'pe', label: 'P/E', fmt: (v) => v?.toFixed(1) ?? '–' },
+  { key: 'evRevenue', label: 'EV/Rev', fmt: (v) => v?.toFixed(1) ?? '–' },
+  { key: 'evEbitda', label: 'EV/EBITDA', fmt: (v) => v?.toFixed(1) ?? '–' },
+  { key: 'pb', label: 'P/B', fmt: (v) => v?.toFixed(1) ?? '–' },
+  { key: 'divYield', label: 'Div Yield', fmt: (v) => (v != null ? `${v.toFixed(1)}%` : '–') },
+  { key: 'grossMargin', label: 'Gross Mgn', fmt: (v) => (v != null ? `${v.toFixed(1)}%` : '–') },
+  { key: 'revenueGrowth', label: 'Rev Growth', fmt: (v) => (v != null ? `${v.toFixed(1)}%` : '–') },
 ];
 
 function posColor(pos) {
@@ -223,17 +223,17 @@ export function CompsAnalysisCard({ symbol, onClose }) {
   const VIcon = vc.icon;
 
   const stripVars = [
-    { label: 'Price', value: target.price != null ? `$${target.price.toFixed(2)}` : '—' },
-    { label: 'Mkt Cap', value: target.marketCapFormatted || '—' },
-    { label: 'P/E', value: target.pe?.toFixed(1) ?? '—' },
-    { label: 'EV/EBITDA', value: target.evEbitda?.toFixed(1) ?? '—' },
+    { label: 'Price', value: target.price != null ? `$${target.price.toFixed(2)}` : '–' },
+    { label: 'Mkt Cap', value: target.marketCapFormatted || '–' },
+    { label: 'P/E', value: target.pe?.toFixed(1) ?? '–' },
+    { label: 'EV/EBITDA', value: target.evEbitda?.toFixed(1) ?? '–' },
     { label: 'Peers', value: `${peers.length}` },
     {
       label: 'vs. Peers',
       value:
         valuation.premiumDiscount != null
           ? `${valuation.premiumDiscount > 0 ? '+' : ''}${valuation.premiumDiscount.toFixed(1)}%`
-          : '—',
+          : '–',
     },
   ];
 
@@ -391,7 +391,7 @@ export function CompsAnalysisCard({ symbol, onClose }) {
                     key={c.key}
                     className="px-2 py-1.5 text-right text-[10px] font-mono text-gray-400 dark:text-gray-500"
                   >
-                    {s?.p25 != null ? `${c.fmt(s.p25)} – ${c.fmt(s.p75)}` : '—'}
+                    {s?.p25 != null ? `${c.fmt(s.p25)} – ${c.fmt(s.p75)}` : '–'}
                   </td>
                 );
               })}

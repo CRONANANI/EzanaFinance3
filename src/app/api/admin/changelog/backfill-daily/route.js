@@ -73,9 +73,7 @@ export const POST = withApiGuard(
           end: r.end.toISOString(),
         });
         if (!summary) {
-          log.push(
-            `${r.dayKey}: skip (no summary, ${commits.length} commits — all noise filtered)`,
-          );
+          log.push(`${r.dayKey}: skip (no summary, ${commits.length} commits, all noise filtered)`);
           skipped++;
           continue;
         }

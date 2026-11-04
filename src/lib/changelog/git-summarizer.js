@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { fetchWithTimeout } from '../http/fetch-json.js';
 
+import { removeEmDashes } from '@/lib/text/em-dash';
 const MODEL = 'claude-sonnet-4-20250514';
 const GITHUB_API = 'https://api.github.com';
 
@@ -159,9 +160,10 @@ Output ONLY the JSON object. No markdown fencing, no preamble, no explanation.`;
   ];
   const category = VALID_CATEGORIES.includes(parsed.category) ? parsed.category : 'improvement';
 
+  /* The changelog is user-facing: no em dashes (src/lib/text/em-dash.js). */
   return {
-    title: String(parsed.title).slice(0, 200),
-    body: String(parsed.body).slice(0, 5000),
+    title: removeEmDashes(String(parsed.title)).slice(0, 200),
+    body: removeEmDashes(String(parsed.body)).slice(0, 5000),
     category,
   };
 }

@@ -110,7 +110,7 @@ export function EchoRevisionLedger({
               </div>
               {active && r.record && (
                 <div className="echo-fig-detail echo-fig-ledger-record">
-                  <strong>{r.label}</strong> — {r.record}
+                  <strong>{r.label}</strong> · {r.record}
                 </div>
               )}
             </div>

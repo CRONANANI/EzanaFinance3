@@ -40,7 +40,7 @@ function normalizeUser(row) {
     username: row.username,
     rank: row.rank,
     name: row.name || row.display_name || 'Member',
-    initials: row.initials || '—',
+    initials: row.initials || '–',
     title: row.title || '',
     tier: row.tier,
     rating: row.rating ?? row.current_rating ?? 0,
@@ -48,7 +48,7 @@ function normalizeUser(row) {
     delta7d: row.delta7d ?? 0,
     delta30d: row.delta30d ?? 0,
     sparkline: row.sparkline || [],
-    active: row.active || '—',
+    active: row.active || '–',
   };
 }
 
@@ -66,7 +66,7 @@ function EloLeaderboardContent() {
   const [league, setLeague] = useState(null);
   const [stats, setStats] = useState(null);
   const [quests, setQuests] = useState(null);
-  const [refreshesAt, setRefreshesAt] = useState('—');
+  const [refreshesAt, setRefreshesAt] = useState('–');
   const [totalTraders, setTotalTraders] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -112,7 +112,7 @@ function EloLeaderboardContent() {
       }
       if (Array.isArray(questsData?.quests)) {
         setQuests(questsData.quests);
-        setRefreshesAt(questsData.refreshesIn || '—');
+        setRefreshesAt(questsData.refreshesIn || '–');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load leaderboard');

@@ -322,7 +322,7 @@ function TopPerformerModalBody({ data }) {
         </div>
         <div className="comm-kpi-modal__stat">
           <span className="comm-kpi-modal__stat-label">Followers</span>
-          <span className="comm-kpi-modal__stat-value">{data.followers || '—'}</span>
+          <span className="comm-kpi-modal__stat-value">{data.followers || '–'}</span>
         </div>
         <div className="comm-kpi-modal__stat">
           <span className="comm-kpi-modal__stat-label">Win rate</span>
@@ -416,7 +416,7 @@ function InvestorsToFollowModalBody({ data }) {
         <div>
           <h2 className="comm-kpi-modal__title">Investors with similar sectors</h2>
           <p className="comm-kpi-modal__subtitle">
-            Sorted by performance — these investors hold positions in sectors that overlap with
+            Sorted by performance, these investors hold positions in sectors that overlap with
             yours.
           </p>
         </div>
@@ -843,8 +843,8 @@ export default function CommunityPageClient() {
             onClick={scrollToFeed}
             aria-label={
               newPostCount > 0
-                ? `${newPostCount} new posts in feed — click to scroll to feed`
-                : `${feedPosts.length} posts in feed — click to scroll to feed`
+                ? `${newPostCount} new posts in feed, click to scroll to feed`
+                : `${feedPosts.length} posts in feed, click to scroll to feed`
             }
           >
             <div className="comm-kpi-icon" aria-hidden>
@@ -876,7 +876,7 @@ export default function CommunityPageClient() {
             </div>
             <div className="comm-kpi-body">
               <span className="comm-kpi-label">Top performer</span>
-              <span className="comm-kpi-value">{topSuggestedReturn || '—'}</span>
+              <span className="comm-kpi-value">{topSuggestedReturn || '–'}</span>
               <span className="comm-kpi-sub positive">
                 {suggestedUsers[0]?.name
                   ? `@${
@@ -901,9 +901,9 @@ export default function CommunityPageClient() {
             </div>
             <div className="comm-kpi-body">
               <span className="comm-kpi-label">Sector momentum</span>
-              <span className="comm-kpi-value">{sectorMomentum?.name || '—'}</span>
+              <span className="comm-kpi-value">{sectorMomentum?.name || '–'}</span>
               <span className="comm-kpi-sub positive">
-                Leading at {sectorMomentum?.return || '—'} this week
+                Leading at {sectorMomentum?.return || '–'} this week
               </span>
             </div>
             <i className="bi bi-chevron-right comm-kpi-card__chevron" aria-hidden />

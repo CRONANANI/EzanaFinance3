@@ -194,7 +194,7 @@ export default async function RootLayout({ children }) {
               var cookieTheme = cookieMatch ? cookieMatch[1] : null;
               theme = (cookieTheme === 'dark' || cookieTheme === 'light') ? cookieTheme : 'light';
             }
-            /* Public marketing routes are LIGHT-mode only — force light
+            /* Public marketing routes are LIGHT-mode only, force light
                before paint so the navbar/page don't briefly flash dark.
                Matches isMarketingBrandLockedLightPath in ThemeProvider and
                the SSR class in this layout. */

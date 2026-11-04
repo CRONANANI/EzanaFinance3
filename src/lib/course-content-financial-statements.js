@@ -8,7 +8,7 @@ export default {
         modules: [
           {
             type: 'paragraphs',
-            body: 'Every public company publishes three core financial statements every quarter and every year: the **income statement**, the **balance sheet**, and the **cash flow statement**. Each answers a different question. The income statement tells you whether the business made money over a period of time. The balance sheet tells you what the business owns and owes at a single point in time. The cash flow statement tells you where cash actually moved during the period — which is not the same thing as profit.',
+            body: 'Every public company publishes three core financial statements every quarter and every year: the **income statement**, the **balance sheet**, and the **cash flow statement**. Each answers a different question. The income statement tells you whether the business made money over a period of time. The balance sheet tells you what the business owns and owes at a single point in time. The cash flow statement tells you where cash actually moved during the period, which is not the same thing as profit.',
           },
           {
             type: 'paragraphs',
@@ -21,7 +21,7 @@ export default {
           },
           {
             type: 'paragraphs',
-            body: "Throughout this course we'll use a real company — [[ticker:AAPL]]Apple[[/ticker]] — to walk through what each statement looks like in practice. Apple is large enough that the numbers are easy to find, conservative enough that the statements aren't full of unusual items, and recognizable enough that the lessons stick.",
+            body: "Throughout this course we'll use a real company, [[ticker:AAPL]]Apple[[/ticker]], to walk through what each statement looks like in practice. Apple is large enough that the numbers are easy to find, conservative enough that the statements aren't full of unusual items, and recognizable enough that the lessons stick.",
           },
         ],
       },
@@ -32,11 +32,11 @@ export default {
         modules: [
           {
             type: 'paragraphs',
-            body: "The income statement (sometimes called the **profit and loss statement** or **P&L**) measures a company's profit over a defined period — usually a quarter or a year. It starts with the money the company brought in and subtracts every type of cost until you arrive at net income at the bottom. This top-to-bottom structure is why people refer to revenue as the **top line** and net income as the **bottom line**.",
+            body: "The income statement (sometimes called the **profit and loss statement** or **P&L**) measures a company's profit over a defined period, usually a quarter or a year. It starts with the money the company brought in and subtracts every type of cost until you arrive at net income at the bottom. This top-to-bottom structure is why people refer to revenue as the **top line** and net income as the **bottom line**.",
           },
           {
             type: 'paragraphs',
-            body: "The basic structure is consistent across companies: **Revenue → Cost of Revenue → Gross Profit → Operating Expenses → Operating Income → Taxes & Interest → Net Income**. Each step strips out a different category of cost. Gross profit shows what's left after the direct cost of making the product. Operating income shows what's left after running the business (R&D, sales, admin). Net income shows what's left after everything — including taxes and interest.",
+            body: "The basic structure is consistent across companies: **Revenue → Cost of Revenue → Gross Profit → Operating Expenses → Operating Income → Taxes & Interest → Net Income**. Each step strips out a different category of cost. Gross profit shows what's left after the direct cost of making the product. Operating income shows what's left after running the business (R&D, sales, admin). Net income shows what's left after everything, including taxes and interest.",
           },
           {
             type: 'financialStatement',
@@ -46,7 +46,7 @@ export default {
             limit: 2,
             eyebrow: 'Live example',
             caption:
-              "Apple's most recent two fiscal years. The YoY column shows the year-over-year change. Notice how revenue, gross profit, operating income, and net income all change at different rates — operating leverage at work.",
+              "Apple's most recent two fiscal years. The YoY column shows the year-over-year change. Notice how revenue, gross profit, operating income, and net income all change at different rates, operating leverage at work.",
           },
           {
             type: 'paragraphs',
@@ -54,7 +54,7 @@ export default {
           },
           {
             type: 'paragraphs',
-            body: 'Pay attention to **earnings per share (EPS)** at the bottom. EPS is net income divided by the number of shares outstanding. Companies that buy back stock reduce the share count, which mechanically increases EPS even without growing net income. That makes EPS growth a useful number to compare to net-income growth — if EPS is growing faster than net income, buybacks are doing the work.',
+            body: 'Pay attention to **earnings per share (EPS)** at the bottom. EPS is net income divided by the number of shares outstanding. Companies that buy back stock reduce the share count, which mechanically increases EPS even without growing net income. That makes EPS growth a useful number to compare to net-income growth, if EPS is growing faster than net income, buybacks are doing the work.',
           },
           {
             type: 'keyTermCards',
@@ -83,7 +83,7 @@ export default {
                 name: 'Net income',
                 color: 'red',
                 definition:
-                  'Profit after every cost — operating, interest, and taxes. Also called the "bottom line." This is what flows to shareholders.',
+                  'Profit after every cost, operating, interest, and taxes. Also called the "bottom line." This is what flows to shareholders.',
               },
               {
                 name: 'EPS (Earnings Per Share)',
@@ -102,7 +102,7 @@ export default {
         modules: [
           {
             type: 'paragraphs',
-            body: 'The balance sheet is a snapshot — it shows what the company owns and owes at a single point in time, usually the last day of the quarter or fiscal year. Unlike the income statement, which measures a period, the balance sheet measures a moment.',
+            body: 'The balance sheet is a snapshot, it shows what the company owns and owes at a single point in time, usually the last day of the quarter or fiscal year. Unlike the income statement, which measures a period, the balance sheet measures a moment.',
           },
           {
             type: 'paragraphs',
@@ -120,11 +120,11 @@ export default {
           },
           {
             type: 'paragraphs',
-            body: 'Within assets, items are split into **current** (convertible to cash within a year — receivables, inventory, short-term investments) and **non-current** (longer-lived items — property, plant and equipment, goodwill, long-term investments). Liabilities follow the same split: **current liabilities** are debts due within a year; **non-current liabilities** are longer-dated debt.',
+            body: 'Within assets, items are split into **current** (convertible to cash within a year, receivables, inventory, short-term investments) and **non-current** (longer-lived items, property, plant and equipment, goodwill, long-term investments). Liabilities follow the same split: **current liabilities** are debts due within a year; **non-current liabilities** are longer-dated debt.',
           },
           {
             type: 'paragraphs',
-            body: 'The relationship between current assets and current liabilities is one of the most important ratios in finance: the **current ratio** (current assets ÷ current liabilities) measures whether a company can pay its near-term obligations from its near-term resources. A ratio above 1 means it can; below 1 raises a question. The **quick ratio** is a stricter version that excludes inventory — it asks whether the company can pay debts with only its most liquid assets.',
+            body: 'The relationship between current assets and current liabilities is one of the most important ratios in finance: the **current ratio** (current assets ÷ current liabilities) measures whether a company can pay its near-term obligations from its near-term resources. A ratio above 1 means it can; below 1 raises a question. The **quick ratio** is a stricter version that excludes inventory, it asks whether the company can pay debts with only its most liquid assets.',
           },
           {
             type: 'paragraphs',
@@ -157,7 +157,7 @@ export default {
                 name: 'Current ratio',
                 color: 'amber',
                 definition:
-                  'Current assets divided by current liabilities. Measures short-term liquidity — whether the company can pay near-term obligations from near-term resources.',
+                  'Current assets divided by current liabilities. Measures short-term liquidity, whether the company can pay near-term obligations from near-term resources.',
               },
               {
                 name: 'Retained earnings',
@@ -176,7 +176,7 @@ export default {
         modules: [
           {
             type: 'paragraphs',
-            body: "The cash flow statement tracks actual cash movement during the period. This sounds redundant with the income statement, but it isn't. The income statement is built on **accrual accounting** — revenue is recognized when earned, costs are recognized when incurred, regardless of when cash actually changes hands. The cash flow statement strips out all those timing assumptions and shows what really moved in and out of the bank account.",
+            body: "The cash flow statement tracks actual cash movement during the period. This sounds redundant with the income statement, but it isn't. The income statement is built on **accrual accounting**, revenue is recognized when earned, costs are recognized when incurred, regardless of when cash actually changes hands. The cash flow statement strips out all those timing assumptions and shows what really moved in and out of the bank account.",
           },
           {
             type: 'paragraphs',
@@ -184,7 +184,7 @@ export default {
           },
           {
             type: 'paragraphs',
-            body: 'The statement is divided into three sections. **Operating activities** is cash generated or used by the core business. **Investing activities** is cash spent on or received from buying/selling long-term assets (the big one is **capital expenditure** — money spent on property, equipment, software). **Financing activities** is cash from issuing or repaying debt, issuing stock, repurchasing stock, or paying dividends.',
+            body: 'The statement is divided into three sections. **Operating activities** is cash generated or used by the core business. **Investing activities** is cash spent on or received from buying/selling long-term assets (the big one is **capital expenditure**, money spent on property, equipment, software). **Financing activities** is cash from issuing or repaying debt, issuing stock, repurchasing stock, or paying dividends.',
           },
           {
             type: 'financialStatement',
@@ -194,15 +194,15 @@ export default {
             limit: 2,
             eyebrow: 'Live example',
             caption:
-              "Apple's cash flow statement. Notice how net income at the top differs from operating cash flow below — depreciation and working-capital changes are the biggest reconciling items.",
+              "Apple's cash flow statement. Notice how net income at the top differs from operating cash flow below, depreciation and working-capital changes are the biggest reconciling items.",
           },
           {
             type: 'paragraphs',
-            body: "The most important number on the cash flow statement is **free cash flow (FCF)**: cash from operations minus capital expenditure. FCF measures how much cash the business throws off after paying for everything required to keep operating. It's the cash available to repay debt, buy back stock, pay dividends, or make acquisitions — anything that creates shareholder value. Many investors consider FCF a better measure of business quality than net income because it strips out accounting choices.",
+            body: "The most important number on the cash flow statement is **free cash flow (FCF)**: cash from operations minus capital expenditure. FCF measures how much cash the business throws off after paying for everything required to keep operating. It's the cash available to repay debt, buy back stock, pay dividends, or make acquisitions, anything that creates shareholder value. Many investors consider FCF a better measure of business quality than net income because it strips out accounting choices.",
           },
           {
             type: 'paragraphs',
-            body: 'Watch the **depreciation and amortization** line near the top of the operating section. Depreciation is a non-cash expense — it represents the wearing-out of long-term assets over time, but no actual cash is spent. So it gets ADDED BACK to net income when calculating operating cash flow. A company with heavy property, plant, and equipment (think utilities, telecoms, manufacturers) will report much higher operating cash flow than net income because of this addback.',
+            body: 'Watch the **depreciation and amortization** line near the top of the operating section. Depreciation is a non-cash expense, it represents the wearing-out of long-term assets over time, but no actual cash is spent. So it gets ADDED BACK to net income when calculating operating cash flow. A company with heavy property, plant, and equipment (think utilities, telecoms, manufacturers) will report much higher operating cash flow than net income because of this addback.',
           },
           {
             type: 'keyTermCards',
@@ -231,7 +231,7 @@ export default {
                 name: 'Depreciation & amortization',
                 color: 'violet',
                 definition:
-                  'A non-cash expense that allocates the cost of long-term assets over their useful life. Reduces net income but not cash — so it gets added back when computing operating cash flow.',
+                  'A non-cash expense that allocates the cost of long-term assets over their useful life. Reduces net income but not cash, so it gets added back when computing operating cash flow.',
               },
               {
                 name: 'Working capital',
@@ -262,7 +262,7 @@ export default {
           },
           {
             type: 'paragraphs',
-            body: "**The third link**: the ending cash balance on the cash flow statement equals the cash line on the balance sheet. The cash flow statement shows you how cash got from last period's balance to this period's — all three operating, investing, and financing activities sum to the net change in cash.",
+            body: "**The third link**: the ending cash balance on the cash flow statement equals the cash line on the balance sheet. The cash flow statement shows you how cash got from last period's balance to this period's, all three operating, investing, and financing activities sum to the net change in cash.",
           },
           {
             type: 'pullQuote',
@@ -271,7 +271,7 @@ export default {
           },
           {
             type: 'paragraphs',
-            body: "This is why financial-modeling work always builds the three statements together rather than in isolation. Change one assumption — say, revenue growth — and the effects ripple. Revenue change moves net income (income statement), which moves operating cash flow (cash flow statement), which moves the cash balance (balance sheet), which moves the next period's opening cash. A model that gets these links right will balance; a model that gets them wrong will not.",
+            body: "This is why financial-modeling work always builds the three statements together rather than in isolation. Change one assumption, say, revenue growth, and the effects ripple. Revenue change moves net income (income statement), which moves operating cash flow (cash flow statement), which moves the cash balance (balance sheet), which moves the next period's opening cash. A model that gets these links right will balance; a model that gets them wrong will not.",
           },
         ],
       },
@@ -282,7 +282,7 @@ export default {
         modules: [
           {
             type: 'paragraphs',
-            body: "Let's read [[ticker:AAPL]]Apple[[/ticker]]'s three statements together and see what story they tell. Start with the income statement: notice how revenue, gross profit, and operating income each grow at slightly different rates. The spread between them is operating leverage — when revenue grows faster than fixed costs, profit grows even faster.",
+            body: "Let's read [[ticker:AAPL]]Apple[[/ticker]]'s three statements together and see what story they tell. Start with the income statement: notice how revenue, gross profit, and operating income each grow at slightly different rates. The spread between them is operating leverage, when revenue grows faster than fixed costs, profit grows even faster.",
           },
           {
             type: 'financialStatement',
@@ -296,7 +296,7 @@ export default {
           },
           {
             type: 'paragraphs',
-            body: 'Now look at the balance sheet. Apple carries an enormous cash and investment position — historically more than $150 billion in cash and marketable securities. That gives the business flexibility to invest, repurchase stock, weather downturns, and acquire targets without taking on debt.',
+            body: 'Now look at the balance sheet. Apple carries an enormous cash and investment position, historically more than $150 billion in cash and marketable securities. That gives the business flexibility to invest, repurchase stock, weather downturns, and acquire targets without taking on debt.',
           },
           {
             type: 'financialStatement',
@@ -306,7 +306,7 @@ export default {
             limit: 3,
             eyebrow: 'Three-year view',
             caption:
-              "Three years of Apple's balance sheet. Watch how cash, total assets, and total stockholders equity evolve — and how the company has reduced its share count via buybacks.",
+              "Three years of Apple's balance sheet. Watch how cash, total assets, and total stockholders equity evolve, and how the company has reduced its share count via buybacks.",
           },
           {
             type: 'paragraphs',
@@ -320,11 +320,11 @@ export default {
             limit: 3,
             eyebrow: 'Three-year view',
             caption:
-              "Apple's cash flow statement. Most of the free cash flow has historically gone to share buybacks and dividends — a deliberate capital-return strategy.",
+              "Apple's cash flow statement. Most of the free cash flow has historically gone to share buybacks and dividends, a deliberate capital-return strategy.",
           },
           {
             type: 'paragraphs',
-            body: "Looking at all three together: Apple makes a lot of money, holds a fortress balance sheet, generates more cash than it can reinvest, and returns the excess to shareholders. That's not just three separate facts — it's one coherent picture only visible by reading the statements together.",
+            body: "Looking at all three together: Apple makes a lot of money, holds a fortress balance sheet, generates more cash than it can reinvest, and returns the excess to shareholders. That's not just three separate facts, it's one coherent picture only visible by reading the statements together.",
           },
         ],
       },
@@ -335,7 +335,7 @@ export default {
         modules: [
           {
             type: 'paragraphs',
-            body: 'Now that you know how the three statements fit together, here are the most common mistakes that trip up readers — including experienced ones.',
+            body: 'Now that you know how the three statements fit together, here are the most common mistakes that trip up readers, including experienced ones.',
           },
           {
             type: 'paragraphs',
@@ -343,7 +343,7 @@ export default {
           },
           {
             type: 'paragraphs',
-            body: "**Ignoring stock-based compensation**. SBC is a real cost — it dilutes existing shareholders — but it doesn't reduce cash, so it gets added back to operating cash flow. Many tech companies report large operating cash flows partly because of this. Always check how much of operating cash flow is just SBC being added back. If you subtract SBC from operating cash flow, you get a more conservative measure of cash profitability.",
+            body: "**Ignoring stock-based compensation**. SBC is a real cost, it dilutes existing shareholders, but it doesn't reduce cash, so it gets added back to operating cash flow. Many tech companies report large operating cash flows partly because of this. Always check how much of operating cash flow is just SBC being added back. If you subtract SBC from operating cash flow, you get a more conservative measure of cash profitability.",
           },
           {
             type: 'paragraphs',
@@ -351,7 +351,7 @@ export default {
           },
           {
             type: 'paragraphs',
-            body: "**Missing the working-capital story**. A business that's growing rapidly often has to invest in working capital — building inventory, extending credit to customers — which can drain operating cash flow even when profit is strong. The opposite is also true: a business with negative working capital (collecting from customers before paying suppliers) generates cash AHEAD of profit.",
+            body: "**Missing the working-capital story**. A business that's growing rapidly often has to invest in working capital, building inventory, extending credit to customers, which can drain operating cash flow even when profit is strong. The opposite is also true: a business with negative working capital (collecting from customers before paying suppliers) generates cash AHEAD of profit.",
           },
           {
             type: 'paragraphs',
@@ -359,7 +359,7 @@ export default {
           },
           {
             type: 'callout',
-            body: 'Practice: pull up any company you follow and answer three questions. (1) Is revenue growing faster, in line with, or slower than net income? (2) How much of operating cash flow is just stock-based compensation? (3) What is free cash flow as a percentage of net income — and what does that tell you?',
+            body: 'Practice: pull up any company you follow and answer three questions. (1) Is revenue growing faster, in line with, or slower than net income? (2) How much of operating cash flow is just stock-based compensation? (3) What is free cash flow as a percentage of net income, and what does that tell you?',
           },
         ],
       },
@@ -378,11 +378,11 @@ export default {
           },
           {
             type: 'paragraphs',
-            body: "Every public-company filing — 10-K (annual) and 10-Q (quarterly) — contains all three statements plus management's commentary on what's behind the numbers. Reading that commentary alongside the statements is where intermediate-level financial analysis lives. The numbers tell you WHAT happened; the commentary tells you WHY.",
+            body: "Every public-company filing, 10-K (annual) and 10-Q (quarterly), contains all three statements plus management's commentary on what's behind the numbers. Reading that commentary alongside the statements is where intermediate-level financial analysis lives. The numbers tell you WHAT happened; the commentary tells you WHY.",
           },
           {
             type: 'paragraphs',
-            body: "When you're ready to go deeper, the next step is **ratio analysis** — combining numbers across the three statements to build measurements of profitability (return on equity, return on invested capital), efficiency (asset turnover, inventory days), leverage (debt-to-equity, interest coverage), and valuation (P/E, EV/EBITDA, P/FCF). Each ratio asks a specific question about the business. With the foundation you have now, those ratios will mean something instead of being abstract.",
+            body: "When you're ready to go deeper, the next step is **ratio analysis**, combining numbers across the three statements to build measurements of profitability (return on equity, return on invested capital), efficiency (asset turnover, inventory days), leverage (debt-to-equity, interest coverage), and valuation (P/E, EV/EBITDA, P/FCF). Each ratio asks a specific question about the business. With the foundation you have now, those ratios will mean something instead of being abstract.",
           },
         ],
       },

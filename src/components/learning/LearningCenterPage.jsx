@@ -48,7 +48,7 @@ function buildStats(courses) {
   return {
     courses_done: completed,
     courses_total: courses?.overall?.total || 120,
-    hours_this_week: '—',
+    hours_this_week: '–',
     quizzes_passed_perfect: completed,
     quizzes_passed_total: completed,
     badges_earned: (courses?.badges || []).length,
@@ -67,7 +67,7 @@ function getPrevLevelLabel(lv) {
 }
 
 function formatResetsIn(iso) {
-  if (!iso) return '—';
+  if (!iso) return '–';
   const ms = new Date(iso) - Date.now();
   const h = Math.max(0, Math.floor(ms / 3600000));
   const m = Math.max(0, Math.floor((ms % 3600000) / 60000));

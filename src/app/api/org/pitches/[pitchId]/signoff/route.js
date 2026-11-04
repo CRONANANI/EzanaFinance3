@@ -154,7 +154,7 @@ export const POST = withApiGuard(
     // hitting this endpoint directly is rejected here, not just in the UI.
     if (!canSignOff(member)) {
       return NextResponse.json(
-        { error: 'Not eligible to sign off — requires Senior Analyst tier or above' },
+        { error: 'Not eligible to sign off, requires Senior Analyst tier or above' },
         { status: 403 },
       );
     }

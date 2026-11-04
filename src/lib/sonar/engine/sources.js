@@ -29,6 +29,7 @@ import { newsEvidence, sanctionsContext } from '@/lib/sonar/landing-research';
 import { getCommoditySeries } from '@/lib/sonar/commodity-series';
 import ipoEvents from '@/lib/sonar/sources/ipo-events';
 import { cacheGet, cacheSet } from './cache';
+import { LOBBYING_TOPICS, topicCovered } from '@/lib/lobbying/topics';
 
 const FMP_STABLE = 'https://financialmodelingprep.com/stable';
 
@@ -80,7 +81,29 @@ async function mapLimit(items, limit, fn) {
 
 /* ── lobbying ──────────────────────────────────────────────────────── */
 
-async function lobbyingLeaders({ issueBuckets = [], text = null, years }, { admin, maxItems }) {
+/* Whether a topic's ingest has walked every phrase for every year asked:
+   only then is a ranking of its specific-issue matches complete. Cached for
+   ten minutes; any error reads as not covered. */
+async function topicReady(admin, key, years) {
+  if (!key) return false;
+  const ck = `lobbying-topic-ready:${key}:${years.from}-${years.to}`;
+  const hit = await cacheGet(ck);
+  if (hit !== undefined) return hit;
+  const { data, error } = await admin
+    .from('lobbying_topic_ingest')
+    .select('topic, year, query, complete')
+    .eq('topic', key)
+    .gte('year', years.from)
+    .lte('year', years.to);
+  const ready = !error && topicCovered(data || [], key, years);
+  await cacheSet(ck, ready, 600);
+  return ready;
+}
+
+async function lobbyingLeaders(
+  { issueBuckets = [], text = null, topic: topicKey = null, years },
+  { admin, maxItems },
+) {
   const call = (pText) =>
     admin.rpc('sonar_lobbying_leaders', {
       p_buckets: issueBuckets.length ? issueBuckets : null,
@@ -89,17 +112,22 @@ async function lobbyingLeaders({ issueBuckets = [], text = null, years }, { admi
       p_limit: Math.max(10, maxItems * 2),
       p_text: pText,
     });
-  /* The topic's own words first (specific issue descriptions); when those
-     are not stored yet or match nothing, the broader issue areas, labelled. */
-  let { data, error } = text ? await call(text) : { data: null, error: null };
-  const textMatched = Boolean(text && !error && data?.length);
+  /* The topic's own words, but only once its ingest is complete for the
+     years asked: a partial text match would rank whoever happened to load
+     first. Until then, the broader issue area, labelled as such. */
+  const topic = topicKey ? LOBBYING_TOPICS[topicKey] : null;
+  const ready = Boolean(text && topic) && (await topicReady(admin, topicKey, years));
+  let { data, error } = ready ? await call(text) : { data: null, error: null };
+  const textMatched = Boolean(ready && !error && data?.length);
   if (!textMatched) ({ data, error } = await call(null));
   if (error || !data?.length) return { items: [] };
-  const topic = text ? text.split(' OR ')[0].replace(/"/g, '') : null;
+  const label = topic?.label || null;
   const scope = textMatched
-    ? `filings whose specific issue descriptions mention ${topic}`
+    ? `filings whose specific issue descriptions mention ${label}`
     : issueBuckets.length
-      ? `filings tagged with the ${issueBuckets.join(', ')} issue area${issueBuckets.length > 1 ? 's' : ''}${topic ? ` (a broader category than ${topic}: the filings' issue descriptions are not searchable yet)` : ''}`
+      ? `filings tagged with the ${issueBuckets.join(', ')} issue area${issueBuckets.length > 1 ? 's' : ''}${
+          label ? ` (broader than ${label}; topic-level filings are still being loaded)` : ''
+        }`
       : 'all filings';
   const period = {
     from: `${years.from}-01-01`,
@@ -129,7 +157,7 @@ async function lobbyingLeaders({ issueBuckets = [], text = null, years }, { admi
           '; ',
         )}. Spend is each client's total reported on those filings (self-filed expenses where the client files itself, otherwise outside firms' reported income), not spend on any single issue.`,
       period,
-      data: { metric: 'lobbying_spend', scope, rows, textMatched, topic },
+      data: { metric: 'lobbying_spend', scope, rows, textMatched, topic: label },
       entities: rows.slice(0, 8).flatMap((r) => [r.client, r.ticker].filter(Boolean)),
     },
     ...rows.slice(0, maxItems).map((r) => ({

@@ -18,9 +18,9 @@
  * @returns {string}
  */
 export function formatModelVariableValue(value, format) {
-  if (value === null || value === undefined) return '—';
+  if (value === null || value === undefined) return '–';
   if (typeof value === 'string') return value;
-  if (typeof value !== 'number' || !Number.isFinite(value)) return '—';
+  if (typeof value !== 'number' || !Number.isFinite(value)) return '–';
   switch (format) {
     case 'percent':
       return `${(value * 100).toFixed(2)}%`;

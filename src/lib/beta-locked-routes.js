@@ -64,23 +64,23 @@ export function isBetaLockedRoute(pathname) {
  */
 export const BETA_LOCK_DESCRIPTIONS = {
   '/alternative-markets':
-    'Crypto, commodities, and alternative asset markets — coming in v1.0 with full DeFi integration and real-time spot data.',
+    'Crypto, commodities, and alternative asset markets, coming in v1.0 with full DeFi integration and real-time spot data.',
   '/centaur-intelligence':
-    'AI-powered boardroom analysis with Buffett, Dalio, Lynch, and Munger persona models — launching with v1.0.',
+    'AI-powered boardroom analysis with Buffett, Dalio, Lynch, and Munger persona models, launching with v1.0.',
   '/kairos-signal':
-    'Weather and alternative macro data feeds for commodity traders — coming in v1.0 with full climate-impact modeling.',
+    'Weather and alternative macro data feeds for commodity traders, coming in v1.0 with full climate-impact modeling.',
   '/betting-markets':
-    'Sports betting EV models, odds comparison, and prop bet analysis — launching with v1.0.',
+    'Sports betting EV models, odds comparison, and prop bet analysis, launching with v1.0.',
   '/for-the-quants':
-    'Strategy builder, backtesting engine, technical scanners, and pairs trading — coming in v1.0.',
+    'Strategy builder, backtesting engine, technical scanners, and pairs trading, coming in v1.0.',
   '/inside-the-capitol':
-    'Congressional trades, lobbying activity, and government contract intelligence — launching with v1.0.',
-  '/real-estate': 'Fractional real estate investments and REIT analysis tools — coming in v1.0.',
+    'Congressional trades, lobbying activity, and government contract intelligence, launching with v1.0.',
+  '/real-estate': 'Fractional real estate investments and REIT analysis tools, coming in v1.0.',
   '/financial-analytics':
-    'Advanced portfolio analytics and risk attribution tools — coming in v1.0.',
-  '/terminal': 'Bloomberg-style integrated terminal for power users — launching with v1.0.',
-  '/leaderboard': 'Community-wide portfolio performance leaderboards — coming in v1.0.',
-  '/badges': 'Achievement badges and XP rewards system — launching with v1.0.',
+    'Advanced portfolio analytics and risk attribution tools, coming in v1.0.',
+  '/terminal': 'Bloomberg-style integrated terminal for power users, launching with v1.0.',
+  '/leaderboard': 'Community-wide portfolio performance leaderboards, coming in v1.0.',
+  '/badges': 'Achievement badges and XP rewards system, launching with v1.0.',
 };
 
 export function getBetaLockedRouteDescription(pathname) {

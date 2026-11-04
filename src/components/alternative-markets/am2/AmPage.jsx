@@ -103,7 +103,7 @@ export function AmPage() {
   const newsItems = useMemo(() => {
     const source = isCrypto ? CRYPTO_NEWS : COMM_NEWS;
     return source.map((n) => ({
-      time: n.time || '—',
+      time: n.time || '–',
       topic: deriveTopic(n.title),
       title: n.title,
       source: n.source,

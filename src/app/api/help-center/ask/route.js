@@ -8,6 +8,7 @@ import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit
 import { searchHelp } from '@/lib/help-center-search';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
+import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /**
  * POST /api/help-center/ask: grounded help-center Q&A (RAG).
  *
@@ -151,7 +152,7 @@ async function synthesize(query, sources) {
 
 const publicSources = (sources) => sources.map(({ content, ...s }) => s);
 
-export const POST = withApiGuard(
+const POST_HANDLER = withApiGuard(
   async (request) => {
     const rl = await checkRateLimit(`help-center-ask:${getClientIp(request)}`, {
       limit: 15,
@@ -221,3 +222,6 @@ export const POST = withApiGuard(
   },
   { requireAuth: false },
 );
+
+/* No em dashes in anything this route returns (src/lib/text/em-dash.js). */
+export const POST = withNoEmDash(POST_HANDLER);

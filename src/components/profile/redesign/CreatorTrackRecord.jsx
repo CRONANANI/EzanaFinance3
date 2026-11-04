@@ -334,7 +334,7 @@ export function CreatorTrackRecord({ creatorId, canCreate = false }) {
       >
         <StatChip
           label="Hit rate"
-          value={record.hitRate != null ? `${record.hitRate}%` : '—'}
+          value={record.hitRate != null ? `${record.hitRate}%` : '–'}
           color="#10b981"
         />
         <StatChip label="Hit" value={record.hit} color="#10b981" />

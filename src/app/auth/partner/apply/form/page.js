@@ -145,7 +145,7 @@ export default function PartnerApplicationForm() {
                       : citiesLoading
                         ? 'Loading cities…'
                         : cities.length === 0
-                          ? 'No cities found — type below'
+                          ? 'No cities found, type below'
                           : 'Select a city'}
                   </option>
                   {cities.map(c => (

@@ -4,6 +4,7 @@ import { withApiGuard } from '@/lib/api-guard';
 
 import { REGIONS, fetchMassiveNews, normalizeArticle } from '@/lib/services/massive-news';
 
+import { deepRemoveEmDashes } from '@/lib/text/em-dash';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -57,7 +58,8 @@ export const GET = withApiGuard(
       if (raw.length > 0) {
         const normalized = raw
           .filter((a) => a?.id && a?.article_url)
-          .map((a) => normalizeArticle(a, region));
+          /* No em dashes in stored headlines (src/lib/text/em-dash.js). */
+          .map((a) => deepRemoveEmDashes(normalizeArticle(a, region)));
 
         if (normalized.length > 0) {
           const { data: upserted, error: upsertErr } = await getAdminClient()

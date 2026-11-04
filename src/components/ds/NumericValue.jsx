@@ -56,7 +56,7 @@ export function NumericValue({
 }) {
   let display = children;
   if (display == null) {
-    display = formatNumber(value, { format, decimals, prefix, suffix, sign }) ?? '—';
+    display = formatNumber(value, { format, decimals, prefix, suffix, sign }) ?? '–';
   }
   const tone =
     colorize === 'auto'

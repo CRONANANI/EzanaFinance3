@@ -25,8 +25,8 @@ export default function BrokeragesIntegrationsPage() {
         <p className="mkt-eyebrow">Integrations</p>
         <h1 className="mkt-h1">Connect your brokerage, your way</h1>
         <p className="mkt-lead">
-          Ezana links your accounts through two trusted aggregators — SnapTrade and Plaid — so you
-          can read holdings or place trades without leaving Ezana. 1,000+ brokerages &amp; exchanges
+          Ezana links your accounts through two trusted aggregators, SnapTrade and Plaid, so you can
+          read holdings or place trades without leaving Ezana. 1,000+ brokerages &amp; exchanges
           supported.
         </p>
       </div>
@@ -86,7 +86,7 @@ export default function BrokeragesIntegrationsPage() {
         <div className="mkt-step">
           <span className="mkt-step-num">2</span>
           <h3>Authorize securely</h3>
-          <p>Credentials never touch Ezana — you authenticate directly with SnapTrade or Plaid.</p>
+          <p>Credentials never touch Ezana, you authenticate directly with SnapTrade or Plaid.</p>
         </div>
         <div className="mkt-step">
           <span className="mkt-step-num">3</span>

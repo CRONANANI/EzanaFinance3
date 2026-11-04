@@ -69,7 +69,7 @@ export function profileTitle(profile) {
 }
 
 export function formatRefreshesIn(iso) {
-  if (!iso) return '—';
+  if (!iso) return '–';
   const ms = new Date(iso).getTime() - Date.now();
   if (ms <= 0) return 'soon';
   const h = Math.floor(ms / 3600000);

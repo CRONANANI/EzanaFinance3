@@ -118,7 +118,7 @@ export default function OecdRadar({
             note: 'Weighted blend of World Bank metrics · click for the formula',
             lines: selected.map((iso) => {
               const raw = empireModel.scoreMap.get(iso)?.get(dim.id);
-              return { label: nameOf(iso), value: raw == null ? '—' : raw.toFixed(0) };
+              return { label: nameOf(iso), value: raw == null ? '–' : raw.toFixed(0) };
             }),
           },
         };
@@ -436,7 +436,7 @@ export default function OecdRadar({
                 dominantBaseline="middle"
                 role="button"
                 tabIndex={0}
-                aria-label={`${ax.payload.title} — open scoring explanation`}
+                aria-label={`${ax.payload.title}, open scoring explanation`}
                 onClick={() => onAxisActivate(ax)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {

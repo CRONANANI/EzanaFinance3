@@ -43,7 +43,7 @@ export function buildSentinelReportText(holdings, opts = {}) {
       '• Concentration risk: review whether any single name exceeds your intended policy weight; trim or hedge if needed.',
     );
     keyInsights.push(
-      '• Macro and rates narratives this week may move growth vs. value factor leadership — map headlines back to your actual tickers above.',
+      '• Macro and rates narratives this week may move growth vs. value factor leadership, map headlines back to your actual tickers above.',
     );
   } else {
     keyInsights.push(
@@ -57,21 +57,21 @@ export function buildSentinelReportText(holdings, opts = {}) {
   const topPerformers = [];
   if (top.length > 0) {
     top.forEach((h, i) => {
-      const t = h.ticker_symbol || '—';
+      const t = h.ticker_symbol || '–';
       const v = Number(h.total_value) || 0;
       const pct = totalValue > 0 ? ((v / totalValue) * 100).toFixed(1) : '0';
       topPerformers.push(
-        `• ${t}: ~${pct}% of portfolio value ($${v.toLocaleString('en-US', { maximumFractionDigits: 0 })}). ${i === 0 ? 'Largest sleeve — watch earnings revisions and sector beta.' : 'Track position size vs. your plan and rebalance if extended.'}`,
+        `• ${t}: ~${pct}% of portfolio value ($${v.toLocaleString('en-US', { maximumFractionDigits: 0 })}). ${i === 0 ? 'Largest sleeve, watch earnings revisions and sector beta.' : 'Track position size vs. your plan and rebalance if extended.'}`,
       );
     });
   } else {
     topPerformers.push(
-      '• No holdings detected yet — top names will appear here after your accounts sync.',
+      '• No holdings detected yet, top names will appear here after your accounts sync.',
     );
   }
 
   const events = [
-    '• Central bank and inflation prints — high impact for duration-sensitive names in your book.',
+    '• Central bank and inflation prints, high impact for duration-sensitive names in your book.',
     '• Earnings guidance and margin commentary for your largest weights.',
     '• Geopolitical and commodity shocks that could flow through to your sector mix.',
   ];

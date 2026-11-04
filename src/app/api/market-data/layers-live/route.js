@@ -67,7 +67,7 @@ function parseFxRate(data) {
   const rateData = data?.['Realtime Currency Exchange Rate'];
   if (!rateData) return null;
   const rate = parseFloat(rateData['5. Exchange Rate']);
-  return rate ? { value: rate.toFixed(4), change: '—', changeVal: 0 } : null;
+  return rate ? { value: rate.toFixed(4), change: '–', changeVal: 0 } : null;
 }
 
 async function handleGet(request) {
@@ -99,8 +99,8 @@ async function handleGet(request) {
       return {
         name: idx.name,
         symbol: idx.key,
-        value: parsed?.value || '—',
-        change: parsed?.change || '—',
+        value: parsed?.value || '–',
+        change: parsed?.change || '–',
         changeVal: parsed?.changeVal || 0,
         status: 'LIVE',
       };
@@ -143,8 +143,8 @@ async function handleGet(request) {
       const item = {
         name: c.name,
         symbol: c.fn,
-        value: parsed?.value || '—',
-        change: parsed?.change || '—',
+        value: parsed?.value || '–',
+        change: parsed?.change || '–',
         changeVal: parsed?.changeVal || 0,
       };
       if (['WTI', 'BRENT', 'NATURAL_GAS'].includes(c.fn)) energy.push(item);
@@ -158,8 +158,8 @@ async function handleGet(request) {
       metalsArr.unshift({
         name: m.name,
         symbol: m.symbol,
-        value: price ? `$${price.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '—',
-        change: '—',
+        value: price ? `$${price.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '–',
+        change: '–',
         changeVal: 0,
       });
     });
@@ -193,8 +193,8 @@ async function handleGet(request) {
         country: p.country,
         code: p.code,
         emoji: p.emoji,
-        value: parsed?.value || '—',
-        change: parsed?.change || '—',
+        value: parsed?.value || '–',
+        change: parsed?.change || '–',
         changeVal: parsed?.changeVal || 0,
       };
     });

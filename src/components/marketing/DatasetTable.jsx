@@ -157,7 +157,7 @@ export function SentimentBadge({ value }) {
 
 /** Signed percentage return, colored positive/negative. */
 export function ReturnValue({ value, digits = 1 }) {
-  if (value == null || value === '') return <span className="mkt-ds-muted">—</span>;
+  if (value == null || value === '') return <span className="mkt-ds-muted">–</span>;
   const n = Number(value);
   if (!Number.isFinite(n)) return <span className="mkt-ds-muted">{value}</span>;
   const pos = n >= 0;

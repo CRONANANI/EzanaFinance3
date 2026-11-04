@@ -603,7 +603,7 @@ export function LearningCoursePage() {
                   </h2>
                   <p className="lc3-muted">
                     You need {result.total} out of {result.total} to complete this course. Review
-                    the questions you missed and try again — your correct answers are saved.
+                    the questions you missed and try again, your correct answers are saved.
                   </p>
                 </>
               )}
@@ -642,8 +642,8 @@ export function LearningCoursePage() {
                   const ok = userIndex === q.correctIndex;
                   const userText =
                     userIndex === undefined || userIndex === null
-                      ? '—'
-                      : (q.options?.[userIndex] ?? '—');
+                      ? '–'
+                      : (q.options?.[userIndex] ?? '–');
                   const correctText = q.options?.[q.correctIndex] ?? '';
                   return (
                     <li key={i} className={ok ? 'ok' : 'bad'}>

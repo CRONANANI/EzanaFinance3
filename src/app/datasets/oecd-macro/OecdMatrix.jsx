@@ -153,10 +153,10 @@ function OecdLensMatrix({
     return {
       title: country.name,
       lines: [
-        { label: col.series.label, value: v == null ? '—' : formatValue(v, col.series) },
+        { label: col.series.label, value: v == null ? '–' : formatValue(v, col.series) },
         { label: 'Unit', value: col.series.unitLabel },
-        { label: 'Year', value: `${col.year ?? '—'}${projected ? ' · PROJ' : ''}` },
-        { label: 'Rank', value: rk ? `#${rk.rank}/${rk.n}` : '—' },
+        { label: 'Year', value: `${col.year ?? '–'}${projected ? ' · PROJ' : ''}` },
+        { label: 'Rank', value: rk ? `#${rk.rank}/${rk.n}` : '–' },
       ],
     };
   };
@@ -213,7 +213,7 @@ function OecdLensMatrix({
                 v == null ? 'no data' : formatValue(v, c.series)
               }`}
             >
-              {v == null ? '—' : formatValue(v, c.series)}
+              {v == null ? '–' : formatValue(v, c.series)}
             </button>
           </td>
         );
@@ -267,7 +267,7 @@ function OecdLensMatrix({
 
       {empireUnavailable ? (
         <p className="oecd-matrix-notice">
-          Empire-dimension scores are temporarily unavailable — showing the OECD indicator matrix.
+          Empire-dimension scores are temporarily unavailable, showing the OECD indicator matrix.
         </p>
       ) : null}
 

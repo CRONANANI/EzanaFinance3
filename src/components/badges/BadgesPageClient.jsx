@@ -147,7 +147,7 @@ export function BadgesPageClient() {
         <div className="bp-header-titles">
           <h1 className="bp-title">All Achievements</h1>
           <p className="bp-subtitle">
-            {loading ? '—' : `${earnedCount} of ${totalCount} earned · ${pct}% complete`}
+            {loading ? '–' : `${earnedCount} of ${totalCount} earned · ${pct}% complete`}
           </p>
         </div>
       </header>

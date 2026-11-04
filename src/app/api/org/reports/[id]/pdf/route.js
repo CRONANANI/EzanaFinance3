@@ -18,8 +18,8 @@ const esc = (s) =>
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
-const money = (n) => (n == null ? '—' : `$${Math.round(Number(n)).toLocaleString()}`);
-const pct = (n) => (n == null ? '—' : `${Number(n) >= 0 ? '+' : ''}${Number(n).toFixed(2)}%`);
+const money = (n) => (n == null ? '–' : `$${Math.round(Number(n)).toLocaleString()}`);
+const pct = (n) => (n == null ? '–' : `${Number(n) >= 0 ? '+' : ''}${Number(n).toFixed(2)}%`);
 const sign = (n) => (n == null ? '' : Number(n) >= 0 ? 'pos' : 'neg');
 
 /* GET /api/org/reports/:id/pdf — branded, print-ready stakeholder report.
@@ -63,7 +63,7 @@ export const GET = withApiGuard(
       .map(
         (s) => `<tr>
           <td>${esc(s.sector)}</td>
-          <td class="mono r">${s.weight_pct == null ? '—' : s.weight_pct.toFixed(1) + '%'}</td>
+          <td class="mono r">${s.weight_pct == null ? '–' : s.weight_pct.toFixed(1) + '%'}</td>
           <td class="mono r ${sign(s.contribution_pct)}">${pct(s.contribution_pct)}</td>
         </tr>`,
       )
@@ -72,11 +72,11 @@ export const GET = withApiGuard(
     const pitchRows = (p.topPitches || [])
       .map(
         (t) => `<tr>
-          <td class="mono">${esc(t.ticker || '—')}</td>
-          <td>${esc(t.analyst || '—')}</td>
+          <td class="mono">${esc(t.ticker || '–')}</td>
+          <td>${esc(t.analyst || '–')}</td>
           <td class="mono r ${sign(t.return_pct)}">${pct(t.return_pct)}</td>
           <td class="mono r ${sign(t.alpha_pct)}">${pct(t.alpha_pct)}</td>
-          <td>${esc(t.current_state || '—')}</td>
+          <td>${esc(t.current_state || '–')}</td>
         </tr>`,
       )
       .join('');
@@ -134,7 +134,7 @@ export const GET = withApiGuard(
 </style></head>
 <body>
 <div class="printbar noprint">
-  Stakeholder report ready — <button onclick="window.print()">Download / Print PDF</button>
+  Stakeholder report ready, <button onclick="window.print()">Download / Print PDF</button>
 </div>
 <div class="page">
   <div class="cover">
@@ -178,14 +178,14 @@ export const GET = withApiGuard(
     ${pitchRows || '<tr><td colspan="5" style="color:#94a3b8">No pitch outcomes recorded yet.</td></tr>'}
   </table>
 
-  <h2>Roster — ${esc(p.cohort || 'Current Cohort')}</h2>
+  <h2>Roster: ${esc(p.cohort || 'Current Cohort')}</h2>
   <table>
     <tr><th>Member</th><th>Title / Role</th><th>Designation</th></tr>
     ${rosterRows || '<tr><td colspan="3" style="color:#94a3b8">No roster recorded.</td></tr>'}
   </table>
 
   <div class="footer">
-    <span>Prepared via Ezana Finance — Confidential</span>
+    <span>Prepared via Ezana Finance, Confidential</span>
     <span class="mono">Generated ${esc(genDate)}</span>
   </div>
 </div>

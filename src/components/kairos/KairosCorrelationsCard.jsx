@@ -79,7 +79,7 @@ function CorrelationRow({ correlation }) {
                   color: wetReturn != null ? (wetReturn >= 0 ? '#10b981' : '#ef4444') : 'inherit',
                 }}
               >
-                {wetReturn != null ? `${wetReturn >= 0 ? '+' : ''}${wetReturn.toFixed(2)}%` : '—'}
+                {wetReturn != null ? `${wetReturn >= 0 ? '+' : ''}${wetReturn.toFixed(2)}%` : '–'}
               </div>
               <div className="kcc-detail-sub">avg forward return</div>
             </div>
@@ -93,7 +93,7 @@ function CorrelationRow({ correlation }) {
                   color: dryReturn != null ? (dryReturn >= 0 ? '#10b981' : '#ef4444') : 'inherit',
                 }}
               >
-                {dryReturn != null ? `${dryReturn >= 0 ? '+' : ''}${dryReturn.toFixed(2)}%` : '—'}
+                {dryReturn != null ? `${dryReturn >= 0 ? '+' : ''}${dryReturn.toFixed(2)}%` : '–'}
               </div>
               <div className="kcc-detail-sub">avg forward return</div>
             </div>

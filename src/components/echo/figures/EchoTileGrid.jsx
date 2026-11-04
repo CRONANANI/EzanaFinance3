@@ -112,7 +112,7 @@ export function EchoTileGrid({
       counts[p.k] += 1;
     });
     const topIdx = classes.length - 1;
-    const topLabel = classes.length ? classes[topIdx].label : '—';
+    const topLabel = classes.length ? classes[topIdx].label : '–';
     const aria = `Tile grid of ${tiles.length} units across ${classes.length} value classes; ${counts[topIdx] || 0} units in the highest class (${topLabel}).`;
 
     return { placed, vbW, vbH, counts, aria, rawWidth };

@@ -114,6 +114,13 @@ function removeSentences(text, bad) {
    Positive dataset sentences ("Ezana's datasets show 12 trades") are kept. */
 const COVERAGE_RES = [
   /\bno record\b/i,
+  /* Nov 4: first-person coverage talk ("I don't have sources that identify
+     ...", "To answer this, I would need access to ...", "none contain"). */
+  /\bI (?:do not|don['’]t|did not|didn['’]t) have\b/i,
+  /\bI would need\b/i,
+  /\b(?:none|neither) of (?:them|these|those|the (?:snippets?|sources?|records?|results?))\b/i,
+  /\bthe (?:snippets?|sources?) (?:provided|given|above|below|supplied)\b/i,
+  /\bnone (?:of them )?contains?\b/i,
   /\b(?:web search|live web|search results?)\b/i,
   /\bgeneral background\b/i,
   /\b(?:our|ezana['’]?s?|the|these|those|its|available|provided|retrieved)\s+(?:[\w-]+\s+){0,2}(?:datasets?|sources?|snippets?)\s+(?:[\w-]+\s+){0,3}?(?:do(?:es)?\s+not|don['’]t|doesn['’]t|did\s+not|didn['’]t|returned\s+no|return\s+no|contain\s+no|have\s+no|has\s+no|show\s+no|shows\s+no|include\s+no|lack|are\s+silent|is\s+silent|are\s+empty|is\s+empty)\b/i,
