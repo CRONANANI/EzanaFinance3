@@ -55,3 +55,11 @@ export function verifyRefund(runId, token) {
   if (!Number.isFinite(n) || !sig) return null;
   return safeEqual(sig, sign(`refund:${runId}:${n}`)) ? n : null;
 }
+
+/** True when the request carries a Supabase session (cookie or bearer). */
+export function hasSessionCredentials(request) {
+  const auth = request.headers?.get?.('authorization') || '';
+  if (/^Bearer\s+\S+/i.test(auth)) return true;
+  const all = request.cookies?.getAll?.() || [];
+  return all.some((c) => /^sb-.+-auth-token(\.\d+)?$/.test(c.name) && c.value);
+}

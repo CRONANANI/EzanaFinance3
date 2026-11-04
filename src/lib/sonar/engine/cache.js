@@ -23,6 +23,11 @@ export function setCacheClient(factory) {
   adminFactory = factory;
 }
 
+/** True once a caller has injected the admin client factory. */
+export function hasCacheClient() {
+  return Boolean(adminFactory);
+}
+
 const race = (p, ms) =>
   Promise.race([p, new Promise((resolve) => setTimeout(() => resolve({ timedOut: true }), ms))]);
 

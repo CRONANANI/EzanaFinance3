@@ -7,6 +7,12 @@
 import { industryBasket } from '@/lib/sonar/industries';
 import { INDUSTRIES } from '@/lib/sonar/understand/lexicons';
 import { gateMarkets } from '@/lib/sonar/relevance';
+import {
+  BUSINESS_MODELS,
+  chainLayout,
+  elsewhereLine,
+  geoScope,
+} from '@/lib/sonar/industry-layout-model';
 
 const TRADE_TYPE_LABEL = {
   purchase: 'Purchase',
@@ -170,21 +176,72 @@ export async function buildIndustryDossier({ registry, understood, admin, deps =
   };
 }
 
-/** The lines the synthesis cites for an industry: structure only, no figures. */
+/**
+ * The lines the synthesis cites for an industry: structure only, no figures.
+ * Nov 2026: led by two summary lines, so a brief built from them (the cited
+ * fallback, or the model's) opens with the shape of the chain and, for a
+ * country ping, with which companies are actually based there, instead of
+ * reading the registry out stage by stage.
+ */
 export function industryEvidence(dossier) {
   const stages = dossier.registry.stages || [];
   const companies = dossier.registry.companies || [];
-  return stages.map((s) => {
+  const label = dossier.industry.label;
+  const out = [];
+
+  const scope = geoScope(dossier.registry, dossier.geo);
+  if (scope) {
+    const named = scope.here.map((c) => {
+      const stage = stages.find((s) => s.id === c.stage_id)?.label;
+      const model = BUSINESS_MODELS[c.business_model] || c.business_model;
+      return `${c.company_name} (${c.ticker})${stage ? `, ${stage.toLowerCase()}` : ''}${
+        model ? `, ${String(model).toLowerCase()}` : ''
+      }`;
+    });
+    const rest = elsewhereLine(scope.elsewhere);
+    out.push({
+      corpus: 'industry_registry',
+      title: `${label}: companies headquartered in ${scope.label}`,
+      snippet: named.length
+        ? `Of the ${scope.total} listed companies in Ezana's ${label.toLowerCase()} registry, ${
+            named.length
+          } ${named.length === 1 ? 'is' : 'are'} headquartered in ${scope.label}: ${named.join(
+            '; ',
+          )}.${rest ? ` Headquarters of the rest: ${rest}.` : ''}`
+        : `None of the ${scope.total} listed companies in Ezana's ${label.toLowerCase()} registry is headquartered in ${scope.label}.${
+            rest ? ` Their headquarters: ${rest}.` : ''
+          }`,
+      meta: { geo: scope.code },
+    });
+  }
+
+  const { upstream, flow } = chainLayout(stages, companies);
+  if (flow.length) {
+    const step = (s) => `${s.label} (${s.n})`;
+    out.push({
+      corpus: 'industry_registry',
+      title: `${label}: value chain`,
+      snippet: `Ezana's registry maps ${companies.length} listed companies across the ${label.toLowerCase()} value chain: ${flow
+        .map(step)
+        .join(', then ')}${
+        upstream.length ? `, with upstream inputs from ${upstream.map(step).join(' and ')}` : ''
+      }.`,
+      meta: { chain: true },
+    });
+  }
+
+  for (const s of stages) {
     const names = companies
       .filter((c) => c.stage_id === s.id)
       .map((c) => `${c.company_name} (${c.ticker})`);
-    return {
+    out.push({
       corpus: 'industry_registry',
-      title: `${dossier.industry.label}: ${s.label}`,
+      title: `${label}: ${s.label}`,
       snippet: `${s.label}${s.is_upstream_input ? ' (upstream input)' : ''}. ${s.description || ''}${
         names.length ? ` Companies in Ezana's registry at this stage: ${names.join(', ')}.` : ''
       }`,
       meta: { stage: s.id },
-    };
-  });
+    });
+  }
+  return out;
 }

@@ -442,3 +442,73 @@
     background: transparent;
   }
 }
+
+/* Nov 4: the pinged country's companies, marked in the landscape. */
+.ind-table tr.is-home td {
+  background: var(--ind-fill);
+}
+.ind-table tr.is-home td:first-child {
+  box-shadow: inset 2px 0 0 var(--ind-accent);
+  padding-left: 12px;
+}
+
+/* Nov 4: sections with nothing sourced yet are listed once, collapsed,
+   instead of each drawing an empty card. */
+.ind-pending {
+  border-top: 1px solid var(--ind-line);
+}
+.ind-pending-head {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0;
+  cursor: pointer;
+  color: var(--ind-dim);
+  font-size: var(--type-body-size);
+}
+.ind-pending-head:focus-visible {
+  outline: 2px solid var(--ind-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.ind-pending-head > .bi:first-child {
+  color: var(--ind-faint);
+}
+.ind-pending-title {
+  flex: none;
+  font-weight: 600;
+  color: var(--ind-text);
+}
+.ind-pending-list {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ind-faint);
+}
+.ind-pending-items {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ind-pending-items li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: var(--type-caption-size);
+}
+.ind-pending-name {
+  font-weight: 600;
+  color: var(--ind-text);
+}
+@media (max-width: 640px) {
+  .ind-pending-list {
+    display: none;
+  }
+}

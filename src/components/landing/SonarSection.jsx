@@ -78,6 +78,7 @@ import { SonarUnderstoodNotice } from './SonarUnderstoodNotice';
 import { IndustryStack } from './SonarIndustryStack';
 import { IndustryLayout } from '@/components/sonar/industry/IndustryLayout';
 import { CountryRankPanel } from '@/components/sonar/macro/CountryRankPanel';
+import { useAuth } from '@/components/auth-context';
 import { SonarCommodityChart } from './SonarCommodityChart';
 import { commoditySegments, windowStart } from '@/lib/sonar/commodity-stats';
 
@@ -775,6 +776,9 @@ export function SonarSection({
      no demo, no header (the page has its own), and it pings `query` as soon
      as it mounts or the query changes. */
   const isPage = variant === 'page';
+  /* Nov 4: a signed-in visitor sees the same results as a guest, never the
+     guest's sign-up gate or "free pings left". */
+  const { isAuthenticated: signedIn } = useAuth();
   /* Oct 25 (/datasets only): stackTop is the matching dataset cards, set at
      the top of the right-hand stack. Null on the landing band, which is
      untouched. (The guest account card is no longer a rail in the band; it
@@ -2229,7 +2233,28 @@ export function SonarSection({
     }
   }
 
+  /* The rest of the result (the industry layout, the country ranking, the
+     research deck) sits below the band: scroll the visitor to it. */
+  function scrollToMore() {
+    const el = typeof document !== 'undefined' ? document.getElementById('sonar-more') : null;
+    if (!el) return false;
+    if (lockedIn) onContinue();
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const top = el.getBoundingClientRect().top + window.scrollY - 72;
+    window.scrollTo({ top: Math.max(0, top), behavior: reduced ? 'auto' : 'smooth' });
+    return true;
+  }
+
   function openGate(copy) {
+    /* A member is already inside Ezana: the gate's destination opens
+       directly, and a link with no destination leads to the rest of the
+       result on this page. */
+    if (signedIn) {
+      if (copy?.next) window.location.assign(copy.next);
+      else if (!scrollToMore() && !isPage)
+        window.location.assign(`/sonar?q=${encodeURIComponent(lastPingRef.current || '')}`);
+      return;
+    }
     setGateCopy(copy || null);
     setGateOpen(true);
   }
@@ -2395,6 +2420,15 @@ export function SonarSection({
      finished arriving. */
   /* Resolved once: the dialog's accessible name has to be the same string the
      title renders, and both gate paths reach the same component. */
+  /* Whether the page carries more of this result below the band. */
+  const hasMoreBelow = Boolean(
+    live &&
+    (live.dossier?.kind === 'industry' ||
+      live.dossier?.rank ||
+      live.sanctions ||
+      (live.webSources || []).length ||
+      hasNewsColumns(live)),
+  );
   const gateTitle = gateCopy?.title || 'This tool lives inside Ezana.';
   const gateSub =
     gateCopy?.sub || 'Log in or create a free account to open charts, filings, and trackers.';
@@ -2853,8 +2887,19 @@ export function SonarSection({
                         ) : null}
                         {typed < 0 ? (
                           <p className="snr-para">
-                            <button type="button" className="snr-link" onClick={() => openGate()}>
-                              Open the full dossier in Sonar
+                            {/* On the page the full result is right below:
+                              everyone scrolls to it, guest or member. On the
+                              landing band it is the app, behind the gate. */}
+                            <button
+                              type="button"
+                              className="snr-link"
+                              onClick={() => (isPage && hasMoreBelow ? scrollToMore() : openGate())}
+                            >
+                              {isPage && hasMoreBelow
+                                ? live?.dossier?.kind === 'industry'
+                                  ? 'See the full industry layout'
+                                  : 'See the full dossier'
+                                : 'Open the full dossier in Sonar'}
                             </button>
                             {typeof live.remaining === 'number' ? (
                               <span className="snr-cite"> {live.remaining} free pings left</span>
@@ -2899,10 +2944,14 @@ export function SonarSection({
                   <p className="snr-footnote">
                     Findings only, never financial advice. Every claim carries its source.
                   </p>
-                  <a className="snr-cta" href="/datasets">
-                    Run your first ping
-                    <i className="bi bi-arrow-right" aria-hidden="true" />
-                  </a>
+                  {/* The landing band invites a first ping; on the page the
+                    visitor has just run one. */}
+                  {isPage ? null : (
+                    <a className="snr-cta" href="/datasets">
+                      Run your first ping
+                      <i className="bi bi-arrow-right" aria-hidden="true" />
+                    </a>
+                  )}
                 </div>
               </div>
 
@@ -3619,13 +3668,11 @@ export function SonarSection({
         the ping was about sanctions, three columns of news, and the web
         sources the brief read. Outside the band so the locked one-screen
         composition above keeps its geometry. */}
-      {answerReady ? (
-        <SonarResearchDeck
-          live={live}
-          hideNews={railPlaced}
-          hideSanctions={Boolean(sanctionsRail)}
-        />
-      ) : null}
+      {/* Below the band, the result's own panels come first (the industry
+        layout, the country ranking), then the research deck (sanctions, news
+        columns, the web pages the brief read). Nov 4: the panels used to sit
+        under the deck, a full screen further down. */}
+      {answerReady ? <div id="sonar-more" className="snr-more-anchor" aria-hidden="true" /> : null}
       {answerReady && live?.dossier?.kind === 'industry' ? (
         <IndustryLayout dossier={live.dossier} />
       ) : null}
@@ -3637,6 +3684,13 @@ export function SonarSection({
             runPing(q);
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
+        />
+      ) : null}
+      {answerReady ? (
+        <SonarResearchDeck
+          live={live}
+          hideNews={railPlaced}
+          hideSanctions={Boolean(sanctionsRail)}
         />
       ) : null}
     </>

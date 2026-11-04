@@ -71,6 +71,8 @@ import { mentionedCompany } from '@/lib/sonar/company-mentions';
 import { BoundedMap } from '@/lib/bounded-map';
 import { withTimeout } from '@/lib/with-timeout';
 import { usd } from '@/lib/research-copilot/retrievers/shared';
+import { canonicalPing } from '@/lib/sonar/canonical-ping';
+import { cacheGet, cacheSet, hasCacheClient, setCacheClient } from '@/lib/sonar/engine/cache';
 
 /**
  * The landing-page Sonar pipeline, shared by the two routes that run it:
@@ -1651,25 +1653,46 @@ function newsItems(articles) {
  * make a claim the sources do not, and the ping still answers.
  */
 export function evidenceBrief(subject, marked) {
-  const clip = (raw) => {
+  const clip = (raw, max = 280) => {
     let t = String(raw || '')
       .replace(/\s*[—–]\s*/g, ', ')
       .replace(/\s+/g, ' ')
       .trim();
-    if (t.length > 280) {
-      const cut = t.slice(0, 280);
+    if (t.length > max) {
+      const cut = t.slice(0, max);
       const end = cut.lastIndexOf('. ');
       t = end > 120 ? cut.slice(0, end + 1) : `${cut.replace(/\s+\S*$/, '')}...`;
     }
     return /[.!?]$/.test(t) ? t : `${t}.`;
   };
-  const line = (it) =>
-    `${clip(it.snippet || it.text || it.title).replace(/[.!?]$/, '')} [${it.marker}].`;
+  /* lineAt takes a length cap; line is the plain form, safe to pass to
+     Array.map (which would hand it the index as a second argument). */
+  const lineAt = (it, max) =>
+    `${clip(it.snippet || it.text || it.title, max).replace(/[.!?]$/, '')} [${it.marker}].`;
+  const line = (it) => lineAt(it, 280);
   /* Nov 3: headlines only when there is nothing else; never a paragraph of
      them under real findings. A company's moves and its analysts each get a
      paragraph of their own, then the dataset matches. */
   const nonNews = marked.filter((it) => it.corpus !== 'news');
   const pool = nonNews.length ? nonNews : marked;
+  /* Nov 4: an industry reads as its shape, not its registry. The summary
+     lines (which companies are based in the pinged country, the chain at a
+     glance) lead; the stage-by-stage lists stay in the Industry Layout
+     beside the brief instead of being read out here; up to two other
+     findings (Echo, filings) follow. */
+  const registry = pool.filter((it) => it.corpus === 'industry_registry');
+  if (registry.length) {
+    /* The country line when the ping names one (the chain is on screen
+       beside the brief), else the chain line. */
+    const geoLine = registry.filter((it) => it.meta?.geo);
+    const chainLine = registry.filter((it) => it.meta?.chain);
+    const summary = geoLine.length ? geoLine : chainLine;
+    const head = (summary.length ? summary : registry.slice(0, 2)).map((it) => lineAt(it, 440));
+    const other = pool.filter((it) => it.corpus !== 'industry_registry').slice(0, 2);
+    const paras = [`Here is what Sonar found on ${subject}. ${head.join(' ')}`];
+    if (other.length) paras.push(other.map(line).join(' '));
+    return paras.join('\n\n');
+  }
   const moves = pool.filter((it) => it.corpus === 'market' || it.corpus === 'ipo');
   const analysts = pool.filter((it) => it.corpus === 'analysts');
   if (moves.length || analysts.length) {
@@ -1690,6 +1713,14 @@ export function evidenceBrief(subject, marked) {
   const paras = [`Here is what Sonar found on ${subject}. ${top.join(' ')}`];
   if (rest.length) paras.push(rest.join(' '));
   return paras.join('\n\n');
+}
+
+/** Seconds a finished ping is shared across phrasings and visitors (0 = off). */
+export function pingCacheTtlSeconds() {
+  const raw = process.env.SONAR_PING_CACHE_TTL_S;
+  if (raw == null || raw === '') return 1800;
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? Math.min(n, 86_400) : 0;
 }
 
 export async function runLandingPipeline(
@@ -1757,6 +1788,40 @@ export async function runLandingPipeline(
   const ipoIntent = eventIntents.includes('ipo');
   const recentEvent = eventIntents.includes('recentEvent');
   const ipoSubj = ipoIntent ? ipoSubject(q) : null;
+  /* Nov 4: one question, one answer. Two phrasings of the same question
+     ("semiconductor industry in Taiwan", "Give me a breakdown of the
+     semiconductor industry in Taiwan") share a canonical key: the synthesis
+     is told the same words, and a finished answer is served to both from the
+     shared cache. Guests and members read the same entry, so a free ping on
+     /datasets and a signed-in ping on /sonar get the same result. A forced
+     entity, a "search instead" re-ping or a recent-event ping always runs. */
+  const canon = canonicalPing(understood, query);
+  const asked = canon.asked;
+  const cacheTtl = pingCacheTtlSeconds();
+  const cacheKey = `landing:v2:${canon.key}`;
+  const cacheable = cacheTtl > 0 && !force && !noCorrect && !recentEvent;
+  if (admin && !hasCacheClient()) setCacheClient(() => admin);
+  if (cacheable) {
+    const hit = await withTimeout(cacheGet(cacheKey), 300, 'ping-cache')
+      .then((r) => (r.ok ? r.value : undefined))
+      .catch(() => undefined);
+    if (hit?.answer && hit.briefKind === 'model') {
+      trace.push({ leg: 'ping-cache', ok: true, ms: 0, note: 'hit' });
+      console.log('[sonar-pipeline] cache hit', { key: canon.key });
+      return {
+        ...hit,
+        understood: {
+          ...hit.understood,
+          raw: understood.raw,
+          corrected: understood.corrected,
+          corrections: understood.corrections,
+        },
+        cached: true,
+        providerErrors: [],
+        failedAt: [],
+      };
+    }
+  }
   /* Oct 30 (v2): a company people know by a name the search endpoints do
      not (SpaceX), anywhere in the ping, before any name search runs. */
   const companyAlias = aliasedCompany(query) || aliasedCompany(q);
@@ -2328,7 +2393,14 @@ export async function runLandingPipeline(
       null,
       'industry-dossier',
     ).catch(() => null);
-    if (industryDossier) items.push(...industryEvidence(industryDossier));
+    if (industryDossier) {
+      /* The summary lines lead the sources (the brief opens with them, and
+         the snippet cap can never cut them); the stage lines follow. */
+      const ind = industryEvidence(industryDossier);
+      const lead = ind.filter((it) => it.meta?.geo || it.meta?.chain);
+      items.unshift(...lead);
+      items.push(...ind.filter((it) => !lead.includes(it)));
+    }
   }
   const columnsP = wantDossier
     ? (async () => {
@@ -2392,6 +2464,10 @@ export async function runLandingPipeline(
 
   let answer = null;
   let grounded = false;
+  /* Where the brief came from: 'model' (grounded synthesis), 'evidence' (the
+     cited-snippet fallback), 'general' (ungrounded synthesis). Only a model
+     brief is cached; a fallback is re-run so the next ping can do better. */
+  let briefKind = null;
   let providerErrors = [];
   let webUsed = false;
   let webSources = [];
@@ -2498,7 +2574,7 @@ export async function runLandingPipeline(
          China as the resolved subject, read as no question at all, and the
          brief asked the visitor what they meant. */
       user: `Today is ${todayLine()}.\nPing: ${display}${resolvedNote}\nThe visitor asked: "${String(
-        query,
+        asked,
       ).slice(0, 300)}"\n\nSources:\n${sourcesBlock}`,
       maxTokens: sanctions ? P.briefTokens + P.sanctionsExtraTokens : P.briefTokens,
       model: P.model,
@@ -2522,6 +2598,7 @@ export async function runLandingPipeline(
       synth,
       marked.map((it) => `${it.title || ''}. ${String(it.text || it.snippet || '')}`),
     );
+    if (answer) briefKind = 'model';
     /* country_rank: every number must come from the rank facts and the
        other sources; a brief with an invented figure is replaced by the
        deterministic brief built from the same facts. */
@@ -2547,6 +2624,7 @@ export async function runLandingPipeline(
        the strongest snippets, cited, word for word. */
     if (!answer) {
       answer = evidenceBrief(subjectLabel, marked);
+      if (answer) briefKind = 'evidence';
       if (answer) {
         console.warn('[sonar-pipeline] evidence brief', {
           reason: synth.answer ? 'guard emptied the draft' : synth.degraded || 'no answer',
@@ -2568,7 +2646,7 @@ export async function runLandingPipeline(
         ? GENERAL_SYSTEM_PROMPT + DATE_RULES + GROUNDING_RULES
         : FAST_GENERAL_PROMPT + DATE_RULES,
       user: `Today is ${todayLine()}.\nPing: ${display}${resolvedNote}\nThe visitor asked: "${String(
-        query,
+        asked,
       ).slice(0, 300)}"`,
       maxTokens: P.briefTokens,
       model: P.model,
@@ -2585,6 +2663,7 @@ export async function runLandingPipeline(
       (v) => Boolean(v.answer),
     );
     answer = await guardBrief(synth.answer || null, generalArgs, synth, []);
+    if (answer) briefKind = 'general';
     grounded = false;
     webUsed = Boolean(synth.webUsed);
     webSources = (synth.webSources || []).slice(0, 6);
@@ -2639,9 +2718,10 @@ export async function runLandingPipeline(
     console.error('[sonar-pipeline] trace', summary);
   }
 
-  return {
+  const result = {
     answer,
     grounded,
+    briefKind,
     sources,
     relevance: grounded ? relevanceFrom(items, corporaSearched) : flatRelevance(FLOOR_UNGROUNDED),
     webUsed,
@@ -2707,6 +2787,13 @@ export async function runLandingPipeline(
     /* Leg names only, never messages: safe to return to a client. */
     failedAt: trace.filter((t) => !t.ok).map((t) => t.leg),
   };
+  /* A finished, grounded model brief is the answer for every phrasing of
+     this question until the TTL runs out. Fire and forget: the write never
+     holds the response. */
+  if (cacheable && answer && grounded && briefKind === 'model') {
+    cacheSet(cacheKey, result, cacheTtl).catch(() => {});
+  }
+  return result;
 }
 
 /** Salted hash, so the ledger can rate-account an IP without storing one. */

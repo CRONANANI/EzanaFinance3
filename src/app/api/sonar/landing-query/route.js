@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { withApiGuard, safeErrorResponse } from '@/lib/api-guard';
 import { getAdminClient, getAuthUser } from '@/lib/supabase';
+import { hasSessionCredentials } from '@/lib/sonar/guest-cookie';
 import { runLandingPipeline, hashIp, DISCLAIMER, pingProfile } from '@/lib/sonar/landing-pipeline';
 import { reservePing, completePing, failPing } from '@/lib/sonar/quota';
 import { getClientIp } from '@/lib/client-ip';
@@ -53,6 +54,9 @@ const RESERVE_MS = PROFILE.reserveMs;
 const LEDGER_MS = PROFILE.ledgerMs;
 
 const GUEST_LIMIT = 5;
+/* The second wait for a visitor whose request carries a session. */
+const AUTH_GRACE_MS = 1_500;
+
 const COOKIE = 'snr_guest';
 
 function guestSecret() {
@@ -112,13 +116,28 @@ const POST_HANDLER = withApiGuard(
        capped per account per day instead, counted from the ledger. */
     /* Bounded: a stalled session lookup reads as a guest ping (the cookie cap
        still applies) instead of hanging the request. */
-    const memberRes = await withTimeout(getAuthUser(request), AUTH_MS, 'auth');
+    /* Nov 4: a signed-in visitor gets the same Sonar as a guest, minus the
+       guest limits. A slow session lookup used to read a member as a guest,
+       so their ping counted against the 5-ping cookie and could end at the
+       sign-up gate. When the request carries a session (a Supabase auth
+       cookie or a bearer token) the lookup gets a second, bounded wait; if
+       it is still unknown the ping runs uncounted by the guest cookie (the
+       per-IP cap in reservePing still applies, so a fake cookie buys
+       nothing). */
+    const lookup = getAuthUser(request);
+    let memberRes = await withTimeout(lookup, AUTH_MS, 'auth');
+    const carriesSession = hasSessionCredentials(request);
+    if (memberRes.timedOut && carriesSession) {
+      memberRes = await withTimeout(lookup, AUTH_GRACE_MS, 'auth-grace');
+    }
     const member = memberRes.ok ? memberRes.value || null : null;
-    if (memberRes.timedOut) console.warn('[sonar/landing] auth lookup timed out');
+    const unknownSession = !member && carriesSession && Boolean(memberRes.timedOut);
+    if (memberRes.timedOut)
+      console.warn('[sonar/landing] auth lookup timed out', { carriesSession });
     const memberCap = Math.max(1, Number(process.env.SONAR_MEMBER_DAILY_CAP) || 25);
 
     // Guest quota gate, before any retrieval or model spend.
-    const used = member ? 0 : readGuestCount(request);
+    const used = member || unknownSession ? 0 : readGuestCount(request);
     if (used >= GUEST_LIMIT) {
       return NextResponse.json({
         gate: true,
@@ -263,10 +282,11 @@ const POST_HANDLER = withApiGuard(
       sanctions: result.sanctions,
       understood: result.understood,
       evidence: result.evidence || [],
-      remaining: member ? null : Math.max(0, GUEST_LIMIT - nextUsed),
+      remaining: member || unknownSession ? null : Math.max(0, GUEST_LIMIT - nextUsed),
+      cached: Boolean(result.cached),
       disclaimer: DISCLAIMER,
     });
-    if (!member) setGuestCount(res, nextUsed);
+    if (!member && !unknownSession) setGuestCount(res, nextUsed);
     return res;
   },
   /* The limiter's database call is bounded to fit the six-second ping; a

@@ -9,13 +9,16 @@
  * only from registry rows with source_url and as_of; nothing is estimated.
  * Copy: findings only, never advice.
  */
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BUSINESS_MODELS,
   KPI_METRICS,
   applyFilters,
   byDimension,
   chainLayout,
+  elsewhereLine,
+  geoScope,
+  orderForGeo,
   currentMetrics,
   facilitiesByState,
   feedsOf,
@@ -159,15 +162,28 @@ function ValueChain({ registry, companies }) {
 }
 
 /* 3. Company landscape */
-function Companies({ registry, companies }) {
+function Companies({ registry, companies, scope }) {
   const { f, set } = useFilter();
+  const home = scope?.code || null;
+  const isHome = (c) => home && String(c.hq_country || '').toUpperCase() === home;
+  const rows = orderForGeo(companies, home);
   const models = [
     ...new Set((registry.companies || []).map((c) => c.business_model).filter(Boolean)),
   ];
   const stageLabel = (id) => registry.stages.find((s) => s.id === id)?.label || '';
   return (
     <div>
-      <div className="ind-chips" role="group" aria-label="Business model">
+      <div className="ind-chips" role="group" aria-label="Filter companies">
+        {scope?.here?.length ? (
+          <button
+            type="button"
+            className={`ind-chip${f.hq === home ? ' is-active' : ''}`}
+            aria-pressed={f.hq === home}
+            onClick={() => set({ hq: f.hq === home ? null : home })}
+          >
+            Headquartered in {scope.label}
+          </button>
+        ) : null}
         {models.map((m) => (
           <button
             key={m}
@@ -180,7 +196,7 @@ function Companies({ registry, companies }) {
           </button>
         ))}
       </div>
-      {companies.length ? (
+      {rows.length ? (
         <div className="ind-table-wrap">
           <table className="ind-table">
             <thead>
@@ -193,8 +209,11 @@ function Companies({ registry, companies }) {
               </tr>
             </thead>
             <tbody>
-              {companies.map((c) => (
-                <tr key={`${c.stage_id}:${c.ticker || c.company_name}`}>
+              {rows.map((c) => (
+                <tr
+                  key={`${c.stage_id}:${c.ticker || c.company_name}`}
+                  className={isHome(c) ? 'is-home' : undefined}
+                >
                   <td>
                     {c.company_name}{' '}
                     {c.ticker ? <span className="ind-mono ind-dim">{c.ticker}</span> : null}
@@ -466,11 +485,134 @@ function MetricList({ rows, labelKey = 'metric' }) {
   );
 }
 
+/* The sections after the chain and the landscape, with what makes each one
+   worth showing. A section with nothing sourced is not drawn as an empty
+   card (six of them used to fill a screen with "Not yet sourced"); it is
+   listed once in the "Still being sourced" note at the end. */
+function sectionsFor(registry, metrics) {
+  const facilities = registry.facilities || [];
+  const current = currentMetrics(metrics);
+  const any = (ids) => current.some((m) => ids.includes(m.metric));
+  return [
+    {
+      id: 'overview',
+      icon: 'bi-speedometer2',
+      title: 'Overview',
+      has: KPI_METRICS.some((k) => headline(metrics, k.id)),
+      waiting: 'industry association or statistical agency headline figures',
+    },
+    {
+      id: 'map',
+      icon: 'bi-geo-alt',
+      title: 'Where it operates',
+      has: facilities.length > 0,
+      waiting: 'facility locations from company filings and CHIPS award records',
+    },
+    {
+      id: 'position',
+      icon: 'bi-bar-chart',
+      title: 'Competitive positioning',
+      has: byDimension(metrics, 'market_share', 'company').length > 0,
+      waiting: 'market share by company from a named source',
+    },
+    {
+      id: 'pipeline',
+      icon: 'bi-cash-stack',
+      title: 'Investment pipeline',
+      has: facilities.some((x) => x.announced_investment_usd || (x.awards || []).length),
+      waiting: 'announced investment per project and CHIPS incentive awards',
+    },
+    {
+      id: 'financials',
+      icon: 'bi-graph-up',
+      title: 'Financial performance',
+      has: any(['revenue', 'operating_margin', 'gross_margin']),
+      waiting: 'revenue and margins by stage from company filings',
+    },
+    {
+      id: 'risk',
+      icon: 'bi-exclamation-triangle',
+      title: 'Supply-chain risk',
+      has: (registry.risks || []).length > 0,
+      waiting: 'documented dependencies from GAO, CRS or company risk factors',
+    },
+    {
+      id: 'demand',
+      icon: 'bi-pie-chart',
+      title: 'End-market demand',
+      has: byDimension(metrics, 'end_market_share', 'end_market').length > 0,
+      waiting: 'sales by end market from an industry association report',
+    },
+    {
+      id: 'workforce',
+      icon: 'bi-people',
+      title: 'Workforce & research',
+      has: any(['employment', 'rd_spend', 'workforce_gap', 'graduates']),
+      waiting: 'employment, R&D and workforce figures from BLS, NSF or associations',
+    },
+  ];
+}
+
+function StillSourcing({ sections }) {
+  const [open, setOpen] = useState(false);
+  if (!sections.length) return null;
+  return (
+    <section className="ind-pending" aria-label="Still being sourced">
+      <button
+        type="button"
+        className="ind-pending-head"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <i className="bi bi-hourglass-split" aria-hidden="true" />
+        <span className="ind-pending-title">Still being sourced</span>
+        <span className="ind-pending-list">{sections.map((x) => x.title).join(' · ')}</span>
+        <i
+          className={`bi ${open ? 'bi-chevron-up' : 'bi-chevron-down'} ind-sec-caret`}
+          aria-hidden="true"
+        />
+      </button>
+      {open ? (
+        <ul className="ind-pending-items">
+          {sections.map((x) => (
+            <li key={x.id}>
+              <span className="ind-pending-name">{x.title}</span>
+              <span className="ind-dim">Waiting for {x.waiting}.</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </section>
+  );
+}
+
 export function IndustryLayout({ dossier, tone = 'band' }) {
   const registry = dossier?.registry;
-  const [f, setF] = useState({ stage: null, state: null, model: null });
+  const rootRef = useRef(null);
+  const [f, setF] = useState({ stage: null, state: null, model: null, hq: null });
   const set = (patch) => setF((prev) => ({ ...prev, ...patch }));
   const filtered = useMemo(() => (registry ? applyFilters(registry, f) : null), [registry, f]);
+  const scope = useMemo(
+    () => (registry ? geoScope(registry, dossier?.geo) : null),
+    [registry, dossier],
+  );
+
+  /* The band's "industry at a glance" card opens this layout, optionally on
+     one stage or on the pinged country's companies. */
+  useEffect(() => {
+    function onOpen(e) {
+      const d = e?.detail || {};
+      setF({ stage: d.stage || null, state: null, model: null, hq: d.hq || null });
+      const el = rootRef.current;
+      if (!el) return;
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const top = el.getBoundingClientRect().top + window.scrollY - 72;
+      window.scrollTo({ top: Math.max(0, top), behavior: reduced ? 'auto' : 'smooth' });
+    }
+    window.addEventListener('ezana:industry-filter', onOpen);
+    return () => window.removeEventListener('ezana:industry-filter', onOpen);
+  }, []);
+
   if (!registry?.stages?.length) return null;
   const metrics = registry.metrics || [];
   const stageLabel = (id) => registry.stages.find((s) => s.id === id)?.label || id;
@@ -478,18 +620,41 @@ export function IndustryLayout({ dossier, tone = 'band' }) {
     f.stage ? { k: 'stage', label: stageLabel(f.stage) } : null,
     f.state ? { k: 'state', label: f.state } : null,
     f.model ? { k: 'model', label: BUSINESS_MODELS[f.model] || f.model } : null,
+    f.hq && scope ? { k: 'hq', label: `Headquartered in ${scope.label}` } : null,
   ].filter(Boolean);
+  const sections = sectionsFor(registry, metrics);
+  const shown = sections.filter((x) => x.has);
+  const pending = sections.filter((x) => !x.has);
+  const total = registry.companies.length;
+  const rest = scope ? elsewhereLine(scope.elsewhere) : '';
+
+  const body = {
+    overview: <Overview metrics={metrics} />,
+    map: <FacilityMap facilities={filtered.facilities} />,
+    position: <Positioning metrics={metrics} companies={filtered.companies} />,
+    pipeline: <Pipeline facilities={filtered.facilities} />,
+    financials: <Financials metrics={metrics} />,
+    risk: <Risks risks={filtered.risks} registry={registry} />,
+    demand: <EndMarkets metrics={metrics} />,
+    workforce: <Workforce metrics={metrics} />,
+  };
 
   return (
     <FilterCtx.Provider value={{ f, set }}>
-      <div className={`ind ind--${tone}`}>
+      <div ref={rootRef} className={`ind ind--${tone}`} id="industry-layout">
         <div className="ind-inner">
           <header className="ind-head">
             <p className="ind-eyebrow">Industry layout</p>
             <h2 className="ind-title">{dossier.name}</h2>
             <p className="ind-lede">
-              Structure from Ezana&rsquo;s industry registry. Companies are placed by the business
-              model in their own annual reports; figures appear only once sourced.
+              {scope
+                ? scope.here.length
+                  ? `${scope.here.length} of the ${total} listed companies in Ezana\u2019s registry ${scope.here.length === 1 ? 'is' : 'are'} headquartered in ${scope.label}${
+                      rest ? `; the rest: ${rest}` : ''
+                    }. The chain below is the global one, with ${scope.label} marked.`
+                  : `None of the ${total} listed companies in Ezana\u2019s registry is headquartered in ${scope.label} yet. The chain below is the global one.`
+                : `${total} listed companies from Ezana\u2019s industry registry, placed by the business model in their own annual reports.`}{' '}
+              Figures appear only once sourced.
             </p>
             {active.length ? (
               <div className="ind-chips" aria-label="Active filters">
@@ -508,7 +673,7 @@ export function IndustryLayout({ dossier, tone = 'band' }) {
                 <button
                   type="button"
                   className="ind-chip"
-                  onClick={() => setF({ stage: null, state: null, model: null })}
+                  onClick={() => setF({ stage: null, state: null, model: null, hq: null })}
                 >
                   Clear all
                 </button>
@@ -516,9 +681,6 @@ export function IndustryLayout({ dossier, tone = 'band' }) {
             ) : null}
           </header>
 
-          <Section id="overview" icon="bi-speedometer2" title="Overview" open>
-            <Overview metrics={metrics} />
-          </Section>
           <Section
             id="chain"
             icon="bi-diagram-3"
@@ -528,7 +690,11 @@ export function IndustryLayout({ dossier, tone = 'band' }) {
           >
             <ValueChain
               registry={registry}
-              companies={registry.companies.filter((c) => !f.model || c.business_model === f.model)}
+              companies={registry.companies.filter(
+                (c) =>
+                  (!f.model || c.business_model === f.model) &&
+                  (!f.hq || String(c.hq_country || '').toUpperCase() === f.hq),
+              )}
             />
           </Section>
           <Section
@@ -538,29 +704,14 @@ export function IndustryLayout({ dossier, tone = 'band' }) {
             sub={`${filtered.companies.length}`}
             open
           >
-            <Companies registry={registry} companies={filtered.companies} />
+            <Companies registry={registry} companies={filtered.companies} scope={scope} />
           </Section>
-          <Section id="map" icon="bi-geo-alt" title="Where it operates" open>
-            <FacilityMap facilities={filtered.facilities} />
-          </Section>
-          <Section id="position" icon="bi-bar-chart" title="Competitive positioning" open>
-            <Positioning metrics={metrics} companies={filtered.companies} />
-          </Section>
-          <Section id="pipeline" icon="bi-cash-stack" title="Investment pipeline" open>
-            <Pipeline facilities={filtered.facilities} />
-          </Section>
-          <Section id="financials" icon="bi-graph-up" title="Financial performance" open={false}>
-            <Financials metrics={metrics} />
-          </Section>
-          <Section id="risk" icon="bi-exclamation-triangle" title="Supply-chain risk" open={false}>
-            <Risks risks={filtered.risks} registry={registry} />
-          </Section>
-          <Section id="demand" icon="bi-pie-chart" title="End-market demand" open={false}>
-            <EndMarkets metrics={metrics} />
-          </Section>
-          <Section id="workforce" icon="bi-people" title="Workforce & research" open={false}>
-            <Workforce metrics={metrics} />
-          </Section>
+          {shown.map((x, i) => (
+            <Section key={x.id} id={x.id} icon={x.icon} title={x.title} open={i < 3}>
+              {body[x.id]}
+            </Section>
+          ))}
+          <StillSourcing sections={pending} />
         </div>
       </div>
     </FilterCtx.Provider>

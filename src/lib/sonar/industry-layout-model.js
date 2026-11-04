@@ -4,6 +4,7 @@
  * row that carries source_url and as_of; nothing is estimated, and an empty
  * input always yields an empty output (the component's empty state).
  */
+import { COUNTRIES } from '@/lib/sonar/understand/geo-codes';
 
 /** Business-model labels, as companies describe themselves in filings. */
 export const BUSINESS_MODELS = {
@@ -73,7 +74,10 @@ export function feedsOf(links, stageId) {
 /** The cross-filter: stage, state and business model, any combination. */
 export function applyFilters(registry, f = {}) {
   const companies = (registry?.companies || []).filter(
-    (c) => (!f.stage || c.stage_id === f.stage) && (!f.model || c.business_model === f.model),
+    (c) =>
+      (!f.stage || c.stage_id === f.stage) &&
+      (!f.model || c.business_model === f.model) &&
+      (!f.hq || String(c.hq_country || '').toUpperCase() === f.hq),
   );
   const tickers = new Set(companies.map((c) => c.ticker).filter(Boolean));
   const names = new Set(companies.map((c) => c.company_name));
@@ -174,4 +178,63 @@ export function formatMetric(m) {
   if (m.unit === 'pct' || m.unit === '%') return `${v.toFixed(v < 10 ? 1 : 0)}%`;
   if (m.unit === 'people' || m.unit === 'count') return v.toLocaleString('en-US');
   return `${v.toLocaleString('en-US')}${m.unit ? ` ${m.unit}` : ''}`;
+}
+
+/** A country's display name from its ISO-2 code ("TW" -> "Taiwan"). */
+export function countryName(code) {
+  const c = String(code || '').toUpperCase();
+  const row = COUNTRIES.find((r) => r[0] === c);
+  return row ? row[2] : c || null;
+}
+
+/**
+ * How a ping's country relates to the registry (Nov 2026). The registry maps
+ * listed companies across the WHOLE chain, wherever they are based, so a
+ * "semiconductor industry in Taiwan" ping has to say which of them are
+ * Taiwanese instead of presenting the global list as Taiwan's industry.
+ *
+ * { code, label, here, total, elsewhere: [{ code, label, n }] } or null when
+ * the ping names no country. `here` is ordered by stage, then name.
+ */
+export function geoScope(registry, geo) {
+  if (!geo || geo.kind !== 'country' || !geo.id) return null;
+  const code = String(geo.id).toUpperCase();
+  const companies = registry?.companies || [];
+  const ord = new Map((registry?.stages || []).map((st) => [st.id, st.ord ?? 0]));
+  const here = companies
+    .filter((c) => String(c.hq_country || '').toUpperCase() === code)
+    .sort(
+      (a, b) =>
+        (ord.get(a.stage_id) ?? 0) - (ord.get(b.stage_id) ?? 0) ||
+        String(a.company_name).localeCompare(String(b.company_name)),
+    );
+  const counts = new Map();
+  for (const c of companies) {
+    const k = String(c.hq_country || '').toUpperCase();
+    if (!k || k === code) continue;
+    counts.set(k, (counts.get(k) || 0) + 1);
+  }
+  const elsewhere = [...counts.entries()]
+    .map(([k, n]) => ({ code: k, label: countryName(k), n }))
+    .sort((a, b) => b.n - a.n || a.code.localeCompare(b.code));
+  return { code, label: geo.label || countryName(code), here, total: companies.length, elsewhere };
+}
+
+/** Companies with the ping's country first (stable otherwise). */
+export function orderForGeo(companies, code) {
+  if (!code) return companies || [];
+  const c = String(code).toUpperCase();
+  const home = (companies || []).filter((x) => String(x.hq_country || '').toUpperCase() === c);
+  const rest = (companies || []).filter((x) => String(x.hq_country || '').toUpperCase() !== c);
+  return [...home, ...rest];
+}
+
+/** "18 in the United States", "18 in the United States and 2 in Japan". */
+export function elsewhereLine(elsewhere) {
+  const parts = (elsewhere || []).map((e) => {
+    const the = COUNTRIES.find((r) => r[0] === e.code)?.[4];
+    return `${e.n} in ${the ? 'the ' : ''}${e.label}`;
+  });
+  if (parts.length <= 1) return parts[0] || '';
+  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
 }
