@@ -9,7 +9,11 @@ import {
   getGovernmentEntityConstants,
   getFilingTypeConstants,
 } from '@/lib/lobbying/client';
-import { normalizeFiling, normalizeConstants } from '@/lib/lobbying/normalize';
+import {
+  normalizeFiling,
+  normalizeConstants,
+  filingSpecificIssues,
+} from '@/lib/lobbying/normalize';
 import { normalizeQuarter, QUARTERS, QUARTER_PERIOD_CODE } from '@/lib/lobbying/period';
 import { validateBatch, topCanonicalMerges } from '@/lib/lobbying/quality';
 import { bucketsForFiling, issueBucket } from '@/lib/lobbying/entities';
@@ -85,6 +89,9 @@ function mapFilingRow(f) {
     entities: n.entities,
     entity_buckets: bucketsForFiling(n.entities),
     issue_buckets: [...new Set((n.issues || []).map((it) => issueBucket(it.display || it.code)))],
+    /* Nov 2026: the activities' free text, for Sonar topic search
+       (lobbying_filings.specific_issues, specific_tsv). */
+    specific_issues: filingSpecificIssues(f),
     lobbyists: n.lobbyists,
     lobbyist_count: n.lobbyistCount,
     document_url: n.url,

@@ -125,6 +125,19 @@ export function normalizeFiling(f = {}) {
   };
 }
 
+/**
+ * Nov 2026 (Sonar research engine): every lobbying activity's free-text
+ * description, joined, so a topic narrower than an LDA issue area ("AI",
+ * "CHIPS Act") can be searched. Bounded; null when the filing has none.
+ */
+export function filingSpecificIssues(f = {}, max = 20000) {
+  const acts = Array.isArray(f.lobbying_activities) ? f.lobbying_activities : [];
+  const text = [
+    ...new Set(acts.map((a) => String(a?.description || '').trim()).filter(Boolean)),
+  ].join('\n');
+  return text ? text.slice(0, max) : null;
+}
+
 /** Detailed normalized filing for the drill-down modal. */
 export function normalizeFilingDetail(f = {}) {
   const base = normalizeFiling(f);

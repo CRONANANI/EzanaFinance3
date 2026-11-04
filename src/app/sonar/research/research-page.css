@@ -1,0 +1,63 @@
+/* /sonar/research page shell (engine v3). `srp-` prefix, tokens only. */
+.srp {
+  min-height: 100vh;
+  padding: 2rem 16px 4rem;
+  background: var(--bg-primary);
+}
+.srp-bar {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 960px;
+  margin: 0 auto 2rem;
+}
+.srp-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-md);
+  background: var(--surface-input);
+  font: inherit;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+.srp-input:focus {
+  border-color: var(--border-focus);
+  outline: none;
+}
+.srp-btn {
+  padding: 0 1.25rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.srp-btn--primary {
+  border-color: var(--emerald);
+  background: var(--emerald);
+  color: var(--bg-primary);
+  font-weight: 600;
+}
+.srp-btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.srp-gate {
+  max-width: 960px;
+  margin: 0 auto;
+  color: var(--text-secondary);
+}
+.srp-gate a {
+  color: var(--emerald-text);
+}
+.srp-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
