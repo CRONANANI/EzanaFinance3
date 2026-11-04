@@ -46,6 +46,7 @@ import {
   buildPoliticianDossier,
   politicianEvidence,
 } from '@/lib/sonar/landing-politician';
+import { buildSectorScreen, sectorEvidence, sectorUniverse } from '@/lib/sonar/sector-screen';
 import {
   resolveCountry,
   mentionedCountry,
@@ -193,6 +194,16 @@ This ping is about one member of Congress. Answer from the (congress) snippets, 
 (2) The estimated open portfolio and its largest positions, labelled as Ezana's estimate from filed ranges at their midpoints, with committee seats and any trades in sectors those committees oversee.
 (3) Members who trade similarly, and what to watch, using (news) snippets only to add context, cited inline.
 Disclosures report ranges, never exact amounts: write "between $500K and $1M" or "a $500K to $1M purchase", never a single figure. State no biography, office, role, retirement or election fact unless a snippet gives it. Never suggest a trade shows intent or inside knowledge, and never tell the reader to copy a trade.`;
+
+/* Nov 4: a sector screen ("Which defense stocks are members of Congress
+   trading?"). The brief answers from the screen's tables, in the order the
+   ping asked. */
+const SECTOR_ADDENDUM = `
+This ping is about a sector, read through Ezana's datasets. Answer the question as asked, from the snippets, leading with what it asks about:
+- (congress) snippets: which of the sector's stocks members of Congress traded most in the last 12 months, purchases against sales, the most active members by name and party, and the latest trades with their disclosed ranges.
+- (market) snippets: the best and weakest performers year to date with 1-year and 1-month moves.
+- (contracts) snippets: the companies with the largest federal contract obligations by fiscal year; say when a fiscal year is still being synced.
+Write two or three short paragraphs. Never present one company as the subject. Disclosures report ranges, never exact amounts. Never suggest a trade shows intent or inside knowledge, and never tell the reader to buy, sell or copy a trade.`;
 
 /* Appended for an IPO ping (Oct 30). */
 const IPO_ADDENDUM = `
@@ -1228,10 +1239,23 @@ async function buildDossierFor({
   politician,
   resolved,
   industry,
+  sector = null,
   understood,
   admin,
   leg,
 }) {
+  if (sector) {
+    try {
+      return await leg(
+        'dossier-sector',
+        () => buildSectorScreen(sector),
+        (v) =>
+          `congress=${v.congress?.total ?? 0} perf=${v.performance?.rows?.length ?? 0} contracts=${v.contracts?.rows?.length ?? 0}`,
+      );
+    } catch {
+      return null;
+    }
+  }
   if (industry) {
     try {
       return await leg(
@@ -1443,6 +1467,9 @@ const PROFILES = {
     legs: {
       industry: 700,
       politician: 600,
+      /* Nov 4: a sector screen's three legs (Congress, performance,
+         contracts), each bounded on its own. */
+      sector: 1_800,
       resolve: 1_100,
       retrieveCap: 1_600,
       retriever: 1_200,
@@ -1483,6 +1510,7 @@ const PROFILES = {
     legs: {
       industry: 5_000,
       politician: 5_000,
+      sector: 6_000,
       resolve: 6_000,
       retrieveCap: 18_000,
       retriever: 15_000,
@@ -1727,6 +1755,14 @@ export async function runLandingPipeline(
       : null;
   const tickerEnt = entity('ticker');
   const countryEnt = entity('country');
+  /* Nov 4: a sector screen ("Which defense stocks are members of Congress
+     trading?"): never a country, a member or one company. A company named in
+     words still wins ("Lockheed Martin and defense contracts"). */
+  const sectorEnt =
+    understood.intent === 'sector_screen' && !companyAlias && !companyMention
+      ? entity('industry')
+      : null;
+  const sectorPing = Boolean(sectorEnt);
 
   /* An industry ping is about the industry: no politician or company
      resolution at all. The registry may not cover every lexicon industry; the
@@ -1751,7 +1787,7 @@ export async function runLandingPipeline(
   /* A country: the strict whole-string match, or a country-intent ping
      whose chosen country entity resolves by name. */
   let country =
-    industryPing || companyMention
+    industryPing || companyMention || sectorPing
       ? null
       : resolveCountry(q) ||
         (['country', 'country_rank'].includes(understood.intent) && countryEnt
@@ -1766,7 +1802,12 @@ export async function runLandingPipeline(
      match's 4-word cap and fall through to a general briefing. */
   const politicianEnt = understood.entities.find((e) => e.kind === 'person_politician') || null;
   const politician =
-    country || industryPing || companyAlias || companyMention || (tickerEnt && !politicianEnt)
+    country ||
+    industryPing ||
+    sectorPing ||
+    companyAlias ||
+    companyMention ||
+    (tickerEnt && !politicianEnt)
       ? null
       : await leg(
           'resolve-politician',
@@ -1788,6 +1829,7 @@ export async function runLandingPipeline(
     !country &&
     !politician &&
     !industryEnt &&
+    !sectorPing &&
     (tickerEnt ||
       ipoIntent ||
       companyAlias ||
@@ -1821,7 +1863,7 @@ export async function runLandingPipeline(
      own words still drive retrieval, and the country filter keeps off-topic
      snippets (contracts for unrelated US firms) out of the brief. */
   const countryMentioned =
-    !country && !politician && !resolved && !industryPing && !industryEnt
+    !country && !politician && !resolved && !industryPing && !industryEnt && !sectorPing
       ? mentionedCountry(q)
       : null;
   if (countryMentioned) country = countryMentioned;
@@ -1843,33 +1885,36 @@ export async function runLandingPipeline(
       : understood.display || q;
   /* Retrieval sees the enriched string; the ledger keeps the raw words, the
      UI shows the display title. */
-  const retrievalQuery = industryPing
-    ? display
-    : country
-      ? countryMentioned
-        ? q
-        : rankPing
-          ? `${country.name} economy size, growth and world ranking`
-          : country.name
-      : politician
-        ? politician.name
-        : resolved
-          ? `${resolved.name} (${resolved.ticker})`
-          : q;
+  const retrievalQuery =
+    industryPing || sectorPing
+      ? display
+      : country
+        ? countryMentioned
+          ? q
+          : rankPing
+            ? `${country.name} economy size, growth and world ranking`
+            : country.name
+        : politician
+          ? politician.name
+          : resolved
+            ? `${resolved.name} (${resolved.ticker})`
+            : q;
   /* What the synthesis is told the ping resolved to. */
-  const resolvedNote = industryPing
-    ? ` (understood as an industry layout: ${display}; describe structure, major players, where it operates, concentration, capital flows, key dependencies and what to watch, from the sources only)`
-    : country
-      ? countryMentioned
-        ? ` (about ${country.name}, ISO ${country.iso3}; Ezana's OECD Economic Outlook and Global Empire Rankings figures for ${country.name} are among the sources; answer the question as asked)`
-        : rankPing
-          ? ` (understood as ${display}: where ${country.name} ranks among the world's economies. Use ONLY the ranks, values, years and sources in the sources; name the measure, year and source for every rank; never state a rank or figure the sources do not give; projections only as "IMF projects" with the year. Sections: ${RANK_SECTIONS.join(' · ')}.)`
-          : ` (resolved to the country ${country.name}, ISO ${country.iso3})`
-      : politician
-        ? ` (resolved to ${politician.name}, ${[politician.party, politician.state].filter(Boolean).join('-')}, U.S. ${politician.chamberLabel || 'Congress'})`
-        : resolved
-          ? ` (resolved to ${resolved.alias ? `${resolved.alias}, ` : ''}${resolved.name}, ${resolved.ticker})`
-          : '';
+  const resolvedNote = sectorPing
+    ? ` (understood as a sector screen: ${display}; answer from the congressional trading, performance and contract snippets, not about any single company)`
+    : industryPing
+      ? ` (understood as an industry layout: ${display}; describe structure, major players, where it operates, concentration, capital flows, key dependencies and what to watch, from the sources only)`
+      : country
+        ? countryMentioned
+          ? ` (about ${country.name}, ISO ${country.iso3}; Ezana's OECD Economic Outlook and Global Empire Rankings figures for ${country.name} are among the sources; answer the question as asked)`
+          : rankPing
+            ? ` (understood as ${display}: where ${country.name} ranks among the world's economies. Use ONLY the ranks, values, years and sources in the sources; name the measure, year and source for every rank; never state a rank or figure the sources do not give; projections only as "IMF projects" with the year. Sections: ${RANK_SECTIONS.join(' · ')}.)`
+            : ` (resolved to the country ${country.name}, ISO ${country.iso3})`
+        : politician
+          ? ` (resolved to ${politician.name}, ${[politician.party, politician.state].filter(Boolean).join('-')}, U.S. ${politician.chamberLabel || 'Congress'})`
+          : resolved
+            ? ` (resolved to ${resolved.alias ? `${resolved.alias}, ` : ''}${resolved.name}, ${resolved.ticker})`
+            : '';
 
   const entitlements = getSonarEntitlements({ planTier: 0, version: 'regular' });
   const classification = classifyQuery(retrievalQuery);
@@ -1884,9 +1929,15 @@ export async function runLandingPipeline(
      a company's dataset matches are ready by the time the brief needs them:
      a country's dossier is its evidence (OECD, Empire), and a company's
      matches (contracts, Congress, 13F, lobbying) are too. */
+  /* The sector screen's inputs: the industry's universe (the listed one, or
+     the registry basket), the ping's words for panel order. */
+  const sectorU = sectorPing ? sectorUniverse(sectorEnt.id, { label: sectorEnt.label }) : null;
+  const sector = sectorPing
+    ? { industryId: sectorEnt.id, label: sectorEnt.label, basket: [], query, admin, ms: LEG.sector }
+    : null;
   const dossierP =
-    wantDossier || country || industry
-      ? buildDossierFor({ country, politician, resolved, industry, understood, admin, leg })
+    wantDossier || country || industry || sector
+      ? buildDossierFor({ country, politician, resolved, industry, sector, understood, admin, leg })
       : null;
 
   /* Oct 30 (v2): the internet evidence, started beside retrieval rather
@@ -1939,15 +1990,17 @@ export async function runLandingPipeline(
           (v) => `items=${v.length}`,
         ).catch(() => [])
       : Promise.resolve([]);
-  const newsPhrase = industryPing
-    ? display
-    : country
-      ? country.name
-      : politician
-        ? politician.name
-        : resolved
-          ? resolved.alias || shortName(resolved.name)
-          : ipoSubj || subjectTerms(understood).slice(0, 3).join(' ');
+  const newsPhrase = sectorPing
+    ? `${sectorU.label} stocks`
+    : industryPing
+      ? display
+      : country
+        ? country.name
+        : politician
+          ? politician.name
+          : resolved
+            ? resolved.alias || shortName(resolved.name)
+            : ipoSubj || subjectTerms(understood).slice(0, 3).join(' ');
   const newsP = leg(
     'news',
     () =>
@@ -2006,21 +2059,30 @@ export async function runLandingPipeline(
   const industryTermList = industryPing
     ? subjectTerms(understood).map((t) => t.toLowerCase())
     : null;
-  const entityTerms = industryTermList?.length
-    ? industryTermList
-    : country
-      ? countryEntityTerms(country)
-      : politician
-        ? [politician.name, politician.lastName].filter(Boolean).map((t) => t.toLowerCase())
-        : resolved
-          ? [resolved.name, shortName(resolved.name), resolved.ticker, resolved.alias]
-              .filter(Boolean)
-              .map((t) => t.toLowerCase())
-          : ipoSubj
-            ? /* An IPO ping for a company nothing resolved: only snippets
+  const sectorTermList = sectorPing
+    ? [
+        ...sectorU.companies.map((c) => c.name).filter(Boolean),
+        ...sectorU.companies.map((c) => c.ticker).filter((t) => t.length >= 3),
+        ...subjectTerms(understood),
+      ].map((t) => t.toLowerCase())
+    : null;
+  const entityTerms = sectorTermList?.length
+    ? sectorTermList
+    : industryTermList?.length
+      ? industryTermList
+      : country
+        ? countryEntityTerms(country)
+        : politician
+          ? [politician.name, politician.lastName].filter(Boolean).map((t) => t.toLowerCase())
+          : resolved
+            ? [resolved.name, shortName(resolved.name), resolved.ticker, resolved.alias]
+                .filter(Boolean)
+                .map((t) => t.toLowerCase())
+            : ipoSubj
+              ? /* An IPO ping for a company nothing resolved: only snippets
                  that name it, never unrelated ones for the brief to fill. */
-              [ipoSubj.toLowerCase()]
-            : null;
+                [ipoSubj.toLowerCase()]
+              : null;
   /* Oct 27: whole words, not substrings ("india" must not match Indiana),
      and for a country, US domestic names that carry a demonym are removed
      first: an India ping was citing federal awards to "The Friendship House
@@ -2114,6 +2176,17 @@ export async function runLandingPipeline(
       'company-dossier',
     ).catch(() => null);
     if (early?.matches) items.push(...companyEvidence(early.matches, resolved));
+  }
+  /* Nov 4: a sector screen's tables lead the evidence, in the order the
+     ping asked. */
+  if (sectorPing && dossierP) {
+    const early = await within(
+      dossierP,
+      Math.max(0, Math.min(LEG.sector + 400, left() - P.dossierReserveMs)),
+      null,
+      'sector-dossier',
+    ).catch(() => null);
+    if (early) items.unshift(...sectorEvidence(early));
   }
   /* Nov 4: a member's disclosures lead the evidence, so the brief answers
      from the trades on screen. */
@@ -2215,21 +2288,28 @@ export async function runLandingPipeline(
                 basket: industryBasket(industry),
                 geo: countryEnt?.label || null,
               }
-            : null,
+            : sectorPing
+              ? {
+                  label: sectorU.label,
+                  basket: sectorU.companies.map((c) => c.ticker),
+                  geo: null,
+                }
+              : null,
         });
         const cols = await leg(
           'news-columns',
           () =>
             buildNewsColumns({
-              subject: industryPing
-                ? display
-                : country
-                  ? country.name
-                  : politician
-                    ? politician.name
-                    : resolved
-                      ? resolved.name
-                      : display,
+              subject:
+                industryPing || sectorPing
+                  ? display
+                  : country
+                    ? country.name
+                    : politician
+                      ? politician.name
+                      : resolved
+                        ? resolved.name
+                        : display,
               specs,
               webSearch: P.web,
             }),
@@ -2287,15 +2367,16 @@ export async function runLandingPipeline(
      deployment turns it on. */
   const webActive = P.web && webSearchOn();
   /* What the brief is about, for the evidence fallback's opening line. */
-  const subjectLabel = industryPing
-    ? display
-    : country
-      ? country.name
-      : politician
-        ? politician.name
-        : resolved
-          ? resolved.alias || shortName(resolved.name)
-          : display;
+  const subjectLabel =
+    industryPing || sectorPing
+      ? display
+      : country
+        ? country.name
+        : politician
+          ? politician.name
+          : resolved
+            ? resolved.alias || shortName(resolved.name)
+            : display;
   /* The news headlines a brief read are the pages it read: listed under
      the brief like web pages when no web search ran. */
   const newsSources = items
@@ -2331,6 +2412,7 @@ export async function runLandingPipeline(
           : '') +
         (country ? COUNTRY_ADDENDUM : '') +
         (politician ? POLITICIAN_ADDENDUM : '') +
+        (sectorPing ? SECTOR_ADDENDUM : '') +
         (ipoIntent ? IPO_ADDENDUM : '') +
         (resolved &&
         !country &&

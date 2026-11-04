@@ -6,7 +6,12 @@
  * ticker, so a geography reading after "in the" / "across" (0.95) always
  * wins, and the ticker survives only as an alternative.
  */
-import { TICKER_BLOCKLIST, TICKER_CUES, GEO_PREPOSITION } from '@/lib/sonar/understand/blocklist';
+import {
+  TICKER_BLOCKLIST,
+  TICKER_CUES,
+  GEO_PREPOSITION,
+  LOWERCASE_WORDS,
+} from '@/lib/sonar/understand/blocklist';
 import {
   KNOWN_TICKERS,
   lookupGeo,
@@ -74,7 +79,11 @@ export function resolveToken(tokens, i, ctx = {}) {
     });
   }
 
-  if (tickerName || (isDollar && looksTicker)) {
+  /* Nov 4: a lower-case English word ("are", "it", "now") is never a ticker
+     candidate unless $-prefixed, whatever cue precedes it. */
+  const plainWord =
+    !isDollar && clean(raw) === clean(raw).toLowerCase() && LOWERCASE_WORDS.has(clean(raw));
+  if (!plainWord && (tickerName || (isDollar && looksTicker))) {
     let conf = 0.2;
     if (cued) conf = 0.97;
     else if (shortQuery) conf = 0.8;

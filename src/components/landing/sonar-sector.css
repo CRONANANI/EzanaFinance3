@@ -1,0 +1,241 @@
+/* Sonar sector screen stack (Nov 4, SonarSectorStack). Congress trading,
+   best performers and contracts for a sector ping. Rides the band's .snr-news
+   card shell; tokens only. Numbers, tickers and dates in mono, names in sans. */
+
+.snr-band .snr-sec-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.snr-band .snr-sec-card .snr-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.snr-band .snr-sec-card .snr-rule-soft {
+  flex: 1 1 auto;
+  min-width: 12px;
+}
+.snr-band .snr-sec-card .snr-range-chip {
+  flex: 0 0 auto;
+}
+
+.snr-band .snr-sec-card .is-up {
+  color: var(--positive);
+}
+.snr-band .snr-sec-card .is-down {
+  color: var(--negative);
+}
+
+/* Four headline counts. */
+.snr-band .snr-sec-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+/* Monthly buys (up) and sales (down). */
+.snr-band .snr-sec-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.snr-band .snr-sec-chart svg {
+  display: block;
+  width: 100%;
+  height: 72px;
+}
+.snr-band .snr-sec-axis {
+  stroke: color-mix(in srgb, var(--snr-mint) 22%, transparent);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.snr-band .snr-sec-bar.is-buy {
+  fill: var(--positive);
+}
+.snr-band .snr-sec-bar.is-sell {
+  fill: color-mix(in srgb, var(--negative) 80%, transparent);
+}
+.snr-band .snr-sec-months {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  text-align: center;
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-sec-legend {
+  display: flex;
+  gap: 14px;
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--snr-track-label);
+  text-transform: uppercase;
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-sec-key::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: var(--radius-sm);
+  vertical-align: -1px;
+}
+.snr-band .snr-sec-key.is-buy::before {
+  background: var(--positive);
+}
+.snr-band .snr-sec-key.is-sell::before {
+  background: var(--negative);
+}
+
+/* Tables: rows are buttons that open the gate. */
+.snr-band .snr-sec-table {
+  display: flex;
+  flex-direction: column;
+}
+.snr-band .snr-sec-tr {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) 0.7fr 0.8fr 0.9fr 0.8fr;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 5px 6px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-family: var(--snr-font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--snr-text-muted);
+  text-align: right;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.snr-band .snr-sec-tr > :first-child {
+  text-align: left;
+}
+.snr-band button.snr-sec-tr:hover,
+.snr-band button.snr-sec-tr:focus-visible {
+  background: color-mix(in srgb, var(--snr-mint) 8%, transparent);
+  outline: none;
+}
+.snr-band .snr-sec-th {
+  cursor: default;
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--snr-track-label);
+  text-transform: uppercase;
+  color: var(--snr-text-faint);
+  border-bottom: 1px solid color-mix(in srgb, var(--snr-mint) 12%, transparent);
+  border-radius: 0;
+}
+.snr-band .snr-sec-tk {
+  font-weight: 600;
+  color: var(--snr-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.snr-band .snr-sec-table--perf .snr-sec-tr {
+  grid-template-columns: 52px minmax(0, 1fr) 58px 58px 52px;
+}
+.snr-band .snr-sec-table--k .snr-sec-tr {
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.8fr) 58px 58px;
+}
+.snr-band .snr-sec-table--k .snr-sec-tk {
+  font-family: var(--snr-font-sans);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* Horizontal bar inside a row. */
+.snr-band .snr-sec-meter {
+  position: relative;
+  height: 4px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--snr-mint) 12%, transparent);
+  overflow: hidden;
+}
+.snr-band .snr-sec-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: var(--snr-mint);
+}
+.snr-band .snr-sec-fill.is-up {
+  background: var(--positive);
+}
+.snr-band .snr-sec-fill.is-down {
+  background: var(--negative);
+}
+
+/* Most active members. */
+.snr-band .snr-sec-members {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.snr-band .snr-sec-sub {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--snr-track-label);
+  text-transform: uppercase;
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-sec-member {
+  box-sizing: border-box;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.snr-band .snr-sec-member:hover,
+.snr-band .snr-sec-member:focus-visible {
+  background: color-mix(in srgb, var(--snr-mint) 8%, transparent);
+  outline: none;
+}
+.snr-band .snr-sec-member-name {
+  flex: 0 1 auto;
+  max-width: 55%;
+  font-family: var(--snr-font-sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--snr-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.snr-band .snr-sec-member-meta {
+  min-width: 0;
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  color: var(--snr-text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 600px) {
+  .snr-band .snr-sec-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .snr-band .snr-sec-tr {
+    font-size: var(--type-micro-size);
+    gap: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snr-band .snr-sec-tr,
+  .snr-band .snr-sec-member {
+    transition: none;
+  }
+}

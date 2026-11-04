@@ -21,11 +21,13 @@ import {
   THEMES,
 } from '@/lib/sonar/understand/lexicons';
 import { EXAMPLES } from '@/lib/sonar/understand/examples';
+import { wantsSectorScreen, CONGRESS_CUE, CONTRACTS_CUE } from '@/lib/sonar/sector-cues';
 import { callUnderstandModel } from '@/lib/sonar/understand/llm';
 
 export { EXAMPLES };
 
 export const INTENTS = [
+  'sector_screen',
   'industry_layout',
   'industry_country',
   'company',
@@ -153,6 +155,13 @@ function pickIntent(text, entities) {
   const tickers = entities.filter((e) => e.kind === 'ticker');
   const countries = entities.filter((e) => e.kind === 'country');
   if (/\s(vs\.?|versus)\s/i.test(text) || /^compare\b/i.test(text)) return 'comparison';
+  /* Nov 4: an industry asked about through Congress, contracts or
+     performance ("Which defense stocks are members of Congress trading?")
+     is a sector screen: tracker tables, performance and contracts, not a
+     value chain and never one company. A named member keeps the politician
+     reading; a named ticker keeps the company reading. */
+  if (has('industry') && !has('person_politician') && !tickers.length && wantsSectorScreen(text))
+    return 'sector_screen';
   /* "is india bigger than japan's economy" */
   if (countries.length >= 2 && /\b(bigger|larger|smaller|richer|poorer) than\b/i.test(text))
     return 'comparison';
@@ -230,6 +239,15 @@ function buildDisplay(intent, entities, corrected) {
       break;
     case 'politician':
       return get('person_politician').label;
+    case 'sector_screen': {
+      const noun = (industry?.noun || industry?.label || 'Sector').replace(
+        /^Aerospace and defense$/i,
+        'Defense',
+      );
+      if (CONGRESS_CUE.test(corrected)) return `${noun} stocks members of Congress are trading`;
+      if (CONTRACTS_CUE.test(corrected)) return `${noun} companies by government contracts`;
+      return `Best performing ${noun.toLowerCase()} stocks`;
+    }
     case 'ticker_lookup':
     case 'company':
     case 'fund':

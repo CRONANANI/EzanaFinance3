@@ -72,6 +72,7 @@ import { geometryFor } from './sonar-geometry';
 import { animateWindowScroll, humanPointer } from './sonar-motion';
 import './sonar-band.css';
 import SonarResearchDeck, { NewsAround, SanctionsRail, hasNewsColumns } from './SonarResearchDeck';
+import SonarSectorStack from './SonarSectorStack';
 import { CountryStack, CountryOecdRow, CountryEmpireRow } from './SonarCountryStack';
 import { SonarUnderstoodNotice } from './SonarUnderstoodNotice';
 import { IndustryStack } from './SonarIndustryStack';
@@ -230,6 +231,15 @@ const SWEPT_POLITICIAN = [
   ...SWEPT,
 ];
 const POLITICIAN_ORDER = ['pol-buys', 'congress', 'pol-oversight', 'echo'];
+
+/* Nov 4: a sector screen leads with who in Congress trades the sector, the
+   latest trades, and the sector's largest contract recipients. */
+const SWEPT_SECTOR = [
+  { id: 'sector-members', chip: 'TOP TRADERS', name: 'Most active members of Congress' },
+  { id: 'sector-contracts', chip: 'GOV CONTRACTS', name: 'Largest contract recipients' },
+  ...SWEPT.filter((d) => d.id !== 'gov-contracts'),
+];
+const SECTOR_ORDER = ['sector-members', 'congress', 'sector-contracts'];
 
 const ROWS = [
   { cls: 'snr-anim-row0', tag: 'ECHO', source: 'Echo editorial', line: '[MATCH TITLE]' },
@@ -2986,11 +2996,14 @@ export function SonarSection({
                       const m = live?.dossier?.matches || null;
                       const isCountry = live?.dossier?.kind === 'country';
                       const isPolitician = live?.dossier?.kind === 'politician';
+                      const isSector = live?.dossier?.kind === 'sector';
                       const swept = isCountry
                         ? SWEPT_COUNTRY
                         : isPolitician
                           ? SWEPT_POLITICIAN
-                          : SWEPT;
+                          : isSector
+                            ? SWEPT_SECTOR
+                            : SWEPT;
                       /* A dataset is matched only when its leg actually returned
                      something. The honesty rule: no rich row is rendered from
                      an empty leg, and a null leg falls through to the dry row
@@ -3007,6 +3020,10 @@ export function SonarSection({
                         empire: m?.empire || null,
                         'pol-buys': m?.buys?.length ? m.buys : null,
                         'pol-oversight': m?.overseen?.trades?.length ? m.overseen : null,
+                        'sector-members': m?.sectorMembers?.length ? m.sectorMembers : null,
+                        'sector-contracts': m?.sectorContracts?.rows?.length
+                          ? m.sectorContracts
+                          : null,
                       };
                       /* Matched rich rows first, in the brief's order, then
                      everything else dimmed. */
@@ -3022,12 +3039,8 @@ export function SonarSection({
                         'lobbying',
                         'prediction-markets',
                       ];
-                      const order = isPolitician
-                        ? [
-                            ...POLITICIAN_ORDER,
-                            ...baseOrder.filter((id) => !POLITICIAN_ORDER.includes(id)),
-                          ]
-                        : baseOrder;
+                      const lead = isPolitician ? POLITICIAN_ORDER : isSector ? SECTOR_ORDER : [];
+                      const order = [...lead, ...baseOrder.filter((id) => !lead.includes(id))];
                       /* Oct 26: only datasets that found something are listed.
                      A matched dataset with no dossier preview (an open
                      question's contracts or Echo hits) shows the items it
@@ -3190,6 +3203,38 @@ export function SonarSection({
                                       <span className="snr-trade-range">{t.range}</span>
                                     ) : null}
                                     <span className="snr-trade-date">{relativeDay(t.date)}</span>
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
+
+                            {d.id === 'sector-members' && data ? (
+                              <div className="snr-rich">
+                                {data.map((mb) => (
+                                  <span key={mb.bioguideId} className="snr-trade">
+                                    <span className="snr-trade-member">{mb.name}</span>
+                                    <span className="snr-trade-type">
+                                      {[mb.party, mb.state].filter(Boolean).join('-')}
+                                    </span>
+                                    <span className="snr-trade-range">
+                                      {mb.tickers.slice(0, 3).join(' ')}
+                                    </span>
+                                    <span className="snr-trade-date">{mb.trades} trades</span>
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
+
+                            {d.id === 'sector-contracts' && data ? (
+                              <div className="snr-rich">
+                                {data.rows.map((r) => (
+                                  <span key={r.ticker} className="snr-trade">
+                                    <span className="snr-trade-member">{r.name || r.ticker}</span>
+                                    <span className="snr-trade-type">{r.ticker}</span>
+                                    <span className="snr-trade-date">
+                                      {usdShort(data.rankBy === 'latest' ? r.latest : r.prior)} · FY
+                                      {data.rankBy === 'latest' ? data.latestFy : data.priorFy}
+                                    </span>
                                   </span>
                                 ))}
                               </div>
@@ -3388,6 +3433,18 @@ export function SonarSection({
                 />
               ) : null}
 
+              {/* Nov 4: a sector screen (Congress trading, best performers,
+              contracts), with the sector's news below on the page. */}
+              {stage2 && live?.dossier?.kind === 'sector' ? (
+                <SonarSectorStack
+                  dossier={live.dossier}
+                  onGate={() => openGate()}
+                  topSlot={leadTop}
+                  newsSlot={railNews}
+                  full={isPage}
+                />
+              ) : null}
+
               {/* A country: the key chart (the series furthest from its own
               20-year norm, switchable) in the price chart's slot, and the
               country's news in the news slot. Same shells again. */}
@@ -3409,6 +3466,7 @@ export function SonarSection({
 
               {stage2 &&
               live?.dossier?.kind !== 'politician' &&
+              live?.dossier?.kind !== 'sector' &&
               live?.dossier?.kind !== 'country' &&
               live?.dossier?.kind !== 'industry' &&
               (live?.dossier?.fundamentals ||
