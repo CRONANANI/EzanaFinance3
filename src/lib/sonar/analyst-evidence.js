@@ -68,10 +68,15 @@ export function actionLine(r) {
 
 /**
  * @param {string} ticker
- * @param {{ ms?: number, now?: Date }} [opts]
+ * @param {{ ms?: number, now?: Date, regions?: boolean }} [opts] regions adds the
+ *   company's revenue by region (Nov 3), for exposure pings ("How exposed is
+ *   Nvidia to China export controls?")
  * @returns {Promise<Array<{ corpus: string, title: string, snippet: string, date: string, meta: object }>>}
  */
-export async function analystEvidence(ticker, { ms = 1500, now = new Date() } = {}) {
+export async function analystEvidence(
+  ticker,
+  { ms = 1500, now = new Date(), regions = false } = {},
+) {
   const sym = String(ticker || '').toUpperCase();
   const key = getFmpKey();
   if (!sym) return [];
@@ -85,7 +90,7 @@ export async function analystEvidence(ticker, { ms = 1500, now = new Date() } = 
       : Promise.resolve(null);
   const finnhubKey = process.env.FINNHUB_API_KEY;
 
-  const [change, quote, target, consensus, grades, trends] = await Promise.all([
+  const [change, quote, target, consensus, grades, trends, geo] = await Promise.all([
     q('stock-price-change'),
     q('quote-short'),
     q('price-target-consensus'),
@@ -97,9 +102,39 @@ export async function analystEvidence(ticker, { ms = 1500, now = new Date() } = 
           ms,
         )
       : Promise.resolve(null),
+    regions && key
+      ? getJson(
+          `${FMP_STABLE}/revenue-geographic-segmentation?symbol=${encodeURIComponent(sym)}&period=annual&apikey=${encodeURIComponent(key)}`,
+          ms,
+        )
+      : Promise.resolve(null),
   ]);
 
   const out = [];
+
+  /* Revenue by region, latest fiscal year, largest first. */
+  const geoRow = Array.isArray(geo)
+    ? [...geo].sort((a, b) => String(b?.date || '').localeCompare(String(a?.date || '')))[0]
+    : null;
+  const geoParts = Object.entries(geoRow?.data || {})
+    .map(([region, v]) => [region, num(v)])
+    .filter(([, v]) => v != null && v > 0)
+    .sort((a, b) => b[1] - a[1]);
+  const geoTotal = geoParts.reduce((sum, [, v]) => sum + v, 0);
+  if (geoParts.length && geoTotal > 0) {
+    const big = (v) =>
+      v >= 1e9 ? `$${(v / 1e9).toFixed(1)}B` : v >= 1e6 ? `$${(v / 1e6).toFixed(0)}M` : money(v);
+    out.push({
+      corpus: 'market',
+      title: `${sym} revenue by region`,
+      snippet: `${sym} revenue by region${geoRow.fiscalYear ? `, fiscal ${geoRow.fiscalYear}` : ''}: ${geoParts
+        .slice(0, 6)
+        .map(([region, v]) => `${region} ${big(v)} (${((v / geoTotal) * 100).toFixed(0)}%)`)
+        .join(', ')}.`,
+      date: String(geoRow.date || today).slice(0, 10),
+      meta: { ticker: sym },
+    });
+  }
 
   /* Price performance over the standard windows. */
   const ch = first(change);

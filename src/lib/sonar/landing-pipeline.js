@@ -58,6 +58,7 @@ import {
   newsEvidence,
 } from '@/lib/sonar/landing-research';
 import { analystEvidence } from '@/lib/sonar/analyst-evidence';
+import { mentionedCompany } from '@/lib/sonar/company-mentions';
 import { BoundedMap } from '@/lib/bounded-map';
 import { withTimeout } from '@/lib/with-timeout';
 import { usd } from '@/lib/research-copilot/retrievers/shared';
@@ -126,6 +127,7 @@ Rules:
 - Ezana's datasets come first. Build the brief around every snippet that is genuinely about the subject and cite its marker inline, e.g. [S1]. Never cite a snippet about a different entity.
 - Then go beyond the datasets: search the web for current facts, recent events, figures and context the snippets do not cover, and weave them in. Name the outlet or source for web facts in passing ("per Reuters").
 - Answer the question the visitor actually asked. Lead with the direct answer, then the evidence, then what it means.
+- Never ask the visitor a question, ask them to rephrase, or offer to help: answer the likeliest reading of the ping.
 - Findings only. No financial or investment advice of your own: no price target, rating or buy/sell/hold call in Ezana's voice. Reporting a named firm's published rating or price target from a snippet, attributed to that firm or to analyst consensus, is a finding. No fabricated figures: a number comes from a snippet or a web result, or it does not appear.
 - Four short paragraphs separated by blank lines: (1) direct answer, (2) what Ezana's datasets show, cited, (3) what the web adds: recent events and figures, (4) cross-signals and what to watch. Each paragraph 50 to 90 words. No headers, no lists, no em dashes.`;
 
@@ -151,6 +153,7 @@ Rules:
 - Answer the question the visitor actually asked. Lead with the direct answer, then the evidence, then what it means.
 - Cite every fact inline with its snippet marker, e.g. [S1]. Never cite a snippet about a different entity.
 - Write only about the subject. Never comment on what the snippets, datasets or searches contain or lack, and never mention web search. If the snippets answer only part of the question, answer that part.
+- Never ask the visitor a question, ask them to rephrase, or offer to help. Read the ping the most useful way (the visitor's own words are given) and answer it; if it is ambiguous, answer the likeliest reading.
 - Findings only. No financial or investment advice of your own: no price target, rating or buy/sell/hold call in Ezana's voice. Reporting a named firm's published rating or price target from an (analysts) snippet, attributed to that firm or to analyst consensus, is a finding. No fabricated figures: a number comes from a snippet or it does not appear.
 - Three short paragraphs separated by blank lines: (1) direct answer, (2) the evidence, cited, (3) what it means and what to watch. Each paragraph 40 to 70 words. No headers, no lists, no em dashes.`;
 
@@ -158,6 +161,7 @@ Rules:
 const FAST_GENERAL_PROMPT = `You are Ezana Sonar, a research analyst answering a ping. Answer the question the visitor asked from established background knowledge.
 Rules:
 - Lead with the direct answer, then the key specifics, then what to watch.
+- Never ask the visitor a question, ask them to rephrase, or offer to help: answer the likeliest reading of the ping.
 - Your knowledge may be out of date. Give the year a time-sensitive fact dates from ("as of 2025"), and never state whether a recent event happened or did not happen.
 - Write only about the subject. Never mention Ezana's datasets, sources, coverage or web search.
 - No fabricated figures, dates or names. Findings only. No financial or investment advice, price targets, or buy/sell/hold language.
@@ -182,11 +186,24 @@ This ping is about an IPO. Snippets marked (ipo) are IPO filing records: offer p
    launches) can postdate any model's training, so they search a little more. */
 const RECENT_WEB_USES = BRIEF_WEB_USES + 2;
 
+/* Nov 3: a company ping about sanctions or export controls ("How exposed is
+   Nvidia to China export controls?"). The brief answers the exposure
+   question itself, with the country as context, instead of describing the
+   sanctions list in general. */
+function exposureAddendum(company, country) {
+  const where = country ? ` involving ${country}` : '';
+  return `
+This ping asks how exposed ${company} is to US sanctions and export controls${where}. Answer that directly, in three paragraphs:
+(1) The direct answer: what the snippets show about ${company}'s ties${country ? ` to ${country}` : ''} (revenue by region, operations, the export rules reported in (news) snippets) and how the stock trades now.
+(2) ${country ? `${country} on the US sanctions list` : 'The US sanctions list'}: what the (sanctions) snippets show. Say plainly that the SDN list is Treasury's sanctions list and that chip export controls sit on the Commerce Department's Entity List, a separate list.
+(3) What analysts say, attributed to their firms, and what to watch next.`;
+}
+
 /* Appended for a sanctions ping. The JSON is stripped from the brief and
    drawn as the exposure table; splitExposed drops malformed rows. */
 const SANCTIONS_ADDENDUM = `
 This ping is about sanctions. The [S#] snippets marked (sanctions) are Ezana's copy of the US Treasury OFAC SDN list; use them for which jurisdictions and programs carry the most listings. Use web search for which companies are exposed (revenue, operations or supply chains in sanctioned jurisdictions, or named in enforcement).
-After the four paragraphs, append on its own line a JSON array inside <exposed></exposed> tags, up to 8 companies a web result names as exposed, most exposed first: [{"company":"Name","ticker":"TICK or null","exposure":"high|medium|low","why":"one clause, under 20 words"}]. Only companies a search result supports. If none, write <exposed>[]</exposed>.`;
+After the brief, append on its own line a JSON array inside <exposed></exposed> tags, up to 8 companies a web result names as exposed, most exposed first: [{"company":"Name","ticker":"TICK or null","exposure":"high|medium|low","why":"one clause, under 20 words"}]. Only companies a search result supports. If none, write <exposed>[]</exposed>.`;
 
 /* Dataset to taxonomy dimension. SONAR_DATASETS entries carry {id,label,source}
    and no dimension, so the mapping is stated here against DATASET_TAXONOMY's
@@ -1682,9 +1699,16 @@ export async function runLandingPipeline(
   /* Oct 30 (v2): a company people know by a name the search endpoints do
      not (SpaceX), anywhere in the ping, before any name search runs. */
   const companyAlias = aliasedCompany(query) || aliasedCompany(q);
+  /* Nov 3: a company named in words ("How exposed is Nvidia to China export
+     controls?") makes the ping about that company; a country it names stays
+     on as context (sanctionsFocus below), not as the subject. */
+  const companyMention =
+    !companyAlias && !entity('ticker') ? mentionedCompany(query) || mentionedCompany(q) : null;
   /* "spacex ipo" is about the company, never the space industry. */
   const industryEnt =
-    INDUSTRY_INTENTS.has(understood.intent) && !companyAlias ? entity('industry') : null;
+    INDUSTRY_INTENTS.has(understood.intent) && !companyAlias && !companyMention
+      ? entity('industry')
+      : null;
   const tickerEnt = entity('ticker');
   const countryEnt = entity('country');
 
@@ -1710,12 +1734,13 @@ export async function runLandingPipeline(
 
   /* A country: the strict whole-string match, or a country-intent ping
      whose chosen country entity resolves by name. */
-  let country = industryPing
-    ? null
-    : resolveCountry(q) ||
-      (['country', 'country_rank'].includes(understood.intent) && countryEnt
-        ? resolveCountry(countryEnt.label)
-        : null);
+  let country =
+    industryPing || companyMention
+      ? null
+      : resolveCountry(q) ||
+        (['country', 'country_rank'].includes(understood.intent) && countryEnt
+          ? resolveCountry(countryEnt.label)
+          : null);
   const rankPing = understood.intent === 'country_rank' && Boolean(country);
   /* A member of Congress before a company: "Nancy Pelosi" must not resolve
      to whatever FMP's fuzzy name search returns for it. */
@@ -1723,6 +1748,7 @@ export async function runLandingPipeline(
     country ||
     industryPing ||
     companyAlias ||
+    companyMention ||
     (tickerEnt && !understood.entities.some((e) => e.kind === 'person_politician'))
       ? null
       : await leg(
@@ -1740,6 +1766,7 @@ export async function runLandingPipeline(
     (tickerEnt ||
       ipoIntent ||
       companyAlias ||
+      companyMention ||
       ['company', 'ticker_lookup', 'open_question', 'fund'].includes(understood.intent));
   const resolved = companyAllowed
     ? await leg(
@@ -1752,7 +1779,9 @@ export async function runLandingPipeline(
                 ? resolveIpoCompany(ipoSubj, query)
                 : companyAlias
                   ? resolveIpoCompany(null, query)
-                  : resolveCompany(q),
+                  : companyMention
+                    ? resolveCompany(`$${companyMention.ticker}`)
+                    : resolveCompany(q),
             LEG.resolve,
             null,
             'resolve',
@@ -1771,7 +1800,22 @@ export async function runLandingPipeline(
       ? mentionedCountry(q)
       : null;
   if (countryMentioned) country = countryMentioned;
-  const display = understood.display || q;
+  /* The one country a company ping names, kept as context: it focuses the
+     sanctions map and the brief on that country. */
+  const contextCountry = !country && resolved ? mentionedCountry(q) : null;
+  /* "NVIDIA, China and export controls", not "Export controls". */
+  const topicOf = (t) => (t ? `${t[0].toLowerCase()}${t.slice(1)}` : null);
+  const mentionParts = companyMention
+    ? [companyMention.name, contextCountry ? contextCountry.name : null].filter(Boolean)
+    : [];
+  const mentionTopic =
+    companyMention && understood.intent !== 'company' ? topicOf(understood.display) : null;
+  const display =
+    companyMention && resolved
+      ? mentionTopic
+        ? `${mentionParts.join(', ')} and ${mentionTopic}`
+        : mentionParts.join(' and ')
+      : understood.display || q;
   /* Retrieval sees the enriched string; the ledger keeps the raw words, the
      UI shows the display title. */
   const retrievalQuery = industryPing
@@ -1859,7 +1903,10 @@ export async function runLandingPipeline(
           'analysts',
           () =>
             within(
-              analystEvidence(resolved.ticker, { ms: LEG.analysts }),
+              analystEvidence(resolved.ticker, {
+                ms: LEG.analysts,
+                regions: intent === 'sanctions' || Boolean(contextCountry),
+              }),
               LEG.analysts,
               [],
               'analysts',
@@ -1991,7 +2038,12 @@ export async function runLandingPipeline(
   /* A sanctions ping reads the OFAC aggregates as dataset evidence too. */
   const sanctions =
     intent === 'sanctions'
-      ? await within(sanctionsContext(), LEG.sanctions, null, 'sanctions').catch(() => null)
+      ? await within(
+          sanctionsContext({ focus: country || contextCountry, query }),
+          LEG.sanctions,
+          null,
+          'sanctions',
+        ).catch(() => null)
       : null;
   if (sanctions) items.push(...sanctions.evidence);
 
@@ -2238,15 +2290,28 @@ export async function runLandingPipeline(
       system:
         (webActive ? GROUNDED_SYSTEM_PROMPT : FAST_GROUNDED_PROMPT) +
         (sanctions ? SANCTIONS_ADDENDUM : '') +
+        (intent === 'sanctions' && resolved && !country && !politician && !industryPing
+          ? exposureAddendum(resolved.alias || shortName(resolved.name), contextCountry?.name)
+          : '') +
         (country ? COUNTRY_ADDENDUM : '') +
         (ipoIntent ? IPO_ADDENDUM : '') +
-        (resolved && !country && !politician && !industryPing && !ipoIntent && !sanctions
+        (resolved &&
+        !country &&
+        !politician &&
+        !industryPing &&
+        !ipoIntent &&
+        intent !== 'sanctions'
           ? COMPANY_ADDENDUM
           : '') +
         DATE_RULES +
         GROUNDING_RULES +
         (webActive ? '' : NO_WEB_RULES),
-      user: `Today is ${todayLine()}.\nPing: ${display}${resolvedNote}\n\nSources:\n${sourcesBlock}`,
+      /* The visitor's own words too (Nov 3): "Export controls" alone, with
+         China as the resolved subject, read as no question at all, and the
+         brief asked the visitor what they meant. */
+      user: `Today is ${todayLine()}.\nPing: ${display}${resolvedNote}\nThe visitor asked: "${String(
+        query,
+      ).slice(0, 300)}"\n\nSources:\n${sourcesBlock}`,
       maxTokens: sanctions ? P.briefTokens + P.sanctionsExtraTokens : P.briefTokens,
       model: P.model,
       fallbackModel: HAIKU_MODEL,
@@ -2314,7 +2379,9 @@ export async function runLandingPipeline(
       system: webActive
         ? GENERAL_SYSTEM_PROMPT + DATE_RULES + GROUNDING_RULES
         : FAST_GENERAL_PROMPT + DATE_RULES,
-      user: `Today is ${todayLine()}.\nPing: ${display}${resolvedNote}`,
+      user: `Today is ${todayLine()}.\nPing: ${display}${resolvedNote}\nThe visitor asked: "${String(
+        query,
+      ).slice(0, 300)}"`,
       maxTokens: P.briefTokens,
       model: P.model,
       fallbackModel: HAIKU_MODEL,

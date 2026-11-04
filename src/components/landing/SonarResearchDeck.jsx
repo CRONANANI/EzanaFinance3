@@ -121,15 +121,34 @@ export function NewsAround({ live, rail = false }) {
   );
 }
 
-export default function SonarResearchDeck({ live, hideNews = false }) {
+/**
+ * Nov 3: the sanctions panel at the top of the results' right-hand stack,
+ * where the visitor sees it without scrolling (SonarSection). The deck then
+ * gets hideSanctions so it is not drawn twice.
+ */
+export function SanctionsRail({ data }) {
+  if (!data) return null;
+  return (
+    /* Its own shell, not .snr-fund: the band pauses every animation once a
+       ping is live, and .snr-fund's entrance would freeze at opacity 0. */
+    <div className="snr-sx-rail">
+      <section className="snrx snrx--rail" aria-label="US sanctions map for this ping">
+        <SonarSanctionsPanel data={data} rail />
+      </section>
+    </div>
+  );
+}
+
+export default function SonarResearchDeck({ live, hideNews = false, hideSanctions = false }) {
   const showNews = !hideNews && hasNewsColumns(live);
+  const showSanctions = !hideSanctions && Boolean(live?.sanctions);
   const web = Array.isArray(live?.webSources) ? live.webSources : [];
-  if (!live?.sanctions && !showNews && !web.length) return null;
+  if (!showSanctions && !showNews && !web.length) return null;
 
   return (
     <section className="snrx" aria-label="Further research for this ping">
       <div className="snrx-inner">
-        {live.sanctions ? <SonarSanctionsPanel data={live.sanctions} /> : null}
+        {showSanctions ? <SonarSanctionsPanel data={live.sanctions} /> : null}
 
         {showNews ? <NewsAround live={live} /> : null}
 

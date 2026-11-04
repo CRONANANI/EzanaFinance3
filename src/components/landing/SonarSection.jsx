@@ -71,7 +71,7 @@ import { SonarLoader } from '@/components/sonar/SonarLoader';
 import { geometryFor } from './sonar-geometry';
 import { animateWindowScroll, humanPointer } from './sonar-motion';
 import './sonar-band.css';
-import SonarResearchDeck, { NewsAround, hasNewsColumns } from './SonarResearchDeck';
+import SonarResearchDeck, { NewsAround, SanctionsRail, hasNewsColumns } from './SonarResearchDeck';
 import { CountryStack, CountryOecdRow, CountryEmpireRow } from './SonarCountryStack';
 import { SonarUnderstoodNotice } from './SonarUnderstoodNotice';
 import { IndustryStack } from './SonarIndustryStack';
@@ -2411,11 +2411,24 @@ export function SonarSection({
         onClose={() => setCommodityStat(null)}
       />
     ) : null;
+  /* Nov 3: a sanctions ping's map leads the right-hand stack, so it is in
+     view with the brief instead of below the band. */
+  const sanctionsRail =
+    answerReady && live?.sanctions ? <SanctionsRail data={live.sanctions} /> : null;
   const leadTop =
-    commodityChart || stackTop ? (
+    sanctionsRail || commodityChart || stackTop ? (
       <>
+        {sanctionsRail}
         {commodityChart}
         {stackTop}
+      </>
+    ) : null;
+  /* What leads a country stack: the same, above its key chart. */
+  const countryLead =
+    sanctionsRail || commodityChart ? (
+      <>
+        {sanctionsRail}
+        {commodityChart}
       </>
     ) : null;
 
@@ -3224,7 +3237,7 @@ export function SonarSection({
                   onGate={() => openGate()}
                   newsSlot={railNews}
                   topSlot={stackTop}
-                  leadSlot={commodityChart}
+                  leadSlot={countryLead}
                 />
               ) : null}
 
@@ -3388,7 +3401,13 @@ export function SonarSection({
         the ping was about sanctions, three columns of news, and the web
         sources the brief read. Outside the band so the locked one-screen
         composition above keeps its geometry. */}
-      {answerReady ? <SonarResearchDeck live={live} hideNews={railPlaced} /> : null}
+      {answerReady ? (
+        <SonarResearchDeck
+          live={live}
+          hideNews={railPlaced}
+          hideSanctions={Boolean(sanctionsRail)}
+        />
+      ) : null}
       {answerReady && live?.dossier?.kind === 'industry' ? (
         <IndustryLayout dossier={live.dossier} />
       ) : null}

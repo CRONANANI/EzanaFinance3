@@ -119,6 +119,10 @@ const COVERAGE_RES = [
   /\b(?:our|ezana['’]?s?|the|these|those|its|available|provided|retrieved)\s+(?:[\w-]+\s+){0,2}(?:datasets?|sources?|snippets?)\s+(?:[\w-]+\s+){0,3}?(?:do(?:es)?\s+not|don['’]t|doesn['’]t|did\s+not|didn['’]t|returned\s+no|return\s+no|contain\s+no|have\s+no|has\s+no|show\s+no|shows\s+no|include\s+no|lack|are\s+silent|is\s+silent|are\s+empty|is\s+empty)\b/i,
   /\b(?:not|isn['’]t|aren['’]t)\s+(?:yet\s+)?(?:covered|available|included)\s+(?:in|by)\s+(?:our|ezana|the)\b/i,
   /\b(?:datasets?|sources?)\s+(?:do\s+not|don['’]t)\s+(?:yet\s+)?cover\b/i,
+  /* Nov 3: a brief never asks the visitor anything ("are you asking about
+     the scope of current listings ... ?", "Please rephrase your question"). */
+  /\?["”'’)\]]*\s*$/,
+  /\b(?:please rephrase|rephrase your|could you (?:clarify|specify|rephrase)|i need to know what|what are you asking|i['’]?d be happy to help|let me know (?:if|what|which))\b/i,
 ];
 
 /**

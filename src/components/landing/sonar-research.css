@@ -421,3 +421,37 @@
     background: transparent;
   }
 }
+
+/* ── Nov 3: the sanctions panel in the results' right-hand stack ─────────
+   SanctionsRail: one column inside the stack's card, the map first and the
+   list under it, smaller heads. Doubled selectors for the light-mode reason
+   noted above. */
+.snr-sx-rail {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 14px 16px 16px;
+  border-radius: var(--snr-r-panel, var(--radius-xl));
+  background: var(--snr-panel, transparent);
+  box-shadow: var(--snr-soft, none);
+}
+.snrx.snrx--rail .snrx-sanctions--rail {
+  gap: 12px;
+}
+.snrx.snrx--rail .snrx-sanctions--rail .snrx-sx-grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+.snrx.snrx--rail .snrx-sanctions--rail .snrx-sx-charts {
+  gap: 12px;
+}
+.snrx.snrx--rail .snrx-sanctions--rail .snrx-bars li {
+  grid-template-columns: minmax(0, 10rem) minmax(0, 1fr) auto;
+}
+.snrx.snrx--rail .snrx-sanctions--rail .snrx-sub {
+  font-size: 12.5px;
+}
+/* One country shaded: its legend of bins says nothing the tooltip and the
+   line above do not. */
+.snrx.snrx--rail .snrx-sanctions--rail .snx-map.is-focus .snx-map-legend {
+  display: none;
+}

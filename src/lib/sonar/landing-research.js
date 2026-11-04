@@ -35,13 +35,49 @@ export function detectIntent(query) {
 }
 
 const fmt = (n) => Number(n || 0).toLocaleString('en-US');
+const ordinal = (n) => {
+  const v = n % 100;
+  const suf = v >= 11 && v <= 13 ? 'th' : { 1: 'st', 2: 'nd', 3: 'rd' }[n % 10] || 'th';
+  return `${n}${suf}`;
+};
+
+/* OFAC writes a few countries its own way. */
+const OFAC_COUNTRY = {
+  'north korea': 'korea, north',
+  'south korea': 'korea, south',
+  'dr congo': 'congo, democratic republic of the',
+  'democratic republic of the congo': 'congo, democratic republic of the',
+};
+const CHIP_RE =
+  /\b(chips?|semiconductors?|gpus?|ai accelerators?|export controls?|entity list|nvidia|amd|intel|tsmc|asml|micron|qualcomm|broadcom|lithography|wafers?|fabs?)\b/i;
+
+/**
+ * The map's title and line for a ping (Nov 3): a ping about one country gets
+ * that country in the title; a ping about chips or export controls says so.
+ * The list behind the map is OFAC's SDN list, so the line says what it is.
+ */
+export function sanctionsTitle({ query = '', focus = null } = {}) {
+  const chips = CHIP_RE.test(String(query || ''));
+  if (focus && chips) return `${focus.label}, chips and US sanctions`;
+  if (focus) return `${focus.label} on the US sanctions list`;
+  if (chips) return 'Chips and US sanctions';
+  return 'Where US sanctions land';
+}
 
 /**
  * The sanctions panel and its dataset evidence. `panel` is what the results
  * draw (map aggregates, top jurisdictions, largest programs); `evidence` is
  * the snippet text the brief cites as [D1] and [D2].
+ *
+ * Nov 3: `focus` ({ name } of the one country a ping is about, e.g. China
+ * for "How exposed is Nvidia to China export controls?") narrows the panel
+ * to that country: the map shades it alone, the list beside the map is its
+ * own SDN profile (China is not a program jurisdiction, so it never
+ * appeared in "Jurisdictions under a US program" although 1,190 listings
+ * have an address there), and the brief gets that country's figures.
+ * `query` picks the panel's title.
  */
-export async function sanctionsContext() {
+export async function sanctionsContext({ focus: focusCountry = null, query = '' } = {}) {
   let s;
   try {
     s = await getSanctionsSummary();
@@ -64,6 +100,36 @@ export async function sanctionsContext() {
     entity: t.entity,
     codes: t.codes.slice(0, 3),
   }));
+  /* The ping's country, as OFAC names it, with its listings by type and
+     the programs they fall under. */
+  let focus = null;
+  if (focusCountry?.name) {
+    const want = String(focusCountry.name).toLowerCase();
+    const ofac = OFAC_COUNTRY[want] || want;
+    const rec = s.countries.find((c) => String(c.name).toLowerCase() === ofac);
+    if (rec?.total) {
+      const rank = s.countries.findIndex((c) => c === rec) + 1;
+      const progs = Object.entries(s.programCountries || {})
+        .map(([code, byCountry]) => ({ code, total: byCountry?.[rec.name] || 0 }))
+        .filter((p) => p.total > 0)
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 5)
+        .map((p) => ({ ...p, label: programMeta(p.code).label }));
+      focus = {
+        name: rec.name,
+        label: focusCountry.name,
+        total: rec.total,
+        entity: rec.entity || 0,
+        individual: rec.individual || 0,
+        vessel: rec.vessel || 0,
+        aircraft: rec.aircraft || 0,
+        rank,
+        ofCountries: s.countries.length,
+        programs: progs,
+        counts: { [rec.name]: rec.total },
+      };
+    }
+  }
   const panel = {
     active: s.active,
     byType: s.byType,
@@ -71,6 +137,11 @@ export async function sanctionsContext() {
     countries: s.countries.map((c) => ({ name: c.name, total: c.total, entity: c.entity })),
     targets,
     programs,
+    focus,
+    title: sanctionsTitle({ query, focus }),
+    /* A chips or export-controls ping: the panel says the SDN list is not
+       the export-control list. */
+    chips: CHIP_RE.test(String(query || '')),
   };
   const topBased = s.countries
     .slice(0, 8)
@@ -95,6 +166,19 @@ export async function sanctionsContext() {
       snippet: `Largest OFAC programs by listings: ${topPrograms}.`,
     },
   ];
+  if (focus) {
+    evidence.unshift({
+      corpus: 'sanctions',
+      title: `OFAC SDN list, ${focus.label}`,
+      snippet: `${fmt(focus.total)} active OFAC SDN listings have an address in ${focus.label}: ${fmt(focus.entity)} companies and organisations, ${fmt(focus.individual)} individuals${focus.vessel ? `, ${fmt(focus.vessel)} vessels` : ''}. That ranks ${focus.label} ${ordinal(focus.rank)} of ${fmt(focus.ofCountries)} address countries on the list.${
+        focus.programs.length
+          ? ` Programs naming ${focus.label}-based parties: ${focus.programs
+              .map((p) => `${p.code} (${p.label}) ${fmt(p.total)}`)
+              .join('; ')}.`
+          : ''
+      } The SDN list is Treasury's; chip export controls sit on the Commerce Department's Entity List, a separate list.`,
+    });
+  }
   return { panel, evidence };
 }
 
