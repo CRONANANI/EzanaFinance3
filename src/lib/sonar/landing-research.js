@@ -366,6 +366,7 @@ export async function columnSpecs({
   }
 
   if (politician) {
+    /* The dossier now carries 8 holdings; the news reads the top 5. */
     const holdings = (dossier?.holdings || []).slice(0, 5);
     const tickers = holdings.map((h) => h.ticker).filter(Boolean);
     const sectors = [...new Set(holdings.map((h) => h.sector).filter(Boolean))].slice(0, 3);
@@ -374,7 +375,16 @@ export async function columnSpecs({
       cacheByTickers(admin, tickers),
       cacheBySearch(admin, politician.name),
     ]);
+    /* Nov 4: the member's own headlines lead ("News and headlines with her
+       involved"), then their positions, then policy. */
     return [
+      {
+        id: 'member',
+        title: `${last} in the news`,
+        icon: 'bi-person-badge',
+        hint: `recent reporting about ${politician.name} (U.S. ${politician.chamberLabel || 'Congress'}): stock trades and disclosures, votes, bills and committee work`,
+        seed: member,
+      },
       {
         id: 'positions',
         title: 'Their heaviest positions',
@@ -385,13 +395,6 @@ export async function columnSpecs({
               .join(', ')}`
           : `recent news on the stocks ${politician.name} has traded`,
         seed: positions,
-      },
-      {
-        id: 'member',
-        title: `${last} in the news`,
-        icon: 'bi-person-badge',
-        hint: `recent reporting about ${politician.name} (U.S. ${politician.chamberLabel || 'Congress'}): stock trades and disclosures, votes, bills and committee work`,
-        seed: member,
       },
       {
         id: 'policy',

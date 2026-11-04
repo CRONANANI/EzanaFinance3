@@ -221,6 +221,16 @@ const SWEPT_COUNTRY = [
   ...SWEPT,
 ];
 
+/* Nov 4: a member of Congress leads with their own datasets: the past
+   year's purchases by position, the latest disclosed trades, and trades in
+   sectors their committees oversee. */
+const SWEPT_POLITICIAN = [
+  { id: 'pol-buys', chip: 'BUYING 12M', name: 'Disclosed purchases, last 12 months' },
+  { id: 'pol-oversight', chip: 'OVERSIGHT', name: 'Trades in committee-overseen sectors' },
+  ...SWEPT,
+];
+const POLITICIAN_ORDER = ['pol-buys', 'congress', 'pol-oversight', 'echo'];
+
 const ROWS = [
   { cls: 'snr-anim-row0', tag: 'ECHO', source: 'Echo editorial', line: '[MATCH TITLE]' },
   {
@@ -529,8 +539,18 @@ const seatOf = (p) => [p.party, p.state].filter(Boolean).join(' · ');
  * time, then the members whose traded tickers overlap most. Every figure is an
  * estimate from disclosed ranges, and the card says so.
  */
-function PoliticianStack({ dossier, onGate, topSlot = null }) {
+/* Nov 4: "12.5%" for a holding's share of the estimated book. */
+const sharePct = (v) =>
+  typeof v === 'number' && v > 0 ? `${(v * 100).toFixed(v >= 0.1 ? 0 : 1)}%` : null;
+
+/* Nov 4 (full, the /sonar page): open positions and committee seats join
+   the chart and similar portfolios, and the member's news sits below. The
+   landing band keeps its two cards and its geometry. */
+function PoliticianStack({ dossier, onGate, topSlot = null, newsSlot = null, full = false }) {
   const s = dossier.stats || {};
+  const holdings = Array.isArray(dossier.holdings) ? dossier.holdings : [];
+  const topShare = Math.max(0, ...holdings.map((h) => Number(h.share) || 0));
+  const committees = Array.isArray(dossier.committees) ? dossier.committees : null;
   return (
     <div className="snr-stack">
       {topSlot}
@@ -589,6 +609,83 @@ function PoliticianStack({ dossier, onGate, topSlot = null }) {
         </p>
       </div>
 
+      {full && holdings.length ? (
+        <div className="snr-news snr-news--positions">
+          <div className="snr-card-head">
+            <span className="snr-panel-title">Open Positions</span>
+            <span className="snr-rule-soft" aria-hidden="true" />
+            {typeof s.openPositions === 'number' ? (
+              <span className="snr-news-meta">{s.openPositions} open</span>
+            ) : null}
+          </div>
+          <div className="snr-pos-list">
+            {holdings.map((h) => (
+              <button
+                key={h.ticker}
+                type="button"
+                className="snr-news-item snr-pos"
+                onClick={onGate}
+              >
+                <span className="snr-pos-ticker">{h.ticker}</span>
+                <span className="snr-pos-name">{h.company || h.sector || ''}</span>
+                <span className="snr-pos-bar" aria-hidden="true">
+                  <span
+                    className="snr-pos-fill"
+                    style={{
+                      width: `${topShare ? Math.max(4, ((Number(h.share) || 0) / topShare) * 100) : 0}%`,
+                    }}
+                  />
+                </span>
+                <span className="snr-pos-share">{sharePct(h.share) || ''}</span>
+              </button>
+            ))}
+          </div>
+          <p className="snr-pol-note">Share of the estimated open book, by disclosed ranges.</p>
+        </div>
+      ) : null}
+
+      {full && committees ? (
+        <div className="snr-news snr-news--committees">
+          <div className="snr-card-head">
+            <span className="snr-panel-title">Committee Seats</span>
+            <span className="snr-rule-soft" aria-hidden="true" />
+          </div>
+          {committees.length ? (
+            <div className="snr-news-list">
+              {committees.map((c) => (
+                <button
+                  key={c.thomasId}
+                  type="button"
+                  className="snr-news-item snr-cmte"
+                  onClick={onGate}
+                >
+                  <span className="snr-news-title">{c.shortName || c.name}</span>
+                  <span className="snr-news-meta">
+                    {[
+                      c.title,
+                      c.chamber
+                        ? `${String(c.chamber)[0].toUpperCase()}${String(c.chamber).slice(1)}`
+                        : null,
+                      c.sectors?.length ? `oversees ${c.sectors.slice(0, 2).join(', ')}` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="snr-pol-empty">No current committee seats on record.</p>
+          )}
+          {dossier.overseen?.matched ? (
+            <p className="snr-pol-note">
+              {dossier.overseen.matched} of {dossier.overseen.total} trades in 24 months fall in
+              sectors these committees oversee.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
       {dossier.similar?.length ? (
         <div className="snr-news snr-news--people">
           <div className="snr-card-head">
@@ -620,6 +717,8 @@ function PoliticianStack({ dossier, onGate, topSlot = null }) {
           </button>
         </div>
       ) : null}
+
+      {newsSlot}
     </div>
   );
 }
@@ -2382,7 +2481,9 @@ export function SonarSection({
      politician keeps its own stack). Wrapped in the .snr-news shell so the
      card entrance and the orbital's "last card landed" signal still fire.
      When placed, the deck below drops its news block so nothing repeats. */
-  const railPlaced = isPage && live?.dossier?.kind !== 'politician' && hasNewsColumns(live);
+  /* Nov 4: a member of Congress gets the rail too, below their stack, led
+     by their own headlines. */
+  const railPlaced = isPage && hasNewsColumns(live);
   const railNews = railPlaced ? (
     <div className="snr-news snr-news--around">
       <NewsAround live={live} rail />
@@ -2884,7 +2985,12 @@ export function SonarSection({
                     {(() => {
                       const m = live?.dossier?.matches || null;
                       const isCountry = live?.dossier?.kind === 'country';
-                      const swept = isCountry ? SWEPT_COUNTRY : SWEPT;
+                      const isPolitician = live?.dossier?.kind === 'politician';
+                      const swept = isCountry
+                        ? SWEPT_COUNTRY
+                        : isPolitician
+                          ? SWEPT_POLITICIAN
+                          : SWEPT;
                       /* A dataset is matched only when its leg actually returned
                      something. The honesty rule: no rich row is rendered from
                      an empty leg, and a null leg falls through to the dry row
@@ -2899,10 +3005,12 @@ export function SonarSection({
                         'prediction-markets': m?.markets?.length ? m.markets : null,
                         'oecd-macro': m?.oecd?.headline?.length ? m.oecd : null,
                         empire: m?.empire || null,
+                        'pol-buys': m?.buys?.length ? m.buys : null,
+                        'pol-oversight': m?.overseen?.trades?.length ? m.overseen : null,
                       };
                       /* Matched rich rows first, in the brief's order, then
                      everything else dimmed. */
-                      const order = [
+                      const baseOrder = [
                         'sanctions',
                         'oecd-macro',
                         'empire',
@@ -2914,6 +3022,12 @@ export function SonarSection({
                         'lobbying',
                         'prediction-markets',
                       ];
+                      const order = isPolitician
+                        ? [
+                            ...POLITICIAN_ORDER,
+                            ...baseOrder.filter((id) => !POLITICIAN_ORDER.includes(id)),
+                          ]
+                        : baseOrder;
                       /* Oct 26: only datasets that found something are listed.
                      A matched dataset with no dossier preview (an open
                      question's contracts or Echo hits) shows the items it
@@ -3072,9 +3186,53 @@ export function SonarSection({
                                     >
                                       {t.type}
                                     </span>
+                                    {t.range ? (
+                                      <span className="snr-trade-range">{t.range}</span>
+                                    ) : null}
                                     <span className="snr-trade-date">{relativeDay(t.date)}</span>
                                   </span>
                                 ))}
+                              </div>
+                            ) : null}
+
+                            {d.id === 'pol-buys' && data ? (
+                              <div className="snr-rich">
+                                {data.map((b, k) => (
+                                  <span key={`${b.ticker}-${k}`} className="snr-trade">
+                                    <span className="snr-trade-member">{b.ticker}</span>
+                                    <span className="snr-trade-type snr-up">
+                                      {b.count} {b.count === 1 ? 'buy' : 'buys'}
+                                    </span>
+                                    {b.range ? (
+                                      <span className="snr-trade-range">{b.range}</span>
+                                    ) : null}
+                                    <span className="snr-trade-date">{relativeDay(b.last)}</span>
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
+
+                            {d.id === 'pol-oversight' && data ? (
+                              <div className="snr-rich">
+                                {data.trades.map((t, k) => (
+                                  <span key={`${t.ticker}-${k}`} className="snr-trade">
+                                    <span className="snr-trade-member">{t.ticker}</span>
+                                    <span
+                                      className={`snr-trade-type ${
+                                        /sale|sell/i.test(t.type) ? 'snr-down' : 'snr-up'
+                                      }`}
+                                    >
+                                      {t.type}
+                                    </span>
+                                    {t.committee ? (
+                                      <span className="snr-trade-range">{t.committee}</span>
+                                    ) : null}
+                                    <span className="snr-trade-date">{relativeDay(t.date)}</span>
+                                  </span>
+                                ))}
+                                <span className="snr-row-line">
+                                  {data.matched} of {data.total} trades in 24 months
+                                </span>
                               </div>
                             ) : null}
 
@@ -3225,6 +3383,8 @@ export function SonarSection({
                   dossier={live.dossier}
                   onGate={() => openGate()}
                   topSlot={leadTop}
+                  newsSlot={railNews}
+                  full={isPage}
                 />
               ) : null}
 

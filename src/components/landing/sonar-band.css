@@ -4603,3 +4603,79 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
     transition: none;
   }
 }
+
+/* ── Nov 4: member of Congress, the full stack on /sonar ─────────────────
+   Open positions (ticker, company, share bar), committee seats, and the
+   disclosed range on a trade row. Tokens only. */
+.snr-band .snr-pos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.snr-band .snr-pos {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 64px 38px;
+  align-items: center;
+  gap: 8px;
+  width: calc(100% + 16px);
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.snr-band .snr-pos-ticker {
+  font-family: var(--snr-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--snr-track-label);
+  color: var(--snr-text);
+}
+.snr-band .snr-pos-name {
+  min-width: 0;
+  font-size: 12px;
+  color: var(--snr-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.snr-band .snr-pos-bar {
+  position: relative;
+  height: 4px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--snr-mint) 14%, transparent);
+  overflow: hidden;
+}
+.snr-band .snr-pos-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: var(--snr-mint);
+}
+.snr-band .snr-pos-share {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-cmte {
+  width: calc(100% + 16px);
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.snr-band .snr-cmte .snr-news-meta {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.snr-band .snr-trade-range {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  color: var(--snr-text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}

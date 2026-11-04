@@ -40,7 +40,12 @@ import {
 } from '@/lib/sonar/macro/brief';
 import { REGIONS as NEWS_REGIONS } from '@/lib/services/massive-news';
 import { industryProfile, industryNewsTitle, fetchIndustryNews } from '@/lib/sonar/industry-news';
-import { resolvePolitician, buildPoliticianDossier } from '@/lib/sonar/landing-politician';
+import {
+  resolvePolitician,
+  resolvePoliticianById,
+  buildPoliticianDossier,
+  politicianEvidence,
+} from '@/lib/sonar/landing-politician';
 import {
   resolveCountry,
   mentionedCountry,
@@ -177,6 +182,17 @@ This ping is about one listed company. Write exactly three paragraphs:
 (2) What analysts expect: from the (analysts) snippets, the consensus price target with its high and low and what it implies against the last price, how the ratings split, and the latest rating actions, each named with its firm ("Morgan Stanley maintained Overweight"). These are the firms' published views: always attribute them, never present a target or rating as Ezana's own, and never tell the reader to buy, sell or hold.
 (3) What Ezana's datasets show and what to watch: congressional trades, institutional holders, government contracts and lobbying from the dataset snippets, then the next catalysts.
 Use (news) snippets only to explain a move or an analyst action, cited inline; never list headlines and never quote a headline in full. Leave out a paragraph that has no snippets.`;
+
+/* Nov 4: a ping about a member of Congress ("What has Nancy Pelosi been
+   buying lately?"). The brief answers from the member's own disclosures;
+   before this the ping fell to a general briefing that stated stale facts
+   about the member from memory. */
+const POLITICIAN_ADDENDUM = `
+This ping is about one member of Congress. Answer from the (congress) snippets, which are the member's STOCK Act disclosures in Ezana's datasets. Write up to three short paragraphs:
+(1) What they have been buying and selling: the latest disclosed purchases and sales by ticker with dates and the disclosed ranges, largest first, and the overall pattern (sectors, repeat buys).
+(2) The estimated open portfolio and its largest positions, labelled as Ezana's estimate from filed ranges at their midpoints, with committee seats and any trades in sectors those committees oversee.
+(3) Members who trade similarly, and what to watch, using (news) snippets only to add context, cited inline.
+Disclosures report ranges, never exact amounts: write "between $500K and $1M" or "a $500K to $1M purchase", never a single figure. State no biography, office, role, retirement or election fact unless a snippet gives it. Never suggest a trade shows intent or inside knowledge, and never tell the reader to copy a trade.`;
 
 /* Appended for an IPO ping (Oct 30). */
 const IPO_ADDENDUM = `
@@ -1247,9 +1263,9 @@ async function buildDossierFor({
     try {
       return await leg(
         'dossier-politician',
-        () => buildPoliticianDossier(politician, admin),
+        () => buildPoliticianDossier(politician, admin, { matchEcho }),
         (v) =>
-          `series=${v.series ? v.series.length : 0} similar=${v.similar.length} trades12m=${v.stats?.trades12m ?? 0}`,
+          `series=${v.series ? v.series.length : 0} similar=${v.similar.length} trades12m=${v.stats?.trades12m ?? 0} buys=${v.buys12m.length} committees=${v.committees ? v.committees.length : 'n'} echo=${v.echo.length}`,
       );
     } catch {
       return null;
@@ -1744,16 +1760,25 @@ export async function runLandingPipeline(
   const rankPing = understood.intent === 'country_rank' && Boolean(country);
   /* A member of Congress before a company: "Nancy Pelosi" must not resolve
      to whatever FMP's fuzzy name search returns for it. */
+  /* Nov 4: a member the understanding layer already named (its politician
+     entity carries the bioguide id) resolves by id, however long the ping:
+     "What has Nancy Pelosi been buying lately?" used to fail the name
+     match's 4-word cap and fall through to a general briefing. */
+  const politicianEnt = understood.entities.find((e) => e.kind === 'person_politician') || null;
   const politician =
-    country ||
-    industryPing ||
-    companyAlias ||
-    companyMention ||
-    (tickerEnt && !understood.entities.some((e) => e.kind === 'person_politician'))
+    country || industryPing || companyAlias || companyMention || (tickerEnt && !politicianEnt)
       ? null
       : await leg(
           'resolve-politician',
-          () => within(resolvePolitician(q, admin), LEG.politician, null, 'politician'),
+          () =>
+            within(
+              (async () =>
+                (politicianEnt ? await resolvePoliticianById(politicianEnt.id, admin) : null) ||
+                resolvePolitician(q, admin))(),
+              LEG.politician,
+              null,
+              'politician',
+            ),
           (v) => (v ? v.bioguideId : 'none'),
         );
   /* A company: only from a chosen ticker entity, or a ping with no other
@@ -2090,6 +2115,17 @@ export async function runLandingPipeline(
     ).catch(() => null);
     if (early?.matches) items.push(...companyEvidence(early.matches, resolved));
   }
+  /* Nov 4: a member's disclosures lead the evidence, so the brief answers
+     from the trades on screen. */
+  if (politician && dossierP) {
+    const early = await within(
+      dossierP,
+      Math.min(LEG.companyDossier, left() - P.dossierReserveMs),
+      null,
+      'politician-dossier',
+    ).catch(() => null);
+    if (early) items.unshift(...politicianEvidence(early));
+  }
 
   /* Headlines last: the brief reads the datasets first. */
   const news = await within(
@@ -2294,6 +2330,7 @@ export async function runLandingPipeline(
           ? exposureAddendum(resolved.alias || shortName(resolved.name), contextCountry?.name)
           : '') +
         (country ? COUNTRY_ADDENDUM : '') +
+        (politician ? POLITICIAN_ADDENDUM : '') +
         (ipoIntent ? IPO_ADDENDUM : '') +
         (resolved &&
         !country &&
