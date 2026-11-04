@@ -138,10 +138,15 @@
 .dcm.dcm--rail .dcm-rule {
   background: color-mix(in srgb, var(--brand-band-mint) 24%, transparent);
 }
+/* Nov 3: transparent, as the header above promises. The fill was
+   --card-bg, which is near-white in light mode, and the /datasets and /sonar
+   routes are always light-mode at the DOM level, so the white ink below sat
+   on a white card ("Fastest growing economies" on a France ping). The
+   card is now the green ground itself, outlined by a mint hairline. */
 .dcm.dcm--rail .hdc.hub-card {
-  background: var(--card-bg);
+  background: transparent;
   box-shadow: none;
-  border: 1px solid transparent;
+  border: 1px solid color-mix(in srgb, var(--brand-band-mint) 22%, transparent);
   border-radius: var(--radius-lg);
   padding: 16px 18px;
   color: white;
