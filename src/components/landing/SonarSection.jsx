@@ -73,6 +73,7 @@ import { animateWindowScroll, humanPointer } from './sonar-motion';
 import './sonar-band.css';
 import SonarResearchDeck, { NewsAround, SanctionsRail, hasNewsColumns } from './SonarResearchDeck';
 import SonarSectorStack from './SonarSectorStack';
+import SonarFlowsStack from './SonarFlowsStack';
 import { CountryStack, CountryOecdRow, CountryEmpireRow } from './SonarCountryStack';
 import { SonarUnderstoodNotice } from './SonarUnderstoodNotice';
 import { IndustryStack } from './SonarIndustryStack';
@@ -241,6 +242,15 @@ const SWEPT_SECTOR = [
   ...SWEPT.filter((d) => d.id !== 'gov-contracts'),
 ];
 const SECTOR_ORDER = ['sector-members', 'congress', 'sector-contracts'];
+
+/* Nov 4: a 13F flows ping ("What are hedge funds selling right now?") leads
+   with the quarter's largest flows and full exits from Ezana's 13F data. */
+const SWEPT_FLOWS = [
+  { id: 'flow-sells', chip: '13F FLOWS', name: 'Largest 13F flows, latest filed quarter' },
+  { id: 'flow-exits', chip: 'FULL EXITS', name: 'Largest complete 13F exits' },
+  ...SWEPT.filter((d) => d.id !== '13f'),
+];
+const FLOWS_ORDER = ['flow-sells', 'flow-exits'];
 
 const ROWS = [
   { cls: 'snr-anim-row0', tag: 'ECHO', source: 'Echo editorial', line: '[MATCH TITLE]' },
@@ -3046,13 +3056,16 @@ export function SonarSection({
                       const isCountry = live?.dossier?.kind === 'country';
                       const isPolitician = live?.dossier?.kind === 'politician';
                       const isSector = live?.dossier?.kind === 'sector';
+                      const isFlows = live?.dossier?.kind === 'flows';
                       const swept = isCountry
                         ? SWEPT_COUNTRY
                         : isPolitician
                           ? SWEPT_POLITICIAN
                           : isSector
                             ? SWEPT_SECTOR
-                            : SWEPT;
+                            : isFlows
+                              ? SWEPT_FLOWS
+                              : SWEPT;
                       /* A dataset is matched only when its leg actually returned
                      something. The honesty rule: no rich row is rendered from
                      an empty leg, and a null leg falls through to the dry row
@@ -3073,6 +3086,8 @@ export function SonarSection({
                         'sector-contracts': m?.sectorContracts?.rows?.length
                           ? m.sectorContracts
                           : null,
+                        'flow-sells': m?.flowSells?.length ? m.flowSells : null,
+                        'flow-exits': m?.flowExits?.length ? m.flowExits : null,
                       };
                       /* Matched rich rows first, in the brief's order, then
                      everything else dimmed. */
@@ -3088,7 +3103,13 @@ export function SonarSection({
                         'lobbying',
                         'prediction-markets',
                       ];
-                      const lead = isPolitician ? POLITICIAN_ORDER : isSector ? SECTOR_ORDER : [];
+                      const lead = isPolitician
+                        ? POLITICIAN_ORDER
+                        : isSector
+                          ? SECTOR_ORDER
+                          : isFlows
+                            ? FLOWS_ORDER
+                            : [];
                       const order = [...lead, ...baseOrder.filter((id) => !lead.includes(id))];
                       /* Oct 26: only datasets that found something are listed.
                      A matched dataset with no dossier preview (an open
@@ -3269,6 +3290,41 @@ export function SonarSection({
                                       {mb.tickers.slice(0, 3).join(' ')}
                                     </span>
                                     <span className="snr-trade-date">{mb.trades} trades</span>
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
+
+                            {d.id === 'flow-sells' && data ? (
+                              <div className="snr-rich">
+                                {data.map((r) => {
+                                  const buying = live.dossier.side === 'buy';
+                                  return (
+                                    <span key={r.cusip || r.label} className="snr-trade">
+                                      <span className="snr-trade-member">{r.label}</span>
+                                      <span
+                                        className={`snr-trade-type ${buying ? 'snr-up' : 'snr-down'}`}
+                                      >
+                                        {buying ? `${r.buyers} buyers` : `${r.sellers} sellers`}
+                                      </span>
+                                      <span className="snr-trade-date">
+                                        {usdShort(buying ? r.boughtUsd : r.soldUsd)} ·{' '}
+                                        {live.dossier.quarterLabel}
+                                      </span>
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            ) : null}
+
+                            {d.id === 'flow-exits' && data ? (
+                              <div className="snr-rich">
+                                {data.map((e) => (
+                                  <span key={`${e.cik}-${e.label}`} className="snr-trade">
+                                    <span className="snr-trade-member">{e.filer}</span>
+                                    <span className="snr-trade-type snr-down">exited</span>
+                                    <span className="snr-trade-range">{e.label}</span>
+                                    <span className="snr-trade-date">{usdShort(e.valuePrior)}</span>
                                   </span>
                                 ))}
                               </div>
@@ -3494,6 +3550,18 @@ export function SonarSection({
                 />
               ) : null}
 
+              {/* Nov 4: a 13F flows ping: the quarter's largest sales or purchases,
+              sector flows and who sold, with the flows news below on the page. */}
+              {stage2 && live?.dossier?.kind === 'flows' ? (
+                <SonarFlowsStack
+                  dossier={live.dossier}
+                  onGate={() => openGate()}
+                  topSlot={leadTop}
+                  newsSlot={railNews}
+                  full={isPage}
+                />
+              ) : null}
+
               {/* A country: the key chart (the series furthest from its own
               20-year norm, switchable) in the price chart's slot, and the
               country's news in the news slot. Same shells again. */}
@@ -3516,6 +3584,7 @@ export function SonarSection({
               {stage2 &&
               live?.dossier?.kind !== 'politician' &&
               live?.dossier?.kind !== 'sector' &&
+              live?.dossier?.kind !== 'flows' &&
               live?.dossier?.kind !== 'country' &&
               live?.dossier?.kind !== 'industry' &&
               (live?.dossier?.fundamentals ||

@@ -26,6 +26,9 @@ export const DATASET_TO_CORPUS = {
   /* Not an orchestrator retriever: the landing pipeline runs the IPO filings
      source itself once the ping has resolved to a symbol. */
   'ipo-filings': 'ipo',
+  /* Not an orchestrator retriever: the landing pipeline reads 13F matches
+     (company pings) and the flow-leaders snapshot (flows pings) itself. */
+  '13f': '13f',
 };
 
 /** Corpus name → the Sonar dataset id it satisfies (reverse of the above). */

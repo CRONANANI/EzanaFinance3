@@ -1,0 +1,151 @@
+/* Sonar 13F flows stack (Nov 4, SonarFlowsStack). Rides the band's .snr-news
+   card shell and the sector stack's .snr-sec-* table classes; this file adds
+   only the diverging bars and the flows table grids. Tokens only. Numbers,
+   tickers and dates in mono, names in sans. Sold is --negative, bought is
+   --positive (status semantics: money out, money in). */
+
+.snr-band .snr-flw-card .is-up {
+  color: var(--positive);
+}
+.snr-band .snr-flw-card .is-down {
+  color: var(--negative);
+}
+
+/* Diverging bars: label | sold (grows left) | axis | bought (grows right). */
+.snr-band .snr-flw-div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.snr-band .snr-flw-div-row,
+.snr-band .snr-flw-net-row {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) 1px minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+}
+.snr-band .snr-flw-div-label {
+  font-family: var(--snr-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--snr-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.snr-band .snr-flw-div-track {
+  position: relative;
+  display: flex;
+  height: 8px;
+}
+.snr-band .snr-flw-div-track.is-left {
+  justify-content: flex-end;
+}
+.snr-band .snr-flw-div-track.is-right {
+  justify-content: flex-start;
+}
+.snr-band .snr-flw-div-bar {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  border-radius: var(--radius-sm);
+  transition: width 0.4s ease;
+}
+.snr-band .snr-flw-div-bar.is-sell {
+  background: color-mix(in srgb, var(--negative) 85%, transparent);
+}
+.snr-band .snr-flw-div-bar.is-buy {
+  background: var(--positive);
+}
+.snr-band .snr-flw-div-axis {
+  align-self: stretch;
+  width: 1px;
+  background: color-mix(in srgb, var(--snr-mint) 28%, transparent);
+}
+
+/* Sector net flow rows are buttons that open the gate. */
+.snr-band .snr-flw-net {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.snr-band .snr-flw-net-row {
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) 1px minmax(0, 1fr) 58px;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.snr-band .snr-flw-net-row:hover,
+.snr-band .snr-flw-net-row:focus-visible {
+  background: color-mix(in srgb, var(--snr-mint) 8%, transparent);
+  outline: none;
+}
+.snr-band .snr-flw-net-label {
+  font-family: var(--snr-font-sans);
+  font-size: 12px;
+  color: var(--snr-text);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.snr-band .snr-flw-net-value {
+  font-family: var(--snr-font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Table grids. */
+.snr-band .snr-flw-table .snr-sec-tr {
+  grid-template-columns: minmax(0, 1fr) 58px 58px 64px 64px;
+}
+.snr-band .snr-flw-table--filers .snr-sec-tr {
+  grid-template-columns: minmax(0, 1.6fr) 62px 40px 40px;
+}
+.snr-band .snr-flw-table--filers .snr-sec-tk {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--snr-font-sans);
+  font-size: 12px;
+}
+.snr-band .snr-flw-table--open .snr-sec-tr {
+  grid-template-columns: minmax(0, 1fr) 70px 52px;
+}
+.snr-band .snr-flw-sub {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 400;
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-flw-arrow {
+  margin: 0 3px;
+  font-size: var(--type-micro-size);
+  color: var(--snr-text-faint);
+}
+
+@media (max-width: 600px) {
+  .snr-band .snr-flw-table .snr-sec-tr {
+    grid-template-columns: minmax(0, 1fr) 52px 52px 56px;
+  }
+  .snr-band .snr-flw-table .snr-sec-tr > :last-child {
+    display: none;
+  }
+  .snr-band .snr-flw-net-row {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) 1px minmax(0, 1fr) 52px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snr-band .snr-flw-div-bar,
+  .snr-band .snr-flw-net-row {
+    transition: none;
+  }
+}
