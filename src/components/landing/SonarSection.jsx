@@ -2289,6 +2289,9 @@ export function SonarSection({
   const gateTitle = gateCopy?.title || 'This tool lives inside Ezana.';
   const gateSub =
     gateCopy?.sub || 'Log in or create a free account to open charts, filings, and trackers.';
+  /* Where the gate's Log in and Sign up land afterwards (Nov 3: the sector
+     report button sends visitors to the report itself). */
+  const gateNext = encodeURIComponent(gateCopy?.next || '/sonar');
 
   /* The composition is latched, and separate from the freeze. The two used to
      be one class: releasing the lock on an upward scroll removed snr-locked,
@@ -2386,6 +2389,15 @@ export function SonarSection({
     </div>
   ) : null;
   const answerFailed = hasPinged && !pinging && !live;
+  /* Nov 3: the company a ping resolved to, for the sector report button
+     under the brief: the dossier's ticker, else the understood ticker. */
+  const reportTicker =
+    (live?.dossier?.kind === 'company' && live.dossier.ticker) ||
+    live?.understood?.entities?.find((e) => e.kind === 'ticker')?.id ||
+    null;
+  const reportName = (live?.dossier?.kind === 'company' && live.dossier.name) || reportTicker || '';
+  const reportIndustry =
+    live?.dossier?.kind === 'company' ? live.dossier.industry?.label || null : null;
   /* The open commodity chart, measured from the brief's own start date
      ("since the Iran war began on February 28, 2026"). It leads the
      right-hand stack, above the country's power profile. */
@@ -2678,6 +2690,43 @@ export function SonarSection({
                             );
                           });
                         })()}
+                        {typed < 0 && reportTicker ? (
+                          /* Nov 3: a company ping offers the sector analysis
+                             report with comparables. It lives in the app
+                             (Company Research, Peers), so the button opens
+                             the sign-in / sign-up gate, which then lands the
+                             visitor on that report. */
+                          <button
+                            type="button"
+                            className="snr-report-cta"
+                            onClick={() =>
+                              openGate({
+                                title: `Open the ${reportName} sector report`,
+                                sub: `Log in or create a free account to compare ${reportName} with its peers${
+                                  reportIndustry ? ` in ${reportIndustry}` : ''
+                                }: valuation, growth, margins and returns side by side.`,
+                                next: `/company-research?ticker=${encodeURIComponent(
+                                  reportTicker,
+                                )}&section=peers`,
+                              })
+                            }
+                          >
+                            <span className="snr-report-icon" aria-hidden="true">
+                              <i className="bi bi-diagram-3" />
+                            </span>
+                            <span className="snr-report-text">
+                              <span className="snr-report-title">
+                                Open the sector analysis report
+                              </span>
+                              <span className="snr-report-sub">
+                                {reportName} against its comparables
+                                {reportIndustry ? ` in ${reportIndustry}` : ''}: valuation, growth,
+                                margins and returns.
+                              </span>
+                            </span>
+                            <i className="bi bi-arrow-right snr-report-arrow" aria-hidden="true" />
+                          </button>
+                        ) : null}
                         {typed < 0 ? (
                           <p className="snr-para">
                             <button type="button" className="snr-link" onClick={() => openGate()}>
@@ -2767,13 +2816,13 @@ export function SonarSection({
                     <div className="snr-gate-actions">
                       <a
                         className="snr-gate-btn snr-gate-btn-ghost"
-                        href="/auth/continue?next=/sonar"
+                        href={`/auth/continue?next=${gateNext}`}
                       >
                         Log in
                       </a>
                       <a
                         className="snr-gate-btn snr-gate-btn-solid"
-                        href="/auth/continue?intent=signup&next=/sonar"
+                        href={`/auth/continue?intent=signup&next=${gateNext}`}
                       >
                         Sign up free
                       </a>

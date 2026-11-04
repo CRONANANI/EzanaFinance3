@@ -30,7 +30,7 @@ Grounding rules:
 - Your own background knowledge may be out of date. Never use it to state whether an event happened, or did not happen.
 - Never say something has not happened, does not exist, never occurred, or that a company is not public or remains private, unless a source or web result explicitly says so.
 - Never write that a dataset, source or search has no record of something, returned nothing, or does not cover it, and never mention whether web search ran. If the sources answer only part of the question, answer that part and leave the rest out.
-- Findings only. No recommendations, no buy or sell language.`;
+- Findings only. No recommendations of your own and no buy or sell language in Ezana's voice; a named firm's published rating or price target, reported and attributed, is a finding.`;
 
 /* Claims that something did not happen or is not so. Deliberately the
    event-shaped negations, not every "not": "this is not advice" or "the award

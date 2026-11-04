@@ -57,6 +57,7 @@ import {
   buildNewsColumns,
   newsEvidence,
 } from '@/lib/sonar/landing-research';
+import { analystEvidence } from '@/lib/sonar/analyst-evidence';
 import { BoundedMap } from '@/lib/bounded-map';
 import { withTimeout } from '@/lib/with-timeout';
 import { usd } from '@/lib/research-copilot/retrievers/shared';
@@ -125,7 +126,7 @@ Rules:
 - Ezana's datasets come first. Build the brief around every snippet that is genuinely about the subject and cite its marker inline, e.g. [S1]. Never cite a snippet about a different entity.
 - Then go beyond the datasets: search the web for current facts, recent events, figures and context the snippets do not cover, and weave them in. Name the outlet or source for web facts in passing ("per Reuters").
 - Answer the question the visitor actually asked. Lead with the direct answer, then the evidence, then what it means.
-- Findings only. No financial or investment advice, price targets, or buy/sell/hold language. No fabricated figures: a number comes from a snippet or a web result, or it does not appear.
+- Findings only. No financial or investment advice of your own: no price target, rating or buy/sell/hold call in Ezana's voice. Reporting a named firm's published rating or price target from a snippet, attributed to that firm or to analyst consensus, is a finding. No fabricated figures: a number comes from a snippet or a web result, or it does not appear.
 - Four short paragraphs separated by blank lines: (1) direct answer, (2) what Ezana's datasets show, cited, (3) what the web adds: recent events and figures, (4) cross-signals and what to watch. Each paragraph 50 to 90 words. No headers, no lists, no em dashes.`;
 
 /* The no-snippet path: the datasets returned nothing about the subject, so
@@ -145,12 +146,12 @@ Rules:
    live market data and the listing record for a resolved company (market),
    the IPO filings source (ipo) and recent headlines from Ezana's news feed
    (news). Three shorter paragraphs, so a fast model finishes in time. */
-const FAST_GROUNDED_PROMPT = `You are Ezana Sonar, a research analyst answering a ping. Your evidence is the numbered snippets below: Ezana's datasets (congressional trades, government contracts, SEC and IPO filings, 13F holdings, lobbying, the OFAC sanctions list, prediction markets, Echo editorial), live market data marked (market) and recent headlines from Ezana's news feed marked (news). The (market) and (news) snippets are current as of today.
+const FAST_GROUNDED_PROMPT = `You are Ezana Sonar, a research analyst answering a ping. Your evidence is the numbered snippets below: Ezana's datasets (congressional trades, government contracts, SEC and IPO filings, 13F holdings, lobbying, the OFAC sanctions list, prediction markets, Echo editorial), live market data marked (market), published analyst ratings and price targets marked (analysts), and recent headlines from Ezana's news feed marked (news). The (market), (analysts) and (news) snippets are current as of today.
 Rules:
 - Answer the question the visitor actually asked. Lead with the direct answer, then the evidence, then what it means.
 - Cite every fact inline with its snippet marker, e.g. [S1]. Never cite a snippet about a different entity.
 - Write only about the subject. Never comment on what the snippets, datasets or searches contain or lack, and never mention web search. If the snippets answer only part of the question, answer that part.
-- Findings only. No financial or investment advice, price targets, or buy/sell/hold language. No fabricated figures: a number comes from a snippet or it does not appear.
+- Findings only. No financial or investment advice of your own: no price target, rating or buy/sell/hold call in Ezana's voice. Reporting a named firm's published rating or price target from an (analysts) snippet, attributed to that firm or to analyst consensus, is a finding. No fabricated figures: a number comes from a snippet or it does not appear.
 - Three short paragraphs separated by blank lines: (1) direct answer, (2) the evidence, cited, (3) what it means and what to watch. Each paragraph 40 to 70 words. No headers, no lists, no em dashes.`;
 
 /* No snippet at all, and no web: established background, dated. */
@@ -161,6 +162,17 @@ Rules:
 - Write only about the subject. Never mention Ezana's datasets, sources, coverage or web search.
 - No fabricated figures, dates or names. Findings only. No financial or investment advice, price targets, or buy/sell/hold language.
 - Three short paragraphs separated by blank lines, each 40 to 70 words. No headers, no lists, no em dashes.`;
+
+/* Nov 3: appended for a ping about one listed company ("aapl"). The brief
+   breaks down how the stock is moving and what named analysts expect, then
+   what Ezana's datasets add. Headlines are context for a move, never a list:
+   a brief that read "Headline: ..." three times told the visitor nothing. */
+const COMPANY_ADDENDUM = `
+This ping is about one listed company. Write exactly three paragraphs:
+(1) Market moves: how the stock is trading, from the (market) snippets only: last price and the day's move, the change over 1 month, 3 months, year to date and 1 year, where the price sits in its 52-week range, and market cap. Say what the moves add up to (a rally, a pullback, range-bound).
+(2) What analysts expect: from the (analysts) snippets, the consensus price target with its high and low and what it implies against the last price, how the ratings split, and the latest rating actions, each named with its firm ("Morgan Stanley maintained Overweight"). These are the firms' published views: always attribute them, never present a target or rating as Ezana's own, and never tell the reader to buy, sell or hold.
+(3) What Ezana's datasets show and what to watch: congressional trades, institutional holders, government contracts and lobbying from the dataset snippets, then the next catalysts.
+Use (news) snippets only to explain a move or an analyst action, cited inline; never list headlines and never quote a headline in full. Leave out a paragraph that has no snippets.`;
 
 /* Appended for an IPO ping (Oct 30). */
 const IPO_ADDENDUM = `
@@ -1371,25 +1383,30 @@ export function companyEvidence(matches, resolved) {
 const PROFILES = {
   fast: {
     id: 'fast',
-    routeBudgetMs: 4_900,
-    defaultBudgetMs: 4_900,
+    /* Nov 3: production traces showed the brief needs about 3.5s on the fast
+       model and was getting 2.4s, so most company briefs fell back to the
+       evidence list. The evidence legs now hand over earlier and the
+       limiter and ledger caps are tighter, keeping the whole request
+       inside six seconds. */
+    routeBudgetMs: 5_300,
+    defaultBudgetMs: 5_300,
     authMs: 700,
     reserveMs: 1_100,
-    ledgerMs: 400,
-    rateLimitMs: 800,
+    ledgerMs: 300,
+    rateLimitMs: 500,
     resolveFetchMs: 900,
     tailMs: 300,
-    evidenceReserveMs: 2_700,
-    dossierReserveMs: 2_700,
+    evidenceReserveMs: 3_600,
+    dossierReserveMs: 3_600,
     model: process.env.SONAR_FAST_MODEL || HAIKU_MODEL,
-    briefTokens: 420,
+    briefTokens: 400,
     sanctionsExtraTokens: 260,
     web: false,
     regenerate: false,
     generalMinMs: 1_300,
     minHopMs: 1_000,
     hopReserveMs: 0,
-    maxSnippets: 14,
+    maxSnippets: 12,
     legs: {
       industry: 700,
       politician: 600,
@@ -1405,6 +1422,7 @@ const PROFILES = {
       ipo: 2_000,
       ipoFetch: 1_000,
       market: 1_200,
+      analysts: 1_400,
       news: 1_000,
     },
   },
@@ -1444,6 +1462,7 @@ const PROFILES = {
       ipo: 6_000,
       ipoFetch: 4_000,
       market: 4_000,
+      analysts: 4_000,
       news: 4_000,
     },
   },
@@ -1537,9 +1556,10 @@ function newsItems(articles) {
     return {
       corpus: 'news',
       title: a.title,
-      snippet: `Headline: "${String(a.title).replace(/\s*[—–]\s*/g, ', ')}" (${a.source}${
-        day ? `, ${day}` : ''
-      }).`,
+      snippet: `Reported by ${a.source}${day ? ` on ${day}` : ''}: ${String(a.title).replace(
+        /\s*[—–]\s*/g,
+        ', ',
+      )}.`,
       url: a.url,
       date: day || null,
       meta: { source: a.source },
@@ -1567,9 +1587,28 @@ export function evidenceBrief(subject, marked) {
   };
   const line = (it) =>
     `${clip(it.snippet || it.text || it.title).replace(/[.!?]$/, '')} [${it.marker}].`;
-  const top = marked.slice(0, 3).map(line);
+  /* Nov 3: headlines only when there is nothing else; never a paragraph of
+     them under real findings. A company's moves and its analysts each get a
+     paragraph of their own, then the dataset matches. */
+  const nonNews = marked.filter((it) => it.corpus !== 'news');
+  const pool = nonNews.length ? nonNews : marked;
+  const moves = pool.filter((it) => it.corpus === 'market' || it.corpus === 'ipo');
+  const analysts = pool.filter((it) => it.corpus === 'analysts');
+  if (moves.length || analysts.length) {
+    const data = pool.filter((it) => !moves.includes(it) && !analysts.includes(it));
+    const paras = [];
+    const lead = `Here is what Sonar found on ${subject}.`;
+    if (moves.length) paras.push(`${lead} ${moves.slice(0, 3).map(line).join(' ')}`);
+    if (analysts.length) {
+      const text = analysts.slice(0, 3).map(line).join(' ');
+      paras.push(paras.length ? text : `${lead} ${text}`);
+    }
+    if (data.length) paras.push(data.slice(0, 3).map(line).join(' '));
+    return paras.join('\n\n');
+  }
+  const top = pool.slice(0, 3).map(line);
   if (!top.length) return null;
-  const rest = marked.slice(3, 6).map(line);
+  const rest = pool.slice(3, 6).map(line);
   const paras = [`Here is what Sonar found on ${subject}. ${top.join(' ')}`];
   if (rest.length) paras.push(rest.join(' '));
   return paras.join('\n\n');
@@ -1811,6 +1850,23 @@ export async function runLandingPipeline(
           (v) => (v ? 'snapshot' : 'none'),
         ).catch(() => null)
       : Promise.resolve(null);
+  /* Nov 3: a company ping also reads its price performance and what
+     analysts publish (targets, ratings, recent actions), beside the market
+     snapshot. */
+  const analystsP =
+    resolved?.ticker && !country && !politician && !industryPing
+      ? leg(
+          'analysts',
+          () =>
+            within(
+              analystEvidence(resolved.ticker, { ms: LEG.analysts }),
+              LEG.analysts,
+              [],
+              'analysts',
+            ),
+          (v) => `items=${v.length}`,
+        ).catch(() => [])
+      : Promise.resolve([]);
   const newsPhrase = industryPing
     ? display
     : country
@@ -1945,10 +2001,14 @@ export async function runLandingPipeline(
   /* The IPO filings and the market snapshot lead the evidence, so the
      brief opens with them. */
   const evidenceWait = Math.max(0, left() - P.evidenceReserveMs);
-  const [ipoFindings, market] = await Promise.all([
+  const [ipoFindings, market, analystItems] = await Promise.all([
     within(ipoP, evidenceWait, [], 'ipo-wait').catch(() => []),
     within(marketP, evidenceWait, null, 'market-wait').catch(() => null),
+    within(analystsP, evidenceWait, [], 'analysts-wait').catch(() => []),
   ]);
+  /* Order: market snapshot, performance, analysts, then the datasets. */
+  items.unshift(...analystItems.filter((it) => it.corpus === 'analysts'));
+  items.unshift(...analystItems.filter((it) => it.corpus === 'market'));
   if (market) items.unshift(market);
   items.unshift(
     ...ipoFindings.map((f) => ({
@@ -2180,6 +2240,9 @@ export async function runLandingPipeline(
         (sanctions ? SANCTIONS_ADDENDUM : '') +
         (country ? COUNTRY_ADDENDUM : '') +
         (ipoIntent ? IPO_ADDENDUM : '') +
+        (resolved && !country && !politician && !industryPing && !ipoIntent && !sanctions
+          ? COMPANY_ADDENDUM
+          : '') +
         DATE_RULES +
         GROUNDING_RULES +
         (webActive ? '' : NO_WEB_RULES),
