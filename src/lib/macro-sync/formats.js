@@ -343,13 +343,10 @@ export function decodeJsonStat(js) {
 
 /**
  * Read a workbook (xlsx or legacy xls) into { sheetName: rows[][] }. Requires SheetJS
- * ('xlsx', installed from the SheetJS CDN tarball, not the stale npm 0.18.x build).
- * Imported lazily so routes that never parse Excel don't load it.
- *
- * webpackIgnore keeps the build green while SheetJS is not yet installed (the
- * CDN tarball couldn't be fetched when this landed). Until it is, the four
- * spreadsheet adapters (gpr, epu, wui, pinksheet) fail with the error below
- * and the rotator moves on; everything else runs.
+ * ('xlsx', installed from the npm registry, 0.18.5; the official CDN build, 0.20.3,
+ * will replace it once it can be downloaded). Imported lazily so routes that never
+ * parse Excel don't load it; only the four spreadsheet adapters (gpr, epu, wui,
+ * pinksheet) use it.
  */
 export async function readWorkbook(buffer) {
   let XLSX;
@@ -357,7 +354,7 @@ export async function readWorkbook(buffer) {
     XLSX = await import(/* webpackIgnore: true */ 'xlsx');
   } catch (e) {
     throw new Error(
-      `SheetJS ('xlsx') is not installed: run npm i https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz (${e.code || e.message})`,
+      `SheetJS ('xlsx') could not be loaded; run npm install so the xlsx dependency in package.json is present (${e.code || e.message})`,
     );
   }
   const lib = XLSX.read ? XLSX : XLSX.default;
