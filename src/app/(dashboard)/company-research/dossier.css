@@ -3,9 +3,8 @@
    section tabs that swap content in place with pinning (C). */
 
 .crx-canvas {
+  /* Page canvas (Nov 2026): fills the shell, which spans the nav bar. */
   width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;

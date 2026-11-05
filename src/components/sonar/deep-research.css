@@ -147,10 +147,29 @@
    its border (Nov 2026). */
 .sdr-run {
   width: 100%;
-  max-width: 1040px;
+  /* Page canvas (Nov 2026): the run spans the nav bar, from the logo's left
+     edge to the logout icon's right edge. /sonar is full bleed, so the run
+     takes the nav's own envelope; on the public /datasets it takes the
+     landing nav's; inside the dashboard shell it fills the shell. */
+  max-width: var(--marketing-shell-max);
   margin: 0 auto;
-  padding: 24px 16px 64px;
+  padding: 24px var(--app-shell-pad) 64px;
   box-sizing: border-box;
+}
+.ds-shell--in-app .sdr-run,
+.dashboard-main-content .sdr-run {
+  max-width: var(--app-shell-max);
+}
+.dashboard-main-content:not(.dashboard-main-content--fullscreen) .sdr-run {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+@media (max-width: 768px) {
+  .sdr-run {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 }
 .sdr-run-bar {
   display: flex;

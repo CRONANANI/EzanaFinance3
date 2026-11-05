@@ -1,7 +1,8 @@
+/* Page canvas (Nov 2026): the dashboard shell sets the width and side
+   padding of every page to the nav bar's (logo to logout), so the page root
+   adds neither. */
 .elo-lb-container {
-  padding: 1rem 1.5rem;
-  max-width: 1280px;
-  margin: 0 auto;
+  padding: 1rem 0;
 }
 
 .elo-lb-header {

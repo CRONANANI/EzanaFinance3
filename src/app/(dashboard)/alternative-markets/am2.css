@@ -17,9 +17,8 @@
 }
 
 .am2-content {
-  max-width: 1480px;
-  margin: 0 auto;
-  padding: 0 28px 32px;
+  /* Page canvas (Nov 2026): the shell sets the width and side padding. */
+  padding: 0 0 32px;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -1090,7 +1089,7 @@
 
 @media (max-width: 899px) {
   .am2-content {
-    padding: 0 16px 24px;
+    padding: 0 0 24px;
   }
   .am2-marquee {
     margin: 0 -1rem;

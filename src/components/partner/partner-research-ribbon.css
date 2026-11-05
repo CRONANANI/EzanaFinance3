@@ -3,7 +3,7 @@
   top: 64px;
   z-index: 40;
   margin: 0;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0;
   border-bottom: 1px solid rgba(212, 168, 83, 0.18);
   background: linear-gradient(90deg, rgba(212, 168, 83, 0.1) 0%, rgba(15, 20, 25, 0.92) 45%);
   backdrop-filter: blur(8px);
@@ -16,8 +16,11 @@ body.light-mode .partner-research-ribbon {
 }
 
 .partner-research-ribbon-inner {
-  max-width: 1400px;
+  /* Lines up with the nav bar (Nov 2026): its envelope, logo to logout. */
+  max-width: var(--app-shell-max);
   margin: 0 auto;
+  padding: 0 var(--app-shell-pad);
+  box-sizing: border-box;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -113,5 +116,11 @@ body.light-mode .partner-research-ribbon-link:hover {
   .partner-research-ribbon-link {
     flex: 1;
     justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .partner-research-ribbon-inner {
+    padding: 0 1rem;
   }
 }

@@ -3195,10 +3195,11 @@ body.light-mode .echo-admin-bar {
   cursor: not-allowed;
 }
 
+/* Page canvas (Nov 2026): the dashboard shell sets the width and side
+   padding of every page to the nav bar's (logo to logout), so the page root
+   adds neither. */
 .echo-archive-page {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
+  padding: 2rem 0 4rem;
 }
 
 .echo-archive-header {

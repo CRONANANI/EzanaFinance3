@@ -1,10 +1,11 @@
 /* Research copilot — analyst-facing cross-corpus Q&A surface. Theme-token only
    (light + dark inherit from theme-variables.css); no hardcoded hex. */
 
+/* Page canvas (Nov 2026): the dashboard shell sets the width and side
+   padding of every page to the nav bar's (logo to logout), so the page root
+   adds neither. */
 .rc-page {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 32px 20px 80px;
+  padding: 32px 0 80px;
   color: var(--text-primary);
   font-family: var(--font-sans);
 }

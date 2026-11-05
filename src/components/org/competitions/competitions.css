@@ -3,9 +3,11 @@
    exactly like the rest of the org app; surfaces/text use the shared theme tokens
    so light/dark come for free. */
 
+/* Page canvas (Nov 2026): the dashboard shell sets the width and side
+   padding of every page to the nav bar's (logo to logout), so the page root
+   adds neither. */
 .pcx-page {
-  max-width: 1120px;
-  margin: 0 auto;
+  width: 100%;
 }
 .pcx-empty-page {
   max-width: 640px;

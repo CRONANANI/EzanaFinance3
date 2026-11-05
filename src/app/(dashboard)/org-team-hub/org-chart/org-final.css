@@ -63,10 +63,11 @@ body.light-mode .ox-root {
   }
 }
 
+/* Page canvas (Nov 2026): the dashboard shell sets the width and side
+   padding of every page to the nav bar's (logo to logout), so the page root
+   adds neither. */
 .ox-wrap {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 32px;
+  padding: 0;
 }
 
 /* ── Desk tape ─────────────────────────────────────────────── */
@@ -1233,7 +1234,7 @@ body.light-mode .ox-root {
 }
 @media (max-width: 720px) {
   .ox-wrap {
-    padding: 0 18px;
+    padding: 0;
   }
   .ox-tape {
     justify-content: flex-start;

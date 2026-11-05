@@ -69,10 +69,11 @@ button:active:not(:disabled) {
 }
 
 /* ── Optional max-width (partner dashboard only; page margins from layout) ── */
+/* Page canvas (Nov 2026): the dashboard shell sets the width and side
+   padding of every page to the nav bar's (logo to logout), so the page root
+   adds neither. */
 .partner-dashboard-container {
-  max-width: 1320px;
-  margin-left: auto;
-  margin-right: auto;
+  width: 100%;
 }
 
 /* ── Skip to content — visually hidden until focused ── */

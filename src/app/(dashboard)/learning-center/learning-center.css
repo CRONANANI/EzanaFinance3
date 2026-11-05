@@ -1,9 +1,10 @@
 /* Learning Center — redesigned hub styles */
 
+/* Page canvas (Nov 2026): the dashboard shell sets the width and side
+   padding of every page to the nav bar's (logo to logout), so the page root
+   adds neither. */
 .lc-page {
-  padding: 28px 36px 48px;
-  max-width: 1440px;
-  margin: 0 auto;
+  padding: 28px 0 48px;
   color: var(--fg);
 }
 

@@ -4,9 +4,8 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  /* Page canvas (Nov 2026): fills the shell, which spans the nav bar. */
   padding: 2rem 0 3rem;
-  max-width: 1400px;
-  margin: 0 auto;
 }
 
 /* ── Hero (40% shorter, centered) ──────────────────────────── */

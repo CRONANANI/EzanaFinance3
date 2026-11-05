@@ -1,9 +1,11 @@
 /* The /sonar briefing page shell (SonarV2Client.jsx). Tokens only. */
 
 .snv2 {
-  max-width: 1400px;
+  /* Page canvas (Nov 2026): the nav bar's envelope, logo to logout. */
+  max-width: var(--app-shell-max);
   margin: 0 auto;
-  padding: 36px 32px 72px;
+  padding: 36px var(--app-shell-pad) 72px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 24px;

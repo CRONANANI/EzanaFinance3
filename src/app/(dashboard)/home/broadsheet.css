@@ -1842,8 +1842,7 @@ body.light-mode .bs-band + .bs-band {
   display: flex;
   align-items: center;
   gap: 14px;
-  max-width: 1200px;
-  margin: 12px auto 0;
+  margin: 12px 0 0;
   padding: 10px 16px;
   border: 1px solid var(--emerald-border, var(--border-primary));
   border-radius: var(--radius-lg, 12px);

@@ -162,10 +162,11 @@ html.light-mode .ezana-theme {
   color: var(--emerald-ink);
 }
 
+/* Page canvas (Nov 2026): the dashboard shell sets the width and side
+   padding of every page to the nav bar's (logo to logout), so the page root
+   adds neither. */
 .evo-hub {
-  max-width: 1340px;
-  margin: 0 auto;
-  padding: 24px 28px 80px;
+  padding: 24px 0 80px;
 }
 
 .ezana-theme .phead {

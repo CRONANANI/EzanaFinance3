@@ -3,10 +3,11 @@
    Premium gold theme matching Kairos/Centaur branding
    ════════════════════════════════════════════════════════════ */
 
+/* Page canvas (Nov 2026): the dashboard shell sets the width and side
+   padding of every page to the nav bar's (logo to logout), so the page root
+   adds neither. */
 .re-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1.5rem 1rem 4rem;
+  padding: 1.5rem 0 4rem;
 }
 
 /* ── Hero ── */

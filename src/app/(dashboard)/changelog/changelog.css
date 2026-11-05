@@ -3,10 +3,11 @@
    Mirrors the ma-chain-* styling from Global Market Analysis
    ════════════════════════════════════════════════════════════ */
 
+/* Page canvas (Nov 2026): the dashboard shell sets the width and side
+   padding of every page to the nav bar's (logo to logout), so the page root
+   adds neither. */
 .cl-page {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 1.25rem 1.25rem 2.5rem;
+  padding: 1.25rem 0 2.5rem;
 }
 
 .cl-header {
@@ -327,7 +328,7 @@ body.light-mode .cl-filter-pill:hover {
 /* ── Mobile ── */
 @media (max-width: 640px) {
   .cl-page {
-    padding: 1rem 1rem 3rem;
+    padding: 1rem 0 3rem;
   }
   .cl-title {
     font-size: 1.2rem;

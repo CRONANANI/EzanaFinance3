@@ -1,8 +1,9 @@
 /* Dashboard pricing — aligns with card + button polish tokens */
 
+/* Page canvas (Nov 2026): the dashboard shell sets the width and side
+   padding of every page to the nav bar's (logo to logout), so the page root
+   adds neither. */
 .pricing-page {
-  max-width: 1200px;
-  margin: 0 auto;
   padding: 0 0 2rem;
 }
 

@@ -4,11 +4,11 @@
   min-height: 100vh;
   background: var(--bg-primary);
   color: var(--text-primary);
-  padding: 40px 20px 60px;
+  /* Page canvas (Nov 2026): the shell sets the width and side padding. */
+  padding: 40px 0 60px;
 }
 .crx-container {
-  max-width: 1000px;
-  margin: 0 auto;
+  width: 100%;
 }
 .crx-hero {
   /* Left-aligned inside the org shell's content region, matching the Trading

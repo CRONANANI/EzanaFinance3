@@ -1,13 +1,22 @@
 /* /sonar/research page shell (engine v3). `srp-` prefix, tokens only. */
 .srp {
   min-height: 100vh;
-  padding: 2rem 16px 4rem;
+  /* Page canvas (Nov 2026): the nav bar's envelope, logo to logout. */
+  max-width: var(--app-shell-max);
+  margin: 0 auto;
+  padding: 2rem var(--app-shell-pad) 4rem;
+  box-sizing: border-box;
   background: var(--bg-primary);
+}
+@media (max-width: 768px) {
+  .srp {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 }
 .srp-bar {
   display: flex;
   gap: 0.5rem;
-  max-width: 960px;
   margin: 0 auto 2rem;
 }
 .srp-input {
@@ -46,7 +55,6 @@
   outline-offset: 2px;
 }
 .srp-gate {
-  max-width: 960px;
   margin: 0 auto;
   color: var(--text-secondary);
 }
