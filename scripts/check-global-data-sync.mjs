@@ -18,6 +18,8 @@ const { parseSidra, parseBcra, parseBcrp, parseArgSeries } =
 const { parseSarb, parseCbnFx, parseBoj, parseSingstat, parseMospiCpi } =
   await import('../src/lib/macro-sync/sources/africa-asia.js');
 const risk = await import('../src/lib/macro-sync/sources/risk-indices.js');
+const { parseFewsCsv } = await import('../src/lib/macro-sync/sources/energy-food.js');
+const { runSync, dedupeRows } = await import('../src/lib/macro-sync/engine.js');
 const { parseEuXml, parseUnXml, parseUkCsv } = await import('../src/lib/sanctions-intl/parsers.js');
 const { syncList } = await import('../src/lib/sanctions-intl/index.js');
 
@@ -218,6 +220,287 @@ test('Africa and Asia: SARB, CBN, BOJ, SingStat, MoSPI', () => {
   });
   assert.equal(mo.length, 2);
   assert.equal(mo[0].period, '2026-09');
+});
+
+/* ---------------------------------------------------------------- duplicate keys */
+
+/* No upsert may carry one (series_key, period) twice; Postgres refuses with "ON CONFLICT DO
+   UPDATE command cannot affect row a second time". */
+const keyCounts = (rows) => {
+  const seen = new Map();
+  for (const r of rows) {
+    const k = `${r.series_key}|${r.period}`;
+    seen.set(k, (seen.get(k) || 0) + 1);
+  }
+  return [...seen.values()];
+};
+const assertUniqueKeys = (rows, label) =>
+  assert.ok(
+    keyCounts(rows).every((n) => n === 1),
+    `${label}: two rows share a (series_key, period)`,
+  );
+
+/* In-memory Supabase stand-in whose macro_series_values upsert fails like Postgres does. */
+function strictDb() {
+  const state = new Map();
+  const values = new Map();
+  const upserts = [];
+  return {
+    values,
+    upserts,
+    from(table) {
+      const q = {
+        select: () => q,
+        eq: (_c, v) => ((q.key = v), q),
+        maybeSingle: async () => ({ data: state.get(q.key) || null, error: null }),
+        upsert: async (rows) => {
+          rows = [].concat(rows);
+          if (table === 'macro_ingest_state') {
+            for (const r of rows) state.set(r.source, { ...state.get(r.source), ...r });
+            return { error: null };
+          }
+          upserts.push(rows.length);
+          const keys = rows.map((r) => `${r.source}|${r.series_key}|${r.period}`);
+          if (new Set(keys).size !== keys.length) {
+            return {
+              error: { message: 'ON CONFLICT DO UPDATE command cannot affect row a second time' },
+            };
+          }
+          rows.forEach((r, i) => values.set(keys[i], r));
+          return { error: null };
+        },
+      };
+      return q;
+    },
+  };
+}
+
+test('engine: dedupeRows keeps the last occurrence and counts the rest', () => {
+  const { rows, dropped } = dedupeRows([
+    { series_key: 'A', period: '2026-01', value: 1 },
+    { series_key: 'A', period: '2026-02', value: 2 },
+    { series_key: 'A', period: '2026-01', value: 3 },
+    { series_key: 'B', period: '2026-01', value: 4 },
+    { series_key: 'A', period: '2026-01', value: 5 },
+  ]);
+  assert.equal(dropped, 2);
+  assert.equal(rows.length, 3);
+  assert.equal(rows.find((r) => r.series_key === 'A' && r.period === '2026-01').value, 5);
+  assert.deepEqual(dedupeRows([]), { rows: [], dropped: 0 });
+});
+
+test('engine: a batch with duplicate keys is written once per key and reports duplicatesDropped', async () => {
+  const db = strictDb();
+  // 1,200 rows with 200 repeats spread across what would be three upsert chunks.
+  const rows = [];
+  for (let i = 0; i < 1000; i += 1) {
+    rows.push({ series_key: `S${i % 50}`, period: `P${Math.floor(i / 50)}`, value: i });
+  }
+  for (let i = 0; i < 200; i += 1) {
+    rows.push({ series_key: `S${i % 50}`, period: `P${Math.floor(i / 50)}`, value: -(i + 1) });
+  }
+  const adapter = {
+    source: 'dupetest',
+    minIntervalMs: 0,
+    attribution: 'test',
+    buildBatches: () => [{ label: 'one' }],
+    fetchBatch: async () => rows,
+  };
+  const r = await runSync(db, adapter, { force: true });
+  assert.deepEqual(r.errors, []);
+  assert.equal(r.passComplete, true);
+  assert.equal(r.rowsRead, 1200);
+  assert.equal(r.rowsWritten, 1000);
+  assert.equal(r.duplicatesDropped, 200);
+  assert.equal(db.values.size, 1000);
+  assert.equal(db.values.get('dupetest|S0|P0').value, -1); // the last occurrence wins
+  assert.equal(db.values.get('dupetest|S7|P3').value, -158);
+  assert.equal(db.values.get('dupetest|S7|P4').value, 207); // no repeat: original kept
+  assert.ok(db.upserts.every((n) => n <= 500));
+});
+
+test('engine: duplicatesDropped is 0 for a clean batch', async () => {
+  const r = await runSync(
+    strictDb(),
+    {
+      source: 'clean',
+      minIntervalMs: 0,
+      attribution: 'test',
+      buildBatches: () => [{ label: 'one' }],
+      fetchBatch: async () => [
+        { series_key: 'A', period: '2026-01', value: 1 },
+        { series_key: 'A', period: '2026-02', value: 2 },
+      ],
+    },
+    { force: true },
+  );
+  assert.equal(r.rowsWritten, 2);
+  assert.equal(r.duplicatesDropped, 0);
+});
+
+test('EPU: China and Mainland China are two series, neither lost, no duplicate keys', () => {
+  const rows = [
+    ['Economic Policy Uncertainty Index'],
+    ['Year', 'Month', 'GEPU_current', 'GEPU_ppp', 'Australia', 'China', 'Mainland China', 'US'],
+    [1999, 12, 100, 101, 90, 120, null, 80],
+    [2000, 1, 102, 103, 91, 130, 140, 81],
+    [2000, 2, 104, 105, 92, 131, 141, 82],
+    ['Notes: China uses the South China Morning Post'],
+  ];
+  const out = risk.parseEpuSheet(rows);
+  assertUniqueKeys(out, 'EPU');
+  const series = (k) => out.filter((r) => r.series_key === k);
+  assert.deepEqual(
+    series('EPU.EPU:CHN').map((r) => [r.period, r.value]),
+    [
+      ['1999-12', 120],
+      ['2000-01', 130],
+      ['2000-02', 131],
+    ],
+  );
+  assert.deepEqual(
+    series('EPU.EPU_MAINLAND:CHN').map((r) => [r.period, r.value]),
+    [
+      ['2000-01', 140],
+      ['2000-02', 141],
+    ],
+  );
+  assert.equal(series('EPU.EPU_MAINLAND:CHN')[0].country_iso3, 'CHN');
+  assert.equal(
+    series('EPU.EPU_MAINLAND:CHN')[0].series_name,
+    'Economic policy uncertainty index (Mainland China)',
+  );
+  assert.equal(series('EPU.EPU:USA').length, 3);
+  assert.equal(series('EPU.EPU:AUS').length, 3);
+  assert.equal(series('EPU.GEPU_current:WLD').length, 3);
+  assert.equal(out.length, 3 * 2 + 3 * 3 + 2); // GEPU x2, AUS/CHN/USA, Mainland China
+});
+
+test('EPU: an "SCMP China" header is kept under its own key, not dropped', () => {
+  const cols = risk.epuCountryColumns([
+    'Year',
+    'Month',
+    'GEPU_current',
+    'SCMP China',
+    'Mainland China',
+    'Korea',
+    'UK',
+  ]);
+  assert.deepEqual(
+    [...cols.values()].map((c) => c.key),
+    ['EPU.EPU:CHN', 'EPU.EPU_MAINLAND:CHN', 'EPU.EPU:KOR', 'EPU.EPU:GBR'],
+  );
+  // No plain "China" column: the first claimant keeps EPU.EPU:CHN, the other is qualified.
+  assert.equal(cols.get(3).key, 'EPU.EPU:CHN');
+  assert.equal(cols.get(4).key, 'EPU.EPU_MAINLAND:CHN');
+  const three = risk.epuCountryColumns(['Year', 'Month', 'China', 'SCMP China', 'Mainland China']);
+  assert.deepEqual(
+    [...three.values()].map((c) => c.key),
+    ['EPU.EPU:CHN', 'EPU.EPU_SCMP:CHN', 'EPU.EPU_MAINLAND:CHN'],
+  );
+});
+
+test('CBN: one central rate per currency and date; the last posted record wins', () => {
+  const out = parseCbnFx([
+    { id: 900, currency: 'US DOLLAR', ratedate: '2019-03-01', centralrate: '306.90' },
+    { id: 905, currency: 'US DOLLAR', ratedate: '2019-03-01', centralrate: '306.95' },
+    { id: 901, currency: 'US  Dollar ', ratedate: '2019-03-01T00:00:00', centralrate: '306.80' },
+    { id: 899, currency: 'US DOLLAR', ratedate: '2019-02-28', centralrate: '306.85' },
+    { id: 902, currency: 'EURO', ratedate: '2019-03-01', centralrate: '349.1' },
+  ]);
+  assertUniqueKeys(out, 'CBN');
+  const usd = out.filter((r) => r.series_key === 'CBN.FX:US_DOLLAR');
+  assert.deepEqual(
+    usd.map((r) => [r.period, r.value]),
+    [
+      ['2019-03-01', 306.95],
+      ['2019-02-28', 306.85],
+    ],
+  );
+  assert.equal(usd[0].series_name, 'NGN per US DOLLAR (CBN central rate)');
+  assert.equal(out.filter((r) => r.series_key === 'CBN.FX:EURO').length, 1);
+  // Without ids the first listed (newest first in the feed) is kept.
+  const noIds = parseCbnFx([
+    { currency: 'YEN', ratedate: '2018-01-02', centralrate: '2.71' },
+    { currency: 'YEN', ratedate: '2018-01-02', centralrate: '2.70' },
+  ]);
+  assert.deepEqual(
+    noIds.map((r) => r.value),
+    [2.71],
+  );
+});
+
+const FEWS_HEADER =
+  'country_code,market,market_id,product,product_source,unit,currency,price_type,period_date,value';
+test('FEWS NET: weekly prices average into one monthly row per series', () => {
+  const csv = [
+    FEWS_HEADER,
+    'NE,Niamey,101,Millet (Pearl),Local,kg,XOF,Retail,2026-03-02,300',
+    'NE,Niamey,101,Millet (Pearl),Local,kg,XOF,Retail,2026-03-09,310',
+    'NE,Niamey,101,Millet (Pearl),Local,kg,XOF,Retail,2026-03-16,320',
+    'NE,Niamey,101,Millet (Pearl),Local,kg,XOF,Retail,2026-03-23,330',
+    'NE,Niamey,101,Millet (Pearl),Local,kg,XOF,Retail,2026-04-06,340',
+  ].join('\n');
+  const out = parseFewsCsv(csv, 'NE');
+  assertUniqueKeys(out, 'FEWS weekly');
+  assert.deepEqual(
+    out.map((r) => [r.series_key, r.period, r.value]),
+    [
+      ['FEWS:NE.Niamey.Millet (Pearl).kg.XOF.Retail', '2026-03', 315],
+      ['FEWS:NE.Niamey.Millet (Pearl).kg.XOF.Retail', '2026-04', 340],
+    ],
+  );
+  assert.equal(out[0].country_iso3, 'NER');
+  assert.equal(out[0].series_name, 'Millet (Pearl) price, Niamey');
+});
+
+test('FEWS NET: local and imported product in one market stay two series', () => {
+  const csv = [
+    FEWS_HEADER,
+    'NG,Kano,7,Rice (Milled),Local,50_kg,NGN,Wholesale,2026-03-01,60000',
+    'NG,Kano,7,Rice (Milled),Import,50_kg,NGN,Wholesale,2026-03-01,85000',
+    'NG,Kano,7,Rice (Milled),Import,50_kg,NGN,Wholesale,2026-03-15,87000',
+    'NG,Kano,7,Maize Grain (White),Local,kg,NGN,Retail,2026-03-01,700',
+  ].join('\n');
+  const out = parseFewsCsv(csv, 'NG');
+  assertUniqueKeys(out, 'FEWS product source');
+  const byKey = Object.fromEntries(out.map((r) => [r.series_key, r]));
+  assert.equal(byKey['FEWS:NG.Kano.Rice (Milled).50_kg.NGN.Wholesale.Local'].value, 60000);
+  assert.equal(byKey['FEWS:NG.Kano.Rice (Milled).50_kg.NGN.Wholesale.Import'].value, 86000);
+  assert.equal(
+    byKey['FEWS:NG.Kano.Rice (Milled).50_kg.NGN.Wholesale.Import'].series_name,
+    'Rice (Milled) price, Kano (Import)',
+  );
+  // A key that covers one series is unchanged, so stored rows keep their key.
+  assert.ok(byKey['FEWS:NG.Kano.Maize Grain (White).kg.NGN.Retail']);
+  assert.equal(out.length, 3);
+});
+
+test('FEWS NET: two markets with one name are told apart by market id only', () => {
+  const csv = [
+    FEWS_HEADER + ',dataseries',
+    'SO,Garowe,11,Sorghum (Red),Local,kg,SOS,Retail,2026-03-01,8000,501',
+    'SO,Garowe,12,Sorghum (Red),Local,kg,SOS,Retail,2026-03-01,8500,502',
+  ].join('\n');
+  const out = parseFewsCsv(csv, 'SO');
+  assertUniqueKeys(out, 'FEWS market id');
+  assert.deepEqual(out.map((r) => r.series_key).sort(), [
+    'FEWS:SO.Garowe.Sorghum (Red).kg.SOS.Retail.11',
+    'FEWS:SO.Garowe.Sorghum (Red).kg.SOS.Retail.12',
+  ]);
+});
+
+test('FEWS NET: without identity columns, repeats in a month are averaged, never doubled', () => {
+  const csv = [
+    'market,product,unit,currency,price_type,period_date,value',
+    'Mogadishu,Wheat Flour,kg,SOS,Retail,2026-03-01,20000',
+    'Mogadishu,Wheat Flour,kg,SOS,Retail,2026-03-15,21000',
+  ].join('\n');
+  const out = parseFewsCsv(csv, 'SO');
+  assert.deepEqual(
+    out.map((r) => [r.series_key, r.period, r.value]),
+    [['FEWS:SO.Mogadishu.Wheat Flour.kg.SOS.Retail', '2026-03', 20500]],
+  );
 });
 
 const GPR_FILE = new URL('./fixtures/data_gpr_export.xls', import.meta.url);

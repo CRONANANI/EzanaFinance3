@@ -98,8 +98,21 @@ async function writeState(db, source, patch) {
   if (error) throw new Error(`macro_ingest_state: ${error.message}`);
 }
 
+/**
+ * One row per (series_key, period), keeping the last occurrence. Postgres refuses an
+ * upsert that touches the same conflict key twice ("ON CONFLICT DO UPDATE command cannot
+ * affect row a second time"), which would fail the whole batch. The source is constant
+ * within a call, so (series_key, period) is the full (source, series_key, period) key.
+ * Parsers should not emit duplicates; this is the backstop, and the count is reported.
+ */
+export function dedupeRows(rows) {
+  const byKey = new Map();
+  for (const r of rows) byKey.set(`${r.series_key}\u0000${r.period}`, r);
+  return { rows: [...byKey.values()], dropped: rows.length - byKey.size };
+}
+
 async function upsertRows(db, source, rows) {
-  const clean = rows.filter((r) => r.series_key && r.period);
+  const { rows: clean, dropped } = dedupeRows(rows.filter((r) => r.series_key && r.period));
   let written = 0;
   for (let i = 0; i < clean.length; i += UPSERT_CHUNK) {
     const now = new Date().toISOString();
@@ -110,7 +123,7 @@ async function upsertRows(db, source, rows) {
     if (error) throw new Error(`macro_series_values: ${error.message}`);
     written += chunk.length;
   }
-  return written;
+  return { written, dropped };
 }
 
 export async function runSync(db, adapter, { budgetMs = Infinity, force = false, sleep } = {}) {
@@ -153,6 +166,7 @@ export async function runSync(db, adapter, { budgetMs = Infinity, force = false,
   let cursor = Math.min(state.cursor, batches.length);
   let rowsRead = 0;
   let rowsWritten = 0;
+  let duplicatesDropped = 0;
   const errors = [];
   while (cursor < batches.length && Date.now() + adapter.minIntervalMs + 20000 < deadline) {
     try {
@@ -160,7 +174,9 @@ export async function runSync(db, adapter, { budgetMs = Infinity, force = false,
         fetchWithRetry(url, { ...opts, deadline }),
       );
       rowsRead += rows.length;
-      rowsWritten += await upsertRows(db, source, rows);
+      const { written, dropped } = await upsertRows(db, source, rows);
+      rowsWritten += written;
+      duplicatesDropped += dropped;
       /* Optional mirror into another table (GPR also feeds lighthouse_observations). */
       if (typeof adapter.afterBatch === 'function') await adapter.afterBatch(db, rows);
       cursor += 1;
@@ -181,6 +197,7 @@ export async function runSync(db, adapter, { budgetMs = Infinity, force = false,
     source,
     rowsRead,
     rowsWritten,
+    duplicatesDropped,
     batchesDone: cursor,
     batchesTotal: batches.length,
     passComplete: done,

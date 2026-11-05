@@ -75,26 +75,43 @@ export const sarb = {
 
 const CBN_FX_KEEP = /dollar|euro|pound|yuan|yen|franc|riyal|rand/i;
 
+/**
+ * The full history lists some currencies twice on the same date (a rate posted again, or the
+ * same currency spelt with different case or spacing, which share one key). That is one
+ * series with one central rate per day, so one row is kept per currency and date: the
+ * record posted last (highest id), or, without ids, the first listed, as the feed runs
+ * newest first. Two rows for one key and date used to fail the whole upsert.
+ */
 export function parseCbnFx(json) {
-  const out = [];
+  const byKey = new Map();
   for (const r of Array.isArray(json) ? json : []) {
-    const currency = String(r.currency || '').trim();
+    const currency = String(r.currency || '')
+      .replace(/\s+/g, ' ')
+      .trim();
     if (!currency || !CBN_FX_KEEP.test(currency)) continue;
     const period = normPeriod(String(r.ratedate || '').slice(0, 10));
     const value = toNum(r.centralrate);
     if (!period || value === null) continue;
-    out.push({
-      series_key: `CBN.FX:${currency.toUpperCase().replace(/\s+/g, '_')}`,
-      country_iso3: 'NGA',
-      period,
-      value,
-      series_name: `NGN per ${currency} (CBN central rate)`,
-      unit: 'NGN',
-      frequency: 'D',
-      dataset: 'ExchangeRates',
+    const series_key = `CBN.FX:${currency.toUpperCase().replace(/\s+/g, '_')}`;
+    const id = Number(r.id);
+    const k = `${series_key}|${period}`;
+    const prev = byKey.get(k);
+    if (prev && !(Number.isFinite(id) && Number.isFinite(prev.id) && id > prev.id)) continue;
+    byKey.set(k, {
+      id,
+      row: {
+        series_key,
+        country_iso3: 'NGA',
+        period,
+        value,
+        series_name: `NGN per ${currency.toUpperCase()} (CBN central rate)`,
+        unit: 'NGN',
+        frequency: 'D',
+        dataset: 'ExchangeRates',
+      },
     });
   }
-  return out;
+  return [...byKey.values()].map((e) => e.row);
 }
 
 export const CBN_DATASETS = [{ name: 'ExchangeRates', parse: parseCbnFx, sinceYear: 2015 }];

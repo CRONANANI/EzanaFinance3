@@ -243,8 +243,30 @@ export const FEWS_COUNTRIES = [
 const pick = (r, names) =>
   names.map((n) => r[n]).find((v) => v !== undefined && v !== null && v !== '');
 
+/* What tells two FEWS NET data series apart beyond market, product, unit, currency and price
+   type, in the order a suffix uses them. Whichever columns the export carries are used. */
+const FEWS_IDENTITY = [
+  ['product_source'],
+  ['market_id', 'geographic_unit', 'fnid'],
+  ['source_organization', 'source_organisation'],
+  ['dataseries_specifier'],
+  ['dataseries', 'dataseries_id'],
+];
+
+const mean = (xs) => Math.round((xs.reduce((s, x) => s + x, 0) / xs.length) * 1e6) / 1e6;
+
+/**
+ * FEWS NET market prices -> one monthly row per series. Two things used to give two rows the
+ * same key and month, which failed the whole batch:
+ *   1. Markets surveyed weekly or by dekad (West African market systems, among others) carry
+ *      several prices a month for the same series. They are averaged into the month.
+ *   2. Different data series can share market, product, unit, currency and price type (local
+ *      and imported product, two markets with one name, two reporting organisations). When a
+ *      key covers more than one, each gets a suffix from the identity columns that differ, so
+ *      both survive. Keys with a single series stay exactly as before.
+ */
 export function parseFewsCsv(text, iso2) {
-  const out = [];
+  const obs = [];
   for (const r of parseCsv(text)) {
     const period = normPeriod(
       String(pick(r, ['period_date', 'collection_date', 'start_date', 'date']) || '').slice(0, 10),
@@ -256,18 +278,65 @@ export function parseFewsCsv(text, iso2) {
     const unit = pick(r, ['unit', 'unit_name']) || '';
     const currency = pick(r, ['currency', 'currency_code']) || '';
     const priceType = pick(r, ['price_type']) || '';
-    out.push({
-      series_key: `FEWS:${iso2}.${market}.${product}.${unit}.${currency}.${priceType}`,
-      country_iso3: toIso3(iso2),
-      period: period.slice(0, 7),
+    const identity = FEWS_IDENTITY.map((names) => String(pick(r, names) ?? '').trim());
+    obs.push({
+      base: `FEWS:${iso2}.${market}.${product}.${unit}.${currency}.${priceType}`,
+      identity,
+      id: identity.join('\u0000'),
+      month: period.slice(0, 7),
       value,
       series_name: `${product} price, ${market}`.trim(),
       unit: [currency, unit && `per ${unit}`].filter(Boolean).join(' ') || null,
-      frequency: 'M',
-      dataset: 'marketpricefacts',
     });
   }
-  return out;
+
+  // Which base keys cover more than one data series, and which identity columns differ.
+  const seriesByBase = new Map();
+  for (const o of obs) {
+    if (!seriesByBase.has(o.base)) seriesByBase.set(o.base, new Map());
+    seriesByBase.get(o.base).set(o.id, o.identity);
+  }
+  const keyOf = new Map();
+  for (const [base, series] of seriesByBase) {
+    if (series.size === 1) {
+      for (const id of series.keys()) keyOf.set(`${base}\u0001${id}`, { key: base, label: '' });
+      continue;
+    }
+    // The fewest identity columns, taken in order, that tell the series apart.
+    const idents = [...series.values()];
+    const use = [];
+    for (let j = 0; j < FEWS_IDENTITY.length; j += 1) {
+      if (new Set(idents.map((x) => x[j])).size > 1) use.push(j);
+      if (new Set(idents.map((x) => use.map((u) => x[u]).join('\u0000'))).size === idents.length)
+        break;
+    }
+    for (const [id, ident] of series) {
+      const parts = use.map((j) => ident[j]).filter(Boolean);
+      // At most one series has none of the distinguishing values; it keeps the plain key.
+      keyOf.set(`${base}\u0001${id}`, {
+        key: parts.length ? `${base}.${parts.join('.')}` : base,
+        label: parts.join(', '),
+      });
+    }
+  }
+
+  const months = new Map();
+  for (const o of obs) {
+    const { key, label } = keyOf.get(`${o.base}\u0001${o.id}`);
+    const k = `${key}\u0000${o.month}`;
+    if (!months.has(k)) months.set(k, { key, label, o, values: [] });
+    months.get(k).values.push(o.value);
+  }
+  return [...months.values()].map(({ key, label, o, values }) => ({
+    series_key: key,
+    country_iso3: toIso3(iso2),
+    period: o.month,
+    value: values.length === 1 ? values[0] : mean(values),
+    series_name: label ? `${o.series_name} (${label})` : o.series_name,
+    unit: o.unit,
+    frequency: 'M',
+    dataset: 'marketpricefacts',
+  }));
 }
 
 export const fewsnet = {

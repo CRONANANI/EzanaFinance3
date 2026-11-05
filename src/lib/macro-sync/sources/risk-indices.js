@@ -8,6 +8,7 @@
  *       /datasets/geopolitical-risk page reads (no loader for it existed in the repo).
  *  epu  Economic Policy Uncertainty, All_Country_Data.xlsx: Year, Month, GEPU_current,
  *       GEPU_ppp, then one column per country NAME. Notes rows at the bottom are dropped.
+ *       China has two columns (China, Mainland China): see epuCountryColumns.
  *  wui  World Uncertainty Index (quarterly). The file path changes every release, so the
  *       link is scraped from the site's data page. Wide: a date column then ISO3 columns.
  *  pinksheet  World Bank commodity prices, monthly. The file hash changes yearly, so the link
@@ -152,12 +153,58 @@ export const gpr = {
 
 const EPU_URL = 'https://www.policyuncertainty.com/media/All_Country_Data.xlsx';
 const EPU_NAME_FIXES = {
-  'SCMP China': null,
+  'SCMP China': 'CHN',
   'Mainland China': 'CHN',
   US: 'USA',
   UK: 'GBR',
   Korea: 'KOR',
 };
+
+const words = (s) =>
+  String(s || '')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+
+/**
+ * Country column -> { key, iso3, name }. Two columns can name the same country: the file
+ * carries both "China" (Baker, Bloom and Davis, read from the South China Morning Post) and
+ * "Mainland China" (Davis, Liu and Sheng, mainland newspapers, from 2000). Both used to land
+ * on EPU.EPU:CHN, which made every batch from 2000 on fail. Each is its own index, so each
+ * keeps its own key: the column named plainly after the country keeps EPU.EPU:{ISO3}, and a
+ * qualified one gets the qualifier, e.g. EPU.EPU_MAINLAND:CHN. With no plain column the
+ * first one keeps the plain key.
+ */
+export function epuCountryColumns(header) {
+  const byIso = new Map();
+  header.forEach((h, i) => {
+    if (i < 2 || !h || h.startsWith('GEPU')) return;
+    const iso3 = h in EPU_NAME_FIXES ? EPU_NAME_FIXES[h] : nameToIso3(h);
+    if (!iso3) return;
+    if (!byIso.has(iso3)) byIso.set(iso3, []);
+    byIso.get(iso3).push({ i, h });
+  });
+  const cols = new Map();
+  for (const [iso3, group] of byIso) {
+    const country = new Set(words(iso3Name(iso3)));
+    const qualifier = (h) => words(h).filter((w) => !country.has(w));
+    const plain = group.find((c) => qualifier(c.h).length === 0) || group[0];
+    const used = new Set();
+    for (const c of group) {
+      let key = `EPU.EPU:${iso3}`;
+      let name = 'Economic policy uncertainty index';
+      if (c !== plain) {
+        const q = (qualifier(c.h).join('_') || words(c.h).join('_')).toUpperCase();
+        key = `EPU.EPU_${q}:${iso3}`;
+        if (used.has(key)) key = `EPU.EPU_${q}_${c.i}:${iso3}`;
+        name = `Economic policy uncertainty index (${c.h})`;
+      }
+      used.add(key);
+      cols.set(c.i, { key, iso3, name });
+    }
+  }
+  return cols;
+}
 
 export function parseEpuSheet(rows) {
   const headerIdx = rows.findIndex(
@@ -165,6 +212,7 @@ export function parseEpuSheet(rows) {
   );
   if (headerIdx < 0) throw new Error('EPU: header row (Year, Month) not found');
   const header = rows[headerIdx].map((h) => (h === null ? '' : String(h).trim()));
+  const countryCols = epuCountryColumns(header);
   const out = [];
   for (const r of rows.slice(headerIdx + 1)) {
     const y = Number(r[0]);
@@ -188,14 +236,14 @@ export function parseEpuSheet(rows) {
         });
         return;
       }
-      const iso3 = h in EPU_NAME_FIXES ? EPU_NAME_FIXES[h] : nameToIso3(h);
-      if (!iso3) return;
+      const col = countryCols.get(i);
+      if (!col) return;
       out.push({
-        series_key: `EPU.EPU:${iso3}`,
-        country_iso3: iso3,
+        series_key: col.key,
+        country_iso3: col.iso3,
         period,
         value,
-        series_name: 'Economic policy uncertainty index',
+        series_name: col.name,
         unit: 'index',
         frequency: 'M',
         dataset: 'epu_all_country',
