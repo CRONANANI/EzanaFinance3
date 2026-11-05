@@ -187,7 +187,7 @@
 .osr-kind {
   text-transform: uppercase;
   letter-spacing: var(--type-eyebrow-tracking);
-  font-size: 10.5px;
+  font-size: var(--type-micro-size);
 }
 .osr-ticker {
   font-family: var(--font-mono);
