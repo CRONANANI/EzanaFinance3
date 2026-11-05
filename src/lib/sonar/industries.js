@@ -346,3 +346,23 @@ export function peersOf(ticker, max = 6) {
     .slice(0, max)
     .map((c) => ({ ticker: c.ticker, name: c.company_name, stage: c.stage_id, same: rank(c) }));
 }
+
+/* The largest customers of an industry, whose capital spending leads its
+   demand (Nov 2026, deep research). Tickers as listed; names for display. */
+const INDUSTRY_CUSTOMERS = {
+  semiconductors: [
+    { ticker: 'MSFT', name: 'Microsoft' },
+    { ticker: 'AMZN', name: 'Amazon' },
+    { ticker: 'GOOGL', name: 'Alphabet' },
+    { ticker: 'META', name: 'Meta Platforms' },
+    { ticker: 'ORCL', name: 'Oracle' },
+  ],
+};
+
+/** The tracked large customers of a company's registry industry, or []. */
+export function customersOf(ticker) {
+  const t = String(ticker || '').toUpperCase();
+  const me = SEED.companies.find((c) => String(c.ticker).toUpperCase() === t);
+  if (!me) return [];
+  return (INDUSTRY_CUSTOMERS[me.industry_id] || []).filter((c) => c.ticker !== t);
+}

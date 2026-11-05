@@ -72,7 +72,14 @@ const CONCEPTS = [
   'operating_income',
   'net_income',
   'operating_cash_flow',
+  'capex',
+  'rd_expense',
+  /* balance-sheet instants, attached to the period that ends on their date */
+  'inventory',
+  'receivables',
+  'purchase_obligations',
 ];
+const INSTANTS = new Set(['inventory', 'receivables', 'purchase_obligations']);
 
 /** Reported periods for tickers: { [ticker]: { quarters: [...], years: [...] } } newest first. */
 export async function reportedPeriods(admin, tickers) {
@@ -81,19 +88,33 @@ export async function reportedPeriods(admin, tickers) {
     .select('ticker, entity_name, concept, period_type, frame, period_end, value')
     .in('ticker', tickers)
     .in('concept', CONCEPTS)
-    .in('period_type', ['quarter', 'annual'])
+    .in('period_type', ['quarter', 'annual', 'instant'])
     .order('period_end', { ascending: false })
-    .limit(60 * tickers.length);
+    .limit(90 * tickers.length);
   if (error || !data?.length) return {};
   const out = {};
+  const instants = [];
   for (const r of data) {
     const t = String(r.ticker).toUpperCase();
     out[t] = out[t] || { name: r.entity_name || t, quarter: new Map(), annual: new Map() };
+    if (r.period_type === 'instant' || INSTANTS.has(r.concept)) {
+      instants.push(r);
+      continue;
+    }
     const bucket = r.period_type === 'quarter' ? out[t].quarter : out[t].annual;
     const key = String(r.period_end).slice(0, 10);
     const row = bucket.get(key) || { periodEnd: key, frame: r.frame || null };
     row[r.concept] = Number(r.value);
     bucket.set(key, row);
+  }
+  /* A balance-sheet value belongs to the quarter (or year) ending that day. */
+  for (const r of instants) {
+    const t = String(r.ticker).toUpperCase();
+    const key = String(r.period_end).slice(0, 10);
+    for (const bucket of [out[t].quarter, out[t].annual]) {
+      const row = bucket.get(key);
+      if (row && row[r.concept] == null) row[r.concept] = Number(r.value);
+    }
   }
   for (const t of Object.keys(out)) {
     const shape = (m) =>
@@ -123,6 +144,13 @@ function periodLine(p, label) {
   if (Number.isFinite(p.net_income)) parts.push(`net income ${usdB(p.net_income)}`);
   if (Number.isFinite(p.operating_cash_flow))
     parts.push(`operating cash flow ${usdB(p.operating_cash_flow)}`);
+  if (Number.isFinite(p.capex)) parts.push(`capital expenditure ${usdB(p.capex)}`);
+  if (Number.isFinite(p.rd_expense)) parts.push(`research and development ${usdB(p.rd_expense)}`);
+  if (Number.isFinite(p.inventory)) parts.push(`inventory at period end ${usdB(p.inventory)}`);
+  if (Number.isFinite(p.receivables))
+    parts.push(`accounts receivable at period end ${usdB(p.receivables)}`);
+  if (Number.isFinite(p.purchase_obligations))
+    parts.push(`purchase obligations ${usdB(p.purchase_obligations)}`);
   return `${label}: ${parts.join(', ')}`;
 }
 
@@ -356,9 +384,183 @@ export async function peerFinancials({ ticker, name, peers = [] }, { admin, ms }
   };
 }
 
+/* ── customer_capex (Nov 2026, deep research step 3) ────────────────── */
+
+/**
+ * Capital expenditure of the subject's main customers, from their own SEC
+ * filings: the leading indicator of the subject's demand (hyperscaler
+ * spending is an AI chip maker's revenue). Each company's latest quarter and
+ * fiscal years, capex as a share of operating cash flow, and fiscal-year
+ * growth. Periods differ by company and are always named.
+ */
+export async function customerCapex({ ticker, name, customers = [] }, { admin }) {
+  const list = (customers || []).map((c) => String(c.ticker || c).toUpperCase()).filter(Boolean);
+  if (!list.length) return { items: [] };
+  const all = await reportedPeriods(admin, list);
+  const rows = list
+    .map((t) => {
+      const f = all[t];
+      if (!f) return null;
+      const q = f.quarters.find((p) => Number.isFinite(p.capex)) || null;
+      const ys = f.years.filter((p) => Number.isFinite(p.capex));
+      const y0 = ys[0] || null;
+      const y1 = ys[1] || null;
+      if (!q && !y0) return null;
+      const label = (customers.find((c) => String(c.ticker || c).toUpperCase() === t) || {}).name;
+      return {
+        ticker: t,
+        name: label || f.name,
+        quarterEnd: q?.periodEnd || null,
+        quarterCapex: q?.capex ?? null,
+        quarterOcf: q?.operating_cash_flow ?? null,
+        yearEnd: y0?.periodEnd || null,
+        yearCapex: y0?.capex ?? null,
+        yearOcf: y0?.operating_cash_flow ?? null,
+        priorYearEnd: y1?.periodEnd || null,
+        priorYearCapex: y1?.capex ?? null,
+        growth: y0?.capex && y1?.capex ? y0.capex / y1.capex - 1 : null,
+      };
+    })
+    .filter(Boolean);
+  if (!rows.length) return { items: [] };
+  const subject = name || ticker;
+  const line = (r) => {
+    const parts = [];
+    if (r.quarterCapex != null)
+      parts.push(
+        `quarter ended ${r.quarterEnd} capital expenditure ${usdB(r.quarterCapex)}${
+          r.quarterOcf ? ` (${pct1(r.quarterCapex / r.quarterOcf)} of operating cash flow)` : ''
+        }`,
+      );
+    if (r.yearCapex != null)
+      parts.push(
+        `fiscal year ended ${r.yearEnd} ${usdB(r.yearCapex)}${
+          r.growth != null ? `, ${signed(r.growth)} from ${usdB(r.priorYearCapex)}` : ''
+        }`,
+      );
+    return `${r.name} (${r.ticker}) ${parts.join('; ')}`;
+  };
+  return {
+    layout: { customerCapex: { ticker, rows } },
+    items: [
+      {
+        kind: 'aggregate',
+        title: `Capital spending by ${subject}'s largest customers`,
+        text: `Capital expenditure reported in SEC filings by the companies Ezana tracks as ${subject}'s largest customers (each company's own fiscal periods, which differ): ${rows
+          .map(line)
+          .join(
+            '. ',
+          )}. Capital expenditure covers all property and equipment, not only purchases from ${subject}.`,
+        data: { metric: 'customer_capex', rows },
+        entities: [ticker, ...rows.map((r) => r.ticker)],
+      },
+    ],
+  };
+}
+
+/* ── estimates (Nov 2026, deep research step 3) ─────────────────────── */
+
+/**
+ * Consensus analyst estimates and trailing valuation multiples from the
+ * market data provider. These are third-party forecasts: every item says so,
+ * with the number of analysts and the date, and the memo may only attribute
+ * them, never adopt them.
+ */
+export async function estimates({ ticker, name }, { ms, now = new Date() }) {
+  const t = String(ticker || '').toUpperCase();
+  if (!t) return { items: [] };
+  const [est, ratios, metrics] = await Promise.all([
+    fmp('analyst-estimates', { symbol: t, period: 'annual', limit: 6 }, ms),
+    fmp('ratios-ttm', { symbol: t }, ms),
+    fmp('key-metrics-ttm', { symbol: t }, ms),
+  ]);
+  return estimatesFromPayload({ est, ratios, metrics }, { ticker: t, name, now });
+}
+
+/** The estimates items from the provider's payloads. Pure, so it is testable. */
+export function estimatesFromPayload({ est, ratios, metrics }, { ticker, name, now = new Date() }) {
+  const t = String(ticker || '').toUpperCase();
+  const asOf = new Date(now).toISOString().slice(0, 10);
+  const label = name || t;
+  const today = asOf;
+  const forward = (Array.isArray(est) ? est : [])
+    .filter((r) => String(r?.date || '') >= today && Number.isFinite(Number(r?.revenueAvg)))
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)))
+    .slice(0, 2)
+    .map((r) => ({
+      fiscalYearEnd: String(r.date).slice(0, 10),
+      revenueAvg: Number(r.revenueAvg),
+      revenueLow: Number(r.revenueLow) || null,
+      revenueHigh: Number(r.revenueHigh) || null,
+      epsAvg: Number.isFinite(Number(r.epsAvg)) ? Number(r.epsAvg) : null,
+      analysts: Number(r.numAnalystsRevenue || r.numberAnalystsEstimatedRevenue) || null,
+    }));
+  const r0 = Array.isArray(ratios) ? ratios[0] : ratios;
+  const m0 = Array.isArray(metrics) ? metrics[0] : metrics;
+  const pe = Number(r0?.priceToEarningsRatioTTM ?? r0?.peRatioTTM);
+  const evEbitda = Number(m0?.evToEBITDATTM ?? m0?.enterpriseValueOverEBITDATTM);
+  const ps = Number(r0?.priceToSalesRatioTTM);
+  const items = [];
+  if (forward.length) {
+    items.push({
+      kind: 'record',
+      title: `Consensus estimates for ${label}`,
+      text: `Consensus analyst estimates for ${label} (${t}) as of ${asOf}, a third-party forecast, not Ezana's: ${forward
+        .map(
+          (f) =>
+            `fiscal year ending ${f.fiscalYearEnd} revenue ${usdB(f.revenueAvg)}${
+              f.revenueLow && f.revenueHigh
+                ? ` (range ${usdB(f.revenueLow)} to ${usdB(f.revenueHigh)})`
+                : ''
+            }${f.epsAvg != null ? `, EPS $${f.epsAvg.toFixed(2)}` : ''}${
+              f.analysts ? ` from ${f.analysts} analysts` : ''
+            }`,
+        )
+        .join('; ')}.`,
+      date: asOf,
+      period: { to: asOf, label: `estimates as of ${asOf}` },
+      data: { metric: 'estimates', ticker: t, forward },
+      entities: [t, label],
+    });
+  }
+  const mult = [];
+  if (Number.isFinite(pe) && pe > 0) mult.push(`price to trailing earnings ${pe.toFixed(1)}x`);
+  if (Number.isFinite(evEbitda) && evEbitda > 0)
+    mult.push(`enterprise value to trailing EBITDA ${evEbitda.toFixed(1)}x`);
+  if (Number.isFinite(ps) && ps > 0) mult.push(`price to trailing sales ${ps.toFixed(1)}x`);
+  if (mult.length) {
+    items.push({
+      kind: 'record',
+      title: `Valuation multiples for ${label}`,
+      text: `Trailing twelve-month valuation multiples for ${label} (${t}) as of ${asOf}: ${mult.join(', ')}.`,
+      date: asOf,
+      period: { to: asOf, label: `trailing twelve months as of ${asOf}` },
+      data: { metric: 'valuation', ticker: t, pe, evEbitda, ps },
+      entities: [t, label],
+    });
+  }
+  return {
+    items,
+    layout: items.length
+      ? {
+          expectations: {
+            ticker: t,
+            asOf,
+            forward,
+            pe: Number.isFinite(pe) ? pe : null,
+            evEbitda: Number.isFinite(evEbitda) ? evEbitda : null,
+            ps: Number.isFinite(ps) ? ps : null,
+          },
+        }
+      : undefined,
+  };
+}
+
 export const MEMO_RUNNERS = {
   company_financials: companyFinancials,
   product_segments: productSegments,
   holder_positioning: holderPositioning,
   peer_financials: peerFinancials,
+  customer_capex: customerCapex,
+  estimates,
 };

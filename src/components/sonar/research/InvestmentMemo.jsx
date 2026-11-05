@@ -99,6 +99,8 @@ function Dashboard({ financials, segments }) {
                 <th scope="col">Gross margin</th>
                 <th scope="col">Operating margin</th>
                 <th scope="col">Operating cash flow</th>
+                <th scope="col">Capex</th>
+                <th scope="col">Inventory</th>
               </tr>
             </thead>
             <tbody>
@@ -112,6 +114,8 @@ function Dashboard({ financials, segments }) {
                   <td className="srr-mono">{pct(p.grossMargin)}</td>
                   <td className="srr-mono">{pct(p.operatingMargin)}</td>
                   <td className="srr-mono">{usd(p.operating_cash_flow)}</td>
+                  <td className="srr-mono">{usd(p.capex)}</td>
+                  <td className="srr-mono">{usd(p.inventory)}</td>
                 </tr>
               ))}
             </tbody>
@@ -285,6 +289,104 @@ function Peers({ peers }) {
   );
 }
 
+function CustomerCapex({ data }) {
+  const rows = data?.rows || [];
+  if (!rows.length) return null;
+  return (
+    <section className="srm-section" aria-labelledby="srm-capex-h">
+      <h2 id="srm-capex-h" className="srr-h2">
+        Customer capital spending
+      </h2>
+      <p className="srm-sub">
+        Capital expenditure of the largest customers, from their own SEC filings. It covers all
+        property and equipment, not only purchases from this company, and fiscal calendars differ.
+      </p>
+      <div className="srm-table-wrap">
+        <table className="srm-table">
+          <thead>
+            <tr>
+              <th scope="col">Customer</th>
+              <th scope="col">Latest quarter</th>
+              <th scope="col">Capex</th>
+              <th scope="col">Share of operating cash flow</th>
+              <th scope="col">Latest fiscal year</th>
+              <th scope="col">Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.ticker}>
+                <td>
+                  <span className="srr-mono">{r.ticker}</span>{' '}
+                  <span className="srm-dim">{r.name}</span>
+                </td>
+                <td className="srr-mono">{r.quarterEnd || '–'}</td>
+                <td className="srr-mono">{usd(r.quarterCapex)}</td>
+                <td className="srr-mono">
+                  {r.quarterCapex != null && r.quarterOcf
+                    ? pct(r.quarterCapex / r.quarterOcf)
+                    : '–'}
+                </td>
+                <td className="srr-mono">
+                  {r.yearCapex != null ? `${usd(r.yearCapex)} (${r.yearEnd})` : '–'}
+                </td>
+                <td className="srr-mono">
+                  {r.growth == null
+                    ? '–'
+                    : `${r.growth >= 0 ? '+' : ''}${(r.growth * 100).toFixed(1)}%`}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function Expectations({ data }) {
+  if (!data || (!data.forward?.length && data.pe == null && data.evEbitda == null)) return null;
+  return (
+    <section className="srm-section" aria-labelledby="srm-exp-h">
+      <h2 id="srm-exp-h" className="srr-h2">
+        What the market expects
+      </h2>
+      <p className="srm-sub">
+        Consensus analyst estimates and trailing multiples as of{' '}
+        <span className="srr-mono">{data.asOf}</span>. These are third-party figures, not
+        Ezana&rsquo;s forecast.
+      </p>
+      <div className="srm-expect">
+        {data.forward.map((f) => (
+          <div key={f.fiscalYearEnd} className="srm-expect-tile">
+            <span className="srm-claim-lead">Fiscal year ending {f.fiscalYearEnd}</span>
+            <span className="srm-expect-val srr-mono">{usd(f.revenueAvg)}</span>
+            <span className="srm-dim">
+              consensus revenue
+              {f.epsAvg != null ? ` · EPS $${f.epsAvg.toFixed(2)}` : ''}
+              {f.analysts ? ` · ${f.analysts} analysts` : ''}
+            </span>
+          </div>
+        ))}
+        {data.pe != null ? (
+          <div className="srm-expect-tile">
+            <span className="srm-claim-lead">Price to earnings</span>
+            <span className="srm-expect-val srr-mono">{data.pe.toFixed(1)}x</span>
+            <span className="srm-dim">trailing twelve months</span>
+          </div>
+        ) : null}
+        {data.evEbitda != null ? (
+          <div className="srm-expect-tile">
+            <span className="srm-claim-lead">EV to EBITDA</span>
+            <span className="srm-expect-val srr-mono">{data.evEbitda.toFixed(1)}x</span>
+            <span className="srm-dim">trailing twelve months</span>
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
 function Scenarios({ scenarios, onCite }) {
   if (!scenarios?.length) return null;
   return (
@@ -394,6 +496,8 @@ export default function InvestmentMemo({ report, panels = {}, onCite }) {
         </section>
       ) : null}
 
+      <CustomerCapex data={panels.customerCapex} />
+      <Expectations data={panels.expectations} />
       <Positioning p={panels.positioning} />
       <Peers peers={panels.peers} />
       <Scenarios scenarios={report.scenarios} onCite={onCite} />

@@ -142,6 +142,8 @@ export const SOURCES = {
   product_segments: { category: 'corporate_filings', reliability: 0.85, needs: ['ticker'] },
   holder_positioning: { category: 'corporate_filings', reliability: 0.9, needs: ['ticker'] },
   peer_financials: { category: 'corporate_filings', reliability: 0.9, needs: ['ticker'] },
+  customer_capex: { category: 'corporate_filings', reliability: 0.9, needs: ['ticker'] },
+  estimates: { category: 'market_data', reliability: 0.75, needs: ['ticker'] },
 };
 
 /** Evidence explorer groups, in display order. */
@@ -206,7 +208,7 @@ export const DEFAULT_CONFIG = {
     },
     competition: { peer_financials: 1, industry_registry: 0.5, news: 0.6 },
     market_performance: { price_performance: 1, market_snapshot: 0.7 },
-    analyst_views: { analysts: 1 },
+    analyst_views: { analysts: 1, estimates: 0.9 },
     commodity: { commodity_series: 1, news: 0.8, prediction_markets: 0.4, echo: 0.4 },
     macro: { macro_country: 0.7, news: 0.6, prediction_markets: 0.4 },
     prediction: { prediction_markets: 1, news: 0.4 },

@@ -58,11 +58,46 @@ export const METRICS = [
     instant: false,
     concepts: ['us-gaap:NetCashProvidedByUsedInOperatingActivities'],
   },
+  /* Nov 2026: companies tag capital spending differently (NVIDIA and Amazon
+     use productive assets); the first concept a company reports wins, and a
+     concept nobody reports is a harmless 404. */
   {
     key: 'capex',
     unit: 'USD',
     instant: false,
-    concepts: ['us-gaap:PaymentsToAcquirePropertyPlantAndEquipment'],
+    concepts: [
+      'us-gaap:PaymentsToAcquirePropertyPlantAndEquipment',
+      'us-gaap:PaymentsToAcquireProductiveAssets',
+      'us-gaap:PaymentsForProceedsFromProductiveAssets',
+    ],
+  },
+  {
+    key: 'rd_expense',
+    unit: 'USD',
+    instant: false,
+    concepts: ['us-gaap:ResearchAndDevelopmentExpense'],
+  },
+  {
+    key: 'sbc',
+    unit: 'USD',
+    instant: false,
+    concepts: ['us-gaap:ShareBasedCompensation', 'us-gaap:AllocatedShareBasedCompensationExpense'],
+  },
+  { key: 'inventory', unit: 'USD', instant: true, concepts: ['us-gaap:InventoryNet'] },
+  {
+    key: 'receivables',
+    unit: 'USD',
+    instant: true,
+    concepts: ['us-gaap:AccountsReceivableNetCurrent'],
+  },
+  {
+    key: 'purchase_obligations',
+    unit: 'USD',
+    instant: true,
+    concepts: [
+      'us-gaap:PurchaseObligation',
+      'us-gaap:UnrecordedUnconditionalPurchaseObligationBalanceSheetAmount',
+    ],
   },
   { key: 'assets', unit: 'USD', instant: true, concepts: ['us-gaap:Assets'] },
   { key: 'liabilities', unit: 'USD', instant: true, concepts: ['us-gaap:Liabilities'] },

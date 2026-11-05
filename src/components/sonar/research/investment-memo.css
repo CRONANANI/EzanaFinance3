@@ -220,6 +220,27 @@
   background: var(--emerald);
 }
 
+/* Market expectations */
+.srm-expect {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+.srm-expect-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+}
+.srm-expect-val {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
 /* Scenarios */
 .srm-scenarios {
   display: grid;

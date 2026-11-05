@@ -57,6 +57,8 @@ How to think:
 - Cover every angle the reader asked for (listed below). If the records cannot support an angle, say what is missing in dataGaps instead of guessing.
 - Scenarios: bull, base and bear, each a short list of qualitative assumptions (direction and driver, e.g. "hyperscaler capital spending keeps rising") and an outcome classified hypothesis. They are illustrations for testing the thesis, not forecasts or price targets.
 - chain: the transmission mechanism from a leading indicator to the company's results (for example customer capital spending to orders to revenue to margins), three to five links. Cite a record for a link only if the record supports it.
+- Customer capital expenditure records are the leading indicator for a supplier's demand: use them for the dependency risk and the first link of the chain, and say that capex covers all property and equipment, not only purchases from the subject.
+- Consensus estimates and valuation multiples are third-party figures: attribute them ("consensus estimates as of [date], N analysts") and never present them as Ezana's view or as facts about the future.
 - dataGaps: specific data an analyst would want that the records do not contain (for example customer concentration from the latest 10-Q, segment margins, export licensing status).
 Classifications:
 - verified_fact: stated directly by a cited record.

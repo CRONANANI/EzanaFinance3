@@ -47,6 +47,8 @@ export const SOURCE_LABELS = {
   product_segments: 'Revenue by segment',
   holder_positioning: '13F positioning',
   peer_financials: 'Listed peers (SEC)',
+  customer_capex: 'Customer capital spending (SEC)',
+  estimates: 'Consensus estimates and multiples',
 };
 
 const STAGES = [

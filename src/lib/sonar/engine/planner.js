@@ -34,7 +34,7 @@ export const SOURCE_DATASET = {
 export const DEPTHS = {
   quick: { maxTasks: 5, items: 3, taskMs: 2_000, label: 'Quick research' },
   standard: { maxTasks: 8, items: 5, taskMs: 2_500, label: 'Standard research' },
-  deep: { maxTasks: 18, items: 8, taskMs: 20_000, label: 'Deep research' },
+  deep: { maxTasks: 22, items: 8, taskMs: 20_000, label: 'Deep research' },
 };
 
 /* What a chart needs, by source. A planned chart renders only if its data
@@ -69,6 +69,12 @@ function paramsFor(source, resolution, spec) {
     case 'peer_financials':
       if (!r.company?.ticker) return null;
       return { ticker: r.company.ticker, name: r.company.name, peers: r.peers || [] };
+    case 'customer_capex':
+      if (!r.company?.ticker || !r.customers?.length) return null;
+      return { ticker: r.company.ticker, name: r.company.name, customers: r.customers };
+    case 'estimates':
+      if (!r.company?.ticker) return null;
+      return { ticker: r.company.ticker, name: r.company.name };
     case 'politician_dossier':
       return r.politician ? { politician: r.politician } : null;
     case 'commodity_series':
@@ -122,6 +128,8 @@ export const MEMO_SOURCES = [
   'product_segments',
   'holder_positioning',
   'peer_financials',
+  'customer_capex',
+  'estimates',
   'market_snapshot',
   'analysts',
   'revenue_geo',

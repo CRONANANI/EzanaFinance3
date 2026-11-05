@@ -360,6 +360,43 @@ export function analyze(evidence, spec = {}) {
         );
     }
 
+    if (d.metric === 'customer_capex' && Array.isArray(d.rows) && d.rows.length) {
+      const fy = d.rows.filter((r) => r.yearCapex != null);
+      if (fy.length) {
+        metrics.push(
+          metric(
+            'customer_capex_fy_total',
+            'Largest customers, combined capital expenditure (latest fiscal years)',
+            fy.reduce((s, r) => s + r.yearCapex, 0),
+            {
+              unit: 'USD',
+              method:
+                "sum of each tracked customer's latest reported fiscal-year capital expenditure",
+              inputs: [e.id],
+              period: e.period,
+            },
+          ),
+        );
+      }
+      const g = d.rows.filter((r) => r.growth != null);
+      if (g.length) {
+        metrics.push(
+          metric(
+            'customers_capex_rising',
+            'Largest customers with higher capital expenditure than the prior fiscal year',
+            g.filter((r) => r.growth > 0).length,
+            {
+              unit: 'count',
+              method:
+                'count of tracked customers whose latest fiscal-year capex exceeds the prior year',
+              inputs: [e.id],
+              period: e.period,
+            },
+          ),
+        );
+      }
+    }
+
     if (d.metric === 'positioning' && d.top10_share != null) {
       metrics.push(
         metric(

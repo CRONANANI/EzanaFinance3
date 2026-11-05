@@ -98,10 +98,19 @@ export async function getTickerMap() {
  * so a filing's CIK can be resolved to a public ticker where one exists.
  */
 export function buildCikTickerIndex(tickerMap) {
+  /* Nov 2026: one CIK can list several tickers (share classes, notes,
+     preferreds). The old map kept the LAST one, which filed Alphabet under
+     GOOGM, Meta under METAM and Oracle under ORCL-PD. The file lists a
+     company's primary ticker first, so keep the first plain ticker (letters
+     only, up to five) and fall back to the first one listed. */
   const idx = new Map();
+  const plain = (t) => /^[A-Z]{1,5}$/.test(String(t));
   for (const k of Object.keys(tickerMap || {})) {
     const row = tickerMap[k];
-    if (row?.cik_str != null && row?.ticker) idx.set(String(row.cik_str), row.ticker);
+    if (row?.cik_str == null || !row?.ticker) continue;
+    const cik = String(row.cik_str);
+    const cur = idx.get(cik);
+    if (!cur || (!plain(cur) && plain(row.ticker))) idx.set(cik, row.ticker);
   }
   return idx;
 }
