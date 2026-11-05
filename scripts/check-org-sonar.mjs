@@ -814,3 +814,146 @@ test('the route takes fund context and the challenged claim from the org, never 
   assert.match(engine, /mandate: layout\.fundFit \|\| null/);
   assert.match(engine, /challengeAddendum\(spec\.challenge\.claim\)/);
 });
+
+/* ── Part 4: Sonar Analytics ───────────────────────────────────────── */
+const An = await import('@/lib/org-sonar/analytics');
+
+test('per-member analytics from reports, reviews, challenges, comments and runs', () => {
+  const now = new Date('2026-11-20T12:00:00Z');
+  const sum = (o = {}) => ({
+    stats: { claimSupportRate: 0.9, citationCoverage: 0.8, sources: 6 },
+    ...o,
+  });
+  const reports = [
+    {
+      id: 'r1',
+      author_id: A,
+      kind: 'research',
+      status: 'approved',
+      ticker: 'NVDA',
+      pitch_id: 'p1',
+      approved_version: 1,
+      submitted_at: '2026-11-01T00:00:00Z',
+      approved_at: '2026-11-03T00:00:00Z',
+      summary: sum(),
+      created_at: '2026-10-30T00:00:00Z',
+    },
+    {
+      id: 'r2',
+      author_id: A,
+      kind: 'fund_fit',
+      status: 'under_review',
+      ticker: 'AMD',
+      submitted_at: '2026-11-10T00:00:00Z',
+      summary: sum({
+        stance: 'watch',
+        stats: { claimSupportRate: 0.7, citationCoverage: 0.6, sources: 4 },
+      }),
+      created_at: '2026-11-09T00:00:00Z',
+    },
+    {
+      id: 'r3',
+      author_id: B,
+      kind: 'research',
+      status: 'draft',
+      ticker: 'XOM',
+      summary: sum(),
+      created_at: '2026-11-11T00:00:00Z',
+    },
+    {
+      id: 'c1',
+      author_id: B,
+      kind: 'challenge',
+      status: 'draft',
+      challenge_of: 'r1',
+      summary: { challengeVerdict: 'holds' },
+      created_at: '2026-11-12T00:00:00Z',
+    },
+    {
+      id: 'c2',
+      author_id: PM,
+      kind: 'challenge',
+      status: 'draft',
+      challenge_of: 'r1',
+      summary: { challengeVerdict: 'weakened' },
+      created_at: '2026-11-13T00:00:00Z',
+    },
+    {
+      id: 'old',
+      author_id: A,
+      kind: 'research',
+      status: 'approved',
+      ticker: 'MSFT',
+      approved_version: 1,
+      approved_at: '2025-01-05T00:00:00Z',
+      summary: sum(),
+      created_at: '2025-01-01T00:00:00Z',
+    },
+  ];
+  const comments = [
+    { report_id: 'r1', author_id: PM, resolved: true, created_at: '2026-11-02T00:00:00Z' },
+    { report_id: 'r1', author_id: B, resolved: false, created_at: '2026-11-02T00:00:00Z' },
+    { report_id: 'r1', author_id: A, resolved: false, created_at: '2026-11-02T00:00:00Z' },
+  ];
+  const runs = [
+    { user_id: A, depth: 'deep', status: 'complete', created_at: '2026-11-01T00:00:00Z' },
+    { user_id: A, depth: 'deep', status: 'failed', created_at: '2026-11-01T00:00:00Z' },
+    { user_id: A, depth: 'standard', status: 'partial', created_at: '2026-11-02T00:00:00Z' },
+  ];
+  const out = An.computeAnalytics({
+    members: [
+      { user_id: A, display_name: 'Ana', role: 'analyst' },
+      { user_id: B, display_name: 'Ben', role: 'analyst' },
+      { user_id: PM, display_name: 'Pat', role: 'portfolio_manager' },
+    ],
+    reports,
+    comments,
+    runs,
+    pitches: [{ id: 'p1', stage: 'in_portfolio', sector: 'Technology', ticker: 'NVDA' }],
+    tickerSectors: { XOM: 'Energy', MSFT: 'Technology' },
+    days: 90,
+    now,
+  });
+  const ana = out.members.find((m) => m.userId === A);
+  assert.equal(ana.reports, 2, 'the 2025 report is outside the window');
+  assert.equal(ana.submitted, 2);
+  assert.equal(ana.approved, 1);
+  assert.equal(ana.approvalRate, 0.5);
+  assert.equal(ana.reviewDays, 2);
+  assert.equal(ana.claimSupport, 0.8);
+  assert.equal(ana.challengesFaced, 2);
+  assert.equal(ana.heldRate, 0.5);
+  assert.equal(ana.commentsReceived, 2, 'own comments do not count as received');
+  assert.equal(ana.commentsResolved, 0.5);
+  assert.equal(ana.onPitches, 1);
+  assert.equal(ana.pitchesAdvanced, 1);
+  assert.deepEqual(ana.fundFit, { invest: 0, watch: 1, pass: 0 });
+  assert.deepEqual(ana.tickers, ['AMD', 'NVDA']);
+  assert.deepEqual(ana.sectors, ['Technology']);
+  assert.equal(ana.deepRuns, 1, 'failed runs are not counted');
+  assert.equal(ana.standardRuns, 1);
+  const ben = out.members.find((m) => m.userId === B);
+  assert.equal(ben.challengesRun, 1);
+  assert.equal(ben.reports, 1);
+  assert.equal(out.members[0].userId, A, 'most approved first');
+  assert.equal(out.totals.challenges, 2);
+  assert.equal(out.totals.approved, 1);
+  /* Coverage counts approved research all time, with staleness. */
+  const msft = out.coverage.find((c) => c.ticker === 'MSFT');
+  assert.equal(msft.sector, 'Technology');
+  assert.ok(msft.staleDays > 600);
+  assert.equal(out.coverage.find((c) => c.ticker === 'NVDA').approved, 1);
+  /* A member who does not manage others sees only their own line. */
+  assert.deepEqual(
+    An.ownView(out, B).members.map((m) => m.userId),
+    [B],
+  );
+});
+
+test('analytics returns counts only, and managers alone see everyone', () => {
+  const src = fs.readFileSync('src/app/api/org/sonar-analytics/route.js', 'utf8');
+  assert.match(src, /assertOrgRole\(member, \['executive', 'portfolio_manager'\]\)/);
+  assert.match(src, /manager \? result : ownView\(result, member\.user_id\)/);
+  assert.doesNotMatch(src, /snapshot/);
+  assert.doesNotMatch(src, /'id, author_id[^']*title/);
+});

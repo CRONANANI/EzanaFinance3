@@ -9,6 +9,8 @@
  *              research; the run can be saved to the fund as a report
  *   Budget     the fund's pooled monthly deep research budget, who is
  *              using it, and (executives) the pool and allocations
+ *   Analytics  research activity and quality per member, and the fund's
+ *              coverage by sector and ticker
  *
  * Every run here is an ordinary Sonar research run (POST
  * /api/sonar/research), so quotas, entitlements and validation are the same
@@ -20,12 +22,14 @@ import { DeepResearchRun } from '@/components/sonar/DeepResearch';
 import { SONAR_QUERY_MAX } from '@/lib/sonar/limits';
 import SonarReportsList from './SonarReportsList';
 import SonarBudget from './SonarBudget';
+import SonarAnalytics from './SonarAnalytics';
 import './org-sonar.css';
 
 export const WORKSPACE_TABS = [
   { id: 'reports', label: 'Reports', icon: 'bi-journal-text' },
   { id: 'research', label: 'Research', icon: 'bi-search' },
   { id: 'budget', label: 'Budget', icon: 'bi-speedometer' },
+  { id: 'analytics', label: 'Analytics', icon: 'bi-bar-chart-line' },
 ];
 
 export default function SonarWorkspace() {
@@ -69,6 +73,7 @@ export default function SonarWorkspace() {
       {tab === 'reports' ? <SonarReportsList /> : null}
       {tab === 'research' ? <ResearchTab /> : null}
       {tab === 'budget' ? <SonarBudget /> : null}
+      {tab === 'analytics' ? <SonarAnalytics /> : null}
     </div>
   );
 }
