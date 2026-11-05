@@ -134,3 +134,34 @@ test('a request carrying a session is never read as a guest by accident', () => 
   );
   assert.equal(hasSessionCredentials(req({}, [{ name: 'snr_guest', value: '2.sig' }])), false);
 });
+
+/* Nov 2026: /sonar and /datasets run one Sonar, and the research view keeps
+   Sonar's dark, unfilled look in either app theme. */
+test('/sonar and /datasets render the same Sonar', async () => {
+  const { readFileSync } = await import('node:fs');
+  const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
+  const app = read('src/app/(dashboard)/sonar/page.js');
+  const datasets = read('src/app/datasets/page.js');
+  assert.match(app, /<DatasetsSonarIndex[^>]*stage="app"/);
+  assert.match(datasets, /<DatasetsSonarIndex/);
+  const index = read('src/app/datasets/DatasetsSonarIndex.jsx');
+  assert.match(index, /<SonarExperience\s+variant="datasets"/);
+  /* The only difference allowed is the link base and the hand-off class. */
+  const exp = read('src/components/sonar/SonarExperience.jsx');
+  assert.equal((exp.match(/stage === 'app'/g) || []).length, 1);
+});
+
+test('the research view is dark and unfilled in light mode too', async () => {
+  const { readFileSync } = await import('node:fs');
+  const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
+  const jsx = read('src/components/sonar/DeepResearch.jsx');
+  assert.equal((jsx.match(/className="sdr-run force-dark-theme"/g) || []).length, 2);
+  const css = read('src/components/sonar/deep-research.css');
+  for (const sel of ['.sdr-run-bar {', '.sdr-gate {', '.sdr-report {']) {
+    const block = css.slice(css.indexOf(sel), css.indexOf('}', css.indexOf(sel)));
+    assert.match(block, /background: transparent;/, sel);
+  }
+  const light = read('src/app/light-mode.css');
+  assert.match(light, /body\.light-mode p:where\(:not\(\.force-dark-theme \*\)\)/);
+  assert.doesNotMatch(light, /^body\.light-mode p \{/m);
+});

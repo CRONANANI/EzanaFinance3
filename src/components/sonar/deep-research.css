@@ -141,7 +141,10 @@
   color: var(--text-muted);
 }
 
-/* The run view */
+/* The run view. Like the quick answer band, it sits on Sonar's dark globe
+   ground with no fill of its own: the root carries .force-dark-theme (dark
+   tokens whatever the app theme) and every panel is transparent, drawn by
+   its border (Nov 2026). */
 .sdr-run {
   width: 100%;
   max-width: 1040px;
@@ -159,7 +162,7 @@
   padding: 0.75rem 1rem;
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
-  background: var(--surface-card);
+  background: transparent;
   color: var(--text-secondary);
 }
 .sdr-link {
@@ -222,7 +225,7 @@
   padding: 1rem 1.25rem;
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
-  background: var(--surface-card);
+  background: transparent;
   color: var(--text-secondary);
 }
 .sdr-gate p {
@@ -232,7 +235,7 @@
   padding: 1.5rem;
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-xl);
-  background: var(--bg-primary);
+  background: transparent;
 }
 
 @media (max-width: 640px) {

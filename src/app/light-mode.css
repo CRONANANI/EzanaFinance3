@@ -654,14 +654,18 @@ body.light-mode .theme-toggle-btn:hover {
 }
 
 /* ── Global text visibility fixes ──────────────────────────── */
-body.light-mode h1,
-body.light-mode h2,
-body.light-mode h3,
-body.light-mode h4 {
+/* Nov 2026: never inside a .force-dark-theme subtree (Sonar's research view,
+   the landing hero), which keeps the dark tokens in light mode and would
+   otherwise get near-black text on a dark ground. :where() adds no
+   specificity, so every other light-mode rule ranks as before. */
+body.light-mode h1:where(:not(.force-dark-theme *)),
+body.light-mode h2:where(:not(.force-dark-theme *)),
+body.light-mode h3:where(:not(.force-dark-theme *)),
+body.light-mode h4:where(:not(.force-dark-theme *)) {
   color: #111827;
 }
 
-body.light-mode p {
+body.light-mode p:where(:not(.force-dark-theme *)) {
   color: #374151;
 }
 

@@ -63,3 +63,27 @@ test('mfa: off unless MFA_ENFORCED is exactly "true"', async () => {
   delete process.env.MFA_ENFORCED;
   assert.equal(await mfaRequired(req({ aal: 'aal1' }), withFactor), false);
 });
+
+/* Nov 2026: a route that streams (Sonar research) returns a plain Response.
+   The guard must hand it back as it is; wrapping it as JSON sent "{}" to the
+   browser while the run went on server side. */
+test('api guard: a streamed Response passes through untouched', async () => {
+  const { withApiGuard } = await import('../src/lib/api-guard.js');
+  const handler = withApiGuard(
+    async () =>
+      new Response('event: stage\ndata: {"stage":"planning"}\n\n', {
+        status: 200,
+        headers: { 'Content-Type': 'text/event-stream; charset=utf-8' },
+      }),
+    { requireAuth: false },
+  );
+  const res = await handler(new NextRequest('https://ezana.world/api/health', { method: 'POST' }));
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get('content-type'), /text\/event-stream/);
+  assert.equal(await res.text(), 'event: stage\ndata: {"stage":"planning"}\n\n');
+  /* A plain value is still wrapped as JSON. */
+  const json = await withApiGuard(async () => ({ ok: true }), { requireAuth: false })(
+    new NextRequest('https://ezana.world/api/health'),
+  );
+  assert.deepEqual(await json.json(), { ok: true });
+});

@@ -186,7 +186,7 @@ export function DeepResearchRun({ query, estimate, onQuick, onStandard, onBack }
   const over = estimate?.maxSec && elapsed > estimate.maxSec;
 
   return (
-    <div className="sdr-run">
+    <div className="sdr-run force-dark-theme">
       <div className="sdr-run-bar">
         <button type="button" className="sdr-link" onClick={onBack}>
           <i className="bi bi-arrow-left" aria-hidden="true" /> New question
@@ -311,7 +311,7 @@ export function StandardResearchRun({
   const hint = coverageHint || goDeeper || null;
 
   return (
-    <div className="sdr-run">
+    <div className="sdr-run force-dark-theme">
       <div className="sdr-run-bar">
         <button type="button" className="sdr-link" onClick={onBack}>
           <i className="bi bi-arrow-left" aria-hidden="true" /> New question

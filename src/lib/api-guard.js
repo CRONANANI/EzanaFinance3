@@ -158,8 +158,18 @@ export function withApiGuard(handler, options = {}) {
       }
 
       const response = await handler(request, user, context);
-      const res = response instanceof NextResponse ? response : NextResponse.json(response);
-      if (remaining != null) res.headers.set('X-RateLimit-Remaining', String(remaining));
+      /* Any Response passes through as it is (Nov 2026). Only a plain value
+         is wrapped as JSON: wrapping a streamed `new Response(stream)` turned
+         Sonar's research stream into "{}", so deep research never reached
+         the browser while the run went on server side. */
+      const res = response instanceof Response ? response : NextResponse.json(response);
+      if (remaining != null) {
+        try {
+          res.headers.set('X-RateLimit-Remaining', String(remaining));
+        } catch {
+          /* immutable headers (a proxied fetch Response): leave them */
+        }
+      }
       return res;
     } catch (error) {
       logger.error('API Error', { requestId, error: error?.message, stack: error?.stack });
