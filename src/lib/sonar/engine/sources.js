@@ -19,7 +19,7 @@
 import { orchestrate } from '@/lib/research-copilot/orchestrate';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
 import { getFmpKey } from '@/lib/fmp/upcoming-events';
-import { marketSnapshot, matchEcho } from '@/lib/sonar/landing-pipeline';
+import { marketSnapshot, matchEcho } from '@/lib/sonar/landing-sources';
 import { analystEvidence } from '@/lib/sonar/analyst-evidence';
 import { buildPoliticianDossier, politicianEvidence } from '@/lib/sonar/landing-politician';
 import { buildCountryDossier, countryEvidence } from '@/lib/sonar/landing-country';
