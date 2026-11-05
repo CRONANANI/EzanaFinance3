@@ -6,6 +6,7 @@ import { useOrg } from '@/contexts/OrgContext';
 import { PitchSupportingData } from './PitchSupportingData';
 import { PitchStageActions } from './PitchStageActions';
 import { PitchGatePanel } from './PitchGatePanel';
+import PitchSonarPanel from '@/components/org/sonar/PitchSonarPanel';
 import { IcMeetingControl } from './IcMeetingControl';
 import {
   PitchDeliverablesPanel,
@@ -234,7 +235,12 @@ export function PitchDetailClient({ pitchId, inModal = false }) {
             </>
           )}
 
-          {tab === 'data' && <PitchSupportingData pitchId={pitchId} />}
+          {tab === 'data' && (
+            <>
+              <PitchSonarPanel pitchId={pitchId} />
+              <PitchSupportingData pitchId={pitchId} />
+            </>
+          )}
 
           {tab === 'deliverables' && <PitchDeliverablesPanel pitch={pitch} onRefresh={onRefresh} />}
 

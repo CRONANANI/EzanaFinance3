@@ -22,12 +22,25 @@ const clip = (o) => {
   return s.length > MAX_JSON ? { truncated: true, size: s.length } : o;
 };
 
+/**
+ * Org runs (Nov 2026) also keep org_id and the folded research state
+ * (`snapshot`), so the analyst can save the run as an org report. Until the
+ * columns exist the row is written without them. Resolves
+ * { snapshotStored } so the route only offers Save when it can work.
+ */
 export async function recordRun(
   admin,
   run,
-  { queryId = null, userId = null, ipHash = null, status = 'complete' } = {},
+  {
+    queryId = null,
+    userId = null,
+    ipHash = null,
+    status = 'complete',
+    orgId = null,
+    snapshot = null,
+  } = {},
 ) {
-  if (!admin || !run?.runId) return;
+  if (!admin || !run?.runId) return { snapshotStored: false };
   const m = run.researchMetadata || {};
   const row = {
     id: run.runId,
@@ -62,8 +75,24 @@ export async function recordRun(
     phase1_ms: m.phase1Ms ?? null,
     provider_errors: m.providerErrors || [],
   };
-  const { error } = await admin.from('sonar_research_runs').upsert(row, { onConflict: 'id' });
-  if (error) console.warn('[sonar-engine] run telemetry failed', error.message);
+  if (orgId) row.org_id = orgId;
+  if (orgId && snapshot) row.snapshot = snapshot;
+  let snapshotStored = Boolean(row.snapshot);
+  let { error } = await admin.from('sonar_research_runs').upsert(row, { onConflict: 'id' });
+  if (
+    error &&
+    (row.org_id || row.snapshot) &&
+    /org_id|snapshot|column/i.test(error.message || '')
+  ) {
+    /* The org columns are not migrated yet: keep the telemetry anyway. */
+    const { org_id: _o, snapshot: _s, ...plain } = row;
+    snapshotStored = false;
+    ({ error } = await admin.from('sonar_research_runs').upsert(plain, { onConflict: 'id' }));
+  }
+  if (error) {
+    snapshotStored = false;
+    console.warn('[sonar-engine] run telemetry failed', error.message);
+  }
   const events = (m.trace || []).map((t, i) => ({
     run_id: run.runId,
     seq: i,
@@ -98,6 +127,7 @@ export async function recordRun(
       .upsert(rels, { onConflict: 'run_id,rel_key', ignoreDuplicates: true });
     if (e3) console.warn('[sonar-engine] relationship telemetry failed', e3.message);
   }
+  return { snapshotStored };
 }
 
 export const FEEDBACK_KINDS = [

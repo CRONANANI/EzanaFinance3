@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import ResearchReport from '@/components/sonar/research/ResearchReport';
 import { useResearchStream } from '@/components/sonar/research/useResearchStream';
+import SaveToOrg from '@/components/org/sonar/SaveToOrg';
 import './research-page.css';
 
 export default function ResearchClient() {
@@ -71,6 +72,9 @@ export default function ResearchClient() {
       ) : null}
       {state.status !== 'idle' && state.status !== 'gated' ? (
         <ResearchReport state={state} onFollowUp={ask} />
+      ) : null}
+      {state.status === 'done' ? (
+        <SaveToOrg org={state.org} query={state.run?.researchQuestion || q} />
       ) : null}
     </main>
   );

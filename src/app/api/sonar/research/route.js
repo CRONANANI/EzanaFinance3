@@ -25,6 +25,8 @@ import { classifyResearchMode, coverageFromPlan } from '@/lib/sonar/research-mod
 import { logModeEvent, fromClassification } from '@/lib/sonar/mode-events';
 import { SONAR_QUERY_MAX } from '@/lib/sonar/limits';
 import { rememberRun } from '@/lib/sonar/engine/memory';
+import { EMPTY_RESEARCH_STATE, reduceEvent } from '@/lib/sonar/research-state';
+import { snapshotFromState } from '@/lib/org-sonar/reports';
 
 import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /**
@@ -42,7 +44,7 @@ import { withNoEmDash } from '@/lib/text/no-em-dash-response';
  *   relationships  observed and inferred relationships, and paths
  *   findings       the validated report and the rendered brief
  *   report         the complete research run
- *   done           { runId, remaining }    or    error { message, refund? }
+ *   done           { runId, remaining, org? }    or    error { message, refund? }
  *
  * The same guards as /api/sonar/landing-query, in the same order: rate limit,
  * input contract, guest cookie, then reserve_sonar_ping BEFORE any spend.
@@ -70,6 +72,12 @@ import { withNoEmDash } from '@/lib/text/no-em-dash-response';
  * guests may use it within their free pings. If the real plan leaves out a
  * kind of evidence the question asked for, a `coverage` event says so and
  * the UI offers Go deeper.
+ *
+ * Sonar for organizations (Nov 2026): an org member's run folds every event
+ * into the same state the browser builds (lib/sonar/research-state.js) and
+ * keeps it on sonar_research_runs (org_id, snapshot), so the analyst can
+ * save it to the org as a report (POST /api/org/sonar-reports) from the run
+ * itself; done carries org: { canSave: true }.
  */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -235,6 +243,9 @@ const POST_HANDLER = withApiGuard(
         }, 10_000);
 
         let run = null;
+        /* An org member's run keeps the state the analyst saw, to save it. */
+        const orgId = access.scope?.orgId || null;
+        let snap = orgId ? EMPTY_RESEARCH_STATE : null;
         try {
           run = await runResearch(query, {
             admin,
@@ -248,9 +259,13 @@ const POST_HANDLER = withApiGuard(
                asked for says so right after the plan (never escalates). */
             emit: (event, data) => {
               send(event, data);
+              if (snap) snap = reduceEvent(snap, [event, data]);
               if (event === 'plan' && standardMode && mode?.requestedFamilies?.length) {
                 const cov = coverageFromPlan(data?.plan, mode.requestedFamilies);
-                if (cov.incomplete) send('coverage', { ...cov, goDeeper: 'deep' });
+                if (cov.incomplete) {
+                  send('coverage', { ...cov, goDeeper: 'deep' });
+                  if (snap) snap = reduceEvent(snap, ['coverage', { ...cov, goDeeper: 'deep' }]);
+                }
               }
             },
             signal: abort.signal,
@@ -280,8 +295,10 @@ const POST_HANDLER = withApiGuard(
             await withTimeout(failPing(admin, res), 800, 'ledger-fail');
           }
         }
+        const snapshot = answered && snap ? snapshotFromState(snap) : null;
+        let saved = false;
         if (run) {
-          await withTimeout(
+          const tele = await withTimeout(
             Promise.all([
               recordRun(admin, run, {
                 queryId: res.id || null,
@@ -292,18 +309,22 @@ const POST_HANDLER = withApiGuard(
                     ? 'partial'
                     : 'complete'
                   : 'failed',
+                orgId,
+                snapshot,
               }),
               answered ? rememberRun(admin, run, { scope: 'public' }) : null,
             ]),
-            1500,
+            snapshot ? 4000 : 1500,
             'telemetry',
           );
+          saved = Boolean(snapshot && tele.ok && tele.value?.[0]?.snapshotStored);
         }
         if (answered) {
           send('done', {
             runId,
             remaining: isGuest ? Math.max(0, GUEST_LIMIT - used - 1) : null,
             disclaimer: DISCLAIMER,
+            org: saved ? { canSave: true, runId } : null,
           });
         } else {
           send('error', {

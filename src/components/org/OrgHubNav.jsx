@@ -67,6 +67,11 @@ const NAV_ITEMS = [
     icon: 'bi-collection',
     badge: 'researchLibrary',
   },
+  {
+    href: '/org-team-hub/sonar',
+    label: 'Sonar Research',
+    icon: 'bi-broadcast',
+  },
   { href: '/org-team-hub/meetings', label: 'Meetings', icon: 'bi-camera-video', badge: 'meetings' },
   {
     href: '/org-team-hub/recognition',

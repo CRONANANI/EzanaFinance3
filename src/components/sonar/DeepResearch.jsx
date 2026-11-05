@@ -24,6 +24,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import ResearchReport from '@/components/sonar/research/ResearchReport';
+import SaveToOrg from '@/components/org/sonar/SaveToOrg';
 import { useResearchStream } from '@/components/sonar/research/useResearchStream';
 import { sendModeEvent } from '@/lib/sonar/mode-events-client';
 import { GoDeeperBar } from './GoDeeperBar';
@@ -161,16 +162,27 @@ function clock(sec) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-export function DeepResearchRun({ query, estimate, onQuick, onStandard, onBack }) {
+export function DeepResearchRun({
+  query,
+  estimate,
+  onQuick,
+  onStandard,
+  onBack,
+  extra = null,
+  saveLabel = null,
+  challengeOf = null,
+}) {
   const { state, run, cancel } = useResearchStream();
   const [now, setNow] = useState(Date.now());
+  /* Org research (Nov 2026) passes { fundFit } or { challenge } through. */
+  const extraKey = extra ? JSON.stringify(extra) : '';
 
   /* One run per question; leaving (or a remount) cancels it, and a
      cancelled run is never charged. */
   useEffect(() => {
-    run(query, { mode: 'deep' });
+    run(query, { mode: 'deep', extra: extraKey ? JSON.parse(extraKey) : null });
     return () => cancel();
-  }, [query, run, cancel]);
+  }, [query, extraKey, run, cancel]);
 
   const running = state.status === 'running';
   const t0 = useRef(Date.now());
@@ -244,7 +256,7 @@ export function DeepResearchRun({ query, estimate, onQuick, onStandard, onBack }
               className="sdr-btn sdr-btn--primary"
               onClick={() => {
                 t0.current = Date.now();
-                run(query, { mode: 'deep' });
+                run(query, { mode: 'deep', extra: extraKey ? JSON.parse(extraKey) : null });
               }}
             >
               Try deep research again
@@ -259,6 +271,14 @@ export function DeepResearchRun({ query, estimate, onQuick, onStandard, onBack }
         <div className="sdr-report">
           <ResearchReport state={state} />
         </div>
+      ) : null}
+      {state.status === 'done' ? (
+        <SaveToOrg
+          org={state.org}
+          query={state.run?.researchQuestion || query}
+          label={saveLabel}
+          challengeOf={challengeOf}
+        />
       ) : null}
     </div>
   );
@@ -364,6 +384,7 @@ export function StandardResearchRun({
           <ResearchReport state={state} />
         </div>
       ) : null}
+      {state.status === 'done' ? <SaveToOrg org={state.org} query={query} /> : null}
       {state.status === 'done' && hint ? (
         <GoDeeperBar
           query={query}

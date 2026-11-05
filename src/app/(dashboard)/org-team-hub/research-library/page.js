@@ -2,6 +2,7 @@ import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { loadResearchBootstrap } from '@/app/api/org/research-notes/_shared';
 import { ResearchLibrary } from '@/components/org/social2/ResearchLibrary';
+import LibrarySonarStrip from '@/components/org/sonar/LibrarySonarStrip';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,6 +26,7 @@ export default async function ResearchLibraryPage() {
 
   return (
     <div className="dashboard-page-inset">
+      {member ? <LibrarySonarStrip /> : null}
       <ResearchLibrary initialData={initialData} />
     </div>
   );
