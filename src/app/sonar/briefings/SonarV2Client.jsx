@@ -86,7 +86,7 @@ export default function SonarV2Client() {
           <input
             type="search"
             value={input}
-            maxLength={300}
+            maxLength={600}
             placeholder="steel industry in Canada"
             aria-label="Ping Sonar"
             onChange={(e) => setInput(e.target.value)}

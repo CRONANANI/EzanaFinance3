@@ -109,8 +109,8 @@ async function handlePing(request, user, ping) {
     if (query.length < 2) {
       return NextResponse.json({ error: 'Type something to ping.' }, { status: 400 });
     }
-    if (query.length > 300) {
-      return NextResponse.json({ error: 'Keep pings under 300 characters.' }, { status: 400 });
+    if (query.length > 600) {
+      return NextResponse.json({ error: 'Keep pings under 600 characters.' }, { status: 400 });
     }
     // Follow-up context: at most ONE prior turn, same sanitation as the query.
     // Used by the dossier's follow-up pill so "Compare to RTX" knows what "this"

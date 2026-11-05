@@ -6,9 +6,13 @@
  * arrive. Every progress state comes from a real server event: nothing here
  * invents progress.
  *
- * State: { status: 'idle'|'running'|'done'|'error'|'gated', plan, stage,
+ * State: { status: 'idle'|'running'|'done'|'error'|'gated'|'quota', plan, stage,
  *   tasks: { [id]: { source, status, items } }, panels, memory, evidence,
- *   analysis, relationships, report, brief, run, error, remaining }
+ *   analysis, relationships, report, brief, run, error, remaining, coverage,
+ *   signup, standardAvailable }
+ * 'quota' (Nov 2026): today's deep research runs are used; a standard run is
+ * still available. `coverage`: a standard run's plan left out evidence the
+ * question asked for ({ incomplete, missing, goDeeper }).
  */
 import { useCallback, useRef, useState } from 'react';
 
@@ -28,6 +32,9 @@ const EMPTY = {
   run: null,
   error: null,
   remaining: null,
+  coverage: null,
+  signup: false,
+  standardAvailable: false,
 };
 
 /** Parse one SSE block ("event: x\ndata: {...}") into [type, data]. */
@@ -76,6 +83,8 @@ export function reduceEvent(state, [type, d]) {
       return { ...state, analysis: d };
     case 'relationships':
       return { ...state, relationships: d };
+    case 'coverage':
+      return { ...state, coverage: d };
     case 'findings':
       return { ...state, report: d.report, brief: d.brief };
     case 'report':
@@ -129,9 +138,11 @@ export function useResearchStream() {
       const body = await res.json().catch(() => ({}));
       setState((s) => ({
         ...s,
-        status: body?.gate ? 'gated' : 'error',
+        status: body?.gate ? 'gated' : body?.reason === 'deep_quota' ? 'quota' : 'error',
         error: body?.message || body?.error || 'That research run did not start.',
         remaining: body?.remaining ?? null,
+        signup: Boolean(body?.signup),
+        standardAvailable: Boolean(body?.standardAvailable),
       }));
       return;
     }

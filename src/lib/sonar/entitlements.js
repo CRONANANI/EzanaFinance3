@@ -52,6 +52,21 @@ export const SONAR_DATASETS = {
 export const ALL_DATASET_IDS = Object.keys(SONAR_DATASETS);
 
 /**
+ * Deep research runs per UTC day, by plan (Nov 2026, research modes). A deep
+ * run also counts as one ping toward the daily quota. Guests cannot run deep
+ * research (it needs a free account); org and partner members get their
+ * plan tier's number. One constant so the caps are easy to change.
+ */
+export const DEEP_RUNS_PER_DAY = { guest: 0, 0: 2, 1: 5, 2: 15, 3: 15, 4: 50 };
+
+/** The deep research cap for a plan tier (or 'guest'). */
+export function deepRunsFor(planTier) {
+  if (planTier === 'guest') return DEEP_RUNS_PER_DAY.guest;
+  const t = Math.max(0, Math.min(4, Number(planTier) || 0));
+  return DEEP_RUNS_PER_DAY[t] ?? DEEP_RUNS_PER_DAY[0];
+}
+
+/**
  * Returns the Sonar capabilities for a given user context.
  *
  * @param {object} ctx
@@ -59,7 +74,13 @@ export const ALL_DATASET_IDS = Object.keys(SONAR_DATASETS);
  * @param {'regular'|'partner'|'org'} ctx.version
  * @param {boolean} [ctx.isPartner]
  * @param {string|null} [ctx.orgRole]
+ * Research modes (Nov 2026): every account may run quick pings and standard
+ * research (the engine at standard depth on its entitled datasets);
+ * `deepRunsPerDay` caps deep research runs. `depth` stays the deepest depth
+ * the plan may request directly from the research route.
+ *
  * @returns {{ datasets: string[], depth: 'summary'|'standard'|'deep', dailyQueries: number,
+ *   deepRunsPerDay: number, researchModes: string[],
  *   exportsEnabled: boolean, userLookup: boolean, savedReports: number,
  *   webSearch: { enabled: boolean, maxUses: number }, planTier: number,
  *   version: string, orgRole: string|null }}
@@ -120,7 +141,14 @@ export function getSonarEntitlements({
   // De-dupe while preserving order.
   base.datasets = ALL_DATASET_IDS.filter((id) => base.datasets.includes(id));
 
-  return { ...base, planTier, version, orgRole: orgRole || null };
+  return {
+    ...base,
+    deepRunsPerDay: deepRunsFor(planTier),
+    researchModes: ['quick', 'standard', 'deep'],
+    planTier,
+    version,
+    orgRole: orgRole || null,
+  };
 }
 
 /**

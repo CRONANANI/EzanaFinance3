@@ -43,11 +43,18 @@ test('a research assignment is offered deep research; ordinary pings are not', (
   assert.match(s.estimate.label, /^about \d to \d minutes$/);
   for (const q of [
     'What are the risks to Apple over the next 5 years?',
-    'Analyze Tesla financial performance and competitive landscape',
     'Give me an investment thesis on AMD: valuation, competition, and customer concentration',
   ]) {
     assert.equal(deepResearchSignal(q).deep, true, q);
   }
+  /* Nov 2026, research modes: a two-family analysis of one company is
+     standard research (it runs automatically), not a deep research offer.
+     Changed from deep under the research-mode classifier; listed for the
+     product owner's review. */
+  assert.equal(
+    deepResearchSignal('Analyze Tesla financial performance and competitive landscape').deep,
+    false,
+  );
   for (const q of [
     'Nancy Pelosi',
     'Lockheed Martin',

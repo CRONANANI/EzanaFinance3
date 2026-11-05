@@ -440,7 +440,7 @@ export default function SonarBriefing({ result, onFollowup, busy = false }) {
             <input
               type="text"
               value={draft}
-              maxLength={300}
+              maxLength={600}
               placeholder="Ask your own follow-up"
               aria-label="Ask your own follow-up"
               onChange={(e) => setDraft(e.target.value)}

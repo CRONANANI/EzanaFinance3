@@ -51,7 +51,7 @@ export function SonarQueryBar({
             onChange={(e) => onChange(e.target.value)}
             placeholder="Try a person, a bank, a policy, a company, or a trend..."
             aria-label="Sonar query"
-            maxLength={300}
+            maxLength={600}
             autoFocus={autoFocus}
             disabled={disabled}
           />
@@ -96,7 +96,7 @@ export function SonarQueryBar({
         onChange={(e) => onChange(e.target.value)}
         placeholder="Try a person, a bank, a policy, a ticker..."
         aria-label="Sonar query"
-        maxLength={300}
+        maxLength={600}
         autoFocus={autoFocus}
         disabled={disabled}
       />

@@ -3,7 +3,10 @@ import { NextResponse } from 'next/server';
 import { withApiGuard, safeErrorResponse } from '@/lib/api-guard';
 import { getAdminClient, getAuthUser } from '@/lib/supabase';
 import { hasSessionCredentials } from '@/lib/sonar/guest-cookie';
-import { deepResearchEnabled, deepResearchSignal } from '@/lib/sonar/deep-research';
+import { deepResearchEnabled, standardResearchEnabled } from '@/lib/sonar/deep-research';
+import { classifyResearchMode, routeForClassification, modeMeta } from '@/lib/sonar/research-mode';
+import { logModeEvent, fromClassification } from '@/lib/sonar/mode-events';
+import { SONAR_QUERY_MAX } from '@/lib/sonar/limits';
 import { runLandingPipeline, hashIp, DISCLAIMER, pingProfile } from '@/lib/sonar/landing-pipeline';
 import { reservePing, completePing, failPing } from '@/lib/sonar/quota';
 import { getClientIp } from '@/lib/client-ip';
@@ -24,7 +27,7 @@ import { withNoEmDash } from '@/lib/text/no-em-dash-response';
  *   1. withApiGuard(strict) rate limits 10/min/IP.
  *   2. An HMAC-signed httpOnly session cookie caps a visitor at GUEST_LIMIT.
  *   3. The shared global daily cap backstops cookie clearing.
- *   4. Input is 2-300 chars, control characters stripped, same contract as the
+ *   4. Input is 2-600 chars, control characters stripped, same contract as the
  *      authenticated route.
  * The quota check runs BEFORE any retrieval or model call, so an exhausted
  * visitor costs nothing.
@@ -108,25 +111,11 @@ const POST_HANDLER = withApiGuard(
     if (query.length < 2) {
       return NextResponse.json({ error: 'Type something to ping.' }, { status: 400 });
     }
-    if (query.length > 300) {
-      return NextResponse.json({ error: 'Keep pings under 300 characters.' }, { status: 400 });
-    }
-
-    /* Nov 4: a research assignment ("What are the biggest risks to NVIDIA's
-       growth over the next three years? Analyze its financials, ownership,
-       contracts...") cannot be answered in a five-second ping. Before any
-       spend, Sonar offers deep research; the visitor's choice comes back as
-       mode 'deep' (to /api/sonar/research) or mode 'quick' (here again). */
-    if (body?.mode !== 'quick' && !body?.force && !body?.noCorrect && deepResearchEnabled()) {
-      const signal = deepResearchSignal(query);
-      if (signal.deep) {
-        return NextResponse.json({
-          deepSuggested: true,
-          query,
-          deep: { reasons: signal.reasons, angles: signal.angles, estimate: signal.estimate },
-          disclaimer: DISCLAIMER,
-        });
-      }
+    if (query.length > SONAR_QUERY_MAX) {
+      return NextResponse.json(
+        { error: `Keep pings under ${SONAR_QUERY_MAX} characters.` },
+        { status: 400 },
+      );
     }
 
     /* A signed-in visitor (the Datasets search page reuses this pipeline) is
@@ -153,6 +142,91 @@ const POST_HANDLER = withApiGuard(
     if (memberRes.timedOut)
       console.warn('[sonar/landing] auth lookup timed out', { carriesSession });
     const memberCap = Math.max(1, Number(process.env.SONAR_MEMBER_DAILY_CAP) || 25);
+    const isGuestPing = !member && !unknownSession;
+    const admin = getAdminClient();
+    const ipHash = hashIp(getClientIp(request) || 'unknown', guestSecret());
+
+    /* Nov 2026, research modes: before any spend, the research-mode
+       classifier (src/lib/sonar/research-mode.js) decides how much research
+       the question warrants. Deep (clear) is OFFERED, never run here: the
+       visitor's choice comes back as mode 'deep' (to /api/sonar/research) or
+       mode 'quick' (here again). Standard is returned to a host that can run
+       it (body.research lists 'standard'), which posts to /api/sonar/research
+       with mode 'standard'. Quick runs the pipeline below; a borderline quick
+       answer carries Go deeper. A re-ping with force or noCorrect, or an
+       explicit quick, is never classified again. */
+    let mode = null;
+    if (
+      body?.mode !== 'quick' &&
+      !body?.force &&
+      !body?.noCorrect &&
+      (deepResearchEnabled() || standardResearchEnabled())
+    ) {
+      try {
+        mode = classifyResearchMode(query);
+      } catch (e) {
+        console.warn('[sonar/landing] classify failed', e?.name);
+      }
+    }
+    const hostRunsStandard = Array.isArray(body?.research) && body.research.includes('standard');
+    /* One 'classified' row per decision, bounded: it never fails or slows a
+       ping (sonar_mode_events, labels for the evaluation set). */
+    const logClassified = (extra = {}) =>
+      mode
+        ? withTimeout(
+            logModeEvent(admin, {
+              ...fromClassification(mode),
+              query,
+              action: 'classified',
+              userId: member?.id || null,
+              ipHash: member ? null : ipHash,
+              ...extra,
+            }),
+            LEDGER_MS,
+            'mode-event',
+          )
+        : Promise.resolve(null);
+
+    const route = routeForClassification(mode, {
+      deepEnabled: deepResearchEnabled(),
+      standardEnabled: standardResearchEnabled(),
+      hostRunsStandard,
+      isGuest: isGuestPing,
+    });
+    if (route.kind === 'deep') {
+      await logClassified({ details: { offered: 'deep' } });
+      return NextResponse.json({
+        deepSuggested: true,
+        query,
+        deep: route.deep,
+        disclaimer: DISCLAIMER,
+      });
+    }
+    if (route.kind === 'standard') {
+      await logClassified({ ranMode: 'standard' });
+      return NextResponse.json({
+        researchMode: 'standard',
+        query,
+        classification: {
+          version: mode.version,
+          mode: mode.mode,
+          confidence: mode.confidence,
+          score: mode.score,
+          operations: mode.operations,
+          domains: mode.domains,
+          reasons: mode.reasons,
+          format: mode.format,
+          estimate: mode.estimate,
+          plannedWork: mode.plannedWork,
+          triggers: mode.triggers,
+          meta: modeMeta(mode),
+        },
+        goDeeper: route.goDeeper,
+        disclaimer: DISCLAIMER,
+      });
+    }
+    /* Quick: Go deeper only to a mode this host can run. */
+    const goDeeper = route.goDeeper;
 
     // Guest quota gate, before any retrieval or model spend.
     const used = member || unknownSession ? 0 : readGuestCount(request);
@@ -165,14 +239,11 @@ const POST_HANDLER = withApiGuard(
       });
     }
 
-    const admin = getAdminClient();
-
     /* Reserve the ping before any retrieval or model spend: the member's
        daily cap (or, for a guest, a per-IP-hash cap behind the cookie) and
        the shared global cap are counted and a 'reserved' ledger row inserted
        under one lock, so parallel pings cannot all pass the same count.
        Salted IP hash only, never a raw IP. */
-    const ipHash = hashIp(getClientIp(request) || 'unknown', guestSecret());
     const reservationP = reservePing(admin, {
       userId: member?.id || null,
       limit: member ? memberCap : null,
@@ -270,15 +341,19 @@ const POST_HANDLER = withApiGuard(
        already counted, and failing here would show the visitor an error for
        a working ping whose synthesis we have already paid for. */
     /* Bounded: a slow ledger write must not hold a finished brief. */
-    const ledger = await withTimeout(
-      completePing(admin, reservation, {
-        classification: result.classification,
-        datasets_searched: result.sources.map((s) => s.id),
-        grounded: result.grounded,
-      }),
-      LEDGER_MS,
-      'ledger',
-    );
+    const [ledger] = await Promise.all([
+      withTimeout(
+        completePing(admin, reservation, {
+          classification: result.classification,
+          datasets_searched: result.sources.map((s) => s.id),
+          grounded: result.grounded,
+        }),
+        LEDGER_MS,
+        'ledger',
+      ),
+      /* Alongside the ledger write, so it adds no time to the ping. */
+      logClassified({ queryId: reservation.id || null, ranMode: 'quick' }),
+    ]);
     if (!ledger.ok) {
       console.error(
         '[sonar/landing] ledger complete',
@@ -302,6 +377,7 @@ const POST_HANDLER = withApiGuard(
       evidence: result.evidence || [],
       remaining: member || unknownSession ? null : Math.max(0, GUEST_LIMIT - nextUsed),
       cached: Boolean(result.cached),
+      ...(goDeeper ? { goDeeper } : {}),
       disclaimer: DISCLAIMER,
     });
     if (!member && !unknownSession) setGuestCount(res, nextUsed);

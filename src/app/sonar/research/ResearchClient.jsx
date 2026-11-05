@@ -14,7 +14,7 @@ import './research-page.css';
 export default function ResearchClient() {
   const params = useSearchParams();
   const router = useRouter();
-  const initial = (params.get('q') || '').slice(0, 300);
+  const initial = (params.get('q') || '').slice(0, 600);
   const [q, setQ] = useState(initial);
   const { state, run, cancel } = useResearchStream();
   const started = useRef(false);
@@ -50,7 +50,7 @@ export default function ResearchClient() {
           id="srp-q"
           className="srp-input"
           value={q}
-          maxLength={300}
+          maxLength={600}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Ask a research question, for example: Who is lobbying hardest on AI regulation?"
         />

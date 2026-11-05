@@ -1,0 +1,502 @@
+[
+  {
+    "id": "cal01",
+    "category": "Company Intelligence and Fundamental Research",
+    "label": "NVIDIA",
+    "query": "What are the biggest risks to NVIDIA's growth over the next three years? Analyze its financial performance, institutional ownership, government contracts, industry exposure, and competitive landscape.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal02",
+    "category": "Company Intelligence and Fundamental Research",
+    "label": "Palantir",
+    "query": "How dependent is Palantir on government spending? Examine its federal contract history, major contract recipients, revenue exposure, and recent contract activity.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal03",
+    "category": "Company Intelligence and Fundamental Research",
+    "label": "Microsoft",
+    "query": "How is Microsoft positioning itself to capture value from the AI infrastructure boom? Connect its financial performance, government contracts, industry exposure, and relevant lobbying activity.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal04",
+    "category": "Company Intelligence and Fundamental Research",
+    "label": "Tesla",
+    "query": "What are the most significant factors influencing Tesla's business outlook? Analyze company fundamentals, industry developments, regulatory exposure, and institutional ownership.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal05",
+    "category": "Company Intelligence and Fundamental Research",
+    "label": "Amazon",
+    "query": "How important are government contracts to Amazon's broader business strategy? Identify major contract awards, spending trends, relevant subsidiaries, and potential areas of growth.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": true
+  },
+  {
+    "id": "cal06",
+    "category": "Company Intelligence and Fundamental Research",
+    "label": "AMD",
+    "query": "Is AMD gaining ground in the AI semiconductor ecosystem? Examine industry positioning, financial performance, institutional ownership, and relevant government procurement activity.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal07",
+    "category": "Company Intelligence and Fundamental Research",
+    "label": "Lockheed Martin",
+    "query": "How has government procurement influenced Lockheed Martin's business over the past five years? Identify major contract trends and relevant industry developments.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal08",
+    "category": "Company Intelligence and Fundamental Research",
+    "label": "Coinbase",
+    "query": "What regulatory and political developments could materially affect Coinbase's business? Connect sanctions, regulatory activity, congressional activity, and relevant lobbying disclosures where supported by the data.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal09",
+    "category": "Company Intelligence and Fundamental Research",
+    "label": "Apple",
+    "query": "What are Apple's most significant geopolitical and supply-chain exposures? Examine relevant country, industry, regulatory, and corporate data, distinguishing documented exposures from analytical hypotheses.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal10",
+    "category": "Company Intelligence and Fundamental Research",
+    "label": "Snowflake",
+    "query": "What evidence suggests Snowflake is benefiting from enterprise AI adoption? Evaluate company fundamentals, industry developments, institutional ownership, and relevant public-sector contracts.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": true
+  },
+  {
+    "id": "cal11",
+    "category": "Congressional Intelligence and Political Activity",
+    "label": "Semiconductor trades",
+    "query": "Which members of Congress have disclosed transactions involving semiconductor companies over the past 12 months? Identify the companies, transaction dates, purchase or sale classifications, and relevant committee memberships.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal12",
+    "category": "Congressional Intelligence and Political Activity",
+    "label": "Defense exposure",
+    "query": "Which members of Congress have disclosed stock transactions involving major defense contractors? Compare their committee assignments with the companies involved, without implying that a committee assignment establishes a conflict of interest.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal13",
+    "category": "Congressional Intelligence and Political Activity",
+    "label": "AI investment activity",
+    "query": "What patterns can be identified in congressional trading activity involving companies exposed to artificial intelligence?",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal14",
+    "category": "Congressional Intelligence and Political Activity",
+    "label": "Energy sector",
+    "query": "Which members of Congress have disclosed investments in energy companies, and how does that activity overlap with their committee responsibilities?",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal15",
+    "category": "Congressional Intelligence and Political Activity",
+    "label": "Political concentration",
+    "query": "Are congressional trades concentrated in particular industries? Rank the most frequently represented industries and identify the companies driving the activity.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": true
+  },
+  {
+    "id": "cal16",
+    "category": "Congressional Intelligence and Political Activity",
+    "label": "Congressional transaction trends",
+    "query": "How has disclosed congressional trading activity changed over the last three years? Compare transaction counts, purchases versus sales, and House versus Senate activity, accounting for reporting limitations.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal17",
+    "category": "Congressional Intelligence and Political Activity",
+    "label": "Politician research",
+    "query": "Build a research dossier on a member of Congress that combines their disclosed trades, committee memberships, relevant lobbying activity, and available political or corporate connections.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal18",
+    "category": "Lobbying, Regulation, and Corporate Influence",
+    "label": "AI regulation",
+    "query": "Who is lobbying hardest on AI regulation in Washington? Rank the most active companies and organizations using disclosed lobbying activity, and distinguish AI-specific lobbying from general federal lobbying.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal19",
+    "category": "Lobbying, Regulation, and Corporate Influence",
+    "label": "Semiconductor lobbying",
+    "query": "Which companies and trade associations are most active in lobbying around semiconductor policy? Identify relevant clients, lobbying disclosures, and potential connections to government procurement.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal20",
+    "category": "Lobbying, Regulation, and Corporate Influence",
+    "label": "Defense lobbying",
+    "query": "Which defense contractors spend the most on federal lobbying, and how does their activity relate to their government contract awards?",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": true
+  },
+  {
+    "id": "cal21",
+    "category": "Lobbying, Regulation, and Corporate Influence",
+    "label": "Financial regulation",
+    "query": "Which major financial institutions and industry associations are lobbying around financial regulation? Identify the most active organizations and the issues disclosed in their filings.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal22",
+    "category": "Lobbying, Regulation, and Corporate Influence",
+    "label": "Energy policy",
+    "query": "Which corporations are most active in lobbying around energy policy? Compare their lobbying activity with their industry exposure and relevant government contracts.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal23",
+    "category": "Lobbying, Regulation, and Corporate Influence",
+    "label": "Corporate influence networks",
+    "query": "Map the relationships between major AI companies, lobbying firms, trade associations, and relevant government agencies using documented evidence. Clearly distinguish direct relationships from inferred connections.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal24",
+    "category": "Government Contracts and Procurement Intelligence",
+    "label": "AI government spending",
+    "query": "Which companies are receiving the most government contracts related to artificial intelligence? Identify major recipients, contract values, awarding agencies, and trends over time where the available records support those classifications.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal25",
+    "category": "Government Contracts and Procurement Intelligence",
+    "label": "Defense procurement",
+    "query": "Which companies have experienced the greatest growth in government contract awards over the past three years? Identify the companies, agencies, award values, and relevant industry categories.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": true
+  },
+  {
+    "id": "cal26",
+    "category": "Government Contracts and Procurement Intelligence",
+    "label": "Federal contract concentration",
+    "query": "Which corporations dominate federal contract awards? Analyze the distribution of awards and identify whether spending is concentrated among a small number of recipients.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal27",
+    "category": "Government Contracts and Procurement Intelligence",
+    "label": "Emerging contractors",
+    "query": "Identify smaller or less-established companies that appear to be gaining traction in federal procurement. Explain the evidence behind each selection and avoid treating a single award as proof of a sustained growth trend.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal28",
+    "category": "Government Contracts and Procurement Intelligence",
+    "label": "Procurement relationships",
+    "query": "Which publicly traded companies have the strongest documented exposure to government procurement? Build a comparative ranking using contract history, recipient relationships, and relevant company information.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal29",
+    "category": "Sanctions, Geopolitical Risk, and Country Intelligence",
+    "label": "Sanctions overview",
+    "query": "Which countries are most represented in the current sanctions dataset? Break down the listings by country, entity type, and sanctions program. Explain what the counts do and do not measure.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal30",
+    "category": "Sanctions, Geopolitical Risk, and Country Intelligence",
+    "label": "Russia exposure",
+    "query": "What industries and publicly traded companies may be exposed to Russia-related sanctions risk? Separate directly documented sanctions relationships from broader geopolitical exposure.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": true
+  },
+  {
+    "id": "cal31",
+    "category": "Sanctions, Geopolitical Risk, and Country Intelligence",
+    "label": "China and semiconductors",
+    "query": "What are the most important geopolitical risks facing the semiconductor supply chain in relation to China and Taiwan? Connect country-level indicators, industry data, corporate exposure, and regulatory developments where available.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal32",
+    "category": "Sanctions, Geopolitical Risk, and Country Intelligence",
+    "label": "Sanctions trends",
+    "query": "How has the composition of sanctions listings changed over time? Identify the fastest-growing countries or programs if historical listing dates support a reliable comparison.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal33",
+    "category": "Sanctions, Geopolitical Risk, and Country Intelligence",
+    "label": "Corporate sanctions exposure",
+    "query": "Which companies in the available company and industry datasets have documented relationships with sanctioned entities? Show the underlying records, explain the relationship, and distinguish direct matches from potential exposure.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal34",
+    "category": "Industry and Thematic Investment Research",
+    "label": "AI infrastructure",
+    "query": "What are the most attractive areas of the AI infrastructure ecosystem to research over the next five years? Compare semiconductors, data centers, power generation, networking, and fiber infrastructure using available company, industry, contract, and macroeconomic evidence. Do not make unsupported investment recommendations.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal35",
+    "category": "Industry and Thematic Investment Research",
+    "label": "Copper demand",
+    "query": "What factors could drive copper demand over the next five years? Examine industrial activity, energy infrastructure, electrification, relevant companies, and available macroeconomic indicators. Clearly identify any missing commodity-specific data.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": true
+  },
+  {
+    "id": "cal36",
+    "category": "Industry and Thematic Investment Research",
+    "label": "Data center power",
+    "query": "Which publicly traded companies are positioned to benefit from rising data center electricity demand? Examine power generation, utilities, infrastructure, government contracts, and relevant industry relationships.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal37",
+    "category": "Industry and Thematic Investment Research",
+    "label": "Defense technology",
+    "query": "Which industries and companies are benefiting from increased defense spending? Connect procurement activity, industry development, lobbying, and macroeconomic trends without assuming that contract awards guarantee future profitability.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal38",
+    "category": "Industry and Thematic Investment Research",
+    "label": "Biotechnology",
+    "query": "What are the major structural trends affecting the biotechnology industry? Identify relevant companies, industry stages, regulatory risks, and available corporate or market evidence. Explicitly identify gaps in clinical trial or drug pipeline coverage if those data are unavailable.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal39",
+    "category": "Cross-Dataset Relationship Intelligence",
+    "label": "The AI influence network",
+    "query": "Build a relationship map connecting major AI companies, federal lobbying activity, government contracts, institutional ownership, and relevant congressional activity. Identify the strongest documented connections and explain their significance.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal40",
+    "category": "Cross-Dataset Relationship Intelligence",
+    "label": "Semiconductor policy ecosystem",
+    "query": "Analyze the relationship between semiconductor companies, congressional trading disclosures, lobbying activity, government procurement, and industry development. What patterns emerge?",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": true
+  },
+  {
+    "id": "cal41",
+    "category": "Cross-Dataset Relationship Intelligence",
+    "label": "Government spending and corporate growth",
+    "query": "Identify publicly traded companies with increasing federal contract activity and examine whether their reported financial performance has changed during the same period. Do not infer causation from correlation.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal42",
+    "category": "Cross-Dataset Relationship Intelligence",
+    "label": "Institutional ownership and political activity",
+    "query": "Are companies receiving significant government contracts also appearing frequently in institutional ownership filings and congressional transaction disclosures? Identify overlaps and explain the limitations of the comparison.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal43",
+    "category": "Cross-Dataset Relationship Intelligence",
+    "label": "Sanctions and corporate networks",
+    "query": "Identify documented relationships between sanctioned entities, corporate subsidiaries, industries, and relevant publicly traded companies. Build a sourced relationship analysis without assuming guilt or wrongdoing from association alone.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal44",
+    "category": "Comparative Research, Screening, and Analytical Reasoning",
+    "label": "AI company comparison",
+    "query": "Compare NVIDIA, AMD, Microsoft, Amazon, and Alphabet as participants in the AI infrastructure ecosystem. Evaluate their financial performance, government contract exposure, industry positioning, institutional ownership, and regulatory activity.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal45",
+    "category": "Comparative Research, Screening, and Analytical Reasoning",
+    "label": "Defense contractor ranking",
+    "query": "Rank the top publicly traded defense contractors using available government procurement data. Explain the ranking methodology, identify the limitations, and show the evidence behind each company's position.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": true
+  },
+  {
+    "id": "cal46",
+    "category": "Comparative Research, Screening, and Analytical Reasoning",
+    "label": "Emerging industry screen",
+    "query": "Identify publicly traded companies that appear to be gaining exposure to the AI infrastructure ecosystem through government contracts, industry development, and corporate activity. Explain why each company qualifies.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal47",
+    "category": "Comparative Research, Screening, and Analytical Reasoning",
+    "label": "Country risk comparison",
+    "query": "Compare the United States, China, Taiwan, and South Korea in terms of semiconductor industry importance, macroeconomic positioning, geopolitical exposure, and relevant corporate relationships.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal48",
+    "category": "Comparative Research, Screening, and Analytical Reasoning",
+    "label": "Historical pattern analysis",
+    "query": "Identify examples where increases in government procurement activity coincided with changes in a company's financial performance or industry position. Show the historical evidence and explain why these examples do not establish causation.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal49",
+    "category": "Complex, Open-Ended, and Edge-Case Research",
+    "label": "Open-ended discovery",
+    "query": "Find three potentially underappreciated investment themes emerging from relationships across Ezana's datasets. For each theme, identify the underlying evidence, relevant companies, supporting data, counterarguments, and what additional information would be required to validate the thesis.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": false
+  },
+  {
+    "id": "cal50",
+    "category": "Complex, Open-Ended, and Edge-Case Research",
+    "label": "Contradictory evidence",
+    "query": "Identify a company or industry where different available datasets appear to tell conflicting stories. Explain the apparent contradiction, investigate whether reporting periods, definitions, or source coverage account for it, and state what cannot be concluded.",
+    "mode": "deep",
+    "source": "calibration-50",
+    "reviewed": true,
+    "holdout": true
+  }
+]

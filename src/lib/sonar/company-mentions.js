@@ -105,3 +105,26 @@ export function mentionedCompany(text) {
   if (guard && guard.test(t)) return null;
   return { ticker: hit.ticker, name: hit.name, surface: m[2] };
 }
+
+const RE_ALL = new RegExp(RE.source, 'giu');
+
+/**
+ * Every distinct company a ping names, in order of first mention (Nov 2026,
+ * research modes: "Compare NVIDIA, AMD, Microsoft, Amazon, and Alphabet").
+ * @param {string} text
+ * @returns {Array<{ ticker: string, name: string, surface: string }>}
+ */
+export function mentionedCompanies(text) {
+  const t = String(text || '');
+  const out = [];
+  const seen = new Set();
+  for (const m of t.matchAll(RE_ALL)) {
+    const hit = BY_NAME.get(m[2].toLowerCase());
+    if (!hit || seen.has(hit.ticker)) continue;
+    const guard = NOT_THE_COMPANY[hit.n];
+    if (guard && guard.test(t)) continue;
+    seen.add(hit.ticker);
+    out.push({ ticker: hit.ticker, name: hit.name, surface: m[2] });
+  }
+  return out;
+}

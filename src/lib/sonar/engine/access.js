@@ -29,7 +29,12 @@ export async function resolveResearchAccess(request, admin, { authMs = 1500 } = 
   const auth = await withTimeout(getAuthUser(request), authMs, 'auth');
   const user = auth.ok ? auth.value || null : null;
   if (!user) {
-    const entitlements = getSonarEntitlements({ planTier: 0, version: 'regular' });
+    /* Guests: free-tier datasets, no deep research (it needs an account). */
+    const entitlements = {
+      ...getSonarEntitlements({ planTier: 0, version: 'regular' }),
+      deepRunsPerDay: 0,
+      researchModes: ['quick', 'standard'],
+    };
     return {
       user: null,
       entitlements,

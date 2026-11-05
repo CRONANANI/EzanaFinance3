@@ -12,28 +12,10 @@
  * objectives or domains below 0.9 confidence; it never removes or overrides a
  * deterministic domain, entity or resolution.
  */
-import { DOMAINS } from './domains';
-import { deepResearchSignal } from '@/lib/sonar/deep-research';
+import { scoreDomains } from './domain-score';
+import { classifyCore } from '@/lib/sonar/research-mode-core';
 
-/* Base domains per understood intent (the deterministic router's verdict). */
-const INTENT_DOMAINS = {
-  company: { company: 1, company_financials: 0.5, analyst_views: 0.4 },
-  ticker_lookup: { company: 1, market_performance: 0.6, analyst_views: 0.5 },
-  fund: { company: 0.7, institutional: 1 },
-  politician: { politician: 1, congress_trading: 0.9 },
-  country: { country: 1, macro: 0.6 },
-  country_rank: { country: 1, macro: 0.8 },
-  industry_layout: { industry: 1 },
-  industry_country: { industry: 1, country: 0.5 },
-  sector_screen: { sector: 1 },
-  ranking: { market_performance: 0.5 },
-  comparison: { company: 0.6, market_performance: 0.6 },
-  policy: { geopolitics: 0.6, lobbying: 0.4 },
-  theme: { news: 0.5 },
-  commodity: { commodity: 1 },
-  event: { news: 0.8 },
-  open_question: { news: 0.5, editorial: 0.3 },
-};
+export { scoreDomains };
 
 const RANK_RE =
   /\b(who|which|what)\b.*\b(most|hardest|largest|biggest|top|highest|lowest|least|best|worst|leading)\b|\b(top|rank\w*|leaderboard|most|largest|biggest)\b/i;
@@ -97,10 +79,27 @@ const ANGLE_DOMAINS = {
 const MEMO_RE =
   /\b(risks?|downside|threats?|headwinds?|investment (?:case|thesis|memo)|thesis|outlook|prospects|analy[sz]e|assess\w*|evaluate|due diligence|deep dive)\b/i;
 
+/* The memo decision reads the research-mode classifier (Nov 2026): a deep
+   question about one company, or any dependence, opportunity or risk
+   question about it, is an investment risk assessment. */
+const MEMO_OPS = ['dependence', 'sustainability', 'opportunity', 'risk_assessment'];
+
+/** The deep signal the memo decision needs, from a classification. */
+function memoSignal(c) {
+  return {
+    deep: c.mode === 'deep' && c.confidence === 'clear',
+    angles: c.angles || [],
+    operations: c.operations || [],
+  };
+}
+
 /** Whether a question about one company is an investment risk assessment. */
-export function isInvestmentMemo(text, subject, signal = deepResearchSignal(text)) {
+export function isInvestmentMemo(text, subject, signal = null) {
   if (subject?.kind !== 'company') return false;
-  return signal.deep || (MEMO_RE.test(String(text || '')) && signal.angles.length >= 2);
+  const s = signal || memoSignal(classifyCore(text));
+  if (s.deep) return true;
+  if ((s.operations || []).some((o) => MEMO_OPS.includes(o))) return true;
+  return MEMO_RE.test(String(text || '')) && (s.angles || []).length >= 2;
 }
 
 function withMemoDomains(domains, angles) {
@@ -166,58 +165,18 @@ export function timeHorizonOf(text, now = new Date()) {
 }
 
 /**
- * Score every domain for a ping: intent prior, entity evidence, cue hits.
- * @returns {Array<{ id: string, score: number, why: string[] }>} best first, score > 0
- */
-export function scoreDomains(text, understood = {}) {
-  const t = String(text || '');
-  const scores = new Map();
-  const add = (id, s, why) => {
-    const cur = scores.get(id) || { id, score: 0, why: [] };
-    cur.score = Math.min(1, Math.max(cur.score, s) + (cur.score && s ? 0.1 : 0));
-    cur.why.push(why);
-    scores.set(id, cur);
-  };
-  for (const [id, s] of Object.entries(INTENT_DOMAINS[understood.intent] || {})) {
-    add(id, s, `intent:${understood.intent}`);
-  }
-  const kinds = new Set((understood.entities || []).map((e) => e.kind));
-  if (kinds.has('ticker')) add('company', 0.9, 'entity:ticker');
-  if (kinds.has('person_politician')) add('politician', 1, 'entity:politician');
-  if (kinds.has('industry') || kinds.has('sector')) add('industry', 0.7, 'entity:industry');
-  if (kinds.has('country')) add('country', 0.5, 'entity:country');
-  if (kinds.has('policy')) add('geopolitics', 0.6, 'entity:policy');
-  for (const [id, d] of Object.entries(DOMAINS)) {
-    if (d.cues.some((re) => re.test(t))) add(id, 0.75, `cue:${id}`);
-  }
-  /* A country named with a tension word, about companies or markets, is a
-     geopolitical exposure question first, not a country profile. */
-  const nCountries = (understood.entities || []).filter((e) => e.kind === 'country').length;
-  if (nCountries && DOMAINS.geopolitics.cues[0].test(t)) {
-    add('geopolitics', nCountries >= 2 ? 1 : 0.9, 'countries+tension');
-    if (
-      /\b(compan(?:y|ies)|stocks?|shares|firms|manufacturers?|exposed|exposure|vulnerable|investors?)\b/i.test(
-        t,
-      )
-    ) {
-      const c = scores.get('country');
-      if (c) c.score = Math.min(c.score, 0.6);
-    }
-  }
-  return [...scores.values()].filter((d) => d.score > 0).sort((a, b) => b.score - a.score);
-}
-
-/**
  * The research specification for a ping.
  * @param {object} understood  understandQuery() output
  * @param {{ query?: string, resolution?: object, depth?: 'quick'|'standard'|'deep', now?: Date }} opts
  */
 export function buildResearchSpec(
   understood,
-  { query = '', resolution = {}, depth = 'standard', now = new Date() } = {},
+  { query = '', resolution = {}, depth = 'standard', now = new Date(), classification = null } = {},
 ) {
   const text = String(query || understood?.raw || understood?.corrected || '');
-  const signal = deepResearchSignal(text, understood);
+  /* The classifier's coverage check passes its own result in, so the spec
+     never re-classifies (and never recurses). */
+  const signal = memoSignal(classification || classifyCore(text, { understood }));
   const memo = isInvestmentMemo(text, resolution.subject, signal);
   const domains = memo
     ? withMemoDomains(scoreDomains(text, understood), signal.angles)

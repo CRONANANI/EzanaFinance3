@@ -28,7 +28,8 @@ import '@/app/datasets/datasets-loading.css';
 
 /* The landing Sonar band, loaded only once a Datasets search is sent. */
 import DatasetCardMatches from './DatasetCardMatches';
-import { DeepResearchPrompt, DeepResearchRun } from './DeepResearch';
+import { DeepResearchPrompt, DeepResearchRun, StandardResearchRun } from './DeepResearch';
+import { useAuth } from '@/components/auth-context';
 import { SonarSignupCta } from './SonarSignupCta';
 
 const SonarBand = dynamic(
@@ -113,7 +114,7 @@ export function SonarExperience({
   const startQuery = onDatasets
     ? String(initialQuery || '')
         .trim()
-        .slice(0, 200) || null
+        .slice(0, 600) || null
     : null;
   const [bandQuery, setBandQuery] = useState(startQuery);
   const [entitlements, setEntitlements] = useState(null);
@@ -146,6 +147,10 @@ export function SonarExperience({
      deep }), and the run once the visitor says yes ({ query, estimate }). */
   const [deepOffer, setDeepOffer] = useState(null);
   const [deepRun, setDeepRun] = useState(null);
+  /* Nov 2026, research modes: a focused question runs standard research
+     automatically ({ query, classification, goDeeper }). */
+  const [standardRun, setStandardRun] = useState(null);
+  const { isAuthenticated: signedIn } = useAuth();
 
   useEffect(() => {
     (async () => {
@@ -422,6 +427,7 @@ export function SonarExperience({
 
   function acceptDeep() {
     if (!deepOffer) return;
+    setStandardRun(null);
     setDeepRun({ query: deepOffer.query, estimate: deepOffer.deep?.estimate || null });
     setDeepOffer(null);
     try {
@@ -436,6 +442,7 @@ export function SonarExperience({
   function quickInstead(query) {
     setDeepOffer(null);
     setDeepRun(null);
+    setStandardRun(null);
     try {
       const url = new URL(window.location.href);
       url.searchParams.delete('deep');
@@ -448,7 +455,34 @@ export function SonarExperience({
   function closeDeep() {
     setDeepOffer(null);
     setDeepRun(null);
+    setStandardRun(null);
     leavePing();
+  }
+  /* Go deeper from a lighter answer: to deep opens the offer (a guest sees
+     the sign-up path in it); to standard runs standard straight away. */
+  function goDeeper(query, hint) {
+    if (hint?.to === 'standard') {
+      setDeepRun(null);
+      setStandardRun({ query, classification: null, goDeeper: null });
+      return;
+    }
+    setDeepOffer({
+      query,
+      deep: hint?.deep || {
+        reasons: hint?.reasons || [],
+        domains: [],
+        format: 'report',
+        estimate: { label: 'about 1 to 3 minutes' },
+        guestNeedsAccount: !signedIn,
+        meta: hint?.meta || null,
+      },
+    });
+  }
+  /* Today's deep runs are used: run standard on the same question. */
+  function standardInstead(query) {
+    setDeepRun(null);
+    setDeepOffer(null);
+    setStandardRun({ query, classification: null, goDeeper: null });
   }
 
   if (onDatasets && bandQuery) {
@@ -459,6 +493,17 @@ export function SonarExperience({
             query={deepRun.query}
             estimate={deepRun.estimate}
             onQuick={() => quickInstead(deepRun.query)}
+            onStandard={() => standardInstead(deepRun.query)}
+            onBack={closeDeep}
+          />
+        ) : null}
+        {standardRun && !deepRun ? (
+          <StandardResearchRun
+            query={standardRun.query}
+            classification={standardRun.classification}
+            goDeeper={standardRun.goDeeper}
+            onGoDeeper={(hint) => goDeeper(standardRun.query, hint)}
+            onQuick={() => quickInstead(standardRun.query)}
             onBack={closeDeep}
           />
         ) : null}
@@ -489,10 +534,16 @@ export function SonarExperience({
             } catch {
               auto = false;
             }
-            if (auto) setDeepRun({ query, estimate: deep?.estimate || null });
-            else setDeepOffer({ query, deep });
+            if (auto && !deep?.guestNeedsAccount) {
+              setStandardRun(null);
+              setDeepRun({ query, estimate: deep?.estimate || null });
+            } else setDeepOffer({ query, deep });
           }}
-          hidden={Boolean(deepRun)}
+          onStandardResearch={(query, { classification, goDeeper: hint } = {}) => {
+            setDeepRun(null);
+            setStandardRun({ query, classification, goDeeper: hint || null });
+          }}
+          hidden={Boolean(deepRun || standardRun)}
           stackTop={
             answeredQuery ? <DatasetCardMatches query={answeredQuery} variant="rail" /> : null
           }

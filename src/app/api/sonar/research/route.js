@@ -16,7 +16,14 @@ import {
 import { resolveResearchAccess, clampDepth } from '@/lib/sonar/engine/access';
 import { runResearch, DEPTH_PROFILES } from '@/lib/sonar/engine/engine';
 import { recordRun } from '@/lib/sonar/engine/telemetry';
-import { deepResearchEnabled, deepResearchForGuests } from '@/lib/sonar/deep-research';
+import {
+  deepResearchEnabled,
+  deepResearchForGuests,
+  standardResearchEnabled,
+} from '@/lib/sonar/deep-research';
+import { classifyResearchMode, coverageFromPlan } from '@/lib/sonar/research-mode';
+import { logModeEvent, fromClassification } from '@/lib/sonar/mode-events';
+import { SONAR_QUERY_MAX } from '@/lib/sonar/limits';
 import { rememberRun } from '@/lib/sonar/engine/memory';
 
 import { withNoEmDash } from '@/lib/text/no-em-dash-response';
@@ -51,7 +58,18 @@ import { withNoEmDash } from '@/lib/text/no-em-dash-response';
  * { mode: 'deep' }. That path is on whatever SONAR_ENGINE_V3 says (turn it
  * off with SONAR_DEEP_RESEARCH=false), always runs at deep depth with every
  * dataset (the same data a quick ping shows anyone), and counts as one ping.
- * Guests may use it unless SONAR_DEEP_GUESTS=false.
+ * Since Nov 2026 (research modes) deep research needs a free account:
+ * guests get the sign-up gate unless SONAR_DEEP_GUESTS=true, and members are
+ * capped per day by their plan (entitlements.deepRunsPerDay, enforced in
+ * reserve_sonar_ping_deep; 429 when reached).
+ *
+ * Standard research (Nov 2026): a question the research-mode classifier
+ * rated 'standard' posts here with { mode: 'standard' }, whatever
+ * SONAR_ENGINE_V3 says (SONAR_STANDARD_RESEARCH=false turns it off). It runs
+ * at standard depth on the user's entitled datasets, counts as one ping and
+ * guests may use it within their free pings. If the real plan leaves out a
+ * kind of evidence the question asked for, a `coverage` event says so and
+ * the UI offers Go deeper.
  */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -66,7 +84,8 @@ const POST_HANDLER = withApiGuard(
     const startedAt = Date.now();
     const body = await request.json().catch(() => ({}));
     const deepMode = body?.mode === 'deep' && deepResearchEnabled();
-    if (process.env.SONAR_ENGINE_V3 !== 'true' && !deepMode) {
+    const standardMode = !deepMode && body?.mode === 'standard' && standardResearchEnabled();
+    if (process.env.SONAR_ENGINE_V3 !== 'true' && !deepMode && !standardMode) {
       return NextResponse.json({ error: 'Not available.' }, { status: 404 });
     }
     const query = String(body?.query || '')
@@ -76,16 +95,46 @@ const POST_HANDLER = withApiGuard(
       .trim();
     if (query.length < 2)
       return NextResponse.json({ error: 'Type something to research.' }, { status: 400 });
-    if (query.length > 300)
-      return NextResponse.json({ error: 'Keep questions under 300 characters.' }, { status: 400 });
+    if (query.length > SONAR_QUERY_MAX)
+      return NextResponse.json(
+        { error: `Keep questions under ${SONAR_QUERY_MAX} characters.` },
+        { status: 400 },
+      );
 
     const admin = getAdminClient();
     const access = await resolveResearchAccess(request, admin);
     const isGuest = !access.user;
     const used = isGuest ? readGuestCount(request) : 0;
+    const ipHash = hashIp(getClientIp(request) || 'unknown', guestSecret());
+    /* The classification travels with every event this route logs, and the
+       standard run's coverage check reads the evidence it asked for. Pure
+       and fast (no I/O). */
+    let mode = null;
+    try {
+      mode = deepMode || standardMode ? classifyResearchMode(query, { coverage: false }) : null;
+    } catch {
+      mode = null;
+    }
+    const logEvent = (action, extra = {}) =>
+      mode
+        ? withTimeout(
+            logModeEvent(admin, {
+              ...fromClassification(mode),
+              query,
+              action,
+              userId: access.user?.id || null,
+              ipHash: isGuest ? ipHash : null,
+              ...extra,
+            }),
+            600,
+            'mode-event',
+          )
+        : Promise.resolve(null);
     if (deepMode && isGuest && !deepResearchForGuests()) {
+      await logEvent('signup_gate', { ranMode: null });
       return NextResponse.json({
         gate: true,
+        signup: true,
         remaining: null,
         message: 'Deep research needs a free account. Create one to run it.',
       });
@@ -99,9 +148,10 @@ const POST_HANDLER = withApiGuard(
     }
     const depth = deepMode
       ? 'deep'
-      : clampDepth(DEPTHS.has(body?.depth) ? body.depth : access.maxDepth, access.maxDepth);
+      : standardMode
+        ? 'standard'
+        : clampDepth(DEPTHS.has(body?.depth) ? body.depth : access.maxDepth, access.maxDepth);
 
-    const ipHash = hashIp(getClientIp(request) || 'unknown', guestSecret());
     const reservation = await withTimeout(
       reservePing(admin, {
         userId: access.user?.id || null,
@@ -112,13 +162,27 @@ const POST_HANDLER = withApiGuard(
           : null,
         isGuest,
         query,
-        version: `research${deepMode ? ':deep' : ''}:${access.version}`,
+        version: `research${deepMode ? ':deep' : standardMode ? ':standard' : ''}:${access.version}`,
         planTier: access.planTier,
+        /* A member's daily cap on deep research runs (reserve_sonar_ping_deep). */
+        deepLimit: deepMode && !isGuest ? access.entitlements.deepRunsPerDay : null,
       }),
       1500,
       'reserve',
     );
     const res = reservation.ok ? reservation.value : { ok: false, reason: 'error' };
+    if (!res.ok && res.reason === 'deep_quota') {
+      await logEvent('deep_quota', { ranMode: null, details: { used: res.used } });
+      return NextResponse.json(
+        {
+          error:
+            'You\u2019ve used today\u2019s deep research runs. They reset at midnight UTC. A standard answer is still available.',
+          reason: 'deep_quota',
+          standardAvailable: standardResearchEnabled(),
+        },
+        { status: 429 },
+      );
+    }
     if (!res.ok) {
       return NextResponse.json(
         {
@@ -180,7 +244,15 @@ const POST_HANDLER = withApiGuard(
               startedAt + Math.min(DEPTH_PROFILES[depth].budgetMs, (maxDuration - 6) * 1000),
             /* Deep mode reads every dataset, as a quick ping does for anyone. */
             entitledDatasets: deepMode ? null : access.entitlements.datasets,
-            emit: send,
+            /* A standard run whose real plan leaves out evidence the question
+               asked for says so right after the plan (never escalates). */
+            emit: (event, data) => {
+              send(event, data);
+              if (event === 'plan' && standardMode && mode?.requestedFamilies?.length) {
+                const cov = coverageFromPlan(data?.plan, mode.requestedFamilies);
+                if (cov.incomplete) send('coverage', { ...cov, goDeeper: 'deep' });
+              }
+            },
             signal: abort.signal,
             scope: access.scope,
             noCorrect: body?.noCorrect === true,

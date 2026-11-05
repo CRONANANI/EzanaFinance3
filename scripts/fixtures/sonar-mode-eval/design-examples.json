@@ -1,0 +1,149 @@
+[
+  {
+    "id": "des01",
+    "query": "What is NVIDIA's latest reported quarterly revenue?",
+    "mode": "quick",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des02",
+    "query": "Who are the largest institutional holders of Palantir?",
+    "mode": "quick",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des03",
+    "query": "Which companies received the most recent government contracts?",
+    "mode": "quick",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des04",
+    "query": "What is the current sanctions status of Rosneft?",
+    "mode": "quick",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des05",
+    "query": "What was NVIDIA's revenue last quarter?",
+    "mode": "quick",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des06",
+    "query": "Who owns Palantir?",
+    "mode": "quick",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des07",
+    "query": "How has Palantir's federal contract activity changed over the past three years?",
+    "mode": "standard",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des08",
+    "query": "Which institutional investors increased their NVIDIA positions?",
+    "mode": "standard",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des09",
+    "query": "Which companies have the greatest exposure to copper prices?",
+    "mode": "standard",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des10",
+    "query": "How has lobbying around semiconductor export controls changed?",
+    "mode": "standard",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des11",
+    "query": "How has NVIDIA's revenue grown over five years?",
+    "mode": "standard",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des12",
+    "query": "Which hedge funds increased their Palantir positions, and by how much?",
+    "mode": "standard",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des13",
+    "query": "Which companies received the most defense contracts last year?",
+    "mode": "standard",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des14",
+    "query": "What are the biggest risks to NVIDIA's growth over the next three years?",
+    "mode": "deep",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des15",
+    "query": "How dependent is Palantir on government spending, and how sustainable is its growth?",
+    "mode": "deep",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des16",
+    "query": "Which companies are best positioned to benefit from increased U.S. defense spending, considering contracts, financial performance, and institutional ownership?",
+    "mode": "deep",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des17",
+    "query": "What are the geopolitical and economic risks to the semiconductor supply chain?",
+    "mode": "deep",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des18",
+    "query": "How does institutional positioning affect the investment risks surrounding Palantir?",
+    "mode": "deep",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des19",
+    "query": "How dependent is Palantir on government spending?",
+    "mode": "deep",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des20",
+    "query": "Which companies are best positioned to benefit from increased defense spending?",
+    "mode": "deep",
+    "source": "design-review",
+    "reviewed": true
+  },
+  {
+    "id": "des21",
+    "query": "What are the biggest risks to NVIDIA's growth over the next three years? Analyze its financial performance, institutional ownership, government contracts, industry exposure, and competitive landscape.",
+    "mode": "deep",
+    "source": "design-review",
+    "reviewed": true
+  }
+]

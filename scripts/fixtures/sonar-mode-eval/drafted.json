@@ -1,0 +1,1232 @@
+[
+  {
+    "id": "dq001",
+    "query": "What is Microsoft's market cap?",
+    "mode": "quick",
+    "rationale": "Single market fact.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq002",
+    "query": "What was Apple's net income last quarter?",
+    "mode": "quick",
+    "rationale": "Single reported metric for one period.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq003",
+    "query": "Show me Nancy Pelosi's latest stock trades.",
+    "mode": "quick",
+    "rationale": "One member's latest disclosures, a list.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq004",
+    "query": "Who is the CEO of Lockheed Martin?",
+    "mode": "quick",
+    "rationale": "Single fact.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq005",
+    "query": "What is Tesla's stock price today?",
+    "mode": "quick",
+    "rationale": "Price lookup.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq006",
+    "query": "Is Gazprom on the OFAC sanctions list?",
+    "mode": "quick",
+    "rationale": "Single status lookup.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq007",
+    "query": "List the latest lobbying filings by Meta Platforms.",
+    "mode": "quick",
+    "rationale": "One record set, a list.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq008",
+    "query": "Which contracts did Palantir win this month?",
+    "mode": "quick",
+    "rationale": "Recent records for one company, a list.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq009",
+    "query": "What is the GDP of Brazil?",
+    "mode": "quick",
+    "rationale": "Single country indicator.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq010",
+    "query": "When did Arm Holdings go public?",
+    "mode": "quick",
+    "rationale": "Single event date.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq011",
+    "query": "Who are the top shareholders of Boeing?",
+    "mode": "quick",
+    "rationale": "One company's holder list; ranking is the record's own order.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq012",
+    "query": "What committees does Senator Elizabeth Warren sit on?",
+    "mode": "quick",
+    "rationale": "Single member fact.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq013",
+    "query": "Show the latest 13F filing from Berkshire Hathaway.",
+    "mode": "quick",
+    "rationale": "One filing.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq014",
+    "query": "What is the price of copper?",
+    "mode": "quick",
+    "rationale": "Commodity price lookup.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq015",
+    "query": "What did Northrop Grumman report for revenue in fiscal 2025?",
+    "mode": "quick",
+    "rationale": "Single reported metric.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq016",
+    "query": "Which members of Congress traded Netflix stock recently?",
+    "mode": "quick",
+    "rationale": "One record set for one ticker.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq017",
+    "query": "What is the inflation rate in Turkey?",
+    "mode": "quick",
+    "rationale": "Single indicator.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq018",
+    "query": "Show me Chevron's most recent government contract.",
+    "mode": "quick",
+    "rationale": "Single record.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq019",
+    "query": "What sector is Snowflake in?",
+    "mode": "quick",
+    "rationale": "Classification fact.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq020",
+    "query": "Is Huawei on the Entity List?",
+    "mode": "quick",
+    "rationale": "Single export-control status.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq021",
+    "query": "What is the latest news on Coinbase?",
+    "mode": "quick",
+    "rationale": "Recent headlines for one company.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq022",
+    "query": "How much did Amazon spend on lobbying in 2025?",
+    "mode": "quick",
+    "rationale": "Single annual figure.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq023",
+    "query": "What is Pfizer's dividend yield?",
+    "mode": "quick",
+    "rationale": "Single market metric.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq024",
+    "query": "Who is the largest holder of Tesla stock?",
+    "mode": "quick",
+    "rationale": "Single holder fact.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq025",
+    "query": "What is the current policy rate in Japan?",
+    "mode": "quick",
+    "rationale": "Single indicator.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq026",
+    "query": "List the sanctions programs that cover Iran.",
+    "mode": "quick",
+    "rationale": "One record set.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq027",
+    "query": "When is Nvidia's next earnings date?",
+    "mode": "quick",
+    "rationale": "Single date.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq028",
+    "query": "What is the ticker for Alphabet?",
+    "mode": "quick",
+    "rationale": "Ticker lookup.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq029",
+    "query": "Show Raytheon's latest 10-Q filing.",
+    "mode": "quick",
+    "rationale": "One filing.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq030",
+    "query": "What was the oil price at the end of last month?",
+    "mode": "quick",
+    "rationale": "Single price for one date.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq031",
+    "query": "Which agency awarded General Dynamics its latest contract?",
+    "mode": "quick",
+    "rationale": "Single record attribute.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq032",
+    "query": "Who represents Texas's 10th congressional district?",
+    "mode": "quick",
+    "rationale": "Single fact.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq033",
+    "query": "What is JPMorgan's price target consensus?",
+    "mode": "quick",
+    "rationale": "Single analyst metric.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq034",
+    "query": "Exxon Mobil",
+    "mode": "quick",
+    "rationale": "Bare entity.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq035",
+    "query": "Senator Tommy Tuberville trades",
+    "mode": "quick",
+    "rationale": "A member's trades, one record set.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq036",
+    "query": "How many employees does Intel have?",
+    "mode": "quick",
+    "rationale": "Single fact.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq037",
+    "query": "What was Germany's unemployment rate in September?",
+    "mode": "quick",
+    "rationale": "Single indicator for one month.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq038",
+    "query": "Show the most recent lobbying registration for OpenAI.",
+    "mode": "quick",
+    "rationale": "Single record.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq039",
+    "query": "What did Micron guide for next quarter's revenue?",
+    "mode": "quick",
+    "rationale": "Single reported guidance figure.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq040",
+    "query": "Which countries are subject to comprehensive US embargoes?",
+    "mode": "quick",
+    "rationale": "A short reference list.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq041",
+    "query": "What is the market cap of Saudi Aramco?",
+    "mode": "quick",
+    "rationale": "Single market fact.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq042",
+    "query": "Who filed the latest SEC Form 4 for Palantir?",
+    "mode": "quick",
+    "rationale": "Single filing.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq043",
+    "query": "What is Broadcom's P/E ratio?",
+    "mode": "quick",
+    "rationale": "Single valuation metric.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq044",
+    "query": "Show me the latest prediction market odds on a Fed rate cut.",
+    "mode": "quick",
+    "rationale": "Single market reading.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq045",
+    "query": "What is the current price of gold?",
+    "mode": "quick",
+    "rationale": "Price lookup.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq046",
+    "query": "Which company won the largest Navy contract this week?",
+    "mode": "quick",
+    "rationale": "Single record, recency.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq047",
+    "query": "What is the 10-year Treasury yield?",
+    "mode": "quick",
+    "rationale": "Single market rate.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq048",
+    "query": "List Visa's subsidiaries.",
+    "mode": "quick",
+    "rationale": "Reference list.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq049",
+    "query": "What are the latest Echo articles on semiconductors?",
+    "mode": "quick",
+    "rationale": "Recent items, a list.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "dq050",
+    "query": "Who is the chair of the House Armed Services Committee?",
+    "mode": "quick",
+    "rationale": "Single fact.",
+    "reviewed": false,
+    "set": "quick"
+  },
+  {
+    "id": "ds001",
+    "query": "How has Boeing's revenue changed over the past five years?",
+    "mode": "standard",
+    "rationale": "Trend in one metric for one company.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds002",
+    "query": "Which defense contractors received the largest Army awards in 2025?",
+    "mode": "standard",
+    "rationale": "Ranking on one criterion.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds003",
+    "query": "Compare Lockheed Martin and Northrop Grumman federal contract obligations.",
+    "mode": "standard",
+    "rationale": "Two companies, one metric.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds004",
+    "query": "How exposed is Apple to China?",
+    "mode": "standard",
+    "rationale": "A single exposure question.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds005",
+    "query": "Which members of Congress traded the most bank stocks this year?",
+    "mode": "standard",
+    "rationale": "Ranking on one criterion within one dataset.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds006",
+    "query": "How has OFAC's Russia designation count changed since 2022?",
+    "mode": "standard",
+    "rationale": "Trend in one dataset.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds007",
+    "query": "Which companies spent the most on lobbying last year?",
+    "mode": "standard",
+    "rationale": "Ranking on one criterion.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds008",
+    "query": "Break down Microsoft's revenue by segment.",
+    "mode": "standard",
+    "rationale": "Breakdown within one record set.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds009",
+    "query": "How have hedge funds changed their positions in Tesla over the last four quarters?",
+    "mode": "standard",
+    "rationale": "Ownership trend for one company.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds010",
+    "query": "Which countries have the highest inflation in Latin America?",
+    "mode": "standard",
+    "rationale": "Ranking on one indicator.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds011",
+    "query": "How has Palantir's stock performed relative to the S&P 500 this year?",
+    "mode": "standard",
+    "rationale": "Comparison on one metric.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds012",
+    "query": "What share of Raytheon's contracts come from the Air Force?",
+    "mode": "standard",
+    "rationale": "Breakdown of one record set.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds013",
+    "query": "Which semiconductor companies have the highest gross margins?",
+    "mode": "standard",
+    "rationale": "Ranking on one metric within an industry.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds014",
+    "query": "How has congressional trading in energy stocks changed over the past two years?",
+    "mode": "standard",
+    "rationale": "Trend within one dataset.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds015",
+    "query": "Which institutional investors cut their Meta positions last quarter?",
+    "mode": "standard",
+    "rationale": "Screen within one dataset.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds016",
+    "query": "Compare Exxon and Chevron revenue over the last three years.",
+    "mode": "standard",
+    "rationale": "Two companies, one metric, trailing.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds017",
+    "query": "How sensitive are airline stocks to oil prices?",
+    "mode": "standard",
+    "rationale": "A single exposure question for a group.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds018",
+    "query": "Which agencies spend the most on cloud contracts?",
+    "mode": "standard",
+    "rationale": "Ranking on one criterion.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds019",
+    "query": "How has Intel's market share in data center chips changed?",
+    "mode": "standard",
+    "rationale": "Trend in one measure.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds020",
+    "query": "Which sanctioned entities were added most recently by country?",
+    "mode": "standard",
+    "rationale": "Breakdown of recent listings.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds021",
+    "query": "How concentrated are federal IT contract awards among the top ten vendors?",
+    "mode": "standard",
+    "rationale": "Concentration within one dataset.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds022",
+    "query": "Which hedge funds hold the largest stakes in Coinbase?",
+    "mode": "standard",
+    "rationale": "Holder ranking across funds for one company.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds023",
+    "query": "How has Germany's GDP growth trended since 2020?",
+    "mode": "standard",
+    "rationale": "Indicator trend.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds024",
+    "query": "Which companies did members of the Senate Banking Committee trade this year?",
+    "mode": "quick",
+    "rationale": "A filtered list of one dataset (trades by committee members); consistent with db018.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds025",
+    "query": "How has Amazon's lobbying spending changed over the past decade?",
+    "mode": "standard",
+    "rationale": "Trend in one metric.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds026",
+    "query": "Rank the top 10 recipients of NASA contracts.",
+    "mode": "standard",
+    "rationale": "Ranking on one criterion.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds027",
+    "query": "How much of Lockheed Martin's revenue comes from the US government?",
+    "mode": "standard",
+    "rationale": "Breakdown of one company's revenue (single exposure figure).",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds028",
+    "query": "Which countries export the most copper?",
+    "mode": "standard",
+    "rationale": "Ranking on one indicator.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds029",
+    "query": "How has Nvidia's data center revenue grown over the past eight quarters?",
+    "mode": "standard",
+    "rationale": "Trend in one segment.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds030",
+    "query": "Compare AMD and Intel operating margins.",
+    "mode": "standard",
+    "rationale": "Two companies, one metric.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds031",
+    "query": "Which lawmakers bought defense stocks in the past six months?",
+    "mode": "standard",
+    "rationale": "Screen within one dataset.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds032",
+    "query": "How has the price of lithium moved over the past two years?",
+    "mode": "standard",
+    "rationale": "Commodity trend.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds033",
+    "query": "Which banks increased their holdings of Treasury bonds?",
+    "mode": "standard",
+    "rationale": "Screen on one change.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds034",
+    "query": "How has Tesla's delivery growth changed year over year?",
+    "mode": "standard",
+    "rationale": "Trend in one metric.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds035",
+    "query": "Which companies have the most export control listings among their subsidiaries?",
+    "mode": "standard",
+    "rationale": "Ranking on one criterion.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds036",
+    "query": "Break down sanctions listings for North Korea by entity type.",
+    "mode": "standard",
+    "rationale": "Breakdown within one dataset.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds037",
+    "query": "How has Japan's yen weakness affected Toyota's reported revenue?",
+    "mode": "standard",
+    "rationale": "Single effect on one metric (causal wording, one family).",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds038",
+    "query": "Which pharmaceutical companies received the most HHS contracts?",
+    "mode": "standard",
+    "rationale": "Ranking on one criterion within an industry.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds039",
+    "query": "How did Palantir's commercial revenue grow compared with its government revenue?",
+    "mode": "standard",
+    "rationale": "Two segments of one company compared.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds040",
+    "query": "Which states have the most defense contract spending?",
+    "mode": "standard",
+    "rationale": "Ranking on one criterion.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds041",
+    "query": "How exposed are European banks to Russia?",
+    "mode": "standard",
+    "rationale": "A single exposure question for a group.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds042",
+    "query": "How has insider selling at Snowflake changed this year?",
+    "mode": "standard",
+    "rationale": "Trend in one dataset.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds043",
+    "query": "Which members of Congress trade the most frequently?",
+    "mode": "standard",
+    "rationale": "Ranking on one criterion.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds044",
+    "query": "How has the number of AI-related federal contracts grown since 2023?",
+    "mode": "standard",
+    "rationale": "Trend in one dataset.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds045",
+    "query": "Compare Brazil and Mexico inflation over the past three years.",
+    "mode": "standard",
+    "rationale": "Two countries, one indicator.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds046",
+    "query": "Which companies have the highest share of revenue from China?",
+    "mode": "standard",
+    "rationale": "Ranking on one exposure metric.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds047",
+    "query": "How did 13F holders change their Apple positions last quarter?",
+    "mode": "standard",
+    "rationale": "Ownership change for one company.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds048",
+    "query": "Which trade associations reported the most lobbying income?",
+    "mode": "standard",
+    "rationale": "Ranking on one criterion.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds049",
+    "query": "How has the volume of Senate stock disclosures changed since 2021?",
+    "mode": "standard",
+    "rationale": "Trend in one dataset.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "ds050",
+    "query": "Which utilities have grown capital spending the fastest?",
+    "mode": "standard",
+    "rationale": "Ranking on one metric within a sector.",
+    "reviewed": false,
+    "set": "standard"
+  },
+  {
+    "id": "db001",
+    "query": "Is Nvidia exposed to export controls?",
+    "mode": "standard",
+    "rationale": "Exposure, one company, one family: standard, close to deep.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db002",
+    "query": "How exposed is Boeing to tariffs and supply chain disruptions?",
+    "mode": "standard",
+    "rationale": "Exposure across two families: standard, near deep.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db003",
+    "query": "Which companies won defense contracts this week?",
+    "mode": "quick",
+    "rationale": "Recent records list; near standard.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db004",
+    "query": "Which members of Congress traded semiconductor stocks before the CHIPS Act vote?",
+    "mode": "standard",
+    "rationale": "Screen with a timing filter; near deep but one dataset.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db005",
+    "query": "What factors drive Tesla's margins?",
+    "mode": "standard",
+    "rationale": "Drivers of one company metric: standard, with Go deeper if the reader wants the full picture.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db006",
+    "query": "How has Microsoft's cloud revenue grown, and what share does Azure represent?",
+    "mode": "standard",
+    "rationale": "Trend plus breakdown in one dataset.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db007",
+    "query": "Compare Palantir's government and commercial revenue growth over three years.",
+    "mode": "standard",
+    "rationale": "Comparison within one company's segments, trailing.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db008",
+    "query": "Is Coinbase vulnerable to new crypto regulation?",
+    "mode": "deep",
+    "rationale": "Vulnerability to a regulatory change about a company: needs policy, lobbying and financial evidence.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db009",
+    "query": "Which companies lobbied on the CHIPS Act and also received semiconductor grants?",
+    "mode": "deep",
+    "rationale": "An overlap of two record sets (lobbying and grants) is a relationship question, the same structure as da015.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db010",
+    "query": "What are Apple's biggest product segments?",
+    "mode": "quick",
+    "rationale": "Segment list from one record set.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db011",
+    "query": "How has Russia's share of sanctions listings changed?",
+    "mode": "standard",
+    "rationale": "Trend in one dataset.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db012",
+    "query": "What would a Taiwan blockade mean for chip stocks?",
+    "mode": "deep",
+    "rationale": "Scenario across geopolitics, industry and markets.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db013",
+    "query": "Which funds bought Nvidia and sold AMD last quarter?",
+    "mode": "standard",
+    "rationale": "Screen across two holdings changes in one dataset.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db014",
+    "query": "How did defense stocks react to the last budget increase?",
+    "mode": "standard",
+    "rationale": "Event reaction in one dataset.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db015",
+    "query": "Is Lockheed Martin's backlog sustainable?",
+    "mode": "deep",
+    "rationale": "Sustainability judgement about a company.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db016",
+    "query": "Rank defense contractors by contract growth since 2023.",
+    "mode": "standard",
+    "rationale": "Ranking on one criterion, trailing.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db017",
+    "query": "How exposed is the S&P 500 to China revenue?",
+    "mode": "standard",
+    "rationale": "Aggregate exposure, one family.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db018",
+    "query": "Which members of the Armed Services Committee own defense stocks?",
+    "mode": "quick",
+    "rationale": "Filtered list from disclosures.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db019",
+    "query": "How has OpenAI's lobbying grown compared with Google's?",
+    "mode": "standard",
+    "rationale": "Two entities, one metric, trailing.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db020",
+    "query": "Which industries would gain most from lower interest rates?",
+    "mode": "deep",
+    "rationale": "Opportunity across industries needs macro, industry and market evidence.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db021",
+    "query": "How have copper prices affected Freeport-McMoRan's earnings?",
+    "mode": "standard",
+    "rationale": "Effect of one driver on one company metric.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db022",
+    "query": "Break down Palantir's federal awards by agency over the past five years.",
+    "mode": "standard",
+    "rationale": "Breakdown plus trend in one dataset.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db023",
+    "query": "Should I worry about Nvidia's customer concentration?",
+    "mode": "deep",
+    "rationale": "Risk judgement about a company (plain words).",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db024",
+    "query": "Which countries have seen the biggest increase in sanctions designations this year?",
+    "mode": "standard",
+    "rationale": "Ranking on one change criterion.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db025",
+    "query": "What did Meta say about capex in its last earnings call?",
+    "mode": "quick",
+    "rationale": "A single disclosure lookup.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db026",
+    "query": "How has the share of AI contracts going to large vendors changed?",
+    "mode": "standard",
+    "rationale": "Concentration trend in one dataset.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db027",
+    "query": "How does Microsoft make money from AI, and how much does it depend on OpenAI?",
+    "mode": "deep",
+    "rationale": "Dependence on a partner plus business model.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db028",
+    "query": "How did 13F filers position in energy stocks during the oil price spike?",
+    "mode": "standard",
+    "rationale": "Ownership change in one sector over an event window.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db029",
+    "query": "Which companies are most exposed to the dollar's strength?",
+    "mode": "standard",
+    "rationale": "Ranking on one exposure criterion.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "db030",
+    "query": "What is driving the growth in defense tech startups winning contracts?",
+    "mode": "deep",
+    "rationale": "Causal drivers across contracts, industry and funding.",
+    "reviewed": false,
+    "set": "borderline",
+    "borderline": true
+  },
+  {
+    "id": "da001",
+    "query": "Comprehensive list of NVIDIA's tickers",
+    "mode": "quick",
+    "rationale": "Deep word, ticker lookup.",
+    "reviewed": false,
+    "set": "adversarial"
+  },
+  {
+    "id": "da002",
+    "query": "analyze apple",
+    "mode": "quick",
+    "rationale": "Analysis verb on a bare name: nothing to analyze beyond a profile.",
+    "reviewed": false,
+    "set": "adversarial"
+  },
+  {
+    "id": "da003",
+    "query": "Give me a deep dive on what Tesla's ticker is",
+    "mode": "quick",
+    "rationale": "Deep words wrapping a ticker lookup.",
+    "reviewed": false,
+    "set": "adversarial"
+  },
+  {
+    "id": "da004",
+    "query": "Full report: Microsoft stock price",
+    "mode": "quick",
+    "rationale": "Report words wrapping a price lookup.",
+    "reviewed": false,
+    "set": "adversarial"
+  },
+  {
+    "id": "da005",
+    "query": "In-depth: who owns Palantir?",
+    "mode": "quick",
+    "rationale": "Depth words wrapping a who-owns question.",
+    "reviewed": false,
+    "set": "adversarial"
+  },
+  {
+    "id": "da006",
+    "query": "Thorough analysis of Boeing's latest contract",
+    "mode": "quick",
+    "rationale": "A single record, however it is framed.",
+    "reviewed": false,
+    "set": "adversarial"
+  },
+  {
+    "id": "da007",
+    "query": "Detailed breakdown of Amazon's ticker symbols",
+    "mode": "quick",
+    "rationale": "Breakdown word on a ticker lookup.",
+    "reviewed": false,
+    "set": "adversarial"
+  },
+  {
+    "id": "da008",
+    "query": "Strategic assessment of the current gold price",
+    "mode": "quick",
+    "rationale": "Assessment wording on a price lookup.",
+    "reviewed": false,
+    "set": "adversarial"
+  },
+  {
+    "id": "da009",
+    "query": "Investigate the date of Arm's IPO",
+    "mode": "quick",
+    "rationale": "Investigation wording on a date lookup.",
+    "reviewed": false,
+    "set": "adversarial"
+  },
+  {
+    "id": "da010",
+    "query": "Research Nancy Pelosi",
+    "mode": "quick",
+    "rationale": "Research verb on a bare politician name.",
+    "reviewed": false,
+    "set": "adversarial"
+  },
+  {
+    "id": "da011",
+    "query": "Is Palantir's growth built on government money?",
+    "mode": "deep",
+    "rationale": "Plain words, dependence question.",
+    "reviewed": false,
+    "set": "adversarial"
+  },
+  {
+    "id": "da012",
+    "query": "Can Nvidia keep this up?",
+    "mode": "deep",
+    "rationale": "Plain words, sustainability of a company's growth.",
+    "reviewed": false,
+    "set": "adversarial"
+  },
+  {
+    "id": "da013",
+    "query": "Who wins if defense budgets keep rising?",
+    "mode": "deep",
+    "rationale": "Plain words, opportunity across companies.",
+    "reviewed": false,
+    "set": "adversarial"
+  },
+  {
+    "id": "da014",
+    "query": "What could go wrong for Apple?",
+    "mode": "deep",
+    "rationale": "Plain words, risk assessment.",
+    "reviewed": false,
+    "set": "adversarial"
+  },
+  {
+    "id": "da015",
+    "query": "Are the companies getting AI contracts also the ones lobbying for AI rules?",
+    "mode": "deep",
+    "rationale": "Plain words, cross-dataset relationship.",
+    "reviewed": false,
+    "set": "adversarial"
+  },
+  {
+    "id": "da016",
+    "query": "Does it matter that hedge funds are leaving Tesla?",
+    "mode": "deep",
+    "rationale": "Plain words, implication of ownership change for a company.",
+    "reviewed": false,
+    "set": "adversarial"
+  },
+  {
+    "id": "da017",
+    "query": "Who benefits from the chip export rules?",
+    "mode": "deep",
+    "rationale": "Plain words, opportunity from a policy.",
+    "reviewed": false,
+    "set": "adversarial"
+  },
+  {
+    "id": "da018",
+    "query": "What's the catch with Coinbase?",
+    "mode": "deep",
+    "rationale": "Plain words, risk assessment.",
+    "reviewed": false,
+    "set": "adversarial"
+  },
+  {
+    "id": "da019",
+    "query": "How much does Lockheed need the Pentagon?",
+    "mode": "deep",
+    "rationale": "Plain words, dependence.",
+    "reviewed": false,
+    "set": "adversarial"
+  },
+  {
+    "id": "da020",
+    "query": "Where are the hidden connections between Congress trades and contract awards?",
+    "mode": "deep",
+    "rationale": "Plain words, relationship discovery.",
+    "reviewed": false,
+    "set": "adversarial"
+  }
+]

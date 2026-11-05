@@ -125,8 +125,8 @@ async function handlePing(request, user, ping) {
     if (query.length < 2) {
       return NextResponse.json({ error: 'Type something to ping.' }, { status: 400 });
     }
-    if (query.length > 300) {
-      return NextResponse.json({ error: 'Keep pings under 300 characters.' }, { status: 400 });
+    if (query.length > 600) {
+      return NextResponse.json({ error: 'Keep pings under 600 characters.' }, { status: 400 });
     }
     const parentPingId = /^[0-9a-f-]{36}$/i.test(String(body?.parentPingId || ''))
       ? body.parentPingId

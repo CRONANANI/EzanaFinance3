@@ -254,3 +254,67 @@
     transition: none;
   }
 }
+
+/* Research modes (Nov 2026): the offer's sub-headings and estimate, and the
+   Go deeper bar under a lighter answer. */
+.sdr-h3 {
+  margin: 0.75rem 0 0.25rem;
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.sdr-estimate {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  color: var(--text-primary);
+}
+.sdr-estimate .bi {
+  color: var(--emerald);
+}
+.sdr-deeper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+}
+.sdr-deeper--prominent {
+  border-color: var(--emerald-border);
+  background: var(--emerald-bg);
+}
+.sdr-deeper-btn {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0 0.25rem;
+  border: 0;
+  background: none;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--emerald-text);
+  cursor: pointer;
+}
+.sdr-deeper-btn:hover span {
+  text-decoration: underline;
+}
+.sdr-deeper-btn:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.sdr-deeper-line {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}

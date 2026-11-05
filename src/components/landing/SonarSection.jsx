@@ -72,6 +72,7 @@ import { geometryFor } from './sonar-geometry';
 import { animateWindowScroll, humanPointer } from './sonar-motion';
 import './sonar-band.css';
 import SonarResearchDeck, { NewsAround, SanctionsRail, hasNewsColumns } from './SonarResearchDeck';
+import { GoDeeperBar } from '@/components/sonar/GoDeeperBar';
 import SonarSectorStack from './SonarSectorStack';
 import SonarCongressSentiment from './SonarCongressSentiment';
 import SonarGovExposure from './SonarGovExposure';
@@ -786,6 +787,11 @@ export function SonarSection({
   /* Nov 4: called with (query, deep) when Sonar recognises a research
      assignment and offers deep research; the host asks the visitor. */
   onDeepOffer = null,
+  /* Nov 2026, research modes: called with (query, { classification,
+     goDeeper }) when the classifier rates a ping 'standard'; the host runs
+     the research engine at standard depth. A host without it never gets a
+     standard result (the band does not ask for one). */
+  onStandardResearch = null,
   /* Kept mounted but out of view while deep research shows (so its quick
      answer can still be asked for). */
   hidden = false,
@@ -2328,7 +2334,7 @@ export function SonarSection({
      fresh document releases it with no cleanup race. */
   function onLandingSubmit(e) {
     e.preventDefault();
-    const q = (queryValue || e.currentTarget.elements?.q?.value || '').trim().slice(0, 200);
+    const q = (queryValue || e.currentTarget.elements?.q?.value || '').trim().slice(0, 600);
     if (!q) {
       setPingPulse((n) => n + 1);
       inputRef.current?.focus();
@@ -2375,8 +2381,11 @@ export function SonarSection({
           ...(opts.noCorrect ? { noCorrect: true } : {}),
           ...(opts.force ? { force: opts.force } : {}),
           /* The host offers deep research itself; without one, never stop
-             at the offer. */
+             at the offer. A host that runs standard research says so. */
           ...(opts.mode === 'quick' || typeof onDeepOffer !== 'function' ? { mode: 'quick' } : {}),
+          ...(opts.mode !== 'quick' && typeof onStandardResearch === 'function'
+            ? { research: ['standard', 'deep'] }
+            : {}),
         }),
         signal: controller.signal,
       });
@@ -2394,6 +2403,18 @@ export function SonarSection({
         }
         setQueryValue(q);
         if (typeof onDeepOffer === 'function') onDeepOffer(q, data.deep || null);
+      } else if (data?.researchMode === 'standard' && typeof onStandardResearch === 'function') {
+        /* Nothing was spent here: the host runs standard research. */
+        settle = { settled: true, ok: true, deep: true };
+        if (!hadPinged) {
+          hasPingedRef.current = false;
+          setHasPinged(false);
+        }
+        setQueryValue(q);
+        onStandardResearch(q, {
+          classification: data.classification || null,
+          goDeeper: data.goDeeper || null,
+        });
       } else if (data?.gate) {
         openGate({
           title: 'You\u2019ve used your 5 free pings.',
@@ -2420,6 +2441,8 @@ export function SonarSection({
           understood: data.understood || null,
           evidence: Array.isArray(data.evidence) ? data.evidence : [],
           remaining: data.remaining,
+          /* Borderline quick answer: Go deeper to standard or deep. */
+          goDeeper: data.goDeeper || null,
         });
         if (typeof onPing === 'function' && data.understood?.display) {
           onPing(q, { display: data.understood.display });
@@ -2980,6 +3003,19 @@ export function SonarSection({
                               <span className="snr-cite"> {live.remaining} free pings left</span>
                             ) : null}
                           </p>
+                        ) : null}
+                        {typed < 0 && isPage && live.goDeeper ? (
+                          <GoDeeperBar
+                            query={live.rawQuery || live.query}
+                            goDeeper={live.goDeeper}
+                            onClick={() => {
+                              const q = live.rawQuery || live.query;
+                              if (live.goDeeper.to === 'deep' && typeof onDeepOffer === 'function')
+                                onDeepOffer(q, live.goDeeper.deep || null);
+                              else if (typeof onStandardResearch === 'function')
+                                onStandardResearch(q, { classification: null, goDeeper: null });
+                            }}
+                          />
                         ) : null}
                       </>
                     ) : null}

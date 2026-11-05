@@ -614,7 +614,7 @@ export function SnrFollowUp({ entity, classification, ticker, onFollowUp }) {
           className="snr-fu-input"
           type="text"
           value={text}
-          maxLength={300}
+          maxLength={600}
           placeholder="Ask a follow-up..."
           aria-label={`Follow-up about ${entity}`}
           onChange={(e) => setText(e.target.value)}
