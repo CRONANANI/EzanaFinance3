@@ -1,0 +1,183 @@
+/* Congress sentiment chart (Nov 4, SonarCongressSentiment) in the CONGRESS
+   row of Sourced matches. Purchases --positive above the axis, sales
+   --negative below (money in, money out). Tokens only; numbers in mono,
+   names in sans. */
+
+.snr-band .snr-cs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--snr-mint) 12%, transparent);
+}
+.snr-band .snr-cs .is-up {
+  color: var(--positive);
+}
+.snr-band .snr-cs .is-down {
+  color: var(--negative);
+}
+
+.snr-band .snr-cs-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+}
+.snr-band .snr-cs-chips {
+  display: inline-flex;
+  gap: 4px;
+}
+.snr-band .snr-cs-chip {
+  padding: 3px 9px;
+  border: 1px solid color-mix(in srgb, var(--snr-mint) 22%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--snr-track-label);
+  text-transform: uppercase;
+  color: var(--snr-text-muted);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.snr-band .snr-cs-chip:hover,
+.snr-band .snr-cs-chip:focus-visible {
+  border-color: var(--snr-mint);
+  color: var(--snr-text);
+  outline: none;
+}
+.snr-band .snr-cs-chip.is-on {
+  border-color: var(--snr-mint);
+  background: color-mix(in srgb, var(--snr-mint) 14%, transparent);
+  color: var(--snr-mint);
+}
+
+.snr-band .snr-cs-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.snr-band .snr-cs-stats > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.snr-band .snr-cs-k {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--snr-track-label);
+  text-transform: uppercase;
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-cs-v {
+  font-family: var(--snr-font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--snr-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.snr-band .snr-cs-chart {
+  display: block;
+  width: 100%;
+  height: 96px;
+}
+.snr-band .snr-cs-axis {
+  stroke: color-mix(in srgb, var(--snr-mint) 28%, transparent);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.snr-band .snr-cs-hit {
+  fill: transparent;
+  cursor: crosshair;
+}
+.snr-band .snr-cs-bar {
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+.snr-band .snr-cs-bar.is-buy {
+  fill: var(--positive);
+}
+.snr-band .snr-cs-bar.is-sell {
+  fill: color-mix(in srgb, var(--negative) 85%, transparent);
+}
+.snr-band .snr-cs-chart:hover .snr-cs-bar:not(.is-hot) {
+  opacity: 0.45;
+}
+.snr-band .snr-cs-axis-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-cs-readout {
+  margin: 0;
+  min-height: 1.2em;
+  font-family: var(--snr-font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--snr-text-muted);
+}
+
+.snr-band .snr-cs-members {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.snr-band .snr-cs-member {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 3px 4px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.snr-band .snr-cs-member:hover,
+.snr-band .snr-cs-member:focus-visible {
+  background: color-mix(in srgb, var(--snr-mint) 8%, transparent);
+  outline: none;
+}
+.snr-band .snr-cs-name {
+  min-width: 0;
+  font-family: var(--snr-font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--snr-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.snr-band .snr-cs-meta {
+  flex: 0 0 auto;
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-cs-note {
+  margin: 0;
+  font-family: var(--snr-font-sans);
+  font-size: var(--type-micro-size);
+  line-height: 1.45;
+  color: var(--snr-text-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snr-band .snr-cs-chip,
+  .snr-band .snr-cs-bar {
+    transition: none;
+  }
+}

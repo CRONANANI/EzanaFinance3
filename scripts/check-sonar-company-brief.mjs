@@ -155,7 +155,7 @@ test('fallback brief: moves, then analysts, then datasets; no headline paragraph
   ]);
   const paras = brief.split('\n\n');
   assert.equal(paras.length, 3);
-  assert.match(paras[0], /^Here is what Sonar found on Apple\. .*\[S1\]\. .*\[S2\]\.$/);
+  assert.match(paras[0], /^(?!Here is what Sonar found).*\[S1\]\. .*\[S2\]\.$/, 'no opener');
   assert.match(paras[1], /\[S3\]/);
   assert.match(paras[2], /\[S4\]/);
   assert.ok(!/\[S5\]|Headline|Reported by/.test(brief), 'no headlines');

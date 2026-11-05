@@ -73,6 +73,8 @@ import { animateWindowScroll, humanPointer } from './sonar-motion';
 import './sonar-band.css';
 import SonarResearchDeck, { NewsAround, SanctionsRail, hasNewsColumns } from './SonarResearchDeck';
 import SonarSectorStack from './SonarSectorStack';
+import SonarCongressSentiment from './SonarCongressSentiment';
+import SonarGovExposure from './SonarGovExposure';
 import SonarFlowsStack, { FlowsDetailCards } from './SonarFlowsStack';
 import { CountryStack, CountryOecdRow, CountryEmpireRow } from './SonarCountryStack';
 import { SonarUnderstoodNotice } from './SonarUnderstoodNotice';
@@ -3338,6 +3340,16 @@ export function SonarSection({
                                     <span className="snr-trade-date">{relativeDay(t.date)}</span>
                                   </span>
                                 ))}
+                                {/* Nov 4: the interactive sentiment chart for the
+                                  stock, on the page (the landing band keeps its
+                                  fixed row height). */}
+                                {isPage && live?.dossier?.matches?.congressSeries ? (
+                                  <SonarCongressSentiment
+                                    series={live.dossier.matches.congressSeries}
+                                    ticker={live.dossier.ticker || ''}
+                                    onGate={() => openGate()}
+                                  />
+                                ) : null}
                               </div>
                             ) : null}
 
@@ -3718,6 +3730,12 @@ export function SonarSection({
                         </div>
                       </div>
                     </div>
+                  ) : null}
+
+                  {/* Nov 4: a government-exposure ping (revenue by customer,
+                    federal obligations, largest awards), above the news. */}
+                  {isPage && live?.dossier?.govFocus ? (
+                    <SonarGovExposure dossier={live.dossier} />
                   ) : null}
 
                   {railNews ? (

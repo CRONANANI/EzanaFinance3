@@ -10,6 +10,10 @@
       "schedule": "25 4 * * 0"
     },
     {
+      "path": "/api/cron/enrich-contract-awards",
+      "schedule": "47 * * * *"
+    },
+    {
       "path": "/api/cron/platform-aggregates",
       "schedule": "31 6 * * *"
     },

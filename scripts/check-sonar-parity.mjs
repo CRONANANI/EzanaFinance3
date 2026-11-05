@@ -111,7 +111,7 @@ test('the fallback brief leads with the country line, not the registry read out'
     },
   ].map((it, i) => ({ ...it, marker: `S${i + 1}` }));
   const brief = evidenceBrief('Semiconductor industry in Taiwan', marked);
-  assert.match(brief, /^Here is what Sonar found on Semiconductor industry in Taiwan\. Of the/);
+  assert.match(brief, /^Of the/, 'starts with the finding, no opener');
   assert.match(brief, /TSMC, produces over 90%/);
   assert.doesNotMatch(brief, /Companies in Ezana's registry at this stage/);
   assert.ok(brief.split('\n\n').length <= 2);

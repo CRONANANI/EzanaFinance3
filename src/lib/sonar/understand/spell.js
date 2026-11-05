@@ -52,6 +52,18 @@ export function isDerivedPlaceWord(word, candidate) {
   return stem.length >= 4 && word.startsWith(stem) && DEMONYM_TAIL.test(word.slice(stem.length));
 }
 
+/* Nov 4: an inflection of a lexicon word is the visitor's own word, not a
+   typo. "contract" was being "corrected" to "contracts" (and would have
+   been "awards" to "award", "filed" to "file"), which showed a "Showing
+   results for ... Search instead for" notice under a perfectly spelled
+   question. One word is the other plus a regular suffix. */
+const INFLECTION_SUFFIX = /^(?:s|es|ed|d|ing|er|ers|ly)$/;
+export function isInflection(word, candidate) {
+  const [short, long] = word.length <= candidate.length ? [word, candidate] : [candidate, word];
+  if (short.length < 4 || !long.startsWith(short)) return false;
+  return INFLECTION_SUFFIX.test(long.slice(short.length));
+}
+
 export function correct(rawTokens) {
   const out = [...rawTokens];
   const corrections = [];
@@ -81,6 +93,11 @@ export function correct(rawTokens) {
       const score = -dist * 2 + Math.log1p(FREQ.get(cand) || 0) * 0.3 + ctx;
       if (!best || score > best.score) best = { word: cand, score };
     }
+    /* Left exactly as typed: the lexicon already knows the word's stem, and
+       every downstream cue matches both forms. */
+    /* A possessive ("japan's" -> "japan") is still normalised as before:
+       the country and canonical readings depend on it. */
+    if (best && !/['’]/.test(raw) && isInflection(w, best.word)) return;
     if (best) {
       out[i] = matchCase(raw, best.word);
       if (isDerivedPlaceWord(w, best.word)) readings.push({ from: raw, to: out[i] });

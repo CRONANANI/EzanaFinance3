@@ -254,7 +254,7 @@ test('evidence brief: cited snippets when synthesis misses the deadline', () => 
     { marker: 'S1', snippet: ipoFinding.summary },
     { marker: 'S2', snippet: 'SpaceX (SPCX) is a listed company trading on Nasdaq.' },
   ]);
-  assert.match(brief, /^Here is what Sonar found on SpaceX\. SpaceX priced at \$135\.00/);
+  assert.match(brief, /^SpaceX priced at \$135\.00/, 'starts with the finding, no opener');
   assert.match(brief, /2026-06-12 \[S1\]\. .*Nasdaq \[S2\]\.$/);
   assert.equal(evidenceBrief('SpaceX', []), null);
 });

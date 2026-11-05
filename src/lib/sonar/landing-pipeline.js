@@ -67,6 +67,7 @@ import {
   newsEvidence,
 } from '@/lib/sonar/landing-research';
 import { analystEvidence } from '@/lib/sonar/analyst-evidence';
+import { detectGovExposure, fetchRevenueMix, exposureEvidence } from '@/lib/sonar/revenue-mix';
 import {
   detectFlowsPing,
   buildFlowsDossier,
@@ -195,6 +196,17 @@ This ping is about one listed company. Write exactly three paragraphs:
 (2) What analysts expect: from the (analysts) snippets, the consensus price target with its high and low and what it implies against the last price, how the ratings split, and the latest rating actions, each named with its firm ("Morgan Stanley maintained Overweight"). These are the firms' published views: always attribute them, never present a target or rating as Ezana's own, and never tell the reader to buy, sell or hold.
 (3) What Ezana's datasets show and what to watch: congressional trades, institutional holders, government contracts and lobbying from the dataset snippets, then the next catalysts.
 Use (news) snippets only to explain a move or an analyst action, cited inline; never list headlines and never quote a headline in full. Leave out a paragraph that has no snippets.`;
+
+/* Nov 4 (v2): a company ping that asks how dependent it is on government
+   money ("How dependent is Palantir on government spending? Examine its
+   federal contract history..."). Replaces COMPANY_ADDENDUM: the answer
+   leads, price and analysts become context. */
+const GOV_EXPOSURE_ADDENDUM = `
+This ping asks how dependent one listed company is on government spending. Write exactly three paragraphs:
+(1) The answer: open with the company's name and ticker, then the government share of revenue from the (exposure) snippets for the latest quarter and the trailing four quarters, how it compares with a year earlier, and whether government or commercial revenue is growing faster. Say plainly whether the company is becoming more or less dependent on government customers.
+(2) Federal contracts from the (contracts) snippets: obligations by fiscal year and the largest awarding agencies, naming the subsidiaries the awards went to, and the largest awards with their ceilings where given. Obligations are money committed on awards, not revenue, and a ceiling is not guaranteed revenue: say so in a clause. Never add obligations and ceilings together.
+(3) What to watch and the limits: congressional trading from the (congress) snippets in one sentence, then the risks the snippets support (budget and procurement, agency concentration, renewals). Mention price or analyst views in at most one sentence.
+Keep customer type (government vs commercial revenue) separate from geography (U.S. vs international). Never state a figure the snippets do not give.`;
 
 /* Nov 4: a ping about a member of Congress ("What has Nancy Pelosi been
    buying lately?"). The brief answers from the member's own disclosures;
@@ -727,12 +739,184 @@ function firstSentences(raw, n) {
   return parts.slice(0, n).join(' ').trim();
 }
 
-async function matchContracts(admin, { name }) {
-  if (!admin || !name) return null;
+/* "PALANTIR USG" -> "Palantir USG": the name keys are upper case. Short
+   all-caps words (USG, IBM, AT) stay capitalised. */
+const keyLabel = (k) =>
+  String(k || '')
+    .split(/\s+/)
+    .map((w) => (w.length <= 3 ? w : `${w[0]}${w.slice(1).toLowerCase()}`))
+    .join(' ');
+
+/**
+ * Turn FY x agency rows into the contracts match. `rows` carry fiscal_year,
+ * awarding_agency, total_amount and award_count; the amounts are what
+ * USAspending reports as obligated on awards dated in each fiscal year,
+ * never a ceiling.
+ */
+export function summarizeContractRows(rows, recipient, extra = {}) {
+  let total = 0;
+  let awards = 0;
+  const byFy = new Map();
+  const byAgency = new Map();
+  const byFyAgency = new Map();
+  for (const r of rows) {
+    const v = Number(r.total_amount) || 0;
+    const c = Number(r.award_count) || 0;
+    total += v;
+    awards += c;
+    const fy = Number(r.fiscal_year);
+    const a = AGENCY_SHORT(r.awarding_agency);
+    if (Number.isFinite(fy)) {
+      byFy.set(fy, (byFy.get(fy) || 0) + v);
+      const k = `${fy}|${a}`;
+      const cur = byFyAgency.get(k) || { fy, agency: a, value: 0, awards: 0 };
+      cur.value += v;
+      cur.awards += c;
+      byFyAgency.set(k, cur);
+    }
+    byAgency.set(a, (byAgency.get(a) || 0) + v);
+  }
+  if (!total || !byFy.size) return null;
+
+  const series = [...byFy.entries()]
+    .map(([fy, value]) => ({ fy, value }))
+    .sort((x, y) => x.fy - y.fy);
+
+  /* Complete fiscal years only. Comparing a partial current year against a
+     whole one is how a quick view ends up reporting a 60% collapse that
+     never happened. */
+  const complete = series.filter((d) => d.fy < FY_NOW);
+  const yoy =
+    complete.length >= 2
+      ? (() => {
+          const to = complete[complete.length - 1];
+          const from = complete[complete.length - 2];
+          if (!from.value) return null;
+          return { value: (to.value - from.value) / from.value, from: from.fy, to: to.fy };
+        })()
+      : null;
+
+  const ranked = [...byAgency.entries()].sort((x, y) => y[1] - x[1]);
+  const top = ranked.slice(0, 3);
+  const otherValue = ranked.slice(3).reduce((sum, [, v]) => sum + v, 0);
+  const agencies = top.map(([nm, v]) => ({ name: nm, value: v, share: v / total }));
+  if (otherValue > 0) {
+    agencies.push({ name: 'Other', value: otherValue, share: otherValue / total });
+  }
+
+  return {
+    recipient,
+    total,
+    awards,
+    avg: awards ? total / awards : null,
+    yoy,
+    coverage: { fromFy: series[0].fy, toFy: series[series.length - 1].fy },
+    series,
+    agencies,
+    /* Nov 4: for the interactive Federal contracts card. Every agency, so
+       its chips can filter the bars; partial current fiscal year flagged. */
+    byFyAgency: [...byFyAgency.values()].sort((x, y) => x.fy - y.fy || y.value - x.value),
+    agencyRanking: ranked.map(([nm, v]) => ({ name: nm, value: v, share: v / total })),
+    fyNow: FY_NOW,
+    measure: 'obligations',
+    ...extra,
+  };
+}
+
+/* The largest awards for a ticker, with the award facts the enrichment cron
+   stores (ceiling, PIID, purpose, dates) when it has reached them. */
+async function topAwardsFor(admin, ticker) {
+  const { data } = await admin
+    .from('company_contract_top_awards')
+    .select(
+      'generated_award_id, recipient_name, awarding_agency, award_amount, action_date, fiscal_year',
+    )
+    .eq('ticker', ticker)
+    .order('award_amount', { ascending: false })
+    .limit(15);
+  if (!data?.length) return [];
+  /* The facts table arrives with SQL_01; until it is applied the read fails
+     and the table shows obligations only. */
+  let facts = new Map();
   try {
-    /* Prefix match, not equality. USAspending spells one recipient several
-       ways ("LOCKHEED MARTIN CORPORATION", "LOCKHEED MARTIN CORP"), and
-       matching exactly splits one company into several. */
+    const { data: f, error } = await admin
+      .from('company_contract_award_facts')
+      .select(
+        'generated_award_id, piid, description, award_type, awarding_sub_agency, total_obligation, base_exercised_options, base_and_all_options, date_signed, last_modified_date, modification_count, pop_start, pop_end, pop_potential_end',
+      )
+      .in(
+        'generated_award_id',
+        data.map((r) => r.generated_award_id),
+      );
+    if (!error) facts = new Map((f || []).map((r) => [r.generated_award_id, r]));
+  } catch {
+    /* table not created yet */
+  }
+  const num = (v) => (v == null || v === '' || !Number.isFinite(Number(v)) ? null : Number(v));
+  return data.map((r) => {
+    const x = facts.get(r.generated_award_id) || {};
+    const obligated = num(x.total_obligation) ?? num(r.award_amount);
+    const ceiling = num(x.base_and_all_options);
+    return {
+      id: r.generated_award_id,
+      recipient: r.recipient_name,
+      agency: AGENCY_SHORT(r.awarding_agency),
+      subAgency: x.awarding_sub_agency || null,
+      purpose: x.description || null,
+      piid: x.piid || null,
+      awardType: x.award_type || null,
+      signed: x.date_signed || null,
+      lastModified: x.last_modified_date || r.action_date || null,
+      modifications: num(x.modification_count),
+      fy: Number(r.fiscal_year) || null,
+      obligated,
+      exercised: num(x.base_exercised_options),
+      ceiling,
+      /* Potential, never promised: the ceiling less what is obligated. */
+      remainingPotential:
+        ceiling != null && obligated != null ? Math.max(0, ceiling - obligated) : null,
+      popEnd: x.pop_end || null,
+      popPotentialEnd: x.pop_potential_end || null,
+      hasFacts: Boolean(x.generated_award_id),
+      url: `https://www.usaspending.gov/award/${encodeURIComponent(r.generated_award_id)}`,
+    };
+  });
+}
+
+async function matchContracts(admin, { name, ticker }) {
+  if (!admin || (!name && !ticker)) return null;
+  try {
+    /* Nov 4: by ticker first. company_contract_history (weekly, from the
+       BigQuery USAspending corpus) adds up every recipient name the ticker
+       maps to in contractor_tickers, so a defense subsidiary counts:
+       Palantir USG Inc holds most of Palantir's Pentagon awards, and the old
+       two-word name prefix ("PALANTIR TECHNOLOGIES") never saw it. */
+    if (ticker) {
+      const t = ticker.toUpperCase();
+      const [{ data: hist }, { data: keys }] = await Promise.all([
+        admin
+          .from('company_contract_history')
+          .select('fiscal_year, awarding_agency, total_amount, award_count')
+          .eq('ticker', t)
+          .limit(5000),
+        admin.from('contractor_tickers').select('name_key').eq('ticker', t).limit(20),
+      ]);
+      if (hist?.length) {
+        const entities = [...new Set((keys || []).map((k) => keyLabel(k.name_key)))];
+        const top = await topAwardsFor(admin, t).catch(() => []);
+        const summary = summarizeContractRows(
+          hist,
+          entities.length ? entities.join(' and ') : name || t,
+          { entities, topAwards: top, source: 'ticker' },
+        );
+        if (summary) return summary;
+      }
+    }
+    if (!name) return null;
+    /* Fallback for a company no ticker map covers: prefix match, not
+       equality. USAspending spells one recipient several ways ("LOCKHEED
+       MARTIN CORPORATION", "LOCKHEED MARTIN CORP"), and matching exactly
+       splits one company into several. */
     const prefix = name
       .replace(/[%_,()]/g, ' ')
       .trim()
@@ -746,63 +930,11 @@ async function matchContracts(admin, { name }) {
       .ilike('recipient_name', `${prefix}%`)
       .limit(5000);
     if (!data?.length) return null;
-
-    let total = 0;
-    let awards = 0;
-    const byFy = new Map();
-    const byAgency = new Map();
-    for (const r of data) {
-      const v = Number(r.total_amount) || 0;
-      const c = Number(r.award_count) || 0;
-      total += v;
-      awards += c;
-      const fy = Number(r.fiscal_year);
-      if (Number.isFinite(fy)) byFy.set(fy, (byFy.get(fy) || 0) + v);
-      const a = AGENCY_SHORT(r.awarding_agency);
-      byAgency.set(a, (byAgency.get(a) || 0) + v);
-    }
-    if (!total || !byFy.size) return null;
-
-    const series = [...byFy.entries()]
-      .map(([fy, value]) => ({ fy, value }))
-      .sort((a, b) => a.fy - b.fy);
-
-    /* Complete fiscal years only. Comparing a partial current year against a
-       whole one is how a quick view ends up reporting a 60% collapse that
-       never happened. */
-    const complete = series.filter((d) => d.fy < FY_NOW);
-    const yoy =
-      complete.length >= 2
-        ? (() => {
-            const to = complete[complete.length - 1];
-            const from = complete[complete.length - 2];
-            if (!from.value) return null;
-            return {
-              value: (to.value - from.value) / from.value,
-              from: from.fy,
-              to: to.fy,
-            };
-          })()
-        : null;
-
-    const ranked = [...byAgency.entries()].sort((a, b) => b[1] - a[1]);
-    const top = ranked.slice(0, 3);
-    const otherValue = ranked.slice(3).reduce((sum, [, v]) => sum + v, 0);
-    const agencies = top.map(([nm, v]) => ({ name: nm, value: v, share: v / total }));
-    if (otherValue > 0) {
-      agencies.push({ name: 'Other', value: otherValue, share: otherValue / total });
-    }
-
-    return {
-      recipient: data[0].recipient_name || name,
-      total,
-      awards,
-      avg: awards ? total / awards : null,
-      yoy,
-      coverage: { fromFy: series[0].fy, toFy: series[series.length - 1].fy },
-      series,
-      agencies,
-    };
+    return summarizeContractRows(data, data[0].recipient_name || name, {
+      entities: [...new Set(data.map((r) => r.recipient_name))],
+      topAwards: [],
+      source: 'name',
+    });
   } catch (e) {
     console.error('[sonar-pipeline] contract matches failed:', e?.message);
     return null;
@@ -845,6 +977,108 @@ async function matchCongress(admin, { ticker }) {
     console.error('[sonar-pipeline] congress matches failed:', e?.message);
     return null;
   }
+}
+
+/**
+ * Nov 4: every disclosed congressional trade in a ticker, compact, for the
+ * interactive sentiment chart in the CONGRESS row (the browser buckets them
+ * by the period the visitor picks). Disclosures report amount RANGES, so
+ * dollar views use the range midpoint and say so. Purchases and sales only;
+ * exchanges are counted apart and never read as sentiment.
+ *   trades   [date, 'b' | 's' | 'x', min, max, memberIndex]
+ *   members  [{ name, party, state, chamber }]
+ */
+export async function congressSeries(admin, { ticker }) {
+  if (!admin || !ticker) return null;
+  try {
+    const { data, error } = await admin
+      .from('congress_trades')
+      .select('bioguide_id, type, transaction_date, amount_min, amount_max')
+      .eq('ticker', ticker.toUpperCase())
+      .not('transaction_date', 'is', null)
+      .order('transaction_date', { ascending: true })
+      .limit(1500);
+    if (error || !data?.length) return null;
+    const ids = [...new Set(data.map((r) => r.bioguide_id).filter(Boolean))];
+    const { data: members } = ids.length
+      ? await admin
+          .from('congress_members')
+          .select('bioguide_id, full_name, party, state, chamber')
+          .in('bioguide_id', ids)
+      : { data: [] };
+    const byId = new Map((members || []).map((m) => [m.bioguide_id, m]));
+    const index = new Map();
+    const list = [];
+    const idx = (id) => {
+      if (!index.has(id)) {
+        const m = byId.get(id) || {};
+        index.set(id, list.length);
+        list.push({
+          name: m.full_name || 'Member of Congress',
+          party: m.party || null,
+          state: m.state || null,
+          chamber: m.chamber || null,
+        });
+      }
+      return index.get(id);
+    };
+    const side = (t) => (/^purchase/.test(t || '') ? 'b' : /^sale/.test(t || '') ? 's' : 'x');
+    const num = (v) => (v == null || !Number.isFinite(Number(v)) ? null : Number(v));
+    return {
+      ticker: ticker.toUpperCase(),
+      trades: data.map((r) => [
+        String(r.transaction_date).slice(0, 10),
+        side(r.type),
+        num(r.amount_min),
+        num(r.amount_max),
+        idx(r.bioguide_id || 'unknown'),
+      ]),
+      members: list,
+      first: String(data[0].transaction_date).slice(0, 10),
+      last: String(data[data.length - 1].transaction_date).slice(0, 10),
+    };
+  } catch (e) {
+    console.error('[sonar-pipeline] congress series failed:', e?.message);
+    return null;
+  }
+}
+
+/** Counts for a window of the series: the brief's sentence and the tests. */
+export function congressWindow(series, { months = null, now = new Date() } = {}) {
+  if (!series?.trades?.length) return null;
+  const from = months
+    ? new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - months, now.getUTCDate()))
+        .toISOString()
+        .slice(0, 10)
+    : '0000';
+  const rows = series.trades.filter((t) => t[0] >= from);
+  const buys = rows.filter((t) => t[1] === 'b');
+  const sells = rows.filter((t) => t[1] === 's');
+  const members = new Set(rows.filter((t) => t[1] !== 'x').map((t) => t[4]));
+  const buyers = new Set(buys.map((t) => t[4]));
+  const sellers = new Set(sells.map((t) => t[4]));
+  const mid = (t) => (t[2] != null && t[3] != null ? (t[2] + t[3]) / 2 : (t[2] ?? t[3] ?? 0));
+  return {
+    from: months ? from : series.first,
+    buys: buys.length,
+    sells: sells.length,
+    members: members.size,
+    buyers: buyers.size,
+    sellers: sellers.size,
+    buyMid: buys.reduce((s0, t) => s0 + mid(t), 0),
+    sellMid: sells.reduce((s0, t) => s0 + mid(t), 0),
+    /* Defined rule, shown in the UI: share of purchases among purchases and
+       sales. At least 60% purchases reads as net buying, at most 40% as net
+       selling, anything between as mixed. Fewer than 3 trades: too few. */
+    lean:
+      buys.length + sells.length < 3
+        ? 'too few'
+        : buys.length / (buys.length + sells.length) >= 0.6
+          ? 'net buying'
+          : buys.length / (buys.length + sells.length) <= 0.4
+            ? 'net selling'
+            : 'mixed',
+  };
 }
 
 /* "STATE STREET CORP (STT, STT-PG)" reads as a shouted ledger line on a
@@ -1056,14 +1290,28 @@ async function matchMarkets(admin, { ticker, name, understood = null }) {
 export async function buildMatches({ ticker, name }, admin, understood = null) {
   const [echo, contracts, congress, sec, thirteenF, lobbying, markets] = await Promise.all([
     matchEcho(admin, { name, ticker }),
-    matchContracts(admin, { name }),
+    matchContracts(admin, { name, ticker }),
     matchCongress(admin, { ticker }),
     matchSec(admin, { ticker }),
     match13f(admin, { ticker }),
     matchLobbying(admin, { ticker, name }),
     matchMarkets(admin, { ticker, name, understood }),
   ]);
-  return { echo, contracts, congress, sec, thirteenF, lobbying, markets };
+  /* Nov 4: the full series for the interactive sentiment chart, only when
+     the latest-trades read found any (one more query, not a second scan). */
+  const congressHistory = congress?.length
+    ? await congressSeries(admin, { ticker }).catch(() => null)
+    : null;
+  return {
+    echo,
+    contracts,
+    congress,
+    congressSeries: congressHistory,
+    sec,
+    thirteenF,
+    lobbying,
+    markets,
+  };
 }
 
 export async function buildDossier({ ticker, name }, admin) {
@@ -1410,7 +1658,7 @@ async function buildRankBlock(country, dossier, admin) {
  * Dataset snippets for a company ping, from the dossier's Sourced matches, in
  * the shape the retrievers emit. Only what the match cards show.
  */
-export function companyEvidence(matches, resolved) {
+export function companyEvidence(matches, resolved, { gov = false } = {}) {
   const out = [];
   const name = resolved?.name || resolved?.ticker || 'The company';
   const c = matches?.contracts;
@@ -1422,21 +1670,69 @@ export function companyEvidence(matches, resolved) {
     const yoy = c.yoy
       ? ` Fiscal ${c.yoy.to} versus fiscal ${c.yoy.from}: ${c.yoy.value >= 0 ? 'up' : 'down'} ${Math.abs(Math.round(c.yoy.value * 100))}%.`
       : '';
+    /* Nov 4: named as what it is. USAspending's award amount is the money
+       obligated on awards dated in each fiscal year: not a ceiling, not
+       revenue. The recipients are every entity the ticker maps to. */
+    const who = c.entities?.length > 1 ? `${name} (as ${c.entities.join(' and ')})` : c.recipient;
     out.push({
       corpus: 'contracts',
-      title: `${c.recipient} federal contract awards`,
-      snippet: `${c.recipient} received ${usd(c.total)} across ${c.awards} federal contract awards from fiscal ${c.coverage?.fromFy} to fiscal ${c.coverage?.toFy} (USAspending).${agencies ? ` Top awarding agencies by value: ${agencies}.` : ''}${yoy}`,
-      meta: { recipient: c.recipient },
+      title: `${c.recipient} federal contract obligations`,
+      snippet: `${who} received ${usd(c.total)} in federal contract obligations across ${c.awards} awards dated fiscal ${c.coverage?.fromFy} to fiscal ${c.coverage?.toFy} (USAspending).${agencies ? ` Largest awarding agencies by value: ${agencies}.` : ''}${yoy}`,
+      meta: { recipient: c.recipient, measure: 'obligations', gov },
     });
+    const latestFy = (c.series || []).filter((d) => d.fy < c.fyNow).slice(-1)[0];
+    if (gov && latestFy && c.byFyAgency?.length) {
+      const fyRows = c.byFyAgency
+        .filter((r) => r.fy === latestFy.fy)
+        .sort((x, y) => y.value - x.value)
+        .slice(0, 4);
+      out.push({
+        corpus: 'contracts',
+        title: `${name} obligations by agency, fiscal ${latestFy.fy}`,
+        snippet: `In fiscal ${latestFy.fy}, federal agencies obligated ${usd(latestFy.value)} to ${name} on awards dated that year: ${fyRows
+          .map(
+            (r) => `${r.agency} ${usd(r.value)} (${Math.round((r.value / latestFy.value) * 100)}%)`,
+          )
+          .join(', ')}.`,
+        meta: { recipient: c.recipient, measure: 'obligations', gov },
+      });
+    }
+    const big = (c.topAwards || []).slice(0, 3);
+    if (gov && big.length) {
+      out.push({
+        corpus: 'contracts',
+        title: `${name} largest federal awards`,
+        snippet: `Largest federal awards to ${name}: ${big
+          .map(
+            (w) =>
+              `${w.agency}${w.piid ? ` ${w.piid}` : ''} to ${w.recipient}, ${usd(w.obligated)} obligated${w.ceiling != null ? ` against a ${usd(w.ceiling)} ceiling (base and all options)` : ''}${w.signed ? `, signed ${w.signed}` : w.fy ? `, fiscal ${w.fy}` : ''}`,
+          )
+          .join(
+            '; ',
+          )}.${big.some((w) => w.ceiling != null) ? ' A ceiling is the most that could be awarded, not committed money.' : ''}`,
+        meta: { recipient: c.recipient, measure: 'awards', gov },
+      });
+    }
   }
   const trades = matches?.congress;
+  const series = matches?.congressSeries;
   if (trades?.length) {
+    const w12 = congressWindow(series, { months: 12 });
+    const all = congressWindow(series);
+    const lean =
+      all && all.buys + all.sells
+        ? ` Since ${all.from}, members disclosed ${all.buys} purchases and ${all.sells} sales (${all.members} members, ${all.lean})${
+            w12 && w12.buys + w12.sells
+              ? `; in the last 12 months ${w12.buys} purchases and ${w12.sells} sales (${w12.lean})`
+              : ''
+          }.`
+        : '';
     out.push({
       corpus: 'congress',
       title: `Congressional trades in ${resolved?.ticker || name}`,
       snippet: `Most recent STOCK Act disclosures in ${name} (${resolved?.ticker || ''}): ${trades
         .map((t) => `${t.member}, ${String(t.type).toLowerCase()}${t.date ? ` on ${t.date}` : ''}`)
-        .join('; ')}.`,
+        .join('; ')}.${lean}`,
       meta: { ticker: resolved?.ticker || null },
     });
   }
@@ -1715,30 +2011,68 @@ export function evidenceBrief(subject, marked) {
     const summary = geoLine.length ? geoLine : chainLine;
     const head = (summary.length ? summary : registry.slice(0, 2)).map((it) => lineAt(it, 440));
     const other = pool.filter((it) => it.corpus !== 'industry_registry').slice(0, 2);
-    const paras = [`Here is what Sonar found on ${subject}. ${head.join(' ')}`];
+    const paras = [head.join(' ')];
     if (other.length) paras.push(other.map(line).join(' '));
     return paras.join('\n\n');
   }
   const moves = pool.filter((it) => it.corpus === 'market' || it.corpus === 'ipo');
   const analysts = pool.filter((it) => it.corpus === 'analysts');
+  /* Nov 4 (v2): a government-exposure ping ("How dependent is Palantir on
+     government spending?") answers the question first: the company's
+     identity line (the first sentence of its listing snippet, "Palantir
+     Technologies Inc. (PLTR) is a listed company..."), then the revenue mix
+     and the federal contract findings, then Congress, then price and
+     analysts as context. */
+  const exposure = pool.filter((it) => it.corpus === 'exposure');
+  /* The contracts snippets of a government-exposure ping are marked gov, so
+     the answer-first order holds when the revenue mix is not available. */
+  if (exposure.length || pool.some((it) => it.meta?.gov)) {
+    const contracts = pool.filter((it) => it.corpus === 'contracts');
+    const congress = pool.filter((it) => it.corpus === 'congress');
+    const identity = moves.find((it) => it.corpus === 'market');
+    const idLine = identity ? firstSentenceOf(identity) : '';
+    const lead = exposure.length ? exposure.slice(0, 2) : contracts.slice(0, 2);
+    const rest = exposure.length ? contracts.slice(0, 2) : contracts.slice(2, 3);
+    const paras = [[idLine, ...lead.map((it) => lineAt(it, 420))].filter(Boolean).join(' ')];
+    if (rest.length) paras.push(rest.map((it) => lineAt(it, 420)).join(' '));
+    if (congress.length)
+      paras.push(
+        congress
+          .slice(0, 1)
+          .map((it) => lineAt(it, 420))
+          .join(' '),
+      );
+    return paras.join('\n\n');
+  }
   if (moves.length || analysts.length) {
     const data = pool.filter((it) => !moves.includes(it) && !analysts.includes(it));
     const paras = [];
-    const lead = `Here is what Sonar found on ${subject}.`;
-    if (moves.length) paras.push(`${lead} ${moves.slice(0, 3).map(line).join(' ')}`);
-    if (analysts.length) {
-      const text = analysts.slice(0, 3).map(line).join(' ');
-      paras.push(paras.length ? text : `${lead} ${text}`);
-    }
+    if (moves.length) paras.push(moves.slice(0, 3).map(line).join(' '));
+    if (analysts.length) paras.push(analysts.slice(0, 3).map(line).join(' '));
     if (data.length) paras.push(data.slice(0, 3).map(line).join(' '));
     return paras.join('\n\n');
   }
+  /* Nov 4: no "Here is what Sonar found on X." opener on any path. The
+     brief starts with the first finding about the subject. `subject` stays
+     in the signature for the callers. */
+  void subject;
   const top = pool.slice(0, 3).map(line);
   if (!top.length) return null;
   const rest = pool.slice(3, 6).map(line);
-  const paras = [`Here is what Sonar found on ${subject}. ${top.join(' ')}`];
+  const paras = [top.join(' ')];
   if (rest.length) paras.push(rest.join(' '));
   return paras.join('\n\n');
+}
+
+/* The first sentence of a snippet, cited: the listing snippet's "X (TICK) is
+   a listed company trading on ..." line, without the price detail after it. */
+function firstSentenceOf(it) {
+  const t = String(it.snippet || it.text || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const m = t.match(/^.*?[a-z0-9)][.!?](?=\s+[A-Z]|$)/);
+  const first = (m ? m[0] : t).replace(/[.!?]$/, '');
+  return first ? `${first} [${it.marker}].` : '';
 }
 
 /** Seconds a finished ping is shared across phrasings and visitors (0 = off). */
@@ -2001,8 +2335,22 @@ export async function runLandingPipeline(
   const mentionParts = companyMention
     ? [companyMention.name, contextCountry ? contextCountry.name : null].filter(Boolean)
     : [];
+  /* Nov 4: a topic is a short phrase ("export controls"). A full question
+     ("How dependent is Palantir on government spending? Examine its...")
+     is not one: gluing it on read "Palantir and how dependent is Palantir
+     on...", in the brief's subject and the news heading. A question, or
+     anything past eight words, leaves the company name as the subject. */
+  const topicText = understood.display || '';
+  const isQuestion =
+    /[?]/.test(topicText) ||
+    /^(how|what|why|which|who|when|where|is|are|does|do|can|should|examine|explain)\b/i.test(
+      topicText,
+    ) ||
+    topicText.split(/\s+/).filter(Boolean).length > 8;
   const mentionTopic =
-    companyMention && understood.intent !== 'company' ? topicOf(understood.display) : null;
+    companyMention && understood.intent !== 'company' && !isQuestion
+      ? topicOf(understood.display)
+      : null;
   const display =
     companyMention && resolved
       ? mentionTopic
@@ -2130,6 +2478,24 @@ export async function runLandingPipeline(
           (v) => `items=${v.length}`,
         ).catch(() => [])
       : Promise.resolve([]);
+  /* Nov 4 (v2): a company ping about government dependence reads the
+     company's reported revenue by customer type beside the market legs. */
+  const govPing = Boolean(
+    resolved?.ticker && !country && !politician && !industryPing && detectGovExposure(query),
+  );
+  const revenueMixP = govPing
+    ? leg(
+        'revenue-mix',
+        () =>
+          within(
+            fetchRevenueMix(resolved.ticker, { ms: LEG.analysts }),
+            LEG.analysts,
+            null,
+            'revenue-mix',
+          ),
+        (v) => (v ? `quarters=${v.quarters.length} gov=${v.latest.govShare.toFixed(3)}` : 'none'),
+      ).catch(() => null)
+    : Promise.resolve(null);
   /* Nov 4: a lobbying question reads the disclosures themselves (the
      research engine's lobbying-leaders runner: same RPC, same counting rule,
      and the topic's own filings only once its ingest is complete). */
@@ -2323,14 +2689,22 @@ export async function runLandingPipeline(
   /* The IPO filings and the market snapshot lead the evidence, so the
      brief opens with them. */
   const evidenceWait = Math.max(0, left() - P.evidenceReserveMs);
-  const [ipoFindings, market, analystItems] = await Promise.all([
+  const [ipoFindings, market, analystItems, revenueMix] = await Promise.all([
     within(ipoP, evidenceWait, [], 'ipo-wait').catch(() => []),
     within(marketP, evidenceWait, null, 'market-wait').catch(() => null),
     within(analystsP, evidenceWait, [], 'analysts-wait').catch(() => []),
+    within(revenueMixP, evidenceWait, null, 'revenue-mix-wait').catch(() => null),
   ]);
-  /* Order: market snapshot, performance, analysts, then the datasets. */
+  /* Order: market snapshot, performance, analysts, then the datasets. A
+     government-exposure ping puts the revenue mix right after the listing
+     line, so the brief answers before it reports the price. */
   items.unshift(...analystItems.filter((it) => it.corpus === 'analysts'));
   items.unshift(...analystItems.filter((it) => it.corpus === 'market'));
+  if (revenueMix) {
+    items.unshift(
+      ...exposureEvidence(revenueMix, { name: resolved?.alias || shortName(resolved?.name) }),
+    );
+  }
   if (market) items.unshift(market);
   items.unshift(
     ...ipoFindings.map((f) => ({
@@ -2358,7 +2732,18 @@ export async function runLandingPipeline(
       null,
       'company-dossier',
     ).catch(() => null);
-    if (early?.matches) items.push(...companyEvidence(early.matches, resolved));
+    if (early?.matches) {
+      const ev = companyEvidence(early.matches, resolved, { gov: govPing });
+      /* A government-exposure ping reads its contracts right after the mix. */
+      if (govPing) {
+        const lead = ev.filter((it) => it.corpus === 'contracts');
+        const at = items.findIndex((it) => it.corpus !== 'market' && it.corpus !== 'exposure');
+        items.splice(at < 0 ? items.length : at, 0, ...lead);
+        items.push(...ev.filter((it) => !lead.includes(it)));
+      } else {
+        items.push(...ev);
+      }
+    }
   }
   /* Nov 4: a sector screen's tables lead the evidence, in the order the
      ping asked. */
@@ -2665,7 +3050,9 @@ export async function runLandingPipeline(
         !industryPing &&
         !ipoIntent &&
         intent !== 'sanctions'
-          ? COMPANY_ADDENDUM
+          ? govPing
+            ? GOV_EXPOSURE_ADDENDUM
+            : COMPANY_ADDENDUM
           : '') +
         DATE_RULES +
         GROUNDING_RULES +
@@ -2796,6 +3183,11 @@ export async function runLandingPipeline(
       ).catch(() => null)
     : null;
   if (dossier) dossier.newsColumns = newsColumns;
+  /* Nov 4 (v2): what the government-exposure cards render. */
+  if (dossier && govPing) {
+    dossier.govFocus = true;
+    dossier.revenueMix = await within(revenueMixP, 300, null, 'revenue-mix-tail').catch(() => null);
+  }
 
   /* A sanctions brief carries its exposure table as a JSON block. */
   let exposed = [];

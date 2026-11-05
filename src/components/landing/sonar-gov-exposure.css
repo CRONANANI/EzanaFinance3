@@ -1,0 +1,265 @@
+/* Government exposure cards (Nov 4, SonarGovExposure). Ride the band's
+   .snr-news card shell and the sector stack's .snr-sec-* table classes.
+   Government revenue is --info (a neutral series), commercial is the
+   band's mint; fiscal-year obligations are mint, the partial current year
+   is a hatch-free faded mint. Tokens only; numbers in mono. */
+
+.snr-band .snr-ge {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.snr-band .snr-ge-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.snr-band .snr-ge-card .snr-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.snr-band .snr-ge-card .snr-rule-soft {
+  flex: 1 1 auto;
+  min-width: 12px;
+}
+.snr-band .snr-ge-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.snr-band .snr-ge-stats .snr-stat-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.snr-band .snr-ge-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+}
+.snr-band .snr-ge-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.snr-band .snr-ge-chip {
+  padding: 3px 9px;
+  border: 1px solid color-mix(in srgb, var(--snr-mint) 22%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--snr-track-label);
+  text-transform: uppercase;
+  color: var(--snr-text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.snr-band .snr-ge-chip:hover,
+.snr-band .snr-ge-chip:focus-visible {
+  border-color: var(--snr-mint);
+  color: var(--snr-text);
+  outline: none;
+}
+.snr-band .snr-ge-chip.is-on {
+  border-color: var(--snr-mint);
+  background: color-mix(in srgb, var(--snr-mint) 14%, transparent);
+  color: var(--snr-mint);
+}
+
+.snr-band .snr-ge-chart {
+  display: block;
+  width: 100%;
+  height: 120px;
+}
+.snr-band .snr-ge-hit {
+  fill: transparent;
+  cursor: crosshair;
+}
+.snr-band .snr-ge-bar {
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+.snr-band .snr-ge-bar.is-gov {
+  fill: var(--info);
+}
+.snr-band .snr-ge-bar.is-other {
+  fill: var(--snr-mint);
+}
+.snr-band .snr-ge-bar.is-fy {
+  fill: var(--snr-mint);
+}
+.snr-band .snr-ge-bar.is-partial {
+  fill: color-mix(in srgb, var(--snr-mint) 40%, transparent);
+}
+.snr-band .snr-ge-chart:hover .snr-ge-bar:not(.is-hot),
+.snr-band .snr-ge-chart:hover .snr-ge-dot:not(.is-hot) {
+  opacity: 0.45;
+}
+.snr-band .snr-ge-line {
+  fill: none;
+  stroke: var(--info);
+  stroke-width: 1.6;
+  vector-effect: non-scaling-stroke;
+}
+.snr-band .snr-ge-dot {
+  fill: var(--info);
+  pointer-events: none;
+}
+.snr-band .snr-ge-ref {
+  stroke: color-mix(in srgb, var(--snr-mint) 30%, transparent);
+  stroke-dasharray: 3 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.snr-band .snr-ge-legend {
+  display: flex;
+  gap: 14px;
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--snr-track-label);
+  text-transform: uppercase;
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-ge-key::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: var(--radius-sm);
+  vertical-align: -1px;
+}
+.snr-band .snr-ge-key.is-gov::before {
+  background: var(--info);
+}
+.snr-band .snr-ge-key.is-other::before {
+  background: var(--snr-mint);
+}
+.snr-band .snr-ge-key.is-ref::before {
+  height: 0;
+  border-top: 1px dashed color-mix(in srgb, var(--snr-mint) 60%, transparent);
+}
+.snr-band .snr-ge-axis {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-ge-readout {
+  margin: 0;
+  min-height: 1.2em;
+  font-family: var(--snr-font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--snr-text-muted);
+}
+
+/* Agency concentration. */
+.snr-band .snr-ge-conc {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.snr-band .snr-ge-sub {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--snr-track-label);
+  text-transform: uppercase;
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-ge-conc-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 40px;
+  align-items: center;
+  gap: 8px;
+}
+.snr-band .snr-ge-conc-name {
+  font-family: var(--snr-font-sans);
+  font-size: 12px;
+  color: var(--snr-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.snr-band .snr-ge-meter {
+  position: relative;
+  height: 4px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--snr-mint) 12%, transparent);
+  overflow: hidden;
+}
+.snr-band .snr-ge-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: var(--snr-mint);
+}
+.snr-band .snr-ge-conc-v {
+  font-family: var(--snr-font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--snr-text-muted);
+}
+
+/* Largest awards table: rows expand in place. */
+.snr-band .snr-ge-table .snr-sec-tr {
+  grid-template-columns: minmax(0, 1.1fr) 62px 62px 62px 56px;
+}
+.snr-band .snr-ge-table .snr-sec-tk {
+  font-family: var(--snr-font-sans);
+  font-size: 12px;
+}
+.snr-band .snr-ge-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 2px 6px 8px;
+  padding: 8px 10px;
+  border-left: 2px solid var(--snr-mint);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--snr-mint) 6%, transparent);
+  font-family: var(--snr-font-sans);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--snr-text-muted);
+}
+.snr-band .snr-ge-detail b {
+  font-weight: 600;
+  color: var(--snr-text);
+}
+.snr-band .snr-ge-detail a {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--snr-mint);
+}
+
+@media (max-width: 600px) {
+  .snr-band .snr-ge-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .snr-band .snr-ge-table .snr-sec-tr {
+    grid-template-columns: minmax(0, 1fr) 56px 56px 56px;
+  }
+  .snr-band .snr-ge-table .snr-sec-tr > :last-child {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snr-band .snr-ge-chip,
+  .snr-band .snr-ge-bar {
+    transition: none;
+  }
+}

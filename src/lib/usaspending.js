@@ -492,3 +492,72 @@ export async function getAwardDetail(awardId) {
     clearTimeout(timer);
   }
 }
+
+/**
+ * Nov 4: one award's facts as raw numbers and ISO dates, for storage
+ * (company_contract_award_facts, filled by /api/cron/enrich-contract-awards).
+ * getAwardDetail formats for display; this keeps the values a report can
+ * compute with: obligated, exercised, ceiling (base and all options), dates
+ * and the modification history count. Null when a field is not reported;
+ * never a guess. Resolves null on any failure.
+ */
+export async function getAwardFacts(awardId, { timeoutMs = FETCH_TIMEOUT_MS } = {}) {
+  if (!awardId) return null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const n = (v) => (v == null || v === '' || !Number.isFinite(Number(v)) ? null : Number(v));
+  const d = (v) => (v ? String(v).slice(0, 10) : null);
+  try {
+    const res = await fetch(`${AWARD_DETAIL_BASE}${encodeURIComponent(awardId)}/`, {
+      headers: { Accept: 'application/json' },
+      signal: controller.signal,
+    });
+    if (!res.ok) return null;
+    const a = await res.json();
+    const pop = a.period_of_performance || {};
+    /* Modification history: the newest action and how many there are (one
+       page of up to 100, so 100 means "100 or more"). */
+    let modificationCount = null;
+    let lastModified = d(pop.last_modified_date) || null;
+    try {
+      const tr = await fetch(TRANSACTIONS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ award_id: awardId, limit: 100, sort: 'action_date', order: 'desc' }),
+        signal: controller.signal,
+      });
+      if (tr.ok) {
+        const j = await tr.json();
+        const rows = Array.isArray(j?.results) ? j.results : [];
+        modificationCount = rows.length;
+        if (rows[0]?.action_date) lastModified = d(rows[0].action_date);
+      }
+    } catch {
+      /* the award facts still stand without the history */
+    }
+    return {
+      generated_award_id: a.generated_unique_award_id || awardId,
+      piid: a.piid || a.fain || null,
+      description: a.description || null,
+      award_type: a.type_description || a.category || null,
+      awarding_agency: a.awarding_agency?.toptier_agency?.name || null,
+      awarding_sub_agency: a.awarding_agency?.subtier_agency?.name || null,
+      recipient_name: a.recipient?.recipient_name || null,
+      parent_recipient_name: a.recipient?.parent_recipient_name || null,
+      total_obligation: n(a.total_obligation),
+      base_exercised_options: n(a.base_exercised_options),
+      base_and_all_options: n(a.base_and_all_options),
+      date_signed: d(a.date_signed),
+      last_modified_date: lastModified,
+      modification_count: modificationCount,
+      pop_start: d(pop.start_date),
+      pop_end: d(pop.end_date),
+      pop_potential_end: d(pop.potential_end_date),
+      parent_award_piid: a.parent_award?.piid || null,
+    };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
