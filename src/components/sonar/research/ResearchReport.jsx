@@ -21,6 +21,8 @@ import { EVIDENCE_CATEGORIES } from '@/lib/sonar/engine/domains';
 import { sendFeedback } from './useResearchStream';
 import InvestmentMemo from './InvestmentMemo';
 import PositioningMemo from './PositioningMemo';
+import FundFitMemo from './FundFitMemo';
+import ChallengeBanner from './ChallengeBanner';
 import './research-report.css';
 
 export const SOURCE_LABELS = {
@@ -59,6 +61,7 @@ export const SOURCE_LABELS = {
   value_chain: 'AI infrastructure value chain (Ezana framework)',
   lobbying_associations: 'Lobbying disclosures, industry associations',
   competitive_products: 'Competitor announcements',
+  fund_mandate: 'Your fund mandate and IPS',
 };
 
 const STAGES = [
@@ -70,6 +73,9 @@ const STAGES = [
 ];
 const MEMO_STAGES = {
   synthesizing: 'Writing the risk assessment',
+};
+const FUND_STAGES = {
+  synthesizing: 'Writing the assessment for your fund',
 };
 
 const CLASS_LABEL = {
@@ -133,7 +139,9 @@ function Progress({ state }) {
             className={`srr-stage${seen.has(id) ? (id === last && state.status === 'running' ? ' is-active' : ' is-done') : ''}`}
           >
             <span className="srr-stage-dot" aria-hidden="true" />
-            {(state.plan?.spec?.format === 'investment_memo' && MEMO_STAGES[id]) || label}
+            {(state.plan?.spec?.memoKind === 'fund_fit' && FUND_STAGES[id]) ||
+              (state.plan?.spec?.format === 'investment_memo' && MEMO_STAGES[id]) ||
+              label}
           </li>
         ))}
       </ol>
@@ -588,10 +596,20 @@ export default function ResearchReport({ state, onFollowUp = null }) {
         </p>
       ) : null}
 
+      {report?.challenge ? <ChallengeBanner challenge={report.challenge} onCite={cite} /> : null}
+
       {report?.format === 'investment_memo' && report.memoKind === 'positioning' ? (
         <PositioningMemo report={report} panels={state.panels || {}} onCite={cite} />
       ) : null}
-      {report?.format === 'investment_memo' && report.memoKind !== 'positioning' ? (
+      {report?.format === 'investment_memo' && report.memoKind === 'fund_fit' ? (
+        <>
+          <FundFitMemo report={report} panels={state.panels || {}} onCite={cite} />
+          <InvestmentMemo report={report} panels={state.panels || {}} onCite={cite} hideView />
+        </>
+      ) : null}
+      {report?.format === 'investment_memo' &&
+      report.memoKind !== 'positioning' &&
+      report.memoKind !== 'fund_fit' ? (
         <InvestmentMemo report={report} panels={state.panels || {}} onCite={cite} />
       ) : null}
 

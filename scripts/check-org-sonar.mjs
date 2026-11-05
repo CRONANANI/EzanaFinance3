@@ -265,7 +265,10 @@ test('the research route keeps a snapshot for org members only', () => {
   const src = fs.readFileSync('src/app/api/sonar/research/route.js', 'utf8');
   assert.match(src, /let snap = orgId \? EMPTY_RESEARCH_STATE : null;/);
   assert.match(src, /snap = reduceEvent\(snap, \[event, data\]\)/);
-  assert.match(src, /org: saved \? \{ canSave: true, runId \} : null/);
+  assert.match(
+    src,
+    /org: saved\s*\?\s*\{ canSave: true, runId, challengeOf: challenge\?\.reportId \|\| null \}/,
+  );
   const hook = fs.readFileSync('src/components/sonar/research/useResearchStream.js', 'utf8');
   assert.match(hook, /from '@\/lib\/sonar\/research-state'/);
 });
@@ -447,4 +450,367 @@ test('the research route draws org deep runs from the pool', () => {
     sql,
     /grant execute on function public\.reserve_sonar_ping_org_deep[\s\S]*to service_role;/,
   );
+});
+
+/* ── Part 3: "Should our fund invest?" and challenge mode ──────────── */
+const F = await import('@/lib/org-sonar/fund-fit');
+const { buildResearchSpec } = await import('@/lib/sonar/engine/research-spec');
+const { understandQuery } = await import('@/lib/sonar/understand');
+const M = await import('@/lib/sonar/engine/investment-memo');
+const Ch = await import('@/lib/sonar/engine/challenge');
+const { toEvidence, withMarkers } = await import('@/lib/sonar/engine/evidence');
+
+const FUND = {
+  fundName: 'DFIC Fund',
+  thesis: 'Quality compounders with durable advantages, held three to five years.',
+  style: 'Long-only fundamental',
+  horizon: '3 to 5 years',
+  benchmark: 'XIU.TO',
+  focusSectors: ['Technology', 'Healthcare'],
+  excludedSectors: ['Tobacco'],
+  minMarketCapMusd: 2000,
+  ips: [
+    { type: 'prohibited_ticker', value: { ticker: 'TSLA', severity: 'block' } },
+    { type: 'max_positions', value: { max: 3, severity: 'warning' } },
+    { type: 'max_position_pct', value: { pct: 5, severity: 'warning' } },
+  ],
+  holdings: [
+    { ticker: 'MSFT', sector: 'Technology', weightPct: 4.2 },
+    { ticker: 'JNJ', sector: 'Healthcare', weightPct: 3.1 },
+    { ticker: 'RY', sector: 'Financial Services', weightPct: 2.5 },
+  ],
+};
+const NVDA = {
+  ticker: 'NVDA',
+  sector: 'Technology',
+  industry: 'Semiconductors',
+  marketCap: 4.3e12,
+};
+
+test('fund fit questions are recognised', () => {
+  for (const q of [
+    'Should our fund invest in NVIDIA?',
+    'should the fund buy AMD stock',
+    'Does Shopify fit our mandate?',
+    'Would our portfolio add Costco at these levels?',
+    'fund fit for UNH',
+  ])
+    assert.equal(F.isFundFitQuestion(q), true, q);
+  for (const q of [
+    'What are the biggest risks to NVIDIA?',
+    'Which funds invest in NVIDIA?',
+    'Should I buy NVDA?',
+  ])
+    assert.equal(F.isFundFitQuestion(q), false, q);
+});
+
+test('mandate checks: a company inside the mandate', () => {
+  const checks = F.mandateChecks(FUND, NVDA);
+  const by = Object.fromEntries(checks.map((c) => [c.id, c]));
+  assert.equal(by.mandate_excluded.status, 'pass');
+  assert.equal(by.mandate_focus.status, 'pass');
+  assert.equal(by.mandate_min_cap.status, 'pass');
+  assert.match(by.mandate_min_cap.detail, /\$4\.30T against a minimum of \$2\.0B/);
+  /* Three positions held of at most three: a new one needs an exit first. */
+  assert.equal(by.ips_max_positions.status, 'warn');
+  assert.equal(by.ips_max_position_pct.status, 'info');
+  assert.equal(F.fitFromChecks(checks), 'partial');
+  assert.equal(
+    checks.some((c) => c.blocking),
+    false,
+  );
+});
+
+test('mandate checks: the IPS blocks a prohibited security', () => {
+  const checks = F.mandateChecks(FUND, {
+    ticker: 'TSLA',
+    sector: 'Consumer Cyclical',
+    marketCap: 1e12,
+  });
+  const block = checks.find((c) => c.id === 'ips_prohibited_TSLA');
+  assert.equal(block.status, 'fail');
+  assert.equal(block.blocking, true);
+  assert.equal(F.fitFromChecks(checks), 'outside');
+  const focus = checks.find((c) => c.id === 'mandate_focus');
+  assert.equal(focus.status, 'warn');
+});
+
+test('mandate checks: excluded sector, size, unknown data, current holding', () => {
+  const tob = F.mandateChecks(FUND, {
+    ticker: 'MO',
+    sector: 'Consumer Defensive',
+    industry: 'Tobacco',
+    marketCap: 9e10,
+  });
+  assert.equal(tob.find((c) => c.id === 'mandate_excluded').blocking, true);
+  const small = F.mandateChecks(FUND, { ticker: 'XYZ', sector: 'Technology', marketCap: 5e8 });
+  assert.equal(small.find((c) => c.id === 'mandate_min_cap').status, 'fail');
+  const unknown = F.mandateChecks(FUND, { ticker: 'ABC' });
+  assert.equal(unknown.find((c) => c.id === 'mandate_min_cap').status, 'unknown');
+  assert.equal(unknown.find((c) => c.id === 'mandate_excluded').status, 'unknown');
+  const held = F.mandateChecks(FUND, { ticker: 'MSFT', sector: 'Technology', marketCap: 3e12 });
+  assert.match(
+    held.find((c) => c.id === 'held').detail,
+    /already holds MSFT \(4\.2% of the fund\)/,
+  );
+  assert.equal(held.find((c) => c.id === 'ips_max_positions').status, 'pass');
+  assert.deepEqual(F.mandateChecks({}, NVDA), []);
+  assert.equal(F.fitFromChecks([]), 'fits');
+});
+
+test('the mandate record carries the thesis and every check', () => {
+  const checks = F.mandateChecks(FUND, NVDA);
+  const rec = F.mandateRecord(FUND, NVDA, checks);
+  assert.match(rec.title, /DFIC Fund: mandate and IPS check for NVDA/);
+  assert.match(rec.text, /Investment thesis: Quality compounders/);
+  assert.match(rec.text, /IPS: number of positions: warn/);
+  assert.equal(rec.data.fit, 'partial');
+});
+
+test('mandate fields from an executive are cleaned', () => {
+  const m = F.cleanMandate({
+    investment_thesis: '  Quality  ',
+    focus_sectors: 'Technology, Healthcare, , Technology',
+    excluded_sectors: ['Tobacco'],
+    min_market_cap_musd: '2000',
+  });
+  assert.deepEqual(m, {
+    investment_thesis: 'Quality',
+    focus_sectors: ['Technology', 'Healthcare'],
+    excluded_sectors: ['Tobacco'],
+    min_market_cap_musd: 2000,
+  });
+  assert.equal(F.cleanMandate({ min_market_cap_musd: '' }).min_market_cap_musd, null);
+  assert.equal(F.cleanMandate({ min_market_cap_musd: -5 }).min_market_cap_musd, null);
+});
+
+const NVDA_SUBJECT = { kind: 'company', id: 'NVDA', label: 'NVIDIA Corporation' };
+
+test('a fund fit run is a fund fit memo about the company', () => {
+  const q = 'Should our fund invest in NVIDIA?';
+  const spec = buildResearchSpec(understandQuery(q), {
+    query: q,
+    resolution: { subject: NVDA_SUBJECT },
+    depth: 'deep',
+    fund: F.fundSpec(FUND),
+  });
+  assert.equal(spec.format, 'investment_memo');
+  assert.equal(spec.memoKind, 'fund_fit');
+  assert.equal(spec.objective.primary, 'assess_fund_fit');
+  assert.equal(spec.reportComponents[0], 'fund_verdict');
+  assert.ok(spec.angles.some((a) => a.id === 'financials'));
+  assert.equal(spec.fund.name, 'DFIC Fund');
+  /* No fund context (a retail member): not a fund fit memo. */
+  const retail = buildResearchSpec(understandQuery(q), {
+    query: q,
+    resolution: { subject: NVDA_SUBJECT },
+    depth: 'deep',
+  });
+  assert.notEqual(retail.memoKind, 'fund_fit');
+  assert.equal(retail.fund, null);
+  /* A fund context but no company: not a fund fit memo. */
+  const noCo = buildResearchSpec(understandQuery('Should our fund invest in semiconductors?'), {
+    query: 'Should our fund invest in semiconductors?',
+    resolution: { subject: null },
+    fund: F.fundSpec(FUND),
+  });
+  assert.notEqual(noCo.memoKind, 'fund_fit');
+});
+
+test('the fund fit prompt gives a stance for the committee, never a target or size', () => {
+  assert.equal(M.memoSystem({ memoKind: 'fund_fit' }), M.FUND_FIT_SYSTEM);
+  assert.match(M.FUND_FIT_SYSTEM, /"stance": "invest" \| "watch" \| "pass"/);
+  assert.match(M.FUND_FIT_SYSTEM, /the committee decides\. Never a price target, a position size/);
+  assert.doesNotMatch(M.FUND_FIT_SYSTEM, /no buy, sell or hold call/);
+  assert.match(M.MEMO_SYSTEM, /no buy, sell or hold call/);
+  assert.ok(!M.FUND_FIT_SYSTEM.includes(String.fromCharCode(8212)), 'no em dash');
+});
+
+function fitEvidence() {
+  const checks = F.mandateChecks(FUND, NVDA);
+  const items = [
+    toEvidence(F.mandateRecord(FUND, NVDA, checks), { source: 'fund_mandate' }),
+    toEvidence(
+      {
+        title: 'NVIDIA 10-Q, quarter ended July 27, 2026',
+        text: 'Data Center revenue was $41.1 billion, up 56% from a year ago.',
+        entities: ['NVDA'],
+      },
+      { source: 'company_financials' },
+    ),
+    toEvidence(
+      {
+        title: 'BIS rule, January 2025',
+        text: 'Export licence requirements apply to advanced computing items shipped to China.',
+        entities: ['NVDA'],
+      },
+      { source: 'export_controls' },
+    ),
+  ];
+  return {
+    checks,
+    marked: withMarkers(items.map((evidence) => ({ evidence, score: 0.9, why: ['test'] }))),
+  };
+}
+
+test('validating a fund fit memo: stance, criteria, catalysts, headwinds', () => {
+  const { checks, marked } = fitEvidence();
+  const parsed = {
+    centralQuestion: 'Should the DFIC Fund invest in NVIDIA?',
+    executiveConclusion: {
+      text: 'Data Center revenue was $41.1 billion, up 56% from a year ago.',
+      classification: 'verified_fact',
+      evidence: ['S2'],
+    },
+    verdict: {
+      stance: 'invest',
+      text: 'The company is inside the mandate and Data Center revenue was $41.1 billion.',
+      evidence: ['S1', 'S2'],
+    },
+    thesisFit: {
+      fit: 'fits',
+      text: 'This suggests the company matches the quality part of the thesis.',
+      evidence: ['S1'],
+      criteria: [
+        {
+          criterion: 'Focus sector',
+          status: 'met',
+          text: 'The mandate check shows Technology is a focus sector.',
+          classification: 'verified_fact',
+          evidence: ['S1'],
+        },
+      ],
+    },
+    catalysts: [
+      {
+        title: 'Data Center growth',
+        timing: 'Next earnings',
+        claim: {
+          text: 'Data Center revenue was $41.1 billion, up 56% from a year ago.',
+          classification: 'verified_fact',
+          evidence: ['S2'],
+        },
+      },
+      {
+        title: 'Invented',
+        timing: null,
+        claim: {
+          text: 'Revenue will reach $90 billion next year.',
+          classification: 'verified_fact',
+          evidence: ['S2'],
+        },
+      },
+    ],
+    headwinds: [
+      {
+        title: 'Export controls',
+        priority: 'high',
+        claim: {
+          text: 'Export licence requirements apply to advanced computing items shipped to China.',
+          classification: 'verified_fact',
+          evidence: ['S3'],
+        },
+      },
+    ],
+    committeeQuestions: ['How much China revenue is at risk?', 'What would reach $90 billion?'],
+    confidence: 'medium',
+  };
+  const r = M.validateMemo(parsed, {
+    marked,
+    metrics: [],
+    kind: 'fund_fit',
+    mandate: { checks, fit: F.fitFromChecks(checks) },
+  });
+  assert.equal(r.memoKind, 'fund_fit');
+  assert.equal(r.verdict.stance, 'invest');
+  /* The deterministic checks say partial (positions at the IPS limit), so the
+     written "fits" cannot be better than that. */
+  assert.equal(r.thesisFit.fit, 'partial');
+  assert.equal(r.thesisFit.criteria[0].status, 'met');
+  assert.equal(r.catalysts.length, 1, 'the invented $90 billion catalyst is removed');
+  assert.equal(r.headwinds[0].priority, 'high');
+  assert.deepEqual(r.committeeQuestions, ['How much China revenue is at risk?']);
+  assert.equal(r.keyFindings[0].title, 'Data Center growth');
+  assert.match(M.renderMemoBrief(r), /^Sonar view for the fund: invest\./);
+});
+
+test('a blocking IPS check makes the stance pass, whatever was written', () => {
+  const { marked } = fitEvidence();
+  const checks = F.mandateChecks(FUND, {
+    ticker: 'TSLA',
+    sector: 'Consumer Cyclical',
+    marketCap: 1e12,
+  });
+  const r = M.validateMemo(
+    {
+      executiveConclusion: {
+        text: 'Data Center revenue was $41.1 billion.',
+        classification: 'verified_fact',
+        evidence: ['S2'],
+      },
+      verdict: {
+        stance: 'invest',
+        text: 'Data Center revenue was $41.1 billion.',
+        evidence: ['S2'],
+      },
+    },
+    { marked, metrics: [], kind: 'fund_fit', mandate: { checks, fit: 'outside' } },
+  );
+  assert.equal(r.verdict.stance, 'pass');
+  assert.deepEqual(r.verdict.overriddenBy, ['ips_prohibited_TSLA']);
+  assert.match(r.verdict.text, /prohibited list/);
+  assert.equal(r.thesisFit.fit, 'outside');
+});
+
+test('the fallback fund fit memo has no stance but keeps the mandate checks', () => {
+  const { marked } = fitEvidence();
+  const r = M.deterministicMemo({
+    spec: { memoKind: 'fund_fit', question: 'q' },
+    marked,
+    metrics: [],
+  });
+  assert.equal(r.memoKind, 'fund_fit');
+  assert.equal(r.verdict, null);
+  assert.equal(r.thesisFit.fit, 'partial');
+  assert.match(r.limitations[0], /mandate checks/);
+});
+
+test('challenge mode: the prompt and the validated verdict', () => {
+  const add = Ch.challengeAddendum("NVIDIA's growth is durable.");
+  assert.match(add, /The fund's team concluded: "NVIDIA's growth is durable\."/);
+  assert.match(add, /"verdict": "holds" \| "weakened" \| "refuted" \| "unclear"/);
+  assert.ok(!add.includes(String.fromCharCode(8212)), 'no em dash');
+  const { marked } = fitEvidence();
+  const v = Ch.validateChallenge(
+    {
+      verdict: 'weakened',
+      text: 'Export licence requirements apply to advanced computing items shipped to China.',
+      evidence: ['S3'],
+      survives: ['Data Center demand is strong.'],
+      doesNotSurvive: ['China demand is unaffected.', 'Margins reach 90% next year.'],
+    },
+    { marked, metrics: [], claim: 'Growth is durable.' },
+  );
+  assert.equal(v.verdict, 'weakened');
+  assert.deepEqual(v.assessment.markers, ['S3']);
+  assert.deepEqual(v.doesNotSurvive, ['China demand is unaffected.']);
+  assert.equal(Ch.validateChallenge(null, { claim: 'x' }).verdict, 'unclear');
+  assert.equal(Ch.validateChallenge({ verdict: 'refuted' }, { claim: 'x' }).verdict, 'unclear');
+});
+
+test('the route takes fund context and the challenged claim from the org, never the body', () => {
+  const src = fs.readFileSync('src/app/api/sonar/research/route.js', 'utf8');
+  assert.match(
+    src,
+    /deepMode && orgId && \(body\?\.fundFit === true \|\| isFundFitQuestion\(query\)\)/,
+  );
+  assert.match(src, /loadFundContext\(admin, orgId\)/);
+  assert.match(src, /canReadReport\(report, viewer\)/);
+  assert.match(src, /const claim = String\(report\.summary\?\.conclusion/);
+  assert.match(src, /runQuery = t\.question;/);
+  assert.doesNotMatch(src, /body\?\.challenge\?\.claim/);
+  const engine = fs.readFileSync('src/lib/sonar/engine/engine.js', 'utf8');
+  assert.match(engine, /source: 'fund_mandate'/);
+  assert.match(engine, /mandate: layout\.fundFit \|\| null/);
+  assert.match(engine, /challengeAddendum\(spec\.challenge\.claim\)/);
 });

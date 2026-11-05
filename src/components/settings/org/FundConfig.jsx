@@ -10,6 +10,9 @@ const TERM_TYPES = [
   { v: 'year', l: 'Academic year' },
 ];
 
+/* Sector lists are edited as text and split on save (cleanMandate). */
+const asText = (v) => (Array.isArray(v) ? v.join(', ') : v || '');
+
 export function FundConfig() {
   const [cfg, setCfg] = useState(null);
   const [orgName, setOrgName] = useState('Organization');
@@ -137,6 +140,109 @@ export function FundConfig() {
                   variant="org"
                   value={cfg.term_end || ''}
                   onChange={(iso) => set('term_end', iso)}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="settings-section">
+            <div className="settings-section-title">Fund mandate</div>
+            <p className="sorg-fg-muted" style={{ fontSize: '0.8rem', marginBottom: '0.75rem' }}>
+              Sonar reads this when a member asks whether the fund should invest in a company. It
+              checks the company against these limits and your IPS rules, then tests it against the
+              thesis.
+            </p>
+            <div className="settings-field">
+              <label className="settings-label" htmlFor="fc-thesis">
+                Investment thesis
+              </label>
+              <textarea
+                id="fc-thesis"
+                className="settings-input"
+                rows={4}
+                maxLength={4000}
+                value={cfg.investment_thesis || ''}
+                placeholder="Quality compounders with durable competitive advantages, held three to five years."
+                onChange={(e) => set('investment_thesis', e.target.value)}
+              />
+            </div>
+            <div className="settings-row">
+              <div className="settings-field">
+                <label className="settings-label" htmlFor="fc-style">
+                  Style
+                </label>
+                <input
+                  id="fc-style"
+                  className="settings-input"
+                  value={cfg.investment_style || ''}
+                  placeholder="Long-only, fundamental, growth at a reasonable price"
+                  onChange={(e) => set('investment_style', e.target.value)}
+                />
+              </div>
+              <div className="settings-field">
+                <label className="settings-label" htmlFor="fc-horizon">
+                  Horizon
+                </label>
+                <input
+                  id="fc-horizon"
+                  className="settings-input"
+                  value={cfg.mandate_horizon || ''}
+                  placeholder="3 to 5 years"
+                  onChange={(e) => set('mandate_horizon', e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="settings-row">
+              <div className="settings-field">
+                <label className="settings-label" htmlFor="fc-universe">
+                  Universe
+                </label>
+                <input
+                  id="fc-universe"
+                  className="settings-input"
+                  value={cfg.mandate_universe || ''}
+                  placeholder="US and Canadian listed equities"
+                  onChange={(e) => set('mandate_universe', e.target.value)}
+                />
+              </div>
+              <div className="settings-field">
+                <label className="settings-label" htmlFor="fc-mincap">
+                  Minimum market cap (US$ millions)
+                </label>
+                <input
+                  id="fc-mincap"
+                  className="settings-input"
+                  type="number"
+                  min={0}
+                  value={cfg.min_market_cap_musd ?? ''}
+                  placeholder="2000"
+                  onChange={(e) => set('min_market_cap_musd', e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="settings-row">
+              <div className="settings-field">
+                <label className="settings-label" htmlFor="fc-focus">
+                  Focus sectors (comma separated)
+                </label>
+                <input
+                  id="fc-focus"
+                  className="settings-input"
+                  value={asText(cfg.focus_sectors)}
+                  placeholder="Technology, Healthcare"
+                  onChange={(e) => set('focus_sectors', e.target.value)}
+                />
+              </div>
+              <div className="settings-field">
+                <label className="settings-label" htmlFor="fc-excluded">
+                  Excluded sectors (comma separated)
+                </label>
+                <input
+                  id="fc-excluded"
+                  className="settings-input"
+                  value={asText(cfg.excluded_sectors)}
+                  placeholder="Tobacco, Weapons"
+                  onChange={(e) => set('excluded_sectors', e.target.value)}
                 />
               </div>
             </div>

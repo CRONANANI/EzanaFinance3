@@ -454,12 +454,59 @@
   overflow-wrap: anywhere;
 }
 
+/* Challenge side by side */
+.osr-compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+}
+.osr-compare > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.osr-compare > div + div {
+  padding-left: 1rem;
+  border-left: 1px solid var(--border-primary);
+}
+
 /* Research tab */
 .osr-research {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   max-width: 48rem;
+}
+.osr-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.osr-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.osr-mode.is-active {
+  border-color: var(--emerald);
+  background: var(--emerald-bg-subtle);
+  color: var(--emerald-text);
+}
+.osr-mode:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
 }
 
 /* Save bar and dialog */
@@ -663,8 +710,13 @@
 }
 
 @media (max-width: 960px) {
-  .osr-body {
+  .osr-body,
+  .osr-compare {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .osr-compare > div + div {
+    padding-left: 0;
+    border-left: 0;
   }
   .osr-comments {
     position: static;

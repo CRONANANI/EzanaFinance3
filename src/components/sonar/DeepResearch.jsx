@@ -277,7 +277,7 @@ export function DeepResearchRun({
           org={state.org}
           query={state.run?.researchQuestion || query}
           label={saveLabel}
-          challengeOf={challengeOf}
+          challengeOf={challengeOf || state.org?.challengeOf || null}
         />
       ) : null}
     </div>

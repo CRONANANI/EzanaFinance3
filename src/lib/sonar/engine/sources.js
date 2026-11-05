@@ -32,6 +32,7 @@ import { cacheGet, cacheSet } from './cache';
 import { LOBBYING_TOPICS, topicCovered } from '@/lib/lobbying/topics';
 import { MEMO_RUNNERS } from './sources-memo';
 import { POSITIONING_RUNNERS } from './sources-positioning';
+import { FUND_RUNNERS } from './sources-fund';
 
 const FMP_STABLE = 'https://financialmodelingprep.com/stable';
 
@@ -721,4 +722,6 @@ export const RUNNERS = {
   ipo_filings: ipoSource,
   ...MEMO_RUNNERS,
   ...POSITIONING_RUNNERS,
+  /* Sonar for organizations: a fund fit run only (added by the engine). */
+  ...FUND_RUNNERS,
 };

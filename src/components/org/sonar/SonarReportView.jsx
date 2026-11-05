@@ -18,6 +18,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ResearchReport from '@/components/sonar/research/ResearchReport';
+import { DeepResearchRun } from '@/components/sonar/DeepResearch';
 import {
   KIND_LABEL,
   REPORT_VISIBILITY,
@@ -40,6 +41,13 @@ async function call(url, method = 'GET', body = null) {
   return data;
 }
 
+const CHALLENGE_LABEL = {
+  holds: 'the conclusion holds',
+  weakened: 'the conclusion is weakened',
+  refuted: 'the records contradict it',
+  unclear: 'the records cannot test it',
+};
+
 function day(iso) {
   return iso ? String(iso).slice(0, 10) : '';
 }
@@ -52,6 +60,7 @@ export default function SonarReportView({ reportId }) {
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState('');
   const [panel, setPanel] = useState(null);
+  const [challenging, setChallenging] = useState(false);
 
   const load = useCallback(
     async (v = null) => {
@@ -114,6 +123,28 @@ export default function SonarReportView({ reportId }) {
 
   const { report, rights, versions } = data;
   const current = version === report.current_version;
+
+  if (challenging) {
+    return (
+      <div className="osr-page">
+        <button type="button" className="osr-link" onClick={() => setChallenging(false)}>
+          <i className="bi bi-arrow-left" aria-hidden="true" /> Back to the report
+        </button>
+        <p className="osr-muted">
+          Challenging: {report.title}. Sonar researches the same question again and tests the
+          report&rsquo;s conclusion against the records.
+        </p>
+        <DeepResearchRun
+          query={report.question || report.title}
+          extra={{ challenge: { reportId: report.id } }}
+          saveLabel="Save the challenge beside the report"
+          challengeOf={report.id}
+          onBack={() => setChallenging(false)}
+          onQuick={() => setChallenging(false)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="osr-page">
@@ -208,6 +239,11 @@ export default function SonarReportView({ reportId }) {
               Mark superseded
             </button>
           ) : null}
+          {rights.canChallenge && report.summary?.conclusion ? (
+            <button type="button" className="osr-btn" onClick={() => setChallenging(true)}>
+              <i className="bi bi-shield-exclamation" aria-hidden="true" /> Challenge the conclusion
+            </button>
+          ) : null}
           {rights.canEdit ? (
             <button type="button" className="osr-btn" onClick={() => setPanel('settings')}>
               <i className="bi bi-sliders" aria-hidden="true" /> Sharing and links
@@ -294,6 +330,25 @@ export default function SonarReportView({ reportId }) {
         ) : null}
       </header>
 
+      {report.kind === 'challenge' && data.original ? (
+        <section className="osr-compare" aria-label="Side by side">
+          <div>
+            <p className="osr-h3">The report&rsquo;s conclusion</p>
+            <p className="osr-row-body">{data.original.summary?.conclusion || 'Not available.'}</p>
+            <Link className="osr-link" href={`/org-team-hub/sonar/${data.original.id}`}>
+              {data.original.title}
+            </Link>
+          </div>
+          <div>
+            <p className="osr-h3">
+              The challenge:{' '}
+              {CHALLENGE_LABEL[report.summary?.challengeVerdict] || CHALLENGE_LABEL.unclear}
+            </p>
+            <p className="osr-row-body">{report.summary?.conclusion || 'Not available.'}</p>
+          </div>
+        </section>
+      ) : null}
+
       {data.challenges.length ? (
         <section className="osr-challenges" aria-label="Challenges">
           <p className="osr-h3">
@@ -307,6 +362,9 @@ export default function SonarReportView({ reportId }) {
                 </Link>{' '}
                 <span className="osr-muted">
                   by {c.author_name}, {STATUS_LABEL[c.status]}
+                  {c.summary?.challengeVerdict
+                    ? `, ${CHALLENGE_LABEL[c.summary.challengeVerdict]}`
+                    : ''}
                 </span>
               </li>
             ))}

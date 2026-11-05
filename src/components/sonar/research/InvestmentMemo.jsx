@@ -648,38 +648,41 @@ function Chain({
   );
 }
 
-export default function InvestmentMemo({ report, panels = {}, onCite }) {
+export default function InvestmentMemo({ report, panels = {}, onCite, hideView = false }) {
   if (!report) return null;
   return (
     <div className="srm">
-      <section className="srr-conclusion" aria-labelledby="srm-concl-h">
-        <h2 id="srm-concl-h" className="srr-h2">
-          Investment view
-        </h2>
-        {report.centralQuestion ? <p className="srm-central">{report.centralQuestion}</p> : null}
-        {report.executiveConclusion ? (
-          <p className="srr-conclusion-text">
-            {report.executiveConclusion.text}{' '}
-            <Cites markers={report.executiveConclusion.markers} onCite={onCite} />
-          </p>
-        ) : null}
-        {report.risks?.length ? (
-          <ol className="srm-risk-index">
-            {report.risks.map((r) => (
-              <li key={r.id}>
-                <a href={`#${r.id}`}>{r.title}</a>{' '}
-                <span className={`srm-priority is-${r.priority}`}>{r.priority}</span>
-              </li>
-            ))}
-          </ol>
-        ) : null}
-        {report.deterministic ? (
-          <p className="srr-note">
-            The written assessment did not complete, so the records are grouped and quoted without a
-            ranking.
-          </p>
-        ) : null}
-      </section>
+      {/* A fund fit memo (FundFitMemo) writes its own view above this one. */}
+      {hideView ? null : (
+        <section className="srr-conclusion" aria-labelledby="srm-concl-h">
+          <h2 id="srm-concl-h" className="srr-h2">
+            Investment view
+          </h2>
+          {report.centralQuestion ? <p className="srm-central">{report.centralQuestion}</p> : null}
+          {report.executiveConclusion ? (
+            <p className="srr-conclusion-text">
+              {report.executiveConclusion.text}{' '}
+              <Cites markers={report.executiveConclusion.markers} onCite={onCite} />
+            </p>
+          ) : null}
+          {report.risks?.length ? (
+            <ol className="srm-risk-index">
+              {report.risks.map((r) => (
+                <li key={r.id}>
+                  <a href={`#${r.id}`}>{r.title}</a>{' '}
+                  <span className={`srm-priority is-${r.priority}`}>{r.priority}</span>
+                </li>
+              ))}
+            </ol>
+          ) : null}
+          {report.deterministic ? (
+            <p className="srr-note">
+              The written assessment did not complete, so the records are grouped and quoted without
+              a ranking.
+            </p>
+          ) : null}
+        </section>
+      )}
 
       <Dashboard financials={panels.financials} segments={panels.segments} />
 

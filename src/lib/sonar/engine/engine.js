@@ -42,6 +42,7 @@ import {
 import {
   MEMO_PROMPT_VERSION,
   POSITIONING_PROMPT_VERSION,
+  FUND_FIT_PROMPT_VERSION,
   memoSystem,
   memoInput,
   validateMemo,
@@ -49,6 +50,7 @@ import {
   renderMemoBrief,
 } from './investment-memo';
 import { loadActiveConfig } from './config-store';
+import { challengeAddendum, validateChallenge, CHALLENGE_PROMPT_SUFFIX } from './challenge';
 import { recallEvidence } from './memory';
 import { setCacheClient } from './cache';
 
@@ -115,6 +117,11 @@ export async function runResearch(query, opts = {}) {
     noCorrect = false,
     force = null,
     now = new Date(),
+    /* Sonar for organizations (Nov 2026), set by the research route only:
+       the fund context of a fund fit run, and the conclusion a challenge
+       run tests ({ claim, reportId }). */
+    fund = null,
+    challenge = null,
   } = opts;
   setCacheClient(() => admin);
   const D = DEPTH_PROFILES[depth] || DEPTH_PROFILES.standard;
@@ -158,7 +165,8 @@ export async function runResearch(query, opts = {}) {
     () => bounded(resolveResearch(understood, { query, admin, ms: 1100, domains: prelim }), 1600),
     (v) => v.subject?.kind || 'none',
   ).catch(() => ({ subject: null, countries: [], universe: null, notes: ['resolution_failed'] }));
-  const spec = buildResearchSpec(understood, { query, resolution, depth, now });
+  const spec = buildResearchSpec(understood, { query, resolution, depth, now, fund });
+  if (challenge?.claim) spec.challenge = { claim: String(challenge.claim).slice(0, 900) };
   /* A config override is for evaluation only (the recalibration gate runs
      candidates against the benchmarks); production reads the active row. */
   const config = opts.config || (await loadActiveConfig(admin).catch(() => null));
@@ -167,6 +175,20 @@ export async function runResearch(query, opts = {}) {
     depth,
     entitledDatasets,
   });
+  /* A fund fit run checks the fund's mandate and IPS for the company. */
+  if (spec.memoKind === 'fund_fit' && resolution.subject?.id) {
+    plan.tasks.push({
+      id: `t${plan.tasks.length + 1}_fund_mandate`,
+      source: 'fund_mandate',
+      params: { ticker: String(resolution.subject.id).toUpperCase(), fund },
+      priority: 1,
+      maxItems: 1,
+      budgetMs: plan.tasks[0]?.budgetMs || 8000,
+      dependsOn: [],
+      reason: 'fund_fit',
+      drivers: [{ domain: 'fund_fit', contribution: 1 }],
+    });
+  }
   const phase1 = {
     runId,
     engine: ENGINE_VERSION,
@@ -198,7 +220,9 @@ export async function runResearch(query, opts = {}) {
       reportComponents: spec.reportComponents,
       depth,
       format: spec.format,
+      memoKind: spec.memoKind,
       angles: spec.angles,
+      challenge: spec.challenge || null,
     },
     plan: {
       configVersion: plan.configVersion,
@@ -281,7 +305,17 @@ export async function runResearch(query, opts = {}) {
     maxItems: D.maxItems,
     maxChars: D.maxChars,
   });
-  const marked = withMarkers(selected);
+  /* A fund fit memo always cites the fund's own mandate record, first. */
+  const mandate =
+    spec.memoKind === 'fund_fit' ? scored.find((x) => x.evidence.source === 'fund_mandate') : null;
+  const marked = withMarkers(
+    mandate
+      ? [
+          { ...mandate, why: ['fund_mandate'] },
+          ...selected.filter((x) => x.evidence.source !== 'fund_mandate'),
+        ]
+      : selected,
+  );
   emit('evidence', {
     retrieved: all.length,
     selected: marked.map((e) => ({
@@ -313,6 +347,7 @@ export async function runResearch(query, opts = {}) {
   emit('stage', { stage: 'synthesizing' });
   let report = null;
   let providerErrors = [];
+  let parsedChallenge = null;
   let model = null;
   const memo = spec.format === 'investment_memo';
   if (marked.length && left() > 2_500 && !aborted()) {
@@ -320,7 +355,9 @@ export async function runResearch(query, opts = {}) {
       'synthesize',
       () =>
         synthesizeWithFallback({
-          system: memo ? memoSystem(spec) : SYNTHESIS_SYSTEM,
+          system:
+            (memo ? memoSystem(spec) : SYNTHESIS_SYSTEM) +
+            (spec.challenge ? challengeAddendum(spec.challenge.claim) : ''),
           user: (memo ? memoInput : synthesisInput)({
             spec,
             plan,
@@ -349,9 +386,15 @@ export async function runResearch(query, opts = {}) {
     providerErrors = synth?.providerErrors || [];
     model = synth?.model || D.model;
     const parsed = parseResearchJson(synth?.answer);
+    parsedChallenge = parsed?.challenge || null;
     if (parsed) {
       report = memo
-        ? validateMemo(parsed, { marked, metrics, kind: spec.memoKind })
+        ? validateMemo(parsed, {
+            marked,
+            metrics,
+            kind: spec.memoKind,
+            mandate: layout.fundFit || null,
+          })
         : validateResearch(parsed, { marked, metrics });
       if (!report.executiveConclusion && !report.keyFindings.length) report = null;
     }
@@ -360,6 +403,13 @@ export async function runResearch(query, opts = {}) {
     report = memo
       ? deterministicMemo({ spec, marked, metrics })
       : deterministicResearch({ spec, marked, metrics });
+  if (spec.challenge) {
+    report.challenge = validateChallenge(report.deterministic ? null : parsedChallenge, {
+      marked,
+      metrics,
+      claim: spec.challenge.claim,
+    });
+  }
 
   /* The rendered text passes the existing grounding guard too. */
   const brief = await enforceGrounding(
@@ -374,11 +424,15 @@ export async function runResearch(query, opts = {}) {
   const run = {
     runId,
     engine: ENGINE_VERSION,
-    promptVersion: memo
-      ? spec.memoKind === 'positioning'
-        ? POSITIONING_PROMPT_VERSION
-        : MEMO_PROMPT_VERSION
-      : SYNTHESIS_PROMPT_VERSION,
+    promptVersion: `${
+      memo
+        ? spec.memoKind === 'fund_fit'
+          ? FUND_FIT_PROMPT_VERSION
+          : spec.memoKind === 'positioning'
+            ? POSITIONING_PROMPT_VERSION
+            : MEMO_PROMPT_VERSION
+        : SYNTHESIS_PROMPT_VERSION
+    }${spec.challenge ? `+${CHALLENGE_PROMPT_SUFFIX}` : ''}`,
     format: memo ? 'investment_memo' : 'report',
     memo: memo
       ? {

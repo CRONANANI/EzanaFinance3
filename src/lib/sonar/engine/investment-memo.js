@@ -29,6 +29,7 @@ import { AI_VALUE_CHAIN } from '@/lib/sonar/ai-infrastructure';
 
 export const MEMO_PROMPT_VERSION = 'memo-v1';
 export const POSITIONING_PROMPT_VERSION = 'positioning-v1';
+export const FUND_FIT_PROMPT_VERSION = 'fund-fit-v1';
 
 export const MEMO_SYSTEM = `You are Ezana Sonar acting as a senior equity research analyst briefing a managing director on a multi-year investment risk assessment. You receive the question, numbered evidence records [S1]..[Sn] and calculated metrics [M:id]. Return ONLY one JSON object, no prose around it, matching:
 {
@@ -156,9 +157,67 @@ How to think:
 ${SOURCE_RULES}- dataGaps: specific data an analyst would want that the records do not contain (for example capacity added versus capacity monetized, AI revenue where not disclosed, government revenue as a share of revenue, five-year lobbying history).
 ${CLAIM_RULES}`;
 
+/* A fund fit memo answers the fund's own question, so the general "no buy,
+   sell or hold call" rule becomes: a stance for the fund's committee, never
+   a price target, a position size or a forecast. */
+const FUND_CLAIM_RULES = CLAIM_RULES.replace(
+  /- Findings only:[^\n]*\n/,
+  "- The stance is Sonar's assessment for the fund's own investment committee, against the fund's own mandate; the committee decides. Never a price target, a position size, a return estimate or a forecast in Ezana's voice. A named firm's published rating or target, attributed, is a finding.\n",
+);
+
+/**
+ * Sonar for organizations (Nov 2026): "Should our fund invest in X?". The
+ * answer for the fund: a stance, the catalysts and headwinds, and whether
+ * the company falls inside the fund's thesis and mandate. The mandate
+ * record (fund_mandate) carries the deterministic IPS and mandate checks;
+ * a blocking failure there makes the stance 'pass' (validateMemo).
+ */
+export const FUND_FIT_SYSTEM = `You are Ezana Sonar acting as the senior analyst of a university student-managed investment fund, answering its investment committee's question: should the fund invest in this company? You receive the question, the fund's mandate (its investment thesis, style, horizon, focus and excluded sectors, and IPS checks already computed), numbered evidence records [S1]..[Sn] and calculated metrics [M:id]. Return ONLY one JSON object, no prose around it, matching:
+{
+  "centralQuestion": string,
+  "executiveConclusion": { "text": string, "classification": string, "evidence": [markers], "metrics": [metric ids] },
+  "verdict": { "stance": "invest" | "watch" | "pass", "text": string, "classification": "analytical_interpretation", "evidence": [markers], "metrics": [metric ids] },
+  "thesisFit": {
+    "fit": "fits" | "partial" | "outside",
+    "text": string, "classification": "analytical_interpretation", "evidence": [markers], "metrics": [metric ids],
+    "criteria": [ { "criterion": string, "status": "met" | "not_met" | "unclear", "text": string, "classification": string, "evidence": [markers], "metrics": [metric ids] } ]
+  },
+  "catalysts": [ { "title": string, "timing": string|null, "claim": { "text": string, "classification": string, "evidence": [markers], "metrics": [metric ids], "period": string|null } } ],
+  "headwinds": [ { "title": string, "priority": "high" | "medium" | "low", "claim": { "text": string, "classification": string, "evidence": [markers], "metrics": [metric ids], "period": string|null } } ],
+  "committeeQuestions": [string],
+  "scenarios": [ { "case": "bull" | "base" | "bear", "assumptions": [string], "outcome": { "text": string, "classification": "hypothesis", "evidence": [markers], "metrics": [metric ids] } } ],
+  "dataGaps": [string],
+  "limitations": [string],
+  "followOnResearch": [string],
+  "confidence": "high" | "medium" | "low"
+}
+How to think:
+- Answer the question asked, for this fund: lead with the stance and why, in two to four sentences (executiveConclusion), then the stance itself (verdict).
+- stance: "invest" when the company is inside the mandate and the evidence supports an investment case worth the committee's time over the fund's horizon; "watch" when it fits but the case depends on catalysts the records do not yet support or headwinds that are unresolved; "pass" when it is outside the mandate or the headwinds outweigh the case. If the mandate record shows a blocking check (status fail), the stance is "pass" and the verdict says which rule.
+- thesisFit: test the company against each part of the fund's written thesis and mandate (style, horizon, sectors, size, universe) as criteria, each met, not met or unclear with the evidence. Use the mandate record [S] for the IPS and mandate checks; never contradict it. If the fund has no written thesis, say so and assess against the mandate checks only.
+- catalysts: two to five dated, cited developments that could move the investment case over the fund's horizon (results, product cycles, contracts, regulation), most material first. headwinds: two to five, with priority, framed the same way. A catalyst or headwind the records do not support goes in dataGaps instead.
+- committeeQuestions: three to five questions the committee should ask the pitching analyst, specific to this company and fund.
+- Scenarios: bull, base and bear, each a short list of qualitative assumptions and an outcome classified hypothesis; never a forecast or a price target.
+${SOURCE_RULES}- dataGaps: specific data the committee would want that the records do not contain.
+${FUND_CLAIM_RULES}`;
+
 /** The system prompt for a memo's kind. */
 export function memoSystem(spec) {
+  if (spec?.memoKind === 'fund_fit') return FUND_FIT_SYSTEM;
   return spec?.memoKind === 'positioning' ? POSITIONING_SYSTEM : MEMO_SYSTEM;
+}
+
+/** The fund block of a fund fit memo's input. */
+function fundBlock(fund) {
+  if (!fund) return '';
+  const list = (a) => (a?.length ? a.join(', ') : 'none set');
+  return `
+Fund: ${fund.name}.
+Investment thesis: ${fund.thesis || 'none written'}.
+Style: ${fund.style || 'not set'}. Horizon: ${fund.horizon || 'not set'}. Universe: ${fund.universe || 'not set'}. Benchmark: ${fund.benchmark || 'not set'}.
+Focus sectors: ${list(fund.focusSectors)}. Excluded sectors: ${list(fund.excludedSectors)}. Minimum market capitalization: ${fund.minMarketCapMusd ? `$${fund.minMarketCapMusd}M` : 'none'}.
+Current positions: ${fund.positions ?? 'unknown'}.
+The mandate and IPS checks are in the fund mandate record.`;
 }
 
 /** The user message: question, angles, evidence and metrics. */
@@ -183,7 +242,7 @@ export function memoInput({ spec, plan, marked, metrics, today }) {
   return `Today is ${today}.
 Central question: ${spec.question}
 The reader asked: "${String(spec.rawQuery).slice(0, 400)}"
-Subject: ${spec.subject?.label || 'n/a'}${spec.subject?.id ? ` (${spec.subject.id})` : ''}. Horizon: ${horizon}.${spec.memoKind === 'positioning' ? '\nAssessment: strategic positioning (how the company captures value and whether it earns attractive returns).' : ''}
+Subject: ${spec.subject?.label || 'n/a'}${spec.subject?.id ? ` (${spec.subject.id})` : ''}. Horizon: ${horizon}.${spec.memoKind === 'positioning' ? '\nAssessment: strategic positioning (how the company captures value and whether it earns attractive returns).' : ''}${spec.memoKind === 'fund_fit' ? `\nAssessment: should the fund invest (fund fit).${fundBlock(spec.fund)}` : ''}${spec.challenge?.claim ? `\nThe conclusion to test: "${String(spec.challenge.claim).slice(0, 900)}"` : ''}
 Angles the reader asked for: ${(spec.angles || []).map((a) => a.label).join(', ') || 'none named'}.
 Sources searched: ${plan.tasks.map((t) => t.source).join(', ')}.
 
@@ -202,6 +261,7 @@ export function unsupportedFigures(text, allowed) {
 }
 
 const PRIORITY = ['high', 'medium', 'low'];
+const STANCE_IDS = ['invest', 'watch', 'pass'];
 
 /**
  * Validate a parsed memo. Returns the surviving memo in the report shape the
@@ -209,7 +269,7 @@ const PRIORITY = ['high', 'medium', 'low'];
  * limitations, followOnResearch, confidence, validation) plus the memo
  * fields (format, centralQuestion, risks, scenarios, chain, dataGaps).
  */
-export function validateMemo(parsed, { marked, metrics, kind = null }) {
+export function validateMemo(parsed, { marked, metrics, kind = null, mandate = null }) {
   const byMarker = new Map(marked.map((e) => [e.marker, e]));
   const metricsById = new Map(metrics.map((m) => [m.id, m]));
   const ctx = { byMarker, metricsById };
@@ -371,8 +431,82 @@ export function validateMemo(parsed, { marked, metrics, kind = null }) {
     })
     .filter(Boolean);
 
+  /* Fund fit fields (Sonar for organizations, Nov 2026); absent elsewhere. */
+  let verdict = null;
+  let thesisFit = null;
+  let catalysts = [];
+  let headwinds = [];
+  let committeeQuestions = [];
+  if (kind === 'fund_fit') {
+    const v = check(parsed?.verdict, 'verdict', 0, 'analytical_interpretation');
+    const stance = STANCE_IDS.includes(parsed?.verdict?.stance) ? parsed.verdict.stance : null;
+    verdict = stance ? { ...(v || { text: '', markers: [] }), stance } : null;
+    /* The IPS stays the authority: a blocking check makes the stance pass. */
+    const blocking = (mandate?.checks || []).filter((c) => c.blocking);
+    if (blocking.length) {
+      verdict = {
+        ...(verdict || { markers: [], classification: 'calculated_result' }),
+        text:
+          verdict?.stance === 'pass' && verdict?.text
+            ? verdict.text
+            : `Outside the fund's rules: ${blocking.map((c) => c.detail).join(' ')}`,
+        stance: 'pass',
+        overriddenBy: blocking.map((c) => c.id),
+      };
+    }
+    const tf = parsed?.thesisFit || {};
+    const tfClaim = check(tf, 'thesis_fit', 0, 'analytical_interpretation');
+    const criteria = (Array.isArray(tf.criteria) ? tf.criteria : [])
+      .slice(0, 8)
+      .map((c, i) => {
+        const claim = check(c, 'criterion', i);
+        if (!claim && !c?.criterion) return null;
+        return {
+          id: `criterion_${i + 1}`,
+          criterion: String(c?.criterion || '').slice(0, 160),
+          status: ['met', 'not_met', 'unclear'].includes(c?.status) ? c.status : 'unclear',
+          claim,
+        };
+      })
+      .filter(Boolean);
+    const mFit = mandate?.fit || null;
+    let fit = ['fits', 'partial', 'outside'].includes(tf.fit) ? tf.fit : mFit;
+    /* Never better than the deterministic checks allow. */
+    const ORDER = ['fits', 'partial', 'outside'];
+    if (mFit && fit && ORDER.indexOf(mFit) > ORDER.indexOf(fit)) fit = mFit;
+    thesisFit = fit || tfClaim || criteria.length ? { fit, claim: tfClaim, criteria } : null;
+    catalysts = (Array.isArray(parsed?.catalysts) ? parsed.catalysts : [])
+      .slice(0, 6)
+      .map((c, i) => {
+        const claim = check(c?.claim, 'catalyst', i);
+        if (!claim) return null;
+        return {
+          id: `catalyst_${i + 1}`,
+          title: String(c?.title || claim.text).slice(0, 140),
+          timing: c?.timing ? String(c.timing).slice(0, 60) : null,
+          claim,
+        };
+      })
+      .filter(Boolean);
+    headwinds = (Array.isArray(parsed?.headwinds) ? parsed.headwinds : [])
+      .slice(0, 6)
+      .map((h, i) => {
+        const claim = check(h?.claim, 'headwind', i);
+        if (!claim) return null;
+        return {
+          id: `headwind_${i + 1}`,
+          title: String(h?.title || claim.text).slice(0, 140),
+          priority: PRIORITY.includes(h?.priority) ? h.priority : 'medium',
+          claim,
+        };
+      })
+      .filter(Boolean);
+    committeeQuestions = cleanLines(parsed?.committeeQuestions, 6);
+  }
+
   /* The legacy surfaces (brief, feedback, telemetry) read keyFindings: the
-     executive view for a positioning memo, the risks otherwise. */
+     executive view for a positioning memo, the catalysts and headwinds for
+     a fund fit memo, the risks otherwise. */
   const viewFindings = executiveView.map((c, i) => ({
     ...c,
     id: `finding_${i + 1}`,
@@ -396,7 +530,19 @@ export function validateMemo(parsed, { marked, metrics, kind = null }) {
         : null;
     })
     .filter(Boolean);
-  const keyFindings = viewFindings.length ? viewFindings : riskFindings;
+  const fitFindings = [...catalysts, ...headwinds].map((x, i) => ({
+    ...x.claim,
+    id: `finding_${i + 1}`,
+    title: x.title,
+    explanation: x.claim.text,
+    entities: x.claim.entities || [],
+    period: x.claim.period || null,
+  }));
+  const keyFindings = viewFindings.length
+    ? viewFindings
+    : fitFindings.length
+      ? fitFindings
+      : riskFindings;
 
   const claims = log.length;
   const kept = log.filter((l) => l.action !== 'removed').length;
@@ -405,12 +551,17 @@ export function validateMemo(parsed, { marked, metrics, kind = null }) {
     ...executiveView,
     ...sections.flatMap((x) => [...x.findings, x.interpretation].filter(Boolean)),
     ...risks.flatMap((r) => [r.assessment, ...r.evidence, r.implication].filter(Boolean)),
+    ...catalysts.map((c) => c.claim),
+    ...headwinds.map((h) => h.claim),
   ];
   return {
     format: 'investment_memo',
     memoKind: kind || (sections.length || executiveView.length ? 'positioning' : 'risk'),
     centralQuestion: String(parsed?.centralQuestion || '').slice(0, 300),
     executiveConclusion: conclusion,
+    ...(kind === 'fund_fit'
+      ? { verdict, thesisFit, catalysts, headwinds, committeeQuestions }
+      : {}),
     investmentQuestion,
     executiveView,
     sections,
@@ -504,6 +655,8 @@ export function deterministicMemo({ spec, marked, metrics }) {
   }));
   const first = marked[0];
   const positioning = spec.memoKind === 'positioning';
+  const fundFit = spec.memoKind === 'fund_fit';
+  const mandateEv = fundFit ? marked.find((e) => e.source === 'fund_mandate') : null;
   const sections = positioning
     ? [...groups.values()]
         .map((g, i) => {
@@ -524,7 +677,20 @@ export function deterministicMemo({ spec, marked, metrics }) {
     : [];
   return {
     format: 'investment_memo',
-    memoKind: positioning ? 'positioning' : 'risk',
+    memoKind: fundFit ? 'fund_fit' : positioning ? 'positioning' : 'risk',
+    ...(fundFit
+      ? {
+          /* No stance without the written assessment; the mandate checks
+             still stand on their own. */
+          verdict: null,
+          thesisFit: mandateEv?.data?.fit
+            ? { fit: mandateEv.data.fit, claim: fact(mandateEv, 'thesis_fit', 0), criteria: [] }
+            : null,
+          catalysts: [],
+          headwinds: [],
+          committeeQuestions: [],
+        }
+      : {}),
     investmentQuestion: null,
     executiveView: [],
     sections,
@@ -544,9 +710,11 @@ export function deterministicMemo({ spec, marked, metrics }) {
     chain: [],
     dataGaps: [],
     limitations: [
-      positioning
-        ? 'The written assessment did not complete in time, so this report groups and quotes the records by section without an assessment. Run the research again for the full assessment.'
-        : 'The written assessment did not complete in time, so this report groups and quotes the records without ranking the risks. Run the research again for the full assessment.',
+      fundFit
+        ? 'The written assessment did not complete in time, so this report shows the mandate checks and quotes the records without a stance. Run the research again for the full assessment.'
+        : positioning
+          ? 'The written assessment did not complete in time, so this report groups and quotes the records by section without an assessment. Run the research again for the full assessment.'
+          : 'The written assessment did not complete in time, so this report groups and quotes the records without ranking the risks. Run the research again for the full assessment.',
     ],
     followOnResearch: [],
     confidence: 'low',
@@ -574,11 +742,15 @@ export function renderMemoBrief(memo) {
       ? ` ${c.markers.map((m) => `[${String(m).replace(/[[\]]/g, '')}]`).join('')}`
       : '';
   const parts = [];
+  if (memo.verdict?.stance)
+    parts.push(
+      `Sonar view for the fund: ${memo.verdict.stance}. ${memo.verdict.text || ''}`.trim(),
+    );
   if (memo.executiveConclusion)
     parts.push(`${memo.executiveConclusion.text}${cite(memo.executiveConclusion)}`);
   if (memo.executiveView?.length)
     parts.push(memo.executiveView.map((c) => `- ${c.text}${cite(c)}`).join('\n'));
-  const lines = memo.risks.map((r) => {
+  const lines = (memo.risks || []).map((r) => {
     const body = r.assessment || r.evidence[0];
     return `${r.rank}. ${r.title}${body ? `: ${body.text}${cite(body)}` : ''}`;
   });

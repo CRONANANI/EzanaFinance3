@@ -153,6 +153,8 @@ export const SOURCES = {
   contracts_profile: { category: 'government_records', reliability: 0.9, needs: ['ticker'] },
   lobbying_profile: { category: 'government_records', reliability: 0.9, needs: ['ticker'] },
   value_chain: { category: 'ezana_datasets', reliability: 0.7, needs: ['ticker'] },
+  /* Sonar for organizations: the fund's IPS and mandate, checked (fund fit runs only). */
+  fund_mandate: { category: 'ezana_datasets', reliability: 1, needs: ['ticker'] },
 };
 
 /** Evidence explorer groups, in display order. */

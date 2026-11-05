@@ -1,0 +1,297 @@
+/* Sonar for organizations: the fund fit assessment (FundFitMemo.jsx, prefix
+   `sff-`) and the challenge result (ChallengeBanner.jsx, prefix `sch-`),
+   layered on the report's `srr-` and the memo's `srm-` styles. Tokens only
+   (EZANA_BRANDING_GUIDE): --positive / --amber / --negative carry meaning
+   (invest, watch, pass; pass, check, fail), never decoration. */
+
+.sff {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.sff-eyebrow {
+  margin: 0;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: var(--type-eyebrow-tracking);
+  color: var(--text-muted);
+}
+.sff-verdict,
+.sch {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid var(--border-primary);
+  border-left: 3px solid var(--emerald);
+  border-radius: var(--radius-md);
+  background: var(--emerald-bg-subtle);
+}
+.sff-verdict-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.sff-stance {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.sff-stance.is-invest {
+  border-color: var(--positive);
+  color: var(--positive);
+}
+.sff-stance.is-watch {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+.sff-stance.is-pass {
+  border-color: var(--negative);
+  color: var(--negative);
+}
+.sff-stance.is-none {
+  color: var(--text-muted);
+}
+.sff-fit {
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.sff-fit.is-fits {
+  border-color: var(--positive);
+}
+.sff-fit.is-partial {
+  border-color: var(--amber);
+}
+.sff-fit.is-outside {
+  border-color: var(--negative);
+}
+.sff-h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 650;
+  color: var(--text-primary);
+}
+.sff-lead {
+  margin: 0;
+  font-size: var(--type-body-size);
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+.sff-why {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.sff-note {
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.sff-note.is-block {
+  color: var(--negative);
+}
+.sff-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.sff-sub {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+.sff-checks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 0.5rem;
+}
+.sff-check {
+  display: flex;
+  gap: 0.55rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+}
+.sff-check > i {
+  margin-top: 0.1rem;
+  color: var(--text-muted);
+}
+.sff-check.is-pass > i {
+  color: var(--positive);
+}
+.sff-check.is-warn > i,
+.sff-check.is-unknown > i {
+  color: var(--amber);
+}
+.sff-check.is-fail {
+  border-color: var(--negative-border);
+}
+.sff-check.is-fail > i {
+  color: var(--negative);
+}
+.sff-check-label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.sff-check-status {
+  margin-left: 0.3rem;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.sff-check-detail {
+  margin: 0.15rem 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+.sff-thesis {
+  margin: 0;
+  padding: 0.6rem 0.85rem;
+  border-left: 2px solid var(--border-strong);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+}
+.sff-table-wrap {
+  overflow-x: auto;
+}
+.sff-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.sff-table th {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--border-primary);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: var(--type-eyebrow-tracking);
+  color: var(--text-muted);
+}
+.sff-table td {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--border-primary);
+  vertical-align: top;
+  color: var(--text-primary);
+  line-height: 1.45;
+}
+.sff-crit {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.sff-crit.is-met {
+  color: var(--positive);
+}
+.sff-crit.is-not_met {
+  color: var(--negative);
+}
+.sff-crit.is-unclear {
+  color: var(--amber);
+}
+.sff-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.sff-two .srr-h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.sff-list {
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.sff-item {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-primary);
+  border-left: 2px solid var(--positive);
+  border-radius: var(--radius-sm);
+}
+.sff-item.is-headwind {
+  border-left-color: var(--amber);
+}
+.sff-item.is-headwind.is-high {
+  border-left-color: var(--negative);
+}
+.sff-item-title {
+  margin: 0 0 0.3rem;
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--text-primary);
+}
+.sff-timing,
+.sff-priority {
+  margin-left: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* Challenge */
+.sch {
+  border-left-color: var(--border-strong);
+  background: transparent;
+}
+.sch.is-holds {
+  border-left-color: var(--positive);
+}
+.sch.is-weakened {
+  border-left-color: var(--amber);
+}
+.sch.is-refuted {
+  border-left-color: var(--negative);
+}
+.sch-verdict {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.sch-label {
+  display: block;
+  margin: 0 0 0.25rem;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: var(--type-eyebrow-tracking);
+  color: var(--text-muted);
+}
+
+@media (max-width: 720px) {
+  .sff-two {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

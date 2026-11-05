@@ -13,7 +13,7 @@
  * deterministic domain, entity or resolution.
  */
 import { scoreDomains } from './domain-score';
-import { classifyCore, isPositioningQuestion } from '@/lib/sonar/research-mode-core';
+import { classifyCore, isPositioningQuestion, DEEP_ANGLES } from '@/lib/sonar/research-mode-core';
 
 export { scoreDomains };
 
@@ -117,8 +117,27 @@ function withMemoDomains(domains, angles) {
   return [...by.values()].sort((a, b) => b.score - a.score);
 }
 
+/* A fund fit run (Sonar for organizations) reads these angles when the
+   question names none: enough to answer "should our fund invest?". */
+export const FUND_FIT_ANGLES = ['financials', 'valuation', 'competition', 'industry', 'customers'];
+
 /* Report components per question shape. */
 function reportComponents(spec) {
+  if (spec.format === 'investment_memo' && spec.memoKind === 'fund_fit') {
+    return [
+      'fund_verdict',
+      'mandate_checks',
+      'thesis_fit',
+      'catalysts',
+      'headwinds',
+      'financial_dashboard',
+      'committee_questions',
+      'scenarios',
+      'evidence_gaps',
+      'evidence',
+      'limitations',
+    ];
+  }
   if (spec.format === 'investment_memo' && spec.memoKind === 'positioning') {
     return [
       'executive_conclusion',
@@ -188,13 +207,30 @@ export function timeHorizonOf(text, now = new Date()) {
  */
 export function buildResearchSpec(
   understood,
-  { query = '', resolution = {}, depth = 'standard', now = new Date(), classification = null } = {},
+  {
+    query = '',
+    resolution = {},
+    depth = 'standard',
+    now = new Date(),
+    classification = null,
+    fund = null,
+  } = {},
 ) {
   const text = String(query || understood?.raw || understood?.corrected || '');
   /* The classifier's coverage check passes its own result in, so the spec
      never re-classifies (and never recurses). */
   const signal = memoSignal(classification || classifyCore(text, { understood }));
-  const memo = isInvestmentMemo(text, resolution.subject, signal);
+  /* Sonar for organizations (Nov 2026): a fund fit run about a company is
+     always a memo, assessed against the fund's mandate (`fund`, from the
+     route; never from the question). */
+  const fundFit = Boolean(fund) && resolution.subject?.kind === 'company';
+  if (fundFit && !signal.angles.length) {
+    signal.angles = DEEP_ANGLES.filter((a) => FUND_FIT_ANGLES.includes(a.id)).map((a) => ({
+      id: a.id,
+      label: a.label,
+    }));
+  }
+  const memo = fundFit || isInvestmentMemo(text, resolution.subject, signal);
   const domains = memo
     ? withMemoDomains(scoreDomains(text, understood), signal.angles)
     : scoreDomains(text, understood);
@@ -224,22 +260,31 @@ export function buildResearchSpec(
     format: memo ? 'investment_memo' : 'report',
     /* Nov 2026: a memo answers either "what could go wrong" (risk) or "how
        does the company capture value" (positioning). */
-    memoKind: memo ? (isPositioningQuestion(text) ? 'positioning' : 'risk') : null,
+    memoKind: fundFit
+      ? 'fund_fit'
+      : memo
+        ? isPositioningQuestion(text)
+          ? 'positioning'
+          : 'risk'
+        : null,
+    fund: fundFit ? fund : null,
     angles: signal.angles,
     objective: {
-      primary: memo
-        ? isPositioningQuestion(text)
-          ? 'assess_positioning'
-          : 'risk_assessment'
-        : rankMatch
-          ? 'rank'
-          : COMPARE_RE.test(text)
-            ? 'compare'
-            : timeHorizonOf(text, now).kind === 'forward'
-              ? 'assess_outlook'
-              : /\b(exposed|exposure|vulnerable|risk)\b/i.test(text)
-                ? 'assess_exposure'
-                : 'explain',
+      primary: fundFit
+        ? 'assess_fund_fit'
+        : memo
+          ? isPositioningQuestion(text)
+            ? 'assess_positioning'
+            : 'risk_assessment'
+          : rankMatch
+            ? 'rank'
+            : COMPARE_RE.test(text)
+              ? 'compare'
+              : timeHorizonOf(text, now).kind === 'forward'
+                ? 'assess_outlook'
+                : /\b(exposed|exposure|vulnerable|risk)\b/i.test(text)
+                  ? 'assess_exposure'
+                  : 'explain',
       secondary: COMPARE_RE.test(text) && rankMatch ? ['compare'] : [],
     },
     domains,

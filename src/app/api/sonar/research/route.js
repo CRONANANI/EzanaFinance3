@@ -6,6 +6,9 @@ import { getClientIp } from '@/lib/client-ip';
 import { withTimeout } from '@/lib/with-timeout';
 import { reservePing, reserveOrgDeep, completePing, failPing } from '@/lib/sonar/quota';
 import { defaultOrgPool, budgetMessage } from '@/lib/org-sonar/budget';
+import { isFundFitQuestion } from '@/lib/org-sonar/fund-fit';
+import { loadFundContext } from '@/lib/org-sonar/fund-context';
+import { canReadReport } from '@/lib/org-sonar/reports';
 import { hashIp, DISCLAIMER } from '@/lib/sonar/landing-pipeline';
 import {
   GUEST_LIMIT,
@@ -79,6 +82,13 @@ import { withNoEmDash } from '@/lib/text/no-em-dash-response';
  * keeps it on sonar_research_runs (org_id, snapshot), so the analyst can
  * save it to the org as a report (POST /api/org/sonar-reports) from the run
  * itself; done carries org: { canSave: true }.
+ *
+ * Also for org members, deep runs only: { fundFit: true } (or a question
+ * like "Should our fund invest in NVIDIA?") answers for the fund, against
+ * its mandate and IPS, read here from the org's own tables; and
+ * { challenge: { reportId } } re-runs a saved report's question with its
+ * conclusion as the thing to test. The conclusion and the question come
+ * from the report (which the caller must be able to read), never the body.
  */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -231,6 +241,36 @@ const POST_HANDLER = withApiGuard(
       );
     }
 
+    /* Sonar for organizations: fund fit and challenge runs (deep, org only). */
+    const orgId = access.scope?.orgId || null;
+    let fund = null;
+    let challenge = null;
+    let runQuery = query;
+    if (deepMode && orgId && body?.challenge?.reportId) {
+      const target = await withTimeout(
+        loadChallengeTarget(admin, String(body.challenge.reportId), access.user.id, orgId),
+        1500,
+        'challenge',
+      );
+      const t = target.ok ? target.value : null;
+      if (!t) {
+        await withTimeout(failPing(admin, res), 800, 'ledger-fail');
+        return NextResponse.json(
+          { error: 'That report cannot be challenged from here. Nothing was spent.' },
+          { status: 404 },
+        );
+      }
+      challenge = { claim: t.claim, reportId: t.id };
+      runQuery = t.question;
+      if (t.kind === 'fund_fit' || isFundFitQuestion(runQuery)) {
+        const f = await withTimeout(loadFundContext(admin, orgId), 1500, 'fund');
+        fund = f.ok ? f.value : null;
+      }
+    } else if (deepMode && orgId && (body?.fundFit === true || isFundFitQuestion(query))) {
+      const f = await withTimeout(loadFundContext(admin, orgId), 1500, 'fund');
+      fund = f.ok ? f.value : null;
+    }
+
     const f = body?.force;
     const force =
       f && FORCE_KINDS.has(f.kind) && typeof f.id === 'string' && f.id.length <= 60
@@ -272,10 +312,9 @@ const POST_HANDLER = withApiGuard(
 
         let run = null;
         /* An org member's run keeps the state the analyst saw, to save it. */
-        const orgId = access.scope?.orgId || null;
         let snap = orgId ? EMPTY_RESEARCH_STATE : null;
         try {
-          run = await runResearch(query, {
+          run = await runResearch(runQuery, {
             admin,
             runId,
             depth,
@@ -300,6 +339,8 @@ const POST_HANDLER = withApiGuard(
             scope: access.scope,
             noCorrect: body?.noCorrect === true,
             force,
+            fund,
+            challenge,
           });
         } catch (e) {
           console.error('[sonar/research] run failed', e?.name);
@@ -352,7 +393,7 @@ const POST_HANDLER = withApiGuard(
             runId,
             remaining: isGuest ? Math.max(0, GUEST_LIMIT - used - 1) : null,
             disclaimer: DISCLAIMER,
-            org: saved ? { canSave: true, runId } : null,
+            org: saved ? { canSave: true, runId, challengeOf: challenge?.reportId || null } : null,
           });
         } else {
           send('error', {
@@ -390,6 +431,37 @@ const POST_HANDLER = withApiGuard(
   },
   { requireAuth: false, strict: true },
 );
+
+/**
+ * The report a challenge run tests: readable by the caller (the same rule
+ * as RLS, lib/org-sonar/reports.js canReadReport), in the caller's org.
+ * Returns { id, kind, question, claim } or null.
+ */
+async function loadChallengeTarget(admin, reportId, userId, orgId) {
+  if (!/^[0-9a-f-]{36}$/i.test(reportId)) return null;
+  const [{ data: report }, { data: viewer }] = await Promise.all([
+    admin
+      .from('org_sonar_reports')
+      .select(
+        'id, org_id, author_id, team_id, visibility, shared_with, status, kind, question, summary',
+      )
+      .eq('id', reportId)
+      .maybeSingle(),
+    admin
+      .from('org_members')
+      .select('user_id, org_id, role, team_id, is_active')
+      .eq('user_id', userId)
+      .eq('org_id', orgId)
+      .eq('is_active', true)
+      .maybeSingle(),
+  ]);
+  if (!report || !viewer || !canReadReport(report, viewer)) return null;
+  if (report.kind === 'challenge') return null;
+  const claim = String(report.summary?.conclusion || '').trim();
+  const question = String(report.question || report.summary?.question || '').trim();
+  if (!claim || question.length < 2) return null;
+  return { id: report.id, kind: report.kind, question: question.slice(0, 600), claim };
+}
 
 /* No em dashes in anything this route returns (src/lib/text/em-dash.js). */
 export const POST = withNoEmDash(POST_HANDLER);
