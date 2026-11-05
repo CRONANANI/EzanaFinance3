@@ -144,6 +144,7 @@ export const SOURCES = {
   peer_financials: { category: 'corporate_filings', reliability: 0.9, needs: ['ticker'] },
   customer_capex: { category: 'corporate_filings', reliability: 0.9, needs: ['ticker'] },
   estimates: { category: 'market_data', reliability: 0.75, needs: ['ticker'] },
+  disclosures: { category: 'corporate_filings', reliability: 0.95, needs: ['ticker'] },
 };
 
 /** Evidence explorer groups, in display order. */

@@ -220,6 +220,46 @@
   background: var(--emerald);
 }
 
+/* Company disclosures, quoted */
+.srm-disc {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+}
+.srm-disc-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.srm-disc-src {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  font-size: 12px;
+  color: var(--emerald-text);
+  text-decoration: none;
+}
+.srm-disc-src:hover,
+.srm-disc-src:focus-visible {
+  text-decoration: underline;
+}
+.srm-quote {
+  margin: 0;
+  padding: 0.6rem 0.9rem;
+  border-left: 2px solid var(--emerald);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
 /* Market expectations */
 .srm-expect {
   display: grid;

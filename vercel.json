@@ -206,6 +206,10 @@
       "schedule": "41 * * * *"
     },
     {
+      "path": "/api/cron/ingest-disclosures",
+      "schedule": "47 */6 * * *"
+    },
+    {
       "path": "/api/cron/ingest-lobbying-contributions",
       "schedule": "30 * * * *"
     },

@@ -556,6 +556,73 @@ export function estimatesFromPayload({ est, ratios, metrics }, { ticker, name, n
   };
 }
 
+/* ── disclosures (Nov 2026, deep research step 3) ───────────────────── */
+
+const KIND_LABEL = {
+  customer_concentration: 'customer concentration',
+  export_risk: 'export controls and China',
+  purchase_obligations: 'purchase and supply obligations',
+};
+
+/**
+ * What the company's own 10-Q and 10-K say about customer concentration,
+ * export controls and purchase obligations, quoted word for word
+ * (company_disclosures, written by /api/cron/ingest-disclosures). The newest
+ * filing per topic, at most three quotes each.
+ */
+export async function disclosures({ ticker, name }, { admin }) {
+  const t = String(ticker || '').toUpperCase();
+  const { data, error } = await admin
+    .from('company_disclosures')
+    .select(
+      'kind, quote, party, period_label, figures, form_type, filed_at, period_end, source_url',
+    )
+    .eq('ticker', t)
+    .eq('review_status', 'approved')
+    .order('filed_at', { ascending: false })
+    .limit(40);
+  if (error || !data?.length) return { items: [] };
+  const label = name || t;
+  const byKind = new Map();
+  for (const r of data) {
+    const list = byKind.get(r.kind) || [];
+    /* the newest filing for the topic only */
+    if (list.length && list[0].filed_at !== r.filed_at) continue;
+    if (list.length < 3) list.push(r);
+    byKind.set(r.kind, list);
+  }
+  const items = [];
+  for (const [kind, rows] of byKind) {
+    for (const r of rows) {
+      items.push({
+        kind: 'record',
+        title: `${label} ${r.form_type || 'filing'} on ${KIND_LABEL[kind] || kind}`,
+        text: `${label} (${t}) ${r.form_type || 'filing'} filed ${r.filed_at}${
+          r.period_end ? ` for the period ended ${r.period_end}` : ''
+        }, on ${KIND_LABEL[kind] || kind}: "${r.quote}"`,
+        url: r.source_url,
+        date: r.filed_at,
+        period: { to: r.period_end || r.filed_at, label: r.period_label || `filed ${r.filed_at}` },
+        data: { metric: 'disclosure', kind, figures: r.figures || [] },
+        entities: [t, label, ...(r.party ? [r.party] : [])],
+      });
+    }
+  }
+  return {
+    items,
+    layout: {
+      disclosures: [...byKind.entries()].map(([kind, rows]) => ({
+        kind,
+        label: KIND_LABEL[kind] || kind,
+        form: rows[0].form_type,
+        filedAt: rows[0].filed_at,
+        url: rows[0].source_url,
+        quotes: rows.map((r) => ({ quote: r.quote, party: r.party, figures: r.figures || [] })),
+      })),
+    },
+  };
+}
+
 export const MEMO_RUNNERS = {
   company_financials: companyFinancials,
   product_segments: productSegments,
@@ -563,4 +630,5 @@ export const MEMO_RUNNERS = {
   peer_financials: peerFinancials,
   customer_capex: customerCapex,
   estimates,
+  disclosures,
 };

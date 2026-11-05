@@ -73,6 +73,7 @@ function paramsFor(source, resolution, spec) {
       if (!r.company?.ticker || !r.customers?.length) return null;
       return { ticker: r.company.ticker, name: r.company.name, customers: r.customers };
     case 'estimates':
+    case 'disclosures':
       if (!r.company?.ticker) return null;
       return { ticker: r.company.ticker, name: r.company.name };
     case 'politician_dossier':
@@ -130,6 +131,7 @@ export const MEMO_SOURCES = [
   'peer_financials',
   'customer_capex',
   'estimates',
+  'disclosures',
   'market_snapshot',
   'analysts',
   'revenue_geo',

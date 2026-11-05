@@ -289,6 +289,34 @@ function Peers({ peers }) {
   );
 }
 
+function Disclosures({ data }) {
+  if (!data?.length) return null;
+  return (
+    <section className="srm-section" aria-labelledby="srm-disc-h">
+      <h2 id="srm-disc-h" className="srr-h2">
+        In the company&rsquo;s own words
+      </h2>
+      <p className="srm-sub">Quoted word for word from the latest 10-Q or 10-K.</p>
+      {data.map((d) => (
+        <article key={d.kind} className="srm-disc">
+          <header className="srm-disc-head">
+            <span className="srm-claim-lead">{d.label}</span>
+            <a className="srm-disc-src" href={d.url} target="_blank" rel="noopener noreferrer">
+              {d.form} filed <span className="srr-mono">{d.filedAt}</span>
+              <i className="bi bi-box-arrow-up-right" aria-hidden="true" />
+            </a>
+          </header>
+          {d.quotes.map((q) => (
+            <blockquote key={q.quote} className="srm-quote">
+              {q.quote}
+            </blockquote>
+          ))}
+        </article>
+      ))}
+    </section>
+  );
+}
+
 function CustomerCapex({ data }) {
   const rows = data?.rows || [];
   if (!rows.length) return null;
@@ -496,6 +524,7 @@ export default function InvestmentMemo({ report, panels = {}, onCite }) {
         </section>
       ) : null}
 
+      <Disclosures data={panels.disclosures} />
       <CustomerCapex data={panels.customerCapex} />
       <Expectations data={panels.expectations} />
       <Positioning p={panels.positioning} />

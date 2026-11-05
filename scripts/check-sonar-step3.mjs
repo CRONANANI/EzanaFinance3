@@ -197,3 +197,121 @@ test('the NVIDIA memo plan reads customer capex and estimates', async () => {
     'MSFT',
   );
 });
+
+/* ── Part B: company disclosures quoted from 10-Q and 10-K ──────────── */
+
+const { htmlToText, findSections, validateExtraction } = await import('@/lib/disclosures/sections');
+const { extractSection, parseItems } = await import('@/lib/disclosures/extract');
+const { disclosureTickers, latestPeriodic } = await import('@/lib/disclosures/filings');
+const { disclosures } = await import('@/lib/sonar/engine/sources-memo');
+
+/* A synthetic 10-Q excerpt in the shape of real filings (test data only). */
+const FILING_HTML = `<html><head><style>p{}</style></head><body>
+<p>Item 2. Management&#8217;s Discussion and Analysis of Financial Condition and Results of Operations.</p>
+<div><span>Concentration of Revenue</span></div>
+<p>Sales to one direct customer, Customer A, represented 16% of total revenue for the second quarter of fiscal year 2027, attributable to the Compute &amp; Networking segment.</p>
+<p>Two indirect customers which primarily purchase our products through system integrators and distributors are estimated to each represent 10% or more of total revenue.</p>
+<p>The U.S. government has imposed export controls and licensing requirements on the sale of our data center products to China. Our outlook assumes no data center compute revenue from China.</p>
+<p>As of July 26, 2026, we had outstanding inventory purchases and long-term supply and capacity obligations totaling $50.3&nbsp;billion.</p>
+<p>Signatures.</p>
+</body></html>`;
+
+test('a filing becomes text and its disclosure passages are found', () => {
+  const text = htmlToText(FILING_HTML);
+  assert.match(text, /Management’s Discussion/);
+  assert.match(text, /Compute & Networking/);
+  assert.match(text, /\$50\.3 billion/);
+  assert.doesNotMatch(text, /p\{\}/, 'styles are dropped');
+  const kinds = findSections(text).map((s) => s.kind);
+  assert.ok(kinds.includes('customer_concentration'));
+  assert.ok(kinds.includes('export_risk'));
+  assert.ok(kinds.includes('purchase_obligations'));
+});
+
+test('only a verbatim quote with its figures in it is kept', async () => {
+  const sections = findSections(htmlToText(FILING_HTML));
+  const cc = sections.find((s) => s.kind === 'customer_concentration');
+  const ok = {
+    quote:
+      'Sales to one direct customer, Customer A, represented 16% of total revenue for the second quarter of fiscal year 2027, attributable to the Compute & Networking segment.',
+    party: 'Customer A',
+    figures: [{ label: 'Customer A share of revenue', text: '16%' }],
+  };
+  assert.deepEqual(validateExtraction(cc.text, ok), { ok: true, reason: null });
+  assert.equal(
+    validateExtraction(cc.text, { ...ok, quote: 'Customer A was 16% of revenue in the quarter.' })
+      .reason,
+    'quote_not_in_filing',
+    'a paraphrase is not a quote',
+  );
+  assert.match(
+    validateExtraction(cc.text, { ...ok, figures: [{ text: '18%' }] }).reason,
+    /^figure_not_in_quote/,
+  );
+
+  const fake = async () => ({
+    answer: `Here you go: ${JSON.stringify({
+      items: [ok, { quote: 'Customer A bought most of our chips.', figures: [] }],
+    })}`,
+  });
+  const out = await extractSection(cc, { synthesize: fake, model: 'm' });
+  assert.equal(out.kept.length, 1);
+  assert.equal(out.kept[0].party, 'Customer A');
+  assert.equal(out.dropped[0].reason, 'quote_not_in_filing');
+  assert.deepEqual(parseItems('not json'), []);
+});
+
+test('the ingest covers the registry and its customers, newest filings first', () => {
+  const t = disclosureTickers({ SONAR_DISCLOSURE_TICKERS: 'aapl, tsla' });
+  for (const x of ['NVDA', 'AMD', 'MSFT', 'GOOGL', 'AAPL', 'TSLA']) assert.ok(t.includes(x), x);
+  const sub = {
+    filings: {
+      recent: {
+        accessionNumber: ['a1', 'a2', 'a3', 'a4'],
+        form: ['8-K', '10-Q', '10-K', '10-Q'],
+        filingDate: ['2026-10-01', '2026-08-27', '2026-02-25', '2025-05-28'],
+        reportDate: ['2026-10-01', '2026-07-26', '2026-01-25', '2025-04-27'],
+        primaryDocument: ['x.htm', 'q2.htm', 'k.htm', 'q1.htm'],
+      },
+    },
+  };
+  assert.deepEqual(
+    latestPeriodic(sub, { since: '2025-09-01' }).map((f) => f.accessionNo),
+    ['a2', 'a3'],
+  );
+});
+
+test('the disclosures reader quotes the newest filing per topic', async () => {
+  const admin = fakeAdmin({
+    tables: {
+      company_disclosures: [
+        {
+          kind: 'customer_concentration',
+          quote: 'Sales to one direct customer, Customer A, represented 16% of total revenue.',
+          party: 'Customer A',
+          figures: [{ text: '16%' }],
+          form_type: '10-Q',
+          filed_at: '2026-08-27',
+          period_end: '2026-07-26',
+          source_url: 'https://www.sec.gov/x/q2.htm',
+        },
+        {
+          kind: 'customer_concentration',
+          quote: 'An older quarter said something else entirely about customers.',
+          form_type: '10-Q',
+          filed_at: '2026-05-28',
+          period_end: '2026-04-26',
+          source_url: 'https://www.sec.gov/x/q1.htm',
+        },
+      ],
+    },
+  });
+  const out = await disclosures({ ticker: 'NVDA', name: 'NVIDIA' }, { admin });
+  assert.equal(out.items.length, 1);
+  assert.match(
+    out.items[0].text,
+    /10-Q filed 2026-08-27 for the period ended 2026-07-26, on customer concentration: "Sales to one direct customer/,
+  );
+  assert.equal(out.items[0].url, 'https://www.sec.gov/x/q2.htm');
+  assert.equal(out.layout.disclosures[0].label, 'customer concentration');
+});

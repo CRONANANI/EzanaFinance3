@@ -49,6 +49,7 @@ export const SOURCE_LABELS = {
   peer_financials: 'Listed peers (SEC)',
   customer_capex: 'Customer capital spending (SEC)',
   estimates: 'Consensus estimates and multiples',
+  disclosures: 'Company filings (10-Q, 10-K)',
 };
 
 const STAGES = [
