@@ -425,3 +425,221 @@ test('the export controls reader cites rules and Entity List counts', async () =
   );
   assert.equal(out.layout.exportControls.rules.length, 1);
 });
+
+/* ── Part D: 13F history, manager types, association lobbying, competitors ── */
+
+const { datasetDate, filingRow, holdingRow, tsvRow } = await import('@/lib/sec/form13f-datasets');
+const { holderPositioning, lobbyingAssociations, competitiveProducts } =
+  await import('@/lib/sonar/engine/sources-memo');
+
+test('13F dataset rows become filings and holdings in Ezana’s shapes', () => {
+  assert.equal(datasetDate('30-JUN-2025'), '2025-06-30');
+  assert.equal(datasetDate('2025-06-30'), '2025-06-30');
+  assert.equal(datasetDate('31-FOO-2025'), null);
+  const sub = tsvRow(
+    ['ACCESSION_NUMBER', 'FILING_DATE', 'SUBMISSIONTYPE', 'CIK', 'PERIODOFREPORT'],
+    '0001234567-25-000001\t14-AUG-2025\t13F-HR\t1234567\t30-JUN-2025',
+  );
+  const f = filingRow(sub, {
+    FILINGMANAGER_NAME: ' Example Capital LLC ',
+    AMENDMENTTYPE: 'restatement',
+  });
+  assert.deepEqual(
+    {
+      cik: f.cik,
+      filed_at: f.filed_at,
+      period: f.period_of_report,
+      family: f.form_family,
+      name: f.filer_name,
+      amend: f.amendment_type,
+    },
+    {
+      cik: '0001234567',
+      filed_at: '2025-08-14',
+      period: '2025-06-30',
+      family: 'institutional',
+      name: 'Example Capital LLC',
+      amend: 'RESTATEMENT',
+    },
+  );
+  assert.equal(
+    f.index_url,
+    'https://www.sec.gov/Archives/edgar/data/1234567/000123456725000001/0001234567-25-000001-index.htm',
+  );
+  const h = holdingRow(
+    {
+      NAMEOFISSUER: 'NVIDIA CORP',
+      CUSIP: '67066g104',
+      VALUE: '1800000',
+      SSHPRNAMT: '10000',
+      SSHPRNAMTTYPE: 'sh',
+      PUTCALL: '',
+    },
+    { periodOfReport: '2025-06-30', filedAt: '2025-08-14', ticker: 'NVDA' },
+  );
+  assert.equal(h.cusip, '67066G104');
+  assert.equal(h.value_usd, 1800000);
+  assert.equal(h.shares, 10000);
+  assert.equal(h.share_type, 'SH');
+  assert.equal(h.put_call, null);
+  /* before 2023 the dataset reports VALUE in thousands */
+  const old = holdingRow(
+    { VALUE: '1800', SSHPRNAMT: '10000' },
+    { periodOfReport: '2022-06-30', filedAt: '2022-08-10' },
+  );
+  assert.equal(old.value_usd, 1800000);
+});
+
+test('positioning adds manager types and the holder trend when the history is there', async () => {
+  const admin = fakeAdmin({
+    rpc: {
+      sonar_13f_positioning: {
+        data: {
+          ticker: 'NVDA',
+          period: '2026-06-30',
+          holders: 1059,
+          filers_in_period: 1477,
+          shares: 9.1e9,
+          value_usd: 1.2e12,
+          top10_share: 0.947,
+          top: [{ filer: 'BlackRock, Inc. (BLK)', shares: 2.1e9, value_usd: 388.6e9 }],
+        },
+        error: null,
+      },
+      sonar_13f_style_trend: {
+        data: {
+          period: '2026-06-30',
+          index_heavy_share: 0.83,
+          style_mix: [
+            { style: 'index_heavy', holders: 5, value_usd: 1.0e12, share: 0.83 },
+            { style: 'pension_sovereign', holders: 40, value_usd: 0.05e12, share: 0.042 },
+          ],
+          trend: [
+            { period: '2026-03-31', filers: 1402, holders: 1001, shares: 8.8e9, value_usd: 1.0e12 },
+            { period: '2026-06-30', filers: 1477, holders: 1059, shares: 9.1e9, value_usd: 1.2e12 },
+          ],
+        },
+        error: null,
+      },
+    },
+  });
+  const out = await holderPositioning({ ticker: 'NVDA', name: 'NVIDIA' }, { admin });
+  const styles = out.items.find((i) => i.data?.metric === 'holder_styles');
+  assert.match(styles.text, /approximate/);
+  assert.match(
+    styles.text,
+    /Index-heavy managers 83\.0% \(5 managers\); Pensions and sovereign funds 4\.2%/,
+  );
+  const trend = out.items.find((i) => i.data?.metric === 'holder_trend');
+  assert.match(
+    trend.text,
+    /2026-03-31 1,001 of 1,402 filers, 8\.80B shares; 2026-06-30 1,059 of 1,477 filers/,
+  );
+  assert.equal(out.layout.positioning.indexHeavyShare, 0.83);
+  assert.equal(out.layout.positioning.trend.length, 2);
+});
+
+test('a single quarter of history shows no trend line', async () => {
+  const admin = fakeAdmin({
+    rpc: {
+      sonar_13f_positioning: {
+        data: { period: '2026-06-30', holders: 10, filers_in_period: 20, top: [] },
+        error: null,
+      },
+      sonar_13f_style_trend: {
+        data: {
+          period: '2026-06-30',
+          style_mix: [],
+          trend: [{ period: '2026-06-30', filers: 20, holders: 10 }],
+        },
+        error: null,
+      },
+    },
+  });
+  const out = await holderPositioning({ ticker: 'NVDA', name: 'NVIDIA' }, { admin });
+  assert.equal(
+    out.items.some((i) => i.data?.metric === 'holder_trend'),
+    false,
+  );
+});
+
+test('association lobbying is never attributed to the company', async () => {
+  const admin = fakeAdmin({
+    rpc: {
+      sonar_lobbying_associations: {
+        data: [
+          {
+            association: 'Semiconductor Industry Association',
+            total_amount: 5222000,
+            filings: 12,
+            top_issues: ['Trade (domestic/foreign)', 'Science/technology'],
+            members: ['NVDA', 'AMD', 'INTC'],
+            members_source_url: 'https://www.semiconductors.org/about/members/',
+            by_year: { 2025: 2240000 },
+          },
+        ],
+        error: null,
+      },
+    },
+  });
+  const out = await lobbyingAssociations(
+    { ticker: 'NVDA', name: 'NVIDIA' },
+    { admin, now: new Date('2026-11-05') },
+  );
+  assert.match(
+    out.items[0].text,
+    /NVIDIA \(NVDA\) is a member of the Semiconductor Industry Association, which reported \$5\.2M in federal lobbying across 12 quarterly filings, 2024 to 2026/,
+  );
+  assert.match(out.items[0].text, /lobbies for all 3 listed members, not for NVIDIA alone/);
+  assert.equal(out.layout.associations[0].total, 5222000);
+});
+
+test('competitor milestones are dated, sourced, and flag a competitor that is also a customer', async () => {
+  const admin = fakeAdmin({
+    tables: {
+      competitive_products: [
+        {
+          company: 'Microsoft',
+          company_ticker: 'MSFT',
+          product: 'Maia 200',
+          kind: 'custom_accelerator',
+          milestone_date: '2026-01-26',
+          statement: 'Microsoft introduced Maia 200, an inference accelerator.',
+          source_url: 'https://news.microsoft.com/x',
+          source_title: 'Microsoft Source',
+        },
+        {
+          company: 'Huawei',
+          company_ticker: null,
+          product: 'Ascend 950 series',
+          kind: 'domestic_alternative',
+          milestone_date: '2025-09-18',
+          statement: 'Huawei set out an Ascend roadmap.',
+          source_url: 'https://www.huawei.com/x',
+          source_title: 'Huawei Connect 2025 keynote',
+        },
+      ],
+    },
+  });
+  const out = await competitiveProducts(
+    { ticker: 'NVDA', name: 'NVIDIA', customers: customersOf('NVDA') },
+    { admin },
+  );
+  assert.match(
+    out.items[0].text,
+    /^Microsoft \(custom accelerator, 2026-01-26\): Microsoft introduced Maia 200/,
+  );
+  assert.match(out.items[0].text, /also among the customers/);
+  assert.doesNotMatch(out.items[1].text, /also among the customers/);
+  assert.equal(out.layout.competitors[1].isCustomer, false);
+});
+
+test('the NVIDIA memo plan reads association lobbying and competitors', async () => {
+  const u = await understandQuery(NVDA_Q, {});
+  const spec = buildResearchSpec(u, { query: NVDA_Q, resolution: NVDA_RES, depth: 'deep' });
+  const plan = planResearch(spec, NVDA_RES, { depth: 'deep' });
+  const sources = plan.tasks.map((t) => t.source);
+  assert.ok(sources.includes('lobbying_associations'));
+  assert.ok(sources.includes('competitive_products'));
+  assert.ok(sources.includes('export_controls'));
+});

@@ -236,6 +236,140 @@ function Positioning({ p }) {
           <span className="srr-mono">{p.exits}</span> exited.
         </p>
       ) : null}
+      {p.styleMix?.length ? (
+        <div className="srm-segments" aria-label="Reported value by manager type">
+          <span className="srm-claim-lead">By manager type, classified from manager names</span>
+          {p.styleMix.slice(0, 6).map((m) => (
+            <div key={m.style} className="srm-seg">
+              <span className="srm-seg-label">{STYLE_LABEL[m.style] || m.style}</span>
+              <span className="srm-seg-track" aria-hidden="true">
+                <span
+                  className="srm-seg-fill"
+                  style={{ width: `${Math.max(1, Math.round((Number(m.share) || 0) * 100))}%` }}
+                />
+              </span>
+              <span className="srr-mono">{pct(m.share)}</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {p.trend?.length >= 2 ? (
+        <div className="srm-table-wrap">
+          <table className="srm-table">
+            <caption className="srm-caption">Reported holders by quarter</caption>
+            <thead>
+              <tr>
+                <th scope="col">Quarter ending</th>
+                <th scope="col">Managers reporting</th>
+                <th scope="col">Filers in dataset</th>
+                <th scope="col">Shares</th>
+                <th scope="col">Reported value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {p.trend.map((q) => (
+                <tr key={q.period}>
+                  <td className="srr-mono">{q.period}</td>
+                  <td className="srr-mono">{Number(q.holders).toLocaleString('en-US')}</td>
+                  <td className="srr-mono">{Number(q.filers).toLocaleString('en-US')}</td>
+                  <td className="srr-mono">{sharesFmt(q.shares)}</td>
+                  <td className="srr-mono">{usd(q.value_usd)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+const STYLE_LABEL = {
+  index_heavy: 'Index-heavy managers',
+  pension_sovereign: 'Pensions and sovereign funds',
+  insurer: 'Insurers',
+  bank_wealth: 'Banks and wealth managers',
+  hedge_quant: 'Hedge funds and trading firms',
+  active: 'Active asset managers',
+  unclassified: 'Other managers',
+};
+
+function Associations({ data }) {
+  if (!data?.length) return null;
+  return (
+    <section className="srm-section" aria-labelledby="srm-assoc-h">
+      <h2 id="srm-assoc-h" className="srr-h2">
+        Industry association lobbying
+      </h2>
+      <p className="srm-sub">
+        Federal lobbying reported by trade associations the company belongs to. An association
+        lobbies for all of its members, so this is not the company&rsquo;s own spend.
+      </p>
+      <div className="srm-table-wrap">
+        <table className="srm-table">
+          <thead>
+            <tr>
+              <th scope="col">Association</th>
+              <th scope="col">Period</th>
+              <th scope="col">Reported lobbying</th>
+              <th scope="col">Filings</th>
+              <th scope="col">Most frequent issues</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((a) => (
+              <tr key={a.association}>
+                <td>
+                  <a
+                    className="srm-disc-src"
+                    href={a.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {a.association}
+                    <i className="bi bi-box-arrow-up-right" aria-hidden="true" />
+                  </a>
+                </td>
+                <td className="srr-mono">
+                  {a.from} to {a.to}
+                </td>
+                <td className="srr-mono">{usd(a.total)}</td>
+                <td className="srr-mono">{a.filings}</td>
+                <td className="srm-wrap">{a.issues.join(', ') || 'n/a'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function Competitors({ data }) {
+  if (!data?.length) return null;
+  return (
+    <section className="srm-section" aria-labelledby="srm-comp-h">
+      <h2 id="srm-comp-h" className="srr-h2">
+        Competing products
+      </h2>
+      <p className="srm-sub">
+        Dated product milestones from competitors, each from the company&rsquo;s own announcement.
+      </p>
+      <ol className="srm-rules">
+        {data.map((c) => (
+          <li key={`${c.company}-${c.product}`}>
+            <span className="srr-mono srm-rule-date">{c.date}</span>
+            <span>
+              <a href={c.url} target="_blank" rel="noopener noreferrer">
+                {c.company} {c.product}
+              </a>{' '}
+              <span className="srm-tag">{c.kindLabel}</span>
+              {c.isCustomer ? <span className="srm-tag is-customer">also a customer</span> : null}
+            </span>
+            <span className="srm-dim">{c.statement}</span>
+          </li>
+        ))}
+      </ol>
     </section>
   );
 }
@@ -566,6 +700,8 @@ export default function InvestmentMemo({ report, panels = {}, onCite }) {
       <Expectations data={panels.expectations} />
       <Positioning p={panels.positioning} />
       <Peers peers={panels.peers} />
+      <Competitors data={panels.competitors} />
+      <Associations data={panels.associations} />
       <Scenarios scenarios={report.scenarios} onCite={onCite} />
       <Chain chain={report.chain} onCite={onCite} />
 

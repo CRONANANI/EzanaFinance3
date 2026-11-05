@@ -322,7 +322,72 @@ export async function holderPositioning({ ticker, name }, { admin }) {
       entities: [t, ...adds.map((a) => a.filer), ...cuts.map((c) => c.filer)],
     });
   }
-  return { items, layout: { positioning: { ticker: t, name: label, ...data } } };
+  const st = await styleTrend(admin, t, label);
+  items.push(...st.items);
+  return {
+    items,
+    layout: { positioning: { ticker: t, name: label, ...data, ...(st.layout || {}) } },
+  };
+}
+
+export const STYLE_LABEL = {
+  index_heavy: 'Index-heavy managers',
+  pension_sovereign: 'Pensions and sovereign funds',
+  insurer: 'Insurers',
+  bank_wealth: 'Banks and wealth managers',
+  hedge_quant: 'Hedge funds and trading firms',
+  active: 'Active asset managers',
+  unclassified: 'Other managers',
+};
+
+/* Holders by manager type and the reported-holder trend
+   (sonar_13f_style_trend). The type comes from the manager's name, so it is
+   an approximation and is described as one. */
+async function styleTrend(admin, t, label) {
+  const { data, error } = await admin.rpc('sonar_13f_style_trend', { p_ticker: t });
+  if (error || !data?.period) return { items: [] };
+  const items = [];
+  const mix = (data.style_mix || []).filter((m) => Number(m.value_usd) > 0);
+  if (mix.length) {
+    items.push({
+      kind: 'aggregate',
+      title: `${label} 13F holders by manager type, quarter ending ${data.period}`,
+      text: `By manager type (classified from each manager's name, so approximate), the reported 13F value in ${label} (${t}) for the quarter ending ${data.period} splits: ${mix
+        .slice(0, 5)
+        .map(
+          (m) =>
+            `${STYLE_LABEL[m.style] || m.style} ${pct1(Number(m.share) || 0)} (${m.holders} managers)`,
+        )
+        .join('; ')}.`,
+      date: data.period,
+      period: { to: data.period, label: `quarter ending ${data.period}` },
+      data: { metric: 'holder_styles', ...data },
+      entities: [t, label],
+    });
+  }
+  const trend = (data.trend || []).filter((q) => Number(q.holders) > 0);
+  if (trend.length >= 2) {
+    const a = trend[0];
+    const b = trend[trend.length - 1];
+    items.push({
+      kind: 'aggregate',
+      title: `${label} reported 13F holders, ${a.period} to ${b.period}`,
+      text: `Managers reporting a position in ${label} (${t}) in Ezana's 13F dataset: ${trend
+        .map(
+          (q) =>
+            `${q.period} ${Number(q.holders).toLocaleString('en-US')} of ${Number(q.filers).toLocaleString('en-US')} filers, ${shares(q.shares)}`,
+        )
+        .join('; ')}.`,
+      date: b.period,
+      period: { from: a.period, to: b.period, label: `${a.period} to ${b.period}` },
+      data: { metric: 'holder_trend', trend },
+      entities: [t, label],
+    });
+  }
+  return {
+    items,
+    layout: { styleMix: mix, indexHeavyShare: data.index_heavy_share ?? null, trend },
+  };
 }
 
 /* ── peer_financials ────────────────────────────────────────────────── */
@@ -720,6 +785,123 @@ export async function exportControls(
   };
 }
 
+/* ── lobbying_associations (Nov 2026, deep research step 3) ─────────── */
+
+/**
+ * Lobbying by the trade associations the company belongs to (Senate LDA
+ * filings, sonar_lobbying_associations). An association lobbies for all its
+ * members, so the text never attributes its spend to the company.
+ */
+export async function lobbyingAssociations({ ticker, name }, { admin, now = new Date() }) {
+  const t = String(ticker || '').toUpperCase();
+  const y = new Date(now).getUTCFullYear();
+  const from = y - 2;
+  const { data, error } = await admin.rpc('sonar_lobbying_associations', {
+    p_ticker: t,
+    p_from: from,
+    p_to: y,
+  });
+  if (error || !Array.isArray(data) || !data.length) return { items: [] };
+  const label = name || t;
+  const rows = data.filter((r) => Number(r.total_amount) > 0);
+  const items = rows.map((r) => ({
+    kind: 'aggregate',
+    title: `${r.association} lobbying, ${from} to ${y}`,
+    text: `${label} (${t}) is a member of the ${r.association}, which reported ${usdB(
+      r.total_amount,
+    )} in federal lobbying across ${r.filings} quarterly filings, ${from} to ${y}${
+      r.top_issues?.length ? `, most often on ${r.top_issues.slice(0, 4).join(', ')}` : ''
+    }. The association lobbies for all ${r.members?.length || 'its'} listed members, not for ${label} alone.`,
+    url: r.members_source_url,
+    date: new Date(now).toISOString().slice(0, 10),
+    period: { from: `${from}-01-01`, to: `${y}-12-31`, label: `${from} to ${y}` },
+    data: { metric: 'association_lobbying', row: r },
+    entities: [t, label, r.association],
+  }));
+  return {
+    items,
+    layout: items.length
+      ? {
+          associations: rows.map((r) => ({
+            association: r.association,
+            total: Number(r.total_amount),
+            filings: r.filings,
+            byYear: r.by_year || {},
+            issues: (r.top_issues || []).slice(0, 4),
+            members: r.members || [],
+            url: r.members_source_url,
+            from,
+            to: y,
+          })),
+        }
+      : undefined,
+  };
+}
+
+/* ── competitive_products (Nov 2026, deep research step 3) ──────────── */
+
+const KIND_TEXT = {
+  custom_accelerator: 'custom accelerator',
+  merchant_gpu: 'merchant accelerator',
+  domestic_alternative: 'domestic alternative',
+  other: 'product',
+};
+
+/**
+ * Dated, sourced product milestones from companies that compete with the
+ * subject (competitive_products, approved rows only). When the competitor is
+ * also one of the subject's large customers, the item says so.
+ */
+export async function competitiveProducts({ ticker, name, customers = [] }, { admin }) {
+  const t = String(ticker || '').toUpperCase();
+  const { data, error } = await admin
+    .from('competitive_products')
+    .select(
+      'company, company_ticker, product, kind, milestone_date, statement, source_url, source_title',
+    )
+    .contains('competes_with', [t])
+    .eq('review_status', 'approved')
+    .order('milestone_date', { ascending: false })
+    .limit(12);
+  if (error || !data?.length) return { items: [] };
+  const label = name || t;
+  const cust = new Set(customers.map((c) => String(c.ticker || c).toUpperCase()));
+  const rows = data.map((r) => ({
+    ...r,
+    isCustomer: !!r.company_ticker && cust.has(r.company_ticker),
+  }));
+  return {
+    items: rows.map((r) => ({
+      kind: 'record',
+      title: `${r.company} ${r.product}`,
+      text: `${r.company} (${KIND_TEXT[r.kind] || 'product'}, ${r.milestone_date}): ${r.statement}${
+        r.isCustomer
+          ? ` ${r.company} is also among the customers whose capital spending this assessment tracks for ${label}.`
+          : ''
+      } Source: ${r.source_title}.`,
+      url: r.source_url,
+      date: r.milestone_date,
+      period: { to: r.milestone_date, label: r.milestone_date },
+      data: { metric: 'competitive_product', kind: r.kind, isCustomer: r.isCustomer },
+      entities: [t, r.company, ...(r.company_ticker ? [r.company_ticker] : []), r.product],
+    })),
+    layout: {
+      competitors: rows.map((r) => ({
+        company: r.company,
+        ticker: r.company_ticker,
+        product: r.product,
+        kind: r.kind,
+        kindLabel: KIND_TEXT[r.kind] || 'product',
+        date: r.milestone_date,
+        statement: r.statement,
+        url: r.source_url,
+        source: r.source_title,
+        isCustomer: r.isCustomer,
+      })),
+    },
+  };
+}
+
 export const MEMO_RUNNERS = {
   company_financials: companyFinancials,
   product_segments: productSegments,
@@ -729,4 +911,6 @@ export const MEMO_RUNNERS = {
   estimates,
   disclosures,
   export_controls: exportControls,
+  lobbying_associations: lobbyingAssociations,
+  competitive_products: competitiveProducts,
 };

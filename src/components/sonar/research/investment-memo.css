@@ -293,6 +293,33 @@
   color: var(--text-muted);
 }
 
+/* Holder trend caption, issue cells, small tags */
+.srm-caption {
+  caption-side: top;
+  text-align: left;
+  padding: 8px 10px 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.srm-table td.srm-wrap {
+  white-space: normal;
+  min-width: 200px;
+}
+.srm-tag {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0 6px;
+  border-radius: 999px;
+  border: 1px solid var(--border-primary);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.srm-tag.is-customer {
+  border-color: var(--emerald-border);
+  color: var(--emerald-text);
+  background: var(--emerald-bg);
+}
+
 /* Market expectations */
 .srm-expect {
   display: grid;

@@ -51,6 +51,8 @@ export const SOURCE_LABELS = {
   estimates: 'Consensus estimates and multiples',
   disclosures: 'Company filings (10-Q, 10-K)',
   export_controls: 'US export controls (BIS)',
+  lobbying_associations: 'Lobbying disclosures, industry associations',
+  competitive_products: 'Competitor announcements',
 };
 
 const STAGES = [

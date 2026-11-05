@@ -146,6 +146,8 @@ export const SOURCES = {
   estimates: { category: 'market_data', reliability: 0.75, needs: ['ticker'] },
   disclosures: { category: 'corporate_filings', reliability: 0.95, needs: ['ticker'] },
   export_controls: { category: 'government_records', reliability: 0.95, needs: [] },
+  lobbying_associations: { category: 'government_records', reliability: 0.9, needs: ['ticker'] },
+  competitive_products: { category: 'news', reliability: 0.8, needs: ['ticker'] },
 };
 
 /** Evidence explorer groups, in display order. */
@@ -184,7 +186,13 @@ export const DEFAULT_CONFIG = {
     country: { macro_country: 1, news: 0.6, prediction_markets: 0.4, echo: 0.4, sanctions: 0.3 },
     industry: { industry_registry: 0.9, price_performance: 0.5, news: 0.5, echo: 0.4 },
     sector: { congress_sector: 0.8, price_performance: 0.8, contracts_history: 0.7, news: 0.4 },
-    lobbying: { lobbying_leaders: 1, lobbying_company: 0.9, news: 0.5, echo: 0.3 },
+    lobbying: {
+      lobbying_leaders: 1,
+      lobbying_company: 0.9,
+      lobbying_associations: 0.7,
+      news: 0.5,
+      echo: 0.3,
+    },
     congress_trading: {
       congress_sector: 1,
       congress_company: 1,
@@ -209,7 +217,12 @@ export const DEFAULT_CONFIG = {
       analysts: 0.6,
       sec_filings: 0.5,
     },
-    competition: { peer_financials: 1, industry_registry: 0.5, news: 0.6 },
+    competition: {
+      peer_financials: 1,
+      competitive_products: 0.9,
+      industry_registry: 0.5,
+      news: 0.6,
+    },
     market_performance: { price_performance: 1, market_snapshot: 0.7 },
     analyst_views: { analysts: 1, estimates: 0.9 },
     commodity: { commodity_series: 1, news: 0.8, prediction_markets: 0.4, echo: 0.4 },

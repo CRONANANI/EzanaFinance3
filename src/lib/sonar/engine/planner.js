@@ -34,7 +34,7 @@ export const SOURCE_DATASET = {
 export const DEPTHS = {
   quick: { maxTasks: 5, items: 3, taskMs: 2_000, label: 'Quick research' },
   standard: { maxTasks: 8, items: 5, taskMs: 2_500, label: 'Standard research' },
-  deep: { maxTasks: 22, items: 8, taskMs: 20_000, label: 'Deep research' },
+  deep: { maxTasks: 24, items: 8, taskMs: 20_000, label: 'Deep research' },
 };
 
 /* What a chart needs, by source. A planned chart renders only if its data
@@ -80,8 +80,12 @@ function paramsFor(source, resolution, spec) {
         countries: iso2.length ? iso2 : ['CN', 'HK'],
       };
     }
+    case 'competitive_products':
+      if (!r.company?.ticker) return null;
+      return { ticker: r.company.ticker, name: r.company.name, customers: r.customers || [] };
     case 'estimates':
     case 'disclosures':
+    case 'lobbying_associations':
       if (!r.company?.ticker) return null;
       return { ticker: r.company.ticker, name: r.company.name };
     case 'politician_dossier':
@@ -141,6 +145,8 @@ export const MEMO_SOURCES = [
   'estimates',
   'disclosures',
   'export_controls',
+  'competitive_products',
+  'lobbying_associations',
   'market_snapshot',
   'analysts',
   'revenue_geo',
