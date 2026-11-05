@@ -29,6 +29,7 @@ import {
   customersOf,
 } from '@/lib/sonar/industries';
 import { COMMODITIES } from '@/lib/sonar/commodity-stats';
+import { hyperscalerPeers } from '@/lib/sonar/ai-infrastructure';
 import { LOWERCASE_WORDS } from '@/lib/sonar/understand/blocklist';
 
 /** Normalised alias key: lower case, letters and digits only. */
@@ -226,6 +227,8 @@ export async function resolveResearch(understood, { query, admin, ms = 1100, dom
   }
   /* Listed peers of a named company, for the competitive comparison. */
   if (out.company) out.peers = peersOf(out.company.ticker);
+  /* A hyperscaler outside the industry registry is compared with the others. */
+  if (out.company && !out.peers.length) out.peers = hyperscalerPeers(out.company.ticker);
   if (out.company) out.customers = customersOf(out.company.ticker);
   if (out.company && !out.universe) {
     out.universe = {

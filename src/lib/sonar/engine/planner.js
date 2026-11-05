@@ -34,7 +34,7 @@ export const SOURCE_DATASET = {
 export const DEPTHS = {
   quick: { maxTasks: 5, items: 3, taskMs: 2_000, label: 'Quick research' },
   standard: { maxTasks: 8, items: 5, taskMs: 2_500, label: 'Standard research' },
-  deep: { maxTasks: 24, items: 8, taskMs: 20_000, label: 'Deep research' },
+  deep: { maxTasks: 30, items: 8, taskMs: 20_000, label: 'Deep research' },
 };
 
 /* What a chart needs, by source. A planned chart renders only if its data
@@ -80,6 +80,15 @@ function paramsFor(source, resolution, spec) {
         countries: iso2.length ? iso2 : ['CN', 'HK'],
       };
     }
+    case 'capex_monetization':
+    case 'hyperscaler_capex':
+    case 'contracts_profile':
+    case 'value_chain':
+      if (!r.company?.ticker) return null;
+      return { ticker: r.company.ticker, name: r.company.name };
+    case 'lobbying_profile':
+      if (!r.company?.ticker) return null;
+      return { ticker: r.company.ticker, name: r.company.name, peers: (r.peers || []).slice(0, 6) };
     case 'competitive_products':
       if (!r.company?.ticker) return null;
       return { ticker: r.company.ticker, name: r.company.name, customers: r.customers || [] };
@@ -147,6 +156,11 @@ export const MEMO_SOURCES = [
   'export_controls',
   'competitive_products',
   'lobbying_associations',
+  'capex_monetization',
+  'hyperscaler_capex',
+  'contracts_profile',
+  'lobbying_profile',
+  'value_chain',
   'market_snapshot',
   'analysts',
   'revenue_geo',
@@ -156,6 +170,13 @@ export const MEMO_SOURCES = [
   'news',
   'echo',
 ];
+
+/* Sources a memo reads through a richer reader instead. */
+const MEMO_REPLACED = {
+  institutional_13f: 'holder_positioning',
+  contracts_history: 'contracts_profile',
+  lobbying_company: 'lobbying_profile',
+};
 
 const SHORT_NAME = (s) =>
   String(s || '')
@@ -232,8 +253,8 @@ export function planResearch(
   const memo = spec.format === 'investment_memo';
   for (const source of Object.keys(SOURCES)) {
     /* The memo's positioning reader replaces the plain top-holders list. */
-    if (memo && source === 'institutional_13f') {
-      excluded.push({ source, reason: 'replaced:holder_positioning' });
+    if (memo && MEMO_REPLACED[source]) {
+      excluded.push({ source, reason: `replaced:${MEMO_REPLACED[source]}` });
       continue;
     }
     let priority = 0;

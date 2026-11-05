@@ -18,6 +18,11 @@ import { cronRoute } from '@/lib/cron/with-cron-lock';
  * run, so metrics rotate their starting point by day and the run stops cleanly
  * at the time budget; every metric is refreshed at least every few days.
  * Auth: Bearer cron secret (cronRoute).   GET /api/cron/ingest-fundamentals[?metrics=revenue,cash]
+ *
+ * Nov 2026: this calendar year's annual frame is read too (fiscal years that
+ * end mid-year land there), and `?backfill=1` widens the window to six
+ * calendar years and twelve quarters, so trends and year-over-year quarters
+ * have their history. A backfill run is heavy: pass `metrics` to split it.
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -31,6 +36,7 @@ async function run(request) {
   const outOfTime = () => Date.now() - started > RUN_BUDGET_MS;
   const { searchParams } = new URL(request.url);
   const only = (searchParams.get('metrics') || '').split(',').filter(Boolean);
+  const backfill = searchParams.get('backfill') === '1';
 
   const admin = getAdminClient();
   const errors = [];
@@ -47,7 +53,10 @@ async function run(request) {
     );
   }
 
-  const { durations, instants } = framePeriods(new Date());
+  const { durations, instants } = framePeriods(
+    new Date(),
+    backfill ? { years: 6, quarters: 12, currentYear: true } : { currentYear: true },
+  );
   let metrics = only.length ? METRICS.filter((m) => only.includes(m.key)) : METRICS;
   const day = Math.floor(Date.now() / 86400000);
   const shift = metrics.length ? day % metrics.length : 0;

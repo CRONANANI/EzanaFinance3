@@ -8,7 +8,7 @@ import {
   secFetchText,
   secRequestCount,
 } from '@/lib/sec-edgar';
-import { htmlToText, findSections } from '@/lib/disclosures/sections';
+import { htmlToText, findSections, DISCLOSURE_KIND_IDS } from '@/lib/disclosures/sections';
 import { extractSection } from '@/lib/disclosures/extract';
 import { synthesizeWithFallback, HAIKU_MODEL } from '@/lib/sonar/llm-providers';
 import { disclosureTickers, latestPeriodic } from '@/lib/disclosures/filings';
@@ -25,7 +25,9 @@ import { disclosureTickers, latestPeriodic } from '@/lib/disclosures/filings';
  * A quote is stored only if it appears in the filing word for word and every
  * figure appears in the quote (lib/disclosures/sections.js), so stored rows
  * are approved on arrival; anything else is dropped and counted. Each filing
- * is processed once (company_disclosure_ingest). Bounded: 240 s, and at most
+ * is processed once per kind (company_disclosure_ingest.kinds; a filing read
+ * before a kind was added is read again for the new kinds only, and a row
+ * with no kinds recorded counts as the original three). Bounded: 240 s, and at most
  * MAX_FILINGS filings a run. SEC rules: User-Agent and the shared throttle in
  * sec-edgar.js.
  */
@@ -35,6 +37,8 @@ export const maxDuration = 300;
 
 const RUN_BUDGET_MS = 240_000;
 const MAX_FILINGS = 8;
+/* The kinds every filing read before Nov 2026 (no kinds recorded) was read for. */
+const ORIGINAL_KINDS = ['customer_concentration', 'export_risk', 'purchase_obligations'];
 async function run(request) {
   const started = Date.now();
   const left = () => RUN_BUDGET_MS - (Date.now() - started);
@@ -89,14 +93,18 @@ async function run(request) {
     // eslint-disable-next-line no-await-in-loop
     const { data: done } = await admin
       .from('company_disclosure_ingest')
-      .select('accession_no')
+      .select('accession_no, kinds')
       .in(
         'accession_no',
         filings.map((f) => f.accessionNo),
       );
-    const doneSet = new Set((done || []).map((d) => d.accession_no));
+    const doneKinds = new Map(
+      (done || []).map((d) => [d.accession_no, d.kinds?.length ? d.kinds : ORIGINAL_KINDS]),
+    );
     for (const f of filings) {
-      if (doneSet.has(f.accessionNo) || left() < 30_000 || stats.filings >= MAX_FILINGS) continue;
+      const had = doneKinds.get(f.accessionNo) || [];
+      const todo = DISCLOSURE_KIND_IDS.filter((k) => !had.includes(k));
+      if (!todo.length || left() < 30_000 || stats.filings >= MAX_FILINGS) continue;
       stats.filings += 1;
       const { primaryDocUrl } = edgarUrls({
         accessionNo: f.accessionNo,
@@ -106,7 +114,7 @@ async function run(request) {
       let sections = [];
       try {
         // eslint-disable-next-line no-await-in-loop
-        sections = findSections(htmlToText(await secFetchText(primaryDocUrl)));
+        sections = findSections(htmlToText(await secFetchText(primaryDocUrl)), { kinds: todo });
       } catch (e) {
         errors.push(`${ticker} ${f.accessionNo}: ${e?.message || e}`);
         continue;
@@ -162,6 +170,7 @@ async function run(request) {
         form_type: f.form,
         sections: sections.length,
         kept: rows.length,
+        kinds: [...new Set([...had, ...todo])],
         dropped,
         processed_at: new Date().toISOString(),
       });

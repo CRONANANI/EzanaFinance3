@@ -20,6 +20,7 @@ import { useMemo, useState } from 'react';
 import { EVIDENCE_CATEGORIES } from '@/lib/sonar/engine/domains';
 import { sendFeedback } from './useResearchStream';
 import InvestmentMemo from './InvestmentMemo';
+import PositioningMemo from './PositioningMemo';
 import './research-report.css';
 
 export const SOURCE_LABELS = {
@@ -51,6 +52,11 @@ export const SOURCE_LABELS = {
   estimates: 'Consensus estimates and multiples',
   disclosures: 'Company filings (10-Q, 10-K)',
   export_controls: 'US export controls (BIS)',
+  capex_monetization: 'Capital spending and cash flow (SEC filings)',
+  hyperscaler_capex: 'Hyperscaler capital spending and cloud revenue',
+  contracts_profile: 'Federal contract obligations, by year and agency',
+  lobbying_profile: 'Lobbying disclosures, by year and policy area',
+  value_chain: 'AI infrastructure value chain (Ezana framework)',
   lobbying_associations: 'Lobbying disclosures, industry associations',
   competitive_products: 'Competitor announcements',
 };
@@ -582,7 +588,10 @@ export default function ResearchReport({ state, onFollowUp = null }) {
         </p>
       ) : null}
 
-      {report?.format === 'investment_memo' ? (
+      {report?.format === 'investment_memo' && report.memoKind === 'positioning' ? (
+        <PositioningMemo report={report} panels={state.panels || {}} onCite={cite} />
+      ) : null}
+      {report?.format === 'investment_memo' && report.memoKind !== 'positioning' ? (
         <InvestmentMemo report={report} panels={state.panels || {}} onCite={cite} />
       ) : null}
 

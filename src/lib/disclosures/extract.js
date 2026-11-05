@@ -26,6 +26,10 @@ const TOPIC = {
     'export controls: licensing requirements, restrictions on sales to China or other countries, related charges',
   purchase_obligations:
     'purchase, inventory and supply or capacity obligations and commitments, with their amounts',
+  cloud_ai_metrics:
+    'cloud and AI business performance: cloud or AI revenue and its growth, capacity, remaining performance obligation, as the company reports them',
+  infrastructure_commitments:
+    'data center and infrastructure commitments: leases not yet commenced, capital expenditure plans, construction and capacity commitments, with their amounts',
 };
 
 /** Parse the model's JSON, tolerating fences and leading prose. */

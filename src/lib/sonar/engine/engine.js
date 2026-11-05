@@ -40,8 +40,9 @@ import {
   renderBrief,
 } from './findings';
 import {
-  MEMO_SYSTEM,
   MEMO_PROMPT_VERSION,
+  POSITIONING_PROMPT_VERSION,
+  memoSystem,
   memoInput,
   validateMemo,
   deterministicMemo,
@@ -319,7 +320,7 @@ export async function runResearch(query, opts = {}) {
       'synthesize',
       () =>
         synthesizeWithFallback({
-          system: memo ? MEMO_SYSTEM : SYNTHESIS_SYSTEM,
+          system: memo ? memoSystem(spec) : SYNTHESIS_SYSTEM,
           user: (memo ? memoInput : synthesisInput)({
             spec,
             plan,
@@ -327,7 +328,12 @@ export async function runResearch(query, opts = {}) {
             metrics,
             today: todayLine(now),
           }),
-          maxTokens: memo ? D.memoTokens || D.tokens : D.tokens,
+          /* A positioning memo writes sections per angle as well as risks. */
+          maxTokens: memo
+            ? spec.memoKind === 'positioning'
+              ? Math.max(D.memoTokens || D.tokens, 8000)
+              : D.memoTokens || D.tokens
+            : D.tokens,
           model: D.model,
           fallbackModel: HAIKU_MODEL,
           webSearch: { enabled: false },
@@ -345,7 +351,7 @@ export async function runResearch(query, opts = {}) {
     const parsed = parseResearchJson(synth?.answer);
     if (parsed) {
       report = memo
-        ? validateMemo(parsed, { marked, metrics })
+        ? validateMemo(parsed, { marked, metrics, kind: spec.memoKind })
         : validateResearch(parsed, { marked, metrics });
       if (!report.executiveConclusion && !report.keyFindings.length) report = null;
     }
@@ -368,11 +374,17 @@ export async function runResearch(query, opts = {}) {
   const run = {
     runId,
     engine: ENGINE_VERSION,
-    promptVersion: memo ? MEMO_PROMPT_VERSION : SYNTHESIS_PROMPT_VERSION,
+    promptVersion: memo
+      ? spec.memoKind === 'positioning'
+        ? POSITIONING_PROMPT_VERSION
+        : MEMO_PROMPT_VERSION
+      : SYNTHESIS_PROMPT_VERSION,
     format: memo ? 'investment_memo' : 'report',
     memo: memo
       ? {
           centralQuestion: report.centralQuestion,
+          memoKind: report.memoKind || spec.memoKind,
+          sections: report.sections || [],
           risks: report.risks,
           scenarios: report.scenarios,
           chain: report.chain,

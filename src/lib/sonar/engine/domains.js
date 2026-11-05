@@ -148,6 +148,11 @@ export const SOURCES = {
   export_controls: { category: 'government_records', reliability: 0.95, needs: [] },
   lobbying_associations: { category: 'government_records', reliability: 0.9, needs: ['ticker'] },
   competitive_products: { category: 'news', reliability: 0.8, needs: ['ticker'] },
+  capex_monetization: { category: 'corporate_filings', reliability: 0.95, needs: ['ticker'] },
+  hyperscaler_capex: { category: 'corporate_filings', reliability: 0.9, needs: ['ticker'] },
+  contracts_profile: { category: 'government_records', reliability: 0.9, needs: ['ticker'] },
+  lobbying_profile: { category: 'government_records', reliability: 0.9, needs: ['ticker'] },
+  value_chain: { category: 'ezana_datasets', reliability: 0.7, needs: ['ticker'] },
 };
 
 /** Evidence explorer groups, in display order. */

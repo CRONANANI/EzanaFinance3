@@ -13,7 +13,7 @@
  * deterministic domain, entity or resolution.
  */
 import { scoreDomains } from './domain-score';
-import { classifyCore } from '@/lib/sonar/research-mode-core';
+import { classifyCore, isPositioningQuestion } from '@/lib/sonar/research-mode-core';
 
 export { scoreDomains };
 
@@ -119,6 +119,23 @@ function withMemoDomains(domains, angles) {
 
 /* Report components per question shape. */
 function reportComponents(spec) {
+  if (spec.format === 'investment_memo' && spec.memoKind === 'positioning') {
+    return [
+      'executive_conclusion',
+      'executive_view',
+      'financial_dashboard',
+      'capex_monetization',
+      'government_contracts',
+      'value_chain',
+      'lobbying_policy',
+      'competition',
+      'risk_assessments',
+      'scenarios',
+      'evidence_gaps',
+      'evidence',
+      'limitations',
+    ];
+  }
   if (spec.format === 'investment_memo') {
     return [
       'executive_conclusion',
@@ -205,10 +222,15 @@ export function buildResearchSpec(
     question: understood?.display || text,
     rawQuery: text,
     format: memo ? 'investment_memo' : 'report',
+    /* Nov 2026: a memo answers either "what could go wrong" (risk) or "how
+       does the company capture value" (positioning). */
+    memoKind: memo ? (isPositioningQuestion(text) ? 'positioning' : 'risk') : null,
     angles: signal.angles,
     objective: {
       primary: memo
-        ? 'risk_assessment'
+        ? isPositioningQuestion(text)
+          ? 'assess_positioning'
+          : 'risk_assessment'
         : rankMatch
           ? 'rank'
           : COMPARE_RE.test(text)

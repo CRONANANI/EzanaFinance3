@@ -54,7 +54,9 @@ export const DEEP_ANGLES = [
   {
     id: 'ownership',
     label: 'Institutional ownership',
-    re: /\b(institutional|13f|ownership|holders?|hedge funds?|positioning)\b/i,
+    /* "positioning" alone is strategy ("how is Microsoft positioning
+       itself"), so only investor positioning counts here. */
+    re: /\b(institutional|13f|ownership|holders?|hedge funds?|(?:investor|institutional|fund|13f) positioning)\b/i,
   },
   {
     id: 'contracts',
@@ -92,6 +94,21 @@ export const DEEP_ANGLES = [
     re: /\b(valuation|multiples?|p\/e|price targets?|expectations|priced in)\b/i,
   },
 ];
+
+/* ── Positioning questions (Nov 2026, the positioning memo) ─────────── */
+
+/* A question about how a company captures value: its strategy, its
+   position in a value chain, how it monetizes a trend. */
+export const POSITIONING_RE =
+  /\b(position(?:ing|ed|s)? (?:itself|themselves|to|for)|capture (?:the )?value|value capture|monetiz\w*|strateg(?:y|ic position\w*)|competitive (?:advantage|position)|moat|value chain|(?:benefit|profit) from|win(?:ning)? in)\b/i;
+const POSITIONING_RISK_RE =
+  /\b(risks?|downside|threats?|vulnerab\w*|headwinds?|what could go wrong|disappoint\w*|bear case|bull case)\b/i;
+
+/** Whether a question asks how a company is positioned, not what could go wrong. */
+export function isPositioningQuestion(text) {
+  const t = String(text || '');
+  return POSITIONING_RE.test(t) && !POSITIONING_RISK_RE.test(t);
+}
 
 /* ── 1a. Analytical operations ───────────────────────────────────────── */
 
@@ -879,8 +896,11 @@ export function classifyCore(query, { understood = null, now = new Date(), cover
     .map((d) => DOMAIN_READING[d.id]);
   const readingList = [...new Set(reading)].slice(0, 4);
   const reasons = [];
-  if (lead) {
-    const phrase = OP_PHRASE[lead.id](subject);
+  /* A positioning question about one company asks how it captures value
+     (the positioning memo answers it). */
+  const positioning = companies.length === 1 && isPositioningQuestion(t);
+  if (lead || positioning) {
+    const phrase = positioning ? `asks how ${subject} captures value` : OP_PHRASE[lead.id](subject);
     reasons.push(
       readingList.length >= 2
         ? `This question ${phrase}, which means reading ${list(readingList)} together.`

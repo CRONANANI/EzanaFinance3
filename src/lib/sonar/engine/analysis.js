@@ -397,6 +397,144 @@ export function analyze(evidence, spec = {}) {
       }
     }
 
+    /* Strategic positioning (Nov 2026). */
+    if (d.metric === 'capex_monetization' && Array.isArray(d.years) && d.years.length) {
+      const y = d.years.find((p) => Number.isFinite(p.capex));
+      const yp = y ? { to: y.periodEnd, label: `fiscal year ended ${y.periodEnd}` } : null;
+      if (y?.capexToRevenue != null)
+        metrics.push(
+          metric(
+            'capex_to_revenue_fy',
+            `${d.ticker} capital expenditure as a share of revenue, latest fiscal year`,
+            y.capexToRevenue,
+            {
+              unit: 'ratio',
+              method: 'fiscal year capital expenditure / fiscal year revenue',
+              inputs: [e.id],
+              period: yp,
+            },
+          ),
+        );
+      if (y?.capexToOcf != null)
+        metrics.push(
+          metric(
+            'capex_to_ocf_fy',
+            `${d.ticker} capital expenditure as a share of operating cash flow, latest fiscal year`,
+            y.capexToOcf,
+            {
+              unit: 'ratio',
+              method: 'fiscal year capital expenditure / fiscal year operating cash flow',
+              inputs: [e.id],
+              period: yp,
+            },
+          ),
+        );
+      if (y?.fcf != null)
+        metrics.push(
+          metric('fcf_fy', `${d.ticker} free cash flow, latest fiscal year`, y.fcf, {
+            unit: 'USD',
+            method: 'fiscal year operating cash flow - fiscal year capital expenditure',
+            inputs: [e.id],
+            period: yp,
+          }),
+        );
+      if (y?.capexGrowth != null && y?.revenueGrowth != null)
+        metrics.push(
+          metric(
+            'capex_growth_fy',
+            `${d.ticker} capital expenditure growth, latest fiscal year`,
+            y.capexGrowth * 100,
+            {
+              unit: 'percent',
+              method: 'fiscal year capital expenditure / prior fiscal year capital expenditure - 1',
+              inputs: [e.id],
+              period: yp,
+            },
+          ),
+        );
+      const q = (d.quarters || []).find((p) => p.capexYoy != null || p.revenueYoy != null);
+      if (q?.revenueYoy != null)
+        metrics.push(
+          metric(
+            'revenue_growth_yoy_q',
+            `${d.ticker} revenue growth, latest quarter on the same quarter a year earlier`,
+            q.revenueYoy * 100,
+            {
+              unit: 'percent',
+              method: 'quarter revenue / same quarter a year earlier - 1',
+              inputs: [e.id],
+              period: { from: q.yearAgo, to: q.periodEnd, label: `${q.yearAgo} to ${q.periodEnd}` },
+            },
+          ),
+        );
+      if (q?.capexYoy != null)
+        metrics.push(
+          metric(
+            'capex_growth_yoy_q',
+            `${d.ticker} capital expenditure growth, latest quarter on the same quarter a year earlier`,
+            q.capexYoy * 100,
+            {
+              unit: 'percent',
+              method: 'quarter capital expenditure / same quarter a year earlier - 1',
+              inputs: [e.id],
+              period: { from: q.yearAgo, to: q.periodEnd, label: `${q.yearAgo} to ${q.periodEnd}` },
+            },
+          ),
+        );
+    }
+
+    if (d.metric === 'segments' && Array.isArray(d.segments)) {
+      const top = [...d.segments]
+        .filter((s) => s.changeShare != null && s.changeShare > 0)
+        .sort((a, b) => b.changeShare - a.changeShare)[0];
+      if (top)
+        metrics.push(
+          metric(
+            'segment_increase_share',
+            `${top.segment} share of the year-over-year revenue increase across reported segments`,
+            top.changeShare,
+            {
+              unit: 'ratio',
+              method:
+                'segment revenue change / total change across reported segments, same quarter a year apart',
+              inputs: [e.id],
+              period: e.period,
+            },
+          ),
+        );
+    }
+
+    if (d.metric === 'contracts_profile' && Array.isArray(d.agencies) && d.agencies.length) {
+      metrics.push(
+        metric(
+          'contracts_top_agency_share',
+          `${d.agencies[0].agency} share of federal contract obligations to ${d.ticker}, FY${d.agencyWindow.from} to FY${d.agencyWindow.to}`,
+          d.agencies[0].share,
+          {
+            unit: 'ratio',
+            method:
+              'obligations by the largest awarding agency / all obligations, complete fiscal years',
+            inputs: [e.id],
+            period: { label: `FY${d.agencyWindow.from} to FY${d.agencyWindow.to}` },
+          },
+        ),
+      );
+      if (d.growth != null)
+        metrics.push(
+          metric(
+            'contracts_growth_complete_fy',
+            `${d.ticker} federal contract obligations, change in FY${d.lastComplete}`,
+            d.growth * 100,
+            {
+              unit: 'percent',
+              method: 'latest complete fiscal year obligations / prior fiscal year obligations - 1',
+              inputs: [e.id],
+              period: { label: `FY${d.lastComplete - 1} to FY${d.lastComplete}` },
+            },
+          ),
+        );
+    }
+
     if (d.metric === 'positioning' && d.top10_share != null) {
       metrics.push(
         metric(

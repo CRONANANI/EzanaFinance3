@@ -88,13 +88,14 @@ test('the NVIDIA question is planned as an investment risk assessment', async ()
     'product_segments',
     'holder_positioning',
     'peer_financials',
-    'contracts_history',
+    'contracts_profile',
     'analysts',
     'news',
   ]) {
     assert.ok(sources.includes(s), s);
   }
   assert.ok(!sources.includes('institutional_13f'), 'positioning replaces the top-holders list');
+  assert.ok(!sources.includes('contracts_history'), 'the contracts profile replaces the summary');
   assert.ok(plan.tasks.every((t) => t.budgetMs >= 20_000));
   const peers = plan.tasks.find((t) => t.source === 'peer_financials').params.peers;
   assert.ok(peers.some((p) => p.ticker === 'AMD'));

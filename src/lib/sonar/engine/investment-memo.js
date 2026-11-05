@@ -25,8 +25,10 @@
 import { numbersOf } from './evidence';
 import { CLASSIFICATIONS, numberSupported, validateClaim } from './findings';
 import { stripCoverageNotes } from '@/lib/sonar/groundingGuard';
+import { AI_VALUE_CHAIN } from '@/lib/sonar/ai-infrastructure';
 
 export const MEMO_PROMPT_VERSION = 'memo-v1';
+export const POSITIONING_PROMPT_VERSION = 'positioning-v1';
 
 export const MEMO_SYSTEM = `You are Ezana Sonar acting as a senior equity research analyst briefing a managing director on a multi-year investment risk assessment. You receive the question, numbered evidence records [S1]..[Sn] and calculated metrics [M:id]. Return ONLY one JSON object, no prose around it, matching:
 {
@@ -78,6 +80,87 @@ Rules:
 - Findings only: no buy, sell or hold call and no price target in Ezana's voice. A named firm's published rating, attributed, is a finding.
 - Never ask the reader a question. Never mention web search. No em dashes.`;
 
+/* Rules both memo kinds share: how to read each kind of record, how to
+   classify a claim, and the integrity rules. */
+const SOURCE_RULES = MEMO_SYSTEM.slice(
+  MEMO_SYSTEM.indexOf('- Company disclosure records'),
+  MEMO_SYSTEM.indexOf('- dataGaps:'),
+);
+const CLAIM_RULES = MEMO_SYSTEM.slice(MEMO_SYSTEM.indexOf('Classifications:'));
+
+/** The section angles a positioning assessment may write. */
+export const POSITIONING_ANGLES = [
+  'financials',
+  'infrastructure',
+  'contracts',
+  'industry',
+  'lobbying',
+  'competition',
+];
+
+/**
+ * Nov 2026: the strategic positioning assessment. "How is Microsoft
+ * positioning itself to capture value from the AI infrastructure boom?" asks
+ * how a company captures value and whether that earns attractive returns,
+ * not what could go wrong; the risks come at the end, as categories with
+ * their evidence attached.
+ */
+export const POSITIONING_SYSTEM = `You are Ezana Sonar acting as a senior investment analyst briefing a managing director on how a company is positioned to capture value from a market shift. You receive the question, numbered evidence records [S1]..[Sn] and calculated metrics [M:id]. Return ONLY one JSON object, no prose around it, matching:
+{
+  "centralQuestion": string,
+  "executiveConclusion": { "text": string, "classification": string, "evidence": [markers], "metrics": [metric ids] },
+  "investmentQuestion": { "text": string, "classification": "analytical_interpretation", "evidence": [markers], "metrics": [metric ids] },
+  "executiveView": [ { "text": string, "classification": string, "evidence": [markers], "metrics": [metric ids] } ],
+  "sections": [
+    {
+      "angle": "financials" | "infrastructure" | "contracts" | "industry" | "lobbying" | "competition",
+      "title": string,
+      "findings": [ { "text": string, "classification": string, "evidence": [markers], "metrics": [metric ids], "period": string|null } ],
+      "interpretation": { "text": string, "classification": "analytical_interpretation", "evidence": [markers], "metrics": [metric ids] },
+      "cannotConclude": [string],
+      "dataRequests": [string]
+    }
+  ],
+  "valueChain": [ { "layer": string, "assessment": { "text": string, "classification": string, "evidence": [markers], "metrics": [metric ids] } } ],
+  "risks": [
+    {
+      "title": string,
+      "priority": "high" | "medium" | "low",
+      "question": string,
+      "assessment": { "text": string, "classification": string, "evidence": [markers], "metrics": [metric ids] },
+      "evidence": [ { "text": string, "classification": string, "evidence": [markers], "metrics": [metric ids], "period": string|null } ],
+      "implication": { "text": string, "classification": string, "evidence": [markers], "metrics": [metric ids] },
+      "watch": [string]
+    }
+  ],
+  "scenarios": [ { "case": "bull" | "base" | "bear", "assumptions": [string], "outcome": { "text": string, "classification": "hypothesis", "evidence": [markers], "metrics": [metric ids] } } ],
+  "chain": [ { "from": string, "to": string, "mechanism": string, "evidence": [markers] } ],
+  "dataGaps": [string],
+  "limitations": [string],
+  "followOnResearch": [string],
+  "confidence": "high" | "medium" | "low"
+}
+How to think:
+- Lead with the answer to the question asked: where the company captures value and what decides whether it earns attractive returns. Never open with the share price, analyst targets or a description of the company; market data is valuation context only.
+- executiveConclusion: the central conclusion in two to four sentences. investmentQuestion: the one debate that decides the investment case. executiveView: three to six short points you would tell the managing director, each cited.
+- Connect the evidence across angles instead of listing it: capital spending against revenue, operating cash flow and free cash flow (the capex metrics); which segments drive the growth (the segment increase share); government obligations; lobbying issue areas set against the bottlenecks of the build (power, permitting, chips, procurement); competitors' capital spending against their cloud revenue.
+- sections: one per angle the reader asked for, plus "infrastructure" (capital spending and capacity) and "competition" when records support them. Each: two to four dated, cited findings, one interpretation, what the records cannot establish (cannotConclude) and the data an analyst would request (dataRequests).
+- valueChain: one assessment per value-chain layer the company operates in, using the layer ids from the value chain record (energy, electrical, semiconductors, systems, data_centers, compute, platform, applications). Cite the value chain record and any financial evidence for that layer.
+- Government contracts: obligations on prime awards are not revenue, and purchases through resellers are recorded under the reseller. Never state or estimate government revenue or its share of revenue. A fiscal year marked incomplete is not a decline.
+- Lobbying: report spend, issue areas and firms. An issue area is not a position. Never say the company lobbied for an outcome, and never connect lobbying to a contract award or a government decision.
+- Industry exposure by end market (finance, healthcare, defense and so on) only when a record states it; otherwise say so in cannotConclude and dataGaps.
+- Remaining performance obligation is contracted revenue not yet recognized: use it for visibility, not as a forecast.
+- risks: three to five, most material first, framed as analytical risk categories, each with its evidence and what to monitor.
+- Scenarios: bull, base and bear, each a short list of qualitative assumptions and an outcome classified hypothesis; never a forecast or price target.
+- chain: how spending becomes results (for example capital spending to capacity to consumption to revenue to margins), three to five links; cite a record for a link only if it supports it.
+${SOURCE_RULES}- dataGaps: specific data an analyst would want that the records do not contain (for example capacity added versus capacity monetized, AI revenue where not disclosed, government revenue as a share of revenue, five-year lobbying history).
+${CLAIM_RULES}`;
+
+/** The system prompt for a memo's kind. */
+export function memoSystem(spec) {
+  return spec?.memoKind === 'positioning' ? POSITIONING_SYSTEM : MEMO_SYSTEM;
+}
+
 /** The user message: question, angles, evidence and metrics. */
 export function memoInput({ spec, plan, marked, metrics, today }) {
   const ev = marked
@@ -100,7 +183,7 @@ export function memoInput({ spec, plan, marked, metrics, today }) {
   return `Today is ${today}.
 Central question: ${spec.question}
 The reader asked: "${String(spec.rawQuery).slice(0, 400)}"
-Subject: ${spec.subject?.label || 'n/a'}${spec.subject?.id ? ` (${spec.subject.id})` : ''}. Horizon: ${horizon}.
+Subject: ${spec.subject?.label || 'n/a'}${spec.subject?.id ? ` (${spec.subject.id})` : ''}. Horizon: ${horizon}.${spec.memoKind === 'positioning' ? '\nAssessment: strategic positioning (how the company captures value and whether it earns attractive returns).' : ''}
 Angles the reader asked for: ${(spec.angles || []).map((a) => a.label).join(', ') || 'none named'}.
 Sources searched: ${plan.tasks.map((t) => t.source).join(', ')}.
 
@@ -126,7 +209,7 @@ const PRIORITY = ['high', 'medium', 'low'];
  * limitations, followOnResearch, confidence, validation) plus the memo
  * fields (format, centralQuestion, risks, scenarios, chain, dataGaps).
  */
-export function validateMemo(parsed, { marked, metrics }) {
+export function validateMemo(parsed, { marked, metrics, kind = null }) {
   const byMarker = new Map(marked.map((e) => [e.marker, e]));
   const metricsById = new Map(metrics.map((m) => [m.id, m]));
   const ctx = { byMarker, metricsById };
@@ -167,6 +250,46 @@ export function validateMemo(parsed, { marked, metrics }) {
       .slice(0, max);
 
   const conclusion = check(parsed?.executiveConclusion, 'conclusion', 0);
+
+  /* Strategic positioning fields (Nov 2026); absent from a risk memo. */
+  const investmentQuestion = check(parsed?.investmentQuestion, 'investment_question', 0);
+  const executiveView = (Array.isArray(parsed?.executiveView) ? parsed.executiveView : [])
+    .slice(0, 6)
+    .map((c, i) => check(c, 'view', i))
+    .filter(Boolean);
+  const sections = (Array.isArray(parsed?.sections) ? parsed.sections : [])
+    .filter((x) => POSITIONING_ANGLES.includes(x?.angle))
+    .slice(0, 8)
+    .map((x, i) => {
+      const findings = (Array.isArray(x.findings) ? x.findings : [])
+        .slice(0, 5)
+        .map((f, j) => check(f, `section${i + 1}_finding`, j))
+        .filter(Boolean);
+      const interpretation = check(x.interpretation, `section${i + 1}_interpretation`, 0);
+      const cannotConclude = cleanLines(x.cannotConclude, 4);
+      const dataRequests = cleanLines(x.dataRequests, 6);
+      if (!findings.length && !interpretation && !cannotConclude.length) return null;
+      return {
+        id: `section_${x.angle}`,
+        angle: x.angle,
+        title: String(x.title || x.angle).slice(0, 120),
+        findings,
+        interpretation,
+        cannotConclude,
+        dataRequests,
+      };
+    })
+    .filter(Boolean)
+    .filter((x, i, a) => a.findIndex((y) => y.angle === x.angle) === i);
+  const layerIds = new Set(AI_VALUE_CHAIN.map((l) => l.id));
+  const valueChain = (Array.isArray(parsed?.valueChain) ? parsed.valueChain : [])
+    .filter((v) => layerIds.has(v?.layer))
+    .slice(0, AI_VALUE_CHAIN.length)
+    .map((v, i) => {
+      const a = check(v.assessment, `layer_${v.layer}`, i);
+      return a ? { layer: v.layer, assessment: a } : null;
+    })
+    .filter(Boolean);
 
   const risks = (Array.isArray(parsed?.risks) ? parsed.risks : [])
     .slice(0, 6)
@@ -248,8 +371,17 @@ export function validateMemo(parsed, { marked, metrics }) {
     })
     .filter(Boolean);
 
-  /* The legacy surfaces (brief, feedback, telemetry) read keyFindings. */
-  const keyFindings = risks
+  /* The legacy surfaces (brief, feedback, telemetry) read keyFindings: the
+     executive view for a positioning memo, the risks otherwise. */
+  const viewFindings = executiveView.map((c, i) => ({
+    ...c,
+    id: `finding_${i + 1}`,
+    title: c.text.slice(0, 80),
+    explanation: c.text,
+    entities: c.entities || [],
+    period: c.period || null,
+  }));
+  const riskFindings = risks
     .map((r) => {
       const base = r.assessment || r.evidence[0];
       return base
@@ -264,17 +396,25 @@ export function validateMemo(parsed, { marked, metrics }) {
         : null;
     })
     .filter(Boolean);
+  const keyFindings = viewFindings.length ? viewFindings : riskFindings;
 
   const claims = log.length;
   const kept = log.filter((l) => l.action !== 'removed').length;
   const cited = [
     ...(conclusion ? [conclusion] : []),
+    ...executiveView,
+    ...sections.flatMap((x) => [...x.findings, x.interpretation].filter(Boolean)),
     ...risks.flatMap((r) => [r.assessment, ...r.evidence, r.implication].filter(Boolean)),
   ];
   return {
     format: 'investment_memo',
+    memoKind: kind || (sections.length || executiveView.length ? 'positioning' : 'risk'),
     centralQuestion: String(parsed?.centralQuestion || '').slice(0, 300),
     executiveConclusion: conclusion,
+    investmentQuestion,
+    executiveView,
+    sections,
+    valueChain,
     keyFindings,
     analysis: [],
     risks,
@@ -319,7 +459,15 @@ const SECTION_OF = {
   sanctions: ['geopolitics', 'Geographic and geopolitical exposure'],
   contracts_history: ['contracts', 'Government contracts'],
   lobbying_company: ['policy', 'Policy and lobbying'],
+  capex_monetization: ['infrastructure', 'Capital spending and monetization'],
+  hyperscaler_capex: ['competition', 'Competitive landscape'],
+  contracts_profile: ['contracts', 'Government contracts'],
+  lobbying_profile: ['lobbying', 'Lobbying and policy'],
+  value_chain: ['industry', 'Industry exposure and value chain'],
 };
+
+/* A grouped section's angle in a positioning memo. */
+const ANGLE_OF = { valuation: null, ownership: null, geopolitics: null, policy: 'lobbying' };
 
 /**
  * The fallback when the written assessment does not complete: the records,
@@ -355,8 +503,32 @@ export function deterministicMemo({ spec, marked, metrics }) {
     watch: [],
   }));
   const first = marked[0];
+  const positioning = spec.memoKind === 'positioning';
+  const sections = positioning
+    ? [...groups.values()]
+        .map((g, i) => {
+          const angle = g.id in ANGLE_OF ? ANGLE_OF[g.id] : g.id;
+          if (!POSITIONING_ANGLES.includes(angle)) return null;
+          return {
+            id: `section_${angle}`,
+            angle,
+            title: g.title,
+            findings: g.items.map((e, j) => fact(e, `section${i + 1}_finding`, j)),
+            interpretation: null,
+            cannotConclude: [],
+            dataRequests: [],
+          };
+        })
+        .filter(Boolean)
+        .filter((x, i, a) => a.findIndex((y) => y.angle === x.angle) === i)
+    : [];
   return {
     format: 'investment_memo',
+    memoKind: positioning ? 'positioning' : 'risk',
+    investmentQuestion: null,
+    executiveView: [],
+    sections,
+    valueChain: [],
     centralQuestion: spec.question,
     executiveConclusion: first ? fact(first, 'conclusion', 0) : null,
     keyFindings: risks.map((r) => ({
@@ -367,12 +539,14 @@ export function deterministicMemo({ spec, marked, metrics }) {
       entities: [],
     })),
     analysis: [],
-    risks,
+    risks: positioning ? [] : risks,
     scenarios: [],
     chain: [],
     dataGaps: [],
     limitations: [
-      'The written assessment did not complete in time, so this report groups and quotes the records without ranking the risks. Run the research again for the full assessment.',
+      positioning
+        ? 'The written assessment did not complete in time, so this report groups and quotes the records by section without an assessment. Run the research again for the full assessment.'
+        : 'The written assessment did not complete in time, so this report groups and quotes the records without ranking the risks. Run the research again for the full assessment.',
     ],
     followOnResearch: [],
     confidence: 'low',
@@ -402,6 +576,8 @@ export function renderMemoBrief(memo) {
   const parts = [];
   if (memo.executiveConclusion)
     parts.push(`${memo.executiveConclusion.text}${cite(memo.executiveConclusion)}`);
+  if (memo.executiveView?.length)
+    parts.push(memo.executiveView.map((c) => `- ${c.text}${cite(c)}`).join('\n'));
   const lines = memo.risks.map((r) => {
     const body = r.assessment || r.evidence[0];
     return `${r.rank}. ${r.title}${body ? `: ${body.text}${cite(body)}` : ''}`;

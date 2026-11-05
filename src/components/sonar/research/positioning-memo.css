@@ -1,0 +1,427 @@
+/* Deep research: the strategic positioning assessment (PositioningMemo.jsx).
+   Page prefix `spm-`, layered on the memo's `srm-` and the report's `srr-`
+   styles. Tokens only (EZANA_BRANDING_GUIDE): sans for prose, mono for
+   numbers, periods and tickers. Series colors are the categorical chart
+   tokens in fixed order (--chart-cat-1 first); text never wears a series
+   color. Incomplete periods are outlined, not filled. */
+
+.spm-exhibit .srr-h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+.spm-n {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: var(--type-eyebrow-tracking);
+}
+.spm-dim {
+  color: var(--text-muted);
+}
+.spm-note {
+  margin: 0.25rem 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* Each exhibit's blocks stack with the section rhythm */
+.spm-exhibit > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Investment view */
+.spm-question {
+  margin-top: 0.9rem;
+  padding: 0.75rem 1rem;
+  border-left: 2px solid var(--emerald);
+  background: var(--emerald-bg-subtle);
+  border-radius: var(--radius-sm);
+}
+.spm-question p {
+  margin: 0;
+  font-size: var(--type-body-size);
+  line-height: 1.55;
+  color: var(--text-primary);
+}
+.spm-view {
+  margin-top: 0.9rem;
+}
+.spm-view ul,
+.spm-findings,
+.spm-cannot ul,
+.spm-requests ul,
+.spm-caveats {
+  margin: 0.35rem 0 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.spm-caveats {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Analyst block under each exhibit */
+.spm-analysis {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-secondary);
+}
+.spm-cannot,
+.spm-requests {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+}
+
+/* KPI tiles and stat rows */
+.spm-kpis,
+.spm-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+.spm-kpi,
+.spm-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+}
+.spm-kpi-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.spm-kpi-val {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.spm-kpi-delta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.spm-kpi-delta.is-up,
+.spm-mix-g.is-up {
+  color: var(--positive);
+}
+.spm-kpi-delta.is-down,
+.spm-mix-g.is-down {
+  color: var(--negative);
+}
+
+/* Charts */
+.spm-chart {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.spm-svg {
+  width: 100%;
+  max-width: 960px;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+.spm-scroll {
+  overflow-x: auto;
+}
+/* Wide charts keep a readable scale on a phone and scroll inside the card. */
+.spm-svg-wide {
+  min-width: 560px;
+}
+.spm-grid {
+  stroke: var(--border-secondary);
+  stroke-width: 1;
+}
+.spm-axis {
+  stroke: var(--border-hover);
+  stroke-width: 1;
+}
+.spm-tick {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--text-muted);
+}
+.spm-bar {
+  stroke-width: 0;
+}
+.spm-bar:hover,
+.spm-dot:hover {
+  opacity: 0.85;
+}
+.spm-bar.is-incomplete {
+  fill: transparent;
+  stroke-width: 1.5;
+  stroke-dasharray: 3 2;
+}
+.spm-line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.spm-dot {
+  stroke: var(--bg-primary);
+  stroke-width: 2;
+}
+
+/* Categorical slots: fill for marks, stroke for lines and outlines */
+.spm-c1 {
+  fill: var(--chart-cat-1);
+  stroke: var(--chart-cat-1);
+}
+.spm-c2 {
+  fill: var(--chart-cat-2);
+  stroke: var(--chart-cat-2);
+}
+.spm-c3 {
+  fill: var(--chart-cat-3);
+  stroke: var(--chart-cat-3);
+}
+.spm-c8 {
+  fill: var(--chart-cat-8);
+  stroke: var(--chart-cat-8);
+}
+.spm-line.spm-c1,
+.spm-line.spm-c2,
+.spm-line.spm-c3 {
+  fill: none;
+}
+.spm-mix-fill.spm-c1,
+.spm-swatch.spm-c1 {
+  background: var(--chart-cat-1);
+}
+.spm-swatch.spm-c2 {
+  background: var(--chart-cat-2);
+}
+.spm-swatch.spm-c3 {
+  background: var(--chart-cat-3);
+}
+.spm-mix-fill.spm-c8 {
+  background: var(--chart-cat-8);
+}
+.spm-swatch.is-outline {
+  background: transparent;
+  border: 1.5px dashed var(--chart-cat-1);
+}
+
+.spm-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.spm-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.spm-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-sm);
+  vertical-align: middle;
+}
+
+/* Horizontal bars (revenue mix, agencies, lobbying peers) */
+.spm-mix {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.spm-mix-row {
+  display: grid;
+  grid-template-columns: minmax(0, 200px) minmax(0, 1fr) 76px 64px;
+  gap: 0.75rem;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.spm-mix-row.is-subject .spm-mix-label {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.spm-mix-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.spm-mix-track {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--border-primary);
+  overflow: hidden;
+}
+.spm-mix-fill {
+  display: block;
+  height: 100%;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.spm-mix-val,
+.spm-mix-g {
+  text-align: right;
+}
+
+/* Capex intensity row */
+.spm-intensity {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  font-size: 12px;
+}
+.spm-intensity-cell {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: baseline;
+}
+
+/* Small multiples */
+.spm-multiples {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 0.75rem;
+}
+.spm-panel {
+  margin: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+}
+.spm-panel.is-subject {
+  border-color: var(--emerald-border);
+  background: var(--emerald-bg-subtle);
+}
+.spm-panel-title {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.spm-panel-note {
+  margin: 0.25rem 0 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Value chain */
+.spm-chain {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+  counter-reset: none;
+}
+.spm-layer {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+}
+.spm-layer.is-subject {
+  border-color: var(--emerald-border);
+  background: var(--emerald-bg-subtle);
+}
+.spm-layer-n {
+  flex: none;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.spm-layer-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+.spm-layer-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.spm-layer-role,
+.spm-layer-pos {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.spm-layer-pos {
+  color: var(--text-secondary);
+}
+.spm-layer-co {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.spm-tag {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: 999px;
+  border: 1px solid var(--emerald-border);
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+  font-size: 11px;
+}
+
+/* Table toggles and risk detail */
+.spm-tabletoggle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.spm-linkbtn {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 12px;
+  color: var(--emerald-text);
+  cursor: pointer;
+}
+.spm-linkbtn:hover,
+.spm-linkbtn:focus-visible {
+  text-decoration: underline;
+}
+.spm-risk-table td {
+  vertical-align: top;
+}
+.spm-risk-detail summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 0.35rem 0;
+}
+.spm-risk-detail summary:hover {
+  color: var(--emerald-text);
+}
+
+@media (max-width: 760px) {
+  .spm-mix-row {
+    grid-template-columns: minmax(0, 1fr) 76px 56px;
+  }
+  .spm-mix-track {
+    grid-column: 1 / -1;
+    order: 4;
+  }
+}

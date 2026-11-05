@@ -615,17 +615,19 @@ function Scenarios({ scenarios, onCite }) {
   );
 }
 
-function Chain({ chain, onCite }) {
+function Chain({
+  chain,
+  onCite,
+  title = 'How the risk would reach the results',
+  sub = 'Each link is marked supported only where a cited record supports it. The chain does not establish that the risk has occurred.',
+}) {
   if (!chain?.length) return null;
   return (
     <section className="srm-section" aria-labelledby="srm-chain-h">
       <h2 id="srm-chain-h" className="srr-h2">
-        How the risk would reach the results
+        {title}
       </h2>
-      <p className="srm-sub">
-        Each link is marked supported only where a cited record supports it. The chain does not
-        establish that the risk has occurred.
-      </p>
+      <p className="srm-sub">{sub}</p>
       <ol className="srm-chain">
         {chain.map((l, i) => (
           <li key={`${l.from}:${l.to}:${i}`} className={`srm-link is-${l.status}`}>
@@ -720,3 +722,19 @@ export default function InvestmentMemo({ report, panels = {}, onCite }) {
     </div>
   );
 }
+
+/* Shared with the strategic positioning layout (PositioningMemo.jsx). */
+export {
+  Cites,
+  Claim,
+  Risk,
+  Positioning,
+  Associations,
+  Competitors,
+  Peers,
+  Disclosures,
+  Scenarios,
+  Chain,
+  usd,
+  pct,
+};

@@ -83,6 +83,25 @@ export const METRICS = [
     instant: false,
     concepts: ['us-gaap:ShareBasedCompensation', 'us-gaap:AllocatedShareBasedCompensationExpense'],
   },
+  /* Nov 2026, strategic positioning: depreciation shows what the capital
+     spending costs once in service; remaining performance obligation is
+     contracted revenue not yet recognized. */
+  {
+    key: 'depreciation',
+    unit: 'USD',
+    instant: false,
+    concepts: [
+      'us-gaap:DepreciationDepletionAndAmortization',
+      'us-gaap:DepreciationAmortizationAndAccretionNet',
+      'us-gaap:DepreciationAndAmortization',
+    ],
+  },
+  {
+    key: 'rpo',
+    unit: 'USD',
+    instant: true,
+    concepts: ['us-gaap:RevenueRemainingPerformanceObligation'],
+  },
   { key: 'inventory', unit: 'USD', instant: true, concepts: ['us-gaap:InventoryNet'] },
   {
     key: 'receivables',
@@ -126,14 +145,22 @@ export const METRICS = [
  * Frame periods to load at `now`: the last three calendar years and the last
  * four complete quarters for durations; the matching instant frames for
  * balance-sheet metrics (year ends as CY####Q4I).
+ *
+ * Options (Nov 2026): `years` and `quarters` widen the window for a backfill;
+ * `currentYear` adds this calendar year's annual frame, which is where a
+ * fiscal year ending mid-year (Microsoft's June, Oracle's May) lands once
+ * its 10-K is filed.
  */
-export function framePeriods(now = new Date()) {
+export function framePeriods(
+  now = new Date(),
+  { years: nYears = 3, quarters: nQuarters = 4, currentYear = false } = {},
+) {
   const y = now.getUTCFullYear();
   const q = Math.floor(now.getUTCMonth() / 3); // complete quarters this year
   const quarters = [];
   let yy = y;
   let qq = q;
-  for (let i = 0; i < 4; i += 1) {
+  for (let i = 0; i < nQuarters; i += 1) {
     if (qq === 0) {
       yy -= 1;
       qq = 4;
@@ -141,9 +168,15 @@ export function framePeriods(now = new Date()) {
     quarters.unshift(`CY${yy}Q${qq}`);
     qq -= 1;
   }
-  const years = [y - 3, y - 2, y - 1].map((n) => `CY${n}`);
+  const years = Array.from({ length: nYears }, (_, i) => y - nYears + i).map((n) => `CY${n}`);
+  if (currentYear) years.push(`CY${y}`);
   const durations = [...years, ...quarters];
-  const instants = [...new Set([...years.map((c) => `${c}Q4I`), ...quarters.map((c) => `${c}I`)])];
+  const instants = [
+    ...new Set([
+      ...years.filter((c) => c !== `CY${y}`).map((c) => `${c}Q4I`),
+      ...quarters.map((c) => `${c}I`),
+    ]),
+  ];
   return { durations, instants };
 }
 

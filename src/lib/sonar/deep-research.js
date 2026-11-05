@@ -16,9 +16,15 @@
  * Pure and client-safe. Unit-tested in scripts/check-sonar-deep.mjs.
  */
 
-import { classifyResearchMode, DEEP_ANGLES, estimateLabel } from '@/lib/sonar/research-mode';
+import {
+  classifyResearchMode,
+  DEEP_ANGLES,
+  estimateLabel,
+  POSITIONING_RE,
+  isPositioningQuestion,
+} from '@/lib/sonar/research-mode';
 
-export { DEEP_ANGLES, estimateLabel };
+export { DEEP_ANGLES, estimateLabel, POSITIONING_RE, isPositioningQuestion };
 
 /**
  * Whether a ping is a deep research assignment, and why. Since Nov 2026 a

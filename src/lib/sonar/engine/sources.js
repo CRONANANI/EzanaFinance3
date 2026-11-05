@@ -31,6 +31,7 @@ import ipoEvents from '@/lib/sonar/sources/ipo-events';
 import { cacheGet, cacheSet } from './cache';
 import { LOBBYING_TOPICS, topicCovered } from '@/lib/lobbying/topics';
 import { MEMO_RUNNERS } from './sources-memo';
+import { POSITIONING_RUNNERS } from './sources-positioning';
 
 const FMP_STABLE = 'https://financialmodelingprep.com/stable';
 
@@ -719,4 +720,5 @@ export const RUNNERS = {
   news: newsSource,
   ipo_filings: ipoSource,
   ...MEMO_RUNNERS,
+  ...POSITIONING_RUNNERS,
 };

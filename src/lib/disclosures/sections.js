@@ -25,7 +25,22 @@ export const DISCLOSURE_KINDS = {
     label: 'Purchase and supply obligations',
     re: /\b(purchase obligations?|outstanding inventory purchases?|supply and capacity (?:commitments|obligations|agreements)|inventory purchase (?:commitments|obligations)|non-?cancell?able purchase)\b/i,
   },
+  /* Nov 2026, strategic positioning: what the company says about its cloud
+     and AI business, in its own MD&A, with the figures it reports. */
+  cloud_ai_metrics: {
+    label: 'Cloud and AI performance',
+    re: /\b(azure|amazon web services|google cloud|oracle cloud infrastructure|microsoft cloud|cloud (?:services )?revenue|ai (?:infrastructure|services|capacity|workloads)|commercial remaining performance obligation)\b[^.]{0,220}(?:\d+(?:\.\d+)?%|\$\d)/i,
+  },
+  /* Commitments that show the size of the build: leases signed for data
+     centers that have not started, and stated capital spending plans. */
+  infrastructure_commitments: {
+    label: 'Data center and infrastructure commitments',
+    re: /\b(leases?[^.]{0,80}(?:not yet commenced|have not commenced)|data cent(?:er|re)s?[^.]{0,160}(?:\$\d|commit\w*|lease)|capital expenditures?[^.]{0,160}(?:increase|expect|data cent(?:er|re)s?|ai|cloud))\b/i,
+  },
 };
+
+/** The kinds a filing is read for; the ingest re-reads a filing for kinds added later. */
+export const DISCLOSURE_KIND_IDS = Object.keys(DISCLOSURE_KINDS);
 
 const ENTITIES = {
   nbsp: ' ',
@@ -71,13 +86,14 @@ export function htmlToText(html) {
  * follows its lead sentence). At most `max` passages per kind, each capped.
  * @returns {Array<{ kind: string, text: string }>}
  */
-export function findSections(text, { max = 3, cap = 3000 } = {}) {
+export function findSections(text, { max = 3, cap = 3000, kinds = null } = {}) {
   const paras = String(text || '')
     .split('\n')
     .map((p) => p.trim())
     .filter((p) => p.length >= 40);
   const out = [];
   for (const [kind, { re }] of Object.entries(DISCLOSURE_KINDS)) {
+    if (kinds && !kinds.includes(kind)) continue;
     const seen = new Set();
     let n = 0;
     for (let i = 0; i < paras.length && n < max; i += 1) {

@@ -48,7 +48,7 @@ const shares = (n) => {
   return `${Math.round(v).toLocaleString('en-US')} shares`;
 };
 
-async function fmp(path, params, ms) {
+export async function fmp(path, params, ms) {
   const key = getFmpKey();
   if (!key) return null;
   const cacheKey = `fmp:${path}:${JSON.stringify(params)}`;
@@ -210,34 +210,91 @@ export async function companyFinancials({ ticker, name }, { admin }) {
 
 /* ── product_segments ───────────────────────────────────────────────── */
 
-export async function productSegments({ ticker, name }, { ms }) {
-  const t = String(ticker || '').toUpperCase();
-  const d = await fmp('revenue-product-segmentation', { symbol: t, period: 'quarter' }, ms);
-  const rows = Array.isArray(d)
-    ? [...d].sort((a, b) => String(b?.date).localeCompare(String(a?.date)))
-    : [];
-  const row = rows[0];
+/**
+ * Pure: segment rows (newest first) -> the latest quarter's segments with
+ * the change from the same quarter a year earlier, and each segment's share
+ * of the year-over-year change across the reported segments.
+ */
+export function segmentsWithGrowth(rows) {
+  const sorted = [...(rows || [])].sort((a, b) => String(b?.date).localeCompare(String(a?.date)));
+  const row = sorted[0];
   const parts = Object.entries(row?.data || {})
     .map(([seg, v]) => [seg, Number(v)])
     .filter(([, v]) => Number.isFinite(v) && v > 0)
     .sort((a, b) => b[1] - a[1]);
   const total = parts.reduce((s, [, v]) => s + v, 0);
-  if (!parts.length || !total) return { items: [] };
+  if (!parts.length || !total) return null;
   const date = String(row.date).slice(0, 10);
+  const days = (d) => Math.abs(new Date(d).getTime() - new Date(date).getTime()) / 864e5;
+  const ago = sorted.find((r) => {
+    const d = days(String(r?.date).slice(0, 10));
+    return d > 340 && d < 390;
+  });
+  const agoDate = ago ? String(ago.date).slice(0, 10) : null;
+  const prevOf = (seg) => {
+    const v = Number(ago?.data?.[seg]);
+    return Number.isFinite(v) && v > 0 ? v : null;
+  };
+  const changes = parts.map(([seg, v]) => (prevOf(seg) != null ? v - prevOf(seg) : null));
+  const comparable = changes.every((c) => c != null);
+  const totalChange = comparable ? changes.reduce((s, c) => s + c, 0) : null;
+  const segments = parts.map(([segment, value], i) => {
+    const prev = prevOf(segment);
+    return {
+      segment,
+      value,
+      share: value / total,
+      prev,
+      growth: prev ? value / prev - 1 : null,
+      change: changes[i],
+      changeShare:
+        totalChange && totalChange > 0 && changes[i] != null ? changes[i] / totalChange : null,
+    };
+  });
+  return { date, prevDate: agoDate, total, totalChange, segments };
+}
+
+export async function productSegments({ ticker, name }, { ms }) {
+  const t = String(ticker || '').toUpperCase();
+  const d = await fmp('revenue-product-segmentation', { symbol: t, period: 'quarter' }, ms);
+  const g = segmentsWithGrowth(Array.isArray(d) ? d : []);
+  if (!g) return { items: [] };
+  const { date, segments } = g;
   const label = name || t;
-  const segments = parts.map(([segment, value]) => ({ segment, value, share: value / total }));
   return {
-    layout: { segments: { ticker: t, date, segments } },
+    layout: {
+      segments: { ticker: t, date, prevDate: g.prevDate, totalChange: g.totalChange, segments },
+    },
     items: [
       {
         kind: 'record',
         title: `${label} revenue by segment, quarter ended ${date}`,
         text: `${label} (${t}) revenue by reported segment, quarter ended ${date}: ${segments
-          .map((s) => `${s.segment} ${usdB(s.value)} (${pct1(s.share)} of the segment total)`)
-          .join(', ')}.`,
+          .map(
+            (s) =>
+              `${s.segment} ${usdB(s.value)} (${pct1(s.share)} of the segment total${
+                s.growth != null ? `, ${signed(s.growth)} from ${usdB(s.prev)} a year earlier` : ''
+              })`,
+          )
+          .join(', ')}.${
+          g.totalChange && g.totalChange > 0
+            ? ` Across these segments revenue rose ${usdB(g.totalChange)} from the quarter ended ${g.prevDate}; ${segments
+                .filter((s) => s.changeShare != null && s.changeShare > 0)
+                .sort((a, b) => b.changeShare - a.changeShare)
+                .slice(0, 3)
+                .map((s) => `${s.segment} accounted for ${pct1(s.changeShare)} of that increase`)
+                .join(', ')}.`
+            : ''
+        }`,
         date,
         period: { to: date, label: `quarter ended ${date}` },
-        data: { metric: 'segments', ticker: t, segments },
+        data: {
+          metric: 'segments',
+          ticker: t,
+          segments,
+          prevDate: g.prevDate,
+          totalChange: g.totalChange,
+        },
         entities: [t, label],
       },
     ],
@@ -627,6 +684,8 @@ const KIND_LABEL = {
   customer_concentration: 'customer concentration',
   export_risk: 'export controls and China',
   purchase_obligations: 'purchase and supply obligations',
+  cloud_ai_metrics: 'cloud and AI performance',
+  infrastructure_commitments: 'data center and infrastructure commitments',
 };
 
 /**
