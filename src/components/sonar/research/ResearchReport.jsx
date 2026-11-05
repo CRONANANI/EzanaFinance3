@@ -19,6 +19,7 @@
 import { useMemo, useState } from 'react';
 import { EVIDENCE_CATEGORIES } from '@/lib/sonar/engine/domains';
 import { sendFeedback } from './useResearchStream';
+import InvestmentMemo from './InvestmentMemo';
 import './research-report.css';
 
 export const SOURCE_LABELS = {
@@ -42,6 +43,10 @@ export const SOURCE_LABELS = {
   echo: 'Ezana Echo',
   news: 'News',
   ipo_filings: 'IPO filings',
+  company_financials: 'Reported financials (SEC)',
+  product_segments: 'Revenue by segment',
+  holder_positioning: '13F positioning',
+  peer_financials: 'Listed peers (SEC)',
 };
 
 const STAGES = [
@@ -51,6 +56,9 @@ const STAGES = [
   ['analyzing', 'Calculating and relating'],
   ['synthesizing', 'Writing validated findings'],
 ];
+const MEMO_STAGES = {
+  synthesizing: 'Writing the risk assessment',
+};
 
 const CLASS_LABEL = {
   verified_fact: 'Verified',
@@ -113,7 +121,7 @@ function Progress({ state }) {
             className={`srr-stage${seen.has(id) ? (id === last && state.status === 'running' ? ' is-active' : ' is-done') : ''}`}
           >
             <span className="srr-stage-dot" aria-hidden="true" />
-            {label}
+            {(state.plan?.spec?.format === 'investment_memo' && MEMO_STAGES[id]) || label}
           </li>
         ))}
       </ol>
@@ -568,7 +576,11 @@ export default function ResearchReport({ state, onFollowUp = null }) {
         </p>
       ) : null}
 
-      {report?.executiveConclusion ? (
+      {report?.format === 'investment_memo' ? (
+        <InvestmentMemo report={report} panels={state.panels || {}} onCite={cite} />
+      ) : null}
+
+      {report?.format !== 'investment_memo' && report?.executiveConclusion ? (
         <section className="srr-conclusion" aria-labelledby="srr-concl-h">
           <h2 id="srr-concl-h" className="srr-h2">
             Conclusion
@@ -596,7 +608,7 @@ export default function ResearchReport({ state, onFollowUp = null }) {
         </section>
       ) : null}
 
-      {report?.keyFindings?.length ? (
+      {report?.format !== 'investment_memo' && report?.keyFindings?.length ? (
         <section className="srr-section" aria-labelledby="srr-find-h">
           <h2 id="srr-find-h" className="srr-h2">
             Key findings

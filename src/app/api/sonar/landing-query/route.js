@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard, safeErrorResponse } from '@/lib/api-guard';
 import { getAdminClient, getAuthUser } from '@/lib/supabase';
 import { hasSessionCredentials } from '@/lib/sonar/guest-cookie';
+import { deepResearchEnabled, deepResearchSignal } from '@/lib/sonar/deep-research';
 import { runLandingPipeline, hashIp, DISCLAIMER, pingProfile } from '@/lib/sonar/landing-pipeline';
 import { reservePing, completePing, failPing } from '@/lib/sonar/quota';
 import { getClientIp } from '@/lib/client-ip';
@@ -109,6 +110,23 @@ const POST_HANDLER = withApiGuard(
     }
     if (query.length > 300) {
       return NextResponse.json({ error: 'Keep pings under 300 characters.' }, { status: 400 });
+    }
+
+    /* Nov 4: a research assignment ("What are the biggest risks to NVIDIA's
+       growth over the next three years? Analyze its financials, ownership,
+       contracts...") cannot be answered in a five-second ping. Before any
+       spend, Sonar offers deep research; the visitor's choice comes back as
+       mode 'deep' (to /api/sonar/research) or mode 'quick' (here again). */
+    if (body?.mode !== 'quick' && !body?.force && !body?.noCorrect && deepResearchEnabled()) {
+      const signal = deepResearchSignal(query);
+      if (signal.deep) {
+        return NextResponse.json({
+          deepSuggested: true,
+          query,
+          deep: { reasons: signal.reasons, angles: signal.angles, estimate: signal.estimate },
+          disclaimer: DISCLAIMER,
+        });
+      }
     }
 
     /* A signed-in visitor (the Datasets search page reuses this pipeline) is

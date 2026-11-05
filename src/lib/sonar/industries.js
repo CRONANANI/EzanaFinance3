@@ -321,3 +321,28 @@ export function industryBasket(registry, stageId = null) {
     ),
   ];
 }
+
+/**
+ * Listed peers of a company from the registry seed (Nov 2026, deep research):
+ * the same stage and business model first, then the rest of its stage, then
+ * the industry's other public companies. [] when the company is not in a
+ * registry industry; the peer runner then asks the market data peers list.
+ */
+export function peersOf(ticker, max = 6) {
+  const t = String(ticker || '').toUpperCase();
+  const me = SEED.companies.find((c) => String(c.ticker).toUpperCase() === t);
+  if (!me) return [];
+  const pool = SEED.companies.filter(
+    (c) => c.industry_id === me.industry_id && c.ticker && c.ticker.toUpperCase() !== t,
+  );
+  const rank = (c) =>
+    c.stage_id === me.stage_id && c.business_model === me.business_model
+      ? 0
+      : c.stage_id === me.stage_id
+        ? 1
+        : 2;
+  return [...pool]
+    .sort((a, b) => rank(a) - rank(b))
+    .slice(0, max)
+    .map((c) => ({ ticker: c.ticker, name: c.company_name, stage: c.stage_id, same: rank(c) }));
+}

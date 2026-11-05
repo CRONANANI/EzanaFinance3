@@ -13,6 +13,7 @@
  * deterministic domain, entity or resolution.
  */
 import { DOMAINS } from './domains';
+import { deepResearchSignal } from '@/lib/sonar/deep-research';
 
 /* Base domains per understood intent (the deterministic router's verdict). */
 const INTENT_DOMAINS = {
@@ -71,8 +72,67 @@ const RELATIONSHIPS = [
   [['geopolitics', 'country'], 'country_subject_to_program'],
 ];
 
+/* The domains an investment risk assessment always covers, and the extra
+   weight each requested angle adds (Nov 2026, deep research). */
+const MEMO_BASE = {
+  company: 1,
+  company_financials: 0.95,
+  analyst_views: 0.7,
+  competition: 0.75,
+  geopolitics: 0.6,
+  news: 0.6,
+};
+const ANGLE_DOMAINS = {
+  financials: { company_financials: 1 },
+  ownership: { institutional: 0.9 },
+  contracts: { contracts: 0.85 },
+  industry: { industry: 0.6, competition: 0.8 },
+  competition: { competition: 0.95 },
+  geopolitics: { geopolitics: 0.9 },
+  customers: { company_financials: 0.95 },
+  lobbying: { lobbying: 0.8 },
+  valuation: { analyst_views: 0.9, market_performance: 0.6 },
+};
+
+const MEMO_RE =
+  /\b(risks?|downside|threats?|headwinds?|investment (?:case|thesis|memo)|thesis|outlook|prospects|analy[sz]e|assess\w*|evaluate|due diligence|deep dive)\b/i;
+
+/** Whether a question about one company is an investment risk assessment. */
+export function isInvestmentMemo(text, subject, signal = deepResearchSignal(text)) {
+  if (subject?.kind !== 'company') return false;
+  return signal.deep || (MEMO_RE.test(String(text || '')) && signal.angles.length >= 2);
+}
+
+function withMemoDomains(domains, angles) {
+  const by = new Map(domains.map((d) => [d.id, { ...d, why: [...d.why] }]));
+  const lift = (id, s, why) => {
+    const cur = by.get(id) || { id, score: 0, why: [] };
+    if (s > cur.score) cur.score = s;
+    cur.why.push(why);
+    by.set(id, cur);
+  };
+  for (const [id, s] of Object.entries(MEMO_BASE)) lift(id, s, 'memo:base');
+  for (const a of angles) {
+    for (const [id, s] of Object.entries(ANGLE_DOMAINS[a.id] || {})) lift(id, s, `angle:${a.id}`);
+  }
+  return [...by.values()].sort((a, b) => b.score - a.score);
+}
+
 /* Report components per question shape. */
 function reportComponents(spec) {
+  if (spec.format === 'investment_memo') {
+    return [
+      'executive_conclusion',
+      'risk_assessments',
+      'financial_dashboard',
+      'ownership',
+      'competition',
+      'scenarios',
+      'risk_chain',
+      'evidence',
+      'limitations',
+    ];
+  }
   const out = ['executive_conclusion', 'key_findings', 'evidence', 'limitations'];
   if (spec.ranking.required) out.push('leaderboard');
   if (spec.comparison.required) out.push('comparison');
@@ -157,7 +217,11 @@ export function buildResearchSpec(
   { query = '', resolution = {}, depth = 'standard', now = new Date() } = {},
 ) {
   const text = String(query || understood?.raw || understood?.corrected || '');
-  const domains = scoreDomains(text, understood);
+  const signal = deepResearchSignal(text, understood);
+  const memo = isInvestmentMemo(text, resolution.subject, signal);
+  const domains = memo
+    ? withMemoDomains(scoreDomains(text, understood), signal.angles)
+    : scoreDomains(text, understood);
   const entities = (understood?.entities || []).map((e) => ({
     kind: e.kind,
     id: e.id,
@@ -181,16 +245,20 @@ export function buildResearchSpec(
     version: 'spec-v1',
     question: understood?.display || text,
     rawQuery: text,
+    format: memo ? 'investment_memo' : 'report',
+    angles: signal.angles,
     objective: {
-      primary: rankMatch
-        ? 'rank'
-        : COMPARE_RE.test(text)
-          ? 'compare'
-          : timeHorizonOf(text, now).kind === 'forward'
-            ? 'assess_outlook'
-            : /\b(exposed|exposure|vulnerable|risk)\b/i.test(text)
-              ? 'assess_exposure'
-              : 'explain',
+      primary: memo
+        ? 'risk_assessment'
+        : rankMatch
+          ? 'rank'
+          : COMPARE_RE.test(text)
+            ? 'compare'
+            : timeHorizonOf(text, now).kind === 'forward'
+              ? 'assess_outlook'
+              : /\b(exposed|exposure|vulnerable|risk)\b/i.test(text)
+                ? 'assess_exposure'
+                : 'explain',
       secondary: COMPARE_RE.test(text) && rankMatch ? ['compare'] : [],
     },
     domains,

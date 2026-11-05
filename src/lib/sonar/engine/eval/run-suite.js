@@ -38,7 +38,9 @@ export async function runSuite({
         run = await runResearch(b.query, {
           admin,
           runId: crypto.randomUUID(),
-          depth,
+          /* A benchmark that names its own depth (the deep research
+             flagship) runs at it. */
+          depth: b.depth || depth,
           config: config || undefined,
         });
       }

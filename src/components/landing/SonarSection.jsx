@@ -781,6 +781,12 @@ export function SonarSection({
   onPing = null,
   stackTop = null,
   controlRef = null,
+  /* Nov 4: called with (query, deep) when Sonar recognises a research
+     assignment and offers deep research; the host asks the visitor. */
+  onDeepOffer = null,
+  /* Kept mounted but out of view while deep research shows (so its quick
+     answer can still be asked for). */
+  hidden = false,
 } = {}) {
   /* 'page': the same band embedded on the Datasets search page. No takeover,
      no demo, no header (the page has its own), and it pings `query` as soon
@@ -2089,6 +2095,13 @@ export function SonarSection({
     let raf = 0;
     const publish = () => {
       raf = 0;
+      /* Hidden behind deep research: nothing to line up with, and a zero
+         rect would pull the nav logo to the edge. */
+      if (!band.offsetParent && getComputedStyle(band).position !== 'fixed') {
+        body.style.removeProperty('--snrp-logo-x');
+        body.style.removeProperty('--snrp-nav-right');
+        return;
+      }
       const r = input.getBoundingClientRect();
       const pad = parseFloat(getComputedStyle(input).paddingLeft) || 0;
       const inner = band.querySelector('.snr-inner');
@@ -2114,6 +2127,11 @@ export function SonarSection({
       body.style.removeProperty('--snrp-nav-right');
     };
   }, [isPage]);
+
+  /* Re-line the nav when the band comes back from behind deep research. */
+  useEffect(() => {
+    if (isPage && typeof window !== 'undefined') window.dispatchEvent(new Event('resize'));
+  }, [hidden, isPage]);
 
   /* Stage 2 pins the orbital top-right with its top edge on the headline, and
      drops the stack below it by exactly the orbital's reach.
@@ -2354,6 +2372,9 @@ export function SonarSection({
           query: q,
           ...(opts.noCorrect ? { noCorrect: true } : {}),
           ...(opts.force ? { force: opts.force } : {}),
+          /* The host offers deep research itself; without one, never stop
+             at the offer. */
+          ...(opts.mode === 'quick' || typeof onDeepOffer !== 'function' ? { mode: 'quick' } : {}),
         }),
         signal: controller.signal,
       });
@@ -2361,7 +2382,17 @@ export function SonarSection({
       /* Answered, gated or "no coverage" all end the loading screen; only a
          failed request turns it into its error state. */
       settle = { settled: true, ok: Boolean(res.ok || data?.gate) };
-      if (data?.gate) {
+      if (data?.deepSuggested) {
+        /* Nothing was spent. The band keeps what it showed before; the host
+           asks whether to run deep research. */
+        settle = { settled: true, ok: true, deep: true };
+        if (!hadPinged) {
+          hasPingedRef.current = false;
+          setHasPinged(false);
+        }
+        setQueryValue(q);
+        if (typeof onDeepOffer === 'function') onDeepOffer(q, data.deep || null);
+      } else if (data?.gate) {
         openGate({
           title: 'You\u2019ve used your 5 free pings.',
           sub: 'Create a free account to keep pinging across every Ezana dataset.',
@@ -2449,6 +2480,8 @@ export function SonarSection({
       retry: () => {
         if (lastPingRef.current) runPingRef.current(lastPingRef.current);
       },
+      /* The visitor declined deep research: answer the quick way. */
+      quick: (q) => runPingRef.current(q || lastPingRef.current, { mode: 'quick' }),
     };
     return () => {
       controlRef.current = null;
@@ -2635,7 +2668,7 @@ export function SonarSection({
     (stage2Settled && typed === -1) || Boolean(pingError) || demoFailed || deadlinePassed;
 
   return (
-    <>
+    <div className="snr-host" style={{ display: hidden ? 'none' : 'contents' }}>
       <section
         ref={bandRef}
         className={`snr-band${isPage ? ' snr-band--page' : ''}${inView ? '' : ' snr-paused'}${composed ? ' snr-composed' : ''}${
@@ -3801,7 +3834,7 @@ export function SonarSection({
           hideSanctions={Boolean(sanctionsRail)}
         />
       ) : null}
-    </>
+    </div>
   );
 }
 

@@ -30,6 +30,7 @@ import { getCommoditySeries } from '@/lib/sonar/commodity-series';
 import ipoEvents from '@/lib/sonar/sources/ipo-events';
 import { cacheGet, cacheSet } from './cache';
 import { LOBBYING_TOPICS, topicCovered } from '@/lib/lobbying/topics';
+import { MEMO_RUNNERS } from './sources-memo';
 
 const FMP_STABLE = 'https://financialmodelingprep.com/stable';
 
@@ -648,8 +649,28 @@ async function ragCorpus(corpus, { query, phrase }, { admin, maxItems, ms }) {
   };
 }
 
-async function newsSource({ tickers, phrase }, { admin, maxItems }) {
-  const rows = await newsEvidence(admin, { tickers, phrase, limit: maxItems });
+async function newsSource({ tickers, phrase, phrases = null }, { admin, maxItems }) {
+  /* Deep research reads one news search per research angle ("NVIDIA export
+     controls", "NVIDIA competition"), merged and de-duplicated. */
+  const list = phrases?.length ? phrases : [phrase];
+  const per = Math.max(2, Math.ceil(maxItems / list.length));
+  const batches = await Promise.all(
+    list.map((ph, i) =>
+      newsEvidence(admin, { tickers: i === 0 ? tickers : [], phrase: ph, limit: per }).catch(
+        () => [],
+      ),
+    ),
+  );
+  const seen = new Set();
+  const rows = batches
+    .flat()
+    .filter((a) => {
+      const k = a.url || a.title;
+      if (!k || seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    })
+    .slice(0, maxItems);
   return {
     items: rows.map((a) => ({
       kind: 'article',
@@ -697,4 +718,5 @@ export const RUNNERS = {
   echo: (p, ctx) => ragCorpus('echo', p, ctx),
   news: newsSource,
   ipo_filings: ipoSource,
+  ...MEMO_RUNNERS,
 };

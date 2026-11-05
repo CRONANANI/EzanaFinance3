@@ -238,8 +238,12 @@ async function anthropicSynthesize({
   deadlineAt = null,
   minHopMs,
   reserveMs,
+  maxHopMs = null,
 }) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
+  /* A long written report (deep research, Nov 2026) needs one call of a
+     minute or more; everything else keeps the 25 second hop. */
+  const longHop = Number(maxHopMs) > 25_000 ? Number(maxHopMs) : null;
   const hop = { minHopMs, reserveMs };
   if (!apiKey) throw new ProviderUnavailableError('anthropic: no ANTHROPIC_API_KEY');
   const safeFallback = fallbackModel || HAIKU_MODEL;
@@ -286,7 +290,7 @@ async function anthropicSynthesize({
     }
   } else {
     try {
-      res = await callAnthropic(baseBody, apiKey, guardHop(25_000, deadlineAt, hop));
+      res = await callAnthropic(baseBody, apiKey, guardHop(longHop || 25_000, deadlineAt, hop));
     } catch (e) {
       if (isAbort(e)) throw new ProviderUnavailableError('anthropic: timed out');
       throw e;
@@ -301,7 +305,7 @@ async function anthropicSynthesize({
       res = await callAnthropic(
         { ...baseBody, model: safeFallback },
         apiKey,
-        guardHop(20_000, deadlineAt, hop),
+        guardHop(longHop || 20_000, deadlineAt, hop),
       );
     } catch (e) {
       if (isAbort(e)) throw new ProviderUnavailableError('anthropic: timed out');
@@ -437,7 +441,8 @@ async function synthesizeWithFallbackRaw(args) {
   /* A caller that knows its own request deadline (the landing ping, which has
      already spent time on retrieval) passes deadlineAt; the chain never runs
      past it. Callers that do not pass one keep the old 50s chain. */
-  const deadline = Math.min(Date.now() + 50_000, Number(args?.deadlineAt) || Infinity);
+  const chainMs = Number(args?.chainMs) > 50_000 ? Number(args.chainMs) : 50_000;
+  const deadline = Math.min(Date.now() + chainMs, Number(args?.deadlineAt) || Infinity);
   /* The least time worth starting a provider with. A caller with its own
      floor (the 6-second landing ping) passes minHopMs. */
   const chainFloorMs = Number(args?.minHopMs) || 8_000;

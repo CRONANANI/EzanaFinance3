@@ -28,6 +28,7 @@ import '@/app/datasets/datasets-loading.css';
 
 /* The landing Sonar band, loaded only once a Datasets search is sent. */
 import DatasetCardMatches from './DatasetCardMatches';
+import { DeepResearchPrompt, DeepResearchRun } from './DeepResearch';
 import { SonarSignupCta } from './SonarSignupCta';
 
 const SonarBand = dynamic(
@@ -141,6 +142,10 @@ export function SonarExperience({
   const [error, setError] = useState(null);
   const [elapsedSec, setElapsedSec] = useState(null);
   const [recent, setRecent] = useState([]);
+  /* Nov 4, deep research: the offer for a research assignment ({ query,
+     deep }), and the run once the visitor says yes ({ query, estimate }). */
+  const [deepOffer, setDeepOffer] = useState(null);
+  const [deepRun, setDeepRun] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -415,9 +420,57 @@ export function SonarExperience({
     return () => window.removeEventListener('resize', publish);
   }, [onDatasets, bandQuery]);
 
+  function acceptDeep() {
+    if (!deepOffer) return;
+    setDeepRun({ query: deepOffer.query, estimate: deepOffer.deep?.estimate || null });
+    setDeepOffer(null);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('q', deepOffer.query);
+      url.searchParams.set('deep', '1');
+      window.history.replaceState(window.history.state, '', url);
+    } catch {
+      /* non-fatal */
+    }
+  }
+  function quickInstead(query) {
+    setDeepOffer(null);
+    setDeepRun(null);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('deep');
+      window.history.replaceState(window.history.state, '', url);
+    } catch {
+      /* non-fatal */
+    }
+    bandControlRef.current?.quick(query);
+  }
+  function closeDeep() {
+    setDeepOffer(null);
+    setDeepRun(null);
+    leavePing();
+  }
+
   if (onDatasets && bandQuery) {
     return (
       <div ref={bandRootRef} className="sonar-root sonar-root--datasets sonar-root--band">
+        {deepRun ? (
+          <DeepResearchRun
+            query={deepRun.query}
+            estimate={deepRun.estimate}
+            onQuick={() => quickInstead(deepRun.query)}
+            onBack={closeDeep}
+          />
+        ) : null}
+        {deepOffer ? (
+          <DeepResearchPrompt
+            query={deepOffer.query}
+            deep={deepOffer.deep}
+            onDeep={acceptDeep}
+            onQuick={() => quickInstead(deepOffer.query)}
+            onClose={closeDeep}
+          />
+        ) : null}
         {/* Oct 25: the matching dataset cards sit at the top of the
             right-hand stack, placed by the band. They wait for the briefing
             to land (never the whole response) and only show cards that pass
@@ -427,6 +480,19 @@ export function SonarExperience({
           query={bandQuery}
           onPing={onBandPing}
           controlRef={bandControlRef}
+          onDeepOffer={(query, deep) => {
+            /* A shared or refreshed deep research link (?deep=1) runs it
+               straight away; otherwise ask. */
+            let auto = false;
+            try {
+              auto = new URL(window.location.href).searchParams.get('deep') === '1';
+            } catch {
+              auto = false;
+            }
+            if (auto) setDeepRun({ query, estimate: deep?.estimate || null });
+            else setDeepOffer({ query, deep });
+          }}
+          hidden={Boolean(deepRun)}
           stackTop={
             answeredQuery ? <DatasetCardMatches query={answeredQuery} variant="rail" /> : null
           }

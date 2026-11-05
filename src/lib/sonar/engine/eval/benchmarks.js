@@ -117,6 +117,29 @@ export const BENCHMARKS = [
     mustRun: ['macro_country'],
     mustNotRun: ['lobbying_leaders', 'congress_sector'],
   },
+  /* Nov 2026, deep research: the flagship analyst question. Run at deep
+     depth it is an investment risk assessment (investment-memo.js). */
+  {
+    id: 'nvidia_three_year_risks',
+    mandatory: true,
+    depth: 'deep',
+    query:
+      "What are the biggest risks to NVIDIA's growth over the next three years? Analyze its financial performance, institutional ownership, government contracts, industry exposure, and competitive landscape.",
+    domains: ['company', 'company_financials', 'competition', 'institutional', 'contracts'],
+    subject: { kind: 'company', id: 'NVDA' },
+    mustRun: [
+      'company_financials',
+      'product_segments',
+      'holder_positioning',
+      'peer_financials',
+      'contracts_history',
+      'analysts',
+      'news',
+    ],
+    mustNotRun: ['macro_country', 'commodity_series', 'congress_sector', 'lobbying_leaders'],
+    limitation: /\b(customer concentration|13f|delayed|ceiling|not (?:split|separate))\b/i,
+    forbidden: [CONDUCT(), /\b(price target of|we (?:rate|recommend)|buy rating from ezana)\b/i],
+  },
 ];
 
 function CONDUCT() {

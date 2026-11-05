@@ -25,6 +25,7 @@ import {
   getIndustryRegistry,
   getIndustryRegistryCached,
   industryBasket,
+  peersOf,
 } from '@/lib/sonar/industries';
 import { COMMODITIES } from '@/lib/sonar/commodity-stats';
 import { LOWERCASE_WORDS } from '@/lib/sonar/understand/blocklist';
@@ -131,6 +132,7 @@ export async function resolveResearch(understood, { query, admin, ms = 1100, dom
     industry: null,
     commodity: null,
     universe: null,
+    peers: [],
     notes: [],
   };
 
@@ -220,6 +222,8 @@ export async function resolveResearch(understood, { query, admin, ms = 1100, dom
       }
     }
   }
+  /* Listed peers of a named company, for the competitive comparison. */
+  if (out.company) out.peers = peersOf(out.company.ticker);
   if (out.company && !out.universe) {
     out.universe = {
       label: out.company.name,

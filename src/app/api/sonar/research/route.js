@@ -16,6 +16,7 @@ import {
 import { resolveResearchAccess, clampDepth } from '@/lib/sonar/engine/access';
 import { runResearch, DEPTH_PROFILES } from '@/lib/sonar/engine/engine';
 import { recordRun } from '@/lib/sonar/engine/telemetry';
+import { deepResearchEnabled, deepResearchForGuests } from '@/lib/sonar/deep-research';
 import { rememberRun } from '@/lib/sonar/engine/memory';
 
 import { withNoEmDash } from '@/lib/text/no-em-dash-response';
@@ -44,21 +45,30 @@ import { withNoEmDash } from '@/lib/text/no-em-dash-response';
  * and a guest receives a signed refund token for the cookie.
  *
  * Off by default: SONAR_ENGINE_V3=true enables it.
+ *
+ * Deep research mode (Nov 2026): a ping that Sonar recognised as a research
+ * assignment, and that the visitor chose to run deeply, posts here with
+ * { mode: 'deep' }. That path is on whatever SONAR_ENGINE_V3 says (turn it
+ * off with SONAR_DEEP_RESEARCH=false), always runs at deep depth with every
+ * dataset (the same data a quick ping shows anyone), and counts as one ping.
+ * Guests may use it unless SONAR_DEEP_GUESTS=false.
  */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 90;
+/* Deep research writes for up to about three minutes. */
+export const maxDuration = 300;
 
 const DEPTHS = new Set(['quick', 'standard', 'deep']);
 const FORCE_KINDS = new Set(['ticker', 'country', 'industry', 'sector', 'state_province', 'theme']);
 
 const POST_HANDLER = withApiGuard(
   async (request) => {
-    if (process.env.SONAR_ENGINE_V3 !== 'true') {
-      return NextResponse.json({ error: 'Not available.' }, { status: 404 });
-    }
     const startedAt = Date.now();
     const body = await request.json().catch(() => ({}));
+    const deepMode = body?.mode === 'deep' && deepResearchEnabled();
+    if (process.env.SONAR_ENGINE_V3 !== 'true' && !deepMode) {
+      return NextResponse.json({ error: 'Not available.' }, { status: 404 });
+    }
     const query = String(body?.query || '')
       // eslint-disable-next-line no-control-regex
       .replace(/[\u0000-\u001f\u007f]/g, ' ')
@@ -73,6 +83,13 @@ const POST_HANDLER = withApiGuard(
     const access = await resolveResearchAccess(request, admin);
     const isGuest = !access.user;
     const used = isGuest ? readGuestCount(request) : 0;
+    if (deepMode && isGuest && !deepResearchForGuests()) {
+      return NextResponse.json({
+        gate: true,
+        remaining: null,
+        message: 'Deep research needs a free account. Create one to run it.',
+      });
+    }
     if (isGuest && used >= GUEST_LIMIT) {
       return NextResponse.json({
         gate: true,
@@ -80,10 +97,9 @@ const POST_HANDLER = withApiGuard(
         message: 'You have used your 5 free pings. Create a free account to keep going.',
       });
     }
-    const depth = clampDepth(
-      DEPTHS.has(body?.depth) ? body.depth : access.maxDepth,
-      access.maxDepth,
-    );
+    const depth = deepMode
+      ? 'deep'
+      : clampDepth(DEPTHS.has(body?.depth) ? body.depth : access.maxDepth, access.maxDepth);
 
     const ipHash = hashIp(getClientIp(request) || 'unknown', guestSecret());
     const reservation = await withTimeout(
@@ -96,7 +112,7 @@ const POST_HANDLER = withApiGuard(
           : null,
         isGuest,
         query,
-        version: `research:${access.version}`,
+        version: `research${deepMode ? ':deep' : ''}:${access.version}`,
         planTier: access.planTier,
       }),
       1500,
@@ -162,7 +178,8 @@ const POST_HANDLER = withApiGuard(
             depth,
             deadlineAt:
               startedAt + Math.min(DEPTH_PROFILES[depth].budgetMs, (maxDuration - 6) * 1000),
-            entitledDatasets: access.entitlements.datasets,
+            /* Deep mode reads every dataset, as a quick ping does for anyone. */
+            entitledDatasets: deepMode ? null : access.entitlements.datasets,
             emit: send,
             signal: abort.signal,
             scope: access.scope,

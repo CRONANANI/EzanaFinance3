@@ -101,7 +101,7 @@ export function useResearchStream() {
     ctrl.current?.abort();
   }, []);
 
-  const run = useCallback(async (query, { depth = null } = {}) => {
+  const run = useCallback(async (query, { depth = null, mode = null } = {}) => {
     ctrl.current?.abort();
     const ac = new AbortController();
     ctrl.current = ac;
@@ -112,7 +112,7 @@ export function useResearchStream() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ query, ...(depth ? { depth } : {}) }),
+        body: JSON.stringify({ query, ...(depth ? { depth } : {}), ...(mode ? { mode } : {}) }),
         signal: ac.signal,
       });
     } catch {

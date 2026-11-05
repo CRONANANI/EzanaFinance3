@@ -1,0 +1,256 @@
+/* Deep research mode: the offer dialog and the run view (DeepResearch.jsx).
+   Page prefix `sdr-`. Tokens only (EZANA_BRANDING_GUIDE). */
+
+.sdr-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147482995;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+  backdrop-filter: blur(6px);
+}
+.sdr-card {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: 1.75rem;
+  border: 1px solid var(--emerald-border);
+  border-radius: var(--radius-xl);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-md);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+}
+.sdr-close {
+  all: unset;
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.sdr-close:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+.sdr-eyebrow {
+  margin: 0 0 0.5rem;
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--emerald-text);
+}
+.sdr-title {
+  margin: 0 0 0.75rem;
+  font-size: var(--type-section-size);
+  font-weight: var(--type-section-weight);
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+.sdr-query {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border-left: 2px solid var(--emerald);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+.sdr-body p {
+  margin: 0 0 0.75rem;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.sdr-angles {
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem 1rem;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.sdr-angles li {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+.sdr-angles .bi {
+  color: var(--emerald);
+}
+.sdr-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.sdr-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 40px;
+  padding: 0 1rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+.sdr-btn:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-tertiary);
+}
+.sdr-btn--primary {
+  border-color: var(--emerald);
+  background: var(--emerald);
+  color: white;
+}
+.sdr-btn--primary:hover {
+  background: var(--emerald-hover);
+  border-color: var(--emerald-hover);
+}
+.sdr-btn:focus-visible,
+.sdr-close:focus-visible,
+.sdr-link:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.sdr-note {
+  margin: 1rem 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* The run view */
+.sdr-run {
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  box-sizing: border-box;
+}
+.sdr-run-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+}
+.sdr-link {
+  all: unset;
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--emerald-text);
+  cursor: pointer;
+}
+.sdr-link:hover {
+  text-decoration: underline;
+}
+.sdr-timer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.9rem;
+  align-items: center;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--emerald-border);
+  border-radius: var(--radius-md);
+  background: var(--emerald-bg);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.sdr-clock {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--emerald-text);
+}
+.sdr-over {
+  color: var(--text-muted);
+}
+.sdr-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--emerald);
+  animation: sdrPulse 1.4s ease-in-out infinite;
+}
+@keyframes sdrPulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+.sdr-gate {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+}
+.sdr-gate p {
+  margin: 0;
+}
+.sdr-report {
+  padding: 1.5rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  background: var(--bg-primary);
+}
+
+@media (max-width: 640px) {
+  .sdr-card {
+    padding: 1.25rem;
+  }
+  .sdr-angles {
+    grid-template-columns: 1fr;
+  }
+  .sdr-report {
+    padding: 1rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sdr-pulse {
+    animation: none;
+  }
+  .sdr-btn {
+    transition: none;
+  }
+}

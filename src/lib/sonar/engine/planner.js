@@ -34,7 +34,7 @@ export const SOURCE_DATASET = {
 export const DEPTHS = {
   quick: { maxTasks: 5, items: 3, taskMs: 2_000, label: 'Quick research' },
   standard: { maxTasks: 8, items: 5, taskMs: 2_500, label: 'Standard research' },
-  deep: { maxTasks: 14, items: 8, taskMs: 12_000, label: 'Deep research' },
+  deep: { maxTasks: 18, items: 8, taskMs: 20_000, label: 'Deep research' },
 };
 
 /* What a chart needs, by source. A planned chart renders only if its data
@@ -61,8 +61,14 @@ function paramsFor(source, resolution, spec) {
     case 'market_snapshot':
     case 'analysts':
     case 'ipo_filings':
+    case 'company_financials':
+    case 'product_segments':
+    case 'holder_positioning':
       if (!r.company?.ticker) return null;
       return { ticker: r.company.ticker, name: r.company.name };
+    case 'peer_financials':
+      if (!r.company?.ticker) return null;
+      return { ticker: r.company.ticker, name: r.company.name, peers: r.peers || [] };
     case 'politician_dossier':
       return r.politician ? { politician: r.politician } : null;
     case 'commodity_series':
@@ -82,12 +88,18 @@ function paramsFor(source, resolution, spec) {
       return { countries: r.countries || [], query: spec.rawQuery };
     case 'news':
     case 'echo':
-    case 'prediction_markets':
+    case 'prediction_markets': {
+      const phrase = r.subject?.label || spec.question;
       return {
-        phrase: r.subject?.label || spec.question,
+        phrase,
+        /* An investment memo reads the news once per angle. */
+        ...(source === 'news' && spec.format === 'investment_memo'
+          ? { phrases: memoNewsPhrases(r, spec) }
+          : {}),
         tickers: tickers.slice(0, 6),
         query: spec.rawQuery,
       };
+    }
     default: {
       const need = SOURCES[source]?.needs || [];
       if (need.includes('tickers') && !tickers.length) return null;
@@ -101,6 +113,47 @@ function paramsFor(source, resolution, spec) {
       return p;
     }
   }
+}
+
+/* The sources an investment risk assessment always reads when its subject
+   allows, whatever the weights say: the memo has a section for each. */
+export const MEMO_SOURCES = [
+  'company_financials',
+  'product_segments',
+  'holder_positioning',
+  'peer_financials',
+  'market_snapshot',
+  'analysts',
+  'revenue_geo',
+  'contracts_history',
+  'lobbying_company',
+  'sec_filings',
+  'news',
+  'echo',
+];
+
+const SHORT_NAME = (s) =>
+  String(s || '')
+    .replace(/,?\s+(Corporation|Corp\.?|Incorporated|Inc\.?|Ltd\.?|plc|Holdings?)$/i, '')
+    .trim();
+
+/** One news search per memo angle: "NVIDIA export controls", "NVIDIA competition". */
+export function memoNewsPhrases(resolution, spec) {
+  const name = SHORT_NAME(resolution?.subject?.label || resolution?.company?.name) || spec.question;
+  const byAngle = {
+    geopolitics: `${name} export controls`,
+    competition: `${name} competition`,
+    customers: `${name} customers`,
+    contracts: `${name} government contract`,
+    financials: `${name} earnings`,
+    valuation: `${name} analysts`,
+    industry: `${name} supply chain`,
+    lobbying: `${name} lobbying`,
+  };
+  const out = [name];
+  for (const a of spec.angles || []) if (byAngle[a.id]) out.push(byAngle[a.id]);
+  if (!out.some((p) => /export controls/.test(p))) out.push(byAngle.geopolitics);
+  return [...new Set(out)].slice(0, 6);
 }
 
 /* LDA issue buckets a lobbying question maps to (lobbying_filings.issue_buckets:
@@ -151,7 +204,13 @@ export function planResearch(
   const entitled = entitledDatasets ? new Set(entitledDatasets) : null;
   const candidates = [];
   const excluded = [];
+  const memo = spec.format === 'investment_memo';
   for (const source of Object.keys(SOURCES)) {
+    /* The memo's positioning reader replaces the plain top-holders list. */
+    if (memo && source === 'institutional_13f') {
+      excluded.push({ source, reason: 'replaced:holder_positioning' });
+      continue;
+    }
     let priority = 0;
     const drivers = [];
     for (const d of spec.domains || []) {
@@ -159,6 +218,10 @@ export function planResearch(
       const s = d.score * w;
       if (s > 0) drivers.push({ domain: d.id, contribution: Number(s.toFixed(3)) });
       if (s > priority) priority = s;
+    }
+    if (memo && MEMO_SOURCES.includes(source)) {
+      priority = Math.max(priority, 0.85);
+      drivers.push({ domain: 'investment_memo', contribution: 0.85 });
     }
     if (priority < threshold) {
       if (priority > 0)

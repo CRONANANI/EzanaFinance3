@@ -280,6 +280,102 @@ export function analyze(evidence, spec = {}) {
         evidenceIds: [e.id],
       });
     }
+
+    /* Deep research (Nov 2026): the company's own reported results. */
+    if (d.metric === 'financials') {
+      const q = d.quarters || [];
+      const y = d.years || [];
+      const qp = (p) => ({ to: p.periodEnd, label: `quarter ended ${p.periodEnd}` });
+      const yp = (p) => ({ to: p.periodEnd, label: `fiscal year ended ${p.periodEnd}` });
+      const method = 'SEC-reported line items for the period';
+      if (q[0]) {
+        metrics.push(
+          metric('revenue_latest_quarter', `${d.ticker} revenue, latest quarter`, q[0].revenue, {
+            unit: 'USD',
+            method,
+            inputs: [e.id],
+            period: qp(q[0]),
+          }),
+        );
+        if (q[0].grossMargin != null)
+          metrics.push(
+            metric(
+              'gross_margin_latest_quarter',
+              `${d.ticker} gross margin, latest quarter`,
+              q[0].grossMargin,
+              {
+                unit: 'ratio',
+                method: 'gross profit / revenue',
+                inputs: [e.id],
+                period: qp(q[0]),
+              },
+            ),
+          );
+        if (q[0].operatingMargin != null)
+          metrics.push(
+            metric(
+              'operating_margin_latest_quarter',
+              `${d.ticker} operating margin, latest quarter`,
+              q[0].operatingMargin,
+              {
+                unit: 'ratio',
+                method: 'operating income / revenue',
+                inputs: [e.id],
+                period: qp(q[0]),
+              },
+            ),
+          );
+        if (q[1]?.revenue)
+          metrics.push(
+            metric(
+              'revenue_growth_qoq',
+              `${d.ticker} revenue change from the prior quarter`,
+              (q[0].revenue / q[1].revenue - 1) * 100,
+              {
+                unit: 'percent',
+                method: 'latest quarter revenue / prior quarter revenue - 1',
+                inputs: [e.id],
+                period: {
+                  from: q[1].periodEnd,
+                  to: q[0].periodEnd,
+                  label: `${q[1].periodEnd} to ${q[0].periodEnd}`,
+                },
+              },
+            ),
+          );
+      }
+      if (y[0] && y[1]?.revenue)
+        metrics.push(
+          metric(
+            'revenue_growth_fy',
+            `${d.ticker} revenue growth, latest fiscal year`,
+            (y[0].revenue / y[1].revenue - 1) * 100,
+            {
+              unit: 'percent',
+              method: 'fiscal year revenue / prior fiscal year revenue - 1',
+              inputs: [e.id],
+              period: yp(y[0]),
+            },
+          ),
+        );
+    }
+
+    if (d.metric === 'positioning' && d.top10_share != null) {
+      metrics.push(
+        metric(
+          'holders_top10_share',
+          'Ten largest 13F holders, share of reported value',
+          d.top10_share,
+          {
+            unit: 'ratio',
+            method:
+              'value held by the ten largest reported holders / value reported by all holders in the dataset',
+            inputs: [e.id],
+            period: e.period,
+          },
+        ),
+      );
+    }
   }
   return { metrics, visualizations };
 }

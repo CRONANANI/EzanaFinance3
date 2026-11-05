@@ -39,6 +39,14 @@ import {
   deterministicResearch,
   renderBrief,
 } from './findings';
+import {
+  MEMO_SYSTEM,
+  MEMO_PROMPT_VERSION,
+  memoInput,
+  validateMemo,
+  deterministicMemo,
+  renderMemoBrief,
+} from './investment-memo';
 import { loadActiveConfig } from './config-store';
 import { recallEvidence } from './memory';
 import { setCacheClient } from './cache';
@@ -63,13 +71,17 @@ export const DEPTH_PROFILES = {
     maxItems: 16,
     maxChars: 9000,
   },
+  /* Deep research (Nov 2026): the evidence tasks get about 20 seconds, the
+     written assessment up to about three minutes. The route's function cap
+     is 300 seconds. */
   deep: {
-    model: process.env.SONAR_LANDING_MODEL || 'claude-sonnet-4-5',
+    model: process.env.SONAR_DEEP_MODEL || process.env.SONAR_LANDING_MODEL || 'claude-sonnet-4-5',
     tokens: 2600,
-    budgetMs: 80_000,
-    synthMs: 30_000,
-    maxItems: 28,
-    maxChars: 16000,
+    memoTokens: Number(process.env.SONAR_DEEP_TOKENS) || 6000,
+    budgetMs: 280_000,
+    synthMs: 200_000,
+    maxItems: 36,
+    maxChars: 30000,
   },
 };
 
@@ -184,6 +196,8 @@ export async function runResearch(query, opts = {}) {
       relationships: spec.relationships,
       reportComponents: spec.reportComponents,
       depth,
+      format: spec.format,
+      angles: spec.angles,
     },
     plan: {
       configVersion: plan.configVersion,
@@ -299,20 +313,30 @@ export async function runResearch(query, opts = {}) {
   let report = null;
   let providerErrors = [];
   let model = null;
+  const memo = spec.format === 'investment_memo';
   if (marked.length && left() > 2_500 && !aborted()) {
     const synth = await leg(
       'synthesize',
       () =>
         synthesizeWithFallback({
-          system: SYNTHESIS_SYSTEM,
-          user: synthesisInput({ spec, plan, marked, metrics, today: todayLine(now) }),
-          maxTokens: D.tokens,
+          system: memo ? MEMO_SYSTEM : SYNTHESIS_SYSTEM,
+          user: (memo ? memoInput : synthesisInput)({
+            spec,
+            plan,
+            marked,
+            metrics,
+            today: todayLine(now),
+          }),
+          maxTokens: memo ? D.memoTokens || D.tokens : D.tokens,
           model: D.model,
           fallbackModel: HAIKU_MODEL,
           webSearch: { enabled: false },
           deadlineAt: deadline - 400,
           minHopMs: 2_000,
           reserveMs: 0,
+          /* One long call for a written assessment; the provider chain's
+             own caps (25 s a hop, 50 s a chain) stay for every other run. */
+          ...(depth === 'deep' ? { maxHopMs: D.synthMs, chainMs: D.synthMs + 5_000 } : {}),
         }),
       (v) => (v?.answer ? 'answered' : v?.degraded || 'no answer'),
     ).catch(() => null);
@@ -320,26 +344,42 @@ export async function runResearch(query, opts = {}) {
     model = synth?.model || D.model;
     const parsed = parseResearchJson(synth?.answer);
     if (parsed) {
-      report = validateResearch(parsed, { marked, metrics });
+      report = memo
+        ? validateMemo(parsed, { marked, metrics })
+        : validateResearch(parsed, { marked, metrics });
       if (!report.executiveConclusion && !report.keyFindings.length) report = null;
     }
   }
-  if (!report) report = deterministicResearch({ spec, marked, metrics });
+  if (!report)
+    report = memo
+      ? deterministicMemo({ spec, marked, metrics })
+      : deterministicResearch({ spec, marked, metrics });
 
   /* The rendered text passes the existing grounding guard too. */
   const brief = await enforceGrounding(
-    renderBrief(report),
+    memo ? renderMemoBrief(report) : renderBrief(report),
     marked.map((e) => `${e.title}. ${e.text}`),
     null,
   )
     .then((r) => r.text)
-    .catch(() => renderBrief(report));
+    .catch(() => (memo ? renderMemoBrief(report) : renderBrief(report)));
   emit('findings', { report, brief });
 
   const run = {
     runId,
     engine: ENGINE_VERSION,
-    promptVersion: SYNTHESIS_PROMPT_VERSION,
+    promptVersion: memo ? MEMO_PROMPT_VERSION : SYNTHESIS_PROMPT_VERSION,
+    format: memo ? 'investment_memo' : 'report',
+    memo: memo
+      ? {
+          centralQuestion: report.centralQuestion,
+          risks: report.risks,
+          scenarios: report.scenarios,
+          chain: report.chain,
+          dataGaps: report.dataGaps,
+          angles: spec.angles,
+        }
+      : null,
     configVersion: plan.configVersion,
     researchQuestion: spec.question,
     researchScope: {

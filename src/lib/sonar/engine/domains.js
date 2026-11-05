@@ -99,6 +99,10 @@ export const DOMAINS = {
     label: 'IPO intelligence',
     cues: [/\b(ipo|initial public offering|listing|went public|go public)\b/i],
   },
+  competition: {
+    label: 'Competitive landscape',
+    cues: [/\b(competit\w*|rivals?|market share|peers?|custom silicon|substitut\w*)\b/i],
+  },
   editorial: { label: 'Ezana editorial', cues: [] },
   news: {
     label: 'Recent developments',
@@ -134,6 +138,10 @@ export const SOURCES = {
   echo: { category: 'supporting_research', reliability: 0.6, needs: [] },
   news: { category: 'news', reliability: 0.6, needs: [] },
   ipo_filings: { category: 'corporate_filings', reliability: 0.9, needs: ['ticker'] },
+  company_financials: { category: 'corporate_filings', reliability: 0.95, needs: ['ticker'] },
+  product_segments: { category: 'corporate_filings', reliability: 0.85, needs: ['ticker'] },
+  holder_positioning: { category: 'corporate_filings', reliability: 0.9, needs: ['ticker'] },
+  peer_financials: { category: 'corporate_filings', reliability: 0.9, needs: ['ticker'] },
 };
 
 /** Evidence explorer groups, in display order. */
@@ -180,7 +188,7 @@ export const DEFAULT_CONFIG = {
       news: 0.3,
     },
     contracts: { contracts_history: 1, news: 0.3 },
-    institutional: { institutional_13f: 1, sec_filings: 0.5 },
+    institutional: { holder_positioning: 1, institutional_13f: 0.8, sec_filings: 0.5 },
     geopolitics: {
       sanctions: 0.8,
       revenue_geo: 0.9,
@@ -188,7 +196,15 @@ export const DEFAULT_CONFIG = {
       prediction_markets: 0.5,
       echo: 0.5,
     },
-    company_financials: { revenue_geo: 0.9, market_snapshot: 0.7, analysts: 0.6, sec_filings: 0.5 },
+    company_financials: {
+      company_financials: 1,
+      product_segments: 0.8,
+      revenue_geo: 0.9,
+      market_snapshot: 0.7,
+      analysts: 0.6,
+      sec_filings: 0.5,
+    },
+    competition: { peer_financials: 1, industry_registry: 0.5, news: 0.6 },
     market_performance: { price_performance: 1, market_snapshot: 0.7 },
     analyst_views: { analysts: 1 },
     commodity: { commodity_series: 1, news: 0.8, prediction_markets: 0.4, echo: 0.4 },
