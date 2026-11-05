@@ -623,6 +623,103 @@ export async function disclosures({ ticker, name }, { admin }) {
   };
 }
 
+/* ── export_controls (Nov 2026, deep research step 3) ───────────────── */
+
+const COUNTRY_NAME = { CN: 'China', HK: 'Hong Kong', MO: 'Macau', RU: 'Russia', IR: 'Iran' };
+
+/**
+ * US export controls around the subject: the Bureau of Industry and
+ * Security's recent advanced-computing and semiconductor rules (Federal
+ * Register), and how many parties located in the subject's restricted
+ * markets BIS has added to its lists. Primary government sources only.
+ */
+export async function exportControls(
+  { ticker, name, countries = ['CN', 'HK'] },
+  { admin, now = new Date() },
+) {
+  const since = new Date(new Date(now).getTime() - 3 * 365 * 864e5).toISOString().slice(0, 10);
+  const yearAgo = new Date(new Date(now).getTime() - 365 * 864e5).toISOString().slice(0, 10);
+  const [rules, entries] = await Promise.all([
+    admin
+      .from('export_control_rules')
+      .select('document_number, title, type, publication_date, effective_on, html_url, topics')
+      .contains('topics', ['advanced_computing'])
+      .gte('publication_date', since)
+      .order('publication_date', { ascending: false })
+      .limit(8),
+    admin
+      .from('export_control_entries')
+      .select('list, countries, start_date')
+      .overlaps('countries', countries)
+      .gte('start_date', since)
+      .limit(5000),
+  ]);
+  const items = [];
+  const label = name || ticker;
+  for (const r of rules?.data || []) {
+    items.push({
+      kind: 'record',
+      title: `BIS ${String(r.type || 'document').toLowerCase()}: ${r.title}`,
+      text: `The Bureau of Industry and Security published "${r.title}" in the Federal Register on ${r.publication_date}${
+        r.effective_on ? `, effective ${r.effective_on}` : ''
+      } (document ${r.document_number}).`,
+      url: r.html_url,
+      date: r.publication_date,
+      period: { to: r.publication_date, label: `published ${r.publication_date}` },
+      entities: [
+        'Bureau of Industry and Security',
+        ...((r.topics || []).includes('china') ? ['China'] : []),
+      ],
+    });
+  }
+  const rows = entries?.data || [];
+  if (rows.length) {
+    const el = rows.filter((r) => r.list === 'entity_list');
+    const recent = el.filter((r) => String(r.start_date) >= yearAgo);
+    const where = countries.map((c) => COUNTRY_NAME[c] || c).join(' or ');
+    items.push({
+      kind: 'aggregate',
+      title: `Entity List additions located in ${where}`,
+      text: `The Consolidated Screening List shows ${el.length} Entity List entries located in ${where} added since ${since}, ${recent.length} of them since ${yearAgo}. Exporting covered items to an Entity List party needs a US license, under the review policy BIS sets for each entry.`,
+      date: new Date(now).toISOString().slice(0, 10),
+      period: {
+        from: since,
+        to: new Date(now).toISOString().slice(0, 10),
+        label: `${since} to ${new Date(now).toISOString().slice(0, 10)}`,
+      },
+      data: { metric: 'entity_list', total: el.length, lastYear: recent.length, countries },
+      entities: ['Bureau of Industry and Security', ...countries.map((c) => COUNTRY_NAME[c] || c)],
+    });
+  }
+  return {
+    items,
+    layout: items.length
+      ? {
+          exportControls: {
+            subject: label,
+            rules: (rules?.data || []).map((r) => ({
+              title: r.title,
+              date: r.publication_date,
+              effective: r.effective_on,
+              url: r.html_url,
+              number: r.document_number,
+            })),
+            entityList: rows.length
+              ? {
+                  total: rows.filter((r) => r.list === 'entity_list').length,
+                  lastYear: rows.filter(
+                    (r) => r.list === 'entity_list' && String(r.start_date) >= yearAgo,
+                  ).length,
+                  since,
+                  countries,
+                }
+              : null,
+          },
+        }
+      : undefined,
+  };
+}
+
 export const MEMO_RUNNERS = {
   company_financials: companyFinancials,
   product_segments: productSegments,
@@ -631,4 +728,5 @@ export const MEMO_RUNNERS = {
   customer_capex: customerCapex,
   estimates,
   disclosures,
+  export_controls: exportControls,
 };

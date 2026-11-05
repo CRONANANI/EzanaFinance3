@@ -145,6 +145,7 @@ export const SOURCES = {
   customer_capex: { category: 'corporate_filings', reliability: 0.9, needs: ['ticker'] },
   estimates: { category: 'market_data', reliability: 0.75, needs: ['ticker'] },
   disclosures: { category: 'corporate_filings', reliability: 0.95, needs: ['ticker'] },
+  export_controls: { category: 'government_records', reliability: 0.95, needs: [] },
 };
 
 /** Evidence explorer groups, in display order. */
@@ -193,6 +194,7 @@ export const DEFAULT_CONFIG = {
     contracts: { contracts_history: 1, news: 0.3 },
     institutional: { holder_positioning: 1, institutional_13f: 0.8, sec_filings: 0.5 },
     geopolitics: {
+      export_controls: 0.9,
       sanctions: 0.8,
       revenue_geo: 0.9,
       news: 0.8,

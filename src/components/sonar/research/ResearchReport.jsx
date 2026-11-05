@@ -50,6 +50,7 @@ export const SOURCE_LABELS = {
   customer_capex: 'Customer capital spending (SEC)',
   estimates: 'Consensus estimates and multiples',
   disclosures: 'Company filings (10-Q, 10-K)',
+  export_controls: 'US export controls (BIS)',
 };
 
 const STAGES = [

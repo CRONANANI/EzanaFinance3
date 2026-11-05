@@ -317,6 +317,42 @@ function Disclosures({ data }) {
   );
 }
 
+function ExportControls({ data }) {
+  if (!data || (!data.rules?.length && !data.entityList)) return null;
+  return (
+    <section className="srm-section" aria-labelledby="srm-exp-ctl-h">
+      <h2 id="srm-exp-ctl-h" className="srr-h2">
+        US export controls
+      </h2>
+      <p className="srm-sub">
+        Bureau of Industry and Security rules on advanced computing and semiconductors from the
+        Federal Register, and its Entity List. Export controls are separate from sanctions.
+      </p>
+      {data.entityList ? (
+        <p className="srm-sub">
+          <span className="srr-mono">{data.entityList.total}</span> Entity List entries located in{' '}
+          {data.entityList.countries.join(', ')} added since{' '}
+          <span className="srr-mono">{data.entityList.since}</span>,{' '}
+          <span className="srr-mono">{data.entityList.lastYear}</span> in the last twelve months.
+        </p>
+      ) : null}
+      {data.rules?.length ? (
+        <ol className="srm-rules">
+          {data.rules.map((r) => (
+            <li key={r.number}>
+              <span className="srr-mono srm-rule-date">{r.date}</span>
+              <a href={r.url} target="_blank" rel="noopener noreferrer">
+                {r.title}
+              </a>
+              {r.effective ? <span className="srm-dim"> effective {r.effective}</span> : null}
+            </li>
+          ))}
+        </ol>
+      ) : null}
+    </section>
+  );
+}
+
 function CustomerCapex({ data }) {
   const rows = data?.rows || [];
   if (!rows.length) return null;
@@ -525,6 +561,7 @@ export default function InvestmentMemo({ report, panels = {}, onCite }) {
       ) : null}
 
       <Disclosures data={panels.disclosures} />
+      <ExportControls data={panels.exportControls} />
       <CustomerCapex data={panels.customerCapex} />
       <Expectations data={panels.expectations} />
       <Positioning p={panels.positioning} />

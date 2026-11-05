@@ -72,6 +72,14 @@ function paramsFor(source, resolution, spec) {
     case 'customer_capex':
       if (!r.company?.ticker || !r.customers?.length) return null;
       return { ticker: r.company.ticker, name: r.company.name, customers: r.customers };
+    case 'export_controls': {
+      const iso2 = (r.countries || []).map((c) => c.iso2).filter(Boolean);
+      return {
+        ticker: r.company?.ticker || null,
+        name: r.company?.name || r.subject?.label || null,
+        countries: iso2.length ? iso2 : ['CN', 'HK'],
+      };
+    }
     case 'estimates':
     case 'disclosures':
       if (!r.company?.ticker) return null;
@@ -132,6 +140,7 @@ export const MEMO_SOURCES = [
   'customer_capex',
   'estimates',
   'disclosures',
+  'export_controls',
   'market_snapshot',
   'analysts',
   'revenue_geo',

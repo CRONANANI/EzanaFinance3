@@ -47,6 +47,8 @@ export function fakeAdmin({ tables = {}, rpc = {} } = {}) {
       lte: () => q,
       ilike: () => q,
       or: () => q,
+      contains: () => q,
+      overlaps: () => q,
       order: () => q,
       limit: () => Promise.resolve({ data: rows, error: null }),
       maybeSingle: () => Promise.resolve({ data: rows[0] || null, error: null }),
@@ -314,4 +316,112 @@ test('the disclosures reader quotes the newest filing per topic', async () => {
   );
   assert.equal(out.items[0].url, 'https://www.sec.gov/x/q2.htm');
   assert.equal(out.layout.disclosures[0].label, 'customer concentration');
+});
+
+/* ── Part C: US export controls ─────────────────────────────────────── */
+
+const { parseCsl, parseFederalRegister, federalRegisterUrl, tagRule } =
+  await import('@/lib/export-controls/parse');
+const { exportControls } = await import('@/lib/sonar/engine/sources-memo');
+
+test('the screening list keeps only the BIS lists, with countries', () => {
+  const json = {
+    results: [
+      {
+        id: 'e1',
+        source: 'Entity List (EL) - Bureau of Industry and Security',
+        name: 'Example Computing Ltd.',
+        alt_names: ['Example Co'],
+        addresses: [{ address: '1 Road', city: 'Shenzhen', country: 'CN' }],
+        federal_register_notice: '89 FR 12345',
+        start_date: '2025-12-02',
+        source_list_url: 'https://www.bis.gov/entity-list',
+      },
+      { id: 'o1', source: 'Specially Designated Nationals (SDN) - Treasury Department', name: 'X' },
+      {
+        id: 'm1',
+        source: 'Military End User (MEU) List - Bureau of Industry and Security',
+        name: 'Y',
+        addresses: [{ country: 'RU' }],
+      },
+    ],
+  };
+  const out = parseCsl(json);
+  assert.deepEqual(
+    out.map((e) => e.list),
+    ['entity_list', 'military_end_user'],
+  );
+  assert.deepEqual(out[0].countries, ['CN']);
+  assert.equal(out[0].start_date, '2025-12-02');
+  assert.equal(parseCsl(json.results).length, 2, 'a bare array works too');
+  const csv =
+    'source,name,addresses,start_date,alt_names\n' +
+    '"Entity List (EL) - Bureau of Industry and Security","Z Tech","Road 1, Beijing, CN; Road 2, Kowloon, HK",2024-05-01,"Z; Zed"\n';
+  const c = parseCsl(csv);
+  assert.deepEqual(c[0].countries, ['CN', 'HK']);
+  assert.deepEqual(c[0].alt_names, ['Z', 'Zed']);
+});
+
+test('BIS rules are parsed and tagged by topic', () => {
+  const rules = parseFederalRegister({
+    results: [
+      {
+        document_number: '2026-01234',
+        title: 'Revisions to Advanced Computing and Semiconductor Manufacturing Items Controls',
+        abstract: 'BIS revises controls on integrated circuits destined for China.',
+        type: 'Rule',
+        publication_date: '2026-01-15',
+        effective_on: '2026-02-14',
+        html_url: 'https://www.federalregister.gov/d/2026-01234',
+      },
+      {
+        document_number: 'x',
+        title: 'Additions to the Entity List',
+        publication_date: '2026-03-01',
+      },
+    ],
+  });
+  assert.deepEqual(rules[0].topics, ['advanced_computing', 'china']);
+  assert.deepEqual(rules[1].topics, ['entity_list']);
+  assert.deepEqual(tagRule('Russia and Belarus export restrictions'), ['russia']);
+  const url = federalRegisterUrl({ page: 2, since: '2026-10-01' });
+  assert.match(url, /conditions%5Bagencies%5D%5B%5D=industry-and-security-bureau/);
+  assert.match(url, /conditions%5Bpublication_date%5D%5Bgte%5D=2026-10-01/);
+  assert.match(url, /page=2/);
+});
+
+test('the export controls reader cites rules and Entity List counts', async () => {
+  const admin = fakeAdmin({
+    tables: {
+      export_control_rules: [
+        {
+          document_number: '2026-01234',
+          title: 'Revisions to Advanced Computing Controls',
+          type: 'Rule',
+          publication_date: '2026-01-15',
+          effective_on: '2026-02-14',
+          html_url: 'https://www.federalregister.gov/d/2026-01234',
+          topics: ['advanced_computing', 'china'],
+        },
+      ],
+      export_control_entries: [
+        { list: 'entity_list', countries: ['CN'], start_date: '2026-06-01' },
+        { list: 'entity_list', countries: ['CN'], start_date: '2024-02-01' },
+        { list: 'military_end_user', countries: ['CN'], start_date: '2026-03-01' },
+      ],
+    },
+  });
+  const out = await exportControls(
+    { ticker: 'NVDA', name: 'NVIDIA', countries: ['CN', 'HK'] },
+    { admin, now: new Date('2026-11-05') },
+  );
+  assert.match(
+    out.items[0].text,
+    /published "Revisions to Advanced Computing Controls" in the Federal Register on 2026-01-15, effective 2026-02-14/,
+  );
+  assert.match(
+    out.items[1].text,
+    /2 Entity List entries located in China or Hong Kong added since 2023-11-06, 1 of them since 2025-11-05/,
+  );
+  assert.equal(out.layout.exportControls.rules.length, 1);
 });
