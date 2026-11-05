@@ -3029,7 +3029,28 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
      padding put the content box 4px past the right edge at 1366 and 400px
      off centre at 1920, where the real gutter is 240. */
   padding-left: var(--snr-gutter);
-  padding-right: var(--snr-gutter);
+  /* Its own variable (Nov 4): framed to the app nav, the right gutter is
+     measured to the logout icon and can differ from the left by a pixel. */
+  padding-right: var(--snr-gutter-r, var(--snr-gutter));
+}
+
+/* Nov 4: framed to the app nav (data-nav-framed, set by the geometry driver
+   in SonarSection.jsx when the app nav's logo and logout icon are on
+   screen). The content box runs exactly from the logo's left edge to the
+   logout icon's right edge: the band's padding is the two measured gutters
+   and .snr-inner is exactly the measured width, with no centring margin to
+   round off a pixel. One attribute deeper than the band's own padding and
+   the /datasets sheet's `padding-left: 0` (both 0,2,0), so it wins whatever
+   order the sheets load in. */
+.snr-band.snr-composed[data-nav-framed='on'] {
+  padding-left: var(--snr-gutter);
+  padding-right: var(--snr-gutter-r, var(--snr-gutter));
+}
+.snr-band.snr-composed[data-nav-framed='on'] .snr-inner {
+  width: var(--snr-content);
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 /* The zone stack. Gaps are explicit elements of the budget rather than a flex

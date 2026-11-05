@@ -1949,7 +1949,27 @@ export function SonarSection({
       const clampedBanner = Math.min(Math.max(0, rawBanner), window.innerHeight * 0.25);
       const bannerPx = 0; /* see above; clampedBanner is the documented alternative */
       const budgetH = Math.max(MIN_BUDGET_PX, window.innerHeight - bannerPx);
-      const base = geometryFor(window.innerWidth, budgetH, navPx);
+      /* Nov 4: inside the app the results span exactly from the nav's Ezana
+         logo to its logout icon, so the research brief's left edge and the
+         far-right card's right edge line up with them. Measured from the
+         rendered glyphs (the logo image and the logout <i>, not their tap
+         boxes, which pad the icon by about 7px), relative to the band's own
+         box. Off when either is missing (the landing and /datasets navs) or
+         hidden (the phone nav puts logout in the drawer). */
+      const frameFor = () => {
+        const logo = document.querySelector(
+          '#mainNav .nav-brand .nav-logo-img, #mainNav .nav-brand img',
+        );
+        const logout = document.querySelector('#mainNav .nav-logout-btn i');
+        if (!logo || !logout) return { vw: window.innerWidth, frame: null };
+        const b = band.getBoundingClientRect();
+        const l = logo.getBoundingClientRect();
+        const r = logout.getBoundingClientRect();
+        if (!l.width || !r.width) return { vw: window.innerWidth, frame: null };
+        return { vw: b.width, frame: { left: l.left - b.left, right: b.right - r.right } };
+      };
+      const { vw, frame } = frameFor();
+      const base = geometryFor(vw, budgetH, navPx, frame);
       /* On the Datasets page the band has no header or exit arrow, so their
          tracks collapse and the cards start at the top. */
       const g = isPage
@@ -1983,6 +2003,8 @@ export function SonarSection({
       px('--snr-arrow', g.arrow);
       px('--snr-pad-bot', g.padBot);
       px('--snr-gutter', g.gutter);
+      px('--snr-gutter-r', g.gutterR);
+      band.dataset.navFramed = g.framed ? 'on' : 'off';
       px('--snr-content', g.content);
       px('--snr-head-max', g.headMax);
       px('--snr-col-l', g.colL);
@@ -2038,11 +2060,19 @@ export function SonarSection({
     };
     const bannerWatch = new MutationObserver(schedule);
     bannerWatch.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+    /* The nav frame moves without a window resize when the nav's own box
+       changes (the logo image or a webfont loading, a scrollbar appearing),
+       so the nav is watched too. */
+    const navNode = document.querySelector('#mainNav .nav-container');
+    const navWatch =
+      navNode && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(schedule) : null;
+    if (navWatch) navWatch.observe(navNode);
     return () => {
       window.removeEventListener('resize', apply);
       window.removeEventListener('orientationchange', apply);
       if (raf) window.cancelAnimationFrame(raf);
       bannerWatch.disconnect();
+      if (navWatch) navWatch.disconnect();
     };
   }, [isPage]);
 

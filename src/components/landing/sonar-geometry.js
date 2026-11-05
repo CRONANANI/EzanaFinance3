@@ -286,7 +286,19 @@ export function tierFor(vw, vh) {
    the bad input itself surfaces. */
 const MIN_BUDGET_H = 640;
 
-export function geometryFor(vw, vh, navPx) {
+/* Below this the three columns get too narrow to hold their cards, so a
+   nav frame narrower than it is ignored and the default box applies. */
+const MIN_FRAME_CONTENT = 960;
+
+/**
+ * `frame` (optional, Nov 4): { left, right }, the distances from the band's
+ * own edges to the app nav's Ezana logo (left) and logout icon (right). When
+ * given, the content box spans exactly between them, so the research brief's
+ * left edge sits under the logo and the far-right card's right edge under
+ * the logout button. The two gutters can differ by a pixel or two, which is
+ * why the right one is reported separately (gutterR).
+ */
+export function geometryFor(vw, vh, navPx, frame = null) {
   /* The tier is read from the REAL height, before any flooring: 'unlocked' is
      precisely the case where the band gives up the lock and lays out in normal
      flow, so it does not compose against this budget and must not be floored —
@@ -321,6 +333,21 @@ export function geometryFor(vw, vh, navPx) {
   const gutterMin = clamp(vw * 0.0278, 16, 40);
   g.content = Math.min(1440, vw - 2 * Math.round(gutterMin));
   g.gutter = (vw - g.content) / 2;
+  g.gutterR = g.gutter;
+  const framed =
+    frame &&
+    !g.phone &&
+    Number.isFinite(frame.left) &&
+    Number.isFinite(frame.right) &&
+    frame.left >= 0 &&
+    frame.right >= 0 &&
+    vw - frame.left - frame.right >= MIN_FRAME_CONTENT;
+  if (framed) {
+    g.content = vw - frame.left - frame.right;
+    g.gutter = frame.left;
+    g.gutterR = frame.right;
+  }
+  g.framed = Boolean(framed);
 
   /* The three Live columns divide the content box in the spec's proportions,
      which reproduces 400/432/480, 376/408/454 and 420/456/516 within rounding
