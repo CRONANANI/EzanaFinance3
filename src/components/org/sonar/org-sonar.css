@@ -529,6 +529,139 @@
   gap: 0.75rem;
 }
 
+/* Budget */
+.osr-budget {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.osr-meter-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  background: var(--card-bg);
+}
+.osr-meter-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.osr-meter-side {
+  text-align: right;
+}
+.osr-big {
+  margin: 0.15rem 0 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.osr-left {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 650;
+  color: var(--emerald-text);
+}
+.osr-meter {
+  position: relative;
+  height: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  overflow: hidden;
+}
+.osr-meter-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--emerald);
+}
+.osr-meter-fill.is-high {
+  background: var(--amber);
+}
+.osr-history {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: end;
+  gap: 0.5rem;
+  height: 5rem;
+}
+.osr-hist-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  height: 100%;
+}
+.osr-hist-bar {
+  width: 60%;
+  max-width: 2.25rem;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: var(--chart-cat-1);
+}
+.osr-hist-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.osr-field--inline input {
+  max-width: 10rem;
+}
+.osr-table-wrap {
+  overflow-x: auto;
+}
+.osr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.osr-table th {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--border-primary);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: var(--type-eyebrow-tracking);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.osr-table td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+.osr-table input {
+  width: 6rem;
+  padding: 0.3rem 0.45rem;
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+.osr-name {
+  font-weight: 600;
+}
+.osr-share {
+  display: inline-block;
+  width: 5rem;
+  height: 6px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  overflow: hidden;
+  vertical-align: middle;
+}
+.osr-share span {
+  display: block;
+  height: 100%;
+  background: var(--chart-cat-1);
+}
+
 @media (max-width: 960px) {
   .osr-body {
     grid-template-columns: minmax(0, 1fr);

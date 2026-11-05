@@ -6,6 +6,8 @@
  *   Reports    the org research reports the viewer can read
  *   Research   run deep research inside the org; the run can be saved to
  *              the fund as a report
+ *   Budget     the fund's pooled monthly deep research budget, who is
+ *              using it, and (executives) the pool and allocations
  *
  * Every run here is an ordinary Sonar research run (POST
  * /api/sonar/research), so quotas, entitlements and validation are the same
@@ -16,11 +18,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { DeepResearchRun } from '@/components/sonar/DeepResearch';
 import { SONAR_QUERY_MAX } from '@/lib/sonar/limits';
 import SonarReportsList from './SonarReportsList';
+import SonarBudget from './SonarBudget';
 import './org-sonar.css';
 
 export const WORKSPACE_TABS = [
   { id: 'reports', label: 'Reports', icon: 'bi-journal-text' },
   { id: 'research', label: 'Research', icon: 'bi-search' },
+  { id: 'budget', label: 'Budget', icon: 'bi-speedometer' },
 ];
 
 export default function SonarWorkspace() {
@@ -63,6 +67,7 @@ export default function SonarWorkspace() {
       </div>
       {tab === 'reports' ? <SonarReportsList /> : null}
       {tab === 'research' ? <ResearchTab /> : null}
+      {tab === 'budget' ? <SonarBudget /> : null}
     </div>
   );
 }
@@ -112,7 +117,7 @@ function ResearchTab() {
           <i className="bi bi-layers" aria-hidden="true" /> Run deep research
         </button>
         <span className="osr-muted">
-          About 1 to 3 minutes. Findings only, never financial advice.
+          About 1 to 3 minutes. Uses one run from your fund&rsquo;s monthly deep research budget.
         </span>
       </div>
     </form>

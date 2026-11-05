@@ -4,7 +4,8 @@ import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
 import { getClientIp } from '@/lib/client-ip';
 import { withTimeout } from '@/lib/with-timeout';
-import { reservePing, completePing, failPing } from '@/lib/sonar/quota';
+import { reservePing, reserveOrgDeep, completePing, failPing } from '@/lib/sonar/quota';
+import { defaultOrgPool, budgetMessage } from '@/lib/org-sonar/budget';
 import { hashIp, DISCLAIMER } from '@/lib/sonar/landing-pipeline';
 import {
   GUEST_LIMIT,
@@ -160,7 +161,10 @@ const POST_HANDLER = withApiGuard(
         ? 'standard'
         : clampDepth(DEPTHS.has(body?.depth) ? body.depth : access.maxDepth, access.maxDepth);
 
-    const reservation = await withTimeout(
+    /* Sonar for organizations (Nov 2026): an org member's deep run draws on
+       the org's pooled monthly budget (lib/org-sonar/budget.js). */
+    const orgDeep = deepMode && !isGuest && Boolean(access.scope?.orgId);
+    const memberReserve = () =>
       reservePing(admin, {
         userId: access.user?.id || null,
         limit: isGuest ? null : access.entitlements.dailyQueries,
@@ -174,11 +178,35 @@ const POST_HANDLER = withApiGuard(
         planTier: access.planTier,
         /* A member's daily cap on deep research runs (reserve_sonar_ping_deep). */
         deepLimit: deepMode && !isGuest ? access.entitlements.deepRunsPerDay : null,
-      }),
+      });
+    const reservation = await withTimeout(
+      orgDeep
+        ? reserveOrgDeep(admin, {
+            userId: access.user.id,
+            orgId: access.scope.orgId,
+            limit: access.entitlements.dailyQueries,
+            query,
+            version: `research:deep:${access.version}`,
+            planTier: access.planTier,
+            defaultPool: defaultOrgPool(),
+            fallbackDeepLimit: access.entitlements.deepRunsPerDay,
+          }).then((r) => (!r.ok && r.reason === 'not_member' ? memberReserve() : r))
+        : memberReserve(),
       1500,
       'reserve',
     );
     const res = reservation.ok ? reservation.value : { ok: false, reason: 'error' };
+    if (!res.ok && (res.reason === 'org_pool' || res.reason === 'org_allocation')) {
+      await logEvent('deep_quota', { ranMode: null, details: { used: res.orgUsed, org: true } });
+      return NextResponse.json(
+        {
+          error: budgetMessage(res.reason, { pool: res.pool, allocation: res.allocation }),
+          reason: res.reason,
+          standardAvailable: standardResearchEnabled(),
+        },
+        { status: 429 },
+      );
+    }
     if (!res.ok && res.reason === 'deep_quota') {
       await logEvent('deep_quota', { ranMode: null, details: { used: res.used } });
       return NextResponse.json(

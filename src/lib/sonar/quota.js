@@ -195,3 +195,71 @@ export async function failPing(admin, reservation) {
     .eq('status', 'reserved');
   if (error) console.error('[sonar-quota] release failed:', error.message);
 }
+
+/**
+ * Sonar for organizations (Nov 2026): an org member's deep research run is
+ * reserved against the org's pooled monthly budget
+ * (reserve_sonar_ping_org_deep), not the member's own daily deep cap.
+ * Refusals: 'org_pool' (the month's pool is used), 'org_allocation' (the
+ * member's allocation is used), 'quota', 'global', 'not_member'.
+ * Until the function is deployed, falls back to the member's own deep cap
+ * (reservePing with deepLimit), so shipping the code first changes nothing.
+ *
+ * @param {object} admin
+ * @param {{ userId: string, orgId: string, limit?: number|null, globalLimit?: number,
+ *   query: string, version: string, planTier?: number, defaultPool: number,
+ *   fallbackDeepLimit?: number|null }} opts
+ * @returns {Promise<{ ok: boolean, id?: string|null, reason?: string, used: number,
+ *   pool?: number|null, orgUsed?: number|null, allocation?: number|null, pooled?: boolean }>}
+ */
+export async function reserveOrgDeep(
+  admin,
+  {
+    userId,
+    orgId,
+    limit = null,
+    globalLimit = globalDailyCap(),
+    query,
+    version,
+    planTier = 0,
+    defaultPool,
+    fallbackDeepLimit = null,
+  },
+) {
+  const { data, error } = await admin.rpc('reserve_sonar_ping_org_deep', {
+    p_user: userId,
+    p_org: orgId,
+    p_limit: limit,
+    p_global_limit: globalLimit,
+    p_query: String(query || '').slice(0, 600),
+    p_version: version || null,
+    p_plan_tier: planTier ?? 0,
+    p_default_pool: defaultPool,
+  });
+  if (error) {
+    if (MISSING_FN.has(error.code)) {
+      const r = await reservePing(admin, {
+        userId,
+        limit,
+        globalLimit,
+        query,
+        version,
+        planTier,
+        deepLimit: fallbackDeepLimit,
+      });
+      return { ...r, pooled: false };
+    }
+    console.error('[sonar-quota] org deep reserve failed:', error.message);
+    return { ok: false, reason: 'error', used: 0 };
+  }
+  const row = Array.isArray(data) ? data[0] : data;
+  const out = {
+    used: row?.used ?? 0,
+    pool: row?.pool ?? null,
+    orgUsed: row?.org_used ?? null,
+    allocation: row?.allocation ?? null,
+    pooled: true,
+  };
+  if (!row?.id) return { ok: false, reason: row?.reason || 'quota', ...out };
+  return { ok: true, id: row.id, ...out };
+}
