@@ -72,6 +72,7 @@ import {
   buildFlowsDossier,
   flowsEvidence,
   FLOWS_ADDENDUM,
+  flowsBrief,
 } from '@/lib/sonar/landing-flows';
 import { mentionedCompany } from '@/lib/sonar/company-mentions';
 import { BoundedMap } from '@/lib/bounded-map';
@@ -1830,7 +1831,7 @@ export async function runLandingPipeline(
     const hit = await withTimeout(cacheGet(cacheKey), 300, 'ping-cache')
       .then((r) => (r.ok ? r.value : undefined))
       .catch(() => undefined);
-    if (hit?.answer && hit.briefKind === 'model') {
+    if (hit?.answer && (hit.briefKind === 'model' || hit.briefKind === 'facts')) {
       trace.push({ leg: 'ping-cache', ok: true, ms: 0, note: 'hit' });
       console.log('[sonar-pipeline] cache hit', { key: canon.key });
       return {
@@ -2196,21 +2197,26 @@ export async function runLandingPipeline(
     'retrieve',
     () =>
       within(
-        orchestrate(retrievalQuery, {
-          admin,
-          allowCorpora,
-          /* The user's own words, so a retriever that resolves its own entities
+        /* Nov 4 (v2): a flows ping answers from the 13F snapshot alone. The
+           corpora have nothing on "what are hedge funds selling" (retrieved
+           0, and 0.9 s of the six-second budget spent finding that out). */
+        flowsPing
+          ? Promise.resolve({ items: [], corporaSearched: [] })
+          : orchestrate(retrievalQuery, {
+              admin,
+              allowCorpora,
+              /* The user's own words, so a retriever that resolves its own entities
              (sanctions reads countries/themes) sees the second country even
              when retrievalQuery collapsed to a single resolved name. */
-          rawQuery: query,
-          topK: budget.topK,
-          perCorpusCap: budget.perCorpusCap,
-          charBudget: budget.charBudget,
-          /* A slow corpus drops out instead of holding the whole fan-out. */
-          retrieverTimeoutMs: LEG.retriever,
-          embedTimeoutMs: LEG.embed,
-          rerankTimeoutMs: LEG.rerank,
-        }),
+              rawQuery: query,
+              topK: budget.topK,
+              perCorpusCap: budget.perCorpusCap,
+              charBudget: budget.charBudget,
+              /* A slow corpus drops out instead of holding the whole fan-out. */
+              retrieverTimeoutMs: LEG.retriever,
+              embedTimeoutMs: LEG.embed,
+              rerankTimeoutMs: LEG.rerank,
+            }),
         /* Never let retrieval eat the brief's time: the profile's reserve
            stays for synthesis and the tail. */
         Math.min(LEG.retrieveCap, left() - P.evidenceReserveMs),
@@ -2378,6 +2384,7 @@ export async function runLandingPipeline(
   }
 
   /* Nov 4: the 13F flows lead the evidence for a flows ping. */
+  let flowsDossier = null;
   if (flowsPing && dossierP) {
     const early = await within(
       dossierP,
@@ -2385,6 +2392,7 @@ export async function runLandingPipeline(
       null,
       'flows-dossier',
     ).catch(() => null);
+    flowsDossier = early;
     if (early) items.unshift(...flowsEvidence(early));
     if (!corporaSearched.includes('13f')) corporaSearched.push('13f');
   }
@@ -2540,9 +2548,11 @@ export async function runLandingPipeline(
 
   let answer = null;
   let grounded = false;
-  /* Where the brief came from: 'model' (grounded synthesis), 'evidence' (the
-     cited-snippet fallback), 'general' (ungrounded synthesis). Only a model
-     brief is cached; a fallback is re-run so the next ping can do better. */
+  /* Where the brief came from: 'model' (grounded synthesis), 'facts' (a
+     deterministic brief built from a snapshot, flows pings), 'evidence' (the
+     cited-snippet fallback), 'general' (ungrounded synthesis). Model and
+     facts briefs are cached; a fallback is re-run so the next ping can do
+     better. */
   let briefKind = null;
   let providerErrors = [];
   let webUsed = false;
@@ -2604,7 +2614,20 @@ export async function runLandingPipeline(
     .slice(0, 6)
     .map((it) => ({ url: it.url, title: it.title }));
 
-  if (items.length) {
+  /* Nov 4 (v2): a flows ping's brief is one paragraph that reads the
+     charts and tables beside it (flowsBrief), built from the same snapshot:
+     instant, no model call to time out, no figure the cards do not show.
+     The model's three-paragraph brief used to time out on the fast profile
+     and fall back to every snippet pasted in a row. */
+  if (flowsPing && flowsDossier) {
+    answer = flowsBrief(flowsDossier);
+    if (answer) {
+      grounded = true;
+      briefKind = 'facts';
+    }
+  }
+
+  if (!answer && items.length) {
     /* Fewer, shorter snippets on the fast profile, so the model reads and
        answers in time; the feed's headlines always keep a few places. */
     const newsKept = items.filter((it) => it.corpus === 'news').slice(0, 4);
@@ -2867,7 +2890,7 @@ export async function runLandingPipeline(
   /* A finished, grounded model brief is the answer for every phrasing of
      this question until the TTL runs out. Fire and forget: the write never
      holds the response. */
-  if (cacheable && answer && grounded && briefKind === 'model') {
+  if (cacheable && answer && grounded && (briefKind === 'model' || briefKind === 'facts')) {
     cacheSet(cacheKey, result, cacheTtl).catch(() => {});
   }
   return result;

@@ -96,7 +96,7 @@ function HeadlineCard({ d, onGate }) {
       </div>
       <div className="snr-sec-stats">
         <div className="snr-stat">
-          <span className="snr-stat-label">Filers compared</span>
+          <span className="snr-stat-label">Filers</span>
           <span className="snr-stat-value">
             {d.coverage.filersCompared.toLocaleString('en-US')}
           </span>
@@ -329,19 +329,37 @@ function OpenQuarterCard({ d, onGate }) {
   );
 }
 
+/**
+ * Nov 4 (v2): the cards split across two columns on the page so nothing
+ * important sits below the fold. The right-hand stack keeps the headline
+ * (stat tiles, sold vs bought chart, table) and the early filings; Sector
+ * flows and Who sold the most render in the centre column under Sourced
+ * matches (FlowsDetailCards), which used to be mostly empty.
+ * `split` is false on the landing band, whose composition shows one card.
+ * Below 1024px the columns stack, so the stack shows its own copy of the
+ * detail cards and the centre copy is hidden (sonar-flows.css).
+ */
 export function SonarFlowsStack({
   dossier,
   onGate,
   topSlot = null,
   newsSlot = null,
   full = false,
+  split = false,
 }) {
   const d = dossier;
   const cards = [
     <HeadlineCard key="headline" d={d} onGate={onGate} />,
     d.open ? <OpenQuarterCard key="open" d={d} onGate={onGate} /> : null,
-    !d.sector && d.sectors.length ? <SectorCard key="sectors" d={d} onGate={onGate} /> : null,
-    d.sellers.length || d.exits.length ? <SellersCard key="sellers" d={d} onGate={onGate} /> : null,
+    ...(split
+      ? [
+          /* The same cards for the stacked layout below 1024px, where the
+             centre column is not beside the stack (sonar-flows.css). */
+          <div key="detail-stack" className="snr-flw-detail snr-flw-detail--stack">
+            {detailCards(d, onGate)}
+          </div>,
+        ]
+      : detailCards(d, onGate)),
   ].filter(Boolean);
   return (
     <div className="snr-stack snr-stack--flows">
@@ -350,6 +368,19 @@ export function SonarFlowsStack({
       {newsSlot}
     </div>
   );
+}
+
+function detailCards(d, onGate) {
+  return [
+    !d.sector && d.sectors.length ? <SectorCard key="sectors" d={d} onGate={onGate} /> : null,
+    d.sellers.length || d.exits.length ? <SellersCard key="sellers" d={d} onGate={onGate} /> : null,
+  ].filter(Boolean);
+}
+
+/** Sector flows and Who sold the most, for the centre column. */
+export function FlowsDetailCards({ dossier, onGate }) {
+  const cards = detailCards(dossier, onGate);
+  return cards.length ? <div className="snr-flw-detail snr-flw-detail--centre">{cards}</div> : null;
 }
 
 export default SonarFlowsStack;

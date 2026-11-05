@@ -8,8 +8,16 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const { detectFlowsPing, mapFlowsPayload, buildFlowsDossier, flowsEvidence, FLOWS_ADDENDUM } =
-  await import('@/lib/sonar/landing-flows');
+const {
+  detectFlowsPing,
+  mapFlowsPayload,
+  buildFlowsDossier,
+  flowsEvidence,
+  flowsBrief,
+  cleanName,
+  FLOWS_ADDENDUM,
+} = await import('@/lib/sonar/landing-flows');
+const { parseInfoTable } = await import('@/lib/sec-13f-parse');
 const { CORPUS_TO_DATASET } = await import('@/lib/sonar/retrieval');
 
 test('flows pings are detected with their side and sector', () => {
@@ -229,6 +237,51 @@ test('the evidence leads with sales, states coverage and never says hedge fund f
   assert.match(all, /Compared 900 13F filers/);
   assert.match(all, /short positions are not reported/);
   assert.ok(!/—/.test(all) && !/—/.test(FLOWS_ADDENDUM), 'no em dash');
+});
+
+test('the brief is one paragraph that reads the cards', async () => {
+  const d = await buildFlowsDossier({
+    admin: fakeAdmin({ 'flows:2026-06-30': PAYLOAD }),
+    side: 'sell',
+    now: new Date('2026-11-04T12:00:00Z'),
+  });
+  const b = flowsBrief(d);
+  assert.ok(b && !b.includes('\n'), 'one paragraph');
+  const words = b.split(/\s+/).length;
+  assert.ok(words >= 40 && words <= 110, `length ${words} words`);
+  assert.match(b, /quarter ending Jun 30, 2026/);
+  assert.match(b, /Most sold: NVDA \(\$328M\), AAPL \(\$292M\) and UNH \(\$100M\)/);
+  assert.match(
+    b,
+    /split between selling and buying/,
+    'NVDA and AAPL had more buyers, UNH more sellers',
+  );
+  assert.match(b, /OP Asset Management Ltd sold the most/);
+  assert.match(b, /; Health Care saw the largest net outflow/);
+  assert.match(b, /hold 43% of reported 13F value/);
+  assert.ok(!/\[S\d/.test(b) && !b.includes('—') && !/hedge fund/i.test(b));
+
+  const buy = flowsBrief({ ...d, side: 'buy', mostBought: d.mostBought });
+  assert.match(buy, /Most bought: AAPL \(\$692M\)/);
+  assert.equal(flowsBrief(null), null);
+});
+
+test('CDATA and entities are cleaned, in the parser and on read', () => {
+  assert.equal(cleanName('<![CDATA[HONEYWELL INTERNATIONAL INC]]>'), 'HONEYWELL INTERNATIONAL INC');
+  assert.equal(cleanName('AT&amp;T INC'), 'AT&T INC');
+  const m = mapFlowsPayload({
+    ...PAYLOAD,
+    exits: [{ ...PAYLOAD.exits[0], issuer: '<![CDATA[ENVIRI CORP]]>' }],
+  });
+  assert.equal(m.exits[0].label, 'ENVIRI CORP');
+  const rows = parseInfoTable(
+    '<infoTable><nameOfIssuer><![CDATA[CARNIVAL CORP]]></nameOfIssuer><titleOfClass>COM</titleOfClass><cusip>143658300</cusip><value>10</value><shrsOrPrnAmt><sshPrnamt>5</sshPrnamt><sshPrnamtType>SH</sshPrnamtType></shrsOrPrnAmt></infoTable>' +
+      '<infoTable><nameOfIssuer>AT&amp;T INC</nameOfIssuer><cusip>00206R102</cusip><value>1</value></infoTable>',
+  );
+  assert.deepEqual(
+    rows.map((r) => r.name_of_issuer),
+    ['CARNIVAL CORP', 'AT&T INC'],
+  );
 });
 
 test('new files carry no hex and no em dash', () => {

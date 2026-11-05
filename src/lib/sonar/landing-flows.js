@@ -89,11 +89,28 @@ export function detectFlowsPing(text) {
 
 /* ── Snapshot read ──────────────────────────────────────────────────── */
 
+/* Some filers wrap names in CDATA or leave XML entities in them
+   ("<![CDATA[HONEYWELL INTERNATIONAL INC]]>", "AT&amp;T"). The parser now
+   decodes them; this cleans snapshots built from rows parsed before that. */
+export function cleanName(v) {
+  if (v == null) return null;
+  const t = String(v)
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;|&#39;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return t || null;
+}
+
 const secRow = (r) => ({
   cusip: r.cusip || null,
   ticker: r.ticker || null,
-  issuer: r.issuer || null,
-  label: r.ticker || r.issuer || r.cusip || 'Unmapped security',
+  issuer: cleanName(r.issuer),
+  label: r.ticker || cleanName(r.issuer) || r.cusip || 'Unmapped security',
   sector: r.sector || null,
   soldUsd: num(r.sold_usd) || 0,
   boughtUsd: num(r.bought_usd) || 0,
@@ -141,7 +158,7 @@ export function mapFlowsPayload(p) {
     breadthSold: (p.breadth_sold || []).map(secRow),
     sellers: (p.sellers || []).map((r) => ({
       cik: r.cik,
-      filer: r.filer_name || 'Unnamed filer',
+      filer: cleanName(r.filer_name) || 'Unnamed filer',
       soldUsd: num(r.sold_usd) || 0,
       boughtUsd: num(r.bought_usd) || 0,
       cut: num(r.cut) || 0,
@@ -151,10 +168,10 @@ export function mapFlowsPayload(p) {
     })),
     exits: (p.exits || []).map((r) => ({
       cik: r.cik,
-      filer: r.filer_name || 'Unnamed filer',
+      filer: cleanName(r.filer_name) || 'Unnamed filer',
       ticker: r.ticker || null,
-      issuer: r.issuer || null,
-      label: r.ticker || r.issuer || r.cusip,
+      issuer: cleanName(r.issuer),
+      label: r.ticker || cleanName(r.issuer) || r.cusip,
       valuePrior: num(r.value_prior) || 0,
       pctOfPriorBook: num(r.pct_of_prior_book),
     })),
@@ -379,9 +396,102 @@ export function flowsEvidence(d) {
   return out;
 }
 
+/* ── The brief ──────────────────────────────────────────────────────── */
+
+/* Same rounding as the cards beside the brief ($691M, $13.9B). */
+const money = (v) => {
+  const a = Math.abs(Number(v) || 0);
+  if (a >= 1e12) return `$${(a / 1e12).toFixed(1)}T`;
+  if (a >= 1e9) return `$${(a / 1e9).toFixed(a >= 1e10 ? 0 : 1)}B`;
+  if (a >= 1e6) return `$${Math.round(a / 1e6)}M`;
+  return `$${Math.round(a / 1e3)}K`;
+};
+const pctOf = (share) => {
+  const v = share * 100;
+  return `${v < 10 ? v.toFixed(1) : Math.round(v)}%`;
+};
+const list = (parts) =>
+  parts.length < 2
+    ? parts.join('')
+    : `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
+
+/**
+ * Nov 4 (v2): the flows ping's brief is ONE short paragraph (about 70 to 100
+ * words) that reads the charts and tables beside it, built from the same
+ * snapshot: instant, never times out, and it cannot state a figure the cards
+ * do not show. The cards carry the detail; the brief says what they add up
+ * to, in card order: the quarter and totals (stat tiles), the top three
+ * names and whether the move was broad or concentrated (chart and table),
+ * the heaviest seller (Who sold the most), the sectors with the largest
+ * outflow, or inflow on a buy ping (Sector flows), early filings when shown,
+ * and one coverage and lag caveat.
+ */
+export function flowsBrief(d) {
+  if (!d || d.kind !== 'flows') return null;
+  const buying = d.side === 'buy';
+  const rows = (buying ? d.mostBought : d.mostSold).slice(0, 3);
+  const scope = d.sector ? ` ${d.sector}` : '';
+  const c = d.coverage;
+  const parts = [];
+
+  parts.push(
+    `In the quarter ending ${d.quarterLabel}, the latest filed, ${c.filersCompared.toLocaleString('en-US')} comparable 13F filers sold ${money(d.totals.soldUsd)} and bought ${money(d.totals.boughtUsd)} of US stocks.`,
+  );
+
+  if (rows.length) {
+    const names = rows.map((r) => `${r.label} (${money(buying ? r.boughtUsd : r.soldUsd)})`);
+    const against = rows.filter((r) => (buying ? r.sellers > r.buyers : r.buyers > r.sellers));
+    let shape;
+    if (against.length === rows.length) {
+      shape = buying
+        ? 'but more filers cut each than added, so a few large buyers drove the dollars'
+        : 'but more filers added to each than cut, so a few large sellers drove the dollars';
+    } else if (against.length === 0) {
+      shape = buying
+        ? 'with most filers adding, a broad move in'
+        : 'with most filers cutting, a broad move out';
+    } else {
+      shape = 'with filers split between selling and buying';
+    }
+    parts.push(
+      `${buying ? 'Most bought' : 'Most sold'}${scope ? ` in${scope}` : ''}: ${list(names)}, ${shape}.`,
+    );
+  } else {
+    parts.push(`No${scope} name had two or more filers ${buying ? 'buying' : 'selling'} it.`);
+  }
+
+  const top = d.sellers?.[0];
+  const sectors = [...(d.sectors || [])]
+    .filter((x) => (buying ? x.netUsd > 0 : x.netUsd < 0))
+    .sort((a, b) => (buying ? b.netUsd - a.netUsd : a.netUsd - b.netUsd))
+    .slice(0, 3);
+  const sectorText = sectors.length
+    ? `${list(sectors.map((x) => x.sector))} saw the largest net ${buying ? 'inflow' : 'outflow'}`
+    : '';
+  if (!buying && top) {
+    parts.push(
+      `${top.filer} sold the most (${money(top.soldUsd)}, ${top.exits} full exits)${
+        !d.sector && sectorText ? `; ${sectorText}` : ''
+      }.`,
+    );
+  } else if (!d.sector && sectorText) {
+    parts.push(`${sectorText}.`);
+  }
+
+  const early = buying ? d.open?.mostBought?.[0] : d.open?.mostSold?.[0];
+  if (early) {
+    parts.push(
+      `Early ${d.open.quarterLabel} filings show ${early.label} ${buying ? 'bought' : 'sold'} most so far.`,
+    );
+  }
+
+  parts.push(
+    c.share < 0.5
+      ? `These filers hold ${pctOf(c.share)} of reported 13F value, and 13F is filed up to 45 days after quarter end, so treat this as partial and lagged.`
+      : `13F is filed up to 45 days after quarter end and omits short positions.`,
+  );
+  return parts.join(' ');
+}
+
 export const FLOWS_ADDENDUM = `
-This ping asks what institutional managers (hedge funds among them) are selling or buying. Answer from the (13f) snippets, which are SEC Form 13F filings compared quarter over quarter in Ezana's datasets. Write three short paragraphs:
-(1) The direct answer: the names 13F filers sold (or bought) most in the latest filed quarter, by dollars and by number of filers, with the quarter named. If early filings for the next quarter are in the snippets, add what they show so far and say the window is still open.
-(2) Who did the selling and where: the largest sellers by name and their biggest sales, the largest complete exits, and the sectors with the heaviest net outflow.
-(3) What it means and its limits: whether the selling is broad (many filers) or concentrated (one or two), and the coverage line as given. Say plainly that 13F shows quarter-end long positions filed up to 45 days later, so "right now" is the latest filed quarter, and that short positions are not reported.
-Call them "13F filers" or "institutional managers"; never call a named filer a hedge fund unless a snippet does. Never state a figure the snippets do not give. Never suggest a sale shows a view on the stock's future, and never tell the reader to sell, buy or copy a trade.`;
+This ping asks what institutional managers (hedge funds among them) are selling or buying. The (13f) snippets are SEC Form 13F filings compared quarter over quarter, and the same figures are shown beside the brief as charts and tables. Write ONE paragraph of 80 to 110 words that summarizes what those charts and tables show: the quarter and totals, the top three names and whether the move was broad or concentrated, the largest seller, the sectors with the heaviest net outflow, and one sentence on coverage and the 45-day lag. Do not list more names than that; the tables carry the detail. Call them "13F filers"; never call a named filer a hedge fund. Never state a figure the snippets do not give, and never tell the reader to sell, buy or copy a trade.`;

@@ -35,12 +35,15 @@ export function parseInfoTable(xml) {
   let m;
   while ((m = re.exec(xml)) !== null) {
     const b = m[1];
-    const name = tag(b, 'nameOfIssuer');
+    /* Nov 4: decoded like the 13D/13G fields. Some filers wrap names in
+       CDATA or escape them ("<![CDATA[HONEYWELL INTERNATIONAL INC]]>",
+       "AT&amp;T"), which reached the UI verbatim. */
+    const name = decodeXml(tag(b, 'nameOfIssuer'));
     if (!name) continue;
     out.push({
       name_of_issuer: name,
       cusip: tag(b, 'cusip'),
-      title_of_class: tag(b, 'titleOfClass'),
+      title_of_class: decodeXml(tag(b, 'titleOfClass')),
       value: toNum(tag(b, 'value')) || 0,
       shares: toNum(tag(b, 'sshPrnamt')),
       share_type: tag(b, 'sshPrnamtType'), // 'SH' | 'PRN'

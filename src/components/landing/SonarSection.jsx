@@ -73,7 +73,7 @@ import { animateWindowScroll, humanPointer } from './sonar-motion';
 import './sonar-band.css';
 import SonarResearchDeck, { NewsAround, SanctionsRail, hasNewsColumns } from './SonarResearchDeck';
 import SonarSectorStack from './SonarSectorStack';
-import SonarFlowsStack from './SonarFlowsStack';
+import SonarFlowsStack, { FlowsDetailCards } from './SonarFlowsStack';
 import { CountryStack, CountryOecdRow, CountryEmpireRow } from './SonarCountryStack';
 import { SonarUnderstoodNotice } from './SonarUnderstoodNotice';
 import { IndustryStack } from './SonarIndustryStack';
@@ -3512,6 +3512,14 @@ export function SonarSection({
                   </div>
                 </div>
 
+                {/* Nov 4 (v2): a flows ping puts Sector flows and Who sold the
+                  most here, under the matches, instead of below the fold in
+                  the right-hand stack. Page only; below 1024px the stack's
+                  own copy shows instead (sonar-flows.css). */}
+                {stage2 && isPage && live?.dossier?.kind === 'flows' ? (
+                  <FlowsDetailCards dossier={live.dossier} onGate={() => openGate()} />
+                ) : null}
+
                 {/* The "13F, LOBBYING, WEB / 3 MORE" footer is gone. It existed
                 to admit that three of the eight datasets were not on screen,
                 which stopped being true once all eight render. */}
@@ -3559,6 +3567,7 @@ export function SonarSection({
                   topSlot={leadTop}
                   newsSlot={railNews}
                   full={isPage}
+                  split={isPage}
                 />
               ) : null}
 

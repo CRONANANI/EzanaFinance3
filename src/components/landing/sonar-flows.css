@@ -103,6 +103,33 @@
   text-align: right;
 }
 
+/* Nov 4 (v2): Sector flows and Who sold the most under Sourced matches in
+   the centre column. */
+.snr-band .snr-flw-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.snr-band .snr-flw-detail--centre {
+  margin-top: 16px;
+}
+.snr-band .snr-flw-detail:empty {
+  display: none;
+}
+/* Three columns: the centre copy shows, the stack's copy does not. Stacked
+   (below 1024px): the reverse, so the phone deck keeps every card in its
+   own slide. */
+@media (min-width: 1024px) {
+  .snr-band .snr-flw-detail--stack {
+    display: none;
+  }
+}
+@media (max-width: 1023px) {
+  .snr-band .snr-flw-detail--centre {
+    display: none;
+  }
+}
+
 /* Table grids. */
 .snr-band .snr-flw-table .snr-sec-tr {
   grid-template-columns: minmax(0, 1fr) 58px 58px 64px 64px;
