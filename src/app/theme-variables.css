@@ -145,6 +145,12 @@
      the soft emerald glow that rises from the bottom. */
   --sonar-ping-bg: #0a0e13;
   --sonar-ping-ink: #e6e9ee;
+  /* The Sonar research cube (loading state, Nov 2026): its hairline shell,
+     its synthesis core and the white centre of every glow. The network uses
+     the seven dimension colours (taxonomy.js) and the brand emerald. */
+  --sonar-cube-shell: #c4e8da;
+  --sonar-cube-core: #c8ffe8;
+  --sonar-cube-spark: #ffffff;
   --sonar-ping-muted: #8b95a3;
   --sonar-ping-dot-idle: #252d38;
   --sonar-ping-glow: rgba(16, 185, 129, 0.07);

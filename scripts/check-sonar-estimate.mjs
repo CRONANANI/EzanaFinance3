@@ -646,8 +646,9 @@ test('the routes record mode and duration, release on abort, and supersede befor
     'src/lib/sonar/estimate-server.js',
     'src/app/api/sonar/estimate/route.js',
     'src/components/sonar/DeepResearchCard.jsx',
-    'src/components/sonar/SonarAnswerProgress.jsx',
-    'src/components/sonar/sonar-answer-progress.css',
+    'src/components/sonar/loading/SonarLoadingState.jsx',
+    'src/components/sonar/loading/sonar-loading.css',
+    'src/components/sonar/loading/dimensions.js',
   ]) {
     assert.ok(!readFileSync(f, 'utf8').includes('—'), `${f}: em dash`);
   }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { SonarHero } from '@/components/sonar/SonarHero';
 import { SonarQueryBar } from '@/components/sonar/SonarQueryBar';
@@ -30,7 +30,7 @@ import '@/app/datasets/datasets-loading.css';
 import DatasetCardMatches from './DatasetCardMatches';
 import { DeepResearchPrompt, DeepResearchRun, StandardResearchRun } from './DeepResearch';
 import { DeepResearchCard, deepSignupHref } from './DeepResearchCard';
-import { SonarAnswerProgress } from './SonarAnswerProgress';
+import SonarLoadingState from '@/components/sonar/loading/SonarLoadingState';
 import { useAuth } from '@/components/auth-context';
 import { SonarSignupCta } from './SonarSignupCta';
 
@@ -221,19 +221,22 @@ export function SonarExperience({
         return;
       }
       /* Settled without a briefing (gated, or nothing found): the screen
-         simply fades out; "Briefing ready" would not be true. */
+         simply fades out; "Briefing ready" would not be true. The loading
+         state clears itself when its fade ends (onExited); the timer is a
+         safety net. */
       setLoader((l) => (l && l.phase === 'sweeping' ? { ...l, leaving: true } : l));
-      loaderTimers.current.push(setTimeout(() => setLoader((l) => (l?.leaving ? null : l)), 300));
+      loaderTimers.current.push(setTimeout(() => setLoader((l) => (l?.leaving ? null : l)), 900));
       return;
     }
     if (meta?.display) {
       hadAnswerRef.current = true;
-      /* All seven dots, "Briefing ready", then a 300ms fade into the
-         results. */
+      /* The brief has landed: the loading state plays its hand-off (every
+         dimension Complete, the cube's core flares, "Your research brief is
+         ready", then a fade) and clears itself (onExited). The timer is a
+         safety net in case it never reports back. */
       setLoader((l) => (l ? { ...l, phase: 'ready', leaving: false } : l));
       loaderTimers.current.push(
-        setTimeout(() => setLoader((l) => (l ? { ...l, leaving: true } : l)), 450),
-        setTimeout(() => setLoader((l) => (l?.leaving ? null : l)), 750),
+        setTimeout(() => setLoader((l) => (l && l.phase === 'ready' ? null : l)), 2600),
       );
       setShownQuery(meta.display);
       /* The briefing has landed: only now may matching dataset cards show,
@@ -254,6 +257,14 @@ export function SonarExperience({
       /* non-fatal */
     }
   }
+
+  /* The loading state's hand-off (or quiet fade) has finished: show what is
+     underneath. Stable, so the state's effect does not re-run. */
+  const clearLoader = useCallback(() => {
+    loaderTimers.current.forEach(clearTimeout);
+    loaderTimers.current = [];
+    setLoader((l) => (l && (l.phase === 'ready' || l.leaving) ? null : l));
+  }, []);
 
   /* Leave the ping screen. With an earlier answer on the page, back to it;
      on a first ping, back to the Ping field with the query still in it. */
@@ -633,14 +644,17 @@ export function SonarExperience({
                 onBack={leavePing}
               />
             ) : (
-              /* Nov 2026: the answer in progress, with the deep research
-                 card beside it (below it on mobile). */
-              <SonarAnswerProgress
-                entityLabel={pingEntityLabel(loader.query)}
+              /* Nov 2026: the Sonar research loading state (the cube and
+                 the seven dimensions), with the deep research card beside
+                 it (below it on smaller screens). */
+              <SonarLoadingState
+                key={loader.query}
+                query={loader.query}
                 estimate={estimateFor(loader.query)?.answer || null}
-                phase={loader.phase}
-                leaving={loader.leaving}
+                isComplete={loader.phase === 'ready'}
+                dismissed={loader.leaving && loader.phase === 'sweeping'}
                 onCancel={cancelPing}
+                onExited={clearLoader}
                 aside={
                   estimateFor(loader.query)?.deep?.blocked === 'disabled' ? null : (
                     <DeepResearchCard

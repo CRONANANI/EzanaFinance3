@@ -1,0 +1,372 @@
+/* Sonar research loading state (Nov 2026, Claude Design handoff). Page
+   scoped: everything sits under .sonar-loading. Fills the ping screen's
+   fixed overlay (.dsl-handoff in datasets-loading.css, which paints the
+   --sonar-ping-* ground) and is always dark (force-dark-theme on the root).
+   The content spans the nav bar, logo to logout: the landing nav's envelope
+   on /datasets, the app nav's in the app shell.
+   Colours: theme tokens only. The seven dimension colours come from
+   taxonomy.js through --dim-color on each row; alphas are color-mix. */
+
+.sonar-loading {
+  --sl-text: var(--sonar-ping-ink);
+  --sl-text-secondary: color-mix(in srgb, var(--sonar-ping-ink) 82%, var(--sonar-ping-bg));
+  --sl-text-muted: var(--sonar-ping-muted);
+  --sl-accent: var(--brand-ezana-green);
+  --sl-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  color: var(--sl-text);
+  font-family: var(--font-sans);
+  transition:
+    opacity 500ms ease-out,
+    transform 500ms ease-out;
+}
+.sonar-loading.is-exiting {
+  opacity: 0;
+  transform: scale(0.98);
+}
+
+.sonar-loading .sl-inner {
+  width: 100%;
+  max-width: var(--marketing-shell-max);
+  min-height: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 16px var(--app-shell-pad) 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.dsl-handoff--app .sonar-loading .sl-inner {
+  max-width: var(--app-shell-max);
+}
+
+/* ---------- top bar: estimate, timer, cancel ---------- */
+.sonar-loading .sl-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+}
+.sonar-loading .sl-estimate {
+  font-size: 12px;
+  color: var(--sl-text-muted);
+}
+.sonar-loading .sl-clock {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  color: var(--sl-text-muted);
+}
+.sonar-loading .sl-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--sl-accent);
+  animation: sl-blink 1.4s ease-in-out infinite;
+}
+.sonar-loading .sl-cancel {
+  height: 36px;
+  min-width: 44px;
+  padding: 0 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--sl-accent) 20%, transparent);
+  background: transparent;
+  color: var(--sl-text-secondary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 200ms ease-out,
+    border-color 200ms ease-out;
+}
+.sonar-loading .sl-cancel:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--sl-accent) 8%, transparent);
+  border-color: color-mix(in srgb, var(--sl-accent) 35%, transparent);
+}
+.sonar-loading .sl-cancel:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--sl-accent) 60%, transparent);
+  outline-offset: 2px;
+}
+.sonar-loading .sl-cancel:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ---------- query: a tinted surface, no outline ---------- */
+.sonar-loading .sl-query {
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--sl-accent) 5%, transparent);
+}
+.sonar-loading .sl-query .bi {
+  flex: none;
+  font-size: 16px;
+  color: var(--sl-text-muted);
+}
+.sonar-loading .sl-query p {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--sl-text);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- body: cube, then dimensions and the deep research card ---------- */
+.sonar-loading .sl-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr);
+  gap: 48px;
+  align-items: center;
+}
+.sonar-loading .sl-engine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.sonar-loading .sl-side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.sonar-loading .sl-cube {
+  position: relative;
+  width: 100%;
+  /* As large as the design allows (680px) while the ticker under it stays
+     in view: the overlay height less the top bar, the query and the ticker. */
+  max-width: min(680px, max(320px, calc(100dvh - var(--navbar-height, 64px) - 230px)));
+  aspect-ratio: 1 / 1;
+}
+.sonar-loading .sl-cube__halo {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--sl-accent) 9%, transparent),
+    transparent
+  );
+  pointer-events: none;
+}
+.sonar-loading .sl-cube__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.sonar-loading .sl-ticker {
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 14px;
+  color: var(--sl-text-secondary);
+}
+.sonar-loading .sl-ticker__phrase {
+  animation: sl-fade-up 600ms ease-out both;
+}
+
+/* ---------- dimension rows ---------- */
+.sonar-loading .sl-dims {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+}
+.sonar-loading .sl-dim {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  column-gap: 12px;
+  row-gap: 8px;
+  align-items: center;
+  padding: 11px 14px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px transparent;
+  transition:
+    background 500ms var(--sl-ease),
+    box-shadow 500ms var(--sl-ease);
+}
+.sonar-loading .sl-dim__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dim-color);
+  transition: box-shadow 500ms var(--sl-ease);
+}
+.sonar-loading .sl-dim__name {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--sl-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 400ms ease-out;
+}
+.sonar-loading .sl-dim__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+  color: var(--sl-text-muted);
+  transition: color 400ms ease-out;
+}
+.sonar-loading .sl-dim__status .bi {
+  font-size: 12px;
+}
+.sonar-loading .sl-dim__bar {
+  grid-column: 2 / 4;
+  height: 2px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--sonar-ping-ink) 6%, transparent);
+  position: relative;
+  overflow: hidden;
+}
+.sonar-loading .sl-dim__bar > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: color-mix(in srgb, var(--dim-color) 55%, transparent);
+  transition:
+    width 300ms linear,
+    background 400ms ease-out;
+}
+.sonar-loading .sl-dim[data-status='complete'] .sl-dim__status {
+  color: var(--sl-text-secondary);
+}
+.sonar-loading .sl-dim[data-focused='true'] {
+  background: color-mix(in srgb, var(--dim-color) 6%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dim-color) 34%, transparent);
+}
+.sonar-loading .sl-dim[data-focused='true'] .sl-dim__dot {
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--dim-color) 14%, transparent),
+    0 0 14px color-mix(in srgb, var(--dim-color) 70%, transparent);
+}
+.sonar-loading .sl-dim[data-focused='true'] .sl-dim__name {
+  color: var(--sl-text);
+}
+.sonar-loading .sl-dim[data-focused='true'] .sl-dim__status {
+  color: var(--dim-color);
+}
+.sonar-loading .sl-dim[data-focused='true'] .sl-dim__bar > span {
+  background: var(--dim-color);
+}
+
+.sonar-loading .sl-aside {
+  min-width: 0;
+}
+
+/* ---------- motion ---------- */
+@keyframes sl-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes sl-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* ---------- breakpoints ---------- */
+@media (max-width: 1023px) {
+  .sonar-loading .sl-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .sonar-loading .sl-engine {
+    align-self: center;
+    width: 100%;
+  }
+  .sonar-loading .sl-cube {
+    max-width: 560px;
+  }
+  .sonar-loading .sl-dims {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 768px) {
+  .sonar-loading .sl-inner {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+@media (max-width: 639px) {
+  .sonar-loading .sl-inner {
+    padding-top: 12px;
+    padding-bottom: 24px;
+  }
+  .sonar-loading .sl-cube {
+    max-width: 360px;
+  }
+  .sonar-loading .sl-dims {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+  .sonar-loading .sl-dim {
+    padding: 7px 10px;
+    row-gap: 0;
+  }
+  .sonar-loading .sl-dim__bar {
+    display: none;
+  }
+  .sonar-loading .sl-dim__name {
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .sonar-loading .sl-ticker {
+    font-size: 13px;
+  }
+  .sonar-loading .sl-cancel {
+    height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sonar-loading,
+  .sonar-loading .sl-live-dot,
+  .sonar-loading .sl-ticker__phrase,
+  .sonar-loading .sl-dim,
+  .sonar-loading .sl-dim__dot,
+  .sonar-loading .sl-dim__bar > span {
+    animation: none;
+    transition: none;
+  }
+}
