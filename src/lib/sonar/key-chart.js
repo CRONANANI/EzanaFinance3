@@ -20,7 +20,8 @@
  * No I/O: landing-country.js reads the histories (bounded) and hands them in.
  */
 import { yoyFromIndexHistory } from './macro/currency.js';
-import { periodLabel, periodEnd, isProjection } from './macro/catalog.js';
+import { periodLabel, periodEnd, isProjection, WEO_CITATION } from './macro/catalog.js';
+import { weoStatus, WEO_GROUP_OF_FAMILY } from './analysts/weo-status.js';
 
 export const OECD_SOURCE = 'OECD Economic Outlook';
 
@@ -216,6 +217,21 @@ export function catalogueStory(spec) {
     periodLabel: periodLabel(latest.period),
     projection: false,
   };
+  /* Nov 6 (1.9): an IMF WEO year after the country's last actual year is an IMF estimate,
+     even in the past; say so on the chart and name the vintage. */
+  const weoIso = /^IMF\.WEO:dataflow\.([A-Z]{3})\./.exec(String(spec.seriesKey || ''))?.[1];
+  const group = WEO_GROUP_OF_FAMILY[fam];
+  if (spec.source === 'imf' && weoIso && group) {
+    const now = spec.now || new Date();
+    for (const p of story.points) {
+      if (weoStatus(weoIso, group, p.period, { now }) === 'estimate') p.est = true;
+    }
+    if (latest.est) {
+      story.estimate = `IMF estimate (${String(latest.period).slice(0, 4)})`;
+      latest.label = `${latest.label} (IMF estimate)`;
+    }
+    story.source = `${story.source}, ${WEO_CITATION}${story.estimate ? `; ${story.estimate}, not yet actual data` : ''}`;
+  }
   story.headline = storyHeadline(story);
   return story;
 }

@@ -533,6 +533,7 @@ export function KeyIndicatorsCard({ dossier }) {
               <TR key={r.id}>
                 <TH scope="row" className="snr-ki-label" title={r.name}>
                   {r.label}
+                  {r.estimate ? <span className="snr-ki-proj"> {r.estimate}</span> : null}
                   {r.projection ? <span className="snr-ki-proj"> {r.projection}</span> : null}
                 </TH>
                 <TD numeric>{minus(r.value)}</TD>
@@ -547,7 +548,8 @@ export function KeyIndicatorsCard({ dossier }) {
         </Table>
       </div>
       <p className="snr-pol-note">
-        Latest observed values. Projections are labelled and never shown as outcomes.
+        Latest observed values. IMF staff estimates and projections are labelled and never shown as
+        outcomes.
       </p>
     </div>
   );

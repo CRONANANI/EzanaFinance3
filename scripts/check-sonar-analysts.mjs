@@ -222,3 +222,14 @@ test('quick mode: no supporting analysts, auditor only', () => {
   assert.equal(r.supporting.length, 0);
   assert.deepEqual(r.controls, ['methodology-auditor']);
 });
+
+const { weoStatus, weoLatestActual } = await import('../src/lib/sonar/analysts/weo-status.js');
+test('weoStatus labels IMF values per country', () => {
+  const now = new Date('2026-11-06');
+  assert.equal(weoStatus('TUR', 'nationalAccounts', 2025, { now }), 'actual');
+  assert.equal(weoStatus('TUR', 'nationalAccounts', 2026, { now }), 'projection');
+  assert.equal(weoStatus('LBY', 'nationalAccounts', 2022, { now }), 'estimate'); // Libya last actual 2019
+  assert.equal(weoStatus('IND', 'governmentFinance', 2025, { now }), 'actual'); // 2024/25 ends in 2025
+  assert.equal(weoLatestActual('EGY', 'nationalAccounts'), 2025);
+  assert.equal(weoStatus('XXX', 'cpi', 2020, { now }), 'unknown');
+});

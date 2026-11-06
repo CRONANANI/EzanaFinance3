@@ -39,6 +39,7 @@ import {
   monthsBetween,
   isEuroAreaRow,
 } from './catalog.js';
+import { PROJECTION_FROM_YEAR as OECD_PROJECTION_FROM } from '@/lib/oecd-curated';
 
 const TABLE = 'macro_series_latest';
 const COLS =
@@ -48,8 +49,13 @@ const HISTORY_CAP = 600;
 
 /** The adapter's attribution, verbatim; the source id when an adapter has none. */
 export function attributionOf(source) {
+  if (source === 'oecd') return OECD_EO_ATTRIBUTION;
   return ADAPTERS[source]?.attribution || source;
 }
+
+/* The OECD Economic Outlook rows (output gap, potential growth) come from Ezana's OECD sync,
+   not a macro-sync adapter. */
+const OECD_EO_ATTRIBUTION = 'OECD Economic Outlook (OECD Data Explorer)';
 
 /* A bounded read: rows, or [] on timeout or error (never throws into a ping). */
 async function read(build, { timeoutMs = DEFAULT_TIMEOUT_MS, label = 'macro' } = {}) {
@@ -104,7 +110,71 @@ export async function countryBrief(admin, iso3, o = {}) {
         )
       : Promise.resolve([]),
   ]);
-  return briefFromRows(iso3, rows, { families, themes, limit, euro, now: o.now });
+  /* Nov 6 (1.9): the OECD output gap and potential growth for members, when the question's
+     families ask for them (or no theme narrowed the brief). */
+  const wantsGap =
+    !eurozone &&
+    (!families.length || families.includes('output_gap') || families.includes('potential_growth'));
+  const gap = wantsGap ? await oecdGapRows(db, iso3, { timeoutMs }).catch(() => []) : [];
+  return briefFromRows(iso3, [...rows, ...gap], { families, themes, limit, euro, now: o.now });
+}
+
+const OECD_GAP_SLUGS = { 'eo-gap': 'Output gap', 'eo-gdpvtr_annpct': 'Potential output growth' };
+
+/**
+ * The OECD Economic Outlook's output gap and potential growth for one member, as latest rows
+ * the catalogue reads (source 'oecd', keys OECD.EO:<slug>): the last year before the OECD
+ * projection year, with the year before it as the year-ago value. Members only; [] otherwise.
+ */
+export async function oecdGapRows(
+  admin,
+  iso3,
+  { timeoutMs, projectionFrom = OECD_PROJECTION_FROM } = {},
+) {
+  const db = admin || getAdminClient();
+  const rows = await read(
+    () =>
+      db
+        .from('oecd_series_observations')
+        .select('ezana_slug, year, obs_value')
+        .eq('ref_area', iso3)
+        .in('ezana_slug', Object.keys(OECD_GAP_SLUGS))
+        .gte('year', projectionFrom - 8)
+        .order('year', { ascending: true }),
+    { timeoutMs, label: `oecd gap ${iso3}` },
+  );
+  return oecdGapLatest(rows, iso3, { projectionFrom });
+}
+
+/** Pure core of oecdGapRows. */
+export function oecdGapLatest(rows, iso3, { projectionFrom = OECD_PROJECTION_FROM } = {}) {
+  const out = [];
+  for (const slug of Object.keys(OECD_GAP_SLUGS)) {
+    const pts = (rows || [])
+      .filter(
+        (r) => r.ezana_slug === slug && r.obs_value != null && Number(r.year) < projectionFrom,
+      )
+      .map((r) => ({ year: Number(r.year), value: Number(r.obs_value) }))
+      .filter((p) => Number.isFinite(p.value))
+      .sort((a, b) => a.year - b.year);
+    if (!pts.length) continue;
+    const last = pts[pts.length - 1];
+    const prev = pts.find((p) => p.year === last.year - 1) || null;
+    out.push({
+      source: 'oecd',
+      series_key: `OECD.EO:${slug}`,
+      country_iso3: iso3,
+      period: String(last.year),
+      value: last.value,
+      series_name: OECD_GAP_SLUGS[slug],
+      unit: slug === 'eo-gap' ? '% of potential GDP' : '% a year',
+      frequency: 'A',
+      dataset: 'OECD Economic Outlook',
+      year_ago_period: prev ? String(prev.year) : null,
+      year_ago_value: prev ? prev.value : null,
+    });
+  }
+  return out;
 }
 
 /** Pure core of countryBrief (tests feed rows directly). */

@@ -128,6 +128,8 @@ export const ANALYSTS = {
       'gov_debt',
       'activity',
       'oecd_macro',
+      'output_gap',
+      'weo_latest_actual',
       'uncertainty',
     ],
     rules: [

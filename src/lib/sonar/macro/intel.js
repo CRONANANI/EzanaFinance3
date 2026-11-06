@@ -194,7 +194,15 @@ export async function buildCountryIntel(
           { now },
         )
       : null;
-    if (s) ext[k] = { value: s.value, period: s.period, unit: s.unit, source: row.source };
+    if (s)
+      ext[k] = {
+        value: s.value,
+        period: s.period,
+        unit: s.unit,
+        source: row.source,
+        /* "IMF estimate (2025)" when the IMF figure is not yet actual (1.9). */
+        estimate: s.weo?.status === 'estimate' ? s.weo.label : null,
+      };
   }
   const importsMonthlyUsd =
     importsRow && Number(importsRow.value) > 0 ? Number(importsRow.value) : null;

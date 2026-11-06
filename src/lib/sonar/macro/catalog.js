@@ -17,6 +17,7 @@
  * JODI codes are from JODI's own guides: "A Guide on JODI-Oil World Database, Item Names"
  * (Sep 2017) and "A Guide on JODI-Gas World Database, Item Names" (Apr 2025), jodidata.org.
  */
+import { weoStatus, WEO_GROUP_OF_FAMILY, WEO_VINTAGE } from '../analysts/weo-status.js';
 import { toIso3, iso3Name } from '@/lib/macro-sync/formats.js';
 
 /* ------------------------------------------------------------------ key helpers */
@@ -575,7 +576,14 @@ export const THEME_FAMILIES = {
   conflict: ['conflict', 'geopolitical_risk'],
   governance: ['governance'],
   labour: ['unemployment', 'employment_sector'],
-  growth: ['gdp_growth', 'activity', 'unemployment', 'inflation_annual'],
+  growth: [
+    'gdp_growth',
+    'activity',
+    'unemployment',
+    'inflation_annual',
+    'output_gap',
+    'potential_growth',
+  ],
 };
 
 /** A country question with no theme gets this headline set. */
@@ -657,6 +665,40 @@ export const FAMILIES = [
       source: 'imf',
       filter: imfWeo('NGDP_RPCH'),
     },
+  },
+  /* Nov 6 (1.9): the OECD Economic Outlook's output gap and potential growth, OECD members
+     only, read from oecd_series_observations (series-store turns them into latest rows with
+     source 'oecd' and keys OECD.EO:eo-gap / OECD.EO:eo-gdpvtr_annpct). Years from the
+     OECD projection year on are OECD projections. */
+  {
+    id: 'output_gap',
+    label: 'Output gap',
+    themes: ['growth', 'macro', 'country'],
+    scope: 'country',
+    present: 'rate',
+    unit: '% of potential GDP',
+    priority: 7,
+    rankable: false,
+    cues: /output gap|potential (gdp|output)|spare capacity|overheat/i,
+    match: (r) => src(r) === 'oecd' && r.series_key === 'OECD.EO:eo-gap',
+    name: () => 'Output gap (OECD Economic Outlook)',
+    unitOf: () => '% of potential GDP',
+    authority: () => 1,
+  },
+  {
+    id: 'potential_growth',
+    label: 'Potential output growth',
+    themes: ['growth', 'macro', 'country'],
+    scope: 'country',
+    present: 'rate',
+    unit: '% a year',
+    priority: 8,
+    rankable: false,
+    cues: /potential (growth|gdp|output)|trend growth/i,
+    match: (r) => src(r) === 'oecd' && r.series_key === 'OECD.EO:eo-gdpvtr_annpct',
+    name: () => 'Potential output growth (OECD Economic Outlook)',
+    unitOf: () => '% a year',
+    authority: () => 1,
   },
   {
     id: 'inflation_annual',
@@ -1711,6 +1753,56 @@ export function yoyFromIndex(value, yearAgo) {
 
 const isRateUnit = (u) => /%|percent|percentage points|score/i.test(String(u || ''));
 
+const WEO_VINTAGE_LABEL = (() => {
+  const m = /^(\d{4})-(\d{2})$/.exec(String(WEO_VINTAGE || ''));
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+  return m
+    ? `IMF World Economic Outlook, ${months[Number(m[2]) - 1]} ${m[1]}`
+    : 'IMF World Economic Outlook';
+})();
+
+/** The WEO vintage as a citation reads it ("IMF World Economic Outlook, October 2026"). */
+export const WEO_CITATION = WEO_VINTAGE_LABEL;
+
+/**
+ * The status of an IMF WEO statement: { status, label, projectionLabel, vintage } or null
+ * for any other source. status is 'actual' | 'estimate' | 'unknown' for the observed year;
+ * the projection (if any) is labelled separately.
+ */
+export function weoLabel(row, family, observedPeriod, projection = null, now = new Date()) {
+  if (!(row?.source === 'imf' && keyPrefix(row) === 'IMF.WEO')) return null;
+  const group = WEO_GROUP_OF_FAMILY[family?.id];
+  const iso3 = rowIso3(row);
+  const status = group && iso3 ? weoStatus(iso3, group, observedPeriod, { now }) : 'unknown';
+  const y = String(observedPeriod).slice(0, 4);
+  return {
+    status: status === 'projection' ? 'unknown' : status,
+    label:
+      status === 'estimate'
+        ? `IMF estimate (${y})`
+        : status === 'actual'
+          ? `IMF actual (${y})`
+          : null,
+    projectionLabel: projection
+      ? `IMF projection (${String(projection.period).slice(0, 4)})`
+      : null,
+    vintage: WEO_VINTAGE_LABEL,
+  };
+}
+
 /**
  * One latest row -> its statement: { value, unit, period, name, change, changeText,
  * projection } or null when the row cannot be stated (no name, or an index without its
@@ -1762,6 +1854,10 @@ export function presentRow(row, family = familyOf(row), { now = new Date() } = {
     }
   }
   if (!Number.isFinite(value)) return null;
+  /* Nov 6 (1.9): an IMF WEO value is actual, a staff estimate, or a projection, by the
+     country's own last actual year per indicator group (weo-status.js), never by assuming
+     that a past year is an outcome. */
+  const weo = weoLabel(row, family, observed.period, projection, now);
   return {
     name,
     value,
@@ -1771,6 +1867,7 @@ export function presentRow(row, family = familyOf(row), { now = new Date() } = {
     changeKind,
     changeText,
     projection,
+    weo,
     mode,
     money: /US\$|USD/.test(statedUnit || '') && !/ per /.test(statedUnit || ''),
   };
@@ -1843,10 +1940,17 @@ export function statementText(s, { place, attribution }) {
   const unit = s.unit ? (s.unit.startsWith('%') ? s.unit : ` ${s.unit}`) : '';
   const head = `${place ? `${place}: ` : ''}${s.name}, ${periodLabel(s.period)}: ${val}${unit}`;
   const change = s.changeText ? `, ${s.changeText}` : '';
+  const est =
+    s.weo?.status === 'estimate'
+      ? ` ${s.weo.label}: an IMF staff estimate, not yet actual data.`
+      : '';
   const proj = s.projection
-    ? ` IMF/AMECO projection for ${s.projection.period}: ${fmtNum(s.projection.value)} (a projection, not an outcome).`
+    ? s.weo
+      ? ` ${s.weo.projectionLabel}: ${fmtNum(s.projection.value)} (a projection, not an outcome).`
+      : ` IMF/AMECO projection for ${s.projection.period}: ${fmtNum(s.projection.value)} (a projection, not an outcome).`
     : '';
-  return `${head}${change}.${proj} Source: ${attribution}.`;
+  const vintage = s.weo ? ` ${s.weo.vintage} vintage.` : '';
+  return `${head}${change}.${est}${proj}${vintage} Source: ${attribution}.`;
 }
 
 /** Dataset page a series links to. */
@@ -1877,7 +1981,11 @@ export function rowToItem(
     title: `${place ? `${place}: ` : ''}${s.name} ${val}${unitShort} (${periodLabel(s.period)})`,
     text: statementText(s, { place, attribution }),
     date: String(s.period),
-    citation: { label: attribution, href: datasetHref(row, where) },
+    citation: {
+      label: attribution,
+      href: datasetHref(row, where),
+      ...(s.weo ? { vintage: s.weo.vintage } : {}),
+    },
     meta: {
       family: family.id,
       name: s.name,
@@ -1895,6 +2003,7 @@ export function rowToItem(
       changeKind: s.changeKind,
       yearAgoPeriod: row.year_ago_period || null,
       ...(s.projection ? { projection: s.projection } : {}),
+      ...(s.weo ? { weo: s.weo } : {}),
     },
   };
 }
@@ -1970,6 +2079,7 @@ export function aggregateFews(rows) {
 /** Short publisher names for tables (the citation keeps the full attribution). */
 export const SOURCE_SHORT = {
   imf: 'IMF',
+  oecd: 'OECD',
   'worldbank-ext': 'World Bank',
   bis: 'BIS',
   ecb: 'ECB',
@@ -2041,8 +2151,12 @@ export function keyIndicatorRows(items, max = 8) {
         href: it.citation?.href || null,
         scope: m.scope,
         projection: m.projection
-          ? `${fmtNum(m.projection.value)} projected for ${m.projection.period}`
+          ? m.weo?.projectionLabel
+            ? `${m.weo.projectionLabel}: ${fmtNum(m.projection.value)}`
+            : `${fmtNum(m.projection.value)} projected for ${m.projection.period}`
           : null,
+        /* Nov 6 (1.9): "IMF estimate (2025)" when the latest IMF figure is not yet actual. */
+        estimate: m.weo?.status === 'estimate' ? m.weo.label : null,
       };
     });
 }

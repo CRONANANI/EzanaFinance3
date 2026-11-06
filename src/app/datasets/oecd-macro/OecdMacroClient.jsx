@@ -144,7 +144,9 @@ export default function OecdMacroClient({ latest }) {
       title: 'How we source it',
       body: [
         'Indicators come from the OECD’s SDMX data API, the organisation’s official statistical distribution channel, published under a CC BY 4.0 licence with attribution. OECD harmonises national statistics onto a common methodology, which is what makes a figure for Canada directly comparable to one for Japan; national statistical offices do not guarantee that on their own.',
-        'Series are keyed by country and reference period, so a macro reading can be joined to the market, contract, and prediction-market signals that share the same window. Values from 2024 onward are OECD projections from the Economic Outlook database. Attribution: Source, OECD.',
+        'Series are keyed by country and reference period, so a macro reading can be joined to the market, contract, and prediction-market signals that share the same window. Values from ' +
+          PROJECTION_FROM_YEAR +
+          ' onward are OECD projections from the Economic Outlook database. Attribution: Source, OECD.',
       ],
     },
     cta: { href: '/auth/login', label: 'Explore in the app' },

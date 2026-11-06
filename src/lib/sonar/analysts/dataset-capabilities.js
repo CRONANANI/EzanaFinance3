@@ -280,6 +280,28 @@ export const CAPABILITIES = {
     semantics: 'prefer fresher catalogue series when both exist',
     freshDays: 400,
   },
+  /* Read through the macro catalogue (families output_gap, potential_growth; series-store
+     reads oecd_series_observations), so the planner routes it via macro_series (Nov 6). */
+  output_gap: {
+    kind: 'macro',
+    families: ['output_gap', 'potential_growth'],
+    tables: ['oecd_series_observations'],
+    series: ['eo-gap', 'eo-gdpvtr', 'eo-gdpvtr_annpct'],
+    label: 'Output gap and potential GDP (OECD Economic Outlook)',
+    unit: '% of potential GDP / % growth',
+    period: 'annual, to 2025',
+    semantics: 'OECD members only; synced Aug 2026 without the 2026-2027 projections',
+    freshDays: 500,
+  },
+  weo_latest_actual: {
+    kind: 'reference',
+    file: 'src/lib/sonar/analysts/reference/weo-latest-actual.js',
+    label: 'IMF WEO last actual year per country and indicator group',
+    period: 'WEO vintage (October 2026)',
+    semantics:
+      'label WEO values actual / estimate / projection with weoStatus; update each April and October',
+    freshDays: 200,
+  },
   empire_scores: {
     kind: 'table',
     tables: ['country_dimension_scores_mat', 'empire_countries', 'country_scores_raw'],

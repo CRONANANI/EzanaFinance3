@@ -116,6 +116,8 @@ const FAMILY_FIXTURES = {
     L('eurostat', 'ESTAT.nama_10_gdp:DE.CLV_PCH_PRE.B1GQ', 'DEU', '2025', 0.4),
   ],
   inflation_annual: [L('imf', 'IMF.WEO:dataflow.TUR.PCPIPCH.A', 'TUR', '2025', 35.1)],
+  output_gap: [L('oecd', 'OECD.EO:eo-gap', 'TUR', '2023', 1.2)],
+  potential_growth: [L('oecd', 'OECD.EO:eo-gdpvtr_annpct', 'TUR', '2023', 3.4)],
   unemployment: [
     L('imf', 'IMF.WEO:dataflow.TUR.LUR.A', 'TUR', '2025', 8.7),
     L('ilostat', 'ILO.UNE_DEAP_SEX_AGE_RT_A:KEN.AGE_YTHADULT_YGE15', 'KEN', '2025', 5.6),
@@ -317,7 +319,9 @@ test('observed vs projected: IMF WEO and AMECO current-year values are projectio
   assert.deepEqual([s.period, s.value], ['2025', 3.2]);
   assert.deepEqual(s.projection, { period: '2026', value: 2.7 });
   const item = C.rowToItem(weo, { attributionOf: S.attributionOf, now: NOW });
-  assert.match(item.text, /projection for 2026: 2\.70 \(a projection, not an outcome\)/);
+  assert.match(item.text, /IMF projection \(2026\): 2\.70 \(a projection, not an outcome\)/);
+  assert.match(item.text, /IMF World Economic Outlook, October 2026 vintage\./);
+  assert.equal(item.citation.vintage, 'IMF World Economic Outlook, October 2026');
   assert.equal(item.meta.period, '2025');
   // A projection with no observed year before it is not stated at all.
   assert.equal(
@@ -987,4 +991,20 @@ test('sanctions: a country question gets listings per list, top regimes and rece
   const fb = await SI.intlCountrySummary(stubDb({ sanctions_intl_entries: INTL }), 'AFG');
   assert.deepEqual(Object.keys(fb), ['un']);
   assert.equal(fb.un.listings, 1);
+});
+
+test("IMF WEO status (1.9): actual, estimate and projection by each country's last actual year", () => {
+  /* Türkiye national accounts are actual to 2025; Libya only to 2019. */
+  const tur = L('imf', 'IMF.WEO:dataflow.TUR.NGDP_RPCH.A', 'TUR', '2025', 3.2, ya('2024', 3.1));
+  const t = C.presentRow(tur, C.FAMILY_BY_ID.gdp_growth, { now: NOW });
+  assert.equal(t.weo.status, 'actual');
+  const lby = L('imf', 'IMF.WEO:dataflow.LBY.NGDP_RPCH.A', 'LBY', '2022', 1.3, ya('2021', 31.4));
+  const item = C.rowToItem(lby, { attributionOf: S.attributionOf, now: NOW });
+  assert.equal(item.meta.weo.status, 'estimate');
+  assert.match(item.text, /IMF estimate \(2022\): an IMF staff estimate, not yet actual data\./);
+  const rows = C.keyIndicatorRows([item], 4);
+  assert.equal(rows[0].estimate, 'IMF estimate (2022)');
+  /* Not an IMF WEO row: no WEO label. */
+  const boe = L('boe', 'BOE:IUDBEDR', 'GBR', '2026-10', 4.0);
+  assert.equal(C.presentRow(boe, C.FAMILY_BY_ID.policy_rate, { now: NOW })?.weo ?? null, null);
 });

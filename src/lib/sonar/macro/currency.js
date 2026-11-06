@@ -410,7 +410,7 @@ export function buildCurrencyPicture(
     const r = ext[k];
     if (r && n(r.value) != null)
       statements.push(
-        `${label}, ${periodLabel(r.period)}: ${withUnit(fmtNum(r.value), r.unit || unit)}.`,
+        `${label}, ${periodLabel(r.period)}: ${withUnit(fmtNum(r.value), r.unit || unit)}${r.estimate ? ` (${r.estimate}, not yet actual data)` : ''}.`,
       );
   }
   if (risk?.percentile != null) {

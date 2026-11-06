@@ -8,8 +8,14 @@
  *
  * EO editions include projections: PROJECTION_FROM_YEAR marks where actuals
  * end. Update when a newer EO vintage is loaded.
+ *
+ * Nov 6 2026: the stored series are the OECD Economic Outlook of June 2026
+ * (synced 4 Aug 2026), whose Statistical Annex projects 2026 and 2027; the sync
+ * kept years to 2025. 2024 and 2025 are therefore OECD outturns (2025 partly
+ * estimated by the OECD), not projections. The value was 2024 (an older vintage),
+ * which labelled two years of outturns as projections everywhere.
  */
-export const PROJECTION_FROM_YEAR = 2024;
+export const PROJECTION_FROM_YEAR = 2026;
 
 export const OECD_LENSES = [
   { id: 'growth', label: 'Growth' },
