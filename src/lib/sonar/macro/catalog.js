@@ -509,7 +509,7 @@ export const THEME_CUES = {
   rates:
     /interest rates?|policy rate|central bank|rate (hike|cut|decision)s?|monetary policy|\bfed\b|federal reserve|\becb\b|bank of (japan|england|canada)|\bboj\b|\bboe\b|repo rate|\bselic\b|bank rate|tightening|easing/i,
   currency:
-    /currenc|exchange rate|\bfx\b|\blira\b|\bpesos?\b|\brupees?\b|\byen\b|\beuro\b|\brubles?\b|\broubles?\b|\brand\b|\byuan\b|\brenminbi\b|\bnaira\b|\breal\b(?= (is|has|was|fell|rose|slid|weak|strong))|\bwon\b(?= (is|has|was|fell|rose|weak|strong))|devaluat|depreciat|appreciat|dollar strength|strong dollar|weak dollar/i,
+    /currenc|exchange rate|\bfx\b|\blira\b|\bpesos?\b|\brupees?\b|\byen\b|\beuro\b|\brubles?\b|\broubles?\b|\brand\b|\byuan\b|\brenminbi\b|\bnaira\b|\breal\b(?= (is|has|was|fell|rose|slid|weak|strong)\b)|\bwon\b(?= (is|has|was|fell|rose|weak|strong)\b)|\bshekels?\b|\bforints?\b|\bzloty\b|\bkoruna\b|\bhryvnia\b|\bcedis?\b|\brupiah\b|\bringgit\b|\bbaht\b|\bsterling\b|\bshillings?\b|\briyals?\b|\bfranc\b|devaluat|depreciat|appreciat|dollar strength|strong dollar|weak dollar/i,
   credit:
     /\bcredit\b|household debt|corporate debt|private debt|leverage|debt service|borrowing|mortgage debt|indebted/i,
   housing: /house prices?|housing|property (prices?|market)|real estate|home prices?|mortgage/i,
@@ -517,7 +517,7 @@ export const THEME_CUES = {
   trade:
     /\btrade (balance|deficit|surplus|war|flows?)\b|\bexports?\b|\bimports?\b|\btariffs?\b|current account|balance of payments/i,
   external:
-    /remittance|external debt|foreign debt|reserves|\bfdi\b|foreign (direct )?investment|capital (flows?|flight)/i,
+    /remittance|external debt|foreign debt|reserves|\bfdi\b|foreign (direct )?investment|capital (flows?|flight)|external (financing|funding|position|stress|vulnerabilit)|financing (stress|needs|gap)|(dollar|fx|foreign[- ]exchange) shortage|balance[- ]of[- ]payments (stress|crisis)/i,
   energy: /\benergy\b|power supply|electricity/i,
   oil: /\boil\b|\bcrude\b|petroleum|barrels?|\bopec\b|refiner|diesel|gasoline|petrol|jet fuel/i,
   gas: /natural gas|\blng\b|gas (supply|cut ?off|imports?|exports?|storage|pipeline|demand)|pipeline gas|\bgas\b/i,
@@ -600,6 +600,13 @@ const imfWeo = (code) => (row) =>
 const weoName = (row) => IMF_WEO[imfCode(row)]?.name || null;
 const weoUnit = (row) => IMF_WEO[imfCode(row)]?.unit || null;
 const bis = (flow) => (row) => src(row) === 'bis' && keyPrefix(row) === flow;
+/* ECB daily reference-rate crosses, local currency per US dollar: ECB.EXRUSD:D.{CCY}. */
+const ecbUsdCross = (row) =>
+  src(row) === 'ecb' && keyPrefix(row) === 'ECB.EXRUSD' && /^D\.[A-Z]{3}$/.test(keyBody(row));
+/* IMF IRFCL official reserve assets in US dollars: IMF.IRFCL:dataflow.{ISO3}.IRFCLDT1_IRFCL65_USD.{SECTOR}.M */
+const IRFCL_RESERVES_RE = /(?:^|\.)IRFCLDT1_IRFCL65_USD\.([A-Z0-9_]+)\.M$/;
+const imfReserves = (row) =>
+  src(row) === 'imf' && keyPrefix(row) === 'IMF.IRFCL' && IRFCL_RESERVES_RE.test(keyBody(row));
 const jodi = (dataset, product, flows, units) => (row) => {
   if (!String(row?.source || '').startsWith('jodi')) return false;
   if (keyPrefix(row) !== `JODI.${dataset}`) return false;
@@ -787,11 +794,13 @@ export const FAMILIES = [
       (src(r) === 'bcra' && r.series_key === 'BCRA:28') ||
       (src(r) === 'arg-series' && r.series_key === 'ARGSERIES:148.3_INIVELNAL_DICI_M_26') ||
       (src(r) === 'singstat' && r.series_key === 'SINGSTAT.M213751:1') ||
-      (src(r) === 'mospi' && /^MOSPI\.CPI\.inflation:/i.test(r.series_key)),
+      (src(r) === 'mospi' && /^MOSPI\.CPI\.inflation:/i.test(r.series_key)) ||
+      (src(r) === 'cbrt' && r.series_key === 'EVDS:TP.TUKFIY2025.GENEL'),
     presentOf: (r) =>
       (src(r) === 'imf' && keyPrefix(r) === 'IMF.CPI') ||
       src(r) === 'arg-series' ||
-      src(r) === 'singstat'
+      src(r) === 'singstat' ||
+      src(r) === 'cbrt'
         ? 'yoy_from_index'
         : 'rate',
     name: (r) => {
@@ -799,6 +808,7 @@ export const FAMILIES = [
       if (src(r) === 'ecb' || src(r) === 'eurostat') return 'HICP inflation, annual rate';
       if (src(r) === 'arg-series') return 'Consumer prices (INDEC), change on a year earlier';
       if (src(r) === 'singstat') return 'Consumer prices, change on a year earlier';
+      if (src(r) === 'cbrt') return 'Consumer prices (TurkStat CPI), change on a year earlier';
       if (src(r) === 'mospi') return 'Consumer price inflation (MoSPI)';
       if (src(r) === 'ons') return 'CPI inflation, annual rate (ONS)';
       if (r.series_key === 'SIDRA.1737.2265:BRA') return 'IPCA inflation, 12-month change (IBGE)';
@@ -816,6 +826,7 @@ export const FAMILIES = [
             ons: 3,
             ibge: 3,
             bcra: 3,
+            cbrt: 3,
             singstat: 3,
             mospi: 3,
             'arg-series': 2.5,
@@ -864,10 +875,12 @@ export const FAMILIES = [
     /* National central bank first; the ECB deposit rate is the euro area's policy stance. */
     authority: (r) =>
       src(r) === 'ecb' ? (/DFR/.test(r.series_key) ? 3 : 2) : src(r) === 'bis' ? 1 : 3,
+    /* Monthly only: the daily series (WS_CBPOL:D.*) states the same rate, so ranking both
+       would list an economy twice. */
     rank: {
-      like: 'WS_CBPOL:%',
+      like: 'WS_CBPOL:M.%',
       source: 'bis',
-      filter: bis('WS_CBPOL'),
+      filter: (r) => bis('WS_CBPOL')(r) && /^M\./.test(keyBody(r)),
     },
   },
   {
@@ -883,6 +896,8 @@ export const FAMILIES = [
     match: (r) =>
       (bis('WS_XRU')(r) && /\.A$/.test(keyBody(r)) && !/\.(USD|XDR)\.A$/.test(keyBody(r))) ||
       (src(r) === 'ecb' && r.series_key === 'ECB.EXR:M.USD.EUR.SP00.A') ||
+      ecbUsdCross(r) ||
+      (src(r) === 'cbrt' && r.series_key === 'EVDS:TP.DK.USD.A.YTL') ||
       (src(r) === 'bcb' && r.series_key === 'SGS.1') ||
       (src(r) === 'bcra' && r.series_key === 'BCRA:5') ||
       (src(r) === 'cbn' && r.series_key === 'CBN.FX:US_DOLLAR') ||
@@ -891,7 +906,9 @@ export const FAMILIES = [
       (src(r) === 'boe' && r.series_key === 'BOE:XUDLUSS'),
     name: (r) => {
       if (src(r) === 'bis') return `${parts(r)[2]} per US dollar (monthly average)`;
+      if (ecbUsdCross(r)) return `${parts(r)[1]} per US dollar (ECB reference rate cross)`;
       if (src(r) === 'ecb') return 'US dollars per euro (ECB reference rate, monthly average)';
+      if (src(r) === 'cbrt') return 'Turkish lira per US dollar (CBRT indicative buying rate)';
       if (src(r) === 'cbn') return 'Naira per US dollar (CBN central rate)';
       if (src(r) === 'boj') return 'Yen per US dollar (Tokyo, 17:00 JST)';
       if (src(r) === 'bcb') return 'Brazilian reais per US dollar (selling rate)';
@@ -902,12 +919,17 @@ export const FAMILIES = [
     },
     unitOf: (r) => {
       if (src(r) === 'bis') return `${parts(r)[2]} per USD`;
+      if (ecbUsdCross(r)) return `${parts(r)[1]} per USD`;
       if (src(r) === 'ecb') return 'USD per EUR';
+      if (src(r) === 'cbrt') return 'TRY per USD';
       if (src(r) === 'cbn') return 'NGN per USD';
       if (src(r) === 'boj') return 'JPY per USD';
       return r.unit || null;
     },
-    authority: (r) => (src(r) === 'bis' ? 1 : 3),
+    /* National central banks first. The ECB daily cross ranks level with BIS's monthly
+       average, so whichever is fresher wins (pickBest: lag, then the finer period); a stale
+       daily cross never displaces a current monthly print. */
+    authority: (r) => (src(r) === 'bis' || ecbUsdCross(r) ? 1 : 3),
   },
   {
     id: 'fx_effective',
@@ -938,9 +960,24 @@ export const FAMILIES = [
     cues: /reserves/i,
     match: (r) =>
       (src(r) === 'bcb' && r.series_key === 'SGS.13621') ||
-      (src(r) === 'bcra' && r.series_key === 'BCRA:1'),
-    name: (r) => named(r) || 'International reserves',
-    authority: () => 3,
+      (src(r) === 'bcra' && r.series_key === 'BCRA:1') ||
+      (src(r) === 'cbrt' && r.series_key === 'EVDS:TP.AB.TOPLAM') ||
+      imfReserves(r),
+    name: (r) => {
+      if (imfReserves(r)) return 'Official reserve assets (IMF reserves data template)';
+      if (src(r) === 'cbrt') return 'CBRT gross official reserves (weekly)';
+      return named(r) || 'International reserves';
+    },
+    /* BCB, BCRA and CBRT store USD millions; IMF IRFCL stores US dollars (units). */
+    unitOf: (r) => (imfReserves(r) ? 'US$' : r.unit || 'USD millions'),
+    /* National central banks (daily or weekly) first; IMF monthly where none is current. One
+       IMF sector per economy: S1XS1311 (monetary authorities and central government), then
+       S1X, then any other. */
+    authority: (r) => {
+      if (!imfReserves(r)) return 3;
+      const sector = IRFCL_RESERVES_RE.exec(keyBody(r))[1];
+      return sector === 'S1XS1311' ? 2 : sector === 'S1X' ? 1.9 : 1.5;
+    },
   },
   {
     id: 'credit_gap',
@@ -1568,6 +1605,11 @@ export const PARTLY_SURFACED = {
     example: 'CBN.FX:US_DOLLAR',
     note: 'Naira per US dollar only; other CBN central rates are not stated.',
   },
+  'cbrt|EVDS': {
+    family: 'fx_usd',
+    example: 'EVDS:TP.DK.USD.A.YTL',
+    note: 'USD/TRY, weekly gross reserves and the CPI index are stated; the one-week lending quotation (TP.PY.P02.1H) is held but not stated until it is confirmed to equal the policy rate (BIS WS_CBPOL:D.TR states it daily).',
+  },
 };
 
 /* ------------------------------------------------------------------ matching */
@@ -1734,10 +1776,20 @@ export function presentRow(row, family = familyOf(row), { now = new Date() } = {
   };
 }
 
+/* How finely a period is dated: a day beats a month beats a quarter beats a year. */
+const periodPrecision = (p) => {
+  const s = String(p || '');
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return 3;
+  if (/^\d{4}-\d{2}$/.test(s)) return 2;
+  if (/^\d{4}-Q[1-4]$/.test(s)) return 1;
+  return 0;
+};
+
 /**
  * Pick the best rows of one family for one country (or scope): the most authoritative among
- * those current (within `freshMonths` of the freshest candidate), then the most recent.
- * Returns up to family.max rows (default 1), distinct series. Pure.
+ * those current (within `freshMonths` of the freshest candidate), then the most recent (by
+ * month, then the finer-dated period: a daily print in the same month as a monthly average
+ * wins). Returns up to family.max rows (default 1), distinct series. Pure.
  */
 export function pickBest(rows, family, { freshMonths = 6, max = family.max || 1, now } = {}) {
   const cands = (rows || [])
@@ -1753,13 +1805,14 @@ export function pickBest(rows, family, { freshMonths = 6, max = family.max || 1,
     const lag = monthsBetween(x.s.period, freshest) ?? 99;
     const current = lag <= freshMonths;
     const auth = family.authority ? family.authority(x.r) : 1;
-    return { ...x, current, auth, lag };
+    return { ...x, current, auth, lag, prec: periodPrecision(x.s.period) };
   });
   scored.sort(
     (a, b) =>
       Number(b.current) - Number(a.current) ||
       b.auth - a.auth ||
       a.lag - b.lag ||
+      b.prec - a.prec ||
       String(a.r.series_key).localeCompare(String(b.r.series_key)),
   );
   const out = [];
@@ -1950,6 +2003,7 @@ export const SOURCE_SHORT = {
   faostat: 'FAOSTAT',
   cepal: 'CEPALSTAT',
   afdb: 'AfDB',
+  cbrt: 'CBRT',
 };
 
 /**

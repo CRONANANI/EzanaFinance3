@@ -29,6 +29,8 @@ import '@/app/datasets/datasets-loading.css';
 /* The landing Sonar band, loaded only once a Datasets search is sent. */
 import DatasetCardMatches from './DatasetCardMatches';
 import { DeepResearchPrompt, DeepResearchRun, StandardResearchRun } from './DeepResearch';
+import { DeepResearchCard, deepSignupHref } from './DeepResearchCard';
+import { SonarAnswerProgress } from './SonarAnswerProgress';
 import { useAuth } from '@/components/auth-context';
 import { SonarSignupCta } from './SonarSignupCta';
 
@@ -150,6 +152,12 @@ export function SonarExperience({
   /* Nov 2026, research modes: a focused question runs standard research
      automatically ({ query, classification, goDeeper }). */
   const [standardRun, setStandardRun] = useState(null);
+  /* Nov 2026, estimates: POST /api/sonar/estimate for the latest ping
+     ({ query, data }), fired by the band on submit just before the ping. It
+     times the answer in progress and fills the deep research card. */
+  const [estimate, setEstimate] = useState(null);
+  const estimateFor = (query) =>
+    estimate && estimate.query === query && estimate.data ? estimate.data : null;
   const { isAuthenticated: signedIn } = useAuth();
 
   useEffect(() => {
@@ -425,10 +433,46 @@ export function SonarExperience({
     return () => window.removeEventListener('resize', publish);
   }, [onDatasets, bandQuery]);
 
+  /* The deep estimate for the run view: the card's time when there is one. */
+  function deepEstimate(query, fallback = null) {
+    const d = estimateFor(query)?.deep;
+    return d ? { minSec: d.minSec, maxSec: d.maxSec, label: d.label } : fallback;
+  }
+
+  /* Deep research from the card. `supersede`: an answer to this question is
+     still running, so it is cancelled first (the aborted ping is released,
+     and the deep run releases its ledger row if the server finished it in
+     the same moment), and the visitor is charged for the deep run only. A
+     guest goes to sign-up and comes back to the question. */
+  function chooseDeep(query, { supersede = false, signup = false } = {}) {
+    if (supersede) bandControlRef.current?.cancel();
+    loaderTimers.current.forEach(clearTimeout);
+    loaderTimers.current = [];
+    setLoader(null);
+    if (signup) {
+      window.location.assign(deepSignupHref(query));
+      return;
+    }
+    setDeepOffer(null);
+    setStandardRun(null);
+    setDeepRun({ query, estimate: deepEstimate(query), supersedes: supersede, fromCard: true });
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('q', query);
+      url.searchParams.set('deep', '1');
+      window.history.replaceState(window.history.state, '', url);
+    } catch {
+      /* non-fatal */
+    }
+  }
+
   function acceptDeep() {
     if (!deepOffer) return;
     setStandardRun(null);
-    setDeepRun({ query: deepOffer.query, estimate: deepOffer.deep?.estimate || null });
+    setDeepRun({
+      query: deepOffer.query,
+      estimate: deepEstimate(deepOffer.query, deepOffer.deep?.estimate || null),
+    });
     setDeepOffer(null);
     try {
       const url = new URL(window.location.href);
@@ -492,6 +536,8 @@ export function SonarExperience({
           <DeepResearchRun
             query={deepRun.query}
             estimate={deepRun.estimate}
+            extra={deepRun.supersedes ? { supersedes: { query: deepRun.query } } : null}
+            focusOnMount={Boolean(deepRun.fromCard)}
             onQuick={() => quickInstead(deepRun.query)}
             onStandard={() => standardInstead(deepRun.query)}
             onBack={closeDeep}
@@ -505,12 +551,15 @@ export function SonarExperience({
             onGoDeeper={(hint) => goDeeper(standardRun.query, hint)}
             onQuick={() => quickInstead(standardRun.query)}
             onBack={closeDeep}
+            estimate={estimateFor(standardRun.query)}
+            onDeep={(opts) => chooseDeep(standardRun.query, opts)}
           />
         ) : null}
         {deepOffer ? (
           <DeepResearchPrompt
             query={deepOffer.query}
             deep={deepOffer.deep}
+            estimate={estimateFor(deepOffer.query)}
             onDeep={acceptDeep}
             onQuick={() => quickInstead(deepOffer.query)}
             onClose={closeDeep}
@@ -520,47 +569,95 @@ export function SonarExperience({
             right-hand stack, placed by the band. They wait for the briefing
             to land (never the whole response) and only show cards that pass
             the relevance rule. */}
-        <SonarBand
-          variant="page"
-          query={bandQuery}
-          onPing={onBandPing}
-          controlRef={bandControlRef}
-          onDeepOffer={(query, deep) => {
-            /* A shared or refreshed deep research link (?deep=1) runs it
+        {/* While the progress overlay is up, the band under it is out of the
+            tab order and the accessibility tree (inert), so focus stays on
+            what is visible. display: contents keeps the layout as it was. */}
+        <div
+          className="sonar-band-wrap"
+          style={{ display: 'contents' }}
+          inert={loader ? '' : undefined}
+        >
+          <SonarBand
+            variant="page"
+            query={bandQuery}
+            onPing={onBandPing}
+            controlRef={bandControlRef}
+            onDeepOffer={(query, deep) => {
+              /* A shared or refreshed deep research link (?deep=1) runs it
                straight away; otherwise ask. */
-            let auto = false;
-            try {
-              auto = new URL(window.location.href).searchParams.get('deep') === '1';
-            } catch {
-              auto = false;
+              let auto = false;
+              try {
+                auto = new URL(window.location.href).searchParams.get('deep') === '1';
+              } catch {
+                auto = false;
+              }
+              if (auto && !deep?.guestNeedsAccount) {
+                setStandardRun(null);
+                setDeepRun({ query, estimate: deep?.estimate || null });
+              } else setDeepOffer({ query, deep });
+            }}
+            onStandardResearch={(query, { classification, goDeeper: hint } = {}) => {
+              setDeepRun(null);
+              setStandardRun({ query, classification, goDeeper: hint || null });
+            }}
+            hidden={Boolean(deepRun || standardRun)}
+            onEstimate={(query, data) => setEstimate({ query, data })}
+            afterAnswer={
+              answeredQuery && estimateFor(answeredQuery) ? (
+                <DeepResearchCard
+                  query={answeredQuery}
+                  estimate={estimateFor(answeredQuery)}
+                  placement="after"
+                  pingsSpent={1}
+                  onRun={(st) => chooseDeep(answeredQuery, { signup: st.blocked === 'signup' })}
+                />
+              ) : null
             }
-            if (auto && !deep?.guestNeedsAccount) {
-              setStandardRun(null);
-              setDeepRun({ query, estimate: deep?.estimate || null });
-            } else setDeepOffer({ query, deep });
-          }}
-          onStandardResearch={(query, { classification, goDeeper: hint } = {}) => {
-            setDeepRun(null);
-            setStandardRun({ query, classification, goDeeper: hint || null });
-          }}
-          hidden={Boolean(deepRun || standardRun)}
-          stackTop={
-            answeredQuery ? <DatasetCardMatches query={answeredQuery} variant="rail" /> : null
-          }
-        />
+            stackTop={
+              answeredQuery ? <DatasetCardMatches query={answeredQuery} variant="rail" /> : null
+            }
+          />
+        </div>
         {/* Guests only (the card checks auth itself): a centred popup once
             the briefing lands, minimizable to a small widget bottom left. */}
         <SonarSignupCta query={shownQuery || bandQuery} ready={Boolean(answeredQuery)} />
         {loader ? (
           <div className={`dsl-handoff${stage === 'app' ? ' dsl-handoff--app' : ''}`}>
-            <SonarPingLoader
-              entityLabel={pingEntityLabel(loader.query)}
-              phase={loader.phase}
-              leaving={loader.leaving}
-              onCancel={cancelPing}
-              onRetry={() => bandControlRef.current?.retry()}
-              onBack={leavePing}
-            />
+            {loader.phase === 'error' ? (
+              <SonarPingLoader
+                entityLabel={pingEntityLabel(loader.query)}
+                phase={loader.phase}
+                leaving={loader.leaving}
+                onCancel={cancelPing}
+                onRetry={() => bandControlRef.current?.retry()}
+                onBack={leavePing}
+              />
+            ) : (
+              /* Nov 2026: the answer in progress, with the deep research
+                 card beside it (below it on mobile). */
+              <SonarAnswerProgress
+                entityLabel={pingEntityLabel(loader.query)}
+                estimate={estimateFor(loader.query)?.answer || null}
+                phase={loader.phase}
+                leaving={loader.leaving}
+                onCancel={cancelPing}
+                aside={
+                  estimateFor(loader.query)?.deep?.blocked === 'disabled' ? null : (
+                    <DeepResearchCard
+                      query={loader.query}
+                      estimate={estimateFor(loader.query)}
+                      placement="progress"
+                      onRun={(st) =>
+                        chooseDeep(loader.query, {
+                          supersede: loader.phase === 'sweeping',
+                          signup: st.blocked === 'signup',
+                        })
+                      }
+                    />
+                  )
+                }
+              />
+            )}
           </div>
         ) : null}
       </div>

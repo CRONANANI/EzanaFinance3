@@ -21,6 +21,8 @@ import {
   REGIONS,
   WEAK_THEMES,
 } from './catalog.js';
+import { findCurrency } from './currencies.js';
+import { selectFrameworks } from './playbook.js';
 
 const DISPLAY = new Intl.DisplayNames(['en'], { type: 'region' });
 
@@ -251,6 +253,13 @@ export function routeMacro(text) {
   const commodity = findCommodity(t);
   const region = findRegion(t);
   let found = findCountries(t);
+  /* A currency word implies its country and the currency theme ("Is the lira under
+     pressure?" -> TUR). A shared word (peso) with no country named stays ambiguous. */
+  const currency = findCurrency(t, found);
+  if (currency) {
+    if (!themes.includes('currency')) themes.unshift('currency');
+    if (currency.iso3 && !found.includes(currency.iso3)) found = [currency.iso3, ...found];
+  }
   // A region word is not a country ("South Africa" yes, "Africa" no: the index has no "africa").
   const ranking = findRanking(t, { themes });
   /* Theme families, cue families first. A commodity question counts as the commodity theme. */
@@ -269,6 +278,7 @@ export function routeMacro(text) {
     commodity: commodity && COMMODITY_PINK[commodity] ? commodity : null,
     ranking,
     region,
+    currency,
   };
 }
 
@@ -283,8 +293,22 @@ const ECONOMY_WORDS = /\b(econom(y|ies)|macro|global|world|worldwide)\b/i;
 export function isMacroRelevant(route, { hasCompany = false, text = '' } = {}) {
   if (!route) return false;
   if (route.countries.length || route.ranking || route.commodity) return true;
+  if (route.currency) return true;
   if (route.region && route.themes.length) return true;
   const strong = route.themes.filter((t) => !WEAK_THEMES.has(t));
   if (strong.length) return true;
   return route.themes.length > 0 && !hasCompany && ECONOMY_WORDS.test(String(text || ''));
+}
+
+/**
+ * The playbook frameworks a routed question needs (max 3). External-financing and currency
+ * themes read as currency questions; a currency word always does.
+ */
+export function frameworksForRoute(route) {
+  const themes = route?.themes || [];
+  return selectFrameworks({
+    ...route,
+    currency:
+      Boolean(route?.currency) || themes.includes('external') || themes.includes('currency'),
+  });
 }

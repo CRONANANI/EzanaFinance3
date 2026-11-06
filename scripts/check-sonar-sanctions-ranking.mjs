@@ -52,10 +52,15 @@ test('news header label names both subjects', () => {
   assert.equal(subjectLabel([]), '');
 });
 
-test('landing understand layer: header names both countries', () => {
+test('landing understand layer: a question naming both countries keeps its words and both entities', () => {
+  /* Nov 6: a question about countries is a country_question (it is answered as asked),
+     so the header is the question, not "United States and Iran". */
   const u = understandDeterministic(PING);
-  assert.equal(u.intent, 'country');
-  assert.equal(u.display, 'United States and Iran');
+  assert.equal(u.intent, 'country_question');
+  assert.equal(
+    u.display,
+    'How will the us involvement in iran affect the economic outlook of the us',
+  );
   const ids = u.entities.filter((e) => e.kind === 'country').map((e) => e.id);
   assert.ok(ids.includes('US') && ids.includes('IR'), `countries = ${ids.join(',')}`);
 });

@@ -28,8 +28,14 @@ import {
 import { getEmpireScoresForExplorer } from '@/lib/empire-public-store';
 import { empireDossier } from '@/lib/sonar/empire-dossier';
 import { buildEmpireModel } from '@/app/datasets/oecd-macro/oecd-empire-model';
-import { countryBrief } from '@/lib/sonar/macro/series-store';
+import { countryBrief, seriesHistory } from '@/lib/sonar/macro/series-store';
 import { keyIndicatorRows } from '@/lib/sonar/macro/catalog';
+import {
+  KEY_CHART_FAMILIES,
+  cataloguePoints,
+  catalogueStory,
+  mergeKeyStories,
+} from '@/lib/sonar/key-chart';
 import { fetchIndustryNews } from '@/lib/sonar/industry-news';
 
 /* ── resolution ─────────────────────────────────────────────────────────── */
@@ -158,6 +164,18 @@ export function resolveCountry(query) {
   if (!q || q.length > 40) return null;
   q = q.replace(SUFFIX, '');
   const hit = BY_KEY.get(q) || BY_KEY.get(`the ${q}`) || BY_KEY.get(q.replace(/\./g, ''));
+  return hit ? { ...hit } : null;
+}
+
+const BY_ISO3 = new Map();
+for (const [iso3, name, , newsTerms, opts] of COUNTRIES) {
+  if (!BY_ISO3.has(iso3))
+    BY_ISO3.set(iso3, { iso3, name, newsTerms, oecdArea: opts?.oecd || iso3 });
+}
+
+/** The country entry for an ISO3 code ("Is the lira under pressure?" -> TUR), or null. */
+export function countryByIso3(iso3) {
+  const hit = BY_ISO3.get(String(iso3 || '').toUpperCase());
   return hit ? { ...hit } : null;
 }
 
@@ -461,6 +479,87 @@ async function buildKeyIndicators(admin, country) {
   }
 }
 
+/* ── key chart: the freshest series per tab (Nov 2026) ────────────────── */
+
+/* The catalogue rows the Key indicators read already picked (one per family, the most
+   authoritative current series) are the candidates; this reads their histories, bounded,
+   and builds one catalogue story per tab. The choice between OECD and catalogue is pure
+   (key-chart.js). A failed or slow read leaves that tab on OECD; nothing here fails the
+   dossier. */
+const KEY_CHART_TIMEOUT_MS = 1200;
+
+async function keyChartCatalogue(admin, items, { now = new Date() } = {}) {
+  if (!admin || !items?.length) return {};
+  const wanted = Object.entries(KEY_CHART_FAMILIES);
+  /* 22 years back: a 20-year norm, plus the year an index needs for its y/y change. */
+  const since = String(now.getUTCFullYear() - 22);
+  const out = {};
+  await Promise.all(
+    wanted.map(async ([slug, family]) => {
+      const fam = items.filter((it) => it?.meta?.family === family && it.meta.source);
+      /* The country's own series first; the euro-area row only for a member without one. */
+      const item = fam.find((it) => it.meta.scope !== 'euro_area') || fam[0];
+      if (!item) return;
+      const m = item.meta;
+      /* A month-on-month rate is a different measure from the OECD annual one. */
+      if (/m\/m/.test(m.unit || '')) return;
+      try {
+        const history = await seriesHistory(admin, m.source, m.series_key, {
+          since,
+          timeoutMs: KEY_CHART_TIMEOUT_MS,
+        });
+        const points = cataloguePoints(history, {
+          family,
+          source: m.source,
+          seriesKey: m.series_key,
+          mode: m.mode,
+          now,
+        });
+        const meta = OECD_SERIES_BY_SLUG[slug] || {};
+        const story = catalogueStory({
+          family,
+          slug,
+          points,
+          label: meta.label,
+          short: meta.short,
+          unit:
+            m.mode === 'yoy_from_index'
+              ? '% y/y'
+              : family === 'policy_rate'
+                ? '% a year'
+                : m.unit || meta.unitLabel,
+          seriesName: m.scope === 'euro_area' ? `${m.name} (euro area)` : m.name,
+          decimals: meta.decimals ?? 1,
+          signed: Boolean(meta.signed),
+          attribution: m.attribution,
+          source: m.source,
+          seriesKey: m.series_key,
+          euroArea: m.scope === 'euro_area',
+        });
+        if (story) out[slug] = story;
+      } catch (e) {
+        console.warn('[sonar-country] key chart series failed:', slug, e?.message);
+      }
+    }),
+  );
+  return out;
+}
+
+/** The Key chart's tabs: per tab the fresher of the OECD and catalogue series. null on no OECD leg. */
+function buildKeyChart(oecd, catalogueBySlug) {
+  try {
+    if (!oecd?.stories?.length) return null;
+    const merged = mergeKeyStories(oecd.stories, catalogueBySlug || {}, {
+      order: STORY_SLUGS,
+      meta: OECD_SERIES_BY_SLUG,
+    });
+    return merged ? { ...merged, projectionFrom: oecd.projectionFrom } : null;
+  } catch (e) {
+    console.error('[sonar-country] key chart failed:', e?.message);
+    return null;
+  }
+}
+
 /* ── dossier ────────────────────────────────────────────────────────────── */
 
 /**
@@ -469,20 +568,29 @@ async function buildKeyIndicators(admin, country) {
  * empty (the brief still answers); the UI renders only what came back.
  */
 export async function buildCountryDossier(country, admin, { matchEcho } = {}) {
-  const [oecd, empire, news, markets, echoMatches, macro] = await Promise.all([
+  const macroP = buildKeyIndicators(admin, country);
+  /* The Key chart's catalogue histories start as soon as the Key indicators rows are in,
+     alongside the OECD read, so they add at most one bounded read to the dossier. */
+  const keyCatP = macroP.then((m) => keyChartCatalogue(admin, m?.items)).catch(() => ({}));
+  const [oecd, empire, news, markets, echoMatches, macro, keyCat] = await Promise.all([
     buildOecd(admin, country),
     buildEmpire(country),
     countryNews(admin, country).catch(() => []),
     countryMarkets(admin, country),
     matchEcho ? matchEcho(admin, { name: country.name, ticker: null }).catch(() => null) : null,
-    buildKeyIndicators(admin, country),
+    macroP,
+    keyCatP,
   ]);
+  const keyChart = buildKeyChart(oecd, keyCat);
   return {
     kind: 'country',
     iso3: country.iso3,
     name: country.name,
     ticker: null,
     oecd,
+    /* The Key chart: each tab the fresher of OECD and the macro catalogue (key-chart.js).
+       `oecd.stories` stays the OECD series, which the brief's evidence cites. */
+    keyChart,
     empire,
     keyIndicators: macro ? macro.rows : [],
     newsTitle: `${country.name} Relevant News`,

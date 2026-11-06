@@ -24,6 +24,7 @@ import PositioningMemo from './PositioningMemo';
 import FundFitMemo from './FundFitMemo';
 import ChallengeBanner from './ChallengeBanner';
 import './research-report.css';
+import { CountryIntelCard } from '@/components/landing/CountryIntelCard';
 
 export const SOURCE_LABELS = {
   lobbying_leaders: 'Lobbying disclosures, leaders',
@@ -629,6 +630,19 @@ export default function ResearchReport({ state, onFollowUp = null }) {
             </p>
           ) : null}
         </section>
+      ) : null}
+
+      {/* Nov 6: a currency question's deep report carries the same Country & Currency
+          Intelligence panel as the ping: KPIs, the assessment table, the charts and the
+          transmission map, built from the computed measures (the prose is above). */}
+      {state.panels?.macro?.countryIntel ? (
+        <CountryIntelCard
+          dossier={{
+            iso3: state.panels.macro.countryIntel.iso3,
+            name: state.panels.macro.countryIntel.place,
+            intel: { ...state.panels.macro.countryIntel, brief: null, fallbackText: null },
+          }}
+        />
       ) : null}
 
       {metrics.length ? (

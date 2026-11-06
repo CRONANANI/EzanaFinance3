@@ -340,3 +340,85 @@
   line-height: 1.5;
   color: var(--text-secondary);
 }
+
+/* The deep research card (Nov 2026, estimates, DeepResearchCard.jsx): beside
+   an answer in progress and under the brief. On Sonar's dark ground
+   (.force-dark-theme on the card), drawn by its border. Every line has
+   reserved space, so the estimate arriving never moves the button. */
+.sdr-dcard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  border: 1px solid var(--emerald-border);
+  border-radius: var(--radius-lg);
+  background: var(--emerald-bg-subtle);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+}
+.sdr-dcard--after {
+  margin-top: 1rem;
+}
+.sdr-dcard-title {
+  margin: 0;
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: var(--type-card-title-size);
+  font-weight: var(--type-card-title-weight);
+  letter-spacing: var(--type-card-title-tracking);
+  line-height: var(--type-card-title-leading);
+  color: var(--text-primary);
+}
+.sdr-dcard-title .bi {
+  color: var(--emerald-text);
+}
+.sdr-dcard-time {
+  margin: 0;
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  min-height: 1.5em;
+  font-size: var(--type-body-size);
+  color: var(--text-primary);
+}
+.sdr-dcard-time .bi {
+  color: var(--emerald-text);
+}
+.sdr-dcard-line {
+  margin: 0;
+  min-height: calc(2 * 1.5em);
+  font-size: var(--type-caption-size);
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.sdr-dcard-btn {
+  align-self: flex-start;
+  min-height: 44px;
+}
+/* The offer dialog's primary button at the cap (the card uses ds Button,
+   whose disabled state the .ds-btn layer draws). */
+.sdr-btn.sdr-dcard-btn:disabled,
+.sdr-btn.sdr-dcard-btn[aria-disabled='true'] {
+  border-color: var(--border-primary);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+.sdr-dcard-why {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+/* The offer dialog's usage line and its standard alternative. */
+.sdr-usage {
+  margin: 0.25rem 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+/* The run view takes focus when it starts from the card (tabIndex -1). */
+.sdr-run:focus:not(:focus-visible) {
+  outline: none;
+}

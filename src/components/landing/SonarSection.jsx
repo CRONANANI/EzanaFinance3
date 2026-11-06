@@ -802,6 +802,13 @@ export function SonarSection({
   /* Kept mounted but out of view while deep research shows (so its quick
      answer can still be asked for). */
   hidden = false,
+  /* Nov 2026, estimates: called with (query, estimate) when POST
+     /api/sonar/estimate answers (fired on submit, just before the ping and
+     never awaited by it); estimate is null when it failed. */
+  onEstimate = null,
+  /* What the host shows under a landed brief: the deep research card,
+     which replaces the Go deeper bar. Without one the bar still shows. */
+  afterAnswer = null,
 } = {}) {
   /* 'page': the same band embedded on the Datasets search page. No takeover,
      no demo, no header (the page has its own), and it pings `query` as soon
@@ -2379,6 +2386,22 @@ export function SonarSection({
     if (typeof onPing === 'function') onPing(q);
     setPinging(true);
     setPingError(null);
+    /* Nov 2026: the estimate first (fast, nothing spent), then the ping at
+       once; the ping never waits on it. Cancel aborts both. */
+    if (typeof onEstimate === 'function') {
+      fetch('/api/sonar/estimate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ query: q }),
+        signal: controller.signal,
+      })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((est) => onEstimate(q, est && est.answer ? est : null))
+        .catch((e) => {
+          if (e?.name !== 'AbortError') onEstimate(q, null);
+        });
+    }
     try {
       const res = await fetch('/api/sonar/landing-query', {
         method: 'POST',
@@ -2912,7 +2935,12 @@ export function SonarSection({
                           /* One reveal counter across the joined answer, so the
                          paragraphs type in sequence without any per-paragraph
                          bookkeeping. typed === -1 means show all of it. */
-                          const paras = live.answer.split(/\n\s*\n/).slice(0, 4);
+                          /* Nov 6: a Country & Currency Intelligence answer keeps
+                             its answer and assessment line here; the drivers,
+                             scenarios and what to monitor are in the card. */
+                          const paras = live.answer
+                            .split(/\n\s*\n/)
+                            .slice(0, live.dossier?.intel?.brief ? 2 : 4);
                           let consumed = 0;
                           return paras.map((para, i) => {
                             const start = consumed;
@@ -3011,7 +3039,8 @@ export function SonarSection({
                             ) : null}
                           </p>
                         ) : null}
-                        {typed < 0 && isPage && live.goDeeper ? (
+                        {typed < 0 && isPage && afterAnswer ? afterAnswer : null}
+                        {typed < 0 && isPage && !afterAnswer && live.goDeeper ? (
                           <GoDeeperBar
                             query={live.rawQuery || live.query}
                             goDeeper={live.goDeeper}

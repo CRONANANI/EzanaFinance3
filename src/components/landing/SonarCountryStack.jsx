@@ -8,14 +8,18 @@
  *   CountryEmpireRow  Sourced matches row: Global Empire Rankings composite
  *                     rank and the strongest dimensions as bars.
  *   CountryStack      The right-hand stack, in the slot the company price
- *                     chart and the politician portfolio use: a key chart
- *                     that tells the country's story, then Relevant News.
+ *                     chart and the politician portfolio use: the Country
+ *                     intelligence card when the pipeline attached one
+ *                     (CountryIntelCard.jsx), a key chart that tells the
+ *                     country's story, then Relevant News.
  *
- * The key chart picks the series furthest from its own 20-year median (the
- * server computes it; see landing-country.js) and lets the visitor switch to
- * any other series the country carries. Every number on screen comes from the
- * dossier. OECD projection years are drawn dashed in the warning tone and
- * labelled, never blended into the actual line.
+ * The key chart picks the series furthest from its own median (the server
+ * computes it; see landing-country.js and key-chart.js) and lets the visitor
+ * switch to any other series the country carries. Each tab shows whichever
+ * series is fresher, the OECD Economic Outlook or Ezana's macro catalogue, and
+ * names its source. Every number on screen comes from the dossier. OECD
+ * projection years are drawn dashed in the warning tone and labelled, never
+ * blended into the actual line; a catalogue series has no projections.
  *
  * Same .snr-fund / .snr-news shells as the company and politician stacks, so
  * the band geometry, the card entrance and the orbital's "last card landed"
@@ -25,7 +29,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Table, THead, TBody, TR, TH, TD, VisuallyHidden } from '@/components/ds';
+import { CountryIntelCard, hasCountryIntel } from './CountryIntelCard';
 import './sonar-country.css';
+
+export { CountryIntelCard, hasCountryIntel };
 
 /* ── shared helpers (the band's own are module-private) ─────────────────── */
 
@@ -84,12 +91,21 @@ const HEADLINE_LABEL = {
 };
 
 /* One sentence per series, from its own stats. No adjectives the numbers do
-   not carry: "above its 20-year norm", never "soaring". */
+   not carry: "above its 20-year norm", never "soaring". The server writes it
+   (story.headline, naming the latest period); this is the fallback for a
+   dossier built before that field existed. */
 function storyLine(s) {
+  if (s.headline) return s.headline;
   const a = Math.abs(s.z);
   if (a < 0.5) return `${s.label} is close to its ${s.normYears}-year norm`;
   return `${s.label} is running ${s.z > 0 ? 'above' : 'below'} its ${s.normYears}-year norm`;
 }
+
+/* A point's display label: 'Sep 2026' for a monthly catalogue point, the year
+   for an annual one. */
+const ptLabel = (p) => (p ? (p.label ?? String(p.year)) : '');
+const OECD_SOURCE = 'OECD Economic Outlook';
+const isOecdStory = (s) => !s.source || s.source === OECD_SOURCE;
 
 /* ── Sourced matches rows ───────────────────────────────────────────────── */
 
@@ -275,7 +291,8 @@ function StoryChart({ story, projectionFrom }) {
   const lastActual = actual[actual.length - 1];
   /* The projection segment starts AT the last actual point so the two lines
      join without a gap, and only the projected years are dashed. */
-  const proj = pts.filter((p) => p.proj);
+  /* Projections exist only on an OECD series. */
+  const proj = isOecdStory(story) ? pts.filter((p) => p.proj) : [];
   const projLine = proj.length && lastActual ? [lastActual, ...proj] : [];
   const showZero = story.signed && lo < 0 && hi > 0;
   const bx = lastActual ? x(lastActual.year) : null;
@@ -286,7 +303,8 @@ function StoryChart({ story, projectionFrom }) {
     if (!box) return;
     const r = e.currentTarget.getBoundingClientRect();
     const frac = (e.clientX - r.left - PAD.l) / Math.max(1, r.width - PAD.l - PAD.r);
-    const yr = y0 + Math.round(Math.min(1, Math.max(0, frac)) * (yN - y0));
+    /* Continuous, so a monthly series (fractional years) snaps to its nearest month. */
+    const yr = y0 + Math.min(1, Math.max(0, frac)) * (yN - y0);
     setHover(pts.reduce((a, b) => (Math.abs(b.year - yr) < Math.abs(a.year - yr) ? b : a)));
   };
 
@@ -300,7 +318,7 @@ function StoryChart({ story, projectionFrom }) {
         {proj.length ? <span className="snr-cty-key snr-cty-key--proj">OECD proj.</span> : null}
         {shown ? (
           <span className={`snr-cty-read${shown.proj ? ' is-proj' : ''}`}>
-            {shown.year} · {val(shown.value)}
+            {ptLabel(shown)} · {val(shown.value)}
             {shown.proj ? ' (proj.)' : ''}
           </span>
         ) : null}
@@ -325,7 +343,7 @@ function StoryChart({ story, projectionFrom }) {
             viewBox={`0 0 ${W} ${H}`}
             preserveAspectRatio="none"
             role="img"
-            aria-label={`${story.label}, ${y0} to ${yN}; latest ${lastActual ? `${lastActual.year} ${val(lastActual.value)}` : 'n/a'}`}
+            aria-label={`${story.label}, ${ptLabel(pts[0])} to ${ptLabel(pts[pts.length - 1])}; latest ${lastActual ? `${ptLabel(lastActual)} ${val(lastActual.value)}` : 'n/a'}`}
           >
             {box
               ? ticks.map((t) => (
@@ -382,22 +400,31 @@ function StoryChart({ story, projectionFrom }) {
         </div>
       </div>
       <div className="snr-cty-axis" aria-hidden="true">
-        <span>{y0}</span>
+        <span>{ptLabel(pts[0])}</span>
         {proj.length ? (
           <span className="snr-cty-axis-proj">OECD proj. from {projectionFrom}</span>
         ) : null}
-        <span>{yN}</span>
+        <span>{ptLabel(pts[pts.length - 1])}</span>
       </div>
     </div>
   );
 }
 
+/* Nov 2026: the merged Key chart (each tab the fresher of the OECD series and
+   the macro catalogue's, see key-chart.js) when the server built one, else
+   the OECD stories as before. */
+const keyChartOf = (dossier) =>
+  dossier.keyChart?.stories?.length ? dossier.keyChart : dossier.oecd;
+
 function StoryCard({ dossier }) {
-  const o = dossier.oecd;
+  const o = keyChartOf(dossier);
   const stories = o?.stories || [];
   const [sel, setSel] = useState(o?.storyIndex ?? 0);
   const s = stories[sel] || stories[0];
   if (!s) return null;
+  const oecd = isOecdStory(s);
+  const hasProj = oecd && s.points.some((p) => p.proj);
+  const note = `${s.seriesName || s.label}, ${s.unit}. Source: ${oecd ? OECD_SOURCE : s.source}.${hasProj ? ' Dashed years are OECD projections.' : ''}`;
   return (
     <div className="snr-fund snr-fund--wide snr-fund--cty">
       <div className="snr-fund-head">
@@ -424,7 +451,7 @@ function StoryCard({ dossier }) {
       </div>
       <p className="snr-cty-headline">{storyLine(s)}</p>
       <div className="snr-fund-body">
-        <StoryChart story={s} projectionFrom={o.projectionFrom} />
+        <StoryChart story={s} projectionFrom={o.projectionFrom ?? dossier.oecd?.projectionFrom} />
         <div className="snr-fund-grid">
           <div className="snr-stat">
             <span className="snr-stat-label">Latest</span>
@@ -435,7 +462,7 @@ function StoryCard({ dossier }) {
                   : fmt(s.latest.value, s.decimals, s.unit),
               )}
             </span>
-            <span className="snr-stat-cap">{s.latest.year}</span>
+            <span className="snr-stat-cap">{s.periodLabel || ptLabel(s.latest)}</span>
           </div>
           <div className="snr-stat">
             <span className="snr-stat-label">{s.normYears}Y median</span>
@@ -445,20 +472,17 @@ function StoryCard({ dossier }) {
           <div className="snr-stat">
             <span className="snr-stat-label">Peak</span>
             <span className="snr-stat-value">{minus(fmt(s.peak.value, s.decimals, s.unit))}</span>
-            <span className="snr-stat-cap">{s.peak.year}</span>
+            <span className="snr-stat-cap">{ptLabel(s.peak)}</span>
           </div>
           <div className="snr-stat">
             <span className="snr-stat-label">Trough</span>
             <span className="snr-stat-value">{minus(fmt(s.trough.value, s.decimals, s.unit))}</span>
-            <span className="snr-stat-cap">{s.trough.year}</span>
+            <span className="snr-stat-cap">{ptLabel(s.trough)}</span>
           </div>
         </div>
       </div>
-      <p
-        className="snr-pol-note snr-cty-note"
-        title={`${s.label}, ${s.unit}. Source: OECD Economic Outlook. Dashed years are OECD projections.`}
-      >
-        {s.label}, {s.unit}. Source: OECD Economic Outlook. Dashed years are OECD projections.
+      <p className="snr-pol-note snr-cty-note" title={note}>
+        {note}
       </p>
     </div>
   );
@@ -582,12 +606,14 @@ export function CountryStack({
   topSlot = null,
   leadSlot = null,
 }) {
-  const hasStory = Boolean(dossier.oecd?.stories?.length);
+  const hasIntel = hasCountryIntel(dossier);
+  const hasStory = Boolean(keyChartOf(dossier)?.stories?.length);
   const hasEmpire = Boolean(dossier.empire?.dims?.length);
   const hasIndicators = Boolean(dossier.keyIndicators?.length);
   const news = dossier.news || [];
   const echo = dossier.echo || [];
   if (
+    !hasIntel &&
     !hasStory &&
     !hasEmpire &&
     !hasIndicators &&
@@ -604,6 +630,9 @@ export function CountryStack({
       {/* Nov 1: a commodity chart opened from the brief leads, above the key
           chart or power profile. */}
       {leadSlot}
+      {/* Nov 2026: a country question ("Is Turkey's lira under pressure?")
+          leads with the Country intelligence card. */}
+      {hasIntel ? <CountryIntelCard dossier={dossier} /> : null}
       {/* Oct 26: the Key Chart leads the stack; the matching dataset cards
           (topSlot) follow it. */}
       {hasStory ? (

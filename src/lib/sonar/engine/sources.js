@@ -29,6 +29,8 @@ import { newsEvidence, sanctionsContext } from '@/lib/sonar/landing-research';
 import { getCommoditySeries } from '@/lib/sonar/commodity-series';
 import ipoEvents from '@/lib/sonar/sources/ipo-events';
 import { macroBrief, seriesHistory, countryBrief } from '@/lib/sonar/macro/series-store';
+import { buildCountryIntel } from '@/lib/sonar/macro/intel';
+import { assessmentRows } from '@/lib/sonar/macro/intel-brief';
 import { cacheGet, cacheSet } from './cache';
 import { LOBBYING_TOPICS, topicCovered } from '@/lib/lobbying/topics';
 import { MEMO_RUNNERS } from './sources-memo';
@@ -691,13 +693,32 @@ async function macroSeriesSource(params, { admin, ms = 2500, maxItems = 6, now }
     region: params.region || null,
   };
   const timeoutMs = Math.max(600, Math.min(ms - 300, 3000));
-  const items = await macroBrief(admin, route, {
-    limit: Math.max(maxItems, 6),
-    maxCountries: 4,
-    perCountry: params.contextLabel ? 4 : 6,
-    timeoutMs,
-    now,
-  });
+  /* Nov 6: a currency question in deep research reads the currency framework's families
+     as required evidence (more per country), plus the computed currency picture with its
+     historical stress episodes, the same charts as the ping, and what Ezana does not hold. */
+  const currencyAsk =
+    !params.contextLabel &&
+    (params.frameworks || []).includes('currency') &&
+    route.countries.length > 0;
+  const [items, intel] = await Promise.all([
+    macroBrief(admin, route, {
+      limit: Math.max(maxItems, currencyAsk ? 10 : 6),
+      maxCountries: 4,
+      perCountry: params.contextLabel ? 4 : currencyAsk ? 10 : 6,
+      timeoutMs,
+      now,
+    }),
+    currencyAsk
+      ? buildCountryIntel(admin, {
+          iso3: route.countries[0],
+          route: { ...route, currency: params.currency || null },
+          timeoutMs,
+          now: now || new Date(),
+          historyYears: 20,
+          withEpisodes: true,
+        }).catch(() => null)
+      : Promise.resolve(null),
+  ]);
   /* History for the two lead series with a key (rankings chart from their own rows). */
   const since = `${(now || new Date()).getUTCFullYear() - 6}`;
   const lead = items.filter((it) => it.meta?.series_key && it.meta.scope !== 'ranking').slice(0, 2);
@@ -711,6 +732,31 @@ async function macroSeriesSource(params, { admin, ms = 2500, maxItems = 6, now }
     ),
   );
   const byKey = new Map(lead.map((it, i) => [it, hist[i]]));
+  const pic = intel?.picture || null;
+  /* The computed measures as evidence (each cites the series it came from), then what the
+     required families lack: a data gap is stated, never filled. */
+  const intelItems = pic
+    ? [
+        ...pic.statements.map((text, i) => ({
+          kind: 'aggregate',
+          category: 'historical',
+          title: `${intel.place}: computed currency measures ${i + 1}`,
+          text,
+          entities: [intel.place, intel.iso3].filter(Boolean),
+        })),
+        ...(pic.missing?.length
+          ? [
+              {
+                kind: 'aggregate',
+                category: 'historical',
+                title: `${intel.place}: data not available`,
+                text: `Not in Ezana's data for ${intel.place}: ${pic.missing.join(', ')}.`,
+                entities: [intel.place],
+              },
+            ]
+          : []),
+      ]
+    : [];
   return {
     layout: {
       macro: {
@@ -720,14 +766,34 @@ async function macroSeriesSource(params, { admin, ms = 2500, maxItems = 6, now }
           citation: it.citation,
           meta: { ...it.meta, history: undefined },
         })),
+        countryIntel: pic
+          ? {
+              iso3: intel.iso3,
+              place: intel.place,
+              currency: intel.currency || null,
+              focus: 'FX risk',
+              overall: pic.assessment?.overall || null,
+              assessmentLabel: intel.assessmentLabel || null,
+              kpis: pic.kpis || [],
+              rows: pic.assessment?.overall ? assessmentRows(pic, null) : [],
+              missing: pic.missing || [],
+              charts: intel.charts || {},
+              transmission: intel.transmission || null,
+              episodes: intel.episodes || [],
+              sources: intel.sources || [],
+            }
+          : null,
       },
     },
-    items: items.map((it) =>
-      macroItemToEvidence(it, {
-        history: byKey.get(it) || null,
-        contextLabel: params.contextLabel || null,
-      }),
-    ),
+    items: [
+      ...intelItems,
+      ...items.map((it) =>
+        macroItemToEvidence(it, {
+          history: byKey.get(it) || null,
+          contextLabel: params.contextLabel || null,
+        }),
+      ),
+    ],
   };
 }
 

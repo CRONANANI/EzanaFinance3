@@ -218,6 +218,16 @@ export function freqOf(period) {
   return null;
 }
 
+/**
+ * 'YYYY-MM-DD' a whole number of years before `date` (UTC). Rolling windows ("the last two
+ * years") start here; adapters pass the pass start date so the batch list stays deterministic.
+ */
+export function yearsBefore(date, years) {
+  const d = new Date(date);
+  d.setUTCFullYear(d.getUTCFullYear() - years);
+  return d.toISOString().slice(0, 10);
+}
+
 /** Excel serial date (1900 system) -> 'YYYY-MM-DD'. */
 export function excelSerialToDate(serial) {
   const n = Number(serial);

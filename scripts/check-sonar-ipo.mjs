@@ -142,13 +142,29 @@ test('market snapshot: listing date and live price, no vendor name', async () =>
   assert.ok(!/[—–]/.test(m.snippet));
 });
 
-test('fast profile: a six-second ping by default', () => {
-  const P = pingProfile();
-  assert.equal(P.id, 'fast');
-  assert.ok(P.routeBudgetMs + P.rateLimitMs + P.ledgerMs <= 6_100);
-  assert.equal(P.web, false);
-  assert.equal(P.regenerate, false);
-  assert.ok(P.legs.retrieveCap < P.routeBudgetMs);
+test('standard profile: 25 s by default, synthesis starts with 8 s or more left', () => {
+  const saved = process.env.SONAR_PING_BUDGET_MS;
+  delete process.env.SONAR_PING_BUDGET_MS;
+  try {
+    const P = pingProfile();
+    assert.equal(P.id, 'standard');
+    assert.equal(P.routeBudgetMs, 25_000);
+    assert.equal(P.web, false);
+    assert.equal(P.regenerate, true);
+    assert.ok(P.briefTokens >= 1_000);
+    assert.ok(P.evidenceReserveMs - P.tailMs >= 8_000, 'synthesis keeps 8 s');
+    /* At the leg caps the evidence legs hand over with the reserve intact. */
+    const LEG = P.legs;
+    const evidenceAtCaps = Math.max(LEG.retrieveCap, LEG.countryDossier, LEG.macro * 2, LEG.news);
+    const authAndUnderstand = P.authMs + P.rateLimitMs + P.ledgerMs + LEG.resolve;
+    const leftAtSynthesis = P.routeBudgetMs - authAndUnderstand - evidenceAtCaps;
+    assert.ok(leftAtSynthesis >= 8_000, `synthesis starts with ${leftAtSynthesis} ms`);
+    process.env.SONAR_PING_BUDGET_MS = '40000';
+    assert.equal(pingProfile().routeBudgetMs, 40_000);
+  } finally {
+    if (saved == null) delete process.env.SONAR_PING_BUDGET_MS;
+    else process.env.SONAR_PING_BUDGET_MS = saved;
+  }
 });
 
 test('resolver: other IPO phrasings and a sanctions "listed" ping', () => {

@@ -8,7 +8,14 @@ import { classifyResearchMode, routeForClassification, modeMeta } from '@/lib/so
 import { logModeEvent, fromClassification } from '@/lib/sonar/mode-events';
 import { SONAR_QUERY_MAX } from '@/lib/sonar/limits';
 import { runLandingPipeline, hashIp, DISCLAIMER, pingProfile } from '@/lib/sonar/landing-pipeline';
-import { reservePing, completePing, failPing } from '@/lib/sonar/quota';
+import {
+  reservePing,
+  completePing,
+  failPing,
+  annotatePing,
+  settlementFor,
+} from '@/lib/sonar/quota';
+import { guestIpDailyCap, landingRunMode, memberDailyPingCap } from '@/lib/sonar/estimate';
 import { getClientIp } from '@/lib/client-ip';
 import { withTimeout } from '@/lib/with-timeout';
 
@@ -36,6 +43,15 @@ import { withNoEmDash } from '@/lib/text/no-em-dash-response';
  * answer. A failed synthesis or a dead upstream returns the count untouched
  * and leaves the cookie alone, so nobody burns their five on our outage. A
  * general-knowledge answer still counts, because a real synthesis was paid for.
+ *
+ * Nov 2026 (estimates): a visitor who leaves before the answer lands (the
+ * request is aborted, for example because they chose deep research from the
+ * progress screen) is not charged either: the reservation is released and
+ * the cookie, which only travels with an answer, is never bumped. A deep run
+ * started with { supersedes } also releases this row if it was completed in
+ * the same moment (quota.js releaseSupersededPing). Each completed row
+ * records the mode that ran and the route's total time (mode, duration_ms),
+ * which /api/sonar/estimate reads back for its p50/p90.
  */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -45,12 +61,13 @@ export const dynamic = 'force-dynamic';
    (PIPELINE_BUDGET_MS from the handler's start, every leg bounded) and the
    function cap sits above it, so the route always gets to answer. */
 export const maxDuration = 90;
-/* Oct 30 (v2): every ping answers inside six seconds (the 'fast' profile,
-   landing-pipeline.js). The pipeline gets PIPELINE_BUDGET_MS from the
-   handler's start; the session lookup, the reservation and the ledger write
-   are each bounded so the whole request stays under it. SONAR_PING_PROFILE=
-   deep restores the 70 second web-search budget. maxDuration stays a
-   literal (Next reads it statically) and above both. */
+/* Nov 2026: a ping runs the 'standard' profile (landing-pipeline.js
+   pingProfile(), PROFILE.id) with a route budget of SONAR_PING_BUDGET_MS,
+   25 seconds by default (PROFILE.routeBudgetMs); SONAR_PING_PROFILE=deep
+   restores the long web-search budget. The pipeline gets PIPELINE_BUDGET_MS
+   from the handler's start; the session lookup, the reservation and the
+   ledger write are each bounded so the whole request stays under it.
+   maxDuration stays a literal (Next reads it statically) and above both. */
 const PROFILE = pingProfile();
 const PIPELINE_BUDGET_MS = PROFILE.routeBudgetMs;
 const AUTH_MS = PROFILE.authMs;
@@ -62,6 +79,26 @@ const GUEST_LIMIT = 5;
 const AUTH_GRACE_MS = 1_500;
 
 const COOKIE = 'snr_guest';
+
+/* What the race against the client's abort resolves with. */
+const ABORTED = Symbol('aborted');
+
+/** Resolves ABORTED when the visitor goes away; never rejects. */
+function whenAborted(signal) {
+  if (!signal) return null;
+  return new Promise((resolve) => {
+    if (signal.aborted) resolve(ABORTED);
+    else signal.addEventListener?.('abort', () => resolve(ABORTED), { once: true });
+  });
+}
+
+/* The visitor went away before the answer: nothing was spent. */
+function cancelledResponse() {
+  return NextResponse.json(
+    { cancelled: true, error: 'Cancelled. Nothing was spent.', disclaimer: DISCLAIMER },
+    { status: 499 },
+  );
+}
 
 function guestSecret() {
   return process.env.SONAR_GUEST_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -141,7 +178,7 @@ const POST_HANDLER = withApiGuard(
     const unknownSession = !member && carriesSession && Boolean(memberRes.timedOut);
     if (memberRes.timedOut)
       console.warn('[sonar/landing] auth lookup timed out', { carriesSession });
-    const memberCap = Math.max(1, Number(process.env.SONAR_MEMBER_DAILY_CAP) || 25);
+    const memberCap = memberDailyPingCap();
     const isGuestPing = !member && !unknownSession;
     const admin = getAdminClient();
     const ipHash = hashIp(getClientIp(request) || 'unknown', guestSecret());
@@ -228,6 +265,21 @@ const POST_HANDLER = withApiGuard(
     /* Quick: Go deeper only to a mode this host can run. */
     const goDeeper = route.goDeeper;
 
+    /* The mode this ping is ledgered as (mode column): 'standard' unless the
+       classifier rated the question quick. Re-pings that skip the routing
+       above are classified here for the record only (pure, no I/O). */
+    let ledgerMode = landingRunMode(mode);
+    if (!mode) {
+      try {
+        ledgerMode = landingRunMode(classifyResearchMode(query, { coverage: false }));
+      } catch {
+        ledgerMode = 'standard';
+      }
+    }
+
+    /* Gone before anything was reserved: nothing to release. */
+    if (request.signal?.aborted) return cancelledResponse();
+
     // Guest quota gate, before any retrieval or model spend.
     const used = member || unknownSession ? 0 : readGuestCount(request);
     if (used >= GUEST_LIMIT) {
@@ -248,9 +300,7 @@ const POST_HANDLER = withApiGuard(
       userId: member?.id || null,
       limit: member ? memberCap : null,
       ipHash: member ? null : ipHash,
-      ipLimit: member
-        ? null
-        : Math.max(GUEST_LIMIT, Number(process.env.SONAR_GUEST_IP_DAILY_CAP) || 20),
+      ipLimit: member ? null : guestIpDailyCap(GUEST_LIMIT),
       isGuest: !member,
       query,
       version: member ? 'member' : 'guest',
@@ -297,17 +347,30 @@ const POST_HANDLER = withApiGuard(
         : null;
 
     let result;
+    const pipelineP = runLandingPipeline(query, {
+      admin,
+      noCorrect,
+      force,
+      deadlineAt: startedAt + PIPELINE_BUDGET_MS,
+    });
+    /* Raced against the visitor leaving, so a cancelled ping is released at
+       once rather than when the pipeline finishes for nobody. */
+    const abortedP = whenAborted(request.signal);
     try {
-      result = await runLandingPipeline(query, {
-        admin,
-        noCorrect,
-        force,
-        deadlineAt: startedAt + PIPELINE_BUDGET_MS,
-      });
+      result = abortedP ? await Promise.race([pipelineP, abortedP]) : await pipelineP;
     } catch (e) {
       await withTimeout(failPing(admin, reservation), LEDGER_MS, 'ledger-fail');
       return safeErrorResponse(e);
     }
+    const aborted = result === ABORTED || Boolean(request.signal?.aborted);
+    if (aborted) {
+      pipelineP.catch(() => {});
+      if (settlementFor({ aborted, answered: false }) === 'release') {
+        await withTimeout(failPing(admin, reservation), LEDGER_MS, 'ledger-cancel');
+      }
+      return cancelledResponse();
+    }
+    const durationMs = Date.now() - startedAt;
 
     console.log('[sonar/landing]', {
       query,
@@ -319,7 +382,7 @@ const POST_HANDLER = withApiGuard(
 
     /* No answer at all means both the grounded and the general synthesis
        failed, which is our problem and not the visitor's. Nothing is spent. */
-    if (!result.answer) {
+    if (settlementFor({ aborted, answered: Boolean(result.answer) }) === 'release') {
       await withTimeout(failPing(admin, reservation), LEDGER_MS, 'ledger-fail');
       return NextResponse.json(
         {
@@ -352,7 +415,14 @@ const POST_HANDLER = withApiGuard(
         'ledger',
       ),
       /* Alongside the ledger write, so it adds no time to the ping. */
-      logClassified({ queryId: reservation.id || null, ranMode: 'quick' }),
+      logClassified({ queryId: reservation.id || null, ranMode: ledgerMode }),
+      /* Which mode ran and the route's total time, for the estimate's
+         p50/p90. Skipped quietly if the columns are missing. */
+      withTimeout(
+        annotatePing(admin, reservation, { mode: ledgerMode, durationMs }),
+        LEDGER_MS,
+        'ledger-annotate',
+      ),
     ]);
     if (!ledger.ok) {
       console.error(
@@ -368,6 +438,7 @@ const POST_HANDLER = withApiGuard(
       sources: result.sources,
       relevance: result.relevance,
       dossier: result.dossier,
+      countryIntel: result.countryIntel || null,
       webUsed: result.webUsed,
       webSources: result.webSources,
       newsColumns: result.newsColumns,
@@ -383,8 +454,9 @@ const POST_HANDLER = withApiGuard(
     if (!member && !unknownSession) setGuestCount(res, nextUsed);
     return res;
   },
-  /* The limiter's database call is bounded to fit the six-second ping; a
-     miss falls back to the per-instance count (persistent-rate-limit.js). */
+  /* The limiter's database call is bounded by the ping profile
+     (PROFILE.rateLimitMs); a miss falls back to the per-instance count
+     (persistent-rate-limit.js). */
   { requireAuth: false, strict: true, rateLimitTimeoutMs: PROFILE.rateLimitMs },
 );
 

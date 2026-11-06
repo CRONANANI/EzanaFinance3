@@ -34,7 +34,7 @@ export const CLASSIFICATIONS = [
   'unknown',
 ];
 
-export const SYNTHESIS_PROMPT_VERSION = 'synth-v1';
+export const SYNTHESIS_PROMPT_VERSION = 'synth-v2';
 
 export const SYNTHESIS_SYSTEM = `You are Ezana Sonar, a financial and geopolitical research analyst. You receive a research question, a research plan, numbered evidence records [S1]..[Sn] and calculated metrics [M:id]. Return ONLY one JSON object, no prose around it, matching:
 {

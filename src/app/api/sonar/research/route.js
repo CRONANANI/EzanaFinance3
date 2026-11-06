@@ -4,7 +4,14 @@ import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
 import { getClientIp } from '@/lib/client-ip';
 import { withTimeout } from '@/lib/with-timeout';
-import { reservePing, reserveOrgDeep, completePing, failPing } from '@/lib/sonar/quota';
+import {
+  reservePing,
+  reserveOrgDeep,
+  completePing,
+  failPing,
+  annotatePing,
+  releaseSupersededPing,
+} from '@/lib/sonar/quota';
 import { defaultOrgPool, budgetMessage } from '@/lib/org-sonar/budget';
 import { isFundFitQuestion } from '@/lib/org-sonar/fund-fit';
 import { loadFundContext } from '@/lib/org-sonar/fund-context';
@@ -28,6 +35,7 @@ import {
 import { classifyResearchMode, coverageFromPlan } from '@/lib/sonar/research-mode';
 import { logModeEvent, fromClassification } from '@/lib/sonar/mode-events';
 import { SONAR_QUERY_MAX } from '@/lib/sonar/limits';
+import { cleanSonarQuery } from '@/lib/sonar/estimate';
 import { rememberRun } from '@/lib/sonar/engine/memory';
 import { EMPTY_RESEARCH_STATE, reduceEvent } from '@/lib/sonar/research-state';
 import { snapshotFromState } from '@/lib/org-sonar/reports';
@@ -76,6 +84,14 @@ import { withNoEmDash } from '@/lib/text/no-em-dash-response';
  * guests may use it within their free pings. If the real plan leaves out a
  * kind of evidence the question asked for, a `coverage` event says so and
  * the UI offers Go deeper.
+ *
+ * Estimates (Nov 2026): a completed standard or deep run records its mode
+ * and the route's total time on its ledger row (mode, duration_ms) for the
+ * estimate's p50/p90 (/api/sonar/estimate). A deep run started while the
+ * visitor's standard answer to the same question was still running carries
+ * { supersedes: { query } }: that answer was cancelled, so its ledger row is
+ * released before the deep run is reserved and the visitor is charged once
+ * (quota.js releaseSupersededPing, scoped to the caller's own rows).
  *
  * Sonar for organizations (Nov 2026): an org member's run folds every event
  * into the same state the browser builds (lib/sonar/research-state.js) and
@@ -170,6 +186,24 @@ const POST_HANDLER = withApiGuard(
       : standardMode
         ? 'standard'
         : clampDepth(DEPTHS.has(body?.depth) ? body.depth : access.maxDepth, access.maxDepth);
+
+    /* Choosing deep cancelled a standard answer to the same question that
+       had not finished: release its row first, so the deep run is the only
+       charge (and the member's daily count has room for it). */
+    let superseded = { released: false };
+    const supersedes = body?.supersedes;
+    if (deepMode && supersedes && typeof supersedes.query === 'string') {
+      const r = await withTimeout(
+        releaseSupersededPing(admin, {
+          userId: access.user?.id || null,
+          ipHash: isGuest ? ipHash : null,
+          query: cleanSonarQuery(supersedes.query).slice(0, SONAR_QUERY_MAX),
+        }),
+        800,
+        'ledger-supersede',
+      );
+      superseded = r.ok ? r.value : { released: false };
+    }
 
     /* Sonar for organizations (Nov 2026): an org member's deep run draws on
        the org's pooled monthly budget (lib/org-sonar/budget.js). */
@@ -352,11 +386,22 @@ const POST_HANDLER = withApiGuard(
           settled = true;
           if (answered) {
             await withTimeout(
-              completePing(admin, res, {
-                classification: run.researchScope?.domains?.[0]?.id || null,
-                datasets_searched: run.methodology?.plan?.tasks?.map((t) => t.source) || [],
-                grounded: true,
-              }),
+              Promise.all([
+                completePing(admin, res, {
+                  classification: run.researchScope?.domains?.[0]?.id || null,
+                  datasets_searched: run.methodology?.plan?.tasks?.map((t) => t.source) || [],
+                  grounded: true,
+                }),
+                /* Standard and deep runs: the mode and the route's total
+                   time, for the estimate. Skipped quietly if the columns
+                   are missing. */
+                deepMode || standardMode
+                  ? annotatePing(admin, res, {
+                      mode: deepMode ? 'deep' : 'standard',
+                      durationMs: Date.now() - startedAt,
+                    })
+                  : null,
+              ]),
               800,
               'ledger',
             );
@@ -426,7 +471,11 @@ const POST_HANDLER = withApiGuard(
     };
     /* A guest's count goes up when the run starts; a failed run's refund
        token puts it back (POST /api/sonar/research/refund). */
-    if (isGuest) headers['Set-Cookie'] = guestCookieHeader(used + 1);
+    /* A released standard research run had already bumped the cookie when
+       it started; the deep run that superseded it takes that place. */
+    const supersededCounted =
+      superseded.released && String(superseded.version || '').startsWith('research:');
+    if (isGuest) headers['Set-Cookie'] = guestCookieHeader(used + (supersededCounted ? 0 : 1));
     return new Response(stream, { status: 200, headers });
   },
   { requireAuth: false, strict: true },

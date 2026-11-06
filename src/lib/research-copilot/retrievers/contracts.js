@@ -1,6 +1,8 @@
 import { getAdminClient } from '@/lib/supabase';
 import { TICKER_ALIASES, AGENCY_ALIASES } from '@/lib/rag/aliases';
 import { usd } from './shared';
+import { findCountries, findThemes } from '@/lib/sonar/macro/route';
+import { findCurrency } from '@/lib/sonar/macro/currencies';
 
 /**
  * Government contracts retriever — structured. Filters
@@ -11,6 +13,53 @@ import { usd } from './shared';
 export const corpus = 'contracts';
 export const kind = 'structured';
 export const scope = 'public';
+
+/* Nov 6 (A5): question scaffolding and generic words are never contract keywords. "under"
+   matched THUNDERyard and THUNDERcat, so "Is Turkey's lira under pressure?" showed
+   government contract cards. */
+const SCAFFOLD = new Set(
+  `under over about above below pressure pressures current currently latest recent recently which what whats
+  doing happening really still today now there their this that these those with from into onto
+  when where while will would should could does have been being much many more most less least
+  very just also even only than then them they your yours ours here going goes heading toward towards
+  stress sustainable undervalued overvalued strong weak weaker stronger crisis risk risks outlook
+  economy economic economies inflation rates rate currency currencies exchange dollar dollars market markets
+  country countries price prices trend trends doing look looks like tell show give explain`
+    .split(/\s+/)
+    .filter(Boolean),
+);
+/* A question about government money: contracts, awards, procurement, agencies. */
+const CONTRACT_CUE =
+  /\b(contracts?|contractors?|awards?|awarded|procurement|government spending|federal spending|pentagon|\bdod\b|department of defense|usaspending|obligations?|idiq|task orders?|grants?)\b/i;
+
+const escapeRe = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/** Whole words only: "under" never matches THUNDERCAT. */
+export function wholeWord(term) {
+  return new RegExp(
+    `(^|[^\\p{L}\\p{N}])${escapeRe(String(term).toLowerCase())}(?=[^\\p{L}\\p{N}]|$)`,
+    'u',
+  );
+}
+
+/* A country, currency or macro-theme word belongs to the macro router, not to a
+   recipient-name search ("Turkey" must not find TURKEY HILL DAIRY). */
+function macroOwned(term) {
+  const t = String(term || '');
+  const cap = t.charAt(0).toUpperCase() + t.slice(1);
+  return findCountries(cap).length > 0 || Boolean(findCurrency(t)) || findThemes(t).length > 0;
+}
+
+/** The keyword terms a query may use against recipient and agency names. */
+export function contractKeywords(query, keywords = []) {
+  void query;
+  return keywords
+    .map((k) =>
+      String(k || '')
+        .toLowerCase()
+        .replace(/'s$/, ''),
+    )
+    .filter((k) => k.length >= 4 && !SCAFFOLD.has(k) && !CONTRACT_CUE.test(k) && !macroOwned(k));
+}
 
 function clean(v) {
   return String(v || '')
@@ -44,7 +93,11 @@ export async function retrieve(query, ctx = {}, opts = {}) {
   // prior priority chain (no-alias queries resolve to the same filter as before).
   const upper = String(query || '').toUpperCase();
   const tickers = new Set((e.tickers || []).map((t) => t.replace('$', '').toUpperCase()));
-  const names = new Set((e.names || []).map((n) => clean(n)).filter(Boolean));
+  const names = new Set(
+    (e.names || [])
+      .map((n) => clean(n))
+      .filter((n) => n && !macroOwned(n) && !SCAFFOLD.has(n.toLowerCase())),
+  );
   const agencies = new Set();
   for (const [key, alist] of Object.entries(TICKER_ALIASES)) {
     const hitKey = new RegExp(`\\b${key}\\b`).test(upper);
@@ -66,9 +119,12 @@ export async function retrieve(query, ctx = {}, opts = {}) {
     ...[...agencies].filter(Boolean).map((a) => `awarding_agency.ilike.%${a}%`),
   ];
 
-  // Keyword fallback across recipient + awarding agency (bounded set).
+  /* Keyword fallback across recipient + awarding agency (bounded set). Only for a
+     question about contracts: without a company, ticker or agency, the query needs a
+     contract word ("Thundercat contracts"), or a year with one. */
+  const contractAsk = CONTRACT_CUE.test(String(query || ''));
+  const terms = contractAsk ? contractKeywords(query, e.keywords || []).slice(0, 4) : [];
   const keywordFilter = () => {
-    const terms = (e.keywords || []).slice(0, 4).filter((k) => k.length >= 4);
     if (!terms.length) return null;
     return terms
       .flatMap((k) => [`recipient_name.ilike.%${clean(k)}%`, `awarding_agency.ilike.%${clean(k)}%`])
@@ -92,6 +148,15 @@ export async function retrieve(query, ctx = {}, opts = {}) {
     const retry = await base().or(fallback);
     if (!retry.error && Array.isArray(retry.data)) data = retry.data;
   }
+
+  /* ilike is a substring match; keep only rows a term matches as whole words. */
+  const wordRes = [...names, ...agencies, ...terms].filter(Boolean).map(wholeWord);
+  data = data.filter((r) => {
+    if (r.ticker && tickers.has(String(r.ticker).toUpperCase())) return true;
+    const hay =
+      `${r.recipient_name || ''} ${r.awarding_agency || ''} ${r.awarding_sub_agency || ''}`.toLowerCase();
+    return wordRes.some((re) => re.test(hay));
+  });
 
   return data.map((r) => {
     const amount = usd(r.award_amount);

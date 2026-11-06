@@ -1,0 +1,736 @@
+/* Country & Currency Intelligence card (CountryIntelCard.jsx). Scoped snr-cii-.
+
+   The card renders in two places: the Sonar band's right stack (always-dark band ground)
+   and the deep research report (the app's themed surface, light or dark). Every rule reads
+   card-local --cii-* tokens: on the app surface they resolve to the theme tokens, which flip
+   with body.light-mode; inside .snr-band they resolve to the band's private --snr-* system.
+   No hex, no new globals: tints are color-mix over the tokens. p and h3/h4 carry a
+   two-class !important colour, which undoes the legacy light-mode sheet's p / h1..h5 rules
+   (see the mode-stability block in sonar-band.css). Caps tracking is the --type-* ramp's. */
+
+/* ── tokens ───────────────────────────────────────────────────────────── */
+
+.snr-cii {
+  --cii-text: var(--text-primary);
+  --cii-body: var(--text-secondary);
+  --cii-faint: var(--text-muted);
+  --cii-accent: var(--emerald-text);
+  --cii-pressed: var(--emerald);
+  --cii-rule: var(--border-primary);
+  --cii-rule-strong: var(--border-input);
+  --cii-hair: var(--border-input);
+  --cii-tile: color-mix(in srgb, var(--emerald) 6%, transparent);
+  --cii-ink: var(--bg-secondary);
+  --cii-grid: var(--border-input);
+  --cii-warn: var(--warning);
+  --cii-mono: var(--font-mono);
+  --cii-sans: var(--font-sans);
+  --cii-r-chip: var(--radius-sm);
+  --cii-r-pill: 999px;
+  --cii-t-fast: 180ms;
+}
+
+.snr-band .snr-cii {
+  --cii-text: var(--snr-text);
+  --cii-body: var(--snr-text-muted);
+  --cii-faint: var(--snr-text-faint);
+  --cii-accent: var(--snr-mint);
+  --cii-pressed: var(--snr-emerald);
+  --cii-rule: var(--snr-divider);
+  --cii-rule-strong: var(--snr-hair-strong);
+  --cii-hair: var(--snr-hair);
+  --cii-tile: var(--snr-row);
+  --cii-ink: var(--snr-ink);
+  --cii-grid: var(--snr-grid);
+  --cii-mono: var(--snr-font-mono);
+  --cii-sans: var(--snr-font-sans);
+  --cii-r-chip: var(--snr-r-chip);
+  --cii-r-pill: var(--snr-r-pill);
+  --cii-t-fast: var(--snr-t-fast);
+}
+
+/* ── shell ────────────────────────────────────────────────────────────── */
+
+/* Two classes, so the shell holds whichever order the band and card sheets load in. */
+.snr-fund.snr-cii {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--cii-rule);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  font-family: var(--cii-sans);
+  color: var(--cii-body);
+  /* The card's own width drives the narrow layouts (a stack column, not the viewport). */
+  container: snr-cii / inline-size;
+}
+
+/* In the band: nothing is boxed (the band's own rule), the band's card padding. */
+.snr-band .snr-fund.snr-cii {
+  padding: 14px 16px;
+  border: 0;
+  border-radius: var(--snr-r-panel);
+  background: transparent;
+}
+
+.snr-fund.snr-cii:focus-visible {
+  outline: 2px solid var(--cii-accent);
+  outline-offset: 2px;
+}
+
+.snr-cii .snr-cii-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.snr-cii .snr-cii-iso {
+  font-family: var(--cii-mono);
+  font-size: var(--type-value-sm-size);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--type-kicker-tracking);
+  color: var(--cii-accent);
+}
+
+.snr-cii .snr-cii-kicker {
+  min-width: 0;
+  margin: 0;
+  padding: 1px 6px;
+  border: 1px solid var(--cii-faint);
+  border-radius: var(--cii-r-chip);
+  font-family: var(--cii-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--cii-faint) !important;
+}
+
+.snr-cii .snr-cii-rule {
+  flex: 1 1 auto;
+  min-width: 12px;
+  height: 1px;
+  background: var(--cii-rule);
+}
+
+.snr-cii .snr-cii-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  font-size: var(--type-caption-size);
+  color: var(--cii-body);
+}
+
+.snr-cii .snr-cii-place {
+  font-size: var(--type-card-title-size);
+  font-weight: 600;
+  color: var(--cii-text);
+}
+
+.snr-cii .snr-cii-mono,
+.snr-cii .snr-cii-asof time {
+  font-family: var(--cii-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.snr-cii .snr-cii-tip {
+  margin-left: auto;
+}
+
+/* The ds badge in sans (the positive/negative tones default to mono for figures). */
+.snr-cii .snr-cii-badge {
+  font-family: var(--cii-sans);
+  cursor: help;
+}
+
+.snr-cii .snr-cii-badge:focus-visible {
+  outline: 2px solid var(--cii-accent);
+  outline-offset: 2px;
+}
+
+/* ── text ─────────────────────────────────────────────────────────────── */
+
+.snr-cii .snr-cii-lede {
+  display: grid;
+  gap: 6px;
+}
+
+.snr-cii .snr-cii-answer {
+  margin: 0;
+  font-size: var(--type-body-size);
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--cii-text) !important;
+}
+
+.snr-cii .snr-cii-assess,
+.snr-cii .snr-cii-para {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  line-height: 1.55;
+  color: var(--cii-body) !important;
+}
+
+.snr-cii .snr-cii-muted {
+  color: var(--cii-faint) !important;
+}
+
+.snr-cii .snr-cii-sec {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--cii-rule);
+}
+
+.snr-cii .snr-cii-h {
+  margin: 0;
+  font-family: var(--cii-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 500;
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--cii-accent) !important;
+}
+
+.snr-cii .snr-cii-ol,
+.snr-cii .snr-cii-ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+  font-size: var(--type-caption-size);
+  line-height: 1.55;
+  color: var(--cii-body);
+}
+
+.snr-cii .snr-cii-ol > li::marker {
+  font-family: var(--cii-mono);
+  color: var(--cii-accent);
+}
+
+.snr-cii .snr-cii-ul > li::marker {
+  color: var(--cii-faint);
+}
+
+.snr-cii .snr-cii-strong {
+  font-weight: 600;
+  color: var(--cii-text);
+}
+
+.snr-cii .snr-cii-refs {
+  font-family: var(--cii-mono);
+  font-size: var(--type-micro-size);
+  color: var(--cii-faint);
+}
+
+.snr-cii .snr-cii-cap {
+  display: block;
+  font-size: var(--type-micro-size);
+  line-height: 1.45;
+  color: var(--cii-faint);
+}
+
+/* ── KPI tiles ────────────────────────────────────────────────────────── */
+
+.snr-cii .snr-cii-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(112px, 100%), 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.snr-cii .snr-cii-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--cii-tile);
+}
+
+.snr-cii .snr-cii-kpi-label {
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--cii-faint);
+}
+
+.snr-cii .snr-cii-kpi-value {
+  font-family: var(--cii-mono);
+  font-size: var(--type-value-sm-size);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--cii-text);
+}
+
+.snr-cii .snr-cii-kpi-cap {
+  font-family: var(--cii-mono);
+  font-size: var(--type-micro-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--cii-body);
+  overflow-wrap: anywhere;
+}
+
+/* "Not current": a text tag in the watch tone, never colour alone. */
+.snr-cii .snr-cii-stale {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 1px 6px;
+  border: 1px solid color-mix(in srgb, var(--cii-warn) 60%, transparent);
+  border-radius: var(--cii-r-chip);
+  font-family: var(--cii-mono);
+  font-size: var(--type-micro-size);
+  color: var(--cii-warn);
+}
+
+/* ── tables ───────────────────────────────────────────────────────────── */
+
+.snr-cii .snr-cii-scroll {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.snr-cii .snr-cii-scroll:focus-visible {
+  outline: 2px solid var(--cii-accent);
+  outline-offset: 2px;
+}
+
+.snr-cii .snr-cii-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--cii-sans);
+  font-size: var(--type-caption-size);
+  color: var(--cii-body);
+}
+
+.snr-cii .snr-cii-table thead th {
+  padding: 0 10px 6px 0;
+  font-family: var(--cii-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 500;
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--cii-faint);
+  border-bottom: 1px solid var(--cii-rule);
+  white-space: nowrap;
+}
+
+.snr-cii .snr-cii-table tbody th,
+.snr-cii .snr-cii-table tbody td {
+  padding: 7px 10px 7px 0;
+  border-bottom: 1px solid var(--cii-rule);
+  vertical-align: top;
+  text-align: left;
+  line-height: 1.45;
+  color: inherit;
+}
+
+.snr-cii .snr-cii-table tbody tr:last-child th,
+.snr-cii .snr-cii-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.snr-cii .snr-cii-table tbody tr:hover {
+  background: var(--cii-tile);
+}
+
+.snr-cii .snr-cii-rowh {
+  font-weight: 500;
+  color: var(--cii-text);
+}
+
+.snr-cii .snr-cii-table--scn .snr-cii-rowh {
+  min-width: 88px;
+}
+
+.snr-cii .snr-cii-level {
+  font-family: var(--cii-mono);
+  font-size: var(--type-micro-size);
+  white-space: nowrap;
+  color: var(--cii-text);
+}
+
+.snr-cii .snr-cii-level.is-elevated,
+.snr-cii .snr-cii-level.is-severe,
+.snr-cii .snr-cii-level.is-evidence-present {
+  color: var(--cii-warn);
+}
+
+/* A narrow card: each scenario stacks (name, then conditions and implication, each
+   labelled). The cells keep explicit table roles in the markup, so the display change does
+   not strip their semantics. */
+@container snr-cii (max-width: 440px) {
+  .snr-cii .snr-cii-table--scn thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .snr-cii .snr-cii-table--scn,
+  .snr-cii .snr-cii-table--scn tbody,
+  .snr-cii .snr-cii-table--scn tr,
+  .snr-cii .snr-cii-table--scn th,
+  .snr-cii .snr-cii-table--scn td {
+    display: block;
+    width: auto;
+  }
+  .snr-cii .snr-cii-table--scn tr {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--cii-rule);
+  }
+  .snr-cii .snr-cii-table--scn tr:last-child {
+    border-bottom: 0;
+  }
+  .snr-cii .snr-cii-table--scn tbody th,
+  .snr-cii .snr-cii-table--scn tbody td {
+    padding: 2px 0;
+    border-bottom: 0;
+  }
+  .snr-cii .snr-cii-table--scn td[data-label]::before {
+    content: attr(data-label) ': ';
+    font-family: var(--cii-mono);
+    font-size: var(--type-micro-size);
+    letter-spacing: var(--type-label-tracking);
+    text-transform: uppercase;
+    color: var(--cii-faint);
+  }
+}
+
+/* The crisis row closes the table, set off by a stronger rule. */
+.snr-cii .snr-cii-table .snr-cii-crisis th,
+.snr-cii .snr-cii-table .snr-cii-crisis td {
+  border-top: 1px solid var(--cii-rule-strong);
+}
+
+/* ── charts ───────────────────────────────────────────────────────────── */
+
+.snr-cii .snr-cii-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--cii-rule);
+}
+
+.snr-cii .snr-cii-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+}
+
+.snr-cii .snr-cii-chart-title {
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  color: var(--cii-text);
+}
+
+.snr-cii .snr-cii-chart-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  min-height: 16px;
+  font-family: var(--cii-mono);
+  font-size: var(--type-micro-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--cii-faint);
+}
+
+.snr-cii .snr-cii-legend {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.snr-cii .snr-cii-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.snr-cii .snr-cii-key::before {
+  content: '';
+  width: 16px;
+  border-top: 2px solid var(--cii-accent);
+}
+
+.snr-cii .snr-cii-key.is-dashed::before {
+  border-top: 2px dashed var(--cii-text);
+}
+
+.snr-cii .snr-cii-read {
+  margin-left: auto;
+  text-align: right;
+  color: var(--cii-text);
+}
+
+.snr-cii .snr-cii-plot {
+  position: relative;
+  min-width: 0;
+  height: 148px;
+  touch-action: pan-y;
+  border-radius: var(--cii-r-chip);
+}
+
+.snr-cii .snr-cii-plot:focus-visible {
+  outline: 2px solid var(--cii-accent);
+  outline-offset: 2px;
+}
+
+.snr-cii .snr-cii-plot svg {
+  display: block;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.snr-cii .snr-cii-grid {
+  stroke: var(--cii-rule);
+  stroke-width: 1;
+}
+
+.snr-cii .snr-cii-zero {
+  stroke: var(--cii-grid);
+  stroke-width: 1;
+}
+
+.snr-cii .snr-cii-tick {
+  font-family: var(--cii-mono);
+  font-size: var(--type-micro-size);
+  font-variant-numeric: tabular-nums;
+  fill: var(--cii-faint);
+}
+
+.snr-cii .snr-cii-line {
+  fill: none;
+  stroke: var(--cii-accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.snr-cii .snr-cii-line.is-dashed {
+  stroke: var(--cii-text);
+  stroke-dasharray: 5 4;
+}
+
+.snr-cii .snr-cii-guide {
+  stroke: var(--cii-faint);
+  stroke-width: 1;
+}
+
+.snr-cii .snr-cii-dot {
+  fill: var(--cii-accent);
+  stroke: var(--cii-ink);
+  stroke-width: 2;
+}
+
+.snr-cii .snr-cii-dot.is-dashed {
+  fill: var(--cii-text);
+}
+
+/* Range toggles: a segmented control of real buttons with aria-pressed. */
+.snr-cii .snr-cii-seg {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: 4px;
+}
+
+.snr-cii .snr-cii-segbtn {
+  min-width: 36px;
+  min-height: 28px;
+  padding: 2px 8px;
+  border: 1px solid var(--cii-hair);
+  border-radius: var(--cii-r-pill);
+  background: transparent;
+  font-family: var(--cii-mono);
+  font-size: var(--type-micro-size);
+  letter-spacing: 0.06em;
+  color: var(--cii-body);
+  cursor: pointer;
+  transition:
+    border-color var(--cii-t-fast) ease,
+    background var(--cii-t-fast) ease,
+    color var(--cii-t-fast) ease;
+}
+
+.snr-cii .snr-cii-segbtn:hover {
+  border-color: var(--cii-rule-strong);
+  color: var(--cii-text);
+}
+
+.snr-cii .snr-cii-segbtn[aria-pressed='true'] {
+  border-color: var(--cii-pressed);
+  background: color-mix(in srgb, var(--cii-pressed) 22%, transparent);
+  color: var(--cii-text);
+  font-weight: 600;
+}
+
+.snr-cii .snr-cii-segbtn:focus-visible {
+  outline: 2px solid var(--cii-accent);
+  outline-offset: 2px;
+}
+
+/* ── transmission map ─────────────────────────────────────────────────── */
+
+.snr-cii .snr-cii-map {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.snr-cii .snr-cii-map-keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--cii-mono);
+  font-size: var(--type-micro-size);
+  color: var(--cii-faint);
+}
+
+.snr-cii .snr-cii-mapkey {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.snr-cii .snr-cii-mapkey::before {
+  content: '';
+  width: 14px;
+  height: 10px;
+  border: 1.5px dashed var(--cii-faint);
+  border-radius: var(--cii-r-chip);
+}
+
+.snr-cii .snr-cii-mapkey.is-supported::before {
+  border: 1.5px solid var(--cii-accent);
+  background: color-mix(in srgb, var(--cii-accent) 14%, transparent);
+}
+
+.snr-cii .snr-cii-map-box {
+  min-width: 0;
+}
+
+.snr-cii .snr-cii-map-box svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.snr-cii .snr-cii-node rect {
+  fill: var(--cii-tile);
+  stroke: var(--cii-faint);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+
+.snr-cii .snr-cii-node.is-supported rect {
+  fill: color-mix(in srgb, var(--cii-accent) 14%, transparent);
+  stroke: var(--cii-accent);
+  stroke-dasharray: none;
+}
+
+.snr-cii .snr-cii-node-label {
+  font-family: var(--cii-sans);
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  fill: var(--cii-text);
+}
+
+.snr-cii .snr-cii-node-tag {
+  font-family: var(--cii-mono);
+  font-size: var(--type-micro-size);
+  fill: var(--cii-faint);
+}
+
+.snr-cii .snr-cii-node.is-supported .snr-cii-node-tag {
+  fill: var(--cii-accent);
+}
+
+.snr-cii .snr-cii-edge {
+  stroke: var(--cii-faint);
+  stroke-width: 1.5;
+}
+
+.snr-cii .snr-cii-arrowhead {
+  fill: var(--cii-faint);
+}
+
+.snr-cii .snr-cii-sources {
+  padding-top: 10px;
+  border-top: 1px solid var(--cii-rule);
+}
+
+/* ── geometry: the card in the landing band ───────────────────────────────
+   The composed landing band has a fixed budget per stack card (and clips with
+   overflow: hidden). Here the intel card is the stack's overflow absorber: it
+   takes the space the other cards leave and scrolls inside itself (it is
+   focusable, so the keyboard can scroll it). On the /datasets page and on a
+   phone it takes its natural height. */
+@media (min-width: 641px) {
+  .snr-band.snr-composed:not(.snr-band--page) .snr-stack > .snr-fund.snr-fund--cty.snr-cii {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 260px;
+    max-height: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+}
+
+.dso-page--search .snr-band.snr-band--page.snr-composed .snr-fund.snr-fund--cty.snr-cii,
+.snr-band.snr-band--page .snr-stack > .snr-fund.snr-cii {
+  flex: none;
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+@media (max-width: 640px) {
+  .snr-band .snr-stack > .snr-fund.snr-cii {
+    flex: none;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .snr-band .snr-cii-tip {
+    margin-left: 0;
+  }
+}
+
+/* Touch: the range buttons meet the 44px target. */
+@media (pointer: coarse) {
+  .snr-band .snr-cii-segbtn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snr-band .snr-cii-segbtn {
+    transition: none;
+  }
+}

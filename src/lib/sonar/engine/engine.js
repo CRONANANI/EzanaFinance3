@@ -25,7 +25,8 @@ import { enforceGrounding } from '@/lib/sonar/groundingGuard';
 import { getAdminClient } from '@/lib/supabase';
 import { scoreDomains, buildResearchSpec } from './research-spec';
 import { resolveResearch } from './resolution';
-import { planResearch, memoContextCountries } from './planner';
+import { planResearch, memoContextCountries, macroSeriesParams } from './planner';
+import { MACRO_LENS, frameworkPrompt } from '@/lib/sonar/macro/playbook';
 import { RUNNERS, MEMO_MACRO_FAMILIES, MEMO_MACRO_LABEL } from './sources';
 import { toEvidence, scoreEvidence, packEvidence, withMarkers } from './evidence';
 import { analyze } from './analysis';
@@ -105,6 +106,25 @@ function todayLine(now) {
  *   entitledDatasets?: string[]|null, emit?: Function, signal?: AbortSignal, scope?: { userId?: string|null, orgId?: string|null },
  *   noCorrect?: boolean, force?: object|null, now?: Date }} opts
  */
+/* Nov 6: how Sonar reasons about economies and markets, in every report and memo prompt.
+   A company question keeps its structure; the lens shapes how macro context is read. A
+   country, currency, macro, commodity or geopolitics question also reads its frameworks
+   (max 3), and a currency question adds the structural, historical and scenario sections. */
+export const CURRENCY_REPORT_ADDENDUM = `
+This question concerns a country's currency or external position. In addition to the format above:
+- Structural vulnerabilities: external debt, the credit gap, debt service and dollarisation, only where the evidence holds them.
+- Historical stress episodes: the episodes the evidence finds in Ezana's own series, with what inflation and the policy rate did then.
+- Policy scenarios over 6 to 12 months: conditional ("if X, then Y"), no probabilities, no forecasts of dates or levels.
+- Separate sustained depreciation from an acute crisis; call a crisis only with evidence of disorderly moves, capital flight, reserves running low against obligations, or lost market access.
+- Label the ex-post real rate as ex-post. Projections stay labelled as projections. Nothing is asserted without evidence.`;
+
+export function macroAddendum(spec, resolution = null) {
+  const params = spec?.memoKind ? null : macroSeriesParams(spec, resolution);
+  const frameworks = params?.frameworks || [];
+  if (!frameworks.length) return `\n\n${MACRO_LENS}`;
+  return `\n\n${frameworkPrompt(frameworks)}${frameworks.includes('currency') ? CURRENCY_REPORT_ADDENDUM : ''}`;
+}
+
 export async function runResearch(query, opts = {}) {
   const {
     admin = getAdminClient(),
@@ -412,6 +432,7 @@ export async function runResearch(query, opts = {}) {
         synthesizeWithFallback({
           system:
             (memo ? memoSystem(spec) : SYNTHESIS_SYSTEM) +
+            macroAddendum(spec, resolution) +
             (spec.challenge ? challengeAddendum(spec.challenge.claim) : ''),
           user: (memo ? memoInput : synthesisInput)({
             spec,

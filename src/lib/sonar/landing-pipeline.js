@@ -53,6 +53,7 @@ import { topicForText } from '@/lib/lobbying/topics';
 import {
   resolveCountry,
   mentionedCountry,
+  countryByIso3,
   buildCountryDossier,
   countryEvidence,
   countryEntityTerms,
@@ -76,6 +77,24 @@ import {
   flowsBrief,
 } from '@/lib/sonar/landing-flows';
 import { mentionedCompany } from '@/lib/sonar/company-mentions';
+import { routeMacro, isMacroRelevant } from '@/lib/sonar/macro/route';
+import {
+  MACRO_LENS,
+  FRAMEWORKS,
+  frameworkPrompt,
+  PRESSURE_LABEL,
+} from '@/lib/sonar/macro/playbook';
+import { buildCountryIntel, frameworksFor } from '@/lib/sonar/macro/intel';
+import {
+  intelSystemPrompt,
+  parseIntelBrief,
+  validateIntelBrief,
+  intelBriefText,
+  fallbackIntelBrief,
+  assessmentRows,
+} from '@/lib/sonar/macro/intel-brief';
+import { directionLine } from '@/lib/sonar/macro/currency';
+import { CURRENCY_OF } from '@/lib/sonar/macro/currencies';
 import { BoundedMap } from '@/lib/bounded-map';
 import { withTimeout } from '@/lib/with-timeout';
 import { usd } from '@/lib/research-copilot/retrievers/shared';
@@ -132,6 +151,13 @@ Dates: today's date is the first line of the ping. Anything dated before today h
    did not run"), which says nothing about the subject. */
 const NO_WEB_RULES = `
 Use only the sources below. Never attribute a fact to an outlet, agency or report you did not read here (no "per Reuters", no "according to Bloomberg") unless a (news) snippet names it. Never let anything you add contradict the sources.`;
+
+/* Nov 6 (A6): the freshest data wins. A Turkey brief led with OECD's 2023
+   inflation while the sources held IMF CPI for September 2026, and said the
+   data did not cover currency pressure while BIS exchange rates sat in the
+   prompt. Every grounded prompt carries this block. */
+export const FRESHEST_RULES = `
+Freshest data: when sources give the same measure for different periods, lead with the most recent observed figure. Mention older figures only with their year, and only when the comparison helps. Never present a projection as current when a later observed figure exists. Never say the data does not cover a topic when evidence for it is in the sources.`;
 
 /** Today in Toronto (the brief's reader), long form: "Monday, October 26, 2026". */
 function todayLine() {
@@ -1737,55 +1763,70 @@ export function companyEvidence(matches, resolved, { gov = false } = {}) {
 
    evidenceReserveMs is the time kept back after the evidence legs for the
    brief and the tail; tailMs after the brief for the response itself. */
+/* Nov 6 (v3): the six-second limit is gone. The 'standard' profile replaces
+   'fast': the route has SONAR_PING_BUDGET_MS (default 25 s), the legs are
+   relaxed in proportion and run side by side, synthesis always starts with
+   at least 8 s left (evidenceReserveMs), and a draft the grounding guard
+   flags can be regenerated once. The visitor sees the estimate up front
+   (/api/sonar/estimate) and can choose deep research instead. */
+const pingBudgetMs = () => {
+  const n = Number(process.env.SONAR_PING_BUDGET_MS);
+  return Number.isFinite(n) && n >= 8_000 ? Math.min(n, 80_000) : 25_000;
+};
+/** The least time synthesis starts with on the standard profile. */
+export const SYNTHESIS_MIN_MS = 8_000;
+
 const PROFILES = {
-  fast: {
-    id: 'fast',
-    /* Nov 3: production traces showed the brief needs about 3.5s on the fast
-       model and was getting 2.4s, so most company briefs fell back to the
-       evidence list. The evidence legs now hand over earlier and the
-       limiter and ledger caps are tighter, keeping the whole request
-       inside six seconds. */
-    routeBudgetMs: 5_300,
-    defaultBudgetMs: 5_300,
-    authMs: 700,
-    reserveMs: 1_100,
-    ledgerMs: 300,
-    rateLimitMs: 500,
-    resolveFetchMs: 900,
-    tailMs: 300,
-    evidenceReserveMs: 3_600,
-    dossierReserveMs: 3_600,
-    model: process.env.SONAR_FAST_MODEL || HAIKU_MODEL,
-    briefTokens: 400,
-    sanctionsExtraTokens: 260,
+  standard: {
+    id: 'standard',
+    get routeBudgetMs() {
+      return pingBudgetMs();
+    },
+    get defaultBudgetMs() {
+      return pingBudgetMs();
+    },
+    authMs: 1_500,
+    reserveMs: 2_000,
+    ledgerMs: 800,
+    rateLimitMs: 1_000,
+    resolveFetchMs: 2_500,
+    tailMs: 800,
+    /* Synthesis starts with at least SYNTHESIS_MIN_MS left, plus the tail. */
+    evidenceReserveMs: SYNTHESIS_MIN_MS + 800,
+    dossierReserveMs: SYNTHESIS_MIN_MS + 800,
+    model: process.env.SONAR_LANDING_MODEL || process.env.SONAR_FAST_MODEL || HAIKU_MODEL,
+    briefTokens: 1_100,
+    sanctionsExtraTokens: 300,
     web: false,
-    regenerate: false,
-    generalMinMs: 1_300,
-    minHopMs: 1_000,
+    regenerate: true,
+    /* A regenerated draft needs this much left after the first one. */
+    regenerateMinMs: 6_000,
+    generalMinMs: 5_000,
+    minHopMs: 2_500,
     hopReserveMs: 0,
-    maxSnippets: 12,
+    maxSnippets: 18,
     legs: {
-      industry: 700,
-      politician: 600,
-      /* Nov 4: a sector screen's three legs (Congress, performance,
-         contracts), each bounded on its own. */
-      sector: 1_800,
-      lobbying: 1_800,
-      flows: 1_200,
-      resolve: 1_100,
-      retrieveCap: 1_600,
-      retriever: 1_200,
-      embed: 600,
-      rerank: 700,
-      sanctions: 900,
-      countryDossier: 1_200,
-      companyDossier: 1_400,
-      macroRank: 900,
-      ipo: 2_000,
-      ipoFetch: 1_000,
-      market: 1_200,
-      analysts: 1_400,
-      news: 1_000,
+      industry: 1_500,
+      politician: 1_500,
+      sector: 4_000,
+      lobbying: 4_000,
+      flows: 3_000,
+      resolve: 2_500,
+      retrieveCap: 6_000,
+      retriever: 4_000,
+      embed: 1_500,
+      rerank: 1_800,
+      sanctions: 2_500,
+      countryDossier: 4_000,
+      companyDossier: 4_000,
+      macroRank: 2_500,
+      /* The country question's own macro read (buildCountryIntel), one retry. */
+      macro: 2_500,
+      ipo: 4_000,
+      ipoFetch: 2_500,
+      market: 3_000,
+      analysts: 3_000,
+      news: 3_000,
     },
   },
   deep: {
@@ -1805,6 +1846,7 @@ const PROFILES = {
     sanctionsExtraTokens: 400,
     web: true,
     regenerate: true,
+    regenerateMinMs: 14_000,
     generalMinMs: 8_000,
     minHopMs: undefined,
     hopReserveMs: undefined,
@@ -1824,6 +1866,7 @@ const PROFILES = {
       countryDossier: 8_000,
       companyDossier: 18_000,
       macroRank: 5_000,
+      macro: 5_000,
       ipo: 6_000,
       ipoFetch: 4_000,
       market: 4_000,
@@ -1833,9 +1876,9 @@ const PROFILES = {
   },
 };
 
-/** The ping profile in force: 'fast' unless SONAR_PING_PROFILE=deep. */
+/** The ping profile in force: 'standard' unless SONAR_PING_PROFILE=deep. */
 export function pingProfile() {
-  return process.env.SONAR_PING_PROFILE === 'deep' ? PROFILES.deep : PROFILES.fast;
+  return process.env.SONAR_PING_PROFILE === 'deep' ? PROFILES.deep : PROFILES.standard;
 }
 
 /* "Space Exploration Technologies Corp." -> "Space Exploration Technologies". */
@@ -1873,6 +1916,9 @@ function newsItems(articles) {
 export function evidenceBrief(subject, marked) {
   const clip = (raw, max = 280) => {
     let t = String(raw || '')
+      /* Nov 2026: the citation marker credits the source; an inline "Source: ..." tail
+         (macro rows carry one for the model) never reaches the visitor. */
+      .replace(/\s*Source:\s[^.]*(?:\([^)]*\))?[^.]*\.?\s*$/i, '')
       .replace(/\s*[—–]\s*/g, ', ')
       .replace(/\s+/g, ' ')
       .trim();
@@ -1983,6 +2029,7 @@ export async function runLandingPipeline(
   query,
   { admin, wantDossier = true, noCorrect = false, force = null, deadlineAt = null } = {},
 ) {
+  const startedAt = Date.now();
   const P = pingProfile();
   const LEG = P.legs;
   const TAIL_MS = P.tailMs;
@@ -2054,7 +2101,10 @@ export async function runLandingPipeline(
   const canon = canonicalPing(understood, query);
   const asked = canon.asked;
   const cacheTtl = pingCacheTtlSeconds();
-  const cacheKey = `landing:v2:${canon.key}`;
+  /* Nov 6 (v3): the intent is part of the key, so a country profile
+     ("Turkey") and a country question ("Is Turkey's lira under pressure?")
+     never share a brief, and today's cached v2 Turkey brief is not served. */
+  const cacheKey = `landing:v3:${understood.intent}:${canon.key}`;
   const cacheable = cacheTtl > 0 && !force && !noCorrect && !recentEvent;
   if (admin && !hasCacheClient()) setCacheClient(() => admin);
   if (cacheable) {
@@ -2132,16 +2182,41 @@ export async function runLandingPipeline(
     : null;
   const industryPing = Boolean(industry);
 
-  /* A country: the strict whole-string match, or a country-intent ping
-     whose chosen country entity resolves by name. */
+  /* Nov 6: the macro router on the raw words. A currency word implies its
+     country and the currency theme ("Is the lira under pressure?" -> TUR);
+     a shared word with no country named ("the peso") stays ambiguous. */
+  const macroRoute = routeMacro(query);
+  const currencyAsk = macroRoute.currency || null;
+  /* A country: the strict whole-string match, a country-intent ping whose
+     chosen country entity resolves by name (or by its id, for a forced chip),
+     or the country a currency word names. */
+  const COUNTRY_INTENTS = ['country', 'country_rank', 'country_question'];
   let country =
     industryPing || companyMention || sectorPing || flowsPing
       ? null
       : resolveCountry(q) ||
-        (['country', 'country_rank'].includes(understood.intent) && countryEnt
-          ? resolveCountry(countryEnt.label)
+        (COUNTRY_INTENTS.includes(understood.intent) && countryEnt
+          ? resolveCountry(countryEnt.label) || countryByIso3(countryEnt.id)
+          : null) ||
+        (currencyAsk?.iso3 &&
+        !companyAlias &&
+        !tickerEnt &&
+        !industryEnt &&
+        !understood.entities.some((e) => e.kind === 'person_politician')
+          ? countryByIso3(currencyAsk.iso3)
           : null);
   const rankPing = understood.intent === 'country_rank' && Boolean(country);
+  /* "What is the peso doing?": five countries use the peso. Sonar asks which,
+     with a chip per country, and never guesses (or resolves a company). */
+  const currencyAmbiguous =
+    !country &&
+    Boolean(currencyAsk?.ambiguous) &&
+    !companyAlias &&
+    !companyMention &&
+    !tickerEnt &&
+    !industryEnt &&
+    !sectorPing &&
+    !flowsPing;
   /* A member of Congress before a company: "Nancy Pelosi" must not resolve
      to whatever FMP's fuzzy name search returns for it. */
   /* Nov 4: a member the understanding layer already named (its politician
@@ -2149,8 +2224,49 @@ export async function runLandingPipeline(
      "What has Nancy Pelosi been buying lately?" used to fail the name
      match's 4-word cap and fall through to a general briefing. */
   const politicianEnt = understood.entities.find((e) => e.kind === 'person_politician') || null;
+  /* A company: only from a chosen ticker entity, or a ping with no other
+     reading. A blocklisted word ("USA", "IT") never reaches here as a ticker
+     unless the understanding layer chose it (a cue, or the chip). */
+  const companyCandidate =
+    !country &&
+    !currencyAmbiguous &&
+    !flowsPing &&
+    !industryEnt &&
+    !sectorPing &&
+    (tickerEnt ||
+      ipoIntent ||
+      companyAlias ||
+      companyMention ||
+      ['company', 'ticker_lookup', 'open_question', 'fund'].includes(understood.intent));
+  /* Nov 6 (B1): the member and company lookups run side by side. The company
+     lookup starts with the member lookup and is discarded if a member resolves,
+     so a company ping no longer waits for the member search first. */
+  const resolveP = companyCandidate
+    ? leg(
+        'resolve',
+        () =>
+          within(
+            tickerEnt
+              ? resolveCompany(`$${tickerEnt.id}`)
+              : ipoIntent
+                ? resolveIpoCompany(ipoSubj, query)
+                : companyAlias
+                  ? resolveIpoCompany(null, query)
+                  : companyMention
+                    ? resolveCompany(`$${companyMention.ticker}`)
+                    : resolveCompany(q),
+            LEG.resolve,
+            null,
+            'resolve',
+          ),
+        (v) => (v ? v.ticker : 'none'),
+      )
+    : null;
+  /* A discarded lookup's failure is not this ping's failure. */
+  resolveP?.catch(() => {});
   const politician =
     country ||
+    currencyAmbiguous ||
     industryPing ||
     sectorPing ||
     flowsPing ||
@@ -2171,41 +2287,8 @@ export async function runLandingPipeline(
             ),
           (v) => (v ? v.bioguideId : 'none'),
         );
-  /* A company: only from a chosen ticker entity, or a ping with no other
-     reading. A blocklisted word ("USA", "IT") never reaches here as a ticker
-     unless the understanding layer chose it (a cue, or the chip). */
-  const companyAllowed =
-    !country &&
-    !politician &&
-    !flowsPing &&
-    !industryEnt &&
-    !sectorPing &&
-    (tickerEnt ||
-      ipoIntent ||
-      companyAlias ||
-      companyMention ||
-      ['company', 'ticker_lookup', 'open_question', 'fund'].includes(understood.intent));
-  const resolved = companyAllowed
-    ? await leg(
-        'resolve',
-        () =>
-          within(
-            tickerEnt
-              ? resolveCompany(`$${tickerEnt.id}`)
-              : ipoIntent
-                ? resolveIpoCompany(ipoSubj, query)
-                : companyAlias
-                  ? resolveIpoCompany(null, query)
-                  : companyMention
-                    ? resolveCompany(`$${companyMention.ticker}`)
-                    : resolveCompany(q),
-            LEG.resolve,
-            null,
-            'resolve',
-          ),
-        (v) => (v ? v.ticker : 'none'),
-      )
-    : null;
+  const companyAllowed = companyCandidate && !politician;
+  const resolved = companyAllowed ? await resolveP : null;
   /* Oct 26: a country named anywhere in an otherwise unresolved ping
      ("brazilian economy outlook for the next 4 years after the 2026 federal
      election") brings that country's dossier: the OECD key chart, the Empire
@@ -2223,6 +2306,45 @@ export async function runLandingPipeline(
       ? mentionedCountry(q)
       : null;
   if (countryMentioned) country = countryMentioned;
+  /* Nov 6: a question about a country ("Is Turkey's lira under pressure?",
+     "Is the lira under pressure?", "How is Brazil's economy doing?") gets the
+     Country & Currency Intelligence brief: its own macro read, started at the
+     top of the country path beside the dossier, and an answer-first brief.
+     A bare country ("Turkey") keeps the profile. */
+  const countryQuestion =
+    Boolean(country) &&
+    !rankPing &&
+    (understood.intent === 'country_question' ||
+      Boolean(currencyAsk?.iso3) ||
+      Boolean(countryMentioned));
+  /* The router's view of the question, with the country settled: the
+     frameworks it needs and the families its evidence leads with. */
+  const intelRoute = countryQuestion
+    ? (() => {
+        const route = {
+          ...macroRoute,
+          countries: [country.iso3, ...macroRoute.countries.filter((c) => c !== country.iso3)],
+        };
+        const frameworks = frameworksFor(route);
+        const lead = frameworks.includes('currency') ? FRAMEWORKS.currency.families : [];
+        return {
+          ...route,
+          frameworks,
+          families: [...new Set([...lead, ...route.families])],
+        };
+      })()
+    : null;
+  /* Macro questions without a company read the lens and their frameworks; every
+     other grounded brief reads the lens alone. */
+  const macroAsk =
+    countryQuestion ||
+    (!resolved &&
+      !politician &&
+      !industryPing &&
+      !sectorPing &&
+      !flowsPing &&
+      isMacroRelevant(macroRoute, { hasCompany: false, text: query }));
+  const lensBlock = `\n${frameworkPrompt(macroAsk ? (intelRoute?.frameworks ?? frameworksFor(macroRoute)) : [])}`;
   /* The one country a company ping names, kept as context: it focuses the
      sanctions map and the brief on that country. */
   const contextCountry = !country && resolved ? mentionedCountry(q) : null;
@@ -2259,7 +2381,7 @@ export async function runLandingPipeline(
     industryPing || sectorPing
       ? display
       : country
-        ? countryMentioned
+        ? countryMentioned || countryQuestion
           ? q
           : rankPing
             ? `${country.name} economy size, growth and world ranking`
@@ -2279,8 +2401,12 @@ export async function runLandingPipeline(
       : industryPing
         ? ` (understood as an industry layout: ${display}; describe structure, major players, where it operates, concentration, capital flows, key dependencies and what to watch, from the sources only)`
         : country
-          ? countryMentioned
-            ? ` (about ${country.name}, ISO ${country.iso3}; Ezana's OECD Economic Outlook and Global Empire Rankings figures for ${country.name} are among the sources; answer the question as asked)`
+          ? countryMentioned || countryQuestion
+            ? ` (about ${country.name}, ISO ${country.iso3}${
+                currencyAsk?.iso3 === country.iso3 && CURRENCY_OF[country.iso3]
+                  ? `, currency ${CURRENCY_OF[country.iso3].name} (${CURRENCY_OF[country.iso3].code})`
+                  : ''
+              }; Ezana's official statistics, OECD Economic Outlook and Global Empire Rankings figures for ${country.name} are among the sources; answer the question as asked)`
             : rankPing
               ? ` (understood as ${display}: where ${country.name} ranks among the world's economies. Use ONLY the ranks, values, years and sources in the sources; name the measure, year and source for every rank; never state a rank or figure the sources do not give; projections only as "IMF projects" with the year. Sections: ${RANK_SECTIONS.join(' · ')}.)`
               : ` (resolved to the country ${country.name}, ISO ${country.iso3})`
@@ -2323,6 +2449,41 @@ export async function runLandingPipeline(
           leg,
         })
       : null;
+
+  /* Nov 6: a country question's own macro read, started beside the dossier at
+     the top of the country path (it used to sit inside retrieval, capped at
+     900 ms, and missed). The router on the raw words decides the families, so
+     a currency word leads with the exchange rate, policy rate, inflation,
+     reserves and the current account. A failed read retries once while there
+     is time; its items always reach synthesis. */
+  const intelOnce = () =>
+    within(
+      buildCountryIntel(admin, { iso3: country.iso3, route: intelRoute, timeoutMs: LEG.macro }),
+      LEG.macro + 400,
+      null,
+      'macro-intel',
+    ).catch(() => null);
+  const intelP =
+    countryQuestion && admin
+      ? leg(
+          'macro-intel',
+          async () => {
+            let v = await intelOnce();
+            if (!v && left() - P.evidenceReserveMs > LEG.macro) {
+              console.warn('[sonar-pipeline] macro-intel retry', { iso3: country.iso3 });
+              v = await intelOnce();
+            }
+            return v;
+          },
+          (v) =>
+            v
+              ? v.empty
+                ? 'empty'
+                : `items=${v.items.length} ${v.picture?.assessment?.overall || 'n/a'} ${v.ms}ms`
+              : 'none',
+          (v) => Boolean(v),
+        ).catch(() => null)
+      : Promise.resolve(null);
 
   /* Oct 30 (v2): the internet evidence, started beside retrieval rather
      than after it. A resolved company gets live market data (where it
@@ -2715,6 +2876,32 @@ export async function runLandingPipeline(
     corporaSearched.push('ipo');
   }
 
+  /* The country question's evidence leads: the computed currency measures,
+     then the catalogue rows for the question's families. */
+  const intel = countryQuestion
+    ? await within(
+        intelP,
+        Math.max(0, left() - P.evidenceReserveMs),
+        null,
+        'macro-intel-wait',
+      ).catch(() => null)
+    : null;
+  const intelItems = (intel?.items || []).map((it) => ({
+    corpus: 'macro',
+    title: it.title,
+    snippet: it.text,
+    url: it.citation?.href || null,
+    date: it.date || null,
+    meta: { ...(it.meta || {}), source: it.citation?.label || it.meta?.source || null },
+  }));
+  /* The general retrieval's macro rows repeat the intel read; the intel read wins. */
+  if (intelItems.length) {
+    for (let i = items.length - 1; i >= 0; i -= 1)
+      if (items[i].corpus === 'macro') items.splice(i, 1);
+    items.unshift(...intelItems);
+    if (!corporaSearched.includes('macro')) corporaSearched.push('macro');
+  }
+
   /* Recomputed from the survivors: a corpus that only contributed off-entity
      noise must not be shown as a match. */
   const corporaUsed = [...new Set(items.map((i) => i.corpus))];
@@ -2851,7 +3038,7 @@ export async function runLandingPipeline(
     const findings = [...sourceTexts, ...(synth?.webCitedText || [])];
     /* The fast profile never regenerates: a second model call does not fit
        in six seconds, so an unsupported negative is removed instead. */
-    const canRetry = P.regenerate && left() - TAIL_MS > 14_000;
+    const canRetry = P.regenerate && left() - TAIL_MS > P.regenerateMinMs;
     const res = await enforceGrounding(
       draft,
       findings,
@@ -2912,9 +3099,37 @@ export async function runLandingPipeline(
     }
   }
 
+  /* Nov 6: "What is the peso doing?" names a currency five countries use.
+     Sonar asks which, with a chip per country (understood.ambiguities). */
+  if (!answer && currencyAmbiguous) {
+    const names = currencyAsk.candidates
+      .map((c) => {
+        const ctry = countryByIso3(c);
+        const cur = CURRENCY_OF[c];
+        return ctry && cur ? `${ctry.name} (${cur.name}, ${cur.code})` : null;
+      })
+      .filter(Boolean);
+    if (names.length) {
+      const list =
+        names.length > 1
+          ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
+          : names[0];
+      answer = `Which ${currencyAsk.word}? Several countries use it: ${list}. Choose one below, or ask about it by name, for example "Is the ${CURRENCY_OF[currencyAsk.candidates[1] || currencyAsk.candidates[0]].name} under pressure?"`;
+      grounded = true;
+      briefKind = 'facts';
+    }
+  }
+
+  /* Nov 6: a country question with its macro read answers in the Country &
+     Currency Intelligence format: the model writes the judgement as JSON, code
+     computed every number, and the validator keeps only what the evidence
+     supports. */
+  const useIntel = Boolean(countryQuestion && intelItems.length);
+  let intelBrief = null;
+  let synthesisStartMsLeft = null;
+
   if (!answer && items.length) {
-    /* Fewer, shorter snippets on the fast profile, so the model reads and
-       answers in time; the feed's headlines always keep a few places. */
+    /* The feed's headlines always keep a few places. */
     const newsKept = items.filter((it) => it.corpus === 'news').slice(0, 4);
     const evidence =
       items.length > P.maxSnippets
@@ -2923,7 +3138,7 @@ export async function runLandingPipeline(
             ...newsKept,
           ]
         : items;
-    const snippetChars = P.id === 'fast' ? 360 : 500;
+    const snippetChars = 500;
     const marked = evidence.map((it, i) => ({ ...it, marker: `S${i + 1}` }));
     const sourcesBlock = marked
       .map(
@@ -2931,60 +3146,96 @@ export async function runLandingPipeline(
           `[${it.marker}] (${it.corpus}) ${String(it.text || it.snippet || '').slice(0, snippetChars)}`,
       )
       .join('\n');
-    const groundedArgs = {
-      system:
-        (webActive ? GROUNDED_SYSTEM_PROMPT : FAST_GROUNDED_PROMPT) +
-        (sanctions ? SANCTIONS_ADDENDUM : '') +
-        (intent === 'sanctions' && resolved && !country && !politician && !industryPing
-          ? exposureAddendum(resolved.alias || shortName(resolved.name), contextCountry?.name)
-          : '') +
-        (country ? COUNTRY_ADDENDUM : '') +
-        (politician ? POLITICIAN_ADDENDUM : '') +
-        (sectorPing ? SECTOR_ADDENDUM : '') +
-        (lobbyingPing ? LOBBYING_ADDENDUM : '') +
-        (flowsPing ? FLOWS_ADDENDUM : '') +
-        (ipoIntent ? IPO_ADDENDUM : '') +
-        (resolved &&
-        !country &&
-        !politician &&
-        !industryPing &&
-        !ipoIntent &&
-        intent !== 'sanctions'
-          ? govPing
-            ? GOV_EXPOSURE_ADDENDUM
-            : COMPANY_ADDENDUM
-          : '') +
+    const intelSystem = useIntel
+      ? intelSystemPrompt(intel.frameworks?.length ? intel.frameworks : intelRoute.frameworks) +
         DATE_RULES +
         GROUNDING_RULES +
-        (webActive ? '' : NO_WEB_RULES),
+        NO_WEB_RULES
+      : null;
+    const groundedArgs = {
+      system:
+        intelSystem ||
+        (webActive ? GROUNDED_SYSTEM_PROMPT : FAST_GROUNDED_PROMPT) +
+          lensBlock +
+          (sanctions ? SANCTIONS_ADDENDUM : '') +
+          (intent === 'sanctions' && resolved && !country && !politician && !industryPing
+            ? exposureAddendum(resolved.alias || shortName(resolved.name), contextCountry?.name)
+            : '') +
+          (country ? COUNTRY_ADDENDUM : '') +
+          (politician ? POLITICIAN_ADDENDUM : '') +
+          (sectorPing ? SECTOR_ADDENDUM : '') +
+          (lobbyingPing ? LOBBYING_ADDENDUM : '') +
+          (flowsPing ? FLOWS_ADDENDUM : '') +
+          (ipoIntent ? IPO_ADDENDUM : '') +
+          (resolved &&
+          !country &&
+          !politician &&
+          !industryPing &&
+          !ipoIntent &&
+          intent !== 'sanctions'
+            ? govPing
+              ? GOV_EXPOSURE_ADDENDUM
+              : COMPANY_ADDENDUM
+            : '') +
+          DATE_RULES +
+          FRESHEST_RULES +
+          GROUNDING_RULES +
+          (webActive ? '' : NO_WEB_RULES),
       /* The visitor's own words too (Nov 3): "Export controls" alone, with
          China as the resolved subject, read as no question at all, and the
          brief asked the visitor what they meant. */
       user: `Today is ${todayLine()}.\nPing: ${display}${resolvedNote}\nThe visitor asked: "${String(
         asked,
       ).slice(0, 300)}"\n\nSources:\n${sourcesBlock}`,
-      maxTokens: sanctions ? P.briefTokens + P.sanctionsExtraTokens : P.briefTokens,
+      maxTokens: useIntel
+        ? Math.max(P.briefTokens, 1_400)
+        : sanctions
+          ? P.briefTokens + P.sanctionsExtraTokens
+          : P.briefTokens,
       model: P.model,
       fallbackModel: HAIKU_MODEL,
       /* Inert unless webActive: anthropicSynthesize also gates the tool on
-         SONAR_WEB_SEARCH. */
-      webSearch: { enabled: webActive, maxUses: webUses },
+         SONAR_WEB_SEARCH. The intelligence brief reads only the evidence. */
+      webSearch: { enabled: webActive && !useIntel, maxUses: webUses },
       deadlineAt: deadline - TAIL_MS,
       minHopMs: P.minHopMs,
       reserveMs: P.hopReserveMs,
     };
+    synthesisStartMsLeft = left();
     const synth = await leg(
       'synthesize',
       () => synthesizeWithFallback(groundedArgs),
       (v) => (v.answer ? `answered${v.webUsed ? ' +web' : ''}` : v.degraded || 'no answer'),
       (v) => Boolean(v.answer),
     );
-    answer = await guardBrief(
-      synth.answer || null,
-      groundedArgs,
-      synth,
-      marked.map((it) => `${it.title || ''}. ${String(it.text || it.snippet || '')}`),
+    const sourceTexts = marked.map(
+      (it) => `${it.title || ''}. ${String(it.text || it.snippet || '')}`,
     );
+    if (useIntel) {
+      const checked = validateIntelBrief(parseIntelBrief(synth.answer), {
+        allowedTexts: sourceTexts,
+        picture: intel.picture,
+      });
+      if (checked.dropped.length) {
+        console.warn('[sonar-pipeline] intel brief validator', {
+          ok: checked.ok,
+          dropped: checked.dropped.slice(0, 6),
+        });
+      }
+      if (checked.ok) {
+        /* The negative-claim guard on the prose fields, no regeneration. */
+        const b = checked.brief;
+        for (const f of ['answer', 'assessmentLine', 'bottomLine']) {
+          if (b[f]) b[f] = (await enforceGrounding(b[f], sourceTexts, null)).text || '';
+        }
+        if (b.answer) {
+          intelBrief = b;
+          answer = intelBriefText(b, { label: intel.assessmentLabel });
+        }
+      }
+    } else {
+      answer = await guardBrief(synth.answer || null, groundedArgs, synth, sourceTexts);
+    }
     if (answer) briefKind = 'model';
     /* country_rank: every number must come from the rank facts and the
        other sources; a brief with an invented figure is replaced by the
@@ -3009,6 +3260,14 @@ export async function runLandingPipeline(
     /* Oct 30 (v2): synthesis that cannot answer in time (or whose every
        sentence the guard removed) no longer costs the ping: the brief is
        the strongest snippets, cited, word for word. */
+    /* Nov 6: a country question's fallback opens with the computed direction
+       line, then the computed measures, never pasted source text. */
+    if (!answer && useIntel) {
+      answer = fallbackIntelBrief(intel, {
+        direction: directionLine(intel.picture, { place: intel.place, currency: intel.currency }),
+      });
+      if (answer) briefKind = 'evidence';
+    }
     if (!answer) {
       answer = evidenceBrief(subjectLabel, marked);
       if (answer) briefKind = 'evidence';
@@ -3027,11 +3286,15 @@ export async function runLandingPipeline(
   /* The general brief only starts when there is time to finish it.
      Running out here returns no answer, which the route turns into a fast
      502 that does not spend the visitor's ping. */
-  if (!answer && left() - TAIL_MS > P.generalMinMs) {
+  /* Never an ungrounded general answer for a country question when the
+     dossier or the macro read holds evidence (it would describe the country
+     from memory beside cards showing its data). */
+  const countryEvidenceHeld = countryQuestion && (intelItems.length > 0 || items.length > 0);
+  if (!answer && !countryEvidenceHeld && left() - TAIL_MS > P.generalMinMs) {
     const generalArgs = {
       system: webActive
-        ? GENERAL_SYSTEM_PROMPT + DATE_RULES + GROUNDING_RULES
-        : FAST_GENERAL_PROMPT + DATE_RULES,
+        ? GENERAL_SYSTEM_PROMPT + lensBlock + DATE_RULES + GROUNDING_RULES
+        : FAST_GENERAL_PROMPT + lensBlock + DATE_RULES,
       user: `Today is ${todayLine()}.\nPing: ${display}${resolvedNote}\nThe visitor asked: "${String(
         asked,
       ).slice(0, 300)}"`,
@@ -3083,6 +3346,28 @@ export async function runLandingPipeline(
       ).catch(() => null)
     : null;
   if (dossier) dossier.newsColumns = newsColumns;
+  /* Nov 6: what the Country & Currency Intelligence card renders. */
+  const intelView =
+    useIntel && intel?.picture
+      ? {
+          iso3: intel.iso3,
+          place: intel.place,
+          currency: intel.currency || null,
+          focus: (intel.frameworks || []).includes('currency') ? 'FX risk' : 'Macro',
+          asOf: new Date().toISOString().slice(0, 10),
+          overall: intel.picture.assessment?.overall || null,
+          assessmentLabel: intel.assessmentLabel || null,
+          brief: intelBrief,
+          fallbackText: intelBrief ? null : answer,
+          kpis: intel.picture.kpis || [],
+          rows: intel.picture.assessment?.overall ? assessmentRows(intel.picture, intelBrief) : [],
+          missing: intel.picture.missing || [],
+          charts: intel.charts || {},
+          transmission: (intel.frameworks || []).includes('currency') ? intel.transmission : null,
+          sources: intel.sources || [],
+        }
+      : null;
+  if (dossier && intelView) dossier.intel = intelView;
   /* Nov 4 (v2): what the government-exposure cards render. */
   if (dossier && govPing) {
     dossier.govFocus = true;
@@ -3104,10 +3389,16 @@ export async function runLandingPipeline(
     '"leg":"retrieve"',
     `"leg":"retrieve","kept":${items.length}`,
   );
+  /* Nov 6: the synthesis-start budget and the total, on the trace line. */
+  const timing = {
+    profile: P.id,
+    synthesisStartMsLeft,
+    totalMs: Date.now() - startedAt,
+  };
   if (answer) {
-    console.log('[sonar-pipeline] trace', summary);
+    console.log('[sonar-pipeline] trace', summary, JSON.stringify(timing));
   } else {
-    console.error('[sonar-pipeline] trace', summary);
+    console.error('[sonar-pipeline] trace', summary, JSON.stringify(timing));
   }
 
   const result = {
@@ -3143,8 +3434,22 @@ export async function runLandingPipeline(
         surface,
         confidence,
       })),
-      ambiguities: understood.ambiguities,
+      ambiguities: currencyAmbiguous
+        ? [
+            ...(understood.ambiguities || []),
+            {
+              surface: currencyAsk.word,
+              chosen: `currency:${currencyAsk.word}`,
+              alternatives: currencyAsk.candidates
+                .map((c) => countryByIso3(c))
+                .filter(Boolean)
+                .map((c) => ({ kind: 'country', id: c.iso3, label: c.name })),
+            },
+          ]
+        : understood.ambiguities,
     },
+    countryIntel: intelView,
+    timing,
     industry: industry ? industry.industry.id : null,
     /* Oct 26: what each matched dataset actually contributed, for the
        Sourced matches rows that have no dossier preview (an open question's

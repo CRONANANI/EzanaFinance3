@@ -18,6 +18,11 @@
  * automatically, with a compact progress line, then the report.
  *
  * GoDeeperBar: under a lighter answer, a quiet way to run the next mode up.
+ * Since Nov 2026 (estimates) the deep research card (DeepResearchCard.jsx)
+ * takes its place: beside the progress and under the report, with the time
+ * and a usage line from POST /api/sonar/estimate. The offer dialog carries
+ * the same usage line, and its alternative is the standard answer with its
+ * time.
  *
  * Branding guide: tokens only, Bootstrap Icons, prefix `sdr-`, motion off
  * under prefers-reduced-motion. No em dashes in copy.
@@ -27,10 +32,12 @@ import ResearchReport from '@/components/sonar/research/ResearchReport';
 import SaveToOrg from '@/components/org/sonar/SaveToOrg';
 import { useResearchStream } from '@/components/sonar/research/useResearchStream';
 import { sendModeEvent } from '@/lib/sonar/mode-events-client';
+import { deepState } from '@/lib/sonar/estimate-copy';
 import { GoDeeperBar } from './GoDeeperBar';
+import { DeepResearchCard, deepSignupHref } from './DeepResearchCard';
 import './deep-research.css';
 
-export { GoDeeperBar };
+export { GoDeeperBar, DeepResearchCard, deepSignupHref };
 
 const PRODUCES = {
   investment_memo:
@@ -39,34 +46,27 @@ const PRODUCES = {
     'A conclusion, key findings with cited evidence, relevant comparisons or rankings, and the limits of what the data shows.',
 };
 
-/** The sign-up link that brings a guest back to this question (run deep
-    when `deep`). */
-export function deepSignupHref(query, { deep = true } = {}) {
-  let next = `/datasets?q=${encodeURIComponent(query || '')}${deep ? '&deep=1' : ''}`;
-  try {
-    const url = new URL(window.location.href);
-    url.searchParams.set('q', query || '');
-    if (deep) url.searchParams.set('deep', '1');
-    else url.searchParams.delete('deep');
-    next = `${url.pathname}${url.search}`;
-  } catch {
-    /* default above */
-  }
-  return `/auth/continue?intent=signup&next=${encodeURIComponent(next)}`;
-}
-
-export function DeepResearchPrompt({ query, deep, onDeep, onQuick, onClose }) {
+/**
+ * `estimate` (Nov 2026) is the /api/sonar/estimate response for this
+ * question, or null while it loads: it gives the usage line (the same one
+ * the deep research card shows), disables the primary button at the cap,
+ * and times the standard answer offered as the alternative.
+ */
+export function DeepResearchPrompt({ query, deep, estimate = null, onDeep, onQuick, onClose }) {
   const firstRef = useRef(null);
-  const guest = Boolean(deep?.guestNeedsAccount);
+  const altRef = useRef(null);
+  const usage = deepState(estimate);
+  const guest = Boolean(deep?.guestNeedsAccount) || usage?.blocked === 'signup';
+  const atCap = Boolean(usage && !usage.available);
   const meta = deep?.meta || null;
   useEffect(() => {
-    firstRef.current?.focus();
+    (atCap ? altRef : firstRef).current?.focus();
     const onKey = (e) => {
       if (e.key === 'Escape') onClose?.();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, [onClose, atCap]);
   /* One 'offered_deep' per offer shown. */
   useEffect(() => {
     sendModeEvent('offered_deep', { query, meta, details: { guest } });
@@ -75,9 +75,11 @@ export function DeepResearchPrompt({ query, deep, onDeep, onQuick, onClose }) {
   const why = deep?.reasons?.[0] || 'This question needs evidence from several datasets.';
   const areas = (deep?.domains || []).slice(0, 6);
   const produces = PRODUCES[deep?.format] || PRODUCES.report;
-  const estimate = deep?.estimate?.label || 'about 1 to 3 minutes';
+  const deepTime = estimate?.deep?.label || deep?.estimate?.label || 'about 1 to 3 minutes';
+  const standardTime = estimate?.answer?.label || '';
 
   const accept = () => {
+    if (atCap) return;
     sendModeEvent('accepted_deep', {
       query,
       meta,
@@ -91,7 +93,9 @@ export function DeepResearchPrompt({ query, deep, onDeep, onQuick, onClose }) {
     onDeep?.();
   };
   const quick = () => {
-    sendModeEvent('chose_quick', { query, meta, ranMode: 'quick', details: { guest } });
+    /* The alternative is the standard answer (the landing ping ledgers it
+       as 'standard' for a question rated deep). */
+    sendModeEvent('chose_quick', { query, meta, ranMode: 'standard', details: { guest } });
     onQuick?.();
   };
 
@@ -130,27 +134,35 @@ export function DeepResearchPrompt({ query, deep, onDeep, onQuick, onClose }) {
           <h3 className="sdr-h3">What Sonar will produce</h3>
           <p>{produces}</p>
           <p className="sdr-estimate">
-            <i className="bi bi-clock" aria-hidden="true" /> Estimated time {estimate}
+            <i className="bi bi-clock" aria-hidden="true" /> Estimated time {deepTime}
           </p>
+          {usage?.line ? (
+            <p className="sdr-usage" id="sdr-usage">
+              {usage.line}
+            </p>
+          ) : null}
         </div>
         <div className="sdr-actions">
           <button
             ref={firstRef}
             type="button"
-            className="sdr-btn sdr-btn--primary"
+            className="sdr-btn sdr-btn--primary sdr-dcard-btn"
             onClick={accept}
+            disabled={atCap}
+            aria-disabled={atCap ? 'true' : undefined}
+            aria-describedby={usage?.line ? 'sdr-usage' : undefined}
           >
             {guest ? 'Create a free account to run it' : 'Run deep research'}
             <i className="bi bi-arrow-right" aria-hidden="true" />
           </button>
-          <button type="button" className="sdr-btn" onClick={quick}>
-            Quick answer
+          <button ref={altRef} type="button" className="sdr-btn" onClick={quick}>
+            {standardTime ? `Standard answer \u00b7 ${standardTime}` : 'Standard answer'}
           </button>
         </div>
         <p className="sdr-note">
           {guest
-            ? 'Deep research needs a free account. The quick answer works without one.'
-            : 'Counts as one ping. Findings only, never financial advice.'}
+            ? 'Deep research needs a free account. The standard answer works without one.'
+            : 'Findings only, never financial advice.'}
         </p>
       </div>
     </div>
@@ -171,8 +183,15 @@ export function DeepResearchRun({
   extra = null,
   saveLabel = null,
   challengeOf = null,
+  /* Nov 2026: started from the deep research card, whose overlay has just
+     closed: focus moves to the run so it is not dropped on the page. */
+  focusOnMount = false,
 }) {
   const { state, run, cancel } = useResearchStream();
+  const rootRef = useRef(null);
+  useEffect(() => {
+    if (focusOnMount) rootRef.current?.focus({ preventScroll: true });
+  }, [focusOnMount]);
   const [now, setNow] = useState(Date.now());
   /* Org research (Nov 2026) passes { fundFit } or { challenge } through. */
   const extraKey = extra ? JSON.stringify(extra) : '';
@@ -198,7 +217,12 @@ export function DeepResearchRun({
   const over = estimate?.maxSec && elapsed > estimate.maxSec;
 
   return (
-    <div className="sdr-run force-dark-theme">
+    <div
+      className="sdr-run force-dark-theme"
+      ref={rootRef}
+      tabIndex={-1}
+      aria-label="Deep research"
+    >
       <div className="sdr-run-bar">
         <button type="button" className="sdr-link" onClick={onBack}>
           <i className="bi bi-arrow-left" aria-hidden="true" /> New question
@@ -209,7 +233,11 @@ export function DeepResearchRun({
             <span>
               Deep research in progress. Estimated time {estimate?.label || 'about 1 to 3 minutes'}.
             </span>
-            <span className="sdr-clock">{clock(elapsed)} elapsed</span>
+            {/* The clock ticks every second: out of the live region, so only
+                the status text is announced. */}
+            <span className="sdr-clock" aria-hidden="true">
+              {clock(elapsed)} elapsed
+            </span>
             {over ? (
               <span className="sdr-over">Taking longer than usual. Still working.</span>
             ) : null}
@@ -300,6 +328,14 @@ const STAGE_LABEL = {
  * reading 6 sources", the live stage, about 15 to 30 seconds), then the report
  * and, when the run left out evidence or the question was borderline, Go
  * deeper.
+ *
+ * Nov 2026 (estimates): with `estimate` (the /api/sonar/estimate response)
+ * the deep research card shows under the progress line while the run works
+ * and under the report once it is done, in place of Go deeper. `onDeep`
+ * gets { supersede: true } while the run is still working: the host cancels
+ * it (unmounting this cancels the stream, and the research route releases an
+ * unfinished run) and the deep run releases its ledger row, so only the deep
+ * run is charged.
  */
 export function StandardResearchRun({
   query,
@@ -308,6 +344,8 @@ export function StandardResearchRun({
   onGoDeeper,
   onQuick,
   onBack,
+  estimate = null,
+  onDeep = null,
 }) {
   const { state, run, cancel } = useResearchStream();
   useEffect(() => {
@@ -384,8 +422,36 @@ export function StandardResearchRun({
           <ResearchReport state={state} />
         </div>
       ) : null}
+      {running && estimate && onDeep ? (
+        <DeepResearchCard
+          query={query}
+          estimate={estimate}
+          placement="progress"
+          onRun={(st) => onDeep({ supersede: true, signup: st.blocked === 'signup' })}
+        />
+      ) : null}
       {state.status === 'done' ? <SaveToOrg org={state.org} query={query} /> : null}
-      {state.status === 'done' && hint ? (
+      {state.status === 'done' && estimate && onDeep ? (
+        <DeepResearchCard
+          query={query}
+          estimate={
+            coverageHint
+              ? {
+                  ...estimate,
+                  deep: {
+                    ...estimate.deep,
+                    recommended: true,
+                    reasons: coverageHint.reasons,
+                  },
+                }
+              : estimate
+          }
+          placement="after"
+          pingsSpent={1}
+          onRun={(st) => onDeep({ supersede: false, signup: st.blocked === 'signup' })}
+        />
+      ) : null}
+      {state.status === 'done' && hint && !(estimate && onDeep) ? (
         <GoDeeperBar
           query={query}
           goDeeper={hint}

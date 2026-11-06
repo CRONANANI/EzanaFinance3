@@ -6,7 +6,9 @@
  *           Eurostat uses EL for Greece and UK for the UK (handled by toIso3).
  * ecb       ECB Data Portal SDMX, csvdata: https://data-api.ecb.europa.eu/service/data/{FLOW}/{KEY}
  *           Also carries AMECO (dataset AME), the easiest machine route to the Commission's
- *           forecasts database (the ECB copy can lag a release).
+ *           forecasts database (the ECB copy can lag a release), and the daily euro reference
+ *           rates (EXR D..EUR.SP00.A), stored as local-currency-per-USD crosses
+ *           (ECB.EXRUSD:D.{CCY}) for the last two years.
  * ons       ONS API v1 (the v0 API is being retired): search by CDID for the series URI, then
  *           /v1/data?uri=... ; JSON with years[], quarters[], months[] of { date, value }.
  * boe       Bank of England IADB CSV. Rejects library user agents (403), and answers errors as
@@ -26,6 +28,7 @@ import {
   freqOf,
   assertNotHtml,
   BROWSER_HEADERS,
+  yearsBefore,
 } from '../formats.js';
 
 /* ------------------------------------------------------------------ Eurostat */
@@ -150,12 +153,115 @@ export function amecoIso3(seriesKey) {
   return AMECO_FIXES[code] || toIso3(code) || null;
 }
 
+/* ECB daily reference rates, every currency against the euro (EXR D..EUR.SP00.A), for the
+   last ECB_DAILY_YEARS years. Each is turned into local currency per US dollar on the same
+   day, so the currency framework has a daily rate where BIS has only monthly averages. */
+export const ECB_DAILY_YEARS = 2;
+export const ECB_DAILY_FX = {
+  flow: 'EXR',
+  key: 'D..EUR.SP00.A',
+  name: 'Euro reference exchange rate (daily)',
+  daily: true,
+};
+
+/* Reference-rate currency -> the economy it is stated for. USD is the numeraire and EUR the
+   base, so neither appears; BGN is left out because Bulgaria uses the euro from 2026 (its
+   rows would be a stale lev for a euro member). HRK and other retired euro-area currencies
+   are not quoted any more. */
+export const ECB_CCY_ISO3 = {
+  AUD: 'AUS',
+  BRL: 'BRA',
+  CAD: 'CAN',
+  CHF: 'CHE',
+  CNY: 'CHN',
+  CZK: 'CZE',
+  DKK: 'DNK',
+  GBP: 'GBR',
+  HKD: 'HKG',
+  HUF: 'HUN',
+  IDR: 'IDN',
+  ILS: 'ISR',
+  INR: 'IND',
+  ISK: 'ISL',
+  JPY: 'JPN',
+  KRW: 'KOR',
+  MXN: 'MEX',
+  MYR: 'MYS',
+  NOK: 'NOR',
+  NZD: 'NZL',
+  PHP: 'PHL',
+  PLN: 'POL',
+  RON: 'ROU',
+  RUB: 'RUS',
+  SEK: 'SWE',
+  SGD: 'SGP',
+  THB: 'THA',
+  TRY: 'TUR',
+  ZAR: 'ZAF',
+};
+
+/**
+ * Local currency per US dollar from two euro reference rates on the same day:
+ * (local per EUR) / (USD per EUR). TRY 50.0 and USD 1.08 per euro -> 46.296... TRY per USD.
+ * Null when either rate is missing or not positive. Rounded to 8 significant digits.
+ */
+export function usdCross(localPerEur, usdPerEur) {
+  const l = Number(localPerEur);
+  const u = Number(usdPerEur);
+  if (!Number.isFinite(l) || !Number.isFinite(u) || l <= 0 || u <= 0) return null;
+  return Number((l / u).toPrecision(8));
+}
+
+/**
+ * Parsed daily EXR rows (ECB.EXR:D.{CCY}.EUR.SP00.A) -> one ECB.EXRUSD:D.{CCY} row per
+ * currency and day with a USD rate the same day. Pure; exported for the test.
+ */
+export function ecbUsdCrossRows(rows) {
+  const byDay = new Map(); // period -> Map(ccy -> local per EUR)
+  for (const r of rows || []) {
+    const [freq, ccy, base] =
+      String(r.series_key || '')
+        .split(':')[1]
+        ?.split('.') || [];
+    if (freq !== 'D' || base !== 'EUR' || !ccy || !r.period) continue;
+    if (!byDay.has(r.period)) byDay.set(r.period, new Map());
+    byDay.get(r.period).set(ccy, r.value);
+  }
+  const out = [];
+  for (const [period, rates] of byDay) {
+    const usd = rates.get('USD');
+    if (usd == null) continue;
+    for (const [ccy, local] of rates) {
+      const iso3 = ECB_CCY_ISO3[ccy];
+      if (!iso3) continue; // USD itself, retired euro-area currencies, unknown codes
+      const value = usdCross(local, usd);
+      if (value == null) continue;
+      out.push({
+        series_key: `ECB.EXRUSD:D.${ccy}`,
+        country_iso3: iso3,
+        period,
+        value,
+        series_name: `${ccy} per US dollar (ECB reference rate cross)`,
+        unit: `${ccy} per USD`,
+        frequency: 'D',
+        dataset: 'EXR',
+      });
+    }
+  }
+  return out;
+}
+
 export const ecb = {
   source: 'ecb',
   minIntervalMs: 2000,
+  /* Daily rates: a full pass a day (the other batches are small). */
+  refreshAfterDays: 1,
   attribution: 'European Central Bank, ECB Data Portal (data.ecb.europa.eu)',
-  buildBatches() {
-    return ECB_QUERIES.map((q) => ({ ...q, label: `${q.flow}/${q.key}` }));
+  buildBatches(passDate) {
+    /* The daily batch goes last so a pass already in progress keeps its cursor. */
+    return [...ECB_QUERIES, { ...ECB_DAILY_FX, since: yearsBefore(passDate, ECB_DAILY_YEARS) }].map(
+      (q) => ({ ...q, label: `${q.flow}/${q.key}` }),
+    );
   },
   async fetchBatch(b, fetchWithRetry) {
     const url = `https://data-api.ecb.europa.eu/service/data/${b.flow}/${b.key}?format=csvdata&detail=dataonly&startPeriod=${b.since}`;
@@ -169,6 +275,9 @@ export const ecb = {
       seriesName: b.name,
       countryDims: ['REF_AREA'],
     });
+    /* Only the USD crosses are stored for the daily batch: the raw per-euro rates would
+       repeat what the monthly EXR batch and the crosses already state. */
+    if (b.daily) return ecbUsdCrossRows(rows);
     if (b.flow !== 'AME') return rows;
     return rows.map((r) => ({ ...r, country_iso3: r.country_iso3 || amecoIso3(r.series_key) }));
   },

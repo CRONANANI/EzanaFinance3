@@ -11,8 +11,12 @@
 import Papa from 'papaparse';
 import countries from 'i18n-iso-countries';
 import { num } from '../engine.js';
+import { yearsBefore } from '../formats.js';
 
 const START = '2000';
+/* Daily policy rates (WS_CBPOL key D.) for the last few years, next to the monthly series: the
+   level set at a decision shows the day it takes effect instead of in the next monthly print. */
+export const CBPOL_DAILY_YEARS = 3;
 export const FLOWS = [
   { flow: 'WS_CBPOL', key: 'M.', name: 'Central bank policy rates' },
   { flow: 'WS_XRU', key: 'M...', name: 'US dollar exchange rates' },
@@ -21,6 +25,13 @@ export const FLOWS = [
   { flow: 'WS_CREDIT_GAP', key: 'all', name: 'Credit-to-GDP gaps' },
   { flow: 'WS_DSR', key: 'all', name: 'Debt service ratios' },
   { flow: 'WS_SPP', key: 'all', name: 'Residential property prices' },
+  /* Last, so a pass already in progress keeps its cursor. `since` is set per pass. */
+  {
+    flow: 'WS_CBPOL',
+    key: 'D.',
+    name: 'Central bank policy rates',
+    sinceYears: CBPOL_DAILY_YEARS,
+  },
 ];
 
 const COUNTRY_DIMS = ['REF_AREA', 'BORROWERS_CTY', 'L_REP_CTY'];
@@ -64,11 +75,15 @@ export const bis = {
   source: 'bis',
   minIntervalMs: 3000, // 20 requests/minute
   attribution: 'Bank for International Settlements, BIS Statistics (data.bis.org)',
-  buildBatches() {
-    return FLOWS.map((f) => ({ ...f, label: f.flow }));
+  buildBatches(passDate) {
+    return FLOWS.map(({ sinceYears, ...f }) => ({
+      ...f,
+      since: sinceYears ? yearsBefore(passDate, sinceYears) : START,
+      label: sinceYears ? `${f.flow}/${f.key}` : f.flow,
+    }));
   },
   async fetchBatch(b, fetchWithRetry) {
-    const url = `https://stats.bis.org/api/v1/data/${b.flow}/${b.key}/all?startPeriod=${START}&detail=dataonly`;
+    const url = `https://stats.bis.org/api/v1/data/${b.flow}/${b.key}/all?startPeriod=${b.since || START}&detail=dataonly`;
     const res = await fetchWithRetry(url, {
       headers: { Accept: 'application/vnd.sdmx.data+csv;version=1.0.0' },
       okStatuses: [404],

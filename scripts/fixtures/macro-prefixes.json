@@ -885,6 +885,42 @@
       ]
     },
     {
+      "source": "cbrt",
+      "prefix": "EVDS",
+      "series": 4,
+      "pending": "Added by hand (Part E, fresher currency data) before the first sync wrote these rows; regenerate with scripts/sonar-macro-coverage.mjs once it has run.",
+      "samples": [
+        {
+          "series_key": "EVDS:TP.AB.TOPLAM",
+          "country_iso3": "TUR",
+          "dataset": "EVDS",
+          "series_name": "CBRT gross official reserves, total (weekly)",
+          "unit": "USD millions"
+        },
+        {
+          "series_key": "EVDS:TP.DK.USD.A.YTL",
+          "country_iso3": "TUR",
+          "dataset": "EVDS",
+          "series_name": "Turkish lira per US dollar (CBRT indicative buying rate)",
+          "unit": "TRY per USD"
+        },
+        {
+          "series_key": "EVDS:TP.PY.P02.1H",
+          "country_iso3": "TUR",
+          "dataset": "EVDS",
+          "series_name": "CBRT one-week lending quotation (interbank money market)",
+          "unit": "% a year"
+        },
+        {
+          "series_key": "EVDS:TP.TUKFIY2025.GENEL",
+          "country_iso3": "TUR",
+          "dataset": "EVDS",
+          "series_name": "Consumer price index (TurkStat, 2025=100)",
+          "unit": "index"
+        }
+      ]
+    },
+    {
       "source": "ecb",
       "prefix": "ECB.AME",
       "series": 31,
@@ -1063,6 +1099,63 @@
           "dataset": "EXR",
           "series_name": "Euro reference exchange rate (monthly average)",
           "unit": null
+        }
+      ]
+    },
+    {
+      "source": "ecb",
+      "prefix": "ECB.EXRUSD",
+      "series": 7,
+      "pending": "Added by hand (Part E, fresher currency data) before the first sync wrote these rows; regenerate with scripts/sonar-macro-coverage.mjs once it has run.",
+      "samples": [
+        {
+          "series_key": "ECB.EXRUSD:D.BRL",
+          "country_iso3": "BRA",
+          "dataset": "EXR",
+          "series_name": "BRL per US dollar (ECB reference rate cross)",
+          "unit": "BRL per USD"
+        },
+        {
+          "series_key": "ECB.EXRUSD:D.CNY",
+          "country_iso3": "CHN",
+          "dataset": "EXR",
+          "series_name": "CNY per US dollar (ECB reference rate cross)",
+          "unit": "CNY per USD"
+        },
+        {
+          "series_key": "ECB.EXRUSD:D.GBP",
+          "country_iso3": "GBR",
+          "dataset": "EXR",
+          "series_name": "GBP per US dollar (ECB reference rate cross)",
+          "unit": "GBP per USD"
+        },
+        {
+          "series_key": "ECB.EXRUSD:D.INR",
+          "country_iso3": "IND",
+          "dataset": "EXR",
+          "series_name": "INR per US dollar (ECB reference rate cross)",
+          "unit": "INR per USD"
+        },
+        {
+          "series_key": "ECB.EXRUSD:D.JPY",
+          "country_iso3": "JPN",
+          "dataset": "EXR",
+          "series_name": "JPY per US dollar (ECB reference rate cross)",
+          "unit": "JPY per USD"
+        },
+        {
+          "series_key": "ECB.EXRUSD:D.TRY",
+          "country_iso3": "TUR",
+          "dataset": "EXR",
+          "series_name": "TRY per US dollar (ECB reference rate cross)",
+          "unit": "TRY per USD"
+        },
+        {
+          "series_key": "ECB.EXRUSD:D.ZAR",
+          "country_iso3": "ZAF",
+          "dataset": "EXR",
+          "series_name": "ZAR per US dollar (ECB reference rate cross)",
+          "unit": "ZAR per USD"
         }
       ]
     },
@@ -2652,6 +2745,35 @@
           "dataset": "IMF.STA/IMTS",
           "series_name": "International trade in goods: MG_CIF_USD",
           "unit": null
+        }
+      ]
+    },
+    {
+      "source": "imf",
+      "prefix": "IMF.IRFCL",
+      "series": 3,
+      "pending": "Added by hand (Part E, fresher currency data) before the first sync wrote these rows; regenerate with scripts/sonar-macro-coverage.mjs once it has run.",
+      "samples": [
+        {
+          "series_key": "IMF.IRFCL:dataflow.TUR.IRFCLDT1_IRFCL65_USD.S1XS1311.M",
+          "country_iso3": "TUR",
+          "dataset": "IMF.STA/IRFCL",
+          "series_name": "Official reserve assets in US dollars (IMF reserves data template)",
+          "unit": "US dollars"
+        },
+        {
+          "series_key": "IMF.IRFCL:dataflow.BRA.IRFCLDT1_IRFCL65_USD.S1XS1311.M",
+          "country_iso3": "BRA",
+          "dataset": "IMF.STA/IRFCL",
+          "series_name": "Official reserve assets in US dollars (IMF reserves data template)",
+          "unit": "US dollars"
+        },
+        {
+          "series_key": "IMF.IRFCL:dataflow.ARG.IRFCLDT1_IRFCL65_USD.S1X.M",
+          "country_iso3": "ARG",
+          "dataset": "IMF.STA/IRFCL",
+          "series_name": "Official reserve assets in US dollars (IMF reserves data template)",
+          "unit": "US dollars"
         }
       ]
     },

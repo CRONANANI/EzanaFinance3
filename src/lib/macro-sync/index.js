@@ -11,6 +11,7 @@ import { eia, ember, jodiOil, jodiGas, fewsnet, faostat } from './sources/energy
 import { eurostat, ecb, ons, boe, insee, istat } from './sources/europe.js';
 import { ibge, bcra, argSeries, bcrp, banrep } from './sources/latam.js';
 import { sarb, cbn, boj, singstat, mospi } from './sources/africa-asia.js';
+import { cbrt } from './sources/evds.js';
 
 /* These four keep their own cron routes (/api/cron/macro-{bcb,bis,cepal,afdb}); the hourly
    rotator (/api/cron/macro-sync) runs everything else. */
@@ -48,6 +49,8 @@ const ALL = [
   boe,
   insee,
   istat,
+  // Turkey (optional: needs EVDS_API_KEY)
+  cbrt,
   // Latin America
   ibge,
   bcra,

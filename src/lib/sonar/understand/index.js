@@ -19,6 +19,7 @@ import {
   POLICIES,
   SECTORS,
   THEMES,
+  STOPWORDS,
 } from '@/lib/sonar/understand/lexicons';
 import { EXAMPLES } from '@/lib/sonar/understand/examples';
 import { wantsSectorScreen, CONGRESS_CUE, CONTRACTS_CUE } from '@/lib/sonar/sector-cues';
@@ -38,6 +39,7 @@ export const INTENTS = [
   'policy',
   'ranking',
   'country_rank',
+  'country_question',
   'comparison',
   'theme',
   'commodity',
@@ -48,7 +50,7 @@ export const INTENTS = [
 export function normalise(raw) {
   return (
     String(raw || '')
-      .replace(/[‘’]/g, "'")
+      .replace(/[‘’ʼ‛`´]/g, "'")
       .replace(/[“”]/g, '"')
       // eslint-disable-next-line no-control-regex
       .replace(/[\u0000-\u001f\u007f]/g, ' ')
@@ -192,7 +194,7 @@ function pickIntent(text, entities) {
   if (tickers.length && /\b(13f|holders|holdings|fund)\b/i.test(text)) return 'fund';
   if (tickers.length === 1 && tokenize(text).length <= 2) return 'ticker_lookup';
   if (tickers.length) return 'company';
-  if (has('country')) return 'country';
+  if (has('country')) return isCountryQuestion(text, entities) ? 'country_question' : 'country';
   return 'open_question';
 }
 
@@ -276,11 +278,99 @@ function buildDisplay(intent, entities, corrected) {
 }
 
 /** The deterministic understanding: no I/O, unit tested. */
+/* Nov 2026: a possessive ("Turkey's", "Philippines'") is the visitor's own word, read as its
+   base so the entity resolves. It is a reading, never a correction (no "Showing results for"
+   notice), and it runs even with noCorrect, which only turns off spelling fixes. Contractions
+   of stopwords ("what's", "it's") are left alone. */
+export function stripPossessives(tokens) {
+  const readings = [];
+  const out = tokens.map((t) => {
+    if (/^["$]/.test(t)) return t;
+    const m = /^(.*[A-Za-z])'s$/i.exec(t) || /^(.*[sS])'$/.exec(t);
+    if (!m) return t;
+    const base = m[1];
+    if (base.length < 2 || STOPWORDS.has(base.toLowerCase())) return t;
+    readings.push({ from: t, to: base });
+    return base;
+  });
+  return { tokens: out, readings };
+}
+
+/* A country named with more than its bare name: a question form, or a topic word left after
+   removing the country, stopwords, question scaffolding and profile words. "Turkey",
+   "Turkey economy" and "tell me about Turkey" stay country profiles. */
+const QUESTION_FORM =
+  /^\s*(is|are|was|were|how|why|what|when|where|which|who|will|would|should|does|do|did|can|could|has|have)\b|\?/i;
+const PROFILE_WORDS = new Set([
+  'tell',
+  'me',
+  'about',
+  'economy',
+  'economic',
+  'economics',
+  'macro',
+  'macroeconomy',
+  'outlook',
+  'overview',
+  'profile',
+  'country',
+  'the',
+  'of',
+  'show',
+  'give',
+  'info',
+  'information',
+  'on',
+  'summary',
+  'brief',
+  'briefing',
+  'snapshot',
+  'please',
+  'report',
+  'reports',
+  'update',
+  'latest',
+  'today',
+  'now',
+  'current',
+  'review',
+  'factsheet',
+  'data',
+  'stats',
+  'statistics',
+  'indicators',
+]);
+/* A year or a number alone ("indian economy report 2026") is still a profile. */
+const PROFILE_TOKEN = /^\d{1,4}$/;
+export function isCountryQuestion(text, entities) {
+  const t = normalise(text);
+  if (QUESTION_FORM.test(t)) return true;
+  const surfaces = entities
+    .filter((e) => e.kind === 'country')
+    .flatMap((e) =>
+      String(e.surface || e.label || '')
+        .toLowerCase()
+        .split(/\s+/),
+    );
+  const rest = tokenize(t)
+    .map((w) => w.toLowerCase().replace(/'s$|'$/, ''))
+    .filter(
+      (w) =>
+        !surfaces.includes(w) &&
+        !STOPWORDS.has(w) &&
+        !PROFILE_WORDS.has(w) &&
+        !PROFILE_TOKEN.test(w),
+    );
+  return rest.length > 0;
+}
+
 export function understandDeterministic(raw, { noCorrect = false, tickerName = null } = {}) {
-  const rawTokens = tokenize(raw);
-  const spell = noCorrect
+  const poss = stripPossessives(tokenize(raw));
+  const rawTokens = poss.tokens;
+  const spelled = noCorrect
     ? { tokens: rawTokens, corrections: [], readings: [] }
     : correct(rawTokens);
+  const spell = { ...spelled, readings: [...poss.readings, ...(spelled.readings || [])] };
   const tokens = spell.tokens;
   /* Readings (a demonym read as its place) rewrite the working text exactly
      like corrections, so intent and display are unchanged, but only real
@@ -320,6 +410,12 @@ export function understandDeterministic(raw, { noCorrect = false, tickerName = n
   }));
 
   const intent = pickIntent(corrected, entities);
+  /* The question as typed (normalised), with genuine spelling fixes but not readings. */
+  const asTyped = spell.corrections.reduce(
+    (str, c) =>
+      str.replace(new RegExp(`\\b${c.from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`), c.to),
+    normalise(raw),
+  );
   const ambiguities = entities
     .filter((e) => e.alternatives?.length)
     .map((e) => ({
@@ -338,7 +434,10 @@ export function understandDeterministic(raw, { noCorrect = false, tickerName = n
     raw: normalise(raw),
     corrected,
     corrections: spell.corrections,
-    display: buildDisplay(intent, entities, corrected),
+    display:
+      intent === 'country_question'
+        ? asTyped.charAt(0).toUpperCase() + asTyped.slice(1)
+        : buildDisplay(intent, entities, corrected),
     intent,
     entities,
     ambiguities,
@@ -367,7 +466,10 @@ export async function understandQuery(raw, opts = {}) {
       ...base,
       entities,
       intent,
-      display: buildDisplay(intent, entities, base.corrected),
+      display:
+        intent === 'country_question' && base.intent === 'country_question'
+          ? base.display
+          : buildDisplay(intent, entities, base.corrected),
       ambiguities: [],
     };
   }

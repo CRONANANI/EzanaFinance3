@@ -41,19 +41,9 @@ async function legacyReserve(admin, { userId, limit, globalLimit, ipHash, ipLimi
     return { ok: false, reason: 'global', used: 0 };
   let used = 0;
   if (userId) {
-    const { count } = await admin
-      .from('sonar_queries')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .gte('created_at', since);
-    used = count || 0;
+    used = await countPingsToday(admin, { userId }).catch(() => 0);
   } else if (ipHash && ipLimit != null) {
-    const { count } = await admin
-      .from('sonar_queries')
-      .select('id', { count: 'exact', head: true })
-      .eq('ip_hash', ipHash)
-      .gte('created_at', since);
-    used = count || 0;
+    used = await countPingsToday(admin, { ipHash }).catch(() => 0);
   }
   const cap = userId ? limit : ipLimit;
   if (cap != null && used >= cap) return { ok: false, reason: 'quota', used };
@@ -63,8 +53,26 @@ async function legacyReserve(admin, { userId, limit, globalLimit, ipHash, ipLimi
 /* Deep research runs are ledgered with version 'research:deep:<version>'. */
 export const DEEP_VERSION_PREFIX = 'research:deep:';
 
+/**
+ * Today's pings for a member (user_id) or a guest (salted ip_hash), counted
+ * the way reserve_sonar_ping counts them: every ledger row since midnight
+ * UTC, reserved or completed (a released reservation is deleted). Read-only;
+ * the estimate route (lib/sonar/estimate-server.js) shows it, the
+ * reservation enforces it.
+ */
+export async function countPingsToday(admin, { userId = null, ipHash = null } = {}) {
+  if (!userId && !ipHash) return 0;
+  const since = startOfUtcDayISO();
+  const base = admin.from('sonar_queries').select('id', { count: 'exact', head: true });
+  const { count, error } = await (
+    userId ? base.eq('user_id', userId) : base.eq('ip_hash', ipHash)
+  ).gte('created_at', since);
+  if (error) throw error;
+  return count || 0;
+}
+
 /** Today's deep research runs for a user, counted from the ledger. */
-async function countDeepToday(admin, userId) {
+export async function countDeepToday(admin, userId) {
   const { count, error } = await admin
     .from('sonar_queries')
     .select('id', { count: 'exact', head: true })
@@ -194,6 +202,94 @@ export async function failPing(admin, reservation) {
     .eq('id', reservation.id)
     .eq('status', 'reserved');
   if (error) console.error('[sonar-quota] release failed:', error.message);
+}
+
+/**
+ * How a ping settles (pure): released (nothing charged) when the visitor
+ * went away before it finished (aborted, for example by choosing deep
+ * research) or when there is no answer; completed otherwise.
+ * @returns {'complete'|'release'}
+ */
+export function settlementFor({ aborted = false, answered = false } = {}) {
+  return !aborted && answered ? 'complete' : 'release';
+}
+
+/* PostgREST "column not in the schema cache" and Postgres undefined_column. */
+const MISSING_COLUMN = new Set(['PGRST204', '42703']);
+
+/**
+ * Record which research mode ran and how long the route took on a reserved
+ * ledger row (sonar_queries.mode, sonar_queries.duration_ms; the estimate
+ * route reads them back for its p50/p90). Never throws and never fails a
+ * ping: a missing column or any other error is skipped with at most a
+ * warning carrying the error code.
+ * @returns {Promise<{ ok: boolean, skipped?: boolean }>}
+ */
+export async function annotatePing(admin, reservation, { mode = null, durationMs = null } = {}) {
+  if (!reservation?.ok || !reservation.id) return { ok: false, skipped: true };
+  const patch = {};
+  if (mode === 'quick' || mode === 'standard' || mode === 'deep') patch.mode = mode;
+  const ms = durationMs == null ? Number.NaN : Number(durationMs);
+  if (Number.isFinite(ms) && ms >= 0) patch.duration_ms = Math.min(2_147_483_647, Math.round(ms));
+  if (!Object.keys(patch).length) return { ok: false, skipped: true };
+  try {
+    /* Query builders are thenables without .catch: wrap them. */
+    const { error } = await Promise.resolve(
+      admin.from('sonar_queries').update(patch).eq('id', reservation.id),
+    );
+    if (error) {
+      if (!MISSING_COLUMN.has(error.code))
+        console.warn('[sonar-quota] annotate skipped', error.code);
+      return { ok: false, skipped: true };
+    }
+    return { ok: true };
+  } catch {
+    return { ok: false, skipped: true };
+  }
+}
+
+/* The ledger versions a deep run may supersede: a landing ping (guest or
+   member) and a standard research run. Never a deep run. */
+const SUPERSEDABLE = (version) =>
+  version === 'guest' ||
+  version === 'member' ||
+  String(version || '').startsWith('research:standard:');
+
+/**
+ * Choosing deep research while a standard answer is still running cancels
+ * that answer, and it must cost nothing: release the caller's most recent
+ * ledger row for the same question (landing ping or standard research run,
+ * reserved or already completed by a server that had not seen the cancel
+ * yet) from the last few minutes. Scoped to the caller's own rows (user_id,
+ * or ip_hash for a guest) because this runs on the service role. At most one
+ * row. Never throws.
+ * @returns {Promise<{ released: boolean, id?: string, version?: string }>}
+ */
+export async function releaseSupersededPing(
+  admin,
+  { userId = null, ipHash = null, query, withinMs = 5 * 60_000, now = Date.now() } = {},
+) {
+  const text = String(query || '').slice(0, 600);
+  if ((!userId && !ipHash) || text.length < 2) return { released: false };
+  try {
+    const scope = (q) =>
+      userId ? q.eq('user_id', userId) : q.is('user_id', null).eq('ip_hash', ipHash);
+    const { data, error } = await Promise.resolve(
+      scope(admin.from('sonar_queries').select('id, version, status'))
+        .eq('query_text', text)
+        .gte('created_at', new Date(now - withinMs).toISOString())
+        .order('created_at', { ascending: false })
+        .limit(5),
+    );
+    if (error) return { released: false };
+    const row = (data || []).find((r) => SUPERSEDABLE(r.version));
+    if (!row) return { released: false };
+    const del = await Promise.resolve(scope(admin.from('sonar_queries').delete()).eq('id', row.id));
+    if (del?.error) return { released: false };
+    return { released: true, id: row.id, version: row.version };
+  } catch {
+    return { released: false };
+  }
 }
 
 /**

@@ -27,9 +27,9 @@ import { CLASSIFICATIONS, numberSupported, validateClaim } from './findings';
 import { stripCoverageNotes } from '@/lib/sonar/groundingGuard';
 import { AI_VALUE_CHAIN } from '@/lib/sonar/ai-infrastructure';
 
-export const MEMO_PROMPT_VERSION = 'memo-v1';
-export const POSITIONING_PROMPT_VERSION = 'positioning-v1';
-export const FUND_FIT_PROMPT_VERSION = 'fund-fit-v1';
+export const MEMO_PROMPT_VERSION = 'memo-v2';
+export const POSITIONING_PROMPT_VERSION = 'positioning-v2';
+export const FUND_FIT_PROMPT_VERSION = 'fund-fit-v2';
 
 export const MEMO_SYSTEM = `You are Ezana Sonar acting as a senior equity research analyst briefing a managing director on a multi-year investment risk assessment. You receive the question, numbered evidence records [S1]..[Sn] and calculated metrics [M:id]. Return ONLY one JSON object, no prose around it, matching:
 {

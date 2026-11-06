@@ -13,7 +13,8 @@
  */
 import { SOURCES, DEFAULT_CONFIG, weightOf } from './domains';
 import { topicForText } from '@/lib/lobbying/topics';
-import { routeMacro, findCountries } from '@/lib/sonar/macro/route';
+import { routeMacro, findCountries, frameworksForRoute } from '@/lib/sonar/macro/route';
+import { FRAMEWORKS } from '@/lib/sonar/macro/playbook';
 
 /* Dataset entitlement each gated source needs (entitlements.js ids). */
 export const SOURCE_DATASET = {
@@ -160,10 +161,23 @@ export function macroSeriesParams(spec, resolution) {
   }
   const countries = route.ranking ? [] : isos.slice(0, 4);
   if (!countries.length && !route.themes.length && !route.commodity && !route.ranking) return null;
+  /* Nov 6: the frameworks the question needs shape the plan. Their families become
+     required evidence, read first; a currency question also reads the structural
+     vulnerabilities (external debt, credit gap, debt service). */
+  const frameworks = route.ranking ? [] : frameworksForRoute({ ...route, countries });
+  const required = [
+    ...new Set([
+      ...frameworks.flatMap((id) => FRAMEWORKS[id]?.families || []),
+      ...(frameworks.includes('currency') ? ['external_debt', 'credit_gap', 'debt_service'] : []),
+    ]),
+  ].filter((f) => f !== 'sanctions');
   return {
     countries,
     themes: route.themes,
-    families: route.families,
+    families: [...new Set([...required, ...route.families])],
+    required,
+    frameworks,
+    currency: route.currency || null,
     commodity: route.commodity,
     ranking: route.ranking,
     region: route.region,
