@@ -12,6 +12,136 @@
   color: var(--text-secondary);
   font-family: var(--font-sans);
 }
+/* Contents legend (Nov 2026): the report's standard sections on the left,
+   as on Ezana Echo articles and the Ezana API docs (ReportContents.jsx).
+   The frame is a size container, so the legend follows the space the report
+   actually has (a saved org report sits beside its comments): a sticky
+   column from 900px of report width, a sticky row of chips below that. */
+.srr-frame {
+  container-type: inline-size;
+  width: 100%;
+}
+.srr-frame-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 1rem;
+}
+.srr-frame [id$='-h'] {
+  scroll-margin-top: calc(var(--navbar-height, 64px) + 72px);
+}
+.srr-contents {
+  position: sticky;
+  top: var(--navbar-height, 64px);
+  z-index: 2;
+  margin: 0 -8px;
+  padding: 0.5rem 8px;
+  background: var(--bg-primary);
+}
+.srr-contents-head {
+  display: none;
+  margin: 0 0 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.srr-contents ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.srr-contents ul::-webkit-scrollbar {
+  display: none;
+}
+.srr-contents li {
+  flex: 0 0 auto;
+}
+.srr-contents a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    color 0.14s ease,
+    border-color 0.14s ease,
+    background 0.14s ease;
+}
+.srr-contents a:hover {
+  color: var(--text-primary);
+}
+.srr-contents a:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.srr-contents a.is-active {
+  color: var(--emerald-text);
+  border-color: color-mix(in srgb, var(--emerald) 45%, transparent);
+  background: var(--emerald-bg);
+  font-weight: 600;
+}
+
+@container (min-width: 900px) {
+  .srr-frame-grid {
+    grid-template-columns: 196px minmax(0, 1fr);
+    column-gap: 2.5rem;
+    align-items: start;
+  }
+  .srr-frame [id$='-h'] {
+    scroll-margin-top: calc(var(--navbar-height, 64px) + 24px);
+  }
+  .srr-contents {
+    top: calc(var(--navbar-height, 64px) + 24px);
+    max-height: calc(100vh - var(--navbar-height, 64px) - 48px);
+    overflow-y: auto;
+    margin: 0;
+    padding: 0 4px;
+    background: transparent;
+  }
+  .srr-contents-head {
+    display: block;
+  }
+  .srr-contents ul {
+    flex-direction: column;
+    gap: 2px;
+    overflow-x: visible;
+  }
+  .srr-contents a {
+    display: block;
+    min-height: 0;
+    padding: 5px 10px;
+    border: 0;
+    border-left: 2px solid transparent;
+    border-radius: 0;
+    background: transparent;
+    white-space: normal;
+  }
+  .srr-contents a.is-active {
+    color: var(--emerald-text);
+    border-left-color: var(--emerald);
+    background: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .srr-contents a {
+    transition: none;
+  }
+}
+
 .srr-mono {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;

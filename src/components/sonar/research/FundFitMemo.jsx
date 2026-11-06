@@ -167,7 +167,11 @@ export default function FundFitMemo({ report, panels = {}, onCite }) {
       ) : null}
 
       {report.catalysts?.length || report.headwinds?.length ? (
-        <section className="sff-section sff-two" aria-label="Catalysts and headwinds">
+        <section
+          id="sff-cat-h"
+          className="sff-section sff-two"
+          aria-label="Catalysts and headwinds"
+        >
           <div id="catalysts">
             <h2 className="srr-h2">
               <i className="bi bi-arrow-up-right" aria-hidden="true" /> Catalysts

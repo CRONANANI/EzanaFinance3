@@ -30,6 +30,7 @@ import InvestmentMemo from './InvestmentMemo';
 import PositioningMemo from './PositioningMemo';
 import FundFitMemo from './FundFitMemo';
 import ChallengeBanner from './ChallengeBanner';
+import ReportContents from './ReportContents';
 import './research-report.css';
 import { CountryIntelCard } from '@/components/landing/CountryIntelCard';
 
@@ -633,6 +634,7 @@ function RunFeedback({ runId }) {
 }
 
 export default function ResearchReport({ state, onFollowUp = null }) {
+  const rootRef = useRef(null);
   const [focus, setFocus] = useState(null);
   const plan = state.plan;
   const report = state.report;
@@ -670,202 +672,222 @@ export default function ResearchReport({ state, onFollowUp = null }) {
   };
 
   return (
-    <div className="srr">
-      {plan ? (
-        <header className="srr-head">
-          <p className="srr-eyebrow">Research question</p>
-          <h1 className="srr-q">{plan.spec.question}</h1>
-          <div className="srr-scope">
-            {plan.spec.domains.slice(0, 4).map((d) => (
-              <span key={d.id} className="srr-chip">
-                {d.id.replace(/_/g, ' ')}
-              </span>
-            ))}
-            {plan.universe ? (
-              <span className="srr-chip">
-                {plan.universe.label} ({plan.universe.count})
-              </span>
-            ) : null}
-            {plan.spec.timeHorizon?.kind !== 'unspecified' ? (
-              <span className="srr-chip srr-mono">
-                {plan.spec.timeHorizon.kind}{' '}
-                {plan.spec.timeHorizon.months ? `${plan.spec.timeHorizon.months}m` : ''}
-              </span>
-            ) : null}
-            <span className="srr-chip">{plan.spec.depth} research</span>
-            {run?.confidence ? (
-              <span className={`srr-badge is-conf-${run.confidence}`}>
-                Confidence {run.confidence}
-              </span>
-            ) : null}
-          </div>
-          {plan.universe?.basis ? (
-            <p className="srr-basis">Companies screened: {plan.universe.basis}.</p>
+    /* Nov 2026: the contents legend on the left (ReportContents), the report
+       beside it. On a narrow container the legend is a chip row above. */
+    <div className="srr-frame">
+      <div className="srr-frame-grid">
+        <ReportContents rootRef={rootRef} />
+        <div className="srr" ref={rootRef}>
+          {plan ? (
+            <header className="srr-head">
+              <p className="srr-eyebrow">Research question</p>
+              <h1 className="srr-q">{plan.spec.question}</h1>
+              <div className="srr-scope">
+                {plan.spec.domains.slice(0, 4).map((d) => (
+                  <span key={d.id} className="srr-chip">
+                    {d.id.replace(/_/g, ' ')}
+                  </span>
+                ))}
+                {plan.universe ? (
+                  <span className="srr-chip">
+                    {plan.universe.label} ({plan.universe.count})
+                  </span>
+                ) : null}
+                {plan.spec.timeHorizon?.kind !== 'unspecified' ? (
+                  <span className="srr-chip srr-mono">
+                    {plan.spec.timeHorizon.kind}{' '}
+                    {plan.spec.timeHorizon.months ? `${plan.spec.timeHorizon.months}m` : ''}
+                  </span>
+                ) : null}
+                <span className="srr-chip">{plan.spec.depth} research</span>
+                {run?.confidence ? (
+                  <span className={`srr-badge is-conf-${run.confidence}`}>
+                    Confidence {run.confidence}
+                  </span>
+                ) : null}
+              </div>
+              {plan.universe?.basis ? (
+                <p className="srr-basis">Companies screened: {plan.universe.basis}.</p>
+              ) : null}
+            </header>
           ) : null}
-        </header>
-      ) : null}
 
-      {state.status === 'running' ? <Progress state={state} /> : null}
-      {state.memory ? (
-        <p className="srr-note">
-          Sonar researched this subject before (last retrieved{' '}
-          {String(state.memory.lastRetrievedAt || '').slice(0, 10)}). {state.memory.newSinceLast}{' '}
-          records are new since then; earlier records are marked and dated.
-        </p>
-      ) : null}
-
-      {report?.challenge ? <ChallengeBanner challenge={report.challenge} onCite={cite} /> : null}
-
-      {report?.format === 'investment_memo' && report.memoKind === 'positioning' ? (
-        <PositioningMemo report={report} panels={state.panels || {}} onCite={cite} />
-      ) : null}
-      {report?.format === 'investment_memo' && report.memoKind === 'fund_fit' ? (
-        <>
-          <FundFitMemo report={report} panels={state.panels || {}} onCite={cite} />
-          <InvestmentMemo report={report} panels={state.panels || {}} onCite={cite} hideView />
-        </>
-      ) : null}
-      {report?.format === 'investment_memo' &&
-      report.memoKind !== 'positioning' &&
-      report.memoKind !== 'fund_fit' ? (
-        <InvestmentMemo report={report} panels={state.panels || {}} onCite={cite} />
-      ) : null}
-
-      {report?.format !== 'investment_memo' && report?.executiveConclusion ? (
-        <section className="srr-conclusion" aria-labelledby="srr-concl-h">
-          <h2 id="srr-concl-h" className="srr-h2">
-            Conclusion
-          </h2>
-          <p className="srr-conclusion-text">
-            {report.executiveConclusion.text}{' '}
-            <Cites markers={report.executiveConclusion.markers} onCite={cite} />
-          </p>
-          {run?.methodology?.deterministic ? (
+          {state.status === 'running' ? <Progress state={state} /> : null}
+          {state.memory ? (
             <p className="srr-note">
-              This report quotes the records directly; the analysis step did not complete.
+              Sonar researched this subject before (last retrieved{' '}
+              {String(state.memory.lastRetrievedAt || '').slice(0, 10)}).{' '}
+              {state.memory.newSinceLast} records are new since then; earlier records are marked and
+              dated.
             </p>
           ) : null}
-        </section>
-      ) : null}
 
-      {/* Nov 6: a currency question's deep report carries the same Country & Currency
-          Intelligence panel as the ping: KPIs, the assessment table, the charts and the
-          transmission map, built from the computed measures (the prose is above). */}
-      {state.panels?.macro?.countryIntel ? (
-        <CountryIntelCard
-          dossier={{
-            iso3: state.panels.macro.countryIntel.iso3,
-            name: state.panels.macro.countryIntel.place,
-            intel: { ...state.panels.macro.countryIntel, brief: null, fallbackText: null },
-          }}
-        />
-      ) : null}
-
-      {metrics.length ? (
-        <section className="srr-metrics" aria-label="Key metrics">
-          {metrics.slice(0, 6).map((m) => (
-            <div key={m.id} className="srr-metric" title={`Method: ${m.method}`}>
-              <span className="srr-metric-val">{fmtValue(m.value, m.unit)}</span>
-              <span className="srr-metric-label">{m.label}</span>
-            </div>
-          ))}
-        </section>
-      ) : null}
-
-      {report?.format !== 'investment_memo' && report?.keyFindings?.length ? (
-        <section className="srr-section" aria-labelledby="srr-find-h">
-          <h2 id="srr-find-h" className="srr-h2">
-            Key findings
-          </h2>
-          {report.keyFindings.map((f) => (
-            <Finding key={f.id} f={f} runId={runId} onCite={cite} />
-          ))}
-          {report.analysis?.length ? (
-            <div className="srr-analysis">
-              {report.analysis.map((a) => (
-                <p key={a.id} className="srr-analysis-text">
-                  <span className={`srr-badge is-${a.classification}`}>
-                    {CLASS_LABEL[a.classification]}
-                  </span>{' '}
-                  {a.text} <Cites markers={a.markers} onCite={cite} />
-                </p>
-              ))}
-            </div>
+          {report?.challenge ? (
+            <ChallengeBanner challenge={report.challenge} onCite={cite} />
           ) : null}
-        </section>
-      ) : null}
 
-      {vis.length ? (
-        <section className="srr-charts" aria-label="Charts">
-          {vis.map((v) => (
-            <ResearchChart key={v.id} vis={v} />
-          ))}
-        </section>
-      ) : null}
-
-      <ResearchTeamPanel team={team} onCite={cite} calcs={calcs} />
-
-      <Relationships data={state.relationships} />
-      <EvidenceExplorer evidence={evidence} focus={focus} runId={runId} />
-
-      {run ? (
-        <section className="srr-section" aria-labelledby="srr-lim-h">
-          <h2 id="srr-lim-h" className="srr-h2">
-            Methodology and limitations
-          </h2>
-          {team ? (
-            <MethodologySection
-              methodology={team.methodology}
-              audit={team.live ? null : team.audit}
-              focus={focus}
-            />
+          {report?.format === 'investment_memo' && report.memoKind === 'positioning' ? (
+            <PositioningMemo report={report} panels={state.panels || {}} onCite={cite} />
           ) : null}
-          {limitations.length ? (
+          {report?.format === 'investment_memo' && report.memoKind === 'fund_fit' ? (
             <>
-              {team?.methodology ? <h3 className="srr-h3">Limitations and data gaps</h3> : null}
-              <ul className="srr-list">
-                {limitations.map((l) => (
-                  <li key={l}>{l}</li>
-                ))}
-              </ul>
+              <FundFitMemo report={report} panels={state.panels || {}} onCite={cite} />
+              <InvestmentMemo report={report} panels={state.panels || {}} onCite={cite} hideView />
             </>
           ) : null}
-          {team?.methodology ? <h3 className="srr-h3">Sources searched</h3> : null}
-          <p className="srr-method">
-            Searched:{' '}
-            {run.methodology.plan.tasks.map((t) => SOURCE_LABELS[t.source] || t.source).join(', ')}.
-            {run.methodology.plan.excluded.filter((x) => x.reason !== 'below_threshold').length
-              ? ` Not searched: ${run.methodology.plan.excluded
-                  .filter((x) => x.reason !== 'below_threshold')
-                  .map(
-                    (x) =>
-                      `${SOURCE_LABELS[x.source] || x.source} (${x.reason === 'not_entitled' ? 'not in your plan' : x.reason.startsWith('unmet') ? 'no subject to search' : 'depth limit'})`,
-                  )
-                  .join(', ')}.`
-              : ''}{' '}
-            {run.methodology.evidence.retrieved} records retrieved,{' '}
-            {run.methodology.evidence.selected} selected.
-            {run.researchMetadata?.validation
-              ? ` ${run.researchMetadata.validation.kept} of ${run.researchMetadata.validation.claims} claims passed validation.`
-              : ''}
-          </p>
-          {run.followOnResearch?.length && onFollowUp ? (
-            <div className="srr-follow">
-              {run.followOnResearch.map((q) => (
-                <button key={q} type="button" className="srr-pill" onClick={() => onFollowUp(q)}>
-                  {q}
-                </button>
-              ))}
+          {report?.format === 'investment_memo' &&
+          report.memoKind !== 'positioning' &&
+          report.memoKind !== 'fund_fit' ? (
+            <InvestmentMemo report={report} panels={state.panels || {}} onCite={cite} />
+          ) : null}
+
+          {report?.format !== 'investment_memo' && report?.executiveConclusion ? (
+            <section className="srr-conclusion" aria-labelledby="srr-concl-h">
+              <h2 id="srr-concl-h" className="srr-h2">
+                Conclusion
+              </h2>
+              <p className="srr-conclusion-text">
+                {report.executiveConclusion.text}{' '}
+                <Cites markers={report.executiveConclusion.markers} onCite={cite} />
+              </p>
+              {run?.methodology?.deterministic ? (
+                <p className="srr-note">
+                  This report quotes the records directly; the analysis step did not complete.
+                </p>
+              ) : null}
+            </section>
+          ) : null}
+
+          {/* Nov 6: a currency question's deep report carries the same Country & Currency
+          Intelligence panel as the ping: KPIs, the assessment table, the charts and the
+          transmission map, built from the computed measures (the prose is above). */}
+          {state.panels?.macro?.countryIntel ? (
+            <div id="srr-country-h" className="srr-anchor">
+              <CountryIntelCard
+                dossier={{
+                  iso3: state.panels.macro.countryIntel.iso3,
+                  name: state.panels.macro.countryIntel.place,
+                  intel: { ...state.panels.macro.countryIntel, brief: null, fallbackText: null },
+                }}
+              />
             </div>
           ) : null}
-          <RunFeedback runId={runId} />
-          <p className="srr-disclaimer">
-            Findings only, never financial advice. Every claim carries its source.
-          </p>
-        </section>
-      ) : null}
 
-      {state.status === 'error' ? <p className="srr-error">{state.error}</p> : null}
+          {metrics.length ? (
+            <section id="srr-metrics-h" className="srr-metrics" aria-label="Key metrics">
+              {metrics.slice(0, 6).map((m) => (
+                <div key={m.id} className="srr-metric" title={`Method: ${m.method}`}>
+                  <span className="srr-metric-val">{fmtValue(m.value, m.unit)}</span>
+                  <span className="srr-metric-label">{m.label}</span>
+                </div>
+              ))}
+            </section>
+          ) : null}
+
+          {report?.format !== 'investment_memo' && report?.keyFindings?.length ? (
+            <section className="srr-section" aria-labelledby="srr-find-h">
+              <h2 id="srr-find-h" className="srr-h2">
+                Key findings
+              </h2>
+              {report.keyFindings.map((f) => (
+                <Finding key={f.id} f={f} runId={runId} onCite={cite} />
+              ))}
+              {report.analysis?.length ? (
+                <div className="srr-analysis">
+                  {report.analysis.map((a) => (
+                    <p key={a.id} className="srr-analysis-text">
+                      <span className={`srr-badge is-${a.classification}`}>
+                        {CLASS_LABEL[a.classification]}
+                      </span>{' '}
+                      {a.text} <Cites markers={a.markers} onCite={cite} />
+                    </p>
+                  ))}
+                </div>
+              ) : null}
+            </section>
+          ) : null}
+
+          {vis.length ? (
+            <section id="srr-charts-h" className="srr-charts" aria-label="Charts">
+              {vis.map((v) => (
+                <ResearchChart key={v.id} vis={v} />
+              ))}
+            </section>
+          ) : null}
+
+          <ResearchTeamPanel team={team} onCite={cite} calcs={calcs} />
+
+          <Relationships data={state.relationships} />
+          <EvidenceExplorer evidence={evidence} focus={focus} runId={runId} />
+
+          {run ? (
+            <section className="srr-section" aria-labelledby="srr-lim-h">
+              <h2 id="srr-lim-h" className="srr-h2">
+                Methodology and limitations
+              </h2>
+              {team ? (
+                <MethodologySection
+                  methodology={team.methodology}
+                  audit={team.live ? null : team.audit}
+                  focus={focus}
+                />
+              ) : null}
+              {limitations.length ? (
+                <>
+                  {team?.methodology ? <h3 className="srr-h3">Limitations and data gaps</h3> : null}
+                  <ul className="srr-list">
+                    {limitations.map((l) => (
+                      <li key={l}>{l}</li>
+                    ))}
+                  </ul>
+                </>
+              ) : null}
+              {team?.methodology ? <h3 className="srr-h3">Sources searched</h3> : null}
+              <p className="srr-method">
+                Searched:{' '}
+                {run.methodology.plan.tasks
+                  .map((t) => SOURCE_LABELS[t.source] || t.source)
+                  .join(', ')}
+                .
+                {run.methodology.plan.excluded.filter((x) => x.reason !== 'below_threshold').length
+                  ? ` Not searched: ${run.methodology.plan.excluded
+                      .filter((x) => x.reason !== 'below_threshold')
+                      .map(
+                        (x) =>
+                          `${SOURCE_LABELS[x.source] || x.source} (${x.reason === 'not_entitled' ? 'not in your plan' : x.reason.startsWith('unmet') ? 'no subject to search' : 'depth limit'})`,
+                      )
+                      .join(', ')}.`
+                  : ''}{' '}
+                {run.methodology.evidence.retrieved} records retrieved,{' '}
+                {run.methodology.evidence.selected} selected.
+                {run.researchMetadata?.validation
+                  ? ` ${run.researchMetadata.validation.kept} of ${run.researchMetadata.validation.claims} claims passed validation.`
+                  : ''}
+              </p>
+              {run.followOnResearch?.length && onFollowUp ? (
+                <div className="srr-follow">
+                  {run.followOnResearch.map((q) => (
+                    <button
+                      key={q}
+                      type="button"
+                      className="srr-pill"
+                      onClick={() => onFollowUp(q)}
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+              <RunFeedback runId={runId} />
+              <p className="srr-disclaimer">
+                Findings only, never financial advice. Every claim carries its source.
+              </p>
+            </section>
+          ) : null}
+
+          {state.status === 'error' ? <p className="srr-error">{state.error}</p> : null}
+        </div>
+      </div>
     </div>
   );
 }
