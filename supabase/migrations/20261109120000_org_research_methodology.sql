@@ -15,7 +15,11 @@
 
 do $$
 begin
-  if to_regclass('public.org_research_methodology') is null then
+  /* Parents first: on a database without the org schema (the CI stub) this is a no-op. */
+  if to_regclass('public.org_research_methodology') is null
+     and to_regclass('public.organizations') is not null
+     and to_regclass('auth.users') is not null
+     and to_regprocedure('public.auth_org_ids()') is not null then
     create table public.org_research_methodology (
       org_id uuid primary key references public.organizations(id) on delete cascade,
       valuation_methods text[] not null default array['dcf', 'comparables']::text[],
