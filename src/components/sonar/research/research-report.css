@@ -41,9 +41,9 @@
   display: none;
   margin: 0 0 10px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: var(--type-micro-size);
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-faint);
 }
