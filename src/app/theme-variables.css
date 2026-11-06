@@ -649,6 +649,21 @@ body.partner-app.light-mode {
   --card-border: transparent;
 }
 
+/* Ezana Echo article globe (CobeGlobe in the Geography of the story rail).
+   The article canvas is white on every theme, so the globe is paper and ink
+   on every theme too: a white dotted globe, near-black markers, arcs and
+   labels, and a warm glow. The four ink shades are the faces of the spinning
+   marker pyramids. Read by the component at runtime for cobe's WebGL colours. */
+:root {
+  --echo-globe-paper: #ffffff;
+  --echo-globe-ink: #111111;
+  --echo-globe-ink-2: #222222;
+  --echo-globe-ink-3: #333333;
+  --echo-globe-ink-4: #555555;
+  --echo-globe-glow: #f0ede8;
+  --echo-globe-label-shadow: rgba(0, 0, 0, 0.2);
+}
+
 /* V3 Marquee — Ezana Echo Article Footer Tokens */
 :root {
   --echo-surface-3: #172230;

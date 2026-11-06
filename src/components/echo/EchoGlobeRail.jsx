@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { InteractiveGlobe } from '@/components/ui/interactive-globe';
+import { CobeGlobe } from '@/components/ui/cobe-globe';
 import './echo-globe-rail.css';
 
 const escapeRegExp = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -55,9 +55,10 @@ function buildSectionCardMap(sections, cities) {
 }
 
 /**
- * "Geography of the story" rail: a rotating city globe (a smaller instance of
- * the landing-hero InteractiveGlobe, showing only this article's cities), one
- * impact card per city, and a compact metric sparkline.
+ * "Geography of the story" rail: a rotating city globe (CobeGlobe, the white
+ * dotted cobe globe with spinning pyramid markers, arcs between this
+ * article's cities and a label per city), one impact card per city, and a
+ * compact metric sparkline.
  *
  * One rule drives the card at every width: the section in view (the last
  * heading above the 35%-viewport line) picks the city via
@@ -77,8 +78,8 @@ function buildSectionCardMap(sections, cities) {
  *
  * All numbers/impact text derive from the article's own content; city
  * lat/lng are geographic facts. Rotation pauses while the sticky block is
- * offscreen; the globe turns to the active city and resumes auto-rotation
- * after 2.5s.
+ * offscreen; the globe turns to the active city (its label reversed out) and
+ * resumes its slow spin after 2.5s.
  */
 const DESKTOP_QUERY = '(min-width: 1280px)';
 const RESUME_AUTOROTATE_MS = 2500;
@@ -88,14 +89,13 @@ const JUMP_OFFSET_PX = 96;
 export function EchoGlobeRail({ rail, sections = [] }) {
   const stickyRef = useRef(null);
   const [visible, setVisible] = useState(true);
-  // The globe's default oceanFill is tuned for the dark hero; in the article
-  // rail resolve it from the theme so it doesn't render as a black disc in
-  // light mode, preferring the article page ground so the ocean matches the
-  // page. Read once on mount.
-  const [oceanFill, setOceanFill] = useState(null);
 
   const cities = useMemo(() => rail?.cities ?? [], [rail]);
   const metric = rail?.metric;
+  const globeMarkers = useMemo(
+    () => cities.map((c) => ({ name: c.name, lat: c.lat, lng: c.lng })),
+    [cities],
+  );
 
   const { sectionToCard, cardToSection } = useMemo(
     () => buildSectionCardMap(sections, cities),
@@ -141,16 +141,6 @@ export function EchoGlobeRail({ rail, sections = [] }) {
     });
     io.observe(el);
     return () => io.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const cs = getComputedStyle(stickyRef.current || document.documentElement);
-    const token =
-      cs.getPropertyValue('--echo-globe-ocean').trim() ||
-      cs.getPropertyValue('--echo-page-bg').trim() ||
-      cs.getPropertyValue('--bg-primary').trim();
-    if (token) setOceanFill(token);
   }, []);
 
   // Deterministic scroll tracker (same pattern as the Contents rail, which
@@ -252,15 +242,13 @@ export function EchoGlobeRail({ rail, sections = [] }) {
         <div className="echo-grail-head echo-grail-mono">GEOGRAPHY OF THE STORY</div>
 
         <div className="echo-grail-globe" title="Select a city to jump to it in the article">
-          <InteractiveGlobe
+          <CobeGlobe
             size={280}
-            autoRotateSpeed={0.35}
             paused={!visible}
-            markers={cities.map((c) => ({ name: c.name, lat: c.lat, lng: c.lng }))}
-            showConnections={false}
+            markers={globeMarkers}
             focusTarget={globeFocus}
+            activeIndex={focusIdx}
             onMarkerClick={onMarkerClick}
-            {...(oceanFill ? { oceanFill } : {})}
           />
         </div>
 
