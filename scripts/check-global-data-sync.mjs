@@ -10,7 +10,7 @@ import { existsSync, readFileSync } from 'node:fs';
 
 const F = await import('../src/lib/macro-sync/formats.js');
 const { ADAPTERS, DEDICATED_CRON } = await import('../src/lib/macro-sync/index.js');
-const { runDue, adapterStatus } = await import('../src/lib/macro-sync/rotate.js');
+const { runDue, adapterStatus, backoffUntil } = await import('../src/lib/macro-sync/rotate.js');
 const { parseGdeltTimeline, aggregateGed } =
   await import('../src/lib/macro-sync/sources/events.js');
 const { parseSidra, parseBcra, parseBcrp, parseArgSeries } =
@@ -19,7 +19,12 @@ const { parseSarb, parseCbnFx, parseBoj, parseSingstat, parseMospiCpi } =
   await import('../src/lib/macro-sync/sources/africa-asia.js');
 const risk = await import('../src/lib/macro-sync/sources/risk-indices.js');
 const { parseFewsCsv } = await import('../src/lib/macro-sync/sources/energy-food.js');
-const { runSync, dedupeRows } = await import('../src/lib/macro-sync/engine.js');
+const { runSync, dedupeRows, serverErrorStreak, withStreak, isServerError } =
+  await import('../src/lib/macro-sync/engine.js');
+const { INDICATORS: WB_INDICATORS, worldbankExt } =
+  await import('../src/lib/macro-sync/sources/worldbank-ext.js');
+const { amecoIso3 } = await import('../src/lib/macro-sync/sources/europe.js');
+const { parseSgs, SERIES: BCB_SERIES } = await import('../src/lib/macro-sync/sources/bcb.js');
 const { parseEuXml, parseUnXml, parseUkCsv } = await import('../src/lib/sanctions-intl/parsers.js');
 const { syncList } = await import('../src/lib/sanctions-intl/index.js');
 
@@ -503,6 +508,229 @@ test('FEWS NET: without identity columns, repeats in a month are averaged, never
   );
 });
 
+/* ---------------------------------------------------------------- sync fixes (Sonar macro wiring) */
+
+const oneBatchAdapter = (source, fetchBatch, batches = [{ label: 'one' }]) => ({
+  source,
+  minIntervalMs: 0,
+  attribution: 'test',
+  buildBatches: () => batches,
+  fetchBatch,
+});
+const serverError = (msg = '500 from sdmx.example.org after 4 attempts') =>
+  Object.assign(new Error(msg), { retryable: true });
+
+test('engine: a pass where every batch failed is not complete, so the next run retries', async () => {
+  const db = strictDb();
+  const states = new Map();
+  const origFrom = db.from.bind(db);
+  db.from = (table) => {
+    const q = origFrom(table);
+    if (table !== 'macro_ingest_state') return q;
+    const up = q.upsert;
+    q.upsert = async (rows) => {
+      for (const r of [].concat(rows)) states.set(r.source, { ...states.get(r.source), ...r });
+      return up(rows);
+    };
+    return q;
+  };
+  const adapter = oneBatchAdapter(
+    'allfail',
+    async () => {
+      throw new Error('Pink Sheet: monthly file link not found');
+    },
+    [{ label: 'a' }, { label: 'b' }],
+  );
+  const r = await runSync(db, adapter, { force: true });
+  assert.equal(r.passComplete, false);
+  assert.equal(r.allBatchesFailed, true);
+  assert.equal(r.errors.length, 2);
+  const st = states.get('allfail');
+  assert.equal(st.pass_completed_at, null);
+  assert.equal(st.pass_started_at, null);
+  assert.equal(st.cursor, 0);
+  // A pass with one good batch is complete as before.
+  let n = 0;
+  const half = oneBatchAdapter(
+    'halffail',
+    async () => {
+      n += 1;
+      if (n === 1) throw new Error('bad batch');
+      return [{ series_key: 'A', period: '2026-01', value: 1 }];
+    },
+    [{ label: 'a' }, { label: 'b' }],
+  );
+  const r2 = await runSync(db, half, { force: true });
+  assert.equal(r2.passComplete, true);
+  assert.ok(states.get('halffail').pass_completed_at);
+});
+
+test('engine: a run that ends on a server error records a growing streak; recovery clears it', async () => {
+  assert.equal(isServerError('500 from esploradati.istat.it after 5 attempts'), true);
+  assert.equal(isServerError('fetch failed'), true);
+  assert.equal(isServerError('400 from rplumber.ilo.org: invalid dataset'), false);
+  assert.equal(isServerError('429 from api.gdeltproject.org after 4 attempts'), false);
+  assert.equal(serverErrorStreak(withStreak(3, '500 from x')), 3);
+  assert.equal(serverErrorStreak('500 from x'), 0);
+  assert.equal(withStreak(2, withStreak(1, 'boom')), '[server-error x2] boom');
+
+  // In-memory state that runSync reads back on every run.
+  const state = new Map();
+  const db = {
+    from(table) {
+      const q = {
+        select: () => q,
+        eq: (_c, v) => ((q.key = v), q),
+        maybeSingle: async () => ({ data: state.get(q.key) || null, error: null }),
+        upsert: async (rows) => {
+          if (table === 'macro_ingest_state')
+            for (const r of [].concat(rows)) state.set(r.source, { ...state.get(r.source), ...r });
+          return { error: null };
+        },
+      };
+      return q;
+    },
+  };
+  let down = true;
+  const adapter = oneBatchAdapter('istat-like', async () => {
+    if (down) throw serverError();
+    return [{ series_key: 'A', period: '2026-01', value: 1 }];
+  });
+  const r1 = await runSync(db, adapter, { force: true });
+  assert.equal(r1.serverErrorStreak, 1);
+  assert.equal(r1.passComplete, false);
+  assert.match(state.get('istat-like').last_error, /^\[server-error x1\] 500 from/);
+  const r2 = await runSync(db, adapter, { force: true });
+  assert.equal(r2.serverErrorStreak, 2);
+  assert.equal(serverErrorStreak(state.get('istat-like').last_error), 2);
+  down = false;
+  const r3 = await runSync(db, adapter, { force: true });
+  assert.equal(r3.passComplete, true);
+  assert.equal(r3.serverErrorStreak, undefined);
+  assert.equal(serverErrorStreak(state.get('istat-like').last_error), 0);
+  // A non-server failure never starts a streak.
+  const bad = oneBatchAdapter('bad-request', async () => {
+    throw new Error('400 from api.example.org: invalid id');
+  });
+  const r4 = await runSync(db, bad, { force: true });
+  assert.equal(r4.serverErrorStreak, undefined);
+  assert.equal(serverErrorStreak(state.get('bad-request').last_error), 0);
+});
+
+test('rotator: backs off 3 h after a server error, doubling to 24 h; force with only ignores it', async () => {
+  const at = '2026-11-06T00:00:00.000Z';
+  const hours = (n) =>
+    (backoffUntil({ last_error: withStreak(n, '500 from x'), updated_at: at }) - new Date(at)) /
+    3600e3;
+  assert.deepEqual([1, 2, 3, 4, 5, 9].map(hours), [3, 6, 12, 24, 24, 24]);
+  assert.equal(backoffUntil({ last_error: '400 from x', updated_at: at }), null);
+  assert.equal(backoffUntil(null), null);
+
+  const stateRows = [
+    { source: 'flaky', last_error: withStreak(2, '500 from x'), updated_at: at },
+    { source: 'healthy', last_error: null, updated_at: at },
+  ];
+  const ran = [];
+  const db = {
+    from: () => ({ select: async () => ({ data: stateRows, error: null }) }),
+  };
+  const adapters = {
+    flaky: { source: 'flaky', buildBatches: () => [] },
+    healthy: { source: 'healthy', buildBatches: () => [] },
+  };
+  // buildBatches() returning [] makes runSync skip before any database call.
+  const wrap = (a) => ({
+    ...a,
+    buildBatches: () => (ran.push(a.source), []),
+  });
+  const list = { flaky: wrap(adapters.flaky), healthy: wrap(adapters.healthy) };
+  const inside = await runDue(db, list, { env: {}, now: new Date('2026-11-06T05:00:00Z') });
+  const flaky = inside.find((r) => r.source === 'flaky');
+  assert.equal(flaky.skipped, true);
+  assert.match(flaky.reason, /backing off after server errors until 2026-11-06T06:00:00/);
+  assert.deepEqual(ran, ['healthy']);
+  // Past the window it runs again.
+  ran.length = 0;
+  await runDue(db, list, { env: {}, now: new Date('2026-11-06T07:00:00Z') });
+  assert.deepEqual(ran.sort(), ['flaky', 'healthy']);
+  // A manual ?only=flaky&force=1 run ignores the backoff.
+  ran.length = 0;
+  await runDue(db, list, {
+    env: {},
+    only: ['flaky'],
+    force: true,
+    now: new Date('2026-11-06T05:00:00Z'),
+  });
+  assert.deepEqual(ran, ['flaky']);
+});
+
+test('macro-sync cron refreshes macro_series_latest after writing rows, bounded and never fatal', () => {
+  const src = readFileSync(
+    new URL('../src/app/api/cron/macro-sync/route.js', import.meta.url),
+    'utf8',
+  );
+  assert.match(src, /rpc\('refresh_macro_series_latest'\)/);
+  assert.match(src, /withTimeout\(admin\.rpc\('refresh_macro_series_latest'\), 60000/);
+  assert.match(src, /wrote\.length \? await refreshLatest\(admin\)/);
+  const mig = readFileSync(
+    new URL('../supabase/migrations/20261108120000_sonar_macro_series_latest.sql', import.meta.url),
+    'utf8',
+  );
+  assert.match(mig, /create materialized view if not exists public\.macro_series_latest/);
+  assert.match(mig, /refresh materialized view concurrently public\.macro_series_latest/);
+  assert.match(
+    mig,
+    /grant execute on function public\.refresh_macro_series_latest\(\) to service_role/,
+  );
+});
+
+test('World Bank: debt codes go through WDI (source 2), one batch per indicator', () => {
+  const debt = WB_INDICATORS.filter((i) => i.id.startsWith('DT.'));
+  assert.deepEqual(
+    debt.map((i) => i.id),
+    ['DT.DOD.DECT.CD', 'DT.DOD.DECT.GN.ZS', 'DT.TDS.DECT.EX.ZS', 'DT.DOD.DSTC.ZS'],
+  );
+  // source=6 answers "not found" for every one of these; source 2 serves them.
+  assert.ok(debt.every((i) => i.source === 2));
+  assert.ok(WB_INDICATORS.every((i) => i.source !== 6));
+  const batches = worldbankExt.buildBatches(new Date('2026-11-06T00:00:00Z'));
+  assert.equal(batches.length, WB_INDICATORS.length);
+  assert.deepEqual(
+    batches.map((b) => b.label),
+    WB_INDICATORS.map((i) => i.id),
+  );
+});
+
+test('ECB: AMECO rows take their country from the key; aggregates stay null', () => {
+  assert.equal(amecoIso3('ECB.AME:A.AUT.1.0.0.0.ZUTN'), 'AUT');
+  assert.equal(amecoIso3('ECB.AME:A.DEU.1.0.0.0.ZUTN'), 'DEU');
+  assert.equal(amecoIso3('ECB.AME:A.ROM.1.0.0.0.ZUTN'), 'ROU');
+  assert.equal(amecoIso3('ECB.AME:A.EA20.1.0.0.0.ZUTN'), null);
+  assert.equal(amecoIso3('ECB.AME:A.EU27.1.0.0.0.ZUTN'), null);
+  assert.equal(amecoIso3('ECB.FM:B.U2.EUR.4F.KR.DFR.LEV'), null);
+});
+
+test('BCB: SGS 432 is the policy rate (% a year); an XML error page is retried, not skipped', () => {
+  const selic = BCB_SERIES.find((s) => s.code === 432);
+  assert.deepEqual([selic.name, selic.unit], ['Selic target rate', '% p.a.']);
+  assert.equal(BCB_SERIES.find((s) => s.code === 11).unit, '% p.d.');
+  const b = { code: 432, name: selic.name, unit: selic.unit, freq: 'D' };
+  const rows = parseSgs('[{"data":"05/11/2026","valor":"13.75"}]', b);
+  assert.deepEqual(
+    [rows[0].series_key, rows[0].period, rows[0].value, rows[0].country_iso3],
+    ['SGS.432', '2026-11-05', 13.75, 'BRA'],
+  );
+  assert.throws(
+    () => parseSgs('<?xml version="1.0"?><error/>', b),
+    (e) => e.retryable === true && /temporary error page/.test(e.message),
+  );
+  assert.throws(
+    () => parseSgs('{"error":"O sistema aceita uma janela de consulta de, no maximo, 10 anos"}', b),
+    (e) => !e.retryable && /10 anos/.test(e.message),
+  );
+  assert.deepEqual(parseSgs('', b), []);
+});
+
 const GPR_FILE = new URL('./fixtures/data_gpr_export.xls', import.meta.url);
 test(
   'GPR: the real export parses (skips when the fixture file is absent)',
@@ -617,71 +845,46 @@ const { CORE_SOURCES, findMissingAdapters } = await import('../src/lib/sonar/sou
 const { getSonarEntitlements } = await import('../src/lib/sonar/entitlements.js');
 const { corporaForDatasets } = await import('../src/lib/sonar/retrieval.js');
 
-test('macro-indicators: latest observed value wins; IMF projection is labelled, never shown as observed', () => {
-  const rows = [
-    {
-      source: 'imf',
-      series_key: 'IMF.WEO:IRN.NGDP_RPCH.A',
-      period: '2025',
-      value: 0.3,
-      series_name: 'Real GDP growth',
-      unit: '%',
-    },
-    {
-      source: 'imf',
-      series_key: 'IMF.WEO:IRN.NGDP_RPCH.A',
-      period: '2026',
-      value: -1.7,
-      series_name: 'Real GDP growth',
-      unit: '%',
-    },
-    {
-      source: 'imf',
-      series_key: 'IMF.WEO:IRN.NGDP_RPCH.A',
-      period: '2027',
-      value: 1.1,
-      series_name: 'Real GDP growth',
-      unit: '%',
-    },
-    {
-      source: 'gpr',
-      series_key: 'GPR.GPRC:IRN',
-      period: '2026-10',
-      value: 1.42,
-      series_name: 'Country GPR',
-      unit: 'index',
-    },
-    { source: 'ucdp', series_key: 'UCDP.deaths.all:IRN', period: '2026-09', value: null },
-  ];
-  const f = macro.rowsToFindings(rows, 'IRN', { now: new Date('2026-11-03T00:00:00Z') });
-  const gdp = f.find((x) => x.meta.headline === 'gdp');
-  assert.equal(gdp.meta.period, '2026');
-  assert.match(gdp.summary, /IMF projection for 2027/);
-  assert.ok(f.find((x) => x.meta.headline === 'gpr'));
-  assert.equal(
-    f.find((x) => x.meta.headline === 'conflict'),
-    undefined,
-  );
-  assert.ok(f.every((x) => x.citation.href.startsWith('/datasets/')));
+test('macro-indicators v2: a current-year IMF value is a labelled projection, never observed', async () => {
+  const { presentRow, FAMILY_BY_ID } = await import('../src/lib/sonar/macro/catalog.js');
+  const row = {
+    source: 'imf',
+    series_key: 'IMF.WEO:dataflow.IRN.NGDP_RPCH.A',
+    country_iso3: 'IRN',
+    period: '2026',
+    value: -1.7,
+    year_ago_period: '2025',
+    year_ago_value: 0.3,
+  };
+  const s = presentRow(row, FAMILY_BY_ID.gdp_growth, { now: new Date('2026-11-03T00:00:00Z') });
+  assert.equal(s.period, '2025');
+  assert.equal(s.value, 0.3);
+  assert.deepEqual(s.projection, { period: '2026', value: -1.7 });
 });
 
-test('macro-indicators: search reads via the injected db, one query per country (max 3)', async () => {
+test('macro-indicators v2: search reads macro_series_latest through the injected db for the routed countries', async () => {
   const seen = [];
   const db = {
-    from: () => {
+    from: (table) => {
       const q = {
         select: () => q,
-        eq: (_c, v) => (seen.push(v), q),
+        eq: (c, v) => (seen.push(`${table}.${c}=${v}`), q),
+        in: () => q,
+        like: () => q,
         gte: () => q,
         order: () => q,
-        limit: async () => ({ data: [], error: null }),
+        limit: () => q,
+        then: (res) => res({ data: [], error: null }),
       };
       return q;
     },
   };
-  await macro.default.search({ countries: ['IR', 'US', 'CN', 'RU'], themes: [] }, { db });
-  assert.deepEqual(seen, ['IRN', 'USA', 'CHN']);
-  assert.equal(macro.default.isRelevant({ countries: [] }), false);
+  await macro.default.search(
+    { raw: "How is Iran's economy doing?", countries: ['IR'], themes: [] },
+    { db },
+  );
+  assert.ok(seen.includes('macro_series_latest.country_iso3=IRN'), seen.join(', '));
+  assert.equal(macro.default.isRelevant({ raw: 'Who owns Palantir?', countries: [] }), false);
 });
 
 test('Sonar wiring: core source, free entitlement, corpus, coverage', () => {

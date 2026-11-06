@@ -553,3 +553,92 @@
     transition: none;
   }
 }
+
+/* ── Key indicators (macro catalogue, Nov 2026) ───────────────────────── */
+
+.snr-band .snr-ki-scroll {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 4px 0 8px;
+}
+
+.snr-band .snr-ki-scroll:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 2px;
+}
+
+.snr-band .snr-ki-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--snr-font-sans);
+  font-size: var(--type-caption-size);
+  color: var(--snr-text);
+}
+
+.snr-band .snr-ki-table thead th {
+  padding: 0 8px 6px 0;
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 500;
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--snr-text-faint);
+  border-bottom: 1px solid var(--snr-divider);
+  white-space: nowrap;
+}
+
+.snr-band .snr-ki-table tbody th,
+.snr-band .snr-ki-table tbody td {
+  padding: 6px 8px 6px 0;
+  color: inherit;
+  border-bottom: 1px solid var(--snr-divider);
+  vertical-align: baseline;
+  text-align: left;
+}
+
+.snr-band .snr-ki-table tbody tr:last-child th,
+.snr-band .snr-ki-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.snr-band .snr-ki-label {
+  font-weight: 500;
+  color: var(--snr-text);
+}
+
+.snr-band .snr-ki-proj {
+  display: block;
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 400;
+  color: var(--warning);
+}
+
+.snr-band .snr-ki-table .ds-num {
+  font-family: var(--snr-font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* The ds table's hover is a light-surface tint; on the always-dark band it is the row tone. */
+.snr-band .snr-ki-table tbody tr:hover {
+  background: var(--snr-row);
+}
+
+.snr-band .snr-ki-period,
+.snr-band .snr-ki-src {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  color: var(--snr-text-muted);
+  white-space: nowrap;
+}
+
+.snr-band .snr-ki-pubs {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  color: var(--snr-text-muted);
+}

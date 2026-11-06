@@ -13,6 +13,7 @@
  */
 import { SOURCES, DEFAULT_CONFIG, weightOf } from './domains';
 import { topicForText } from '@/lib/lobbying/topics';
+import { routeMacro, findCountries } from '@/lib/sonar/macro/route';
 
 /* Dataset entitlement each gated source needs (entitlements.js ids). */
 export const SOURCE_DATASET = {
@@ -50,6 +51,7 @@ const VIS_BY_SOURCE = {
   price_performance: { id: 'performance_leaders', type: 'leaderboard', metric: 'price_change' },
   revenue_geo: { id: 'revenue_exposure', type: 'bars', metric: 'revenue_by_region' },
   commodity_series: { id: 'commodity_price', type: 'line', metric: 'price_change' },
+  macro_series: { id: 'macro_series', type: 'line', metric: 'macro_series' },
   institutional_13f: { id: 'holders_leaders', type: 'leaderboard', metric: 'holdings_value' },
 };
 
@@ -103,6 +105,8 @@ function paramsFor(source, resolution, spec) {
       return r.commodity ? { commodity: r.commodity, horizon: spec.timeHorizon } : null;
     case 'macro_country':
       return r.countries?.[0]?.iso3 ? { country: r.countries[0] } : null;
+    case 'macro_series':
+      return macroSeriesParams(spec, r);
     case 'industry_registry':
       return r.industry?.registry ? { industry: r.industry } : null;
     case 'lobbying_leaders':
@@ -141,6 +145,29 @@ function paramsFor(source, resolution, spec) {
       return p;
     }
   }
+}
+
+/**
+ * macro_series params from the spec: the macro router's reading of the question (countries,
+ * themes, commodity, ranking) plus the resolver's countries, max 4. Null when the question
+ * names none of these, so the planner records the unmet need instead of running it.
+ */
+export function macroSeriesParams(spec, resolution) {
+  const route = routeMacro(spec?.rawQuery || spec?.question || '');
+  const isos = [...route.countries];
+  for (const c of resolution?.countries || []) {
+    if (c?.iso3 && /^[A-Z]{3}$/.test(c.iso3) && !isos.includes(c.iso3)) isos.push(c.iso3);
+  }
+  const countries = route.ranking ? [] : isos.slice(0, 4);
+  if (!countries.length && !route.themes.length && !route.commodity && !route.ranking) return null;
+  return {
+    countries,
+    themes: route.themes,
+    families: route.families,
+    commodity: route.commodity,
+    ranking: route.ranking,
+    region: route.region,
+  };
 }
 
 /* The sources an investment risk assessment always reads when its subject
@@ -322,4 +349,33 @@ export function planResearch(
     excluded,
     visualizations,
   };
+}
+
+/* Evidence a company memo reads its countries from: where revenue is reported, export
+   rules, customers and disclosures. */
+const MEMO_COUNTRY_SOURCES = new Set([
+  'revenue_geo',
+  'export_controls',
+  'customer_capex',
+  'disclosures',
+  'product_segments',
+]);
+
+/**
+ * The countries a company memo's macro context covers: any the question names first, then
+ * those its revenue, export-control and customer evidence names most often. Max 3. Pure.
+ */
+export function memoContextCountries(evidence, resolution, { max = 3 } = {}) {
+  const counts = new Map();
+  for (const e of evidence || []) {
+    if (!MEMO_COUNTRY_SOURCES.has(e.source)) continue;
+    for (const iso3 of findCountries(`${e.title || ''}. ${e.text || ''}`)) {
+      counts.set(iso3, (counts.get(iso3) || 0) + 1);
+    }
+  }
+  const named = (resolution?.countries || [])
+    .map((c) => c?.iso3)
+    .filter((c) => c && /^[A-Z]{3}$/.test(c));
+  const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([iso3]) => iso3);
+  return [...new Set([...named, ...ranked])].slice(0, max);
 }

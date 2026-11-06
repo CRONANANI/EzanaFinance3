@@ -36,7 +36,12 @@ export function makeFetcher(minIntervalMs, { sleep = defaultSleep } = {}) {
       try {
         res = await fetch(url, { headers, cache: 'no-store' });
       } catch (e) {
-        if (attempt === MAX_RETRIES) throw e;
+        if (attempt === MAX_RETRIES) {
+          /* Unreachable or timing out after every retry: the server is down, not the batch
+             bad, so stop and resume at this batch next run (rotate.js backs off). */
+          e.retryable = true;
+          throw e;
+        }
         await sleep(Math.min(60000, 2000 * 2 ** attempt));
         continue;
       }
@@ -79,6 +84,23 @@ const missingTable = (error) =>
     /does not exist/i.test(error.message || ''));
 
 class NotMigrated extends Error {}
+
+/* A server-side failure (5xx, timeout, unreachable), as opposed to a bad request or a parse
+   error. Only these count toward the rotator's backoff. 429 is a rate limit, not an outage:
+   the run already stops and resumes next hour. */
+const SERVER_ERROR_RE =
+  /\b5\d\d from |timed? ?out|timeout|ETIMEDOUT|ECONNRESET|ECONNREFUSED|ENOTFOUND|EAI_AGAIN|fetch failed|socket hang up|aborted/i;
+export const isServerError = (msg) => SERVER_ERROR_RE.test(String(msg || ''));
+
+/* macro_ingest_state has no streak column, so the failure streak rides at the front of
+   last_error: "[server-error x3] 500 from sdmx.oecd.org after 4 attempts". */
+const STREAK_RE = /^\[server-error x(\d+)\]\s*/;
+export function serverErrorStreak(lastError) {
+  const m = STREAK_RE.exec(String(lastError || ''));
+  return m ? Number(m[1]) : 0;
+}
+export const withStreak = (n, msg) =>
+  `[server-error x${n}] ${String(msg || '').replace(STREAK_RE, '')}`.slice(0, 500);
 
 async function readState(db, source) {
   const { data, error } = await db
@@ -164,9 +186,13 @@ export async function runSync(db, adapter, { budgetMs = Infinity, force = false,
   const fetchWithRetry = makeFetcher(adapter.minIntervalMs, sleep ? { sleep } : {});
 
   let cursor = Math.min(state.cursor, batches.length);
+  const startCursor = cursor;
+  const streakBefore = serverErrorStreak(state.last_error);
   let rowsRead = 0;
   let rowsWritten = 0;
   let duplicatesDropped = 0;
+  let batchesOk = 0;
+  let stoppedOn = null; // the error a retryable failure stopped the run on
   const errors = [];
   while (cursor < batches.length && Date.now() + adapter.minIntervalMs + 20000 < deadline) {
     try {
@@ -180,19 +206,45 @@ export async function runSync(db, adapter, { budgetMs = Infinity, force = false,
       /* Optional mirror into another table (GPR also feeds lighthouse_observations). */
       if (typeof adapter.afterBatch === 'function') await adapter.afterBatch(db, rows);
       cursor += 1;
+      batchesOk += 1;
       await writeState(db, source, { cursor });
     } catch (e) {
       errors.push(`batch ${cursor} (${batches[cursor]?.label || ''}): ${e.message}`);
       await writeState(db, source, { cursor, last_error: String(e.message).slice(0, 500) });
-      if (e.retryable) break; // rate-limited or down: resume here next run
+      if (e.retryable) {
+        stoppedOn = e; // rate-limited or down: resume here next run
+        break;
+      }
       cursor += 1; // bad batch: log it and move on
       await writeState(db, source, { cursor });
     }
   }
-  const done = cursor >= batches.length;
+  const reachedEnd = cursor >= batches.length;
+  /* A pass that started this run and in which every batch failed got nothing. It is not
+     complete, so the next hourly run tries again instead of waiting refreshAfterDays. */
+  const allFailed = reachedEnd && startCursor === 0 && batchesOk === 0 && errors.length > 0;
+  const done = reachedEnd && !allFailed;
   if (done) {
     await writeState(db, source, { cursor: 0, pass_completed_at: new Date().toISOString() });
+  } else if (allFailed) {
+    await writeState(db, source, { cursor: 0, pass_started_at: null, pass_completed_at: null });
   }
+
+  /* Server-error streak for the rotator's backoff (rotate.js). The run ended on a server
+     error when a 5xx or timeout stopped it, or when every batch failed that way. */
+  const lastMsg = stoppedOn?.message || (errors.length ? errors[errors.length - 1] : '');
+  const endedOnServerError =
+    (stoppedOn && isServerError(stoppedOn.message)) ||
+    (allFailed && errors.every((m) => isServerError(m)));
+  let serverErrorStreakAfter = 0;
+  if (endedOnServerError) {
+    serverErrorStreakAfter = streakBefore + 1;
+    await writeState(db, source, { last_error: withStreak(serverErrorStreakAfter, lastMsg) });
+  } else if (streakBefore && (batchesOk > 0 || !errors.length)) {
+    // Recovered: drop the streak so the rotator stops backing off.
+    await writeState(db, source, { last_error: errors.length ? lastMsg.slice(0, 500) : null });
+  }
+
   return {
     source,
     rowsRead,
@@ -201,6 +253,8 @@ export async function runSync(db, adapter, { budgetMs = Infinity, force = false,
     batchesDone: cursor,
     batchesTotal: batches.length,
     passComplete: done,
+    ...(allFailed ? { allBatchesFailed: true } : {}),
+    ...(serverErrorStreakAfter ? { serverErrorStreak: serverErrorStreakAfter } : {}),
     errors,
   };
 }

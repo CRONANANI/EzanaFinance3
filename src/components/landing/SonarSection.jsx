@@ -77,7 +77,12 @@ import SonarSectorStack from './SonarSectorStack';
 import SonarCongressSentiment from './SonarCongressSentiment';
 import SonarGovExposure from './SonarGovExposure';
 import SonarFlowsStack, { FlowsDetailCards } from './SonarFlowsStack';
-import { CountryStack, CountryOecdRow, CountryEmpireRow } from './SonarCountryStack';
+import {
+  CountryStack,
+  CountryOecdRow,
+  CountryEmpireRow,
+  CountryMacroRow,
+} from './SonarCountryStack';
 import { SonarUnderstoodNotice } from './SonarUnderstoodNotice';
 import { IndustryStack } from './SonarIndustryStack';
 import { IndustryLayout } from '@/components/sonar/industry/IndustryLayout';
@@ -217,6 +222,8 @@ const SWEPT = [
   { id: '13f', chip: '13F', name: '13F institutional holdings' },
   { id: 'lobbying', chip: 'LOBBYING', name: 'Lobbying disclosures' },
   { id: 'sanctions', chip: 'US SANCTIONS', name: 'US Sanctions' },
+  /* Nov 2026: official macro and commodity statistics (the macro catalogue). */
+  { id: 'macro', chip: 'MACRO DATA', name: 'Macro and commodity indicators' },
 ];
 
 /* A country ping leads with the two macro datasets; the company legs follow,
@@ -3181,6 +3188,7 @@ export function SonarSection({
                         'prediction-markets': m?.markets?.length ? m.markets : null,
                         'oecd-macro': m?.oecd?.headline?.length ? m.oecd : null,
                         empire: m?.empire || null,
+                        macro: m?.macro?.publishers?.length ? m.macro : null,
                         'pol-buys': m?.buys?.length ? m.buys : null,
                         'pol-oversight': m?.overseen?.trades?.length ? m.overseen : null,
                         'sector-members': m?.sectorMembers?.length ? m.sectorMembers : null,
@@ -3196,6 +3204,7 @@ export function SonarSection({
                         'sanctions',
                         'oecd-macro',
                         'empire',
+                        'macro',
                         'gov-contracts',
                         'echo',
                         'congress',
@@ -3273,6 +3282,10 @@ export function SonarSection({
 
                             {d.id === 'empire' && data ? (
                               <CountryEmpireRow data={data} name={live?.dossier?.name} />
+                            ) : null}
+
+                            {d.id === 'macro' && data ? (
+                              <CountryMacroRow data={data} name={live?.dossier?.name} />
                             ) : null}
 
                             {d.id === 'gov-contracts' && data ? (

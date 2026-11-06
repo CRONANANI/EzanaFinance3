@@ -83,12 +83,16 @@ export const DOMAINS = {
     label: 'Commodity markets',
     cues: [
       /\b(copper|oil|crude|brent|gold|silver|natural gas|lithium|uranium|wheat|corn|soybeans|coffee|cocoa|sugar|aluminum|platinum|palladium|commodit\w*)\b/i,
+      /* Macro catalogue cues (energy, food, metals): src/lib/sonar/macro/catalog.js. */
+      /\b(lng|iron ore|nickel|zinc|coal|fertili[sz]ers?|urea|potash|rice|maize|palm oil|food prices?|energy prices?|metals?|barrels?|opec|refiner\w*)\b/i,
     ],
   },
   macro: {
     label: 'Macroeconomic context',
     cues: [
       /\b(interest rates?|fed|federal reserve|inflation|gdp|recession|dollar|china demand|global growth)\b/i,
+      /* Macro catalogue cues (rates, currency, credit, trade, energy, food). */
+      /\b(policy rates?|central banks?|monetary policy|exchange rates?|currenc\w*|devaluat\w*|depreciat\w*|credit gap|household debt|debt service|house prices|housing market|current account|balance of payments|trade balance|exports|imports|remittances?|external debt|reserves|unemployment|cpi|energy (security|supply|imports)|gas (supply|imports|cut ?off)|food (prices|security)|geopolitical risk|uncertainty)\b/i,
     ],
   },
   prediction: {
@@ -133,6 +137,13 @@ export const SOURCES = {
   commodity_series: { category: 'market_data', reliability: 0.85, needs: ['commodity'] },
   sanctions: { category: 'government_records', reliability: 0.95, needs: [] },
   macro_country: { category: 'historical', reliability: 0.85, needs: ['country'] },
+  /* The macro catalogue (IMF, World Bank, BIS, central banks, JODI, EIA, Pink Sheet, risk
+     indices): countries (max 4), themes, a commodity or a ranking, from the spec. */
+  macro_series: {
+    category: 'historical',
+    reliability: 0.9,
+    needs: ['countries|themes|commodity|ranking'],
+  },
   industry_registry: { category: 'ezana_datasets', reliability: 0.8, needs: ['industry'] },
   prediction_markets: { category: 'ezana_datasets', reliability: 0.6, needs: [] },
   echo: { category: 'supporting_research', reliability: 0.6, needs: [] },
@@ -190,7 +201,14 @@ export const DEFAULT_CONFIG = {
       lobbying_company: 0.4,
     },
     politician: { politician_dossier: 1, news: 0.6, echo: 0.3 },
-    country: { macro_country: 1, news: 0.6, prediction_markets: 0.4, echo: 0.4, sanctions: 0.3 },
+    country: {
+      macro_country: 1,
+      macro_series: 0.95,
+      news: 0.6,
+      prediction_markets: 0.4,
+      echo: 0.4,
+      sanctions: 0.3,
+    },
     industry: { industry_registry: 0.9, price_performance: 0.5, news: 0.5, echo: 0.4 },
     sector: { congress_sector: 0.8, price_performance: 0.8, contracts_history: 0.7, news: 0.4 },
     lobbying: {
@@ -207,10 +225,17 @@ export const DEFAULT_CONFIG = {
       news: 0.3,
     },
     contracts: { contracts_history: 1, news: 0.3 },
-    institutional: { holder_positioning: 1, institutional_13f: 0.8, sec_filings: 0.5 },
+    institutional: {
+      holder_positioning: 1,
+      institutional_13f: 0.8,
+      sec_filings: 0.5,
+      /* Credit and rates context. */
+      macro_series: 0.3,
+    },
     geopolitics: {
       export_controls: 0.9,
       sanctions: 0.8,
+      macro_series: 0.8,
       revenue_geo: 0.9,
       news: 0.8,
       prediction_markets: 0.5,
@@ -232,8 +257,14 @@ export const DEFAULT_CONFIG = {
     },
     market_performance: { price_performance: 1, market_snapshot: 0.7 },
     analyst_views: { analysts: 1, estimates: 0.9 },
-    commodity: { commodity_series: 1, news: 0.8, prediction_markets: 0.4, echo: 0.4 },
-    macro: { macro_country: 0.7, news: 0.6, prediction_markets: 0.4 },
+    commodity: {
+      commodity_series: 1,
+      macro_series: 0.9,
+      news: 0.8,
+      prediction_markets: 0.4,
+      echo: 0.4,
+    },
+    macro: { macro_series: 1, macro_country: 0.7, news: 0.6, prediction_markets: 0.4 },
     prediction: { prediction_markets: 1, news: 0.4 },
     ipo: { ipo_filings: 1, market_snapshot: 0.8, news: 0.6 },
     editorial: { echo: 1 },
@@ -241,7 +272,13 @@ export const DEFAULT_CONFIG = {
   },
 };
 
-/** The weight of a source for a domain under a config. */
+/** The weight of a source for a domain under a config. A source the config has never seen
+    (added after the config was approved, e.g. macro_series) takes the code default until a
+    recalibrated version weighs it, instead of being silently switched off. */
 export function weightOf(config, domain, source) {
-  return Number(config?.weights?.[domain]?.[source]) || 0;
+  const weights = config?.weights || {};
+  const known = Object.values(weights).some((row) => row && source in row);
+  if (!known && config !== DEFAULT_CONFIG)
+    return Number(DEFAULT_CONFIG.weights?.[domain]?.[source]) || 0;
+  return Number(weights?.[domain]?.[source]) || 0;
 }

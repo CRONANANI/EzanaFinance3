@@ -551,6 +551,124 @@ export function analyze(evidence, spec = {}) {
         ),
       );
     }
+
+    /* Nov 2026: series from the macro catalogue (macro_series source). */
+    if (d.metric === 'macro_series') analyzeMacroSeries(e, d, metrics, visualizations);
   }
   return { metrics, visualizations };
+}
+
+const slug = (s) =>
+  String(s || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_|_$/g, '');
+
+/** Where the latest value sits among the last five years of observations, 0 to 100. */
+export function fiveYearPercentile(history, latest, frequency = 'M') {
+  const per = { A: 5, Q: 20, M: 60, D: 1260 }[frequency] || 60;
+  const pts = (history || []).filter((p) => Number.isFinite(p.value)).slice(-per);
+  if (pts.length < Math.min(12, per) || !Number.isFinite(latest)) return null;
+  const below = pts.filter((p) => p.value <= latest).length;
+  return {
+    value: (below / pts.length) * 100,
+    n: pts.length,
+    from: pts[0].period,
+    to: pts[pts.length - 1].period,
+  };
+}
+
+const freqOfPeriod = (p) =>
+  /^\d{4}$/.test(p) ? 'A' : /-Q[1-4]$/.test(p) ? 'Q' : /^\d{4}-\d{2}$/.test(p) ? 'M' : 'D';
+
+function analyzeMacroSeries(e, d, metrics, visualizations) {
+  const where = d.place ? ` (${d.place})` : '';
+  const id = `${slug(d.family)}_${slug(d.iso3 || d.scope || 'world')}`;
+  const unit = d.unit || null;
+  if (d.ranking?.rows?.length) {
+    const rows = d.ranking.rows;
+    for (const r of rows.slice(0, 5)) {
+      metrics.push(
+        metric(
+          `macro_rank_${slug(d.family)}_${slug(r.iso3)}`,
+          `${r.name}: rank on ${d.name}`,
+          r.rank,
+          {
+            unit: 'rank',
+            method: `rank among ${rows.length >= 10 ? 'the countries listed' : `${rows.length} countries`} by each country's latest observation (${d.order === 'asc' ? 'lowest' : 'highest'} first), one source for all: ${d.attribution}`,
+            inputs: [e.id],
+            period: { label: `latest observation per country, most recent ${r.period}` },
+          },
+        ),
+      );
+    }
+    visualizations.push({
+      id: `macro_rank_${slug(d.family)}`,
+      type: 'bars',
+      title: d.name,
+      unit: unit || 'value',
+      period: { label: d.ranking.mix || 'latest observation per country' },
+      source: d.attribution,
+      method: "each country's latest observation; periods differ by country as noted",
+      rows: rows.map((r) => ({ label: r.name, value: r.value, note: r.period })),
+      evidenceIds: [e.id],
+    });
+    return;
+  }
+  if (!Number.isFinite(d.value)) return;
+  metrics.push(
+    metric(`macro_latest_${id}`, `${d.name}${where}, ${d.period}`, d.value, {
+      unit,
+      method: `latest observed value as published by ${d.attribution}`,
+      inputs: [e.id],
+      period: { label: d.period },
+    }),
+  );
+  if (Number.isFinite(d.change)) {
+    metrics.push(
+      metric(`macro_yoy_${id}`, `${d.name}${where}: change on a year earlier`, d.change, {
+        unit: d.changeKind === 'pp' ? 'percentage points' : 'percent',
+        method:
+          d.changeKind === 'pp'
+            ? `value in ${d.period} minus value in ${d.yearAgoPeriod}`
+            : `(value in ${d.period} / value in ${d.yearAgoPeriod} - 1) x 100`,
+        inputs: [e.id],
+        period: { label: `${d.yearAgoPeriod} to ${d.period}` },
+      }),
+    );
+  }
+  const hist = Array.isArray(d.history) ? d.history : [];
+  const pct = fiveYearPercentile(hist, d.rawLatest ?? d.value, freqOfPeriod(String(d.period)));
+  if (pct && !d.derived) {
+    metrics.push(
+      metric(
+        `macro_pct5y_${id}`,
+        `${d.name}${where}: percentile of the latest value in five years`,
+        pct.value,
+        {
+          unit: 'percentile',
+          method: `share of the ${pct.n} observations from ${pct.from} to ${pct.to} at or below the latest value`,
+          inputs: [e.id],
+          period: { label: `${pct.from} to ${pct.to}` },
+        },
+      ),
+    );
+  }
+  if (hist.length > 1) {
+    visualizations.push({
+      id: `macro_line_${id}`,
+      type: 'line',
+      title: `${d.name}${where}`,
+      unit: d.seriesUnit || unit || 'value',
+      period: {
+        from: hist[0].period,
+        to: hist[hist.length - 1].period,
+        label: `${hist[0].period} to ${hist[hist.length - 1].period}`,
+      },
+      source: d.attribution,
+      method: d.derived ? 'underlying index as published' : 'as published',
+      series: hist.map((p) => ({ x: p.period, y: p.value })),
+      evidenceIds: [e.id],
+    });
+  }
 }

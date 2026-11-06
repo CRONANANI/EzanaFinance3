@@ -28,6 +28,8 @@ import {
 import { getEmpireScoresForExplorer } from '@/lib/empire-public-store';
 import { empireDossier } from '@/lib/sonar/empire-dossier';
 import { buildEmpireModel } from '@/app/datasets/oecd-macro/oecd-empire-model';
+import { countryBrief } from '@/lib/sonar/macro/series-store';
+import { keyIndicatorRows } from '@/lib/sonar/macro/catalog';
 import { fetchIndustryNews } from '@/lib/sonar/industry-news';
 
 /* ── resolution ─────────────────────────────────────────────────────────── */
@@ -440,6 +442,25 @@ async function countryMarkets(admin, country) {
   }
 }
 
+/* ── key indicators (macro catalogue) ──────────────────────────────────── */
+
+/* Up to 8 headline series for the country from the macro catalogue (IMF, World Bank, BIS,
+   central banks, Eurostat, risk indices; euro-area rows for members), for the layout's Key
+   indicators table and the Sourced matches row. Never fails the dossier. */
+async function buildKeyIndicators(admin, country) {
+  if (!admin) return null;
+  try {
+    const items = await countryBrief(admin, country.iso3, { limit: 8, timeoutMs: 1200 });
+    const rows = keyIndicatorRows(items, 8);
+    if (!rows.length) return null;
+    const publishers = [...new Set(rows.map((r) => r.attribution))];
+    return { rows, publishers, items };
+  } catch (e) {
+    console.error('[sonar-country] key indicators failed:', e?.message);
+    return null;
+  }
+}
+
 /* ── dossier ────────────────────────────────────────────────────────────── */
 
 /**
@@ -448,12 +469,13 @@ async function countryMarkets(admin, country) {
  * empty (the brief still answers); the UI renders only what came back.
  */
 export async function buildCountryDossier(country, admin, { matchEcho } = {}) {
-  const [oecd, empire, news, markets, echoMatches] = await Promise.all([
+  const [oecd, empire, news, markets, echoMatches, macro] = await Promise.all([
     buildOecd(admin, country),
     buildEmpire(country),
     countryNews(admin, country).catch(() => []),
     countryMarkets(admin, country),
     matchEcho ? matchEcho(admin, { name: country.name, ticker: null }).catch(() => null) : null,
+    buildKeyIndicators(admin, country),
   ]);
   return {
     kind: 'country',
@@ -462,6 +484,7 @@ export async function buildCountryDossier(country, admin, { matchEcho } = {}) {
     ticker: null,
     oecd,
     empire,
+    keyIndicators: macro ? macro.rows : [],
     newsTitle: `${country.name} Relevant News`,
     news,
     echo: (echoMatches || []).map((e) => ({
@@ -472,6 +495,8 @@ export async function buildCountryDossier(country, admin, { matchEcho } = {}) {
     matches: {
       oecd,
       empire,
+      /* The publishers behind the Key indicators table, for the Sourced matches row. */
+      macro: macro ? { publishers: macro.publishers, count: macro.rows.length } : null,
       echo: echoMatches,
       markets,
       contracts: null,

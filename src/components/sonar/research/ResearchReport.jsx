@@ -41,6 +41,7 @@ export const SOURCE_LABELS = {
   commodity_series: 'Commodity prices',
   sanctions: 'US sanctions (OFAC)',
   macro_country: 'OECD and Empire rankings',
+  macro_series: 'Macro and commodity indicators',
   industry_registry: 'Industry registry',
   prediction_markets: 'Prediction markets',
   echo: 'Ezana Echo',

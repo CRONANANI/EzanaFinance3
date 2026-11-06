@@ -138,6 +138,18 @@ export const ECB_QUERIES = [
   { flow: 'AME', key: 'A..1.0.0.0.ZUTN', name: 'AMECO: unemployment rate', since: '2000' },
 ];
 
+/* AMECO keys carry the country in position 2 (FREQ.COUNTRY...), in AMECO's own ISO3 codes;
+   the AME flow has no REF_AREA column, so parseSdmxCsv left country_iso3 null. ROM is
+   AMECO's code for Romania. Aggregates (EA20, EU27, ...) stay null. */
+const AMECO_FIXES = { ROM: 'ROU' };
+export function amecoIso3(seriesKey) {
+  const code = String(seriesKey || '')
+    .split(':')[1]
+    ?.split('.')[1];
+  if (!code || !/^[A-Z]{3}$/.test(code)) return null;
+  return AMECO_FIXES[code] || toIso3(code) || null;
+}
+
 export const ecb = {
   source: 'ecb',
   minIntervalMs: 2000,
@@ -151,12 +163,14 @@ export const ecb = {
     if (res.status === 404) return [];
     const text = await res.text();
     if (!text.trim()) return [];
-    return parseSdmxCsv(text, {
+    const rows = parseSdmxCsv(text, {
       prefix: `ECB.${b.flow}`,
       dataset: b.flow,
       seriesName: b.name,
       countryDims: ['REF_AREA'],
     });
+    if (b.flow !== 'AME') return rows;
+    return rows.map((r) => ({ ...r, country_iso3: r.country_iso3 || amecoIso3(r.series_key) }));
   },
 };
 

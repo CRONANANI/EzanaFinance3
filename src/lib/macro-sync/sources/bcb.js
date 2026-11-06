@@ -10,7 +10,9 @@ import { num } from '../engine.js';
 
 const BACKFILL_FROM = '2000-01-01';
 export const SERIES = [
+  // The policy rate: the Copom's Selic target, % per year.
   { code: 432, name: 'Selic target rate', unit: '% p.a.', freq: 'D' },
+  // The effective overnight Selic in % per DAY. Not the policy rate; never presented as it.
   { code: 11, name: 'Selic daily rate', unit: '% p.d.', freq: 'D' },
   { code: 1, name: 'USD/BRL exchange rate, free market, sell', unit: 'BRL per USD', freq: 'D' },
   { code: 10813, name: 'USD/BRL exchange rate, free market, buy', unit: 'BRL per USD', freq: 'D' },
@@ -58,23 +60,43 @@ export const bcb = {
       okStatuses: [404],
     });
     if (res.status === 404) return [];
-    const json = await res.json();
-    if (!Array.isArray(json)) return [];
-    return json
-      .map((o) => {
-        const [dd, mm, yyyy] = String(o.data).split('/');
-        if (!yyyy || !mm || !dd) return null;
-        return {
-          series_key: `SGS.${b.code}`,
-          country_iso3: 'BRA',
-          period: b.freq === 'M' ? `${yyyy}-${mm}` : `${yyyy}-${mm}-${dd}`,
-          value: num(o.valor),
-          series_name: b.name,
-          unit: b.unit,
-          frequency: b.freq,
-          dataset: 'SGS',
-        };
-      })
-      .filter(Boolean);
+    return parseSgs(await res.text(), b);
   },
 };
+
+/**
+ * SGS response text -> rows. BCB sometimes answers a valid request with an XML or HTML error
+ * page (it did for every SGS 432 window on 2 Nov 2026, then served the same requests
+ * normally). That is a temporary server fault, not a bad batch: it is thrown as retryable so
+ * the run stops and resumes at this batch instead of skipping it for a week. A JSON error
+ * object (e.g. the 10-year window limit for daily series) is a bad request and says so.
+ */
+export function parseSgs(text, b) {
+  const body = String(text || '').trim();
+  if (body.startsWith('<')) {
+    const err = new Error(`BCB SGS ${b.code}: temporary error page instead of JSON`);
+    err.retryable = true;
+    throw err;
+  }
+  const json = body ? JSON.parse(body) : [];
+  if (!Array.isArray(json)) {
+    if (json?.error) throw new Error(`BCB SGS ${b.code}: ${String(json.error).slice(0, 160)}`);
+    return [];
+  }
+  return json
+    .map((o) => {
+      const [dd, mm, yyyy] = String(o.data).split('/');
+      if (!yyyy || !mm || !dd) return null;
+      return {
+        series_key: `SGS.${b.code}`,
+        country_iso3: 'BRA',
+        period: b.freq === 'M' ? `${yyyy}-${mm}` : `${yyyy}-${mm}-${dd}`,
+        value: num(o.valor),
+        series_name: b.name,
+        unit: b.unit,
+        frequency: b.freq,
+        dataset: 'SGS',
+      };
+    })
+    .filter(Boolean);
+}

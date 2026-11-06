@@ -1,7 +1,11 @@
 /**
  * World Bank series beyond the WDI set already ingested by /api/cron/macro-worldbank and
- * /api/cron/ingest-worldbank: governance (WGI, source 3), external debt (IDS, source 6) and
+ * /api/cron/ingest-worldbank: governance (WGI, source 3), external debt (IDS codes) and
  * remittances (WDI codes, source 2). api.worldbank.org/v2, JSON [meta, rows], no key, CC BY 4.0.
+ * The IDS debt codes answer only through WDI (source 2): asked for with source=6 every one of
+ * them, DT.DOD.DSTC.ZS included, returns "The indicator was not found. It may have been
+ * deleted or archived" (checked 6 Nov 2026), which is why the debt group never loaded.
+ * One batch per indicator, so a dead code fails its own batch and nothing else.
  * WGI codes changed: the bare GE.EST etc. are archived; the live codes are GOV_WGI_*.EST.
  * Regional and income aggregates are dropped (no valid ISO3).
  */
@@ -20,11 +24,11 @@ export const INDICATORS = [
   { id: 'GOV_WGI_RQ.EST', source: 3, name: 'Regulatory quality', unit: 'estimate' },
   { id: 'GOV_WGI_RL.EST', source: 3, name: 'Rule of law', unit: 'estimate' },
   { id: 'GOV_WGI_CC.EST', source: 3, name: 'Control of corruption', unit: 'estimate' },
-  // International Debt Statistics
-  { id: 'DT.DOD.DECT.CD', source: 6, name: 'External debt stocks, total', unit: 'current US$' },
-  { id: 'DT.DOD.DECT.GN.ZS', source: 6, name: 'External debt stocks', unit: '% of GNI' },
-  { id: 'DT.TDS.DECT.EX.ZS', source: 6, name: 'Total debt service', unit: '% of exports' },
-  { id: 'DT.DOD.DSTC.ZS', source: 6, name: 'Short-term debt', unit: '% of total external debt' },
+  // International Debt Statistics codes, served through WDI (source 2; source 6 refuses them)
+  { id: 'DT.DOD.DECT.CD', source: 2, name: 'External debt stocks, total', unit: 'current US$' },
+  { id: 'DT.DOD.DECT.GN.ZS', source: 2, name: 'External debt stocks', unit: '% of GNI' },
+  { id: 'DT.TDS.DECT.EX.ZS', source: 2, name: 'Total debt service', unit: '% of exports' },
+  { id: 'DT.DOD.DSTC.ZS', source: 2, name: 'Short-term debt', unit: '% of total external debt' },
   // Remittances (KNOMAD's headline figures, published through WDI)
   {
     id: 'BX.TRF.PWKR.CD.DT',

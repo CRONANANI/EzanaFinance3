@@ -25,8 +25,8 @@ import { enforceGrounding } from '@/lib/sonar/groundingGuard';
 import { getAdminClient } from '@/lib/supabase';
 import { scoreDomains, buildResearchSpec } from './research-spec';
 import { resolveResearch } from './resolution';
-import { planResearch } from './planner';
-import { RUNNERS } from './sources';
+import { planResearch, memoContextCountries } from './planner';
+import { RUNNERS, MEMO_MACRO_FAMILIES, MEMO_MACRO_LABEL } from './sources';
 import { toEvidence, scoreEvidence, packEvidence, withMarkers } from './evidence';
 import { analyze } from './analysis';
 import { discoverRelationships, paths } from './relationships';
@@ -278,6 +278,61 @@ export async function runResearch(query, opts = {}) {
       }
     }),
   );
+  /* Company memo (Nov 2026): macro context for the countries the company reports revenue
+     from, once the revenue, export-control and customer evidence has named them. Labelled
+     as context, never as the company's exposure. */
+  if (spec.format === 'investment_memo' && RUNNERS.macro_series && !aborted()) {
+    const countries = memoContextCountries(raw, resolution);
+    const ms = Math.min(4000, left() - D.synthMs);
+    if (countries.length && ms >= 800) {
+      const t = {
+        id: `t${plan.tasks.length + 1}_macro_series`,
+        source: 'macro_series',
+        params: {
+          countries,
+          themes: [],
+          families: MEMO_MACRO_FAMILIES,
+          contextLabel: MEMO_MACRO_LABEL,
+        },
+        priority: 0.6,
+        maxItems: 8,
+        budgetMs: ms,
+        dependsOn: ['revenue_geo', 'export_controls', 'customer_capex'],
+        reason: 'investment_memo:country_context',
+        drivers: [{ domain: 'investment_memo', contribution: 0.6 }],
+      };
+      plan.tasks.push(t);
+      emit('task', { id: t.id, source: t.source, status: 'running' });
+      try {
+        const out = await leg(
+          'task:macro_series:context',
+          () =>
+            bounded(RUNNERS.macro_series(t.params, { ...ctxBase, ms, maxItems: t.maxItems }), ms),
+          (v) => `items=${v?.items?.length || 0}`,
+        );
+        const items = (out?.items || []).map((it) => toEvidence(it, { source: t.source }));
+        raw.push(...items);
+        if (out?.layout) Object.assign(layout, { macroContext: out.layout.macro });
+        emit('task', { id: t.id, source: t.source, status: 'done', items: items.length });
+      } catch (e) {
+        emit('task', {
+          id: t.id,
+          source: t.source,
+          status: e?.name === 'TimeoutError' ? 'timeout' : 'failed',
+        });
+      }
+    }
+  }
+  /* Two sources can state the same series (macro_country appends the country's catalogue
+     rows; macro_series may read them too): keep one copy of an identical statement. */
+  {
+    const seen = new Set();
+    for (let i = raw.length - 1; i >= 0; i -= 1) {
+      const k = `${raw[i].title}|${raw[i].text}`;
+      if (raw[i].kind === 'series' && seen.has(k)) raw.splice(i, 1);
+      else seen.add(k);
+    }
+  }
   /* Fresh evidence supersedes the remembered copy of the same record. */
   const freshIds = new Set(raw.map((e) => e.id));
   const all = [...raw, ...memory.filter((m) => !freshIds.has(m.id))];

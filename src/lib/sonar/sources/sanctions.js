@@ -13,6 +13,13 @@
  * search. Recent designations rank higher. Findings only, never advice.
  */
 import { searchSanctions } from '@/lib/sanctions/research';
+import { getAdminClient } from '@/lib/supabase';
+import { toIso3 } from '@/lib/macro-sync/formats.js';
+import {
+  intlSanctionsEvidence,
+  sanctionsEntityName,
+  isComparativeSanctions,
+} from '@/lib/sonar/sanctions-intl';
 
 const SLUG = 'sanctions';
 const PAGE_ROUTE = '/datasets/sanctions';
@@ -98,8 +105,24 @@ export function isRelevant(q) {
     foreign.length > 0 ||
     (q.themes || []).includes('sanctions') ||
     (q.organizations || []).length > 0 ||
-    (q.people || []).length > 0
+    (q.people || []).length > 0 ||
+    Boolean(sanctionsEntityName(q.raw)) ||
+    isComparativeSanctions(q.raw)
   );
+}
+
+/** International-list items (EU, UK, UN beside OFAC) -> findings. Pure. */
+export function intlToFindings(items) {
+  return (items || []).map((it) => ({
+    sourceSlug: SLUG,
+    title: it.title,
+    summary: it.text,
+    date: null,
+    /* A direct answer to the question asked (an entity, a country or a ranking). */
+    relevance: it.meta?.kind === 'intl_entity' ? 0.98 : 0.9,
+    citation: it.citation,
+    meta: { ...it.meta, entNum: null },
+  }));
 }
 
 /**
@@ -112,6 +135,25 @@ export function isRelevant(q) {
 export async function search(q, ctx = {}) {
   const limit = ctx.limit || 6;
   const searchFn = ctx.searchFn || searchSanctions;
+  /* The EU, UK and UN lists, in parallel with the OFAC calls below. */
+  const entity = sanctionsEntityName(q.raw);
+  const intlFn =
+    ctx.intlFn ||
+    ((args) =>
+      intlSanctionsEvidence(ctx.db || getAdminClient(), { ...args, searchOfac: searchFn }));
+  const intlP = Promise.resolve()
+    .then(() =>
+      intlFn({
+        query: q.raw || '',
+        countries: (q.countries || [])
+          .filter((c) => c !== 'US')
+          .map((c) => toIso3(c))
+          .filter(Boolean),
+        names: entity ? [entity] : [...(q.organizations || []), ...(q.people || [])].slice(0, 1),
+      }),
+    )
+    .then(intlToFindings)
+    .catch(() => []);
   const from = q.window?.from || null;
   const foreign = (q.countries || []).filter((c) => c !== 'US').slice(0, MAX_COUNTRIES);
   const names = [...(q.organizations || []), ...(q.people || [])].slice(0, MAX_NAMES);
@@ -124,7 +166,7 @@ export async function search(q, ctx = {}) {
   for (const n of names) {
     if (n) calls.push({ params: { q: n, from, page: 1 }, cite: { citeQuery: n } });
   }
-  if (!calls.length) return [];
+  if (!calls.length) return (await intlP).slice(0, limit);
 
   const settled = await Promise.allSettled(
     calls.map(async ({ params, cite }) => {
@@ -141,7 +183,8 @@ export async function search(q, ctx = {}) {
       if (!byId.has(key)) byId.set(key, f);
     }
   }
-  return [...byId.values()]
+  const intlFindings = await intlP;
+  return [...intlFindings, ...byId.values()]
     .sort(
       (a, b) =>
         b.relevance - a.relevance || String(b.date || '').localeCompare(String(a.date || '')),

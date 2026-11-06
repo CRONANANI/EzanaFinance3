@@ -18,6 +18,9 @@
  * panel, never a lost answer.
  */
 import { getSanctionsSummary } from '@/lib/sanctions/summary';
+import { searchSanctions } from '@/lib/sanctions/research';
+import { getAdminClient } from '@/lib/supabase';
+import { intlSanctionsEvidence } from '@/lib/sonar/sanctions-intl';
 import { programMeta, themeOf } from '@/lib/sanctions/programs';
 import { synthesizeWithFallback } from './llm-providers';
 
@@ -77,7 +80,12 @@ export function sanctionsTitle({ query = '', focus = null } = {}) {
  * have an address there), and the brief gets that country's figures.
  * `query` picks the panel's title.
  */
-export async function sanctionsContext({ focus: focusCountry = null, query = '' } = {}) {
+export async function sanctionsContext({
+  focus: focusCountry = null,
+  query = '',
+  intl = true,
+  admin = null,
+} = {}) {
   let s;
   try {
     s = await getSanctionsSummary();
@@ -178,6 +186,22 @@ export async function sanctionsContext({ focus: focusCountry = null, query = '' 
           : ''
       } The SDN list is Treasury's; chip export controls sit on the Commerce Department's Entity List, a separate list.`,
     });
+  }
+  /* Nov 2026: the EU, UK and UN lists beside OFAC (sanctions_intl_entries): the focus
+     country's listings per list, a named entity across all four lists, or country counts.
+     The landing pipeline passes intl: false because its sanctions retriever adds them. */
+  if (intl) {
+    const iso3 =
+      focusCountry?.iso3 && /^[A-Z]{3}$/.test(focusCountry.iso3) ? focusCountry.iso3 : null;
+    const extra = await intlSanctionsEvidence(admin || getAdminClient(), {
+      query,
+      countries: iso3 ? [iso3] : [],
+      searchOfac: searchSanctions,
+    }).catch(() => []);
+    for (const it of extra) {
+      evidence.push({ corpus: 'sanctions', title: it.title, snippet: it.text, meta: it.meta });
+    }
+    panel.intl = extra.map((it) => it.meta);
   }
   return { panel, evidence };
 }

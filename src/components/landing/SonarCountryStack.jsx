@@ -24,6 +24,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { Table, THead, TBody, TR, TH, TD, VisuallyHidden } from '@/components/ds';
 import './sonar-country.css';
 
 /* ── shared helpers (the band's own are module-private) ─────────────────── */
@@ -463,6 +464,85 @@ function StoryCard({ dossier }) {
   );
 }
 
+/* Nov 2026: the country's headline series from Ezana's macro catalogue (IMF, World Bank,
+   BIS, central banks, Eurostat, risk indices; euro-area rows for members). Latest observed
+   value, its period, the change on a year earlier and the publisher. A table, so a screen
+   reader announces each figure with its column; mono numerics, band tokens only. */
+export function KeyIndicatorsCard({ dossier }) {
+  const rows = dossier?.keyIndicators || [];
+  if (!rows.length) return null;
+  return (
+    <div className="snr-fund snr-fund--wide snr-fund--cty snr-ki">
+      <div className="snr-fund-head">
+        <span className="snr-fund-ticker">{dossier.iso3}</span>
+        <span className="snr-range-chip">KEY INDICATORS</span>
+        <span className="snr-rule-soft" />
+        <span className="snr-fund-name">{dossier.name}</span>
+      </div>
+      {/* Scrolls sideways on a narrow phone; focusable so the keyboard can scroll it too. */}
+      <div
+        className="snr-ki-scroll"
+        role="region"
+        aria-label={`Key indicators for ${dossier.name}`}
+        tabIndex={0}
+      >
+        <Table className="snr-ki-table">
+          <VisuallyHidden as="caption">
+            Key indicators for {dossier.name}: latest observed value, period, change on a year
+            earlier and source
+          </VisuallyHidden>
+          <THead>
+            <TR>
+              <TH scope="col">Indicator</TH>
+              <TH scope="col" numeric>
+                Latest
+              </TH>
+              <TH scope="col">Period</TH>
+              <TH scope="col" numeric>
+                vs year earlier
+              </TH>
+              <TH scope="col">Source</TH>
+            </TR>
+          </THead>
+          <TBody>
+            {rows.map((r) => (
+              <TR key={r.id}>
+                <TH scope="row" className="snr-ki-label" title={r.name}>
+                  {r.label}
+                  {r.projection ? <span className="snr-ki-proj"> {r.projection}</span> : null}
+                </TH>
+                <TD numeric>{minus(r.value)}</TD>
+                <TD className="snr-ki-period">{r.period}</TD>
+                <TD numeric>{r.change ? minus(r.change) : 'n/a'}</TD>
+                <TD className="snr-ki-src" title={r.attribution}>
+                  {r.source}
+                </TD>
+              </TR>
+            ))}
+          </TBody>
+        </Table>
+      </div>
+      <p className="snr-pol-note">
+        Latest observed values. Projections are labelled and never shown as outcomes.
+      </p>
+    </div>
+  );
+}
+
+/* Sourced matches row: the publishers behind the Key indicators table. */
+export function CountryMacroRow({ data, name }) {
+  if (!data?.publishers?.length) return null;
+  return (
+    <div className="snr-rich snr-cty-row">
+      <span className="snr-rich-name">{name}</span>
+      <p className="snr-ki-pubs">
+        {data.count} headline indicator{data.count === 1 ? '' : 's'} from{' '}
+        {data.publishers.join('; ')}.
+      </p>
+    </div>
+  );
+}
+
 /* No OECD coverage (most non-members): the Empire profile carries the card. */
 function EmpireCard({ dossier, onGate }) {
   const e = dossier.empire;
@@ -504,11 +584,13 @@ export function CountryStack({
 }) {
   const hasStory = Boolean(dossier.oecd?.stories?.length);
   const hasEmpire = Boolean(dossier.empire?.dims?.length);
+  const hasIndicators = Boolean(dossier.keyIndicators?.length);
   const news = dossier.news || [];
   const echo = dossier.echo || [];
   if (
     !hasStory &&
     !hasEmpire &&
+    !hasIndicators &&
     !news.length &&
     !echo.length &&
     !newsSlot &&
@@ -529,6 +611,7 @@ export function CountryStack({
       ) : hasEmpire ? (
         <EmpireCard dossier={dossier} onGate={onGate} />
       ) : null}
+      {hasIndicators ? <KeyIndicatorsCard dossier={dossier} /> : null}
       {topSlot}
 
       {newsSlot ? (

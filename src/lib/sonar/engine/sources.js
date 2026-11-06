@@ -28,6 +28,7 @@ import { summarizeCongress, summarizeContracts, rankPerformance } from '@/lib/so
 import { newsEvidence, sanctionsContext } from '@/lib/sonar/landing-research';
 import { getCommoditySeries } from '@/lib/sonar/commodity-series';
 import ipoEvents from '@/lib/sonar/sources/ipo-events';
+import { macroBrief, seriesHistory, countryBrief } from '@/lib/sonar/macro/series-store';
 import { cacheGet, cacheSet } from './cache';
 import { LOBBYING_TOPICS, topicCovered } from '@/lib/lobbying/topics';
 import { MEMO_RUNNERS } from './sources-memo';
@@ -601,17 +602,132 @@ async function sanctionsSource({ countries, query }) {
   };
 }
 
-async function macroCountry({ country }, { admin }) {
-  const d = await buildCountryDossier(country, admin, { matchEcho });
+async function macroCountry({ country }, { admin, ms = 2500 }) {
+  /* The dossier (OECD, Empire, news) plus the country's headline series from the macro
+     catalogue, in parallel. */
+  const [d, brief] = await Promise.all([
+    buildCountryDossier(country, admin, { matchEcho }),
+    countryBrief(admin, country.iso3, { limit: 8, timeoutMs: Math.max(600, ms - 400) }).catch(
+      () => [],
+    ),
+  ]);
   return {
     layout: { country: d },
-    items: countryEvidence(d).map((e) => ({
-      kind: 'aggregate',
-      title: e.title,
-      text: e.snippet,
-      date: e.date || null,
-      entities: [country.name],
-    })),
+    items: [
+      ...countryEvidence(d).map((e) => ({
+        kind: 'aggregate',
+        title: e.title,
+        text: e.snippet,
+        date: e.date || null,
+        entities: [country.name],
+      })),
+      ...brief.map((it) => macroItemToEvidence(it)),
+    ],
+  };
+}
+
+/* ── macro catalogue ───────────────────────────────────────────────── */
+
+/** The families a company memo reads for the countries it reports revenue from. */
+export const MEMO_MACRO_FAMILIES = [
+  'geopolitical_risk',
+  'policy_rate',
+  'fx_usd',
+  'inflation_monthly',
+];
+export const MEMO_MACRO_LABEL = 'Context for the countries the company reports revenue from';
+
+/** A macro catalogue item -> a raw evidence item (kind 'series', structured data). */
+export function macroItemToEvidence(it, { history = null, contextLabel = null } = {}) {
+  const m = it.meta || {};
+  return {
+    kind: 'series',
+    category: 'historical',
+    title: contextLabel ? `${contextLabel}: ${it.title}` : it.title,
+    text: contextLabel ? `${contextLabel} (not company exposure). ${it.text}` : it.text,
+    date: it.date || null,
+    period: m.period ? { label: String(m.period), to: String(m.period) } : null,
+    data: {
+      metric: 'macro_series',
+      family: m.family,
+      name: m.name || it.title,
+      place: m.place || null,
+      iso3: m.iso3 || null,
+      scope: m.scope || null,
+      source: m.source,
+      series_key: m.series_key || null,
+      value: m.value ?? null,
+      unit: m.unit || null,
+      period: m.period || null,
+      change: m.change ?? null,
+      changeKind: m.changeKind || null,
+      yearAgoPeriod: m.yearAgoPeriod || null,
+      attribution: m.attribution || it.citation?.label || m.source,
+      derived: m.mode === 'yoy_from_index',
+      history: history || null,
+      ranking: m.ranking
+        ? { rows: m.ranking.rows, order: m.ranking.order, mix: m.ranking.mix }
+        : null,
+      projection: m.projection || null,
+      context: contextLabel || null,
+    },
+    entities: [m.place, m.iso3].filter(Boolean),
+  };
+}
+
+/**
+ * macro_series: the macro catalogue for the spec's countries (max 4), themes, commodity or
+ * ranking. Items carry structured data (analysis.js computes latest, change, five-year
+ * percentile and rank) and, for up to two lead series, their history for a line chart.
+ * `contextLabel` marks a company memo's country context (never the company's exposure).
+ */
+async function macroSeriesSource(params, { admin, ms = 2500, maxItems = 6, now }) {
+  const route = {
+    countries: params.countries || [],
+    themes: params.themes || [],
+    families: params.families || [],
+    commodity: params.commodity || null,
+    ranking: params.ranking || null,
+    region: params.region || null,
+  };
+  const timeoutMs = Math.max(600, Math.min(ms - 300, 3000));
+  const items = await macroBrief(admin, route, {
+    limit: Math.max(maxItems, 6),
+    maxCountries: 4,
+    perCountry: params.contextLabel ? 4 : 6,
+    timeoutMs,
+    now,
+  });
+  /* History for the two lead series with a key (rankings chart from their own rows). */
+  const since = `${(now || new Date()).getUTCFullYear() - 6}`;
+  const lead = items.filter((it) => it.meta?.series_key && it.meta.scope !== 'ranking').slice(0, 2);
+  const hist = await Promise.all(
+    lead.map((it) =>
+      it.meta.history
+        ? Promise.resolve(it.meta.history)
+        : seriesHistory(admin, it.meta.source, it.meta.series_key, { since, timeoutMs }).catch(
+            () => [],
+          ),
+    ),
+  );
+  const byKey = new Map(lead.map((it, i) => [it, hist[i]]));
+  return {
+    layout: {
+      macro: {
+        context: params.contextLabel || null,
+        items: items.map((it) => ({
+          title: it.title,
+          citation: it.citation,
+          meta: { ...it.meta, history: undefined },
+        })),
+      },
+    },
+    items: items.map((it) =>
+      macroItemToEvidence(it, {
+        history: byKey.get(it) || null,
+        contextLabel: params.contextLabel || null,
+      }),
+    ),
   };
 }
 
@@ -715,6 +831,7 @@ export const RUNNERS = {
   commodity_series: commoditySeriesSource,
   sanctions: sanctionsSource,
   macro_country: macroCountry,
+  macro_series: macroSeriesSource,
   industry_registry: industryRegistry,
   prediction_markets: (p, ctx) => ragCorpus('markets', p, ctx),
   echo: (p, ctx) => ragCorpus('echo', p, ctx),

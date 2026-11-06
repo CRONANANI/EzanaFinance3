@@ -1,0 +1,4199 @@
+{
+  "generatedAt": "2026-11-06",
+  "note": "Every (source, series_key prefix) in public.macro_series_values with up to 12 sample rows. Regenerate with scripts/sonar-macro-coverage.mjs. The coverage test (npm run test:sonar-macro) requires each prefix to match a catalogue family or be listed in NOT_SURFACED.",
+  "prefixes": [
+    {
+      "source": "arg-series",
+      "prefix": "ARGSERIES",
+      "series": 2,
+      "samples": [
+        {
+          "series_key": "ARGSERIES:143.3_NO_PR_2004_A_21",
+          "country_iso3": "ARG",
+          "dataset": "series-tiempo",
+          "series_name": "EMAE economic activity estimator (INDEC)",
+          "unit": "index"
+        },
+        {
+          "series_key": "ARGSERIES:148.3_INIVELNAL_DICI_M_26",
+          "country_iso3": "ARG",
+          "dataset": "series-tiempo",
+          "series_name": "CPI national level (INDEC)",
+          "unit": "index"
+        }
+      ]
+    },
+    {
+      "source": "bcb",
+      "prefix": "SGS.1",
+      "series": 1,
+      "samples": [
+        {
+          "series_key": "SGS.1",
+          "country_iso3": "BRA",
+          "dataset": "SGS",
+          "series_name": "USD/BRL exchange rate, free market, sell",
+          "unit": "BRL per USD"
+        }
+      ]
+    },
+    {
+      "source": "bcb",
+      "prefix": "SGS.10813",
+      "series": 1,
+      "samples": [
+        {
+          "series_key": "SGS.10813",
+          "country_iso3": "BRA",
+          "dataset": "SGS",
+          "series_name": "USD/BRL exchange rate, free market, buy",
+          "unit": "BRL per USD"
+        }
+      ]
+    },
+    {
+      "source": "bcb",
+      "prefix": "SGS.11",
+      "series": 1,
+      "samples": [
+        {
+          "series_key": "SGS.11",
+          "country_iso3": "BRA",
+          "dataset": "SGS",
+          "series_name": "Selic daily rate",
+          "unit": "% p.d."
+        }
+      ]
+    },
+    {
+      "source": "bcb",
+      "prefix": "SGS.13621",
+      "series": 1,
+      "samples": [
+        {
+          "series_key": "SGS.13621",
+          "country_iso3": "BRA",
+          "dataset": "SGS",
+          "series_name": "International reserves, cash concept, daily",
+          "unit": "USD millions"
+        }
+      ]
+    },
+    {
+      "source": "bcb",
+      "prefix": "SGS.24363",
+      "series": 1,
+      "samples": [
+        {
+          "series_key": "SGS.24363",
+          "country_iso3": "BRA",
+          "dataset": "SGS",
+          "series_name": "IBC-Br economic activity index",
+          "unit": "index"
+        }
+      ]
+    },
+    {
+      "source": "bcb",
+      "prefix": "SGS.433",
+      "series": 1,
+      "samples": [
+        {
+          "series_key": "SGS.433",
+          "country_iso3": "BRA",
+          "dataset": "SGS",
+          "series_name": "IPCA consumer prices, monthly change",
+          "unit": "% m/m"
+        }
+      ]
+    },
+    {
+      "source": "bcra",
+      "prefix": "BCRA",
+      "series": 4,
+      "samples": [
+        {
+          "series_key": "BCRA:27",
+          "country_iso3": "ARG",
+          "dataset": "monetarias v4",
+          "series_name": "Monthly inflation",
+          "unit": "% m/m"
+        },
+        {
+          "series_key": "BCRA:1",
+          "country_iso3": "ARG",
+          "dataset": "monetarias v4",
+          "series_name": "International reserves",
+          "unit": "USD millions"
+        },
+        {
+          "series_key": "BCRA:5",
+          "country_iso3": "ARG",
+          "dataset": "monetarias v4",
+          "series_name": "Wholesale exchange rate (ARS per USD)",
+          "unit": "ARS per USD"
+        },
+        {
+          "series_key": "BCRA:28",
+          "country_iso3": "ARG",
+          "dataset": "monetarias v4",
+          "series_name": "Year-on-year inflation",
+          "unit": "% y/y"
+        }
+      ]
+    },
+    {
+      "source": "bis",
+      "prefix": "WS_CBPOL",
+      "series": 41,
+      "samples": [
+        {
+          "series_key": "WS_CBPOL:M.IN",
+          "country_iso3": "IND",
+          "dataset": "WS_CBPOL",
+          "series_name": "Central bank policy rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CBPOL:M.RO",
+          "country_iso3": "ROU",
+          "dataset": "WS_CBPOL",
+          "series_name": "Central bank policy rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CBPOL:M.MA",
+          "country_iso3": "MAR",
+          "dataset": "WS_CBPOL",
+          "series_name": "Central bank policy rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CBPOL:M.PE",
+          "country_iso3": "PER",
+          "dataset": "WS_CBPOL",
+          "series_name": "Central bank policy rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CBPOL:M.SA",
+          "country_iso3": "SAU",
+          "dataset": "WS_CBPOL",
+          "series_name": "Central bank policy rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CBPOL:M.SE",
+          "country_iso3": "SWE",
+          "dataset": "WS_CBPOL",
+          "series_name": "Central bank policy rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CBPOL:M.CZ",
+          "country_iso3": "CZE",
+          "dataset": "WS_CBPOL",
+          "series_name": "Central bank policy rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CBPOL:M.XM",
+          "country_iso3": null,
+          "dataset": "WS_CBPOL",
+          "series_name": "Central bank policy rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CBPOL:M.BR",
+          "country_iso3": "BRA",
+          "dataset": "WS_CBPOL",
+          "series_name": "Central bank policy rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CBPOL:M.TR",
+          "country_iso3": "TUR",
+          "dataset": "WS_CBPOL",
+          "series_name": "Central bank policy rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CBPOL:M.KR",
+          "country_iso3": "KOR",
+          "dataset": "WS_CBPOL",
+          "series_name": "Central bank policy rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CBPOL:M.KW",
+          "country_iso3": "KWT",
+          "dataset": "WS_CBPOL",
+          "series_name": "Central bank policy rates",
+          "unit": null
+        }
+      ]
+    },
+    {
+      "source": "bis",
+      "prefix": "WS_CREDIT_GAP",
+      "series": 132,
+      "samples": [
+        {
+          "series_key": "WS_CREDIT_GAP:Q.CO.P.A.A",
+          "country_iso3": "COL",
+          "dataset": "WS_CREDIT_GAP",
+          "series_name": "Credit-to-GDP gaps",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CREDIT_GAP:Q.CL.P.A.C",
+          "country_iso3": "CHL",
+          "dataset": "WS_CREDIT_GAP",
+          "series_name": "Credit-to-GDP gaps",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CREDIT_GAP:Q.PT.P.A.B",
+          "country_iso3": "PRT",
+          "dataset": "WS_CREDIT_GAP",
+          "series_name": "Credit-to-GDP gaps",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CREDIT_GAP:Q.SA.P.A.A",
+          "country_iso3": "SAU",
+          "dataset": "WS_CREDIT_GAP",
+          "series_name": "Credit-to-GDP gaps",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CREDIT_GAP:Q.MX.P.A.A",
+          "country_iso3": "MEX",
+          "dataset": "WS_CREDIT_GAP",
+          "series_name": "Credit-to-GDP gaps",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CREDIT_GAP:Q.ID.P.A.C",
+          "country_iso3": "IDN",
+          "dataset": "WS_CREDIT_GAP",
+          "series_name": "Credit-to-GDP gaps",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CREDIT_GAP:Q.AT.P.A.C",
+          "country_iso3": "AUT",
+          "dataset": "WS_CREDIT_GAP",
+          "series_name": "Credit-to-GDP gaps",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CREDIT_GAP:Q.IT.P.A.C",
+          "country_iso3": "ITA",
+          "dataset": "WS_CREDIT_GAP",
+          "series_name": "Credit-to-GDP gaps",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CREDIT_GAP:Q.HU.P.A.C",
+          "country_iso3": "HUN",
+          "dataset": "WS_CREDIT_GAP",
+          "series_name": "Credit-to-GDP gaps",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CREDIT_GAP:Q.HK.P.A.A",
+          "country_iso3": "HKG",
+          "dataset": "WS_CREDIT_GAP",
+          "series_name": "Credit-to-GDP gaps",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CREDIT_GAP:Q.SE.P.A.A",
+          "country_iso3": "SWE",
+          "dataset": "WS_CREDIT_GAP",
+          "series_name": "Credit-to-GDP gaps",
+          "unit": null
+        },
+        {
+          "series_key": "WS_CREDIT_GAP:Q.GB.P.A.B",
+          "country_iso3": "GBR",
+          "dataset": "WS_CREDIT_GAP",
+          "series_name": "Credit-to-GDP gaps",
+          "unit": null
+        }
+      ]
+    },
+    {
+      "source": "bis",
+      "prefix": "WS_DSR",
+      "series": 66,
+      "samples": [
+        {
+          "series_key": "WS_DSR:Q.PT.H",
+          "country_iso3": "PRT",
+          "dataset": "WS_DSR",
+          "series_name": "Debt service ratios",
+          "unit": null
+        },
+        {
+          "series_key": "WS_DSR:Q.NO.N",
+          "country_iso3": "NOR",
+          "dataset": "WS_DSR",
+          "series_name": "Debt service ratios",
+          "unit": null
+        },
+        {
+          "series_key": "WS_DSR:Q.MX.P",
+          "country_iso3": "MEX",
+          "dataset": "WS_DSR",
+          "series_name": "Debt service ratios",
+          "unit": null
+        },
+        {
+          "series_key": "WS_DSR:Q.AU.P",
+          "country_iso3": "AUS",
+          "dataset": "WS_DSR",
+          "series_name": "Debt service ratios",
+          "unit": null
+        },
+        {
+          "series_key": "WS_DSR:Q.FI.P",
+          "country_iso3": "FIN",
+          "dataset": "WS_DSR",
+          "series_name": "Debt service ratios",
+          "unit": null
+        },
+        {
+          "series_key": "WS_DSR:Q.BE.P",
+          "country_iso3": "BEL",
+          "dataset": "WS_DSR",
+          "series_name": "Debt service ratios",
+          "unit": null
+        },
+        {
+          "series_key": "WS_DSR:Q.ID.P",
+          "country_iso3": "IDN",
+          "dataset": "WS_DSR",
+          "series_name": "Debt service ratios",
+          "unit": null
+        },
+        {
+          "series_key": "WS_DSR:Q.TR.P",
+          "country_iso3": "TUR",
+          "dataset": "WS_DSR",
+          "series_name": "Debt service ratios",
+          "unit": null
+        },
+        {
+          "series_key": "WS_DSR:Q.HU.P",
+          "country_iso3": "HUN",
+          "dataset": "WS_DSR",
+          "series_name": "Debt service ratios",
+          "unit": null
+        },
+        {
+          "series_key": "WS_DSR:Q.CH.P",
+          "country_iso3": "CHE",
+          "dataset": "WS_DSR",
+          "series_name": "Debt service ratios",
+          "unit": null
+        },
+        {
+          "series_key": "WS_DSR:Q.JP.H",
+          "country_iso3": "JPN",
+          "dataset": "WS_DSR",
+          "series_name": "Debt service ratios",
+          "unit": null
+        },
+        {
+          "series_key": "WS_DSR:Q.NO.H",
+          "country_iso3": "NOR",
+          "dataset": "WS_DSR",
+          "series_name": "Debt service ratios",
+          "unit": null
+        }
+      ]
+    },
+    {
+      "source": "bis",
+      "prefix": "WS_EER",
+      "series": 181,
+      "samples": [
+        {
+          "series_key": "WS_EER:M.R.B.CY",
+          "country_iso3": "CYP",
+          "dataset": "WS_EER",
+          "series_name": "Effective exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_EER:M.N.B.ES",
+          "country_iso3": "ESP",
+          "dataset": "WS_EER",
+          "series_name": "Effective exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_EER:M.N.B.CA",
+          "country_iso3": "CAN",
+          "dataset": "WS_EER",
+          "series_name": "Effective exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_EER:M.R.B.BA",
+          "country_iso3": "BIH",
+          "dataset": "WS_EER",
+          "series_name": "Effective exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_EER:M.R.N.BE",
+          "country_iso3": "BEL",
+          "dataset": "WS_EER",
+          "series_name": "Effective exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_EER:M.N.N.IE",
+          "country_iso3": "IRL",
+          "dataset": "WS_EER",
+          "series_name": "Effective exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_EER:M.N.B.RU",
+          "country_iso3": "RUS",
+          "dataset": "WS_EER",
+          "series_name": "Effective exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_EER:M.R.B.IT",
+          "country_iso3": "ITA",
+          "dataset": "WS_EER",
+          "series_name": "Effective exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_EER:M.R.N.SE",
+          "country_iso3": "SWE",
+          "dataset": "WS_EER",
+          "series_name": "Effective exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_EER:M.R.B.SA",
+          "country_iso3": "SAU",
+          "dataset": "WS_EER",
+          "series_name": "Effective exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_EER:M.N.B.BR",
+          "country_iso3": "BRA",
+          "dataset": "WS_EER",
+          "series_name": "Effective exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_EER:M.R.B.TH",
+          "country_iso3": "THA",
+          "dataset": "WS_EER",
+          "series_name": "Effective exchange rates",
+          "unit": null
+        }
+      ]
+    },
+    {
+      "source": "bis",
+      "prefix": "WS_SPP",
+      "series": 244,
+      "samples": [
+        {
+          "series_key": "WS_SPP:Q.FI.N.628",
+          "country_iso3": "FIN",
+          "dataset": "WS_SPP",
+          "series_name": "Residential property prices",
+          "unit": "628"
+        },
+        {
+          "series_key": "WS_SPP:Q.ID.N.771",
+          "country_iso3": "IDN",
+          "dataset": "WS_SPP",
+          "series_name": "Residential property prices",
+          "unit": "771"
+        },
+        {
+          "series_key": "WS_SPP:Q.CA.N.771",
+          "country_iso3": "CAN",
+          "dataset": "WS_SPP",
+          "series_name": "Residential property prices",
+          "unit": "771"
+        },
+        {
+          "series_key": "WS_SPP:Q.NO.N.628",
+          "country_iso3": "NOR",
+          "dataset": "WS_SPP",
+          "series_name": "Residential property prices",
+          "unit": "628"
+        },
+        {
+          "series_key": "WS_SPP:Q.5R.R.771",
+          "country_iso3": null,
+          "dataset": "WS_SPP",
+          "series_name": "Residential property prices",
+          "unit": "771"
+        },
+        {
+          "series_key": "WS_SPP:Q.AT.R.628",
+          "country_iso3": "AUT",
+          "dataset": "WS_SPP",
+          "series_name": "Residential property prices",
+          "unit": "628"
+        },
+        {
+          "series_key": "WS_SPP:Q.SE.N.771",
+          "country_iso3": "SWE",
+          "dataset": "WS_SPP",
+          "series_name": "Residential property prices",
+          "unit": "771"
+        },
+        {
+          "series_key": "WS_SPP:Q.HR.R.628",
+          "country_iso3": "HRV",
+          "dataset": "WS_SPP",
+          "series_name": "Residential property prices",
+          "unit": "628"
+        },
+        {
+          "series_key": "WS_SPP:Q.MT.R.771",
+          "country_iso3": "MLT",
+          "dataset": "WS_SPP",
+          "series_name": "Residential property prices",
+          "unit": "771"
+        },
+        {
+          "series_key": "WS_SPP:Q.BR.R.771",
+          "country_iso3": "BRA",
+          "dataset": "WS_SPP",
+          "series_name": "Residential property prices",
+          "unit": "771"
+        },
+        {
+          "series_key": "WS_SPP:Q.PH.N.628",
+          "country_iso3": "PHL",
+          "dataset": "WS_SPP",
+          "series_name": "Residential property prices",
+          "unit": "628"
+        },
+        {
+          "series_key": "WS_SPP:Q.MY.N.771",
+          "country_iso3": "MYS",
+          "dataset": "WS_SPP",
+          "series_name": "Residential property prices",
+          "unit": "771"
+        }
+      ]
+    },
+    {
+      "source": "bis",
+      "prefix": "WS_TC",
+      "series": 1133,
+      "samples": [
+        {
+          "series_key": "WS_TC:Q.TH.P.B.M.USD.A",
+          "country_iso3": "THA",
+          "dataset": "WS_TC",
+          "series_name": "Total credit to the non-financial sector",
+          "unit": "USD"
+        },
+        {
+          "series_key": "WS_TC:Q.ES.P.B.M.XDC.U",
+          "country_iso3": "ESP",
+          "dataset": "WS_TC",
+          "series_name": "Total credit to the non-financial sector",
+          "unit": "XDC"
+        },
+        {
+          "series_key": "WS_TC:Q.DE.H.A.M.XDC.U",
+          "country_iso3": "DEU",
+          "dataset": "WS_TC",
+          "series_name": "Total credit to the non-financial sector",
+          "unit": "XDC"
+        },
+        {
+          "series_key": "WS_TC:Q.MX.N.A.M.770.A",
+          "country_iso3": "MEX",
+          "dataset": "WS_TC",
+          "series_name": "Total credit to the non-financial sector",
+          "unit": "770"
+        },
+        {
+          "series_key": "WS_TC:Q.PL.C.A.M.770.A",
+          "country_iso3": "POL",
+          "dataset": "WS_TC",
+          "series_name": "Total credit to the non-financial sector",
+          "unit": "770"
+        },
+        {
+          "series_key": "WS_TC:Q.JP.G.A.N.770.A",
+          "country_iso3": "JPN",
+          "dataset": "WS_TC",
+          "series_name": "Total credit to the non-financial sector",
+          "unit": "770"
+        },
+        {
+          "series_key": "WS_TC:Q.GR.N.A.M.USD.A",
+          "country_iso3": "GRC",
+          "dataset": "WS_TC",
+          "series_name": "Total credit to the non-financial sector",
+          "unit": "USD"
+        },
+        {
+          "series_key": "WS_TC:Q.NL.G.A.N.770.A",
+          "country_iso3": "NLD",
+          "dataset": "WS_TC",
+          "series_name": "Total credit to the non-financial sector",
+          "unit": "770"
+        },
+        {
+          "series_key": "WS_TC:Q.SG.P.A.M.XDC.U",
+          "country_iso3": "SGP",
+          "dataset": "WS_TC",
+          "series_name": "Total credit to the non-financial sector",
+          "unit": "XDC"
+        },
+        {
+          "series_key": "WS_TC:Q.5A.P.A.M.770.A",
+          "country_iso3": null,
+          "dataset": "WS_TC",
+          "series_name": "Total credit to the non-financial sector",
+          "unit": "770"
+        },
+        {
+          "series_key": "WS_TC:Q.LU.G.A.N.XDC.A",
+          "country_iso3": "LUX",
+          "dataset": "WS_TC",
+          "series_name": "Total credit to the non-financial sector",
+          "unit": "XDC"
+        },
+        {
+          "series_key": "WS_TC:Q.CZ.G.A.M.USD.A",
+          "country_iso3": "CZE",
+          "dataset": "WS_TC",
+          "series_name": "Total credit to the non-financial sector",
+          "unit": "USD"
+        }
+      ]
+    },
+    {
+      "source": "bis",
+      "prefix": "WS_XRU",
+      "series": 384,
+      "samples": [
+        {
+          "series_key": "WS_XRU:M.SZ.SZL.E",
+          "country_iso3": "SWZ",
+          "dataset": "WS_XRU",
+          "series_name": "US dollar exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_XRU:M.SR.SRD.A",
+          "country_iso3": "SUR",
+          "dataset": "WS_XRU",
+          "series_name": "US dollar exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_XRU:M.WA.XOF.A",
+          "country_iso3": null,
+          "dataset": "WS_XRU",
+          "series_name": "US dollar exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_XRU:M.DK.DKK.A",
+          "country_iso3": "DNK",
+          "dataset": "WS_XRU",
+          "series_name": "US dollar exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_XRU:M.ME.EUR.E",
+          "country_iso3": "MNE",
+          "dataset": "WS_XRU",
+          "series_name": "US dollar exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_XRU:M.DZ.DZD.E",
+          "country_iso3": "DZA",
+          "dataset": "WS_XRU",
+          "series_name": "US dollar exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_XRU:M.ML.XOF.A",
+          "country_iso3": "MLI",
+          "dataset": "WS_XRU",
+          "series_name": "US dollar exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_XRU:M.WS.WST.E",
+          "country_iso3": "WSM",
+          "dataset": "WS_XRU",
+          "series_name": "US dollar exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_XRU:M.LR.LRD.E",
+          "country_iso3": "LBR",
+          "dataset": "WS_XRU",
+          "series_name": "US dollar exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_XRU:M.CA.CAD.E",
+          "country_iso3": "CAN",
+          "dataset": "WS_XRU",
+          "series_name": "US dollar exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_XRU:M.MT.EUR.E",
+          "country_iso3": "MLT",
+          "dataset": "WS_XRU",
+          "series_name": "US dollar exchange rates",
+          "unit": null
+        },
+        {
+          "series_key": "WS_XRU:M.JM.JMD.E",
+          "country_iso3": "JAM",
+          "dataset": "WS_XRU",
+          "series_name": "US dollar exchange rates",
+          "unit": null
+        }
+      ]
+    },
+    {
+      "source": "boe",
+      "prefix": "BOE",
+      "series": 3,
+      "samples": [
+        {
+          "series_key": "BOE:IUDBEDR",
+          "country_iso3": "GBR",
+          "dataset": "IADB",
+          "series_name": "Bank Rate",
+          "unit": "%"
+        },
+        {
+          "series_key": "BOE:XUDLERS",
+          "country_iso3": "GBR",
+          "dataset": "IADB",
+          "series_name": "EUR per GBP, spot",
+          "unit": "EUR per GBP"
+        },
+        {
+          "series_key": "BOE:XUDLUSS",
+          "country_iso3": "GBR",
+          "dataset": "IADB",
+          "series_name": "USD per GBP, spot",
+          "unit": "USD per GBP"
+        }
+      ]
+    },
+    {
+      "source": "boj",
+      "prefix": "BOJ.FM08",
+      "series": 1,
+      "samples": [
+        {
+          "series_key": "BOJ.FM08:FXERD04",
+          "country_iso3": "JPN",
+          "dataset": "FM08",
+          "series_name": "US.Dollar/Yen Spot Rate at 17:00 in JST, Tokyo Market",
+          "unit": "Yen per U.S. Dollar"
+        }
+      ]
+    },
+    {
+      "source": "cbn",
+      "prefix": "CBN.FX",
+      "series": 8,
+      "samples": [
+        {
+          "series_key": "CBN.FX:POUNDS_STERLING",
+          "country_iso3": "NGA",
+          "dataset": "ExchangeRates",
+          "series_name": "NGN per POUNDS STERLING (CBN central rate)",
+          "unit": "NGN"
+        },
+        {
+          "series_key": "CBN.FX:SWISS_FRANC",
+          "country_iso3": "NGA",
+          "dataset": "ExchangeRates",
+          "series_name": "NGN per SWISS FRANC (CBN central rate)",
+          "unit": "NGN"
+        },
+        {
+          "series_key": "CBN.FX:US_DOLLAR",
+          "country_iso3": "NGA",
+          "dataset": "ExchangeRates",
+          "series_name": "NGN per US DOLLAR (CBN central rate)",
+          "unit": "NGN"
+        },
+        {
+          "series_key": "CBN.FX:EURO",
+          "country_iso3": "NGA",
+          "dataset": "ExchangeRates",
+          "series_name": "NGN per EURO (CBN central rate)",
+          "unit": "NGN"
+        },
+        {
+          "series_key": "CBN.FX:RIYAL",
+          "country_iso3": "NGA",
+          "dataset": "ExchangeRates",
+          "series_name": "NGN per RIYAL (CBN central rate)",
+          "unit": "NGN"
+        },
+        {
+          "series_key": "CBN.FX:YUAN/RENMINBI",
+          "country_iso3": "NGA",
+          "dataset": "ExchangeRates",
+          "series_name": "NGN per YUAN/RENMINBI (CBN central rate)",
+          "unit": "NGN"
+        },
+        {
+          "series_key": "CBN.FX:SOUTH_AFRICAN_RAND",
+          "country_iso3": "NGA",
+          "dataset": "ExchangeRates",
+          "series_name": "NGN per SOUTH AFRICAN RAND (CBN central rate)",
+          "unit": "NGN"
+        },
+        {
+          "series_key": "CBN.FX:YEN",
+          "country_iso3": "NGA",
+          "dataset": "ExchangeRates",
+          "series_name": "NGN per YEN (CBN central rate)",
+          "unit": "NGN"
+        }
+      ]
+    },
+    {
+      "source": "ecb",
+      "prefix": "ECB.AME",
+      "series": 31,
+      "samples": [
+        {
+          "series_key": "ECB.AME:A.SVK.1.0.0.0.ZUTN",
+          "country_iso3": null,
+          "dataset": "AME",
+          "series_name": "AMECO: unemployment rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.AME:A.EST.1.0.0.0.ZUTN",
+          "country_iso3": null,
+          "dataset": "AME",
+          "series_name": "AMECO: unemployment rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.AME:A.DEU.1.0.0.0.ZUTN",
+          "country_iso3": null,
+          "dataset": "AME",
+          "series_name": "AMECO: unemployment rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.AME:A.EA21.1.0.0.0.ZUTN",
+          "country_iso3": null,
+          "dataset": "AME",
+          "series_name": "AMECO: unemployment rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.AME:A.FRA.1.0.0.0.ZUTN",
+          "country_iso3": null,
+          "dataset": "AME",
+          "series_name": "AMECO: unemployment rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.AME:A.ESP.1.0.0.0.ZUTN",
+          "country_iso3": null,
+          "dataset": "AME",
+          "series_name": "AMECO: unemployment rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.AME:A.DNK.1.0.0.0.ZUTN",
+          "country_iso3": null,
+          "dataset": "AME",
+          "series_name": "AMECO: unemployment rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.AME:A.HUN.1.0.0.0.ZUTN",
+          "country_iso3": null,
+          "dataset": "AME",
+          "series_name": "AMECO: unemployment rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.AME:A.LVA.1.0.0.0.ZUTN",
+          "country_iso3": null,
+          "dataset": "AME",
+          "series_name": "AMECO: unemployment rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.AME:A.SVN.1.0.0.0.ZUTN",
+          "country_iso3": null,
+          "dataset": "AME",
+          "series_name": "AMECO: unemployment rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.AME:A.PRT.1.0.0.0.ZUTN",
+          "country_iso3": null,
+          "dataset": "AME",
+          "series_name": "AMECO: unemployment rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.AME:A.AUT.1.0.0.0.ZUTN",
+          "country_iso3": null,
+          "dataset": "AME",
+          "series_name": "AMECO: unemployment rate",
+          "unit": null
+        }
+      ]
+    },
+    {
+      "source": "ecb",
+      "prefix": "ECB.EXR",
+      "series": 39,
+      "samples": [
+        {
+          "series_key": "ECB.EXR:M.DKK.EUR.SP00.A",
+          "country_iso3": null,
+          "dataset": "EXR",
+          "series_name": "Euro reference exchange rate (monthly average)",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.EXR:M.TRY.EUR.SP00.A",
+          "country_iso3": null,
+          "dataset": "EXR",
+          "series_name": "Euro reference exchange rate (monthly average)",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.EXR:M.THB.EUR.SP00.A",
+          "country_iso3": null,
+          "dataset": "EXR",
+          "series_name": "Euro reference exchange rate (monthly average)",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.EXR:M.HKD.EUR.SP00.A",
+          "country_iso3": null,
+          "dataset": "EXR",
+          "series_name": "Euro reference exchange rate (monthly average)",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.EXR:M.MXN.EUR.SP00.A",
+          "country_iso3": null,
+          "dataset": "EXR",
+          "series_name": "Euro reference exchange rate (monthly average)",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.EXR:M.CZK.EUR.SP00.A",
+          "country_iso3": null,
+          "dataset": "EXR",
+          "series_name": "Euro reference exchange rate (monthly average)",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.EXR:M.TWD.EUR.SP00.A",
+          "country_iso3": null,
+          "dataset": "EXR",
+          "series_name": "Euro reference exchange rate (monthly average)",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.EXR:M.AUD.EUR.SP00.A",
+          "country_iso3": null,
+          "dataset": "EXR",
+          "series_name": "Euro reference exchange rate (monthly average)",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.EXR:M.KRW.EUR.SP00.A",
+          "country_iso3": null,
+          "dataset": "EXR",
+          "series_name": "Euro reference exchange rate (monthly average)",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.EXR:M.NOK.EUR.SP00.A",
+          "country_iso3": null,
+          "dataset": "EXR",
+          "series_name": "Euro reference exchange rate (monthly average)",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.EXR:M.MYR.EUR.SP00.A",
+          "country_iso3": null,
+          "dataset": "EXR",
+          "series_name": "Euro reference exchange rate (monthly average)",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.EXR:M.RON.EUR.SP00.A",
+          "country_iso3": null,
+          "dataset": "EXR",
+          "series_name": "Euro reference exchange rate (monthly average)",
+          "unit": null
+        }
+      ]
+    },
+    {
+      "source": "ecb",
+      "prefix": "ECB.FM",
+      "series": 2,
+      "samples": [
+        {
+          "series_key": "ECB.FM:B.U2.EUR.4F.KR.DFR.LEV",
+          "country_iso3": null,
+          "dataset": "FM",
+          "series_name": "ECB deposit facility rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.FM:B.U2.EUR.4F.KR.MRR_FR.LEV",
+          "country_iso3": null,
+          "dataset": "FM",
+          "series_name": "ECB main refinancing rate",
+          "unit": null
+        }
+      ]
+    },
+    {
+      "source": "ecb",
+      "prefix": "ECB.ICP",
+      "series": 35,
+      "samples": [
+        {
+          "series_key": "ECB.ICP:M.EE.N.000000.4.ANR",
+          "country_iso3": "EST",
+          "dataset": "ICP",
+          "series_name": "HICP inflation, annual rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.ICP:M.IT.N.000000.4.ANR",
+          "country_iso3": "ITA",
+          "dataset": "ICP",
+          "series_name": "HICP inflation, annual rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.ICP:M.CY.N.000000.4.ANR",
+          "country_iso3": "CYP",
+          "dataset": "ICP",
+          "series_name": "HICP inflation, annual rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.ICP:M.AT.N.000000.4.ANR",
+          "country_iso3": "AUT",
+          "dataset": "ICP",
+          "series_name": "HICP inflation, annual rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.ICP:M.ES.N.000000.4.ANR",
+          "country_iso3": "ESP",
+          "dataset": "ICP",
+          "series_name": "HICP inflation, annual rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.ICP:M.IE.N.000000.4.ANR",
+          "country_iso3": "IRL",
+          "dataset": "ICP",
+          "series_name": "HICP inflation, annual rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.ICP:M.BG.N.000000.4.ANR",
+          "country_iso3": "BGR",
+          "dataset": "ICP",
+          "series_name": "HICP inflation, annual rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.ICP:M.CZ.N.000000.4.ANR",
+          "country_iso3": "CZE",
+          "dataset": "ICP",
+          "series_name": "HICP inflation, annual rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.ICP:M.HR.N.000000.4.ANR",
+          "country_iso3": "HRV",
+          "dataset": "ICP",
+          "series_name": "HICP inflation, annual rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.ICP:M.I9.N.000000.4.ANR",
+          "country_iso3": null,
+          "dataset": "ICP",
+          "series_name": "HICP inflation, annual rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.ICP:M.SK.N.000000.4.ANR",
+          "country_iso3": "SVK",
+          "dataset": "ICP",
+          "series_name": "HICP inflation, annual rate",
+          "unit": null
+        },
+        {
+          "series_key": "ECB.ICP:M.LU.N.000000.4.ANR",
+          "country_iso3": "LUX",
+          "dataset": "ICP",
+          "series_name": "HICP inflation, annual rate",
+          "unit": null
+        }
+      ]
+    },
+    {
+      "source": "eia",
+      "prefix": "EIA.1.57.TBPD",
+      "series": 263,
+      "samples": [
+        {
+          "series_key": "EIA.1.57.TBPD:ETH",
+          "country_iso3": "ETH",
+          "dataset": "international",
+          "series_name": "EIA Crude oil production",
+          "unit": "thousand barrels per day"
+        },
+        {
+          "series_key": "EIA.1.57.TBPD:WP22",
+          "country_iso3": null,
+          "dataset": "international",
+          "series_name": "EIA Crude oil production",
+          "unit": "thousand barrels per day"
+        },
+        {
+          "series_key": "EIA.1.57.TBPD:CYM",
+          "country_iso3": "CYM",
+          "dataset": "international",
+          "series_name": "EIA Crude oil production",
+          "unit": "thousand barrels per day"
+        },
+        {
+          "series_key": "EIA.1.57.TBPD:KOR",
+          "country_iso3": "KOR",
+          "dataset": "international",
+          "series_name": "EIA Crude oil production",
+          "unit": "thousand barrels per day"
+        },
+        {
+          "series_key": "EIA.1.57.TBPD:CHE",
+          "country_iso3": "CHE",
+          "dataset": "international",
+          "series_name": "EIA Crude oil production",
+          "unit": "thousand barrels per day"
+        },
+        {
+          "series_key": "EIA.1.57.TBPD:CPV",
+          "country_iso3": "CPV",
+          "dataset": "international",
+          "series_name": "EIA Crude oil production",
+          "unit": "thousand barrels per day"
+        },
+        {
+          "series_key": "EIA.1.57.TBPD:BLZ",
+          "country_iso3": "BLZ",
+          "dataset": "international",
+          "series_name": "EIA Crude oil production",
+          "unit": "thousand barrels per day"
+        },
+        {
+          "series_key": "EIA.1.57.TBPD:OPEC",
+          "country_iso3": null,
+          "dataset": "international",
+          "series_name": "EIA Crude oil production",
+          "unit": "thousand barrels per day"
+        },
+        {
+          "series_key": "EIA.1.57.TBPD:NOEC",
+          "country_iso3": null,
+          "dataset": "international",
+          "series_name": "EIA Crude oil production",
+          "unit": "thousand barrels per day"
+        },
+        {
+          "series_key": "EIA.1.57.TBPD:OEAO",
+          "country_iso3": null,
+          "dataset": "international",
+          "series_name": "EIA Crude oil production",
+          "unit": "thousand barrels per day"
+        },
+        {
+          "series_key": "EIA.1.57.TBPD:MOZ",
+          "country_iso3": "MOZ",
+          "dataset": "international",
+          "series_name": "EIA Crude oil production",
+          "unit": "thousand barrels per day"
+        },
+        {
+          "series_key": "EIA.1.57.TBPD:WP17",
+          "country_iso3": null,
+          "dataset": "international",
+          "series_name": "EIA Crude oil production",
+          "unit": "thousand barrels per day"
+        }
+      ]
+    },
+    {
+      "source": "epu",
+      "prefix": "EPU.EPU",
+      "series": 19,
+      "samples": [
+        {
+          "series_key": "EPU.EPU:USA",
+          "country_iso3": "USA",
+          "dataset": "epu_all_country",
+          "series_name": "Economic policy uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "EPU.EPU:AUS",
+          "country_iso3": "AUS",
+          "dataset": "epu_all_country",
+          "series_name": "Economic policy uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "EPU.EPU:IND",
+          "country_iso3": "IND",
+          "dataset": "epu_all_country",
+          "series_name": "Economic policy uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "EPU.EPU:FRA",
+          "country_iso3": "FRA",
+          "dataset": "epu_all_country",
+          "series_name": "Economic policy uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "EPU.EPU:RUS",
+          "country_iso3": "RUS",
+          "dataset": "epu_all_country",
+          "series_name": "Economic policy uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "EPU.EPU:ESP",
+          "country_iso3": "ESP",
+          "dataset": "epu_all_country",
+          "series_name": "Economic policy uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "EPU.EPU:DEU",
+          "country_iso3": "DEU",
+          "dataset": "epu_all_country",
+          "series_name": "Economic policy uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "EPU.EPU:KOR",
+          "country_iso3": "KOR",
+          "dataset": "epu_all_country",
+          "series_name": "Economic policy uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "EPU.EPU:GRC",
+          "country_iso3": "GRC",
+          "dataset": "epu_all_country",
+          "series_name": "Economic policy uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "EPU.EPU:PAK",
+          "country_iso3": "PAK",
+          "dataset": "epu_all_country",
+          "series_name": "Economic policy uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "EPU.EPU:CAN",
+          "country_iso3": "CAN",
+          "dataset": "epu_all_country",
+          "series_name": "Economic policy uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "EPU.EPU:GBR",
+          "country_iso3": "GBR",
+          "dataset": "epu_all_country",
+          "series_name": "Economic policy uncertainty index",
+          "unit": "index"
+        }
+      ]
+    },
+    {
+      "source": "epu",
+      "prefix": "EPU.GEPU_current",
+      "series": 1,
+      "samples": [
+        {
+          "series_key": "EPU.GEPU_current:WLD",
+          "country_iso3": null,
+          "dataset": "epu_all_country",
+          "series_name": "Global economic policy uncertainty (current weights)",
+          "unit": "index"
+        }
+      ]
+    },
+    {
+      "source": "epu",
+      "prefix": "EPU.GEPU_ppp",
+      "series": 1,
+      "samples": [
+        {
+          "series_key": "EPU.GEPU_ppp:WLD",
+          "country_iso3": null,
+          "dataset": "epu_all_country",
+          "series_name": "Global economic policy uncertainty (PPP weights)",
+          "unit": "index"
+        }
+      ]
+    },
+    {
+      "source": "eurostat",
+      "prefix": "ESTAT.gov_10dd_edpt1",
+      "series": 31,
+      "samples": [
+        {
+          "series_key": "ESTAT.gov_10dd_edpt1:SI.GD.S13.PC_GDP",
+          "country_iso3": "SVN",
+          "dataset": "gov_10dd_edpt1",
+          "series_name": "General government gross debt",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "ESTAT.gov_10dd_edpt1:EL.GD.S13.PC_GDP",
+          "country_iso3": "GRC",
+          "dataset": "gov_10dd_edpt1",
+          "series_name": "General government gross debt",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "ESTAT.gov_10dd_edpt1:RO.GD.S13.PC_GDP",
+          "country_iso3": "ROU",
+          "dataset": "gov_10dd_edpt1",
+          "series_name": "General government gross debt",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "ESTAT.gov_10dd_edpt1:SK.GD.S13.PC_GDP",
+          "country_iso3": "SVK",
+          "dataset": "gov_10dd_edpt1",
+          "series_name": "General government gross debt",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "ESTAT.gov_10dd_edpt1:IT.GD.S13.PC_GDP",
+          "country_iso3": "ITA",
+          "dataset": "gov_10dd_edpt1",
+          "series_name": "General government gross debt",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "ESTAT.gov_10dd_edpt1:NL.GD.S13.PC_GDP",
+          "country_iso3": "NLD",
+          "dataset": "gov_10dd_edpt1",
+          "series_name": "General government gross debt",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "ESTAT.gov_10dd_edpt1:ES.GD.S13.PC_GDP",
+          "country_iso3": "ESP",
+          "dataset": "gov_10dd_edpt1",
+          "series_name": "General government gross debt",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "ESTAT.gov_10dd_edpt1:HR.GD.S13.PC_GDP",
+          "country_iso3": "HRV",
+          "dataset": "gov_10dd_edpt1",
+          "series_name": "General government gross debt",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "ESTAT.gov_10dd_edpt1:FR.GD.S13.PC_GDP",
+          "country_iso3": "FRA",
+          "dataset": "gov_10dd_edpt1",
+          "series_name": "General government gross debt",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "ESTAT.gov_10dd_edpt1:LT.GD.S13.PC_GDP",
+          "country_iso3": "LTU",
+          "dataset": "gov_10dd_edpt1",
+          "series_name": "General government gross debt",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "ESTAT.gov_10dd_edpt1:DE.GD.S13.PC_GDP",
+          "country_iso3": "DEU",
+          "dataset": "gov_10dd_edpt1",
+          "series_name": "General government gross debt",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "ESTAT.gov_10dd_edpt1:DK.GD.S13.PC_GDP",
+          "country_iso3": "DNK",
+          "dataset": "gov_10dd_edpt1",
+          "series_name": "General government gross debt",
+          "unit": "% of GDP"
+        }
+      ]
+    },
+    {
+      "source": "eurostat",
+      "prefix": "ESTAT.nama_10_gdp",
+      "series": 44,
+      "samples": [
+        {
+          "series_key": "ESTAT.nama_10_gdp:DE.CLV_PCH_PRE.B1GQ",
+          "country_iso3": "DEU",
+          "dataset": "nama_10_gdp",
+          "series_name": "Real GDP growth",
+          "unit": "% change on previous year"
+        },
+        {
+          "series_key": "ESTAT.nama_10_gdp:IE.CLV_PCH_PRE.B1GQ",
+          "country_iso3": "IRL",
+          "dataset": "nama_10_gdp",
+          "series_name": "Real GDP growth",
+          "unit": "% change on previous year"
+        },
+        {
+          "series_key": "ESTAT.nama_10_gdp:EE.CLV_PCH_PRE.B1GQ",
+          "country_iso3": "EST",
+          "dataset": "nama_10_gdp",
+          "series_name": "Real GDP growth",
+          "unit": "% change on previous year"
+        },
+        {
+          "series_key": "ESTAT.nama_10_gdp:IT.CLV_PCH_PRE.B1GQ",
+          "country_iso3": "ITA",
+          "dataset": "nama_10_gdp",
+          "series_name": "Real GDP growth",
+          "unit": "% change on previous year"
+        },
+        {
+          "series_key": "ESTAT.nama_10_gdp:EA19.CLV_PCH_PRE.B1GQ",
+          "country_iso3": null,
+          "dataset": "nama_10_gdp",
+          "series_name": "Real GDP growth",
+          "unit": "% change on previous year"
+        },
+        {
+          "series_key": "ESTAT.nama_10_gdp:PT.CLV_PCH_PRE.B1GQ",
+          "country_iso3": "PRT",
+          "dataset": "nama_10_gdp",
+          "series_name": "Real GDP growth",
+          "unit": "% change on previous year"
+        },
+        {
+          "series_key": "ESTAT.nama_10_gdp:MK.CLV_PCH_PRE.B1GQ",
+          "country_iso3": "MKD",
+          "dataset": "nama_10_gdp",
+          "series_name": "Real GDP growth",
+          "unit": "% change on previous year"
+        },
+        {
+          "series_key": "ESTAT.nama_10_gdp:UA.CLV_PCH_PRE.B1GQ",
+          "country_iso3": "UKR",
+          "dataset": "nama_10_gdp",
+          "series_name": "Real GDP growth",
+          "unit": "% change on previous year"
+        },
+        {
+          "series_key": "ESTAT.nama_10_gdp:SE.CLV_PCH_PRE.B1GQ",
+          "country_iso3": "SWE",
+          "dataset": "nama_10_gdp",
+          "series_name": "Real GDP growth",
+          "unit": "% change on previous year"
+        },
+        {
+          "series_key": "ESTAT.nama_10_gdp:EA20.CLV_PCH_PRE.B1GQ",
+          "country_iso3": null,
+          "dataset": "nama_10_gdp",
+          "series_name": "Real GDP growth",
+          "unit": "% change on previous year"
+        },
+        {
+          "series_key": "ESTAT.nama_10_gdp:CH.CLV_PCH_PRE.B1GQ",
+          "country_iso3": "CHE",
+          "dataset": "nama_10_gdp",
+          "series_name": "Real GDP growth",
+          "unit": "% change on previous year"
+        },
+        {
+          "series_key": "ESTAT.nama_10_gdp:MT.CLV_PCH_PRE.B1GQ",
+          "country_iso3": "MLT",
+          "dataset": "nama_10_gdp",
+          "series_name": "Real GDP growth",
+          "unit": "% change on previous year"
+        }
+      ]
+    },
+    {
+      "source": "eurostat",
+      "prefix": "ESTAT.prc_hicp_manr",
+      "series": 45,
+      "samples": [
+        {
+          "series_key": "ESTAT.prc_hicp_manr:MT.CP00.RCH_A",
+          "country_iso3": "MLT",
+          "dataset": "prc_hicp_manr",
+          "series_name": "HICP inflation",
+          "unit": "% annual rate"
+        },
+        {
+          "series_key": "ESTAT.prc_hicp_manr:EEA.CP00.RCH_A",
+          "country_iso3": null,
+          "dataset": "prc_hicp_manr",
+          "series_name": "HICP inflation",
+          "unit": "% annual rate"
+        },
+        {
+          "series_key": "ESTAT.prc_hicp_manr:CZ.CP00.RCH_A",
+          "country_iso3": "CZE",
+          "dataset": "prc_hicp_manr",
+          "series_name": "HICP inflation",
+          "unit": "% annual rate"
+        },
+        {
+          "series_key": "ESTAT.prc_hicp_manr:LU.CP00.RCH_A",
+          "country_iso3": "LUX",
+          "dataset": "prc_hicp_manr",
+          "series_name": "HICP inflation",
+          "unit": "% annual rate"
+        },
+        {
+          "series_key": "ESTAT.prc_hicp_manr:FR.CP00.RCH_A",
+          "country_iso3": "FRA",
+          "dataset": "prc_hicp_manr",
+          "series_name": "HICP inflation",
+          "unit": "% annual rate"
+        },
+        {
+          "series_key": "ESTAT.prc_hicp_manr:SI.CP00.RCH_A",
+          "country_iso3": "SVN",
+          "dataset": "prc_hicp_manr",
+          "series_name": "HICP inflation",
+          "unit": "% annual rate"
+        },
+        {
+          "series_key": "ESTAT.prc_hicp_manr:IS.CP00.RCH_A",
+          "country_iso3": "ISL",
+          "dataset": "prc_hicp_manr",
+          "series_name": "HICP inflation",
+          "unit": "% annual rate"
+        },
+        {
+          "series_key": "ESTAT.prc_hicp_manr:LT.CP00.RCH_A",
+          "country_iso3": "LTU",
+          "dataset": "prc_hicp_manr",
+          "series_name": "HICP inflation",
+          "unit": "% annual rate"
+        },
+        {
+          "series_key": "ESTAT.prc_hicp_manr:EE.CP00.RCH_A",
+          "country_iso3": "EST",
+          "dataset": "prc_hicp_manr",
+          "series_name": "HICP inflation",
+          "unit": "% annual rate"
+        },
+        {
+          "series_key": "ESTAT.prc_hicp_manr:PT.CP00.RCH_A",
+          "country_iso3": "PRT",
+          "dataset": "prc_hicp_manr",
+          "series_name": "HICP inflation",
+          "unit": "% annual rate"
+        },
+        {
+          "series_key": "ESTAT.prc_hicp_manr:RO.CP00.RCH_A",
+          "country_iso3": "ROU",
+          "dataset": "prc_hicp_manr",
+          "series_name": "HICP inflation",
+          "unit": "% annual rate"
+        },
+        {
+          "series_key": "ESTAT.prc_hicp_manr:EU.CP00.RCH_A",
+          "country_iso3": null,
+          "dataset": "prc_hicp_manr",
+          "series_name": "HICP inflation",
+          "unit": "% annual rate"
+        }
+      ]
+    },
+    {
+      "source": "eurostat",
+      "prefix": "ESTAT.sts_inpr_m",
+      "series": 40,
+      "samples": [
+        {
+          "series_key": "ESTAT.sts_inpr_m:NL.PRD.B-D.SCA.I21",
+          "country_iso3": "NLD",
+          "dataset": "sts_inpr_m",
+          "series_name": "Industrial production index",
+          "unit": "index"
+        },
+        {
+          "series_key": "ESTAT.sts_inpr_m:NO.PRD.B-D.SCA.I21",
+          "country_iso3": "NOR",
+          "dataset": "sts_inpr_m",
+          "series_name": "Industrial production index",
+          "unit": "index"
+        },
+        {
+          "series_key": "ESTAT.sts_inpr_m:TR.PRD.B-D.SCA.I21",
+          "country_iso3": "TUR",
+          "dataset": "sts_inpr_m",
+          "series_name": "Industrial production index",
+          "unit": "index"
+        },
+        {
+          "series_key": "ESTAT.sts_inpr_m:SE.PRD.B-D.SCA.I21",
+          "country_iso3": "SWE",
+          "dataset": "sts_inpr_m",
+          "series_name": "Industrial production index",
+          "unit": "index"
+        },
+        {
+          "series_key": "ESTAT.sts_inpr_m:AT.PRD.B-D.SCA.I21",
+          "country_iso3": "AUT",
+          "dataset": "sts_inpr_m",
+          "series_name": "Industrial production index",
+          "unit": "index"
+        },
+        {
+          "series_key": "ESTAT.sts_inpr_m:LT.PRD.B-D.SCA.I21",
+          "country_iso3": "LTU",
+          "dataset": "sts_inpr_m",
+          "series_name": "Industrial production index",
+          "unit": "index"
+        },
+        {
+          "series_key": "ESTAT.sts_inpr_m:ES.PRD.B-D.SCA.I21",
+          "country_iso3": "ESP",
+          "dataset": "sts_inpr_m",
+          "series_name": "Industrial production index",
+          "unit": "index"
+        },
+        {
+          "series_key": "ESTAT.sts_inpr_m:LU.PRD.B-D.SCA.I21",
+          "country_iso3": "LUX",
+          "dataset": "sts_inpr_m",
+          "series_name": "Industrial production index",
+          "unit": "index"
+        },
+        {
+          "series_key": "ESTAT.sts_inpr_m:RO.PRD.B-D.SCA.I21",
+          "country_iso3": "ROU",
+          "dataset": "sts_inpr_m",
+          "series_name": "Industrial production index",
+          "unit": "index"
+        },
+        {
+          "series_key": "ESTAT.sts_inpr_m:RS.PRD.B-D.SCA.I21",
+          "country_iso3": "SRB",
+          "dataset": "sts_inpr_m",
+          "series_name": "Industrial production index",
+          "unit": "index"
+        },
+        {
+          "series_key": "ESTAT.sts_inpr_m:EA20.PRD.B-D.SCA.I21",
+          "country_iso3": null,
+          "dataset": "sts_inpr_m",
+          "series_name": "Industrial production index",
+          "unit": "index"
+        },
+        {
+          "series_key": "ESTAT.sts_inpr_m:EL.PRD.B-D.SCA.I21",
+          "country_iso3": "GRC",
+          "dataset": "sts_inpr_m",
+          "series_name": "Industrial production index",
+          "unit": "index"
+        }
+      ]
+    },
+    {
+      "source": "eurostat",
+      "prefix": "ESTAT.une_rt_m",
+      "series": 38,
+      "samples": [
+        {
+          "series_key": "ESTAT.une_rt_m:PT.SA.TOTAL.T.PC_ACT",
+          "country_iso3": "PRT",
+          "dataset": "une_rt_m",
+          "series_name": "Unemployment rate",
+          "unit": "% of active population"
+        },
+        {
+          "series_key": "ESTAT.une_rt_m:PL.SA.TOTAL.T.PC_ACT",
+          "country_iso3": "POL",
+          "dataset": "une_rt_m",
+          "series_name": "Unemployment rate",
+          "unit": "% of active population"
+        },
+        {
+          "series_key": "ESTAT.une_rt_m:NO.SA.TOTAL.T.PC_ACT",
+          "country_iso3": "NOR",
+          "dataset": "une_rt_m",
+          "series_name": "Unemployment rate",
+          "unit": "% of active population"
+        },
+        {
+          "series_key": "ESTAT.une_rt_m:EU27_2020.SA.TOTAL.T.PC_ACT",
+          "country_iso3": null,
+          "dataset": "une_rt_m",
+          "series_name": "Unemployment rate",
+          "unit": "% of active population"
+        },
+        {
+          "series_key": "ESTAT.une_rt_m:IE.SA.TOTAL.T.PC_ACT",
+          "country_iso3": "IRL",
+          "dataset": "une_rt_m",
+          "series_name": "Unemployment rate",
+          "unit": "% of active population"
+        },
+        {
+          "series_key": "ESTAT.une_rt_m:CZ.SA.TOTAL.T.PC_ACT",
+          "country_iso3": "CZE",
+          "dataset": "une_rt_m",
+          "series_name": "Unemployment rate",
+          "unit": "% of active population"
+        },
+        {
+          "series_key": "ESTAT.une_rt_m:HU.SA.TOTAL.T.PC_ACT",
+          "country_iso3": "HUN",
+          "dataset": "une_rt_m",
+          "series_name": "Unemployment rate",
+          "unit": "% of active population"
+        },
+        {
+          "series_key": "ESTAT.une_rt_m:UK.SA.TOTAL.T.PC_ACT",
+          "country_iso3": "GBR",
+          "dataset": "une_rt_m",
+          "series_name": "Unemployment rate",
+          "unit": "% of active population"
+        },
+        {
+          "series_key": "ESTAT.une_rt_m:MK.SA.TOTAL.T.PC_ACT",
+          "country_iso3": "MKD",
+          "dataset": "une_rt_m",
+          "series_name": "Unemployment rate",
+          "unit": "% of active population"
+        },
+        {
+          "series_key": "ESTAT.une_rt_m:EA21.SA.TOTAL.T.PC_ACT",
+          "country_iso3": null,
+          "dataset": "une_rt_m",
+          "series_name": "Unemployment rate",
+          "unit": "% of active population"
+        },
+        {
+          "series_key": "ESTAT.une_rt_m:EL.SA.TOTAL.T.PC_ACT",
+          "country_iso3": "GRC",
+          "dataset": "une_rt_m",
+          "series_name": "Unemployment rate",
+          "unit": "% of active population"
+        },
+        {
+          "series_key": "ESTAT.une_rt_m:BE.SA.TOTAL.T.PC_ACT",
+          "country_iso3": "BEL",
+          "dataset": "une_rt_m",
+          "series_name": "Unemployment rate",
+          "unit": "% of active population"
+        }
+      ]
+    },
+    {
+      "source": "faostat",
+      "prefix": "FAO.PP",
+      "series": 7134,
+      "samples": [
+        {
+          "series_key": "FAO.PP:FRA.1020",
+          "country_iso3": "FRA",
+          "dataset": "Prices",
+          "series_name": "Producer price: Raw milk of goats",
+          "unit": "USD"
+        },
+        {
+          "series_key": "FAO.PP:LVA.1095",
+          "country_iso3": "LVA",
+          "dataset": "Prices",
+          "series_name": "Producer price: Meat of chickens, fresh or chilled (biological)",
+          "unit": "USD"
+        },
+        {
+          "series_key": "FAO.PP:LBN.44",
+          "country_iso3": "LBN",
+          "dataset": "Prices",
+          "series_name": "Producer price: Barley",
+          "unit": "USD"
+        },
+        {
+          "series_key": "FAO.PP:SLV.401",
+          "country_iso3": "SLV",
+          "dataset": "Prices",
+          "series_name": "Producer price: Chillies and peppers, green (Capsicum spp. and Pimenta spp.)",
+          "unit": "USD"
+        },
+        {
+          "series_key": "FAO.PP:CZE.75",
+          "country_iso3": "CZE",
+          "dataset": "Prices",
+          "series_name": "Producer price: Oats",
+          "unit": "USD"
+        },
+        {
+          "series_key": "FAO.PP:PRY.401",
+          "country_iso3": "PRY",
+          "dataset": "Prices",
+          "series_name": "Producer price: Chillies and peppers, green (Capsicum spp. and Pimenta spp.)",
+          "unit": "USD"
+        },
+        {
+          "series_key": "FAO.PP:ARG.560",
+          "country_iso3": "ARG",
+          "dataset": "Prices",
+          "series_name": "Producer price: Grapes",
+          "unit": "USD"
+        },
+        {
+          "series_key": "FAO.PP:TZA.414",
+          "country_iso3": "TZA",
+          "dataset": "Prices",
+          "series_name": "Producer price: Other beans, green",
+          "unit": "USD"
+        },
+        {
+          "series_key": "FAO.PP:LBN.826",
+          "country_iso3": "LBN",
+          "dataset": "Prices",
+          "series_name": "Producer price: Unmanufactured tobacco",
+          "unit": "USD"
+        },
+        {
+          "series_key": "FAO.PP:IDN.15",
+          "country_iso3": "IDN",
+          "dataset": "Prices",
+          "series_name": "Producer price: Wheat",
+          "unit": "USD"
+        },
+        {
+          "series_key": "FAO.PP:IRN.328",
+          "country_iso3": "IRN",
+          "dataset": "Prices",
+          "series_name": "Producer price: Seed cotton, unginned",
+          "unit": "USD"
+        },
+        {
+          "series_key": "FAO.PP:KEN.372",
+          "country_iso3": "KEN",
+          "dataset": "Prices",
+          "series_name": "Producer price: Lettuce and chicory",
+          "unit": "USD"
+        }
+      ]
+    },
+    {
+      "source": "fewsnet",
+      "prefix": "FEWS",
+      "series": 1985,
+      "samples": [
+        {
+          "series_key": "FEWS:HT.Cap Haitien.Rice (Bongu).6_lb.HTG.Retail",
+          "country_iso3": "HTI",
+          "dataset": "marketpricefacts",
+          "series_name": "Rice (Bongu) price, Cap Haitien",
+          "unit": "HTG per 6_lb"
+        },
+        {
+          "series_key": "FEWS:NG.Ibadan, Bodija.Rice (5% Broken).kg.NGN.Retail",
+          "country_iso3": "NGA",
+          "dataset": "marketpricefacts",
+          "series_name": "Rice (5% Broken) price, Ibadan, Bodija",
+          "unit": "NGN per kg"
+        },
+        {
+          "series_key": "FEWS:AF.Taloqan.Wheat Flour (High Quality).kg.AFN.Retail",
+          "country_iso3": "AFG",
+          "dataset": "marketpricefacts",
+          "series_name": "Wheat Flour (High Quality) price, Taloqan",
+          "unit": "AFN per kg"
+        },
+        {
+          "series_key": "FEWS:AF.Maimana.Wheat Flour (High Quality).kg.AFN.Retail",
+          "country_iso3": "AFG",
+          "dataset": "marketpricefacts",
+          "series_name": "Wheat Flour (High Quality) price, Maimana",
+          "unit": "AFN per kg"
+        },
+        {
+          "series_key": "FEWS:SO.Jowhar.Cowpeas (Red).kg.SOS.Retail",
+          "country_iso3": "SOM",
+          "dataset": "marketpricefacts",
+          "series_name": "Cowpeas (Red) price, Jowhar",
+          "unit": "SOS per kg"
+        },
+        {
+          "series_key": "FEWS:SO.Hudur.Rice (Parboiled).kg.SOS.Retail",
+          "country_iso3": "SOM",
+          "dataset": "marketpricefacts",
+          "series_name": "Rice (Parboiled) price, Hudur",
+          "unit": "SOS per kg"
+        },
+        {
+          "series_key": "FEWS:SO.Jamame.Water (potable, drinking).200_L.SOS.Retail",
+          "country_iso3": "SOM",
+          "dataset": "marketpricefacts",
+          "series_name": "Water (potable, drinking) price, Jamame",
+          "unit": "SOS per 200_L"
+        },
+        {
+          "series_key": "FEWS:KE.Garissa.Maize Grain (White).kg.KES.Retail",
+          "country_iso3": "KEN",
+          "dataset": "marketpricefacts",
+          "series_name": "Maize Grain (White) price, Garissa",
+          "unit": "KES per kg"
+        },
+        {
+          "series_key": "FEWS:HT.Fond-des-Negres.Charcoal.6_lb.HTG.Retail",
+          "country_iso3": "HTI",
+          "dataset": "marketpricefacts",
+          "series_name": "Charcoal price, Fond-des-Negres",
+          "unit": "HTG per 6_lb"
+        },
+        {
+          "series_key": "FEWS:HT.Jeremie.Tomato Paste (Laperla).226.8_g.HTG.Retail",
+          "country_iso3": "HTI",
+          "dataset": "marketpricefacts",
+          "series_name": "Tomato Paste (Laperla) price, Jeremie",
+          "unit": "HTG per 226.8_g"
+        },
+        {
+          "series_key": "FEWS:SO.Mogadishu, Bakara.Salt.kg.SOS.Retail",
+          "country_iso3": "SOM",
+          "dataset": "marketpricefacts",
+          "series_name": "Salt price, Mogadishu, Bakara",
+          "unit": "SOS per kg"
+        },
+        {
+          "series_key": "FEWS:NG.Mubi, Tike.Goats (Male).ea.NGN.Retail",
+          "country_iso3": "NGA",
+          "dataset": "marketpricefacts",
+          "series_name": "Goats (Male) price, Mubi, Tike",
+          "unit": "NGN per ea"
+        }
+      ]
+    },
+    {
+      "source": "gpr",
+      "prefix": "GPR.GPR",
+      "series": 1,
+      "samples": [
+        {
+          "series_key": "GPR.GPR:WLD",
+          "country_iso3": null,
+          "dataset": "gpr_monthly",
+          "series_name": "Geopolitical risk index",
+          "unit": "index"
+        }
+      ]
+    },
+    {
+      "source": "gpr",
+      "prefix": "GPR.GPRA",
+      "series": 1,
+      "samples": [
+        {
+          "series_key": "GPR.GPRA:WLD",
+          "country_iso3": null,
+          "dataset": "gpr_monthly",
+          "series_name": "Geopolitical acts",
+          "unit": "index"
+        }
+      ]
+    },
+    {
+      "source": "gpr",
+      "prefix": "GPR.GPRC",
+      "series": 44,
+      "samples": [
+        {
+          "series_key": "GPR.GPRC:AUS",
+          "country_iso3": "AUS",
+          "dataset": "gpr_monthly",
+          "series_name": "Country geopolitical risk index",
+          "unit": "index (share of articles)"
+        },
+        {
+          "series_key": "GPR.GPRC:DNK",
+          "country_iso3": "DNK",
+          "dataset": "gpr_monthly",
+          "series_name": "Country geopolitical risk index",
+          "unit": "index (share of articles)"
+        },
+        {
+          "series_key": "GPR.GPRC:NLD",
+          "country_iso3": "NLD",
+          "dataset": "gpr_monthly",
+          "series_name": "Country geopolitical risk index",
+          "unit": "index (share of articles)"
+        },
+        {
+          "series_key": "GPR.GPRC:ITA",
+          "country_iso3": "ITA",
+          "dataset": "gpr_monthly",
+          "series_name": "Country geopolitical risk index",
+          "unit": "index (share of articles)"
+        },
+        {
+          "series_key": "GPR.GPRC:VNM",
+          "country_iso3": "VNM",
+          "dataset": "gpr_monthly",
+          "series_name": "Country geopolitical risk index",
+          "unit": "index (share of articles)"
+        },
+        {
+          "series_key": "GPR.GPRC:VEN",
+          "country_iso3": "VEN",
+          "dataset": "gpr_monthly",
+          "series_name": "Country geopolitical risk index",
+          "unit": "index (share of articles)"
+        },
+        {
+          "series_key": "GPR.GPRC:EGY",
+          "country_iso3": "EGY",
+          "dataset": "gpr_monthly",
+          "series_name": "Country geopolitical risk index",
+          "unit": "index (share of articles)"
+        },
+        {
+          "series_key": "GPR.GPRC:ESP",
+          "country_iso3": "ESP",
+          "dataset": "gpr_monthly",
+          "series_name": "Country geopolitical risk index",
+          "unit": "index (share of articles)"
+        },
+        {
+          "series_key": "GPR.GPRC:CAN",
+          "country_iso3": "CAN",
+          "dataset": "gpr_monthly",
+          "series_name": "Country geopolitical risk index",
+          "unit": "index (share of articles)"
+        },
+        {
+          "series_key": "GPR.GPRC:CHN",
+          "country_iso3": "CHN",
+          "dataset": "gpr_monthly",
+          "series_name": "Country geopolitical risk index",
+          "unit": "index (share of articles)"
+        },
+        {
+          "series_key": "GPR.GPRC:TUR",
+          "country_iso3": "TUR",
+          "dataset": "gpr_monthly",
+          "series_name": "Country geopolitical risk index",
+          "unit": "index (share of articles)"
+        },
+        {
+          "series_key": "GPR.GPRC:CHE",
+          "country_iso3": "CHE",
+          "dataset": "gpr_monthly",
+          "series_name": "Country geopolitical risk index",
+          "unit": "index (share of articles)"
+        }
+      ]
+    },
+    {
+      "source": "gpr",
+      "prefix": "GPR.GPRT",
+      "series": 1,
+      "samples": [
+        {
+          "series_key": "GPR.GPRT:WLD",
+          "country_iso3": null,
+          "dataset": "gpr_monthly",
+          "series_name": "Geopolitical threats",
+          "unit": "index"
+        }
+      ]
+    },
+    {
+      "source": "ibge",
+      "prefix": "SIDRA.1737.2265",
+      "series": 1,
+      "samples": [
+        {
+          "series_key": "SIDRA.1737.2265:BRA",
+          "country_iso3": "BRA",
+          "dataset": "1737",
+          "series_name": "IPCA, 12-month change",
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "source": "ibge",
+      "prefix": "SIDRA.1737.63",
+      "series": 1,
+      "samples": [
+        {
+          "series_key": "SIDRA.1737.63:BRA",
+          "country_iso3": "BRA",
+          "dataset": "1737",
+          "series_name": "IPCA, monthly change",
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "source": "ibge",
+      "prefix": "SIDRA.6381.4099",
+      "series": 1,
+      "samples": [
+        {
+          "series_key": "SIDRA.6381.4099:BRA",
+          "country_iso3": "BRA",
+          "dataset": "6381",
+          "series_name": "Unemployment rate (PNAD, rolling quarter)",
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "source": "ilostat",
+      "prefix": "ILO.EMP_TEMP_SEX_ECO_NB_A",
+      "series": 7747,
+      "samples": [
+        {
+          "series_key": "ILO.EMP_TEMP_SEX_ECO_NB_A:MHL.ECO_AGGREGATE_MEL",
+          "country_iso3": "MHL",
+          "dataset": "EMP_TEMP_SEX_ECO_NB_A",
+          "series_name": "Employment by economic activity (ECO_AGGREGATE_MEL)",
+          "unit": "thousands"
+        },
+        {
+          "series_key": "ILO.EMP_TEMP_SEX_ECO_NB_A:ESP.ECO_ISIC4_R",
+          "country_iso3": "ESP",
+          "dataset": "EMP_TEMP_SEX_ECO_NB_A",
+          "series_name": "Employment by economic activity (ECO_ISIC4_R)",
+          "unit": "thousands"
+        },
+        {
+          "series_key": "ILO.EMP_TEMP_SEX_ECO_NB_A:LAO.ECO_ISIC4_E",
+          "country_iso3": "LAO",
+          "dataset": "EMP_TEMP_SEX_ECO_NB_A",
+          "series_name": "Employment by economic activity (ECO_ISIC4_E)",
+          "unit": "thousands"
+        },
+        {
+          "series_key": "ILO.EMP_TEMP_SEX_ECO_NB_A:MRT.ECO_ISIC4_J",
+          "country_iso3": "MRT",
+          "dataset": "EMP_TEMP_SEX_ECO_NB_A",
+          "series_name": "Employment by economic activity (ECO_ISIC4_J)",
+          "unit": "thousands"
+        },
+        {
+          "series_key": "ILO.EMP_TEMP_SEX_ECO_NB_A:ARG.ECO_ISIC4_L",
+          "country_iso3": "ARG",
+          "dataset": "EMP_TEMP_SEX_ECO_NB_A",
+          "series_name": "Employment by economic activity (ECO_ISIC4_L)",
+          "unit": "thousands"
+        },
+        {
+          "series_key": "ILO.EMP_TEMP_SEX_ECO_NB_A:BGD.ECO_ISIC4_E",
+          "country_iso3": "BGD",
+          "dataset": "EMP_TEMP_SEX_ECO_NB_A",
+          "series_name": "Employment by economic activity (ECO_ISIC4_E)",
+          "unit": "thousands"
+        },
+        {
+          "series_key": "ILO.EMP_TEMP_SEX_ECO_NB_A:ZAF.ECO_ISIC3_P",
+          "country_iso3": "ZAF",
+          "dataset": "EMP_TEMP_SEX_ECO_NB_A",
+          "series_name": "Employment by economic activity (ECO_ISIC3_P)",
+          "unit": "thousands"
+        },
+        {
+          "series_key": "ILO.EMP_TEMP_SEX_ECO_NB_A:NLD.ECO_AGGREGATE_CON",
+          "country_iso3": "NLD",
+          "dataset": "EMP_TEMP_SEX_ECO_NB_A",
+          "series_name": "Employment by economic activity (ECO_AGGREGATE_CON)",
+          "unit": "thousands"
+        },
+        {
+          "series_key": "ILO.EMP_TEMP_SEX_ECO_NB_A:CMR.ECO_ISIC4_D",
+          "country_iso3": "CMR",
+          "dataset": "EMP_TEMP_SEX_ECO_NB_A",
+          "series_name": "Employment by economic activity (ECO_ISIC4_D)",
+          "unit": "thousands"
+        },
+        {
+          "series_key": "ILO.EMP_TEMP_SEX_ECO_NB_A:BRA.ECO_ISIC3_J",
+          "country_iso3": "BRA",
+          "dataset": "EMP_TEMP_SEX_ECO_NB_A",
+          "series_name": "Employment by economic activity (ECO_ISIC3_J)",
+          "unit": "thousands"
+        },
+        {
+          "series_key": "ILO.EMP_TEMP_SEX_ECO_NB_A:PSE.ECO_ISIC3_B",
+          "country_iso3": "PSE",
+          "dataset": "EMP_TEMP_SEX_ECO_NB_A",
+          "series_name": "Employment by economic activity (ECO_ISIC3_B)",
+          "unit": "thousands"
+        },
+        {
+          "series_key": "ILO.EMP_TEMP_SEX_ECO_NB_A:SGP.ECO_ISIC4_N",
+          "country_iso3": "SGP",
+          "dataset": "EMP_TEMP_SEX_ECO_NB_A",
+          "series_name": "Employment by economic activity (ECO_ISIC4_N)",
+          "unit": "thousands"
+        }
+      ]
+    },
+    {
+      "source": "ilostat",
+      "prefix": "ILO.UNE_DEAP_SEX_AGE_RT_A",
+      "series": 208,
+      "samples": [
+        {
+          "series_key": "ILO.UNE_DEAP_SEX_AGE_RT_A:AGO.AGE_YTHADULT_YGE15",
+          "country_iso3": "AGO",
+          "dataset": "UNE_DEAP_SEX_AGE_RT_A",
+          "series_name": "Unemployment rate (AGE_YTHADULT_YGE15)",
+          "unit": "%"
+        },
+        {
+          "series_key": "ILO.UNE_DEAP_SEX_AGE_RT_A:ECU.AGE_YTHADULT_YGE15",
+          "country_iso3": "ECU",
+          "dataset": "UNE_DEAP_SEX_AGE_RT_A",
+          "series_name": "Unemployment rate (AGE_YTHADULT_YGE15)",
+          "unit": "%"
+        },
+        {
+          "series_key": "ILO.UNE_DEAP_SEX_AGE_RT_A:CHL.AGE_YTHADULT_YGE15",
+          "country_iso3": "CHL",
+          "dataset": "UNE_DEAP_SEX_AGE_RT_A",
+          "series_name": "Unemployment rate (AGE_YTHADULT_YGE15)",
+          "unit": "%"
+        },
+        {
+          "series_key": "ILO.UNE_DEAP_SEX_AGE_RT_A:CUW.AGE_YTHADULT_YGE15",
+          "country_iso3": "CUW",
+          "dataset": "UNE_DEAP_SEX_AGE_RT_A",
+          "series_name": "Unemployment rate (AGE_YTHADULT_YGE15)",
+          "unit": "%"
+        },
+        {
+          "series_key": "ILO.UNE_DEAP_SEX_AGE_RT_A:SVN.AGE_YTHADULT_YGE15",
+          "country_iso3": "SVN",
+          "dataset": "UNE_DEAP_SEX_AGE_RT_A",
+          "series_name": "Unemployment rate (AGE_YTHADULT_YGE15)",
+          "unit": "%"
+        },
+        {
+          "series_key": "ILO.UNE_DEAP_SEX_AGE_RT_A:STP.AGE_YTHADULT_YGE15",
+          "country_iso3": "STP",
+          "dataset": "UNE_DEAP_SEX_AGE_RT_A",
+          "series_name": "Unemployment rate (AGE_YTHADULT_YGE15)",
+          "unit": "%"
+        },
+        {
+          "series_key": "ILO.UNE_DEAP_SEX_AGE_RT_A:CHE.AGE_YTHADULT_YGE15",
+          "country_iso3": "CHE",
+          "dataset": "UNE_DEAP_SEX_AGE_RT_A",
+          "series_name": "Unemployment rate (AGE_YTHADULT_YGE15)",
+          "unit": "%"
+        },
+        {
+          "series_key": "ILO.UNE_DEAP_SEX_AGE_RT_A:SOM.AGE_YTHADULT_YGE15",
+          "country_iso3": "SOM",
+          "dataset": "UNE_DEAP_SEX_AGE_RT_A",
+          "series_name": "Unemployment rate (AGE_YTHADULT_YGE15)",
+          "unit": "%"
+        },
+        {
+          "series_key": "ILO.UNE_DEAP_SEX_AGE_RT_A:FJI.AGE_YTHADULT_YGE15",
+          "country_iso3": "FJI",
+          "dataset": "UNE_DEAP_SEX_AGE_RT_A",
+          "series_name": "Unemployment rate (AGE_YTHADULT_YGE15)",
+          "unit": "%"
+        },
+        {
+          "series_key": "ILO.UNE_DEAP_SEX_AGE_RT_A:BFA.AGE_YTHADULT_YGE15",
+          "country_iso3": "BFA",
+          "dataset": "UNE_DEAP_SEX_AGE_RT_A",
+          "series_name": "Unemployment rate (AGE_YTHADULT_YGE15)",
+          "unit": "%"
+        },
+        {
+          "series_key": "ILO.UNE_DEAP_SEX_AGE_RT_A:IND.AGE_YTHADULT_YGE15",
+          "country_iso3": "IND",
+          "dataset": "UNE_DEAP_SEX_AGE_RT_A",
+          "series_name": "Unemployment rate (AGE_YTHADULT_YGE15)",
+          "unit": "%"
+        },
+        {
+          "series_key": "ILO.UNE_DEAP_SEX_AGE_RT_A:LUX.AGE_YTHADULT_YGE15",
+          "country_iso3": "LUX",
+          "dataset": "UNE_DEAP_SEX_AGE_RT_A",
+          "series_name": "Unemployment rate (AGE_YTHADULT_YGE15)",
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "source": "imf",
+      "prefix": "IMF.BOP",
+      "series": 948,
+      "samples": [
+        {
+          "series_key": "IMF.BOP:dataflow.HRV.L_NIL_T.P_F.USD.Q",
+          "country_iso3": "HRV",
+          "dataset": "IMF.STA/BOP",
+          "series_name": "Balance of payments, financial account: P_F",
+          "unit": "USD"
+        },
+        {
+          "series_key": "IMF.BOP:dataflow.KHM.A_NFA_T.O_F.USD.Q",
+          "country_iso3": "KHM",
+          "dataset": "IMF.STA/BOP",
+          "series_name": "Balance of payments, financial account: O_F",
+          "unit": "USD"
+        },
+        {
+          "series_key": "IMF.BOP:dataflow.GMB.A_NFA_T.D_F.USD.Q",
+          "country_iso3": "GMB",
+          "dataset": "IMF.STA/BOP",
+          "series_name": "Balance of payments, financial account: D_F",
+          "unit": "USD"
+        },
+        {
+          "series_key": "IMF.BOP:dataflow.BEL.L_NIL_T.P_F.USD.Q",
+          "country_iso3": "BEL",
+          "dataset": "IMF.STA/BOP",
+          "series_name": "Balance of payments, financial account: P_F",
+          "unit": "USD"
+        },
+        {
+          "series_key": "IMF.BOP:dataflow.CHN.L_NIL_T.D_F.USD.Q",
+          "country_iso3": "CHN",
+          "dataset": "IMF.STA/BOP",
+          "series_name": "Balance of payments, financial account: D_F",
+          "unit": "USD"
+        },
+        {
+          "series_key": "IMF.BOP:dataflow.MMR.A_NFA_T.D_F.USD.Q",
+          "country_iso3": "MMR",
+          "dataset": "IMF.STA/BOP",
+          "series_name": "Balance of payments, financial account: D_F",
+          "unit": "USD"
+        },
+        {
+          "series_key": "IMF.BOP:dataflow.BRA.A_NFA_T.D_F.USD.Q",
+          "country_iso3": "BRA",
+          "dataset": "IMF.STA/BOP",
+          "series_name": "Balance of payments, financial account: D_F",
+          "unit": "USD"
+        },
+        {
+          "series_key": "IMF.BOP:dataflow.DOM.A_NFA_T.O_F.USD.Q",
+          "country_iso3": "DOM",
+          "dataset": "IMF.STA/BOP",
+          "series_name": "Balance of payments, financial account: O_F",
+          "unit": "USD"
+        },
+        {
+          "series_key": "IMF.BOP:dataflow.NGA.L_NIL_T.P_F.USD.Q",
+          "country_iso3": "NGA",
+          "dataset": "IMF.STA/BOP",
+          "series_name": "Balance of payments, financial account: P_F",
+          "unit": "USD"
+        },
+        {
+          "series_key": "IMF.BOP:dataflow.HKG.L_NIL_T.O_F.USD.Q",
+          "country_iso3": "HKG",
+          "dataset": "IMF.STA/BOP",
+          "series_name": "Balance of payments, financial account: O_F",
+          "unit": "USD"
+        },
+        {
+          "series_key": "IMF.BOP:dataflow.AND.L_NIL_T.P_F.USD.Q",
+          "country_iso3": "AND",
+          "dataset": "IMF.STA/BOP",
+          "series_name": "Balance of payments, financial account: P_F",
+          "unit": "USD"
+        },
+        {
+          "series_key": "IMF.BOP:dataflow.IRL.A_NFA_T.D_F.USD.Q",
+          "country_iso3": "IRL",
+          "dataset": "IMF.STA/BOP",
+          "series_name": "Balance of payments, financial account: D_F",
+          "unit": "USD"
+        }
+      ]
+    },
+    {
+      "source": "imf",
+      "prefix": "IMF.CPI",
+      "series": 190,
+      "samples": [
+        {
+          "series_key": "IMF.CPI:dataflow.LVA.CPI._T.IX.M",
+          "country_iso3": "LVA",
+          "dataset": "IMF.STA/CPI",
+          "series_name": "Consumer price index",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.CPI:dataflow.BEN.CPI._T.IX.M",
+          "country_iso3": "BEN",
+          "dataset": "IMF.STA/CPI",
+          "series_name": "Consumer price index",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.CPI:dataflow.NIC.CPI._T.IX.M",
+          "country_iso3": "NIC",
+          "dataset": "IMF.STA/CPI",
+          "series_name": "Consumer price index",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.CPI:dataflow.SSD.CPI._T.IX.M",
+          "country_iso3": "SSD",
+          "dataset": "IMF.STA/CPI",
+          "series_name": "Consumer price index",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.CPI:dataflow.MLT.CPI._T.IX.M",
+          "country_iso3": "MLT",
+          "dataset": "IMF.STA/CPI",
+          "series_name": "Consumer price index",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.CPI:dataflow.KOS.CPI._T.IX.M",
+          "country_iso3": null,
+          "dataset": "IMF.STA/CPI",
+          "series_name": "Consumer price index",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.CPI:dataflow.SLB.CPI._T.IX.M",
+          "country_iso3": "SLB",
+          "dataset": "IMF.STA/CPI",
+          "series_name": "Consumer price index",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.CPI:dataflow.KIR.CPI._T.IX.M",
+          "country_iso3": "KIR",
+          "dataset": "IMF.STA/CPI",
+          "series_name": "Consumer price index",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.CPI:dataflow.PAK.CPI._T.IX.M",
+          "country_iso3": "PAK",
+          "dataset": "IMF.STA/CPI",
+          "series_name": "Consumer price index",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.CPI:dataflow.LBN.CPI._T.IX.M",
+          "country_iso3": "LBN",
+          "dataset": "IMF.STA/CPI",
+          "series_name": "Consumer price index",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.CPI:dataflow.MTQ.CPI._T.IX.M",
+          "country_iso3": "MTQ",
+          "dataset": "IMF.STA/CPI",
+          "series_name": "Consumer price index",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.CPI:dataflow.IRQ.CPI._T.IX.M",
+          "country_iso3": "IRQ",
+          "dataset": "IMF.STA/CPI",
+          "series_name": "Consumer price index",
+          "unit": null
+        }
+      ]
+    },
+    {
+      "source": "imf",
+      "prefix": "IMF.IMTS",
+      "series": 454,
+      "samples": [
+        {
+          "series_key": "IMF.IMTS:dataflow.SOM.XG_FOB_USD.G001.M",
+          "country_iso3": "SOM",
+          "dataset": "IMF.STA/IMTS",
+          "series_name": "International trade in goods: XG_FOB_USD",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.IMTS:dataflow.G603.XG_FOB_USD.G001.M",
+          "country_iso3": null,
+          "dataset": "IMF.STA/IMTS",
+          "series_name": "International trade in goods: XG_FOB_USD",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.IMTS:dataflow.CPV.XG_FOB_USD.G001.M",
+          "country_iso3": "CPV",
+          "dataset": "IMF.STA/IMTS",
+          "series_name": "International trade in goods: XG_FOB_USD",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.IMTS:dataflow.BFA.MG_CIF_USD.G001.M",
+          "country_iso3": "BFA",
+          "dataset": "IMF.STA/IMTS",
+          "series_name": "International trade in goods: MG_CIF_USD",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.IMTS:dataflow.ERI.MG_CIF_USD.G001.M",
+          "country_iso3": "ERI",
+          "dataset": "IMF.STA/IMTS",
+          "series_name": "International trade in goods: MG_CIF_USD",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.IMTS:dataflow.GNB.MG_CIF_USD.G001.M",
+          "country_iso3": "GNB",
+          "dataset": "IMF.STA/IMTS",
+          "series_name": "International trade in goods: MG_CIF_USD",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.IMTS:dataflow.KGZ.MG_CIF_USD.G001.M",
+          "country_iso3": "KGZ",
+          "dataset": "IMF.STA/IMTS",
+          "series_name": "International trade in goods: MG_CIF_USD",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.IMTS:dataflow.CMR.XG_FOB_USD.G001.M",
+          "country_iso3": "CMR",
+          "dataset": "IMF.STA/IMTS",
+          "series_name": "International trade in goods: XG_FOB_USD",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.IMTS:dataflow.IRQ.XG_FOB_USD.G001.M",
+          "country_iso3": "IRQ",
+          "dataset": "IMF.STA/IMTS",
+          "series_name": "International trade in goods: XG_FOB_USD",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.IMTS:dataflow.NPL.XG_FOB_USD.G001.M",
+          "country_iso3": "NPL",
+          "dataset": "IMF.STA/IMTS",
+          "series_name": "International trade in goods: XG_FOB_USD",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.IMTS:dataflow.ATG.XG_FOB_USD.G001.M",
+          "country_iso3": "ATG",
+          "dataset": "IMF.STA/IMTS",
+          "series_name": "International trade in goods: XG_FOB_USD",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.IMTS:dataflow.FIN.MG_CIF_USD.G001.M",
+          "country_iso3": "FIN",
+          "dataset": "IMF.STA/IMTS",
+          "series_name": "International trade in goods: MG_CIF_USD",
+          "unit": null
+        }
+      ]
+    },
+    {
+      "source": "imf",
+      "prefix": "IMF.WEO",
+      "series": 1164,
+      "samples": [
+        {
+          "series_key": "IMF.WEO:dataflow.KOS.GGXWDG_NGDP.A",
+          "country_iso3": null,
+          "dataset": "IMF.RES/WEO",
+          "series_name": "World Economic Outlook: GGXWDG_NGDP",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.WEO:dataflow.DEU.BCA_NGDPD.A",
+          "country_iso3": "DEU",
+          "dataset": "IMF.RES/WEO",
+          "series_name": "World Economic Outlook: BCA_NGDPD",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.WEO:dataflow.GNQ.PCPIPCH.A",
+          "country_iso3": "GNQ",
+          "dataset": "IMF.RES/WEO",
+          "series_name": "World Economic Outlook: PCPIPCH",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.WEO:dataflow.GAB.NGDP_RPCH.A",
+          "country_iso3": "GAB",
+          "dataset": "IMF.RES/WEO",
+          "series_name": "World Economic Outlook: NGDP_RPCH",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.WEO:dataflow.WBG.BCA_NGDPD.A",
+          "country_iso3": null,
+          "dataset": "IMF.RES/WEO",
+          "series_name": "World Economic Outlook: BCA_NGDPD",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.WEO:dataflow.EGY.GGXWDG_NGDP.A",
+          "country_iso3": "EGY",
+          "dataset": "IMF.RES/WEO",
+          "series_name": "World Economic Outlook: GGXWDG_NGDP",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.WEO:dataflow.MMR.PCPIPCH.A",
+          "country_iso3": "MMR",
+          "dataset": "IMF.RES/WEO",
+          "series_name": "World Economic Outlook: PCPIPCH",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.WEO:dataflow.GNB.NGDP_RPCH.A",
+          "country_iso3": "GNB",
+          "dataset": "IMF.RES/WEO",
+          "series_name": "World Economic Outlook: NGDP_RPCH",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.WEO:dataflow.TUV.GGXWDG_NGDP.A",
+          "country_iso3": "TUV",
+          "dataset": "IMF.RES/WEO",
+          "series_name": "World Economic Outlook: GGXWDG_NGDP",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.WEO:dataflow.HKG.LUR.A",
+          "country_iso3": "HKG",
+          "dataset": "IMF.RES/WEO",
+          "series_name": "World Economic Outlook: LUR",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.WEO:dataflow.PHL.GGXCNL_NGDP.A",
+          "country_iso3": "PHL",
+          "dataset": "IMF.RES/WEO",
+          "series_name": "World Economic Outlook: GGXCNL_NGDP",
+          "unit": null
+        },
+        {
+          "series_key": "IMF.WEO:dataflow.ARE.GGXWDG_NGDP.A",
+          "country_iso3": "ARE",
+          "dataset": "IMF.RES/WEO",
+          "series_name": "World Economic Outlook: GGXWDG_NGDP",
+          "unit": null
+        }
+      ]
+    },
+    {
+      "source": "insee",
+      "prefix": "INSEE",
+      "series": 1,
+      "samples": [
+        {
+          "series_key": "INSEE:010539365",
+          "country_iso3": "FRA",
+          "dataset": "SERIES_BDM",
+          "series_name": "INSEE series 010539365 (replace with a named series)",
+          "unit": null
+        }
+      ]
+    },
+    {
+      "source": "jodi-gas",
+      "prefix": "JODI.gas",
+      "series": 2048,
+      "samples": [
+        {
+          "series_key": "JODI.gas:SE.NATGAS.IMPPIP.TJ",
+          "country_iso3": "SWE",
+          "dataset": "jodi_gas",
+          "series_name": "NATGAS IMPPIP",
+          "unit": "TJ"
+        },
+        {
+          "series_key": "JODI.gas:CL.NATGAS.TOTIMPSB.TJ",
+          "country_iso3": "CHL",
+          "dataset": "jodi_gas",
+          "series_name": "NATGAS TOTIMPSB",
+          "unit": "TJ"
+        },
+        {
+          "series_key": "JODI.gas:IT.NATGAS.TOTDEMC.M3",
+          "country_iso3": "ITA",
+          "dataset": "jodi_gas",
+          "series_name": "NATGAS TOTDEMC",
+          "unit": "M3"
+        },
+        {
+          "series_key": "JODI.gas:BO.NATGAS.TOTEXPSB.M3",
+          "country_iso3": "BOL",
+          "dataset": "jodi_gas",
+          "series_name": "NATGAS TOTEXPSB",
+          "unit": "M3"
+        },
+        {
+          "series_key": "JODI.gas:GE.NATGAS.MAINTOT.TJ",
+          "country_iso3": "GEO",
+          "dataset": "jodi_gas",
+          "series_name": "NATGAS MAINTOT",
+          "unit": "TJ"
+        },
+        {
+          "series_key": "JODI.gas:AZ.NATGAS.IMPLNG.M3",
+          "country_iso3": "AZE",
+          "dataset": "jodi_gas",
+          "series_name": "NATGAS IMPLNG",
+          "unit": "M3"
+        },
+        {
+          "series_key": "JODI.gas:BE.NATGAS.EXPPIP.TJ",
+          "country_iso3": "BEL",
+          "dataset": "jodi_gas",
+          "series_name": "NATGAS EXPPIP",
+          "unit": "TJ"
+        },
+        {
+          "series_key": "JODI.gas:BY.NATGAS.STOCKCH.TJ",
+          "country_iso3": "BLR",
+          "dataset": "jodi_gas",
+          "series_name": "NATGAS STOCKCH",
+          "unit": "TJ"
+        },
+        {
+          "series_key": "JODI.gas:MD.NATGAS.INDPROD.TJ",
+          "country_iso3": "MDA",
+          "dataset": "jodi_gas",
+          "series_name": "NATGAS INDPROD",
+          "unit": "TJ"
+        },
+        {
+          "series_key": "JODI.gas:CH.NATGAS.STATDIFF.TJ",
+          "country_iso3": "CHE",
+          "dataset": "jodi_gas",
+          "series_name": "NATGAS STATDIFF",
+          "unit": "TJ"
+        },
+        {
+          "series_key": "JODI.gas:HK.NATGAS.STATDIFF.TJ",
+          "country_iso3": "HKG",
+          "dataset": "jodi_gas",
+          "series_name": "NATGAS STATDIFF",
+          "unit": "TJ"
+        },
+        {
+          "series_key": "JODI.gas:NL.NATGAS.STOCKCH.TJ",
+          "country_iso3": "NLD",
+          "dataset": "jodi_gas",
+          "series_name": "NATGAS STOCKCH",
+          "unit": "TJ"
+        }
+      ]
+    },
+    {
+      "source": "jodi-oil",
+      "prefix": "JODI.oil_primary",
+      "series": 3647,
+      "samples": [
+        {
+          "series_key": "JODI.oil_primary:BG.CRUDEOIL.STATDIFF.KBD",
+          "country_iso3": "BGR",
+          "dataset": "jodi_oil_primary",
+          "series_name": "CRUDEOIL STATDIFF",
+          "unit": "KBD"
+        },
+        {
+          "series_key": "JODI.oil_primary:CY.NGL.REFINOBS.KBD",
+          "country_iso3": "CYP",
+          "dataset": "jodi_oil_primary",
+          "series_name": "NGL REFINOBS",
+          "unit": "KBD"
+        },
+        {
+          "series_key": "JODI.oil_primary:CL.NGL.REFINOBS.KBD",
+          "country_iso3": "CHL",
+          "dataset": "jodi_oil_primary",
+          "series_name": "NGL REFINOBS",
+          "unit": "KBD"
+        },
+        {
+          "series_key": "JODI.oil_primary:TR.OTHERCRUDE.CLOSTLV.KTONS",
+          "country_iso3": "TUR",
+          "dataset": "jodi_oil_primary",
+          "series_name": "OTHERCRUDE CLOSTLV",
+          "unit": "KTONS"
+        },
+        {
+          "series_key": "JODI.oil_primary:FI.NGL.DIRECUSE.KBD",
+          "country_iso3": "FIN",
+          "dataset": "jodi_oil_primary",
+          "series_name": "NGL DIRECUSE",
+          "unit": "KBD"
+        },
+        {
+          "series_key": "JODI.oil_primary:IE.TOTCRUDE.INDPROD.KTONS",
+          "country_iso3": "IRL",
+          "dataset": "jodi_oil_primary",
+          "series_name": "TOTCRUDE INDPROD",
+          "unit": "KTONS"
+        },
+        {
+          "series_key": "JODI.oil_primary:DE.TOTCRUDE.OSOURCES.KTONS",
+          "country_iso3": "DEU",
+          "dataset": "jodi_oil_primary",
+          "series_name": "TOTCRUDE OSOURCES",
+          "unit": "KTONS"
+        },
+        {
+          "series_key": "JODI.oil_primary:GB.TOTCRUDE.TRANSBAK.KTONS",
+          "country_iso3": "GBR",
+          "dataset": "jodi_oil_primary",
+          "series_name": "TOTCRUDE TRANSBAK",
+          "unit": "KTONS"
+        },
+        {
+          "series_key": "JODI.oil_primary:AU.TOTCRUDE.REFINOBS.KTONS",
+          "country_iso3": "AUS",
+          "dataset": "jodi_oil_primary",
+          "series_name": "TOTCRUDE REFINOBS",
+          "unit": "KTONS"
+        },
+        {
+          "series_key": "JODI.oil_primary:DE.NGL.INDPROD.KTONS",
+          "country_iso3": "DEU",
+          "dataset": "jodi_oil_primary",
+          "series_name": "NGL INDPROD",
+          "unit": "KTONS"
+        },
+        {
+          "series_key": "JODI.oil_primary:HU.TOTCRUDE.TRANSBAK.KBD",
+          "country_iso3": "HUN",
+          "dataset": "jodi_oil_primary",
+          "series_name": "TOTCRUDE TRANSBAK",
+          "unit": "KBD"
+        },
+        {
+          "series_key": "JODI.oil_primary:IS.NGL.TOTIMPSB.KBD",
+          "country_iso3": "ISL",
+          "dataset": "jodi_oil_primary",
+          "series_name": "NGL TOTIMPSB",
+          "unit": "KBD"
+        }
+      ]
+    },
+    {
+      "source": "jodi-oil",
+      "prefix": "JODI.oil_secondary",
+      "series": 9932,
+      "samples": [
+        {
+          "series_key": "JODI.oil_secondary:CY.JETKERO.RECEIPTS.KTONS",
+          "country_iso3": "CYP",
+          "dataset": "jodi_oil_secondary",
+          "series_name": "JETKERO RECEIPTS",
+          "unit": "KTONS"
+        },
+        {
+          "series_key": "JODI.oil_secondary:IT.TOTPRODS.STOCKCH.KTONS",
+          "country_iso3": "ITA",
+          "dataset": "jodi_oil_secondary",
+          "series_name": "TOTPRODS STOCKCH",
+          "unit": "KTONS"
+        },
+        {
+          "series_key": "JODI.oil_secondary:AT.ONONSPEC.PTRANSF.KBD",
+          "country_iso3": "AUT",
+          "dataset": "jodi_oil_secondary",
+          "series_name": "ONONSPEC PTRANSF",
+          "unit": "KBD"
+        },
+        {
+          "series_key": "JODI.oil_secondary:LV.TOTPRODS.TOTEXPSB.KBD",
+          "country_iso3": "LVA",
+          "dataset": "jodi_oil_secondary",
+          "series_name": "TOTPRODS TOTEXPSB",
+          "unit": "KBD"
+        },
+        {
+          "series_key": "JODI.oil_secondary:EG.GASOLINE.TOTIMPSB.KBD",
+          "country_iso3": "EGY",
+          "dataset": "jodi_oil_secondary",
+          "series_name": "GASOLINE TOTIMPSB",
+          "unit": "KBD"
+        },
+        {
+          "series_key": "JODI.oil_secondary:BE.GASOLINE.TOTEXPSB.KTONS",
+          "country_iso3": "BEL",
+          "dataset": "jodi_oil_secondary",
+          "series_name": "GASOLINE TOTEXPSB",
+          "unit": "KTONS"
+        },
+        {
+          "series_key": "JODI.oil_secondary:CH.TOTPRODS.RECEIPTS.KTONS",
+          "country_iso3": "CHE",
+          "dataset": "jodi_oil_secondary",
+          "series_name": "TOTPRODS RECEIPTS",
+          "unit": "KTONS"
+        },
+        {
+          "series_key": "JODI.oil_secondary:IS.TOTPRODS.TOTEXPSB.KBD",
+          "country_iso3": "ISL",
+          "dataset": "jodi_oil_secondary",
+          "series_name": "TOTPRODS TOTEXPSB",
+          "unit": "KBD"
+        },
+        {
+          "series_key": "JODI.oil_secondary:MU.NAPHTHA.TOTEXPSB.KTONS",
+          "country_iso3": "MUS",
+          "dataset": "jodi_oil_secondary",
+          "series_name": "NAPHTHA TOTEXPSB",
+          "unit": "KTONS"
+        },
+        {
+          "series_key": "JODI.oil_secondary:SE.RESFUEL.TOTDEMO.KBD",
+          "country_iso3": "SWE",
+          "dataset": "jodi_oil_secondary",
+          "series_name": "RESFUEL TOTDEMO",
+          "unit": "KBD"
+        },
+        {
+          "series_key": "JODI.oil_secondary:CZ.JETKERO.STATDIFF.KBD",
+          "country_iso3": "CZE",
+          "dataset": "jodi_oil_secondary",
+          "series_name": "JETKERO STATDIFF",
+          "unit": "KBD"
+        },
+        {
+          "series_key": "JODI.oil_secondary:MY.TOTPRODS.TOTDEMO.KTONS",
+          "country_iso3": "MYS",
+          "dataset": "jodi_oil_secondary",
+          "series_name": "TOTPRODS TOTDEMO",
+          "unit": "KTONS"
+        }
+      ]
+    },
+    {
+      "source": "ons",
+      "prefix": "ONS",
+      "series": 5,
+      "samples": [
+        {
+          "series_key": "ONS:IHYQ",
+          "country_iso3": "GBR",
+          "dataset": "IHYQ",
+          "series_name": "GDP quarter-on-quarter growth",
+          "unit": "%"
+        },
+        {
+          "series_key": "ONS:D7G7",
+          "country_iso3": "GBR",
+          "dataset": "D7G7",
+          "series_name": "CPI annual rate",
+          "unit": "%"
+        },
+        {
+          "series_key": "ONS:L55O",
+          "country_iso3": "GBR",
+          "dataset": "L55O",
+          "series_name": "CPIH annual rate",
+          "unit": "%"
+        },
+        {
+          "series_key": "ONS:MGSX",
+          "country_iso3": "GBR",
+          "dataset": "MGSX",
+          "series_name": "Unemployment rate (16+)",
+          "unit": "%"
+        },
+        {
+          "series_key": "ONS:ABMI",
+          "country_iso3": "GBR",
+          "dataset": "ABMI",
+          "series_name": "GDP, chained volume measures",
+          "unit": "GBP millions"
+        }
+      ]
+    },
+    {
+      "source": "pinksheet",
+      "prefix": "PINK",
+      "series": 71,
+      "samples": [
+        {
+          "series_key": "PINK:Rubber, TSR20 **",
+          "country_iso3": null,
+          "dataset": "CMO monthly prices",
+          "series_name": "Rubber, TSR20 **",
+          "unit": "$/kg"
+        },
+        {
+          "series_key": "PINK:Liquefied natural gas, Japan",
+          "country_iso3": null,
+          "dataset": "CMO monthly prices",
+          "series_name": "Liquefied natural gas, Japan",
+          "unit": "$/mmbtu"
+        },
+        {
+          "series_key": "PINK:Rice, Thai A.1",
+          "country_iso3": null,
+          "dataset": "CMO monthly prices",
+          "series_name": "Rice, Thai A.1",
+          "unit": "$/mt"
+        },
+        {
+          "series_key": "PINK:Natural gas index",
+          "country_iso3": null,
+          "dataset": "CMO monthly prices",
+          "series_name": "Natural gas index",
+          "unit": "2010=100"
+        },
+        {
+          "series_key": "PINK:Copper",
+          "country_iso3": null,
+          "dataset": "CMO monthly prices",
+          "series_name": "Copper",
+          "unit": "$/mt"
+        },
+        {
+          "series_key": "PINK:Platinum",
+          "country_iso3": null,
+          "dataset": "CMO monthly prices",
+          "series_name": "Platinum",
+          "unit": "$/troy oz"
+        },
+        {
+          "series_key": "PINK:Iron ore, cfr spot",
+          "country_iso3": null,
+          "dataset": "CMO monthly prices",
+          "series_name": "Iron ore, cfr spot",
+          "unit": "$/dmtu"
+        },
+        {
+          "series_key": "PINK:Wheat, US HRW",
+          "country_iso3": null,
+          "dataset": "CMO monthly prices",
+          "series_name": "Wheat, US HRW",
+          "unit": "$/mt"
+        },
+        {
+          "series_key": "PINK:Soybeans",
+          "country_iso3": null,
+          "dataset": "CMO monthly prices",
+          "series_name": "Soybeans",
+          "unit": "$/mt"
+        },
+        {
+          "series_key": "PINK:Orange",
+          "country_iso3": null,
+          "dataset": "CMO monthly prices",
+          "series_name": "Orange",
+          "unit": "$/kg"
+        },
+        {
+          "series_key": "PINK:Coconut oil",
+          "country_iso3": null,
+          "dataset": "CMO monthly prices",
+          "series_name": "Coconut oil",
+          "unit": "$/mt"
+        },
+        {
+          "series_key": "PINK:Logs, Malaysian",
+          "country_iso3": null,
+          "dataset": "CMO monthly prices",
+          "series_name": "Logs, Malaysian",
+          "unit": "$/cubic meter"
+        }
+      ]
+    },
+    {
+      "source": "sarb",
+      "prefix": "SARB",
+      "series": 3,
+      "samples": [
+        {
+          "series_key": "SARB:MMRD002A",
+          "country_iso3": "ZAF",
+          "dataset": "SarbWebApi",
+          "series_name": "Repo rate",
+          "unit": "%"
+        },
+        {
+          "series_key": "SARB:EXCX135D",
+          "country_iso3": "ZAF",
+          "dataset": "SarbWebApi",
+          "series_name": "USD/ZAR exchange rate",
+          "unit": "ZAR per USD"
+        },
+        {
+          "series_key": "SARB:MMRD403A",
+          "country_iso3": "ZAF",
+          "dataset": "SarbWebApi",
+          "series_name": "JIBAR 3-month rate",
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "source": "singstat",
+      "prefix": "SINGSTAT.M213751",
+      "series": 22,
+      "samples": [
+        {
+          "series_key": "SINGSTAT.M213751:1.01.1.2",
+          "country_iso3": "SGP",
+          "dataset": "M213751",
+          "series_name": "Consumer price index: Flour",
+          "unit": "Index"
+        },
+        {
+          "series_key": "SINGSTAT.M213751:1.01.1.8",
+          "country_iso3": "SGP",
+          "dataset": "M213751",
+          "series_name": "Consumer price index: Other Cereal Products Nec",
+          "unit": "Index"
+        },
+        {
+          "series_key": "SINGSTAT.M213751:1.01",
+          "country_iso3": "SGP",
+          "dataset": "M213751",
+          "series_name": "Consumer price index: Food Excl Food & Beverage Serving Services",
+          "unit": "Index"
+        },
+        {
+          "series_key": "SINGSTAT.M213751:1.01.2.1",
+          "country_iso3": "SGP",
+          "dataset": "M213751",
+          "series_name": "Consumer price index: Pork, Chilled Or Frozen",
+          "unit": "Index"
+        },
+        {
+          "series_key": "SINGSTAT.M213751:1.01.2.3",
+          "country_iso3": "SGP",
+          "dataset": "M213751",
+          "series_name": "Consumer price index: Mutton, Chilled Or Frozen",
+          "unit": "Index"
+        },
+        {
+          "series_key": "SINGSTAT.M213751:1.01.1.1",
+          "country_iso3": "SGP",
+          "dataset": "M213751",
+          "series_name": "Consumer price index: Rice",
+          "unit": "Index"
+        },
+        {
+          "series_key": "SINGSTAT.M213751:1",
+          "country_iso3": "SGP",
+          "dataset": "M213751",
+          "series_name": "Consumer price index: All Items",
+          "unit": "Index"
+        },
+        {
+          "series_key": "SINGSTAT.M213751:1.01.2.5",
+          "country_iso3": "SGP",
+          "dataset": "M213751",
+          "series_name": "Consumer price index: Meat, Preserved Or Prepared",
+          "unit": "Index"
+        },
+        {
+          "series_key": "SINGSTAT.M213751:1.01.3.1",
+          "country_iso3": "SGP",
+          "dataset": "M213751",
+          "series_name": "Consumer price index: Fish, Fresh Or Chilled",
+          "unit": "Index"
+        },
+        {
+          "series_key": "SINGSTAT.M213751:1.01.2.2",
+          "country_iso3": "SGP",
+          "dataset": "M213751",
+          "series_name": "Consumer price index: Beef, Chilled Or Frozen",
+          "unit": "Index"
+        },
+        {
+          "series_key": "SINGSTAT.M213751:1.01.1.5",
+          "country_iso3": "SGP",
+          "dataset": "M213751",
+          "series_name": "Consumer price index: Biscuits & Cookies",
+          "unit": "Index"
+        },
+        {
+          "series_key": "SINGSTAT.M213751:1.01.3",
+          "country_iso3": "SGP",
+          "dataset": "M213751",
+          "series_name": "Consumer price index: Fish & Other Seafood",
+          "unit": "Index"
+        }
+      ]
+    },
+    {
+      "source": "worldbank-ext",
+      "prefix": "WB.BM.TRF.PWKR.CD.DT",
+      "series": 195,
+      "samples": [
+        {
+          "series_key": "WB.BM.TRF.PWKR.CD.DT:GRC",
+          "country_iso3": "GRC",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, paid",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BM.TRF.PWKR.CD.DT:VEN",
+          "country_iso3": "VEN",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, paid",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BM.TRF.PWKR.CD.DT:HUN",
+          "country_iso3": "HUN",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, paid",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BM.TRF.PWKR.CD.DT:ITA",
+          "country_iso3": "ITA",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, paid",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BM.TRF.PWKR.CD.DT:CYM",
+          "country_iso3": "CYM",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, paid",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BM.TRF.PWKR.CD.DT:ABW",
+          "country_iso3": "ABW",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, paid",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BM.TRF.PWKR.CD.DT:EST",
+          "country_iso3": "EST",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, paid",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BM.TRF.PWKR.CD.DT:OMN",
+          "country_iso3": "OMN",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, paid",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BM.TRF.PWKR.CD.DT:FRA",
+          "country_iso3": "FRA",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, paid",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BM.TRF.PWKR.CD.DT:KGZ",
+          "country_iso3": "KGZ",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, paid",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BM.TRF.PWKR.CD.DT:TON",
+          "country_iso3": "TON",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, paid",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BM.TRF.PWKR.CD.DT:CIV",
+          "country_iso3": "CIV",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, paid",
+          "unit": "current US$"
+        }
+      ]
+    },
+    {
+      "source": "worldbank-ext",
+      "prefix": "WB.BX.TRF.PWKR.CD.DT",
+      "series": 193,
+      "samples": [
+        {
+          "series_key": "WB.BX.TRF.PWKR.CD.DT:LSO",
+          "country_iso3": "LSO",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.CD.DT:GHA",
+          "country_iso3": "GHA",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.CD.DT:ALB",
+          "country_iso3": "ALB",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.CD.DT:VUT",
+          "country_iso3": "VUT",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.CD.DT:JAM",
+          "country_iso3": "JAM",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.CD.DT:BEL",
+          "country_iso3": "BEL",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.CD.DT:HUN",
+          "country_iso3": "HUN",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.CD.DT:CUW",
+          "country_iso3": "CUW",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.CD.DT:UGA",
+          "country_iso3": "UGA",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.CD.DT:WSM",
+          "country_iso3": "WSM",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.CD.DT:IRN",
+          "country_iso3": "IRN",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "current US$"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.CD.DT:ISR",
+          "country_iso3": "ISR",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "current US$"
+        }
+      ]
+    },
+    {
+      "source": "worldbank-ext",
+      "prefix": "WB.BX.TRF.PWKR.DT.GD.ZS",
+      "series": 193,
+      "samples": [
+        {
+          "series_key": "WB.BX.TRF.PWKR.DT.GD.ZS:NCL",
+          "country_iso3": "NCL",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.DT.GD.ZS:MUS",
+          "country_iso3": "MUS",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.DT.GD.ZS:NIC",
+          "country_iso3": "NIC",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.DT.GD.ZS:LVA",
+          "country_iso3": "LVA",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.DT.GD.ZS:LBN",
+          "country_iso3": "LBN",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.DT.GD.ZS:BEN",
+          "country_iso3": "BEN",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.DT.GD.ZS:CHL",
+          "country_iso3": "CHL",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.DT.GD.ZS:ERI",
+          "country_iso3": "ERI",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.DT.GD.ZS:DJI",
+          "country_iso3": "DJI",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.DT.GD.ZS:MDG",
+          "country_iso3": "MDG",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.DT.GD.ZS:BFA",
+          "country_iso3": "BFA",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "% of GDP"
+        },
+        {
+          "series_key": "WB.BX.TRF.PWKR.DT.GD.ZS:COD",
+          "country_iso3": "COD",
+          "dataset": "WB source 2",
+          "series_name": "Personal remittances, received",
+          "unit": "% of GDP"
+        }
+      ]
+    },
+    {
+      "source": "worldbank-ext",
+      "prefix": "WB.GOV_WGI_CC.EST",
+      "series": 207,
+      "samples": [
+        {
+          "series_key": "WB.GOV_WGI_CC.EST:PNG",
+          "country_iso3": "PNG",
+          "dataset": "WB source 3",
+          "series_name": "Control of corruption",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_CC.EST:TGO",
+          "country_iso3": "TGO",
+          "dataset": "WB source 3",
+          "series_name": "Control of corruption",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_CC.EST:MNG",
+          "country_iso3": "MNG",
+          "dataset": "WB source 3",
+          "series_name": "Control of corruption",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_CC.EST:GTM",
+          "country_iso3": "GTM",
+          "dataset": "WB source 3",
+          "series_name": "Control of corruption",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_CC.EST:BLZ",
+          "country_iso3": "BLZ",
+          "dataset": "WB source 3",
+          "series_name": "Control of corruption",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_CC.EST:BHS",
+          "country_iso3": "BHS",
+          "dataset": "WB source 3",
+          "series_name": "Control of corruption",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_CC.EST:NER",
+          "country_iso3": "NER",
+          "dataset": "WB source 3",
+          "series_name": "Control of corruption",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_CC.EST:DJI",
+          "country_iso3": "DJI",
+          "dataset": "WB source 3",
+          "series_name": "Control of corruption",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_CC.EST:XKX",
+          "country_iso3": "XKX",
+          "dataset": "WB source 3",
+          "series_name": "Control of corruption",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_CC.EST:MDG",
+          "country_iso3": "MDG",
+          "dataset": "WB source 3",
+          "series_name": "Control of corruption",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_CC.EST:SEN",
+          "country_iso3": "SEN",
+          "dataset": "WB source 3",
+          "series_name": "Control of corruption",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_CC.EST:GNB",
+          "country_iso3": "GNB",
+          "dataset": "WB source 3",
+          "series_name": "Control of corruption",
+          "unit": "estimate"
+        }
+      ]
+    },
+    {
+      "source": "worldbank-ext",
+      "prefix": "WB.GOV_WGI_GE.EST",
+      "series": 205,
+      "samples": [
+        {
+          "series_key": "WB.GOV_WGI_GE.EST:VCT",
+          "country_iso3": "VCT",
+          "dataset": "WB source 3",
+          "series_name": "Government effectiveness",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_GE.EST:KAZ",
+          "country_iso3": "KAZ",
+          "dataset": "WB source 3",
+          "series_name": "Government effectiveness",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_GE.EST:NLD",
+          "country_iso3": "NLD",
+          "dataset": "WB source 3",
+          "series_name": "Government effectiveness",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_GE.EST:LSO",
+          "country_iso3": "LSO",
+          "dataset": "WB source 3",
+          "series_name": "Government effectiveness",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_GE.EST:PRY",
+          "country_iso3": "PRY",
+          "dataset": "WB source 3",
+          "series_name": "Government effectiveness",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_GE.EST:COD",
+          "country_iso3": "COD",
+          "dataset": "WB source 3",
+          "series_name": "Government effectiveness",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_GE.EST:SMR",
+          "country_iso3": "SMR",
+          "dataset": "WB source 3",
+          "series_name": "Government effectiveness",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_GE.EST:PAN",
+          "country_iso3": "PAN",
+          "dataset": "WB source 3",
+          "series_name": "Government effectiveness",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_GE.EST:LKA",
+          "country_iso3": "LKA",
+          "dataset": "WB source 3",
+          "series_name": "Government effectiveness",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_GE.EST:MWI",
+          "country_iso3": "MWI",
+          "dataset": "WB source 3",
+          "series_name": "Government effectiveness",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_GE.EST:TJK",
+          "country_iso3": "TJK",
+          "dataset": "WB source 3",
+          "series_name": "Government effectiveness",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_GE.EST:USA",
+          "country_iso3": "USA",
+          "dataset": "WB source 3",
+          "series_name": "Government effectiveness",
+          "unit": "estimate"
+        }
+      ]
+    },
+    {
+      "source": "worldbank-ext",
+      "prefix": "WB.GOV_WGI_PV.EST",
+      "series": 207,
+      "samples": [
+        {
+          "series_key": "WB.GOV_WGI_PV.EST:ROU",
+          "country_iso3": "ROU",
+          "dataset": "WB source 3",
+          "series_name": "Political stability and absence of violence",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_PV.EST:MDV",
+          "country_iso3": "MDV",
+          "dataset": "WB source 3",
+          "series_name": "Political stability and absence of violence",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_PV.EST:CAF",
+          "country_iso3": "CAF",
+          "dataset": "WB source 3",
+          "series_name": "Political stability and absence of violence",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_PV.EST:TGO",
+          "country_iso3": "TGO",
+          "dataset": "WB source 3",
+          "series_name": "Political stability and absence of violence",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_PV.EST:ISL",
+          "country_iso3": "ISL",
+          "dataset": "WB source 3",
+          "series_name": "Political stability and absence of violence",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_PV.EST:BMU",
+          "country_iso3": "BMU",
+          "dataset": "WB source 3",
+          "series_name": "Political stability and absence of violence",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_PV.EST:BHS",
+          "country_iso3": "BHS",
+          "dataset": "WB source 3",
+          "series_name": "Political stability and absence of violence",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_PV.EST:BLZ",
+          "country_iso3": "BLZ",
+          "dataset": "WB source 3",
+          "series_name": "Political stability and absence of violence",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_PV.EST:PYF",
+          "country_iso3": "PYF",
+          "dataset": "WB source 3",
+          "series_name": "Political stability and absence of violence",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_PV.EST:MDG",
+          "country_iso3": "MDG",
+          "dataset": "WB source 3",
+          "series_name": "Political stability and absence of violence",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_PV.EST:QAT",
+          "country_iso3": "QAT",
+          "dataset": "WB source 3",
+          "series_name": "Political stability and absence of violence",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_PV.EST:KNA",
+          "country_iso3": "KNA",
+          "dataset": "WB source 3",
+          "series_name": "Political stability and absence of violence",
+          "unit": "estimate"
+        }
+      ]
+    },
+    {
+      "source": "worldbank-ext",
+      "prefix": "WB.GOV_WGI_RL.EST",
+      "series": 207,
+      "samples": [
+        {
+          "series_key": "WB.GOV_WGI_RL.EST:MEX",
+          "country_iso3": "MEX",
+          "dataset": "WB source 3",
+          "series_name": "Rule of law",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RL.EST:SYC",
+          "country_iso3": "SYC",
+          "dataset": "WB source 3",
+          "series_name": "Rule of law",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RL.EST:OMN",
+          "country_iso3": "OMN",
+          "dataset": "WB source 3",
+          "series_name": "Rule of law",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RL.EST:DEU",
+          "country_iso3": "DEU",
+          "dataset": "WB source 3",
+          "series_name": "Rule of law",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RL.EST:COG",
+          "country_iso3": "COG",
+          "dataset": "WB source 3",
+          "series_name": "Rule of law",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RL.EST:NOR",
+          "country_iso3": "NOR",
+          "dataset": "WB source 3",
+          "series_name": "Rule of law",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RL.EST:WSM",
+          "country_iso3": "WSM",
+          "dataset": "WB source 3",
+          "series_name": "Rule of law",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RL.EST:AUS",
+          "country_iso3": "AUS",
+          "dataset": "WB source 3",
+          "series_name": "Rule of law",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RL.EST:NRU",
+          "country_iso3": "NRU",
+          "dataset": "WB source 3",
+          "series_name": "Rule of law",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RL.EST:IRQ",
+          "country_iso3": "IRQ",
+          "dataset": "WB source 3",
+          "series_name": "Rule of law",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RL.EST:GAB",
+          "country_iso3": "GAB",
+          "dataset": "WB source 3",
+          "series_name": "Rule of law",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RL.EST:ROU",
+          "country_iso3": "ROU",
+          "dataset": "WB source 3",
+          "series_name": "Rule of law",
+          "unit": "estimate"
+        }
+      ]
+    },
+    {
+      "source": "worldbank-ext",
+      "prefix": "WB.GOV_WGI_RQ.EST",
+      "series": 205,
+      "samples": [
+        {
+          "series_key": "WB.GOV_WGI_RQ.EST:ZAF",
+          "country_iso3": "ZAF",
+          "dataset": "WB source 3",
+          "series_name": "Regulatory quality",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RQ.EST:GTM",
+          "country_iso3": "GTM",
+          "dataset": "WB source 3",
+          "series_name": "Regulatory quality",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RQ.EST:ETH",
+          "country_iso3": "ETH",
+          "dataset": "WB source 3",
+          "series_name": "Regulatory quality",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RQ.EST:ITA",
+          "country_iso3": "ITA",
+          "dataset": "WB source 3",
+          "series_name": "Regulatory quality",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RQ.EST:MCO",
+          "country_iso3": "MCO",
+          "dataset": "WB source 3",
+          "series_name": "Regulatory quality",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RQ.EST:TON",
+          "country_iso3": "TON",
+          "dataset": "WB source 3",
+          "series_name": "Regulatory quality",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RQ.EST:SMR",
+          "country_iso3": "SMR",
+          "dataset": "WB source 3",
+          "series_name": "Regulatory quality",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RQ.EST:RWA",
+          "country_iso3": "RWA",
+          "dataset": "WB source 3",
+          "series_name": "Regulatory quality",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RQ.EST:MKD",
+          "country_iso3": "MKD",
+          "dataset": "WB source 3",
+          "series_name": "Regulatory quality",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RQ.EST:LSO",
+          "country_iso3": "LSO",
+          "dataset": "WB source 3",
+          "series_name": "Regulatory quality",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RQ.EST:VCT",
+          "country_iso3": "VCT",
+          "dataset": "WB source 3",
+          "series_name": "Regulatory quality",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_RQ.EST:PNG",
+          "country_iso3": "PNG",
+          "dataset": "WB source 3",
+          "series_name": "Regulatory quality",
+          "unit": "estimate"
+        }
+      ]
+    },
+    {
+      "source": "worldbank-ext",
+      "prefix": "WB.GOV_WGI_VA.EST",
+      "series": 207,
+      "samples": [
+        {
+          "series_key": "WB.GOV_WGI_VA.EST:NZL",
+          "country_iso3": "NZL",
+          "dataset": "WB source 3",
+          "series_name": "Voice and accountability",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_VA.EST:ABW",
+          "country_iso3": "ABW",
+          "dataset": "WB source 3",
+          "series_name": "Voice and accountability",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_VA.EST:IND",
+          "country_iso3": "IND",
+          "dataset": "WB source 3",
+          "series_name": "Voice and accountability",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_VA.EST:ETH",
+          "country_iso3": "ETH",
+          "dataset": "WB source 3",
+          "series_name": "Voice and accountability",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_VA.EST:PRT",
+          "country_iso3": "PRT",
+          "dataset": "WB source 3",
+          "series_name": "Voice and accountability",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_VA.EST:MCO",
+          "country_iso3": "MCO",
+          "dataset": "WB source 3",
+          "series_name": "Voice and accountability",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_VA.EST:FJI",
+          "country_iso3": "FJI",
+          "dataset": "WB source 3",
+          "series_name": "Voice and accountability",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_VA.EST:GNQ",
+          "country_iso3": "GNQ",
+          "dataset": "WB source 3",
+          "series_name": "Voice and accountability",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_VA.EST:DZA",
+          "country_iso3": "DZA",
+          "dataset": "WB source 3",
+          "series_name": "Voice and accountability",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_VA.EST:FRA",
+          "country_iso3": "FRA",
+          "dataset": "WB source 3",
+          "series_name": "Voice and accountability",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_VA.EST:SWE",
+          "country_iso3": "SWE",
+          "dataset": "WB source 3",
+          "series_name": "Voice and accountability",
+          "unit": "estimate"
+        },
+        {
+          "series_key": "WB.GOV_WGI_VA.EST:FIN",
+          "country_iso3": "FIN",
+          "dataset": "WB source 3",
+          "series_name": "Voice and accountability",
+          "unit": "estimate"
+        }
+      ]
+    },
+    {
+      "source": "wui",
+      "prefix": "WUI.WUI",
+      "series": 143,
+      "samples": [
+        {
+          "series_key": "WUI.WUI:USA",
+          "country_iso3": "USA",
+          "dataset": "T2",
+          "series_name": "World uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "WUI.WUI:DOM",
+          "country_iso3": "DOM",
+          "dataset": "T2",
+          "series_name": "World uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "WUI.WUI:KHM",
+          "country_iso3": "KHM",
+          "dataset": "T2",
+          "series_name": "World uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "WUI.WUI:CIV",
+          "country_iso3": "CIV",
+          "dataset": "T2",
+          "series_name": "World uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "WUI.WUI:LBY",
+          "country_iso3": "LBY",
+          "dataset": "T2",
+          "series_name": "World uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "WUI.WUI:KGZ",
+          "country_iso3": "KGZ",
+          "dataset": "T2",
+          "series_name": "World uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "WUI.WUI:COG",
+          "country_iso3": "COG",
+          "dataset": "T2",
+          "series_name": "World uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "WUI.WUI:SEN",
+          "country_iso3": "SEN",
+          "dataset": "T2",
+          "series_name": "World uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "WUI.WUI:AZE",
+          "country_iso3": "AZE",
+          "dataset": "T2",
+          "series_name": "World uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "WUI.WUI:ERI",
+          "country_iso3": "ERI",
+          "dataset": "T2",
+          "series_name": "World uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "WUI.WUI:UGA",
+          "country_iso3": "UGA",
+          "dataset": "T2",
+          "series_name": "World uncertainty index",
+          "unit": "index"
+        },
+        {
+          "series_key": "WUI.WUI:PER",
+          "country_iso3": "PER",
+          "dataset": "T2",
+          "series_name": "World uncertainty index",
+          "unit": "index"
+        }
+      ]
+    }
+  ]
+}

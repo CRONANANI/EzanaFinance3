@@ -147,8 +147,9 @@ function todayLine() {
 /* The same switch anthropicSynthesize reads: without it no search runs. */
 const webSearchOn = () => process.env.SONAR_WEB_SEARCH === 'true';
 
-const GROUNDED_SYSTEM_PROMPT = `You are Ezana Sonar, a research analyst answering a ping. You have two kinds of evidence: numbered dataset snippets from Ezana's proprietary datasets (congressional trades, government contracts, SEC and 13F filings, lobbying, the OFAC sanctions list, prediction markets, Echo editorial), and live web search.
+const GROUNDED_SYSTEM_PROMPT = `You are Ezana Sonar, a research analyst answering a ping. You have two kinds of evidence: numbered dataset snippets from Ezana's proprietary datasets (congressional trades, government contracts, SEC and 13F filings, lobbying, the OFAC sanctions list, official macro and commodity statistics marked (macro), prediction markets, Echo editorial), and live web search.
 Rules:
+- A (macro) snippet is an official statistic held by Ezana (IMF, World Bank, BIS, central banks, JODI, EIA, the World Bank Pink Sheet, risk indices). Give every figure its period as the snippet states it, cite it, and keep a projection a projection. Compare two figures only when their periods match, or say that they differ.
 - Ezana's datasets come first. Build the brief around every snippet that is genuinely about the subject and cite its marker inline, e.g. [S1]. Never cite a snippet about a different entity.
 - Then go beyond the datasets: search the web for current facts, recent events, figures and context the snippets do not cover, and weave them in. Name the outlet or source for web facts in passing ("per Reuters").
 - Answer the question the visitor actually asked. Lead with the direct answer, then the evidence, then what it means.
@@ -173,8 +174,9 @@ Rules:
    live market data and the listing record for a resolved company (market),
    the IPO filings source (ipo) and recent headlines from Ezana's news feed
    (news). Three shorter paragraphs, so a fast model finishes in time. */
-const FAST_GROUNDED_PROMPT = `You are Ezana Sonar, a research analyst answering a ping. Your evidence is the numbered snippets below: Ezana's datasets (congressional trades, government contracts, SEC and IPO filings, 13F holdings, lobbying, the OFAC sanctions list, prediction markets, Echo editorial), live market data marked (market), published analyst ratings and price targets marked (analysts), and recent headlines from Ezana's news feed marked (news). The (market), (analysts) and (news) snippets are current as of today.
+const FAST_GROUNDED_PROMPT = `You are Ezana Sonar, a research analyst answering a ping. Your evidence is the numbered snippets below: Ezana's datasets (congressional trades, government contracts, SEC and IPO filings, 13F holdings, lobbying, the OFAC sanctions list, prediction markets, Echo editorial), live market data marked (market), published analyst ratings and price targets marked (analysts), and recent headlines from Ezana's news feed marked (news). The (market), (analysts) and (news) snippets are current as of today. Snippets marked (macro) are official statistics (IMF, World Bank, BIS, central banks, JODI, EIA, the World Bank Pink Sheet, risk indices), each with its own period.
 Rules:
+- Give every (macro) figure the period the snippet states, and keep a projection a projection. Compare two figures only when their periods match, or say that they differ.
 - Answer the question the visitor actually asked. Lead with the direct answer, then the evidence, then what it means.
 - Cite every fact inline with its snippet marker, e.g. [S1]. Never cite a snippet about a different entity.
 - Write only about the subject. Never comment on what the snippets, datasets or searches contain or lack, and never mention web search. If the snippets answer only part of the question, answer that part.
@@ -2549,6 +2551,10 @@ export async function runLandingPipeline(
            so they will not carry the (US) country term; keep them as relevant
            by construction. The retriever only runs when the ping warrants it. */
         if (it.corpus === 'sanctions') return true;
+        /* Macro rows are chosen by the macro router for this question's countries, themes
+           or commodity; euro-area rows ("the euro area") answer a Germany ping without
+           naming Germany, and a company ping's country context never names the company. */
+        if (it.corpus === 'macro') return true;
         let hay = [it.title, it.snippet, ...Object.values(it.meta || {})]
           .filter((v) => typeof v === 'string')
           .join(' ')
@@ -2569,7 +2575,7 @@ export async function runLandingPipeline(
   const sanctions =
     intent === 'sanctions'
       ? await within(
-          sanctionsContext({ focus: country || contextCountry, query }),
+          sanctionsContext({ focus: country || contextCountry, query, intl: false }),
           LEG.sanctions,
           null,
           'sanctions',
