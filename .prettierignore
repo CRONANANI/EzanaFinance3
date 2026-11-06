@@ -45,3 +45,7 @@ app-legacy/
 # makes the repo copy differ from what was handed over.
 docs/design/
 src/lib/politicians/legislators-current.json
+
+# Analyst methodology skills: authored text, compiled into skills.generated.js by
+# scripts/build-sonar-skills.mjs (a reflow here makes the bundle stale).
+sonar-skills/
