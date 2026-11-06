@@ -232,8 +232,8 @@
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.08em;
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--type-label-tracking);
   font-variant-numeric: tabular-nums;
   text-transform: uppercase;
   color: var(--sl-text-muted);
