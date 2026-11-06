@@ -203,6 +203,9 @@ export function assessmentRows(picture, brief) {
     id: c.id,
     label: c.label,
     level: c.level,
+    /* Nov 6: the measured inputs, so the "Ezana thresholds" explainer can show this
+       country's own reading next to each cut-off. */
+    evidence: c.evidence || null,
   }));
   rows.push({
     id: 'crisis',

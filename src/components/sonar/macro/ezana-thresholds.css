@@ -1,0 +1,241 @@
+/* "How Ezana thresholds work" (EzanaThresholds.jsx). Scoped ezt-.
+
+   The modal portals to <body>, so it reads the app theme tokens and flips with
+   body.light-mode; the trigger sits inside the Country intelligence card and inherits its
+   --cii-* colours where it is used there. No hex: tints are color-mix over tokens. p and h3
+   carry a two-class !important colour, which undoes the legacy light-mode sheet's p / h1..h5
+   rules (the same guard country-intel.css uses). */
+
+/* ── the inline trigger ───────────────────────────────────────────────── */
+
+.ezt-trigger {
+  display: inline;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  line-height: inherit;
+  color: var(--cii-accent, var(--emerald-text));
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.ezt-trigger:hover {
+  text-decoration-style: solid;
+}
+.ezt-trigger:focus-visible {
+  outline: 2px solid var(--cii-accent, var(--emerald-text));
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── the modal ────────────────────────────────────────────────────────── */
+
+.ds-modal.ezt-modal {
+  width: min(1040px, calc(100vw - 32px));
+}
+
+.ezt {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  color: var(--text-secondary);
+  container: ezt / inline-size;
+}
+
+.ezt .ezt-p {
+  margin: 0;
+  line-height: 1.55;
+  color: var(--text-secondary) !important;
+}
+.ezt .ezt-muted {
+  color: var(--text-muted) !important;
+  font-size: var(--type-caption-size);
+}
+
+.ezt .ezt-h {
+  margin: 0 0 8px;
+  font-size: var(--type-card-title-size);
+  font-weight: 600;
+  color: var(--text-primary) !important;
+}
+
+.ezt .ezt-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+}
+.ezt .ezt-scroll:focus-visible {
+  outline: 2px solid var(--emerald-text);
+  outline-offset: 2px;
+}
+
+.ezt .ezt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--type-caption-size);
+}
+.ezt .ezt-table th,
+.ezt .ezt-table td {
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border-primary);
+}
+.ezt .ezt-table thead th {
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 500;
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.ezt .ezt-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.ezt .ezt-rowh {
+  min-width: 220px;
+  font-weight: 400;
+}
+.ezt .ezt-comp {
+  display: block;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ezt .ezt-measure,
+.ezt .ezt-note {
+  display: block;
+  margin-top: 4px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+.ezt .ezt-note {
+  font-style: italic;
+}
+
+.ezt .ezt-cell {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+  min-width: 120px;
+}
+/* The level this country sits at: tinted cell and a left rule in the level's tone. */
+.ezt .ezt-cell.is-current {
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--ezt-tone);
+  background: color-mix(in srgb, var(--ezt-tone) 12%, transparent);
+}
+.ezt .ezt-cell.is-low {
+  --ezt-tone: var(--emerald);
+}
+.ezt .ezt-cell.is-moderate {
+  --ezt-tone: var(--info, var(--emerald-text));
+}
+.ezt .ezt-cell.is-elevated {
+  --ezt-tone: var(--warning);
+}
+.ezt .ezt-cell.is-severe {
+  --ezt-tone: var(--danger, var(--warning));
+}
+
+.ezt .ezt-now {
+  min-width: 170px;
+}
+.ezt .ezt-badge {
+  margin-bottom: 6px;
+}
+.ezt .ezt-reading {
+  display: block;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.ezt .ezt-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 28px;
+}
+.ezt .ezt-sec {
+  min-width: 0;
+}
+.ezt .ezt-ol,
+.ezt .ezt-ul {
+  margin: 0 0 10px;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  line-height: 1.5;
+}
+
+/* Narrow modal (phones, split screens): one card per component, the levels as labelled
+   lines, the columns stacked. Driven by the modal's own width, not the viewport. */
+@container ezt (max-width: 760px) {
+  .ezt .ezt-scroll {
+    overflow: visible;
+    border: 0;
+  }
+  .ezt .ezt-table,
+  .ezt .ezt-table tbody,
+  .ezt .ezt-table tr,
+  .ezt .ezt-table th,
+  .ezt .ezt-table td {
+    display: block;
+    width: auto;
+  }
+  .ezt .ezt-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .ezt .ezt-table tbody tr {
+    margin-bottom: 12px;
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  .ezt .ezt-table tbody tr > * {
+    border-bottom: 1px solid var(--border-primary);
+  }
+  .ezt .ezt-table tbody tr > *:last-child {
+    border-bottom: 0;
+  }
+  .ezt .ezt-rowh {
+    min-width: 0;
+  }
+  .ezt .ezt-table td[data-label] {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 10px;
+    min-width: 0;
+  }
+  .ezt .ezt-table td[data-label]::before {
+    content: attr(data-label);
+    font-family: var(--font-mono);
+    font-size: var(--type-micro-size);
+    letter-spacing: var(--type-eyebrow-tracking);
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .ezt .ezt-cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-modal.ezt-modal {
+    animation: none;
+  }
+}

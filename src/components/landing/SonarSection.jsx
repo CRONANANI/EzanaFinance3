@@ -79,6 +79,7 @@ import SonarGovExposure from './SonarGovExposure';
 import SonarFlowsStack, { FlowsDetailCards } from './SonarFlowsStack';
 import {
   CountryStack,
+  CountryDetail,
   CountryOecdRow,
   CountryEmpireRow,
   CountryMacroRow,
@@ -3734,6 +3735,7 @@ export function SonarSection({
                   newsSlot={railNews}
                   topSlot={stackTop}
                   leadSlot={countryLead}
+                  detached={isPage}
                 />
               ) : null}
 
@@ -3876,6 +3878,18 @@ export function SonarSection({
               ) : null}
             </SonarStackBoundary>
           </div>
+
+          {/* Nov 6 (/datasets): a country question's intel detail (drivers,
+            scenarios, the charts, the transmission map, what to monitor, the key
+            chart and key indicators) spans the full answer width under the three
+            columns instead of running down the right-hand stack beside empty
+            space. Inside the band so the --snr-* tokens and card shells hold.
+            The landing band's locked one-screen stack keeps the whole card. */}
+          {isPage && stage2 && live?.dossier?.kind === 'country' ? (
+            <SonarStackBoundary key={`detail-${live?.rawQuery || live?.query || 'none'}`}>
+              <CountryDetail dossier={live.dossier} onGate={() => openGate()} />
+            </SonarStackBoundary>
+          ) : null}
 
           {/* A ping that lands without a dossier has no right-hand stack, so
             the matching dataset cards fall back to a row under the columns. */}

@@ -29,10 +29,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Table, THead, TBody, TR, TH, TD, VisuallyHidden } from '@/components/ds';
-import { CountryIntelCard, hasCountryIntel } from './CountryIntelCard';
+import { CountryIntelCard, CountryIntelDetail, hasCountryIntel } from './CountryIntelCard';
 import './sonar-country.css';
 
-export { CountryIntelCard, hasCountryIntel };
+export { CountryIntelCard, CountryIntelDetail, hasCountryIntel };
 
 /* ── shared helpers (the band's own are module-private) ─────────────────── */
 
@@ -601,17 +601,25 @@ function EmpireCard({ dossier, onGate }) {
 /* newsSlot (Oct 19): the /datasets results band hands in the "news around it"
    rail, which takes the Relevant News card's place. Absent on the landing band,
    which keeps the card exactly as before. */
+/* detached (Nov 6, /datasets): the host renders <CountryDetail> full width below the band's
+   columns, so a country question with an intel card keeps only the summary card (KPI tiles,
+   badge, "How serious is it") here, and the key chart and key indicators move down into the
+   detail grid with the charts. Without an intel card nothing moves. The landing band (not
+   detached) keeps the whole card in its locked one-screen stack. Either way the card drops its
+   answer paragraph: the research brief in the left column already shows it. */
 export function CountryStack({
   dossier,
   onGate,
   newsSlot = null,
   topSlot = null,
   leadSlot = null,
+  detached = false,
 }) {
   const hasIntel = hasCountryIntel(dossier);
-  const hasStory = Boolean(keyChartOf(dossier)?.stories?.length);
-  const hasEmpire = Boolean(dossier.empire?.dims?.length);
-  const hasIndicators = Boolean(dossier.keyIndicators?.length);
+  const moved = detached && hasIntel;
+  const hasStory = !moved && Boolean(keyChartOf(dossier)?.stories?.length);
+  const hasEmpire = !moved && Boolean(dossier.empire?.dims?.length);
+  const hasIndicators = !moved && Boolean(dossier.keyIndicators?.length);
   const news = dossier.news || [];
   const echo = dossier.echo || [];
   if (
@@ -634,7 +642,9 @@ export function CountryStack({
       {leadSlot}
       {/* Nov 2026: a country question ("Is Turkey's lira under pressure?")
           leads with the Country intelligence card. */}
-      {hasIntel ? <CountryIntelCard dossier={dossier} /> : null}
+      {hasIntel ? (
+        <CountryIntelCard dossier={dossier} lede={false} part={moved ? 'summary' : 'all'} />
+      ) : null}
       {/* Oct 26: the Key Chart leads the stack; the matching dataset cards
           (topSlot) follow it. */}
       {hasStory ? (
@@ -693,6 +703,30 @@ export function CountryStack({
       ) : null}
     </div>
   );
+}
+
+/**
+ * The full-width row under the /datasets band's columns for a country question with an intel
+ * card: the intel detail sections plus the key chart (or power profile) and key indicators,
+ * packed edge to edge by CountryIntelDetail. Null when the dossier has no intel card.
+ */
+export function CountryDetail({ dossier, onGate }) {
+  if (!hasCountryIntel(dossier)) return null;
+  const extras = [];
+  if (keyChartOf(dossier)?.stories?.length) {
+    extras.push({ id: 'story', node: <StoryCard dossier={dossier} />, span: 7, min: 6 });
+  } else if (dossier.empire?.dims?.length) {
+    extras.push({ id: 'empire', node: <EmpireCard dossier={dossier} onGate={onGate} />, span: 6 });
+  }
+  if (dossier.keyIndicators?.length) {
+    extras.push({
+      id: 'indicators',
+      node: <KeyIndicatorsCard dossier={dossier} />,
+      span: 5,
+      min: 4,
+    });
+  }
+  return <CountryIntelDetail dossier={dossier} extras={extras} />;
 }
 
 export default CountryStack;

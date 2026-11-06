@@ -14,6 +14,13 @@
  * qualitative against Ezana thresholds; the scenarios are conditional, not forecasts; the
  * transmission map is conceptual, not a fitted causal model. Each says so where it shows.
  *
+ * Nov 6 layout: the KPI tiles lead the card. In the Sonar band the research brief (left
+ * column) already carries the answer and assessment line, so the band passes lede={false}.
+ * On /datasets the band shows part="summary" (KPIs, badge, "How serious is it") in the right
+ * stack and <CountryIntelDetail> lays the drivers, scenarios, charts, transmission map, what to
+ * monitor and the rest across the full width below the columns, packed so no row leaves a gap.
+ * "Ezana thresholds" under the assessment opens the explainer (EzanaThresholds.jsx).
+ *
  * Renders in the Sonar band's stack and in the deep research report: card-local --cii-*
  * tokens resolve to the band's --snr-* system inside .snr-band and to the app theme tokens
  * elsewhere. Mono numerics, ds Table / Badge / Tooltip / VisuallyHidden. Styles:
@@ -38,7 +45,9 @@ import {
   paragraphs,
   transmissionLayout,
   nodeStatus,
+  packDetailRows,
 } from '@/lib/sonar/country-intel-view';
+import { EzanaThresholdsButton } from '@/components/sonar/macro/EzanaThresholds';
 import './country-intel.css';
 
 export { hasCountryIntel };
@@ -309,8 +318,10 @@ function FxChart({ fx, fxMonthly }) {
   );
 }
 
-function IntelCharts({ charts }) {
-  if (!charts) return null;
+/* The chart tiles, in reading order: [{ key, node }]. IntelCharts stacks them in one card;
+   CountryIntelDetail gives each its own cell in the full-width grid. */
+function intelChartItems(charts) {
+  if (!charts) return [];
   const infl = charts.inflation ? cleanPoints(charts.inflation) : [];
   const pol = charts.policy ? cleanPoints(charts.policy) : [];
   const res = charts.reserves ? cleanPoints(charts.reserves) : [];
@@ -367,8 +378,13 @@ function IntelCharts({ charts }) {
         caption={chartCaption(charts.reserves)}
       />,
     );
+  return items.map((node) => ({ key: node.key, node }));
+}
+
+function IntelCharts({ charts }) {
+  const items = intelChartItems(charts);
   if (!items.length) return null;
-  return <div className="snr-cii-charts">{items}</div>;
+  return <div className="snr-cii-charts">{items.map((i) => i.node)}</div>;
 }
 
 /* ── transmission map ───────────────────────────────────────────────────── */
@@ -499,33 +515,235 @@ function Heading({ id, children }) {
   );
 }
 
-export function CountryIntelCard({ dossier }) {
+/* What the card and the detail grid both read off dossier.intel. */
+function intelParts(dossier) {
+  const intel = dossier?.intel || {};
+  const brief = intel.brief || null;
+  return {
+    intel,
+    brief,
+    focus: intel.focus || 'FX risk',
+    place: intel.place || dossier?.name,
+    iso3: intel.iso3 || dossier?.iso3,
+    cur: intel.currency,
+    fallback: brief ? [] : paragraphs(intel.fallbackText),
+    kpis: (intel.kpis || []).filter((k) => k && k.value != null && k.value !== '').slice(0, 4),
+    rows: (intel.rows || []).filter((r) => r && r.label),
+    missing: (intel.missing || []).filter(Boolean),
+    drivers: (brief?.drivers || []).filter((d) => d && (d.title || d.text)),
+    scenarios: (brief?.scenarios || []).filter((s) => s && s.name),
+    monitor: (brief?.monitor || []).filter((m) => m && m.indicator),
+    map: intel.transmission,
+    sources: (intel.sources || []).filter(Boolean),
+  };
+}
+
+/* ── sections (shared by the card and the full-width detail) ───────────── */
+
+function KpiRow({ kpis }) {
+  if (!kpis.length) return null;
+  return (
+    <ul className="snr-cii-kpis" aria-label="Key measures">
+      {kpis.map((k) => (
+        <li key={k.id || k.label} className="snr-cii-kpi">
+          <span className="snr-cii-kpi-label">{k.label}</span>
+          <span className="snr-cii-kpi-value">{String(k.value).replace(/^-/, '−')}</span>
+          {k.period ? <span className="snr-cii-kpi-cap">{k.period}</span> : null}
+          {k.change ? (
+            <span className="snr-cii-kpi-cap">
+              {String(k.change).replace(/(^|\s)-(?=\d)/g, '$1−')}
+            </span>
+          ) : null}
+          {k.stale ? <span className="snr-cii-stale">Not current</span> : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function DriversSection({ drivers, focus, id }) {
+  if (!drivers.length) return null;
+  return (
+    <div className="snr-cii-sec">
+      <Heading id={id}>
+        {focus === 'Macro' ? 'What is driving it' : 'What is driving the pressure'}
+      </Heading>
+      <ol className="snr-cii-ol" aria-labelledby={id}>
+        {drivers.map((d, i) => (
+          <li key={i}>
+            {d.title ? <strong className="snr-cii-strong">{d.title}.</strong> : null} {d.text}
+            {d.refs?.length ? (
+              <span className="snr-cii-refs"> {d.refs.map((r) => `[${r}]`).join('')}</span>
+            ) : null}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function SeveritySection({ rows, place, id }) {
+  if (!rows.length) return null;
+  return (
+    <div className="snr-cii-sec">
+      <Heading id={id}>How serious is it</Heading>
+      <div className="snr-cii-scroll" role="region" aria-labelledby={id} tabIndex={0}>
+        <Table className="snr-cii-table">
+          <VisuallyHidden as="caption">
+            How serious is it: each component and its level
+          </VisuallyHidden>
+          <THead>
+            <TR>
+              <TH scope="col">Component</TH>
+              <TH scope="col">Level</TH>
+            </TR>
+          </THead>
+          <TBody>
+            {rows.map((r) => (
+              <TR
+                key={r.id || r.label}
+                className={r.id === 'crisis' ? 'snr-cii-crisis' : undefined}
+              >
+                <TH scope="row" className="snr-cii-rowh">
+                  {r.label}
+                </TH>
+                <TD className={`snr-cii-level is-${String(r.level || '').replace(/\s+/g, '-')}`}>
+                  {sentenceCase(r.level || 'n/a')}
+                </TD>
+              </TR>
+            ))}
+          </TBody>
+        </Table>
+      </div>
+      {/* Nov 6: "Ezana thresholds" opens the explainer: every cut-off, the overall rule, and
+          where this country sits now. */}
+      <span className="snr-cii-cap">
+        Qualitative assessment against <EzanaThresholdsButton rows={rows} place={place} />, not a
+        calibrated risk score.
+      </span>
+    </div>
+  );
+}
+
+function ScenariosSection({ scenarios, id }) {
+  if (!scenarios.length) return null;
+  return (
+    <div className="snr-cii-sec">
+      <Heading id={id}>What could happen next</Heading>
+      <div className="snr-cii-scroll" role="region" aria-labelledby={id} tabIndex={0}>
+        <Table className="snr-cii-table snr-cii-table--scn" role="table">
+          <VisuallyHidden as="caption">
+            What could happen next: conditional scenarios, not forecasts
+          </VisuallyHidden>
+          <THead role="rowgroup">
+            <TR role="row">
+              <TH scope="col" role="columnheader">
+                Scenario
+              </TH>
+              <TH scope="col" role="columnheader">
+                Conditions
+              </TH>
+              <TH scope="col" role="columnheader">
+                Implication
+              </TH>
+            </TR>
+          </THead>
+          <TBody role="rowgroup">
+            {scenarios.map((s, i) => (
+              <TR key={i} role="row">
+                <TH scope="row" role="rowheader" className="snr-cii-rowh">
+                  {s.name}
+                </TH>
+                <TD role="cell" data-label="Conditions">
+                  {s.conditions}
+                </TD>
+                <TD role="cell" data-label="Implication">
+                  {s.implication}
+                </TD>
+              </TR>
+            ))}
+          </TBody>
+        </Table>
+      </div>
+      <span className="snr-cii-cap">Conditional scenarios, not forecasts.</span>
+    </div>
+  );
+}
+
+function MonitorSection({ monitor, id }) {
+  if (!monitor.length) return null;
+  return (
+    <div className="snr-cii-sec">
+      <Heading id={id}>What to monitor</Heading>
+      <ol className="snr-cii-ol" aria-labelledby={id}>
+        {monitor.map((m, i) => (
+          <li key={i}>
+            <strong className="snr-cii-strong">{m.indicator}.</strong> {m.why}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function BottomLineSection({ text }) {
+  if (!text) return null;
+  return (
+    <div className="snr-cii-sec">
+      <Heading>Bottom line</Heading>
+      <p className="snr-cii-para">{text}</p>
+    </div>
+  );
+}
+
+function MissingSection({ missing, id }) {
+  if (!missing.length) return null;
+  const note = missingSentence(missing);
+  return (
+    <div className="snr-cii-sec">
+      <Heading id={id}>Data not available</Heading>
+      <ul className="snr-cii-ul" aria-labelledby={id}>
+        {missing.map((m) => (
+          <li key={m}>{sentenceCase(m)}</li>
+        ))}
+      </ul>
+      {note ? <p className="snr-cii-para snr-cii-muted">{note}</p> : null}
+    </div>
+  );
+}
+
+function MapSection({ map, id }) {
+  if (!map?.nodes?.length) return null;
+  return (
+    <div className="snr-cii-sec">
+      <Heading id={id}>How pressure can travel</Heading>
+      <TransmissionMap map={map} headingId={id} />
+    </div>
+  );
+}
+
+/* ── the card ───────────────────────────────────────────────────────────── */
+
+/**
+ * lede: false where the host already shows the answer and assessment line (the Sonar band's
+ *   research brief, left column), so the card does not repeat them.
+ * part: 'all' renders every section in the card (the landing band's locked screen, the deep
+ *   report); 'summary' renders the header, the KPI tiles and "How serious is it" only, and the
+ *   host puts <CountryIntelDetail> in a full-width row below (the /datasets results band).
+ * The KPI tiles always lead, directly under the card's title line.
+ */
+export function CountryIntelCard({ dossier, lede = true, part = 'all' }) {
   const uid = useId();
   const ids = (k) => `${uid}-${k}`;
   const [scrollable, setCardNode] = useScrollable();
-  const intel = dossier?.intel;
   if (!hasCountryIntel(dossier)) return null;
-
-  const focus = intel.focus || 'FX risk';
-  const place = intel.place || dossier.name;
-  const iso3 = intel.iso3 || dossier.iso3;
-  const cur = intel.currency;
-  const brief = intel.brief || null;
-  const fallback = brief ? [] : paragraphs(intel.fallbackText);
-  const kpis = (intel.kpis || []).filter((k) => k && k.value != null && k.value !== '').slice(0, 4);
-  const rows = (intel.rows || []).filter((r) => r && r.label);
-  const missing = (intel.missing || []).filter(Boolean);
-  const missingNote = missingSentence(missing);
-  const drivers = (brief?.drivers || []).filter((d) => d && (d.title || d.text));
-  const scenarios = (brief?.scenarios || []).filter((s) => s && s.name);
-  const monitor = (brief?.monitor || []).filter((m) => m && m.indicator);
-  const map = intel.transmission;
-  const hasMap = Boolean(map?.nodes?.length);
-  const sources = (intel.sources || []).filter(Boolean);
+  const P = intelParts(dossier);
+  const { intel, brief, focus, place, iso3, cur, fallback, kpis, rows } = P;
+  const full = part !== 'summary';
 
   return (
     <section
-      className="snr-fund snr-fund--wide snr-fund--cty snr-cii"
+      className={`snr-fund snr-fund--wide snr-fund--cty snr-cii${full ? '' : ' snr-cii--summary'}`}
       aria-labelledby={ids('title')}
       ref={setCardNode}
       tabIndex={scrollable ? 0 : undefined}
@@ -537,6 +755,9 @@ export function CountryIntelCard({ dossier }) {
         </h3>
         <span className="snr-cii-rule" aria-hidden="true" />
       </div>
+
+      {/* Nov 6: the KPI tiles lead (TRY per USD, inflation, policy rate). */}
+      <KpiRow kpis={kpis} />
 
       <div className="snr-cii-meta">
         <span className="snr-cii-place">{place}</span>
@@ -568,12 +789,12 @@ export function CountryIntelCard({ dossier }) {
         ) : null}
       </div>
 
-      {brief ? (
+      {lede && brief && (brief.answer || brief.assessmentLine) ? (
         <div className="snr-cii-lede">
           {brief.answer ? <p className="snr-cii-answer">{brief.answer}</p> : null}
           {brief.assessmentLine ? <p className="snr-cii-assess">{brief.assessmentLine}</p> : null}
         </div>
-      ) : fallback.length ? (
+      ) : lede && fallback.length ? (
         <div className="snr-cii-lede">
           {fallback.map((t, i) => (
             <p key={i} className={i === 0 ? 'snr-cii-answer' : 'snr-cii-para'}>
@@ -583,166 +804,126 @@ export function CountryIntelCard({ dossier }) {
         </div>
       ) : null}
 
-      {kpis.length ? (
-        <ul className="snr-cii-kpis" aria-label="Key measures">
-          {kpis.map((k) => (
-            <li key={k.id || k.label} className="snr-cii-kpi">
-              <span className="snr-cii-kpi-label">{k.label}</span>
-              <span className="snr-cii-kpi-value">{String(k.value).replace(/^-/, '−')}</span>
-              {k.period ? <span className="snr-cii-kpi-cap">{k.period}</span> : null}
-              {k.change ? (
-                <span className="snr-cii-kpi-cap">
-                  {String(k.change).replace(/(^|\s)-(?=\d)/g, '$1\u2212')}
-                </span>
-              ) : null}
-              {k.stale ? <span className="snr-cii-stale">Not current</span> : null}
-            </li>
-          ))}
-        </ul>
+      {full ? <DriversSection drivers={P.drivers} focus={focus} id={ids('drv')} /> : null}
+      <SeveritySection rows={rows} place={place} id={ids('sev')} />
+      {full ? (
+        <>
+          <ScenariosSection scenarios={P.scenarios} id={ids('scn')} />
+          <MonitorSection monitor={P.monitor} id={ids('mon')} />
+          <BottomLineSection text={brief?.bottomLine} />
+          <MissingSection missing={P.missing} id={ids('na')} />
+          <IntelCharts charts={intel.charts} />
+          <MapSection map={P.map} id={ids('map')} />
+          {P.sources.length ? (
+            <span className="snr-cii-cap snr-cii-sources">Sources: {P.sources.join('; ')}.</span>
+          ) : null}
+        </>
       ) : null}
+    </section>
+  );
+}
 
-      {drivers.length ? (
-        <div className="snr-cii-sec">
-          <Heading id={ids('drv')}>
-            {focus === 'Macro' ? 'What is driving it' : 'What is driving the pressure'}
-          </Heading>
-          <ol className="snr-cii-ol" aria-labelledby={ids('drv')}>
-            {drivers.map((d, i) => (
-              <li key={i}>
-                {d.title ? <strong className="snr-cii-strong">{d.title}.</strong> : null} {d.text}
-                {d.refs?.length ? (
-                  <span className="snr-cii-refs"> {d.refs.map((r) => `[${r}]`).join('')}</span>
-                ) : null}
-              </li>
-            ))}
-          </ol>
-        </div>
-      ) : null}
+/* ── the full-width detail ─────────────────────────────────────────────── */
 
-      {rows.length ? (
-        <div className="snr-cii-sec">
-          <Heading id={ids('sev')}>How serious is it</Heading>
-          <div className="snr-cii-scroll" role="region" aria-labelledby={ids('sev')} tabIndex={0}>
-            <Table className="snr-cii-table">
-              <VisuallyHidden as="caption">
-                How serious is it: each component and its level
-              </VisuallyHidden>
-              <THead>
-                <TR>
-                  <TH scope="col">Component</TH>
-                  <TH scope="col">Level</TH>
-                </TR>
-              </THead>
-              <TBody>
-                {rows.map((r) => (
-                  <TR
-                    key={r.id || r.label}
-                    className={r.id === 'crisis' ? 'snr-cii-crisis' : undefined}
-                  >
-                    <TH scope="row" className="snr-cii-rowh">
-                      {r.label}
-                    </TH>
-                    <TD
-                      className={`snr-cii-level is-${String(r.level || '').replace(/\s+/g, '-')}`}
-                    >
-                      {sentenceCase(r.level || 'n/a')}
-                    </TD>
-                  </TR>
-                ))}
-              </TBody>
-            </Table>
+/**
+ * Everything the summary card leaves out, laid across the full width of the answer in a
+ * 12-column grid (6 columns on a mid-width container, 1 on a phone). Rows are packed by
+ * packDetailRows so each row is filled edge to edge: nothing ever runs down one narrow column
+ * with empty space beside it.
+ *
+ * extras: host-supplied cells ([{ id, node, span?, min? }]), e.g. the key chart and key
+ * indicators from SonarCountryStack, placed after the country-intel sections.
+ */
+const SPANS = {
+  drivers: [6, 5],
+  scenarios: [6, 6],
+  chart: [4, 4],
+  map: [8, 7],
+  monitor: [4, 4],
+  bottom: [4, 4],
+  extra: [6, 5],
+  missing: [6, 4],
+};
+
+export function CountryIntelDetail({ dossier, extras = [] }) {
+  const uid = useId();
+  const ids = (k) => `${uid}-${k}`;
+  if (!hasCountryIntel(dossier)) return null;
+  const P = intelParts(dossier);
+  const cells = [];
+  const add = (id, kind, node, tile = true, span, min) => {
+    if (!node) return;
+    const [s, m] = SPANS[kind];
+    cells.push({ id, node, tile, span: span || s, min: min || m });
+  };
+  add(
+    'drivers',
+    'drivers',
+    P.drivers.length ? (
+      <DriversSection drivers={P.drivers} focus={P.focus} id={ids('drv')} />
+    ) : null,
+  );
+  add(
+    'scenarios',
+    'scenarios',
+    P.scenarios.length ? <ScenariosSection scenarios={P.scenarios} id={ids('scn')} /> : null,
+  );
+  for (const c of intelChartItems(P.intel.charts)) add(`chart-${c.key}`, 'chart', c.node);
+  add('map', 'map', P.map?.nodes?.length ? <MapSection map={P.map} id={ids('map')} /> : null);
+  add(
+    'monitor',
+    'monitor',
+    P.monitor.length ? <MonitorSection monitor={P.monitor} id={ids('mon')} /> : null,
+  );
+  add(
+    'bottom',
+    'bottom',
+    P.brief?.bottomLine ? <BottomLineSection text={P.brief.bottomLine} /> : null,
+  );
+  for (const x of extras || []) {
+    if (x?.node) add(`x-${x.id}`, 'extra', x.node, false, x.span, x.min);
+  }
+  add(
+    'missing',
+    'missing',
+    P.missing.length ? <MissingSection missing={P.missing} id={ids('na')} /> : null,
+  );
+  if (!cells.length) return null;
+
+  const wide = new Map(packDetailRows(cells, 12).map((c) => [c.id, c.span]));
+  const mid = new Map(
+    packDetailRows(
+      cells.map((c) => ({
+        id: c.id,
+        span: Math.max(2, Math.round(c.span / 2)),
+        min: Math.max(2, Math.round(c.min / 2)),
+      })),
+      6,
+    ).map((c) => [c.id, c.span]),
+  );
+
+  return (
+    <section className="snr-cii snr-cii-detail" aria-labelledby={ids('title')}>
+      <div className="snr-cii-head">
+        {P.iso3 ? <span className="snr-cii-iso">{P.iso3}</span> : null}
+        <h3 id={ids('title')} className="snr-cii-kicker">
+          {P.place ? `${P.place} in detail` : 'In detail'} · {P.focus}
+        </h3>
+        <span className="snr-cii-rule" aria-hidden="true" />
+      </div>
+      <div className="snr-cii-grid">
+        {cells.map((c) => (
+          <div
+            key={c.id}
+            className={c.tile ? 'snr-cii-cell snr-cii-tile' : 'snr-cii-cell'}
+            style={{ '--cii-span': wide.get(c.id), '--cii-span-mid': mid.get(c.id) }}
+          >
+            {c.node}
           </div>
-          <span className="snr-cii-cap">
-            Qualitative assessment against Ezana thresholds, not a calibrated risk score.
-          </span>
-        </div>
-      ) : null}
-
-      {scenarios.length ? (
-        <div className="snr-cii-sec">
-          <Heading id={ids('scn')}>What could happen next</Heading>
-          <div className="snr-cii-scroll" role="region" aria-labelledby={ids('scn')} tabIndex={0}>
-            <Table className="snr-cii-table snr-cii-table--scn" role="table">
-              <VisuallyHidden as="caption">
-                What could happen next: conditional scenarios, not forecasts
-              </VisuallyHidden>
-              <THead role="rowgroup">
-                <TR role="row">
-                  <TH scope="col" role="columnheader">
-                    Scenario
-                  </TH>
-                  <TH scope="col" role="columnheader">
-                    Conditions
-                  </TH>
-                  <TH scope="col" role="columnheader">
-                    Implication
-                  </TH>
-                </TR>
-              </THead>
-              <TBody role="rowgroup">
-                {scenarios.map((s, i) => (
-                  <TR key={i} role="row">
-                    <TH scope="row" role="rowheader" className="snr-cii-rowh">
-                      {s.name}
-                    </TH>
-                    <TD role="cell" data-label="Conditions">
-                      {s.conditions}
-                    </TD>
-                    <TD role="cell" data-label="Implication">
-                      {s.implication}
-                    </TD>
-                  </TR>
-                ))}
-              </TBody>
-            </Table>
-          </div>
-          <span className="snr-cii-cap">Conditional scenarios, not forecasts.</span>
-        </div>
-      ) : null}
-
-      {monitor.length ? (
-        <div className="snr-cii-sec">
-          <Heading id={ids('mon')}>What to monitor</Heading>
-          <ol className="snr-cii-ol" aria-labelledby={ids('mon')}>
-            {monitor.map((m, i) => (
-              <li key={i}>
-                <strong className="snr-cii-strong">{m.indicator}.</strong> {m.why}
-              </li>
-            ))}
-          </ol>
-        </div>
-      ) : null}
-
-      {brief?.bottomLine ? (
-        <div className="snr-cii-sec">
-          <Heading>Bottom line</Heading>
-          <p className="snr-cii-para">{brief.bottomLine}</p>
-        </div>
-      ) : null}
-
-      {missing.length ? (
-        <div className="snr-cii-sec">
-          <Heading id={ids('na')}>Data not available</Heading>
-          <ul className="snr-cii-ul" aria-labelledby={ids('na')}>
-            {missing.map((m) => (
-              <li key={m}>{sentenceCase(m)}</li>
-            ))}
-          </ul>
-          {missingNote ? <p className="snr-cii-para snr-cii-muted">{missingNote}</p> : null}
-        </div>
-      ) : null}
-
-      <IntelCharts charts={intel.charts} />
-
-      {hasMap ? (
-        <div className="snr-cii-sec">
-          <Heading id={ids('map')}>How pressure can travel</Heading>
-          <TransmissionMap map={map} headingId={ids('map')} />
-        </div>
-      ) : null}
-
-      {sources.length ? (
-        <span className="snr-cii-cap snr-cii-sources">Sources: {sources.join('; ')}.</span>
+        ))}
+      </div>
+      {P.sources.length ? (
+        <span className="snr-cii-cap snr-cii-sources">Sources: {P.sources.join('; ')}.</span>
       ) : null}
     </section>
   );

@@ -289,3 +289,109 @@ export function transmissionLayout(
   const height = Math.max(...out.map((n) => n.y + n.h));
   return { width, height, mode, nodes: out, edges };
 }
+
+/* ------------------------------------------------------------------ Ezana thresholds */
+
+const num = (v) => typeof v === 'number' && Number.isFinite(v);
+const fmt1 = (v) => (Math.round(v * 10) / 10).toFixed(1).replace(/^-/, '−');
+const ordinalOf = (n) => {
+  const v = Math.round(n);
+  const s = v % 100 >= 11 && v % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][v % 10] || 'th';
+  return `${v}${s}`;
+};
+
+/**
+ * This country's own reading for one assessment row, in words, from the evidence the
+ * engine recorded (assessmentRows in intel-brief.js). Null when the row carries none.
+ * Shown in the "How Ezana thresholds work" modal next to each cut-off.
+ */
+export function evidenceReading(row) {
+  const e = row?.evidence;
+  if (!e) return null;
+  const parts = [];
+  switch (row.id) {
+    case 'depreciation':
+      if (num(e.valueLostPct))
+        parts.push(`${fmt1(e.valueLostPct)}% of dollar value lost over 12 months`);
+      if (num(e.annualisedLast3mPct))
+        parts.push(`last 3 months annualised ${fmt1(e.annualisedLast3mPct)}%`);
+      break;
+    case 'inflation':
+      if (num(e.annualPct)) parts.push(`annual inflation ${fmt1(e.annualPct)}%`);
+      if (e.trend) parts.push(`${e.trend} against a year earlier`);
+      break;
+    case 'policy':
+      if (num(e.expostRealRatePp)) parts.push(`real policy rate ${fmt1(e.expostRealRatePp)} pp`);
+      if (e.easingOverYear === true) parts.push('rate cut over the year');
+      break;
+    case 'external':
+      if (num(e.reservesChange3mPct))
+        parts.push(`reserves ${fmt1(e.reservesChange3mPct)}% over about 3 months`);
+      if (num(e.reserveImportMonths))
+        parts.push(`${fmt1(e.reserveImportMonths)} months of import cover`);
+      if (num(e.currentAccountPctGdp))
+        parts.push(`current account ${fmt1(e.currentAccountPctGdp)}% of GDP`);
+      break;
+    case 'stress':
+      if (num(e.ownHistoryPercentile))
+        parts.push(`${ordinalOf(e.ownHistoryPercentile)} percentile of its own history`);
+      break;
+    default:
+      return null;
+  }
+  return parts.length ? sentenceCase(parts.join(', ')) : null;
+}
+
+/* ------------------------------------------------------------------ full-width detail */
+
+/**
+ * Pack the answer's detail sections into rows of a `cols`-column grid so every row is filled
+ * edge to edge: no section ever sits alone in a column with empty space beside it.
+ *
+ * sections: [{ id, span, min? }] in reading order. `span` is the preferred width in columns,
+ * `min` the narrowest it reads well at (defaults to span). A section that does not fit the
+ * current row closes it; the row's sections then share the leftover columns (wider sections
+ * first), so the last item never strands a gap. A section wider than `cols` takes a full row.
+ * -> [{ id, span, row }]
+ */
+export function packDetailRows(sections, cols = 12) {
+  const list = (sections || []).filter((s) => s && s.id);
+  const out = [];
+  let row = [];
+  let used = 0;
+  let rowNo = 0;
+  const close = () => {
+    if (!row.length) return;
+    let spare = cols - used;
+    /* Hand the spare columns out one at a time, widest section first, round robin. */
+    const order = [...row].sort((a, b) => b.span - a.span);
+    let k = 0;
+    while (spare > 0) {
+      order[k % order.length].span += 1;
+      spare -= 1;
+      k += 1;
+    }
+    for (const r of row) out.push({ id: r.id, span: r.span, row: rowNo });
+    rowNo += 1;
+    row = [];
+    used = 0;
+  };
+  for (const s of list) {
+    const span = Math.max(1, Math.min(cols, Math.round(s.span || cols)));
+    const min = Math.max(1, Math.min(span, Math.round(s.min || span)));
+    if (used + span <= cols) {
+      row.push({ id: s.id, span });
+      used += span;
+    } else if (used + min <= cols) {
+      row.push({ id: s.id, span: cols - used });
+      used = cols;
+    } else {
+      close();
+      row.push({ id: s.id, span });
+      used = span;
+    }
+    if (used >= cols) close();
+  }
+  close();
+  return out;
+}

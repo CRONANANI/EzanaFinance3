@@ -527,6 +527,9 @@
   box-shadow: var(--shadow-xl);
   animation: ds-pop 0.16s ease;
 }
+.ds-modal:focus {
+  outline: none;
+}
 .ds-modal-header {
   display: flex;
   align-items: center;

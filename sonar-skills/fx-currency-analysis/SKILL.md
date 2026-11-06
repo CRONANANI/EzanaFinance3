@@ -71,7 +71,7 @@ State precisely how much a currency has moved, in both quote conventions, over n
 - Reserve import cover. Engine: reserveCoverMonths(reserves, imports).
 - Reserves versus short-term external debt. Engine: shortTermDebtCover(reserves, stDebt).
 - Aligning FX, inflation and reserves dates. Engine: alignPeriods(seriesList).
-- Pressure classification. Deterministic: assessCurrencyPressure(metrics) in playbook.js with CURRENCY_THRESHOLDS (depreciation 1y elevated 10, severe 25; 3m annualised elevated 15; inflation elevated 10, severe 30; real rate negative below 0, thin below 2; reserves 3m deteriorating -5, sharp -15; import cover weak below 3 months; current account vulnerable at -4% of GDP; risk percentile elevated 80; the severe cut of 95 is set inside the function). Overall is anchored on the depreciation level, raised one step when two or more other components are elevated or worse, lowered one step when all others are low.
+- Pressure classification. Deterministic: assessCurrencyPressure(metrics) in playbook.js with CURRENCY_THRESHOLDS (depreciation 1y elevated 10, severe 25; 3m annualised elevated 15; inflation elevated 10, severe 30; real rate negative below 0, thin below 2; reserves 3m deteriorating -5, sharp -15; import cover weak below 3 months; current account vulnerable at -4% of GDP; risk percentile moderate 50, elevated 80, severe 95; the moderate cuts are depreciation above 3% and inflation from 4%, all held in CURRENCY_THRESHOLDS). Overall is anchored on the depreciation level, raised one step when two or more other components are elevated or worse, lowered one step when all others are low.
 
 ## Mandatory checks
 

@@ -734,3 +734,101 @@
     transition: none;
   }
 }
+
+/* ── Nov 6: summary card + full-width detail ─────────────────────────────
+   On /datasets the right stack shows the summary card (KPI tiles first, the badge, "How
+   serious is it") and CountryIntelDetail lays the rest across the whole answer width below
+   the three columns. The grid is 12 columns on a wide container, 6 on a mid-width one and 1
+   on a phone; each cell's span comes from packDetailRows (country-intel-view.js), which fills
+   every row edge to edge, so no section ever runs down one narrow column beside empty space.
+   Driven by the detail's own width (container query), not the viewport. */
+
+.snr-cii.snr-cii-detail {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+  margin-top: 24px;
+  font-family: var(--cii-sans);
+  color: var(--cii-body);
+  container: snr-cii-detail / inline-size;
+}
+
+.snr-cii .snr-cii-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.snr-cii .snr-cii-cell {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.snr-cii .snr-cii-cell > * {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Detail tiles: one boxed panel per section (the band's row tint, or the app's tile tint). */
+.snr-cii .snr-cii-tile {
+  box-sizing: border-box;
+  padding: 16px;
+  border: 1px solid var(--cii-rule);
+  border-radius: var(--radius-lg);
+  background: var(--cii-tile);
+  /* Each tile is its own snr-cii container, so the card's narrow layouts (the scenario table
+     as stacked rows, the tall transmission map) key off the tile's width. */
+  container: snr-cii / inline-size;
+}
+/* A section inside a tile: no extra top rule or padding of its own. */
+.snr-cii .snr-cii-tile > .snr-cii-sec,
+.snr-cii .snr-cii-tile > .snr-cii-chart {
+  margin: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* Host cells (the key chart, key indicators) keep their own card shell; in the detail they
+   take their natural height, never the landing band's fixed chart slot. */
+.snr-band .snr-cii-detail .snr-fund,
+.snr-band .snr-cii-detail .snr-news {
+  flex: 1 1 auto;
+  height: auto;
+  max-height: none;
+  min-height: 0;
+  overflow: visible;
+}
+
+.snr-cii-detail > .snr-cii-sources {
+  max-width: 120ch;
+}
+
+@container snr-cii-detail (min-width: 640px) {
+  .snr-cii .snr-cii-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .snr-cii .snr-cii-grid > .snr-cii-cell {
+    grid-column: span var(--cii-span-mid, 6);
+  }
+}
+
+@container snr-cii-detail (min-width: 1080px) {
+  .snr-cii .snr-cii-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .snr-cii .snr-cii-grid > .snr-cii-cell {
+    grid-column: span var(--cii-span, 12);
+  }
+}
+
+/* Summary card in the right stack: natural height, no inner scroller. */
+.snr-band .snr-fund.snr-cii.snr-cii--summary {
+  height: auto;
+  max-height: none;
+  flex: none;
+  overflow: visible;
+}

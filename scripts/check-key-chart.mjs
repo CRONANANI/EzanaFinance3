@@ -348,11 +348,16 @@ test('the card source carries the required captions and no em dash', () => {
     new URL('../src/components/landing/CountryIntelCard.jsx', import.meta.url),
     'utf8',
   );
+  /* Nov 6: "Ezana thresholds" is now a button inside the caption (it opens the explainer),
+     so the caption is checked in its parts around it. */
+  assert.match(
+    src.replace(/\s+/g, ' '),
+    /Qualitative assessment against <EzanaThresholdsButton[^>]*\/>, not a calibrated risk score\./,
+  );
   for (const s of [
-    'Qualitative assessment against Ezana thresholds, not a calibrated risk score.',
     'Conditional scenarios, not forecasts.',
     'Conceptual channels, not a fitted causal model.',
-    'Ezana thresholds',
+    'EzanaThresholdsButton',
     'Country intelligence ·',
   ])
     assert.ok(src.includes(s), s);

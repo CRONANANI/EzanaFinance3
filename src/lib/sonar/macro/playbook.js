@@ -184,19 +184,26 @@ export function frameworkPrompt(ids = []) {
 
 /* ── Deterministic currency assessment ──────────────────────────────────────────────── */
 
-/** Ezana thresholds. Stated in answers as "Ezana's thresholds". */
+/** The four steps every component and the overall label sit on, lowest first. */
+export const CURRENCY_LEVELS = ['low', 'moderate', 'elevated', 'severe'];
+
+/**
+ * Ezana thresholds. Stated in answers as "Ezana's thresholds". Every cut-off
+ * assessCurrencyPressure uses lives here, so the "Ezana thresholds" explainer on the answer
+ * (currency-thresholds.js, EzanaThresholdsModal.jsx) can never drift from the engine.
+ */
 export const CURRENCY_THRESHOLDS = {
-  depreciation1y: { elevated: 10, severe: 25 }, // % lost against USD over a year
+  depreciation1y: { moderate: 3, elevated: 10, severe: 25 }, // % lost against USD over a year
   depreciation3mAnnualised: { elevated: 15 },
-  inflation: { elevated: 10, severe: 30 }, // % annual
+  inflation: { moderate: 4, elevated: 10, severe: 30 }, // % annual
   realRate: { negative: 0, thin: 2 }, // policy rate minus annual inflation, pp
   reserves3m: { deteriorating: -5, sharp: -15 }, // % change over ~3 months
   reserveImportMonths: { weak: 3 },
   currentAccount: { vulnerable: -4 }, // % of GDP
-  riskPercentile: { elevated: 80 }, // own-history percentile
+  riskPercentile: { moderate: 50, elevated: 80, severe: 95 }, // own-history percentile
 };
 
-const LEVELS = ['low', 'moderate', 'elevated', 'severe'];
+const LEVELS = CURRENCY_LEVELS;
 
 /**
  * metrics (all optional; pass what the evidence has):
@@ -211,8 +218,8 @@ const LEVELS = ['low', 'moderate', 'elevated', 'severe'];
  *   riskPercentile                     0-100, own history (GPR or WUI)
  *
  * Returns { components: [{ id, label, level, evidence }], overall, crisisEstablished: false,
- *           missing: [...] }. `overall` is the median of assessed component levels, never a
- *           score; crisisEstablished is always false here because the data cannot show
+ *           missing: [...] }. `overall` is anchored on the depreciation level (rule below),
+ *           never a score; crisisEstablished is always false here because the data cannot show
  *           disorderly market functioning on its own (the model may only say so with evidence).
  */
 export function assessCurrencyPressure(m = {}) {
@@ -230,7 +237,7 @@ export function assessCurrencyPressure(m = {}) {
         ? 'severe'
         : valueLost >= T.depreciation1y.elevated
           ? 'elevated'
-          : valueLost > 3
+          : valueLost > T.depreciation1y.moderate
             ? 'moderate'
             : 'low';
     let accel = null;
@@ -261,7 +268,7 @@ export function assessCurrencyPressure(m = {}) {
         ? 'severe'
         : v >= T.inflation.elevated
           ? 'elevated'
-          : v >= 4
+          : v >= T.inflation.moderate
             ? 'moderate'
             : 'low';
     const trend =
@@ -335,11 +342,11 @@ export function assessCurrencyPressure(m = {}) {
   if (n(m.riskPercentile) != null) {
     const p = m.riskPercentile;
     const level =
-      p >= 95
+      p >= T.riskPercentile.severe
         ? 'severe'
         : p >= T.riskPercentile.elevated
           ? 'elevated'
-          : p >= 50
+          : p >= T.riskPercentile.moderate
             ? 'moderate'
             : 'low';
     comps.push({
