@@ -31,6 +31,7 @@ import {
   percentileOf,
 } from '../macro/currency.js';
 import { assessCurrencyPressure as playbookAssessCurrencyPressure } from '../macro/playbook.js';
+import { weoStatus as weoStatusOf, weoLatestActual, WEO_VINTAGE } from './weo-status.js';
 import {
   aggregateFews as catalogAggregateFews,
   yoyFromIndex as catalogYoyFromIndex,
@@ -3401,6 +3402,28 @@ export function importDependency(imports, consumption, opts = {}) {
 
 /* ================================================================== existing engine functions */
 
+/**
+ * Is an IMF WEO value actual, an IMF staff estimate or a projection (weo-status.js and the
+ * appendix reference table), as a metric: value 'actual' | 'estimate' | 'projection' | 'unknown'.
+ */
+export function weoStatus(iso3, indicatorGroup, year, opts = {}) {
+  const status = weoStatusOf(iso3, indicatorGroup, year, { now: opts.now || new Date() });
+  const last = weoLatestActual(iso3, indicatorGroup);
+  return metric(
+    'weoStatus',
+    {
+      value: status,
+      unit: 'label',
+      method: `compared with the country's last actual year for ${indicatorGroup} (IMF WEO ${WEO_VINTAGE || ''} Database Appendix); the current year and later are projections`,
+      periods: [String(year)],
+      warnings:
+        status === 'unknown' ? ['country or indicator group not in the reference table'] : [],
+      lastActual: last,
+    },
+    opts,
+  );
+}
+
 /** Currency pressure classification (macro/playbook.js, Ezana's thresholds), as a metric. */
 export function assessCurrencyPressure(metrics = {}, opts = {}) {
   const res = playbookAssessCurrencyPressure(metrics);
@@ -3439,6 +3462,7 @@ export function aggregateFews(rows, opts = {}) {
 
 /** Every engine function by name, so evaluations can verify each `mustCompute` exists. */
 export const QUANT = Object.freeze({
+  weoStatus,
   pctChange,
   bothConventionsFx,
   annualise,
